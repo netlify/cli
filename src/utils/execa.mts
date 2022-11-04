@@ -1,3 +1,4 @@
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'env'.
 const { env } = require('process')
 
 const execaLib = require('execa')
@@ -6,6 +7,7 @@ const execaLib = require('execa')
 // alternative path to the module location, making it easier to mock its logic
 // in tests (see `tests/utils/mock-execa.js`).
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'execa'.
 // eslint-disable-next-line import/no-dynamic-require
 const execa = env.NETLIFY_CLI_EXECA_PATH ? require(env.NETLIFY_CLI_EXECA_PATH) : execaLib
 

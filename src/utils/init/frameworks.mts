@@ -1,9 +1,10 @@
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module '@net... Remove this comment to see the full error message
+// @ts-expect-error TS(7016): Could not find a declaration file for module '@net... Remove this comment to see the full error message
 const frameworkInfoPromise = import('@netlify/framework-info')
 
 const getFrameworkInfo = async ({
   baseDirectory,
   nodeVersion
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
 }: $TSFixMe) => {
   const { listFrameworks } = await frameworkInfoPromise
   const frameworks = await listFrameworks({ projectDir: baseDirectory, nodeVersion })

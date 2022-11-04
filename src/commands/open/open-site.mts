@@ -1,3 +1,4 @@
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'error'.
 const { error, exit, log, openBrowser, warn } = require('../../utils/index.mjs')
 
 /**
@@ -5,7 +6,8 @@ const { error, exit, log, openBrowser, warn } = require('../../utils/index.mjs')
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command').BaseCommand} command
  */
-const openSite = async (options, command) => {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'openSite'.
+const openSite = async (options: $TSFixMe, command: $TSFixMe) => {
   const { api, site } = command.netlify
 
   await command.authenticate()
@@ -27,7 +29,8 @@ Run \`netlify link\` to connect to this folder to a site`)
     log(`> ${url}`)
   } catch (error_) {
     // unauthorized
-    if (error_.status === 401) {
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    if ((error_ as $TSFixMe).status === 401) {
       warn(`Log in with a different account or re-link to a site you have permission for`)
       error(`Not authorized to view the currently linked site (${siteId})`)
     }
@@ -43,11 +46,11 @@ Run \`netlify link\` to connect to this folder to a site`)
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createOpenSiteCommand = (program) =>
-  program
-    .command('open:site')
-    .description('Opens current site url in browser')
-    .addExamples(['netlify open:site'])
-    .action(openSite)
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createOpen... Remove this comment to see the full error message
+const createOpenSiteCommand = (program: $TSFixMe) => program
+  .command('open:site')
+  .description('Opens current site url in browser')
+  .addExamples(['netlify open:site'])
+  .action(openSite)
 
 module.exports = { createOpenSiteCommand, openSite }

@@ -8,7 +8,13 @@ const DEBOUNCE_INTERVAL = 300
 // This allows us to discard any duplicate filesystem events, while ensuring
 // that actual updates happening during the zip operation will be executed
 // after it finishes (only the last update will run).
-const memoizedBuild = ({ cache, cacheKey, command }) => {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'memoizedBu... Remove this comment to see the full error message
+const memoizedBuild = ({
+  cache,
+  cacheKey,
+  command
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) => {
   if (cache[cacheKey] === undefined) {
     cache[cacheKey] = {
       // eslint-disable-next-line promise/prefer-await-to-then

@@ -2,12 +2,12 @@
 import process from 'process'
 import { format } from 'util'
 
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module '@net... Remove this comment to see the full error message
+// @ts-expect-error TS(7016): Could not find a declaration file for module '@net... Remove this comment to see the full error message
 import { resolveConfig } from '@netlify/config'
 import { Command, Option } from 'commander'
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'debu... Remove this comment to see the full error message
+// @ts-expect-error TS(7016): Could not find a declaration file for module 'debu... Remove this comment to see the full error message
 import debug from 'debug'
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'loda... Remove this comment to see the full error message
+// @ts-expect-error TS(7016): Could not find a declaration file for module 'loda... Remove this comment to see the full error message
 import merge from 'lodash/merge.js'
 import { NetlifyAPI } from 'netlify'
 
@@ -54,6 +54,7 @@ const HELP_SEPARATOR_WIDTH = 5
  * @param {string[]} textArray
  * @returns
  */
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
 const formatHelpList = (textArray: $TSFixMe) => textArray.join('\n').replace(/^/gm, ' '.repeat(HELP_INDENT_WIDTH))
 
 /**
@@ -61,6 +62,7 @@ const formatHelpList = (textArray: $TSFixMe) => textArray.join('\n').replace(/^/
  * @param {bigint} startTime
  * @returns
  */
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
 const getDuration = function (startTime: $TSFixMe) {
   const durationNs = process.hrtime.bigint() - startTime
   return Math.round(Number(durationNs / BigInt(NANO_SECS_TO_MSECS)))
@@ -85,7 +87,14 @@ const getDuration = function (startTime: $TSFixMe) {
 
 /** Base command class that provides tracking and config initialization */
 export default class BaseCommand extends Command {
+  // @ts-expect-error TS(2612): Property 'args' will overwrite the base property i... Remove this comment to see the full error message
+  args: $TSFixMe;
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  name: $TSFixMe;
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  opts: $TSFixMe;
   /** @type {NetlifyOptions} */
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
   netlify: $TSFixMe
 
   /** @type {{ startTime: bigint, payload?: any}} */
@@ -97,33 +106,24 @@ export default class BaseCommand extends Command {
    * @param {string} name The command name
    * @returns
    */
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
   createCommand(name: $TSFixMe) {
-    return (
-      new BaseCommand(name)
-        // If  --silent or --json flag passed disable logger
-        .addOption(new Option('--json', 'Output return values as JSON').hideHelp(true))
-        .addOption(new Option('--silent', 'Silence CLI output').hideHelp(true))
-        .addOption(new Option('--cwd <cwd>').hideHelp(true))
-        .addOption(new Option('-o, --offline').hideHelp(true))
-        .addOption(new Option('--auth <token>', 'Netlify auth token').hideHelp(true))
-        .option(
-          '--httpProxyCertificateFilename [file]',
-          'Certificate file to use when connecting using a proxy server',
-          process.env.NETLIFY_PROXY_CERTIFICATE_FILENAME,
-        )
-        .option(
-          '--httpProxy [address]',
-          'Proxy server address to route requests through.',
-          process.env.HTTP_PROXY || process.env.HTTPS_PROXY,
-        )
-        .option('--debug', 'Print debugging information')
-        .hook('preAction', async (_parentCommand, actionCommand) => {
-          debug(`${name}:preAction`)('start')
-          this.analytics = { startTime: process.hrtime.bigint() }
-          await this.init(actionCommand)
-          debug(`${name}:preAction`)('end')
-        })
-    )
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    return (new BaseCommand(name) as $TSFixMe).addOption(new Option('--json', 'Output return values as JSON').hideHelp(true))
+    .addOption(new Option('--silent', 'Silence CLI output').hideHelp(true))
+    .addOption(new Option('--cwd <cwd>').hideHelp(true))
+    .addOption(new Option('-o, --offline').hideHelp(true))
+    .addOption(new Option('--auth <token>', 'Netlify auth token').hideHelp(true))
+    .option('--httpProxyCertificateFilename [file]', 'Certificate file to use when connecting using a proxy server', process.env.NETLIFY_PROXY_CERTIFICATE_FILENAME)
+    .option('--httpProxy [address]', 'Proxy server address to route requests through.', process.env.HTTP_PROXY || process.env.HTTPS_PROXY)
+    .option('--debug', 'Print debugging information')
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    .hook('preAction', async (_parentCommand: $TSFixMe, actionCommand: $TSFixMe) => {
+    debug(`${name}:preAction`)('start');
+    this.analytics = { startTime: process.hrtime.bigint() };
+    await this.init(actionCommand);
+    debug(`${name}:preAction`)('end');
+});
   }
 
   /** @private */
@@ -142,6 +142,7 @@ export default class BaseCommand extends Command {
    * Set examples for the command
    * @param {string[]} examples
    */
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
   addExamples(examples: $TSFixMe) {
     this.examples = examples
     return this
@@ -154,18 +155,20 @@ export default class BaseCommand extends Command {
   createHelp() {
     const help = super.createHelp()
 
-    help.commandUsage = (command) => {
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    help.commandUsage = (command: $TSFixMe) => {
       const term =
         this.name() === 'netlify'
           ? `${HELP_$} ${command.name()} [COMMAND]`
-          : // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-                                             `${HELP_$} ${command.parent.name()} ${command.name()} ${command.usage()}`
+          :                                             `${HELP_$} ${command.parent.name()} ${command.name()} ${command.usage()}`
 
       return padLeft(term, HELP_INDENT_WIDTH)
     }
 
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
     const getCommands = (command: $TSFixMe) => {
       const parentCommand = this.name() === 'netlify' ? command : command.parent
+      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
       return parentCommand.commands.filter((cmd: $TSFixMe) => {
         // eslint-disable-next-line no-underscore-dangle
         if (cmd._hidden) return false
@@ -183,8 +186,8 @@ export default class BaseCommand extends Command {
      * @param {BaseCommand} command
      * @returns {number}
      */
-    help.longestSubcommandTermLength = (command) =>
-      getCommands(command).reduce((max: $TSFixMe, cmd: $TSFixMe) => Math.max(max, cmd.name().length), 0)
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    help.longestSubcommandTermLength = (command: $TSFixMe) => getCommands(command).reduce((max: $TSFixMe, cmd: $TSFixMe) => Math.max(max, cmd.name().length), 0)
 
     /**
      * override the longestOptionTermLength to react on hide options flag
@@ -192,10 +195,11 @@ export default class BaseCommand extends Command {
      * @param {import('commander').Help} helper
      * @returns {number}
      */
-    help.longestOptionTermLength = (command, helper) =>
-      // @ts-expect-error TS(2551) FIXME: Property 'noBaseOptions' does not exist on type 'C... Remove this comment to see the full error message
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    help.longestOptionTermLength = (command: $TSFixMe, helper: $TSFixMe) =>
       (command.noBaseOptions === false &&
-        helper.visibleOptions(command).reduce((max, option) => Math.max(max, helper.optionTerm(option).length), 0)) ||
+        // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+        helper.visibleOptions(command).reduce((max: $TSFixMe, option: $TSFixMe) => Math.max(max, helper.optionTerm(option).length), 0)) ||
       0
 
     /**
@@ -204,7 +208,8 @@ export default class BaseCommand extends Command {
  * @param {import('commander').Help} helper
  * @returns {string}
  */
-help.formatHelp = (command, helper) => {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+help.formatHelp = (command: $TSFixMe, helper: $TSFixMe) => {
     const parentCommand = this.name() === 'netlify' ? command : command.parent;
     const termWidth = helper.padWidth(command, helper);
     const helpWidth = helper.helpWidth || FALLBACK_HELP_CMD_WIDTH;
@@ -215,6 +220,7 @@ help.formatHelp = (command, helper) => {
      * @param {boolean} [isCommand]
      * @returns {string}
      */
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
     const formatItem = (term: $TSFixMe, description: $TSFixMe, isCommand = false) => {
         const bang = isCommand ? `${HELP_$} ` : '';
         if (description) {
@@ -225,6 +231,7 @@ help.formatHelp = (command, helper) => {
         return `${bang}${term}`;
     };
     /** @type {string[]} */
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
     let output: $TSFixMe = [];
     // Description
     const [topDescription, ...commandDescription] = (helper.commandDescription(command) || '').split('\n');
@@ -233,7 +240,7 @@ help.formatHelp = (command, helper) => {
     }
     // on the parent help command the version should be displayed
     if (this.name() === 'netlify') {
-        // @ts-expect-error TS(2554) FIXME: Expected 2-3 arguments, but got 1.
+        // @ts-expect-error TS(2554): Expected 2-3 arguments, but got 1.
         output = [...output, chalk.bold('VERSION'), formatHelpList([formatItem(USER_AGENT)]), ''];
     }
     // Usage
@@ -241,17 +248,18 @@ help.formatHelp = (command, helper) => {
     // Arguments
     const argumentList = helper
         .visibleArguments(command)
-        .map((argument) => formatItem(helper.argumentTerm(argument), helper.argumentDescription(argument)));
+        // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+        .map((argument: $TSFixMe) => formatItem(helper.argumentTerm(argument), helper.argumentDescription(argument)));
     if (argumentList.length !== 0) {
         output = [...output, chalk.bold('ARGUMENTS'), formatHelpList(argumentList), ''];
     }
-    // @ts-expect-error TS(2551) FIXME: Property 'noBaseOptions' does not exist on type 'C... Remove this comment to see the full error message
     if (command.noBaseOptions === false) {
         // Options
         const optionList = helper
             .visibleOptions(command)
             .sort(sortOptions)
-            .map((option) => formatItem(helper.optionTerm(option), helper.optionDescription(option)));
+            // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+            .map((option: $TSFixMe) => formatItem(helper.optionTerm(option), helper.optionDescription(option)));
         if (optionList.length !== 0) {
             output = [...output, chalk.bold('OPTIONS'), formatHelpList(optionList), ''];
         }
@@ -261,22 +269,24 @@ help.formatHelp = (command, helper) => {
         output = [...output, chalk.bold('DESCRIPTION'), formatHelpList(commandDescription), ''];
     }
     // Aliases
-    // @ts-expect-error TS(2551) FIXME: Property '_aliases' does not exist on type 'Comman... Remove this comment to see the full error message
     // eslint-disable-next-line no-underscore-dangle
     if (command._aliases.length !== 0) {
-        // @ts-expect-error TS(2551) FIXME: Property '_aliases' does not exist on type 'Comman... Remove this comment to see the full error message
+        // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
         // eslint-disable-next-line no-underscore-dangle
         const aliases = command._aliases.map((alias: $TSFixMe) => formatItem(`${parentCommand.name()} ${alias}`, null, true));
         output = [...output, chalk.bold('ALIASES'), formatHelpList(aliases), ''];
     }
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
     if ((command as $TSFixMe).examples.length !== 0) {
         output = [
             ...output,
             chalk.bold('EXAMPLES'),
+            // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
             formatHelpList((command as $TSFixMe).examples.map((example: $TSFixMe) => `${HELP_$} ${example}`)),
             '',
         ];
     }
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
     const commandList = getCommands(command).map((cmd: $TSFixMe) => formatItem(cmd.name(), helper.subcommandDescription(cmd).split('\n')[0], true));
     if (commandList.length !== 0) {
         output = [...output, chalk.bold('COMMANDS'), formatHelpList(commandList), ''];
@@ -290,8 +300,9 @@ help.formatHelp = (command, helper) => {
    * Will be called on the end of an action to track the metrics
    * @param {*} [error_]
    */
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
   async onEnd(error_: $TSFixMe) {
-    // @ts-expect-error TS(2339) FIXME: Property 'payload' does not exist on type '{ start... Remove this comment to see the full error message
+    // @ts-expect-error TS(2339): Property 'payload' does not exist on type '{ start... Remove this comment to see the full error message
     const { payload, startTime } = this.analytics
     const duration = getDuration(startTime)
     const status = error_ === undefined ? 'success' : 'error'
@@ -315,6 +326,7 @@ help.formatHelp = (command, helper) => {
     }
   }
 
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
   async authenticate(tokenFromFlag: $TSFixMe) {
     const [token] = await getToken(tokenFromFlag)
     if (token) {
@@ -382,8 +394,9 @@ help.formatHelp = (command, helper) => {
     return accessToken
   }
 
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
   setAnalyticsPayload(payload: $TSFixMe) {
-    // @ts-expect-error TS(2322) FIXME: Type '{ payload: any; startTime: any; }' is not as... Remove this comment to see the full error message
+    // @ts-expect-error TS(2322): Type '{ payload: $TSFixMe; startTime: bigint; }' i... Remove this comment to see the full error message
     this.analytics = { ...this.analytics, payload }
   }
 
@@ -392,6 +405,7 @@ help.formatHelp = (command, helper) => {
    * @param {BaseCommand} actionCommand The command of the action that is run (`this.` gets the parent command)
    * @private
    */
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
   async init(actionCommand: $TSFixMe) {
     debug(`${actionCommand.name()}:init`)('start')
     const options = actionCommand.opts()
@@ -406,11 +420,13 @@ help.formatHelp = (command, helper) => {
     }
 
     if (process.env.NETLIFY_API_URL) {
-      // @ts-expect-error TS(7022) FIXME: 'apiUrl' implicitly has type 'any' because it does... Remove this comment to see the full error message
+      // @ts-expect-error TS(7022): 'apiUrl' implicitly has type 'any' because it does... Remove this comment to see the full error message
       const apiUrl = new URL(process.env.NETLIFY_API_URL)
-      // @ts-expect-error TS(2448) FIXME: Block-scoped variable 'apiUrl' used before its dec... Remove this comment to see the full error message
+      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
       (apiUrlOpts as $TSFixMe).scheme = apiUrl.protocol.slice(0, -1);
+      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
       (apiUrlOpts as $TSFixMe).host = apiUrl.host;
+      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
       (apiUrlOpts as $TSFixMe).pathPrefix =
     process.env.NETLIFY_API_URL === `${apiUrl.protocol}//${apiUrl.host}` ? '/api/v1' : apiUrl.pathname;
     }
@@ -460,7 +476,7 @@ help.formatHelp = (command, helper) => {
    * @param {*} config
    * @returns {ReturnType<import('@netlify/config/src/main')>}
    */
-  // @ts-expect-error TS(7023) FIXME: 'getConfig' implicitly has return type 'any' becau... Remove this comment to see the full error message
+  // @ts-expect-error TS(7023): 'getConfig' implicitly has return type 'any' becau... Remove this comment to see the full error message
   async getConfig(config: $TSFixMe) {
     const options = this.opts()
     const { cwd, host, offline = options.offline, pathPrefix, scheme, state, token } = config
@@ -484,6 +500,7 @@ help.formatHelp = (command, helper) => {
         offline,
       })
     } catch (error_) {
+      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
       const isUserError = (error_ as $TSFixMe).customErrorInfo !== undefined && (error_ as $TSFixMe).customErrorInfo.type === 'resolveConfig';
 
       // If we're failing due to an error thrown by us, it might be because the token we're using is invalid.
@@ -500,6 +517,7 @@ help.formatHelp = (command, helper) => {
         return this.getConfig({ cwd, offline: true, state, token })
       }
 
+      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
       const message = isUserError ? (error_ as $TSFixMe).message : (error_ as $TSFixMe).stack;
       console.error(message)
       exit(1)

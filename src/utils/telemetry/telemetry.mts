@@ -1,19 +1,26 @@
 // @ts-check
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'path'.
 const path = require('path')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'process'.
 const process = require('process')
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'isCI'.
 const { isCI } = require('ci-info')
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'execa'.
 const execa = require('../execa.cjs')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getGlobalC... Remove this comment to see the full error message
 const getGlobalConfig = require('../get-global-config.cjs')
 
 const isValidEventName = require('./validation.cjs')
 
-const isTelemetryDisabled = function (config) {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const isTelemetryDisabled = function (config: $TSFixMe) {
   return config.get('telemetryDisabled')
 }
 
-const send = function (type, payload) {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const send = function (type: $TSFixMe, payload: $TSFixMe) {
   const requestFile = path.join(__dirname, 'request.cjs')
   const options = JSON.stringify({
     data: payload,
@@ -46,7 +53,8 @@ const eventConfig = {
   ],
 }
 
-const track = async function (eventName, payload = {}) {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'track'.
+const track = async function (eventName: $TSFixMe, payload = {}) {
   if (isCI) {
     return
   }
@@ -70,6 +78,7 @@ const track = async function (eventName, payload = {}) {
     return false
   }
 
+  // @ts-expect-error TS(2339): Property 'duration' does not exist on type '{}'.
   const { duration, status, ...properties } = payload
   const defaultData = {
     event: eventName,
@@ -83,7 +92,8 @@ const track = async function (eventName, payload = {}) {
   return send('track', defaultData)
 }
 
-const identify = async function (payload) {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const identify = async function (payload: $TSFixMe) {
   if (isCI) {
     return
   }

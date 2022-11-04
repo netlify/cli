@@ -1,9 +1,13 @@
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'path'.
 const path = require('path')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'promisify'... Remove this comment to see the full error message
 const { promisify } = require('util')
 
 const fromArray = require('from2-array')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'pump'.
 const pump = promisify(require('pump'))
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'hasherCtor... Remove this comment to see the full error message
 const { hasherCtor, manifestCollectorCtor } = require('./hasher-segments.cjs')
 
 // Maximum age of functions manifest (2 minutes).
@@ -16,8 +20,9 @@ const getFunctionZips = async ({
   rootDir,
   skipFunctionsCache,
   statusCb,
-  tmpDir,
-}) => {
+  tmpDir
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) => {
   statusCb({
     type: 'functions-manifest',
     msg: 'Looking for a functions cache...',
@@ -65,8 +70,10 @@ const getFunctionZips = async ({
   return await zipFunctions(directories, tmpDir, { basePath: rootDir, config: functionsConfig })
 }
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'hashFns'.
 const hashFns = async (
-  directories,
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  directories: $TSFixMe,
   {
     assetType = 'function',
     concurrentHash,
@@ -76,8 +83,9 @@ const hashFns = async (
     rootDir,
     skipFunctionsCache,
     statusCb,
-    tmpDir,
-  },
+    tmpDir
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  }: $TSFixMe,
 ) => {
   // Early out if no functions directories are configured.
   if (directories.length === 0) {
@@ -97,7 +105,11 @@ const hashFns = async (
     statusCb,
     tmpDir,
   })
-  const fileObjs = functionZips.map(({ path: functionPath, runtime }) => ({
+  const fileObjs = functionZips.map(({
+    path: functionPath,
+    runtime
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  }: $TSFixMe) => ({
     filepath: functionPath,
     root: tmpDir,
     relname: path.relative(tmpDir, functionPath),
@@ -109,10 +121,17 @@ const hashFns = async (
     runtime,
   }))
   const functionSchedules = functionZips
-    .map(({ name, schedule }) => schedule && { name, cron: schedule })
+    .map(({
+    name,
+    schedule
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  }: $TSFixMe) => schedule && { name, cron: schedule })
     .filter(Boolean)
   const functionsWithNativeModules = functionZips.filter(
-    ({ nativeNodeModules }) => nativeNodeModules !== undefined && Object.keys(nativeNodeModules).length !== 0,
+    ({
+      nativeNodeModules
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    }: $TSFixMe) => nativeNodeModules !== undefined && Object.keys(nativeNodeModules).length !== 0,
   )
 
   const functionStream = fromArray.obj(fileObjs)

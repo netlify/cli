@@ -1,12 +1,17 @@
 // @ts-check
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'Buffer'.
 const { Buffer } = require('buffer')
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'NETLIFYDEV... Remove this comment to see the full error message
 const { NETLIFYDEVERR } = require('../../utils/index.mjs')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'renderErro... Remove this comment to see the full error message
 const renderErrorTemplate = require('../render-error-remplate.cjs')
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'detectAwsS... Remove this comment to see the full error message
 const { detectAwsSdkError } = require('./utils.cjs')
 
-const addHeaders = (headers, response) => {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const addHeaders = (headers: $TSFixMe, response: $TSFixMe) => {
   if (!headers) {
     return
   }
@@ -16,7 +21,8 @@ const addHeaders = (headers, response) => {
   })
 }
 
-const handleSynchronousFunction = function (err, result, request, response) {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'handleSync... Remove this comment to see the full error message
+const handleSynchronousFunction = function (err: $TSFixMe, result: $TSFixMe, request: $TSFixMe, response: $TSFixMe) {
   if (err) {
     return handleErr(err, request, response)
   }
@@ -37,7 +43,8 @@ const handleSynchronousFunction = function (err, result, request, response) {
   response.end()
 }
 
-const formatLambdaLocalError = (err, acceptsHtml) =>
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const formatLambdaLocalError = (err: $TSFixMe, acceptsHtml: $TSFixMe) =>
   acceptsHtml
     ? JSON.stringify({
         errorType: err.errorType,
@@ -46,7 +53,8 @@ const formatLambdaLocalError = (err, acceptsHtml) =>
       })
     : `${err.errorType}: ${err.errorMessage}\n ${err.stackTrace.join('\n ')}`
 
-const processRenderedResponse = async (err, request) => {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const processRenderedResponse = async (err: $TSFixMe, request: $TSFixMe) => {
   const acceptsHtml = request.headers && request.headers.accept && request.headers.accept.includes('text/html')
   const errorString = typeof err === 'string' ? err : formatLambdaLocalError(err, acceptsHtml)
 
@@ -55,14 +63,16 @@ const processRenderedResponse = async (err, request) => {
     : errorString
 }
 
-const handleErr = async (err, request, response) => {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const handleErr = async (err: $TSFixMe, request: $TSFixMe, response: $TSFixMe) => {
   detectAwsSdkError({ err })
 
   response.statusCode = 500
   response.end(await processRenderedResponse(err, request))
 }
 
-const validateLambdaResponse = (lambdaResponse) => {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const validateLambdaResponse = (lambdaResponse: $TSFixMe) => {
   if (lambdaResponse === undefined) {
     return { error: 'lambda response was undefined. check your function code again' }
   }

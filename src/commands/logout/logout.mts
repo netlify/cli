@@ -1,4 +1,5 @@
 // @ts-check
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'exit'.
 const { exit, getToken, log, track } = require('../../utils/index.mjs')
 
 /**
@@ -6,7 +7,9 @@ const { exit, getToken, log, track } = require('../../utils/index.mjs')
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command').BaseCommand} command
  */
-const logout = async (options, command) => {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const logout = async (options: $TSFixMe, command: $TSFixMe) => {
+  // @ts-expect-error TS(2554): Expected 1 arguments, but got 0.
   const [accessToken, location] = await getToken()
 
   if (!accessToken) {
@@ -37,7 +40,7 @@ const logout = async (options, command) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createLogoutCommand = (program) =>
-  program.command('logout', { hidden: true }).description('Logout of your Netlify account').action(logout)
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createLogo... Remove this comment to see the full error message
+const createLogoutCommand = (program: $TSFixMe) => program.command('logout', { hidden: true }).description('Logout of your Netlify account').action(logout)
 
 module.exports = { createLogoutCommand, logout }

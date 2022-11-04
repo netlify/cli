@@ -3,6 +3,7 @@ const { chalk, log } = require('../command-helpers.cjs')
 const { configGithub } = require('./config-github.cjs')
 const configManual = require('./config-manual.cjs')
 
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
 const logSuccess = (repoData: $TSFixMe) => {
   log()
   log(chalk.greenBright.bold.underline(`Success! Netlify CI/CD Configured!`))
@@ -28,6 +29,7 @@ const configureRepo = async ({
   manual,
   repoData,
   siteId
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
 }: $TSFixMe) => {
   if (manual) {
     await configManual({ command, siteId, repoData })

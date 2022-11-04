@@ -1,11 +1,18 @@
 // @ts-check
 const {
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'AVAILABLE_... Remove this comment to see the full error message
   AVAILABLE_CONTEXTS,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'chalk'.
   chalk,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'error'.
   error,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'log'.
   log,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'logJson'.
   logJson,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'normalizeC... Remove this comment to see the full error message
   normalizeContext,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'translateF... Remove this comment to see the full error message
   translateFromEnvelopeToMongo,
 } = require('../../utils/index.mjs')
 
@@ -16,7 +23,8 @@ const {
  * @param {import('../base-command').BaseCommand} command
  * @returns {Promise<boolean>}
  */
-const envUnset = async (key, options, command) => {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const envUnset = async (key: $TSFixMe, options: $TSFixMe, command: $TSFixMe) => {
   const { context } = options
   const { api, cachedConfig, site } = command.netlify
   const siteId = site.id
@@ -56,7 +64,12 @@ const envUnset = async (key, options, command) => {
  * Deletes a given key from the env of a site record
  * @returns {Promise<object>}
  */
-const unsetInMongo = async ({ api, key, siteInfo }) => {
+const unsetInMongo = async ({
+  api,
+  key,
+  siteInfo
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) => {
   // Get current environment variables set in the UI
   const {
     build_settings: { env = {} },
@@ -84,7 +97,13 @@ const unsetInMongo = async ({ api, key, siteInfo }) => {
  * Deletes a given key from the env of a site configured with Envelope
  * @returns {Promise<object>}
  */
-const unsetInEnvelope = async ({ api, context, key, siteInfo }) => {
+const unsetInEnvelope = async ({
+  api,
+  context,
+  key,
+  siteInfo
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) => {
   const accountId = siteInfo.account_slug
   const siteId = siteInfo.id
   // fetch envelope env vars
@@ -94,7 +113,8 @@ const unsetInEnvelope = async ({ api, context, key, siteInfo }) => {
   const env = translateFromEnvelopeToMongo(envelopeVariables, context ? context[0] : 'dev')
 
   // check if the given key exists
-  const variable = envelopeVariables.find((envVar) => envVar.key === key)
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  const variable = envelopeVariables.find((envVar: $TSFixMe) => envVar.key === key)
   if (!variable) {
     // if not, no need to call delete; return early
     return env
@@ -104,19 +124,23 @@ const unsetInEnvelope = async ({ api, context, key, siteInfo }) => {
   try {
     if (context) {
       // if context(s) are passed, delete the matching contexts / branches, and the `all` context
-      const values = variable.values.filter((val) =>
-        [...contexts, 'all'].includes(val.context_parameter || val.context),
+      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+      const values = variable.values.filter((val: $TSFixMe) => [...contexts, 'all'].includes(val.context_parameter || val.context),
       )
       if (values) {
-        await Promise.all(values.map((value) => api.deleteEnvVarValue({ ...params, id: value.id })))
+        // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+        await Promise.all(values.map((value: $TSFixMe) => api.deleteEnvVarValue({ ...params, id: value.id })))
         // if this was the `all` context, we need to create 3 values in the other contexts
         if (values.length === 1 && values[0].context === 'all') {
-          const newContexts = AVAILABLE_CONTEXTS.filter((ctx) => !context.includes(ctx))
+          // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+          const newContexts = AVAILABLE_CONTEXTS.filter((ctx: $TSFixMe) => !context.includes(ctx))
           const allValue = values[0].value
           await Promise.all(
             newContexts
-              .filter((ctx) => ctx !== 'all')
-              .map((ctx) => api.setEnvVarValue({ ...params, body: { context: ctx, value: allValue } })),
+              // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+              .filter((ctx: $TSFixMe) => ctx !== 'all')
+              // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+              .map((ctx: $TSFixMe) => api.setEnvVarValue({ ...params, body: { context: ctx, value: allValue } })),
           )
         }
       }
@@ -125,7 +149,8 @@ const unsetInEnvelope = async ({ api, context, key, siteInfo }) => {
       await api.deleteEnvVar({ accountId, siteId, key })
     }
   } catch (error_) {
-    throw error_.json ? error_.json.msg : error_
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    throw (error_ as $TSFixMe).json ? (error_ as $TSFixMe).json.msg : error_;
   }
 
   delete env[key]
@@ -138,25 +163,27 @@ const unsetInEnvelope = async ({ api, context, key, siteInfo }) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createEnvUnsetCommand = (program) =>
-  program
-    .command('env:unset')
-    .aliases(['env:delete', 'env:remove'])
-    .argument('<key>', 'Environment variable key')
-    .option(
-      '-c, --context <context...>',
-      'Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev") (default: all contexts)',
-      // spread over an array for variadic options
-      (context, previous = []) => [...previous, normalizeContext(context)],
-    )
-    .addExamples([
-      'netlify env:unset VAR_NAME # unset in all contexts',
-      'netlify env:unset VAR_NAME --context production',
-      'netlify env:unset VAR_NAME --context production deploy-preview',
-    ])
-    .description('Unset an environment variable which removes it from the UI')
-    .action(async (key, options, command) => {
-      await envUnset(key, options, command)
-    })
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createEnvU... Remove this comment to see the full error message
+const createEnvUnsetCommand = (program: $TSFixMe) => program
+  .command('env:unset')
+  .aliases(['env:delete', 'env:remove'])
+  .argument('<key>', 'Environment variable key')
+  .option(
+    '-c, --context <context...>',
+    'Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev") (default: all contexts)',
+    // spread over an array for variadic options
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    (context: $TSFixMe, previous = []) => [...previous, normalizeContext(context)],
+  )
+  .addExamples([
+    'netlify env:unset VAR_NAME # unset in all contexts',
+    'netlify env:unset VAR_NAME --context production',
+    'netlify env:unset VAR_NAME --context production deploy-preview',
+  ])
+  .description('Unset an environment variable which removes it from the UI')
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  .action(async (key: $TSFixMe, options: $TSFixMe, command: $TSFixMe) => {
+    await envUnset(key, options, command)
+  })
 
 module.exports = { createEnvUnsetCommand }

@@ -1,9 +1,14 @@
 // @ts-check
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'fs'.
 const fs = require('fs')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'path'.
 const path = require('path')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'process'.
 const process = require('process')
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getNetlify... Remove this comment to see the full error message
 const { getNetlifyGraphConfig } = require('../../lib/one-graph/cli-netlify-graph.cjs')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'NETLIFYDEV... Remove this comment to see the full error message
 const { NETLIFYDEVERR, chalk, error, log } = require('../../utils/index.mjs')
 
 /**
@@ -12,7 +17,8 @@ const { NETLIFYDEVERR, chalk, error, log } = require('../../utils/index.mjs')
  * @param {import('../base-command').BaseCommand} command
  * @returns
  */
-const graphConfigWrite = async (options, command) => {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const graphConfigWrite = async (options: $TSFixMe, command: $TSFixMe) => {
   const { site } = command.netlify
 
   if (!site.id) {
@@ -45,14 +51,15 @@ const graphConfigWrite = async (options, command) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createGraphConfigWriteCommand = (program) =>
-  program
-    .command('graph:config:write')
-    .description(
-      'Write a .graphqlrc.json file to the current directory for use with local tooling (e.g. the graphql extension for vscode)',
-    )
-    .action(async (options, command) => {
-      await graphConfigWrite(options, command)
-    })
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createGrap... Remove this comment to see the full error message
+const createGraphConfigWriteCommand = (program: $TSFixMe) => program
+  .command('graph:config:write')
+  .description(
+    'Write a .graphqlrc.json file to the current directory for use with local tooling (e.g. the graphql extension for vscode)',
+  )
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  .action(async (options: $TSFixMe, command: $TSFixMe) => {
+    await graphConfigWrite(options, command)
+  })
 
 module.exports = { createGraphConfigWriteCommand }

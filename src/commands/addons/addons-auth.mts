@@ -1,6 +1,8 @@
 // @ts-check
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'ADDON_VALI... Remove this comment to see the full error message
 const { ADDON_VALIDATION, prepareAddonCommand } = require('../../utils/addons/prepare.cjs')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'exit'.
 const { exit, log, openBrowser } = require('../../utils/index.mjs')
 
 /**
@@ -10,11 +12,11 @@ const { exit, log, openBrowser } = require('../../utils/index.mjs')
  * @param {import('../base-command').BaseCommand} command
  * @returns {Promise<boolean>}
  */
-const addonsAuth = async (addonName, options, command) => {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const addonsAuth = async (addonName: $TSFixMe, options: $TSFixMe, command: $TSFixMe) => {
   const { addon } = await prepareAddonCommand({
     command,
     addonName,
-    // @ts-ignore when migrating to typescript this should be a const enum
     validation: ADDON_VALIDATION.EXISTS,
   })
 
@@ -37,14 +39,15 @@ const addonsAuth = async (addonName, options, command) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createAddonsAuthCommand = (program) =>
-  program
-    .command('addons:auth')
-    .alias('addon:auth')
-    .argument('<name>', 'Add-on slug')
-    .description('Login to add-on provider')
-    .action(async (addonName, options, command) => {
-      await addonsAuth(addonName, options, command)
-    })
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createAddo... Remove this comment to see the full error message
+const createAddonsAuthCommand = (program: $TSFixMe) => program
+  .command('addons:auth')
+  .alias('addon:auth')
+  .argument('<name>', 'Add-on slug')
+  .description('Login to add-on provider')
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  .action(async (addonName: $TSFixMe, options: $TSFixMe, command: $TSFixMe) => {
+    await addonsAuth(addonName, options, command)
+  })
 
 module.exports = { createAddonsAuthCommand }

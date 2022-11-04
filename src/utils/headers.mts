@@ -1,6 +1,7 @@
 // TODO: use static `import` after migrating this repository to pure ES modules
 const netlifyHeadersParser = import('netlify-headers-parser')
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'NETLIFYDEV... Remove this comment to see the full error message
 const { NETLIFYDEVERR, log } = require('./command-helpers.cjs')
 
 /**
@@ -14,17 +15,29 @@ const { NETLIFYDEVERR, log } = require('./command-helpers.cjs')
  *
  * @returns {Object<string,string[]>}
  */
-const headersForPath = function (headers, path) {
-  const matchingHeaders = headers.filter(({ forRegExp }) => forRegExp.test(path)).map(getHeaderValues)
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'headersFor... Remove this comment to see the full error message
+const headersForPath = function (headers: $TSFixMe, path: $TSFixMe) {
+  const matchingHeaders = headers.filter(({
+    forRegExp
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  }: $TSFixMe) => forRegExp.test(path)).map(getHeaderValues)
   const headersRules = Object.assign({}, ...matchingHeaders)
   return headersRules
 }
 
-const getHeaderValues = function ({ values }) {
+const getHeaderValues = function ({
+  values
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) {
   return values
 }
 
-const parseHeaders = async function ({ configPath, headersFiles }) {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'parseHeade... Remove this comment to see the full error message
+const parseHeaders = async function ({
+  configPath,
+  headersFiles
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) {
   const { parseAllHeaders } = await netlifyHeadersParser
   const { errors, headers } = await parseAllHeaders({
     headersFiles,
@@ -35,7 +48,8 @@ const parseHeaders = async function ({ configPath, headersFiles }) {
   return headers
 }
 
-const handleHeadersErrors = function (errors) {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const handleHeadersErrors = function (errors: $TSFixMe) {
   if (errors.length === 0) {
     return
   }
@@ -44,7 +58,11 @@ const handleHeadersErrors = function (errors) {
   log(NETLIFYDEVERR, `Headers syntax errors:\n${errorMessage}`)
 }
 
-const getErrorMessage = function ({ message }) {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getErrorMe... Remove this comment to see the full error message
+const getErrorMessage = function ({
+  message
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) {
   return message
 }
 

@@ -1,30 +1,52 @@
 // @ts-check
 const cp = require('child_process')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'fs'.
 const fs = require('fs')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'mkdir'.
 const { mkdir } = require('fs').promises
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'path'.
 const path = require('path')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'process'.
 const process = require('process')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'promisify'... Remove this comment to see the full error message
 const { promisify } = require('util')
 
 const copy = promisify(require('copy-template-dir'))
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'findUp'.
 const findUp = require('find-up')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'fuzzy'.
 const fuzzy = require('fuzzy')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'inquirer'.
 const inquirer = require('inquirer')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'inquirerAu... Remove this comment to see the full error message
 const inquirerAutocompletePrompt = require('inquirer-autocomplete-prompt')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'fetch'.
 const fetch = require('node-fetch')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'ora'.
 const ora = require('ora')
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getAddons'... Remove this comment to see the full error message
 const { getAddons, getCurrentAddon, getSiteData } = require('../../utils/addons/prepare.cjs')
 const {
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'NETLIFYDEV... Remove this comment to see the full error message
   NETLIFYDEVERR,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'NETLIFYDEV... Remove this comment to see the full error message
   NETLIFYDEVLOG,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'NETLIFYDEV... Remove this comment to see the full error message
   NETLIFYDEVWARN,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'chalk'.
   chalk,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'error'.
   error,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'execa'.
   execa,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'injectEnvV... Remove this comment to see the full error message
   injectEnvVariables,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'log'.
   log,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'readRepoUR... Remove this comment to see the full error message
   readRepoURL,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'validateRe... Remove this comment to see the full error message
   validateRepoURL,
 } = require('../../utils/index.mjs')
 
@@ -48,7 +70,8 @@ const languages = [
  * @param {string} [defaultName]
  * @returns
  */
-const getNameFromArgs = async function (argumentName, options, defaultName) {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getNameFro... Remove this comment to see the full error message
+const getNameFromArgs = async function (argumentName: $TSFixMe, options: $TSFixMe, defaultName: $TSFixMe) {
   if (options.name) {
     if (argumentName) {
       throw new Error('function name specified in both flag and arg format, pick one')
@@ -66,7 +89,8 @@ const getNameFromArgs = async function (argumentName, options, defaultName) {
       message: 'Name your function:',
       default: defaultName,
       type: 'input',
-      validate: (val) => Boolean(val) && /^[\w.-]+$/i.test(val),
+      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+      validate: (val: $TSFixMe) => Boolean(val) && /^[\w.-]+$/i.test(val),
       // make sure it is not undefined and is a valid filename.
       // this has some nuance i have ignored, eg crossenv and i18n concerns
     },
@@ -74,36 +98,46 @@ const getNameFromArgs = async function (argumentName, options, defaultName) {
   return name
 }
 
-const filterRegistry = function (registry, input) {
-  const temp = registry.map((value) => value.name + value.description)
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const filterRegistry = function (registry: $TSFixMe, input: $TSFixMe) {
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  const temp = registry.map((value: $TSFixMe) => value.name + value.description)
   // TODO: remove once https://github.com/sindresorhus/eslint-plugin-unicorn/issues/1394 is fixed
   // eslint-disable-next-line unicorn/no-array-method-this-argument
   const filteredTemplates = fuzzy.filter(input, temp)
   const filteredTemplateNames = new Set(
-    filteredTemplates.map((filteredTemplate) => (input ? filteredTemplate.string : filteredTemplate)),
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    filteredTemplates.map((filteredTemplate: $TSFixMe) => input ? filteredTemplate.string : filteredTemplate),
   )
   return registry
-    .filter((t) => filteredTemplateNames.has(t.name + t.description))
-    .map((t) => {
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    .filter((t: $TSFixMe) => filteredTemplateNames.has(t.name + t.description))
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    .map((t: $TSFixMe) => {
       // add the score
-      const { score } = filteredTemplates.find((filteredTemplate) => filteredTemplate.string === t.name + t.description)
+      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+      const { score } = filteredTemplates.find((filteredTemplate: $TSFixMe) => filteredTemplate.string === t.name + t.description)
       t.score = score
       return t
-    })
+    });
 }
 
-const formatRegistryArrayForInquirer = function (lang, funcType) {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const formatRegistryArrayForInquirer = function (lang: $TSFixMe, funcType: $TSFixMe) {
   const folderNames = fs.readdirSync(path.join(templatesDir, lang))
   const registry = folderNames
     // filter out markdown files
-    .filter((folderName) => !folderName.endsWith('.md'))
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    .filter((folderName: $TSFixMe) => !folderName.endsWith('.md'))
 
-    .map((folderName) =>
-      // eslint-disable-next-line n/global-require, import/no-dynamic-require
-      require(path.join(templatesDir, lang, folderName, '.netlify-function-template.cjs')),
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    .map((folderName: $TSFixMe) => // eslint-disable-next-line n/global-require, import/no-dynamic-require
+  require(path.join(templatesDir, lang, folderName, '.netlify-function-template.cjs')),
     )
-    .filter((folderName) => folderName.functionType === funcType)
-    .sort((folderNameA, folderNameB) => {
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    .filter((folderName: $TSFixMe) => folderName.functionType === funcType)
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    .sort((folderNameA: $TSFixMe, folderNameB: $TSFixMe) => {
       const priorityDiff = (folderNameA.priority || DEFAULT_PRIORITY) - (folderNameB.priority || DEFAULT_PRIORITY)
 
       if (priorityDiff !== 0) {
@@ -116,7 +150,8 @@ const formatRegistryArrayForInquirer = function (lang, funcType) {
       // Node 10.
       return folderNameA - folderNameB
     })
-    .map((t) => {
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    .map((t: $TSFixMe) => {
       t.lang = lang
       return {
         // confusing but this is the format inquirer wants
@@ -133,7 +168,8 @@ const formatRegistryArrayForInquirer = function (lang, funcType) {
  * @param {import('commander').OptionValues} config
  *
  */
-const pickTemplate = async function ({ language: languageFromFlag }, funcType) {
+// @ts-expect-error TS(7031): Binding element 'languageFromFlag' implicitly has ... Remove this comment to see the full error message
+const pickTemplate = async function ({ language: languageFromFlag }, funcType: $TSFixMe) {
   const specialCommands = [
     new inquirer.Separator(),
     {
@@ -152,10 +188,10 @@ const pickTemplate = async function ({ language: languageFromFlag }, funcType) {
   let language = languageFromFlag
 
   if (language === undefined) {
-    const langs =
-      funcType === 'edge'
-        ? languages.filter((lang) => lang.value === 'javascript' || lang.value === 'typescript')
-        : languages.filter(Boolean)
+    const langs = funcType === 'edge'
+    ? // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+           languages.filter((lang) => (lang as $TSFixMe).value === 'javascript' || (lang as $TSFixMe).value === 'typescript')
+    : languages.filter(Boolean);
 
     const { language: languageFromPrompt } = await inquirer.prompt({
       choices: langs,
@@ -169,7 +205,8 @@ const pickTemplate = async function ({ language: languageFromFlag }, funcType) {
 
   inquirer.registerPrompt('autocomplete', inquirerAutocompletePrompt)
 
-  let templatesForLanguage
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  let templatesForLanguage: $TSFixMe
 
   try {
     templatesForLanguage = formatRegistryArrayForInquirer(language, funcType)
@@ -181,7 +218,8 @@ const pickTemplate = async function ({ language: languageFromFlag }, funcType) {
     name: 'chosenTemplate',
     message: 'Pick a template',
     type: 'autocomplete',
-    source(answersSoFar, input) {
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    source(answersSoFar: $TSFixMe, input: $TSFixMe) {
       // if Edge Functions template, don't show url option
       const edgeCommands = specialCommands.filter((val) => val.value !== 'url')
       const parsedSpecialCommands = funcType === 'edge' ? edgeCommands : specialCommands
@@ -219,7 +257,8 @@ const selectTypeOfFunc = async () => {
   return functionType
 }
 
-const ensureEdgeFuncDirExists = function (command) {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const ensureEdgeFuncDirExists = function (command: $TSFixMe) {
   const { config, site } = command.netlify
   const siteId = site.id
   let functionsDirHolder = config.build.edge_functions
@@ -251,7 +290,8 @@ const ensureEdgeFuncDirExists = function (command) {
  * @param {import('../base-command').BaseCommand} command
  * @returns {Promise<string|never>} - functions directory or throws an error
  */
-const ensureFunctionDirExists = async function (command) {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const ensureFunctionDirExists = async function (command: $TSFixMe) {
   const { api, config, site } = command.netlify
   const siteId = site.id
   let functionsDirHolder = config.functionsDirectory
@@ -278,7 +318,6 @@ const ensureFunctionDirExists = async function (command) {
     try {
       log(`${NETLIFYDEVLOG} updating site settings with ${chalk.magenta.inverse(functionsDirHolder)}`)
 
-      // @ts-ignore Typings of API are not correct
       await api.updateSite({
         siteId: site.id,
         body: {
@@ -315,7 +354,8 @@ const ensureFunctionDirExists = async function (command) {
  * @param {string} argumentName
  * @param {string} functionsDir
  */
-const downloadFromURL = async function (command, options, argumentName, functionsDir) {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const downloadFromURL = async function (command: $TSFixMe, options: $TSFixMe, argumentName: $TSFixMe, functionsDir: $TSFixMe) {
   const folderContents = await readRepoURL(options.url)
   const [functionName] = options.url.split('/').slice(-1)
   const nameToUse = await getNameFromArgs(argumentName, options, functionName)
@@ -333,18 +373,19 @@ const downloadFromURL = async function (command, options, argumentName, function
   } catch {
     // Ignore
   }
-  await Promise.all(
-    folderContents.map(async ({ download_url: downloadUrl, name }) => {
-      try {
-        const res = await fetch(downloadUrl)
-        const finalName = path.basename(name, '.js') === functionName ? `${nameToUse}.js` : name
-        const dest = fs.createWriteStream(path.join(fnFolder, finalName))
-        res.body.pipe(dest)
-      } catch (error_) {
-        throw new Error(`Error while retrieving ${downloadUrl} ${error_}`)
-      }
-    }),
-  )
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  await Promise.all(folderContents.map(async ({ download_url: downloadUrl, name }: $TSFixMe) => {
+    try {
+        const res = await fetch(downloadUrl);
+        const finalName = path.basename(name, '.js') === functionName ? `${nameToUse}.js` : name;
+        const dest = fs.createWriteStream(path.join(fnFolder, finalName));
+        // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+        (res.body as $TSFixMe).pipe(dest);
+    }
+    catch (error_) {
+        throw new Error(`Error while retrieving ${downloadUrl} ${error_}`);
+    }
+}));
 
   log(`${NETLIFYDEVLOG} Installing dependencies for ${nameToUse}...`)
   cp.exec('npm i', { cwd: path.join(functionsDir, nameToUse) }, () => {
@@ -370,6 +411,7 @@ const downloadFromURL = async function (command, options, argumentName, function
 // name and version range (e.g. '@netlify/functions@0.1.0').
 const getNpmInstallPackages = (existingPackages = {}, neededPackages = {}) =>
   Object.entries(neededPackages)
+    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     .filter(([name]) => existingPackages[name] === undefined)
     .map(([name, version]) => `${name}@${version}`)
 
@@ -378,7 +420,12 @@ const getNpmInstallPackages = (existingPackages = {}, neededPackages = {}) =>
 // that aren't already listed as dependencies of the site and install them. If
 // we don't do this check, we may be upgrading the version of a module used in
 // another part of the project, which we don't want to do.
-const installDeps = async ({ functionPackageJson, functionPath, functionsDir }) => {
+const installDeps = async ({
+  functionPackageJson,
+  functionPath,
+  functionsDir
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) => {
   // eslint-disable-next-line import/no-dynamic-require, n/global-require
   const { dependencies: functionDependencies, devDependencies: functionDevDependencies } = require(functionPackageJson)
   const sitePackageJson = await findUp('package.json', { cwd: functionsDir })
@@ -429,8 +476,9 @@ const installDeps = async ({ functionPackageJson, functionPath, functionsDir }) 
  * @param {string} functionsDir
  * @param {string} funcType
  */
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
 // eslint-disable-next-line max-params
-const scaffoldFromTemplate = async function (command, options, argumentName, functionsDir, funcType) {
+const scaffoldFromTemplate = async function (command: $TSFixMe, options: $TSFixMe, argumentName: $TSFixMe, functionsDir: $TSFixMe, funcType: $TSFixMe) {
   // pull the rest of the metadata from the template
   const chosenTemplate = await pickTemplate(options, funcType)
   if (chosenTemplate === 'url') {
@@ -439,7 +487,8 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
         name: 'chosenUrl',
         message: 'URL to clone: ',
         type: 'input',
-        validate: (val) => Boolean(validateRepoURL(val)),
+        // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+        validate: (val: $TSFixMe) => Boolean(validateRepoURL(val)),
         // make sure it is not undefined and is a valid filename.
         // this has some nuance i have ignored, eg crossenv and i18n concerns
       },
@@ -475,7 +524,8 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
     // be removed before the command finishes.
     const omittedFromOutput = new Set(['.netlify-function-template.cjs', 'package.json', 'package-lock.json'])
     const createdFiles = await copy(pathToTemplate, functionPath, vars)
-    createdFiles.forEach((filePath) => {
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    createdFiles.forEach((filePath: $TSFixMe) => {
       const filename = path.basename(filePath)
 
       if (!omittedFromOutput.has(filename)) {
@@ -512,7 +562,14 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
 
 const TEMPLATE_PERMISSIONS = 0o777
 
-const createFunctionAddon = async function ({ addonName, addons, api, siteData, siteId }) {
+const createFunctionAddon = async function ({
+  addonName,
+  addons,
+  api,
+  siteData,
+  siteId
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) {
   try {
     const addon = getCurrentAddon({ addons, addonName })
     if (addon && addon.id) {
@@ -527,7 +584,8 @@ const createFunctionAddon = async function ({ addonName, addons, api, siteData, 
     log(`Add-on "${addonName}" created for ${siteData.name}`)
     return true
   } catch (error_) {
-    error(error_.message)
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    error((error_ as $TSFixMe).message);
   }
 }
 
@@ -537,7 +595,11 @@ const createFunctionAddon = async function ({ addonName, addons, api, siteData, 
  * @param {import('../base-command').BaseCommand} config.command
  * @param {(command: import('../base-command').BaseCommand) => any} config.onComplete
  */
-const handleOnComplete = async ({ command, onComplete }) => {
+const handleOnComplete = async ({
+  command,
+  onComplete
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) => {
   const { config } = command.netlify
 
   if (onComplete) {
@@ -557,7 +619,13 @@ const handleOnComplete = async ({ command, onComplete }) => {
  * @param {import('../base-command').BaseCommand} config.command
  * @param {string} config.fnPath
  */
-const handleAddonDidInstall = async ({ addonCreated, addonDidInstall, command, fnPath }) => {
+const handleAddonDidInstall = async ({
+  addonCreated,
+  addonDidInstall,
+  command,
+  fnPath
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) => {
   const { config } = command.netlify
 
   if (!addonCreated || !addonDidInstall) {
@@ -592,7 +660,8 @@ const handleAddonDidInstall = async ({ addonCreated, addonDidInstall, command, f
  * @param {*} fnPath
  * @returns
  */
-const installAddons = async function (command, functionAddons, fnPath) {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const installAddons = async function (command: $TSFixMe, functionAddons: $TSFixMe, fnPath: $TSFixMe) {
   if (functionAddons.length === 0) {
     return
   }
@@ -607,7 +676,11 @@ const installAddons = async function (command, functionAddons, fnPath) {
 
   const [siteData, siteAddons] = await Promise.all([getSiteData({ api, siteId }), getAddons({ api, siteId })])
 
-  const arr = functionAddons.map(async ({ addonDidInstall, addonName }) => {
+  const arr = functionAddons.map(async ({
+    addonDidInstall,
+    addonName
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  }: $TSFixMe) => {
     log(`${NETLIFYDEVLOG} installing addon: ${chalk.yellow.inverse(addonName)}`)
     try {
       const addonCreated = await createFunctionAddon({
@@ -626,7 +699,8 @@ const installAddons = async function (command, functionAddons, fnPath) {
   return Promise.all(arr)
 }
 
-const registerEFInToml = async (funcName) => {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const registerEFInToml = async (funcName: $TSFixMe) => {
   if (!fs.existsSync('netlify.toml')) {
     log(`${NETLIFYDEVLOG} \`netlify.toml\` file does not exist yet. Creating it...`)
   }
@@ -637,7 +711,8 @@ const registerEFInToml = async (funcName) => {
       name: 'funcPath',
       message: `What route do you want your edge function to be invoked on?`,
       default: '/test',
-      validate: (val) => Boolean(val),
+      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+      validate: (val: $TSFixMe) => Boolean(val),
       // Make sure route isn't undefined and is valid
       // Todo: add more validation?
     },
@@ -662,7 +737,8 @@ const registerEFInToml = async (funcName) => {
 
 // we used to allow for a --dir command,
 // but have retired that to force every scaffolded function to be a directory
-const ensureFunctionPathIsOk = function (functionsDir, name) {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const ensureFunctionPathIsOk = function (functionsDir: $TSFixMe, name: $TSFixMe) {
   const functionPath = path.join(functionsDir, name)
   if (fs.existsSync(functionPath)) {
     log(`${NETLIFYDEVLOG} Function ${functionPath} already exists, cancelling...`)
@@ -676,7 +752,8 @@ const ensureFunctionPathIsOk = function (functionsDir, name) {
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command').BaseCommand} command
  */
-const functionsCreate = async (name, options, command) => {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const functionsCreate = async (name: $TSFixMe, options: $TSFixMe, command: $TSFixMe) => {
   const functionType = await selectTypeOfFunc()
   const functionsDir =
     functionType === 'edge' ? await ensureEdgeFuncDirExists(command) : await ensureFunctionDirExists(command)
@@ -691,20 +768,20 @@ const functionsCreate = async (name, options, command) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createFunctionsCreateCommand = (program) =>
-  program
-    .command('functions:create')
-    .alias('function:create')
-    .argument('[name]', 'name of your new function file inside your functions directory')
-    .description('Create a new function locally')
-    .option('-n, --name <name>', 'function name')
-    .option('-u, --url <url>', 'pull template from URL')
-    .option('-l, --language <lang>', 'function language')
-    .addExamples([
-      'netlify functions:create',
-      'netlify functions:create hello-world',
-      'netlify functions:create --name hello-world',
-    ])
-    .action(functionsCreate)
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createFunc... Remove this comment to see the full error message
+const createFunctionsCreateCommand = (program: $TSFixMe) => program
+  .command('functions:create')
+  .alias('function:create')
+  .argument('[name]', 'name of your new function file inside your functions directory')
+  .description('Create a new function locally')
+  .option('-n, --name <name>', 'function name')
+  .option('-u, --url <url>', 'pull template from URL')
+  .option('-l, --language <lang>', 'function language')
+  .addExamples([
+    'netlify functions:create',
+    'netlify functions:create hello-world',
+    'netlify functions:create --name hello-world',
+  ])
+  .action(functionsCreate)
 
 module.exports = { createFunctionsCreateCommand }

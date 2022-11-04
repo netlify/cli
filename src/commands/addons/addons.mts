@@ -1,9 +1,14 @@
 // @ts-check
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createAddo... Remove this comment to see the full error message
 const { createAddonsAuthCommand } = require('./addons-auth.cjs')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createAddo... Remove this comment to see the full error message
 const { createAddonsConfigCommand } = require('./addons-config.cjs')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createAddo... Remove this comment to see the full error message
 const { createAddonsCreateCommand } = require('./addons-create.cjs')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createAddo... Remove this comment to see the full error message
 const { createAddonsDeleteCommand } = require('./addons-delete.cjs')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createAddo... Remove this comment to see the full error message
 const { createAddonsListCommand } = require('./addons-list.cjs')
 
 /**
@@ -11,7 +16,8 @@ const { createAddonsListCommand } = require('./addons-list.cjs')
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command').BaseCommand} command
  */
-const addons = (options, command) => {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const addons = (options: $TSFixMe, command: $TSFixMe) => {
   command.help()
 }
 
@@ -20,7 +26,8 @@ const addons = (options, command) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createAddonsCommand = (program) => {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createAddo... Remove this comment to see the full error message
+const createAddonsCommand = (program: $TSFixMe) => {
   createAddonsAuthCommand(program)
   createAddonsConfigCommand(program)
   createAddonsCreateCommand(program)

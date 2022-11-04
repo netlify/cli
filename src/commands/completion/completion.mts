@@ -1,7 +1,10 @@
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'join'.
 const { join } = require('path')
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'uninstall'... Remove this comment to see the full error message
 const { install, uninstall } = require('tabtab')
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createAuto... Remove this comment to see the full error message
 const { createAutocompletion } = require('../../lib/completion/index.cjs')
 
 /**
@@ -9,7 +12,8 @@ const { createAutocompletion } = require('../../lib/completion/index.cjs')
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command').BaseCommand} command
  */
-const completionGenerate = async (options, command) => {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const completionGenerate = async (options: $TSFixMe, command: $TSFixMe) => {
   const { parent } = command
 
   createAutocompletion(parent)
@@ -27,7 +31,8 @@ const completionGenerate = async (options, command) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createCompletionCommand = (program) => {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createComp... Remove this comment to see the full error message
+const createCompletionCommand = (program: $TSFixMe) => {
   program
     .command('completion:install')
     .alias('completion:generate')
@@ -39,7 +44,8 @@ const createCompletionCommand = (program) => {
     .alias('completion:remove')
     .description('Uninstalls the installed completions')
     .addExamples(['netlify completion:uninstall'])
-    .action(async (options, command) => {
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    .action(async (options: $TSFixMe, command: $TSFixMe) => {
       await uninstall({
         name: command.parent.name(),
       })
@@ -49,8 +55,9 @@ const createCompletionCommand = (program) => {
     .command('completion')
     .description('(Beta) Generate shell completion script\nRun this command to see instructions for your shell.')
     .addExamples(['netlify completion:install'])
-    .action((options, command) => {
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    .action((options: $TSFixMe, command: $TSFixMe) => {
       command.help()
-    })
+    });
 }
 module.exports = { createCompletionCommand }

@@ -1,8 +1,12 @@
 // @ts-check
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'inquirer'.
 const inquirer = require('inquirer')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'isEmpty'.
 const isEmpty = require('lodash/isEmpty')
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'listSites'... Remove this comment to see the full error message
 const { listSites } = require('../../lib/api.cjs')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'chalk'.
 const { chalk, ensureNetlifyIgnore, error, exit, getRepoData, log, track } = require('../../utils/index.mjs')
 
 /**
@@ -10,7 +14,8 @@ const { chalk, ensureNetlifyIgnore, error, exit, getRepoData, log, track } = req
  * @param {import('../base-command').NetlifyOptions} netlify
  * @param {import('commander').OptionValues} options
  */
-const linkPrompt = async (netlify, options) => {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const linkPrompt = async (netlify: $TSFixMe, options: $TSFixMe) => {
   const { api, state } = netlify
 
   const SITE_NAME_PROMPT = 'Search by full or partial site name'
@@ -55,9 +60,8 @@ const linkPrompt = async (netlify, options) => {
         error(`You don't have any sites yet. Run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
       }
 
-      const matchingSites = sites.filter(
-        ({ build_settings: buildSettings = {} }) => repoData.httpsUrl === buildSettings.repo_url,
-      )
+      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+      const matchingSites = sites.filter(({ build_settings: buildSettings = {} }) => repoData.httpsUrl === (buildSettings as $TSFixMe).repo_url);
 
       // If no remote matches. Throw error
       if (isEmpty(matchingSites)) {
@@ -86,9 +90,10 @@ Run ${chalk.cyanBright('git remote -v')} to see a list of your git remotes.`)
             type: 'list',
             name: 'selectedSite',
             message: 'Which site do you want to link?',
-            choices: matchingSites.map((matchingSite) => ({
+            // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+            choices: matchingSites.map((matchingSite: $TSFixMe) => ({
               name: `${matchingSite.name} - ${matchingSite.ssl_url}`,
-              value: matchingSite,
+              value: matchingSite
             })),
           },
         ])
@@ -118,7 +123,8 @@ Run ${chalk.cyanBright('git remote -v')} to see a list of your git remotes.`)
           options: { name: searchTerm, filter: 'all' },
         })
       } catch (error_) {
-        if (error_.status === 404) {
+        // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+        if ((error_ as $TSFixMe).status === 404) {
           error(`'${searchTerm}' not found`)
         } else {
           error(error_)
@@ -140,7 +146,11 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
             name: 'selectedSite',
             message: 'Which site do you want to link?',
             paginated: true,
-            choices: matchingSites.map((matchingSite) => ({ name: matchingSite.name, value: matchingSite })),
+            // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+            choices: matchingSites.map((matchingSite: $TSFixMe) => ({
+              name: matchingSite.name,
+              value: matchingSite
+            })),
           },
         ])
         if (!selectedSite) {
@@ -175,7 +185,11 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
           name: 'selectedSite',
           message: 'Which site do you want to link?',
           paginated: true,
-          choices: sites.map((matchingSite) => ({ name: matchingSite.name, value: matchingSite })),
+          // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+          choices: sites.map((matchingSite: $TSFixMe) => ({
+            name: matchingSite.name,
+            value: matchingSite
+          })),
         },
       ])
       if (!selectedSite) {
@@ -195,10 +209,10 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
       ])
 
       try {
-        // @ts-ignore types from API are wrong they cannot recognize `getSite` of API
         site = await api.getSite({ siteId })
       } catch (error_) {
-        if (error_.status === 404) {
+        // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+        if ((error_ as $TSFixMe).status === 404) {
           error(new Error(`Site ID '${siteId}' not found`))
         } else {
           error(error_)
@@ -240,7 +254,8 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command').BaseCommand} command
  */
-const link = async (options, command) => {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'link'.
+const link = async (options: $TSFixMe, command: $TSFixMe) => {
   await command.authenticate()
 
   const {
@@ -252,7 +267,6 @@ const link = async (options, command) => {
 
   let siteData
   try {
-    // @ts-ignore types from API are wrong they cannot recognize `getSite` of API
     siteData = await api.getSite({ siteId })
   } catch {
     // silent api error
@@ -276,10 +290,10 @@ const link = async (options, command) => {
     log(`To unlink this site, run: ${chalk.cyanBright('netlify unlink')}`)
   } else if (options.id) {
     try {
-      // @ts-ignore types from API are wrong they cannot recognize `getSite` of API
       siteData = await api.getSite({ site_id: options.id })
     } catch (error_) {
-      if (error_.status === 404) {
+      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+      if ((error_ as $TSFixMe).status === 404) {
         error(new Error(`Site id ${options.id} not found`))
       } else {
         error(error_)
@@ -306,7 +320,8 @@ const link = async (options, command) => {
         },
       })
     } catch (error_) {
-      if (error_.status === 404) {
+      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+      if ((error_ as $TSFixMe).status === 404) {
         error(new Error(`${options.name} not found`))
       } else {
         error(error_)
@@ -337,14 +352,14 @@ const link = async (options, command) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createLinkCommand = (program) =>
-  program
-    .command('link')
-    .description('Link a local repo or project folder to an existing site on Netlify')
-    .option('--id <id>', 'ID of site to link to')
-    .option('--name <name>', 'Name of site to link to')
-    .option('--gitRemoteName <name>', 'Name of Git remote to use. e.g. "origin"')
-    .addExamples(['netlify link', 'netlify link --id 123-123-123-123', 'netlify link --name my-site-name'])
-    .action(link)
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createLink... Remove this comment to see the full error message
+const createLinkCommand = (program: $TSFixMe) => program
+  .command('link')
+  .description('Link a local repo or project folder to an existing site on Netlify')
+  .option('--id <id>', 'ID of site to link to')
+  .option('--name <name>', 'Name of site to link to')
+  .option('--gitRemoteName <name>', 'Name of Git remote to use. e.g. "origin"')
+  .addExamples(['netlify link', 'netlify link --id 123-123-123-123', 'netlify link --name my-site-name'])
+  .action(link)
 
 module.exports = { createLinkCommand, link }

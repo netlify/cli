@@ -1,7 +1,11 @@
 // @ts-check
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createLmIn... Remove this comment to see the full error message
 const { createLmInfoCommand } = require('./lm-info.cjs')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createLmIn... Remove this comment to see the full error message
 const { createLmInstallCommand } = require('./lm-install.cjs')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createLmSe... Remove this comment to see the full error message
 const { createLmSetupCommand } = require('./lm-setup.cjs')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createLmUn... Remove this comment to see the full error message
 const { createLmUninstallCommand } = require('./lm-uninstall.cjs')
 
 /**
@@ -9,7 +13,8 @@ const { createLmUninstallCommand } = require('./lm-uninstall.cjs')
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command').BaseCommand} command
  */
-const lm = (options, command) => {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const lm = (options: $TSFixMe, command: $TSFixMe) => {
   command.help()
 }
 
@@ -18,7 +23,8 @@ const lm = (options, command) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createLmCommand = (program) => {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createLmCo... Remove this comment to see the full error message
+const createLmCommand = (program: $TSFixMe) => {
   createLmInfoCommand(program)
   createLmInstallCommand(program)
   createLmSetupCommand(program)

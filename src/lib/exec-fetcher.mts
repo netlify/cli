@@ -1,5 +1,7 @@
 // @ts-check
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'path'.
 const path = require('path')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'process'.
 const process = require('process')
 
 const { fetchLatest, fetchVersion, newerVersion, updateAvailable } = require('gh-release-fetch')
@@ -7,14 +9,23 @@ const isExe = require('isexe')
 
 // cannot directly import from ../utils as it would create a circular dependency.
 // the file `src/utils/live-tunnel.js` depends on this file
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'NETLIFYDEV... Remove this comment to see the full error message
 const { NETLIFYDEVWARN, error, getTerminalLink, log } = require('../utils/command-helpers.cjs')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'execa'.
 const execa = require('../utils/execa.cjs')
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'isWindows'... Remove this comment to see the full error message
 const isWindows = () => process.platform === 'win32'
 
-const getRepository = ({ packageName }) => `netlify/${packageName}`
+const getRepository = ({
+  packageName
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) => `netlify/${packageName}`
 
-const getExecName = ({ execName }) => (isWindows() ? `${execName}.exe` : execName)
+const getExecName = ({
+  execName
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) => (isWindows() ? `${execName}.exe` : execName)
 
 const getOptions = () => {
   // this is used in out CI tests to avoid hitting GitHub API limit
@@ -26,7 +37,12 @@ const getOptions = () => {
   }
 }
 
-const isVersionOutdated = async ({ currentVersion, latestVersion, packageName }) => {
+const isVersionOutdated = async ({
+  currentVersion,
+  latestVersion,
+  packageName
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) => {
   if (latestVersion) {
     return newerVersion(latestVersion, currentVersion)
   }
@@ -35,7 +51,16 @@ const isVersionOutdated = async ({ currentVersion, latestVersion, packageName })
   return outdated
 }
 
-const shouldFetchLatestVersion = async ({ binPath, execArgs, execName, latestVersion, packageName, pattern }) => {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'shouldFetc... Remove this comment to see the full error message
+const shouldFetchLatestVersion = async ({
+  binPath,
+  execArgs,
+  execName,
+  latestVersion,
+  packageName,
+  pattern
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) => {
   const execPath = path.join(binPath, getExecName({ execName }))
 
   const exists = await isExe(execPath, { ignoreErrors: true })
@@ -93,7 +118,15 @@ const getArch = () => {
  * @param {string} config.packageName
  * @param {string} [config.latestVersion ]
  */
-const fetchLatestVersion = async ({ destination, execName, extension, latestVersion, packageName }) => {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'fetchLates... Remove this comment to see the full error message
+const fetchLatestVersion = async ({
+  destination,
+  execName,
+  extension,
+  latestVersion,
+  packageName
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) => {
   const win = isWindows()
   const arch = getArch()
   const platform = win ? 'windows' : process.platform
@@ -114,7 +147,8 @@ const fetchLatestVersion = async ({ destination, execName, extension, latestVers
   try {
     await fetch
   } catch (error_) {
-    if (typeof error_ === 'object' && 'statusCode' in error_ && error_.statusCode === 404) {
+    // @ts-expect-error TS(2531): Object is possibly 'null'.
+    if (typeof error_ === 'object' && 'statusCode' in error_ && (error_ as $TSFixMe).statusCode === 404) {
       const createIssueLink = new URL('https://github.com/netlify/cli/issues/new')
       createIssueLink.searchParams.set('assignees', '')
       createIssueLink.searchParams.set('labels', 'type: bug')

@@ -1,25 +1,39 @@
 // @ts-check
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'readFile'.
 const { appendFile, copyFile, readFile, writeFile } = require('fs').promises
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'os'.
 const os = require('os')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'path'.
 const path = require('path')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'process'.
 const process = require('process')
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'execa'.
 const execa = require('execa')
 const hasbin = require('hasbin')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'Listr'.
 const Listr = require('listr')
 const pathKey = require('path-key')
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'fetchLates... Remove this comment to see the full error message
 const { fetchLatestVersion, shouldFetchLatestVersion } = require('../../lib/exec-fetcher.cjs')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'fileExists... Remove this comment to see the full error message
 const { fileExistsAsync, rmdirRecursiveAsync } = require('../../lib/fs.cjs')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'normalizeB... Remove this comment to see the full error message
 const { normalizeBackslash } = require('../../lib/path.cjs')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getLegacyP... Remove this comment to see the full error message
 const { getLegacyPathInHome, getPathInHome } = require('../../lib/settings.cjs')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'chalk'.
 const { chalk } = require('../command-helpers.cjs')
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'PACKAGE_NA... Remove this comment to see the full error message
 const PACKAGE_NAME = 'netlify-credential-helper'
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'EXEC_NAME'... Remove this comment to see the full error message
 const EXEC_NAME = 'git-credential-netlify'
 
 const GIT_CONFIG = '.gitconfig'
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'checkGitLF... Remove this comment to see the full error message
 const { checkGitLFSVersionStep, checkGitVersionStep, checkLFSFiltersStep } = require('./steps.cjs')
 
 const SUPPORTED_PLATFORMS = {
@@ -28,8 +42,12 @@ const SUPPORTED_PLATFORMS = {
   win32: 'Windows',
 }
 
-const getSetupStep = ({ skipInstall }) => {
+const getSetupStep = ({
+  skipInstall
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) => {
   const platform = os.platform()
+  // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
   const platformName = SUPPORTED_PLATFORMS[platform]
   if (platformName === undefined) {
     throw new Error(`Platform not supported: ${platform}.
@@ -55,12 +73,17 @@ const setupGitConfigStep = {
   task: () => configureGitConfig(),
 }
 
-const installPlatform = async function ({ force }) {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'installPla... Remove this comment to see the full error message
+const installPlatform = async function ({
+  force
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) {
   const skipInstall = !force && (await installedWithPackageManager())
   const steps = [
     checkGitVersionStep,
     checkGitLFSVersionStep,
-    checkLFSFiltersStep(async (ctx, task, installed) => {
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    checkLFSFiltersStep(async (ctx: $TSFixMe, task: $TSFixMe, installed: $TSFixMe) => {
       if (!installed) {
         await execa('git', ['lfs', 'install'])
         task.title += chalk.dim(' [installed]')
@@ -110,10 +133,12 @@ const installHelper = async function () {
   })
 }
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'isBinInPat... Remove this comment to see the full error message
 const isBinInPath = () => {
   const envPath = process.env[pathKey()]
   const binPath = getBinPath()
-  return envPath.replace(/"+/g, '').split(path.delimiter).includes(binPath)
+  // @ts-expect-error TS(2532): Object is possibly 'undefined'.
+  return envPath.replace(/"+/g, '').split(path.delimiter).includes(binPath);
 }
 
 const setupWindowsPath = async function () {
@@ -133,7 +158,8 @@ const CONTENT_COMMENT = `
 # The next line updates PATH for Netlify's Git Credential Helper.
 `
 
-const getInitContent = (incFilePath) => `${CONTENT_COMMENT}test -f '${incFilePath}' && source '${incFilePath}'`
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const getInitContent = (incFilePath: $TSFixMe) => `${CONTENT_COMMENT}test -f '${incFilePath}' && source '${incFilePath}'`
 
 const setupUnixPath = async () => {
   if (isBinInPath()) {
@@ -154,7 +180,8 @@ Set the helper path in your environment PATH: ${getBinPath()}`
   ])
 }
 
-const writeConfig = async function (name, initContent) {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const writeConfig = async function (name: $TSFixMe, initContent: $TSFixMe) {
   const configPath = path.join(os.homedir(), name)
   if (!(await fileExistsAsync(configPath))) {
     return
@@ -175,7 +202,8 @@ const getCurrentCredentials = async () => {
     return currentCredentials
   } catch (error) {
     // ignore error caused by not having any credential configured
-    if (error.stdout !== '') {
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    if ((error as $TSFixMe).stdout !== '') {
       throw error
     }
     return []
@@ -183,7 +211,8 @@ const getCurrentCredentials = async () => {
 }
 
 // Git expects the config path to always use / even on Windows
-const getGitConfigContent = (gitConfigPath) => `
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const getGitConfigContent = (gitConfigPath: $TSFixMe) => `
 # This next lines include Netlify's Git Credential Helper configuration in your Git configuration.
 [include]
   path = ${normalizeBackslash(gitConfigPath)}
@@ -203,7 +232,8 @@ const configureGitConfig = async function () {
 
   let section = 'credential'
   if (currentCredentials.length !== 0) {
-    currentCredentials.forEach((line) => {
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    currentCredentials.forEach((line: $TSFixMe) => {
       const parts = line.split(' ')
 
       if (parts.length === 2) {
@@ -247,6 +277,7 @@ const CONFIG_FILES = {
   fish: '.config/fish/config.fish',
 }
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getShellIn... Remove this comment to see the full error message
 const getShellInfo = function () {
   const shellEnv = process.env.SHELL
   if (!shellEnv) {
@@ -257,6 +288,7 @@ const getShellInfo = function () {
   return {
     shell,
     incFilePath: `${getHelperPath()}/path.${shell}.inc`,
+    // @ts-expect-error TS(2538): Type 'undefined' cannot be used as an index type.
     configFile: CONFIG_FILES[shell],
   }
 }
@@ -272,6 +304,7 @@ const cleanupShell = async function () {
   } catch {}
 }
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'uninstall'... Remove this comment to see the full error message
 const uninstall = async function () {
   await Promise.all([
     rmdirRecursiveAsync(getHelperPath()),
@@ -280,7 +313,8 @@ const uninstall = async function () {
   ])
 }
 
-const removeConfig = async function (name, toRemove) {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const removeConfig = async function (name: $TSFixMe, toRemove: $TSFixMe) {
   const configPath = path.join(os.homedir(), name)
 
   if (!(await fileExistsAsync(configPath))) {

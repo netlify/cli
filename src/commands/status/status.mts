@@ -1,9 +1,12 @@
 // @ts-check
 const clean = require('clean-deep')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'prettyjson... Remove this comment to see the full error message
 const prettyjson = require('prettyjson')
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'chalk'.
 const { chalk, error, exit, getToken, log, logJson, warn } = require('../../utils/index.mjs')
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createStat... Remove this comment to see the full error message
 const { createStatusHooksCommand } = require('./status-hooks.cjs')
 
 /**
@@ -11,9 +14,11 @@ const { createStatusHooksCommand } = require('./status-hooks.cjs')
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command').BaseCommand} command
  */
-const status = async (options, command) => {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'status'.
+const status = async (options: $TSFixMe, command: $TSFixMe) => {
   const { api, globalConfig, site } = command.netlify
   const current = globalConfig.get('userId')
+  // @ts-expect-error TS(2554): Expected 1 arguments, but got 0.
   const [accessToken] = await getToken()
 
   if (!accessToken) {
@@ -33,9 +38,10 @@ const status = async (options, command) => {
   let user
 
   try {
-    ;[accounts, user] = await Promise.all([api.listAccountsForUser(), api.getCurrentUser()])
+    [accounts, user] = await Promise.all([api.listAccountsForUser(), api.getCurrentUser()])
   } catch (error_) {
-    if (error_.status === 401) {
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    if ((error_ as $TSFixMe).status === 401) {
       error('Your session has expired. Please try to re-authenticate by running `netlify logout` and `netlify login`.')
     }
   }
@@ -48,11 +54,14 @@ const status = async (options, command) => {
   }
   const teamsData = {}
 
-  accounts.forEach((team) => {
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  accounts.forEach((team: $TSFixMe) => {
+    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     teamsData[team.name] = team.roles_allowed.join(' ')
   })
 
-  accountData.Teams = teamsData
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  (accountData as $TSFixMe).Teams = teamsData;
 
   const cleanAccountData = clean(accountData)
 
@@ -67,12 +76,14 @@ const status = async (options, command) => {
     siteData = await api.getSite({ siteId })
   } catch (error_) {
     // unauthorized
-    if (error_.status === 401) {
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    if ((error_ as $TSFixMe).status === 401) {
       warn(`Log in with a different account or re-link to a site you have permission for`)
       error(`Not authorized to view the currently linked site (${siteId})`)
     }
     // missing
-    if (error_.status === 404) {
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    if ((error_ as $TSFixMe).status === 404) {
       error(`The site this folder is linked to can't be found`)
     }
     error(error_)
@@ -80,6 +91,7 @@ const status = async (options, command) => {
 
   // Json only logs out if --json flag is passed
   if (options.json) {
+    // @ts-expect-error TS(2345): Argument of type '{ account: any; siteData: { 'sit... Remove this comment to see the full error message
     logJson({
       account: cleanAccountData,
       siteData: {
@@ -112,7 +124,8 @@ const status = async (options, command) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createStatusCommand = (program) => {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createStat... Remove this comment to see the full error message
+const createStatusCommand = (program: $TSFixMe) => {
   createStatusHooksCommand(program)
 
   return program

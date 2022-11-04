@@ -1,11 +1,18 @@
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'process'.
 const process = require('process')
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'open'.
 const open = require('better-opn')
 const isDockerContainer = require('is-docker')
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'chalk'.
 const { chalk, log } = require('./command-helpers.cjs')
 
-const unableToOpenBrowserMessage = function ({ message, url }) {
+const unableToOpenBrowserMessage = function ({
+  message,
+  url
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) {
   log('---------------------------')
   log(chalk.redBright(`Error: Unable to open browser automatically: ${message}`))
   log(chalk.cyan('Please open your browser and open the URL below:'))
@@ -20,7 +27,12 @@ const unableToOpenBrowserMessage = function ({ message, url }) {
  * @param {boolean} [config.silentBrowserNoneError]
  * @returns {Promise<void>}
  */
-const openBrowser = async function ({ silentBrowserNoneError, url }) {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'openBrowse... Remove this comment to see the full error message
+const openBrowser = async function ({
+  silentBrowserNoneError,
+  url
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) {
   if (isDockerContainer()) {
     unableToOpenBrowserMessage({ url, message: 'Running inside a docker container' })
     return
@@ -35,7 +47,8 @@ const openBrowser = async function ({ silentBrowserNoneError, url }) {
   try {
     await open(url)
   } catch (error) {
-    unableToOpenBrowserMessage({ url, message: error.message })
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    unableToOpenBrowserMessage({ url, message: (error as $TSFixMe).message });
   }
 }
 

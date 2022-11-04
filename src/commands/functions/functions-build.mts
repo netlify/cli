@@ -1,7 +1,9 @@
 // @ts-check
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'mkdir'.
 const { mkdir } = require('fs/promises')
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'NETLIFYDEV... Remove this comment to see the full error message
 const { NETLIFYDEVERR, NETLIFYDEVLOG, exit, getFunctionsDir, log } = require('../../utils/index.mjs')
 
 /**
@@ -9,7 +11,8 @@ const { NETLIFYDEVERR, NETLIFYDEVLOG, exit, getFunctionsDir, log } = require('..
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command').BaseCommand} command
  */
-const functionsBuild = async (options, command) => {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const functionsBuild = async (options: $TSFixMe, command: $TSFixMe) => {
   const { config } = command.netlify
 
   const src = options.src || config.build.functionsSource
@@ -38,6 +41,7 @@ const functionsBuild = async (options, command) => {
 
   const { zipFunctions } = await import('@netlify/zip-it-and-ship-it')
 
+  // @ts-expect-error TS(2345): Argument of type '{ skipGo: boolean; }' is not ass... Remove this comment to see the full error message
   zipFunctions(src, dst, { skipGo: true })
   log(`${NETLIFYDEVLOG} Functions built to `, dst)
 }
@@ -47,13 +51,13 @@ const functionsBuild = async (options, command) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createFunctionsBuildCommand = (program) =>
-  program
-    .command('functions:build')
-    .alias('function:build')
-    .description('Build functions locally')
-    .option('-f, --functions <directory>', 'Specify a functions directory to build to')
-    .option('-s, --src <directory>', 'Specify the source directory for the functions')
-    .action(functionsBuild)
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createFunc... Remove this comment to see the full error message
+const createFunctionsBuildCommand = (program: $TSFixMe) => program
+  .command('functions:build')
+  .alias('function:build')
+  .description('Build functions locally')
+  .option('-f, --functions <directory>', 'Specify a functions directory to build to')
+  .option('-s, --src <directory>', 'Specify the source directory for the functions')
+  .action(functionsBuild)
 
 module.exports = { createFunctionsBuildCommand }

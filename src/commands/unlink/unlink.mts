@@ -1,5 +1,6 @@
 // @ts-check
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'exit'.
 const { exit, log, track } = require('../../utils/index.mjs')
 
 /**
@@ -7,7 +8,8 @@ const { exit, log, track } = require('../../utils/index.mjs')
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command').BaseCommand} command
  */
-const unlink = async (options, command) => {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const unlink = async (options: $TSFixMe, command: $TSFixMe) => {
   const { site, state } = command.netlify
   const siteId = site.id
 
@@ -18,7 +20,6 @@ const unlink = async (options, command) => {
 
   let siteData = {}
   try {
-    // @ts-ignore types from API are wrong they cannot recognize `getSite` of API
     siteData = await command.netlify.api.getSite({ siteId })
   } catch {
     // ignore errors if we can't get the site
@@ -27,11 +28,13 @@ const unlink = async (options, command) => {
   state.delete('siteId')
 
   await track('sites_unlinked', {
-    siteId: siteData.id || siteId,
-  })
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    siteId: (siteData as $TSFixMe).id || siteId,
+});
 
   if (site) {
-    log(`Unlinked ${site.configPath} from ${siteData ? siteData.name : siteId}`)
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    log(`Unlinked ${site.configPath} from ${siteData ? (siteData as $TSFixMe).name : siteId}`);
   } else {
     log('Unlinked site')
   }
@@ -42,7 +45,7 @@ const unlink = async (options, command) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createUnlinkCommand = (program) =>
-  program.command('unlink').description('Unlink a local folder from a Netlify site').action(unlink)
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createUnli... Remove this comment to see the full error message
+const createUnlinkCommand = (program: $TSFixMe) => program.command('unlink').description('Unlink a local folder from a Netlify site').action(unlink)
 
 module.exports = { createUnlinkCommand }

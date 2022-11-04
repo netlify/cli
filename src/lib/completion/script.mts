@@ -4,11 +4,15 @@
 // This script is run by the completion (every log output will be displayed on tab)
 // src/commands/completion/completion.js -> dynamically references this file
 // if this file is renamed or moved then it needs to be adapted there
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'existsSync... Remove this comment to see the full error message
 const { existsSync, readFileSync } = require('fs')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'process'.
 const process = require('process')
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'log'.
 const { log, parseEnv } = require('tabtab')
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'AUTOCOMPLE... Remove this comment to see the full error message
 const { AUTOCOMPLETION_FILE } = require('./constants.cjs')
 
 /**
@@ -21,12 +25,14 @@ const { AUTOCOMPLETION_FILE } = require('./constants.cjs')
  * @param {Record<string, CompletionItem & {options: CompletionItem[]}>} program
  * @returns {CompletionItem[]|void}
  */
-const getAutocompletion = function (env, program) {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const getAutocompletion = function (env: $TSFixMe, program: $TSFixMe) {
   if (!env.complete) {
     return
   }
   // means that we are currently in the first command (the root command)
   if (env.words === 1) {
+    // @ts-expect-error TS(2345): Argument of type '({ description, name }: { descri... Remove this comment to see the full error message
     const rootCommands = Object.values(program).map(({ description, name }) => ({ name, description }))
 
     // suggest all commands
@@ -37,6 +43,7 @@ const getAutocompletion = function (env, program) {
 
     // $ netlify add<cursor>
     // we can now check if a command starts with the last partial
+    // @ts-expect-error TS(2769): No overload matches this call.
     const autocomplete = rootCommands.filter(({ name }) => name.startsWith(env.lastPartial))
     return autocomplete
   }
@@ -45,10 +52,16 @@ const getAutocompletion = function (env, program) {
 
   if (program[command]) {
     const usedArgs = new Set(args)
-    const unusedOptions = program[command].options.filter(({ name }) => !usedArgs.has(name))
+    const unusedOptions = program[command].options.filter(({
+      name
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    }: $TSFixMe) => !usedArgs.has(name))
 
     if (env.lastPartial.length !== 0) {
-      return unusedOptions.filter(({ name }) => name.startsWith(env.lastPartial))
+      return unusedOptions.filter(({
+        name
+      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+      }: $TSFixMe) => name.startsWith(env.lastPartial));
     }
 
     // suggest options that are not used

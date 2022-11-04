@@ -2,15 +2,24 @@
 // @ts-check
 
 const {
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'autocomple... Remove this comment to see the full error message
   autocompleteCodegenModules,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'autocomple... Remove this comment to see the full error message
   autocompleteOperationNames,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'buildSchem... Remove this comment to see the full error message
   buildSchema,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'generateHa... Remove this comment to see the full error message
   generateHandlerByOperationName,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getCodegen... Remove this comment to see the full error message
   getCodegenFunctionById,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getCodegen... Remove this comment to see the full error message
   getCodegenModule,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getNetlify... Remove this comment to see the full error message
   getNetlifyGraphConfig,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'readGraphQ... Remove this comment to see the full error message
   readGraphQLSchemaFile,
 } = require('../../lib/one-graph/cli-netlify-graph.cjs')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'error'.
 const { error, log } = require('../../utils/index.mjs')
 
 /**
@@ -19,7 +28,8 @@ const { error, log } = require('../../utils/index.mjs')
  * @param {import('../base-command').BaseCommand} command
  * @returns
  */
-const graphHandler = async (args, options, command) => {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const graphHandler = async (args: $TSFixMe, options: $TSFixMe, command: $TSFixMe) => {
   const netlifyGraphConfig = await getNetlifyGraphConfig({ command, options })
   const { config } = command.netlify
 
@@ -88,17 +98,18 @@ const graphHandler = async (args, options, command) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createGraphHandlerCommand = (program) =>
-  program
-    .command('graph:handler')
-    .argument('[name...]', 'Operation name(s)')
-    .option('-c, --codegen <id>', 'The id of the specific code generator to use')
-    .option("-d, --data '<json>'", 'Optional data to pass along to the code generator')
-    .description(
-      'Generate a handler for a Graph operation given its name. See `graph:operations` for a list of operations.',
-    )
-    .action(async (operationNames, options, command) => {
-      await graphHandler({ operationNames }, options, command)
-    })
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createGrap... Remove this comment to see the full error message
+const createGraphHandlerCommand = (program: $TSFixMe) => program
+  .command('graph:handler')
+  .argument('[name...]', 'Operation name(s)')
+  .option('-c, --codegen <id>', 'The id of the specific code generator to use')
+  .option("-d, --data '<json>'", 'Optional data to pass along to the code generator')
+  .description(
+    'Generate a handler for a Graph operation given its name. See `graph:operations` for a list of operations.',
+  )
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  .action(async (operationNames: $TSFixMe, options: $TSFixMe, command: $TSFixMe) => {
+    await graphHandler({ operationNames }, options, command)
+  })
 
 module.exports = { createGraphHandlerCommand }

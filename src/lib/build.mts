@@ -1,6 +1,8 @@
 // @ts-check
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'process'.
 const process = require('process')
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'netlifyBui... Remove this comment to see the full error message
 const netlifyBuildPromise = import('@netlify/build')
 
 /**
@@ -20,7 +22,13 @@ const netlifyBuildPromise = import('@netlify/build')
  * @param {import('commander').OptionValues} config.options
  * @returns {BuildConfig}
  */
-const getBuildOptions = ({ cachedConfig, options: { context, cwd, debug, dry, json, offline, silent }, token }) => ({
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getBuildOp... Remove this comment to see the full error message
+const getBuildOptions = ({
+  cachedConfig,
+  options: { context, cwd, debug, dry, json, offline, silent },
+  token
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) => ({
   cachedConfig,
   siteId: cachedConfig.siteInfo.id,
   token,
@@ -46,7 +54,8 @@ const getBuildOptions = ({ cachedConfig, options: { context, cwd, debug, dry, js
  * @param {BuildConfig} options
  * @returns
  */
-const runBuild = async (options) => {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'runBuild'.
+const runBuild = async (options: $TSFixMe) => {
   const { default: build } = await netlifyBuildPromise
 
   // If netlify NETLIFY_API_URL is set we need to pass this information to @netlify/build
@@ -60,6 +69,7 @@ const runBuild = async (options) => {
     options = { ...options, testOpts }
   }
 
+  // @ts-expect-error TS(2349): This expression is not callable.
   const { configMutations, netlifyConfig: newConfig, severityCode: exitCode } = await build(options)
   return { exitCode, newConfig, configMutations }
 }

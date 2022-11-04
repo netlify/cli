@@ -1,11 +1,15 @@
 // @ts-check
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'AsciiTable... Remove this comment to see the full error message
 const AsciiTable = require('ascii-table')
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'chalk'.
 const { chalk } = require('../command-helpers.cjs')
 
-const missingValues = function (values, manifest) {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const missingValues = function (values: $TSFixMe, manifest: $TSFixMe) {
   const display = values
-    .map((item) => {
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    .map((item: $TSFixMe) => {
       const itemDisplay = chalk.redBright.bold(`${item}`)
       const niceNameDisplay = manifest.config[item].displayName
       return ` - ${itemDisplay} ${niceNameDisplay}`
@@ -14,7 +18,8 @@ const missingValues = function (values, manifest) {
   console.log(display)
 }
 
-const configValues = function (addonName, values, currentValue) {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const configValues = function (addonName: $TSFixMe, values: $TSFixMe, currentValue: $TSFixMe) {
   const table = new AsciiTable(`${addonName} add-on settings`)
 
   const tableHeader = currentValue

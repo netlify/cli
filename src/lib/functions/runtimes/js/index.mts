@@ -1,3 +1,4 @@
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'dirname'.
 const { dirname } = require('path')
 
 const lambdaLocal = require('lambda-local')
@@ -6,9 +7,11 @@ const winston = require('winston')
 const detectNetlifyLambdaBuilder = require('./builders/netlify-lambda.cjs')
 const detectZisiBuilder = require('./builders/zisi.cjs')
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'SECONDS_TO... Remove this comment to see the full error message
 const SECONDS_TO_MILLISECONDS = 1e3
 
-let netlifyLambdaDetectorCache
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+let netlifyLambdaDetectorCache: $TSFixMe
 
 const logger = winston.createLogger({
   levels: winston.config.npm.levels,
@@ -28,7 +31,15 @@ const detectNetlifyLambdaWithCache = () => {
   return netlifyLambdaDetectorCache
 }
 
-const getBuildFunction = async ({ config, directory, errorExit, func, projectRoot }) => {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getBuildFu... Remove this comment to see the full error message
+const getBuildFunction = async ({
+  config,
+  directory,
+  errorExit,
+  func,
+  projectRoot
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) => {
   const netlifyLambdaBuilder = await detectNetlifyLambdaWithCache()
 
   if (netlifyLambdaBuilder) {
@@ -51,7 +62,14 @@ const getBuildFunction = async ({ config, directory, errorExit, func, projectRoo
   return () => ({ schedule, srcFiles })
 }
 
-const invokeFunction = async ({ context, event, func, timeout }) => {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'invokeFunc... Remove this comment to see the full error message
+const invokeFunction = async ({
+  context,
+  event,
+  func,
+  timeout
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) => {
   // If a function builder has defined a `buildPath` property, we use it.
   // Otherwise, we'll invoke the function's main file.
   const lambdaPath = (func.buildData && func.buildData.buildPath) || func.mainFile

@@ -20,6 +20,7 @@ const normalizeDir = ({
   baseDirectory,
   defaultValue,
   dir
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
 }: $TSFixMe) => {
   if (dir === undefined) {
     return defaultValue
@@ -32,6 +33,7 @@ const normalizeDir = ({
 const getDefaultBase = ({
   baseDirectory,
   repositoryRoot
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
 }: $TSFixMe) => {
   if (baseDirectory !== repositoryRoot && baseDirectory.startsWith(repositoryRoot)) {
     return path.relative(repositoryRoot, baseDirectory)
@@ -45,6 +47,7 @@ const getDefaultSettings = ({
   frameworkBuildDir,
   frameworkPlugins,
   repositoryRoot
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
 }: $TSFixMe) => {
   const recommendedPlugins = getRecommendPlugins(frameworkPlugins, config)
   const {
@@ -66,6 +69,7 @@ const getPromptInputs = ({
   defaultBaseDir,
   defaultBuildCmd,
   defaultBuildDir
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
 }: $TSFixMe) => {
   const inputs = [
     defaultBaseDir !== undefined && {
@@ -78,6 +82,7 @@ const getPromptInputs = ({
       type: 'input',
       name: 'buildCmd',
       message: 'Your build command (hugo build/yarn run build/etc):',
+      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
       filter: (val: $TSFixMe) => val === '' ? '# no build command' : val,
       default: defaultBuildCmd,
     },
@@ -96,6 +101,7 @@ const getPromptInputs = ({
 const getBaseDirectory = ({
   repositoryRoot,
   siteRoot
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
 }: $TSFixMe) =>
   path.normalize(repositoryRoot) === path.normalize(siteRoot) ? process.cwd() : siteRoot
 
@@ -104,6 +110,7 @@ const getBuildSettings = async ({
   env,
   repositoryRoot,
   siteRoot
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
 }: $TSFixMe) => {
   const baseDirectory = getBaseDirectory({ repositoryRoot, siteRoot })
   const nodeVersion = await detectNodeVersion({ baseDirectory, env })
@@ -139,6 +146,7 @@ const getBuildSettings = async ({
     }),
   )
 
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
   const pluginsToInstall = recommendedPlugins.map((plugin: $TSFixMe) => ({
     package: plugin
   }))
@@ -182,6 +190,7 @@ const saveNetlifyToml = async ({
   configPath,
   functionsDir,
   repositoryRoot
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
 }: $TSFixMe) => {
   const tomlPathParts = [repositoryRoot, baseDir, 'netlify.toml'].filter(Boolean)
   const tomlPath = path.join(...tomlPathParts)
@@ -212,6 +221,7 @@ const saveNetlifyToml = async ({
         'utf-8',
       )
     } catch (error) {
+      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
       warn(`Failed saving Netlify toml file: ${(error as $TSFixMe).message}`);
     }
   }
@@ -220,15 +230,18 @@ const saveNetlifyToml = async ({
 const formatErrorMessage = ({
   error,
   message
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
 }: $TSFixMe) => {
   const errorMessage = error.json ? `${error.message} - ${JSON.stringify(error.json)}` : error.message
   return `${message} with error: ${chalk.red(errorMessage)}`
 }
 
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
 const formatTitle = (title: $TSFixMe) => chalk.cyan(title)
 
 const createDeployKey = async ({
   api
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
 }: $TSFixMe) => {
   try {
     const deployKey = await api.createDeployKey()
@@ -243,6 +256,7 @@ const updateSite = async ({
   api,
   options,
   siteId
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
 }: $TSFixMe) => {
   try {
     const updatedSite = await api.updateSite({ siteId, body: options })
@@ -259,6 +273,7 @@ const setupSite = async ({
   pluginsToInstall,
   repo,
   siteId
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
 }: $TSFixMe) => {
   const updatedSite = await updateSite({
     siteId,

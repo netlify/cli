@@ -1,9 +1,11 @@
 // @ts-check
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'AsciiTable... Remove this comment to see the full error message
 const AsciiTable = require('ascii-table')
 
 // TODO: use static `import` after migrating this repository to pure ES modules
 const jsClient = import('netlify')
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'chalk'.
 const { chalk, error, exit, log, logJson } = require('../../utils/index.mjs')
 
 /**
@@ -12,14 +14,16 @@ const { chalk, error, exit, log, logJson } = require('../../utils/index.mjs')
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command').BaseCommand} command
  */
-const apiCommand = async (apiMethod, options, command) => {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const apiCommand = async (apiMethod: $TSFixMe, options: $TSFixMe, command: $TSFixMe) => {
   const { api } = command.netlify
 
   if (options.list) {
     const table = new AsciiTable(`Netlify API Methods`)
     table.setHeading('API Method', 'Docs Link')
     const { methods } = await jsClient
-    methods.forEach((method) => {
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    methods.forEach((method: $TSFixMe) => {
       const { operationId } = method
       table.addRow(operationId, `https://open-api.netlify.com/#operation/${operationId}`)
     })
@@ -57,19 +61,19 @@ const apiCommand = async (apiMethod, options, command) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createApiCommand = (program) =>
-  program
-    .command('api')
-    .argument('[apiMethod]', 'Open API method to run')
-    .description(
-      `Run any Netlify API method
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createApiC... Remove this comment to see the full error message
+const createApiCommand = (program: $TSFixMe) => program
+  .command('api')
+  .argument('[apiMethod]', 'Open API method to run')
+  .description(
+    `Run any Netlify API method
 For more information on available methods checkout https://open-api.netlify.com/ or run '${chalk.grey(
-        'netlify api --list',
-      )}'`,
-    )
-    .option('-d, --data <data>', 'Data to use')
-    .option('--list', 'List out available API methods', false)
-    .addExamples(['netlify api --list', `netlify api getSite --data '{ "site_id": "123456" }'`])
-    .action(apiCommand)
+      'netlify api --list',
+    )}'`,
+  )
+  .option('-d, --data <data>', 'Data to use')
+  .option('--list', 'List out available API methods', false)
+  .addExamples(['netlify api --list', `netlify api getSite --data '{ "site_id": "123456" }'`])
+  .action(apiCommand)
 
 module.exports = { createApiCommand }

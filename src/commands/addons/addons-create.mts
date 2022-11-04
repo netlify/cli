@@ -1,14 +1,28 @@
 // @ts-check
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'inquirer'.
 const inquirer = require('inquirer')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'isEmpty'.
 const isEmpty = require('lodash/isEmpty')
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'ADDON_VALI... Remove this comment to see the full error message
 const { ADDON_VALIDATION, prepareAddonCommand } = require('../../utils/addons/prepare.cjs')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'generatePr... Remove this comment to see the full error message
 const generatePrompts = require('../../utils/addons/prompts.cjs')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'render'.
 const render = require('../../utils/addons/render.cjs')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'missingCon... Remove this comment to see the full error message
 const { missingConfigValues, requiredConfigValues, updateConfigValues } = require('../../utils/addons/validation.cjs')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'chalk'.
 const { chalk, error, log, parseRawFlags } = require('../../utils/index.mjs')
 
-const createAddon = async ({ addonName, api, config, siteData, siteId }) => {
+const createAddon = async ({
+  addonName,
+  api,
+  config,
+  siteData,
+  siteId
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) => {
   try {
     const response = await api.createServiceInstance({
       siteId,
@@ -21,7 +35,8 @@ const createAddon = async ({ addonName, api, config, siteData, siteId }) => {
       log(`${response.config.message}`)
     }
   } catch (error_) {
-    error(error_.message)
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    error((error_ as $TSFixMe).message);
   }
 }
 
@@ -32,11 +47,11 @@ const createAddon = async ({ addonName, api, config, siteData, siteId }) => {
  * @param {import('../base-command').BaseCommand} command
  * @returns {Promise<boolean>}
  */
-const addonsCreate = async (addonName, options, command) => {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const addonsCreate = async (addonName: $TSFixMe, options: $TSFixMe, command: $TSFixMe) => {
   const { manifest, siteData } = await prepareAddonCommand({
     command,
     addonName,
-    // @ts-ignore
     validation: ADDON_VALIDATION.NOT_EXISTS,
   })
 
@@ -98,7 +113,8 @@ const addonsCreate = async (addonName, options, command) => {
     configValues = updateConfigValues(manifest.config, rawFlags, userInput)
     const missingRequiredValues = missingConfigValues(required, configValues)
     if (missingRequiredValues && missingRequiredValues.length !== 0) {
-      missingRequiredValues.forEach((val) => {
+      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+      missingRequiredValues.forEach((val: $TSFixMe) => {
         log(`Missing required value "${val}". Please run the command again`)
       })
       return false
@@ -113,19 +129,20 @@ const addonsCreate = async (addonName, options, command) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createAddonsCreateCommand = (program) =>
-  program
-    .command('addons:create')
-    .alias('addon:create')
-    .argument('<name>', 'Add-on namespace')
-    .description(
-      `Add an add-on extension to your site
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createAddo... Remove this comment to see the full error message
+const createAddonsCreateCommand = (program: $TSFixMe) => program
+  .command('addons:create')
+  .alias('addon:create')
+  .argument('<name>', 'Add-on namespace')
+  .description(
+    `Add an add-on extension to your site
 Add-ons are a way to extend the functionality of your Netlify site`,
-    )
-    // allow for any flags. Handy for variadic configuration options
-    .allowUnknownOption(true)
-    .action(async (addonName, options, command) => {
-      await addonsCreate(addonName, options, command)
-    })
+  )
+  // allow for any flags. Handy for variadic configuration options
+  .allowUnknownOption(true)
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  .action(async (addonName: $TSFixMe, options: $TSFixMe, command: $TSFixMe) => {
+    await addonsCreate(addonName, options, command)
+  })
 
 module.exports = { createAddonsCreateCommand }

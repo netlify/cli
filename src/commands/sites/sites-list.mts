@@ -1,7 +1,10 @@
 // @ts-check
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'listSites'... Remove this comment to see the full error message
 const { listSites } = require('../../lib/api.cjs')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'startSpinn... Remove this comment to see the full error message
 const { startSpinner, stopSpinner } = require('../../lib/spinner.cjs')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'chalk'.
 const { chalk, log, logJson } = require('../../utils/index.mjs')
 
 /**
@@ -10,7 +13,8 @@ const { chalk, log, logJson } = require('../../utils/index.mjs')
  * @param {import('../base-command').BaseCommand} command
  * @returns {Promise<{ id: any; name: any; ssl_url: any; account_name: any; }|boolean>}
  */
-const sitesList = async (options, command) => {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const sitesList = async (options: $TSFixMe, command: $TSFixMe) => {
   const { api } = command.netlify
   /** @type {import('ora').Ora} */
   let spinner
@@ -25,7 +29,8 @@ const sitesList = async (options, command) => {
   }
 
   if (sites && sites.length !== 0) {
-    const logSites = sites.map((site) => {
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    const logSites = sites.map((site: $TSFixMe) => {
       const siteInfo = {
         id: site.id,
         name: site.name,
@@ -34,7 +39,8 @@ const sitesList = async (options, command) => {
       }
 
       if (site.build_settings && site.build_settings.repo_url) {
-        siteInfo.repo_url = site.build_settings.repo_url
+        // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+        (siteInfo as $TSFixMe).repo_url = site.build_settings.repo_url;
       }
 
       return siteInfo
@@ -42,7 +48,8 @@ const sitesList = async (options, command) => {
 
     // Json response for piping commands
     if (options.json) {
-      const redactedSites = sites.map((site) => {
+      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+      const redactedSites = sites.map((site: $TSFixMe) => {
         if (site && site.build_settings) {
           delete site.build_settings.env
         }
@@ -60,7 +67,8 @@ const sitesList = async (options, command) => {
 Count: ${logSites.length}
 `)
 
-    logSites.forEach((logSite) => {
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    logSites.forEach((logSite: $TSFixMe) => {
       log(`${chalk.greenBright(logSite.name)} - ${logSite.id}`)
       log(`  ${chalk.whiteBright.bold('url:')}  ${chalk.yellowBright(logSite.ssl_url)}`)
       if (logSite.repo_url) {
@@ -78,13 +86,14 @@ Count: ${logSites.length}
  * Creates the `netlify sites:list` command
  * @param {import('../base-command').BaseCommand} program
  */
-const createSitesListCommand = (program) =>
-  program
-    .command('sites:list')
-    .description('List all sites you have access to')
-    .option('--json', 'Output site data as JSON')
-    .action(async (options, command) => {
-      await sitesList(options, command)
-    })
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createSite... Remove this comment to see the full error message
+const createSitesListCommand = (program: $TSFixMe) => program
+  .command('sites:list')
+  .description('List all sites you have access to')
+  .option('--json', 'Output site data as JSON')
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  .action(async (options: $TSFixMe, command: $TSFixMe) => {
+    await sitesList(options, command)
+  })
 
 module.exports = { createSitesListCommand }

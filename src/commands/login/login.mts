@@ -1,7 +1,9 @@
 // @ts-check
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'chalk'.
 const { chalk, exit, getToken, log } = require('../../utils/index.mjs')
 
-const msg = function (location) {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const msg = function (location: $TSFixMe) {
   switch (location) {
     case 'env':
       return 'via process.env.NETLIFY_AUTH_TOKEN set in your terminal session'
@@ -19,7 +21,9 @@ const msg = function (location) {
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command').BaseCommand} command
  */
-const login = async (options, command) => {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'login'.
+const login = async (options: $TSFixMe, command: $TSFixMe) => {
+  // @ts-expect-error TS(2554): Expected 1 arguments, but got 0.
   const [accessToken, location] = await getToken()
 
   command.setAnalyticsPayload({ new: options.new })
@@ -44,14 +48,14 @@ const login = async (options, command) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createLoginCommand = (program) =>
-  program
-    .command('login')
-    .description(
-      `Login to your Netlify account
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createLogi... Remove this comment to see the full error message
+const createLoginCommand = (program: $TSFixMe) => program
+  .command('login')
+  .description(
+    `Login to your Netlify account
 Opens a web browser to acquire an OAuth token.`,
-    )
-    .option('--new', 'Login to new Netlify account')
-    .action(login)
+  )
+  .option('--new', 'Login to new Netlify account')
+  .action(login)
 
 module.exports = { createLoginCommand, login, msg }

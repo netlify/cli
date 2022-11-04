@@ -1,10 +1,14 @@
 // @ts-check
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'join'.
 const { join } = require('path')
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'startFunct... Remove this comment to see the full error message
 const { startFunctionsServer } = require('../../lib/functions/server.cjs')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'acquirePor... Remove this comment to see the full error message
 const { acquirePort, getFunctionsDir, getSiteInformation, injectEnvVariables } = require('../../utils/index.mjs')
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'DEFAULT_PO... Remove this comment to see the full error message
 const DEFAULT_PORT = 9999
 
 /**
@@ -12,7 +16,8 @@ const DEFAULT_PORT = 9999
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command').BaseCommand} command
  */
-const functionsServe = async (options, command) => {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const functionsServe = async (options: $TSFixMe, command: $TSFixMe) => {
   const { api, config, site, siteInfo } = command.netlify
 
   const functionsDir = getFunctionsDir({ options, config }, join('netlify', 'functions'))
@@ -51,15 +56,16 @@ const functionsServe = async (options, command) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createFunctionsServeCommand = (program) =>
-  program
-    .command('functions:serve')
-    .alias('function:serve')
-    .description('(Beta) Serve functions locally')
-    .option('-f, --functions <dir>', 'Specify a functions directory to serve')
-    .option('-p, --port <port>', 'Specify a port for the functions server', (value) => Number.parseInt(value))
-    .option('-o, --offline', 'disables any features that require network access')
-    .addHelpText('after', 'Helpful for debugging functions.')
-    .action(functionsServe)
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createFunc... Remove this comment to see the full error message
+const createFunctionsServeCommand = (program: $TSFixMe) => program
+  .command('functions:serve')
+  .alias('function:serve')
+  .description('(Beta) Serve functions locally')
+  .option('-f, --functions <dir>', 'Specify a functions directory to serve')
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  .option('-p, --port <port>', 'Specify a port for the functions server', (value: $TSFixMe) => Number.parseInt(value))
+  .option('-o, --offline', 'disables any features that require network access')
+  .addHelpText('after', 'Helpful for debugging functions.')
+  .action(functionsServe)
 
 module.exports = { createFunctionsServeCommand }

@@ -2,45 +2,63 @@
 /* eslint-disable eslint-comments/disable-enable-pair */
 /* eslint-disable fp/no-loops */
 /* eslint-disable no-underscore-dangle */
+// @ts-expect-error TS(6200): Definitions of the following identifiers conflict ... Remove this comment to see the full error message
 const crypto = require('crypto')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'readFileSy... Remove this comment to see the full error message
 const { readFileSync, writeFileSync } = require('fs')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'os'.
 const os = require('os')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'path'.
 const path = require('path')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'process'.
 const process = require('process')
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'gitRepoInf... Remove this comment to see the full error message
 const gitRepoInfo = require('git-repo-info')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'WSL'.
 const WSL = require('is-wsl')
 const {
   // eslint-disable-next-line no-unused-vars
   CliEventHelper,
   // eslint-disable-next-line no-unused-vars
   CodegenHelpers,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'GraphQL'.
   GraphQL,
   InternalConsole,
   NetlifyGraph,
   NetlifyGraphLockfile,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'OneGraphCl... Remove this comment to see the full error message
   OneGraphClient,
 } = require('netlify-onegraph-internal')
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'frameworkI... Remove this comment to see the full error message
 const frameworkInfoPromise = import('@netlify/framework-info')
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'version'.
 const { version } = require('../../../package.json')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'StateConfi... Remove this comment to see the full error message
 // eslint-disable-next-line no-unused-vars
 const { StateConfig, USER_AGENT, chalk, error, execa, log, warn, watchDebounced } = require('../../utils/index.mjs')
 
 const {
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'generateFu... Remove this comment to see the full error message
   generateFunctionsFile,
   generateHandlerByOperationId,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getCodegen... Remove this comment to see the full error message
   getCodegenFunctionById,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getCodegen... Remove this comment to see the full error message
   getCodegenModule,
   normalizeOperationsDoc,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'readGraphQ... Remove this comment to see the full error message
   readGraphQLOperationsSourceFile,
   setNetlifyTomlCodeGeneratorModule,
   writeGraphQLOperationsSourceFile,
   writeGraphQLSchemaFile,
 } = require('./cli-netlify-graph.cjs')
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'parse'.
 const { parse } = GraphQL
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'defaultExa... Remove this comment to see the full error message
 const { defaultExampleOperationsDoc, extractFunctionsFromOperationDoc } = NetlifyGraph
 
 const internalConsole = {
@@ -51,12 +69,14 @@ const internalConsole = {
 }
 
 /** @type {string | null} */
-let currentPersistedDocId = null
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+let currentPersistedDocId: $TSFixMe = null
 
 /**
  * Keep track of which document hashes we've received from the server so we can ignore events from the filesystem based on them
  */
-const witnessedIncomingDocumentHashes = []
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const witnessedIncomingDocumentHashes: $TSFixMe = []
 
 InternalConsole.registerConsole(internalConsole)
 
@@ -76,7 +96,8 @@ InternalConsole.registerConsole(internalConsole)
  * @param {any} input.site The site object
  * @returns
  */
-const monitorCLISessionEvents = (input) => {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const monitorCLISessionEvents = (input: $TSFixMe) => {
   const { appId, config, netlifyGraphConfig, netlifyToken, onClose, onError, onEvents, site, state } = input
   const currentSessionId = input.sessionId
   // TODO (sg): Track changing schemaId for a session
@@ -115,7 +136,12 @@ const monitorCLISessionEvents = (input) => {
 
   setTimeout(markActiveHelper, nextMarkActiveHeartbeat)
 
-  const enabledServiceWatcher = async (jwt, { appId: siteId, sessionId }) => {
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  const enabledServiceWatcher = async (jwt: $TSFixMe, {
+    appId: siteId,
+    sessionId
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  }: $TSFixMe) => {
     const enabledServices = state.get('oneGraphEnabledServices') || ['onegraph']
 
     try {
@@ -124,7 +150,8 @@ const monitorCLISessionEvents = (input) => {
         warn('Unable to fetch enabled services for site for code generation')
         return
       }
-      const newEnabledServices = graphQLSchemaInfo.services.map((service) => service.graphQLField)
+      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+      const newEnabledServices = graphQLSchemaInfo.services.map((service: $TSFixMe) => service.graphQLField)
       const enabledServicesCompareKey = enabledServices.sort().join(',')
       const newEnabledServicesCompareKey = newEnabledServices.sort().join(',')
 
@@ -156,7 +183,8 @@ const monitorCLISessionEvents = (input) => {
     shouldClose = true
   }
 
-  let handle
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  let handle: $TSFixMe
 
   const helper = async () => {
     try {
@@ -170,7 +198,8 @@ const monitorCLISessionEvents = (input) => {
       const next = await OneGraphClient.fetchCliSessionEvents({ appId, jwt: graphJwt.jwt, sessionId: currentSessionId })
 
       if (next && next.errors) {
-        next.errors.forEach((fetchEventError) => {
+        // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+        next.errors.forEach((fetchEventError: $TSFixMe) => {
           onError(fetchEventError)
         })
       }
@@ -216,7 +245,13 @@ const monitorCLISessionEvents = (input) => {
  * @param {() => void=} input.onUnlink A callback function to handle when the operations document is unlinked
  * @returns {Promise<any>}
  */
-const monitorOperationFile = async ({ netlifyGraphConfig, onAdd, onChange, onUnlink }) => {
+const monitorOperationFile = async ({
+  netlifyGraphConfig,
+  onAdd,
+  onChange,
+  onUnlink
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) => {
   if (!netlifyGraphConfig.graphQLOperationsSourceFilename) {
     error('Please configure `graphQLOperationsSourceFilename` in your `netlify.toml` [graph] section')
   }
@@ -243,7 +278,8 @@ const monitorOperationFile = async ({ netlifyGraphConfig, onAdd, onChange, onUnl
  * @param {(message: string) => void=} input.logger A function that if provided will be used to log messages
  * @returns {Promise<Record<string, unknown> | undefined>}
  */
-const fetchCliSessionSchema = async (input) => {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const fetchCliSessionSchema = async (input: $TSFixMe) => {
   const { jwt, siteId } = input
 
   await OneGraphClient.ensureAppForSite(jwt, siteId)
@@ -280,7 +316,8 @@ const fetchCliSessionSchema = async (input) => {
  * @param {(message: string) => void=} input.logger A function that if provided will be used to log messages
  * @returns {Promise<void>}
  */
-const refetchAndGenerateFromOneGraph = async (input) => {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'refetchAnd... Remove this comment to see the full error message
+const refetchAndGenerateFromOneGraph = async (input: $TSFixMe) => {
   const { config, jwt, logger, netlifyGraphConfig, schemaId, siteId, state } = input
 
   await OneGraphClient.ensureAppForSite(jwt, siteId)
@@ -292,8 +329,10 @@ const refetchAndGenerateFromOneGraph = async (input) => {
   }
 
   const enabledServices = graphQLSchemaInfo.services
-    .map((service) => service.graphQLField)
-    .sort((aString, bString) => aString.localeCompare(bString))
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    .map((service: $TSFixMe) => service.graphQLField)
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    .sort((aString: $TSFixMe, bString: $TSFixMe) => aString.localeCompare(bString))
 
   const schema = await OneGraphClient.fetchOneGraphSchemaById({
     siteId,
@@ -341,7 +380,8 @@ const refetchAndGenerateFromOneGraph = async (input) => {
  * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig A standalone config object that contains all the information necessary for Netlify Graph to process events
  * @returns
  */
-const regenerateFunctionsFileFromOperationsFile = (input) => {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const regenerateFunctionsFileFromOperationsFile = (input: $TSFixMe) => {
   const { config, netlifyGraphConfig, schema, schemaId } = input
 
   const appOperationsDoc = readGraphQLOperationsSourceFile(netlifyGraphConfig)
@@ -378,7 +418,11 @@ const regenerateFunctionsFileFromOperationsFile = (input) => {
  * @param {string} input.siteRoot The GraphQL schema to use when generating code
  * @return {NetlifyGraphLockfile.V0_format | undefined}
  */
-const readLockfile = ({ siteRoot }) => {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'readLockfi... Remove this comment to see the full error message
+const readLockfile = ({
+  siteRoot
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) => {
   try {
     const buf = readFileSync(path.join(siteRoot, NetlifyGraphLockfile.defaultLockFileName))
     return JSON.parse(buf.toString('utf8'))
@@ -391,7 +435,11 @@ const readLockfile = ({ siteRoot }) => {
  * @param {string} input.siteRoot The GraphQL schema to use when generating code
  * @param {NetlifyGraphLockfile.V0_format} input.lockfile
  */
-const writeLockfile = ({ lockfile, siteRoot }) => {
+const writeLockfile = ({
+  lockfile,
+  siteRoot
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) => {
   writeFileSync(path.join(siteRoot, NetlifyGraphLockfile.defaultLockFileName), JSON.stringify(lockfile, null, 2))
 }
 
@@ -402,7 +450,12 @@ const writeLockfile = ({ lockfile, siteRoot }) => {
  * @param {string=} input.schemaId
  * @param {string=} input.operationsHash
  */
-const mergeLockfile = ({ operationsHash, schemaId, siteRoot }) => {
+const mergeLockfile = ({
+  operationsHash,
+  schemaId,
+  siteRoot
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) => {
   const lockfile = readLockfile({ siteRoot })
   if (lockfile) {
     /** @type {NetlifyGraphLockfile.V0_format} */
@@ -431,7 +484,11 @@ const mergeLockfile = ({ operationsHash, schemaId, siteRoot }) => {
  * @param {string} input.siteRoot The GraphQL schema to use when generating code
  * @return {string | undefined}
  */
-const readSchemaIdFromLockfile = ({ siteRoot }) => {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'readSchema... Remove this comment to see the full error message
+const readSchemaIdFromLockfile = ({
+  siteRoot
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) => {
   try {
     const lockfile = readLockfile({ siteRoot })
     return lockfile && lockfile.locked.schemaId
@@ -443,8 +500,10 @@ const readSchemaIdFromLockfile = ({ siteRoot }) => {
  * @param {string} input String to compute a quick md5 hash for
  * @returns hex digest of the input string
  */
-const quickHash = (input) => {
-  const hashSum = crypto.createHash('md5')
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const quickHash = (input: $TSFixMe) => {
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  const hashSum = (crypto as $TSFixMe).createHash('md5');
   hashSum.update(input)
   return hashSum.digest('hex')
 }
@@ -463,7 +522,8 @@ const quickHash = (input) => {
  * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig A standalone config object that contains all the information necessary for Netlify Graph to process events
  * @returns {Promise<string | undefined>}
  */
-const fetchGraphQLOperationsLibraryFromPersistedDoc = async (input) => {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const fetchGraphQLOperationsLibraryFromPersistedDoc = async (input: $TSFixMe) => {
   try {
     const { docId, netlifyToken, siteId } = input
     const { jwt } = await OneGraphClient.getGraphJwtForSite({ siteId, nfToken: netlifyToken })
@@ -495,7 +555,8 @@ const fetchGraphQLOperationsLibraryFromPersistedDoc = async (input) => {
  * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig A standalone config object that contains all the information necessary for Netlify Graph to process events
  * @returns
  */
-const updateGraphQLOperationsFileFromPersistedDoc = (input) => {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const updateGraphQLOperationsFileFromPersistedDoc = (input: $TSFixMe) => {
   const { config, logger, netlifyGraphConfig, operationsDocString, schema, schemaId } = input
 
   writeGraphQLOperationsSourceFile({ logger, netlifyGraphConfig, operationsDocString })
@@ -526,7 +587,8 @@ const updateGraphQLOperationsFileFromPersistedDoc = (input) => {
  * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig A standalone config object that contains all the information necessary for Netlify Graph to process events
  * @returns {Promise<string | undefined>}
  */
-const handleOperationsLibraryPersistedEvent = async (input) => {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const handleOperationsLibraryPersistedEvent = async (input: $TSFixMe) => {
   const { schemaId, siteRoot } = input
   const operationsFileContents = await fetchGraphQLOperationsLibraryFromPersistedDoc(input)
 
@@ -556,6 +618,7 @@ const handleOperationsLibraryPersistedEvent = async (input) => {
  * @param {string} input.siteRoot Path to the root of the project
  * @returns {Promise<void>}
  */
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'handleCliS... Remove this comment to see the full error message
 const handleCliSessionEvent = async ({
   config,
   docId,
@@ -567,8 +630,9 @@ const handleCliSessionEvent = async ({
   sessionId,
   site,
   siteId,
-  siteRoot,
-}) => {
+  siteRoot
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) => {
   switch (event.__typename) {
     case 'OneGraphNetlifyCliSessionTestEvent': {
       const { payload } = event
@@ -577,7 +641,6 @@ const handleCliSessionEvent = async ({
         config,
         docId,
         netlifyToken,
-        // @ts-ignore
         event: payload,
         netlifyGraphConfig,
         schema,
@@ -642,10 +705,10 @@ ${JSON.stringify(payload, null, 2)}`)
         sessionId,
         payload: {
           editor,
-          // @ts-expect-error
-          files: files.map((file) => ({
+          // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+          files: files.map((file: $TSFixMe) => ({
             name: file.name,
-            filePath: file.filePath,
+            filePath: file.filePath
           })),
         },
         audience: 'UI',
@@ -750,7 +813,12 @@ ${JSON.stringify(payload, null, 2)}`)
  * @param {string} input.oneGraphSessionId The id of the cli session to fetch the current metadata for
  * @param {object} input.siteId The site object that contains the root file path for the site
  */
-const getCLISession = async ({ jwt, oneGraphSessionId, siteId }) => {
+const getCLISession = async ({
+  jwt,
+  oneGraphSessionId,
+  siteId
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) => {
   const input = {
     appId: siteId,
     sessionId: oneGraphSessionId,
@@ -767,7 +835,12 @@ const getCLISession = async ({ jwt, oneGraphSessionId, siteId }) => {
  * @param {string} input.oneGraphSessionId The id of the cli session to fetch the current metadata for
  * @param {string} input.siteId The site object that contains the root file path for the site
  */
-const getCLISessionMetadata = async ({ jwt, oneGraphSessionId, siteId }) => {
+const getCLISessionMetadata = async ({
+  jwt,
+  oneGraphSessionId,
+  siteId
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) => {
   const result = await getCLISession({ jwt, oneGraphSessionId, siteId })
   if (!result) {
     warn(`Unable to fetch CLI session metadata`)
@@ -782,8 +855,10 @@ const getCLISessionMetadata = async ({ jwt, oneGraphSessionId, siteId }) => {
  * @param {string} input.siteRoot The root file path for the site
  * @returns {Promise<CliEventHelper.DetectedLocalCLISessionMetadata>} Any locally detected facts that are relevant to include in the cli session metadata
  */
-const detectLocalCLISessionMetadata = async ({ siteRoot }) => {
-  // @ts-ignore
+const detectLocalCLISessionMetadata = async ({
+  siteRoot
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) => {
   const { listFrameworks } = await frameworkInfoPromise
 
   /** @type {string | null} */
@@ -832,7 +907,15 @@ const detectLocalCLISessionMetadata = async ({ siteRoot }) => {
  * @param {string} input.docId The GraphQL operations document id to fetch
  * @param {string} input.schemaId The GraphQL schemaId to use when generating code
  */
-const publishCliSessionMetadataPublishEvent = async ({ config, docId, jwt, schemaId, sessionId, siteRoot }) => {
+const publishCliSessionMetadataPublishEvent = async ({
+  config,
+  docId,
+  jwt,
+  schemaId,
+  sessionId,
+  siteRoot
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) => {
   const detectedMetadata = await detectLocalCLISessionMetadata({ siteRoot })
 
   /** @type {CodegenHelpers.CodegenModuleMeta | null} */
@@ -844,12 +927,13 @@ const publishCliSessionMetadataPublishEvent = async ({ config, docId, jwt, schem
     codegen = {
       id: codegenModule.id,
       version: codegenModule.id,
-      generators: codegenModule.generators.map((generator) => ({
+      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+      generators: codegenModule.generators.map((generator: $TSFixMe) => ({
         id: generator.id,
         name: generator.name,
         options: generator.generateHandlerOptions || null,
         supportedDefinitionTypes: generator.supportedDefinitionTypes,
-        version: generator.version,
+        version: generator.version
       })),
     }
   }
@@ -900,7 +984,15 @@ const publishCliSessionMetadataPublishEvent = async ({ config, docId, jwt, schem
  * @param {object} input.newMetadata The metadata to merge into (with priority) the existing metadata
  * @returns {Promise<object>}
  */
-const upsertMergeCLISessionMetadata = async ({ jwt, newMetadata, oneGraphSessionId, siteId, siteRoot }) => {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'upsertMerg... Remove this comment to see the full error message
+const upsertMergeCLISessionMetadata = async ({
+  jwt,
+  newMetadata,
+  oneGraphSessionId,
+  siteId,
+  siteRoot
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) => {
   const { errors, metadata } = await getCLISessionMetadata({ jwt, oneGraphSessionId, siteId })
   if (errors) {
     warn(`Error fetching cli session metadata: ${JSON.stringify(errors, null, 2)}`)
@@ -908,7 +1000,6 @@ const upsertMergeCLISessionMetadata = async ({ jwt, newMetadata, oneGraphSession
 
   const detectedMetadata = await detectLocalCLISessionMetadata({ siteRoot })
 
-  // @ts-ignore
   const finalMetadata = { ...metadata, ...detectedMetadata, ...newMetadata }
 
   const result = OneGraphClient.updateCLISessionMetadata(jwt, siteId, oneGraphSessionId, finalMetadata)
@@ -916,6 +1007,7 @@ const upsertMergeCLISessionMetadata = async ({ jwt, newMetadata, oneGraphSession
   return result
 }
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'persistNew... Remove this comment to see the full error message
 const persistNewOperationsDocForSession = async ({
   config,
   netlifyGraphConfig,
@@ -923,8 +1015,9 @@ const persistNewOperationsDocForSession = async ({
   oneGraphSessionId,
   operationsDoc,
   siteId,
-  siteRoot,
-}) => {
+  siteRoot
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) => {
   try {
     GraphQL.parse(operationsDoc)
   } catch (parseError) {
@@ -1011,7 +1104,13 @@ const persistNewOperationsDocForSession = async ({
   }
 }
 
-const createCLISession = async ({ metadata, netlifyToken, sessionName, siteId }) => {
+const createCLISession = async ({
+  metadata,
+  netlifyToken,
+  sessionName,
+  siteId
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) => {
   const { jwt } = await OneGraphClient.getGraphJwtForSite({ siteId, nfToken: netlifyToken })
   const result = OneGraphClient.createCLISession(jwt, siteId, sessionName, metadata)
   return result
@@ -1022,7 +1121,8 @@ const createCLISession = async ({ metadata, netlifyToken, sessionName, siteId })
  * @param {StateConfig} state
  * @returns
  */
-const loadCLISession = (state) => state.get('oneGraphSessionId')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'loadCLISes... Remove this comment to see the full error message
+const loadCLISession = (state: $TSFixMe) => state.get('oneGraphSessionId')
 
 /**
  * Idemponentially save the CLI session id to the local state and start monitoring for CLI events, upstream schema changes, and local operation file changes
@@ -1034,7 +1134,8 @@ const loadCLISession = (state) => state.get('oneGraphSessionId')
  * @param {StateConfig} input.state A function to call to set/get the current state of the local Netlify project
  * @param {any} input.site The site object
  */
-const startOneGraphCLISession = async (input) => {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'startOneGr... Remove this comment to see the full error message
+const startOneGraphCLISession = async (input: $TSFixMe) => {
   const { config, netlifyGraphConfig, netlifyToken, site, state } = input
   const getJwt = async () => {
     const accessToken = await OneGraphClient.getGraphJwtForSite({ siteId: site.id, nfToken: netlifyToken })
@@ -1079,12 +1180,14 @@ const startOneGraphCLISession = async (input) => {
 
   await syncUIHelper()
 
-  const enabledServices = []
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  const enabledServices: $TSFixMe = []
   const schema = await OneGraphClient.fetchOneGraphSchemaForServices(site.id, enabledServices)
 
   const opsFileWatcher = monitorOperationFile({
     netlifyGraphConfig,
-    onChange: async (filePath) => {
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    onChange: async (filePath: $TSFixMe) => {
       log('NetlifyGraph operation file changed at', filePath, 'updating function library...')
       if (!schema) {
         warn('Unable to load schema, run graph:pull to update')
@@ -1110,7 +1213,8 @@ const startOneGraphCLISession = async (input) => {
         siteRoot: site.root,
       })
     },
-    onAdd: async (filePath) => {
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    onAdd: async (filePath: $TSFixMe) => {
       log('NetlifyGraph operation file created at', filePath, 'creating function library...')
       if (!schema) {
         warn('Unable to load schema, run graph:pull to update')
@@ -1149,10 +1253,12 @@ const startOneGraphCLISession = async (input) => {
     onClose: () => {
       log('CLI session closed, stopping monitor...')
     },
-    onSchemaIdChange: (newSchemaId) => {
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    onSchemaIdChange: (newSchemaId: $TSFixMe) => {
       log('Netlify Graph schemaId changed:', newSchemaId)
     },
-    onEvents: async (events) => {
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    onEvents: async (events: $TSFixMe) => {
       const ackEventIds = []
 
       for (const event of events) {
@@ -1203,7 +1309,8 @@ ${JSON.stringify(error_, null, 2)}`)
 
       return ackEventIds
     },
-    onError: (fetchEventError) => {
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    onError: (fetchEventError: $TSFixMe) => {
       error(`Netlify Graph upstream error: ${fetchEventError}`)
     },
   })
@@ -1222,7 +1329,13 @@ ${JSON.stringify(error_, null, 2)}`)
  * @param {string} input.siteId A function to call to set/get the current state of the local Netlify project
  * @param {string} input.sessionId The session id to monitor CLI events for
  */
-const markCliSessionInactive = async ({ netlifyToken, sessionId, siteId }) => {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'markCliSes... Remove this comment to see the full error message
+const markCliSessionInactive = async ({
+  netlifyToken,
+  sessionId,
+  siteId
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) => {
   const { jwt } = await OneGraphClient.getGraphJwtForSite({ siteId, nfToken: netlifyToken })
   const result = await OneGraphClient.executeMarkCliSessionInactive(jwt, siteId, sessionId)
   if (!result || result.errors) {
@@ -1248,7 +1361,8 @@ const generateSessionName = () => {
  * @param {string} input.netlifyToken The (typically netlify) access token that is used for authentication, if any
  * @param {NetlifyGraphLockfile.V0_format | undefined} input.lockfile A function to call to set/get the current state of the local Netlify project
  */
-const idempotentlyUpdateSessionSchemaIdFromLockfile = async (input) => {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const idempotentlyUpdateSessionSchemaIdFromLockfile = async (input: $TSFixMe) => {
   const { lockfile, netlifyToken, session } = input
   const sessionSchemaId = session.metadata && session.metadata.schemaId
   const lockfileSchemaId = lockfile && lockfile.locked.schemaId
@@ -1277,7 +1391,8 @@ const idempotentlyUpdateSessionSchemaIdFromLockfile = async (input) => {
  * @param {string} [input.oneGraphSessionId]
  * @param {any} input.site The site object
  */
-const ensureCLISession = async (input) => {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'ensureCLIS... Remove this comment to see the full error message
+const ensureCLISession = async (input: $TSFixMe) => {
   const { config, metadata, netlifyGraphConfig, netlifyToken, site, state } = input
   let oneGraphSessionId = input.oneGraphSessionId ? input.oneGraphSessionId : loadCLISession(state)
   let parentCliSessionId = null
@@ -1364,7 +1479,6 @@ const ensureCLISession = async (input) => {
     })
 
     if (oneGraphSession) {
-      // @ts-expect-error
       oneGraphSessionId = oneGraphSession.id
     } else {
       warn('Unable to load Netlify Graph session, please report this to Netlify support')
@@ -1389,6 +1503,7 @@ const ensureCLISession = async (input) => {
   return oneGraphSessionId
 }
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'OneGraphCl... Remove this comment to see the full error message
 const OneGraphCliClient = {
   ackCLISessionEvents: OneGraphClient.ackCLISessionEvents,
   executeCreatePersistedQueryMutation: OneGraphClient.executeCreatePersistedQueryMutation,

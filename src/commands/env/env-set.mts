@@ -1,14 +1,22 @@
 // @ts-check
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'Option'.
 const { Option } = require('commander')
 
 const {
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'AVAILABLE_... Remove this comment to see the full error message
   AVAILABLE_CONTEXTS,
   AVAILABLE_SCOPES,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'chalk'.
   chalk,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'error'.
   error,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'log'.
   log,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'logJson'.
   logJson,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'normalizeC... Remove this comment to see the full error message
   normalizeContext,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'translateF... Remove this comment to see the full error message
   translateFromEnvelopeToMongo,
 } = require('../../utils/index.mjs')
 
@@ -20,7 +28,8 @@ const {
  * @param {import('../base-command').BaseCommand} command
  * @returns {Promise<boolean>}
  */
-const envSet = async (key, value, options, command) => {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const envSet = async (key: $TSFixMe, value: $TSFixMe, options: $TSFixMe, command: $TSFixMe) => {
   const { context, scope } = options
 
   const { api, cachedConfig, site } = command.netlify
@@ -71,7 +80,13 @@ const envSet = async (key, value, options, command) => {
  * Updates the env for a site record with a new key/value pair
  * @returns {Promise<object>}
  */
-const setInMongo = async ({ api, key, siteInfo, value }) => {
+const setInMongo = async ({
+  api,
+  key,
+  siteInfo,
+  value
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) => {
   const { env = {} } = siteInfo.build_settings
   const newEnv = {
     ...env,
@@ -93,7 +108,15 @@ const setInMongo = async ({ api, key, siteInfo, value }) => {
  * Updates the env for a site configured with Envelope with a new key/value pair
  * @returns {Promise<object>}
  */
-const setInEnvelope = async ({ api, context, key, scope, siteInfo, value }) => {
+const setInEnvelope = async ({
+  api,
+  context,
+  key,
+  scope,
+  siteInfo,
+  value
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) => {
   const accountId = siteInfo.account_slug
   const siteId = siteInfo.id
   // fetch envelope env vars
@@ -102,11 +125,12 @@ const setInEnvelope = async ({ api, context, key, scope, siteInfo, value }) => {
   const scopes = scope || AVAILABLE_SCOPES
 
   // if the passed context is unknown, it is actually a branch name
-  let values = contexts.map((ctx) =>
-    AVAILABLE_CONTEXTS.includes(ctx) ? { context: ctx, value } : { context: 'branch', context_parameter: ctx, value },
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  let values = contexts.map((ctx: $TSFixMe) => AVAILABLE_CONTEXTS.includes(ctx) ? { context: ctx, value } : { context: 'branch', context_parameter: ctx, value },
   )
 
-  const existing = envelopeVariables.find((envVar) => envVar.key === key)
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  const existing = envelopeVariables.find((envVar: $TSFixMe) => envVar.key === key)
 
   const params = { accountId, siteId, key }
   try {
@@ -123,7 +147,8 @@ const setInEnvelope = async ({ api, context, key, scope, siteInfo, value }) => {
       }
       if (context) {
         // update individual value(s)
-        await Promise.all(values.map((val) => api.setEnvVarValue({ ...params, body: val })))
+        // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+        await Promise.all(values.map((val: $TSFixMe) => api.setEnvVarValue({ ...params, body: val })))
       } else {
         // otherwise update whole env var
         const body = { key, scopes, values }
@@ -135,7 +160,8 @@ const setInEnvelope = async ({ api, context, key, scope, siteInfo, value }) => {
       await api.createEnvVars({ ...params, body })
     }
   } catch (error_) {
-    throw error_.json ? error_.json.msg : error_
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    throw (error_ as $TSFixMe).json ? (error_ as $TSFixMe).json.msg : error_;
   }
 
   const env = translateFromEnvelopeToMongo(envelopeVariables, context ? context[0] : 'dev')
@@ -150,35 +176,33 @@ const setInEnvelope = async ({ api, context, key, scope, siteInfo, value }) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createEnvSetCommand = (program) =>
-  program
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createEnvS... Remove this comment to see the full error message
+const createEnvSetCommand = (program: $TSFixMe) => program
     .command('env:set')
     .argument('<key>', 'Environment variable key')
     .argument('[value]', 'Value to set to', '')
-    .option(
-      '-c, --context <context...>',
-      'Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev") (default: all contexts)',
-      // spread over an array for variadic options
-      (context, previous = []) => [...previous, normalizeContext(context)],
-    )
-    .addOption(
-      new Option('-s, --scope <scope...>', 'Specify a scope (default: all scopes)').choices([
-        'builds',
-        'functions',
-        'post-processing',
-        'runtime',
-      ]),
-    )
+    .option('-c, --context <context...>', 'Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev") (default: all contexts)', 
+// spread over an array for variadic options
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+(context: $TSFixMe, previous = []) => [...previous, normalizeContext(context)])
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    .addOption((new Option('-s, --scope <scope...>', 'Specify a scope (default: all scopes)') as $TSFixMe).choices([
+    'builds',
+    'functions',
+    'post-processing',
+    'runtime',
+]))
     .description('Set value of environment variable')
     .addExamples([
-      'netlify env:set VAR_NAME value # set in all contexts and scopes',
-      'netlify env:set VAR_NAME value --context production',
-      'netlify env:set VAR_NAME value --context production deploy-preview',
-      'netlify env:set VAR_NAME value --scope builds',
-      'netlify env:set VAR_NAME value --scope builds functions',
-    ])
-    .action(async (key, value, options, command) => {
-      await envSet(key, value, options, command)
-    })
+    'netlify env:set VAR_NAME value # set in all contexts and scopes',
+    'netlify env:set VAR_NAME value --context production',
+    'netlify env:set VAR_NAME value --context production deploy-preview',
+    'netlify env:set VAR_NAME value --scope builds',
+    'netlify env:set VAR_NAME value --scope builds functions',
+])
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    .action(async (key: $TSFixMe, value: $TSFixMe, options: $TSFixMe, command: $TSFixMe) => {
+    await envSet(key, value, options, command);
+});
 
 module.exports = { createEnvSetCommand }

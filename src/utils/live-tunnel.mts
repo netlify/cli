@@ -1,16 +1,25 @@
 // @ts-check
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'process'.
 const process = require('process')
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'fetch'.
 const fetch = require('node-fetch')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'pWaitFor'.
 const pWaitFor = require('p-wait-for')
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'fetchLates... Remove this comment to see the full error message
 const { fetchLatestVersion, shouldFetchLatestVersion } = require('../lib/exec-fetcher.cjs')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getPathInH... Remove this comment to see the full error message
 const { getPathInHome } = require('../lib/settings.cjs')
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'NETLIFYDEV... Remove this comment to see the full error message
 const { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log } = require('./command-helpers.cjs')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'execa'.
 const execa = require('./execa.cjs')
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'PACKAGE_NA... Remove this comment to see the full error message
 const PACKAGE_NAME = 'live-tunnel-client'
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'EXEC_NAME'... Remove this comment to see the full error message
 const EXEC_NAME = PACKAGE_NAME
 
 // 1 second
@@ -18,7 +27,11 @@ const TUNNEL_POLL_INTERVAL = 1e3
 // 5 minutes
 const TUNNEL_POLL_TIMEOUT = 3e5
 
-const createTunnel = async function ({ netlifyApiToken, siteId }) {
+const createTunnel = async function ({
+  netlifyApiToken,
+  siteId
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) {
   await installTunnelClient()
 
   if (!siteId) {
@@ -50,7 +63,12 @@ const createTunnel = async function ({ netlifyApiToken, siteId }) {
   return data
 }
 
-const connectTunnel = function ({ localPort, netlifyApiToken, session }) {
+const connectTunnel = function ({
+  localPort,
+  netlifyApiToken,
+  session
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) {
   const execPath = getPathInHome(['tunnel', 'bin', EXEC_NAME])
   const args = ['connect', '-s', session.id, '-t', netlifyApiToken, '-l', localPort]
   if (process.env.DEBUG) {
@@ -59,7 +77,8 @@ const connectTunnel = function ({ localPort, netlifyApiToken, session }) {
   }
 
   const ps = execa(execPath, args, { stdio: 'inherit' })
-  ps.on('close', (code) => process.exit(code))
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  ps.on('close', (code: $TSFixMe) => process.exit(code))
   ps.on('SIGINT', process.exit)
   ps.on('SIGTERM', process.exit)
 }
@@ -87,7 +106,13 @@ const installTunnelClient = async function () {
   })
 }
 
-const startLiveTunnel = async ({ localPort, netlifyApiToken, siteId }) => {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'startLiveT... Remove this comment to see the full error message
+const startLiveTunnel = async ({
+  localPort,
+  netlifyApiToken,
+  siteId
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) => {
   const session = await createTunnel({
     siteId,
     netlifyApiToken,

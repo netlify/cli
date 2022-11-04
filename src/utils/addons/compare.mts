@@ -1,6 +1,7 @@
 const isEqual = require('lodash/isEqual')
 
-module.exports = function compare(oldValues, newValues) {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+module.exports = function compare(oldValues: $TSFixMe, newValues: $TSFixMe) {
   const initialData = {
     // default everything is equal
     isEqual: true,
@@ -14,6 +15,7 @@ module.exports = function compare(oldValues, newValues) {
   const newKeys = Object.keys(newValues)
   const set = new Set([...newKeys, ...oldKeys])
 
+  // @ts-expect-error TS(2769): No overload matches this call.
   return [...set].reduce((acc, current) => {
     // if values not deep equal. There are changes
     if (!isEqual(newValues[current], oldValues[current])) {

@@ -1,9 +1,17 @@
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'fs'.
 const { promises: fs } = require('fs')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'dirname'.
 const { dirname, relative } = require('path')
 
 const unixify = require('unixify')
 
-const applySettings = (existingSettings, { denoBinary, edgeFunctionsPath, repositoryRoot }) => {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'applySetti... Remove this comment to see the full error message
+const applySettings = (existingSettings: $TSFixMe, {
+  denoBinary,
+  edgeFunctionsPath,
+  repositoryRoot
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) => {
   const relativeEdgeFunctionsPath = unixify(relative(repositoryRoot, edgeFunctionsPath))
   const settings = {
     ...existingSettings,
@@ -30,7 +38,8 @@ const applySettings = (existingSettings, { denoBinary, edgeFunctionsPath, reposi
   return settings
 }
 
-const getSettings = async (settingsPath) => {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getSetting... Remove this comment to see the full error message
+const getSettings = async (settingsPath: $TSFixMe) => {
   try {
     const stats = await fs.stat(settingsPath)
 
@@ -45,8 +54,10 @@ const getSettings = async (settingsPath) => {
       settings: JSON.parse(file),
     }
   } catch (error) {
-    if (error.code !== 'ENOENT') {
-      throw new Error(`Could not open VS Code settings file: ${error.message}`)
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    if ((error as $TSFixMe).code !== 'ENOENT') {
+      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+      throw new Error(`Could not open VS Code settings file: ${(error as $TSFixMe).message}`);
     }
 
     return {
@@ -56,7 +67,12 @@ const getSettings = async (settingsPath) => {
   }
 }
 
-const writeSettings = async ({ settings, settingsPath }) => {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'writeSetti... Remove this comment to see the full error message
+const writeSettings = async ({
+  settings,
+  settingsPath
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) => {
   const serializedSettings = JSON.stringify(settings, null, 2)
 
   await fs.mkdir(dirname(settingsPath), { recursive: true })

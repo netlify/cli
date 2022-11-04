@@ -1,25 +1,41 @@
 // @ts-check
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'get'.
 const { get } = require('dot-prop')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'jwtDecode'... Remove this comment to see the full error message
 const jwtDecode = require('jwt-decode')
 
 const {
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'CLOCKWORK_... Remove this comment to see the full error message
   CLOCKWORK_USERAGENT,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'NETLIFYDEV... Remove this comment to see the full error message
   NETLIFYDEVERR,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'NETLIFYDEV... Remove this comment to see the full error message
   NETLIFYDEVLOG,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'errorExit'... Remove this comment to see the full error message
   error: errorExit,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'generateNe... Remove this comment to see the full error message
   generateNetlifyGraphJWT,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getInterna... Remove this comment to see the full error message
   getInternalFunctionsDir,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'log'.
   log,
 } = require('../../utils/index.mjs')
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'handleBack... Remove this comment to see the full error message
 const { handleBackgroundFunction, handleBackgroundFunctionResult } = require('./background.cjs')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createForm... Remove this comment to see the full error message
 const { createFormSubmissionHandler } = require('./form-submissions-handler.cjs')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'FunctionsR... Remove this comment to see the full error message
 const { FunctionsRegistry } = require('./registry.cjs')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'handleSche... Remove this comment to see the full error message
 const { handleScheduledFunction } = require('./scheduled.cjs')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'handleSync... Remove this comment to see the full error message
 const { handleSynchronousFunction } = require('./synchronous.cjs')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'shouldBase... Remove this comment to see the full error message
 const { shouldBase64Encode } = require('./utils.cjs')
 
-const buildClientContext = function (headers) {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const buildClientContext = function (headers: $TSFixMe) {
   // inject a client context based on auth header, ported over from netlify-lambda (https://github.com/netlify/netlify-lambda/pull/57)
   if (!headers.authorization) return
 
@@ -46,10 +62,12 @@ const buildClientContext = function (headers) {
   }
 }
 
-const createHandler = function (options) {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const createHandler = function (options: $TSFixMe) {
   const { config, functionsRegistry } = options
 
-  return async function handler(request, response) {
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  return async function handler(request: $TSFixMe, response: $TSFixMe) {
     // handle proxies without path re-writes (http-servr)
     const cleanPath = request.path.replace(/^\/.netlify\/(functions|builders)/, '')
     const functionName = cleanPath.split('/').find(Boolean)
@@ -95,26 +113,29 @@ const createHandler = function (options) {
     url.search = rawQuery
     const rawUrl = url.toString()
     const event = {
-      path: requestPath,
-      httpMethod: request.method,
-      queryStringParameters: Object.entries(queryParams).reduce(
-        (prev, [key, value]) => ({ ...prev, [key]: value.join(', ') }),
-        {},
-      ),
-      multiValueQueryStringParameters: queryParams,
-      headers: Object.entries(headers).reduce((prev, [key, value]) => ({ ...prev, [key]: value.join(', ') }), {}),
-      multiValueHeaders: headers,
-      body,
-      isBase64Encoded,
-      rawUrl,
-      rawQuery,
-    }
+    path: requestPath,
+    httpMethod: request.method,
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    queryStringParameters: Object.entries(queryParams).reduce((prev, [key, value]) => ({ ...prev, [key]: (value as $TSFixMe).join(', ') }), {}),
+    multiValueQueryStringParameters: queryParams,
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    headers: Object.entries(headers).reduce((prev, [key, value]) => ({ ...prev, [key]: (value as $TSFixMe).join(', ') }), {}),
+    multiValueHeaders: headers,
+    body,
+    isBase64Encoded,
+    rawUrl,
+    rawQuery,
+};
 
     if (config && config.netlifyGraphConfig && config.netlifyGraphConfig.authlifyTokenId != null) {
       // XXX(anmonteiro): this name is deprecated. Delete after 3/31/2022
+      // @ts-expect-error TS(7022): 'jwt' implicitly has type 'any' because it does no... Remove this comment to see the full error message
       const jwt = generateNetlifyGraphJWT(config.netlifyGraphConfig)
-      event.authlifyToken = jwt
-      event.netlifyGraphToken = jwt
+      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+      (event as $TSFixMe).authlifyToken = jwt;
+      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+      (event as $TSFixMe).netlifyGraphToken = jwt;
+      // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
       event.headers['X-Nf-Graph-Token'] = jwt
     }
 
@@ -165,10 +186,11 @@ const createHandler = function (options) {
 
       handleSynchronousFunction(error, result, request, response)
     }
-  }
+  };
 }
 
-const getFunctionsServer = function (options) {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const getFunctionsServer = function (options: $TSFixMe) {
   const { buildersPrefix = '', functionsPrefix = '', functionsRegistry, siteUrl } = options
   // performance optimization, load express on demand
   // eslint-disable-next-line n/global-require
@@ -194,7 +216,8 @@ const getFunctionsServer = function (options) {
     }),
   )
 
-  app.get('/favicon.ico', function onRequest(_req, res) {
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  app.get('/favicon.ico', function onRequest(_req: $TSFixMe, res: $TSFixMe) {
     res.status(204).end()
   })
 
@@ -204,7 +227,8 @@ const getFunctionsServer = function (options) {
   return app
 }
 
-const startFunctionsServer = async (options) => {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'startFunct... Remove this comment to see the full error message
+const startFunctionsServer = async (options: $TSFixMe) => {
   const { capabilities, config, settings, site, siteUrl, timeouts } = options
   const internalFunctionsDir = await getInternalFunctionsDir({ base: site.root })
 
@@ -230,14 +254,20 @@ const startFunctionsServer = async (options) => {
   }
 }
 
-const startWebServer = async ({ server, settings }) => {
+const startWebServer = async ({
+  server,
+  settings
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) => {
   await new Promise((resolve) => {
-    server.listen(settings.functionsPort, (err) => {
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    server.listen(settings.functionsPort, (err: $TSFixMe) => {
       if (err) {
         errorExit(`${NETLIFYDEVERR} Unable to start functions server: ${err}`)
       } else {
         log(`${NETLIFYDEVLOG} Functions server is listening on ${settings.functionsPort}`)
       }
+      // @ts-expect-error TS(2794): Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
       resolve()
     })
   })

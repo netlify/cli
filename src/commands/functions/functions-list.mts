@@ -1,20 +1,34 @@
 // @ts-check
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'AsciiTable... Remove this comment to see the full error message
 const AsciiTable = require('ascii-table')
 
 const {
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'error'.
   error,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'exit'.
   exit,
 
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getFunctio... Remove this comment to see the full error message
   getFunctions,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getFunctio... Remove this comment to see the full error message
   getFunctionsDir,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'log'.
   log,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'logJson'.
   logJson,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'warn'.
   warn,
 } = require('../../utils/index.mjs')
 
-const normalizeFunction = function (deployedFunctions, { name, urlPath: url }) {
-  const isDeployed = deployedFunctions.some((deployedFunction) => deployedFunction.n === name)
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const normalizeFunction = function (deployedFunctions: $TSFixMe, {
+  name,
+  urlPath: url
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) {
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  const isDeployed = deployedFunctions.some((deployedFunction: $TSFixMe) => deployedFunction.n === name)
   return { name, url, isDeployed }
 }
 
@@ -23,7 +37,8 @@ const normalizeFunction = function (deployedFunctions, { name, urlPath: url }) {
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command').BaseCommand} command
  */
-const functionsList = async (options, command) => {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const functionsList = async (options: $TSFixMe, command: $TSFixMe) => {
   const { api, config, site } = command.netlify
 
   // get deployed site details
@@ -38,12 +53,14 @@ const functionsList = async (options, command) => {
     siteData = await api.getSite({ siteId })
   } catch (error_) {
     // unauthorized
-    if (error_.status === 401) {
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    if ((error_ as $TSFixMe).status === 401) {
       warn(`Log in with a different account or re-link to a site you have permission for`)
       error(`Not authorized to view the currently linked site (${siteId})`)
     }
     // missing
-    if (error_.status === 404) {
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    if ((error_ as $TSFixMe).status === 404) {
       error(`The site this folder is linked to can't be found`)
     }
     error(error_)
@@ -77,7 +94,12 @@ const functionsList = async (options, command) => {
   log(`Based on local functions folder ${functionsDir}, these are the functions detected`)
   const table = new AsciiTable(`Netlify Functions (in local functions folder)`)
   table.setHeading('Name', 'URL', 'deployed')
-  normalizedFunctions.forEach(({ isDeployed, name, url }) => {
+  normalizedFunctions.forEach(({
+    isDeployed,
+    name,
+    url
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  }: $TSFixMe) => {
     table.addRow(name, url, isDeployed ? 'yes' : 'no')
   })
   log(table.toString())
@@ -88,18 +110,18 @@ const functionsList = async (options, command) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createFunctionsListCommand = (program) =>
-  program
-    .command('functions:list')
-    .alias('function:list')
-    .description(
-      `List functions that exist locally
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createFunc... Remove this comment to see the full error message
+const createFunctionsListCommand = (program: $TSFixMe) => program
+  .command('functions:list')
+  .alias('function:list')
+  .description(
+    `List functions that exist locally
 Helpful for making sure that you have formatted your functions correctly
 
 NOT the same as listing the functions that have been deployed. For that info you need to go to your Netlify deploy log.`,
-    )
-    .option('-f, --functions <dir>', 'Specify a functions directory to list')
-    .option('--json', 'Output function data as JSON')
-    .action(functionsList)
+  )
+  .option('-f, --functions <dir>', 'Specify a functions directory to list')
+  .option('--json', 'Output function data as JSON')
+  .action(functionsList)
 
 module.exports = { createFunctionsListCommand }

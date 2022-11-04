@@ -3,9 +3,19 @@ const { stdout } = require('process')
 
 const { getBinaryPath: getFunctionsProxyPath } = require('@netlify/local-functions-proxy')
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'execa'.
 const { execa } = require('../../utils/index.mjs')
 
-const runFunctionsProxy = ({ binaryPath, context, directory, event, name, timeout }) => {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'runFunctio... Remove this comment to see the full error message
+const runFunctionsProxy = ({
+  binaryPath,
+  context,
+  directory,
+  event,
+  name,
+  timeout
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) => {
   const functionsProxyPath = getFunctionsProxyPath()
   const requestData = {
     resource: '',

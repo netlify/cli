@@ -1,7 +1,10 @@
 // @ts-check
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'get'.
 const { get } = require('dot-prop')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'prettyjson... Remove this comment to see the full error message
 const prettyjson = require('prettyjson')
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'error'.
 const { error, log, warn } = require('../../utils/index.mjs')
 
 /**
@@ -9,7 +12,8 @@ const { error, log, warn } = require('../../utils/index.mjs')
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command').BaseCommand} command
  */
-const statusHooks = async (options, command) => {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const statusHooks = async (options: $TSFixMe, command: $TSFixMe) => {
   const { api, site } = command.netlify
 
   await command.authenticate()
@@ -20,17 +24,20 @@ const statusHooks = async (options, command) => {
     error(`You don't appear to be in a folder that is linked to a site`)
   }
 
-  let siteData
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  let siteData: $TSFixMe
   try {
     siteData = await api.getSite({ siteId })
   } catch (error_) {
     // unauthorized
-    if (error_.status === 401) {
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    if ((error_ as $TSFixMe).status === 401) {
       warn(`Log in with a different account or re-link to a site you have permission for`)
       error(`Not authorized to view the currently linked site (${siteId})`)
     }
     // missing
-    if (error_.status === 404) {
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    if ((error_ as $TSFixMe).status === 404) {
       error(`The site this folder is linked to can't be found`)
     }
     error(error_)
@@ -41,7 +48,9 @@ const statusHooks = async (options, command) => {
     site: siteData.name,
     hooks: {},
   }
-  ntlHooks.forEach((hook) => {
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  ntlHooks.forEach((hook: $TSFixMe) => {
+    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     data.hooks[hook.id] = {
       type: hook.type,
       event: hook.event,
@@ -49,6 +58,7 @@ const statusHooks = async (options, command) => {
       disabled: hook.disabled,
     }
     if (get(siteData, 'build_settings.repo_url')) {
+      // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
       data.hooks[hook.id].repo_url = get(siteData, 'build_settings.repo_url')
     }
   })
@@ -63,7 +73,7 @@ Site Hook Status │
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createStatusHooksCommand = (program) =>
-  program.command('status:hooks').description('Print hook information of the linked site').action(statusHooks)
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createStat... Remove this comment to see the full error message
+const createStatusHooksCommand = (program: $TSFixMe) => program.command('status:hooks').description('Print hook information of the linked site').action(statusHooks)
 
 module.exports = { createStatusHooksCommand }

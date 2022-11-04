@@ -1,6 +1,8 @@
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'fetch'.
 const fetch = require('node-fetch')
 
-const getTemplatesFromGitHub = async (token) => {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getTemplat... Remove this comment to see the full error message
+const getTemplatesFromGitHub = async (token: $TSFixMe) => {
   const getPublicGitHubReposFromOrg = new URL(`https://api.github.com/orgs/netlify-templates/repos`)
   // GitHub returns 30 by default and we want to avoid our limit
   // due to our archived repositories at any given time
@@ -8,6 +10,7 @@ const getTemplatesFromGitHub = async (token) => {
 
   getPublicGitHubReposFromOrg.searchParams.set('type', 'public')
   getPublicGitHubReposFromOrg.searchParams.set('sort', 'full_name')
+  // @ts-expect-error TS(2345): Argument of type 'number' is not assignable to par... Remove this comment to see the full error message
   getPublicGitHubReposFromOrg.searchParams.set('per_page', REPOS_PER_PAGE)
 
   const templates = await fetch(getPublicGitHubReposFromOrg, {
@@ -21,7 +24,12 @@ const getTemplatesFromGitHub = async (token) => {
   return allTemplates
 }
 
-const validateTemplate = async ({ ghToken, templateName }) => {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'validateTe... Remove this comment to see the full error message
+const validateTemplate = async ({
+  ghToken,
+  templateName
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) => {
   const response = await fetch(`https://api.github.com/repos/${templateName}`, {
     headers: {
       Authorization: `token ${ghToken}`,
@@ -40,7 +48,8 @@ const validateTemplate = async ({ ghToken, templateName }) => {
   return { exists: true, isTemplate: data.is_template }
 }
 
-const createRepo = async (templateName, ghToken, siteName) => {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createRepo... Remove this comment to see the full error message
+const createRepo = async (templateName: $TSFixMe, ghToken: $TSFixMe, siteName: $TSFixMe) => {
   const resp = await fetch(`https://api.github.com/repos/${templateName}/generate`, {
     method: 'POST',
     headers: {

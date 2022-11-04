@@ -1,10 +1,16 @@
 // @ts-check
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'chalk'.
 const { chalk } = require('../../utils/index.mjs')
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createFunc... Remove this comment to see the full error message
 const { createFunctionsBuildCommand } = require('./functions-build.cjs')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createFunc... Remove this comment to see the full error message
 const { createFunctionsCreateCommand } = require('./functions-create.cjs')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createFunc... Remove this comment to see the full error message
 const { createFunctionsInvokeCommand } = require('./functions-invoke.cjs')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createFunc... Remove this comment to see the full error message
 const { createFunctionsListCommand } = require('./functions-list.cjs')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createFunc... Remove this comment to see the full error message
 const { createFunctionsServeCommand } = require('./functions-serve.cjs')
 
 /**
@@ -12,7 +18,8 @@ const { createFunctionsServeCommand } = require('./functions-serve.cjs')
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command').BaseCommand} command
  */
-const functions = (options, command) => {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'functions'... Remove this comment to see the full error message
+const functions = (options: $TSFixMe, command: $TSFixMe) => {
   command.help()
 }
 
@@ -21,7 +28,8 @@ const functions = (options, command) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createFunctionsCommand = (program) => {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createFunc... Remove this comment to see the full error message
+const createFunctionsCommand = (program: $TSFixMe) => {
   createFunctionsBuildCommand(program)
   createFunctionsCreateCommand(program)
   createFunctionsInvokeCommand(program)

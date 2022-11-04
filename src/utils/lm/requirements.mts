@@ -1,8 +1,10 @@
 // @ts-check
 const semver = require('semver')
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'execa'.
 const execa = require('../execa.cjs')
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'checkLFSFi... Remove this comment to see the full error message
 const checkLFSFilters = async function () {
   try {
     const { stdout } = await execa('git', ['config', '--get-regexp', 'filter.lfs'])
@@ -21,6 +23,7 @@ const getHelperVersion = async function () {
   }
 }
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'checkHelpe... Remove this comment to see the full error message
 const checkHelperVersion = async function () {
   const version = await getHelperVersion()
   const expectedVersion = '0.1.10'
@@ -29,9 +32,10 @@ const checkHelperVersion = async function () {
     /git-credential-netlify\/([.\d]+).*/,
     expectedVersion,
     `Invalid Netlify's Git Credential version MATCH_PLACEHOLDER. Please update to version ${expectedVersion} or above by running 'ntl lm:install'`,
-  )
+  );
 }
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'checkGitVe... Remove this comment to see the full error message
 const checkGitVersion = async function () {
   try {
     const { stdout } = await execa('git', ['--version'])
@@ -50,6 +54,7 @@ const getLFSVersion = async function () {
   }
 }
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'checkLFSVe... Remove this comment to see the full error message
 const checkLFSVersion = async function () {
   const version = await getLFSVersion()
   const expectedVersion = '2.5.1'
@@ -58,10 +63,11 @@ const checkLFSVersion = async function () {
     /git-lfs\/([.\d]+).*/,
     expectedVersion,
     `Invalid Git LFS version MATCH_PLACEHOLDER. Please update to version ${expectedVersion} or above`,
-  )
+  );
 }
 
-const matchVersion = function (out, regex, version, message) {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const matchVersion = function (out: $TSFixMe, regex: $TSFixMe, version: $TSFixMe, message: $TSFixMe) {
   const match = out.match(regex)
   if (!match || match.length !== 2 || semver.lt(match[1], version)) {
     throw new Error(message.replace('MATCH_PLACEHOLDER', match[1]))

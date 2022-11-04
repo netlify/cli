@@ -1,21 +1,55 @@
 // @ts-check
 const CronParser = require('cron-parser')
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'errorExit'... Remove this comment to see the full error message
 const { error: errorExit } = require('../../utils/command-helpers.cjs')
 
 const BACKGROUND_SUFFIX = '-background'
 
 // Returns a new set with all elements of `setA` that don't exist in `setB`.
-const difference = (setA, setB) => new Set([...setA].filter((item) => !setB.has(item)))
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const difference = (setA: $TSFixMe, setB: $TSFixMe) => new Set([...setA].filter((item) => !setB.has(item)))
 
-const getNextRun = function (schedule) {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const getNextRun = function (schedule: $TSFixMe) {
   const cron = CronParser.parseExpression(schedule, {
     tz: 'Etc/UTC',
   })
   return cron.next().toDate()
 }
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'NetlifyFun... Remove this comment to see the full error message
 class NetlifyFunction {
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  buildData: $TSFixMe;
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  buildQueue: $TSFixMe;
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  config: $TSFixMe;
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  directory: $TSFixMe;
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  errorExit: $TSFixMe;
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  isBackground: $TSFixMe;
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  mainFile: $TSFixMe;
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  name: $TSFixMe;
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  projectRoot: $TSFixMe;
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  runtime: $TSFixMe;
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  schedule: $TSFixMe;
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  settings: $TSFixMe;
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  srcFiles: $TSFixMe;
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  timeoutBackground: $TSFixMe;
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  timeoutSynchronous: $TSFixMe;
   constructor({
     config,
     directory,
@@ -25,8 +59,9 @@ class NetlifyFunction {
     runtime,
     settings,
     timeoutBackground,
-    timeoutSynchronous,
-  }) {
+    timeoutSynchronous
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  }: $TSFixMe) {
     this.config = config
     this.directory = directory
     this.errorExit = errorExit
@@ -53,7 +88,7 @@ class NetlifyFunction {
   hasValidName() {
     // same as https://github.com/netlify/bitballoon/blob/fbd7881e6c8e8c48e7a0145da4ee26090c794108/app/models/deploy.rb#L482
     // eslint-disable-next-line unicorn/better-regex
-    return /^[A-Za-z0-9_-]+$/.test(this.name)
+    return /^[A-Za-z0-9_-]+$/.test(this.name);
   }
 
   async isScheduled() {
@@ -75,7 +110,10 @@ class NetlifyFunction {
   //
   // - `srcFilesDiff`: Files that were added and removed since the last time
   //    the function was built.
-  async build({ cache }) {
+  async build({
+    cache
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  }: $TSFixMe) {
     const buildFunction = await this.runtime.getBuildFunction({
       config: this.config,
       directory: this.directory,
@@ -103,7 +141,8 @@ class NetlifyFunction {
 
   // Compares a new set of source files against a previous one, returning an
   // object with two Sets, one with added and the other with deleted files.
-  getSrcFilesDiff(newSrcFiles) {
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  getSrcFilesDiff(newSrcFiles: $TSFixMe) {
     const added = difference(newSrcFiles, this.srcFiles)
     const deleted = difference(this.srcFiles, newSrcFiles)
 
@@ -114,7 +153,8 @@ class NetlifyFunction {
   }
 
   // Invokes the function and returns its response object.
-  async invoke(event, context) {
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  async invoke(event: $TSFixMe, context: $TSFixMe) {
     await this.buildQueue
 
     const timeout = this.isBackground ? this.timeoutBackground : this.timeoutSynchronous

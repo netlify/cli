@@ -1,18 +1,30 @@
 // @ts-check
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'AsciiTable... Remove this comment to see the full error message
 const AsciiTable = require('ascii-table')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'isCI'.
 const { isCI } = require('ci-info')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'Option'.
 const { Option } = require('commander')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'inquirer'.
 const inquirer = require('inquirer')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'isEmpty'.
 const isEmpty = require('lodash/isEmpty')
 
 const {
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'AVAILABLE_... Remove this comment to see the full error message
   AVAILABLE_CONTEXTS,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'chalk'.
   chalk,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'error'.
   error,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getEnvelop... Remove this comment to see the full error message
   getEnvelopeEnv,
   getHumanReadableScopes,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'log'.
   log,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'logJson'.
   logJson,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'normalizeC... Remove this comment to see the full error message
   normalizeContext,
 } = require('../../utils/index.mjs')
 
@@ -21,22 +33,25 @@ const [logUpdatePromise, ansiEscapesPromise] = [import('log-update'), import('an
 const MASK_LENGTH = 50
 const MASK = '*'.repeat(MASK_LENGTH)
 
-const getTable = ({ environment, hideValues, scopesColumn }) => {
+const getTable = ({
+  environment,
+  hideValues,
+  scopesColumn
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) => {
   const table = new AsciiTable(`Environment variables`)
   const headings = ['Key', 'Value', scopesColumn && 'Scope'].filter(Boolean)
   table.setHeading(...headings)
-  table.addRowMatrix(
-    Object.entries(environment).map(([key, variable]) =>
-      [
-        // Key
-        key,
-        // Value
-        hideValues ? MASK : variable.value || ' ',
-        // Scope
-        scopesColumn && getHumanReadableScopes(variable.scopes),
-      ].filter(Boolean),
-    ),
-  )
+  table.addRowMatrix(Object.entries(environment).map(([key, variable]) => [
+    // Key
+    key,
+    // Value
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    hideValues ? MASK : (variable as $TSFixMe).value || ' ',
+    // Scope
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    scopesColumn && getHumanReadableScopes((variable as $TSFixMe).scopes),
+].filter(Boolean)));
   return table.toString()
 }
 
@@ -46,7 +61,8 @@ const getTable = ({ environment, hideValues, scopesColumn }) => {
  * @param {import('../base-command').BaseCommand} command
  * @returns {Promise<boolean>}
  */
-const envList = async (options, command) => {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const envList = async (options: $TSFixMe, command: $TSFixMe) => {
   const { context, scope } = options
   const { api, cachedConfig, site } = command.netlify
   const siteId = site.id
@@ -72,15 +88,14 @@ const envList = async (options, command) => {
   }
 
   // filter out general sources
-  environment = Object.fromEntries(
-    Object.entries(environment).filter(([, variable]) => variable.sources[0] !== 'general'),
-  )
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+environment = Object.fromEntries(Object.entries(environment).filter(([, variable]) => (variable as $TSFixMe).sources[0] !== 'general'));
 
   // Return json response for piping commands
   if (options.json) {
-    const envDictionary = Object.fromEntries(
-      Object.entries(environment).map(([key, variable]) => [key, variable.value]),
-    )
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    const envDictionary = Object.fromEntries(Object.entries(environment).map(([key, variable]) => [key, (variable as $TSFixMe).value]));
+    // @ts-expect-error TS(2345): Argument of type '{ [k: string]: any; }' is not as... Remove this comment to see the full error message
     logJson(envDictionary)
     return false
   }
@@ -129,29 +144,23 @@ const envList = async (options, command) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createEnvListCommand = (program) =>
-  program
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createEnvL... Remove this comment to see the full error message
+const createEnvListCommand = (program: $TSFixMe) => program
     .command('env:list')
-    .option(
-      '-c, --context <context>',
-      'Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev")',
-      normalizeContext,
-      'dev',
-    )
-    .addOption(
-      new Option('-s, --scope <scope>', 'Specify a scope')
-        .choices(['builds', 'functions', 'post-processing', 'runtime', 'any'])
-        .default('any'),
-    )
+    .option('-c, --context <context>', 'Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev")', normalizeContext, 'dev')
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    .addOption((new Option('-s, --scope <scope>', 'Specify a scope') as $TSFixMe).choices(['builds', 'functions', 'post-processing', 'runtime', 'any'])
+    .default('any'))
     .addExamples([
-      'netlify env:list # list variables with values in the dev context and with any scope',
-      'netlify env:list --context production',
-      'netlify env:list --context branch:staging',
-      'netlify env:list --scope functions',
-    ])
+    'netlify env:list # list variables with values in the dev context and with any scope',
+    'netlify env:list --context production',
+    'netlify env:list --context branch:staging',
+    'netlify env:list --scope functions',
+])
     .description('Lists resolved environment variables for site (includes netlify.toml)')
-    .action(async (options, command) => {
-      await envList(options, command)
-    })
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    .action(async (options: $TSFixMe, command: $TSFixMe) => {
+    await envList(options, command);
+});
 
 module.exports = { createEnvListCommand }

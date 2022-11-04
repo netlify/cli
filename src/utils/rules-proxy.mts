@@ -1,20 +1,30 @@
 // @ts-check
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'path'.
 const path = require('path')
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'chokidar'.
 const chokidar = require('chokidar')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'cookie'.
 const cookie = require('cookie')
 const redirector = require('netlify-redirector')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'pFilter'.
 const pFilter = require('p-filter')
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'fileExists... Remove this comment to see the full error message
 const { fileExistsAsync } = require('../lib/fs.cjs')
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'NETLIFYDEV... Remove this comment to see the full error message
 const { NETLIFYDEVLOG } = require('./command-helpers.cjs')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'parseRedir... Remove this comment to see the full error message
 const { parseRedirects } = require('./redirects.cjs')
 
-const watchers = []
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const watchers: $TSFixMe = []
 
-const onChanges = function (files, listener) {
-  files.forEach((file) => {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'onChanges'... Remove this comment to see the full error message
+const onChanges = function (files: $TSFixMe, listener: $TSFixMe) {
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  files.forEach((file: $TSFixMe) => {
     const watcher = chokidar.watch(file)
     watcher.on('change', listener)
     watcher.on('unlink', listener)
@@ -26,15 +36,26 @@ const getWatchers = function () {
   return watchers
 }
 
-const getLanguage = function (headers) {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const getLanguage = function (headers: $TSFixMe) {
   if (headers['accept-language']) {
     return headers['accept-language'].split(',')[0].slice(0, 2)
   }
   return 'en'
 }
 
-const createRewriter = async function ({ configPath, distDir, geoCountry, jwtRoleClaim, jwtSecret, projectDir }) {
-  let matcher = null
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createRewr... Remove this comment to see the full error message
+const createRewriter = async function ({
+  configPath,
+  distDir,
+  geoCountry,
+  jwtRoleClaim,
+  jwtSecret,
+  projectDir
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) {
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  let matcher: $TSFixMe = null
   const redirectsFiles = [...new Set([path.resolve(distDir, '_redirects'), path.resolve(projectDir, '_redirects')])]
   let redirects = await parseRedirects({ redirectsFiles, configPath })
 
@@ -43,7 +64,8 @@ const createRewriter = async function ({ configPath, distDir, geoCountry, jwtRol
     const existingRedirectsFiles = await pFilter(watchedRedirectFiles, fileExistsAsync)
     console.log(
       `${NETLIFYDEVLOG} Reloading redirect rules from`,
-      existingRedirectsFiles.map((redirectFile) => path.relative(projectDir, redirectFile)),
+      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+      existingRedirectsFiles.map((redirectFile: $TSFixMe) => path.relative(projectDir, redirectFile)),
     )
     redirects = await parseRedirects({ redirectsFiles, configPath })
     matcher = null
@@ -65,7 +87,8 @@ const createRewriter = async function ({ configPath, distDir, geoCountry, jwtRol
     }
   }
 
-  return async function rewriter(req) {
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  return async function rewriter(req: $TSFixMe) {
     const matcherFunc = await getMatcher()
     const reqUrl = new URL(
       req.url,
@@ -88,12 +111,14 @@ const createRewriter = async function ({ configPath, distDir, geoCountry, jwtRol
       query: reqUrl.search.slice(1),
       headers,
       cookieValues,
-      getHeader: (name) => headers[name.toLowerCase()] || '',
-      getCookie: (key) => cookieValues[key] || '',
+      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+      getHeader: (name: $TSFixMe) => headers[name.toLowerCase()] || '',
+      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+      getCookie: (key: $TSFixMe) => cookieValues[key] || '',
     }
     const match = matcherFunc.match(matchReq)
     return match
-  }
+  };
 }
 
 module.exports = {

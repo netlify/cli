@@ -1,20 +1,31 @@
 // @ts-check
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'gitRepoInf... Remove this comment to see the full error message
 const gitRepoInfo = require('git-repo-info')
 
 const {
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'OneGraphCl... Remove this comment to see the full error message
   OneGraphCliClient,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'ensureCLIS... Remove this comment to see the full error message
   ensureCLISession,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'upsertMerg... Remove this comment to see the full error message
   upsertMergeCLISessionMetadata,
 } = require('../../lib/one-graph/cli-client.cjs')
 const {
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'defaultExa... Remove this comment to see the full error message
   defaultExampleOperationsDoc,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getGraphEd... Remove this comment to see the full error message
   getGraphEditUrlBySiteId,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getNetlify... Remove this comment to see the full error message
   getNetlifyGraphConfig,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'readGraphQ... Remove this comment to see the full error message
   readGraphQLOperationsSourceFile,
 } = require('../../lib/one-graph/cli-netlify-graph.cjs')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'NETLIFYDEV... Remove this comment to see the full error message
 const { NETLIFYDEVERR, chalk, error, log } = require('../../utils/index.mjs')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'openBrowse... Remove this comment to see the full error message
 const { openBrowser } = require('../../utils/open-browser.cjs')
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'ensureAppF... Remove this comment to see the full error message
 const { ensureAppForSite, executeCreatePersistedQueryMutation } = OneGraphCliClient
 
 /**
@@ -23,7 +34,8 @@ const { ensureAppForSite, executeCreatePersistedQueryMutation } = OneGraphCliCli
  * @param {import('../base-command').BaseCommand} command
  * @returns
  */
-const graphEdit = async (options, command) => {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const graphEdit = async (options: $TSFixMe, command: $TSFixMe) => {
   const { config, site, state } = command.netlify
   const siteId = site.id
 
@@ -99,12 +111,13 @@ const graphEdit = async (options, command) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createGraphEditCommand = (program) =>
-  program
-    .command('graph:edit')
-    .description('Launch the browser to edit your local graph functions from Netlify')
-    .action(async (options, command) => {
-      await graphEdit(options, command)
-    })
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createGrap... Remove this comment to see the full error message
+const createGraphEditCommand = (program: $TSFixMe) => program
+  .command('graph:edit')
+  .description('Launch the browser to edit your local graph functions from Netlify')
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  .action(async (options: $TSFixMe, command: $TSFixMe) => {
+    await graphEdit(options, command)
+  })
 
 module.exports = { createGraphEditCommand }

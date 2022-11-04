@@ -1,5 +1,6 @@
-// @ts-expect-error
+// @ts-expect-error TS(2307): Cannot find module '../command-helpers.cjs' or its... Remove this comment to see the full error message
 import commandHelpersPkg from '../command-helpers.cjs'
+
 const { error } = commandHelpersPkg
 
 export const AVAILABLE_CONTEXTS = ['all', 'production', 'deploy-preview', 'branch-deploy', 'dev']
@@ -9,6 +10,7 @@ export const AVAILABLE_SCOPES = ['builds', 'functions', 'runtime', 'post_process
  * @param {string|undefined} context - The deploy context or branch of the environment variable value
  * @returns {Array<string|undefined>} The normalized context or branch name
  */
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
 export const normalizeContext = (context: $TSFixMe) => {
   if (!context) {
     return context
@@ -19,7 +21,7 @@ export const normalizeContext = (context: $TSFixMe) => {
   }
   context = context.toLowerCase()
   if (context in CONTEXT_SYNONYMS) {
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     context = CONTEXT_SYNONYMS[context]
   }
   const forbiddenContexts = AVAILABLE_CONTEXTS.map((ctx) => `branch:${ctx}`)
@@ -36,7 +38,9 @@ export const normalizeContext = (context: $TSFixMe) => {
  * @param {string} context - The deploy context or branch of the environment variable value
  * @returns {object<context: enum<dev,branch-deploy,deploy-preview,production,branch>, context_parameter: <string>, value: string>} The matching environment variable value object
  */
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
 export const findValueInValues = (values: $TSFixMe, context: $TSFixMe) =>
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
   values.find((val: $TSFixMe) => {
     if (!AVAILABLE_CONTEXTS.includes(context)) {
       // the "context" option passed in is actually the name of a branch
@@ -51,9 +55,8 @@ export const findValueInValues = (values: $TSFixMe, context: $TSFixMe) =>
  * @param {enum<general,account,addons,ui,configFile>} source - The source of the environment variable
  * @returns {object} The dictionary of env vars that match the given source
  */
-export const filterEnvBySource = (env: $TSFixMe, source: $TSFixMe) =>
-  // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-  Object.fromEntries(Object.entries(env).filter(([, variable]) => variable.sources[0] === source))
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+export const filterEnvBySource = (env: $TSFixMe, source: $TSFixMe) => Object.fromEntries(Object.entries(env).filter(([, variable]) => (variable as $TSFixMe).sources[0] === source));
 
 /**
  * Fetches data from Envelope
@@ -68,6 +71,7 @@ const fetchEnvelopeItems = async function ({
   api,
   key,
   siteId
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
 }: $TSFixMe) {
   if (accountId === undefined) {
     return {}
@@ -116,20 +120,25 @@ export const formatEnvelopeData = ({
   envelopeItems = [],
   scope = 'any',
   source
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
 }: $TSFixMe) =>
   envelopeItems
     // filter by context
-    // @ts-expect-error TS(7031) FIXME: Binding element 'values' implicitly has an 'any' t... Remove this comment to see the full error message
-    .filter(({ values }) => Boolean(findValueInValues(values, context)))
+    .filter(({
+    values
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  }: $TSFixMe) => Boolean(findValueInValues(values, context)))
     // filter by scope
-    // @ts-expect-error TS(7031) FIXME: Binding element 'scopes' implicitly has an 'any' t... Remove this comment to see the full error message
-    .filter(({ scopes }) => (scope === 'any' ? true : scopes.includes(scope)))
+    .filter(({
+    scopes
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  }: $TSFixMe) => (scope === 'any' ? true : scopes.includes(scope)))
     // sort alphabetically, case insensitive
-    // @ts-expect-error TS(7006) FIXME: Parameter 'left' implicitly has an 'any' type.
-    .sort((left, right) => (left.key.toLowerCase() < right.key.toLowerCase() ? -1 : 1))
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    .sort((left: $TSFixMe, right: $TSFixMe) => (left.key.toLowerCase() < right.key.toLowerCase() ? -1 : 1))
     // format the data
-    // @ts-expect-error TS(7006) FIXME: Parameter 'acc' implicitly has an 'any' type.
-    .reduce((acc, cur) => {
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    .reduce((acc: $TSFixMe, cur: $TSFixMe) => {
       const { context: ctx, context_parameter: branch, value } = findValueInValues(cur.values, context)
       return {
         ...acc,
@@ -160,6 +169,7 @@ export const getEnvelopeEnv = async ({
   key = '',
   scope = 'any',
   siteInfo
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
 }: $TSFixMe) => {
   const { account_slug: accountId, id: siteId } = siteInfo
 
@@ -192,6 +202,7 @@ export const getEnvelopeEnv = async ({
  * @param {Array<enum<builds,functions,runtime,post_processing>>} scopes - An array of scopes
  * @returns {string} A human-readable, comma-separated list of scopes
  */
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
 export const getHumanReadableScopes = (scopes: $TSFixMe) => {
   const HUMAN_SCOPES = ['Builds', 'Functions', 'Runtime', 'Post processing']
   const SCOPES_MAP = {
@@ -210,7 +221,7 @@ export const getHumanReadableScopes = (scopes: $TSFixMe) => {
     // shorthand instead of listing every available scope
     return 'All'
   }
-  // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
   return scopes.map((scope: $TSFixMe) => SCOPES_MAP[scope]).join(', ');
 }
 
@@ -241,10 +252,12 @@ export const translateFromMongoToEnvelope = (env = {}) => {
  * @returns {object} The env object as compatible with Mongo
  */
 export const translateFromEnvelopeToMongo = (envVars = [], context = 'dev') => envVars
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
     .sort((left, right) => ((left as $TSFixMe).key.toLowerCase() < (right as $TSFixMe).key.toLowerCase() ? -1 : 1))
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
     .reduce((acc, cur: $TSFixMe) => {
-    // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-    const envVar = cur.values.find((val) => [context, 'all'].includes(val.context_parameter || val.context))
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    const envVar = cur.values.find((val: $TSFixMe) => [context, 'all'].includes(val.context_parameter || val.context))
       if (envVar && envVar.value) {
         return {
           ...acc,

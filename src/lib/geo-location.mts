@@ -1,6 +1,8 @@
 // @ts-check
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'fetch'.
 const fetch = require('node-fetch')
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'API_URL'.
 const API_URL = 'https://netlifind.netlify.app'
 const STATE_GEO_PROPERTY = 'geolocation'
 // 24 hours
@@ -38,7 +40,14 @@ const mockLocation = {
  * @param {import('../utils/state-config').StateConfig} params.state
  * @returns {Promise<GeoLocation>}
  */
-const getGeoLocation = async ({ geoCountry, mode, offline, state }) => {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getGeoLoca... Remove this comment to see the full error message
+const getGeoLocation = async ({
+  geoCountry,
+  mode,
+  offline,
+  state
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) => {
   const cacheObject = state.get(STATE_GEO_PROPERTY)
 
   // If `--country` was used, we also set `--mode=mock`.
@@ -102,6 +111,7 @@ const getGeoLocation = async ({ geoCountry, mode, offline, state }) => {
 const getGeoLocationFromAPI = async () => {
   const res = await fetch(API_URL, {
     method: 'GET',
+    // @ts-expect-error TS(2345): Argument of type '{ method: string; timeout: numbe... Remove this comment to see the full error message
     timeout: REQUEST_TIMEOUT,
   })
   const { geo } = await res.json()

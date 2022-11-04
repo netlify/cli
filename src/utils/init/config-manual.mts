@@ -3,8 +3,10 @@ const inquirer = require('inquirer')
 const { exit, log } = require('../command-helpers.cjs')
 
 const { createDeployKey, getBuildSettings, saveNetlifyToml, setupSite } = require('./utils.cjs')
+
 const addDeployKey = async ({
   deployKey
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
 }: $TSFixMe) => {
   log('\nGive this Netlify SSH public key access to your repository:\n')
   log(`\n${deployKey.public_key}\n\n`)
@@ -25,6 +27,7 @@ const addDeployKey = async ({
 
 const getRepoPath = async ({
   repoData
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
 }: $TSFixMe) => {
   const { repoPath } = await inquirer.prompt([
     {
@@ -32,6 +35,7 @@ const getRepoPath = async ({
       name: 'repoPath',
       message: 'The SSH URL of the remote git repo:',
       default: repoData.url,
+      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
       validate: (url: $TSFixMe) => SSH_URL_REGEXP.test(url) || 'The URL provided does not use the SSH protocol',
     },
   ])
@@ -40,6 +44,7 @@ const getRepoPath = async ({
 }
 const addDeployHook = async ({
   deployHook
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
 }: $TSFixMe) => {
   log('\nConfigure the following webhook for your repository:\n')
   log(`\n${deployHook}\n\n`)
@@ -65,6 +70,7 @@ export default async function configManual({
   command,
   repoData,
   siteId
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
 }: $TSFixMe) {
   const { netlify } = command
   const {

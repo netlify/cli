@@ -1,9 +1,14 @@
 // @ts-check
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'pWaitFor'.
 const pWaitFor = require('p-wait-for')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'prettyjson... Remove this comment to see the full error message
 const prettyjson = require('prettyjson')
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'startSpinn... Remove this comment to see the full error message
 const { startSpinner, stopSpinner } = require('../../lib/spinner.cjs')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'chalk'.
 const { chalk, error, log } = require('../../utils/index.mjs')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'init'.
 const { init } = require('../init/index.cjs')
 
 // 1 second
@@ -21,13 +26,15 @@ const BUILD_FINISH_TIMEOUT = 12e5
  * @param {import('ora').Ora} spinner
  * @returns {Promise<boolean>}
  */
-const waitForBuildFinish = async function (api, siteId, spinner) {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const waitForBuildFinish = async function (api: $TSFixMe, siteId: $TSFixMe, spinner: $TSFixMe) {
   let firstPass = true
 
   const waitForBuildToFinish = async function () {
     const builds = await api.listSiteBuilds({ siteId })
     // build.error
-    const currentBuilds = builds.filter((build) => !build.done)
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    const currentBuilds = builds.filter((build: $TSFixMe) => !build.done)
 
     // if build.error
     // @TODO implement build error messages into this
@@ -55,7 +62,8 @@ const waitForBuildFinish = async function (api, siteId, spinner) {
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command').BaseCommand} command
  */
-const watch = async (options, command) => {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const watch = async (options: $TSFixMe, command: $TSFixMe) => {
   await command.authenticate()
   const client = command.netlify.api
   let siteId = command.netlify.site.id
@@ -69,6 +77,7 @@ const watch = async (options, command) => {
   // wait for 1 sec for everything to kickoff
   console.time('Deploy time')
   await new Promise((resolve) => {
+    // @ts-expect-error TS(2794): Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
     setTimeout(() => resolve(), INIT_WAIT)
   })
 
@@ -121,11 +130,11 @@ const watch = async (options, command) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createWatchCommand = (program) =>
-  program
-    .command('watch')
-    .description('Watch for site deploy to finish')
-    .addExamples([`netlify watch`, `git push && netlify watch`])
-    .action(watch)
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createWatc... Remove this comment to see the full error message
+const createWatchCommand = (program: $TSFixMe) => program
+  .command('watch')
+  .description('Watch for site deploy to finish')
+  .addExamples([`netlify watch`, `git push && netlify watch`])
+  .action(watch)
 
 module.exports = { createWatchCommand }

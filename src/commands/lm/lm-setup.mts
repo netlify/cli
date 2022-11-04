@@ -1,12 +1,20 @@
 // @ts-check
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'Listr'.
 const Listr = require('listr')
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'error'.
 const { error, execa } = require('../../utils/index.mjs')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'installPla... Remove this comment to see the full error message
 const { installPlatform } = require('../../utils/lm/install.cjs')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'checkHelpe... Remove this comment to see the full error message
 const { checkHelperVersion } = require('../../utils/lm/requirements.cjs')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'printBanne... Remove this comment to see the full error message
 const { printBanner } = require('../../utils/lm/ui.cjs')
 
-const installHelperIfMissing = async function ({ force }) {
+const installHelperIfMissing = async function ({
+  force
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) {
   let installHelper = false
   try {
     const version = await checkHelperVersion()
@@ -24,7 +32,8 @@ const installHelperIfMissing = async function ({ force }) {
   return false
 }
 
-const provisionService = async function (siteId, api) {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const provisionService = async function (siteId: $TSFixMe, api: $TSFixMe) {
   const addonName = 'large-media'
 
   if (!siteId) {
@@ -38,11 +47,13 @@ const provisionService = async function (siteId, api) {
     })
   } catch (error_) {
     // error is JSONHTTPError
-    throw new Error(error_.json.error)
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+throw new Error((error_ as $TSFixMe).json.error);
   }
 }
 
-const configureLFSURL = async function (siteId, api) {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const configureLFSURL = async function (siteId: $TSFixMe, api: $TSFixMe) {
   const siteInfo = await api.getSite({ siteId })
   const url = `https://${siteInfo.id_domain}/.netlify/large-media`
 
@@ -54,7 +65,8 @@ const configureLFSURL = async function (siteId, api) {
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command').BaseCommand} command
  */
-const lmSetup = async (options, command) => {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const lmSetup = async (options: $TSFixMe, command: $TSFixMe) => {
   await command.authenticate()
 
   const { api, site } = command.netlify
@@ -94,13 +106,13 @@ const lmSetup = async (options, command) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createLmSetupCommand = (program) =>
-  program
-    .command('lm:setup')
-    .description('Configures your site to use Netlify Large Media')
-    .option('-s, --skip-install', 'Skip the credentials helper installation check')
-    .option('-f, --force-install', 'Force the credentials helper installation')
-    .addHelpText('after', 'It runs the install command if you have not installed the dependencies yet.')
-    .action(lmSetup)
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createLmSe... Remove this comment to see the full error message
+const createLmSetupCommand = (program: $TSFixMe) => program
+  .command('lm:setup')
+  .description('Configures your site to use Netlify Large Media')
+  .option('-s, --skip-install', 'Skip the credentials helper installation check')
+  .option('-f, --force-install', 'Force the credentials helper installation')
+  .addHelpText('after', 'It runs the install command if you have not installed the dependencies yet.')
+  .action(lmSetup)
 
 module.exports = { createLmSetupCommand }

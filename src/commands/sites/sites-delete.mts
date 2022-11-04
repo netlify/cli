@@ -1,6 +1,8 @@
 // @ts-check
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'inquirer'.
 const inquirer = require('inquirer')
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'chalk'.
 const { chalk, error, exit, log } = require('../../utils/index.mjs')
 
 /**
@@ -9,7 +11,8 @@ const { chalk, error, exit, log } = require('../../utils/index.mjs')
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command').BaseCommand} command
  */
-const sitesDelete = async (siteId, options, command) => {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const sitesDelete = async (siteId: $TSFixMe, options: $TSFixMe, command: $TSFixMe) => {
   command.setAnalyticsPayload({ force: options.force })
 
   const { api, site } = command.netlify
@@ -22,7 +25,8 @@ const sitesDelete = async (siteId, options, command) => {
   try {
     siteData = await api.getSite({ siteId })
   } catch (error_) {
-    if (error_.status === 404) {
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    if ((error_ as $TSFixMe).status === 404) {
       error(`No site with id ${siteId} found. Please verify the siteId & try again.`)
     }
   }
@@ -78,10 +82,12 @@ const sitesDelete = async (siteId, options, command) => {
   try {
     await api.deleteSite({ site_id: siteId })
   } catch (error_) {
-    if (error_.status === 404) {
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    if ((error_ as $TSFixMe).status === 404) {
       error(`No site with id ${siteId} found. Please verify the siteId & try again.`)
     } else {
-      error(`Delete Site error: ${error_.status}: ${error_.message}`)
+      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+      error(`Delete Site error: ${(error_ as $TSFixMe).status}: ${(error_ as $TSFixMe).message}`);
     }
   }
   log(`Site "${siteId}" successfully deleted!`)
@@ -92,13 +98,13 @@ const sitesDelete = async (siteId, options, command) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createSitesDeleteCommand = (program) =>
-  program
-    .command('sites:delete')
-    .description('Delete a site\nThis command will permanently delete the site on Netlify. Use with caution.')
-    .argument('<siteId>', 'Site ID to delete.')
-    .option('-f, --force', 'delete without prompting (useful for CI)')
-    .addExamples(['netlify sites:delete 1234-3262-1211'])
-    .action(sitesDelete)
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createSite... Remove this comment to see the full error message
+const createSitesDeleteCommand = (program: $TSFixMe) => program
+  .command('sites:delete')
+  .description('Delete a site\nThis command will permanently delete the site on Netlify. Use with caution.')
+  .argument('<siteId>', 'Site ID to delete.')
+  .option('-f, --force', 'delete without prompting (useful for CI)')
+  .addExamples(['netlify sites:delete 1234-3262-1211'])
+  .action(sitesDelete)
 
 module.exports = { createSitesDeleteCommand }

@@ -1,11 +1,14 @@
 // @ts-check
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'basename'.
 const { basename } = require('path')
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'inquirer'.
 const inquirer = require('inquirer')
 const { findBestMatch } = require('string-similarity')
 
 const utils = require('../../utils/command-helpers.cjs')
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'getRecipe'... Remove this comment to see the full error message
 const { getRecipe, listRecipes } = require('./common.cjs')
 
 const SUGGESTION_TIMEOUT = 1e4
@@ -16,7 +19,8 @@ const SUGGESTION_TIMEOUT = 1e4
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command').BaseCommand} command
  */
-const recipesCommand = async (recipeName, options, command) => {
+// @ts-expect-error TS(7023): 'recipesCommand' implicitly has return type 'any' ... Remove this comment to see the full error message
+const recipesCommand = async (recipeName: $TSFixMe, options: $TSFixMe, command: $TSFixMe) => {
   const { config, repositoryRoot } = command.netlify
   const sanitizedRecipeName = basename(recipeName || '').toLowerCase()
 
@@ -27,14 +31,18 @@ const recipesCommand = async (recipeName, options, command) => {
   try {
     return await runRecipe({ config, recipeName: sanitizedRecipeName, repositoryRoot })
   } catch (error) {
-    if (error.code !== 'MODULE_NOT_FOUND') {
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    if ((error as $TSFixMe).code !== 'MODULE_NOT_FOUND') {
       throw error
     }
 
     utils.log(`${utils.NETLIFYDEVERR} ${utils.chalk.yellow(recipeName)} is not a valid recipe name.`)
 
     const recipes = await listRecipes()
-    const recipeNames = recipes.map(({ name }) => name)
+    const recipeNames = recipes.map(({
+      name
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    }: $TSFixMe) => name)
     const {
       bestMatch: { target: suggestion },
     } = findBestMatch(recipeName, recipeNames)
@@ -47,13 +55,13 @@ const recipesCommand = async (recipeName, options, command) => {
       })
 
       setTimeout(() => {
-        // @ts-ignore
         prompt.ui.close()
         resolve(false)
       }, SUGGESTION_TIMEOUT)
 
+      // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
       // eslint-disable-next-line promise/catch-or-return
-      prompt.then((value) => resolve(value.suggestion))
+      prompt.then((value: $TSFixMe) => resolve(value.suggestion))
     })
 
     if (applySuggestion) {
@@ -62,7 +70,13 @@ const recipesCommand = async (recipeName, options, command) => {
   }
 }
 
-const runRecipe = ({ config, recipeName, repositoryRoot }) => {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'runRecipe'... Remove this comment to see the full error message
+const runRecipe = ({
+  config,
+  recipeName,
+  repositoryRoot
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) => {
   const recipe = getRecipe(recipeName)
 
   return recipe.run({ config, repositoryRoot })
@@ -73,13 +87,13 @@ const runRecipe = ({ config, recipeName, repositoryRoot }) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createRecipesCommand = (program) =>
-  program
-    .command('recipes')
-    .argument('[name]', 'name of the recipe')
-    .description(`(Beta) Create and modify files in a project using pre-defined recipes`)
-    .option('-n, --name <name>', 'recipe name to use')
-    .addExamples(['netlify recipes my-recipe', 'netlify recipes --name my-recipe'])
-    .action(recipesCommand)
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createReci... Remove this comment to see the full error message
+const createRecipesCommand = (program: $TSFixMe) => program
+  .command('recipes')
+  .argument('[name]', 'name of the recipe')
+  .description(`(Beta) Create and modify files in a project using pre-defined recipes`)
+  .option('-n, --name <name>', 'recipe name to use')
+  .addExamples(['netlify recipes my-recipe', 'netlify recipes --name my-recipe'])
+  .action(recipesCommand)
 
 module.exports = { createRecipesCommand, runRecipe }

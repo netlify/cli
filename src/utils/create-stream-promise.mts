@@ -1,16 +1,21 @@
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'Buffer'.
 const { Buffer } = require('buffer')
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'SEC_TO_MIL... Remove this comment to see the full error message
 const SEC_TO_MILLISEC = 1e3
 
 // 6 MiB
 const DEFAULT_BYTES_LIMIT = 6e6
 
-const createStreamPromise = function (stream, timeoutSeconds, bytesLimit = DEFAULT_BYTES_LIMIT) {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createStre... Remove this comment to see the full error message
+const createStreamPromise = function (stream: $TSFixMe, timeoutSeconds: $TSFixMe, bytesLimit = DEFAULT_BYTES_LIMIT) {
   return new Promise(function streamPromiseFunc(resolve, reject) {
-    let data = []
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    let data: $TSFixMe = []
     let dataLength = 0
 
-    let timeoutId = null
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    let timeoutId: $TSFixMe = null
     if (timeoutSeconds != null && Number.isFinite(timeoutSeconds)) {
       timeoutId = setTimeout(() => {
         data = null
@@ -18,7 +23,8 @@ const createStreamPromise = function (stream, timeoutSeconds, bytesLimit = DEFAU
       }, timeoutSeconds * SEC_TO_MILLISEC)
     }
 
-    stream.on('data', function onData(chunk) {
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    stream.on('data', function onData(chunk: $TSFixMe) {
       if (!Array.isArray(data)) {
         // Stream harvesting closed
         return
@@ -32,7 +38,8 @@ const createStreamPromise = function (stream, timeoutSeconds, bytesLimit = DEFAU
       }
     })
 
-    stream.on('error', function onError(error) {
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    stream.on('error', function onError(error: $TSFixMe) {
       data = null
       reject(error)
       clearTimeout(timeoutId)
@@ -43,7 +50,7 @@ const createStreamPromise = function (stream, timeoutSeconds, bytesLimit = DEFAU
         resolve(Buffer.concat(data))
       }
     })
-  })
+  });
 }
 
 module.exports = { createStreamPromise }

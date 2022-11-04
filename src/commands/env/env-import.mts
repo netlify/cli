@@ -1,15 +1,24 @@
 // @ts-check
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'readFile'.
 const { readFile } = require('fs').promises
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'AsciiTable... Remove this comment to see the full error message
 const AsciiTable = require('ascii-table')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'dotenv'.
 const dotenv = require('dotenv')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'isEmpty'.
 const isEmpty = require('lodash/isEmpty')
 
 const {
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'exit'.
   exit,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'log'.
   log,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'logJson'.
   logJson,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'translateF... Remove this comment to see the full error message
   translateFromEnvelopeToMongo,
+  // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'translateF... Remove this comment to see the full error message
   translateFromMongoToEnvelope,
 } = require('../../utils/index.mjs')
 
@@ -20,7 +29,8 @@ const {
  * @param {import('../base-command').BaseCommand} command
  * @returns {Promise<boolean>}
  */
-const envImport = async (fileName, options, command) => {
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+const envImport = async (fileName: $TSFixMe, options: $TSFixMe, command: $TSFixMe) => {
   const { api, cachedConfig, site } = command.netlify
   const siteId = site.id
 
@@ -34,7 +44,8 @@ const envImport = async (fileName, options, command) => {
     const envFileContents = await readFile(fileName, 'utf-8')
     importedEnv = dotenv.parse(envFileContents)
   } catch (error) {
-    log(error.message)
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    log((error as $TSFixMe).message);
     exit(1)
   }
 
@@ -67,7 +78,13 @@ const envImport = async (fileName, options, command) => {
  * Updates the imported env in the site record
  * @returns {Promise<object>}
  */
-const importIntoMongo = async ({ api, importedEnv, options, siteInfo }) => {
+const importIntoMongo = async ({
+  api,
+  importedEnv,
+  options,
+  siteInfo
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) => {
   const { env = {} } = siteInfo.build_settings
   const siteId = siteInfo.id
 
@@ -92,35 +109,50 @@ const importIntoMongo = async ({ api, importedEnv, options, siteInfo }) => {
  * Saves the imported env in the Envelope service
  * @returns {Promise<object>}
  */
-const importIntoEnvelope = async ({ api, importedEnv, options, siteInfo }) => {
+const importIntoEnvelope = async ({
+  api,
+  importedEnv,
+  options,
+  siteInfo
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) => {
   // fetch env vars
   const accountId = siteInfo.account_slug
   const siteId = siteInfo.id
   const dotEnvKeys = Object.keys(importedEnv)
   const envelopeVariables = await api.getEnvVars({ accountId, siteId })
-  const envelopeKeys = envelopeVariables.map(({ key }) => key)
+  const envelopeKeys = envelopeVariables.map(({
+    key
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  }: $TSFixMe) => key)
 
   // if user intends to replace all existing env vars
   // either replace; delete all existing env vars on the site
   // or, merge; delete only the existing env vars that would collide with new .env entries
-  const keysToDelete = options.replaceExisting ? envelopeKeys : envelopeKeys.filter((key) => dotEnvKeys.includes(key))
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  const keysToDelete = options.replaceExisting ? envelopeKeys : envelopeKeys.filter((key: $TSFixMe) => dotEnvKeys.includes(key))
 
   // delete marked env vars in parallel
-  await Promise.all(keysToDelete.map((key) => api.deleteEnvVar({ accountId, siteId, key })))
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  await Promise.all(keysToDelete.map((key: $TSFixMe) => api.deleteEnvVar({ accountId, siteId, key })))
 
   // hit create endpoint
   const body = translateFromMongoToEnvelope(importedEnv)
   try {
     await api.createEnvVars({ accountId, siteId, body })
   } catch (error) {
-    throw error.json ? error.json.msg : error
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    throw (error as $TSFixMe).json ? (error as $TSFixMe).json.msg : error;
   }
 
   // return final env to aid in --json output (for testing)
   return {
-    ...translateFromEnvelopeToMongo(envelopeVariables.filter(({ key }) => !keysToDelete.includes(key))),
+    ...translateFromEnvelopeToMongo(envelopeVariables.filter(({
+      key
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    }: $TSFixMe) => !keysToDelete.includes(key))),
     ...importedEnv,
-  }
+  };
 }
 
 /**
@@ -128,18 +160,19 @@ const importIntoEnvelope = async ({ api, importedEnv, options, siteInfo }) => {
  * @param {import('../base-command').BaseCommand} program
  * @returns
  */
-const createEnvImportCommand = (program) =>
-  program
-    .command('env:import')
-    .argument('<fileName>', '.env file to import')
-    .option(
-      '-r, --replaceExisting',
-      'Replace all existing variables instead of merging them with the current ones',
-      false,
-    )
-    .description('Import and set environment variables from .env file')
-    .action(async (fileName, options, command) => {
-      await envImport(fileName, options, command)
-    })
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createEnvI... Remove this comment to see the full error message
+const createEnvImportCommand = (program: $TSFixMe) => program
+  .command('env:import')
+  .argument('<fileName>', '.env file to import')
+  .option(
+    '-r, --replaceExisting',
+    'Replace all existing variables instead of merging them with the current ones',
+    false,
+  )
+  .description('Import and set environment variables from .env file')
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  .action(async (fileName: $TSFixMe, options: $TSFixMe, command: $TSFixMe) => {
+    await envImport(fileName, options, command)
+  })
 
 module.exports = { createEnvImportCommand }

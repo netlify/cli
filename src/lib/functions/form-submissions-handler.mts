@@ -5,12 +5,21 @@ const { parse: parseContentType } = require('content-type')
 const multiparty = require('multiparty')
 const getRawBody = require('raw-body')
 
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'warn'.
 const { warn } = require('../../utils/command-helpers.cjs')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'BACKGROUND... Remove this comment to see the full error message
 const { BACKGROUND } = require('../../utils/index.mjs')
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'capitalize... Remove this comment to see the full error message
 const { capitalize } = require('../string.cjs')
 
-const createFormSubmissionHandler = function ({ functionsRegistry, siteUrl }) {
-  return async function formSubmissionHandler(req, res, next) {
+// @ts-expect-error TS(2451): Cannot redeclare block-scoped variable 'createForm... Remove this comment to see the full error message
+const createFormSubmissionHandler = function ({
+  functionsRegistry,
+  siteUrl
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) {
+  // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+  return async function formSubmissionHandler(req: $TSFixMe, res: $TSFixMe, next: $TSFixMe) {
     if (req.url.startsWith('/.netlify/') || req.method !== 'POST') return next()
 
     const fakeRequest = new Readable({
@@ -42,34 +51,30 @@ const createFormSubmissionHandler = function ({ functionsRegistry, siteUrl }) {
       fields = Object.fromEntries(new URLSearchParams(bodyData.toString()))
     } else if (ct.type === 'multipart/form-data') {
       try {
-        ;[fields, files] = await new Promise((resolve, reject) => {
-          const form = new multiparty.Form({ encoding: ct.parameters.charset || 'utf8' })
-          form.parse(fakeRequest, (err, Fields, Files) => {
-            if (err) return reject(err)
-            Files = Object.entries(Files).reduce(
-              (prev, [name, values]) => ({
-                ...prev,
-                [name]: values.map((value) => ({
-                  filename: value.originalFilename,
-                  size: value.size,
-                  type: value.headers && value.headers['content-type'],
-                  url: value.path,
-                })),
-              }),
-              {},
-            )
-            return resolve([
-              Object.entries(Fields).reduce(
-                (prev, [name, values]) => ({ ...prev, [name]: values.length > 1 ? values : values[0] }),
-                {},
-              ),
-              Object.entries(Files).reduce(
-                (prev, [name, values]) => ({ ...prev, [name]: values.length > 1 ? values : values[0] }),
-                {},
-              ),
-            ])
-          })
-        })
+        [fields, files] = await new Promise((resolve, reject) => {
+    const form = new multiparty.Form({ encoding: ct.parameters.charset || 'utf8' });
+    // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+    form.parse(fakeRequest, (err: $TSFixMe, Fields: $TSFixMe, Files: $TSFixMe) => {
+        if (err)
+            return reject(err);
+        Files = Object.entries(Files).reduce((prev, [name, values]) => ({
+            ...prev,
+            // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+            [name]: (values as $TSFixMe).map((value: $TSFixMe) => ({
+                filename: value.originalFilename,
+                size: value.size,
+                type: value.headers && value.headers['content-type'],
+                url: value.path
+            })),
+        }), {});
+        return resolve([
+            // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+            Object.entries(Fields).reduce((prev, [name, values]) => ({ ...prev, [name]: (values as $TSFixMe).length > 1 ? values : (values as $TSFixMe)[0] }), {}),
+            // @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+            Object.entries(Files).reduce((prev, [name, values]) => ({ ...prev, [name]: (values as $TSFixMe).length > 1 ? values : (values as $TSFixMe)[0] }), {}),
+        ]);
+    });
+});
       } catch (error) {
         warn(error)
         return next()
@@ -81,20 +86,26 @@ const createFormSubmissionHandler = function ({ functionsRegistry, siteUrl }) {
     const data = JSON.stringify({
       payload: {
         company:
+          // @ts-expect-error TS(2538): Type 'undefined' cannot be used as an index type.
           fields[Object.keys(fields).find((name) => ['company', 'business', 'employer'].includes(name.toLowerCase()))],
         last_name:
+          // @ts-expect-error TS(2538): Type 'undefined' cannot be used as an index type.
           fields[Object.keys(fields).find((name) => ['lastname', 'surname', 'byname'].includes(name.toLowerCase()))],
         first_name:
           fields[
+            // @ts-expect-error TS(2538): Type 'undefined' cannot be used as an index type.
             Object.keys(fields).find((name) => ['firstname', 'givenname', 'forename'].includes(name.toLowerCase()))
           ],
+        // @ts-expect-error TS(2538): Type 'undefined' cannot be used as an index type.
         name: fields[Object.keys(fields).find((name) => ['name', 'fullname'].includes(name.toLowerCase()))],
         email:
           fields[
+            // @ts-expect-error TS(2538): Type 'undefined' cannot be used as an index type.
             Object.keys(fields).find((name) =>
               ['email', 'mail', 'from', 'twitter', 'sender'].includes(name.toLowerCase()),
             )
           ],
+        // @ts-expect-error TS(2538): Type 'undefined' cannot be used as an index type.
         title: fields[Object.keys(fields).find((name) => ['title', 'subject'].includes(name.toLowerCase()))],
         data: {
           ...fields,
@@ -106,10 +117,12 @@ const createFormSubmissionHandler = function ({ functionsRegistry, siteUrl }) {
         created_at: new Date().toISOString(),
         human_fields: Object.entries({
           ...fields,
+          // @ts-expect-error TS(2339): Property 'url' does not exist on type 'unknown'.
           ...Object.entries(files).reduce((prev, [name, { url }]) => ({ ...prev, [name]: url }), {}),
         }).reduce((prev, [key, val]) => ({ ...prev, [capitalize(key)]: val }), {}),
         ordered_human_fields: Object.entries({
           ...fields,
+          // @ts-expect-error TS(2339): Property 'url' does not exist on type 'unknown'.
           ...Object.entries(files).reduce((prev, [name, { url }]) => ({ ...prev, [name]: url }), {}),
         }).map(([key, val]) => ({ title: capitalize(key), name: key, value: val })),
         site_url: siteUrl,
@@ -124,10 +137,13 @@ const createFormSubmissionHandler = function ({ functionsRegistry, siteUrl }) {
     }
 
     next()
-  }
+  };
 }
 
-const getFormHandler = function ({ functionsRegistry }) {
+const getFormHandler = function ({
+  functionsRegistry
+// @ts-expect-error TS(2304): Cannot find name '$TSFixMe'.
+}: $TSFixMe) {
   const handlers = ['submission-created', `submission-created${BACKGROUND}`]
     .map((name) => functionsRegistry.get(name))
     .filter(Boolean)
