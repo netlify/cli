@@ -1,14 +1,14 @@
 // @ts-check
 
-const AsciiTable = require('ascii-table')
+import AsciiTable from 'ascii-table'
 
 const { isCI } = require('ci-info')
 
 const { Option } = require('commander')
 
-const inquirer = require('inquirer')
+import inquirer from 'inquirer'
 
-const isEmpty = require('lodash/isEmpty')
+import { isEmpty } from 'lodash'
 
 const {
   

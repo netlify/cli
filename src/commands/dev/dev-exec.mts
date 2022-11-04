@@ -1,5 +1,5 @@
 
-const execa = require('execa')
+import execa from 'execa'
 
 
 const { getEnvelopeEnv, injectEnvVariables, normalizeContext } = require('../../utils/index.mjs')

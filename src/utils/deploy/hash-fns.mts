@@ -1,9 +1,9 @@
 
-const path = require('path')
+import path from 'path'
 
 const { promisify } = require('util')
 
-const fromArray = require('from2-array')
+import fromArray from 'from2-array'
 
 const pump = promisify(require('pump'))
 

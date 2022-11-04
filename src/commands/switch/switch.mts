@@ -1,6 +1,6 @@
 // @ts-check
 
-const inquirer = require('inquirer')
+import inquirer from 'inquirer'
 
 
 const { chalk, log } = require('../../utils/index.mjs')

@@ -1,7 +1,7 @@
 
 const { env } = require('process')
 
-const execaLib = require('execa')
+import execaLib from 'execa'
 
 // This is a thin layer on top of `execa` that allows consumers to provide an
 // alternative path to the module location, making it easier to mock its logic

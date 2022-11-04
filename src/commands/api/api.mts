@@ -1,6 +1,6 @@
 // @ts-check
 
-const AsciiTable = require('ascii-table')
+import AsciiTable from 'ascii-table'
 
 // TODO: use static `import` after migrating this repository to pure ES modules
 const jsClient = import('netlify')

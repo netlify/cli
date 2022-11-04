@@ -1,14 +1,14 @@
 // @ts-check
 
-const process = require('process')
+import process from 'process'
 
 
 const { get } = require('dot-prop')
 
-const getPort = require('get-port')
-const jwt = require('jsonwebtoken')
+import getPort from 'get-port'
+import jwt from 'jsonwebtoken'
 
-const isEmpty = require('lodash/isEmpty')
+import { isEmpty } from 'lodash'
 
 
 const { supportsBackgroundFunctions } = require('../lib/account.mjs')

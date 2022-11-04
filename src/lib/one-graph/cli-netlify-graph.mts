@@ -1,16 +1,16 @@
 /* eslint-disable eslint-comments/disable-enable-pair */
 
 // @ts-check
-const fs = require('fs')
+import fs from 'fs'
 
-const path = require('path')
+import path from 'path'
 
-const process = require('process')
+import process from 'process'
 
 
-const inquirer = require('inquirer')
+import inquirer from 'inquirer'
 
-const inquirerAutocompletePrompt = require('inquirer-autocomplete-prompt')
+import inquirerAutocompletePrompt from 'inquirer-autocomplete-prompt'
 const {
   // eslint-disable-next-line no-unused-vars
   CodegenHelpers,

@@ -1,17 +1,17 @@
 // @ts-check
 
-const inquirer = require('inquirer')
+import inquirer from 'inquirer'
 
-const isEmpty = require('lodash/isEmpty')
+import { isEmpty } from 'lodash'
 
-const compare = require('../../utils/addons/compare.mjs')
-const diffValues = require('../../utils/addons/diffs/index.mjs')
+import compare from '../../utils/addons/compare.mjs'
+import diffValues from '../../utils/addons/diffs/index.mjs'
 
 const { ADDON_VALIDATION, prepareAddonCommand } = require('../../utils/addons/prepare.mjs')
 
-const generatePrompts = require('../../utils/addons/prompts.mjs')
+import generatePrompts from '../../utils/addons/prompts.mjs'
 
-const render = require('../../utils/addons/render.mjs')
+import render from '../../utils/addons/render.mjs'
 
 const { missingConfigValues, requiredConfigValues, updateConfigValues } = require('../../utils/addons/validation.mjs')
 

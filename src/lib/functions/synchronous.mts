@@ -5,7 +5,7 @@ const { Buffer } = require('buffer')
 
 const { NETLIFYDEVERR } = require('../../utils/index.mjs')
 
-const renderErrorTemplate = require('../render-error-remplate.mjs')
+import {renderErrorTemplate} from '../render-error-remplate.mjs'
 
 
 const { detectAwsSdkError } = require('./utils.mjs')

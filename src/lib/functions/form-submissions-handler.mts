@@ -2,8 +2,8 @@
 const { Readable } = require('stream')
 
 const { parse: parseContentType } = require('content-type')
-const multiparty = require('multiparty')
-const getRawBody = require('raw-body')
+import multiparty from 'multiparty'
+import getRawBody from 'raw-body'
 
 
 const { warn } = require('../../utils/command-helpers.mjs')

@@ -1,12 +1,12 @@
 
-const edgeFunctions = require('../../lib/edge-functions/index.mjs')
+import edgeFunctions from '../../lib/edge-functions/index.mjs'
 
 
-const constants = require('./constants.mjs')
+import constants from './constants.mjs'
 
-const functions = require('./functions.mjs')
+import functions from './functions.mjs'
 
-const getFunctions = require('./get-functions.mjs')
+import getFunctions from './get-functions.mjs'
 
 export default {
   ...constants,

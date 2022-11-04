@@ -2,7 +2,7 @@
 
 const { get } = require('dot-prop')
 
-const prettyjson = require('prettyjson')
+import prettyjson from 'prettyjson'
 
 
 const { error, log, warn } = require('../../utils/index.mjs')

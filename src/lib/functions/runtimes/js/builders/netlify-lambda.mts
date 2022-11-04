@@ -4,7 +4,7 @@ const { readFile } = require('fs').promises
 
 const { resolve } = require('path')
 
-const minimist = require('minimist')
+import minimist from 'minimist'
 
 
 const { execa } = require('../../../../../utils/index.mjs')

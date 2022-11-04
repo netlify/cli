@@ -1,12 +1,12 @@
 
 const { existsSync } = require('fs')
 const { writeFile } = require('fs').promises
-const path = require('path')
-const process = require('process')
+import path from 'path'
+import process from 'process'
 
-const cleanDeep = require('clean-deep')
-const inquirer = require('inquirer')
-const isEmpty = require('lodash/isEmpty')
+import cleanDeep from 'clean-deep'
+import inquirer from 'inquirer'
+import { isEmpty } from 'lodash'
 
 const { normalizeBackslash } = require('../../lib/path.mjs')
 const { log } = require('../command-helpers.mjs')

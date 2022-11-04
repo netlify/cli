@@ -1,15 +1,15 @@
 // @ts-check
 
-const fs = require('fs')
+import fs from 'fs'
 
-const path = require('path')
+import path from 'path'
 
-const process = require('process')
+import process from 'process'
 
 
-const inquirer = require('inquirer')
+import inquirer from 'inquirer'
 
-const fetch = require('node-fetch')
+import fetch from 'node-fetch'
 
 const {
   

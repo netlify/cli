@@ -1,6 +1,6 @@
-const go = require('./go/index.mjs')
-const js = require('./js/index.mjs')
-const rust = require('./rust/index.mjs')
+import go from './go/index.mjs'
+import js from './js/index.mjs'
+import rust from './rust/index.mjs'
 
 /**
  * @callback BuildFunction

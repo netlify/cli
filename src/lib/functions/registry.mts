@@ -30,7 +30,7 @@ const { getLogMessage } = require('../log.mjs')
 
 const { NetlifyFunction } = require('./netlify-function.mjs')
 
-const runtimes = require('./runtimes/index.mjs')
+import runtimes from './runtimes/index.mjs'
 
 const ZIP_EXTENSION = '.zip'
 

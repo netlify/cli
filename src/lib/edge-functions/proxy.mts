@@ -6,7 +6,7 @@ const { relative } = require('path')
 
 const { cwd, env } = require('process')
 
-const getAvailablePort = require('get-port')
+import getAvailablePort from 'get-port'
 const { v4: generateUUID } = require('uuid')
 
 
@@ -20,7 +20,7 @@ const { startSpinner, stopSpinner } = require('../spinner.mjs')
 
 
 const { DIST_IMPORT_MAP_PATH } = require('./consts.mjs')
-const headers = require('./headers.mjs')
+import headers from './headers.mjs'
 
 const { getInternalFunctions } = require('./internal.mjs')
 

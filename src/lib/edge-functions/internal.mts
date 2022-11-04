@@ -2,7 +2,7 @@
 
 const { promises: fs } = require('fs')
 
-const path = require('path')
+import path from 'path'
 
 const { cwd } = require('process')
 const { pathToFileURL } = require('url')

@@ -1,11 +1,11 @@
 
 const { dirname } = require('path')
 
-const lambdaLocal = require('lambda-local')
-const winston = require('winston')
+import lambdaLocal from 'lambda-local'
+import winston from 'winston'
 
-const detectNetlifyLambdaBuilder = require('./builders/netlify-lambda.mjs')
-const detectZisiBuilder = require('./builders/zisi.mjs')
+import detectNetlifyLambdaBuilder from './builders/netlify-lambda.mjs'
+import detectZisiBuilder from './builders/zisi.mjs'
 
 
 const SECONDS_TO_MILLISECONDS = 1e3

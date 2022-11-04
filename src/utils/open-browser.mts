@@ -1,9 +1,9 @@
 
-const process = require('process')
+import process from 'process'
 
-
-const open = require('better-opn')
-const isDockerContainer = require('is-docker')
+// @ts-ignore
+import open from 'better-opn'
+import isDockerContainer from 'is-docker'
 
 
 const { chalk, log } = require('./command-helpers.mjs')

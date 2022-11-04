@@ -1,7 +1,7 @@
 // @ts-check
 
 
-const AsciiTable = require('ascii-table')
+import AsciiTable from 'ascii-table'
 
 
 const { prepareAddonCommand } = require('../../utils/addons/prepare.mjs')

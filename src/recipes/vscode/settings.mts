@@ -3,7 +3,7 @@ const { promises: fs } = require('fs')
 
 const { dirname, relative } = require('path')
 
-const unixify = require('unixify')
+import unixify from 'unixify'
 
 
 const applySettings = (existingSettings: $TSFixMe, {

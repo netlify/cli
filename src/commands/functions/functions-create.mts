@@ -1,29 +1,29 @@
 // @ts-check
-const cp = require('child_process')
+import cp from 'child_process'
 
-const fs = require('fs')
+import fs from 'fs'
 
 const { mkdir } = require('fs').promises
 
-const path = require('path')
+import path from 'path'
 
-const process = require('process')
+import process from 'process'
 
 const { promisify } = require('util')
 
 const copy = promisify(require('copy-template-dir'))
 
-const findUp = require('find-up')
+import findUp from 'find-up'
 
-const fuzzy = require('fuzzy')
+import fuzzy from 'fuzzy'
 
-const inquirer = require('inquirer')
+import inquirer from 'inquirer'
 
-const inquirerAutocompletePrompt = require('inquirer-autocomplete-prompt')
+import inquirerAutocompletePrompt from 'inquirer-autocomplete-prompt'
 
-const fetch = require('node-fetch')
+import fetch from 'node-fetch'
 
-const ora = require('ora')
+import ora from 'ora'
 
 
 const { getAddons, getCurrentAddon, getSiteData } = require('../../utils/addons/prepare.mjs')

@@ -2,18 +2,18 @@
 
 const { dirname } = require('path')
 
-const process = require('process')
+import process from 'process'
 
-const util = require('util')
+import util from 'util'
 
 
-const findUp = require('find-up')
+import findUp from 'find-up'
 
-const gitRepoInfo = require('git-repo-info')
-const gitconfiglocal = require('gitconfiglocal')
+import gitRepoInfo from 'git-repo-info'
+import gitconfiglocal from 'gitconfiglocal'
 
-const isEmpty = require('lodash/isEmpty')
-const parseGitRemote = require('parse-github-url')
+import { isEmpty } from 'lodash'
+import parseGitRemote from 'parse-github-url'
 
 
 const { log } = require('./command-helpers.mjs')

@@ -2,9 +2,9 @@
 const { join } = require('path')
 
 
-const execa = require('execa')
+import execa from 'execa'
 
-const inquirer = require('inquirer')
+import inquirer from 'inquirer'
 
 
 const { NETLIFYDEVLOG, NETLIFYDEVWARN, chalk, error, log } = require('../../utils/command-helpers.mjs')

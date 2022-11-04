@@ -1,9 +1,9 @@
-const cleanDeep = require('clean-deep')
+import cleanDeep from 'clean-deep'
 
-const tempy = require('tempy')
+import tempy from 'tempy'
 
 
-const edgeFunctions = require('../../lib/edge-functions/index.mjs')
+import edgeFunctions from '../../lib/edge-functions/index.mjs'
 
 const { rmdirRecursiveAsync } = require('../../lib/fs.mjs')
 

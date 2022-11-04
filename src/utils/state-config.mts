@@ -1,15 +1,15 @@
 
-const fs = require('fs')
+import fs from 'fs'
 
-const path = require('path')
+import path from 'path'
 
-const process = require('process')
+import process from 'process'
 
 
-const dotProp = require('dot-prop')
+import dotProp from 'dot-prop'
 
-const findUp = require('find-up')
-const writeFileAtomic = require('write-file-atomic')
+import findUp from 'find-up'
+import writeFileAtomic from 'write-file-atomic'
 
 
 const { getPathInProject } = require('../lib/settings.mjs')
@@ -40,6 +40,8 @@ class StateConfig {
 
   get all() {
     try {
+      // FIXME: This looks to be a legitimate error that needs to be addressed
+      // @ts-ignore
       return JSON.parse(fs.readFileSync(this.path))
     } catch (error) {
       // Don't create if it doesn't exist

@@ -2,18 +2,18 @@
 
 const { appendFile, copyFile, readFile, writeFile } = require('fs').promises
 
-const os = require('os')
+import os from 'os'
 
-const path = require('path')
+import path from 'path'
 
-const process = require('process')
+import process from 'process'
 
 
-const execa = require('execa')
-const hasbin = require('hasbin')
+import execa from 'execa'
+import hasbin from 'hasbin'
 
-const Listr = require('listr')
-const pathKey = require('path-key')
+import Listr from 'listr'
+import pathKey from 'path-key'
 
 
 const { fetchLatestVersion, shouldFetchLatestVersion } = require('../../lib/exec-fetcher.mjs')

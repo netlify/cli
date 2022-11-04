@@ -1,5 +1,5 @@
 
-const process = require('process')
+import process from 'process'
 
 // @ts-check
 

@@ -1,18 +1,18 @@
 // @ts-check
 const { EOL } = require('os')
 
-const path = require('path')
+import path from 'path'
 
-const process = require('process')
+import process from 'process'
 
 
 // @ts-ignore
 const frameworkInfoPromise = import('@netlify/framework-info')
 
-const fuzzy = require('fuzzy')
+import fuzzy from 'fuzzy'
 
-const getPort = require('get-port')
-const isPlainObject = require('is-plain-obj')
+import getPort from 'get-port'
+import isPlainObject from 'is-plain-obj'
 
 
 const { readFileAsyncCatchError } = require('../lib/fs.mjs')
@@ -243,9 +243,11 @@ const detectFrameworkSettings = async ({
   if (frameworks.length > 1) {
     // performance optimization, load inquirer on demand
     // eslint-disable-next-line n/global-require
-    const inquirer = require('inquirer')
+    // @ts-ignore
+    import inquirer from 'inquirer'
     // eslint-disable-next-line n/global-require
-    const inquirerAutocompletePrompt = require('inquirer-autocomplete-prompt')
+    // @ts-ignore
+    import inquirerAutocompletePrompt from 'inquirer-autocomplete-prompt'
     /** multiple matching detectors, make the user choose */
     inquirer.registerPrompt('autocomplete', inquirerAutocompletePrompt)
     const scriptInquirerOptions = formatSettingsArrForInquirer(frameworks)

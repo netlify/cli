@@ -1,11 +1,11 @@
 // @ts-check
 
-const process = require('process')
+import process from 'process'
 
 
-const fetch = require('node-fetch')
+import fetch from 'node-fetch'
 
-const pWaitFor = require('p-wait-for')
+import pWaitFor from 'p-wait-for'
 
 
 const { fetchLatestVersion, shouldFetchLatestVersion } = require('../lib/exec-fetcher.mjs')
@@ -15,7 +15,7 @@ const { getPathInHome } = require('../lib/settings.mjs')
 
 const { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log } = require('./command-helpers.mjs')
 
-const execa = require('./execa.mjs')
+import execa from './execa.mjs'
 
 
 const PACKAGE_NAME = 'live-tunnel-client'

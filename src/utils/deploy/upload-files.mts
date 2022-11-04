@@ -1,8 +1,8 @@
 
-const fs = require('fs')
+import fs from 'fs'
 
-const backoff = require('backoff')
-const pMap = require('p-map')
+import backoff from 'backoff'
+import pMap from 'p-map'
 
 
 const { UPLOAD_INITIAL_DELAY, UPLOAD_MAX_DELAY, UPLOAD_RANDOM_FACTOR } = require('./constants.mjs')

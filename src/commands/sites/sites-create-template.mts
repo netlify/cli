@@ -1,12 +1,12 @@
 // @ts-check
 
 
-const inquirer = require('inquirer')
+import inquirer from 'inquirer'
 
-const pick = require('lodash/pick')
-const parseGitHubUrl = require('parse-github-url')
+import { pick } from 'lodash'
+import parseGitHubUrl from 'parse-github-url'
 
-const prettyjson = require('prettyjson')
+import prettyjson from 'prettyjson'
 
 const {
   

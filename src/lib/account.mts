@@ -1,5 +1,5 @@
 
-const dotProp = require('dot-prop')
+import dotProp from 'dot-prop'
 
 
 const supportsBooleanCapability = (account: $TSFixMe, capability: $TSFixMe) => dotProp.get(account, `capabilities.${capability}.included`)

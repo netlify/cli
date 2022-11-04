@@ -1,8 +1,8 @@
 // @ts-check
 
-const pWaitFor = require('p-wait-for')
+import pWaitFor from 'p-wait-for'
 
-const prettyjson = require('prettyjson')
+import prettyjson from 'prettyjson'
 
 
 const { startSpinner, stopSpinner } = require('../../lib/spinner.mjs')

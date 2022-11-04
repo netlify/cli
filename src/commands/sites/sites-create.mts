@@ -1,11 +1,11 @@
 // @ts-check
 const { InvalidArgumentError } = require('commander')
 
-const inquirer = require('inquirer')
+import inquirer from 'inquirer'
 
-const pick = require('lodash/pick')
+import { pick } from 'lodash'
 
-const prettyjson = require('prettyjson')
+import prettyjson from 'prettyjson'
 
 
 const { chalk, error, getRepoData, log, logJson, track, warn } = require('../../utils/index.mjs')

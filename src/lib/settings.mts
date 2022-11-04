@@ -1,9 +1,9 @@
 
-const os = require('os')
+import os from 'os'
 
-const path = require('path')
+import path from 'path'
 
-const envPaths = require('env-paths')
+import envPaths from 'env-paths'
 
 const OSBasedPaths = envPaths('netlify', { suffix: '' })
 const NETLIFY_HOME = '.netlify'

@@ -1,8 +1,8 @@
 
-const os = require('os')
+import os from 'os'
 
 
-const boxen = require('boxen')
+import boxen from 'boxen'
 
 
 const { chalk, log } = require('../command-helpers.mjs')

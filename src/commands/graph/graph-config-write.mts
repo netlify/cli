@@ -1,10 +1,10 @@
 // @ts-check
 
-const fs = require('fs')
+import fs from 'fs'
 
-const path = require('path')
+import path from 'path'
 
-const process = require('process')
+import process from 'process'
 
 
 const { getNetlifyGraphConfig } = require('../../lib/one-graph/cli-netlify-graph.mjs')

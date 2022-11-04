@@ -1,6 +1,6 @@
-const flushWriteStream = require('flush-write-stream')
-const hasha = require('hasha')
-const transform = require('parallel-transform')
+import flushWriteStream from 'flush-write-stream'
+import hasha from 'hasha'
+import transform from 'parallel-transform'
 const { objCtor: objFilterCtor } = require('through2-filter')
 const { obj: map } = require('through2-map')
 

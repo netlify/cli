@@ -7,7 +7,7 @@ const { join } = require('path')
 let errorTemplateFile: $TSFixMe
 
 
-const renderErrorTemplate = async (errString: $TSFixMe, templatePath: $TSFixMe, functionType: $TSFixMe) => {
+export const renderErrorTemplate = async (errString: $TSFixMe, templatePath: $TSFixMe, functionType: $TSFixMe) => {
   const errorDetailsRegex = /<!--@ERROR-DETAILS-->/g
   const functionTypeRegex = /<!--@FUNCTION-TYPE-->/g
   try {
@@ -17,5 +17,3 @@ const renderErrorTemplate = async (errString: $TSFixMe, templatePath: $TSFixMe, 
     return errString
   }
 }
-
-module.exports = renderErrorTemplate

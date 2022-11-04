@@ -8,7 +8,7 @@ const {
 
 const { version } = require('process')
 
-const del = require('del')
+import del from 'del'
 
 const { gte, parse } = require('semver')
 

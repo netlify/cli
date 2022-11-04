@@ -2,7 +2,7 @@
 
 const { Buffer } = require('buffer')
 
-const process = require('process')
+import process from 'process'
 
 
 const { OneGraphClient } = require('netlify-onegraph-internal')

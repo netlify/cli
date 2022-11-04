@@ -1,15 +1,15 @@
 // @ts-check
 // A simple ghauth inspired library for getting a personal access token
 
-const http = require('http')
+import http from 'http'
 
-const process = require('process')
+import process from 'process'
 
 const { Octokit } = require('@octokit/rest')
 
-const getPort = require('get-port')
+import getPort from 'get-port'
 
-const inquirer = require('inquirer')
+import inquirer from 'inquirer'
 
 
 const { log } = require('./command-helpers.mjs')
@@ -76,6 +76,8 @@ const authWithNetlify = async () => {
 
   await new Promise(function waitForListening(resolve, reject) {
     server.on('error', reject)
+    // TODO: Overload call is not matching, need to investigate further
+    // @ts-ignore
     server.listen(port, resolve)
   })
 

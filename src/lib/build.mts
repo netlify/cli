@@ -1,6 +1,6 @@
 // @ts-check
 
-const process = require('process')
+import process from 'process'
 
 
 const netlifyBuildPromise = import('@netlify/build')

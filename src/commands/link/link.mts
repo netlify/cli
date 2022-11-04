@@ -1,8 +1,8 @@
 // @ts-check
 
-const inquirer = require('inquirer')
+import inquirer from 'inquirer'
 
-const isEmpty = require('lodash/isEmpty')
+import { isEmpty } from 'lodash'
 
 
 const { listSites } = require('../../lib/api.mjs')

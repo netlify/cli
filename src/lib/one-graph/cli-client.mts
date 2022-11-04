@@ -2,20 +2,20 @@
 /* eslint-disable eslint-comments/disable-enable-pair */
 /* eslint-disable fp/no-loops */
 /* eslint-disable no-underscore-dangle */
-const crypto = require('crypto')
+import crypto from 'crypto'
 
 const { readFileSync, writeFileSync } = require('fs')
 
-const os = require('os')
+import os from 'os'
 
-const path = require('path')
+import path from 'path'
 
-const process = require('process')
+import process from 'process'
 
 
-const gitRepoInfo = require('git-repo-info')
+import gitRepoInfo from 'git-repo-info'
 
-const WSL = require('is-wsl')
+import WSL from 'is-wsl'
 const {
   // eslint-disable-next-line no-unused-vars
   CliEventHelper,

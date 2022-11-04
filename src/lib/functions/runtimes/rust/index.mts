@@ -7,8 +7,8 @@ const { dirname, extname, join, resolve } = require('path')
 const { platform } = require('process')
 
 
-const findUp = require('find-up')
-const toml = require('toml')
+import findUp from 'find-up'
+import toml from 'toml'
 
 
 const isWindows = platform === 'win32'

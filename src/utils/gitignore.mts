@@ -2,9 +2,9 @@
 
 const { readFile, writeFile } = require('fs').promises
 
-const path = require('path')
+import path from 'path'
 
-const parseIgnore = require('parse-gitignore')
+import parseIgnore from 'parse-gitignore'
 
 
 const { fileExistsAsync } = require('../lib/fs.mjs')

@@ -2,10 +2,10 @@
 
 const { readFile } = require('fs').promises
 
-const path = require('path')
+import path from 'path'
 
 
-const dotenv = require('dotenv')
+import dotenv from 'dotenv'
 
 
 const { isFileAsync } = require('../lib/fs.mjs')

@@ -1,8 +1,9 @@
 const { readFile } = require('fs').promises
 
 const { get } = require('dot-prop')
-const locatePath = require('locate-path')
-const nodeVersionAlias = require('node-version-alias')
+import locatePath from 'locate-path'
+// @ts-ignore
+import nodeVersionAlias from 'node-version-alias'
 
 const { warn } = require('../command-helpers.mjs')
 

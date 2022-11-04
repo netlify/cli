@@ -5,7 +5,7 @@ const { dirname, extname } = require('path')
 const { platform } = require('process')
 
 
-const tempy = require('tempy')
+import tempy from 'tempy'
 
 
 const isWindows = platform === 'win32'

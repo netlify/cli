@@ -1,6 +1,6 @@
 // @ts-check
 
-const inquirer = require('inquirer')
+import inquirer from 'inquirer'
 
 
 const { ADDON_VALIDATION, prepareAddonCommand } = require('../../utils/addons/prepare.mjs')

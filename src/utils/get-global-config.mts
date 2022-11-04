@@ -1,8 +1,8 @@
 
 const { readFile } = require('fs').promises
 
-const Configstore = require('configstore')
-const memoizeOne = require('memoize-one')
+import Configstore from 'configstore'
+import memoizeOne from 'memoize-one'
 
 const { v4: uuidv4 } = require('uuid')
 

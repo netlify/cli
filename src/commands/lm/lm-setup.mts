@@ -1,6 +1,6 @@
 // @ts-check
 
-const Listr = require('listr')
+import Listr from 'listr'
 
 
 const { error, execa } = require('../../utils/index.mjs')

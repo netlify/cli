@@ -1,22 +1,22 @@
 // @ts-check
 const { once } = require('events')
 
-const os = require('os')
+import os from 'os'
 
-const process = require('process')
+import process from 'process'
 const { format, inspect } = require('util')
 
 // eslint-disable-next-line no-restricted-modules
 const { Instance: ChalkInstance } = require('chalk')
 
-const chokidar = require('chokidar')
+import chokidar from 'chokidar'
 
-const decache = require('decache')
+import decache from 'decache'
 
-const WSL = require('is-wsl')
-const debounce = require('lodash/debounce')
+import WSL from 'is-wsl'
+import {debounce} from 'lodash'
 const { default: omit } = require('omit.js')
-const terminalLink = require('terminal-link')
+import terminalLink from 'terminal-link'
 
 
 const { name, version } = require('../../package.json')
@@ -24,7 +24,7 @@ const { name, version } = require('../../package.json')
 const { clearSpinner, startSpinner } = require('../lib/spinner.mjs')
 
 
-const getGlobalConfig = require('./get-global-config.mjs')
+import getGlobalConfig from './get-global-config.mjs'
 
 /** The parsed process argv without the binary only arguments and flags */
 const argv = process.argv.slice(2)

@@ -6,38 +6,38 @@ const { once } = require('events')
 
 const { readFile } = require('fs').promises
 
-const http = require('http')
-const https = require('https')
+import http from 'http'
+import https from 'https'
 const { isIPv6 } = require('net')
 
-const path = require('path')
+import path from 'path'
 
-const util = require('util')
-const zlib = require('zlib')
+import util from 'util'
+import zlib from 'zlib'
 
-const contentType = require('content-type')
+import contentType from 'content-type'
 
-const cookie = require('cookie')
+import cookie from 'cookie'
 
 const { get } = require('dot-prop')
-const generateETag = require('etag')
-const httpProxy = require('http-proxy')
+import generateETag from 'etag'
+import httpProxy from 'http-proxy'
 const { createProxyMiddleware } = require('http-proxy-middleware')
 
-const jwtDecode = require('jwt-decode')
-const locatePath = require('locate-path')
+import jwtDecode from 'jwt-decode'
+import locatePath from 'locate-path'
 
-const isEmpty = require('lodash/isEmpty')
+import { isEmpty } from 'lodash'
 
-const pFilter = require('p-filter')
-const toReadableStream = require('to-readable-stream')
+import pFilter from 'p-filter'
+import toReadableStream from 'to-readable-stream'
 
 
-const edgeFunctions = require('../lib/edge-functions/index.mjs')
+import edgeFunctions from '../lib/edge-functions/index.mjs'
 
 const { fileExistsAsync, isFileAsync } = require('../lib/fs.mjs')
 
-const renderErrorTemplate = require('../lib/render-error-remplate.mjs')
+import {renderErrorTemplate} from '../lib/render-error-remplate.mjs'
 
 
 const { NETLIFYDEVLOG, NETLIFYDEVWARN } = require('./command-helpers.mjs')
@@ -390,6 +390,9 @@ const initializeProxy = async function ({
   })
 
   
+  
+  // FIXME: This appears to be a bug, needs to be addressed
+  // @ts-ignore
   proxy.before('web', 'stream', (req: $TSFixMe) => {
     // See https://github.com/http-party/node-http-proxy/issues/1219#issuecomment-511110375
     if (req.headers.expect) {

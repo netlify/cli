@@ -1,4 +1,4 @@
-const telemetry = require('./telemetry.mjs')
+import telemetry from './telemetry.mjs'
 
 export default {
   ...telemetry,

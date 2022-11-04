@@ -7,8 +7,7 @@ import { resolveConfig } from '@netlify/config'
 import { Command, Option } from 'commander'
 // @ts-expect-error TS(7016): Could not find a declaration file for module 'debu... Remove this comment to see the full error message
 import debug from 'debug'
-// @ts-expect-error TS(7016): Could not find a declaration file for module 'loda... Remove this comment to see the full error message
-import merge from 'lodash/merge.js'
+import {merge} from 'lodash'
 import { NetlifyAPI } from 'netlify'
 
 import { getAgent } from '../lib/http-agent.mjs'

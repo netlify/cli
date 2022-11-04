@@ -1,7 +1,7 @@
 const { sep } = require('path')
 
 
-const pWaitFor = require('p-wait-for')
+import pWaitFor from 'p-wait-for'
 
 
 const { DEPLOY_POLL } = require('./constants.mjs')

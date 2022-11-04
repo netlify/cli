@@ -2,7 +2,7 @@
 
 const { get } = require('dot-prop')
 
-const jwtDecode = require('jwt-decode')
+import jwtDecode from 'jwt-decode'
 
 const {
   
@@ -193,9 +193,9 @@ const getFunctionsServer = function (options: $TSFixMe) {
   const { buildersPrefix = '', functionsPrefix = '', functionsRegistry, siteUrl } = options
   // performance optimization, load express on demand
   // eslint-disable-next-line n/global-require
-  const express = require('express')
+  import express from 'express'
   // eslint-disable-next-line n/global-require
-  const expressLogging = require('express-logging')
+  import expressLogging from 'express-logging'
   const app = express()
   const functionHandler = createHandler(options)
 

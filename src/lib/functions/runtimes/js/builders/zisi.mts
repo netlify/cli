@@ -1,12 +1,12 @@
 
 const { mkdir, writeFile } = require('fs').promises
 
-const path = require('path')
+import path from 'path'
 
 
-const decache = require('decache')
-const readPkgUp = require('read-pkg-up')
-const sourceMapSupport = require('source-map-support')
+import decache from 'decache'
+import readPkgUp from 'read-pkg-up'
+import sourceMapSupport from 'source-map-support'
 
 
 const { NETLIFYDEVERR } = require('../../../../../utils/index.mjs')

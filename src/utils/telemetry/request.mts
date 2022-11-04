@@ -2,10 +2,10 @@
 // This file is being called by `src/utils/telemetry/telemetry.js` as a child process
 // to run a s a detached process
 
-const process = require('process')
+import process from 'process'
 
 
-const fetch = require('node-fetch')
+import fetch from 'node-fetch'
 
 
 const { name, version } = require('../../../package.json')

@@ -1,4 +1,4 @@
-const isEqual = require('lodash/isEqual')
+import {isEqual} from 'lodash'
 
 
 module.exports = function compare(oldValues: $TSFixMe, newValues: $TSFixMe) {

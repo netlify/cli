@@ -2,7 +2,7 @@
 const { env } = require('process')
 
 
-const inquirer = require('inquirer')
+import inquirer from 'inquirer'
 
 
 const { runRecipe } = require('../../commands/recipes/index.mjs')

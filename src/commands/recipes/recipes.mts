@@ -3,10 +3,10 @@
 const { basename } = require('path')
 
 
-const inquirer = require('inquirer')
+import inquirer from 'inquirer'
 const { findBestMatch } = require('string-similarity')
 
-const utils = require('../../utils/command-helpers.mjs')
+import utils from '../../utils/command-helpers.mjs'
 
 
 const { getRecipe, listRecipes } = require('./common.mjs')

@@ -1,18 +1,18 @@
 // @ts-check
 
-const path = require('path')
+import path from 'path'
 
-const process = require('process')
+import process from 'process'
 
 
 const { isCI } = require('ci-info')
 
 
-const execa = require('../execa.mjs')
+import execa from '../execa.mjs'
 
-const getGlobalConfig = require('../get-global-config.mjs')
+import getGlobalConfig from '../get-global-config.mjs'
 
-const isValidEventName = require('./validation.mjs')
+import {isValidEventName} from './validation.mjs'
 
 
 const isTelemetryDisabled = function (config: $TSFixMe) {
@@ -64,7 +64,7 @@ const track = async function (eventName: $TSFixMe, payload = {}) {
     return
   }
 
-  const [userId, cliId] = [globalConfig.get('userId'), globalConfig.get('cliId')]
+  const [userId, cliId] = [globalConfig?.get('userId'), globalConfig?.get('cliId')]
 
   // automatically add `cli:` prefix if missing
   if (!eventName.includes('cli:')) {
@@ -103,7 +103,7 @@ const identify = async function (payload: $TSFixMe) {
     return
   }
 
-  const cliId = globalConfig.get('cliId')
+  const cliId = globalConfig?.get('cliId')
   const { email, name, userId } = payload
 
   const defaultTraits = {

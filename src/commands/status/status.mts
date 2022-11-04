@@ -1,7 +1,7 @@
 // @ts-check
-const clean = require('clean-deep')
+import clean from 'clean-deep'
 
-const prettyjson = require('prettyjson')
+import prettyjson from 'prettyjson'
 
 
 const { chalk, error, exit, getToken, log, logJson, warn } = require('../../utils/index.mjs')

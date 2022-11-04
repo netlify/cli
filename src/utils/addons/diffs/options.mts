@@ -1,5 +1,5 @@
 // @ts-check
-const ansiStyles = require('ansi-styles')
+import ansiStyles from 'ansi-styles'
 
 
 const { chalk } = require('../../command-helpers.mjs')

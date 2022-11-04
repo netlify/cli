@@ -1,7 +1,7 @@
 // @ts-check
-const logSymbols = require('log-symbols')
+import logSymbols from 'log-symbols'
 
-const ora = require('ora')
+import ora from 'ora'
 
 /**
  * Creates a spinner with the following text

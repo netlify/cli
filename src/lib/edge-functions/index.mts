@@ -1,9 +1,9 @@
 // @ts-check
 
-const constants = require('./consts.mjs')
+import constants from './consts.mjs'
 
-const deploy = require('./deploy.mjs')
-const editorHelper = require('./editor-helper.mjs')
-const proxy = require('./proxy.mjs')
+import deploy from './deploy.mjs'
+import editorHelper from './editor-helper.mjs'
+import proxy from './proxy.mjs'
 
 export default { ...constants, ...deploy, ...editorHelper, ...proxy }

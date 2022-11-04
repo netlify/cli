@@ -1,5 +1,5 @@
 // @ts-check
-const concordance = require('concordance')
+import concordance from 'concordance'
 
 
 const { concordanceDiffOptions, concordanceOptions } = require('./options.mjs')

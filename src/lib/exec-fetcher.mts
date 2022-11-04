@@ -1,18 +1,18 @@
 // @ts-check
 
-const path = require('path')
+import path from 'path'
 
-const process = require('process')
+import process from 'process'
 
 const { fetchLatest, fetchVersion, newerVersion, updateAvailable } = require('gh-release-fetch')
-const isExe = require('isexe')
+import isExe from 'isexe'
 
 // cannot directly import from ../utils as it would create a circular dependency.
 // the file `src/utils/live-tunnel.js` depends on this file
 
 const { NETLIFYDEVWARN, error, getTerminalLink, log } = require('../utils/command-helpers.mjs')
 
-const execa = require('../utils/execa.mjs')
+import execa from '../utils/execa.mjs'
 
 
 const isWindows = () => process.platform === 'win32'

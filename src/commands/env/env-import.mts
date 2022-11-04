@@ -3,11 +3,11 @@
 const { readFile } = require('fs').promises
 
 
-const AsciiTable = require('ascii-table')
+import AsciiTable from 'ascii-table'
 
-const dotenv = require('dotenv')
+import dotenv from 'dotenv'
 
-const isEmpty = require('lodash/isEmpty')
+import { isEmpty } from 'lodash'
 
 const {
   

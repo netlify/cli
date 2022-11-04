@@ -1,6 +1,6 @@
 // @ts-check
 
-const gitRepoInfo = require('git-repo-info')
+import gitRepoInfo from 'git-repo-info'
 
 const {
   

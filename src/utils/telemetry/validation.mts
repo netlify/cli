@@ -5,7 +5,7 @@
 const { log } = require('../command-helpers.mjs')
 
 
-module.exports = function isValidEventName(eventName: $TSFixMe, config: $TSFixMe) {
+export function isValidEventName(eventName: $TSFixMe, config: $TSFixMe) {
   const validProject = [config.projectName]
   const validObjects = config.objects || []
   const matches = eventName.match(/([a-zA-Z]*):([a-zA-Z]*)_([a-zA-Z]*$)/)

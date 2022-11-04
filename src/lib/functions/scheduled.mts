@@ -1,4 +1,4 @@
-const AnsiToHtml = require('ansi-to-html')
+import AnsiToHtml from 'ansi-to-html'
 
 const ansiToHtml = new AnsiToHtml()
 

@@ -1,7 +1,7 @@
 
 const { promisify } = require('util')
 
-const walker = require('folder-walker')
+import walker from 'folder-walker'
 
 const pump = promisify(require('pump'))
 

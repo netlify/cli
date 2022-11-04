@@ -1,15 +1,15 @@
 // @ts-check
-const events = require('events')
-const path = require('path')
-const process = require('process')
+import events from 'events'
+import path from 'path'
+import process from 'process'
 const { promisify } = require('util')
 
-const boxen = require('boxen')
+import boxen from 'boxen'
 const { Option } = require('commander')
-const execa = require('execa')
-const StaticServer = require('static-server')
-const stripAnsiCc = require('strip-ansi-control-characters')
-const waitPort = require('wait-port')
+import execa from 'execa'
+import StaticServer from 'static-server'
+import stripAnsiCc from 'strip-ansi-control-characters'
+import waitPort from 'wait-port'
 
 const { promptEditorHelper } = require('../../lib/edge-functions/index.mjs')
 const { startFunctionsServer } = require('../../lib/functions/server.mjs')

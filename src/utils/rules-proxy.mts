@@ -1,14 +1,15 @@
 // @ts-check
 
-const path = require('path')
+import path from 'path'
 
 
-const chokidar = require('chokidar')
+import chokidar from 'chokidar'
 
-const cookie = require('cookie')
-const redirector = require('netlify-redirector')
+import cookie from 'cookie'
+// @ts-ignore
+import redirector from 'netlify-redirector'
 
-const pFilter = require('p-filter')
+import pFilter from 'p-filter'
 
 
 const { fileExistsAsync } = require('../lib/fs.mjs')

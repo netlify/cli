@@ -9,10 +9,10 @@ const { cwd, env } = require('process')
 
 const { get } = require('dot-prop')
 
-const inquirer = require('inquirer')
-const isObject = require('lodash/isObject')
+import inquirer from 'inquirer'
+import { isObject } from 'lodash'
 
-const prettyjson = require('prettyjson')
+import prettyjson from 'prettyjson'
 
 // TODO: This should be looked at again as TS is not finding runCoreSteps as an exported member of the package
 // when it's been confirmed that it does exist and is an exported member

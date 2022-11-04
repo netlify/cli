@@ -1,5 +1,5 @@
 // @ts-check
-const CronParser = require('cron-parser')
+import CronParser from 'cron-parser'
 
 
 const { error: errorExit } = require('../../utils/command-helpers.mjs')

@@ -1,6 +1,6 @@
 // @ts-check
 
-const AsciiTable = require('ascii-table')
+import AsciiTable from 'ascii-table'
 
 
 const { chalk } = require('../command-helpers.mjs')

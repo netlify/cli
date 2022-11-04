@@ -1,10 +1,10 @@
 // @ts-check
 
-const dotProp = require('dot-prop')
+import dotProp from 'dot-prop'
 
-const inquirer = require('inquirer')
+import inquirer from 'inquirer'
 
-const isEmpty = require('lodash/isEmpty')
+import { isEmpty } from 'lodash'
 
 
 const { chalk, ensureNetlifyIgnore, exit, getRepoData, log, track } = require('../../utils/index.mjs')

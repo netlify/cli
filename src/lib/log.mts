@@ -1,5 +1,5 @@
 
-const dotProp = require('dot-prop')
+import dotProp from 'dot-prop'
 
 
 const { chalk } = require('../utils/index.mjs')

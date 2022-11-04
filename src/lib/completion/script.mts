@@ -7,7 +7,7 @@
 
 const { existsSync, readFileSync } = require('fs')
 
-const process = require('process')
+import process from 'process'
 
 
 const { log, parseEnv } = require('tabtab')
