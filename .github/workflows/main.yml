@@ -17,7 +17,10 @@ jobs:
       # Sets an output parameter if this is a release PR
       - name: Check for release
         id: release-check
-        run: echo "IS_RELEASE=true" >> $GITHUB_OUTPUT
+        # For windows we have to use $env:
+        run: |-
+          echo "IS_RELEASE=true" >> $GITHUB_OUTPUT
+          echo "IS_RELEASE=true" >> $env:GITHUB_OUTPUT
         if: "${{ startsWith(github.head_ref, 'release-') }}"
       - name: Git checkout
         uses: actions/checkout@v3
@@ -61,7 +64,10 @@ jobs:
       # Sets an output parameter if this is a release PR
       - name: Check for release
         id: release-check
-        run: echo "IS_RELEASE=true" >> $GITHUB_OUTPUT
+        # For windows we have to use $env:
+        run: |-
+          echo "IS_RELEASE=true" >> $GITHUB_OUTPUT
+          echo "IS_RELEASE=true" >> $env:GITHUB_OUTPUT
         if: "${{ startsWith(github.head_ref, 'release-') }}"
       # This improves Windows network performance, we need this since we open many ports in our tests
       - name: Increase Windows port limit and reduce time wait delay
@@ -84,6 +90,7 @@ jobs:
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
       - name: Setup Deno
         uses: denoland/setup-deno@v1
+        if: '${{!steps.release-check.outputs.IS_RELEASE}}'
         with:
           deno-version: v1.x
       - name: Install core dependencies
@@ -124,11 +131,14 @@ jobs:
         if: '${{ !steps.release-check.outputs.IS_RELEASE }}'
       - name: Get test coverage flags
         id: test-coverage-flags
+        # For windows we have to use $env:
         run: |-
           os=${{ matrix.os }}
           node=$(node --version)
           echo "os=${os/-latest/}" >> $GITHUB_OUTPUT
+          echo "os=${os/-latest/}" >> $env:GITHUB_OUTPUT
           echo "node=node_${node/.*.*/}" >> $GITHUB_OUTPUT
+          echo "node=node_${node/.*.*/}" >> $env:GITHUB_OUTPUT
         shell: bash
         if: '${{ !steps.release-check.outputs.IS_RELEASE }}'
       - uses: codecov/codecov-action@v3
