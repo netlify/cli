@@ -420,6 +420,70 @@ test('Serves an Edge Function that transforms the response', async (t) => {
   })
 })
 
+test('Serves an Edge Function that streams the response', async (t) => {
+  await withSiteBuilder('site-with-edge-function-that-streams-response', async (builder) => {
+    const publicDir = 'public'
+    builder
+      .withNetlifyToml({
+        config: {
+          build: {
+            publish: publicDir,
+            edge_functions: 'netlify/edge-functions',
+          },
+          edge_functions: [
+            {
+              function: 'stream',
+              path: '/stream',
+            },
+          ],
+        },
+      })
+      .withEdgeFunction({
+        handler: async () => {
+          // eslint-disable-next-line no-undef -- `ReadableStream` is a global in Deno
+          const body = new ReadableStream({
+            async start(controller) {
+              setInterval(() => {
+                const msg = new TextEncoder().encode(`${Date.now()}\r\n`)
+                controller.enqueue(msg)
+              }, 100)
+
+              setTimeout(() => {
+                controller.close()
+              }, 500)
+            },
+          })
+
+          return new Response(body, {
+            headers: {
+              'content-type': 'text/event-stream',
+            },
+            status: 200,
+          })
+        },
+        name: 'stream',
+      })
+
+    await builder.buildAsync()
+
+    await withDevServer({ cwd: builder.directory }, async (server) => {
+      let numberOfChunks = 0
+
+      await new Promise((resolve, reject) => {
+        const stream = got.stream(`${server.url}/stream`)
+        stream.on('data', () => {
+          numberOfChunks += 1
+        })
+        stream.on('end', resolve)
+        stream.on('error', reject)
+      })
+
+      // streamed responses arrive in more than one batch
+      t.not(numberOfChunks, 1)
+    })
+  })
+})
+
 test('redirect with country cookie', async (t) => {
   await withSiteBuilder('site-with-country-cookie', async (builder) => {
     builder
