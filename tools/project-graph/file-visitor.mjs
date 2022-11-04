@@ -21,6 +21,36 @@ export const resolveRelativeModule = (moduleSpecifier) => {
   if (existsSync(`${moduleSpecifier}/index.js`)) {
     return `${moduleSpecifier}/index.js`
   }
+  if (existsSync(`${moduleSpecifier}.cjs`)) {
+    return `${moduleSpecifier}.cjs`
+  }
+  if (existsSync(`${moduleSpecifier}/index.cjs`)) {
+    return `${moduleSpecifier}/index.cjs`
+  }
+  if (existsSync(`${moduleSpecifier}.mjs`)) {
+    return `${moduleSpecifier}.mjs`
+  }
+  if (existsSync(`${moduleSpecifier}/index.mjs`)) {
+    return `${moduleSpecifier}/index.mjs`
+  }
+  if (existsSync(`${moduleSpecifier}.ts`)) {
+    return `${moduleSpecifier}.ts`
+  }
+  if (existsSync(`${moduleSpecifier}/index.ts`)) {
+    return `${moduleSpecifier}/index.ts`
+  }
+  if (existsSync(`${moduleSpecifier}.cts`)) {
+    return `${moduleSpecifier}.cts`
+  }
+  if (existsSync(`${moduleSpecifier}/index.cts`)) {
+    return `${moduleSpecifier}/index.cts`
+  }
+  if (existsSync(`${moduleSpecifier}.mts`)) {
+    return `${moduleSpecifier}.mts`
+  }
+  if (existsSync(`${moduleSpecifier}/index.mts`)) {
+    return `${moduleSpecifier}/index.mts`
+  }
 
   return null
 }
