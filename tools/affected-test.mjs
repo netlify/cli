@@ -11,7 +11,7 @@ import glob from 'fast-glob'
 
 import { DependencyGraph, fileVisitor, visitorPlugins } from './project-graph/index.mjs'
 
-export const TEST_MATCHING_GLOB = /\.test\.m?js$/gm
+export const TEST_MATCHING_GLOB = /\.test\.(m|c)?(j|t)s$/gm
 
 export const getChangedFiles = async (compareTarget = 'origin/main') => {
   const { stdout } = await execa('git', ['diff', '--name-only', 'HEAD', compareTarget])
@@ -29,7 +29,7 @@ export const getChangedFiles = async (compareTarget = 'origin/main') => {
 export const getAffectedFiles = (changedFiles) => {
   // glob is using only posix file paths on windows we need the `\`
   // by using join the paths are adjusted to the operating system
-  const testFiles = glob.sync(['tests/integration/**/*.test.cjs']).map((filePath) => join(filePath))
+  const testFiles = glob.sync(['tests/integration/**/*.test.?(c|m)+(j|t)s']).map((filePath) => join(filePath))
 
   // in this case all files are affected
   if (
