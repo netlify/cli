@@ -22,7 +22,7 @@ test.before(async (t) => {
     name: 'site-name',
     id_domain: 'localhost',
   }
-  const { server } = startMockApi({
+  const { server } = await startMockApi({
     routes: [
       { path: 'sites/site_id', response: siteInfo },
       { path: 'sites/site_id/service-instances', response: [] },

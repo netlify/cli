@@ -39,13 +39,25 @@ const startMockApi = ({ routes }) => {
     res.json({ message: 'Not found' })
   })
 
-  return { server: app.listen(), requests }
+  const returnPromise = new Promise((resolve, reject) => {
+    const server = app.listen()
+
+    server.on('listening', () => {
+      resolve({ server, requests })
+    })
+
+    server.on('error', (error) => {
+      reject(error)
+    })
+  })
+
+  return returnPromise
 }
 
 const withMockApi = async (routes, testHandler) => {
   let mockApi
   try {
-    mockApi = startMockApi({ routes })
+    mockApi = await startMockApi({ routes })
     const apiUrl = `http://localhost:${mockApi.server.address().port}/api/v1`
     return await testHandler({ apiUrl, requests: mockApi.requests })
   } finally {
