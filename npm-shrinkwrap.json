@@ -114,7 +114,7 @@
         "uuid": "^9.0.0",
         "wait-port": "^1.0.1",
         "winston": "^3.2.1",
-        "write-file-atomic": "^4.0.0"
+        "write-file-atomic": "^5.0.0"
       },
       "bin": {
         "netlify": "bin/run.mjs",
@@ -6286,6 +6286,19 @@
       },
       "funding": {
         "url": "https://github.com/chalk/strip-ansi?sponsor=1"
+      }
+    },
+    "node_modules/ava/node_modules/write-file-atomic": {
+      "version": "4.0.2",
+      "resolved": "https://registry.npmjs.org/write-file-atomic/-/write-file-atomic-4.0.2.tgz",
+      "integrity": "sha512-7KxauUdBmSdWnmpaGFg+ppNjKF8uNLry8LyzjauQDOVONfFLNKrKvQOxZ/VuTIcS/gge/YNahf5RIIQWTSarlg==",
+      "dev": true,
+      "dependencies": {
+        "imurmurhash": "^0.1.4",
+        "signal-exit": "^3.0.7"
+      },
+      "engines": {
+        "node": "^12.13.0 || ^14.15.0 || >=16.0.0"
       }
     },
     "node_modules/aws-sign2": {
@@ -23711,15 +23724,15 @@
       "integrity": "sha1-tSQ9jz7BqjXxNkYFvA0QNuMKtp8="
     },
     "node_modules/write-file-atomic": {
-      "version": "4.0.2",
-      "resolved": "https://registry.npmjs.org/write-file-atomic/-/write-file-atomic-4.0.2.tgz",
-      "integrity": "sha512-7KxauUdBmSdWnmpaGFg+ppNjKF8uNLry8LyzjauQDOVONfFLNKrKvQOxZ/VuTIcS/gge/YNahf5RIIQWTSarlg==",
+      "version": "5.0.0",
+      "resolved": "https://registry.npmjs.org/write-file-atomic/-/write-file-atomic-5.0.0.tgz",
+      "integrity": "sha512-R7NYMnHSlV42K54lwY9lvW6MnSm1HSJqZL3xiSgi9E7//FYaI74r2G0rd+/X6VAMkHEdzxQaU5HUOXWUz5kA/w==",
       "dependencies": {
         "imurmurhash": "^0.1.4",
         "signal-exit": "^3.0.7"
       },
       "engines": {
-        "node": "^12.13.0 || ^14.15.0 || >=16.0.0"
+        "node": "^14.17.0 || ^16.13.0 || >=18.0.0"
       }
     },
     "node_modules/ws": {
@@ -28054,6 +28067,16 @@
           "dev": true,
           "requires": {
             "ansi-regex": "^6.0.1"
+          }
+        },
+        "write-file-atomic": {
+          "version": "4.0.2",
+          "resolved": "https://registry.npmjs.org/write-file-atomic/-/write-file-atomic-4.0.2.tgz",
+          "integrity": "sha512-7KxauUdBmSdWnmpaGFg+ppNjKF8uNLry8LyzjauQDOVONfFLNKrKvQOxZ/VuTIcS/gge/YNahf5RIIQWTSarlg==",
+          "dev": true,
+          "requires": {
+            "imurmurhash": "^0.1.4",
+            "signal-exit": "^3.0.7"
           }
         }
       }
@@ -41291,9 +41314,9 @@
       "integrity": "sha1-tSQ9jz7BqjXxNkYFvA0QNuMKtp8="
     },
     "write-file-atomic": {
-      "version": "4.0.2",
-      "resolved": "https://registry.npmjs.org/write-file-atomic/-/write-file-atomic-4.0.2.tgz",
-      "integrity": "sha512-7KxauUdBmSdWnmpaGFg+ppNjKF8uNLry8LyzjauQDOVONfFLNKrKvQOxZ/VuTIcS/gge/YNahf5RIIQWTSarlg==",
+      "version": "5.0.0",
+      "resolved": "https://registry.npmjs.org/write-file-atomic/-/write-file-atomic-5.0.0.tgz",
+      "integrity": "sha512-R7NYMnHSlV42K54lwY9lvW6MnSm1HSJqZL3xiSgi9E7//FYaI74r2G0rd+/X6VAMkHEdzxQaU5HUOXWUz5kA/w==",
       "requires": {
         "imurmurhash": "^0.1.4",
         "signal-exit": "^3.0.7"
