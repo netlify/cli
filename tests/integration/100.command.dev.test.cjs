@@ -326,7 +326,7 @@ test.only('Serves an Edge Function with caching', async (t) => {
             {
               function: 'hello',
               path: '/edge-function',
-              mode: 'after-cache',
+              cache: 'manual',
             },
           ],
         },
