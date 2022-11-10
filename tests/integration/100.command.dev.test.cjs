@@ -312,6 +312,48 @@ test('Serves an Edge Function with a rewrite', async (t) => {
   })
 })
 
+
+test.only('Serves an Edge Function with caching', async (t) => {
+  await withSiteBuilder('site-with-edge-function-with-caching', async (builder) => {
+    const publicDir = 'public'
+    builder
+      .withNetlifyToml({
+        config: {
+          build: {
+            publish: publicDir,
+            edge_functions: 'netlify/edge-functions',
+          },
+          edge_functions: [
+            {
+              function: 'hello',
+              path: '/edge-function',
+              mode: 'after-cache'
+            },
+          ],
+        },
+      })
+      .withContentFiles([
+        {
+          path: path.join(publicDir, 'index.html'),
+          content: '<html>index</html>',
+        },
+      ])
+      .withEdgeFunction({
+        handler: () => new Response('Hello world'),
+        name: 'hello',
+      })
+
+    await builder.buildAsync()
+
+    await withDevServer({ cwd: builder.directory }, async (server) => {
+      const response = await got(`${server.url}/edge-function`)
+
+      t.is(response.statusCode, 200)
+      t.is(response.body, 'Hello world')
+    })
+  })
+})
+
 test('Serves an Edge Function that includes context with site information', async (t) => {
   await withSiteBuilder('site-with-edge-function-printing-site-info', async (builder) => {
     const publicDir = 'public'
