@@ -13,7 +13,7 @@
         "@netlify/build": "^28.1.12",
         "@netlify/config": "^19.1.2",
         "@netlify/edge-bundler": "^4.0.0",
-        "@netlify/framework-info": "^9.5.0",
+        "@netlify/framework-info": "^9.5.1",
         "@netlify/local-functions-proxy": "^1.1.1",
         "@netlify/zip-it-and-ship-it": "^8.1.0",
         "@octokit/rest": "^19.0.0",
@@ -3723,9 +3723,9 @@
       }
     },
     "node_modules/@netlify/framework-info": {
-      "version": "9.5.0",
-      "resolved": "https://registry.npmjs.org/@netlify/framework-info/-/framework-info-9.5.0.tgz",
-      "integrity": "sha512-jikQX/dbp0DS1bBxg08O0IrrhZ7eDUbrtogPelSmk1grZ8Y2J6N9fVic+fmji0Rba49IUqFJRoGLgMs+ktWhHQ==",
+      "version": "9.5.1",
+      "resolved": "https://registry.npmjs.org/@netlify/framework-info/-/framework-info-9.5.1.tgz",
+      "integrity": "sha512-UqwJM7Z2SnZMnX85GkfE6lHfG9ZGoWwh8ejyBr84arjXg21xcOUl3Gy0txuON2R9dR4YseuPWKoHJqfqObbplQ==",
       "dependencies": {
         "ajv": "^8.0.0",
         "filter-obj": "^3.0.0",
@@ -3760,9 +3760,9 @@
       }
     },
     "node_modules/@netlify/framework-info/node_modules/ajv": {
-      "version": "8.11.0",
-      "resolved": "https://registry.npmjs.org/ajv/-/ajv-8.11.0.tgz",
-      "integrity": "sha512-wGgprdCvMalC0BztXvitD2hC04YffAvtsUn93JbGXYLAtCUO4xd17mCCZQxUOItiBwZvJScWo8NIvQMQ71rdpg==",
+      "version": "8.11.2",
+      "resolved": "https://registry.npmjs.org/ajv/-/ajv-8.11.2.tgz",
+      "integrity": "sha512-E4bfmKAhGiSTvMfL1Myyycaub+cUEU2/IvpylXkUu7CHBkBj1f/ikdzbD7YQ6FKUbixDxeYvB/xY4fvyroDlQg==",
       "dependencies": {
         "fast-deep-equal": "^3.1.1",
         "json-schema-traverse": "^1.0.0",
@@ -26859,9 +26859,9 @@
       }
     },
     "@netlify/framework-info": {
-      "version": "9.5.0",
-      "resolved": "https://registry.npmjs.org/@netlify/framework-info/-/framework-info-9.5.0.tgz",
-      "integrity": "sha512-jikQX/dbp0DS1bBxg08O0IrrhZ7eDUbrtogPelSmk1grZ8Y2J6N9fVic+fmji0Rba49IUqFJRoGLgMs+ktWhHQ==",
+      "version": "9.5.1",
+      "resolved": "https://registry.npmjs.org/@netlify/framework-info/-/framework-info-9.5.1.tgz",
+      "integrity": "sha512-UqwJM7Z2SnZMnX85GkfE6lHfG9ZGoWwh8ejyBr84arjXg21xcOUl3Gy0txuON2R9dR4YseuPWKoHJqfqObbplQ==",
       "requires": {
         "ajv": "^8.0.0",
         "filter-obj": "^3.0.0",
@@ -26887,9 +26887,9 @@
           }
         },
         "ajv": {
-          "version": "8.11.0",
-          "resolved": "https://registry.npmjs.org/ajv/-/ajv-8.11.0.tgz",
-          "integrity": "sha512-wGgprdCvMalC0BztXvitD2hC04YffAvtsUn93JbGXYLAtCUO4xd17mCCZQxUOItiBwZvJScWo8NIvQMQ71rdpg==",
+          "version": "8.11.2",
+          "resolved": "https://registry.npmjs.org/ajv/-/ajv-8.11.2.tgz",
+          "integrity": "sha512-E4bfmKAhGiSTvMfL1Myyycaub+cUEU2/IvpylXkUu7CHBkBj1f/ikdzbD7YQ6FKUbixDxeYvB/xY4fvyroDlQg==",
           "requires": {
             "fast-deep-equal": "^3.1.1",
             "json-schema-traverse": "^1.0.0",
