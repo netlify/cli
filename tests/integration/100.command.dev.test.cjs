@@ -312,7 +312,7 @@ test('Serves an Edge Function with a rewrite', async (t) => {
   })
 })
 
-test.only('Serves an Edge Function with caching', async (t) => {
+test('Serves an Edge Function with caching', async (t) => {
   await withSiteBuilder('site-with-edge-function-with-caching', async (builder) => {
     const publicDir = 'public'
     builder
