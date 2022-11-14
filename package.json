@@ -228,7 +228,7 @@
   },
   "dependencies": {
     "@netlify/build": "^28.1.13",
-    "@netlify/config": "^19.1.2",
+    "@netlify/config": "^20.0.0",
     "@netlify/edge-bundler": "^4.0.0",
     "@netlify/framework-info": "^9.5.0",
     "@netlify/local-functions-proxy": "^1.1.1",
