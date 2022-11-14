@@ -285,15 +285,10 @@ class EdgeFunctionsRegistry {
       declarations,
       functions: this.functions,
     })
-    const preCacheRoutes = manifest.routes.map((route) => ({
+    const routes = [...manifest.routes, ...manifest.post_cache_routes].map((route) => ({
       ...route,
       pattern: new RegExp(route.pattern),
     }))
-    const postCacheRoutes = manifest.post_cache_routes.map((route) => ({
-      ...route,
-      pattern: new RegExp(route.pattern),
-    }))
-    const routes = [...preCacheRoutes, ...postCacheRoutes]
     const functionNames = routes.filter(({ pattern }) => pattern.test(urlPath)).map((route) => route.function)
     const orphanedDeclarations = await this.matchURLPathAgainstOrphanedDeclarations(urlPath)
 
@@ -311,15 +306,11 @@ class EdgeFunctionsRegistry {
       declarations: this.declarationsFromConfig,
       functions,
     })
-    const preCacheRoutes = manifest.routes.map((route) => ({
+
+    const routes = [...manifest.routes, ...manifest.post_cache_routes].map((route) => ({
       ...route,
       pattern: new RegExp(route.pattern),
     }))
-    const postCacheRoutes = manifest.post_cache_routes.map((route) => ({
-      ...route,
-      pattern: new RegExp(route.pattern),
-    }))
-    const routes = [...preCacheRoutes, ...postCacheRoutes]
 
     const functionNames = routes
       .filter((route) => {
