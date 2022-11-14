@@ -285,7 +285,7 @@ class EdgeFunctionsRegistry {
       declarations,
       functions: this.functions,
     })
-    const routes = manifest.routes.map((route) => ({
+    const routes = [...manifest.routes, ...manifest.post_cache_routes].map((route) => ({
       ...route,
       pattern: new RegExp(route.pattern),
     }))
@@ -306,10 +306,12 @@ class EdgeFunctionsRegistry {
       declarations: this.declarationsFromConfig,
       functions,
     })
-    const routes = manifest.routes.map((route) => ({
+
+    const routes = [...manifest.routes, ...manifest.post_cache_routes].map((route) => ({
       ...route,
       pattern: new RegExp(route.pattern),
     }))
+
     const functionNames = routes
       .filter((route) => {
         const hasFunctionFile = this.functions.some((func) => func.name === route.function)
