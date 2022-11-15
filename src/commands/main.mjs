@@ -29,7 +29,7 @@ import { createOpenCommand } from './open/index.cjs'
 import { createRecipesCommand, createRecipesListCommand } from './recipes/index.cjs'
 import { createSitesCommand } from './sites/index.cjs'
 import { createStatusCommand } from './status/index.mjs'
-import { createSwitchCommand } from './switch/index.cjs'
+import { createSwitchCommand } from './switch/index.mjs'
 import { createUnlinkCommand } from './unlink/index.mjs'
 import { createWatchCommand } from './watch/index.cjs'
 
