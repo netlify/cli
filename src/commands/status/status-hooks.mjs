@@ -1,13 +1,15 @@
 // @ts-check
-const { get } = require('dot-prop')
-const prettyjson = require('prettyjson')
+import { get } from 'dot-prop'
+import prettyjson from 'prettyjson'
 
-const { error, log, warn } = require('../../utils/index.cjs')
+import utils from '../../utils/index.cjs'
+
+const { error, log, warn } = utils
 
 /**
  * The status:hooks command
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').default} command
  */
 const statusHooks = async (options, command) => {
   const { api, site } = command.netlify
@@ -60,10 +62,8 @@ Site Hook Status │
 
 /**
  * Creates the `netlify status:hooks` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').default} program
  * @returns
  */
-const createStatusHooksCommand = (program) =>
+export const createStatusHooksCommand = (program) =>
   program.command('status:hooks').description('Print hook information of the linked site').action(statusHooks)
-
-module.exports = { createStatusHooksCommand }

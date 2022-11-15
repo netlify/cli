@@ -1,15 +1,17 @@
 // @ts-check
-const clean = require('clean-deep')
-const prettyjson = require('prettyjson')
+import clean from 'clean-deep'
+import prettyjson from 'prettyjson'
 
-const { chalk, error, exit, getToken, log, logJson, warn } = require('../../utils/index.cjs')
+import utils from '../../utils/index.cjs'
 
-const { createStatusHooksCommand } = require('./status-hooks.cjs')
+import { createStatusHooksCommand } from './status-hooks.mjs'
+
+const { chalk, error, exit, getToken, log, logJson, warn } = utils
 
 /**
  * The status command
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').default} command
  */
 const status = async (options, command) => {
   const { api, globalConfig, site } = command.netlify
@@ -109,10 +111,10 @@ const status = async (options, command) => {
 
 /**
  * Creates the `netlify status` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').default} program
  * @returns
  */
-const createStatusCommand = (program) => {
+export const createStatusCommand = (program) => {
   createStatusHooksCommand(program)
 
   return program
@@ -121,4 +123,3 @@ const createStatusCommand = (program) => {
     .option('--verbose', 'Output system info')
     .action(status)
 }
-module.exports = { createStatusCommand }
