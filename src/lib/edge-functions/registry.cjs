@@ -1,4 +1,3 @@
-// @ts-check
 const { fileURLToPath } = require('url')
 
 const { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log, warn, watchDebounced } = require('../../utils/command-helpers.cjs')
@@ -289,7 +288,21 @@ class EdgeFunctionsRegistry {
       ...route,
       pattern: new RegExp(route.pattern),
     }))
-    const functionNames = routes.filter(({ pattern }) => pattern.test(urlPath)).map((route) => route.function)
+
+    const functionNames = routes
+      .filter(({ pattern }) => pattern.test(urlPath))
+      .map((route) => route.function)
+      .reduce(
+        (acc, curr) => {
+          acc.allFunctions.push(curr)
+          manifest.post_cache_routes.some((route) => route.function === curr)
+            ? acc.postCacheFunctions.push(curr)
+            : acc.preCacheFunctions.push(curr)
+          return acc
+        },
+        { postCacheFunctions: [], preCacheFunctions: [], allFunctions: [] },
+      )
+
     const orphanedDeclarations = await this.matchURLPathAgainstOrphanedDeclarations(urlPath)
 
     return { functionNames, orphanedDeclarations }

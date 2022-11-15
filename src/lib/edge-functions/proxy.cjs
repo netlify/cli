@@ -91,10 +91,6 @@ const initializeProxy = async ({
   const hasEdgeFunctions = userFunctionsPath !== undefined || internalFunctions.length !== 0
 
   return async (req) => {
-    if (req.headers[headers.Passthrough] !== undefined || !hasEdgeFunctions) {
-      return
-    }
-
     const [geoLocation, registry] = await Promise.all([
       getGeoLocation({ mode: geolocationMode, geoCountry, offline, state }),
       server,
@@ -102,14 +98,30 @@ const initializeProxy = async ({
 
     if (!registry) return
 
-    // Setting header with geolocation and site info.
-    req.headers[headers.Geo] = JSON.stringify(geoLocation)
-    req.headers[headers.Site] = createSiteInfoHeader(siteInfo)
-
     await registry.initialize()
 
     const url = new URL(req.url, `http://${LOCAL_HOST}:${mainPort}`)
-    const { functionNames, orphanedDeclarations } = await registry.matchURLPath(url.pathname)
+    const {
+      functionNames: { allFunctions, postCacheFunctions, preCacheFunctions },
+      orphanedDeclarations,
+    } = await registry.matchURLPath(url.pathname)
+    let isPostCacheFunction = false
+
+    // We only have edge functions with caching
+    if (preCacheFunctions.length === 0 && postCacheFunctions.length >= 0) {
+      isPostCacheFunction = true
+    }
+    if ((req.headers[headers.Passthrough] !== undefined && postCacheFunctions.length === 0) || !hasEdgeFunctions) {
+      return
+    }
+    // We get a passthrough header but there are edge functions with caching
+    if (req.headers[headers.Passthrough] !== undefined && postCacheFunctions.length >= 0) {
+      isPostCacheFunction = true
+    }
+
+    // Setting header with geolocation and site info.
+    req.headers[headers.Geo] = JSON.stringify(geoLocation)
+    req.headers[headers.Site] = createSiteInfoHeader(siteInfo)
 
     // If the request matches a config declaration for an Edge Function without
     // a matching function file, we warn the user.
@@ -125,14 +137,17 @@ const initializeProxy = async ({
       )
     })
 
-    if (functionNames.length === 0) {
+    if (allFunctions.length === 0) {
       return
     }
 
+    // if the current edge function has no caching, we only sent pre-cache edge functions
+    // if the current edge function has caching, we only sent a list of that function.
     req[headersSymbol] = {
-      [headers.Functions]: functionNames.join(','),
+      [headers.Functions]: isPostCacheFunction ? postCacheFunctions.join(',') : preCacheFunctions.join(','),
       [headers.ForwardedHost]: `localhost:${mainPort}`,
-      [headers.Passthrough]: 'passthrough',
+      // we only need passthrough for edge functions without caching
+      ...(!isPostCacheFunction && { [headers.Passthrough]: 'passthrough' }),
       [headers.RequestID]: generateUUID(),
       [headers.IP]: LOCAL_HOST,
     }
