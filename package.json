@@ -230,7 +230,7 @@
     "@netlify/build": "^28.1.13",
     "@netlify/config": "^20.0.0",
     "@netlify/edge-bundler": "^4.0.0",
-    "@netlify/framework-info": "^9.5.0",
+    "@netlify/framework-info": "^9.5.1",
     "@netlify/local-functions-proxy": "^1.1.1",
     "@netlify/zip-it-and-ship-it": "^8.1.0",
     "@octokit/rest": "^19.0.0",
