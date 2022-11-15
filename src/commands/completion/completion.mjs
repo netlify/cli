@@ -1,8 +1,11 @@
-const { join } = require('path')
+import { dirname, join } from 'path'
+import { fileURLToPath } from 'url'
 
-const { install, uninstall } = require('tabtab')
+import { install, uninstall } from 'tabtab'
 
-const { createAutocompletion } = require('../../lib/completion/index.cjs')
+import { createAutocompletion } from '../../lib/completion/index.cjs'
+
+const completer = join(dirname(fileURLToPath(import.meta.url)), '../../lib/completion/script.cjs')
 
 /**
  * The completion:generate command
@@ -16,7 +19,7 @@ const completionGenerate = async (options, command) => {
 
   await install({
     name: parent.name(),
-    completer: join(__dirname, '../../lib/completion/script.cjs'),
+    completer,
   })
 
   console.log(`Completion for ${parent.name()} successful installed!`)
@@ -27,7 +30,7 @@ const completionGenerate = async (options, command) => {
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
-const createCompletionCommand = (program) => {
+export const createCompletionCommand = (program) => {
   program
     .command('completion:install')
     .alias('completion:generate')
@@ -53,4 +56,3 @@ const createCompletionCommand = (program) => {
       command.help()
     })
 }
-module.exports = { createCompletionCommand }
