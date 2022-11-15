@@ -1,5 +1,5 @@
 // @ts-check
-import { chalk } from '../../utils/index.cjs'
+import { chalk } from '../../utils/command-helpers.cjs'
 
 import { createFunctionsBuildCommand } from './functions-build.mjs'
 import { createFunctionsCreateCommand } from './functions-create.mjs'
