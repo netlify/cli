@@ -1,21 +1,24 @@
 // @ts-check
-const { stat } = require('fs').promises
-const { basename, resolve } = require('path')
-const { cwd, env } = require('process')
+import { stat } from 'fs/promises'
+import { basename, resolve } from 'path'
+import { cwd, env } from 'process'
 
-const { get } = require('dot-prop')
-const inquirer = require('inquirer')
-const isObject = require('lodash/isObject')
-const prettyjson = require('prettyjson')
+import { runCoreSteps } from '@netlify/build'
+import { restoreConfig, updateConfig } from '@netlify/config'
+import { get } from 'dot-prop'
+import inquirer from 'inquirer'
+import isObject from 'lodash/isObject.js'
+import prettyjson from 'prettyjson'
 
-const runCoreStepPromise = import('@netlify/build')
-const netlifyConfigPromise = import('@netlify/config')
+import { cancelDeploy } from '../../lib/api.cjs'
+import { getBuildOptions, runBuild } from '../../lib/build.cjs'
+import { normalizeFunctionsConfig } from '../../lib/functions/config.cjs'
+import { getLogMessage } from '../../lib/log.cjs'
+import { startSpinner, stopSpinner } from '../../lib/spinner.cjs'
+import utils from '../../utils/index.cjs'
+import { link } from '../link/index.cjs'
+import { sitesCreate } from '../sites/index.cjs'
 
-const { cancelDeploy } = require('../../lib/api.cjs')
-const { getBuildOptions, runBuild } = require('../../lib/build.cjs')
-const { normalizeFunctionsConfig } = require('../../lib/functions/config.cjs')
-const { getLogMessage } = require('../../lib/log.cjs')
-const { startSpinner, stopSpinner } = require('../../lib/spinner.cjs')
 const {
   NETLIFYDEV,
   NETLIFYDEVERR,
@@ -31,9 +34,7 @@ const {
   logJson,
   openBrowser,
   warn,
-} = require('../../utils/index.cjs')
-const { link } = require('../link/index.cjs')
-const { sitesCreate } = require('../sites/index.cjs')
+} = utils
 
 const DEFAULT_DEPLOY_TIMEOUT = 1.2e6
 
@@ -401,7 +402,6 @@ const handleBuild = async ({ cachedConfig, options }) => {
  * @returns
  */
 const bundleEdgeFunctions = async (options) => {
-  const { runCoreSteps } = await runCoreStepPromise
   const statusCb = options.silent ? () => {} : deployProgressCb()
 
   statusCb({
@@ -607,7 +607,6 @@ const deploy = async (options, command) => {
   })
 
   const redirectsPath = `${deployFolder}/_redirects`
-  const { restoreConfig, updateConfig } = await netlifyConfigPromise
   // @ts-ignore
   await updateConfig(configMutations, {
     buildDir: deployFolder,
@@ -656,7 +655,7 @@ const deploy = async (options, command) => {
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
-const createDeployCommand = (program) =>
+export const createDeployCommand = (program) =>
   program
     .command('deploy')
     .description(
@@ -767,5 +766,3 @@ Support for package.json's main field, and intrinsic index.js entrypoints are co
       'netlify deploy --build --context deploy-preview',
     ])
     .action(deploy)
-
-module.exports = { createDeployCommand }
