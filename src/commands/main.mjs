@@ -30,7 +30,7 @@ import { createRecipesCommand, createRecipesListCommand } from './recipes/index.
 import { createSitesCommand } from './sites/index.cjs'
 import { createStatusCommand } from './status/index.mjs'
 import { createSwitchCommand } from './switch/index.cjs'
-import { createUnlinkCommand } from './unlink/index.cjs'
+import { createUnlinkCommand } from './unlink/index.mjs'
 import { createWatchCommand } from './watch/index.cjs'
 
 const { BANG, NETLIFY_CYAN, USER_AGENT, chalk, error, execa, exit, getGlobalConfig, log, track, warn } = utils
