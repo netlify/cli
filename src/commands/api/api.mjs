@@ -1,10 +1,10 @@
 // @ts-check
-const AsciiTable = require('ascii-table')
+import AsciiTable from 'ascii-table'
+import { methods } from 'netlify'
 
-// TODO: use static `import` after migrating this repository to pure ES modules
-const jsClient = import('netlify')
+import utils from '../../utils/index.cjs'
 
-const { chalk, error, exit, log, logJson } = require('../../utils/index.cjs')
+const { chalk, error, exit, log, logJson } = utils
 
 /**
  * The api command
@@ -18,7 +18,6 @@ const apiCommand = async (apiMethod, options, command) => {
   if (options.list) {
     const table = new AsciiTable(`Netlify API Methods`)
     table.setHeading('API Method', 'Docs Link')
-    const { methods } = await jsClient
     methods.forEach((method) => {
       const { operationId } = method
       table.addRow(operationId, `https://open-api.netlify.com/#operation/${operationId}`)
@@ -57,7 +56,7 @@ const apiCommand = async (apiMethod, options, command) => {
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
-const createApiCommand = (program) =>
+export const createApiCommand = (program) =>
   program
     .command('api')
     .argument('[apiMethod]', 'Open API method to run')
@@ -71,5 +70,3 @@ For more information on available methods checkout https://open-api.netlify.com/
     .option('--list', 'List out available API methods', false)
     .addExamples(['netlify api --list', `netlify api getSite --data '{ "site_id": "123456" }'`])
     .action(apiCommand)
-
-module.exports = { createApiCommand }

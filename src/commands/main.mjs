@@ -11,7 +11,7 @@ import { findBestMatch } from 'string-similarity'
 import utils from '../utils/index.cjs'
 
 import { createAddonsCommand } from './addons/index.cjs'
-import { createApiCommand } from './api/index.cjs'
+import { createApiCommand } from './api/index.mjs'
 import BaseCommand from './base-command.mjs'
 import { createBuildCommand } from './build/index.cjs'
 import { createCompletionCommand } from './completion/index.cjs'
