@@ -2,10 +2,10 @@
 import inquirer from 'inquirer'
 import isEmpty from 'lodash/isEmpty.js'
 
-import { ADDON_VALIDATION, prepareAddonCommand } from '../../utils/addons/prepare.cjs'
-import generatePrompts from '../../utils/addons/prompts.cjs'
-import render from '../../utils/addons/render.cjs'
-import { missingConfigValues, requiredConfigValues, updateConfigValues } from '../../utils/addons/validation.cjs'
+import { ADDON_VALIDATION, prepareAddonCommand } from '../../utils/addons/prepare.mjs'
+import generatePrompts from '../../utils/addons/prompts.mjs'
+import { renderConfigValues, renderMissingValues } from '../../utils/addons/render.mjs'
+import { missingConfigValues, requiredConfigValues, updateConfigValues } from '../../utils/addons/validation.mjs'
 import utils from '../../utils/index.cjs'
 
 const { chalk, error, log, parseRawFlags } = utils
@@ -64,7 +64,7 @@ const addonsCreate = async (addonName, options, command) => {
         /* Warn user of missing required values */
         log(`${chalk.redBright.underline.bold(`Error: Missing required configuration for "${addonName} add-on"`)}`)
         log()
-        render.missingValues(missingValues, manifest)
+        renderMissingValues(missingValues, manifest)
         log()
         const msg = `netlify addons:create ${addonName}`
         log(`Please supply the configuration values as CLI flags`)
@@ -81,7 +81,7 @@ const addonsCreate = async (addonName, options, command) => {
 
     const words = `The ${addonName} add-on has the following configurable options:`
     log(` ${chalk.yellowBright.bold(words)}`)
-    render.configValues(addonName, manifest.config)
+    renderConfigValues(addonName, manifest.config)
     log()
     log(` ${chalk.greenBright.bold('Lets configure those!')}`)
 

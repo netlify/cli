@@ -1,7 +1,7 @@
 // @ts-check
-const { chalk, error, exit, log, warn } = require('../command-helpers.cjs')
+import { chalk, error, exit, log, warn } from '../command-helpers.cjs'
 
-const ADDON_VALIDATION = {
+export const ADDON_VALIDATION = {
   EXISTS: 'EXISTS',
   NOT_EXISTS: 'NOT_EXISTS',
 }
@@ -27,7 +27,7 @@ const validateNotExists = ({ addon, addonName, siteData }) => {
   }
 }
 
-const getCurrentAddon = ({ addonName, addons }) => addons.find((addon) => addon.service_slug === addonName)
+export const getCurrentAddon = ({ addonName, addons }) => addons.find((addon) => addon.service_slug === addonName)
 
 const validateCurrentAddon = ({ addon, addonName, siteData, validation }) => {
   switch (validation) {
@@ -46,7 +46,7 @@ const validateCurrentAddon = ({ addon, addonName, siteData, validation }) => {
   }
 }
 
-const getAddonManifest = async ({ addonName, api }) => {
+export const getAddonManifest = async ({ addonName, api }) => {
   let manifest
   try {
     manifest = await api.showServiceManifest({ addonName })
@@ -60,7 +60,7 @@ const getAddonManifest = async ({ addonName, api }) => {
   return manifest
 }
 
-const getSiteData = async ({ api, siteId }) => {
+export const getSiteData = async ({ api, siteId }) => {
   let siteData
   try {
     siteData = await api.getSite({ siteId })
@@ -70,7 +70,7 @@ const getSiteData = async ({ api, siteId }) => {
   return siteData
 }
 
-const getAddons = async ({ api, siteId }) => {
+export const getAddons = async ({ api, siteId }) => {
   let addons
   try {
     addons = await api.listServiceInstancesForSite({ siteId })
@@ -87,7 +87,7 @@ const getAddons = async ({ api, siteId }) => {
  * @param {string} [config.addonName]
  * @param {keyof ADDON_VALIDATION} [config.validation]
  */
-const prepareAddonCommand = async ({ addonName, command, validation }) => {
+export const prepareAddonCommand = async ({ addonName, command, validation }) => {
   const { netlify } = command
   const { api, site } = netlify
   const siteId = site.id
@@ -112,5 +112,3 @@ const prepareAddonCommand = async ({ addonName, command, validation }) => {
 
   return { manifest, addons, addon, siteData }
 }
-
-module.exports = { ADDON_VALIDATION, prepareAddonCommand, getAddonManifest, getSiteData, getAddons, getCurrentAddon }

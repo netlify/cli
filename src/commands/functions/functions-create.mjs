@@ -16,7 +16,7 @@ import inquirerAutocompletePrompt from 'inquirer-autocomplete-prompt'
 import fetch from 'node-fetch'
 import ora from 'ora'
 
-import { getAddons, getCurrentAddon, getSiteData } from '../../utils/addons/prepare.cjs'
+import { getAddons, getCurrentAddon, getSiteData } from '../../utils/addons/prepare.mjs'
 import utils from '../../utils/index.cjs'
 
 const copyTemplateDir = promisify(copyTemplateDirOriginal)

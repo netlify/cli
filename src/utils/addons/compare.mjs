@@ -1,6 +1,6 @@
-const isEqual = require('lodash/isEqual')
+import isEqual from 'lodash/isEqual.js'
 
-module.exports = function compare(oldValues, newValues) {
+export default function compare(oldValues, newValues) {
   const initialData = {
     // default everything is equal
     isEqual: true,

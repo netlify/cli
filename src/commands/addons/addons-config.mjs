@@ -2,12 +2,12 @@
 import inquirer from 'inquirer'
 import isEmpty from 'lodash/isEmpty.js'
 
-import compare from '../../utils/addons/compare.cjs'
-import diffValues from '../../utils/addons/diffs/index.cjs'
-import { ADDON_VALIDATION, prepareAddonCommand } from '../../utils/addons/prepare.cjs'
-import generatePrompts from '../../utils/addons/prompts.cjs'
-import render from '../../utils/addons/render.cjs'
-import { missingConfigValues, requiredConfigValues, updateConfigValues } from '../../utils/addons/validation.cjs'
+import compare from '../../utils/addons/compare.mjs'
+import diffValues from '../../utils/addons/diffs/index.mjs'
+import { ADDON_VALIDATION, prepareAddonCommand } from '../../utils/addons/prepare.mjs'
+import generatePrompts from '../../utils/addons/prompts.mjs'
+import { renderConfigValues } from '../../utils/addons/render.mjs'
+import { missingConfigValues, requiredConfigValues, updateConfigValues } from '../../utils/addons/validation.mjs'
 import utils from '../../utils/index.cjs'
 
 const { chalk, error, log, parseRawFlags } = utils
@@ -66,7 +66,7 @@ const addonsConfig = async (addonName, options, command) => {
   log(` ${chalk.yellowBright.bold(words)}`)
   if (hasConfig) {
     if (!rawFlags.silent) {
-      render.configValues(addonName, manifest.config, currentConfig)
+      renderConfigValues(addonName, manifest.config, currentConfig)
     }
   } else {
     // For addons without manifest. TODO remove once we enforce manifests

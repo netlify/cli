@@ -1,8 +1,8 @@
 // @ts-check
-const { chalk } = require('../command-helpers.cjs')
+import { chalk } from '../command-helpers.cjs'
 
 /* programmatically generate CLI prompts */
-module.exports = function generatePrompts(settings) {
+export default function generatePrompts(settings) {
   const { config, configValues } = settings
   const configItems = Object.keys(config)
 

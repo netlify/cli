@@ -1,7 +1,7 @@
 // @ts-check
 import AsciiTable from 'ascii-table'
 
-import { prepareAddonCommand } from '../../utils/addons/prepare.cjs'
+import { prepareAddonCommand } from '../../utils/addons/prepare.mjs'
 import utils from '../../utils/index.cjs'
 
 const { log, logJson } = utils

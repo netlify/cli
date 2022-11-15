@@ -1,9 +1,9 @@
 // @ts-check
-const AsciiTable = require('ascii-table')
+import AsciiTable from 'ascii-table'
 
-const { chalk } = require('../command-helpers.cjs')
+import { chalk } from '../command-helpers.cjs'
 
-const missingValues = function (values, manifest) {
+export const renderMissingValues = function (values, manifest) {
   const display = values
     .map((item) => {
       const itemDisplay = chalk.redBright.bold(`${item}`)
@@ -14,7 +14,7 @@ const missingValues = function (values, manifest) {
   console.log(display)
 }
 
-const configValues = function (addonName, values, currentValue) {
+export const renderConfigValues = function (addonName, values, currentValue) {
   const table = new AsciiTable(`${addonName} add-on settings`)
 
   const tableHeader = currentValue
@@ -36,9 +36,4 @@ const configValues = function (addonName, values, currentValue) {
     }
   })
   console.log(table.toString())
-}
-
-module.exports = {
-  missingValues,
-  configValues,
 }

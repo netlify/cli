@@ -1,5 +1,5 @@
 // @ts-check
-import { ADDON_VALIDATION, prepareAddonCommand } from '../../utils/addons/prepare.cjs'
+import { ADDON_VALIDATION, prepareAddonCommand } from '../../utils/addons/prepare.mjs'
 import utils from '../../utils/index.cjs'
 
 const { exit, log, openBrowser } = utils

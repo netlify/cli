@@ -1,14 +1,14 @@
 // @ts-check
-const concordance = require('concordance')
+import concordance from 'concordance'
 
-const { concordanceDiffOptions, concordanceOptions } = require('./options.cjs')
+import { concordanceDiffOptions, concordanceOptions } from './options.mjs'
 
 const formatDescriptorDiff = function (actualDescriptor, expectedDescriptor, options) {
   const diffOptions = { ...options, ...concordanceDiffOptions }
   return concordance.diffDescriptors(actualDescriptor, expectedDescriptor, diffOptions)
 }
 
-module.exports = function diffValues(actual, expected) {
+export default function diffValues(actual, expected) {
   const result = concordance.compare(actual, expected, concordanceOptions)
   if (result.pass) {
     return null
