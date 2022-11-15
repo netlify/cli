@@ -1,8 +1,9 @@
 // @ts-check
+import { mkdir } from 'fs/promises'
 
-const { mkdir } = require('fs/promises')
+import utils from '../../utils/index.cjs'
 
-const { NETLIFYDEVERR, NETLIFYDEVLOG, exit, getFunctionsDir, log } = require('../../utils/index.cjs')
+const { NETLIFYDEVERR, NETLIFYDEVLOG, exit, getFunctionsDir, log } = utils
 
 /**
  * The functions:build command
@@ -47,7 +48,7 @@ const functionsBuild = async (options, command) => {
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
-const createFunctionsBuildCommand = (program) =>
+export const createFunctionsBuildCommand = (program) =>
   program
     .command('functions:build')
     .alias('function:build')
@@ -55,5 +56,3 @@ const createFunctionsBuildCommand = (program) =>
     .option('-f, --functions <directory>', 'Specify a functions directory to build to')
     .option('-s, --src <directory>', 'Specify the source directory for the functions')
     .action(functionsBuild)
-
-module.exports = { createFunctionsBuildCommand }

@@ -1,17 +1,9 @@
 // @ts-check
+import AsciiTable from 'ascii-table'
 
-const AsciiTable = require('ascii-table')
+import utils from '../../utils/index.cjs'
 
-const {
-  error,
-  exit,
-
-  getFunctions,
-  getFunctionsDir,
-  log,
-  logJson,
-  warn,
-} = require('../../utils/index.cjs')
+const { error, exit, getFunctions, getFunctionsDir, log, logJson, warn } = utils
 
 const normalizeFunction = function (deployedFunctions, { name, urlPath: url }) {
   const isDeployed = deployedFunctions.some((deployedFunction) => deployedFunction.n === name)
@@ -88,7 +80,7 @@ const functionsList = async (options, command) => {
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
-const createFunctionsListCommand = (program) =>
+export const createFunctionsListCommand = (program) =>
   program
     .command('functions:list')
     .alias('function:list')
@@ -101,5 +93,3 @@ NOT the same as listing the functions that have been deployed. For that info you
     .option('-f, --functions <dir>', 'Specify a functions directory to list')
     .option('--json', 'Output function data as JSON')
     .action(functionsList)
-
-module.exports = { createFunctionsListCommand }

@@ -1,11 +1,11 @@
 // @ts-check
-const { chalk } = require('../../utils/index.cjs')
+import { chalk } from '../../utils/index.cjs'
 
-const { createFunctionsBuildCommand } = require('./functions-build.cjs')
-const { createFunctionsCreateCommand } = require('./functions-create.cjs')
-const { createFunctionsInvokeCommand } = require('./functions-invoke.cjs')
-const { createFunctionsListCommand } = require('./functions-list.cjs')
-const { createFunctionsServeCommand } = require('./functions-serve.cjs')
+import { createFunctionsBuildCommand } from './functions-build.mjs'
+import { createFunctionsCreateCommand } from './functions-create.mjs'
+import { createFunctionsInvokeCommand } from './functions-invoke.mjs'
+import { createFunctionsListCommand } from './functions-list.mjs'
+import { createFunctionsServeCommand } from './functions-serve.mjs'
 
 /**
  * The functions command
@@ -21,7 +21,7 @@ const functions = (options, command) => {
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
-const createFunctionsCommand = (program) => {
+export const createFunctionsCommand = (program) => {
   createFunctionsBuildCommand(program)
   createFunctionsCreateCommand(program)
   createFunctionsInvokeCommand(program)
@@ -43,5 +43,3 @@ The ${name} command will help you manage the functions in this site`,
     ])
     .action(functions)
 }
-
-module.exports = { createFunctionsCommand }

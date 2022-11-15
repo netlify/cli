@@ -1,20 +1,17 @@
 // @ts-check
-const fs = require('fs')
-const path = require('path')
-const process = require('process')
+import fs from 'fs'
+import { createRequire } from 'module'
+import path from 'path'
+import process from 'process'
 
-const inquirer = require('inquirer')
-const fetch = require('node-fetch')
+import inquirer from 'inquirer'
+import fetch from 'node-fetch'
 
-const {
-  BACKGROUND,
-  CLOCKWORK_USERAGENT,
-  NETLIFYDEVWARN,
-  chalk,
-  error,
-  exit,
-  getFunctions,
-} = require('../../utils/index.cjs')
+import utils from '../../utils/index.cjs'
+
+const { BACKGROUND, CLOCKWORK_USERAGENT, NETLIFYDEVWARN, chalk, error, exit, getFunctions } = utils
+
+const require = createRequire(import.meta.url)
 
 // https://docs.netlify.com/functions/trigger-on-events/
 const events = [
@@ -72,7 +69,7 @@ const processPayloadFromFlag = function (payloadString) {
     if (pathexists) {
       try {
         // there is code execution potential here
-        // eslint-disable-next-line n/global-require, import/no-dynamic-require
+        // eslint-disable-next-line import/no-dynamic-require
         payload = require(payloadpath)
         return payload
       } catch (error_) {
@@ -238,7 +235,7 @@ const functionsInvoke = async (nameArgument, options, command) => {
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
-const createFunctionsInvokeCommand = (program) =>
+export const createFunctionsInvokeCommand = (program) =>
   program
     .command('functions:invoke')
     .alias('function:trigger')
@@ -271,5 +268,3 @@ const createFunctionsInvokeCommand = (program) =>
       'netlify functions:invoke myfunction --payload "./pathTo.json"',
     ])
     .action(functionsInvoke)
-
-module.exports = { createFunctionsInvokeCommand }

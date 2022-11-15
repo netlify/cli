@@ -1,20 +1,26 @@
 // @ts-check
-const cp = require('child_process')
-const fs = require('fs')
-const { mkdir } = require('fs').promises
-const path = require('path')
-const process = require('process')
-const { promisify } = require('util')
+import cp from 'child_process'
+import fs from 'fs'
+import { mkdir } from 'fs/promises'
+import { createRequire } from 'module'
+import path, { dirname } from 'path'
+import process from 'process'
+import { fileURLToPath } from 'url'
+import { promisify } from 'util'
 
-const copy = promisify(require('copy-template-dir'))
-const findUp = require('find-up')
-const fuzzy = require('fuzzy')
-const inquirer = require('inquirer')
-const inquirerAutocompletePrompt = require('inquirer-autocomplete-prompt')
-const fetch = require('node-fetch')
-const ora = require('ora')
+import copyTemplateDirOriginal from 'copy-template-dir'
+import findUp from 'find-up'
+import fuzzy from 'fuzzy'
+import inquirer from 'inquirer'
+import inquirerAutocompletePrompt from 'inquirer-autocomplete-prompt'
+import fetch from 'node-fetch'
+import ora from 'ora'
 
-const { getAddons, getCurrentAddon, getSiteData } = require('../../utils/addons/prepare.cjs')
+import { getAddons, getCurrentAddon, getSiteData } from '../../utils/addons/prepare.cjs'
+import utils from '../../utils/index.cjs'
+
+const copyTemplateDir = promisify(copyTemplateDirOriginal)
+
 const {
   NETLIFYDEVERR,
   NETLIFYDEVLOG,
@@ -26,9 +32,11 @@ const {
   log,
   readRepoURL,
   validateRepoURL,
-} = require('../../utils/index.cjs')
+} = utils
 
-const templatesDir = path.resolve(__dirname, '../../functions-templates')
+const require = createRequire(import.meta.url)
+
+const templatesDir = path.resolve(dirname(fileURLToPath(import.meta.url)), '../../functions-templates')
 
 const showRustTemplates = process.env.NETLIFY_EXPERIMENTAL_BUILD_RUST_SOURCE === 'true'
 
@@ -99,7 +107,7 @@ const formatRegistryArrayForInquirer = function (lang, funcType) {
     .filter((folderName) => !folderName.endsWith('.md'))
 
     .map((folderName) =>
-      // eslint-disable-next-line n/global-require, import/no-dynamic-require
+      // eslint-disable-next-line import/no-dynamic-require
       require(path.join(templatesDir, lang, folderName, '.netlify-function-template.cjs')),
     )
     .filter((folderName) => folderName.functionType === funcType)
@@ -354,7 +362,7 @@ const downloadFromURL = async function (command, options, argumentName, function
   // read, execute, and delete function template file if exists
   const fnTemplateFile = path.join(fnFolder, '.netlify-function-template.cjs')
   if (fs.existsSync(fnTemplateFile)) {
-    // eslint-disable-next-line n/global-require, import/no-dynamic-require
+    // eslint-disable-next-line import/no-dynamic-require
     const { onComplete, addons = [] } = require(fnTemplateFile)
 
     await installAddons(command, addons, path.resolve(fnFolder))
@@ -379,7 +387,7 @@ const getNpmInstallPackages = (existingPackages = {}, neededPackages = {}) =>
 // we don't do this check, we may be upgrading the version of a module used in
 // another part of the project, which we don't want to do.
 const installDeps = async ({ functionPackageJson, functionPath, functionsDir }) => {
-  // eslint-disable-next-line import/no-dynamic-require, n/global-require
+  // eslint-disable-next-line import/no-dynamic-require
   const { dependencies: functionDependencies, devDependencies: functionDevDependencies } = require(functionPackageJson)
   const sitePackageJson = await findUp('package.json', { cwd: functionsDir })
   const npmInstallFlags = ['--no-audit', '--no-fund']
@@ -393,7 +401,7 @@ const installDeps = async ({ functionPackageJson, functionPath, functionsDir }) 
     return
   }
 
-  // eslint-disable-next-line import/no-dynamic-require, n/global-require
+  // eslint-disable-next-line import/no-dynamic-require
   const { dependencies: siteDependencies, devDependencies: siteDevDependencies } = require(sitePackageJson)
   const dependencies = getNpmInstallPackages(siteDependencies, functionDependencies)
   const devDependencies = getNpmInstallPackages(siteDevDependencies, functionDevDependencies)
@@ -474,7 +482,7 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
     // These files will not be part of the log message because they'll likely
     // be removed before the command finishes.
     const omittedFromOutput = new Set(['.netlify-function-template.cjs', 'package.json', 'package-lock.json'])
-    const createdFiles = await copy(pathToTemplate, functionPath, vars)
+    const createdFiles = await copyTemplateDir(pathToTemplate, functionPath, vars)
     createdFiles.forEach((filePath) => {
       const filename = path.basename(filePath)
 
@@ -691,7 +699,7 @@ const functionsCreate = async (name, options, command) => {
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
-const createFunctionsCreateCommand = (program) =>
+export const createFunctionsCreateCommand = (program) =>
   program
     .command('functions:create')
     .alias('function:create')
@@ -706,5 +714,3 @@ const createFunctionsCreateCommand = (program) =>
       'netlify functions:create --name hello-world',
     ])
     .action(functionsCreate)
-
-module.exports = { createFunctionsCreateCommand }

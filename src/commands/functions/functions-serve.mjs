@@ -1,10 +1,10 @@
 // @ts-check
+import { join } from 'path'
 
-const { join } = require('path')
+import { startFunctionsServer } from '../../lib/functions/server.cjs'
+import utils from '../../utils/index.cjs'
 
-const { startFunctionsServer } = require('../../lib/functions/server.cjs')
-const { acquirePort, getFunctionsDir, getSiteInformation, injectEnvVariables } = require('../../utils/index.cjs')
-
+const { acquirePort, getFunctionsDir, getSiteInformation, injectEnvVariables } = utils
 const DEFAULT_PORT = 9999
 
 /**
@@ -51,7 +51,7 @@ const functionsServe = async (options, command) => {
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
-const createFunctionsServeCommand = (program) =>
+export const createFunctionsServeCommand = (program) =>
   program
     .command('functions:serve')
     .alias('function:serve')
@@ -61,5 +61,3 @@ const createFunctionsServeCommand = (program) =>
     .option('-o, --offline', 'disables any features that require network access')
     .addHelpText('after', 'Helpful for debugging functions.')
     .action(functionsServe)
-
-module.exports = { createFunctionsServeCommand }

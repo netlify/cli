@@ -59,4 +59,3 @@ export const createAddonsListCommand = (program) =>
     .action(async (options, command) => {
       await addonsList(options, command)
     })
-
