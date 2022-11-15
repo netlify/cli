@@ -1,12 +1,14 @@
 // @ts-check
-const inquirer = require('inquirer')
-const isEmpty = require('lodash/isEmpty')
+import inquirer from 'inquirer'
+import isEmpty from 'lodash/isEmpty.js'
 
-const { ADDON_VALIDATION, prepareAddonCommand } = require('../../utils/addons/prepare.cjs')
-const generatePrompts = require('../../utils/addons/prompts.cjs')
-const render = require('../../utils/addons/render.cjs')
-const { missingConfigValues, requiredConfigValues, updateConfigValues } = require('../../utils/addons/validation.cjs')
-const { chalk, error, log, parseRawFlags } = require('../../utils/index.cjs')
+import { ADDON_VALIDATION, prepareAddonCommand } from '../../utils/addons/prepare.cjs'
+import generatePrompts from '../../utils/addons/prompts.cjs'
+import render from '../../utils/addons/render.cjs'
+import { missingConfigValues, requiredConfigValues, updateConfigValues } from '../../utils/addons/validation.cjs'
+import utils from '../../utils/index.cjs'
+
+const { chalk, error, log, parseRawFlags } = utils
 
 const createAddon = async ({ addonName, api, config, siteData, siteId }) => {
   try {
@@ -113,7 +115,7 @@ const addonsCreate = async (addonName, options, command) => {
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
-const createAddonsCreateCommand = (program) =>
+export const createAddonsCreateCommand = (program) =>
   program
     .command('addons:create')
     .alias('addon:create')
@@ -127,5 +129,3 @@ Add-ons are a way to extend the functionality of your Netlify site`,
     .action(async (addonName, options, command) => {
       await addonsCreate(addonName, options, command)
     })
-
-module.exports = { createAddonsCreateCommand }

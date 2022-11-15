@@ -1,14 +1,16 @@
 // @ts-check
-const inquirer = require('inquirer')
-const isEmpty = require('lodash/isEmpty')
+import inquirer from 'inquirer'
+import isEmpty from 'lodash/isEmpty.js'
 
-const compare = require('../../utils/addons/compare.cjs')
-const diffValues = require('../../utils/addons/diffs/index.cjs')
-const { ADDON_VALIDATION, prepareAddonCommand } = require('../../utils/addons/prepare.cjs')
-const generatePrompts = require('../../utils/addons/prompts.cjs')
-const render = require('../../utils/addons/render.cjs')
-const { missingConfigValues, requiredConfigValues, updateConfigValues } = require('../../utils/addons/validation.cjs')
-const { chalk, error, log, parseRawFlags } = require('../../utils/index.cjs')
+import compare from '../../utils/addons/compare.cjs'
+import diffValues from '../../utils/addons/diffs/index.cjs'
+import { ADDON_VALIDATION, prepareAddonCommand } from '../../utils/addons/prepare.cjs'
+import generatePrompts from '../../utils/addons/prompts.cjs'
+import render from '../../utils/addons/render.cjs'
+import { missingConfigValues, requiredConfigValues, updateConfigValues } from '../../utils/addons/validation.cjs'
+import utils from '../../utils/index.cjs'
+
+const { chalk, error, log, parseRawFlags } = utils
 
 const update = async function ({ addonName, api, currentConfig, instanceId, newConfig, siteId }) {
   const codeDiff = diffValues(currentConfig, newConfig)
@@ -165,7 +167,7 @@ const addonsConfig = async (addonName, options, command) => {
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
-const createAddonsConfigCommand = (program) =>
+export const createAddonsConfigCommand = (program) =>
   program
     .command('addons:config')
     .alias('addon:config')
@@ -176,5 +178,3 @@ const createAddonsConfigCommand = (program) =>
     .action(async (addonName, options, command) => {
       await addonsConfig(addonName, options, command)
     })
-
-module.exports = { createAddonsConfigCommand }

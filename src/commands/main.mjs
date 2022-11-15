@@ -10,7 +10,7 @@ import { findBestMatch } from 'string-similarity'
 // TODO: use named imports again once the imported file is esm
 import utils from '../utils/index.cjs'
 
-import { createAddonsCommand } from './addons/index.cjs'
+import { createAddonsCommand } from './addons/index.mjs'
 import { createApiCommand } from './api/index.mjs'
 import BaseCommand from './base-command.mjs'
 import { createBuildCommand } from './build/index.mjs'

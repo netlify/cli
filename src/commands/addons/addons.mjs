@@ -1,10 +1,9 @@
 // @ts-check
-
-const { createAddonsAuthCommand } = require('./addons-auth.cjs')
-const { createAddonsConfigCommand } = require('./addons-config.cjs')
-const { createAddonsCreateCommand } = require('./addons-create.cjs')
-const { createAddonsDeleteCommand } = require('./addons-delete.cjs')
-const { createAddonsListCommand } = require('./addons-list.cjs')
+import { createAddonsAuthCommand } from './addons-auth.mjs'
+import { createAddonsConfigCommand } from './addons-config.mjs'
+import { createAddonsCreateCommand } from './addons-create.mjs'
+import { createAddonsDeleteCommand } from './addons-delete.mjs'
+import { createAddonsListCommand } from './addons-list.mjs'
 
 /**
  * The addons command
@@ -20,7 +19,7 @@ const addons = (options, command) => {
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
-const createAddonsCommand = (program) => {
+export const createAddonsCommand = (program) => {
   createAddonsAuthCommand(program)
   createAddonsConfigCommand(program)
   createAddonsCreateCommand(program)
@@ -41,4 +40,3 @@ const createAddonsCommand = (program) => {
     ])
     .action(addons)
 }
-module.exports = { createAddonsCommand }

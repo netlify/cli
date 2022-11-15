@@ -1,9 +1,10 @@
 // @ts-check
+import AsciiTable from 'ascii-table'
 
-const AsciiTable = require('ascii-table')
+import { prepareAddonCommand } from '../../utils/addons/prepare.cjs'
+import utils from '../../utils/index.cjs'
 
-const { prepareAddonCommand } = require('../../utils/addons/prepare.cjs')
-const { log, logJson } = require('../../utils/index.cjs')
+const { log, logJson } = utils
 
 /**
  * The addons:list command
@@ -49,7 +50,7 @@ const addonsList = async (options, command) => {
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
-const createAddonsListCommand = (program) =>
+export const createAddonsListCommand = (program) =>
   program
     .command('addons:list')
     .alias('addon:list')
@@ -59,4 +60,3 @@ const createAddonsListCommand = (program) =>
       await addonsList(options, command)
     })
 
-module.exports = { createAddonsListCommand }
