@@ -5,11 +5,11 @@ const jwtDecode = require('jwt-decode')
 const {
   CLOCKWORK_USERAGENT,
   NETLIFYDEVERR,
-  NETLIFYDEVLOG,
   error: errorExit,
   generateNetlifyGraphJWT,
   getInternalFunctionsDir,
   log,
+  logInfo,
 } = require('../../utils/index.cjs')
 
 const { handleBackgroundFunction, handleBackgroundFunctionResult } = require('./background.cjs')
@@ -236,7 +236,9 @@ const startWebServer = async ({ server, settings }) => {
       if (err) {
         errorExit(`${NETLIFYDEVERR} Unable to start functions server: ${err}`)
       } else {
-        log(`${NETLIFYDEVLOG} Functions server is listening on ${settings.functionsPort}`)
+        log()
+        logInfo({ message: `Functions server is listening on ${settings.functionsPort}` })
+        log()
       }
       resolve()
     })

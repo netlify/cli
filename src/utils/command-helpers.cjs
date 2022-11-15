@@ -53,15 +53,78 @@ const USER_AGENT = `${name}/${version} ${platform}-${arch} node-${process.versio
 /** A list of base command flags that needs to be sorted down on documentation and on help pages */
 const BASE_FLAGS = new Set(['--debug', '--httpProxy', '--httpProxyCertificateFilename'])
 
-// eslint-disable-next-line no-magic-numbers
-const NETLIFY_CYAN = chalk.rgb(40, 180, 170)
+const BRAND = {
+  COLORS: {
+    BLUE: '#2451f5',
+    CYAN: `#5cebdf`,
+  },
+  ICONS: {
+    DIAMOND: '◈',
+  },
+}
 
-const NETLIFYDEV = `${chalk.greenBright('◈')} ${NETLIFY_CYAN('Netlify Dev')} ${chalk.greenBright('◈')}`
-const NETLIFYDEVLOG = `${chalk.greenBright('◈')}`
-const NETLIFYDEVWARN = `${chalk.yellowBright('◈')}`
-const NETLIFYDEVERR = `${chalk.redBright('◈')}`
+const NETLIFY_CYAN = chalk.hex(BRAND.COLORS.CYAN)
+const NETLIFYDEVLOG = `${chalk.greenBright(BRAND.ICONS.DIAMOND)}`
+const NETLIFYDEVWARN = `${chalk.yellowBright(BRAND.ICONS.DIAMOND)}`
+const NETLIFYDEVERR = `${chalk.redBright(BRAND.ICONS.DIAMOND)}`
 
 const BANG = process.platform === 'win32' ? '»' : '›'
+
+// indent on commands or description on the help page
+const INDENT_WIDTHS = {
+  HELP: 2,
+  // eslint-disable-next-line no-magic-numbers
+  INFO: 4,
+}
+
+/**
+ * Outputs an important log line in a standard Netlify-branded format
+ * Use for initialising commands and other important headings
+ * @param {string} message
+ */
+const logH1 = (message) => {
+  if (message) {
+    log(' ')
+    log(`${chalk.black(`✨`)} ${chalk.bgHex(BRAND.COLORS.BLUE).whiteBright.bold(` ${message} `)} ${chalk.black(`✨`)}`)
+    log(' ')
+  }
+}
+
+/**
+ * Outputs a log in a standard format
+ * to indicate the start of a sub-section of logs
+ * during command initialisation
+ * @param {string} message
+ */
+const logH2 = (message) => {
+  if (message) {
+    log(`${chalk.bgHex(BRAND.COLORS.CYAN).black(` ${BRAND.ICONS.DIAMOND} ${message} `)}`)
+    log()
+  }
+}
+
+/**
+ * Outputs an info log in a standard format
+ * intended to show heirarchy of information
+ * @param {string} message
+ * @param {dim} bool
+ */
+const logInfo = ({ dim = false, message }) => {
+  if (message) {
+    switch (dim) {
+      case true:
+        log(`${chalk.dim(padLeft(`${BANG} ${message}`, INDENT_WIDTHS.INFO))}`)
+        break
+      default:
+        log(padLeft(`${BANG} ${message}`, INDENT_WIDTHS.INFO))
+    }
+  }
+}
+
+const STATUS_MSG = {
+  LOADED: chalk.green('Loaded'),
+  RELOADED: chalk.green('Reloaded'),
+}
 
 /**
  * Sorts two options so that the base flags are at the bottom of the list
@@ -251,10 +314,13 @@ module.exports = {
   exit,
   getTerminalLink,
   getToken,
+  INDENT_WIDTHS,
+  logInfo,
   log,
+  logH1,
+  logH2,
   logJson,
   NETLIFY_CYAN,
-  NETLIFYDEV,
   NETLIFYDEVERR,
   NETLIFYDEVLOG,
   NETLIFYDEVWARN,
@@ -262,6 +328,7 @@ module.exports = {
   padLeft,
   pollForToken,
   sortOptions,
+  STATUS_MSG,
   USER_AGENT,
   warn,
   watchDebounced,

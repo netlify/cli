@@ -1,7 +1,16 @@
 // @ts-check
 const { fileURLToPath } = require('url')
 
-const { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log, warn, watchDebounced } = require('../../utils/command-helpers.cjs')
+const {
+  NETLIFYDEVERR,
+  NETLIFYDEVLOG,
+  STATUS_MSG,
+  chalk,
+  log,
+  logInfo,
+  warn,
+  watchDebounced,
+} = require('../../utils/command-helpers.cjs')
 
 /**
  * @typedef EdgeFunction
@@ -240,10 +249,10 @@ class EdgeFunctionsRegistry {
       const functionNames = [...matchingFunctions]
 
       if (functionNames.length === 0) {
-        log(`${NETLIFYDEVLOG} ${chalk.green('Reloaded')} edge functions`)
+        logInfo({ message: `${STATUS_MSG.RELOADED} edge functions` })
       } else {
         functionNames.forEach((functionName) => {
-          log(`${NETLIFYDEVLOG} ${chalk.green('Reloaded')} edge function ${chalk.yellow(functionName)}`)
+          logInfo({ message: `${STATUS_MSG.RELOADED} edge function ${chalk.yellow(functionName)}` })
         })
       }
     } catch {
@@ -269,11 +278,11 @@ class EdgeFunctionsRegistry {
   }
 
   static logAddedFunction(func) {
-    log(`${NETLIFYDEVLOG} ${chalk.green('Loaded')} edge function ${chalk.yellow(func.name)}`)
+    logInfo({ message: `${STATUS_MSG.LOADED} edge function ${chalk.yellow(func.name)}` })
   }
 
   static logDeletedFunction(func) {
-    log(`${NETLIFYDEVLOG} ${chalk.magenta('Removed')} edge function ${chalk.yellow(func.name)}`)
+    logInfo({ message: `${chalk.magenta('Removed')} edge function ${chalk.yellow(func.name)}` })
   }
 
   /**

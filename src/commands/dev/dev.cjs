@@ -1,4 +1,3 @@
-// @ts-check
 const events = require('events')
 const path = require('path')
 const process = require('process')
@@ -29,7 +28,6 @@ const {
 const { startSpinner, stopSpinner } = require('../../lib/spinner.cjs')
 const {
   BANG,
-  NETLIFYDEV,
   NETLIFYDEVERR,
   NETLIFYDEVLOG,
   NETLIFYDEVWARN,
@@ -44,6 +42,8 @@ const {
   getToken,
   injectEnvVariables,
   log,
+  logH1,
+  logH2,
   normalizeConfig,
   normalizeContext,
   openBrowser,
@@ -199,7 +199,7 @@ const startFrameworkServer = async function ({ settings }) {
     return {}
   }
 
-  log(`${NETLIFYDEVLOG} Starting Netlify Dev with ${settings.framework || 'custom config'}`)
+  logH2(`Starting netlify dev with ${settings.framework || 'custom config'}`)
 
   const spinner = startSpinner({
     text: `Waiting for framework port ${settings.frameworkPort}. This can be configured using the 'targetPort' property in the netlify.toml`,
@@ -430,11 +430,13 @@ const validateGeoCountryCode = (arg) => {
  * @param {import('../base-command').BaseCommand} command
  */
 const dev = async (options, command) => {
-  log(`${NETLIFYDEV}`)
+  logH1('netlify dev')
+
   const { api, cachedConfig, config, repositoryRoot, site, siteInfo, state } = command.netlify
   const netlifyBuild = await netlifyBuildPromise
   config.dev = { ...config.dev }
   config.build = { ...config.build }
+
   /** @type {import('./types').DevConfig} */
   const devConfig = {
     framework: '#auto',
@@ -498,6 +500,8 @@ const dev = async (options, command) => {
     startPollingForAPIAuthentication({ api, command, config, site, siteInfo })
   }
 
+  logH2('Loading netlify functions')
+
   await startFunctionsServer({
     api,
     command,
@@ -510,7 +514,7 @@ const dev = async (options, command) => {
     timeouts,
   })
 
-  log(`${NETLIFYDEVWARN} Setting up local development server`)
+  logH2('Setting up local development server')
 
   const devCommand = async () => {
     const { ipVersion } = await startFrameworkServer({ settings })

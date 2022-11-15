@@ -8,7 +8,7 @@ const isEmpty = require('lodash/isEmpty')
 
 const { supportsBackgroundFunctions } = require('../lib/account.cjs')
 
-const { NETLIFYDEVLOG, chalk, error, log, warn } = require('./command-helpers.cjs')
+const { STATUS_MSG, chalk, error, log, logH2, logInfo, warn } = require('./command-helpers.cjs')
 const { loadDotEnvFiles } = require('./dot-env.cjs')
 
 // Possible sources of environment variables. For the purpose of printing log messages only. Order does not matter.
@@ -140,6 +140,8 @@ const getEnvSourceName = (source) => {
 // Takes a set of environment variables in the format provided by @netlify/config, augments it with variables from both
 // dot-env files and the process itself, and injects into `process.env`.
 const injectEnvVariables = async ({ devConfig, env, site }) => {
+  logH2('Loading environment variables')
+
   const environment = new Map(Object.entries(env))
   const dotEnvFiles = await loadDotEnvFiles({ envFiles: devConfig.envFiles, projectDir: site.root })
 
@@ -164,25 +166,23 @@ const injectEnvVariables = async ({ devConfig, env, site }) => {
     overriddenSources.forEach((source) => {
       const sourceName = getEnvSourceName(source)
 
-      log(
-        chalk.dim(
-          `${NETLIFYDEVLOG} Ignored ${chalk.bold(sourceName)} env var: ${chalk.yellow(
-            key,
-          )} (defined in ${usedSourceName})`,
-        ),
-      )
+      logInfo({
+        message: `Ignored ${chalk.bold(sourceName)} env var: ${chalk.yellow(key)} (defined in ${usedSourceName})`,
+        dim: true,
+      })
     })
 
     if (!existsInProcess) {
       // Omitting `general` env vars to reduce noise in the logs.
       if (usedSource !== 'general') {
-        log(`${NETLIFYDEVLOG} Injected ${usedSourceName} env var: ${chalk.yellow(key)}`)
+        logInfo({ message: `${STATUS_MSG.LOADED} ${usedSourceName} env var: ${chalk.yellow(key)}` })
       }
 
       process.env[key] = variable.value
     }
   }
 
+  log()
   process.env.NETLIFY_DEV = 'true'
 }
 

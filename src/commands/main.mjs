@@ -33,7 +33,7 @@ import { createSwitchCommand } from './switch/index.cjs'
 import { createUnlinkCommand } from './unlink/index.cjs'
 import { createWatchCommand } from './watch/index.cjs'
 
-const { BANG, NETLIFY_CYAN, USER_AGENT, chalk, error, execa, exit, getGlobalConfig, log, track, warn } = utils
+const { BANG, NETLIFY_CYAN, USER_AGENT, chalk, error, execa, exit, getGlobalConfig, log, logH1, track, warn } = utils
 
 const SUGGESTION_TIMEOUT = 1e4
 
@@ -90,17 +90,16 @@ const mainCommand = async function (options, command) {
 
   // if no command show the header and the help
   if (command.args.length === 0) {
+    logH1(`Welcome to the netlify CLI`)
+
     const pkg = JSON.parse(await readFile(fileURLToPath(new URL('../../package.json', import.meta.url))), 'utf-8')
 
-    const title = `${chalk.bgBlack.cyan('⬥ Netlify CLI')}`
     const docsMsg = `${chalk.greenBright('Read the docs:')} https://docs.netlify.com/cli/get-started/`
     const supportMsg = `${chalk.magentaBright('Support and bugs:')} ${pkg.bugs.url}`
 
-    console.log()
-    console.log(title)
-    console.log(docsMsg)
-    console.log(supportMsg)
-    console.log()
+    log(docsMsg)
+    log(supportMsg)
+    log()
 
     command.help()
   }

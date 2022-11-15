@@ -7,9 +7,11 @@ const {
   NETLIFYDEVERR,
   NETLIFYDEVLOG,
   NETLIFYDEVWARN,
+  STATUS_MSG,
   chalk,
   getTerminalLink,
   log,
+  logInfo,
   warn,
   watchDebounced,
 } = require('../../utils/index.cjs')
@@ -67,7 +69,7 @@ class FunctionsRegistry {
 
   async buildFunctionAndWatchFiles(func, { verbose = false } = {}) {
     if (verbose) {
-      log(`${NETLIFYDEVLOG} ${chalk.magenta('Reloading')} function ${chalk.yellow(func.name)}...`)
+      logInfo({ message: `${STATUS_MSG.RELOADED} function ${chalk.yellow(func.name)}...` })
     }
 
     const { error_, includedFiles, srcFilesDiff } = await func.build({ cache: this.buildCache })
@@ -79,7 +81,7 @@ class FunctionsRegistry {
         }`,
       )
     } else if (verbose) {
-      log(`${NETLIFYDEVLOG} ${chalk.green('Reloaded')} function ${chalk.yellow(func.name)}`)
+      logInfo({ message: `${STATUS_MSG.RELOADED} function ${chalk.yellow(func.name)}` })
     }
 
     // If the build hasn't resulted in any files being added or removed, there
@@ -155,7 +157,7 @@ class FunctionsRegistry {
     this.functions.set(name, func)
     this.buildFunctionAndWatchFiles(func)
 
-    log(`${NETLIFYDEVLOG} ${chalk.green('Loaded')} function ${getTerminalLink(chalk.yellow(name), func.url)}.`)
+    logInfo({ message: `${STATUS_MSG.LOADED} function ${getTerminalLink(chalk.yellow(name), func.url)}` })
   }
 
   // This function is here so we can mock it in tests

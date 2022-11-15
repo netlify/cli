@@ -3,7 +3,7 @@ const dotProp = require('dot-prop')
 const inquirer = require('inquirer')
 const isEmpty = require('lodash/isEmpty')
 
-const { chalk, ensureNetlifyIgnore, exit, getRepoData, log, track } = require('../../utils/index.cjs')
+const { chalk, ensureNetlifyIgnore, exit, getRepoData, log, logH1, track } = require('../../utils/index.cjs')
 const { configureRepo } = require('../../utils/init/config.cjs')
 const { link } = require('../link/index.cjs')
 const { sitesCreate } = require('../sites/index.cjs')
@@ -172,6 +172,7 @@ const logExistingRepoSetupAndExit = ({ repoUrl, siteName }) => {
  * @param {import('../base-command').BaseCommand} command
  */
 const init = async (options, command) => {
+  logH1('netlify init')
   command.setAnalyticsPayload({ manual: options.manual, force: options.force })
 
   const { repositoryRoot, state } = command.netlify

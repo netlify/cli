@@ -13,6 +13,7 @@ import { getAgent } from '../lib/http-agent.cjs'
 import utils from '../utils/index.cjs'
 
 const {
+  INDENT_WIDTHS,
   NETLIFY_CYAN,
   StateConfig,
   USER_AGENT,
@@ -41,8 +42,7 @@ const NANO_SECS_TO_MSECS = 1e6
 const FALLBACK_HELP_CMD_WIDTH = 80
 
 const HELP_$ = NETLIFY_CYAN('$')
-// indent on commands or description on the help page
-const HELP_INDENT_WIDTH = 2
+
 // separator width between term and description
 const HELP_SEPARATOR_WIDTH = 5
 
@@ -51,7 +51,7 @@ const HELP_SEPARATOR_WIDTH = 5
  * @param {string[]} textArray
  * @returns
  */
-const formatHelpList = (textArray) => textArray.join('\n').replace(/^/gm, ' '.repeat(HELP_INDENT_WIDTH))
+const formatHelpList = (textArray) => textArray.join('\n').replace(/^/gm, ' '.repeat(INDENT_WIDTHS.HELP))
 
 /**
  * Get the duration between a start time and the current time
@@ -158,7 +158,7 @@ export default class BaseCommand extends Command {
           ? `${HELP_$} ${command.name()} [COMMAND]`
           : `${HELP_$} ${command.parent.name()} ${command.name()} ${command.usage()}`
 
-      return padLeft(term, HELP_INDENT_WIDTH)
+      return padLeft(term, INDENT_WIDTHS.HELP)
     }
 
     const getCommands = (command) => {
@@ -217,7 +217,7 @@ export default class BaseCommand extends Command {
         if (description) {
           const pad = termWidth + HELP_SEPARATOR_WIDTH
           const fullText = `${bang}${term.padEnd(pad - (isCommand ? 2 : 0))}${chalk.grey(description)}`
-          return helper.wrap(fullText, helpWidth - HELP_INDENT_WIDTH, pad)
+          return helper.wrap(fullText, helpWidth - INDENT_WIDTHS.HELP, pad)
         }
 
         return `${bang}${term}`
