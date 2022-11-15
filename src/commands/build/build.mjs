@@ -1,18 +1,13 @@
-const process = require('process')
-
 // @ts-check
-const { getBuildOptions, runBuild } = require('../../lib/build.cjs')
-const {
-  error,
-  exit,
-  generateNetlifyGraphJWT,
-  getEnvelopeEnv,
-  getToken,
-  normalizeContext,
-} = require('../../utils/index.cjs')
+import process from 'process'
+
+import { getBuildOptions, runBuild } from '../../lib/build.cjs'
+import utils from '../../utils/index.cjs'
+
+const { error, exit, generateNetlifyGraphJWT, getEnvelopeEnv, getToken, normalizeContext } = utils
 
 /**
- * @param {import('../../lib/build').BuildConfig} options
+ * @param {import('../../lib/build.cjs').BuildConfig} options
  */
 const checkOptions = ({ cachedConfig: { siteInfo = {} }, token }) => {
   if (!siteInfo.id) {
@@ -88,7 +83,7 @@ const build = async (options, command) => {
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
-const createBuildCommand = (program) =>
+export const createBuildCommand = (program) =>
   program
     .command('build')
     .description('(Beta) Build on your local machine')
@@ -102,5 +97,3 @@ const createBuildCommand = (program) =>
     .option('-o, --offline', 'disables any features that require network access', false)
     .addExamples(['netlify build'])
     .action(build)
-
-module.exports = { createBuildCommand }
