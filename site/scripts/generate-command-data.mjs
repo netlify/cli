@@ -4,13 +4,13 @@ import utils from '../../src/utils/index.cjs'
 
 const program = createMainCommand()
 
-/** @type {Array<import('../../src/commands/base-command').BaseCommand>} */
+/** @type {Array<import('../../src/commands/base-command.mjs').default>} */
 // @ts-ignore typecast needed
 const commands = program.commands.sort((cmdA, cmdB) => cmdA.name().localeCompare(cmdB.name()))
 
 /**
  *
- * @param {import('../../src/commands/base-command').BaseCommand} command
+ * @param {import('../../src/commands/base-command.mjs').default} command
  */
 const parseCommand = function (command) {
   // eslint-disable-next-line no-underscore-dangle

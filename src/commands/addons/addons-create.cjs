@@ -29,7 +29,7 @@ const createAddon = async ({ addonName, api, config, siteData, siteId }) => {
  * The addons:create command
  * @param {string} addonName
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').default} command
  * @returns {Promise<boolean>}
  */
 const addonsCreate = async (addonName, options, command) => {
@@ -110,7 +110,7 @@ const addonsCreate = async (addonName, options, command) => {
 
 /**
  * Creates the `netlify addons:create` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').default} program
  * @returns
  */
 const createAddonsCreateCommand = (program) =>

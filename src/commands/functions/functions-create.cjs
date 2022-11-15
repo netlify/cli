@@ -248,7 +248,7 @@ const ensureEdgeFuncDirExists = function (command) {
 
 /**
  * Get functions directory (and make it if necessary)
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').default} command
  * @returns {Promise<string|never>} - functions directory or throws an error
  */
 const ensureFunctionDirExists = async function (command) {
@@ -310,7 +310,7 @@ const ensureFunctionDirExists = async function (command) {
 
 /**
  * Download files from a given GitHub URL
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').default} command
  * @param {import('commander').OptionValues} options
  * @param {string} argumentName
  * @param {string} functionsDir
@@ -423,7 +423,7 @@ const installDeps = async ({ functionPackageJson, functionPath, functionsDir }) 
 
 /**
  * no --url flag specified, pick from a provided template
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').default} command
  * @param {import('commander').OptionValues} options
  * @param {string} argumentName
  * @param {string} functionsDir
@@ -534,8 +534,8 @@ const createFunctionAddon = async function ({ addonName, addons, api, siteData, 
 /**
  *
  * @param {object} config
- * @param {import('../base-command').BaseCommand} config.command
- * @param {(command: import('../base-command').BaseCommand) => any} config.onComplete
+ * @param {import('../base-command.mjs').default} config.command
+ * @param {(command: import('../base-command.mjs').default) => any} config.onComplete
  */
 const handleOnComplete = async ({ command, onComplete }) => {
   const { config } = command.netlify
@@ -554,7 +554,7 @@ const handleOnComplete = async ({ command, onComplete }) => {
  * @param {object} config
  * @param {*} config.addonCreated
  * @param {*} config.addonDidInstall
- * @param {import('../base-command').BaseCommand} config.command
+ * @param {import('../base-command.mjs').default} config.command
  * @param {string} config.fnPath
  */
 const handleAddonDidInstall = async ({ addonCreated, addonDidInstall, command, fnPath }) => {
@@ -587,7 +587,7 @@ const handleAddonDidInstall = async ({ addonCreated, addonDidInstall, command, f
 
 /**
  *
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').default} command
  * @param {*} functionAddons
  * @param {*} fnPath
  * @returns
@@ -674,7 +674,7 @@ const ensureFunctionPathIsOk = function (functionsDir, name) {
 /**
  * The functions:create command
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').default} command
  */
 const functionsCreate = async (name, options, command) => {
   const functionType = await selectTypeOfFunc()
@@ -688,7 +688,7 @@ const functionsCreate = async (name, options, command) => {
 
 /**
  * Creates the `netlify functions:create` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').default} program
  * @returns
  */
 const createFunctionsCreateCommand = (program) =>

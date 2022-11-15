@@ -83,7 +83,7 @@ const getAddons = async ({ api, siteId }) => {
 /**
  *
  * @param {object} config
- * @param {import('../../commands/base-command').BaseCommand} config.command
+ * @param {import('../../commands/base-command.mjs').default} config.command
  * @param {string} [config.addonName]
  * @param {keyof ADDON_VALIDATION} [config.validation]
  */

@@ -9,7 +9,7 @@ const { NETLIFYDEVERR, chalk, error, log } = require('../../utils/index.cjs')
 /**
  * Creates the `netlify graph:config:write` command
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').default} command
  * @returns
  */
 const graphConfigWrite = async (options, command) => {
@@ -42,7 +42,7 @@ const graphConfigWrite = async (options, command) => {
 
 /**
  * Creates the `netlify graph:config:write` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').default} program
  * @returns
  */
 const createGraphConfigWriteCommand = (program) =>

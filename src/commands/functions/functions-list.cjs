@@ -21,7 +21,7 @@ const normalizeFunction = function (deployedFunctions, { name, urlPath: url }) {
 /**
  * The functions:list command
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').default} command
  */
 const functionsList = async (options, command) => {
   const { api, config, site } = command.netlify
@@ -85,7 +85,7 @@ const functionsList = async (options, command) => {
 
 /**
  * Creates the `netlify functions:list` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').default} program
  * @returns
  */
 const createFunctionsListCommand = (program) =>

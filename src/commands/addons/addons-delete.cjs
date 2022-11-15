@@ -8,7 +8,7 @@ const { error, exit, log } = require('../../utils/index.cjs')
  * The addons:delete command
  * @param {string} addonName
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').default} command
  */
 const addonsDelete = async (addonName, options, command) => {
   const { addon } = await prepareAddonCommand({
@@ -43,7 +43,7 @@ const addonsDelete = async (addonName, options, command) => {
 
 /**
  * Creates the `netlify addons:delete` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').default} program
  * @returns
  */
 const createAddonsDeleteCommand = (program) =>

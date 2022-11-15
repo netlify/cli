@@ -53,7 +53,7 @@ const waitForBuildFinish = async function (api, siteId, spinner) {
 /**
  * The watch command
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').default} command
  */
 const watch = async (options, command) => {
   await command.authenticate()
@@ -118,7 +118,7 @@ const watch = async (options, command) => {
 
 /**
  * Creates the `netlify watch` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').default} program
  * @returns
  */
 const createWatchCommand = (program) =>

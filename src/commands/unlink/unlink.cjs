@@ -5,7 +5,7 @@ const { exit, log, track } = require('../../utils/index.cjs')
 /**
  * The unlink command
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').default} command
  */
 const unlink = async (options, command) => {
   const { site, state } = command.netlify
@@ -39,7 +39,7 @@ const unlink = async (options, command) => {
 
 /**
  * Creates the `netlify unlink` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').default} program
  * @returns
  */
 const createUnlinkCommand = (program) =>

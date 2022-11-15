@@ -17,7 +17,7 @@ const { NETLIFYDEVERR, chalk, error, log } = require('../../utils/index.cjs')
 /**
  * Creates the `netlify graph:library` command
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').default} command
  * @returns
  */
 const graphLibrary = async (options, command) => {
@@ -76,7 +76,7 @@ const graphLibrary = async (options, command) => {
 
 /**
  * Creates the `netlify graph:library` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').default} program
  * @returns
  */
 const createGraphLibraryCommand = (program) =>

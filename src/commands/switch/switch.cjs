@@ -9,7 +9,7 @@ const LOGIN_NEW = 'I would like to login to a new account'
 /**
  * The switch command
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').default} command
  */
 const switchCommand = async (options, command) => {
   const availableUsersChoices = Object.values(command.netlify.globalConfig.get('users') || {}).reduce(
@@ -41,7 +41,7 @@ const switchCommand = async (options, command) => {
 
 /**
  * Creates the `netlify switch` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').default} program
  * @returns
  */
 const createSwitchCommand = (program) =>

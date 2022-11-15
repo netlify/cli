@@ -3,7 +3,7 @@ const { error, exit, log, openBrowser, warn } = require('../../utils/index.cjs')
 /**
  * The open:site command
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').default} command
  */
 const openSite = async (options, command) => {
   const { api, site } = command.netlify
@@ -40,7 +40,7 @@ Run \`netlify link\` to connect to this folder to a site`)
 
 /**
  * Creates the `netlify open:site` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').default} program
  * @returns
  */
 const createOpenSiteCommand = (program) =>

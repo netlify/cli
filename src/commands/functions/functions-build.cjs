@@ -7,7 +7,7 @@ const { NETLIFYDEVERR, NETLIFYDEVLOG, exit, getFunctionsDir, log } = require('..
 /**
  * The functions:build command
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').default} command
  */
 const functionsBuild = async (options, command) => {
   const { config } = command.netlify
@@ -44,7 +44,7 @@ const functionsBuild = async (options, command) => {
 
 /**
  * Creates the `netlify functions:build` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').default} program
  * @returns
  */
 const createFunctionsBuildCommand = (program) =>

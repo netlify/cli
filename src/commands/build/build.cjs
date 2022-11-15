@@ -58,7 +58,7 @@ const injectEnv = async function (command, { api, buildOptions, context, site, s
 /**
  * The build command
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').default} command
  */
 const build = async (options, command) => {
   command.setAnalyticsPayload({ dry: options.dry })
@@ -85,7 +85,7 @@ const build = async (options, command) => {
 
 /**
  * Creates the `netlify build` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').default} program
  * @returns
  */
 const createBuildCommand = (program) =>

@@ -204,7 +204,7 @@ const defaultFrameworkLookup = {
 /**
  * Return a full NetlifyGraph config with any defaults overridden by netlify.toml
  * @param {object} input
- * @param {import('../../commands/base-command').BaseCommand} input.command
+ * @param {import('../../commands/base-command.mjs').default} input.command
  * @param {import('commander').CommandOptions} input.options
  * @param {Partial<import('../../utils/types').ServerSettings>=} input.settings
  * @return {Promise<NetlifyGraph.NetlifyGraphConfig>} NetlifyGraphConfig

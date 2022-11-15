@@ -35,7 +35,7 @@ const logExistingAndExit = ({ siteInfo }) => {
  * Creates and new site and exits the process
  * @param {object} config
  * @param {*} config.state
- * @param {import('../base-command').BaseCommand} config.command
+ * @param {import('../base-command.mjs').default} config.command
  */
 const createNewSiteAndExit = async ({ command, state }) => {
   const siteInfo = await sitesCreate({}, command)
@@ -85,7 +85,7 @@ const logGitSetupInstructionsAndExit = () => {
 /**
  * Handles the case where no git remote was found.
  * @param {object} config
- * @param {import('../base-command').BaseCommand} config.command
+ * @param {import('../base-command.mjs').default} config.command
  * @param {object} config.error
  * @param {object} config.state
  */
@@ -127,7 +127,7 @@ git remote add origin https://github.com/YourUserName/RepoName.git
 
 /**
  * Creates a new site or links an existing one to the repository
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').default} command
  */
 const createOrLinkSiteToRepo = async (command) => {
   const NEW_SITE = '+  Create & configure a new site'
@@ -169,7 +169,7 @@ const logExistingRepoSetupAndExit = ({ repoUrl, siteName }) => {
 /**
  * The init command
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').default} command
  */
 const init = async (options, command) => {
   command.setAnalyticsPayload({ manual: options.manual, force: options.force })
@@ -215,7 +215,7 @@ const init = async (options, command) => {
 
 /**
  * Creates the `netlify init` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').default} program
  * @returns
  */
 const createInitCommand = (program) =>

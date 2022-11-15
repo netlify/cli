@@ -60,7 +60,7 @@ ${USER_AGENT}
 /**
  * The main CLI command without any command (root action)
  * @param {import('commander').OptionValues} options
- * @param {import('./base-command').BaseCommand} command
+ * @param {import('./base-command.mjs').default} command
  */
 const mainCommand = async function (options, command) {
   const globalConfig = await getGlobalConfig()
@@ -153,7 +153,7 @@ const mainCommand = async function (options, command) {
 /**
  * Creates the `netlify-cli` command
  * Promise is needed as the envinfo is a promise
- * @returns {import('./base-command').BaseCommand}
+ * @returns {import('./base-command.mjs').default}
  */
 export const createMainCommand = () => {
   const program = new BaseCommand('netlify')

@@ -40,7 +40,7 @@ const update = async function ({ addonName, api, currentConfig, instanceId, newC
  * The addons:config command
  * @param {string} addonName
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').default} command
  * @returns {Promise<boolean>}
  */
 const addonsConfig = async (addonName, options, command) => {
@@ -162,7 +162,7 @@ const addonsConfig = async (addonName, options, command) => {
 
 /**
  * Creates the `netlify addons:config` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').default} program
  * @returns
  */
 const createAddonsConfigCommand = (program) =>

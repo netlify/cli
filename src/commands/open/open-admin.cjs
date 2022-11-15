@@ -3,7 +3,7 @@ const { error, exit, log, openBrowser, warn } = require('../../utils/index.cjs')
 /**
  * The open:admin command
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').default} command
  */
 const openAdmin = async (options, command) => {
   const { api, site } = command.netlify
@@ -47,7 +47,7 @@ Run \`netlify link\` to connect to this folder to a site`)
 
 /**
  * Creates the `netlify open:admin` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').default} program
  * @returns
  */
 const createOpenAdminCommand = (program) =>

@@ -9,7 +9,7 @@ const { createEnvUnsetCommand } = require('./env-unset.cjs')
 /**
  * The env command
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').default} command
  */
 const env = (options, command) => {
   command.help()
@@ -17,7 +17,7 @@ const env = (options, command) => {
 
 /**
  * Creates the `netlify env` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').default} program
  * @returns
  */
 const createEnvCommand = (program) => {

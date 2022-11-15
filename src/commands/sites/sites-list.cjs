@@ -7,7 +7,7 @@ const { chalk, log, logJson } = require('../../utils/index.cjs')
 /**
  * The sites:list command
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').default} command
  * @returns {Promise<{ id: any; name: any; ssl_url: any; account_name: any; }|boolean>}
  */
 const sitesList = async (options, command) => {
@@ -76,7 +76,7 @@ Count: ${logSites.length}
 
 /**
  * Creates the `netlify sites:list` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').default} program
  */
 const createSitesListCommand = (program) =>
   program

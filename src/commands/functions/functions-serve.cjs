@@ -10,7 +10,7 @@ const DEFAULT_PORT = 9999
 /**
  * The functions:serve command
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').default} command
  */
 const functionsServe = async (options, command) => {
   const { api, config, site, siteInfo } = command.netlify
@@ -48,7 +48,7 @@ const functionsServe = async (options, command) => {
 
 /**
  * Creates the `netlify functions:serve` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').default} program
  * @returns
  */
 const createFunctionsServeCommand = (program) =>

@@ -7,7 +7,7 @@ const { createLmUninstallCommand } = require('./lm-uninstall.cjs')
 /**
  * The lm command
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').default} command
  */
 const lm = (options, command) => {
   command.help()
@@ -15,7 +15,7 @@ const lm = (options, command) => {
 
 /**
  * Creates the `netlify lm` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').default} program
  * @returns
  */
 const createLmCommand = (program) => {

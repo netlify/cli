@@ -6,7 +6,7 @@ const { createOpenSiteCommand, openSite } = require('./open-site.cjs')
 /**
  * The open command
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').default} command
  */
 const open = async (options, command) => {
   if (!options.site || !options.admin) {
@@ -22,7 +22,7 @@ const open = async (options, command) => {
 
 /**
  * Creates the `netlify open` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').default} program
  * @returns
  */
 const createOpenCommand = (program) => {

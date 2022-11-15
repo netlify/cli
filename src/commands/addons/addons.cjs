@@ -9,7 +9,7 @@ const { createAddonsListCommand } = require('./addons-list.cjs')
 /**
  * The addons command
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').default} command
  */
 const addons = (options, command) => {
   command.help()
@@ -17,7 +17,7 @@ const addons = (options, command) => {
 
 /**
  * Creates the `netlify addons` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').default} program
  * @returns
  */
 const createAddonsCommand = (program) => {

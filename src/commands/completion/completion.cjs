@@ -7,7 +7,7 @@ const { createAutocompletion } = require('../../lib/completion/index.cjs')
 /**
  * The completion:generate command
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').default} command
  */
 const completionGenerate = async (options, command) => {
   const { parent } = command
@@ -24,7 +24,7 @@ const completionGenerate = async (options, command) => {
 
 /**
  * Creates the `netlify completion` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').default} program
  * @returns
  */
 const createCompletionCommand = (program) => {

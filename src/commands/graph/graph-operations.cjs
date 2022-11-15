@@ -14,7 +14,7 @@ const { parse } = GraphQL
 /**
  * Creates the `netlify graph:operations` command
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').default} command
  * @returns
  */
 const graphOperations = async (options, command) => {
@@ -104,7 +104,7 @@ const graphOperations = async (options, command) => {
 
 /**
  * Creates the `netlify graph:operations` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').default} program
  * @returns
  */
 const createGraphOperationsCommand = (program) =>

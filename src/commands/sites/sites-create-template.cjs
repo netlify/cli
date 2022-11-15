@@ -70,7 +70,7 @@ const getGitHubLink = ({ options, templateName }) => options.url || `https://git
  * The sites:create-template command
  * @param repository {string}
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').default} command
  */
 const sitesCreateTemplate = async (repository, options, command) => {
   const { api } = command.netlify
@@ -243,7 +243,7 @@ const sitesCreateTemplate = async (repository, options, command) => {
 
 /**
  * Creates the `netlify sites:create-template` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').default} program
  * @returns
  */
 const createSitesFromTemplateCommand = (program) =>

@@ -17,7 +17,7 @@ const {
  * The env:import command
  * @param {string} fileName .env file to import
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').default} command
  * @returns {Promise<boolean>}
  */
 const envImport = async (fileName, options, command) => {
@@ -125,7 +125,7 @@ const importIntoEnvelope = async ({ api, importedEnv, options, siteInfo }) => {
 
 /**
  * Creates the `netlify env:import` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').default} program
  * @returns
  */
 const createEnvImportCommand = (program) =>

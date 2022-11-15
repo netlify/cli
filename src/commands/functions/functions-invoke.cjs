@@ -142,7 +142,7 @@ const getFunctionToTrigger = function (options, argumentName) {
  * The functions:invoke command
  * @param {string} nameArgument
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').default} command
  */
 const functionsInvoke = async (nameArgument, options, command) => {
   const { config } = command.netlify
@@ -235,7 +235,7 @@ const functionsInvoke = async (nameArgument, options, command) => {
 
 /**
  * Creates the `netlify functions:invoke` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').default} program
  * @returns
  */
 const createFunctionsInvokeCommand = (program) =>

@@ -8,7 +8,7 @@ const { log, logJson } = require('../../utils/index.cjs')
 /**
  * The addons:list command
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').default} command
  * @returns {Promise<boolean>}
  */
 const addonsList = async (options, command) => {
@@ -46,7 +46,7 @@ const addonsList = async (options, command) => {
 
 /**
  * Creates the `netlify addons:list` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').default} program
  * @returns
  */
 const createAddonsListCommand = (program) =>

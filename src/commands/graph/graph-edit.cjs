@@ -20,7 +20,7 @@ const { ensureAppForSite, executeCreatePersistedQueryMutation } = OneGraphCliCli
 /**
  * Creates the `netlify graph:edit` command
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').default} command
  * @returns
  */
 const graphEdit = async (options, command) => {
@@ -96,7 +96,7 @@ const graphEdit = async (options, command) => {
 
 /**
  * Creates the `netlify graph:edit` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').default} program
  * @returns
  */
 const createGraphEditCommand = (program) =>

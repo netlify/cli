@@ -17,7 +17,7 @@ const msg = function (location) {
 /**
  * The login command
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').default} command
  */
 const login = async (options, command) => {
   const [accessToken, location] = await getToken()
@@ -41,7 +41,7 @@ const login = async (options, command) => {
 
 /**
  * Creates the `netlify login` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').default} program
  * @returns
  */
 const createLoginCommand = (program) =>

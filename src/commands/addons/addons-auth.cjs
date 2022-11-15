@@ -7,7 +7,7 @@ const { exit, log, openBrowser } = require('../../utils/index.cjs')
  * The addons:auth command
  * @param {string} addonName
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').default} command
  * @returns {Promise<boolean>}
  */
 const addonsAuth = async (addonName, options, command) => {
@@ -34,7 +34,7 @@ const addonsAuth = async (addonName, options, command) => {
 
 /**
  * Creates the `netlify addons:auth` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').default} program
  * @returns
  */
 const createAddonsAuthCommand = (program) =>

@@ -28,7 +28,7 @@ const getSiteNameInput = async (name) => {
 /**
  * The sites:create command
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').default} command
  */
 const sitesCreate = async (options, command) => {
   const { api } = command.netlify
@@ -154,7 +154,7 @@ const validateName = function (value) {
 
 /**
  * Creates the `netlify sites:create` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').default} program
  * @returns
  */
 const createSitesCreateCommand = (program) =>

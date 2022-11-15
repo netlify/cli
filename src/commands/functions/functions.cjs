@@ -10,7 +10,7 @@ const { createFunctionsServeCommand } = require('./functions-serve.cjs')
 /**
  * The functions command
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').default} command
  */
 const functions = (options, command) => {
   command.help()
@@ -18,7 +18,7 @@ const functions = (options, command) => {
 
 /**
  * Creates the `netlify functions` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').default} program
  * @returns
  */
 const createFunctionsCommand = (program) => {

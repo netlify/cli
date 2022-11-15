@@ -4,7 +4,7 @@ const { exit, getToken, log, track } = require('../../utils/index.cjs')
 /**
  * The logout command
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').default} command
  */
 const logout = async (options, command) => {
   const [accessToken, location] = await getToken()
@@ -34,7 +34,7 @@ const logout = async (options, command) => {
 
 /**
  * Creates the `netlify logout` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').default} program
  * @returns
  */
 const createLogoutCommand = (program) =>
