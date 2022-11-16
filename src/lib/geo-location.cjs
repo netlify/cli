@@ -30,7 +30,7 @@ const mockLocation = {
   subdivision: { code: 'CA', name: 'California' },
   longitude: 0,
   latitude: 0,
-  timezone: 'Mock Timezone',
+  timezone: 'UTC',
 }
 
 /**
@@ -79,7 +79,7 @@ const getGeoLocation = async ({ geoCountry, mode, offline, state }) => {
         subdivision: { code: 'SD', name: 'Mock Subdivision' },
         longitude: 0,
         latitude: 0,
-        timezone: 'Mock Timezone',
+        timezone: 'UTC',
       }
     }
     return mockLocation
