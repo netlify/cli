@@ -98,6 +98,7 @@
     "Nestor Vera <nestorvera@me.com> (https://twitter.com/hack_nug)",
     "Netlify Team Account 1 (https://twitter.com/netlify)",
     "Nick McCurdy <nick@nickmccurdy.com> (https://twitter.com/nickemccurdy)",
+    "Nick Taylor <nick@iamdeveloper.com> (https://twitter.com/nickytonline)",
     "Nicolas Gonzalez",
     "Pankaj Patil <pankaj.patil2099@hotmail.com> (https://twitter.com/pankajpatil16)",
     "Peter",
@@ -227,7 +228,7 @@
     "prettier": "--ignore-path .gitignore --loglevel=warn \"{src,tools,scripts,site,tests,.github}/**/*.{mjs,cjs,js,md,yml,json,html}\" \"*.{mjs,cjs,js,yml,json,html}\" \".*.{mjs,cjs,js,yml,json,html}\" \"!CHANGELOG.md\" \"!npm-shrinkwrap.json\" \"!**/*/package-lock.json\" \"!.github/**/*.md\""
   },
   "dependencies": {
-    "@netlify/build": "^28.1.13",
+    "@netlify/build": "^28.1.15",
     "@netlify/config": "^20.0.0",
     "@netlify/edge-bundler": "^4.0.2",
     "@netlify/framework-info": "^9.5.1",

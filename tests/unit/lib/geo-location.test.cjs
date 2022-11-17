@@ -122,6 +122,9 @@ test('`getGeoLocation` returns mock geolocation data if valid country code set',
     city: 'Mock City',
     country: { code: 'CA', name: 'Mock Country' },
     subdivision: { code: 'SD', name: 'Mock Subdivision' },
+    latitude: 0,
+    longitude: 0,
+    timezone: 'UTC',
   }
 
   const mockState = {
@@ -144,6 +147,9 @@ test('`getGeoLocation` mocks country code when not using mock flag', async (t) =
     city: 'Mock City',
     country: { code: 'CA', name: 'Mock Country' },
     subdivision: { code: 'SD', name: 'Mock Subdivision' },
+    latitude: 0,
+    longitude: 0,
+    timezone: 'UTC',
   }
 
   const geo = await getGeoLocation({ mode: 'update', offline: false, state: mockState, geoCountry: 'CA' })
