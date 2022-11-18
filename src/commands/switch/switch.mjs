@@ -2,7 +2,7 @@
 import inquirer from 'inquirer'
 
 import utils from '../../utils/index.cjs'
-import { login } from '../login/index.cjs'
+import { login } from '../login/index.mjs'
 
 const { chalk, log } = utils
 
