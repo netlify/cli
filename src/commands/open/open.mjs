@@ -1,7 +1,9 @@
-const { log } = require('../../utils/index.cjs')
+import utils from '../../utils/index.cjs'
 
-const { createOpenAdminCommand, openAdmin } = require('./open-admin.cjs')
-const { createOpenSiteCommand, openSite } = require('./open-site.cjs')
+import { createOpenAdminCommand, openAdmin } from './open-admin.mjs'
+import { createOpenSiteCommand, openSite } from './open-site.mjs'
+
+const { log } = utils
 
 /**
  * The open command
@@ -25,7 +27,7 @@ const open = async (options, command) => {
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
-const createOpenCommand = (program) => {
+export const createOpenCommand = (program) => {
   createOpenAdminCommand(program)
   createOpenSiteCommand(program)
 
@@ -37,4 +39,3 @@ const createOpenCommand = (program) => {
     .addExamples(['netlify open --site', 'netlify open --admin', 'netlify open:admin', 'netlify open:site'])
     .action(open)
 }
-module.exports = { createOpenCommand }
