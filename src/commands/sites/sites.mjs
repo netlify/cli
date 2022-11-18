@@ -1,8 +1,8 @@
 // @ts-check
-const { createSitesFromTemplateCommand } = require('./sites-create-template.cjs')
-const { createSitesCreateCommand } = require('./sites-create.cjs')
-const { createSitesDeleteCommand } = require('./sites-delete.cjs')
-const { createSitesListCommand } = require('./sites-list.cjs')
+import { createSitesFromTemplateCommand } from './sites-create-template.mjs'
+import { createSitesCreateCommand } from './sites-create.mjs'
+import { createSitesDeleteCommand } from './sites-delete.mjs'
+import { createSitesListCommand } from './sites-list.mjs'
 
 /**
  * The sites command
@@ -18,7 +18,7 @@ const sites = (options, command) => {
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
-const createSitesCommand = (program) => {
+export const createSitesCommand = (program) => {
   createSitesCreateCommand(program)
   createSitesFromTemplateCommand(program)
   createSitesListCommand(program)
@@ -30,5 +30,3 @@ const createSitesCommand = (program) => {
     .addExamples(['netlify sites:create --name my-new-site', 'netlify sites:list'])
     .action(sites)
 }
-
-module.exports = { createSitesCommand }

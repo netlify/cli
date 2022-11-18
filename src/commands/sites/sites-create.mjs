@@ -1,14 +1,16 @@
 // @ts-check
-const { InvalidArgumentError } = require('commander')
-const inquirer = require('inquirer')
-const pick = require('lodash/pick')
-const prettyjson = require('prettyjson')
+import { InvalidArgumentError } from 'commander'
+import inquirer from 'inquirer'
+import pick from 'lodash/pick.js'
+import prettyjson from 'prettyjson'
 
-const { chalk, error, getRepoData, log, logJson, track, warn } = require('../../utils/index.cjs')
-const { configureRepo } = require('../../utils/init/config.cjs')
-const { link } = require('../link/index.cjs')
+import utils from '../../utils/index.cjs'
+import { configureRepo } from '../../utils/init/config.cjs'
+import { link } from '../link/index.cjs'
 
-const getSiteNameInput = async (name) => {
+const { chalk, error, getRepoData, log, logJson, track, warn } = utils
+
+export const getSiteNameInput = async (name) => {
   if (!name) {
     const { name: nameInput } = await inquirer.prompt([
       {
@@ -30,7 +32,7 @@ const getSiteNameInput = async (name) => {
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command.mjs').default} command
  */
-const sitesCreate = async (options, command) => {
+export const sitesCreate = async (options, command) => {
   const { api } = command.netlify
 
   await command.authenticate()
@@ -157,7 +159,7 @@ const validateName = function (value) {
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
-const createSitesCreateCommand = (program) =>
+export const createSitesCreateCommand = (program) =>
   program
     .command('sites:create')
     .description(
@@ -174,5 +176,3 @@ Create a blank site that isn't associated with any git remote. Will link the sit
       `Create a blank site that isn't associated with any git remote. Will link the site to the current working directory.`,
     )
     .action(sitesCreate)
-
-module.exports = { createSitesCreateCommand, sitesCreate, getSiteNameInput }

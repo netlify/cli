@@ -1,28 +1,20 @@
 // @ts-check
 
-const inquirer = require('inquirer')
-const pick = require('lodash/pick')
-const parseGitHubUrl = require('parse-github-url')
-const prettyjson = require('prettyjson')
+import inquirer from 'inquirer'
+import pick from 'lodash/pick.js'
+import parseGitHubUrl from 'parse-github-url'
+import prettyjson from 'prettyjson'
 
-const {
-  chalk,
-  error,
-  execa,
-  getRepoData,
-  getTerminalLink,
-  log,
-  logJson,
-  track,
-  warn,
-} = require('../../utils/index.cjs')
-const { getGitHubToken } = require('../../utils/init/config-github.cjs')
-const { configureRepo } = require('../../utils/init/config.cjs')
-const { createRepo, getTemplatesFromGitHub, validateTemplate } = require('../../utils/sites/utils.cjs')
+import utils from '../../utils/index.cjs'
+import { getGitHubToken } from '../../utils/init/config-github.cjs'
+import { configureRepo } from '../../utils/init/config.cjs'
+import { createRepo, getTemplatesFromGitHub, validateTemplate } from '../../utils/sites/utils.cjs'
 
-const { getSiteNameInput } = require('./sites-create.cjs')
+import { getSiteNameInput } from './sites-create.mjs'
 
-const fetchTemplates = async (token) => {
+const { chalk, error, execa, getRepoData, getTerminalLink, log, logJson, track, warn } = utils
+
+export const fetchTemplates = async (token) => {
   const templatesFromGithubOrg = await getTemplatesFromGitHub(token)
 
   return templatesFromGithubOrg
@@ -246,7 +238,7 @@ const sitesCreateTemplate = async (repository, options, command) => {
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
-const createSitesFromTemplateCommand = (program) =>
+export const createSitesFromTemplateCommand = (program) =>
   program
     .command('sites:create-template')
     .description(
@@ -265,5 +257,3 @@ Create a site from a starter template.`,
       'netlify sites:create-template my-github-profile/my-template',
     ])
     .action(sitesCreateTemplate)
-
-module.exports = { createSitesFromTemplateCommand, fetchTemplates }
