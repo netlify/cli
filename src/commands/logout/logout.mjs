@@ -1,5 +1,7 @@
 // @ts-check
-const { exit, getToken, log, track } = require('../../utils/index.cjs')
+import utils from '../../utils/index.cjs'
+
+const { exit, getToken, log, track } = utils
 
 /**
  * The logout command
@@ -37,7 +39,5 @@ const logout = async (options, command) => {
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
-const createLogoutCommand = (program) =>
+export const createLogoutCommand = (program) =>
   program.command('logout', { hidden: true }).description('Logout of your Netlify account').action(logout)
-
-module.exports = { createLogoutCommand, logout }
