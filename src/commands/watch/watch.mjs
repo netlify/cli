@@ -4,7 +4,7 @@ import prettyjson from 'prettyjson'
 
 import { startSpinner, stopSpinner } from '../../lib/spinner.cjs'
 import utils from '../../utils/index.cjs'
-import { init } from '../init/index.cjs'
+import { init } from '../init/index.mjs'
 
 const { chalk, error, log } = utils
 

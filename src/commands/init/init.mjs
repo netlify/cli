@@ -1,12 +1,14 @@
 // @ts-check
-const dotProp = require('dot-prop')
-const inquirer = require('inquirer')
-const isEmpty = require('lodash/isEmpty')
+import dotProp from 'dot-prop'
+import inquirer from 'inquirer'
+import isEmpty from 'lodash/isEmpty.js'
 
-const { chalk, ensureNetlifyIgnore, exit, getRepoData, log, track } = require('../../utils/index.cjs')
-const { configureRepo } = require('../../utils/init/config.cjs')
-const { link } = require('../link/index.cjs')
-const { sitesCreate } = require('../sites/index.cjs')
+import utils from '../../utils/index.cjs'
+import { configureRepo } from '../../utils/init/config.cjs'
+import { link } from '../link/index.cjs'
+import { sitesCreate } from '../sites/index.cjs'
+
+const { chalk, ensureNetlifyIgnore, exit, getRepoData, log, track } = utils
 
 const persistState = ({ siteInfo, state }) => {
   // Save to .netlify/state.json file
@@ -171,7 +173,7 @@ const logExistingRepoSetupAndExit = ({ repoUrl, siteName }) => {
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command.mjs').default} command
  */
-const init = async (options, command) => {
+export const init = async (options, command) => {
   command.setAnalyticsPayload({ manual: options.manual, force: options.force })
 
   const { repositoryRoot, state } = command.netlify
@@ -218,7 +220,7 @@ const init = async (options, command) => {
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
-const createInitCommand = (program) =>
+export const createInitCommand = (program) =>
   program
     .command('init')
     .description(
@@ -228,5 +230,3 @@ const createInitCommand = (program) =>
     .option('--force', 'Reinitialize CI hooks if the linked site is already configured to use CI')
     .option('--gitRemoteName <name>', 'Name of Git remote to use. e.g. "origin"')
     .action(init)
-
-module.exports = { createInitCommand, init }
