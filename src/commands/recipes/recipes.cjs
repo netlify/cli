@@ -14,7 +14,7 @@ const SUGGESTION_TIMEOUT = 1e4
  * The recipes command
  * @param {string} recipeName
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').default} command
  */
 const recipesCommand = async (recipeName, options, command) => {
   const { config, repositoryRoot } = command.netlify
@@ -70,7 +70,7 @@ const runRecipe = ({ config, recipeName, repositoryRoot }) => {
 
 /**
  * Creates the `netlify recipes` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').default} program
  * @returns
  */
 const createRecipesCommand = (program) =>

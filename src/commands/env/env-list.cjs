@@ -43,7 +43,7 @@ const getTable = ({ environment, hideValues, scopesColumn }) => {
 /**
  * The env:list command
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').default} command
  * @returns {Promise<boolean>}
  */
 const envList = async (options, command) => {
@@ -126,7 +126,7 @@ const envList = async (options, command) => {
 
 /**
  * Creates the `netlify env:list` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').default} program
  * @returns
  */
 const createEnvListCommand = (program) =>

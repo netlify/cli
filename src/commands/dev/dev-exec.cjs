@@ -5,7 +5,7 @@ const { getEnvelopeEnv, injectEnvVariables, normalizeContext } = require('../../
 /**
  * The dev:exec command
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').default} command
  */
 const devExec = async (cmd, options, command) => {
   const { api, cachedConfig, config, site, siteInfo } = command.netlify
@@ -24,7 +24,7 @@ const devExec = async (cmd, options, command) => {
 
 /**
  * Creates the `netlify dev:exec` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').default} program
  * @returns
  */
 const createDevExecCommand = (program) =>

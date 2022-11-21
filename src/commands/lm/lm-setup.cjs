@@ -52,7 +52,7 @@ const configureLFSURL = async function (siteId, api) {
 /**
  * The lm:setup command
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').default} command
  */
 const lmSetup = async (options, command) => {
   await command.authenticate()
@@ -91,7 +91,7 @@ const lmSetup = async (options, command) => {
 
 /**
  * Creates the `netlify lm:setup` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').default} program
  * @returns
  */
 const createLmSetupCommand = (program) =>

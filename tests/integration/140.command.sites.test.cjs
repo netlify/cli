@@ -43,9 +43,6 @@ const validateTemplateStub = sinon.stub(templatesUtils, 'validateTemplate').call
 
 const jsonRenderSpy = sinon.spy(prettyjson, 'render')
 
-const { createSitesFromTemplateCommand, fetchTemplates } = require('../../src/commands/sites/sites-create-template.cjs')
-const { createSitesCreateCommand } = require('../../src/commands/sites/sites-create.cjs')
-
 /* eslint-enable import/order */
 const { withMockApi } = require('./utils/mock-api.cjs')
 
@@ -90,6 +87,8 @@ const routes = [
 ]
 
 test.serial('netlify sites:create-template', async (t) => {
+  const { createSitesFromTemplateCommand } = await import('../../src/commands/sites/sites-create-template.mjs')
+
   await withMockApi(routes, async ({ apiUrl }) => {
     Object.defineProperty(process, 'env', {
       value: {
@@ -121,6 +120,8 @@ test.serial('netlify sites:create-template', async (t) => {
 })
 
 test.serial('should not fetch templates if one is passed as option', async (t) => {
+  const { createSitesFromTemplateCommand } = await import('../../src/commands/sites/sites-create-template.mjs')
+
   await withMockApi(routes, async ({ apiUrl }) => {
     Object.defineProperty(process, 'env', {
       value: {
@@ -147,6 +148,8 @@ test.serial('should not fetch templates if one is passed as option', async (t) =
 })
 
 test.serial('should throw an error if the URL option is not a valid URL', async (t) => {
+  const { createSitesFromTemplateCommand } = await import('../../src/commands/sites/sites-create-template.mjs')
+
   await withMockApi(routes, async ({ apiUrl }) => {
     Object.defineProperty(process, 'env', {
       value: {
@@ -169,6 +172,8 @@ test.serial('should throw an error if the URL option is not a valid URL', async 
 })
 
 test.serial('should return an array of templates with name, source code url and slug', async (t) => {
+  const { fetchTemplates } = await import('../../src/commands/sites/sites-create-template.mjs')
+
   await withMockApi(routes, async ({ apiUrl }) => {
     Object.defineProperty(process, 'env', {
       value: {
@@ -191,6 +196,8 @@ test.serial('should return an array of templates with name, source code url and 
 })
 
 test.serial('should throw error when name flag is incorrect', async (t) => {
+  const { createSitesCreateCommand } = await import('../../src/commands/sites/sites-create.mjs')
+
   await withMockApi(routes, async ({ apiUrl }) => {
     Object.defineProperty(process, 'env', {
       value: {

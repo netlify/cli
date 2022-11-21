@@ -238,7 +238,7 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
 /**
  * The link command
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').default} command
  */
 const link = async (options, command) => {
   await command.authenticate()
@@ -334,7 +334,7 @@ const link = async (options, command) => {
 
 /**
  * Creates the `netlify link` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').default} program
  * @returns
  */
 const createLinkCommand = (program) =>
