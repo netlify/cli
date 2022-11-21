@@ -22,7 +22,7 @@ const { ensureAppForSite, executeCreateApiTokenMutation } = OneGraphCliClient
 /**
  * Creates the `netlify graph:init` command
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').default} command
  * @returns
  */
 const graphInit = async (options, command) => {
@@ -158,7 +158,7 @@ const graphInit = async (options, command) => {
 
 /**
  * Creates the `netlify graph:init` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').default} program
  * @returns
  */
 const createGraphInitCommand = (program) =>

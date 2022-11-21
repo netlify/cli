@@ -15,7 +15,7 @@ const {
  * The env:get command
  * @param {string} name Environment variable name
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').default} command
  */
 const envGet = async (name, options, command) => {
   const { context, scope } = options
@@ -62,7 +62,7 @@ const envGet = async (name, options, command) => {
 
 /**
  * Creates the `netlify env:get` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').default} program
  * @returns
  */
 const createEnvGetCommand = (program) =>

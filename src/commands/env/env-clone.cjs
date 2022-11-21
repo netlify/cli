@@ -24,7 +24,7 @@ const safeGetSite = async (api, siteId) => {
  * @param {string} siteIdA Site (From)
  * @param {string} siteIdB Site (To)
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').default} command
  * @returns {Promise<boolean>}
  */
 const envClone = async (options, command) => {
@@ -219,7 +219,7 @@ const envelopeToEnvelope = async ({ api, siteFrom, siteTo }) => {
 
 /**
  * Creates the `netlify env:clone` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').default} program
  * @returns
  */
 const createEnvCloneCommand = (program) =>

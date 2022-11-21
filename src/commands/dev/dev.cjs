@@ -427,7 +427,7 @@ const validateGeoCountryCode = (arg) => {
 /**
  * The dev command
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').default} command
  */
 const dev = async (options, command) => {
   log(`${NETLIFYDEV}`)
@@ -687,7 +687,7 @@ const getBuildOptions = ({ cachedConfig, options: { context, cwd = process.cwd()
 
 /**
  * Creates the `netlify dev` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').default} program
  * @returns
  */
 const createDevCommand = (program) => {

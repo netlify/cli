@@ -19,7 +19,7 @@ const logSuccess = (repoData) => {
 
 /**
  * @param {object} config
- * @param {import('../../commands/base-command').BaseCommand} config.command
+ * @param {import('../../commands/base-command.mjs').default} config.command
  * @param {boolean} config.manual
  * @param {*} config.repoData
  * @param {string} config.siteId

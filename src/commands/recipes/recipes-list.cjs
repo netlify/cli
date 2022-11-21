@@ -21,7 +21,7 @@ const recipesListCommand = async () => {
 
 /**
  * Creates the `netlify recipes:list` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').default} program
  * @returns
  */
 const createRecipesListCommand = (program) =>

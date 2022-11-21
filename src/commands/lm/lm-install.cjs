@@ -15,7 +15,7 @@ const lmInstall = async ({ force }) => {
 
 /**
  * Creates the `netlify lm:install` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').default} program
  * @returns
  */
 const createLmInstallCommand = (program) =>

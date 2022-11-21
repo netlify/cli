@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "12.2.4",
+  "version": "12.2.6",
   "author": "Netlify Inc.",
   "type": "module",
   "contributors": [
@@ -228,10 +228,10 @@
     "prettier": "--ignore-path .gitignore --loglevel=warn \"{src,tools,scripts,site,tests,.github}/**/*.{mjs,cjs,js,md,yml,json,html}\" \"*.{mjs,cjs,js,yml,json,html}\" \".*.{mjs,cjs,js,yml,json,html}\" \"!CHANGELOG.md\" \"!npm-shrinkwrap.json\" \"!**/*/package-lock.json\" \"!.github/**/*.md\""
   },
   "dependencies": {
-    "@netlify/build": "^28.2.0",
-    "@netlify/config": "^20.0.1",
-    "@netlify/edge-bundler": "^4.3.2",
-    "@netlify/framework-info": "^9.5.1",
+    "@netlify/build": "^28.3.1",
+    "@netlify/config": "^20.0.2",
+    "@netlify/edge-bundler": "^4.4.1",
+    "@netlify/framework-info": "^9.5.2",
     "@netlify/local-functions-proxy": "^1.1.1",
     "@netlify/zip-it-and-ship-it": "^8.1.0",
     "@octokit/rest": "^19.0.0",
@@ -296,7 +296,7 @@
     "minimist": "^1.2.5",
     "multiparty": "^4.2.1",
     "netlify": "^13.0.2",
-    "netlify-headers-parser": "^7.0.2",
+    "netlify-headers-parser": "^7.0.3",
     "netlify-onegraph-internal": "0.10.1",
     "netlify-redirect-parser": "^14.0.2",
     "netlify-redirector": "^0.3.1",
