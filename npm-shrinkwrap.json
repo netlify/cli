@@ -20463,9 +20463,9 @@
       }
     },
     "node_modules/rewiremock": {
-      "version": "3.14.3",
-      "resolved": "https://registry.npmjs.org/rewiremock/-/rewiremock-3.14.3.tgz",
-      "integrity": "sha512-6BaUGfp7NtxBjisxcGN73nNiA2fS2AwhEk/9DMUqxfv5v0aDM1wpOYpj5GSArqsJi07YCfLhkD8C74LAN7+FkQ==",
+      "version": "3.14.4",
+      "resolved": "https://registry.npmjs.org/rewiremock/-/rewiremock-3.14.4.tgz",
+      "integrity": "sha512-4oRzslkj0Qm0ErfFdGrD4ziW9cOcx/DW6RRDmUP82z3AC2C4C5eczsYjpTo6rOyIIDcCciXZBYKcAm2atGRggw==",
       "dev": true,
       "dependencies": {
         "babel-runtime": "^6.26.0",
@@ -39429,9 +39429,9 @@
       "integrity": "sha512-U9nH88a3fc/ekCF1l0/UP1IosiuIjyTh7hBvXVMHYgVcfGvt897Xguj2UOLDeI5BG2m7/uwyaLVT6fbtCwTyzw=="
     },
     "rewiremock": {
-      "version": "3.14.3",
-      "resolved": "https://registry.npmjs.org/rewiremock/-/rewiremock-3.14.3.tgz",
-      "integrity": "sha512-6BaUGfp7NtxBjisxcGN73nNiA2fS2AwhEk/9DMUqxfv5v0aDM1wpOYpj5GSArqsJi07YCfLhkD8C74LAN7+FkQ==",
+      "version": "3.14.4",
+      "resolved": "https://registry.npmjs.org/rewiremock/-/rewiremock-3.14.4.tgz",
+      "integrity": "sha512-4oRzslkj0Qm0ErfFdGrD4ziW9cOcx/DW6RRDmUP82z3AC2C4C5eczsYjpTo6rOyIIDcCciXZBYKcAm2atGRggw==",
       "dev": true,
       "requires": {
         "babel-runtime": "^6.26.0",
