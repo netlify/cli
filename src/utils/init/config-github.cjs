@@ -198,7 +198,7 @@ const addNotificationHooks = async ({ api, siteId, token }) => {
 
 /**
  * @param {object} config
- * @param {import('../../commands/base-command').BaseCommand} config.command
+ * @param {import('../../commands/base-command.mjs').default} config.command
  * @param {string} config.repoName
  * @param {string} config.repoOwner
  * @param {string} config.siteId

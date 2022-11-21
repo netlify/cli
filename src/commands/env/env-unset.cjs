@@ -13,7 +13,7 @@ const {
  * The env:unset command
  * @param {string} key Environment variable key
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').default} command
  * @returns {Promise<boolean>}
  */
 const envUnset = async (key, options, command) => {
@@ -135,7 +135,7 @@ const unsetInEnvelope = async ({ api, context, key, siteInfo }) => {
 
 /**
  * Creates the `netlify env:unset` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').default} program
  * @returns
  */
 const createEnvUnsetCommand = (program) =>

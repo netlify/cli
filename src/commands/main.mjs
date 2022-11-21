@@ -10,28 +10,28 @@ import { findBestMatch } from 'string-similarity'
 // TODO: use named imports again once the imported file is esm
 import utils from '../utils/index.cjs'
 
-import { createAddonsCommand } from './addons/index.cjs'
-import { createApiCommand } from './api/index.cjs'
+import { createAddonsCommand } from './addons/index.mjs'
+import { createApiCommand } from './api/index.mjs'
 import BaseCommand from './base-command.mjs'
-import { createBuildCommand } from './build/index.cjs'
-import { createCompletionCommand } from './completion/index.cjs'
-import { createDeployCommand } from './deploy/index.cjs'
+import { createBuildCommand } from './build/index.mjs'
+import { createCompletionCommand } from './completion/index.mjs'
+import { createDeployCommand } from './deploy/index.mjs'
 import { createDevCommand } from './dev/index.cjs'
 import { createEnvCommand } from './env/index.cjs'
-import { createFunctionsCommand } from './functions/index.cjs'
+import { createFunctionsCommand } from './functions/index.mjs'
 import { createGraphCommand } from './graph/index.cjs'
-import { createInitCommand } from './init/index.cjs'
+import { createInitCommand } from './init/index.mjs'
 import { createLinkCommand } from './link/index.cjs'
 import { createLmCommand } from './lm/index.cjs'
-import { createLoginCommand } from './login/index.cjs'
-import { createLogoutCommand } from './logout/index.cjs'
-import { createOpenCommand } from './open/index.cjs'
+import { createLoginCommand } from './login/index.mjs'
+import { createLogoutCommand } from './logout/index.mjs'
+import { createOpenCommand } from './open/index.mjs'
 import { createRecipesCommand, createRecipesListCommand } from './recipes/index.cjs'
-import { createSitesCommand } from './sites/index.cjs'
-import { createStatusCommand } from './status/index.cjs'
-import { createSwitchCommand } from './switch/index.cjs'
-import { createUnlinkCommand } from './unlink/index.cjs'
-import { createWatchCommand } from './watch/index.cjs'
+import { createSitesCommand } from './sites/index.mjs'
+import { createStatusCommand } from './status/index.mjs'
+import { createSwitchCommand } from './switch/index.mjs'
+import { createUnlinkCommand } from './unlink/index.mjs'
+import { createWatchCommand } from './watch/index.mjs'
 
 const { BANG, NETLIFY_CYAN, USER_AGENT, chalk, error, execa, exit, getGlobalConfig, log, track, warn } = utils
 
@@ -60,7 +60,7 @@ ${USER_AGENT}
 /**
  * The main CLI command without any command (root action)
  * @param {import('commander').OptionValues} options
- * @param {import('./base-command').BaseCommand} command
+ * @param {import('./base-command.mjs').default} command
  */
 const mainCommand = async function (options, command) {
   const globalConfig = await getGlobalConfig()
@@ -153,7 +153,7 @@ const mainCommand = async function (options, command) {
 /**
  * Creates the `netlify-cli` command
  * Promise is needed as the envinfo is a promise
- * @returns {import('./base-command').BaseCommand}
+ * @returns {import('./base-command.mjs').default}
  */
 export const createMainCommand = () => {
   const program = new BaseCommand('netlify')

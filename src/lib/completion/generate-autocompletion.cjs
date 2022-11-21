@@ -8,7 +8,7 @@ const { AUTOCOMPLETION_FILE } = require('./constants.cjs')
 
 /**
  * Create or updates the autocompletion information for the CLI
- * @param {import('../../commands/base-command').BaseCommand} program
+ * @param {import('../../commands/base-command.mjs').default} program
  * @returns {void}
  */
 const createAutocompletion = (program) => {

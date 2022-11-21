@@ -22,7 +22,7 @@ const { NETLIFYDEVERR, chalk, error, log, warn } = require('../../utils/index.cj
 /**
  * Creates the `netlify graph:pull` command
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').default} command
  * @returns
  */
 const graphPull = async (options, command) => {
@@ -160,7 +160,7 @@ ${JSON.stringify(error_, null, 2)}`)
 
 /**
  * Creates the `netlify graph:pull` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').default} program
  * @returns
  */
 const createGraphPullCommand = (program) =>
