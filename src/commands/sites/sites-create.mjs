@@ -6,7 +6,7 @@ import prettyjson from 'prettyjson'
 
 import utils from '../../utils/index.cjs'
 import { configureRepo } from '../../utils/init/config.cjs'
-import { link } from '../link/index.cjs'
+import { link } from '../link/index.mjs'
 
 const { chalk, error, getRepoData, log, logJson, track, warn } = utils
 

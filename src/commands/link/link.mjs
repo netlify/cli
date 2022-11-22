@@ -1,9 +1,10 @@
 // @ts-check
-const inquirer = require('inquirer')
-const isEmpty = require('lodash/isEmpty')
+import inquirer from 'inquirer'
 
-const { listSites } = require('../../lib/api.cjs')
-const { chalk, ensureNetlifyIgnore, error, exit, getRepoData, log, track } = require('../../utils/index.cjs')
+import { listSites } from '../../lib/api.cjs'
+import utils from '../../utils/index.cjs'
+
+const { chalk, ensureNetlifyIgnore, error, exit, getRepoData, log, track } = utils
 
 /**
  *
@@ -51,7 +52,7 @@ const linkPrompt = async (netlify, options) => {
       log()
       const sites = await listSites({ api, options: { filter: 'all' } })
 
-      if (isEmpty(sites)) {
+      if (sites.length === 0) {
         error(`You don't have any sites yet. Run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
       }
 
@@ -60,7 +61,7 @@ const linkPrompt = async (netlify, options) => {
       )
 
       // If no remote matches. Throw error
-      if (isEmpty(matchingSites)) {
+      if (matchingSites.length === 0) {
         log(chalk.redBright.bold.underline(`No Matching Site Found`))
         log()
         log(`No site found with the remote ${repoData.httpsUrl}.
@@ -125,7 +126,7 @@ Run ${chalk.cyanBright('git remote -v')} to see a list of your git remotes.`)
         }
       }
 
-      if (isEmpty(matchingSites)) {
+      if (!matchingSites || matchingSites.length === 0) {
         error(`No site names found containing '${searchTerm}'.
 
 Run ${chalk.cyanBright('netlify link')} again to try a new search,
@@ -165,7 +166,7 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
         error(error_)
       }
 
-      if (isEmpty(sites)) {
+      if (!sites || sites.length === 0) {
         error(`You don't have any sites yet. Run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
       }
 
@@ -240,7 +241,7 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command.mjs').default} command
  */
-const link = async (options, command) => {
+export const link = async (options, command) => {
   await command.authenticate()
 
   const {
@@ -337,7 +338,7 @@ const link = async (options, command) => {
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
-const createLinkCommand = (program) =>
+export const createLinkCommand = (program) =>
   program
     .command('link')
     .description('Link a local repo or project folder to an existing site on Netlify')
@@ -346,5 +347,3 @@ const createLinkCommand = (program) =>
     .option('--gitRemoteName <name>', 'Name of Git remote to use. e.g. "origin"')
     .addExamples(['netlify link', 'netlify link --id 123-123-123-123', 'netlify link --name my-site-name'])
     .action(link)
-
-module.exports = { createLinkCommand, link }
