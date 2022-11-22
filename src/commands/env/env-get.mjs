@@ -1,15 +1,9 @@
 // @ts-check
-const { Option } = require('commander')
+import { Option } from 'commander'
 
-const {
-  AVAILABLE_CONTEXTS,
-  chalk,
-  error,
-  getEnvelopeEnv,
-  log,
-  logJson,
-  normalizeContext,
-} = require('../../utils/index.cjs')
+import utils from '../../utils/index.cjs'
+
+const { AVAILABLE_CONTEXTS, chalk, error, getEnvelopeEnv, log, logJson, normalizeContext } = utils
 
 /**
  * The env:get command
@@ -65,7 +59,7 @@ const envGet = async (name, options, command) => {
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
-const createEnvGetCommand = (program) =>
+export const createEnvGetCommand = (program) =>
   program
     .command('env:get')
     .argument('<name>', 'Environment variable name')
@@ -90,5 +84,3 @@ const createEnvGetCommand = (program) =>
     .action(async (name, options, command) => {
       await envGet(name, options, command)
     })
-
-module.exports = { createEnvGetCommand }
