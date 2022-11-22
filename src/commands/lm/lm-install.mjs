@@ -1,6 +1,6 @@
 // @ts-check
-const { installPlatform } = require('../../utils/lm/install.cjs')
-const { printBanner } = require('../../utils/lm/ui.cjs')
+import { installPlatform } from '../../utils/lm/install.cjs'
+import { printBanner } from '../../utils/lm/ui.cjs'
 
 /**
  * The lm:install command
@@ -18,7 +18,7 @@ const lmInstall = async ({ force }) => {
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
-const createLmInstallCommand = (program) =>
+export const createLmInstallCommand = (program) =>
   program
     .command('lm:install')
     .alias('lm:init')
@@ -29,5 +29,3 @@ and configures your Git environment with the right credentials.`,
     )
     .option('-f, --force', 'Force the credentials helper installation')
     .action(lmInstall)
-
-module.exports = { createLmInstallCommand }
