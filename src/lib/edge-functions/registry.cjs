@@ -7,6 +7,7 @@ const {
   STATUS_MSG,
   chalk,
   log,
+  logH2,
   logInfo,
   warn,
   watchDebounced,
@@ -405,6 +406,7 @@ class EdgeFunctionsRegistry {
   }
 
   async scan(directories) {
+    logH2('Loading netlify edge functions')
     const functions = await this.bundler.find(directories)
 
     functions.forEach((func) => {
