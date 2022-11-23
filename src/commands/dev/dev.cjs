@@ -202,7 +202,7 @@ const startFrameworkServer = async function ({ settings }) {
   logH2(`Starting netlify dev with ${settings.framework || 'custom config'}`)
 
   const spinner = startSpinner({
-    text: `Waiting for port ${settings.frameworkPort}`,
+    text: `✨ Waiting for port ${settings.frameworkPort}`,
   })
 
   runCommand(settings.command, settings.env, spinner)

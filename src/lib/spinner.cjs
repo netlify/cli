@@ -3,8 +3,12 @@ const process = require('process')
 
 // eslint-disable-next-line no-restricted-modules
 const { Instance: ChalkInstance } = require('chalk')
-const logSymbols = require('log-symbols')
 const ora = require('ora')
+
+const logSymbols = {
+  success: '🌈',
+  error: '🚫',
+}
 
 /**
  * Chalk instance for CLI that can be initialized with no colors mode
@@ -82,7 +86,7 @@ const startSpinner = ({ text }) => {
       interval: 60,
       frames,
     },
-    text: `✨ ${text}`,
+    text: `${text}`,
   }).start()
 }
 
