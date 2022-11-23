@@ -42,6 +42,7 @@ const {
   getToken,
   injectEnvVariables,
   log,
+  logError,
   logH1,
   logH2,
   normalizeConfig,
@@ -159,16 +160,16 @@ const runCommand = (command, env = {}, spinner = null) => {
       const result = await commandProcess
       const [commandWithoutArgs] = command.split(' ')
       if (result.failed && isNonExistingCommandError({ command: commandWithoutArgs, error: result })) {
-        log(
-          NETLIFYDEVERR,
-          `Failed running command: ${command}. Please verify ${chalk.magenta(`'${commandWithoutArgs}'`)} exists`,
+        logError(
+          `Failed running command: ${command}. Please verify ${chalk.underline(`'${commandWithoutArgs}'`)} exists`,
         )
       } else {
         const errorMessage = result.failed
           ? `${NETLIFYDEVERR} ${result.shortMessage}`
           : `${NETLIFYDEVWARN} "${command}" exited with code ${result.exitCode}`
 
-        log(`${errorMessage}. Shutting down Netlify Dev server`)
+        log()
+        logError(`${errorMessage}. Shutting down netlify dev server!`)
       }
 
       return await cleanupBeforeExit({ exitCode: 1 })

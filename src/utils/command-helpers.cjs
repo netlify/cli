@@ -55,8 +55,9 @@ const BASE_FLAGS = new Set(['--debug', '--httpProxy', '--httpProxyCertificateFil
 
 const BRAND = {
   COLORS: {
-    BLUE: '#2451f5',
+    BLUE: `#2451f5`,
     CYAN: `#5cebdf`,
+    RED: `#7a122d`,
   },
   ICONS: {
     DIAMOND: '◈',
@@ -118,6 +119,13 @@ const logInfo = ({ dim = false, message }) => {
       default:
         log(padLeft(`${BANG} ${message}`, INDENT_WIDTHS.INFO))
     }
+  }
+}
+
+const logError = ({ message }) => {
+  if (message) {
+    log(`${chalk.bgHex(BRAND.COLORS.RED).whiteBright(` ${BRAND.ICONS.DIAMOND} ${message} `)}`)
+    log()
   }
 }
 
@@ -317,6 +325,7 @@ module.exports = {
   INDENT_WIDTHS,
   logInfo,
   log,
+  logError,
   logH1,
   logH2,
   logJson,
