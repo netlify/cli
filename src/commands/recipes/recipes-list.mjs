@@ -1,7 +1,7 @@
 // @ts-check
-const AsciiTable = require('ascii-table')
+import AsciiTable from 'ascii-table'
 
-const { listRecipes } = require('./common.cjs')
+import { listRecipes } from './common.mjs'
 
 /**
  * The recipes:list command
@@ -24,11 +24,9 @@ const recipesListCommand = async () => {
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
-const createRecipesListCommand = (program) =>
+export const createRecipesListCommand = (program) =>
   program
     .command('recipes:list')
     .description(`(Beta) List the recipes available to create and modify files in a project`)
     .addExamples(['netlify recipes:list'])
     .action(recipesListCommand)
-
-module.exports = { createRecipesListCommand }

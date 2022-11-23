@@ -11,7 +11,7 @@ import StaticServer from 'static-server'
 import stripAnsiCc from 'strip-ansi-control-characters'
 import waitPort from 'wait-port'
 
-import edgeFunctions from '../../lib/edge-functions/index.cjs'
+import { promptEditorHelper } from '../../lib/edge-functions/editor-helper.mjs'
 import { startFunctionsServer } from '../../lib/functions/server.cjs'
 import {
   OneGraphCliClient,
@@ -25,8 +25,6 @@ import { startSpinner, stopSpinner } from '../../lib/spinner.cjs'
 import utils from '../../utils/index.cjs'
 
 import { createDevExecCommand } from './dev-exec.mjs'
-
-const { promptEditorHelper } = edgeFunctions
 
 const { defaultExampleOperationsDoc, getGraphEditUrlBySiteId, getNetlifyGraphConfig, readGraphQLOperationsSourceFile } =
   netlifyGraph

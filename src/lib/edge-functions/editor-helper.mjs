@@ -1,12 +1,12 @@
-const { env } = require('process')
+import { env } from 'process'
 
-const inquirer = require('inquirer')
+import inquirer from 'inquirer'
 
-const { runRecipe } = require('../../commands/recipes/index.cjs')
+import { runRecipe } from '../../commands/recipes/index.mjs'
 
 const STATE_PROMPT_PROPERTY = 'promptVSCodeSettings'
 
-const promptEditorHelper = async ({ NETLIFYDEVLOG, chalk, config, log, repositoryRoot, state }) => {
+export const promptEditorHelper = async ({ NETLIFYDEVLOG, chalk, config, log, repositoryRoot, state }) => {
   // This prevents tests from hanging when running them inside the VS Code
   // terminal, as otherwise we'll show the prompt and wait for a response.
   if (env.NODE_ENV === 'test') return
@@ -41,5 +41,3 @@ const promptEditorHelper = async ({ NETLIFYDEVLOG, chalk, config, log, repositor
 
   await runRecipe({ config, recipeName: 'vscode', repositoryRoot })
 }
-
-module.exports = { promptEditorHelper }

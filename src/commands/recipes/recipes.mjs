@@ -1,12 +1,13 @@
 // @ts-check
-const { basename } = require('path')
+import { basename } from 'path'
 
-const inquirer = require('inquirer')
-const { findBestMatch } = require('string-similarity')
+import inquirer from 'inquirer'
+import { findBestMatch } from 'string-similarity'
 
-const utils = require('../../utils/command-helpers.cjs')
+import utils from '../../utils/command-helpers.cjs'
 
-const { getRecipe, listRecipes } = require('./common.cjs')
+import { getRecipe, listRecipes } from './common.mjs'
+import { createRecipesListCommand } from './recipes-list.mjs'
 
 const SUGGESTION_TIMEOUT = 1e4
 
@@ -62,8 +63,8 @@ const recipesCommand = async (recipeName, options, command) => {
   }
 }
 
-const runRecipe = ({ config, recipeName, repositoryRoot }) => {
-  const recipe = getRecipe(recipeName)
+export const runRecipe = async ({ config, recipeName, repositoryRoot }) => {
+  const recipe = await getRecipe(recipeName)
 
   return recipe.run({ config, repositoryRoot })
 }
@@ -73,7 +74,9 @@ const runRecipe = ({ config, recipeName, repositoryRoot }) => {
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
-const createRecipesCommand = (program) =>
+export const createRecipesCommand = (program) => {
+  createRecipesListCommand(program)
+
   program
     .command('recipes')
     .argument('[name]', 'name of the recipe')
@@ -81,5 +84,4 @@ const createRecipesCommand = (program) =>
     .option('-n, --name <name>', 'recipe name to use')
     .addExamples(['netlify recipes my-recipe', 'netlify recipes --name my-recipe'])
     .action(recipesCommand)
-
-module.exports = { createRecipesCommand, runRecipe }
+}

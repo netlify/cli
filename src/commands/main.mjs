@@ -26,7 +26,7 @@ import { createLmCommand } from './lm/index.mjs'
 import { createLoginCommand } from './login/index.mjs'
 import { createLogoutCommand } from './logout/index.mjs'
 import { createOpenCommand } from './open/index.mjs'
-import { createRecipesCommand, createRecipesListCommand } from './recipes/index.cjs'
+import { createRecipesCommand } from './recipes/index.mjs'
 import { createSitesCommand } from './sites/index.mjs'
 import { createStatusCommand } from './status/index.mjs'
 import { createSwitchCommand } from './switch/index.mjs'
@@ -167,7 +167,6 @@ export const createMainCommand = () => {
   createEnvCommand(program)
   createFunctionsCommand(program)
   createRecipesCommand(program)
-  createRecipesListCommand(program)
   createGraphCommand(program)
   createInitCommand(program)
   createLinkCommand(program)

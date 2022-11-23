@@ -1,13 +1,13 @@
-const { join } = require('path')
+import { join } from 'path'
 
-const execa = require('execa')
-const inquirer = require('inquirer')
+import execa from 'execa'
+import inquirer from 'inquirer'
 
-const { NETLIFYDEVLOG, NETLIFYDEVWARN, chalk, error, log } = require('../../utils/command-helpers.cjs')
+import { NETLIFYDEVLOG, NETLIFYDEVWARN, chalk, error, log } from '../../utils/command-helpers.cjs'
 
-const { applySettings, getSettings, writeSettings } = require('./settings.cjs')
+import { applySettings, getSettings, writeSettings } from './settings.mjs'
 
-const description = 'Create VS Code settings for an optimal experience with Netlify projects'
+export const description = 'Create VS Code settings for an optimal experience with Netlify projects'
 
 const getPrompt = ({ fileExists, path }) => {
   const formattedPath = chalk.underline(path)
@@ -48,7 +48,7 @@ const getDenoExtPrompt = () => {
   })
 }
 
-const run = async ({ config, repositoryRoot }) => {
+export const run = async ({ config, repositoryRoot }) => {
   const { DenoBridge } = await import('@netlify/edge-bundler')
   const deno = new DenoBridge({
     onBeforeDownload: () =>
@@ -86,5 +86,3 @@ const run = async ({ config, repositoryRoot }) => {
     error('Could not write VS Code settings file.')
   }
 }
-
-module.exports = { description, run }

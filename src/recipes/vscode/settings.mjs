@@ -1,9 +1,9 @@
-const { promises: fs } = require('fs')
-const { dirname, relative } = require('path')
+import { mkdir, readFile, stat, writeFile } from 'fs/promises'
+import { dirname, relative } from 'path'
 
-const unixify = require('unixify')
+import unixify from 'unixify'
 
-const applySettings = (existingSettings, { denoBinary, edgeFunctionsPath, repositoryRoot }) => {
+export const applySettings = (existingSettings, { denoBinary, edgeFunctionsPath, repositoryRoot }) => {
   const relativeEdgeFunctionsPath = unixify(relative(repositoryRoot, edgeFunctionsPath))
   const settings = {
     ...existingSettings,
@@ -30,15 +30,15 @@ const applySettings = (existingSettings, { denoBinary, edgeFunctionsPath, reposi
   return settings
 }
 
-const getSettings = async (settingsPath) => {
+export const getSettings = async (settingsPath) => {
   try {
-    const stats = await fs.stat(settingsPath)
+    const stats = await stat(settingsPath)
 
     if (!stats.isFile()) {
       throw new Error(`${settingsPath} is not a valid file.`)
     }
 
-    const file = await fs.readFile(settingsPath)
+    const file = await readFile(settingsPath)
 
     return {
       fileExists: true,
@@ -56,11 +56,9 @@ const getSettings = async (settingsPath) => {
   }
 }
 
-const writeSettings = async ({ settings, settingsPath }) => {
+export const writeSettings = async ({ settings, settingsPath }) => {
   const serializedSettings = JSON.stringify(settings, null, 2)
 
-  await fs.mkdir(dirname(settingsPath), { recursive: true })
-  await fs.writeFile(settingsPath, serializedSettings)
+  await mkdir(dirname(settingsPath), { recursive: true })
+  await writeFile(settingsPath, serializedSettings)
 }
-
-module.exports = { applySettings, getSettings, writeSettings }
