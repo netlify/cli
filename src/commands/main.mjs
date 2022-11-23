@@ -1,13 +1,11 @@
 // @ts-check
-import { readFile } from 'fs/promises'
 import process from 'process'
-import { fileURLToPath } from 'url'
 
 import { Option } from 'commander'
 import inquirer from 'inquirer'
 import { findBestMatch } from 'string-similarity'
 
-// TODO: use named imports again once the imported file is esm
+import getPackageJson from '../utils/get-package-json.mjs'
 import utils from '../utils/index.cjs'
 
 import { createAddonsCommand } from './addons/index.mjs'
@@ -90,7 +88,7 @@ const mainCommand = async function (options, command) {
 
   // if no command show the header and the help
   if (command.args.length === 0) {
-    const pkg = JSON.parse(await readFile(fileURLToPath(new URL('../../package.json', import.meta.url))), 'utf-8')
+    const pkg = await getPackageJson()
 
     const title = `${chalk.bgBlack.cyan('⬥ Netlify CLI')}`
     const docsMsg = `${chalk.greenBright('Read the docs:')} https://docs.netlify.com/cli/get-started/`
