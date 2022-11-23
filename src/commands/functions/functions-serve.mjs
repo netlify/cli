@@ -1,7 +1,7 @@
 // @ts-check
 import { join } from 'path'
 
-import { startFunctionsServer } from '../../lib/functions/server.cjs'
+import { startFunctionsServer } from '../../lib/functions/server.mjs'
 import utils from '../../utils/index.cjs'
 
 const { acquirePort, getFunctionsDir, getSiteInformation, injectEnvVariables } = utils

@@ -1,6 +1,15 @@
 // @ts-check
-const { get } = require('dot-prop')
-const jwtDecode = require('jwt-decode')
+import { get } from 'dot-prop'
+import jwtDecode from 'jwt-decode'
+
+import utils from '../../utils/index.cjs'
+
+import { handleBackgroundFunction, handleBackgroundFunctionResult } from './background.cjs'
+import { createFormSubmissionHandler } from './form-submissions-handler.cjs'
+import { FunctionsRegistry } from './registry.cjs'
+import { handleScheduledFunction } from './scheduled.cjs'
+import { handleSynchronousFunction } from './synchronous.cjs'
+import { shouldBase64Encode } from './utils.cjs'
 
 const {
   CLOCKWORK_USERAGENT,
@@ -10,14 +19,7 @@ const {
   generateNetlifyGraphJWT,
   getInternalFunctionsDir,
   log,
-} = require('../../utils/index.cjs')
-
-const { handleBackgroundFunction, handleBackgroundFunctionResult } = require('./background.cjs')
-const { createFormSubmissionHandler } = require('./form-submissions-handler.cjs')
-const { FunctionsRegistry } = require('./registry.cjs')
-const { handleScheduledFunction } = require('./scheduled.cjs')
-const { handleSynchronousFunction } = require('./synchronous.cjs')
-const { shouldBase64Encode } = require('./utils.cjs')
+} = utils
 
 const buildClientContext = function (headers) {
   // inject a client context based on auth header, ported over from netlify-lambda (https://github.com/netlify/netlify-lambda/pull/57)
@@ -46,7 +48,7 @@ const buildClientContext = function (headers) {
   }
 }
 
-const createHandler = function (options) {
+export const createHandler = function (options) {
   const { config, functionsRegistry } = options
 
   return async function handler(request, response) {
@@ -168,13 +170,11 @@ const createHandler = function (options) {
   }
 }
 
-const getFunctionsServer = function (options) {
+const getFunctionsServer = async function (options) {
   const { buildersPrefix = '', functionsPrefix = '', functionsRegistry, siteUrl } = options
   // performance optimization, load express on demand
-  // eslint-disable-next-line n/global-require
-  const express = require('express')
-  // eslint-disable-next-line n/global-require
-  const expressLogging = require('express-logging')
+  const express = await import('express')
+  const expressLogging = await import('express-logging')
   const app = express()
   const functionHandler = createHandler(options)
 
@@ -204,7 +204,7 @@ const getFunctionsServer = function (options) {
   return app
 }
 
-const startFunctionsServer = async (options) => {
+export const startFunctionsServer = async (options) => {
   const { capabilities, config, settings, site, siteUrl, timeouts } = options
   const internalFunctionsDir = await getInternalFunctionsDir({ base: site.root })
 
@@ -224,7 +224,7 @@ const startFunctionsServer = async (options) => {
 
     await functionsRegistry.scan(functionsDirectories)
 
-    const server = getFunctionsServer(Object.assign(options, { functionsRegistry }))
+    const server = await getFunctionsServer(Object.assign(options, { functionsRegistry }))
 
     await startWebServer({ server, settings })
   }
@@ -242,5 +242,3 @@ const startWebServer = async ({ server, settings }) => {
     })
   })
 }
-
-module.exports = { startFunctionsServer, createHandler }

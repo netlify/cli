@@ -12,7 +12,7 @@ import stripAnsiCc from 'strip-ansi-control-characters'
 import waitPort from 'wait-port'
 
 import { promptEditorHelper } from '../../lib/edge-functions/editor-helper.mjs'
-import { startFunctionsServer } from '../../lib/functions/server.cjs'
+import { startFunctionsServer } from '../../lib/functions/server.mjs'
 import {
   OneGraphCliClient,
   loadCLISession,
