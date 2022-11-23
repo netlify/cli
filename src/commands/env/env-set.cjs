@@ -17,7 +17,7 @@ const {
  * @param {string} key Environment variable key
  * @param {string} value Value to set to
  * @param {import('commander').OptionValues} options
- * @param {import('../base-command').BaseCommand} command
+ * @param {import('../base-command.mjs').default} command
  * @returns {Promise<boolean>}
  */
 const envSet = async (key, value, options, command) => {
@@ -147,7 +147,7 @@ const setInEnvelope = async ({ api, context, key, scope, siteInfo, value }) => {
 
 /**
  * Creates the `netlify env:set` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').default} program
  * @returns
  */
 const createEnvSetCommand = (program) =>

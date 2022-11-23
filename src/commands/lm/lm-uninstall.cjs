@@ -10,7 +10,7 @@ const lmUninstall = async () => {
 
 /**
  * Creates the `netlify lm:uninstall` command
- * @param {import('../base-command').BaseCommand} program
+ * @param {import('../base-command.mjs').default} program
  * @returns
  */
 const createLmUninstallCommand = (program) =>

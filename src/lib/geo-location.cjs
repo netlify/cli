@@ -19,12 +19,18 @@ const REQUEST_TIMEOUT = 1e4
  * @property {object} subdivision
  * @property {string} subdivision.code
  * @property {string} subdivision.name
+ * @property {number} longitude
+ * @property {number} latitude
+ * @property {string} timezone
  */
 
 const mockLocation = {
   city: 'San Francisco',
   country: { code: 'US', name: 'United States' },
   subdivision: { code: 'CA', name: 'California' },
+  longitude: 0,
+  latitude: 0,
+  timezone: 'UTC',
 }
 
 /**
@@ -71,6 +77,9 @@ const getGeoLocation = async ({ geoCountry, mode, offline, state }) => {
         city: 'Mock City',
         country: { code: geoCountry, name: 'Mock Country' },
         subdivision: { code: 'SD', name: 'Mock Subdivision' },
+        longitude: 0,
+        latitude: 0,
+        timezone: 'UTC',
       }
     }
     return mockLocation
