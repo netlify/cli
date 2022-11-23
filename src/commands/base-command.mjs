@@ -9,28 +9,24 @@ import merge from 'lodash/merge.js'
 import { NetlifyAPI } from 'netlify'
 
 import { getAgent } from '../lib/http-agent.cjs'
-// TODO: use named imports again once the imported file is esm
-import utils from '../utils/index.cjs'
-
-const {
+import {
   NETLIFY_CYAN,
-  StateConfig,
   USER_AGENT,
   chalk,
   error,
   exit,
-  getGlobalConfig,
   getToken,
-  identify,
   log,
   normalizeConfig,
-  openBrowser,
   padLeft,
   pollForToken,
   sortOptions,
-  track,
   warn,
-} = utils
+} from '../utils/command-helpers.cjs'
+import { getGlobalConfig } from '../utils/get-global-config.cjs'
+import { openBrowser } from '../utils/open-browser.cjs'
+import { StateConfig } from '../utils/state-config.cjs'
+import { identify, track } from '../utils/telemetry/index.mjs'
 
 // Netlify CLI client id. Lives in bot@netlify.com
 // TODO: setup client for multiple environments

@@ -1,9 +1,9 @@
 /**
  * Utility to validating analytic event names for clean data
  */
-const { log } = require('../command-helpers.cjs')
+import { log } from '../command-helpers.cjs'
 
-module.exports = function isValidEventName(eventName, config) {
+export default function isValidEventName(eventName, config) {
   const validProject = [config.projectName]
   const validObjects = config.objects || []
   const matches = eventName.match(/([a-zA-Z]*):([a-zA-Z]*)_([a-zA-Z]*$)/)

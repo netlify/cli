@@ -17,7 +17,6 @@ const parseRawFlags = require('./parse-raw-flags.cjs')
 const proxy = require('./proxy.cjs')
 const readRepoURL = require('./read-repo-url.cjs')
 const StateConfig = require('./state-config.cjs')
-const telemetry = require('./telemetry/index.cjs')
 
 module.exports = {
   ...commandHelpers,
@@ -36,7 +35,6 @@ module.exports = {
   ...proxy,
   ...readRepoURL,
   ...StateConfig,
-  ...telemetry,
   execa,
   getGlobalConfig,
 }
