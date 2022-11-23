@@ -6,7 +6,7 @@ import build from '@netlify/build'
 /**
  * The buildConfig + a missing cachedConfig
  * @typedef BuildConfig
- * @type {Parameters<import('@netlify/build/src/core/main')>[0] & {cachedConfig: any}}
+ * @type {Parameters<import('@netlify/build/src/core/main.js')>[0] & {cachedConfig: any}}
  */
 
 // We have already resolved the configuration using `@netlify/config`
@@ -20,7 +20,11 @@ import build from '@netlify/build'
  * @param {import('commander').OptionValues} config.options
  * @returns {BuildConfig}
  */
-const getBuildOptions = ({ cachedConfig, options: { context, cwd, debug, dry, json, offline, silent }, token }) => ({
+export const getBuildOptions = ({
+  cachedConfig,
+  options: { context, cwd, debug, dry, json, offline, silent },
+  token,
+}) => ({
   cachedConfig,
   siteId: cachedConfig.siteInfo.id,
   token,
@@ -46,7 +50,7 @@ const getBuildOptions = ({ cachedConfig, options: { context, cwd, debug, dry, js
  * @param {BuildConfig} options
  * @returns
  */
-const runBuild = async (options) => {
+export const runBuild = async (options) => {
   // If netlify NETLIFY_API_URL is set we need to pass this information to @netlify/build
   // TODO don't use testOpts, but add real properties to do this.
   if (process.env.NETLIFY_API_URL) {
@@ -61,5 +65,3 @@ const runBuild = async (options) => {
   const { configMutations, netlifyConfig: newConfig, severityCode: exitCode } = await build(options)
   return { exitCode, newConfig, configMutations }
 }
-
-module.exports = { getBuildOptions, runBuild }
