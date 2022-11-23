@@ -4,13 +4,13 @@ const { extname, isAbsolute, join } = require('path')
 const { env } = require('process')
 
 const {
-  NETLIFYDEVERR,
   NETLIFYDEVLOG,
   NETLIFYDEVWARN,
   STATUS_MSG,
   chalk,
   getTerminalLink,
   log,
+  logError,
   logInfo,
   warn,
   watchDebounced,
@@ -75,11 +75,9 @@ class FunctionsRegistry {
     const { error_, includedFiles, srcFilesDiff } = await func.build({ cache: this.buildCache })
 
     if (error_) {
-      log(
-        `${NETLIFYDEVERR} ${chalk.red('Failed')} reloading function ${chalk.yellow(func.name)} with error:\n${
-          error_.message
-        }`,
-      )
+      logError({
+        message: `Failed reloading function ${chalk.underline(func.name)} with error:\n${error_.message}`,
+      })
     } else if (verbose) {
       logInfo({ message: `${STATUS_MSG.RELOADED} function ${chalk.yellow(func.name)}` })
     }
