@@ -1,21 +1,15 @@
 // @ts-check
-const gitRepoInfo = require('git-repo-info')
+import gitRepoInfo from 'git-repo-info'
 
-const {
-  OneGraphCliClient,
-  ensureCLISession,
-  upsertMergeCLISessionMetadata,
-} = require('../../lib/one-graph/cli-client.cjs')
-const {
-  defaultExampleOperationsDoc,
-  getGraphEditUrlBySiteId,
-  getNetlifyGraphConfig,
-  readGraphQLOperationsSourceFile,
-} = require('../../lib/one-graph/cli-netlify-graph.cjs')
-const { NETLIFYDEVERR, chalk, error, log } = require('../../utils/index.cjs')
-const { openBrowser } = require('../../utils/open-browser.cjs')
+import { OneGraphCliClient, ensureCLISession, upsertMergeCLISessionMetadata } from '../../lib/one-graph/cli-client.cjs'
+import netlifyGraph from '../../lib/one-graph/cli-netlify-graph.cjs'
+import utils from '../../utils/index.cjs'
+import { openBrowser } from '../../utils/open-browser.cjs'
 
+const { NETLIFYDEVERR, chalk, error, log } = utils
 const { ensureAppForSite, executeCreatePersistedQueryMutation } = OneGraphCliClient
+const { defaultExampleOperationsDoc, getGraphEditUrlBySiteId, getNetlifyGraphConfig, readGraphQLOperationsSourceFile } =
+  netlifyGraph
 
 /**
  * Creates the `netlify graph:edit` command
@@ -99,12 +93,10 @@ const graphEdit = async (options, command) => {
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
-const createGraphEditCommand = (program) =>
+export const createGraphEditCommand = (program) =>
   program
     .command('graph:edit')
     .description('Launch the browser to edit your local graph functions from Netlify')
     .action(async (options, command) => {
       await graphEdit(options, command)
     })
-
-module.exports = { createGraphEditCommand }

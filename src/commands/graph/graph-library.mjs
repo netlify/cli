@@ -1,7 +1,11 @@
 // @ts-check
-const { GraphQL } = require('netlify-onegraph-internal')
+import { GraphQL } from 'netlify-onegraph-internal'
 
-const { readLockfile } = require('../../lib/one-graph/cli-client.cjs')
+import { readLockfile } from '../../lib/one-graph/cli-client.cjs'
+import netlifyGraph from '../../lib/one-graph/cli-netlify-graph.cjs'
+import utils from '../../utils/index.cjs'
+
+const { NETLIFYDEVERR, chalk, error, log } = utils
 const {
   buildSchema,
   defaultExampleOperationsDoc,
@@ -11,8 +15,7 @@ const {
   parse,
   readGraphQLOperationsSourceFile,
   readGraphQLSchemaFile,
-} = require('../../lib/one-graph/cli-netlify-graph.cjs')
-const { NETLIFYDEVERR, chalk, error, log } = require('../../utils/index.cjs')
+} = netlifyGraph
 
 /**
  * Creates the `netlify graph:library` command
@@ -79,12 +82,10 @@ const graphLibrary = async (options, command) => {
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
-const createGraphLibraryCommand = (program) =>
+export const createGraphLibraryCommand = (program) =>
   program
     .command('graph:library')
     .description('Generate the Graph function library')
     .action(async (options, command) => {
       await graphLibrary(options, command)
     })
-
-module.exports = { createGraphLibraryCommand }
