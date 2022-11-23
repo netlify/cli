@@ -16,7 +16,7 @@ import { normalizeFunctionsConfig } from '../../lib/functions/config.cjs'
 import { getLogMessage } from '../../lib/log.cjs'
 import { startSpinner, stopSpinner } from '../../lib/spinner.cjs'
 import utils from '../../utils/index.cjs'
-import { link } from '../link/index.cjs'
+import { link } from '../link/index.mjs'
 import { sitesCreate } from '../sites/index.mjs'
 
 const {

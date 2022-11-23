@@ -1,10 +1,14 @@
 // @ts-check
-const fs = require('fs')
-const path = require('path')
-const process = require('process')
+import fs from 'fs'
+import path from 'path'
+import process from 'process'
 
-const { getNetlifyGraphConfig } = require('../../lib/one-graph/cli-netlify-graph.cjs')
-const { NETLIFYDEVERR, chalk, error, log } = require('../../utils/index.cjs')
+import netlifyGraph from '../../lib/one-graph/cli-netlify-graph.cjs'
+import utils from '../../utils/index.cjs'
+
+const { getNetlifyGraphConfig } = netlifyGraph
+
+const { NETLIFYDEVERR, chalk, error, log } = utils
 
 /**
  * Creates the `netlify graph:config:write` command
@@ -45,7 +49,7 @@ const graphConfigWrite = async (options, command) => {
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
-const createGraphConfigWriteCommand = (program) =>
+export const createGraphConfigWriteCommand = (program) =>
   program
     .command('graph:config:write')
     .description(
@@ -54,5 +58,3 @@ const createGraphConfigWriteCommand = (program) =>
     .action(async (options, command) => {
       await graphConfigWrite(options, command)
     })
-
-module.exports = { createGraphConfigWriteCommand }

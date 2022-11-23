@@ -1,22 +1,15 @@
 // @ts-check
-const AsciiTable = require('ascii-table')
-const { isCI } = require('ci-info')
-const { Option } = require('commander')
-const inquirer = require('inquirer')
-const isEmpty = require('lodash/isEmpty')
+import ansiEscapes from 'ansi-escapes'
+import AsciiTable from 'ascii-table'
+import { isCI } from 'ci-info'
+import { Option } from 'commander'
+import inquirer from 'inquirer'
+import logUpdate from 'log-update'
 
-const {
-  AVAILABLE_CONTEXTS,
-  chalk,
-  error,
-  getEnvelopeEnv,
-  getHumanReadableScopes,
-  log,
-  logJson,
-  normalizeContext,
-} = require('../../utils/index.cjs')
+import utils from '../../utils/index.cjs'
 
-const [logUpdatePromise, ansiEscapesPromise] = [import('log-update'), import('ansi-escapes')]
+const { AVAILABLE_CONTEXTS, chalk, error, getEnvelopeEnv, getHumanReadableScopes, log, logJson, normalizeContext } =
+  utils
 
 const MASK_LENGTH = 50
 const MASK = '*'.repeat(MASK_LENGTH)
@@ -89,7 +82,7 @@ const envList = async (options, command) => {
   const contextType = AVAILABLE_CONTEXTS.includes(context) ? 'context' : 'branch'
   const withContext = isUsingEnvelope ? `in the ${chalk.magenta(options.context)} ${contextType}` : ''
   const withScope = isUsingEnvelope && scope !== 'any' ? `and ${chalk.yellow(options.scope)} scope` : ''
-  if (isEmpty(environment)) {
+  if (Object.keys(environment).length === 0) {
     log(`No environment variables set ${forSite} ${withContext} ${withScope}`)
     return false
   }
@@ -103,8 +96,6 @@ const envList = async (options, command) => {
     return false
   }
 
-  const { default: logUpdate } = await logUpdatePromise
-
   logUpdate(getTable({ environment, hideValues: true, scopesColumn: isUsingEnvelope }))
   const { showValues } = await inquirer.prompt([
     {
@@ -116,7 +107,6 @@ const envList = async (options, command) => {
   ])
 
   if (showValues) {
-    const { default: ansiEscapes } = await ansiEscapesPromise
     // since inquirer adds a prompt, we need to account for it when printing the table again
     log(ansiEscapes.eraseLines(3))
     logUpdate(getTable({ environment, hideValues: false, scopesColumn: isUsingEnvelope }))
@@ -129,7 +119,7 @@ const envList = async (options, command) => {
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
-const createEnvListCommand = (program) =>
+export const createEnvListCommand = (program) =>
   program
     .command('env:list')
     .option(
@@ -153,5 +143,3 @@ const createEnvListCommand = (program) =>
     .action(async (options, command) => {
       await envList(options, command)
     })
-
-module.exports = { createEnvListCommand }

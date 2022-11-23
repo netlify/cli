@@ -1,32 +1,36 @@
 // @ts-check
-const events = require('events')
-const path = require('path')
-const process = require('process')
-const { promisify } = require('util')
+import events from 'events'
+import path from 'path'
+import process from 'process'
+import { promisify } from 'util'
 
-const boxen = require('boxen')
-const { Option } = require('commander')
-const execa = require('execa')
-const StaticServer = require('static-server')
-const stripAnsiCc = require('strip-ansi-control-characters')
-const waitPort = require('wait-port')
+import boxen from 'boxen'
+import { Option } from 'commander'
+import execa from 'execa'
+import StaticServer from 'static-server'
+import stripAnsiCc from 'strip-ansi-control-characters'
+import waitPort from 'wait-port'
 
-const { promptEditorHelper } = require('../../lib/edge-functions/index.cjs')
-const { startFunctionsServer } = require('../../lib/functions/server.cjs')
-const {
+import edgeFunctions from '../../lib/edge-functions/index.cjs'
+import { startFunctionsServer } from '../../lib/functions/server.cjs'
+import {
   OneGraphCliClient,
   loadCLISession,
   markCliSessionInactive,
   persistNewOperationsDocForSession,
   startOneGraphCLISession,
-} = require('../../lib/one-graph/cli-client.cjs')
-const {
-  defaultExampleOperationsDoc,
-  getGraphEditUrlBySiteId,
-  getNetlifyGraphConfig,
-  readGraphQLOperationsSourceFile,
-} = require('../../lib/one-graph/cli-netlify-graph.cjs')
-const { startSpinner, stopSpinner } = require('../../lib/spinner.cjs')
+} from '../../lib/one-graph/cli-client.cjs'
+import netlifyGraph from '../../lib/one-graph/cli-netlify-graph.cjs'
+import { startSpinner, stopSpinner } from '../../lib/spinner.cjs'
+import utils from '../../utils/index.cjs'
+
+import { createDevExecCommand } from './dev-exec.mjs'
+
+const { promptEditorHelper } = edgeFunctions
+
+const { defaultExampleOperationsDoc, getGraphEditUrlBySiteId, getNetlifyGraphConfig, readGraphQLOperationsSourceFile } =
+  netlifyGraph
+
 const {
   BANG,
   NETLIFYDEV,
@@ -52,9 +56,7 @@ const {
   startProxy,
   warn,
   watchDebounced,
-} = require('../../utils/index.cjs')
-
-const { createDevExecCommand } = require('./dev-exec.cjs')
+} = utils
 
 const netlifyBuildPromise = import('@netlify/build')
 
@@ -690,7 +692,7 @@ const getBuildOptions = ({ cachedConfig, options: { context, cwd = process.cwd()
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
-const createDevCommand = (program) => {
+export const createDevCommand = (program) => {
   createDevExecCommand(program)
 
   return program
@@ -765,5 +767,3 @@ const createDevCommand = (program) => {
     ])
     .action(dev)
 }
-
-module.exports = { createDevCommand }

@@ -1,5 +1,5 @@
 // @ts-check
-const { uninstall } = require('../../utils/lm/install.cjs')
+import { uninstall } from '../../utils/lm/install.cjs'
 
 /**
  * The lm:uninstall command
@@ -13,7 +13,7 @@ const lmUninstall = async () => {
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
-const createLmUninstallCommand = (program) =>
+export const createLmUninstallCommand = (program) =>
   program
     .command('lm:uninstall', { hidden: true })
     .alias('lm:remove')
@@ -21,5 +21,3 @@ const createLmUninstallCommand = (program) =>
       'Uninstalls Netlify git credentials helper and cleans up any related configuration changes made by the install command.',
     )
     .action(lmUninstall)
-
-module.exports = { createLmUninstallCommand }

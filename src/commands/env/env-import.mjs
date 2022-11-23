@@ -1,17 +1,12 @@
 // @ts-check
-const { readFile } = require('fs').promises
+import { readFile } from 'fs/promises'
 
-const AsciiTable = require('ascii-table')
-const dotenv = require('dotenv')
-const isEmpty = require('lodash/isEmpty')
+import AsciiTable from 'ascii-table'
+import dotenv from 'dotenv'
 
-const {
-  exit,
-  log,
-  logJson,
-  translateFromEnvelopeToMongo,
-  translateFromMongoToEnvelope,
-} = require('../../utils/index.cjs')
+import utils from '../../utils/index.cjs'
+
+const { exit, log, logJson, translateFromEnvelopeToMongo, translateFromMongoToEnvelope } = utils
 
 /**
  * The env:import command
@@ -38,7 +33,7 @@ const envImport = async (fileName, options, command) => {
     exit(1)
   }
 
-  if (isEmpty(importedEnv)) {
+  if (Object.keys(importedEnv).length === 0) {
     log(`No environment variables found in file ${fileName} to import`)
     return false
   }
@@ -128,7 +123,7 @@ const importIntoEnvelope = async ({ api, importedEnv, options, siteInfo }) => {
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
-const createEnvImportCommand = (program) =>
+export const createEnvImportCommand = (program) =>
   program
     .command('env:import')
     .argument('<fileName>', '.env file to import')
@@ -141,5 +136,3 @@ const createEnvImportCommand = (program) =>
     .action(async (fileName, options, command) => {
       await envImport(fileName, options, command)
     })
-
-module.exports = { createEnvImportCommand }

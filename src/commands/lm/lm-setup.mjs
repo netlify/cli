@@ -1,10 +1,12 @@
 // @ts-check
-const Listr = require('listr')
+import Listr from 'listr'
 
-const { error, execa } = require('../../utils/index.cjs')
-const { installPlatform } = require('../../utils/lm/install.cjs')
-const { checkHelperVersion } = require('../../utils/lm/requirements.cjs')
-const { printBanner } = require('../../utils/lm/ui.cjs')
+import utils from '../../utils/index.cjs'
+import { installPlatform } from '../../utils/lm/install.cjs'
+import { checkHelperVersion } from '../../utils/lm/requirements.cjs'
+import { printBanner } from '../../utils/lm/ui.cjs'
+
+const { error, execa } = utils
 
 const installHelperIfMissing = async function ({ force }) {
   let installHelper = false
@@ -94,7 +96,7 @@ const lmSetup = async (options, command) => {
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
-const createLmSetupCommand = (program) =>
+export const createLmSetupCommand = (program) =>
   program
     .command('lm:setup')
     .description('Configures your site to use Netlify Large Media')
@@ -102,5 +104,3 @@ const createLmSetupCommand = (program) =>
     .option('-f, --force-install', 'Force the credentials helper installation')
     .addHelpText('after', 'It runs the install command if you have not installed the dependencies yet.')
     .action(lmSetup)
-
-module.exports = { createLmSetupCommand }

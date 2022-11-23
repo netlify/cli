@@ -1,8 +1,8 @@
 // @ts-check
-const { createLmInfoCommand } = require('./lm-info.cjs')
-const { createLmInstallCommand } = require('./lm-install.cjs')
-const { createLmSetupCommand } = require('./lm-setup.cjs')
-const { createLmUninstallCommand } = require('./lm-uninstall.cjs')
+import { createLmInfoCommand } from './lm-info.mjs'
+import { createLmInstallCommand } from './lm-install.mjs'
+import { createLmSetupCommand } from './lm-setup.mjs'
+import { createLmUninstallCommand } from './lm-uninstall.mjs'
 
 /**
  * The lm command
@@ -18,7 +18,7 @@ const lm = (options, command) => {
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
-const createLmCommand = (program) => {
+export const createLmCommand = (program) => {
   createLmInfoCommand(program)
   createLmInstallCommand(program)
   createLmSetupCommand(program)
@@ -30,5 +30,3 @@ const createLmCommand = (program) => {
     .addExamples(['netlify lm:info', 'netlify lm:install', 'netlify lm:setup'])
     .action(lm)
 }
-
-module.exports = { createLmCommand }

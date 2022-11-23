@@ -1,10 +1,10 @@
 // @ts-check
-const { createEnvCloneCommand } = require('./env-clone.cjs')
-const { createEnvGetCommand } = require('./env-get.cjs')
-const { createEnvImportCommand } = require('./env-import.cjs')
-const { createEnvListCommand } = require('./env-list.cjs')
-const { createEnvSetCommand } = require('./env-set.cjs')
-const { createEnvUnsetCommand } = require('./env-unset.cjs')
+import { createEnvCloneCommand } from './env-clone.mjs'
+import { createEnvGetCommand } from './env-get.mjs'
+import { createEnvImportCommand } from './env-import.mjs'
+import { createEnvListCommand } from './env-list.mjs'
+import { createEnvSetCommand } from './env-set.mjs'
+import { createEnvUnsetCommand } from './env-unset.mjs'
 
 /**
  * The env command
@@ -20,7 +20,7 @@ const env = (options, command) => {
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
-const createEnvCommand = (program) => {
+export const createEnvCommand = (program) => {
   createEnvGetCommand(program)
   createEnvImportCommand(program)
   createEnvListCommand(program)
@@ -41,5 +41,3 @@ const createEnvCommand = (program) => {
     ])
     .action(env)
 }
-
-module.exports = { createEnvCommand }

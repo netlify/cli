@@ -1,15 +1,18 @@
 // @ts-check
-const { GraphQL } = require('netlify-onegraph-internal')
+import { GraphQL } from 'netlify-onegraph-internal'
 
+import netlifyGraph from '../../lib/one-graph/cli-netlify-graph.cjs'
+import utils from '../../utils/index.cjs'
+
+const { log } = utils
+
+const { parse } = GraphQL
 const {
   defaultExampleOperationsDoc,
   extractFunctionsFromOperationDoc,
   getNetlifyGraphConfig,
   readGraphQLOperationsSourceFile,
-} = require('../../lib/one-graph/cli-netlify-graph.cjs')
-const { log } = require('../../utils/index.cjs')
-
-const { parse } = GraphQL
+} = netlifyGraph
 
 /**
  * Creates the `netlify graph:operations` command
@@ -107,12 +110,10 @@ const graphOperations = async (options, command) => {
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
-const createGraphOperationsCommand = (program) =>
+export const createGraphOperationsCommand = (program) =>
   program
     .command('graph:operations')
     .description('List all of the locally available operations')
     .action(async (options, command) => {
       await graphOperations(options, command)
     })
-
-module.exports = { createGraphOperationsCommand }
