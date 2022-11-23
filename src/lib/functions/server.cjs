@@ -212,6 +212,14 @@ const startFunctionsServer = async (options) => {
   // precedence.
   const functionsDirectories = [settings.functions, internalFunctionsDir].filter(Boolean)
 
+  if (functionsDirectories.length === 0) {
+    // TO DO
+    // for a Next.js 12 project, this is not scanning the api folder
+    // and outputs here even if we have a function in api/
+    logInfo({ message: 'No netlify function files found', dim: true })
+    log()
+  }
+
   if (functionsDirectories.length !== 0) {
     const functionsRegistry = new FunctionsRegistry({
       capabilities,
@@ -228,12 +236,6 @@ const startFunctionsServer = async (options) => {
 
     await startWebServer({ server, settings })
   }
-
-  // TO DO
-  // for a Next.js 12 project, this is not scanning the api folder
-  // and outputs here even if we have a function in api/
-  logInfo({ message: 'No netlify function files found', dim: true })
-  log()
 }
 
 const startWebServer = async ({ server, settings }) => {
