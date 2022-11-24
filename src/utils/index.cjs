@@ -1,6 +1,5 @@
 // @ts-check
 const commandHelpers = require('./command-helpers.cjs')
-const createStreamPromise = require('./create-stream-promise.cjs')
 const deploy = require('./deploy/index.cjs')
 const detectServerSettings = require('./detect-server-settings.cjs')
 const dev = require('./dev.cjs')
@@ -15,7 +14,6 @@ const parseRawFlags = require('./parse-raw-flags.cjs')
 
 module.exports = {
   ...commandHelpers,
-  ...createStreamPromise,
   ...deploy,
   ...detectServerSettings,
   ...dev,

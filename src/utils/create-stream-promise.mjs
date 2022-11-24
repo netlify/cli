@@ -1,4 +1,4 @@
-const { Buffer } = require('buffer')
+import { Buffer } from 'buffer'
 
 const SEC_TO_MILLISEC = 1e3
 
@@ -46,4 +46,4 @@ const createStreamPromise = function (stream, timeoutSeconds, bytesLimit = DEFAU
   })
 }
 
-module.exports = { createStreamPromise }
+export default createStreamPromise
