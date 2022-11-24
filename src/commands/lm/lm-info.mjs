@@ -6,7 +6,7 @@ import {
   checkGitVersionStep,
   checkHelperVersionStep,
   checkLFSFiltersStep,
-} from '../../utils/lm/steps.cjs'
+} from '../../utils/lm/steps.mjs'
 
 /**
  * The lm:info command

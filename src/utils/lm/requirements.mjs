@@ -1,9 +1,9 @@
 // @ts-check
-const semver = require('semver')
+import semver from 'semver'
 
-const execa = require('../execa.cjs')
+import execa from '../execa.cjs'
 
-const checkLFSFilters = async function () {
+export const checkLFSFilters = async function () {
   try {
     const { stdout } = await execa('git', ['config', '--get-regexp', 'filter.lfs'])
     return stdout.length !== 0
@@ -21,7 +21,7 @@ const getHelperVersion = async function () {
   }
 }
 
-const checkHelperVersion = async function () {
+export const checkHelperVersion = async function () {
   const version = await getHelperVersion()
   const expectedVersion = '0.1.10'
   return matchVersion(
@@ -32,7 +32,7 @@ const checkHelperVersion = async function () {
   )
 }
 
-const checkGitVersion = async function () {
+export const checkGitVersion = async function () {
   try {
     const { stdout } = await execa('git', ['--version'])
     return stdout.split(' ').pop()
@@ -50,7 +50,7 @@ const getLFSVersion = async function () {
   }
 }
 
-const checkLFSVersion = async function () {
+export const checkLFSVersion = async function () {
   const version = await getLFSVersion()
   const expectedVersion = '2.5.1'
   return matchVersion(
@@ -67,11 +67,4 @@ const matchVersion = function (out, regex, version, message) {
     throw new Error(message.replace('MATCH_PLACEHOLDER', match[1]))
   }
   return match[1]
-}
-
-module.exports = {
-  checkGitVersion,
-  checkLFSVersion,
-  checkLFSFilters,
-  checkHelperVersion,
 }

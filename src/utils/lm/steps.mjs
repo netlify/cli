@@ -1,8 +1,8 @@
-const { chalk } = require('../command-helpers.cjs')
+import { chalk } from '../command-helpers.cjs'
 
-const { checkGitVersion, checkHelperVersion, checkLFSFilters, checkLFSVersion } = require('./requirements.cjs')
+import { checkGitVersion, checkHelperVersion, checkLFSFilters, checkLFSVersion } from './requirements.mjs'
 
-const checkGitVersionStep = {
+export const checkGitVersionStep = {
   title: 'Checking Git version',
   task: async (ctx, task) => {
     const version = await checkGitVersion()
@@ -10,7 +10,7 @@ const checkGitVersionStep = {
   },
 }
 
-const checkGitLFSVersionStep = {
+export const checkGitLFSVersionStep = {
   title: 'Checking Git LFS version',
   task: async (ctx, task) => {
     const version = await checkLFSVersion()
@@ -18,7 +18,7 @@ const checkGitLFSVersionStep = {
   },
 }
 
-const checkLFSFiltersStep = (onCheckDone) => ({
+export const checkLFSFiltersStep = (onCheckDone) => ({
   title: 'Checking Git LFS filters',
   task: async (ctx, task) => {
     const installed = await checkLFSFilters()
@@ -26,12 +26,10 @@ const checkLFSFiltersStep = (onCheckDone) => ({
   },
 })
 
-const checkHelperVersionStep = {
+export const checkHelperVersionStep = {
   title: `Checking Netlify's Git Credentials version`,
   task: async (ctx, task) => {
     const version = await checkHelperVersion()
     task.title += chalk.dim(` [${version}]`)
   },
 }
-
-module.exports = { checkGitVersionStep, checkGitLFSVersionStep, checkLFSFiltersStep, checkHelperVersionStep }

@@ -1,15 +1,15 @@
-const os = require('os')
+import os from 'os'
 
-const boxen = require('boxen')
+import boxen from 'boxen'
 
-const { chalk, log } = require('../command-helpers.cjs')
+import { chalk, log } from '../command-helpers.cjs'
 
-const { getShellInfo, isBinInPath } = require('./install.cjs')
+import { getShellInfo, isBinInPath } from './install.mjs'
 
 /**
  * @param {boolean} force
  */
-const printBanner = function (force) {
+export const printBanner = function (force) {
   const print = force || !isBinInPath()
   const platform = os.platform()
 
@@ -22,5 +22,3 @@ const printBanner = function (force) {
     log(boxen(banner, { padding: 1, margin: 1, align: 'center', borderColor: '#00c7b7' }))
   }
 }
-
-module.exports = { printBanner }

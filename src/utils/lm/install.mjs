@@ -1,32 +1,35 @@
 // @ts-check
-const { appendFile, copyFile, readFile, writeFile } = require('fs').promises
-const os = require('os')
-const path = require('path')
-const process = require('process')
+import { appendFile, copyFile, readFile, writeFile } from 'fs/promises'
+import os from 'os'
+import path, { dirname } from 'path'
+import process from 'process'
+import { fileURLToPath } from 'url'
 
-const execa = require('execa')
-const hasbin = require('hasbin')
-const Listr = require('listr')
-const pathKey = require('path-key')
+import execa from 'execa'
+import hasbin from 'hasbin'
+import Listr from 'listr'
+import pathKey from 'path-key'
 
-const { fetchLatestVersion, shouldFetchLatestVersion } = require('../../lib/exec-fetcher.cjs')
-const { fileExistsAsync, rmdirRecursiveAsync } = require('../../lib/fs.cjs')
-const { normalizeBackslash } = require('../../lib/path.cjs')
-const { getLegacyPathInHome, getPathInHome } = require('../../lib/settings.cjs')
-const { chalk } = require('../command-helpers.cjs')
+import { fetchLatestVersion, shouldFetchLatestVersion } from '../../lib/exec-fetcher.cjs'
+import { fileExistsAsync, rmdirRecursiveAsync } from '../../lib/fs.cjs'
+import { normalizeBackslash } from '../../lib/path.cjs'
+import { getLegacyPathInHome, getPathInHome } from '../../lib/settings.cjs'
+import { chalk } from '../command-helpers.cjs'
+
+import { checkGitLFSVersionStep, checkGitVersionStep, checkLFSFiltersStep } from './steps.mjs'
 
 const PACKAGE_NAME = 'netlify-credential-helper'
 const EXEC_NAME = 'git-credential-netlify'
 
 const GIT_CONFIG = '.gitconfig'
 
-const { checkGitLFSVersionStep, checkGitVersionStep, checkLFSFiltersStep } = require('./steps.cjs')
-
 const SUPPORTED_PLATFORMS = {
   linux: 'Linux',
   darwin: 'Mac OS X',
   win32: 'Windows',
 }
+
+const dirPath = dirname(fileURLToPath(import.meta.url))
 
 const getSetupStep = ({ skipInstall }) => {
   const platform = os.platform()
@@ -55,7 +58,7 @@ const setupGitConfigStep = {
   task: () => configureGitConfig(),
 }
 
-const installPlatform = async function ({ force }) {
+export const installPlatform = async function ({ force }) {
   const skipInstall = !force && (await installedWithPackageManager())
   const steps = [
     checkGitVersionStep,
@@ -110,7 +113,7 @@ const installHelper = async function () {
   })
 }
 
-const isBinInPath = () => {
+export const isBinInPath = () => {
   const envPath = process.env[pathKey()]
   const binPath = getBinPath()
   return envPath.replace(/"+/g, '').split(path.delimiter).includes(binPath)
@@ -121,7 +124,7 @@ const setupWindowsPath = async function () {
     return true
   }
 
-  const scriptPath = path.join(__dirname, 'scripts', 'path.ps1')
+  const scriptPath = path.join(dirPath, 'scripts', 'path.ps1')
   return await execa(
     'powershell',
     ['-ExecutionPolicy', 'unrestricted', '-windowstyle', 'hidden', '-File', scriptPath, getBinPath()],
@@ -149,7 +152,7 @@ Set the helper path in your environment PATH: ${getBinPath()}`
   }
 
   return await Promise.all([
-    await copyFile(`${__dirname}/scripts/${shell}.sh`, incFilePath),
+    await copyFile(`${dirPath}/scripts/${shell}.sh`, incFilePath),
     await writeConfig(configFile, getInitContent(incFilePath)),
   ])
 }
@@ -247,7 +250,7 @@ const CONFIG_FILES = {
   fish: '.config/fish/config.fish',
 }
 
-const getShellInfo = function () {
+export const getShellInfo = function () {
   const shellEnv = process.env.SHELL
   if (!shellEnv) {
     throw new Error('Unable to detect SHELL type, make sure the variable is defined in your environment')
@@ -272,7 +275,7 @@ const cleanupShell = async function () {
   } catch {}
 }
 
-const uninstall = async function () {
+export const uninstall = async function () {
   await Promise.all([
     rmdirRecursiveAsync(getHelperPath()),
     removeConfig(GIT_CONFIG, getGitConfigContent(getGitConfigPath())),
@@ -290,5 +293,3 @@ const removeConfig = async function (name, toRemove) {
   const content = await readFile(configPath, 'utf8')
   return await writeFile(configPath, content.replace(toRemove, ''))
 }
-
-module.exports = { installPlatform, isBinInPath, getShellInfo, uninstall }
