@@ -173,8 +173,8 @@ export const createHandler = function (options) {
 const getFunctionsServer = async function (options) {
   const { buildersPrefix = '', functionsPrefix = '', functionsRegistry, siteUrl } = options
   // performance optimization, load express on demand
-  const express = await import('express')
-  const expressLogging = await import('express-logging')
+  const { default: express } = await import('express')
+  const { default: expressLogging } = await import('express-logging')
   const app = express()
   const functionHandler = createHandler(options)
 

@@ -1,6 +1,6 @@
-const test = require('ava')
+import test from 'ava'
 
-const isValidEventName = require('../../../../src/utils/telemetry/validation.cjs')
+import isValidEventName from '../../../../src/utils/telemetry/validation.mjs'
 
 const getEventForProject = (projectName, eventName) => `${projectName}:${eventName}`
 
