@@ -24,6 +24,7 @@ import netlifyGraph from '../../lib/one-graph/cli-netlify-graph.cjs'
 import { startSpinner, stopSpinner } from '../../lib/spinner.cjs'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.mjs'
 import utils from '../../utils/index.cjs'
+import { startLiveTunnel } from '../../utils/live-tunnel.mjs'
 
 import { createDevExecCommand } from './dev-exec.mjs'
 
@@ -50,7 +51,6 @@ const {
   normalizeContext,
   openBrowser,
   processOnExit,
-  startLiveTunnel,
   startProxy,
   warn,
   watchDebounced,

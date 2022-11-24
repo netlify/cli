@@ -10,7 +10,6 @@ const functions = require('./functions/index.cjs')
 const getGlobalConfig = require('./get-global-config.cjs')
 const getRepoData = require('./get-repo-data.cjs')
 const ghAuth = require('./gh-auth.cjs')
-const liveTunnel = require('./live-tunnel.cjs')
 const openBrowser = require('./open-browser.cjs')
 const parseRawFlags = require('./parse-raw-flags.cjs')
 const proxy = require('./proxy.cjs')
@@ -26,7 +25,6 @@ module.exports = {
   ...functions,
   ...getRepoData,
   ...ghAuth,
-  ...liveTunnel,
   ...openBrowser,
   ...parseRawFlags,
   ...proxy,

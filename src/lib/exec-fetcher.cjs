@@ -5,8 +5,6 @@ const process = require('process')
 const { fetchLatest, fetchVersion, newerVersion, updateAvailable } = require('gh-release-fetch')
 const isExe = require('isexe')
 
-// cannot directly import from ../utils as it would create a circular dependency.
-// the file `src/utils/live-tunnel.js` depends on this file
 const { NETLIFYDEVWARN, error, getTerminalLink, log } = require('../utils/command-helpers.cjs')
 const execa = require('../utils/execa.cjs')
 
