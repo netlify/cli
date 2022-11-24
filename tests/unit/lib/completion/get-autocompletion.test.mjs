@@ -1,54 +1,7 @@
 // @ts-check
-const fs = require('fs')
+import test from 'ava'
 
-const test = require('ava')
-const { Argument } = require('commander')
-const sinon = require('sinon')
-
-const { getAutocompletion } = require('../../../../src/lib/completion/script.cjs')
-
-const createTestCommand = async () => {
-  const { default: BaseCommand } = await import('../../../../src/commands/base-command.mjs')
-  const program = new BaseCommand('chef')
-
-  program
-    .command('bake')
-    .alias('cook')
-    .description('Cooks something')
-    .addExamples(['chef cook pizza'])
-    .argument('<type>', 'the type to cook')
-    .option('-f, --fast', 'cook it fast')
-
-  program.command('bake:pizza').description('bakes a pizza').option('--type <type>', 'Type of pizza', 'neapolitan')
-
-  program
-    .command('taste')
-    .description('tastes something')
-    .addArgument(new Argument('<name>', 'what to taste').choices(['pizza', 'sauce']))
-
-  return program
-}
-
-test.afterEach(() => {
-  sinon.restore()
-})
-
-test('should generate a completion file', async (t) => {
-  const stub = sinon.stub(fs, 'writeFileSync').callsFake(() => {})
-  // eslint-disable-next-line n/global-require
-  const { createAutocompletion } = require('../../../../src/lib/completion/generate-autocompletion.cjs')
-  const program = await createTestCommand()
-
-  createAutocompletion(program)
-
-  // @ts-ignore
-  t.true(stub.getCall(0).args[0].endsWith('autocompletion.json'), 'should write a autocompletion file')
-
-  // @ts-ignore
-  t.snapshot(JSON.parse(stub.getCall(0).args[1]))
-
-  stub.restore()
-})
+import getAutocompletion from '../../../../src/lib/completion/get-autocompletion.mjs'
 
 const cookingFixtures = {
   cook: {

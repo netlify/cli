@@ -1,15 +1,4 @@
-#!/usr/bin/env node
 // @ts-check
-
-// This script is run by the completion (every log output will be displayed on tab)
-// src/commands/completion/completion.js -> dynamically references this file
-// if this file is renamed or moved then it needs to be adapted there
-const { existsSync, readFileSync } = require('fs')
-const process = require('process')
-
-const { log, parseEnv } = require('tabtab')
-
-const { AUTOCOMPLETION_FILE } = require('./constants.cjs')
 
 /**
  * @typedef CompletionItem
@@ -56,17 +45,4 @@ const getAutocompletion = function (env, program) {
   }
 }
 
-if (require.main === module) {
-  const env = parseEnv(process.env)
-
-  if (existsSync(AUTOCOMPLETION_FILE)) {
-    const program = JSON.parse(readFileSync(AUTOCOMPLETION_FILE, 'utf-8'))
-    const autocomplete = getAutocompletion(env, program)
-
-    if (autocomplete && autocomplete.length !== 0) {
-      log(autocomplete)
-    }
-  }
-}
-
-module.exports = { getAutocompletion }
+export default getAutocompletion

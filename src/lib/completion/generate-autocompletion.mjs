@@ -1,17 +1,17 @@
 // @ts-check
-const { existsSync, mkdirSync, writeFileSync } = require('fs')
-const { dirname } = require('path')
+import { existsSync, mkdirSync, writeFileSync } from 'fs'
+import { dirname } from 'path'
 
-const { sortOptions, warn } = require('../../utils/index.cjs')
+import { sortOptions, warn } from '../../utils/command-helpers.cjs'
 
-const { AUTOCOMPLETION_FILE } = require('./constants.cjs')
+import { AUTOCOMPLETION_FILE } from './constants.mjs'
 
 /**
  * Create or updates the autocompletion information for the CLI
  * @param {import('../../commands/base-command.mjs').default} program
  * @returns {void}
  */
-const createAutocompletion = (program) => {
+const generateAutocompletion = (program) => {
   try {
     const autocomplete = program.commands.reduce(
       (prev, cmd) => ({
@@ -41,4 +41,4 @@ const createAutocompletion = (program) => {
   }
 }
 
-module.exports = { createAutocompletion }
+export default generateAutocompletion
