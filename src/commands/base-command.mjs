@@ -8,7 +8,7 @@ import debug from 'debug'
 import merge from 'lodash/merge.js'
 import { NetlifyAPI } from 'netlify'
 
-import { getAgent } from '../lib/http-agent.cjs'
+import { getAgent } from '../lib/http-agent.mjs'
 import {
   NETLIFY_CYAN,
   USER_AGENT,

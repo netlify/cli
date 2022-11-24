@@ -1,12 +1,13 @@
 // @ts-check
-const { readFile } = require('fs').promises
+import { readFile } from 'fs/promises'
 
-const { HttpsProxyAgent } = require('https-proxy-agent')
-const waitPort = require('wait-port')
+import HttpsProxyAgent from 'https-proxy-agent'
+import waitPort from 'wait-port'
 
-const { NETLIFYDEVERR, NETLIFYDEVWARN, exit, log } = require('../utils/index.cjs')
+import { NETLIFYDEVERR, NETLIFYDEVWARN, exit, log } from '../utils/command-helpers.cjs'
 
 // https://github.com/TooTallNate/node-https-proxy-agent/issues/89
+// Maybe replace with https://github.com/delvedor/hpagent
 class HttpsProxyAgentWithCA extends HttpsProxyAgent {
   constructor(opts) {
     super(opts)
@@ -26,7 +27,7 @@ const DEFAULT_HTTPS_PORT = 443
 // 50 seconds
 const AGENT_PORT_TIMEOUT = 50
 
-const tryGetAgent = async ({ certificateFile, httpProxy }) => {
+export const tryGetAgent = async ({ certificateFile, httpProxy }) => {
   if (!httpProxy) {
     return {}
   }
@@ -85,7 +86,7 @@ const tryGetAgent = async ({ certificateFile, httpProxy }) => {
   return response
 }
 
-const getAgent = async ({ certificateFile, httpProxy }) => {
+export const getAgent = async ({ certificateFile, httpProxy }) => {
   const { agent, error, message, warning } = await tryGetAgent({ httpProxy, certificateFile })
   if (error) {
     log(NETLIFYDEVERR, error, message || '')
@@ -96,5 +97,3 @@ const getAgent = async ({ certificateFile, httpProxy }) => {
   }
   return agent
 }
-
-module.exports = { getAgent, tryGetAgent }

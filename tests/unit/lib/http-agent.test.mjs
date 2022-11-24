@@ -1,10 +1,10 @@
-const http = require('http')
+import http from 'http'
 
-const test = require('ava')
-const { createProxyServer } = require('http-proxy')
-const { HttpsProxyAgent } = require('https-proxy-agent')
+import test from 'ava'
+import ProxyServer from 'http-proxy'
+import HttpsProxyAgent from 'https-proxy-agent'
 
-const { tryGetAgent } = require('../../../src/lib/http-agent.cjs')
+import { tryGetAgent } from '../../../src/lib/http-agent.mjs'
 
 test(`should return an empty object when there is no httpProxy`, async (t) => {
   t.deepEqual(await tryGetAgent({}), {})
@@ -31,7 +31,7 @@ test(`should return error when proxy is not available`, async (t) => {
 })
 
 test(`should return agent for a valid proxy`, async (t) => {
-  const proxy = createProxyServer()
+  const proxy = ProxyServer.createProxyServer()
   const server = http.createServer(function onRequest(req, res) {
     proxy.web(req, res, { target: 'http://localhost:5555' })
   })
