@@ -1,12 +1,12 @@
-const fs = require('fs')
-const path = require('path')
-const process = require('process')
+import fs from 'fs'
+import path from 'path'
+import process from 'process'
 
-const dotProp = require('dot-prop')
-const findUp = require('find-up')
-const writeFileAtomic = require('write-file-atomic')
+import dotProp from 'dot-prop'
+import findUp from 'find-up'
+import writeFileAtomic from 'write-file-atomic'
 
-const { getPathInProject } = require('../lib/settings.cjs')
+import { getPathInProject } from '../lib/settings.cjs'
 
 const STATE_PATH = getPathInProject(['state.json'])
 const permissionError = "You don't have access to this file."
@@ -22,7 +22,7 @@ const findStatePath = (cwd) => {
   return statePath
 }
 
-class StateConfig {
+export default class StateConfig {
   constructor(cwd) {
     this.path = findStatePath(cwd)
   }
@@ -107,5 +107,3 @@ class StateConfig {
     this.all = {}
   }
 }
-
-module.exports = { StateConfig }

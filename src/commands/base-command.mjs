@@ -25,7 +25,7 @@ import {
 } from '../utils/command-helpers.cjs'
 import getGlobalConfig from '../utils/get-global-config.cjs'
 import { openBrowser } from '../utils/open-browser.cjs'
-import { StateConfig } from '../utils/state-config.cjs'
+import StateConfig from '../utils/state-config.mjs'
 import { identify, track } from '../utils/telemetry/index.mjs'
 
 // Netlify CLI client id. Lives in bot@netlify.com
@@ -73,7 +73,7 @@ const getDuration = function (startTime) {
  * @property {*} config
  * @property {*} cachedConfig
  * @property {*} globalConfig
- * @property {StateConfig} state,
+ * @property {import('../../utils/state-config.mjs').default} state,
  */
 
 /** Base command class that provides tracking and config initialization */

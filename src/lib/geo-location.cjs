@@ -41,7 +41,7 @@ const mockLocation = {
  * @param {"cache"|"update"|"mock"} params.mode
  * @param {string} params.geoCountry
  * @param {boolean} params.offline
- * @param {import('../utils/state-config').StateConfig} params.state
+ * @param {import('../utils/state-config.mjs').default} params.state
  * @returns {Promise<GeoLocation>}
  */
 const getGeoLocation = async ({ geoCountry, mode, offline, state }) => {

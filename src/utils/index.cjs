@@ -15,7 +15,6 @@ const openBrowser = require('./open-browser.cjs')
 const parseRawFlags = require('./parse-raw-flags.cjs')
 const proxy = require('./proxy.cjs')
 const readRepoURL = require('./read-repo-url.cjs')
-const StateConfig = require('./state-config.cjs')
 
 module.exports = {
   ...commandHelpers,
@@ -32,7 +31,6 @@ module.exports = {
   ...parseRawFlags,
   ...proxy,
   ...readRepoURL,
-  ...StateConfig,
   execa,
   getGlobalConfig,
 }

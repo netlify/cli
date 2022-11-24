@@ -26,7 +26,7 @@ const frameworkInfoPromise = import('@netlify/framework-info')
 
 const { version } = require('../../../package.json')
 // eslint-disable-next-line no-unused-vars
-const { StateConfig, USER_AGENT, chalk, error, execa, log, warn, watchDebounced } = require('../../utils/index.cjs')
+const { USER_AGENT, chalk, error, execa, log, warn, watchDebounced } = require('../../utils/index.cjs')
 
 const {
   generateFunctionsFile,
@@ -72,7 +72,7 @@ InternalConsole.registerConsole(internalConsole)
  * @param {function} input.onEvents A function to call when CLI events are received and need to be processed
  * @param {function} input.onSchemaIdChange A function to call when the CLI schemaId has changed
  * @param {string} input.sessionId The session id to monitor CLI events for
- * @param {StateConfig} input.state A function to call to set/get the current state of the local Netlify project
+ * @param {import('../../utils/state-config.mjs').default} input.state A function to call to set/get the current state of the local Netlify project
  * @param {any} input.site The site object
  * @returns
  */
@@ -239,7 +239,7 @@ const monitorOperationFile = async ({ netlifyGraphConfig, onAdd, onChange, onUnl
  * @param {string} input.jwt The Graph JWT
  * @param {string} input.sessionId The session ID for the current session
  * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig A standalone config object that contains all the information necessary for Netlify Graph to process events
- * @param {StateConfig} input.state A function to call to set/get the current state of the local Netlify project
+ * @param {import('../../utils/state-config.mjs').default} input.state A function to call to set/get the current state of the local Netlify project
  * @param {(message: string) => void=} input.logger A function that if provided will be used to log messages
  * @returns {Promise<Record<string, unknown> | undefined>}
  */
@@ -276,7 +276,7 @@ const fetchCliSessionSchema = async (input) => {
  * @param {string} input.sessionId The session ID for the current session
  * @param {string} input.schemaId The schemaId for the current session
  * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig A standalone config object that contains all the information necessary for Netlify Graph to process events
- * @param {StateConfig} input.state A function to call to set/get the current state of the local Netlify project
+ * @param {import('../../utils/state-config.mjs').default} input.state A function to call to set/get the current state of the local Netlify project
  * @param {(message: string) => void=} input.logger A function that if provided will be used to log messages
  * @returns {Promise<void>}
  */
@@ -1019,7 +1019,7 @@ const createCLISession = async ({ metadata, netlifyToken, sessionName, siteId })
 
 /**
  * Load the CLI session id from the local state
- * @param {StateConfig} state
+ * @param {import('../../utils/state-config.mjs').default} state
  * @returns
  */
 const loadCLISession = (state) => state.get('oneGraphSessionId')
@@ -1031,7 +1031,7 @@ const loadCLISession = (state) => state.get('oneGraphSessionId')
  * @param {string} input.netlifyToken The (typically netlify) access token that is used for authentication, if any
  * @param {string | undefined} input.oneGraphSessionId The session ID to use for this CLI session (default: read from state)
  * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig A standalone config object that contains all the information necessary for Netlify Graph to process events
- * @param {StateConfig} input.state A function to call to set/get the current state of the local Netlify project
+ * @param {import('../../utils/state-config.mjs').default} input.state A function to call to set/get the current state of the local Netlify project
  * @param {any} input.site The site object
  */
 const startOneGraphCLISession = async (input) => {
@@ -1273,7 +1273,7 @@ const idempotentlyUpdateSessionSchemaIdFromLockfile = async (input) => {
  * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig A standalone config object that contains all the information necessary for Netlify Graph to process events
  * @param {object} input.metadata
  * @param {string} input.netlifyToken
- * @param {StateConfig} input.state
+ * @param {import('../../utils/state-config.mjs').default} input.state
  * @param {string} [input.oneGraphSessionId]
  * @param {any} input.site The site object
  */
