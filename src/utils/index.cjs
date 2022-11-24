@@ -1,7 +1,6 @@
 // @ts-check
 const commandHelpers = require('./command-helpers.cjs')
 const deploy = require('./deploy/index.cjs')
-const detectServerSettings = require('./detect-server-settings.cjs')
 const dev = require('./dev.cjs')
 const env = require('./env/index.cjs')
 const execa = require('./execa.cjs')
@@ -15,7 +14,6 @@ const parseRawFlags = require('./parse-raw-flags.cjs')
 module.exports = {
   ...commandHelpers,
   ...deploy,
-  ...detectServerSettings,
   ...dev,
   ...env,
   ...functions,

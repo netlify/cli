@@ -1,18 +1,21 @@
 // @ts-check
-const { EOL } = require('os')
-const path = require('path')
-const process = require('process')
+import { EOL } from 'os'
+import path from 'path'
+import process from 'process'
 
-const frameworkInfoPromise = import('@netlify/framework-info')
-const fuzzy = require('fuzzy')
-const getPort = require('get-port')
-const isPlainObject = require('is-plain-obj')
+import { getFramework, listFrameworks } from '@netlify/framework-info'
+import fuzzy from 'fuzzy'
+import getPort from 'get-port'
+import isPlainObject from 'is-plain-obj'
 
-const { readFileAsyncCatchError } = require('../lib/fs.cjs')
+import { readFileAsyncCatchError } from '../lib/fs.cjs'
 
-const { NETLIFYDEVWARN, chalk, log } = require('./command-helpers.cjs')
-const { acquirePort } = require('./dev.cjs')
-const { getInternalFunctionsDir } = require('./functions/index.cjs')
+import { NETLIFYDEVWARN, chalk, log } from './command-helpers.cjs'
+import { acquirePort } from './dev.cjs'
+import functions from './functions/index.cjs'
+
+// TODO
+const { getInternalFunctionsDir } = functions
 
 const formatProperty = (str) => chalk.magenta(`'${str}'`)
 const formatValue = (str) => chalk.green(`'${str}'`)
@@ -184,7 +187,6 @@ const getSettingsFromFramework = (framework) => {
 const hasDevCommand = (framework) => Array.isArray(framework.dev.commands) && framework.dev.commands.length !== 0
 
 const detectFrameworkSettings = async ({ projectDir }) => {
-  const { listFrameworks } = await frameworkInfoPromise
   const projectFrameworks = await listFrameworks({ projectDir })
   const frameworks = projectFrameworks.filter((framework) => hasDevCommand(framework))
 
@@ -194,10 +196,8 @@ const detectFrameworkSettings = async ({ projectDir }) => {
 
   if (frameworks.length > 1) {
     // performance optimization, load inquirer on demand
-    // eslint-disable-next-line n/global-require
-    const inquirer = require('inquirer')
-    // eslint-disable-next-line n/global-require
-    const inquirerAutocompletePrompt = require('inquirer-autocomplete-prompt')
+    const { default: inquirer } = await import('inquirer')
+    const { default: inquirerAutocompletePrompt } = await import('inquirer-autocomplete-prompt')
     /** multiple matching detectors, make the user choose */
     inquirer.registerPrompt('autocomplete', inquirerAutocompletePrompt)
     const scriptInquirerOptions = formatSettingsArrForInquirer(frameworks)
@@ -279,7 +279,6 @@ const mergeSettings = async ({ devConfig, frameworkSettings = {} }) => {
  */
 const handleForcedFramework = async ({ devConfig, projectDir }) => {
   // this throws if `devConfig.framework` is not a supported framework
-  const { getFramework } = await frameworkInfoPromise
   const frameworkSettings = getSettingsFromFramework(await getFramework(devConfig.framework, { projectDir }))
   return mergeSettings({ devConfig, frameworkSettings })
 }
@@ -369,6 +368,4 @@ const formatSettingsArrForInquirer = function (frameworks) {
   return formattedArr.flat()
 }
 
-module.exports = {
-  detectServerSettings,
-}
+export default detectServerSettings

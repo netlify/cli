@@ -27,6 +27,7 @@ import {
   readGraphQLOperationsSourceFile,
 } from '../../lib/one-graph/cli-netlify-graph.mjs'
 import { startSpinner, stopSpinner } from '../../lib/spinner.cjs'
+import detectServerSettings from '../../utils/detect-server-settings.mjs'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.mjs'
 import utils from '../../utils/index.cjs'
 import { startLiveTunnel } from '../../utils/live-tunnel.mjs'
@@ -41,7 +42,6 @@ const {
   NETLIFYDEVLOG,
   NETLIFYDEVWARN,
   chalk,
-  detectServerSettings,
   error,
   exit,
   generateNetlifyGraphJWT,
