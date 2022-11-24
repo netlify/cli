@@ -1,15 +1,18 @@
 // @ts-check
 import gitRepoInfo from 'git-repo-info'
 
-import { OneGraphCliClient, ensureCLISession, upsertMergeCLISessionMetadata } from '../../lib/one-graph/cli-client.cjs'
-import netlifyGraph from '../../lib/one-graph/cli-netlify-graph.cjs'
+import { OneGraphCliClient, ensureCLISession, upsertMergeCLISessionMetadata } from '../../lib/one-graph/cli-client.mjs'
+import {
+  defaultExampleOperationsDoc,
+  getGraphEditUrlBySiteId,
+  getNetlifyGraphConfig,
+  readGraphQLOperationsSourceFile,
+} from '../../lib/one-graph/cli-netlify-graph.mjs'
 import utils from '../../utils/index.cjs'
 import { openBrowser } from '../../utils/open-browser.cjs'
 
 const { NETLIFYDEVERR, chalk, error, log } = utils
 const { ensureAppForSite, executeCreatePersistedQueryMutation } = OneGraphCliClient
-const { defaultExampleOperationsDoc, getGraphEditUrlBySiteId, getNetlifyGraphConfig, readGraphQLOperationsSourceFile } =
-  netlifyGraph
 
 /**
  * Creates the `netlify graph:edit` command

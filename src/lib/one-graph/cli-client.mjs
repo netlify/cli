@@ -2,33 +2,21 @@
 /* eslint-disable eslint-comments/disable-enable-pair */
 /* eslint-disable fp/no-loops */
 /* eslint-disable no-underscore-dangle */
-const crypto = require('crypto')
-const { readFileSync, writeFileSync } = require('fs')
-const os = require('os')
-const path = require('path')
-const process = require('process')
+import crypto from 'crypto'
+import { readFileSync, writeFileSync } from 'fs'
+import os from 'os'
+import path from 'path'
+import process from 'process'
 
-const gitRepoInfo = require('git-repo-info')
-const WSL = require('is-wsl')
-const {
-  // eslint-disable-next-line no-unused-vars
-  CliEventHelper,
-  // eslint-disable-next-line no-unused-vars
-  CodegenHelpers,
-  GraphQL,
-  InternalConsole,
-  NetlifyGraph,
-  NetlifyGraphLockfile,
-  OneGraphClient,
-} = require('netlify-onegraph-internal')
+import { listFrameworks } from '@netlify/framework-info'
+import gitRepoInfo from 'git-repo-info'
+import WSL from 'is-wsl'
+import { GraphQL, InternalConsole, NetlifyGraph, NetlifyGraphLockfile, OneGraphClient } from 'netlify-onegraph-internal'
 
-const frameworkInfoPromise = import('@netlify/framework-info')
+import getPackageJson from '../../utils/get-package-json.mjs'
+import utils from '../../utils/index.cjs'
 
-const { version } = require('../../../package.json')
-// eslint-disable-next-line no-unused-vars
-const { USER_AGENT, chalk, error, execa, log, warn, watchDebounced } = require('../../utils/index.cjs')
-
-const {
+import {
   generateFunctionsFile,
   generateHandlerByOperationId,
   getCodegenFunctionById,
@@ -38,10 +26,13 @@ const {
   setNetlifyTomlCodeGeneratorModule,
   writeGraphQLOperationsSourceFile,
   writeGraphQLSchemaFile,
-} = require('./cli-netlify-graph.cjs')
+} from './cli-netlify-graph.mjs'
 
+const { chalk, error, execa, log, warn, watchDebounced } = utils
 const { parse } = GraphQL
 const { defaultExampleOperationsDoc, extractFunctionsFromOperationDoc } = NetlifyGraph
+
+const { version } = await getPackageJson()
 
 const internalConsole = {
   log,
@@ -51,6 +42,7 @@ const internalConsole = {
 }
 
 /** @type {string | null} */
+// eslint-disable-next-line import/no-mutable-exports
 let currentPersistedDocId = null
 
 /**
@@ -76,7 +68,7 @@ InternalConsole.registerConsole(internalConsole)
  * @param {any} input.site The site object
  * @returns
  */
-const monitorCLISessionEvents = (input) => {
+export const monitorCLISessionEvents = (input) => {
   const { appId, config, netlifyGraphConfig, netlifyToken, onClose, onError, onEvents, site, state } = input
   const currentSessionId = input.sessionId
   // TODO (sg): Track changing schemaId for a session
@@ -280,7 +272,7 @@ const fetchCliSessionSchema = async (input) => {
  * @param {(message: string) => void=} input.logger A function that if provided will be used to log messages
  * @returns {Promise<void>}
  */
-const refetchAndGenerateFromOneGraph = async (input) => {
+export const refetchAndGenerateFromOneGraph = async (input) => {
   const { config, jwt, logger, netlifyGraphConfig, schemaId, siteId, state } = input
 
   await OneGraphClient.ensureAppForSite(jwt, siteId)
@@ -378,7 +370,7 @@ const regenerateFunctionsFileFromOperationsFile = (input) => {
  * @param {string} input.siteRoot The GraphQL schema to use when generating code
  * @return {NetlifyGraphLockfile.V0_format | undefined}
  */
-const readLockfile = ({ siteRoot }) => {
+export const readLockfile = ({ siteRoot }) => {
   try {
     const buf = readFileSync(path.join(siteRoot, NetlifyGraphLockfile.defaultLockFileName))
     return JSON.parse(buf.toString('utf8'))
@@ -431,7 +423,7 @@ const mergeLockfile = ({ operationsHash, schemaId, siteRoot }) => {
  * @param {string} input.siteRoot The GraphQL schema to use when generating code
  * @return {string | undefined}
  */
-const readSchemaIdFromLockfile = ({ siteRoot }) => {
+export const readSchemaIdFromLockfile = ({ siteRoot }) => {
   try {
     const lockfile = readLockfile({ siteRoot })
     return lockfile && lockfile.locked.schemaId
@@ -544,7 +536,7 @@ const handleOperationsLibraryPersistedEvent = async (input) => {
  *
  * @param {object} input
  * @param {any} input.site The site object
- * @param {CliEventHelper.CliEvent} input.event
+ * @param {import('netlify-onegraph-internal').CliEventHelper.CliEvent} input.event
  * @param {GraphQL.GraphQLSchema} input.schema The GraphQL schema to use when generating code
  * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig A standalone config object that contains all the information necessary for Netlify Graph to process events
  * @param {object} input.config The parsed netlify.toml config file
@@ -556,7 +548,7 @@ const handleOperationsLibraryPersistedEvent = async (input) => {
  * @param {string} input.siteRoot Path to the root of the project
  * @returns {Promise<void>}
  */
-const handleCliSessionEvent = async ({
+export const handleCliSessionEvent = async ({
   config,
   docId,
   event,
@@ -634,7 +626,7 @@ ${JSON.stringify(payload, null, 2)}`)
 
       const editor = process.env.EDITOR || null
 
-      /** @type {CliEventHelper.OneGraphNetlifyCliSessionFilesWrittenEvent} */
+      /** @type {import('netlify-onegraph-internal').CliEventHelper.OneGraphNetlifyCliSessionFilesWrittenEvent} */
       const filesWrittenEvent = {
         id: crypto.randomUUID(),
         createdAt: new Date().toString(),
@@ -780,12 +772,9 @@ const getCLISessionMetadata = async ({ jwt, oneGraphSessionId, siteId }) => {
  * Look at the current project, filesystem, etc. and determine relevant metadata for a cli session
  * @param {object} input
  * @param {string} input.siteRoot The root file path for the site
- * @returns {Promise<CliEventHelper.DetectedLocalCLISessionMetadata>} Any locally detected facts that are relevant to include in the cli session metadata
+ * @returns {Promise<import('netlify-onegraph-internal').CliEventHelper.DetectedLocalCLISessionMetadata>} Any locally detected facts that are relevant to include in the cli session metadata
  */
 const detectLocalCLISessionMetadata = async ({ siteRoot }) => {
-  // @ts-ignore
-  const { listFrameworks } = await frameworkInfoPromise
-
   /** @type {string | null} */
   let framework = null
 
@@ -835,7 +824,7 @@ const detectLocalCLISessionMetadata = async ({ siteRoot }) => {
 const publishCliSessionMetadataPublishEvent = async ({ config, docId, jwt, schemaId, sessionId, siteRoot }) => {
   const detectedMetadata = await detectLocalCLISessionMetadata({ siteRoot })
 
-  /** @type {CodegenHelpers.CodegenModuleMeta | null} */
+  /** @type {import('netlify-onegraph-internal').CodegenHelpers.CodegenModuleMeta | null} */
   let codegen = null
 
   const codegenModule = await getCodegenModule({ config })
@@ -854,7 +843,7 @@ const publishCliSessionMetadataPublishEvent = async ({ config, docId, jwt, schem
     }
   }
 
-  /** @type {CliEventHelper.OneGraphNetlifyCliSessionMetadataPublishEvent} */
+  /** @type {import('netlify-onegraph-internal').CliEventHelper.OneGraphNetlifyCliSessionMetadataPublishEvent} */
   const event = {
     __typename: 'OneGraphNetlifyCliSessionMetadataPublishEvent',
     audience: 'UI',
@@ -900,7 +889,7 @@ const publishCliSessionMetadataPublishEvent = async ({ config, docId, jwt, schem
  * @param {object} input.newMetadata The metadata to merge into (with priority) the existing metadata
  * @returns {Promise<object>}
  */
-const upsertMergeCLISessionMetadata = async ({ jwt, newMetadata, oneGraphSessionId, siteId, siteRoot }) => {
+export const upsertMergeCLISessionMetadata = async ({ jwt, newMetadata, oneGraphSessionId, siteId, siteRoot }) => {
   const { errors, metadata } = await getCLISessionMetadata({ jwt, oneGraphSessionId, siteId })
   if (errors) {
     warn(`Error fetching cli session metadata: ${JSON.stringify(errors, null, 2)}`)
@@ -916,7 +905,7 @@ const upsertMergeCLISessionMetadata = async ({ jwt, newMetadata, oneGraphSession
   return result
 }
 
-const persistNewOperationsDocForSession = async ({
+export const persistNewOperationsDocForSession = async ({
   config,
   netlifyGraphConfig,
   netlifyToken,
@@ -1011,7 +1000,7 @@ const persistNewOperationsDocForSession = async ({
   }
 }
 
-const createCLISession = async ({ metadata, netlifyToken, sessionName, siteId }) => {
+export const createCLISession = async ({ metadata, netlifyToken, sessionName, siteId }) => {
   const { jwt } = await OneGraphClient.getGraphJwtForSite({ siteId, nfToken: netlifyToken })
   const result = OneGraphClient.createCLISession(jwt, siteId, sessionName, metadata)
   return result
@@ -1022,7 +1011,7 @@ const createCLISession = async ({ metadata, netlifyToken, sessionName, siteId })
  * @param {import('../../utils/state-config.mjs').default} state
  * @returns
  */
-const loadCLISession = (state) => state.get('oneGraphSessionId')
+export const loadCLISession = (state) => state.get('oneGraphSessionId')
 
 /**
  * Idemponentially save the CLI session id to the local state and start monitoring for CLI events, upstream schema changes, and local operation file changes
@@ -1034,7 +1023,7 @@ const loadCLISession = (state) => state.get('oneGraphSessionId')
  * @param {import('../../utils/state-config.mjs').default} input.state A function to call to set/get the current state of the local Netlify project
  * @param {any} input.site The site object
  */
-const startOneGraphCLISession = async (input) => {
+export const startOneGraphCLISession = async (input) => {
   const { config, netlifyGraphConfig, netlifyToken, site, state } = input
   const getJwt = async () => {
     const accessToken = await OneGraphClient.getGraphJwtForSite({ siteId: site.id, nfToken: netlifyToken })
@@ -1222,7 +1211,7 @@ ${JSON.stringify(error_, null, 2)}`)
  * @param {string} input.siteId A function to call to set/get the current state of the local Netlify project
  * @param {string} input.sessionId The session id to monitor CLI events for
  */
-const markCliSessionInactive = async ({ netlifyToken, sessionId, siteId }) => {
+export const markCliSessionInactive = async ({ netlifyToken, sessionId, siteId }) => {
   const { jwt } = await OneGraphClient.getGraphJwtForSite({ siteId, nfToken: netlifyToken })
   const result = await OneGraphClient.executeMarkCliSessionInactive(jwt, siteId, sessionId)
   if (!result || result.errors) {
@@ -1234,7 +1223,7 @@ const markCliSessionInactive = async ({ netlifyToken, sessionId, siteId }) => {
  * Generate a session name that can be identified as belonging to the current checkout
  * @returns {string} The name of the session to create
  */
-const generateSessionName = () => {
+export const generateSessionName = () => {
   const userInfo = os.userInfo({ encoding: 'utf-8' })
   const sessionName = `${userInfo.username}-${Date.now()}`
   log(`Generated Netlify Graph session name: ${sessionName}`)
@@ -1277,7 +1266,7 @@ const idempotentlyUpdateSessionSchemaIdFromLockfile = async (input) => {
  * @param {string} [input.oneGraphSessionId]
  * @param {any} input.site The site object
  */
-const ensureCLISession = async (input) => {
+export const ensureCLISession = async (input) => {
   const { config, metadata, netlifyGraphConfig, netlifyToken, site, state } = input
   let oneGraphSessionId = input.oneGraphSessionId ? input.oneGraphSessionId : loadCLISession(state)
   let parentCliSessionId = null
@@ -1389,7 +1378,7 @@ const ensureCLISession = async (input) => {
   return oneGraphSessionId
 }
 
-const OneGraphCliClient = {
+export const OneGraphCliClient = {
   ackCLISessionEvents: OneGraphClient.ackCLISessionEvents,
   executeCreatePersistedQueryMutation: OneGraphClient.executeCreatePersistedQueryMutation,
   executeCreateApiTokenMutation: OneGraphClient.executeCreateApiTokenMutation,
@@ -1400,21 +1389,4 @@ const OneGraphCliClient = {
   getGraphJwtForSite: OneGraphClient.getGraphJwtForSite,
 }
 
-module.exports = {
-  OneGraphCliClient,
-  createCLISession,
-  currentPersistedDocId,
-  ensureCLISession,
-  extractFunctionsFromOperationDoc,
-  handleCliSessionEvent,
-  generateSessionName,
-  loadCLISession,
-  markCliSessionInactive,
-  monitorCLISessionEvents,
-  persistNewOperationsDocForSession,
-  readSchemaIdFromLockfile,
-  refetchAndGenerateFromOneGraph,
-  startOneGraphCLISession,
-  upsertMergeCLISessionMetadata,
-  readLockfile,
-}
+export { currentPersistedDocId, extractFunctionsFromOperationDoc }

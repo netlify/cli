@@ -1,23 +1,17 @@
 /* eslint-disable eslint-comments/disable-enable-pair */
 
 // @ts-check
-const fs = require('fs')
-const path = require('path')
-const process = require('process')
+import fs from 'fs'
+import path from 'path'
+import process from 'process'
 
-const inquirer = require('inquirer')
-const inquirerAutocompletePrompt = require('inquirer-autocomplete-prompt')
-const {
-  // eslint-disable-next-line no-unused-vars
-  CodegenHelpers,
-  GraphQL,
-  GraphQLHelpers,
-  IncludedCodegen,
-  InternalConsole,
-  NetlifyGraph,
-} = require('netlify-onegraph-internal')
+import inquirer from 'inquirer'
+import inquirerAutocompletePrompt from 'inquirer-autocomplete-prompt'
+import { GraphQL, GraphQLHelpers, IncludedCodegen, InternalConsole, NetlifyGraph } from 'netlify-onegraph-internal'
 
-const { chalk, detectServerSettings, error, execa, getFunctionsDir, log, warn } = require('../../utils/index.cjs')
+import utils from '../../utils/index.cjs'
+
+const { chalk, detectServerSettings, error, execa, getFunctionsDir, log, warn } = utils
 
 const { printSchema } = GraphQL
 
@@ -30,7 +24,8 @@ const internalConsole = {
 
 InternalConsole.registerConsole(internalConsole)
 
-const { extractFunctionsFromOperationDoc } = NetlifyGraph
+const { defaultExampleOperationsDoc, extractFunctionsFromOperationDoc, generateHandlerSource } = NetlifyGraph
+const { normalizeOperationsDoc } = GraphQLHelpers
 
 /**
  * Updates the netlify.toml in-place with the `graph.codeGenerator` key set to `codegenModuleImportPath
@@ -370,9 +365,9 @@ const runPrettier = async (filePath) => {
  * @param {string} input.operationsDoc The GraphQL operations doc to use when generating the functions
  * @param {Record<string, NetlifyGraph.ExtractedFunction>} input.functions The parsed queries with metadata to use when generating library functions
  * @param {Record<string, NetlifyGraph.ExtractedFragment>} input.fragments The parsed queries with metadata to use when generating library functions
- * @param {CodegenHelpers.GenerateRuntimeFunction} input.generate
+ * @param {import('netlify-onegraph-internal').CodegenHelpers.GenerateRuntimeFunction} input.generate
  * @param {(message: string) => void=} input.logger A function that if provided will be used to log messages
- * @returns {Promise<CodegenHelpers.NamedExportedFile[]>} In-memory files
+ * @returns {Promise<import('netlify-onegraph-internal').CodegenHelpers.NamedExportedFile[]>} In-memory files
  */
 const generateRuntimeSource = async ({
   fragments,
@@ -406,7 +401,7 @@ const generateRuntimeSource = async ({
  * @param {string} input.operationsDoc The GraphQL operations doc to use when generating the functions
  * @param {Record<string, NetlifyGraph.ExtractedFunction>} input.functions The parsed queries with metadata to use when generating library functions
  * @param {Record<string, NetlifyGraph.ExtractedFragment>} input.fragments The parsed queries with metadata to use when generating library functions
- * @param {CodegenHelpers.GenerateRuntimeFunction} input.generate
+ * @param {import('netlify-onegraph-internal').CodegenHelpers.GenerateRuntimeFunction} input.generate
  * @param {(message: string) => void=} input.logger A function that if provided will be used to log messages
  * @returns {Promise<void>} Void, effectfully writes the generated library to the filesystem
  */
@@ -543,14 +538,14 @@ const readGraphQLSchemaFile = (netlifyGraphConfig) => {
 /**
  * Given a NetlifyGraphConfig, read the appropriate files and write a handler for the given operationId to the filesystem
  * @param {object} input
- * @param {CodegenHelpers.GenerateHandlerFunction} input.generate
+ * @param {import('netlify-onegraph-internal').CodegenHelpers.GenerateHandlerFunction} input.generate
  * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig
  * @param {GraphQL.GraphQLSchema} input.schema The GraphQL schema to use when generating the handler
  * @param {string} input.operationId The operationId to use when generating the handler
  * @param {string} input.operationsDoc The document containing the operation with operationId and any fragment dependency to use when generating the handler
  * @param {object} input.handlerOptions The options to use when generating the handler
  * @param {(message: string) => void=} input.logger A function that if provided will be used to log messages
- * @returns {Promise<{exportedFiles: CodegenHelpers.ExportedFile[]; operation: GraphQL.OperationDefinitionNode;} | undefined>} The generated files
+ * @returns {Promise<{exportedFiles: import('netlify-onegraph-internal').CodegenHelpers.ExportedFile[]; operation: GraphQL.OperationDefinitionNode;} | undefined>} The generated files
  */
 const generateHandlerSourceByOperationId = async ({
   generate,
@@ -579,7 +574,7 @@ const generateHandlerSourceByOperationId = async ({
 /**
  * Given a NetlifyGraphConfig, read the appropriate files and write a handler for the given operationId to the filesystem
  * @param {object} input
- * @param {CodegenHelpers.GenerateHandlerFunction} input.generate
+ * @param {import('netlify-onegraph-internal').CodegenHelpers.GenerateHandlerFunction} input.generate
  * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig
  * @param {GraphQL.GraphQLSchema} input.schema The GraphQL schema to use when generating the handler
  * @param {string} input.operationId The operationId to use when generating the handler
@@ -663,7 +658,7 @@ const generateHandlerByOperationId = async ({ generate, handlerOptions, netlifyG
 /**
  * Given a NetlifyGraphConfig, read the appropriate files and write a handler for the given operationId to the filesystem
  * @param {object} input
- * @param {CodegenHelpers.GenerateHandlerFunction} input.generate
+ * @param {import('netlify-onegraph-internal').CodegenHelpers.GenerateHandlerFunction} input.generate
  * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig
  * @param {GraphQL.GraphQLSchema} input.schema The GraphQL schema to use when generating the handler
  * @param {string} input.operationName The name of the operation to use when generating the handler
@@ -715,13 +710,13 @@ const generateHandlerByOperationName = async ({
 /**
  * Given a NetlifyGraphConfig, read the appropriate files and write a handler for the given operationId to the filesystem
  * @param {object} input
- * @param {CodegenHelpers.GenerateHandlerPreviewFunction} input.generate
+ * @param {import('netlify-onegraph-internal').CodegenHelpers.GenerateHandlerPreviewFunction} input.generate
  * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig
  * @param {GraphQL.GraphQLSchema} input.schema The GraphQL schema to use when generating the handler
  * @param {string} input.operationName The name of the operation to use when generating the handler
  * @param {object} input.handlerOptions The options to use when generating the handler
  * @param {(message: string) => void} input.logger A function that if provided will be used to log messages
- * @returns {CodegenHelpers.ExportedFile | undefined}
+ * @returns {import('netlify-onegraph-internal').CodegenHelpers.ExportedFile | undefined}
  */
 const generateHandlerPreviewByOperationName = ({
   generate,
@@ -876,7 +871,7 @@ let lastWarnedFailedCodegenModule
  * @param {object} input
  * @param {object} input.config The parsed netlify.toml file
  * @param {string=} input.cwd The optional directory to use as a base path when resolving codegen modules
- * @returns {Promise<CodegenHelpers.CodegenModule | void>} codegenModule
+ * @returns {Promise<import('netlify-onegraph-internal').CodegenHelpers.CodegenModule | void>} codegenModule
  */
 const dynamicallyLoadCodegenModule = async ({ config, cwd }) => {
   const basePath = cwd || process.cwd()
@@ -911,15 +906,9 @@ const dynamicallyLoadCodegenModule = async ({ config, cwd }) => {
 
     const finalPath = fs.existsSync(relativePath) ? relativePath : absoluteOrNodePath
 
-    /** @type {CodegenHelpers.CodegenModule | undefined} */
-    let newModule
-    try {
-      // eslint-disable-next-line import/no-dynamic-require, n/global-require
-      newModule = require(finalPath)
-    } catch {
-      // eslint-disable-next-line import/no-dynamic-require
-      newModule = await import(finalPath)
-    }
+    /** @type {import('netlify-onegraph-internal').CodegenHelpers.CodegenModule | undefined} */
+    // eslint-disable-next-line import/no-dynamic-require
+    const newModule = await import(finalPath)
 
     if (newModule) {
       const hasGenerators = Array.isArray(newModule.generators)
@@ -1011,14 +1000,14 @@ const autocompleteCodegenModules = async ({ config }) => {
   )
 }
 
-module.exports = {
+export {
   autocompleteCodegenModules,
   autocompleteOperationNames,
   buildSchema,
-  defaultExampleOperationsDoc: NetlifyGraph.defaultExampleOperationsDoc,
-  extractFunctionsFromOperationDoc: NetlifyGraph.extractFunctionsFromOperationDoc,
+  defaultExampleOperationsDoc,
+  extractFunctionsFromOperationDoc,
   generateFunctionsFile,
-  generateHandlerSource: NetlifyGraph.generateHandlerSource,
+  generateHandlerSource,
   generateHandlerByOperationId,
   generateHandlerByOperationName,
   generateHandlerPreviewByOperationName,
@@ -1031,7 +1020,7 @@ module.exports = {
   getGraphEditUrlBySiteName,
   getNetlifyGraphConfig,
   loadNetlifyGraphConfig,
-  normalizeOperationsDoc: GraphQLHelpers.normalizeOperationsDoc,
+  normalizeOperationsDoc,
   parse,
   readGraphQLOperationsSourceFile,
   readGraphQLSchemaFile,

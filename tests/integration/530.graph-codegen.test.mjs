@@ -1,26 +1,27 @@
 /* eslint-disable eslint-comments/disable-enable-pair */
 /* eslint-disable no-unused-vars */
 // @ts-check
-const fs = require('fs')
-const path = require('path')
-const process = require('process')
+import fs from 'fs'
+import path, { dirname } from 'path'
+import process from 'process'
+import { fileURLToPath } from 'url'
 
-const test = require('ava')
-const { CodegenHelpers, GraphQL, IncludedCodegen, NetlifyGraph } = require('netlify-onegraph-internal')
-const { registerConsole } = require('netlify-onegraph-internal/dist/internalConsole')
+import test from 'ava'
+import { CodegenHelpers, GraphQL, IncludedCodegen, NetlifyGraph } from 'netlify-onegraph-internal'
+import { registerConsole } from 'netlify-onegraph-internal/dist/internalConsole.js'
 
-const {
+import {
   generateHandlerSourceByOperationId,
   generateRuntimeSource,
   runPrettier,
-} = require('../../src/lib/one-graph/cli-netlify-graph.cjs')
-const {
   buildSchema,
   extractFunctionsFromOperationDoc,
   parse,
-} = require('../../src/lib/one-graph/cli-netlify-graph.cjs')
+} from '../../src/lib/one-graph/cli-netlify-graph.mjs'
 
-const { normalize } = require('./utils/snapshots.cjs')
+import { normalize } from './utils/snapshots.cjs'
+
+const dirPath = dirname(fileURLToPath(import.meta.url))
 
 /**
  * Given a path, ensure that the path exists
@@ -53,7 +54,7 @@ const baseNetlifyGraphConfig = {
   graphQLOperationsSourceDirectory: ['dummy'],
 }
 
-const loadAsset = (filename) => fs.readFileSync(path.join(__dirname, 'assets', filename), 'utf8')
+const loadAsset = (filename) => fs.readFileSync(path.join(dirPath, 'assets', filename), 'utf8')
 const schemaString = loadAsset('../assets/netlifyGraphSchema.graphql')
 const commonSchema = buildSchema(schemaString)
 
