@@ -12,7 +12,6 @@ const getRepoData = require('./get-repo-data.cjs')
 const ghAuth = require('./gh-auth.cjs')
 const openBrowser = require('./open-browser.cjs')
 const parseRawFlags = require('./parse-raw-flags.cjs')
-const proxy = require('./proxy.cjs')
 const readRepoURL = require('./read-repo-url.cjs')
 
 module.exports = {
@@ -27,7 +26,6 @@ module.exports = {
   ...ghAuth,
   ...openBrowser,
   ...parseRawFlags,
-  ...proxy,
   ...readRepoURL,
   execa,
   getGlobalConfig,

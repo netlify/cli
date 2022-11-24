@@ -30,6 +30,7 @@ import { startSpinner, stopSpinner } from '../../lib/spinner.cjs'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.mjs'
 import utils from '../../utils/index.cjs'
 import { startLiveTunnel } from '../../utils/live-tunnel.mjs'
+import { startProxy } from '../../utils/proxy.mjs'
 
 import { createDevExecCommand } from './dev-exec.mjs'
 
@@ -53,7 +54,6 @@ const {
   normalizeContext,
   openBrowser,
   processOnExit,
-  startProxy,
   warn,
   watchDebounced,
 } = utils

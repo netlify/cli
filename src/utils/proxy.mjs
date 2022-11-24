@@ -1,34 +1,33 @@
 // @ts-check
-const { Buffer } = require('buffer')
-const { once } = require('events')
-const { readFile } = require('fs').promises
-const http = require('http')
-const https = require('https')
-const { isIPv6 } = require('net')
-const path = require('path')
-const util = require('util')
-const zlib = require('zlib')
+import { Buffer } from 'buffer'
+import { once } from 'events'
+import { readFile } from 'fs/promises'
+import http from 'http'
+import https from 'https'
+import { isIPv6 } from 'net'
+import path from 'path'
+import util from 'util'
+import zlib from 'zlib'
 
-const contentType = require('content-type')
-const cookie = require('cookie')
-const { get } = require('dot-prop')
-const generateETag = require('etag')
-const httpProxy = require('http-proxy')
-const { createProxyMiddleware } = require('http-proxy-middleware')
-const jwtDecode = require('jwt-decode')
-const locatePath = require('locate-path')
-const isEmpty = require('lodash/isEmpty')
-const pFilter = require('p-filter')
-const toReadableStream = require('to-readable-stream')
+import contentType from 'content-type'
+import cookie from 'cookie'
+import { get } from 'dot-prop'
+import generateETag from 'etag'
+import httpProxy from 'http-proxy'
+import { createProxyMiddleware } from 'http-proxy-middleware'
+import jwtDecode from 'jwt-decode'
+import locatePath from 'locate-path'
+import pFilter from 'p-filter'
+import toReadableStream from 'to-readable-stream'
 
-const edgeFunctions = require('../lib/edge-functions/index.cjs')
-const { fileExistsAsync, isFileAsync } = require('../lib/fs.cjs')
-const renderErrorTemplate = require('../lib/render-error-remplate.cjs')
+import edgeFunctions from '../lib/edge-functions/index.cjs'
+import { fileExistsAsync, isFileAsync } from '../lib/fs.cjs'
+import renderErrorTemplate from '../lib/render-error-remplate.cjs'
 
-const { NETLIFYDEVLOG, NETLIFYDEVWARN } = require('./command-helpers.cjs')
-const { createStreamPromise } = require('./create-stream-promise.cjs')
-const { headersForPath, parseHeaders } = require('./headers.cjs')
-const { createRewriter, onChanges } = require('./rules-proxy.cjs')
+import { NETLIFYDEVLOG, NETLIFYDEVWARN } from './command-helpers.cjs'
+import { createStreamPromise } from './create-stream-promise.cjs'
+import { headersForPath, parseHeaders } from './headers.cjs'
+import { createRewriter, onChanges } from './rules-proxy.cjs'
 
 const decompress = util.promisify(zlib.gunzip)
 const shouldGenerateETag = Symbol('Internal: response should generate ETag')
@@ -145,7 +144,7 @@ const serveRedirect = async function ({ match, options, proxy, req, res }) {
   options = options || req.proxyOptions || {}
   options.match = null
 
-  if (!isEmpty(match.proxyHeaders)) {
+  if (match.proxyHeaders && Object.keys(match.proxyHeaders).length >= 0) {
     Object.entries(match.proxyHeaders).forEach(([key, value]) => {
       req.headers[key] = value
     })
@@ -526,7 +525,7 @@ const onRequest = async ({ addonsUrls, edgeFunctionsProxy, functionsServer, prox
   proxy.web(req, res, options)
 }
 
-const startProxy = async function ({
+export const startProxy = async function ({
   addonsUrls,
   config,
   configPath,
@@ -597,5 +596,3 @@ const startProxy = async function ({
 }
 
 const BYTES_LIMIT = 30
-
-module.exports = { shouldGenerateETag, startProxy }
