@@ -10,7 +10,7 @@ const { chalk, error, exit, log, track } = utils
 
 /**
  *
- * @param {import('../base-command').NetlifyOptions} netlify
+ * @param {import('../base-command.mjs').NetlifyOptions} netlify
  * @param {import('commander').OptionValues} options
  */
 const linkPrompt = async (netlify, options) => {
