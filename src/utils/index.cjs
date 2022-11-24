@@ -10,7 +10,6 @@ const functions = require('./functions/index.cjs')
 const getGlobalConfig = require('./get-global-config.cjs')
 const getRepoData = require('./get-repo-data.cjs')
 const ghAuth = require('./gh-auth.cjs')
-const gitignore = require('./gitignore.cjs')
 const liveTunnel = require('./live-tunnel.cjs')
 const openBrowser = require('./open-browser.cjs')
 const parseRawFlags = require('./parse-raw-flags.cjs')
@@ -28,7 +27,6 @@ module.exports = {
   ...functions,
   ...getRepoData,
   ...ghAuth,
-  ...gitignore,
   ...liveTunnel,
   ...openBrowser,
   ...parseRawFlags,

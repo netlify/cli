@@ -22,6 +22,7 @@ import {
 } from '../../lib/one-graph/cli-client.cjs'
 import netlifyGraph from '../../lib/one-graph/cli-netlify-graph.cjs'
 import { startSpinner, stopSpinner } from '../../lib/spinner.cjs'
+import { ensureNetlifyIgnore } from '../../utils/gitignore.mjs'
 import utils from '../../utils/index.cjs'
 
 import { createDevExecCommand } from './dev-exec.mjs'
@@ -37,7 +38,6 @@ const {
   NETLIFYDEVWARN,
   chalk,
   detectServerSettings,
-  ensureNetlifyIgnore,
   error,
   exit,
   generateNetlifyGraphJWT,
