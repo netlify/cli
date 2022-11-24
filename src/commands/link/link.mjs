@@ -2,10 +2,11 @@
 import inquirer from 'inquirer'
 
 import { listSites } from '../../lib/api.mjs'
+import getRepoData from '../../utils/get-repo-data.mjs'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.mjs'
 import utils from '../../utils/index.cjs'
 
-const { chalk, error, exit, getRepoData, log, track } = utils
+const { chalk, error, exit, log, track } = utils
 
 /**
  *

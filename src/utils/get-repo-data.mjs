@@ -1,15 +1,14 @@
 // @ts-check
-const { dirname } = require('path')
-const process = require('process')
-const util = require('util')
+import { dirname } from 'path'
+import process from 'process'
+import util from 'util'
 
-const findUp = require('find-up')
-const gitRepoInfo = require('git-repo-info')
-const gitconfiglocal = require('gitconfiglocal')
-const isEmpty = require('lodash/isEmpty')
-const parseGitRemote = require('parse-github-url')
+import findUp from 'find-up'
+import gitRepoInfo from 'git-repo-info'
+import gitconfiglocal from 'gitconfiglocal'
+import parseGitRemote from 'parse-github-url'
 
-const { log } = require('./command-helpers.cjs')
+import { log } from './command-helpers.cjs'
 
 /**
  *
@@ -30,7 +29,7 @@ const getRepoData = async function ({ remoteName } = {}) {
       log(`Git directory located in ${baseGitPath}`)
     }
 
-    if (isEmpty(gitConfig) || isEmpty(gitConfig.remote)) {
+    if (!gitConfig || !gitConfig.remote || Object.keys(gitConfig.remote).length === 0) {
       throw new Error('No Git remote found')
     }
 
@@ -39,7 +38,11 @@ const getRepoData = async function ({ remoteName } = {}) {
       remoteName = remotes.find((remote) => remote === 'origin') || remotes[0]
     }
 
-    if (!Object.prototype.hasOwnProperty.call(gitConfig.remote, remoteName) || isEmpty(gitConfig.remote[remoteName])) {
+    if (
+      !Object.prototype.hasOwnProperty.call(gitConfig.remote, remoteName) ||
+      !gitConfig.remote[remoteName] ||
+      Object.keys(gitConfig.remote[remoteName]).length === 0
+    ) {
       throw new Error(
         `The specified remote "${remoteName}" is not defined in Git repo. Please use --gitRemoteName flag to specify a remote.`,
       )
@@ -69,4 +72,4 @@ const PROVIDERS = {
   'gitlab.com': 'gitlab',
 }
 
-module.exports = { getRepoData }
+export default getRepoData
