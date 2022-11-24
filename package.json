@@ -364,7 +364,7 @@
   "ava": {
     "files": [
       "tools/**/*.test.mjs",
-      "tests/**/*.test.cjs"
+      "tests/**/*.test.+(c|m)js"
     ],
     "cache": true,
     "concurrency": 5,
