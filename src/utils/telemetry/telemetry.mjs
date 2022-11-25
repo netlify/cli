@@ -17,7 +17,7 @@ const isTelemetryDisabled = function (config) {
 const dirPath = dirname(fileURLToPath(import.meta.url))
 
 const send = function (type, payload) {
-  const requestFile = join(dirPath, 'request.cjs')
+  const requestFile = join(dirPath, 'request.mjs')
   const options = JSON.stringify({
     data: payload,
     type,
