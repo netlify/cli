@@ -53,7 +53,6 @@ const USER_AGENT = `${name}/${version} ${platform}-${arch} node-${process.versio
 /** A list of base command flags that needs to be sorted down on documentation and on help pages */
 const BASE_FLAGS = new Set(['--debug', '--httpProxy', '--httpProxyCertificateFilename'])
 
-// eslint-disable-next-line no-magic-numbers
 const NETLIFY_CYAN = chalk.rgb(40, 180, 170)
 
 const NETLIFYDEV = `${chalk.greenBright('◈')} ${NETLIFY_CYAN('Netlify Dev')} ${chalk.greenBright('◈')}`
