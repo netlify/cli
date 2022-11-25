@@ -1,8 +1,8 @@
 // @ts-check
-const { resolve } = require('path')
+import { resolve } from 'path'
 
-const { isDirectoryAsync, isFileAsync } = require('../../lib/fs.cjs')
-const { getPathInProject } = require('../../lib/settings.cjs')
+import { isDirectoryAsync, isFileAsync } from '../../lib/fs.cjs'
+import { getPathInProject } from '../../lib/settings.cjs'
 
 /**
  * retrieves the function directory out of the flags or config
@@ -12,25 +12,23 @@ const { getPathInProject } = require('../../lib/settings.cjs')
  * @param {string} [defaultValue]
  * @returns {string}
  */
-const getFunctionsDir = ({ config, options }, defaultValue) =>
+export const getFunctionsDir = ({ config, options }, defaultValue) =>
   options.functions ||
   (config.dev && config.dev.functions) ||
   config.functionsDirectory ||
   (config.dev && config.dev.Functions) ||
   defaultValue
 
-const getFunctionsManifestPath = async ({ base }) => {
+export const getFunctionsManifestPath = async ({ base }) => {
   const path = resolve(base, getPathInProject(['functions', 'manifest.json']))
   const isFile = await isFileAsync(path)
 
   return isFile ? path : null
 }
 
-const getInternalFunctionsDir = async ({ base }) => {
+export const getInternalFunctionsDir = async ({ base }) => {
   const path = resolve(base, getPathInProject(['functions-internal']))
   const isDirectory = await isDirectoryAsync(path)
 
   return isDirectory ? path : null
 }
-
-module.exports = { getFunctionsDir, getInternalFunctionsDir, getFunctionsManifestPath }

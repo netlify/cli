@@ -4,7 +4,6 @@ const deploy = require('./deploy/index.cjs')
 const dev = require('./dev.cjs')
 const env = require('./env/index.cjs')
 const execa = require('./execa.cjs')
-const functions = require('./functions/index.cjs')
 const getGlobalConfig = require('./get-global-config.cjs')
 const ghAuth = require('./gh-auth.cjs')
 const openBrowser = require('./open-browser.cjs')
@@ -15,7 +14,6 @@ module.exports = {
   ...deploy,
   ...dev,
   ...env,
-  ...functions,
   ...ghAuth,
   ...openBrowser,
   ...parseRawFlags,

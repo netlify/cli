@@ -15,6 +15,7 @@ import { getBuildOptions, runBuild } from '../../lib/build.mjs'
 import { normalizeFunctionsConfig } from '../../lib/functions/config.cjs'
 import { getLogMessage } from '../../lib/log.cjs'
 import { startSpinner, stopSpinner } from '../../lib/spinner.cjs'
+import { getFunctionsManifestPath, getInternalFunctionsDir } from '../../utils/functions/index.mjs'
 import utils from '../../utils/index.cjs'
 import { link } from '../link/index.mjs'
 import { sitesCreate } from '../sites/index.mjs'
@@ -27,8 +28,6 @@ const {
   deploySite,
   error,
   exit,
-  getFunctionsManifestPath,
-  getInternalFunctionsDir,
   getToken,
   log,
   logJson,

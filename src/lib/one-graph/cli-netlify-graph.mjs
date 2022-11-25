@@ -10,9 +10,10 @@ import inquirerAutocompletePrompt from 'inquirer-autocomplete-prompt'
 import { GraphQL, GraphQLHelpers, IncludedCodegen, InternalConsole, NetlifyGraph } from 'netlify-onegraph-internal'
 
 import detectServerSettings from '../../utils/detect-server-settings.mjs'
+import { getFunctionsDir } from '../../utils/functions/index.mjs'
 import utils from '../../utils/index.cjs'
 
-const { chalk, error, execa, getFunctionsDir, log, warn } = utils
+const { chalk, error, execa, log, warn } = utils
 
 const { printSchema } = GraphQL
 

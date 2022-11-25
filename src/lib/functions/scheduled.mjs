@@ -1,12 +1,12 @@
-const AnsiToHtml = require('ansi-to-html')
+import AnsiToHtml from 'ansi-to-html'
+
+import { CLOCKWORK_USERAGENT } from '../../utils/functions/index.mjs'
+
+import { formatLambdaError } from './utils.cjs'
 
 const ansiToHtml = new AnsiToHtml()
 
-const { CLOCKWORK_USERAGENT } = require('../../utils/index.cjs')
-
-const { formatLambdaError } = require('./utils.cjs')
-
-const buildHelpResponse = ({ error, headers, path, result }) => {
+export const buildHelpResponse = ({ error, headers, path, result }) => {
   const acceptsHtml = headers.accept && headers.accept.includes('text/html')
 
   const paragraph = (text) => {
@@ -84,7 +84,7 @@ At the moment, Netlify does nothing about that. In the future, there might be a 
       }
 }
 
-const handleScheduledFunction = ({ error, request, response, result }) => {
+export const handleScheduledFunction = ({ error, request, response, result }) => {
   const { contentType, message, statusCode } = buildHelpResponse({
     error,
     headers: request.headers,
@@ -96,5 +96,3 @@ const handleScheduledFunction = ({ error, request, response, result }) => {
   response.set('Content-Type', contentType)
   response.send(message)
 }
-
-module.exports = { handleScheduledFunction, buildHelpResponse }

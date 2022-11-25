@@ -1,6 +1,6 @@
-const test = require('ava')
+import test from 'ava'
 
-const { buildHelpResponse } = require('../../../../src/lib/functions/scheduled.cjs')
+import { buildHelpResponse } from '../../../../src/lib/functions/scheduled.mjs'
 
 const withAccept = (accept) =>
   buildHelpResponse({

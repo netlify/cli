@@ -12,10 +12,7 @@ import { readFileAsyncCatchError } from '../lib/fs.cjs'
 
 import { NETLIFYDEVWARN, chalk, log } from './command-helpers.cjs'
 import { acquirePort } from './dev.cjs'
-import functions from './functions/index.cjs'
-
-// TODO
-const { getInternalFunctionsDir } = functions
+import { getInternalFunctionsDir } from './functions/index.mjs'
 
 const formatProperty = (str) => chalk.magenta(`'${str}'`)
 const formatValue = (str) => chalk.green(`'${str}'`)

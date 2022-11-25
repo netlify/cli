@@ -1,15 +1,33 @@
 // @ts-check
-const { Readable } = require('stream')
+import { Readable } from 'stream'
 
-const { parse: parseContentType } = require('content-type')
-const multiparty = require('multiparty')
-const getRawBody = require('raw-body')
+import { parse as parseContentType } from 'content-type'
+import multiparty from 'multiparty'
+import getRawBody from 'raw-body'
 
-const { warn } = require('../../utils/command-helpers.cjs')
-const { BACKGROUND } = require('../../utils/index.cjs')
-const { capitalize } = require('../string.cjs')
+import { warn } from '../../utils/command-helpers.cjs'
+import { BACKGROUND } from '../../utils/functions/index.mjs'
+import { capitalize } from '../string.cjs'
 
-const createFormSubmissionHandler = function ({ functionsRegistry, siteUrl }) {
+const getFormHandler = function ({ functionsRegistry }) {
+  const handlers = ['submission-created', `submission-created${BACKGROUND}`]
+    .map((name) => functionsRegistry.get(name))
+    .filter(Boolean)
+    .map(({ name }) => name)
+
+  if (handlers.length === 0) {
+    warn(`Missing form submission function handler`)
+    return
+  }
+
+  if (handlers.length === 2) {
+    warn(`Detected both '${handlers[0]}' and '${handlers[1]}' form submission functions handlers, using ${handlers[0]}`)
+  }
+
+  return handlers[0]
+}
+
+export const createFormSubmissionHandler = function ({ functionsRegistry, siteUrl }) {
   return async function formSubmissionHandler(req, res, next) {
     if (req.url.startsWith('/.netlify/') || req.method !== 'POST') return next()
 
@@ -126,23 +144,3 @@ const createFormSubmissionHandler = function ({ functionsRegistry, siteUrl }) {
     next()
   }
 }
-
-const getFormHandler = function ({ functionsRegistry }) {
-  const handlers = ['submission-created', `submission-created${BACKGROUND}`]
-    .map((name) => functionsRegistry.get(name))
-    .filter(Boolean)
-    .map(({ name }) => name)
-
-  if (handlers.length === 0) {
-    warn(`Missing form submission function handler`)
-    return
-  }
-
-  if (handlers.length === 2) {
-    warn(`Detected both '${handlers[0]}' and '${handlers[1]}' form submission functions handlers, using ${handlers[0]}`)
-  }
-
-  return handlers[0]
-}
-
-module.exports = { createFormSubmissionHandler }

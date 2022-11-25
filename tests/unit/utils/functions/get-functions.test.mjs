@@ -1,10 +1,10 @@
-const path = require('path')
+import path from 'path'
 
-const test = require('ava')
-const sortOn = require('sort-on')
+import test from 'ava'
+import sortOn from 'sort-on'
 
-const { getFunctions, getFunctionsAndWatchDirs } = require('../../../../src/utils/functions/get-functions.cjs')
-const { withSiteBuilder } = require('../../../integration/utils/site-builder.cjs')
+import { getFunctions } from '../../../../src/utils/functions/get-functions.mjs'
+import { withSiteBuilder } from '../../../integration/utils/site-builder.cjs'
 
 test('should return empty object when an empty string is provided', async (t) => {
   const funcs = await getFunctions('')
@@ -76,38 +76,5 @@ test('should mark background functions based on filenames', async (t) => {
         urlPath: '/.netlify/functions/foo-background',
       },
     ])
-  })
-})
-
-test.skip('should return additional watch dirs when functions requires a file outside function dir', async (t) => {
-  await withSiteBuilder('site-with-functions-require-outside-functions-dir', async (builder) => {
-    await builder
-      .withFunction({
-        path: 'index.js',
-        // eslint-disable-next-line require-await
-        handler: async () => {
-          // eslint-disable-next-line n/global-require, import/no-unresolved
-          const { logHello } = require('../utils/index.js')
-          logHello()
-          return { statusCode: 200, body: 'Logged Hello!' }
-        },
-      })
-      .withContentFile({
-        path: 'utils/index.js',
-        content: `const logHello = () => console.log('hello'); module.exports = { logHello }`,
-      })
-      .buildAsync()
-
-    const { functions, watchDirs } = await getFunctionsAndWatchDirs(path.join(builder.directory, 'functions'))
-    t.deepEqual(functions, [
-      {
-        name: 'index',
-        mainFile: path.join(builder.directory, 'functions', 'index.js'),
-        isBackground: false,
-        runtime: 'js',
-        urlPath: '/.netlify/functions/index',
-      },
-    ])
-    t.deepEqual(watchDirs, [path.join(builder.directory, 'functions'), path.join(builder.directory, 'utils')])
   })
 })
