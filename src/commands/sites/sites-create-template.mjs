@@ -10,10 +10,11 @@ import utils from '../../utils/index.cjs'
 import { getGitHubToken } from '../../utils/init/config-github.cjs'
 import { configureRepo } from '../../utils/init/config.cjs'
 import { createRepo, getTemplatesFromGitHub, validateTemplate } from '../../utils/sites/utils.cjs'
+import { track } from '../../utils/telemetry/index.mjs'
 
 import { getSiteNameInput } from './sites-create.mjs'
 
-const { chalk, error, execa, getTerminalLink, log, logJson, track, warn } = utils
+const { chalk, error, execa, getTerminalLink, log, logJson, warn } = utils
 
 export const fetchTemplates = async (token) => {
   const templatesFromGithubOrg = await getTemplatesFromGitHub(token)

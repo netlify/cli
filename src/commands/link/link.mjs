@@ -5,8 +5,9 @@ import { listSites } from '../../lib/api.mjs'
 import getRepoData from '../../utils/get-repo-data.mjs'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.mjs'
 import utils from '../../utils/index.cjs'
+import { track } from '../../utils/telemetry/index.mjs'
 
-const { chalk, error, exit, log, track } = utils
+const { chalk, error, exit, log } = utils
 
 /**
  *

@@ -7,6 +7,7 @@ import { findBestMatch } from 'string-similarity'
 
 import getPackageJson from '../utils/get-package-json.mjs'
 import utils from '../utils/index.cjs'
+import { track } from '../utils/telemetry/index.mjs'
 
 import { createAddonsCommand } from './addons/index.mjs'
 import { createApiCommand } from './api/index.mjs'
@@ -31,7 +32,7 @@ import { createSwitchCommand } from './switch/index.mjs'
 import { createUnlinkCommand } from './unlink/index.mjs'
 import { createWatchCommand } from './watch/index.mjs'
 
-const { BANG, NETLIFY_CYAN, USER_AGENT, chalk, error, execa, exit, getGlobalConfig, log, track, warn } = utils
+const { BANG, NETLIFY_CYAN, USER_AGENT, chalk, error, execa, exit, getGlobalConfig, log, warn } = utils
 
 const SUGGESTION_TIMEOUT = 1e4
 
