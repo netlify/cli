@@ -1,14 +1,15 @@
 import fs from 'fs/promises'
 import { dirname, join, resolve } from 'path'
-import { fileURLToPath } from 'url'
+import { fileURLToPath, pathToFileURL } from 'url'
 
 const directoryPath = dirname(fileURLToPath(import.meta.url))
 
 export const getRecipe = async (name) => {
   const recipePath = resolve(directoryPath, '../../recipes', name, 'index.mjs')
 
+  // windows needs a URL for absolute paths
   // eslint-disable-next-line import/no-dynamic-require
-  const recipe = await import(recipePath)
+  const recipe = await import(pathToFileURL(recipePath).href)
 
   return recipe
 }
@@ -20,8 +21,9 @@ export const listRecipes = async () => {
     recipeNames.map(async (name) => {
       const recipePath = join(recipesPath, name, 'index.mjs')
 
+      // windows needs a URL for absolute paths
       // eslint-disable-next-line import/no-dynamic-require
-      const recipe = await import(recipePath)
+      const recipe = await import(pathToFileURL(recipePath).href)
 
       return {
         ...recipe,

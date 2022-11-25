@@ -4,6 +4,7 @@
 import fs from 'fs'
 import path from 'path'
 import process from 'process'
+import { pathToFileURL } from 'url'
 
 import inquirer from 'inquirer'
 import inquirerAutocompletePrompt from 'inquirer-autocomplete-prompt'
@@ -906,7 +907,7 @@ const dynamicallyLoadCodegenModule = async ({ config, cwd }) => {
     const relativePath = path.join(basePath, importPath)
     const absoluteOrNodePath = path.resolve(...absolute)
 
-    const finalPath = fs.existsSync(relativePath) ? relativePath : absoluteOrNodePath
+    const finalPath = fs.existsSync(relativePath) ? relativePath : pathToFileURL(absoluteOrNodePath).href
 
     /** @type {import('netlify-onegraph-internal').CodegenHelpers.CodegenModule | undefined} */
     // eslint-disable-next-line import/no-dynamic-require
