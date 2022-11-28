@@ -509,8 +509,6 @@ const dev = async (options, command) => {
     startPollingForAPIAuthentication({ api, command, config, site, siteInfo })
   }
 
-  logH2({ message: 'Loading netlify functions' })
-
   await startFunctionsServer({
     api,
     command,
