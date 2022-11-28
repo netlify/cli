@@ -406,7 +406,7 @@ class EdgeFunctionsRegistry {
   }
 
   async scan(directories) {
-    logH2('Loading netlify edge functions')
+    logH2({ message: 'Loading netlify edge functions' })
     const functions = await this.bundler.find(directories)
 
     functions.forEach((func) => {

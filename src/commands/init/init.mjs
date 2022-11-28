@@ -175,7 +175,7 @@ const logExistingRepoSetupAndExit = ({ repoUrl, siteName }) => {
  */
 export const init = async (options, command) => {
   command.setAnalyticsPayload({ manual: options.manual, force: options.force })
-  logH1('netlify init')
+  logH1({ message: 'netlify init' })
 
   const { repositoryRoot, state } = command.netlify
   let { siteInfo } = command.netlify

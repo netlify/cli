@@ -83,11 +83,11 @@ const INDENT_WIDTHS = {
  * Use for initialising commands and other important headings
  * @param {string} message
  */
-const logH1 = (message) => {
+const logH1 = ({ message }) => {
   if (message) {
-    log(' ')
+    log()
     log(`${chalk.black(`✨`)} ${chalk.bgHex(BRAND.COLORS.BLUE).whiteBright.bold(` ${message} `)} ${chalk.black(`✨`)}`)
-    log(' ')
+    log()
   }
 }
 
@@ -97,7 +97,7 @@ const logH1 = (message) => {
  * during command initialisation
  * @param {string} message
  */
-const logH2 = (message) => {
+const logH2 = ({ message }) => {
   if (message) {
     log(`${chalk.bgHex(BRAND.COLORS.CYAN).black(` ${BRAND.ICONS.DIAMOND} ${message} `)}`)
     log()

@@ -204,7 +204,7 @@ const startFrameworkServer = async function ({ settings }) {
     return {}
   }
 
-  logH2(`Starting netlify dev with ${settings.framework || 'custom config'}`)
+  logH2({ message: `Starting netlify dev with ${settings.framework || 'custom config'}` })
 
   const spinner = startSpinner({
     text: `✨ Waiting for port ${settings.frameworkPort}`,
@@ -324,19 +324,20 @@ const handleLiveTunnel = async ({ api, options, settings, site }) => {
 }
 
 const printBanner = ({ url }) => {
-  const banner = chalk.whiteBright.bold(`✨ Server now ready on ${url}`)
+  log()
 
   log(
-    boxen(banner, {
-      title: '✨ netlify dev ✨',
+    boxen(chalk.bold(`Dev server now ready on ${chalk.underline(`${url}`)}`), {
+      title: chalk.bgHex(BRAND.COLORS.BLUE).whiteBright.bold('✨ netlify dev ✨'),
       padding: 1,
       margin: 0,
       align: 'left',
-      borderStyle: 'bold',
+      borderStyle: 'doubleSingle',
       borderColor: BRAND.COLORS.BLUE,
-      backgroundColor: BRAND.COLORS.BLUE,
     }),
   )
+
+  log()
 }
 
 const startPollingForAPIAuthentication = async function (options) {
@@ -438,7 +439,7 @@ const validateGeoCountryCode = (arg) => {
  * @param {import('../base-command.mjs').default} command
  */
 const dev = async (options, command) => {
-  logH1('netlify dev')
+  logH1({ message: 'netlify dev' })
 
   const { api, cachedConfig, config, repositoryRoot, site, siteInfo, state } = command.netlify
   const netlifyBuild = await netlifyBuildPromise
@@ -508,7 +509,7 @@ const dev = async (options, command) => {
     startPollingForAPIAuthentication({ api, command, config, site, siteInfo })
   }
 
-  logH2('Loading netlify functions')
+  logH2({ message: 'Loading netlify functions' })
 
   await startFunctionsServer({
     api,
@@ -522,7 +523,7 @@ const dev = async (options, command) => {
     timeouts,
   })
 
-  logH2('Setting up local development server')
+  logH2({ message: 'Setting up local development server' })
 
   const devCommand = async () => {
     const { ipVersion } = await startFrameworkServer({ settings })

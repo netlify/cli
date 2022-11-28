@@ -90,7 +90,7 @@ const mainCommand = async function (options, command) {
 
   // if no command show the header and the help
   if (command.args.length === 0) {
-    logH1(`Welcome to the netlify CLI`)
+    logH1({ message: `Welcome to the netlify CLI` })
 
     const pkg = JSON.parse(await readFile(fileURLToPath(new URL('../../package.json', import.meta.url))), 'utf-8')
 
