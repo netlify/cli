@@ -1,14 +1,7 @@
 // @ts-check
+import utils from '../../utils/index.cjs'
 
-const { isEmpty } = require('lodash')
-
-const {
-  chalk,
-  error: logError,
-  log,
-  translateFromEnvelopeToMongo,
-  translateFromMongoToEnvelope,
-} = require('../../utils/index.cjs')
+const { chalk, error: logError, log, translateFromEnvelopeToMongo, translateFromMongoToEnvelope } = utils
 
 const safeGetSite = async (api, siteId) => {
   try {
@@ -93,7 +86,7 @@ const mongoToMongo = async ({ api, siteFrom, siteTo }) => {
     },
   ] = [siteFrom, siteTo]
 
-  if (isEmpty(envFrom)) {
+  if (Object.keys(envFrom).length === 0) {
     log(`${chalk.green(siteFrom.name)} has no environment variables, nothing to clone`)
     return false
   }
@@ -125,7 +118,7 @@ const mongoToEnvelope = async ({ api, siteFrom, siteTo }) => {
   const envFrom = siteFrom.build_settings.env || {}
   const keysFrom = Object.keys(envFrom)
 
-  if (isEmpty(envFrom)) {
+  if (Object.keys(envFrom).length === 0) {
     log(`${chalk.green(siteFrom.name)} has no environment variables, nothing to clone`)
     return false
   }
@@ -158,7 +151,7 @@ const envelopeToMongo = async ({ api, siteFrom, siteTo }) => {
   const envelopeVariables = await api.getEnvVars({ accountId: siteFrom.account_slug, siteId: siteFrom.id })
   const envFrom = translateFromEnvelopeToMongo(envelopeVariables)
 
-  if (isEmpty(envFrom)) {
+  if (Object.keys(envFrom).length === 0) {
     log(`${chalk.green(siteFrom.name)} has no environment variables, nothing to clone`)
     return false
   }
@@ -196,7 +189,7 @@ const envelopeToEnvelope = async ({ api, siteFrom, siteTo }) => {
 
   const keysFrom = envelopeFrom.map(({ key }) => key)
 
-  if (isEmpty(keysFrom)) {
+  if (keysFrom.length === 0) {
     log(`${chalk.green(siteFrom.name)} has no environment variables, nothing to clone`)
     return false
   }
@@ -222,7 +215,7 @@ const envelopeToEnvelope = async ({ api, siteFrom, siteTo }) => {
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
-const createEnvCloneCommand = (program) =>
+export const createEnvCloneCommand = (program) =>
   program
     .command('env:clone')
     .alias('env:migrate')
@@ -231,5 +224,3 @@ const createEnvCloneCommand = (program) =>
     .description(`Clone environment variables from one site to another`)
     .addExamples(['netlify env:clone --to <to-site-id>', 'netlify env:clone --to <to-site-id> --from <from-site-id>'])
     .action(envClone)
-
-module.exports = { createEnvCloneCommand }

@@ -1,5 +1,7 @@
 // @ts-check
-const { Option } = require('commander')
+import { Option } from 'commander'
+
+import utils from '../../utils/index.cjs'
 
 const {
   AVAILABLE_CONTEXTS,
@@ -10,7 +12,7 @@ const {
   logJson,
   normalizeContext,
   translateFromEnvelopeToMongo,
-} = require('../../utils/index.cjs')
+} = utils
 
 /**
  * The env:set command
@@ -150,7 +152,7 @@ const setInEnvelope = async ({ api, context, key, scope, siteInfo, value }) => {
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
-const createEnvSetCommand = (program) =>
+export const createEnvSetCommand = (program) =>
   program
     .command('env:set')
     .argument('<key>', 'Environment variable key')
@@ -180,5 +182,3 @@ const createEnvSetCommand = (program) =>
     .action(async (key, value, options, command) => {
       await envSet(key, value, options, command)
     })
-
-module.exports = { createEnvSetCommand }

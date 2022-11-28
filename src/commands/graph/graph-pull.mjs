@@ -1,9 +1,9 @@
 // @ts-check
 /* eslint-disable eslint-comments/disable-enable-pair */
 /* eslint-disable fp/no-loops */
-const { OneGraphClient } = require('netlify-onegraph-internal')
+import { OneGraphClient } from 'netlify-onegraph-internal'
 
-const {
+import {
   OneGraphCliClient,
   ensureCLISession,
   handleCliSessionEvent,
@@ -11,13 +11,12 @@ const {
   readLockfile,
   readSchemaIdFromLockfile,
   refetchAndGenerateFromOneGraph,
-} = require('../../lib/one-graph/cli-client.cjs')
-const {
-  buildSchema,
-  getNetlifyGraphConfig,
-  readGraphQLSchemaFile,
-} = require('../../lib/one-graph/cli-netlify-graph.cjs')
-const { NETLIFYDEVERR, chalk, error, log, warn } = require('../../utils/index.cjs')
+} from '../../lib/one-graph/cli-client.cjs'
+import netlifyGraph from '../../lib/one-graph/cli-netlify-graph.cjs'
+import utils from '../../utils/index.cjs'
+
+const { NETLIFYDEVERR, chalk, error, log, warn } = utils
+const { buildSchema, getNetlifyGraphConfig, readGraphQLSchemaFile } = netlifyGraph
 
 /**
  * Creates the `netlify graph:pull` command
@@ -163,12 +162,10 @@ ${JSON.stringify(error_, null, 2)}`)
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
-const createGraphPullCommand = (program) =>
+export const createGraphPullCommand = (program) =>
   program
     .command('graph:pull')
     .description('Pull your remote Netlify Graph schema locally, and process pending Graph edit events')
     .action(async (options, command) => {
       await graphPull(options, command)
     })
-
-module.exports = { createGraphPullCommand }

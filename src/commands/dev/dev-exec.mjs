@@ -1,6 +1,8 @@
-const execa = require('execa')
+import execa from 'execa'
 
-const { getEnvelopeEnv, injectEnvVariables, normalizeContext } = require('../../utils/index.cjs')
+import utils from '../../utils/index.cjs'
+
+const { getEnvelopeEnv, injectEnvVariables, normalizeContext } = utils
 
 /**
  * The dev:exec command
@@ -27,7 +29,7 @@ const devExec = async (cmd, options, command) => {
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
-const createDevExecCommand = (program) =>
+export const createDevExecCommand = (program) =>
   program
     .command('dev:exec')
     .argument('<...cmd>', `the command that should be executed`)
@@ -43,5 +45,3 @@ const createDevExecCommand = (program) =>
     .allowExcessArguments(true)
     .addExamples(['netlify dev:exec npm run bootstrap'])
     .action(devExec)
-
-module.exports = { createDevExecCommand }

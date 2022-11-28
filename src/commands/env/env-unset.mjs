@@ -1,13 +1,7 @@
 // @ts-check
-const {
-  AVAILABLE_CONTEXTS,
-  chalk,
-  error,
-  log,
-  logJson,
-  normalizeContext,
-  translateFromEnvelopeToMongo,
-} = require('../../utils/index.cjs')
+import utils from '../../utils/index.cjs'
+
+const { AVAILABLE_CONTEXTS, chalk, error, log, logJson, normalizeContext, translateFromEnvelopeToMongo } = utils
 
 /**
  * The env:unset command
@@ -138,7 +132,7 @@ const unsetInEnvelope = async ({ api, context, key, siteInfo }) => {
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
-const createEnvUnsetCommand = (program) =>
+export const createEnvUnsetCommand = (program) =>
   program
     .command('env:unset')
     .aliases(['env:delete', 'env:remove'])
@@ -158,5 +152,3 @@ const createEnvUnsetCommand = (program) =>
     .action(async (key, options, command) => {
       await envUnset(key, options, command)
     })
-
-module.exports = { createEnvUnsetCommand }

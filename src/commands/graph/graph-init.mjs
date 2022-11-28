@@ -1,23 +1,18 @@
 // @ts-check
-const { Buffer } = require('buffer')
-const process = require('process')
+import { Buffer } from 'buffer'
+import process from 'process'
 
-const { OneGraphClient } = require('netlify-onegraph-internal')
-const { v4: uuidv4 } = require('uuid')
+import { OneGraphClient } from 'netlify-onegraph-internal'
+import { v4 as uuidv4 } from 'uuid'
 
-const { OneGraphCliClient, ensureCLISession } = require('../../lib/one-graph/cli-client.cjs')
-const { getNetlifyGraphConfig } = require('../../lib/one-graph/cli-netlify-graph.cjs')
-const {
-  NETLIFYDEVERR,
-  chalk,
-  error,
-  exit,
-  getToken,
-  log,
-  translateFromEnvelopeToMongo,
-} = require('../../utils/index.cjs')
+import { OneGraphCliClient, ensureCLISession } from '../../lib/one-graph/cli-client.cjs'
+import netlifyGraph from '../../lib/one-graph/cli-netlify-graph.cjs'
+import utils from '../../utils/index.cjs'
+
+const { NETLIFYDEVERR, chalk, error, exit, getToken, log, translateFromEnvelopeToMongo } = utils
 
 const { ensureAppForSite, executeCreateApiTokenMutation } = OneGraphCliClient
+const { getNetlifyGraphConfig } = netlifyGraph
 
 /**
  * Creates the `netlify graph:init` command
@@ -161,12 +156,10 @@ const graphInit = async (options, command) => {
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
-const createGraphInitCommand = (program) =>
+export const createGraphInitCommand = (program) =>
   program
     .command('graph:init')
     .description('Initialize all the resources for Netlify Graph')
     .action(async (options, command) => {
       await graphInit(options, command)
     })
-
-module.exports = { createGraphInitCommand }

@@ -1,12 +1,12 @@
 // @ts-check
-const Listr = require('listr')
+import Listr from 'listr'
 
-const {
+import {
   checkGitLFSVersionStep,
   checkGitVersionStep,
   checkHelperVersionStep,
   checkLFSFiltersStep,
-} = require('../../utils/lm/steps.cjs')
+} from '../../utils/lm/steps.cjs'
 
 /**
  * The lm:info command
@@ -36,7 +36,5 @@ const lmInfo = async () => {
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
-const createLmInfoCommand = (program) =>
+export const createLmInfoCommand = (program) =>
   program.command('lm:info').description('Show large media requirements information.').action(lmInfo)
-
-module.exports = { createLmInfoCommand }

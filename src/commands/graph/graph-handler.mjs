@@ -1,6 +1,10 @@
 /* eslint-disable eslint-comments/disable-enable-pair */
 // @ts-check
 
+import netlifyGraph from '../../lib/one-graph/cli-netlify-graph.cjs'
+import utils from '../../utils/index.cjs'
+
+const { error, log } = utils
 const {
   autocompleteCodegenModules,
   autocompleteOperationNames,
@@ -10,8 +14,7 @@ const {
   getCodegenModule,
   getNetlifyGraphConfig,
   readGraphQLSchemaFile,
-} = require('../../lib/one-graph/cli-netlify-graph.cjs')
-const { error, log } = require('../../utils/index.cjs')
+} = netlifyGraph
 
 /**
  * Creates the `netlify graph:handler` command
@@ -88,7 +91,7 @@ const graphHandler = async (args, options, command) => {
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
-const createGraphHandlerCommand = (program) =>
+export const createGraphHandlerCommand = (program) =>
   program
     .command('graph:handler')
     .argument('[name...]', 'Operation name(s)')
@@ -100,5 +103,3 @@ const createGraphHandlerCommand = (program) =>
     .action(async (operationNames, options, command) => {
       await graphHandler({ operationNames }, options, command)
     })
-
-module.exports = { createGraphHandlerCommand }

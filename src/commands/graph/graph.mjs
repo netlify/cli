@@ -1,11 +1,11 @@
 // @ts-check
-const { createGraphConfigWriteCommand } = require('./graph-config-write.cjs')
-const { createGraphEditCommand } = require('./graph-edit.cjs')
-const { createGraphHandlerCommand } = require('./graph-handler.cjs')
-const { createGraphInitCommand } = require('./graph-init.cjs')
-const { createGraphLibraryCommand } = require('./graph-library.cjs')
-const { createGraphOperationsCommand } = require('./graph-operations.cjs')
-const { createGraphPullCommand } = require('./graph-pull.cjs')
+import { createGraphConfigWriteCommand } from './graph-config-write.mjs'
+import { createGraphEditCommand } from './graph-edit.mjs'
+import { createGraphHandlerCommand } from './graph-handler.mjs'
+import { createGraphInitCommand } from './graph-init.mjs'
+import { createGraphLibraryCommand } from './graph-library.mjs'
+import { createGraphOperationsCommand } from './graph-operations.mjs'
+import { createGraphPullCommand } from './graph-pull.mjs'
 
 /**
  * The graph command
@@ -21,7 +21,7 @@ const graph = (options, command) => {
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
-const createGraphCommand = (program) => {
+export const createGraphCommand = (program) => {
   createGraphConfigWriteCommand(program)
   createGraphEditCommand(program)
   createGraphHandlerCommand(program)
@@ -36,5 +36,3 @@ const createGraphCommand = (program) => {
     .addExamples(['netlify graph:pull', 'netlify graph:edit'])
     .action(graph)
 }
-
-module.exports = { createGraphCommand }

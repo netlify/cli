@@ -5,7 +5,7 @@ import isEmpty from 'lodash/isEmpty.js'
 
 import utils from '../../utils/index.cjs'
 import { configureRepo } from '../../utils/init/config.cjs'
-import { link } from '../link/index.cjs'
+import { link } from '../link/index.mjs'
 import { sitesCreate } from '../sites/index.mjs'
 
 const { chalk, ensureNetlifyIgnore, exit, getRepoData, log, logH1, track } = utils

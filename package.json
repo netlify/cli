@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "12.2.6",
+  "version": "12.2.7",
   "author": "Netlify Inc.",
   "type": "module",
   "contributors": [
@@ -228,9 +228,9 @@
     "prettier": "--ignore-path .gitignore --loglevel=warn \"{src,tools,scripts,site,tests,.github}/**/*.{mjs,cjs,js,md,yml,json,html}\" \"*.{mjs,cjs,js,yml,json,html}\" \".*.{mjs,cjs,js,yml,json,html}\" \"!CHANGELOG.md\" \"!npm-shrinkwrap.json\" \"!**/*/package-lock.json\" \"!.github/**/*.md\""
   },
   "dependencies": {
-    "@netlify/build": "^28.4.0",
+    "@netlify/build": "^28.4.2",
     "@netlify/config": "^20.0.2",
-    "@netlify/edge-bundler": "^4.4.1",
+    "@netlify/edge-bundler": "^4.4.2",
     "@netlify/framework-info": "^9.5.2",
     "@netlify/local-functions-proxy": "^1.1.1",
     "@netlify/zip-it-and-ship-it": "^8.1.0",
