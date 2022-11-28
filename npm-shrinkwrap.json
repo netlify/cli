@@ -15895,6 +15895,18 @@
         "node": ">=0.10.0"
       }
     },
+    "node_modules/marked": {
+      "version": "4.2.2",
+      "resolved": "https://registry.npmjs.org/marked/-/marked-4.2.2.tgz",
+      "integrity": "sha512-JjBTFTAvuTgANXx82a5vzK9JLSMoV6V3LBVn4Uhdso6t7vXrGx7g1Cd2r6NYSsxrYbQGFCMqBDhFHyK5q2UvcQ==",
+      "dev": true,
+      "bin": {
+        "marked": "bin/marked.js"
+      },
+      "engines": {
+        "node": ">= 12"
+      }
+    },
     "node_modules/matcher": {
       "version": "5.0.0",
       "resolved": "https://registry.npmjs.org/matcher/-/matcher-5.0.0.tgz",
@@ -23123,9 +23135,9 @@
       }
     },
     "node_modules/verdaccio": {
-      "version": "5.17.0",
-      "resolved": "https://registry.npmjs.org/verdaccio/-/verdaccio-5.17.0.tgz",
-      "integrity": "sha512-is5ivFhZ8RUmafkIXWvOh/lDzu9Ooa9njP/sgfOVBKDgajOYEzn58YO6aOgmhw6WrYhGsBs8ocaEht48yjcTwA==",
+      "version": "5.18.0",
+      "resolved": "https://registry.npmjs.org/verdaccio/-/verdaccio-5.18.0.tgz",
+      "integrity": "sha512-z6akeVQS08iXXz0yqi6gMMOoSI2SHocQI+NMMtaVo2MFJaYvhoPSLf66MyXIS3vyCIOu108R6Ncknt0oTIUk1A==",
       "dev": true,
       "dependencies": {
         "@verdaccio/commons-api": "10.2.0",
@@ -23287,18 +23299,6 @@
       "dev": true,
       "engines": {
         "node": ">=12"
-      }
-    },
-    "node_modules/verdaccio/node_modules/marked": {
-      "version": "4.2.2",
-      "resolved": "https://registry.npmjs.org/marked/-/marked-4.2.2.tgz",
-      "integrity": "sha512-JjBTFTAvuTgANXx82a5vzK9JLSMoV6V3LBVn4Uhdso6t7vXrGx7g1Cd2r6NYSsxrYbQGFCMqBDhFHyK5q2UvcQ==",
-      "dev": true,
-      "bin": {
-        "marked": "bin/marked.js"
-      },
-      "engines": {
-        "node": ">= 12"
       }
     },
     "node_modules/verdaccio/node_modules/mime": {
@@ -35196,6 +35196,12 @@
         "object-visit": "^1.0.0"
       }
     },
+    "marked": {
+      "version": "4.2.2",
+      "resolved": "https://registry.npmjs.org/marked/-/marked-4.2.2.tgz",
+      "integrity": "sha512-JjBTFTAvuTgANXx82a5vzK9JLSMoV6V3LBVn4Uhdso6t7vXrGx7g1Cd2r6NYSsxrYbQGFCMqBDhFHyK5q2UvcQ==",
+      "dev": true
+    },
     "matcher": {
       "version": "5.0.0",
       "resolved": "https://registry.npmjs.org/matcher/-/matcher-5.0.0.tgz",
@@ -40666,9 +40672,9 @@
       "integrity": "sha1-IpnwLG3tMNSllhsLn3RSShj2NPw="
     },
     "verdaccio": {
-      "version": "5.17.0",
-      "resolved": "https://registry.npmjs.org/verdaccio/-/verdaccio-5.17.0.tgz",
-      "integrity": "sha512-is5ivFhZ8RUmafkIXWvOh/lDzu9Ooa9njP/sgfOVBKDgajOYEzn58YO6aOgmhw6WrYhGsBs8ocaEht48yjcTwA==",
+      "version": "5.18.0",
+      "resolved": "https://registry.npmjs.org/verdaccio/-/verdaccio-5.18.0.tgz",
+      "integrity": "sha512-z6akeVQS08iXXz0yqi6gMMOoSI2SHocQI+NMMtaVo2MFJaYvhoPSLf66MyXIS3vyCIOu108R6Ncknt0oTIUk1A==",
       "dev": true,
       "requires": {
         "@verdaccio/commons-api": "10.2.0",
@@ -40746,12 +40752,6 @@
           "version": "7.14.0",
           "resolved": "https://registry.npmjs.org/lru-cache/-/lru-cache-7.14.0.tgz",
           "integrity": "sha512-EIRtP1GrSJny0dqb50QXRUNBxHJhcpxHC++M5tD7RYbvLLn5KVWKsbyswSSqDuU15UFi3bgTQIY8nhDMeF6aDQ==",
-          "dev": true
-        },
-        "marked": {
-          "version": "4.2.2",
-          "resolved": "https://registry.npmjs.org/marked/-/marked-4.2.2.tgz",
-          "integrity": "sha512-JjBTFTAvuTgANXx82a5vzK9JLSMoV6V3LBVn4Uhdso6t7vXrGx7g1Cd2r6NYSsxrYbQGFCMqBDhFHyK5q2UvcQ==",
           "dev": true
         },
         "mime": {
