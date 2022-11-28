@@ -216,7 +216,7 @@ const startFunctionsServer = async (options) => {
     // TO DO
     // for a Next.js 12 project, this is not scanning the api folder
     // and outputs here even if we have a function in api/
-    logInfo({ message: 'No netlify function files found', dim: true })
+    logInfo({ message: 'No netlify function files found ', dim: true })
     log()
   }
 

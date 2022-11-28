@@ -132,6 +132,7 @@ const logError = ({ message }) => {
 const STATUS_MSG = {
   LOADED: chalk.green('Loaded'),
   RELOADED: chalk.green('Reloaded'),
+  REMOVED: chalk.magenta('Removed'),
 }
 
 /**
@@ -317,6 +318,7 @@ const getTerminalLink = (text, url) => terminalLink(text, url, { fallback: () =>
 
 module.exports = {
   BANG,
+  BRAND,
   chalk,
   error,
   exit,

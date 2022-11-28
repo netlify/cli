@@ -33,6 +33,7 @@ const { defaultExampleOperationsDoc, getGraphEditUrlBySiteId, getNetlifyGraphCon
 
 const {
   BANG,
+  BRAND,
   NETLIFYDEVERR,
   NETLIFYDEVLOG,
   NETLIFYDEVWARN,
@@ -323,14 +324,17 @@ const handleLiveTunnel = async ({ api, options, settings, site }) => {
 }
 
 const printBanner = ({ url }) => {
-  const banner = chalk.bold(`${NETLIFYDEVLOG} Server now ready on ${url}`)
+  const banner = chalk.whiteBright.bold(`✨ Server now ready on ${url}`)
 
   log(
     boxen(banner, {
+      title: '✨ netlify dev ✨',
       padding: 1,
-      margin: 1,
-      align: 'center',
-      borderColor: '#00c7b7',
+      margin: 0,
+      align: 'left',
+      borderStyle: 'bold',
+      borderColor: BRAND.COLORS.BLUE,
+      backgroundColor: BRAND.COLORS.BLUE,
     }),
   )
 }

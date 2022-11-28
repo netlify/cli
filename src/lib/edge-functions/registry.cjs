@@ -283,7 +283,7 @@ class EdgeFunctionsRegistry {
   }
 
   static logDeletedFunction(func) {
-    logInfo({ message: `${chalk.magenta('Removed')} edge function ${chalk.yellow(func.name)}` })
+    logInfo({ message: `${STATUS_MSG.REMOVED} edge function ${chalk.yellow(func.name)}` })
   }
 
   /**
@@ -412,6 +412,8 @@ class EdgeFunctionsRegistry {
     functions.forEach((func) => {
       EdgeFunctionsRegistry.logAddedFunction(func)
     })
+
+    functions.push(log())
 
     this.functions = functions
 
