@@ -1,7 +1,8 @@
 // @ts-check
 import utils from '../../utils/index.cjs'
+import { track } from '../../utils/telemetry/index.mjs'
 
-const { exit, getToken, log, track } = utils
+const { exit, getToken, log } = utils
 
 /**
  * The logout command

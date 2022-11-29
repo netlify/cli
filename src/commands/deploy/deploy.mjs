@@ -10,11 +10,12 @@ import inquirer from 'inquirer'
 import isObject from 'lodash/isObject.js'
 import prettyjson from 'prettyjson'
 
-import { cancelDeploy } from '../../lib/api.cjs'
-import { getBuildOptions, runBuild } from '../../lib/build.cjs'
+import { cancelDeploy } from '../../lib/api.mjs'
+import { getBuildOptions, runBuild } from '../../lib/build.mjs'
 import { normalizeFunctionsConfig } from '../../lib/functions/config.cjs'
 import { getLogMessage } from '../../lib/log.cjs'
 import { startSpinner, stopSpinner } from '../../lib/spinner.cjs'
+import { getFunctionsManifestPath, getInternalFunctionsDir } from '../../utils/functions/index.mjs'
 import utils from '../../utils/index.cjs'
 import { link } from '../link/index.mjs'
 import { sitesCreate } from '../sites/index.mjs'
@@ -27,8 +28,6 @@ const {
   deploySite,
   error,
   exit,
-  getFunctionsManifestPath,
-  getInternalFunctionsDir,
   getToken,
   log,
   logJson,

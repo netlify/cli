@@ -5,14 +5,13 @@ import process from 'process'
 import { OneGraphClient } from 'netlify-onegraph-internal'
 import { v4 as uuidv4 } from 'uuid'
 
-import { OneGraphCliClient, ensureCLISession } from '../../lib/one-graph/cli-client.cjs'
-import netlifyGraph from '../../lib/one-graph/cli-netlify-graph.cjs'
+import { OneGraphCliClient, ensureCLISession } from '../../lib/one-graph/cli-client.mjs'
+import { getNetlifyGraphConfig } from '../../lib/one-graph/cli-netlify-graph.mjs'
 import utils from '../../utils/index.cjs'
 
 const { NETLIFYDEVERR, chalk, error, exit, getToken, log, translateFromEnvelopeToMongo } = utils
 
 const { ensureAppForSite, executeCreateApiTokenMutation } = OneGraphCliClient
-const { getNetlifyGraphConfig } = netlifyGraph
 
 /**
  * Creates the `netlify graph:init` command
