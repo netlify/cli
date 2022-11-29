@@ -78,6 +78,16 @@ or (`DEBUG=true` enables printing stack traces when errors are thrown):
 DEBUG=true ./bin/run.mjs [command]
 ```
 
+### Updating snapshots
+
+To update test snapshots, add the `--update-snapshots` or `-u` flag after a command, separated by ` -- `. For example:
+
+```bash
+npm run test:dev:ava -- -u
+```
+
+[Read the ava snapshot docs for more info](https://github.com/avajs/ava/blob/main/docs/04-snapshot-testing.md)
+
 ## Architecture
 
 The CLI is written using the [commander.js](https://github.com/tj/commander.js/) cli interface and the

@@ -1,4 +1,4 @@
-# Snapshot report for `src/lib/completion/tests/completion.test.cjs`
+# Snapshot report for `tests/unit/lib/completion/completion.test.cjs`
 
 The actual snapshot is saved in `completion.test.cjs.snap`.
 

@@ -9,6 +9,7 @@ coverage
 .vscode
 !.vscode/launch.json
 .github/styles
+.env
 
 # node sdk
 vendor
