@@ -228,7 +228,7 @@
     "prettier": "--ignore-path .gitignore --loglevel=warn \"{src,tools,scripts,site,tests,.github}/**/*.{mjs,cjs,js,md,yml,json,html}\" \"*.{mjs,cjs,js,yml,json,html}\" \".*.{mjs,cjs,js,yml,json,html}\" \"!CHANGELOG.md\" \"!npm-shrinkwrap.json\" \"!**/*/package-lock.json\" \"!.github/**/*.md\""
   },
   "dependencies": {
-    "@netlify/build": "^28.4.2",
+    "@netlify/build": "^28.4.5",
     "@netlify/config": "^20.0.2",
     "@netlify/edge-bundler": "^4.4.2",
     "@netlify/framework-info": "^9.5.2",
