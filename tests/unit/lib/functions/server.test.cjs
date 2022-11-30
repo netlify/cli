@@ -23,7 +23,6 @@ test.before(async () => {
     projectRoot,
     config: {},
     timeouts: { syncFunctions: 1, backgroundFunctions: 1 },
-
     settings: { port: 8888 },
   })
   await functionsRegistry.scan([functionsDirectory])
