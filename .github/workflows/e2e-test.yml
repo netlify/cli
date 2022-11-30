@@ -1,4 +1,4 @@
-name: E2E Testing for CLI
+name: Testing
 
 on:
   push:
@@ -11,6 +11,7 @@ on:
 
 jobs:
   e2e:
+    name: E2E
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
     env:
