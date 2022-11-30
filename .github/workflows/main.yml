@@ -1,4 +1,4 @@
-name: Testing for CLI
+name: Testing
 
 on:
   push:
@@ -7,7 +7,8 @@ on:
     branches: [main]
 
 jobs:
-  build:
+  unit:
+    name: Unit
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -48,7 +49,8 @@ jobs:
       - name: Run vitest unit tests
         run: npm run test:ci:vitest:unit
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
-  vitest:
+  integration:
+    name: Integration
     runs-on: ${{ matrix.os }}
     timeout-minutes: 15
     strategy:
@@ -146,6 +148,7 @@ jobs:
           flags: ${{ steps.test-coverage-flags.outputs.os }},${{ steps.test-coverage-flags.outputs.node }}
         if: '${{ !steps.release-check.outputs.IS_RELEASE }}'
   test:
+    name: Legacy Integration
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     strategy:
@@ -248,7 +251,8 @@ jobs:
           flags: ${{ steps.test-coverage-flags.outputs.os }},${{ steps.test-coverage-flags.outputs.node }}
         if: '${{ !steps.release-check.outputs.IS_RELEASE }}'
   all:
-    needs: [build, test]
+    # This is here strictly to make branch protection rules easier, to avoid changing those based on matrix naming
+    needs: [unit, integration, test]
     runs-on: ubuntu-latest
     steps:
       - name: Log success
