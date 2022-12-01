@@ -1,7 +1,16 @@
 const test = require('ava')
 const sinon = require('sinon')
 
-const { FunctionsRegistry } = require('../../../../src/lib/functions/registry.cjs')
+const { rewiremock } = require('../../../integration/utils/rewiremock.cjs')
+
+const watchDebouncedSpy = sinon.stub()
+// eslint-disable-next-line n/global-require
+const { FunctionsRegistry } = rewiremock.proxy(() => require('../../../../src/lib/functions/registry.cjs'), {
+  '../../../../src/utils/index.cjs': {
+    watchDebounced: watchDebouncedSpy,
+  },
+})
+watchDebouncedSpy.resolves({})
 
 test('registry should only pass functions config to zip-it-and-ship-it', async (t) => {
   const functionsRegistry = new FunctionsRegistry({
@@ -25,4 +34,20 @@ test('registry should only pass functions config to zip-it-and-ship-it', async (
     await setupDirectoryWatcherStub.restore()
     await prepareDirectoryScanStub.restore()
   })
+})
+
+test('should add included_files to watcher', async (t) => {
+  const registry = new FunctionsRegistry({})
+  const func = {
+    name: '',
+    config: { functions: { '*': { included_files: ['include/*', '!include/a.txt'] } } },
+    build() {
+      return { srcFilesDiff: { added: ['myfile'] }, includedFiles: ['include/*'] }
+    },
+  }
+
+  await registry.buildFunctionAndWatchFiles(func)
+
+  t.is(watchDebouncedSpy.callCount, 1)
+  t.deepEqual(watchDebouncedSpy.args[0][0], ['myfile', 'include/*'])
 })

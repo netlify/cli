@@ -1,12 +1,8 @@
 // @ts-check
 import { GraphQL } from 'netlify-onegraph-internal'
 
-import { readLockfile } from '../../lib/one-graph/cli-client.cjs'
-import netlifyGraph from '../../lib/one-graph/cli-netlify-graph.cjs'
-import utils from '../../utils/index.cjs'
-
-const { NETLIFYDEVERR, chalk, error, log } = utils
-const {
+import { readLockfile } from '../../lib/one-graph/cli-client.mjs'
+import {
   buildSchema,
   defaultExampleOperationsDoc,
   extractFunctionsFromOperationDoc,
@@ -15,7 +11,10 @@ const {
   parse,
   readGraphQLOperationsSourceFile,
   readGraphQLSchemaFile,
-} = netlifyGraph
+} from '../../lib/one-graph/cli-netlify-graph.mjs'
+import utils from '../../utils/index.cjs'
+
+const { NETLIFYDEVERR, chalk, error, log } = utils
 
 /**
  * Creates the `netlify graph:library` command

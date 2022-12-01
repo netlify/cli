@@ -8,30 +8,26 @@ import debug from 'debug'
 import merge from 'lodash/merge.js'
 import { NetlifyAPI } from 'netlify'
 
-import { getAgent } from '../lib/http-agent.cjs'
-// TODO: use named imports again once the imported file is esm
-import utils from '../utils/index.cjs'
-
-const {
-  INDENT_WIDTHS,
+import { getAgent } from '../lib/http-agent.mjs'
+import {
   NETLIFY_CYAN,
-  StateConfig,
   USER_AGENT,
+  INDENT_WIDTHS,
   chalk,
   error,
   exit,
-  getGlobalConfig,
   getToken,
-  identify,
   log,
   normalizeConfig,
-  openBrowser,
   padLeft,
   pollForToken,
   sortOptions,
-  track,
   warn,
-} = utils
+} from '../utils/command-helpers.cjs'
+import getGlobalConfig from '../utils/get-global-config.cjs'
+import { openBrowser } from '../utils/open-browser.cjs'
+import StateConfig from '../utils/state-config.mjs'
+import { identify, track } from '../utils/telemetry/index.mjs'
 
 // Netlify CLI client id. Lives in bot@netlify.com
 // TODO: setup client for multiple environments
@@ -77,7 +73,7 @@ const getDuration = function (startTime) {
  * @property {*} config
  * @property {*} cachedConfig
  * @property {*} globalConfig
- * @property {StateConfig} state,
+ * @property {import('../../utils/state-config.mjs').default} state,
  */
 
 /** Base command class that provides tracking and config initialization */

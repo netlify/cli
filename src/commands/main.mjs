@@ -1,14 +1,13 @@
 // @ts-check
-import { readFile } from 'fs/promises'
 import process from 'process'
-import { fileURLToPath } from 'url'
 
 import { Option } from 'commander'
 import inquirer from 'inquirer'
 import { findBestMatch } from 'string-similarity'
 
-// TODO: use named imports again once the imported file is esm
+import getPackageJson from '../utils/get-package-json.mjs'
 import utils from '../utils/index.cjs'
+import { track } from '../utils/telemetry/index.mjs'
 
 import { createAddonsCommand } from './addons/index.mjs'
 import { createApiCommand } from './api/index.mjs'
@@ -26,14 +25,14 @@ import { createLmCommand } from './lm/index.mjs'
 import { createLoginCommand } from './login/index.mjs'
 import { createLogoutCommand } from './logout/index.mjs'
 import { createOpenCommand } from './open/index.mjs'
-import { createRecipesCommand, createRecipesListCommand } from './recipes/index.cjs'
+import { createRecipesCommand } from './recipes/index.mjs'
 import { createSitesCommand } from './sites/index.mjs'
 import { createStatusCommand } from './status/index.mjs'
 import { createSwitchCommand } from './switch/index.mjs'
 import { createUnlinkCommand } from './unlink/index.mjs'
 import { createWatchCommand } from './watch/index.mjs'
 
-const { BANG, NETLIFY_CYAN, USER_AGENT, chalk, error, execa, exit, getGlobalConfig, log, logH1, track, warn } = utils
+const { BANG, NETLIFY_CYAN, USER_AGENT, chalk, error, execa, exit, getGlobalConfig, log, logH1, warn } = utils
 
 const SUGGESTION_TIMEOUT = 1e4
 
@@ -92,7 +91,7 @@ const mainCommand = async function (options, command) {
   if (command.args.length === 0) {
     logH1({ message: `Welcome to the netlify CLI` })
 
-    const pkg = JSON.parse(await readFile(fileURLToPath(new URL('../../package.json', import.meta.url))), 'utf-8')
+    const pkg = await getPackageJson()
 
     const docsMsg = `${chalk.greenBright('Read the docs:')} https://docs.netlify.com/cli/get-started/`
     const supportMsg = `${chalk.magentaBright('Support and bugs:')} ${pkg.bugs.url}`
@@ -166,7 +165,6 @@ export const createMainCommand = () => {
   createEnvCommand(program)
   createFunctionsCommand(program)
   createRecipesCommand(program)
-  createRecipesListCommand(program)
   createGraphCommand(program)
   createInitCommand(program)
   createLinkCommand(program)

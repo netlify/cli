@@ -1,18 +1,17 @@
 // @ts-check
 import { GraphQL } from 'netlify-onegraph-internal'
 
-import netlifyGraph from '../../lib/one-graph/cli-netlify-graph.cjs'
+import {
+  defaultExampleOperationsDoc,
+  extractFunctionsFromOperationDoc,
+  getNetlifyGraphConfig,
+  readGraphQLOperationsSourceFile,
+} from '../../lib/one-graph/cli-netlify-graph.mjs'
 import utils from '../../utils/index.cjs'
 
 const { log } = utils
 
 const { parse } = GraphQL
-const {
-  defaultExampleOperationsDoc,
-  extractFunctionsFromOperationDoc,
-  getNetlifyGraphConfig,
-  readGraphQLOperationsSourceFile,
-} = netlifyGraph
 
 /**
  * Creates the `netlify graph:operations` command

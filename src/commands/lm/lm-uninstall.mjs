@@ -1,5 +1,5 @@
 // @ts-check
-import { uninstall } from '../../utils/lm/install.cjs'
+import { uninstall } from '../../utils/lm/install.mjs'
 
 /**
  * The lm:uninstall command

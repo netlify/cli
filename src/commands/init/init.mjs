@@ -3,12 +3,15 @@ import dotProp from 'dot-prop'
 import inquirer from 'inquirer'
 import isEmpty from 'lodash/isEmpty.js'
 
+import getRepoData from '../../utils/get-repo-data.mjs'
+import { ensureNetlifyIgnore } from '../../utils/gitignore.mjs'
 import utils from '../../utils/index.cjs'
 import { configureRepo } from '../../utils/init/config.cjs'
+import { track } from '../../utils/telemetry/index.mjs'
 import { link } from '../link/index.mjs'
 import { sitesCreate } from '../sites/index.mjs'
 
-const { chalk, ensureNetlifyIgnore, exit, getRepoData, log, logH1, track } = utils
+const { chalk, exit, log, logH1 } = utils
 
 const persistState = ({ siteInfo, state }) => {
   // Save to .netlify/state.json file

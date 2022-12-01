@@ -4,11 +4,13 @@ import inquirer from 'inquirer'
 import pick from 'lodash/pick.js'
 import prettyjson from 'prettyjson'
 
+import getRepoData from '../../utils/get-repo-data.mjs'
 import utils from '../../utils/index.cjs'
 import { configureRepo } from '../../utils/init/config.cjs'
+import { track } from '../../utils/telemetry/index.mjs'
 import { link } from '../link/index.mjs'
 
-const { chalk, error, getRepoData, log, logJson, track, warn } = utils
+const { chalk, error, log, logJson, warn } = utils
 
 export const getSiteNameInput = async (name) => {
   if (!name) {

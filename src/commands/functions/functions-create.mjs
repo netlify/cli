@@ -18,21 +18,11 @@ import ora from 'ora'
 
 import { getAddons, getCurrentAddon, getSiteData } from '../../utils/addons/prepare.mjs'
 import utils from '../../utils/index.cjs'
+import { readRepoURL, validateRepoURL } from '../../utils/read-repo-url.mjs'
 
 const copyTemplateDir = promisify(copyTemplateDirOriginal)
 
-const {
-  NETLIFYDEVERR,
-  NETLIFYDEVLOG,
-  NETLIFYDEVWARN,
-  chalk,
-  error,
-  execa,
-  injectEnvVariables,
-  log,
-  readRepoURL,
-  validateRepoURL,
-} = utils
+const { NETLIFYDEVERR, NETLIFYDEVLOG, NETLIFYDEVWARN, chalk, error, execa, injectEnvVariables, log } = utils
 
 const require = createRequire(import.meta.url)
 

@@ -2,9 +2,9 @@
 import Listr from 'listr'
 
 import utils from '../../utils/index.cjs'
-import { installPlatform } from '../../utils/lm/install.cjs'
-import { checkHelperVersion } from '../../utils/lm/requirements.cjs'
-import { printBanner } from '../../utils/lm/ui.cjs'
+import { installPlatform } from '../../utils/lm/install.mjs'
+import { checkHelperVersion } from '../../utils/lm/requirements.mjs'
+import { printBanner } from '../../utils/lm/ui.mjs'
 
 const { error, execa } = utils
 

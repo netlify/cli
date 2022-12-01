@@ -1,10 +1,11 @@
 // @ts-check
 import { join } from 'path'
 
-import { startFunctionsServer } from '../../lib/functions/server.cjs'
+import { startFunctionsServer } from '../../lib/functions/server.mjs'
+import { getFunctionsDir } from '../../utils/functions/index.mjs'
 import utils from '../../utils/index.cjs'
 
-const { acquirePort, getFunctionsDir, getSiteInformation, injectEnvVariables } = utils
+const { acquirePort, getSiteInformation, injectEnvVariables } = utils
 const DEFAULT_PORT = 9999
 
 /**

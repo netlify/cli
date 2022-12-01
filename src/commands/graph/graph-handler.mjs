@@ -1,11 +1,7 @@
 /* eslint-disable eslint-comments/disable-enable-pair */
 // @ts-check
 
-import netlifyGraph from '../../lib/one-graph/cli-netlify-graph.cjs'
-import utils from '../../utils/index.cjs'
-
-const { error, log } = utils
-const {
+import {
   autocompleteCodegenModules,
   autocompleteOperationNames,
   buildSchema,
@@ -14,7 +10,10 @@ const {
   getCodegenModule,
   getNetlifyGraphConfig,
   readGraphQLSchemaFile,
-} = netlifyGraph
+} from '../../lib/one-graph/cli-netlify-graph.mjs'
+import utils from '../../utils/index.cjs'
+
+const { error, log } = utils
 
 /**
  * Creates the `netlify graph:handler` command

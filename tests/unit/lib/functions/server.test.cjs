@@ -7,7 +7,6 @@ const express = require('express')
 const request = require('supertest')
 
 const { FunctionsRegistry } = require('../../../../src/lib/functions/registry.cjs')
-const { createHandler } = require('../../../../src/lib/functions/server.cjs')
 
 /** @type { express.Express} */
 let app
@@ -29,7 +28,8 @@ test.before(async () => {
   })
   await functionsRegistry.scan([functionsDirectory])
   app = express()
-  app.all('*', createHandler({ functionsRegistry }))
+  const server = await import('../../../../src/lib/functions/server.mjs')
+  app.all('*', server.createHandler({ functionsRegistry }))
 })
 
 test('should get the url as the `rawUrl` inside the function', async (t) => {

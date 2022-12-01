@@ -1,6 +1,6 @@
 // @ts-check
-import { installPlatform } from '../../utils/lm/install.cjs'
-import { printBanner } from '../../utils/lm/ui.cjs'
+import { installPlatform } from '../../utils/lm/install.mjs'
+import { printBanner } from '../../utils/lm/ui.mjs'
 
 /**
  * The lm:install command

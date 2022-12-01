@@ -28,11 +28,11 @@ const postInstall = async () => {
   if (!process.argv[1].includes('.yarn')) {
     const { createMainCommand } = await import('../src/commands/index.mjs')
     // TODO: use destructuring again once the imported file is esm
-    const completion = await import('../src/lib/completion/index.cjs')
+    const { generateAutocompletion } = await import('../src/lib/completion/index.mjs')
 
     // create or update the autocompletion definition
     const program = createMainCommand()
-    completion.createAutocompletion(program)
+    generateAutocompletion(program)
   }
 
   console.log('')

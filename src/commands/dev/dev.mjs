@@ -11,25 +11,29 @@ import StaticServer from 'static-server'
 import stripAnsiCc from 'strip-ansi-control-characters'
 import waitPort from 'wait-port'
 
-import edgeFunctions from '../../lib/edge-functions/index.cjs'
-import { startFunctionsServer } from '../../lib/functions/server.cjs'
+import { promptEditorHelper } from '../../lib/edge-functions/editor-helper.mjs'
+import { startFunctionsServer } from '../../lib/functions/server.mjs'
 import {
   OneGraphCliClient,
   loadCLISession,
   markCliSessionInactive,
   persistNewOperationsDocForSession,
   startOneGraphCLISession,
-} from '../../lib/one-graph/cli-client.cjs'
-import netlifyGraph from '../../lib/one-graph/cli-netlify-graph.cjs'
+} from '../../lib/one-graph/cli-client.mjs'
+import {
+  defaultExampleOperationsDoc,
+  getGraphEditUrlBySiteId,
+  getNetlifyGraphConfig,
+  readGraphQLOperationsSourceFile,
+} from '../../lib/one-graph/cli-netlify-graph.mjs'
 import { startSpinner, stopSpinner } from '../../lib/spinner.cjs'
+import detectServerSettings from '../../utils/detect-server-settings.mjs'
+import { ensureNetlifyIgnore } from '../../utils/gitignore.mjs'
 import utils from '../../utils/index.cjs'
+import { startLiveTunnel } from '../../utils/live-tunnel.mjs'
+import { startProxy } from '../../utils/proxy.mjs'
 
 import { createDevExecCommand } from './dev-exec.mjs'
-
-const { promptEditorHelper } = edgeFunctions
-
-const { defaultExampleOperationsDoc, getGraphEditUrlBySiteId, getNetlifyGraphConfig, readGraphQLOperationsSourceFile } =
-  netlifyGraph
 
 const {
   BANG,
@@ -38,8 +42,6 @@ const {
   NETLIFYDEVLOG,
   NETLIFYDEVWARN,
   chalk,
-  detectServerSettings,
-  ensureNetlifyIgnore,
   error,
   exit,
   generateNetlifyGraphJWT,
@@ -55,8 +57,6 @@ const {
   normalizeContext,
   openBrowser,
   processOnExit,
-  startLiveTunnel,
-  startProxy,
   warn,
   watchDebounced,
 } = utils
@@ -252,8 +252,8 @@ const FRAMEWORK_PORT_TIMEOUT = 6e5
  *
  * @param {object} params
  * @param {*} params.addonsUrls
- * @param {import('../base-command').NetlifyOptions["config"]} params.config
- * @param {import('../base-command').NetlifyOptions["cachedConfig"]['env']} params.env
+ * @param {import('../base-command.mjs').NetlifyOptions["config"]} params.config
+ * @param {import('../base-command.mjs').NetlifyOptions["cachedConfig"]['env']} params.env
  * @param {InspectSettings} params.inspectSettings
  * @param {() => Promise<object>} params.getUpdatedConfig
  * @param {string} params.geolocationMode
@@ -262,7 +262,7 @@ const FRAMEWORK_PORT_TIMEOUT = 6e5
  * @param {boolean} params.offline
  * @param {*} params.site
  * @param {*} params.siteInfo
- * @param {import('../../utils/state-config').StateConfig} params.state
+ * @param {import('../../utils/state-config.mjs').default} params.state
  * @returns
  */
 const startProxyServer = async ({
