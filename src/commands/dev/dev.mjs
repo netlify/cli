@@ -338,8 +338,6 @@ const printBanner = ({ url }) => {
       borderColor: BRAND.COLORS.BLUE,
     }),
   )
-
-  log()
 }
 
 const startPollingForAPIAuthentication = async function (options) {
