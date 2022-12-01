@@ -1,7 +1,7 @@
 // @ts-check
 import utils from '../../utils/index.cjs'
 
-const { chalk, error: logError, log, translateFromEnvelopeToMongo, translateFromMongoToEnvelope } = utils
+const { chalk, error: logErrorOld, log, translateFromEnvelopeToMongo, translateFromMongoToEnvelope } = utils
 
 const safeGetSite = async (api, siteId) => {
   try {
@@ -41,12 +41,12 @@ const envClone = async (options, command) => {
   ])
 
   if (errorFrom) {
-    logError(`Can't find site with id ${chalk.bold(siteId.from)}. Please make sure the site exists.`)
+    logErrorOld(`Can't find site with id ${chalk.bold(siteId.from)}. Please make sure the site exists.`)
     return false
   }
 
   if (errorTo) {
-    logError(`Can't find site with id ${chalk.bold(siteId.to)}. Please make sure the site exists.`)
+    logErrorOld(`Can't find site with id ${chalk.bold(siteId.to)}. Please make sure the site exists.`)
     return false
   }
 

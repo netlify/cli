@@ -15,7 +15,7 @@ test('should pass .env variables to exec command', async (t) => {
       cwd: builder.directory,
     })
 
-    t.is(output.includes('Injected .env file env var: TEST'), true)
+    t.is(output.includes('Loaded .env file env var: TEST'), true)
     t.is(output.includes('TEST=ENV_VAR'), true)
   })
 })
