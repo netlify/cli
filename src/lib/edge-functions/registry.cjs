@@ -413,7 +413,7 @@ class EdgeFunctionsRegistry {
       EdgeFunctionsRegistry.logAddedFunction(func)
     })
 
-    functions.push(log())
+    // to do - need a blank line here somewhere
 
     this.functions = functions
 
