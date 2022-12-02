@@ -30,7 +30,10 @@ const normalize = (inputString, { duration, filePath } = {}) => {
     filePath && optionalNormalizers.filePath,
   ]
 
-  return normalizers.filter(Boolean).reduce((acc, { pattern, value }) => acc.replace(pattern, value), inputString)
+  return normalizers
+    .filter(Boolean)
+    .reduce((acc, { pattern, value }) => acc.replace(pattern, value), inputString)
+    .trim()
 }
 
 module.exports = { normalize }
