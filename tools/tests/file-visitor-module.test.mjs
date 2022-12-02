@@ -32,8 +32,7 @@ test('should visit the files that are dependents from the provided main file bas
   "src/nested/a.js" -> "src/c/index.js";
   "src/c/index.js" -> "src/d.js";
   "tests/a.test.js" -> "src/nested/a.js";
-}
-`,
+}`,
   )
 })
 
@@ -57,8 +56,7 @@ test('should merge the graph with files from a different entry point based on im
   "tests/a.test.js" -> "src/nested/a.js";
   "tests/c.test.js" -> "src/c/index.js";
   "tests/c.test.js" -> "tests/utils.js";
-}
-`,
+}`,
   )
 })
 
