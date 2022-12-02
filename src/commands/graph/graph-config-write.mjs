@@ -3,10 +3,8 @@ import fs from 'fs'
 import path from 'path'
 import process from 'process'
 
-import netlifyGraph from '../../lib/one-graph/cli-netlify-graph.cjs'
+import { getNetlifyGraphConfig } from '../../lib/one-graph/cli-netlify-graph.mjs'
 import utils from '../../utils/index.cjs'
-
-const { getNetlifyGraphConfig } = netlifyGraph
 
 const { NETLIFYDEVERR, chalk, error, log } = utils
 

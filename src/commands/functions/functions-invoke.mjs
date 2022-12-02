@@ -7,9 +7,10 @@ import process from 'process'
 import inquirer from 'inquirer'
 import fetch from 'node-fetch'
 
+import { BACKGROUND, CLOCKWORK_USERAGENT, getFunctions } from '../../utils/functions/index.mjs'
 import utils from '../../utils/index.cjs'
 
-const { BACKGROUND, CLOCKWORK_USERAGENT, NETLIFYDEVWARN, chalk, error, exit, getFunctions } = utils
+const { NETLIFYDEVWARN, chalk, error, exit } = utils
 
 const require = createRequire(import.meta.url)
 

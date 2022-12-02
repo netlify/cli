@@ -11,12 +11,11 @@ import {
   readLockfile,
   readSchemaIdFromLockfile,
   refetchAndGenerateFromOneGraph,
-} from '../../lib/one-graph/cli-client.cjs'
-import netlifyGraph from '../../lib/one-graph/cli-netlify-graph.cjs'
+} from '../../lib/one-graph/cli-client.mjs'
+import { buildSchema, getNetlifyGraphConfig, readGraphQLSchemaFile } from '../../lib/one-graph/cli-netlify-graph.mjs'
 import utils from '../../utils/index.cjs'
 
 const { NETLIFYDEVERR, chalk, error, log, warn } = utils
-const { buildSchema, getNetlifyGraphConfig, readGraphQLSchemaFile } = netlifyGraph
 
 /**
  * Creates the `netlify graph:pull` command

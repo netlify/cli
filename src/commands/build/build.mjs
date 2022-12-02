@@ -1,13 +1,13 @@
 // @ts-check
 import process from 'process'
 
-import { getBuildOptions, runBuild } from '../../lib/build.cjs'
+import { getBuildOptions, runBuild } from '../../lib/build.mjs'
 import utils from '../../utils/index.cjs'
 
 const { error, exit, generateNetlifyGraphJWT, getEnvelopeEnv, getToken, normalizeContext } = utils
 
 /**
- * @param {import('../../lib/build.cjs').BuildConfig} options
+ * @param {import('../../lib/build.mjs').BuildConfig} options
  */
 const checkOptions = ({ cachedConfig: { siteInfo = {} }, token }) => {
   if (!siteInfo.id) {

@@ -1,14 +1,17 @@
 // @ts-check
 import inquirer from 'inquirer'
 
-import { listSites } from '../../lib/api.cjs'
+import { listSites } from '../../lib/api.mjs'
+import getRepoData from '../../utils/get-repo-data.mjs'
+import { ensureNetlifyIgnore } from '../../utils/gitignore.mjs'
 import utils from '../../utils/index.cjs'
+import { track } from '../../utils/telemetry/index.mjs'
 
-const { chalk, ensureNetlifyIgnore, error, exit, getRepoData, log, track } = utils
+const { chalk, error, exit, log } = utils
 
 /**
  *
- * @param {import('../base-command').NetlifyOptions} netlify
+ * @param {import('../base-command.mjs').NetlifyOptions} netlify
  * @param {import('commander').OptionValues} options
  */
 const linkPrompt = async (netlify, options) => {

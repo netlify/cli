@@ -3,9 +3,9 @@ import { fileURLToPath } from 'url'
 
 import { install, uninstall } from 'tabtab'
 
-import { createAutocompletion } from '../../lib/completion/index.cjs'
+import { generateAutocompletion } from '../../lib/completion/index.mjs'
 
-const completer = join(dirname(fileURLToPath(import.meta.url)), '../../lib/completion/script.cjs')
+const completer = join(dirname(fileURLToPath(import.meta.url)), '../../lib/completion/script.mjs')
 
 /**
  * The completion:generate command
@@ -15,7 +15,7 @@ const completer = join(dirname(fileURLToPath(import.meta.url)), '../../lib/compl
 const completionGenerate = async (options, command) => {
   const { parent } = command
 
-  createAutocompletion(parent)
+  generateAutocompletion(parent)
 
   await install({
     name: parent.name(),
