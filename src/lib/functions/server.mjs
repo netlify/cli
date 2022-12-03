@@ -43,7 +43,7 @@ const buildClientContext = function (headers) {
 
 const hasBody = (req) =>
   // copied from is-type package
-  (req.get('transfer-encoding') !== undefined || !Number.isNaN(req.headers['content-length'])) &&
+  (req.header('transfer-encoding') !== undefined || !Number.isNaN(req.header('content-length'))) &&
   // we expect a string or a buffer, because we use the two bodyParsers(text, raw) from express
   // eslint-disable-next-line n/prefer-global/buffer
   (typeof req.body === 'string' || Buffer.isBuffer(req.body))
@@ -69,21 +69,21 @@ export const createHandler = function (options) {
       return
     }
 
-    const isBase64Encoded = shouldBase64Encode(request.get('content-type'))
+    const isBase64Encoded = shouldBase64Encode(request.header('content-type'))
     let body
     if (hasBody(request)) {
       body = request.body.toString(isBase64Encoded ? 'base64' : 'utf8')
     }
 
-    let remoteAddress = request.get('x-forwarded-for') || request.connection.remoteAddress || ''
+    let remoteAddress = request.header('x-forwarded-for') || request.connection.remoteAddress || ''
     remoteAddress = remoteAddress
       .split(remoteAddress.includes('.') ? ':' : ',')
       .pop()
       .trim()
 
     let requestPath = request.path
-    if (request.get('x-netlify-original-pathname')) {
-      requestPath = request.get('x-netlify-original-pathname')
+    if (request.header('x-netlify-original-pathname')) {
+      requestPath = request.header('x-netlify-original-pathname')
       delete request.headers['x-netlify-original-pathname']
     }
     const queryParams = Object.entries(request.query).reduce(
