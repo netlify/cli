@@ -41,6 +41,13 @@ const buildClientContext = function (headers) {
   }
 }
 
+const hasBody = (req) =>
+  // copied from is-type package
+  (req.get('transfer-encoding') !== undefined || !Number.isNaN(req.headers['content-length'])) &&
+  // we expect a string or a buffer, because we use the two bodyParsers(text, raw) from express
+  // eslint-disable-next-line n/prefer-global/buffer
+  (typeof req.body === 'string' || Buffer.isBuffer(req.body))
+
 export const createHandler = function (options) {
   const { config, functionsRegistry } = options
 
@@ -62,8 +69,11 @@ export const createHandler = function (options) {
       return
     }
 
-    const isBase64Encoded = shouldBase64Encode(request.headers['content-type'])
-    const body = request.get('content-length') ? request.body.toString(isBase64Encoded ? 'base64' : 'utf8') : undefined
+    const isBase64Encoded = shouldBase64Encode(request.get('content-type'))
+    let body
+    if (hasBody(request)) {
+      body = request.body.toString(isBase64Encoded ? 'base64' : 'utf8')
+    }
 
     let remoteAddress = request.get('x-forwarded-for') || request.connection.remoteAddress || ''
     remoteAddress = remoteAddress
