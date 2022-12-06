@@ -6,7 +6,7 @@ import prettyjson from 'prettyjson'
 
 import getRepoData from '../../utils/get-repo-data.mjs'
 import utils from '../../utils/index.cjs'
-import { configureRepo } from '../../utils/init/config.cjs'
+import { configureRepo } from '../../utils/init/config.mjs'
 import { track } from '../../utils/telemetry/index.mjs'
 import { link } from '../link/index.mjs'
 

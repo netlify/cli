@@ -7,7 +7,7 @@ import utils from '../../utils/index.cjs'
 
 import { handleBackgroundFunction, handleBackgroundFunctionResult } from './background.cjs'
 import { createFormSubmissionHandler } from './form-submissions-handler.mjs'
-import { FunctionsRegistry } from './registry.cjs'
+import { FunctionsRegistry } from './registry.mjs'
 import { handleScheduledFunction } from './scheduled.mjs'
 import { handleSynchronousFunction } from './synchronous.cjs'
 import { shouldBase64Encode } from './utils.cjs'

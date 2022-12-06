@@ -1,6 +1,7 @@
 import utils from '../../utils/index.cjs'
+import openBrowser from '../../utils/open-browser.mjs'
 
-const { error, exit, log, openBrowser, warn } = utils
+const { error, exit, log, warn } = utils
 
 /**
  * The open:site command

@@ -24,7 +24,7 @@ import {
   warn,
 } from '../utils/command-helpers.cjs'
 import getGlobalConfig from '../utils/get-global-config.cjs'
-import { openBrowser } from '../utils/open-browser.cjs'
+import openBrowser from '../utils/open-browser.mjs'
 import StateConfig from '../utils/state-config.mjs'
 import { identify, track } from '../utils/telemetry/index.mjs'
 

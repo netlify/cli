@@ -2,9 +2,10 @@
 import process from 'process'
 
 import { getBuildOptions, runBuild } from '../../lib/build.mjs'
+import { getEnvelopeEnv, normalizeContext } from '../../utils/env/index.mjs'
 import utils from '../../utils/index.cjs'
 
-const { error, exit, generateNetlifyGraphJWT, getEnvelopeEnv, getToken, normalizeContext } = utils
+const { error, exit, generateNetlifyGraphJWT, getToken } = utils
 
 /**
  * @param {import('../../lib/build.mjs').BuildConfig} options

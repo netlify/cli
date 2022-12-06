@@ -15,25 +15,14 @@ import { getBuildOptions, runBuild } from '../../lib/build.mjs'
 import { normalizeFunctionsConfig } from '../../lib/functions/config.cjs'
 import { getLogMessage } from '../../lib/log.cjs'
 import { startSpinner, stopSpinner } from '../../lib/spinner.cjs'
+import { deploySite } from '../../utils/deploy/deploy-site.mjs'
 import { getFunctionsManifestPath, getInternalFunctionsDir } from '../../utils/functions/index.mjs'
 import utils from '../../utils/index.cjs'
+import openBrowser from '../../utils/open-browser.mjs'
 import { link } from '../link/index.mjs'
 import { sitesCreate } from '../sites/index.mjs'
 
-const {
-  NETLIFYDEV,
-  NETLIFYDEVERR,
-  NETLIFYDEVLOG,
-  chalk,
-  deploySite,
-  error,
-  exit,
-  getToken,
-  log,
-  logJson,
-  openBrowser,
-  warn,
-} = utils
+const { NETLIFYDEV, NETLIFYDEVERR, NETLIFYDEVLOG, chalk, error, exit, getToken, log, logJson, warn } = utils
 
 const DEFAULT_DEPLOY_TIMEOUT = 1.2e6
 

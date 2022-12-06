@@ -9,7 +9,7 @@ import {
   readGraphQLOperationsSourceFile,
 } from '../../lib/one-graph/cli-netlify-graph.mjs'
 import utils from '../../utils/index.cjs'
-import { openBrowser } from '../../utils/open-browser.cjs'
+import openBrowser from '../../utils/open-browser.mjs'
 
 const { NETLIFYDEVERR, chalk, error, log } = utils
 const { ensureAppForSite, executeCreatePersistedQueryMutation } = OneGraphCliClient

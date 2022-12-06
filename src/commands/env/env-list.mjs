@@ -6,10 +6,10 @@ import { Option } from 'commander'
 import inquirer from 'inquirer'
 import logUpdate from 'log-update'
 
+import { AVAILABLE_CONTEXTS, getEnvelopeEnv, getHumanReadableScopes, normalizeContext } from '../../utils/env/index.mjs'
 import utils from '../../utils/index.cjs'
 
-const { AVAILABLE_CONTEXTS, chalk, error, getEnvelopeEnv, getHumanReadableScopes, log, logJson, normalizeContext } =
-  utils
+const { chalk, error, log, logJson } = utils
 
 const MASK_LENGTH = 50
 const MASK = '*'.repeat(MASK_LENGTH)

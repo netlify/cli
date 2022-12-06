@@ -20,13 +20,17 @@ import locatePath from 'locate-path'
 import pFilter from 'p-filter'
 import toReadableStream from 'to-readable-stream'
 
-import edgeFunctions from '../lib/edge-functions/index.cjs'
+import {
+  handleProxyRequest,
+  initializeProxy as initializeEdgeFunctionsProxy,
+  isEdgeFunctionsRequest,
+} from '../lib/edge-functions/proxy.mjs'
 import { fileExistsAsync, isFileAsync } from '../lib/fs.cjs'
 import renderErrorTemplate from '../lib/render-error-remplate.cjs'
 
 import { NETLIFYDEVLOG, NETLIFYDEVWARN } from './command-helpers.cjs'
 import createStreamPromise from './create-stream-promise.mjs'
-import { headersForPath, parseHeaders } from './headers.cjs'
+import { headersForPath, parseHeaders } from './headers.mjs'
 import { createRewriter, onChanges } from './rules-proxy.cjs'
 
 const decompress = util.promisify(zlib.gunzip)
@@ -338,15 +342,15 @@ const initializeProxy = async function ({ configPath, distDir, host, port, proje
       'Content-Type': 'text/plain',
     })
 
-    const message = edgeFunctions.isEdgeFunctionsRequest(req)
+    const message = isEdgeFunctionsRequest(req)
       ? 'There was an error with an Edge Function. Please check the terminal for more details.'
       : 'Could not proxy request.'
 
     res.end(message)
   })
   proxy.on('proxyReq', (proxyReq, req) => {
-    if (edgeFunctions.isEdgeFunctionsRequest(req)) {
-      edgeFunctions.handleProxyRequest(req, proxyReq)
+    if (isEdgeFunctionsRequest(req)) {
+      handleProxyRequest(req, proxyReq)
     }
 
     // eslint-disable-next-line no-underscore-dangle
@@ -428,7 +432,7 @@ const initializeProxy = async function ({ configPath, distDir, host, port, proje
 
       const isUncaughtError = proxyRes.headers['x-nf-uncaught-error'] === '1'
 
-      if (edgeFunctions.isEdgeFunctionsRequest(req) && isUncaughtError) {
+      if (isEdgeFunctionsRequest(req) && isUncaughtError) {
         const acceptsHtml = req.headers && req.headers.accept && req.headers.accept.includes('text/html')
         const decompressedBody = await decompress(responseBody)
         const formattedBody = formatEdgeFunctionError(decompressedBody, acceptsHtml)
@@ -541,7 +545,7 @@ export const startProxy = async function ({
   state,
 }) {
   const functionsServer = settings.functionsPort ? `http://127.0.0.1:${settings.functionsPort}` : null
-  const edgeFunctionsProxy = await edgeFunctions.initializeProxy({
+  const edgeFunctionsProxy = await initializeEdgeFunctionsProxy({
     config,
     configPath,
     env,

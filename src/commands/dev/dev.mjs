@@ -28,9 +28,11 @@ import {
 } from '../../lib/one-graph/cli-netlify-graph.mjs'
 import { startSpinner, stopSpinner } from '../../lib/spinner.cjs'
 import detectServerSettings from '../../utils/detect-server-settings.mjs'
+import { getEnvelopeEnv, normalizeContext } from '../../utils/env/index.mjs'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.mjs'
 import utils from '../../utils/index.cjs'
 import { startLiveTunnel } from '../../utils/live-tunnel.mjs'
+import openBrowser from '../../utils/open-browser.mjs'
 import { startProxy } from '../../utils/proxy.mjs'
 
 import { createDevExecCommand } from './dev-exec.mjs'
@@ -45,14 +47,11 @@ const {
   error,
   exit,
   generateNetlifyGraphJWT,
-  getEnvelopeEnv,
   getSiteInformation,
   getToken,
   injectEnvVariables,
   log,
   normalizeConfig,
-  normalizeContext,
-  openBrowser,
   processOnExit,
   warn,
   watchDebounced,
