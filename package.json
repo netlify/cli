@@ -355,7 +355,7 @@
     "p-timeout": "^4.0.0",
     "rewiremock": "^3.14.3",
     "serialize-javascript": "^6.0.0",
-    "sinon": "^14.0.0",
+    "sinon": "^15.0.0",
     "strip-ansi": "^6.0.0",
     "supertest": "^6.1.6",
     "temp-dir": "^2.0.0",
