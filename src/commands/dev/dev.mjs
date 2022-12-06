@@ -516,7 +516,7 @@ const dev = async (options, command) => {
 
   const devCommand = async () => {
     const { ipVersion } = await startFrameworkServer({ settings })
-    // eslint-disable-next-line no-magic-numbers
+
     settings.frameworkHost = ipVersion === 6 ? '::1' : '127.0.0.1'
   }
   const startDevOptions = getBuildOptions({

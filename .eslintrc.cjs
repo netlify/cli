@@ -26,6 +26,7 @@ module.exports = {
     'import/extensions': [2, 'ignorePackages'],
     'n/no-process-exit': 0,
     'n/no-sync': 0,
+    'no-magic-numbers': 'off',
     'sort-destructure-keys/sort-destructure-keys': 2,
     'unicorn/consistent-destructuring': 0,
     // TODO: harmonize with filename snake_case in other Netlify Dev projects

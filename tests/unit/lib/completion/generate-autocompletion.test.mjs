@@ -1,9 +1,10 @@
 // @ts-check
 import fs from 'fs'
 
-import test from 'ava'
 import { Argument } from 'commander'
-import sinon from 'sinon'
+import { describe, expect, test, vi } from 'vitest'
+
+import generateAutocompletion from '../../../../src/lib/completion/generate-autocompletion.mjs'
 
 const createTestCommand = async () => {
   const { default: BaseCommand } = await import('../../../../src/commands/base-command.mjs')
@@ -27,24 +28,22 @@ const createTestCommand = async () => {
   return program
 }
 
-test.afterEach(() => {
-  // eslint-disable-next-line import/no-named-as-default-member
-  sinon.restore()
-})
+describe('generateAutocompletion', () => {
+  test('should generate a completion file', async () => {
+    vi.spyOn(fs, 'writeFileSync').mockImplementation(() => {})
+    const program = await createTestCommand()
 
-test('should generate a completion file', async (t) => {
-  // eslint-disable-next-line import/no-named-as-default-member
-  const stub = sinon.stub(fs, 'writeFileSync').callsFake(() => {})
-  const { default: generateAutocompletion } = await import('../../../../src/lib/completion/generate-autocompletion.mjs')
-  const program = await createTestCommand()
+    generateAutocompletion(program)
 
-  generateAutocompletion(program)
+    expect(fs.writeFileSync).toHaveBeenCalledOnce()
 
-  // @ts-ignore
-  t.true(stub.getCall(0).args[0].endsWith('autocompletion.json'), 'should write a autocompletion file')
+    expect(fs.writeFileSync).toHaveBeenCalledWith(
+      expect.stringMatching(/autocompletion\.json$/),
+      expect.anything(),
+      'utf-8',
+    )
+    expect(fs.writeFileSync.lastCall).toMatchSnapshot()
 
-  // @ts-ignore
-  t.snapshot(JSON.parse(stub.getCall(0).args[1]))
-
-  stub.restore()
+    fs.writeFileSync.mockRestore()
+  })
 })

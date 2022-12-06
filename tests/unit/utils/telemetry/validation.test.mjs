@@ -1,71 +1,73 @@
-import test from 'ava'
+import { describe, expect, test } from 'vitest'
 
 import isValidEventName from '../../../../src/utils/telemetry/validation.mjs'
 
 const getEventForProject = (projectName, eventName) => `${projectName}:${eventName}`
 
-test('validate failed with eventName without underscore', (t) => {
-  const projectName = 'testProject'
-  const event = 'test'
-  const config = {
-    projectName,
-    objects: ['test'],
-  }
-  const result = isValidEventName(getEventForProject(projectName, event), config)
-  t.is(result, false)
-})
+describe('isValidEventName', () => {
+  test('validate failed with eventName without underscore', () => {
+    const projectName = 'testProject'
+    const event = 'test'
+    const config = {
+      projectName,
+      objects: ['test'],
+    }
+    const result = isValidEventName(getEventForProject(projectName, event), config)
+    expect(result).toBe(false)
+  })
 
-test('validate failed with eventName without colon', (t) => {
-  const projectName = 'testProject'
-  const event = 'test_eventName'
-  const config = {
-    projectName,
-    objects: ['test'],
-  }
-  const result = isValidEventName(`${projectName}${event}`, config)
-  t.is(result, false)
-})
+  test('validate failed with eventName without colon', () => {
+    const projectName = 'testProject'
+    const event = 'test_eventName'
+    const config = {
+      projectName,
+      objects: ['test'],
+    }
+    const result = isValidEventName(`${projectName}${event}`, config)
+    expect(result).toBe(false)
+  })
 
-test('validate pass with eventName with only underscore', (t) => {
-  const projectName = 'testProject'
-  const event = 'test_name'
-  const config = {
-    projectName,
-    objects: ['test'],
-  }
-  const result = isValidEventName(getEventForProject(projectName, event), config)
-  t.is(result, true)
-})
+  test('validate pass with eventName with only underscore', () => {
+    const projectName = 'testProject'
+    const event = 'test_name'
+    const config = {
+      projectName,
+      objects: ['test'],
+    }
+    const result = isValidEventName(getEventForProject(projectName, event), config)
+    expect(result).toBe(true)
+  })
 
-test('validate pass with eventName with underscore and camelCase', (t) => {
-  const projectName = 'testProject'
-  const event = 'test_eventName'
-  const config = {
-    projectName,
-    objects: ['test'],
-  }
-  const result = isValidEventName(getEventForProject(projectName, event), config)
-  t.is(result, true)
-})
+  test('validate pass with eventName with underscore and camelCase', () => {
+    const projectName = 'testProject'
+    const event = 'test_eventName'
+    const config = {
+      projectName,
+      objects: ['test'],
+    }
+    const result = isValidEventName(getEventForProject(projectName, event), config)
+    expect(result).toBe(true)
+  })
 
-test('project in event should be pass in config', (t) => {
-  const projectName = 'anotherProjectName'
-  const event = 'test_eventName'
-  const config = {
-    projectName: 'projectName',
-    objects: ['test'],
-  }
-  const result = isValidEventName(getEventForProject(projectName, event), config)
-  t.is(result, false)
-})
+  test('project in event should be pass in config', () => {
+    const projectName = 'anotherProjectName'
+    const event = 'test_eventName'
+    const config = {
+      projectName: 'projectName',
+      objects: ['test'],
+    }
+    const result = isValidEventName(getEventForProject(projectName, event), config)
+    expect(result).toBe(false)
+  })
 
-test('object in event should be pass in config.objects', (t) => {
-  const projectName = 'testProject'
-  const event = 'event_eventName'
-  const config = {
-    projectName,
-    objects: ['test'],
-  }
-  const result = isValidEventName(getEventForProject(projectName, event), config)
-  t.is(result, false)
+  test('object in event should be pass in config.objects', () => {
+    const projectName = 'testProject'
+    const event = 'event_eventName'
+    const config = {
+      projectName,
+      objects: ['test'],
+    }
+    const result = isValidEventName(getEventForProject(projectName, event), config)
+    expect(result).toBe(false)
+  })
 })

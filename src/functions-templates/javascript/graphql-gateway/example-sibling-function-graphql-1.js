@@ -17,13 +17,11 @@ const typeDefs = gql`
   }
 `
 
-/* eslint-disable no-magic-numbers */
 const authors = [
   { id: 1, name: 'Terry Pratchett', age: 67 },
   { id: 2, name: 'Stephen King', age: 71 },
   { id: 3, name: 'JK Rowling', age: 53 },
 ]
-/* eslint-enable no-magic-numbers */
 
 const resolvers = {
   Query: {

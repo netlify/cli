@@ -1,4 +1,4 @@
-name: Testing for CLI
+name: Tests
 
 on:
   push:
@@ -7,45 +7,8 @@ on:
     branches: [main]
 
 jobs:
-  build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macOS-latest, windows-latest]
-        node-version: ['*']
-    steps:
-      # Sets an output parameter if this is a release PR
-      - name: Check for release
-        id: release-check
-        # For windows we have to use $env:
-        run: |-
-          echo "IS_RELEASE=true" >> $GITHUB_OUTPUT
-          echo "IS_RELEASE=true" >> $env:GITHUB_OUTPUT
-        if: "${{ startsWith(github.head_ref, 'release-') }}"
-      - name: Git checkout
-        uses: actions/checkout@v3
-        if: '${{!steps.release-check.outputs.IS_RELEASE}}'
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
-          cache-dependency-path: 'npm-shrinkwrap.json'
-          check-latest: true
-        if: '${{!steps.release-check.outputs.IS_RELEASE}}'
-      - name: Install core dependencies
-        run: npm ci --no-audit
-        if: '${{!steps.release-check.outputs.IS_RELEASE}}'
-      - name: Install site dependencies
-        run: npm run site:build:install
-        if: '${{!steps.release-check.outputs.IS_RELEASE}}'
-      - name: Linting
-        run: npm run format:ci
-        if: '${{!steps.release-check.outputs.IS_RELEASE}}'
-      - name: Run unit tests
-        run: npm run test:ci:ava:unit
-        if: '${{!steps.release-check.outputs.IS_RELEASE}}'
-  test:
+  integration:
+    name: Legacy Integration
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     strategy:
@@ -147,9 +110,3 @@ jobs:
           file: coverage/coverage-final.json
           flags: ${{ steps.test-coverage-flags.outputs.os }},${{ steps.test-coverage-flags.outputs.node }}
         if: '${{ !steps.release-check.outputs.IS_RELEASE }}'
-  all:
-    needs: [build, test]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Log success
-        run: echo "Finished running all tests"
