@@ -287,6 +287,57 @@ test('should pass body to functions event for POST requests when redirecting', a
   })
 })
 
+test('should pass body to functions event for POST requests with passthrough edge function', async (t) => {
+  await withSiteBuilder('site-with-post-echo-function', async (builder) => {
+    builder
+      .withNetlifyToml({
+        config: {
+          functions: { directory: 'functions' },
+          redirects: [{ from: '/api/*', to: '/.netlify/functions/:splat', status: 200 }],
+          edge_functions: [
+            {
+              function: 'passthrough',
+              path: '/*',
+            },
+          ],
+        },
+      })
+      .withEdgeFunction({
+        name: 'passthrough',
+        handler: async (_, context) => context.next(),
+      })
+      .withFunction({
+        path: 'echo.js',
+        handler: async (event) => ({
+          statusCode: 200,
+          body: JSON.stringify(event),
+        }),
+      })
+
+    await builder.buildAsync()
+
+    await withDevServer({ cwd: builder.directory }, async (server) => {
+      const response = await got
+        .post(`${server.url}/api/echo?ding=dong`, {
+          headers: {
+            'content-type': 'application/x-www-form-urlencoded',
+          },
+          body: 'some=thing',
+        })
+        .json()
+
+      t.is(response.body, 'some=thing')
+      t.is(response.headers.host, `${server.host}:${server.port}`)
+      t.is(response.headers['content-type'], 'application/x-www-form-urlencoded')
+      t.is(response.headers['transfer-encoding'], 'chunked')
+      t.is(response.httpMethod, 'POST')
+      t.is(response.isBase64Encoded, false)
+      t.is(response.path, '/api/echo')
+      t.deepEqual(response.queryStringParameters, { ding: 'dong' })
+    })
+  })
+})
+
 test('should return an empty body for a function with no body when redirecting', async (t) => {
   await withSiteBuilder('site-with-no-body-function', async (builder) => {
     builder
