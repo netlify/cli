@@ -10,4 +10,4 @@ const createDeferred = () => {
   return { promise, reject: rejectDeferred, resolve: resolveDeferred }
 }
 
-module.exports = { createDeferred }
+export default createDeferred

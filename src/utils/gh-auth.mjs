@@ -8,7 +8,7 @@ import getPort from 'get-port'
 import inquirer from 'inquirer'
 
 import { log } from './command-helpers.cjs'
-import { createDeferred } from './deferred.cjs'
+import createDeferred from './create-deferred.mjs'
 import openBrowser from './open-browser.mjs'
 
 const SERVER_PORT = 3000
