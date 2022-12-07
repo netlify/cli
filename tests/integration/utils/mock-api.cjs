@@ -73,7 +73,7 @@ const getEnvironmentVariables = ({ apiUrl }) => ({
 
 const getCLIOptions = ({ apiUrl, builder: { directory: cwd }, extendEnv = true, env = {} }) => ({
   cwd,
-  env: { ...getEnvironmentVariables(apiUrl), ...env },
+  env: { ...getEnvironmentVariables({ apiUrl }), ...env },
   extendEnv,
 })
 
