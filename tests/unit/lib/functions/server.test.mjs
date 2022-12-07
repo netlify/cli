@@ -4,10 +4,15 @@ import { join } from 'path'
 
 import express from 'express'
 import got from 'got'
-import { afterAll, beforeAll, describe, expect, test } from 'vitest'
+import { afterAll, beforeAll, describe, expect, test, vi } from 'vitest'
 
 import { FunctionsRegistry } from '../../../../src/lib/functions/registry.mjs'
 import { createHandler } from '../../../../src/lib/functions/server.mjs'
+
+vi.mock('../../../../src/utils/command-helpers.cjs', async () => ({
+  ...(await vi.importActual('../../../../src/utils/command-helpers.cjs')),
+  log: () => {},
+}))
 
 describe('createHandler', () => {
   let server
@@ -31,11 +36,9 @@ describe('createHandler', () => {
     app.all('*', createHandler({ functionsRegistry }))
 
     return await new Promise((resolve) => {
-      server = app.listen(() => {
-        console.log('listening')
-        return resolve()
-      })
+      server = app.listen(resolve)
       const { port } = server.address()
+
       serverAddress = `http://localhost:${port}`
     })
   })

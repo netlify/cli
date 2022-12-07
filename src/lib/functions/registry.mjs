@@ -3,14 +3,20 @@ import { mkdir } from 'fs/promises'
 import { extname, isAbsolute, join } from 'path'
 import { env } from 'process'
 
-import { watchDebounced } from '../../utils/command-helpers.cjs'
-import utils from '../../utils/index.cjs'
+import {
+  chalk,
+  getTerminalLink,
+  log,
+  NETLIFYDEVERR,
+  NETLIFYDEVLOG,
+  NETLIFYDEVWARN,
+  warn,
+  watchDebounced,
+} from '../../utils/command-helpers.cjs'
 import { getLogMessage } from '../log.cjs'
 
-import { NetlifyFunction } from './netlify-function.cjs'
-import runtimes from './runtimes/index.cjs'
-
-const { NETLIFYDEVERR, NETLIFYDEVLOG, NETLIFYDEVWARN, chalk, getTerminalLink, log, warn } = utils
+import NetlifyFunction from './netlify-function.mjs'
+import runtimes from './runtimes/index.mjs'
 
 const ZIP_EXTENSION = '.zip'
 

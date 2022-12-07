@@ -1,14 +1,14 @@
 // @ts-check
-const { readFile } = require('fs').promises
-const { resolve } = require('path')
+import { readFile } from 'fs/promises'
+import { resolve } from 'path'
 
-const minimist = require('minimist')
+import minimist from 'minimist'
 
-const { execa } = require('../../../../../utils/index.cjs')
-const { fileExistsAsync } = require('../../../../fs.cjs')
-const { memoizedBuild } = require('../../../memoized-build.cjs')
+import execa from '../../../../../utils/execa.cjs'
+import { fileExistsAsync } from '../../../../fs.cjs'
+import { memoizedBuild } from '../../../memoized-build.mjs'
 
-const detectNetlifyLambda = async function ({ packageJson } = {}) {
+export const detectNetlifyLambda = async function ({ packageJson } = {}) {
   const { dependencies, devDependencies, scripts } = packageJson || {}
   if (!((dependencies && dependencies['netlify-lambda']) || (devDependencies && devDependencies['netlify-lambda']))) {
     return false
@@ -19,7 +19,11 @@ const detectNetlifyLambda = async function ({ packageJson } = {}) {
   // eslint-disable-next-line fp/no-loops
   for (const [key, script] of matchingScripts) {
     // E.g. ["netlify-lambda", "build", "functions/folder"]
-    const match = minimist(script.split(' '))
+    const match = minimist(script.split(' '), {
+      // these are all valid options for netlify-lambda
+      boolean: ['s', 'static'],
+      string: ['c', 'config', 'p', 'port', 'b', 'babelrc', 't', 'timeout'],
+    })
     // We are not interested in 'netlify-lambda' and 'build' commands
     const functionDirectories = match._.slice(2)
     if (functionDirectories.length === 1) {
@@ -54,7 +58,7 @@ const detectNetlifyLambda = async function ({ packageJson } = {}) {
   return false
 }
 
-module.exports = async function handler() {
+export default async function handler() {
   const exists = await fileExistsAsync('package.json')
   if (!exists) {
     return false
@@ -64,4 +68,3 @@ module.exports = async function handler() {
   const packageJson = JSON.parse(content)
   return detectNetlifyLambda({ packageJson })
 }
-module.exports.detectNetlifyLambda = detectNetlifyLambda

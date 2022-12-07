@@ -1,9 +1,11 @@
-const test = require('ava')
+import { describe, test } from 'vitest'
 
-const { getLanguage } = require('../../../src/utils/rules-proxy.cjs')
+const { getLanguage } = require('../../../src/utils/rules-proxy.mjs')
 
-test('getLanguage', (t) => {
-  const language = getLanguage({ 'accept-language': 'ur' })
+describe('getLanguage', () => {
+  test('detects language', (t) => {
+    const language = getLanguage({ 'accept-language': 'ur' })
 
-  t.is(language, 'ur')
+    t.is(language, 'ur')
+  })
 })

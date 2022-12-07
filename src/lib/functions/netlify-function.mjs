@@ -1,9 +1,8 @@
 // @ts-check
-const CronParser = require('cron-parser')
+import CronParser from 'cron-parser'
 
-const { error: errorExit } = require('../../utils/command-helpers.cjs')
-
-const BACKGROUND_SUFFIX = '-background'
+import { error as errorExit } from '../../utils/command-helpers.cjs'
+import { BACKGROUND } from '../../utils/functions/get-functions.mjs'
 
 // Returns a new set with all elements of `setA` that don't exist in `setB`.
 const difference = (setA, setB) => new Set([...setA].filter((item) => !setB.has(item)))
@@ -15,7 +14,7 @@ const getNextRun = function (schedule) {
   return cron.next().toDate()
 }
 
-class NetlifyFunction {
+export default class NetlifyFunction {
   constructor({
     config,
     directory,
@@ -40,7 +39,7 @@ class NetlifyFunction {
 
     // Determines whether this is a background function based on the function
     // name.
-    this.isBackground = name.endsWith(BACKGROUND_SUFFIX)
+    this.isBackground = name.endsWith(BACKGROUND)
 
     const functionConfig = config.functions && config.functions[name]
     this.schedule = functionConfig && functionConfig.schedule
@@ -143,5 +142,3 @@ class NetlifyFunction {
     return url.href
   }
 }
-
-module.exports = { NetlifyFunction }

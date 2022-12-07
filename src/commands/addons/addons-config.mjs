@@ -8,10 +8,8 @@ import { ADDON_VALIDATION, prepareAddonCommand } from '../../utils/addons/prepar
 import generatePrompts from '../../utils/addons/prompts.mjs'
 import { renderConfigValues } from '../../utils/addons/render.mjs'
 import { missingConfigValues, requiredConfigValues, updateConfigValues } from '../../utils/addons/validation.mjs'
-import utils from '../../utils/index.cjs'
+import { chalk, error, log } from '../../utils/command-helpers.cjs'
 import { parseRawFlags } from '../../utils/parse-raw-flags.mjs'
-
-const { chalk, error, log } = utils
 
 const update = async function ({ addonName, api, currentConfig, instanceId, newConfig, siteId }) {
   const codeDiff = diffValues(currentConfig, newConfig)

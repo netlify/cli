@@ -5,16 +5,15 @@ import pick from 'lodash/pick.js'
 import parseGitHubUrl from 'parse-github-url'
 import { render } from 'prettyjson'
 
+import { chalk, error, getTerminalLink, log, logJson, warn } from '../../utils/command-helpers.cjs'
+import execa from '../../utils/execa.cjs'
 import getRepoData from '../../utils/get-repo-data.mjs'
-import utils from '../../utils/index.cjs'
 import { getGitHubToken } from '../../utils/init/config-github.mjs'
 import { configureRepo } from '../../utils/init/config.mjs'
 import { createRepo, getTemplatesFromGitHub, validateTemplate } from '../../utils/sites/utils.mjs'
 import { track } from '../../utils/telemetry/index.mjs'
 
 import { getSiteNameInput } from './sites-create.mjs'
-
-const { chalk, error, execa, getTerminalLink, log, logJson, warn } = utils
 
 export const fetchTemplates = async (token) => {
   const templatesFromGithubOrg = await getTemplatesFromGitHub(token)

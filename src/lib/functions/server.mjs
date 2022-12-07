@@ -5,12 +5,12 @@ import jwtDecode from 'jwt-decode'
 import { CLOCKWORK_USERAGENT, getInternalFunctionsDir } from '../../utils/functions/index.mjs'
 import utils from '../../utils/index.cjs'
 
-import { handleBackgroundFunction, handleBackgroundFunctionResult } from './background.cjs'
+import { handleBackgroundFunction, handleBackgroundFunctionResult } from './background.mjs'
 import { createFormSubmissionHandler } from './form-submissions-handler.mjs'
 import { FunctionsRegistry } from './registry.mjs'
 import { handleScheduledFunction } from './scheduled.mjs'
-import { handleSynchronousFunction } from './synchronous.cjs'
-import { shouldBase64Encode } from './utils.cjs'
+import { handleSynchronousFunction } from './synchronous.mjs'
+import { shouldBase64Encode } from './utils.mjs'
 
 const { NETLIFYDEVERR, NETLIFYDEVLOG, error: errorExit, generateNetlifyGraphJWT, log } = utils
 

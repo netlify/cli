@@ -1,9 +1,14 @@
 import { resolve } from 'path'
 
-import { afterEach, beforeEach, describe, expect, test } from 'vitest'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 
 import { headersForPath, parseHeaders } from '../../../src/utils/headers.mjs'
 import { createSiteBuilder } from '../../integration/utils/site-builder.cjs'
+
+vi.mock('../../../src/utils/command-helpers.cjs', async () => ({
+  ...(await vi.importActual('../../../src/utils/command-helpers.cjs')),
+  log: () => {},
+}))
 
 const headers = [
   { path: '/', headers: ['X-Frame-Options: SAMEORIGIN'] },

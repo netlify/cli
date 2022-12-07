@@ -1,11 +1,11 @@
 // @ts-check
-const { stdout } = require('process')
+import { stdout } from 'process'
 
-const { getBinaryPath: getFunctionsProxyPath } = require('@netlify/local-functions-proxy')
+import { getBinaryPath as getFunctionsProxyPath } from '@netlify/local-functions-proxy'
 
-const { execa } = require('../../utils/index.cjs')
+import execa from '../../utils/execa.cjs'
 
-const runFunctionsProxy = ({ binaryPath, context, directory, event, name, timeout }) => {
+export const runFunctionsProxy = ({ binaryPath, context, directory, event, name, timeout }) => {
   const functionsProxyPath = getFunctionsProxyPath()
   const requestData = {
     resource: '',
@@ -43,5 +43,3 @@ const runFunctionsProxy = ({ binaryPath, context, directory, event, name, timeou
 
   return proxyProcess
 }
-
-module.exports = { runFunctionsProxy }

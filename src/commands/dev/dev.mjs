@@ -27,35 +27,30 @@ import {
   readGraphQLOperationsSourceFile,
 } from '../../lib/one-graph/cli-netlify-graph.mjs'
 import { startSpinner, stopSpinner } from '../../lib/spinner.cjs'
+import {
+  BANG,
+  chalk,
+  error,
+  exit,
+  getToken,
+  log,
+  NETLIFYDEV,
+  NETLIFYDEVERR,
+  NETLIFYDEVLOG,
+  NETLIFYDEVWARN,
+  normalizeConfig,
+  warn,
+  watchDebounced,
+} from '../../utils/command-helpers.cjs'
 import detectServerSettings from '../../utils/detect-server-settings.mjs'
+import { generateNetlifyGraphJWT, getSiteInformation, injectEnvVariables, processOnExit } from '../../utils/dev.cjs'
 import { getEnvelopeEnv, normalizeContext } from '../../utils/env/index.mjs'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.mjs'
-import utils from '../../utils/index.cjs'
 import { startLiveTunnel } from '../../utils/live-tunnel.mjs'
 import openBrowser from '../../utils/open-browser.mjs'
 import { startProxy } from '../../utils/proxy.mjs'
 
 import { createDevExecCommand } from './dev-exec.mjs'
-
-const {
-  BANG,
-  NETLIFYDEV,
-  NETLIFYDEVERR,
-  NETLIFYDEVLOG,
-  NETLIFYDEVWARN,
-  chalk,
-  error,
-  exit,
-  generateNetlifyGraphJWT,
-  getSiteInformation,
-  getToken,
-  injectEnvVariables,
-  log,
-  normalizeConfig,
-  processOnExit,
-  warn,
-  watchDebounced,
-} = utils
 
 const netlifyBuildPromise = import('@netlify/build')
 

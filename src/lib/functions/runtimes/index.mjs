@@ -1,11 +1,12 @@
-const go = require('./go/index.cjs')
-const js = require('./js/index.cjs')
-const rust = require('./rust/index.cjs')
-
+/* eslint-disable import/no-namespace */
+import * as go from './go/index.mjs'
+import * as js from './js/index.mjs'
+import * as rust from './rust/index.mjs'
+/* eslint-enable import/no-namespace */
 /**
  * @callback BuildFunction
  * @param {object} func
- * @returns {Promise<{srcFiles: string[], buildPath?: string>}
+ * @returns {Promise<{srcFiles: string[], buildPath?: string}>}
  */
 
 /**
@@ -41,6 +42,10 @@ const rust = require('./rust/index.cjs')
  * @property {string} name
  */
 
-const runtimes = [js, go, rust].reduce((res, runtime) => ({ ...res, [runtime.name]: runtime }), {})
+const runtimes = {
+  [go.name]: go,
+  [js.name]: js,
+  [rust.name]: rust,
+}
 
-module.exports = runtimes
+export default runtimes

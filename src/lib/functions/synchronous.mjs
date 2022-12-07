@@ -1,10 +1,10 @@
 // @ts-check
-const { Buffer } = require('buffer')
+import { Buffer } from 'buffer'
 
-const { NETLIFYDEVERR } = require('../../utils/index.cjs')
-const renderErrorTemplate = require('../render-error-remplate.cjs')
+import { NETLIFYDEVERR } from '../../utils/command-helpers.cjs'
+import renderErrorTemplate from '../render-error-remplate.cjs'
 
-const { detectAwsSdkError } = require('./utils.cjs')
+import { detectAwsSdkError } from './utils.mjs'
 
 const addHeaders = (headers, response) => {
   if (!headers) {
@@ -16,7 +16,7 @@ const addHeaders = (headers, response) => {
   })
 }
 
-const handleSynchronousFunction = function (err, result, request, response) {
+export const handleSynchronousFunction = function (err, result, request, response) {
   if (err) {
     return handleErr(err, request, response)
   }
@@ -82,5 +82,3 @@ const validateLambdaResponse = (lambdaResponse) => {
 
   return {}
 }
-
-module.exports = { handleSynchronousFunction }

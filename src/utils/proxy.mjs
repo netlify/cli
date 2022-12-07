@@ -31,7 +31,7 @@ import renderErrorTemplate from '../lib/render-error-remplate.cjs'
 import { NETLIFYDEVLOG, NETLIFYDEVWARN } from './command-helpers.cjs'
 import createStreamPromise from './create-stream-promise.mjs'
 import { headersForPath, parseHeaders } from './headers.mjs'
-import { createRewriter, onChanges } from './rules-proxy.cjs'
+import { createRewriter, onChanges } from './rules-proxy.mjs'
 
 const decompress = util.promisify(zlib.gunzip)
 const shouldGenerateETag = Symbol('Internal: response should generate ETag')

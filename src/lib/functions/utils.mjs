@@ -1,14 +1,8 @@
 // @ts-check
-const { chalk, warn } = require('../../utils/index.cjs')
-const { getLogMessage } = require('../log.cjs')
+import { chalk, warn } from '../../utils/command-helpers.cjs'
+import { getLogMessage } from '../log.cjs'
 
-const DEFAULT_LAMBDA_OPTIONS = {
-  verboseLevel: 3,
-}
-
-const SECONDS_TO_MILLISECONDS = 1000
-
-const detectAwsSdkError = ({ error }) => {
+export const detectAwsSdkError = ({ error }) => {
   const isAwsSdkError = error && error.errorMessage && error.errorMessage.includes("Cannot find module 'aws-sdk'")
 
   if (isAwsSdkError) {
@@ -16,7 +10,7 @@ const detectAwsSdkError = ({ error }) => {
   }
 }
 
-const formatLambdaError = (err) => chalk.red(`${err.errorType}: ${err.errorMessage}`)
+export const formatLambdaError = (err) => chalk.red(`${err.errorType}: ${err.errorMessage}`)
 
 // should be equivalent to https://github.com/netlify/proxy/blob/main/pkg/functions/request.go#L105
 const exceptionsList = new Set([
@@ -33,7 +27,7 @@ const exceptionsList = new Set([
  * @param {string | undefined} contentType
  * @returns {boolean}
  */
-const shouldBase64Encode = function (contentType) {
+export const shouldBase64Encode = function (contentType) {
   if (!contentType) {
     return true
   }
@@ -57,13 +51,4 @@ const shouldBase64Encode = function (contentType) {
   return true
 }
 
-const styleFunctionName = (name) => chalk.magenta(name)
-
-module.exports = {
-  detectAwsSdkError,
-  DEFAULT_LAMBDA_OPTIONS,
-  formatLambdaError,
-  SECONDS_TO_MILLISECONDS,
-  shouldBase64Encode,
-  styleFunctionName,
-}
+export const styleFunctionName = (name) => chalk.magenta(name)

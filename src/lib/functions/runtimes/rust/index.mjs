@@ -1,16 +1,18 @@
 // @ts-check
-const { readFile } = require('fs').promises
-const { dirname, extname, join, resolve } = require('path')
-const { platform } = require('process')
+import { readFile } from 'fs/promises'
+import { dirname, extname, join, resolve } from 'path'
+import { platform } from 'process'
 
-const findUp = require('find-up')
-const toml = require('toml')
+import findUp from 'find-up'
+import toml from 'toml'
+
+import { execa } from '../../../../utils/index.cjs'
+import { getPathInProject } from '../../../settings.cjs'
+import { runFunctionsProxy } from '../../local-proxy.mjs'
 
 const isWindows = platform === 'win32'
 
-const { execa } = require('../../../../utils/index.cjs')
-const { getPathInProject } = require('../../../settings.cjs')
-const { runFunctionsProxy } = require('../../local-proxy.cjs')
+export const name = 'rs'
 
 const build = async ({ func }) => {
   const functionDirectory = dirname(func.mainFile)
@@ -30,7 +32,7 @@ const build = async ({ func }) => {
   }
 }
 
-const getBuildFunction =
+export const getBuildFunction =
   ({ func }) =>
   () =>
     build({ func })
@@ -38,12 +40,12 @@ const getBuildFunction =
 const getCrateName = async (cwd) => {
   const manifestPath = await findUp('Cargo.toml', { cwd, type: 'file' })
   const manifest = await readFile(manifestPath, 'utf-8')
-  const { package } = toml.parse(manifest)
+  const { package: CargoPackage } = toml.parse(manifest)
 
-  return package.name
+  return CargoPackage.name
 }
 
-const invokeFunction = async ({ context, event, func, timeout }) => {
+export const invokeFunction = async ({ context, event, func, timeout }) => {
   const { stdout } = await runFunctionsProxy({
     binaryPath: func.buildData.binaryPath,
     context,
@@ -69,10 +71,8 @@ const invokeFunction = async ({ context, event, func, timeout }) => {
   }
 }
 
-const onRegister = (func) => {
+export const onRegister = (func) => {
   const isSource = extname(func.mainFile) === '.rs'
 
   return isSource ? func : null
 }
-
-module.exports = { getBuildFunction, invokeFunction, name: 'rs', onRegister }

@@ -12,17 +12,26 @@ import prettyjson from 'prettyjson'
 
 import { cancelDeploy } from '../../lib/api.mjs'
 import { getBuildOptions, runBuild } from '../../lib/build.mjs'
-import { normalizeFunctionsConfig } from '../../lib/functions/config.cjs'
+import { normalizeFunctionsConfig } from '../../lib/functions/config.mjs'
 import { getLogMessage } from '../../lib/log.cjs'
 import { startSpinner, stopSpinner } from '../../lib/spinner.cjs'
+import {
+  chalk,
+  error,
+  exit,
+  getToken,
+  log,
+  logJson,
+  NETLIFYDEV,
+  NETLIFYDEVERR,
+  NETLIFYDEVLOG,
+  warn,
+} from '../../utils/command-helpers.cjs'
 import { deploySite } from '../../utils/deploy/deploy-site.mjs'
 import { getFunctionsManifestPath, getInternalFunctionsDir } from '../../utils/functions/index.mjs'
-import utils from '../../utils/index.cjs'
 import openBrowser from '../../utils/open-browser.mjs'
 import { link } from '../link/index.mjs'
 import { sitesCreate } from '../sites/index.mjs'
-
-const { NETLIFYDEV, NETLIFYDEVERR, NETLIFYDEVLOG, chalk, error, exit, getToken, log, logJson, warn } = utils
 
 const DEFAULT_DEPLOY_TIMEOUT = 1.2e6
 

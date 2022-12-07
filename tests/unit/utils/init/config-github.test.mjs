@@ -4,6 +4,11 @@ import { beforeEach, describe, expect, test, vi } from 'vitest'
 
 import { getGitHubToken } from '../../../../src/utils/init/config-github.mjs'
 
+vi.mock('../../../../src/utils/command-helpers.cjs', async () => ({
+  ...(await vi.importActual('../../../../src/utils/command-helpers.cjs')),
+  log: () => {},
+}))
+
 // stub the await ghauth() call for a new token
 vi.mock('../../../../src/utils/gh-auth.mjs', () => ({
   getGitHubToken: () =>

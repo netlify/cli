@@ -10,7 +10,12 @@ import { createSitesCreateCommand } from '../../src/commands/sites/sites-create.
 import { getGitHubToken } from '../../src/utils/init/config-github.mjs'
 import { createRepo, getTemplatesFromGitHub } from '../../src/utils/sites/utils.mjs'
 
-import { withMockApi } from './utils/mock-api.cjs'
+import { getEnvironmentVariables, withMockApi } from './utils/mock-api.cjs'
+
+vi.mock('../../src/utils/command-helpers.cjs', async () => ({
+  ...(await vi.importActual('../../src/utils/command-helpers.cjs')),
+  log: () => {},
+}))
 
 // mock the getGithubToken method with a fake token
 vi.mock('../../src/utils/init/config-github.mjs', () => ({
@@ -68,6 +73,7 @@ const routes = [
     response: [],
   },
   { path: 'sites/site_id', response: siteInfo },
+  { path: 'sites/site_id/service-instances', response: [] },
   {
     path: 'user',
     response: { name: 'test user', slug: 'test-user', email: 'user@test.com' },
@@ -86,11 +92,7 @@ describe('sites', () => {
     vi.resetModules()
     vi.clearAllMocks()
 
-    Object.defineProperty(process, 'env', {
-      value: {
-        NETLIFY_AUTH_TOKEN: 'fake-token',
-      },
-    })
+    Object.defineProperty(process, 'env', { value: {} })
   })
 
   afterAll(() => {
@@ -104,7 +106,7 @@ describe('sites', () => {
   describe('sites:create-template', () => {
     test('basic', async () => {
       await withMockApi(routes, async ({ apiUrl }) => {
-        process.env.NETLIFY_API_URL = apiUrl
+        Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
         const program = new BaseCommand('netlify')
 
@@ -127,7 +129,7 @@ describe('sites', () => {
 
     test('should not fetch templates if one is passed as option', async () => {
       await withMockApi(routes, async ({ apiUrl }) => {
-        process.env.NETLIFY_API_URL = apiUrl
+        Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
         const program = new BaseCommand('netlify')
 
@@ -147,7 +149,7 @@ describe('sites', () => {
 
     test('should throw an error if the URL option is not a valid URL', async () => {
       await withMockApi(routes, async ({ apiUrl }) => {
-        process.env.NETLIFY_API_URL = apiUrl
+        Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
         const program = new BaseCommand('netlify')
 
@@ -163,7 +165,7 @@ describe('sites', () => {
   describe('fetchTemplates', () => {
     test('should return an array of templates with name, source code url and slug', async () => {
       await withMockApi(routes, async ({ apiUrl }) => {
-        process.env.NETLIFY_API_URL = apiUrl
+        Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
         const program = new BaseCommand('netlify')
 
@@ -186,7 +188,7 @@ describe('sites', () => {
   describe('sites:create', () => {
     test('should throw error when name flag is incorrect', async () => {
       await withMockApi(routes, async ({ apiUrl }) => {
-        process.env.NETLIFY_API_URL = apiUrl
+        Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
         const exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => {})
 

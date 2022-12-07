@@ -1,7 +1,7 @@
-const test = require('ava')
+import { expect, test } from 'vitest'
 
-const { parseRedirects } = require('../../../src/utils/redirects.cjs')
-const { withSiteBuilder } = require('../../integration/utils/site-builder.cjs')
+import { parseRedirects } from '../../../src/utils/redirects.mjs'
+import { withSiteBuilder } from '../../integration/utils/site-builder.cjs'
 
 const defaultConfig = {
   redirects: [
@@ -56,7 +56,7 @@ const BASE_REDIRECT = {
   params: {},
 }
 
-test('should parse redirect rules from netlify.toml', async (t) => {
+test('should parse redirect rules from netlify.toml', async () => {
   await withSiteBuilder('site-with-redirects-in-netlify-toml', async (builder) => {
     await builder
       .withNetlifyToml({
@@ -120,11 +120,11 @@ test('should parse redirect rules from netlify.toml', async (t) => {
       },
     ]
 
-    t.deepEqual(redirects, expected)
+    expect(redirects).toEqual(expected)
   })
 })
 
-test('should parse redirect rules from _redirects file', async (t) => {
+test('should parse redirect rules from _redirects file', async () => {
   await withSiteBuilder('site-with-redirects-file', async (builder) => {
     await builder
       .withRedirectsFile({
@@ -143,11 +143,11 @@ test('should parse redirect rules from _redirects file', async (t) => {
       },
     ]
 
-    t.deepEqual(redirects, expected)
+    expect(redirects).toEqual(expected)
   })
 })
 
-test('should parse redirect rules from _redirects file and netlify.toml', async (t) => {
+test('should parse redirect rules from _redirects file and netlify.toml', async () => {
   await withSiteBuilder('site-with-redirects-file-and-netlify-toml', async (builder) => {
     await builder
       .withRedirectsFile({
@@ -224,6 +224,6 @@ test('should parse redirect rules from _redirects file and netlify.toml', async 
       },
     ]
 
-    t.deepEqual(redirects, expected)
+    expect(redirects).toEqual(expected)
   })
 })

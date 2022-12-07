@@ -1,19 +1,19 @@
 // @ts-check
-const path = require('path')
+import path from 'path'
 
-const chokidar = require('chokidar')
-const cookie = require('cookie')
-const redirector = require('netlify-redirector')
-const pFilter = require('p-filter')
+import chokidar from 'chokidar'
+import cookie from 'cookie'
+import redirector from 'netlify-redirector'
+import pFilter from 'p-filter'
 
-const { fileExistsAsync } = require('../lib/fs.cjs')
+import { fileExistsAsync } from '../lib/fs.cjs'
 
-const { NETLIFYDEVLOG } = require('./command-helpers.cjs')
-const { parseRedirects } = require('./redirects.cjs')
+import { NETLIFYDEVLOG } from './command-helpers.cjs'
+import { parseRedirects } from './redirects.mjs'
 
 const watchers = []
 
-const onChanges = function (files, listener) {
+export const onChanges = function (files, listener) {
   files.forEach((file) => {
     const watcher = chokidar.watch(file)
     watcher.on('change', listener)
@@ -22,18 +22,25 @@ const onChanges = function (files, listener) {
   })
 }
 
-const getWatchers = function () {
+export const getWatchers = function () {
   return watchers
 }
 
-const getLanguage = function (headers) {
+export const getLanguage = function (headers) {
   if (headers['accept-language']) {
     return headers['accept-language'].split(',')[0].slice(0, 2)
   }
   return 'en'
 }
 
-const createRewriter = async function ({ configPath, distDir, geoCountry, jwtRoleClaim, jwtSecret, projectDir }) {
+export const createRewriter = async function ({
+  configPath,
+  distDir,
+  geoCountry,
+  jwtRoleClaim,
+  jwtSecret,
+  projectDir,
+}) {
   let matcher = null
   const redirectsFiles = [...new Set([path.resolve(distDir, '_redirects'), path.resolve(projectDir, '_redirects')])]
   let redirects = await parseRedirects({ redirectsFiles, configPath })
@@ -94,11 +101,4 @@ const createRewriter = async function ({ configPath, distDir, geoCountry, jwtRol
     const match = matcherFunc.match(matchReq)
     return match
   }
-}
-
-module.exports = {
-  onChanges,
-  getLanguage,
-  createRewriter,
-  getWatchers,
 }
