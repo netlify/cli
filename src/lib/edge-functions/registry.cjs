@@ -11,11 +11,20 @@ const { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log, warn, watchDebounced } = requi
  */
 
 /**
- * @typedef EdgeFunctionDeclaration
+ * @typedef EdgeFunctionDeclarationWithPath
  * @type {object}
  * @property {string} function
  * @property {string} path
  */
+
+/**
+ * @typedef EdgeFunctionDeclarationWithPattern
+ * @type {object}
+ * @property {string} function
+ * @property {RegExp} pattern
+ */
+
+/** @typedef {(EdgeFunctionDeclarationWithPath | EdgeFunctionDeclarationWithPattern) } EdgeFunctionDeclaration */
 
 class EdgeFunctionsRegistry {
   /**
@@ -341,7 +350,9 @@ class EdgeFunctionsRegistry {
       }
     })
 
-    return declarations
+    const filteredDeclarations = declarations.filter((declaration) => 'path' in declaration || 'pattern' in declaration)
+
+    return filteredDeclarations
   }
 
   processGraph(graph) {
