@@ -3,7 +3,7 @@ import process from 'process'
 
 import { getBuildOptions, runBuild } from '../../lib/build.mjs'
 import { error, exit, getToken } from '../../utils/command-helpers.cjs'
-import { generateNetlifyGraphJWT } from '../../utils/dev.cjs'
+import { generateNetlifyGraphJWT } from '../../utils/dev.mjs'
 import { getEnvelopeEnv, normalizeContext } from '../../utils/env/index.mjs'
 
 /**

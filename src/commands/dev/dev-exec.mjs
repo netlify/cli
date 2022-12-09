@@ -1,6 +1,6 @@
 import execa from 'execa'
 
-import { injectEnvVariables } from '../../utils/dev.cjs'
+import { injectEnvVariables } from '../../utils/dev.mjs'
 import { getEnvelopeEnv, normalizeContext } from '../../utils/env/index.mjs'
 
 /**

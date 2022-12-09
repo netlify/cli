@@ -1,8 +1,6 @@
 // @ts-check
+import { chalk, error as logError, log } from '../../utils/command-helpers.cjs'
 import { translateFromEnvelopeToMongo, translateFromMongoToEnvelope } from '../../utils/env/index.mjs'
-import utils from '../../utils/index.cjs'
-
-const { chalk, error: logError, log } = utils
 
 const safeGetSite = async (api, siteId) => {
   try {

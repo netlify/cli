@@ -1,15 +1,15 @@
 // @ts-check
-const process = require('process')
+import process from 'process'
 
-const { get } = require('dot-prop')
-const getPort = require('get-port')
-const jwt = require('jsonwebtoken')
-const isEmpty = require('lodash/isEmpty')
+import { get } from 'dot-prop'
+import getPort from 'get-port'
+import jwt from 'jsonwebtoken'
+import isEmpty from 'lodash/isEmpty.js'
 
-const { supportsBackgroundFunctions } = require('../lib/account.cjs')
+import { supportsBackgroundFunctions } from '../lib/account.mjs'
 
-const { NETLIFYDEVLOG, chalk, error, log, warn } = require('./command-helpers.cjs')
-const { loadDotEnvFiles } = require('./dot-env.cjs')
+import { NETLIFYDEVLOG, chalk, error, log, warn } from './command-helpers.cjs'
+import { loadDotEnvFiles } from './dot-env.mjs'
 
 // Possible sources of environment variables. For the purpose of printing log messages only. Order does not matter.
 const ENV_VAR_SOURCES = {
@@ -98,7 +98,7 @@ const BACKGROUND_FUNCTION_TIMEOUT = 900
  * @param {*} config.siteInfo
  * @returns
  */
-const getSiteInformation = async ({ api, offline, site, siteInfo }) => {
+export const getSiteInformation = async ({ api, offline, site, siteInfo }) => {
   if (site.id && !offline) {
     validateSiteInfo({ site, siteInfo })
     const [accounts, addons] = await Promise.all([getAccounts({ api }), getAddons({ api, site })])
@@ -139,7 +139,7 @@ const getEnvSourceName = (source) => {
 
 // Takes a set of environment variables in the format provided by @netlify/config, augments it with variables from both
 // dot-env files and the process itself, and injects into `process.env`.
-const injectEnvVariables = async ({ devConfig, env, site }) => {
+export const injectEnvVariables = async ({ devConfig, env, site }) => {
   const environment = new Map(Object.entries(env))
   const dotEnvFiles = await loadDotEnvFiles({ envFiles: devConfig.envFiles, projectDir: site.root })
 
@@ -186,7 +186,7 @@ const injectEnvVariables = async ({ devConfig, env, site }) => {
   process.env.NETLIFY_DEV = 'true'
 }
 
-const acquirePort = async ({ configuredPort, defaultPort, errorMessage }) => {
+export const acquirePort = async ({ configuredPort, defaultPort, errorMessage }) => {
   const acquiredPort = await getPort({ port: configuredPort || defaultPort })
   if (configuredPort && acquiredPort !== configuredPort) {
     throw new Error(`${errorMessage}: '${configuredPort}'`)
@@ -199,7 +199,7 @@ const acquirePort = async ({ configuredPort, defaultPort, errorMessage }) => {
 // - netlify_token -- the bearer token for the Netlify API
 // - authlify_token_id -- the authlify token ID stored for the site after
 //   enabling API Authentication.
-const generateNetlifyGraphJWT = ({ authlifyTokenId, netlifyToken, siteId }) => {
+export const generateNetlifyGraphJWT = ({ authlifyTokenId, netlifyToken, siteId }) => {
   const claims = {
     netlify_token: netlifyToken,
     authlify_token_id: authlifyTokenId,
@@ -215,17 +215,9 @@ const generateNetlifyGraphJWT = ({ authlifyTokenId, netlifyToken, siteId }) => {
   )
 }
 
-const processOnExit = (fn) => {
+export const processOnExit = (fn) => {
   const signals = ['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit']
   signals.forEach((signal) => {
     process.on(signal, fn)
   })
-}
-
-module.exports = {
-  getSiteInformation,
-  injectEnvVariables,
-  acquirePort,
-  generateNetlifyGraphJWT,
-  processOnExit,
 }

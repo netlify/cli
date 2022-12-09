@@ -1,10 +1,8 @@
 // @ts-check
 import { Option } from 'commander'
 
+import { chalk, error, log, logJson } from '../../utils/command-helpers.cjs'
 import { AVAILABLE_CONTEXTS, getEnvelopeEnv, normalizeContext } from '../../utils/env/index.mjs'
-import utils from '../../utils/index.cjs'
-
-const { chalk, error, log, logJson } = utils
 
 /**
  * The env:get command

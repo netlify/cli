@@ -1,8 +1,6 @@
 // @ts-check
+import { chalk, error, log, logJson } from '../../utils/command-helpers.cjs'
 import { AVAILABLE_CONTEXTS, normalizeContext, translateFromEnvelopeToMongo } from '../../utils/env/index.mjs'
-import utils from '../../utils/index.cjs'
-
-const { chalk, error, log, logJson } = utils
 
 /**
  * The env:unset command

@@ -1,9 +1,7 @@
 // @ts-check
 import inquirer from 'inquirer'
 
-import utils from '../../utils/index.cjs'
-
-const { chalk, error, exit, log } = utils
+import { chalk, error, exit, log } from '../../utils/command-helpers.cjs'
 
 /**
  * The sites:delete command

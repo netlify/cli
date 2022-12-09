@@ -14,7 +14,7 @@ import { startSpinner, stopSpinner } from '../spinner.cjs'
 import { DIST_IMPORT_MAP_PATH } from './consts.mjs'
 import headers from './headers.mjs'
 import { getInternalFunctions } from './internal.mjs'
-import { EdgeFunctionsRegistry } from './registry.cjs'
+import { EdgeFunctionsRegistry } from './registry.mjs'
 
 const headersSymbol = Symbol('Edge Functions Headers')
 

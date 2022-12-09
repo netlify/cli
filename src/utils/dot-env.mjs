@@ -1,14 +1,14 @@
 // @ts-check
-const { readFile } = require('fs').promises
-const path = require('path')
+import { readFile } from 'fs/promises'
+import path from 'path'
 
-const dotenv = require('dotenv')
+import dotenv from 'dotenv'
 
-const { isFileAsync } = require('../lib/fs.cjs')
+import { isFileAsync } from '../lib/fs.cjs'
 
-const { warn } = require('./command-helpers.cjs')
+import { warn } from './command-helpers.cjs'
 
-const loadDotEnvFiles = async function ({ envFiles, projectDir }) {
+export const loadDotEnvFiles = async function ({ envFiles, projectDir }) {
   const response = await tryLoadDotEnvFiles({ projectDir, dotenvFiles: envFiles })
 
   const filesWithWarning = response.filter((el) => el.warning)
@@ -22,7 +22,7 @@ const loadDotEnvFiles = async function ({ envFiles, projectDir }) {
 // in the user configuration, the order is highest to lowest
 const defaultEnvFiles = ['.env.development.local', '.env.local', '.env.development', '.env']
 
-const tryLoadDotEnvFiles = async ({ projectDir, dotenvFiles = defaultEnvFiles }) => {
+export const tryLoadDotEnvFiles = async ({ projectDir, dotenvFiles = defaultEnvFiles }) => {
   const results = await Promise.all(
     dotenvFiles.map(async (file) => {
       const filepath = path.resolve(projectDir, file)
@@ -45,5 +45,3 @@ const tryLoadDotEnvFiles = async ({ projectDir, dotenvFiles = defaultEnvFiles })
   // we return in order of lowest to highest priority
   return results.filter(Boolean).reverse()
 }
-
-module.exports = { loadDotEnvFiles, tryLoadDotEnvFiles }

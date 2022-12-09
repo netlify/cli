@@ -4,7 +4,7 @@ import { platform } from 'process'
 
 import tempy from 'tempy'
 
-import { execa } from '../../../../utils/index.cjs'
+import execa from '../../../../utils/execa.cjs'
 import { runFunctionsProxy } from '../../local-proxy.mjs'
 
 const isWindows = platform === 'win32'

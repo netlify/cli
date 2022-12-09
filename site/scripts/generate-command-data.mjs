@@ -1,6 +1,6 @@
 // @ts-check
 import { createMainCommand } from '../../src/commands/index.mjs'
-import utils from '../../src/utils/index.cjs'
+import { sortOptions } from '../../src/utils/command-helpers.cjs'
 
 const program = createMainCommand()
 
@@ -21,7 +21,7 @@ const parseCommand = function (command) {
 
   const flags = command.options
     .filter((option) => !option.hidden)
-    .sort(utils.sortOptions)
+    .sort(sortOptions)
     .reduce((prev, cur) => {
       const name = cur.long.replace('--', '')
       const contentType = cur.argChoices ? cur.argChoices.join(' | ') : 'string'

@@ -17,12 +17,12 @@ import fetch from 'node-fetch'
 import ora from 'ora'
 
 import { getAddons, getCurrentAddon, getSiteData } from '../../utils/addons/prepare.mjs'
-import utils from '../../utils/index.cjs'
+import { NETLIFYDEVERR, NETLIFYDEVLOG, NETLIFYDEVWARN, chalk, error, log } from '../../utils/command-helpers.cjs'
+import { injectEnvVariables } from '../../utils/dev.mjs'
+import execa from '../../utils/execa.cjs'
 import { readRepoURL, validateRepoURL } from '../../utils/read-repo-url.mjs'
 
 const copyTemplateDir = promisify(copyTemplateDirOriginal)
-
-const { NETLIFYDEVERR, NETLIFYDEVLOG, NETLIFYDEVWARN, chalk, error, execa, injectEnvVariables, log } = utils
 
 const require = createRequire(import.meta.url)
 

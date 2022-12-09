@@ -1,20 +1,20 @@
-const process = require('process')
+import process from 'process'
 
-const test = require('ava')
+import { expect, test } from 'vitest'
 
-const { tryLoadDotEnvFiles } = require('../../../src/utils/dot-env.cjs')
-const { withSiteBuilder } = require('../../integration/utils/site-builder.cjs')
+import { tryLoadDotEnvFiles } from '../../../src/utils/dot-env.mjs'
+import { withSiteBuilder } from '../../integration/utils/site-builder.cjs'
 
-test('should return an empty array for a site with no .env file', async (t) => {
+test('should return an empty array for a site with no .env file', async () => {
   await withSiteBuilder('site-without-env-file', async (builder) => {
     await builder.buildAsync()
 
     const results = await tryLoadDotEnvFiles({ projectDir: builder.directory })
-    t.deepEqual(results, [])
+    expect(results).toEqual([])
   })
 })
 
-test('should read env vars from .env file', async (t) => {
+test('should read env vars from .env file', async () => {
   process.env.NODE_ENV = 'development'
   await withSiteBuilder('site-with-envs-file', async (builder) => {
     builder.withEnvFile({
@@ -24,11 +24,11 @@ test('should read env vars from .env file', async (t) => {
     await builder.buildAsync()
 
     const results = await tryLoadDotEnvFiles({ projectDir: builder.directory })
-    t.deepEqual(results, [{ file: '.env', env: { TEST: 'FROM_ENV' } }])
+    expect(results).toEqual([{ file: '.env', env: { TEST: 'FROM_ENV' } }])
   })
 })
 
-test('should read env vars from .env.development file', async (t) => {
+test('should read env vars from .env.development file', async () => {
   process.env.NODE_ENV = 'development'
   await withSiteBuilder('site-with-envs-file', async (builder) => {
     builder.withEnvFile({
@@ -38,11 +38,11 @@ test('should read env vars from .env.development file', async (t) => {
     await builder.buildAsync()
 
     const results = await tryLoadDotEnvFiles({ projectDir: builder.directory })
-    t.deepEqual(results, [{ file: '.env.development', env: { TEST: 'FROM_DEVELOPMENT_ENV' } }])
+    expect(results).toEqual([{ file: '.env.development', env: { TEST: 'FROM_DEVELOPMENT_ENV' } }])
   })
 })
 
-test('should read env vars from .env.local file', async (t) => {
+test('should read env vars from .env.local file', async () => {
   process.env.NODE_ENV = 'development'
   await withSiteBuilder('site-with-envs-file', async (builder) => {
     builder.withEnvFile({
@@ -52,11 +52,11 @@ test('should read env vars from .env.local file', async (t) => {
     await builder.buildAsync()
 
     const results = await tryLoadDotEnvFiles({ projectDir: builder.directory })
-    t.deepEqual(results, [{ file: '.env.local', env: { TEST: 'FROM_LOCAL_ENV' } }])
+    expect(results).toEqual([{ file: '.env.local', env: { TEST: 'FROM_LOCAL_ENV' } }])
   })
 })
 
-test('should read env vars from .env.development.local file', async (t) => {
+test('should read env vars from .env.development.local file', async () => {
   process.env.NODE_ENV = 'development'
   await withSiteBuilder('site-with-envs-file', async (builder) => {
     builder.withEnvFile({
@@ -66,11 +66,11 @@ test('should read env vars from .env.development.local file', async (t) => {
     await builder.buildAsync()
 
     const results = await tryLoadDotEnvFiles({ projectDir: builder.directory })
-    t.deepEqual(results, [{ file: '.env.development.local', env: { TEST: 'FROM_LOCAL_DEVELOPMENT_ENV' } }])
+    expect(results).toEqual([{ file: '.env.development.local', env: { TEST: 'FROM_LOCAL_DEVELOPMENT_ENV' } }])
   })
 })
 
-test('should read env vars from all four .env[.development][.local] files', async (t) => {
+test('should read env vars from all four .env[.development][.local] files', async () => {
   process.env.NODE_ENV = 'development'
   await withSiteBuilder('site-with-envs-file', async (builder) => {
     builder
@@ -93,7 +93,7 @@ test('should read env vars from all four .env[.development][.local] files', asyn
     await builder.buildAsync()
 
     const results = await tryLoadDotEnvFiles({ projectDir: builder.directory })
-    t.deepEqual(results, [
+    expect(results).toEqual([
       { file: '.env', env: { ONE: 'FROM_ENV', TWO: 'FROM_ENV' } },
       { file: '.env.development', env: { ONE: 'FROM_DEVELOPMENT_ENV', THREE: 'FROM_DEVELOPMENT_ENV' } },
       { file: '.env.local', env: { ONE: 'FROM_LOCAL_ENV', FOUR: 'FROM_LOCAL_ENV' } },
@@ -105,7 +105,7 @@ test('should read env vars from all four .env[.development][.local] files', asyn
   })
 })
 
-test('should handle empty .env file', async (t) => {
+test('should handle empty .env file', async () => {
   await withSiteBuilder('site-with-empty-env-file', async (builder) => {
     builder.withEnvFile({
       path: '.env',
@@ -114,6 +114,6 @@ test('should handle empty .env file', async (t) => {
     await builder.buildAsync()
 
     const results = await tryLoadDotEnvFiles({ projectDir: builder.directory })
-    t.deepEqual(results, [{ file: '.env', env: {} }])
+    expect(results).toEqual([{ file: '.env', env: {} }])
   })
 })

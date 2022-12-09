@@ -11,7 +11,7 @@ import isPlainObject from 'is-plain-obj'
 import { readFileAsyncCatchError } from '../lib/fs.cjs'
 
 import { NETLIFYDEVWARN, chalk, log } from './command-helpers.cjs'
-import { acquirePort } from './dev.cjs'
+import { acquirePort } from './dev.mjs'
 import { getInternalFunctionsDir } from './functions/index.mjs'
 
 const formatProperty = (str) => chalk.magenta(`'${str}'`)

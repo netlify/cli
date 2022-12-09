@@ -43,7 +43,7 @@ import {
   watchDebounced,
 } from '../../utils/command-helpers.cjs'
 import detectServerSettings from '../../utils/detect-server-settings.mjs'
-import { generateNetlifyGraphJWT, getSiteInformation, injectEnvVariables, processOnExit } from '../../utils/dev.cjs'
+import { generateNetlifyGraphJWT, getSiteInformation, injectEnvVariables, processOnExit } from '../../utils/dev.mjs'
 import { getEnvelopeEnv, normalizeContext } from '../../utils/env/index.mjs'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.mjs'
 import { startLiveTunnel } from '../../utils/live-tunnel.mjs'

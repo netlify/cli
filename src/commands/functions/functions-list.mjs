@@ -1,10 +1,8 @@
 // @ts-check
 import AsciiTable from 'ascii-table'
 
+import { error, exit, log, logJson, warn } from '../../utils/command-helpers.cjs'
 import { getFunctions, getFunctionsDir } from '../../utils/functions/index.mjs'
-import utils from '../../utils/index.cjs'
-
-const { error, exit, log, logJson, warn } = utils
 
 const normalizeFunction = function (deployedFunctions, { name, urlPath: url }) {
   const isDeployed = deployedFunctions.some((deployedFunction) => deployedFunction.n === name)

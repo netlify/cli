@@ -1,7 +1,7 @@
 // @ts-check
-const { fileURLToPath } = require('url')
+import { fileURLToPath } from 'url'
 
-const { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log, warn, watchDebounced } = require('../../utils/command-helpers.cjs')
+import { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log, warn, watchDebounced } from '../../utils/command-helpers.cjs'
 
 /**
  * @typedef EdgeFunction
@@ -26,7 +26,7 @@ const { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log, warn, watchDebounced } = requi
 
 /** @typedef {(EdgeFunctionDeclarationWithPath | EdgeFunctionDeclarationWithPattern) } EdgeFunctionDeclaration */
 
-class EdgeFunctionsRegistry {
+export class EdgeFunctionsRegistry {
   /**
    * @param {Object} opts
    * @param {import('@netlify/edge-bundler')} opts.bundler
@@ -448,5 +448,3 @@ class EdgeFunctionsRegistry {
     this.directoryWatchers.set(directory, watcher)
   }
 }
-
-module.exports = { EdgeFunctionsRegistry }
