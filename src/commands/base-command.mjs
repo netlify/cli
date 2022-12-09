@@ -23,7 +23,7 @@ import {
   sortOptions,
   warn,
 } from '../utils/command-helpers.mjs'
-import getGlobalConfig from '../utils/get-global-config.cjs'
+import getGlobalConfig from '../utils/get-global-config.mjs'
 import openBrowser from '../utils/open-browser.mjs'
 import StateConfig from '../utils/state-config.mjs'
 import { identify, track } from '../utils/telemetry/index.mjs'

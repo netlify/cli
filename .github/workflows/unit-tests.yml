@@ -44,8 +44,5 @@ jobs:
         run: npm run format:ci
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
       - name: Run unit tests
-        run: npm run test:ci:ava:unit
-        if: '${{!steps.release-check.outputs.IS_RELEASE}}'
-      - name: Run vitest unit tests
         run: npm run test:ci:vitest:unit
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'

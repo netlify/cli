@@ -1,9 +1,9 @@
-const fs = require('fs')
+import fs from 'fs'
 
-const backoff = require('backoff')
-const pMap = require('p-map')
+import backoff from 'backoff'
+import pMap from 'p-map'
 
-const { UPLOAD_INITIAL_DELAY, UPLOAD_MAX_DELAY, UPLOAD_RANDOM_FACTOR } = require('./constants.cjs')
+import { UPLOAD_INITIAL_DELAY, UPLOAD_MAX_DELAY, UPLOAD_RANDOM_FACTOR } from './constants.mjs'
 
 const uploadFiles = async (api, deployId, uploadList, { concurrentUpload, maxRetry, statusCb }) => {
   if (!concurrentUpload || !statusCb || !maxRetry) throw new Error('Missing required option concurrentUpload')
@@ -115,4 +115,4 @@ const retryUpload = (uploadFn, maxRetry) =>
     tryUpload()
   })
 
-module.exports = { uploadFiles }
+export default uploadFiles

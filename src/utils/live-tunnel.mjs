@@ -8,7 +8,7 @@ import { fetchLatestVersion, shouldFetchLatestVersion } from '../lib/exec-fetche
 import { getPathInHome } from '../lib/settings.cjs'
 
 import { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log } from './command-helpers.mjs'
-import execa from './execa.cjs'
+import execa from './execa.mjs'
 
 const PACKAGE_NAME = 'live-tunnel-client'
 const EXEC_NAME = PACKAGE_NAME

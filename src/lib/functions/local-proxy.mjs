@@ -3,7 +3,7 @@ import { stdout } from 'process'
 
 import { getBinaryPath as getFunctionsProxyPath } from '@netlify/local-functions-proxy'
 
-import execa from '../../utils/execa.cjs'
+import execa from '../../utils/execa.mjs'
 
 export const runFunctionsProxy = ({ binaryPath, context, directory, event, name, timeout }) => {
   const functionsProxyPath = getFunctionsProxyPath()

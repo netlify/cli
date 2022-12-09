@@ -12,7 +12,7 @@ import { GraphQL, GraphQLHelpers, IncludedCodegen, InternalConsole, NetlifyGraph
 
 import { chalk, error, log, warn } from '../../utils/command-helpers.mjs'
 import detectServerSettings from '../../utils/detect-server-settings.mjs'
-import execa from '../../utils/execa.cjs'
+import execa from '../../utils/execa.mjs'
 import { getFunctionsDir } from '../../utils/functions/index.mjs'
 
 const { printSchema } = GraphQL

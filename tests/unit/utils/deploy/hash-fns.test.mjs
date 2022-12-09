@@ -1,21 +1,22 @@
-/* eslint-disable require-await */
-const test = require('ava')
-const tempy = require('tempy')
+import tempy from 'tempy'
+import { expect, test } from 'vitest'
 
-const { DEFAULT_CONCURRENT_HASH } = require('../../../../src/utils/deploy/constants.cjs')
-const { hashFns } = require('../../../../src/utils/deploy/hash-fns.cjs')
-const { withSiteBuilder } = require('../../../integration/utils/site-builder.cjs')
+import { DEFAULT_CONCURRENT_HASH } from '../../../../src/utils/deploy/constants.mjs'
+import hashFns from '../../../../src/utils/deploy/hash-fns.mjs'
+import { withSiteBuilder } from '../../../integration/utils/site-builder.cjs'
 
-test('Hashes files in a folder', async (t) => {
+test('Hashes files in a folder', async () => {
   await withSiteBuilder('site-with-functions', async (builder) => {
     await builder
       .withNetlifyToml({ config: { functions: { directory: 'functions' } } })
       .withFunction({
         path: 'hello.js',
+        // eslint-disable-next-line require-await
         handler: async () => ({ statusCode: 200, body: 'Hello' }),
       })
       .withFunction({
         path: 'goodbye.js',
+        // eslint-disable-next-line require-await
         handler: async () => ({ statusCode: 200, body: 'Goodbye' }),
       })
       .buildAsync()
@@ -27,22 +28,17 @@ test('Hashes files in a folder', async (t) => {
       statusCb() {},
     })
 
-    t.is(Object.entries(functions).length, expectedFunctions.length)
-    t.is(Object.entries(fnShaMap).length, expectedFunctions.length)
+    expect(Object.entries(functions)).toHaveLength(expectedFunctions.length)
+    expect(Object.entries(fnShaMap)).toHaveLength(expectedFunctions.length)
 
     expectedFunctions.forEach((functionPath) => {
       const sha = functions[functionPath]
-      t.truthy(sha, `includes the ${functionPath} file`)
+      expect(sha).toBeDefined()
 
       const functionsObjArray = fnShaMap[sha]
       functionsObjArray.forEach((fileObj) => {
-        t.is(
-          fileObj.normalizedPath,
-          functionPath,
-          'functionPath normalizedPath property should equal to function path from functions array',
-        )
+        expect(fileObj.normalizedPath).toBe(functionPath)
       })
     })
   })
 })
-/* eslint-enable require-await */

@@ -1,9 +1,11 @@
-const { promisify } = require('util')
+import { promisify } from 'util'
 
-const walker = require('folder-walker')
-const pump = promisify(require('pump'))
+import walker from 'folder-walker'
+import pumpModule from 'pump'
 
-const { fileFilterCtor, fileNormalizerCtor, hasherCtor, manifestCollectorCtor } = require('./hasher-segments.cjs')
+import { fileFilterCtor, fileNormalizerCtor, hasherCtor, manifestCollectorCtor } from './hasher-segments.mjs'
+
+const pump = promisify(pumpModule)
 
 const hashFiles = async ({
   assetType = 'file',
@@ -33,4 +35,4 @@ const hashFiles = async ({
   return { files, filesShaMap }
 }
 
-module.exports = { hashFiles }
+export default hashFiles

@@ -2,7 +2,7 @@
 import Listr from 'listr'
 
 import { error } from '../../utils/command-helpers.mjs'
-import execa from '../../utils/execa.cjs'
+import execa from '../../utils/execa.mjs'
 import { installPlatform } from '../../utils/lm/install.mjs'
 import { checkHelperVersion } from '../../utils/lm/requirements.mjs'
 import { printBanner } from '../../utils/lm/ui.mjs'

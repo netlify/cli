@@ -27,13 +27,12 @@ import {
   NETLIFYDEVLOG,
   warn,
 } from '../../utils/command-helpers.mjs'
+import { DEFAULT_DEPLOY_TIMEOUT } from '../../utils/deploy/constants.mjs'
 import { deploySite } from '../../utils/deploy/deploy-site.mjs'
 import { getFunctionsManifestPath, getInternalFunctionsDir } from '../../utils/functions/index.mjs'
 import openBrowser from '../../utils/open-browser.mjs'
 import { link } from '../link/index.mjs'
 import { sitesCreate } from '../sites/index.mjs'
-
-const DEFAULT_DEPLOY_TIMEOUT = 1.2e6
 
 const triggerDeploy = async ({ api, options, siteData, siteId }) => {
   try {

@@ -1,10 +1,13 @@
-const path = require('path')
-const { promisify } = require('util')
+import { readFile } from 'fs/promises'
+import path from 'path'
+import { promisify } from 'util'
 
-const fromArray = require('from2-array')
-const pump = promisify(require('pump'))
+import fromArray from 'from2-array'
+import pumpModule from 'pump'
 
-const { hasherCtor, manifestCollectorCtor } = require('./hasher-segments.cjs')
+import { hasherCtor, manifestCollectorCtor } from './hasher-segments.mjs'
+
+const pump = promisify(pumpModule)
 
 // Maximum age of functions manifest (2 minutes).
 const MANIFEST_FILE_TTL = 12e4
@@ -26,8 +29,8 @@ const getFunctionZips = async ({
 
   if (manifestPath) {
     try {
-      // eslint-disable-next-line import/no-dynamic-require, n/global-require
-      const { functions, timestamp } = require(manifestPath)
+      // read manifest.json file
+      const { functions, timestamp } = JSON.parse(await readFile(manifestPath))
       const manifestAge = Date.now() - timestamp
 
       if (manifestAge > MANIFEST_FILE_TTL) {
@@ -131,4 +134,4 @@ const hashFns = async (
   return { functionSchedules, functions, functionsWithNativeModules, fnShaMap }
 }
 
-module.exports = { hashFns }
+export default hashFns

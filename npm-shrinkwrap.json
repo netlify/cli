@@ -74,7 +74,6 @@
         "lodash": "^4.17.20",
         "log-symbols": "^4.0.0",
         "log-update": "^5.0.0",
-        "memoize-one": "^6.0.0",
         "minimist": "^1.2.5",
         "multiparty": "^4.2.1",
         "netlify": "^13.0.2",

@@ -1,10 +1,10 @@
-const test = require('ava')
+import { expect, test } from 'vitest'
 
-const { DEFAULT_CONCURRENT_HASH } = require('../../../../src/utils/deploy/constants.cjs')
-const { hashFiles } = require('../../../../src/utils/deploy/hash-files.cjs')
-const { withSiteBuilder } = require('../../../integration/utils/site-builder.cjs')
+import { DEFAULT_CONCURRENT_HASH } from '../../../../src/utils/deploy/constants.mjs'
+import hashFiles from '../../../../src/utils/deploy/hash-files.mjs'
+import { withSiteBuilder } from '../../../integration/utils/site-builder.cjs'
 
-test('Hashes files in a folder', async (t) => {
+test('Hashes files in a folder', async () => {
   await withSiteBuilder('site-with-content', async (builder) => {
     await builder
       .withNetlifyToml({ config: { build: { publish: 'public' } } })
@@ -22,20 +22,16 @@ test('Hashes files in a folder', async (t) => {
       statusCb() {},
     })
 
-    t.is(Object.entries(files).length, expectedFiles.length)
-    t.is(Object.entries(filesShaMap).length, expectedFiles.length)
+    expect(Object.entries(files)).toHaveLength(expectedFiles.length)
+    expect(Object.entries(filesShaMap)).toHaveLength(expectedFiles.length)
 
     expectedFiles.forEach((filePath) => {
       const sha = files[filePath]
-      t.truthy(sha, `includes the ${filePath} file`)
+      expect(sha).toBeDefined()
 
       const fileObjArray = filesShaMap[sha]
       fileObjArray.forEach((fileObj) => {
-        t.is(
-          fileObj.normalizedPath,
-          filePath,
-          'fileObj normalizedPath property should equal to file path from files array',
-        )
+        expect(fileObj.normalizedPath).toBe(filePath)
       })
     })
   })

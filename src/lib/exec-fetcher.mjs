@@ -6,7 +6,7 @@ import { fetchLatest, fetchVersion, newerVersion, updateAvailable } from 'gh-rel
 import isExe from 'isexe'
 
 import { NETLIFYDEVWARN, error, getTerminalLink, log } from '../utils/command-helpers.mjs'
-import execa from '../utils/execa.cjs'
+import execa from '../utils/execa.mjs'
 
 const isWindows = () => process.platform === 'win32'
 

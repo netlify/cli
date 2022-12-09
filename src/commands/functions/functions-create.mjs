@@ -19,7 +19,7 @@ import ora from 'ora'
 import { getAddons, getCurrentAddon, getSiteData } from '../../utils/addons/prepare.mjs'
 import { NETLIFYDEVERR, NETLIFYDEVLOG, NETLIFYDEVWARN, chalk, error, log } from '../../utils/command-helpers.mjs'
 import { injectEnvVariables } from '../../utils/dev.mjs'
-import execa from '../../utils/execa.cjs'
+import execa from '../../utils/execa.mjs'
 import { readRepoURL, validateRepoURL } from '../../utils/read-repo-url.mjs'
 
 const copyTemplateDir = promisify(copyTemplateDirOriginal)

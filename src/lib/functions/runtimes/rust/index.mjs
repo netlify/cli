@@ -6,7 +6,7 @@ import { platform } from 'process'
 import findUp from 'find-up'
 import toml from 'toml'
 
-import execa from '../../../../utils/execa.cjs'
+import execa from '../../../../utils/execa.mjs'
 import { getPathInProject } from '../../../settings.cjs'
 import { runFunctionsProxy } from '../../local-proxy.mjs'
 

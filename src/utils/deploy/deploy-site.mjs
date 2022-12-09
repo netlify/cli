@@ -11,11 +11,11 @@ import {
   DEFAULT_DEPLOY_TIMEOUT,
   DEFAULT_MAX_RETRY,
   DEFAULT_SYNC_LIMIT,
-} from './constants.cjs'
-import { hashFiles } from './hash-files.cjs'
-import { hashFns } from './hash-fns.cjs'
-import { uploadFiles } from './upload-files.cjs'
-import { getUploadList, waitForDeploy, waitForDiff } from './util.cjs'
+} from './constants.mjs'
+import hashFiles from './hash-files.mjs'
+import hashFns from './hash-fns.mjs'
+import uploadFiles from './upload-files.mjs'
+import { getUploadList, waitForDeploy, waitForDiff } from './util.mjs'
 
 export const deploySite = async (
   api,

@@ -6,8 +6,8 @@ import inquirer from 'inquirer'
 import { findBestMatch } from 'string-similarity'
 
 import { BANG, chalk, error, exit, log, NETLIFY_CYAN, USER_AGENT, warn } from '../utils/command-helpers.mjs'
-import execa from '../utils/execa.cjs'
-import getGlobalConfig from '../utils/get-global-config.cjs'
+import execa from '../utils/execa.mjs'
+import getGlobalConfig from '../utils/get-global-config.mjs'
 import getPackageJson from '../utils/get-package-json.mjs'
 import { track } from '../utils/telemetry/index.mjs'
 

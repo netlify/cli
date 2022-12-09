@@ -14,7 +14,7 @@ import terminalLink from 'terminal-link'
 
 import { clearSpinner, startSpinner } from '../lib/spinner.cjs'
 
-import getGlobalConfig from './get-global-config.cjs'
+import getGlobalConfig from './get-global-config.mjs'
 import getPackageJson from './get-package-json.mjs'
 
 /** The parsed process argv without the binary only arguments and flags */

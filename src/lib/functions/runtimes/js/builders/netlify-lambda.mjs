@@ -4,7 +4,7 @@ import { resolve } from 'path'
 
 import minimist from 'minimist'
 
-import execa from '../../../../../utils/execa.cjs'
+import execa from '../../../../../utils/execa.mjs'
 import { fileExistsAsync } from '../../../../fs.cjs'
 import { memoizedBuild } from '../../../memoized-build.mjs'
 

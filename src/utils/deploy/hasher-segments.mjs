@@ -1,15 +1,15 @@
-const flushWriteStream = require('flush-write-stream')
-const hasha = require('hasha')
-const transform = require('parallel-transform')
-const { objCtor: objFilterCtor } = require('through2-filter')
-const { obj: map } = require('through2-map')
+import flushWriteStream from 'flush-write-stream'
+import hasha from 'hasha'
+import transform from 'parallel-transform'
+import { objCtor as objFilterCtor } from 'through2-filter'
+import { obj as map } from 'through2-map'
 
-const { normalizePath } = require('./util.cjs')
+import { normalizePath } from './util.mjs'
 
 // a parallel transform stream segment ctor that hashes fileObj's created by folder-walker
 // TODO: use promises instead of callbacks
 /* eslint-disable promise/prefer-await-to-callbacks */
-const hasherCtor = ({ concurrentHash, hashAlgorithm }) => {
+export const hasherCtor = ({ concurrentHash, hashAlgorithm }) => {
   const hashaOpts = { algorithm: hashAlgorithm }
   if (!concurrentHash) throw new Error('Missing required opts')
   return transform(concurrentHash, { objectMode: true }, async (fileObj, cb) => {
@@ -24,7 +24,7 @@ const hasherCtor = ({ concurrentHash, hashAlgorithm }) => {
 }
 
 // Inject normalized file names into normalizedPath and assetType
-const fileNormalizerCtor = ({ assetType, normalizer: normalizeFunction }) =>
+export const fileNormalizerCtor = ({ assetType, normalizer: normalizeFunction }) =>
   map((fileObj) => {
     const normalizedFile = { ...fileObj, assetType, normalizedPath: normalizePath(fileObj.relname) }
 
@@ -36,7 +36,7 @@ const fileNormalizerCtor = ({ assetType, normalizer: normalizeFunction }) =>
   })
 
 // A writable stream segment ctor that normalizes file paths, and writes shaMap's
-const manifestCollectorCtor = (filesObj, shaMap, { assetType, statusCb }) => {
+export const manifestCollectorCtor = (filesObj, shaMap, { assetType, statusCb }) => {
   if (!statusCb || !assetType) throw new Error('Missing required options')
   return flushWriteStream.obj((fileObj, _, cb) => {
     filesObj[fileObj.normalizedPath] = fileObj.hash
@@ -60,11 +60,4 @@ const manifestCollectorCtor = (filesObj, shaMap, { assetType, statusCb }) => {
 /* eslint-enable promise/prefer-await-to-callbacks */
 
 // transform stream ctor that filters folder-walker results for only files
-const fileFilterCtor = objFilterCtor((fileObj) => fileObj.type === 'file')
-
-module.exports = {
-  hasherCtor,
-  fileNormalizerCtor,
-  manifestCollectorCtor,
-  fileFilterCtor,
-}
+export const fileFilterCtor = objFilterCtor((fileObj) => fileObj.type === 'file')
