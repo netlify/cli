@@ -4,8 +4,8 @@ import isValidEventName from '../../../../src/utils/telemetry/validation.mjs'
 
 const getEventForProject = (projectName, eventName) => `${projectName}:${eventName}`
 
-vi.mock('../../../../src/utils/command-helpers.cjs', async () => ({
-  ...(await vi.importActual('../../../../src/utils/command-helpers.cjs')),
+vi.mock('../../../../src/utils/command-helpers.mjs', async () => ({
+  ...(await vi.importActual('../../../../src/utils/command-helpers.mjs')),
   log: () => {},
 }))
 

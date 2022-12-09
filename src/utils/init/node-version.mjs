@@ -5,7 +5,7 @@ import { get } from 'dot-prop'
 import locatePath from 'locate-path'
 import nodeVersionAlias from 'node-version-alias'
 
-import { warn } from '../command-helpers.cjs'
+import { warn } from '../command-helpers.mjs'
 
 const DEFAULT_NODE_VERSION = '12.18.0'
 const NVM_FLAG_PREFIX = '--'

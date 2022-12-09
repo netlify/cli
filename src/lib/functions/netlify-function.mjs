@@ -1,7 +1,7 @@
 // @ts-check
 import CronParser from 'cron-parser'
 
-import { error as errorExit } from '../../utils/command-helpers.cjs'
+import { error as errorExit } from '../../utils/command-helpers.mjs'
 import { BACKGROUND } from '../../utils/functions/get-functions.mjs'
 
 // Returns a new set with all elements of `setA` that don't exist in `setB`.

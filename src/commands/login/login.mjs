@@ -1,5 +1,5 @@
 // @ts-check
-import { chalk, exit, getToken, log } from '../../utils/command-helpers.cjs'
+import { chalk, exit, getToken, log } from '../../utils/command-helpers.mjs'
 
 const msg = function (location) {
   switch (location) {

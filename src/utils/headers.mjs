@@ -1,6 +1,6 @@
 import { parseAllHeaders } from 'netlify-headers-parser'
 
-import { NETLIFYDEVERR, log } from './command-helpers.cjs'
+import { NETLIFYDEVERR, log } from './command-helpers.mjs'
 
 /**
  * Get the matching headers for `path` given a set of `rules`.

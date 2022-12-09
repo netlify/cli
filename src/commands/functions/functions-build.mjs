@@ -1,7 +1,7 @@
 // @ts-check
 import { mkdir } from 'fs/promises'
 
-import { NETLIFYDEVERR, NETLIFYDEVLOG, exit, log } from '../../utils/command-helpers.cjs'
+import { NETLIFYDEVERR, NETLIFYDEVLOG, exit, log } from '../../utils/command-helpers.mjs'
 import { getFunctionsDir } from '../../utils/functions/index.mjs'
 
 /**

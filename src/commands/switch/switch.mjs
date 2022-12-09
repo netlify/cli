@@ -1,7 +1,7 @@
 // @ts-check
 import inquirer from 'inquirer'
 
-import { chalk, log } from '../../utils/command-helpers.cjs'
+import { chalk, log } from '../../utils/command-helpers.mjs'
 import { login } from '../login/index.mjs'
 
 const LOGIN_NEW = 'I would like to login to a new account'

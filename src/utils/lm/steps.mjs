@@ -1,4 +1,4 @@
-import { chalk } from '../command-helpers.cjs'
+import { chalk } from '../command-helpers.mjs'
 
 import { checkGitVersion, checkHelperVersion, checkLFSFilters, checkLFSVersion } from './requirements.mjs'
 

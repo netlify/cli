@@ -4,7 +4,7 @@ import { basename } from 'path'
 import inquirer from 'inquirer'
 import { findBestMatch } from 'string-similarity'
 
-import utils from '../../utils/command-helpers.cjs'
+import { NETLIFYDEVERR, chalk, log } from '../../utils/command-helpers.mjs'
 
 import { getRecipe, listRecipes } from './common.mjs'
 import { createRecipesListCommand } from './recipes-list.mjs'
@@ -32,7 +32,7 @@ const recipesCommand = async (recipeName, options, command) => {
       throw error
     }
 
-    utils.log(`${utils.NETLIFYDEVERR} ${utils.chalk.yellow(recipeName)} is not a valid recipe name.`)
+    log(`${NETLIFYDEVERR} ${chalk.yellow(recipeName)} is not a valid recipe name.`)
 
     const recipes = await listRecipes()
     const recipeNames = recipes.map(({ name }) => name)
@@ -43,7 +43,7 @@ const recipesCommand = async (recipeName, options, command) => {
       const prompt = inquirer.prompt({
         type: 'confirm',
         name: 'suggestion',
-        message: `Did you mean ${utils.chalk.blue(suggestion)}`,
+        message: `Did you mean ${chalk.blue(suggestion)}`,
         default: false,
       })
 

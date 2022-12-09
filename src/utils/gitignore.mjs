@@ -6,7 +6,7 @@ import parseIgnore from 'parse-gitignore'
 
 import { fileExistsAsync } from '../lib/fs.cjs'
 
-import { log } from './command-helpers.cjs'
+import { log } from './command-helpers.mjs'
 
 const hasGitIgnore = async function (dir) {
   const gitIgnorePath = path.join(dir, '.gitignore')

@@ -5,7 +5,7 @@ import pick from 'lodash/pick.js'
 import parseGitHubUrl from 'parse-github-url'
 import { render } from 'prettyjson'
 
-import { chalk, error, getTerminalLink, log, logJson, warn } from '../../utils/command-helpers.cjs'
+import { chalk, error, getTerminalLink, log, logJson, warn } from '../../utils/command-helpers.mjs'
 import execa from '../../utils/execa.cjs'
 import getRepoData from '../../utils/get-repo-data.mjs'
 import { getGitHubToken } from '../../utils/init/config-github.mjs'

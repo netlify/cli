@@ -7,7 +7,7 @@ import { v4 as uuidv4 } from 'uuid'
 
 import { OneGraphCliClient, ensureCLISession } from '../../lib/one-graph/cli-client.mjs'
 import { getNetlifyGraphConfig } from '../../lib/one-graph/cli-netlify-graph.mjs'
-import { NETLIFYDEVERR, chalk, error, exit, getToken, log } from '../../utils/command-helpers.cjs'
+import { NETLIFYDEVERR, chalk, error, exit, getToken, log } from '../../utils/command-helpers.mjs'
 import { translateFromEnvelopeToMongo } from '../../utils/env/index.mjs'
 
 const { ensureAppForSite, executeCreateApiTokenMutation } = OneGraphCliClient

@@ -1,5 +1,5 @@
 // @ts-check
-import { chalk, warn } from '../../utils/command-helpers.cjs'
+import { chalk, warn } from '../../utils/command-helpers.mjs'
 import { getLogMessage } from '../log.mjs'
 
 export const detectAwsSdkError = ({ error }) => {

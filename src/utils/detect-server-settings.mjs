@@ -10,7 +10,7 @@ import isPlainObject from 'is-plain-obj'
 
 import { readFileAsyncCatchError } from '../lib/fs.cjs'
 
-import { NETLIFYDEVWARN, chalk, log } from './command-helpers.cjs'
+import { NETLIFYDEVWARN, chalk, log } from './command-helpers.mjs'
 import { acquirePort } from './dev.mjs'
 import { getInternalFunctionsDir } from './functions/index.mjs'
 

@@ -1,7 +1,7 @@
 // @ts-check
 import { listSites } from '../../lib/api.mjs'
 import { startSpinner, stopSpinner } from '../../lib/spinner.cjs'
-import { chalk, log, logJson } from '../../utils/command-helpers.cjs'
+import { chalk, log, logJson } from '../../utils/command-helpers.mjs'
 
 /**
  * The sites:list command

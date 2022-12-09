@@ -3,7 +3,7 @@ import { join } from 'path'
 import execa from 'execa'
 import inquirer from 'inquirer'
 
-import { NETLIFYDEVLOG, NETLIFYDEVWARN, chalk, error, log } from '../../utils/command-helpers.cjs'
+import { NETLIFYDEVLOG, NETLIFYDEVWARN, chalk, error, log } from '../../utils/command-helpers.mjs'
 
 import { applySettings, getSettings, writeSettings } from './settings.mjs'
 

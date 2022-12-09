@@ -2,7 +2,7 @@
 import AsciiTable from 'ascii-table'
 
 import { prepareAddonCommand } from '../../utils/addons/prepare.mjs'
-import { log, logJson } from '../../utils/command-helpers.cjs'
+import { log, logJson } from '../../utils/command-helpers.mjs'
 
 /**
  * The addons:list command

@@ -8,7 +8,7 @@ import pFilter from 'p-filter'
 
 import { fileExistsAsync } from '../lib/fs.cjs'
 
-import { NETLIFYDEVLOG } from './command-helpers.cjs'
+import { NETLIFYDEVLOG } from './command-helpers.mjs'
 import { parseRedirects } from './redirects.mjs'
 
 const watchers = []

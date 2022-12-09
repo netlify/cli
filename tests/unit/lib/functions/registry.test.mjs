@@ -1,10 +1,10 @@
 import { expect, test, vi } from 'vitest'
 
 import { FunctionsRegistry } from '../../../../src/lib/functions/registry.mjs'
-import { watchDebounced } from '../../../../src/utils/command-helpers.cjs'
+import { watchDebounced } from '../../../../src/utils/command-helpers.mjs'
 
-vi.mock('../../../../src/utils/command-helpers.cjs', async () => {
-  const helpers = await vi.importActual('../../../../src/utils/command-helpers.cjs')
+vi.mock('../../../../src/utils/command-helpers.mjs', async () => {
+  const helpers = await vi.importActual('../../../../src/utils/command-helpers.mjs')
 
   return {
     ...helpers,

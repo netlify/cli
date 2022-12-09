@@ -10,7 +10,7 @@ import inquirer from 'inquirer'
 import inquirerAutocompletePrompt from 'inquirer-autocomplete-prompt'
 import { GraphQL, GraphQLHelpers, IncludedCodegen, InternalConsole, NetlifyGraph } from 'netlify-onegraph-internal'
 
-import { chalk, error, log, warn } from '../../utils/command-helpers.cjs'
+import { chalk, error, log, warn } from '../../utils/command-helpers.mjs'
 import detectServerSettings from '../../utils/detect-server-settings.mjs'
 import execa from '../../utils/execa.cjs'
 import { getFunctionsDir } from '../../utils/functions/index.mjs'

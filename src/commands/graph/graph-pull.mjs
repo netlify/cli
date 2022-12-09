@@ -13,7 +13,7 @@ import {
   refetchAndGenerateFromOneGraph,
 } from '../../lib/one-graph/cli-client.mjs'
 import { buildSchema, getNetlifyGraphConfig, readGraphQLSchemaFile } from '../../lib/one-graph/cli-netlify-graph.mjs'
-import { NETLIFYDEVERR, chalk, error, log, warn } from '../../utils/command-helpers.cjs'
+import { NETLIFYDEVERR, chalk, error, log, warn } from '../../utils/command-helpers.mjs'
 
 /**
  * Creates the `netlify graph:pull` command

@@ -5,7 +5,7 @@ import { Option } from 'commander'
 import inquirer from 'inquirer'
 import { findBestMatch } from 'string-similarity'
 
-import { BANG, chalk, error, exit, log, NETLIFY_CYAN, USER_AGENT, warn } from '../utils/command-helpers.cjs'
+import { BANG, chalk, error, exit, log, NETLIFY_CYAN, USER_AGENT, warn } from '../utils/command-helpers.mjs'
 import execa from '../utils/execa.cjs'
 import getGlobalConfig from '../utils/get-global-config.cjs'
 import getPackageJson from '../utils/get-package-json.mjs'

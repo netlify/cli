@@ -7,7 +7,7 @@ import { Octokit } from '@octokit/rest'
 import getPort from 'get-port'
 import inquirer from 'inquirer'
 
-import { log } from './command-helpers.cjs'
+import { log } from './command-helpers.mjs'
 import createDeferred from './create-deferred.mjs'
 import openBrowser from './open-browser.mjs'
 

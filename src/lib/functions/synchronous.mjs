@@ -1,7 +1,7 @@
 // @ts-check
 import { Buffer } from 'buffer'
 
-import { NETLIFYDEVERR } from '../../utils/command-helpers.cjs'
+import { NETLIFYDEVERR } from '../../utils/command-helpers.mjs'
 import renderErrorTemplate from '../render-error-template.mjs'
 
 import { detectAwsSdkError } from './utils.mjs'

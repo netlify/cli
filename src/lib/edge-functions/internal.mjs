@@ -4,7 +4,7 @@ import { dirname, join, resolve } from 'path'
 import { cwd } from 'process'
 import { pathToFileURL } from 'url'
 
-import { warn } from '../../utils/command-helpers.cjs'
+import { warn } from '../../utils/command-helpers.mjs'
 import { getPathInProject } from '../settings.cjs'
 
 import { INTERNAL_EDGE_FUNCTIONS_FOLDER } from './consts.mjs'

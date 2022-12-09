@@ -9,8 +9,8 @@ import { afterAll, beforeAll, describe, expect, test, vi } from 'vitest'
 import { FunctionsRegistry } from '../../../../src/lib/functions/registry.mjs'
 import { createHandler } from '../../../../src/lib/functions/server.mjs'
 
-vi.mock('../../../../src/utils/command-helpers.cjs', async () => ({
-  ...(await vi.importActual('../../../../src/utils/command-helpers.cjs')),
+vi.mock('../../../../src/utils/command-helpers.mjs', async () => ({
+  ...(await vi.importActual('../../../../src/utils/command-helpers.mjs')),
   log: () => {},
 }))
 

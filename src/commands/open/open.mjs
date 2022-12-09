@@ -1,4 +1,4 @@
-import { log } from '../../utils/command-helpers.cjs'
+import { log } from '../../utils/command-helpers.mjs'
 
 import { createOpenAdminCommand, openAdmin } from './open-admin.mjs'
 import { createOpenSiteCommand, openSite } from './open-site.mjs'

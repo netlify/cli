@@ -5,7 +5,7 @@ import process from 'process'
 import { fetchLatest, fetchVersion, newerVersion, updateAvailable } from 'gh-release-fetch'
 import isExe from 'isexe'
 
-import { NETLIFYDEVWARN, error, getTerminalLink, log } from '../utils/command-helpers.cjs'
+import { NETLIFYDEVWARN, error, getTerminalLink, log } from '../utils/command-helpers.mjs'
 import execa from '../utils/execa.cjs'
 
 const isWindows = () => process.platform === 'win32'

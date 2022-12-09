@@ -6,7 +6,7 @@ import { cwd, env } from 'process'
 import getAvailablePort from 'get-port'
 import { v4 as generateUUID } from 'uuid'
 
-import { NETLIFYDEVERR, NETLIFYDEVWARN, chalk, error as printError, log } from '../../utils/command-helpers.cjs'
+import { NETLIFYDEVERR, NETLIFYDEVWARN, chalk, error as printError, log } from '../../utils/command-helpers.mjs'
 import { getGeoLocation } from '../geo-location.mjs'
 import { getPathInProject } from '../settings.cjs'
 import { startSpinner, stopSpinner } from '../spinner.cjs'

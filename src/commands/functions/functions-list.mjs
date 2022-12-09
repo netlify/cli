@@ -1,7 +1,7 @@
 // @ts-check
 import AsciiTable from 'ascii-table'
 
-import { error, exit, log, logJson, warn } from '../../utils/command-helpers.cjs'
+import { error, exit, log, logJson, warn } from '../../utils/command-helpers.mjs'
 import { getFunctions, getFunctionsDir } from '../../utils/functions/index.mjs'
 
 const normalizeFunction = function (deployedFunctions, { name, urlPath: url }) {

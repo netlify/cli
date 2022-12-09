@@ -77,19 +77,6 @@ module.exports = {
       },
     },
     {
-      files: ['src/**/*.cjs'],
-      rules: {
-        'no-restricted-modules': [
-          'error',
-          {
-            name: 'chalk',
-            message:
-              'Please use the safe chalk import that handles colors for json output. `const { chalk } = require("src/utils")`',
-          },
-        ],
-      },
-    },
-    {
       files: ['src/**/*.mjs', 'bin/**/*.mjs'],
       parserOptions: {
         sourceType: 'module',
@@ -106,7 +93,7 @@ module.exports = {
           {
             name: 'chalk',
             message:
-              'Please use the safe chalk import that handles colors for json output. `import { chalk } from "src/utils"`',
+              'Please use the safe chalk import that handles colors for json output. `import { chalk } from "src/utils/command-helpers.mjs"`',
           },
         ],
       },

@@ -2,7 +2,7 @@
 import { get } from 'dot-prop'
 import jwtDecode from 'jwt-decode'
 
-import { NETLIFYDEVERR, NETLIFYDEVLOG, error as errorExit, log } from '../../utils/command-helpers.cjs'
+import { NETLIFYDEVERR, NETLIFYDEVLOG, error as errorExit, log } from '../../utils/command-helpers.mjs'
 import { generateNetlifyGraphJWT } from '../../utils/dev.mjs'
 import { CLOCKWORK_USERAGENT, getInternalFunctionsDir } from '../../utils/functions/index.mjs'
 

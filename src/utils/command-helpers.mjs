@@ -1,22 +1,21 @@
 // @ts-check
-const { once } = require('events')
-const os = require('os')
-const process = require('process')
-const { format, inspect } = require('util')
+import { once } from 'events'
+import os from 'os'
+import process from 'process'
+import { format, inspect } from 'util'
 
-// eslint-disable-next-line no-restricted-modules
-const { Instance: ChalkInstance } = require('chalk')
-const chokidar = require('chokidar')
-const decache = require('decache')
-const WSL = require('is-wsl')
-const debounce = require('lodash/debounce')
-const { default: omit } = require('omit.js')
-const terminalLink = require('terminal-link')
+// eslint-disable-next-line no-restricted-imports
+import chalkModule from 'chalk'
+import chokidar from 'chokidar'
+import decache from 'decache'
+import WSL from 'is-wsl'
+import debounce from 'lodash/debounce.js'
+import terminalLink from 'terminal-link'
 
-const { name, version } = require('../../package.json')
-const { clearSpinner, startSpinner } = require('../lib/spinner.cjs')
+import { clearSpinner, startSpinner } from '../lib/spinner.cjs'
 
-const getGlobalConfig = require('./get-global-config.cjs')
+import getGlobalConfig from './get-global-config.cjs'
+import getPackageJson from './get-package-json.mjs'
 
 /** The parsed process argv without the binary only arguments and flags */
 const argv = process.argv.slice(2)
@@ -28,13 +27,13 @@ const argv = process.argv.slice(2)
  */
 const safeChalk = function (noColors) {
   if (noColors) {
-    const colorlessChalk = new ChalkInstance({ level: 0 })
+    const colorlessChalk = new chalkModule.Instance({ level: 0 })
     return colorlessChalk
   }
-  return new ChalkInstance()
+  return new chalkModule.Instance()
 }
 
-const chalk = safeChalk(argv.includes('--json'))
+export const chalk = safeChalk(argv.includes('--json'))
 
 /**
  * Adds the filler to the start of the string
@@ -43,24 +42,26 @@ const chalk = safeChalk(argv.includes('--json'))
  * @param {string} [filler]
  * @returns {string}
  */
-const padLeft = (str, count, filler = ' ') => str.padStart(str.length + count, filler)
+export const padLeft = (str, count, filler = ' ') => str.padStart(str.length + count, filler)
 
 const platform = WSL ? 'wsl' : os.platform()
 const arch = os.arch() === 'ia32' ? 'x86' : os.arch()
 
-const USER_AGENT = `${name}/${version} ${platform}-${arch} node-${process.version}`
+const { name, version } = await getPackageJson()
+
+export const USER_AGENT = `${name}/${version} ${platform}-${arch} node-${process.version}`
 
 /** A list of base command flags that needs to be sorted down on documentation and on help pages */
 const BASE_FLAGS = new Set(['--debug', '--httpProxy', '--httpProxyCertificateFilename'])
 
-const NETLIFY_CYAN = chalk.rgb(40, 180, 170)
+export const NETLIFY_CYAN = chalk.rgb(40, 180, 170)
 
-const NETLIFYDEV = `${chalk.greenBright('◈')} ${NETLIFY_CYAN('Netlify Dev')} ${chalk.greenBright('◈')}`
-const NETLIFYDEVLOG = `${chalk.greenBright('◈')}`
-const NETLIFYDEVWARN = `${chalk.yellowBright('◈')}`
-const NETLIFYDEVERR = `${chalk.redBright('◈')}`
+export const NETLIFYDEV = `${chalk.greenBright('◈')} ${NETLIFY_CYAN('Netlify Dev')} ${chalk.greenBright('◈')}`
+export const NETLIFYDEVLOG = `${chalk.greenBright('◈')}`
+export const NETLIFYDEVWARN = `${chalk.yellowBright('◈')}`
+export const NETLIFYDEVERR = `${chalk.redBright('◈')}`
 
-const BANG = process.platform === 'win32' ? '»' : '›'
+export const BANG = process.platform === 'win32' ? '»' : '›'
 
 /**
  * Sorts two options so that the base flags are at the bottom of the list
@@ -70,7 +71,7 @@ const BANG = process.platform === 'win32' ? '»' : '›'
  * @example
  * options.sort(sortOptions)
  */
-const sortOptions = (optionA, optionB) => {
+export const sortOptions = (optionA, optionB) => {
   // base flags should be always at the bottom
   if (BASE_FLAGS.has(optionA.long) || BASE_FLAGS.has(optionB.long)) {
     return -1
@@ -88,7 +89,7 @@ const TOKEN_TIMEOUT = 3e5
  * @param {object} config.ticket
  * @returns
  */
-const pollForToken = async ({ api, ticket }) => {
+export const pollForToken = async ({ api, ticket }) => {
   const spinner = startSpinner({ text: 'Waiting for authorization...' })
   try {
     const accessToken = await api.getAccessToken(ticket, { timeout: TOKEN_TIMEOUT })
@@ -118,7 +119,7 @@ const pollForToken = async ({ api, ticket }) => {
  * @param {string} [tokenFromOptions] optional token from the provided --auth options
  * @returns {Promise<[null|string, 'flag' | 'env' |'config' |'not found']>}
  */
-const getToken = async (tokenFromOptions) => {
+export const getToken = async (tokenFromOptions) => {
   // 1. First honor command flag --auth
   if (tokenFromOptions) {
     return [tokenFromOptions, 'flag']
@@ -146,13 +147,13 @@ const isDefaultJson = () => argv[0] === 'functions:invoke' || (argv[0] === 'api'
  * logs a json message
  * @param {string|object} message
  */
-const logJson = (message = '') => {
+export const logJson = (message = '') => {
   if (argv.includes('--json') || isDefaultJson()) {
     process.stdout.write(JSON.stringify(message, null, 2))
   }
 }
 
-const log = (message = '', ...args) => {
+export const log = (message = '', ...args) => {
   // If  --silent or --json flag passed disable logger
   if (argv.includes('--json') || argv.includes('--silent') || isDefaultJson()) {
     return
@@ -165,7 +166,7 @@ const log = (message = '', ...args) => {
  * logs a warning message
  * @param {string} message
  */
-const warn = (message = '') => {
+export const warn = (message = '') => {
   const bang = chalk.yellow(BANG)
   log(` ${bang}   Warning: ${message}`)
 }
@@ -176,7 +177,7 @@ const warn = (message = '') => {
  * @param {object} [options]
  * @param {boolean} [options.exit]
  */
-const error = (message = '', options = {}) => {
+export const error = (message = '', options = {}) => {
   const err = message instanceof Error ? message : new Error(message)
   if (options.exit === false) {
     const bang = chalk.red(BANG)
@@ -190,18 +191,21 @@ const error = (message = '', options = {}) => {
   }
 }
 
-const exit = (code = 0) => {
+export const exit = (code = 0) => {
   process.exit(code)
 }
 
 // When `build.publish` is not set by the user, the CLI behavior differs in
 // several ways. It detects it by checking if `build.publish` is `undefined`.
 // However, `@netlify/config` adds a default value to `build.publish`.
-// This removes it.
-const normalizeConfig = (config) =>
-  config.build.publishOrigin === 'default'
-    ? { ...config, build: omit(config.build, ['publish', 'publishOrigin']) }
-    : config
+// This removes 'publish' and 'publishOrigin' in this case.
+export const normalizeConfig = (config) => {
+  // Unused var here is in order to omit 'publish' from build config
+  // eslint-disable-next-line no-unused-vars
+  const { publish, publishOrigin, ...build } = config.build
+
+  return publishOrigin === 'default' ? { ...config, build } : config
+}
 
 const DEBOUNCE_WAIT = 100
 
@@ -215,7 +219,7 @@ const DEBOUNCE_WAIT = 100
  * @param {() => any} [opts.onChange]
  * @param {() => any} [opts.onUnlink]
  */
-const watchDebounced = async (target, { depth, onAdd = () => {}, onChange = () => {}, onUnlink = () => {} }) => {
+export const watchDebounced = async (target, { depth, onAdd = () => {}, onChange = () => {}, onUnlink = () => {} }) => {
   const watcher = chokidar.watch(target, { depth, ignored: /node_modules/, ignoreInitial: true })
 
   await once(watcher, 'ready')
@@ -241,27 +245,4 @@ const watchDebounced = async (target, { depth, onAdd = () => {}, onChange = () =
   return watcher
 }
 
-const getTerminalLink = (text, url) => terminalLink(text, url, { fallback: () => `${text} ${url}` })
-
-module.exports = {
-  BANG,
-  chalk,
-  error,
-  exit,
-  getTerminalLink,
-  getToken,
-  log,
-  logJson,
-  NETLIFY_CYAN,
-  NETLIFYDEV,
-  NETLIFYDEVERR,
-  NETLIFYDEVLOG,
-  NETLIFYDEVWARN,
-  normalizeConfig,
-  padLeft,
-  pollForToken,
-  sortOptions,
-  USER_AGENT,
-  warn,
-  watchDebounced,
-}
+export const getTerminalLink = (text, url) => terminalLink(text, url, { fallback: () => `${text} ${url}` })

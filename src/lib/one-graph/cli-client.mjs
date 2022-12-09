@@ -13,7 +13,7 @@ import gitRepoInfo from 'git-repo-info'
 import WSL from 'is-wsl'
 import { GraphQL, InternalConsole, NetlifyGraph, NetlifyGraphLockfile, OneGraphClient } from 'netlify-onegraph-internal'
 
-import { chalk, error, log, warn, watchDebounced } from '../../utils/command-helpers.cjs'
+import { chalk, error, log, warn, watchDebounced } from '../../utils/command-helpers.mjs'
 import execa from '../../utils/execa.cjs'
 import getPackageJson from '../../utils/get-package-json.mjs'
 

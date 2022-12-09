@@ -8,7 +8,7 @@ import inquirer from 'inquirer'
 
 import { fileExistsAsync } from '../../lib/fs.cjs'
 import { normalizeBackslash } from '../../lib/path.mjs'
-import { chalk, error as failAndExit, log, warn } from '../command-helpers.cjs'
+import { chalk, error as failAndExit, log, warn } from '../command-helpers.mjs'
 
 import { getFrameworkInfo } from './frameworks.mjs'
 import { detectNodeVersion } from './node-version.mjs'

@@ -1,7 +1,7 @@
 // @ts-check
 import { parseAllRedirects } from 'netlify-redirect-parser'
 
-import { NETLIFYDEVERR, log } from './command-helpers.cjs'
+import { NETLIFYDEVERR, log } from './command-helpers.mjs'
 
 // Parse, normalize and validate all redirects from `_redirects` files
 // and `netlify.toml`

@@ -1,7 +1,7 @@
 // @ts-check
 import { Option } from 'commander'
 
-import { chalk, error, log, logJson } from '../../utils/command-helpers.cjs'
+import { chalk, error, log, logJson } from '../../utils/command-helpers.mjs'
 import { AVAILABLE_CONTEXTS, getEnvelopeEnv, normalizeContext } from '../../utils/env/index.mjs'
 
 /**

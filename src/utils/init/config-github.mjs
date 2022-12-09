@@ -1,7 +1,7 @@
 // @ts-check
 import { Octokit } from '@octokit/rest'
 
-import { chalk, error as failAndExit, log } from '../command-helpers.cjs'
+import { chalk, error as failAndExit, log } from '../command-helpers.mjs'
 import { getGitHubToken as ghauth } from '../gh-auth.mjs'
 
 import { createDeployKey, formatErrorMessage, getBuildSettings, saveNetlifyToml, setupSite } from './utils.mjs'

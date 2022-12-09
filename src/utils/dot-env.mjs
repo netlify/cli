@@ -6,7 +6,7 @@ import dotenv from 'dotenv'
 
 import { isFileAsync } from '../lib/fs.cjs'
 
-import { warn } from './command-helpers.cjs'
+import { warn } from './command-helpers.mjs'
 
 export const loadDotEnvFiles = async function ({ envFiles, projectDir }) {
   const response = await tryLoadDotEnvFiles({ projectDir, dotenvFiles: envFiles })

@@ -1,4 +1,4 @@
-import { NETLIFYDEVERR, NETLIFYDEVLOG } from '../../utils/command-helpers.cjs'
+import { NETLIFYDEVERR, NETLIFYDEVLOG } from '../../utils/command-helpers.mjs'
 
 import { formatLambdaError, styleFunctionName } from './utils.mjs'
 

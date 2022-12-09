@@ -1,6 +1,6 @@
 import dotProp from 'dot-prop'
 
-import { chalk } from '../utils/command-helpers.cjs'
+import { chalk } from '../utils/command-helpers.mjs'
 
 const RED_BACKGROUND = chalk.red('-background')
 const [PRO, BUSINESS, ENTERPRISE] = ['Pro', 'Business', 'Enterprise'].map((plan) => chalk.magenta(plan))

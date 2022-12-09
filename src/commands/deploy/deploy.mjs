@@ -26,7 +26,7 @@ import {
   NETLIFYDEVERR,
   NETLIFYDEVLOG,
   warn,
-} from '../../utils/command-helpers.cjs'
+} from '../../utils/command-helpers.mjs'
 import { deploySite } from '../../utils/deploy/deploy-site.mjs'
 import { getFunctionsManifestPath, getInternalFunctionsDir } from '../../utils/functions/index.mjs'
 import openBrowser from '../../utils/open-browser.mjs'

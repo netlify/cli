@@ -1,7 +1,7 @@
 // @ts-check
 import { fileURLToPath } from 'url'
 
-import { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log, warn, watchDebounced } from '../../utils/command-helpers.cjs'
+import { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log, warn, watchDebounced } from '../../utils/command-helpers.mjs'
 
 /**
  * @typedef EdgeFunction

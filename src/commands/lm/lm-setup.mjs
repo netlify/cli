@@ -1,7 +1,7 @@
 // @ts-check
 import Listr from 'listr'
 
-import { error } from '../../utils/command-helpers.cjs'
+import { error } from '../../utils/command-helpers.mjs'
 import execa from '../../utils/execa.cjs'
 import { installPlatform } from '../../utils/lm/install.mjs'
 import { checkHelperVersion } from '../../utils/lm/requirements.mjs'

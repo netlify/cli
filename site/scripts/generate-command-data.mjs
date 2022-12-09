@@ -1,6 +1,6 @@
 // @ts-check
 import { createMainCommand } from '../../src/commands/index.mjs'
-import { sortOptions } from '../../src/utils/command-helpers.cjs'
+import { sortOptions } from '../../src/utils/command-helpers.mjs'
 
 const program = createMainCommand()
 

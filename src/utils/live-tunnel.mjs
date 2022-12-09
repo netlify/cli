@@ -7,7 +7,7 @@ import pWaitFor from 'p-wait-for'
 import { fetchLatestVersion, shouldFetchLatestVersion } from '../lib/exec-fetcher.mjs'
 import { getPathInHome } from '../lib/settings.cjs'
 
-import { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log } from './command-helpers.cjs'
+import { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log } from './command-helpers.mjs'
 import execa from './execa.cjs'
 
 const PACKAGE_NAME = 'live-tunnel-client'

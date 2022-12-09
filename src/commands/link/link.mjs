@@ -2,7 +2,7 @@
 import inquirer from 'inquirer'
 
 import { listSites } from '../../lib/api.mjs'
-import { chalk, error, exit, log } from '../../utils/command-helpers.cjs'
+import { chalk, error, exit, log } from '../../utils/command-helpers.mjs'
 import getRepoData from '../../utils/get-repo-data.mjs'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.mjs'
 import { track } from '../../utils/telemetry/index.mjs'

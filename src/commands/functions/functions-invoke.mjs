@@ -7,7 +7,7 @@ import process from 'process'
 import inquirer from 'inquirer'
 import fetch from 'node-fetch'
 
-import { NETLIFYDEVWARN, chalk, error, exit } from '../../utils/command-helpers.cjs'
+import { NETLIFYDEVWARN, chalk, error, exit } from '../../utils/command-helpers.mjs'
 import { BACKGROUND, CLOCKWORK_USERAGENT, getFunctions } from '../../utils/functions/index.mjs'
 
 const require = createRequire(import.meta.url)

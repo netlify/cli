@@ -12,7 +12,7 @@ import {
   NETLIFYDEVWARN,
   warn,
   watchDebounced,
-} from '../../utils/command-helpers.cjs'
+} from '../../utils/command-helpers.mjs'
 import { getLogMessage } from '../log.mjs'
 
 import NetlifyFunction from './netlify-function.mjs'

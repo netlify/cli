@@ -3,7 +3,7 @@ import process from 'process'
 import open from 'better-opn'
 import isDockerContainer from 'is-docker'
 
-import { chalk, log } from './command-helpers.cjs'
+import { chalk, log } from './command-helpers.mjs'
 
 const unableToOpenBrowserMessage = function ({ message, url }) {
   log('---------------------------')

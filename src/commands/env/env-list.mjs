@@ -6,7 +6,7 @@ import { Option } from 'commander'
 import inquirer from 'inquirer'
 import logUpdate from 'log-update'
 
-import { chalk, error, log, logJson } from '../../utils/command-helpers.cjs'
+import { chalk, error, log, logJson } from '../../utils/command-helpers.mjs'
 import { AVAILABLE_CONTEXTS, getEnvelopeEnv, getHumanReadableScopes, normalizeContext } from '../../utils/env/index.mjs'
 
 const MASK_LENGTH = 50

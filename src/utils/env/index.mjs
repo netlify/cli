@@ -1,4 +1,4 @@
-import { error } from '../command-helpers.cjs'
+import { error } from '../command-helpers.mjs'
 
 export const AVAILABLE_CONTEXTS = ['all', 'production', 'deploy-preview', 'branch-deploy', 'dev']
 export const AVAILABLE_SCOPES = ['builds', 'functions', 'runtime', 'post_processing']

@@ -8,7 +8,7 @@ import isEmpty from 'lodash/isEmpty.js'
 
 import { supportsBackgroundFunctions } from '../lib/account.mjs'
 
-import { NETLIFYDEVLOG, chalk, error, log, warn } from './command-helpers.cjs'
+import { NETLIFYDEVLOG, chalk, error, log, warn } from './command-helpers.mjs'
 import { loadDotEnvFiles } from './dot-env.mjs'
 
 // Possible sources of environment variables. For the purpose of printing log messages only. Order does not matter.

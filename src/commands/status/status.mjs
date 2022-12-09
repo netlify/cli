@@ -2,7 +2,7 @@
 import clean from 'clean-deep'
 import prettyjson from 'prettyjson'
 
-import { chalk, error, exit, getToken, log, logJson, warn } from '../../utils/command-helpers.cjs'
+import { chalk, error, exit, getToken, log, logJson, warn } from '../../utils/command-helpers.mjs'
 
 import { createStatusHooksCommand } from './status-hooks.mjs'
 

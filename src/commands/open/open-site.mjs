@@ -1,4 +1,4 @@
-import { error, exit, log, warn } from '../../utils/command-helpers.cjs'
+import { error, exit, log, warn } from '../../utils/command-helpers.mjs'
 import openBrowser from '../../utils/open-browser.mjs'
 
 /**

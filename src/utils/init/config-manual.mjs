@@ -1,7 +1,7 @@
 // @ts-check
 import inquirer from 'inquirer'
 
-import { exit, log } from '../command-helpers.cjs'
+import { exit, log } from '../command-helpers.mjs'
 
 import { createDeployKey, getBuildSettings, saveNetlifyToml, setupSite } from './utils.mjs'
 

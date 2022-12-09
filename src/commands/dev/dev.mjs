@@ -41,7 +41,7 @@ import {
   normalizeConfig,
   warn,
   watchDebounced,
-} from '../../utils/command-helpers.cjs'
+} from '../../utils/command-helpers.mjs'
 import detectServerSettings from '../../utils/detect-server-settings.mjs'
 import { generateNetlifyGraphJWT, getSiteInformation, injectEnvVariables, processOnExit } from '../../utils/dev.mjs'
 import { getEnvelopeEnv, normalizeContext } from '../../utils/env/index.mjs'

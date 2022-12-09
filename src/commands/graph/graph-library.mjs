@@ -12,7 +12,7 @@ import {
   readGraphQLOperationsSourceFile,
   readGraphQLSchemaFile,
 } from '../../lib/one-graph/cli-netlify-graph.mjs'
-import { NETLIFYDEVERR, chalk, error, log } from '../../utils/command-helpers.cjs'
+import { NETLIFYDEVERR, chalk, error, log } from '../../utils/command-helpers.mjs'
 
 /**
  * Creates the `netlify graph:library` command

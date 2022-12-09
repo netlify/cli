@@ -2,7 +2,7 @@ import os from 'os'
 
 import boxen from 'boxen'
 
-import { chalk, log } from '../command-helpers.cjs'
+import { chalk, log } from '../command-helpers.mjs'
 
 import { getShellInfo, isBinInPath } from './install.mjs'
 

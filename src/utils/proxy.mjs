@@ -28,7 +28,7 @@ import {
 import { fileExistsAsync, isFileAsync } from '../lib/fs.cjs'
 import renderErrorTemplate from '../lib/render-error-template.mjs'
 
-import { NETLIFYDEVLOG, NETLIFYDEVWARN } from './command-helpers.cjs'
+import { NETLIFYDEVLOG, NETLIFYDEVWARN } from './command-helpers.mjs'
 import createStreamPromise from './create-stream-promise.mjs'
 import { headersForPath, parseHeaders } from './headers.mjs'
 import { createRewriter, onChanges } from './rules-proxy.mjs'

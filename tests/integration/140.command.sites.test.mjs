@@ -12,8 +12,8 @@ import { createRepo, getTemplatesFromGitHub } from '../../src/utils/sites/utils.
 
 import { getEnvironmentVariables, withMockApi } from './utils/mock-api.cjs'
 
-vi.mock('../../src/utils/command-helpers.cjs', async () => ({
-  ...(await vi.importActual('../../src/utils/command-helpers.cjs')),
+vi.mock('../../src/utils/command-helpers.mjs', async () => ({
+  ...(await vi.importActual('../../src/utils/command-helpers.mjs')),
   log: () => {},
 }))
 

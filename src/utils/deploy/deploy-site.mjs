@@ -3,7 +3,7 @@ import tempy from 'tempy'
 
 import { deployFileNormalizer, getDistPathIfExists, isEdgeFunctionFile } from '../../lib/edge-functions/deploy.mjs'
 import { rmdirRecursiveAsync } from '../../lib/fs.cjs'
-import { warn } from '../command-helpers.cjs'
+import { warn } from '../command-helpers.mjs'
 
 import {
   DEFAULT_CONCURRENT_HASH,

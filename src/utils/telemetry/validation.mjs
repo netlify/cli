@@ -1,7 +1,7 @@
 /**
  * Utility to validating analytic event names for clean data
  */
-import { log } from '../command-helpers.cjs'
+import { log } from '../command-helpers.mjs'
 
 export default function isValidEventName(eventName, config) {
   const validProject = [config.projectName]

@@ -305,7 +305,6 @@
     "netlify-redirector": "^0.3.1",
     "node-fetch": "^2.6.0",
     "node-version-alias": "^1.0.1",
-    "omit.js": "^2.0.2",
     "ora": "^5.0.0",
     "p-filter": "^2.1.0",
     "p-map": "^4.0.0",

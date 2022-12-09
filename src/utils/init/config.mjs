@@ -1,5 +1,5 @@
 // @ts-check
-import { chalk, log } from '../command-helpers.cjs'
+import { chalk, log } from '../command-helpers.mjs'
 
 import { configGithub } from './config-github.mjs'
 import configManual from './config-manual.mjs'

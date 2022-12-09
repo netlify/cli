@@ -4,7 +4,7 @@ import { readFile } from 'fs/promises'
 import AsciiTable from 'ascii-table'
 import dotenv from 'dotenv'
 
-import { exit, log, logJson } from '../../utils/command-helpers.cjs'
+import { exit, log, logJson } from '../../utils/command-helpers.mjs'
 import { translateFromEnvelopeToMongo, translateFromMongoToEnvelope } from '../../utils/env/index.mjs'
 
 /**
