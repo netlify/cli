@@ -1,10 +1,8 @@
-import { dirname } from 'path'
-
 import lambdaLocal from 'lambda-local'
 import winston from 'winston'
 
 import detectNetlifyLambdaBuilder from './builders/netlify-lambda.mjs'
-import detectZisiBuilder, { parseForSchedule } from './builders/zisi.mjs'
+import detectZisiBuilder from './builders/zisi.mjs'
 
 export const name = 'js'
 
@@ -39,18 +37,7 @@ export const getBuildFunction = async ({ config, directory, errorExit, func, pro
 
   const zisiBuilder = await detectZisiBuilder({ config, directory, errorExit, func, projectRoot })
 
-  if (zisiBuilder) {
-    return zisiBuilder.build
-  }
-
-  // If there's no function builder, we create a simple one on-the-fly which
-  // returns as `srcFiles` the function directory, if there is one, or its
-  // main file otherwise.
-  const functionDirectory = dirname(func.mainFile)
-  const srcFiles = functionDirectory === directory ? [func.mainFile] : [functionDirectory]
-  const schedule = await parseForSchedule({ mainFile: func.mainFile, config, projectRoot })
-
-  return () => ({ schedule, srcFiles })
+  return zisiBuilder.build
 }
 
 export const invokeFunction = async ({ context, event, func, timeout }) => {

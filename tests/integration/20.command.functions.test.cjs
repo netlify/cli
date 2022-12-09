@@ -761,6 +761,31 @@ test('should serve helpful tips and tricks', async (t) => {
   })
 })
 
+test('should support functions that do not run natively on node', async (t) => {
+  await withSiteBuilder('site-with-function-needs-bundle', async (builder) => {
+    await builder
+      .withContentFile({
+        path: 'netlify/functions/hello-world.js',
+        content: `
+          import { join } from 'path'
+
+          export const handler = async () => {
+            return {
+              statusCode: 200,
+              body: "hello world"
+            }
+          }`,
+      })
+      .buildAsync()
+
+    await withDevServer({ cwd: builder.directory }, async (server) => {
+      const response = await got(`http://localhost:${server.port}/.netlify/functions/hello-world`)
+      t.is(response.body, 'hello world')
+      t.is(response.statusCode, 200)
+    })
+  })
+})
+
 test('should emulate next_run for scheduled functions', async (t) => {
   await withSiteBuilder('site-with-isc-ping-function', async (builder) => {
     await builder

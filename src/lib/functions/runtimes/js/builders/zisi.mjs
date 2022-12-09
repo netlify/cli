@@ -114,22 +114,6 @@ export default async function handler({ config, directory, errorExit, func, proj
   const packageJson = await readPkgUp(func.mainFile)
   const hasTypeModule = packageJson && packageJson.packageJson.type === 'module'
 
-  // We must use esbuild for certain file extensions.
-  const mustTranspile = ['.mjs', '.ts'].includes(path.extname(func.mainFile))
-  const mustUseEsbuild = hasTypeModule || mustTranspile
-
-  if (mustUseEsbuild && !functionsConfig['*'].nodeBundler) {
-    functionsConfig['*'].nodeBundler = 'esbuild'
-  }
-
-  // TODO: Resolve functions config globs so that we can check for the bundler
-  // on a per-function basis.
-  const isUsingEsbuild = ['esbuild_zisi', 'esbuild'].includes(functionsConfig['*'].nodeBundler)
-
-  if (!isUsingEsbuild) {
-    return false
-  }
-
   // Enable source map support.
   sourceMapSupport.install()
 
