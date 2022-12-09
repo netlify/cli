@@ -1,6 +1,6 @@
 // @ts-check
 const { promises: fs } = require('fs')
-const path = require('path')
+const { dirname, join, resolve } = require('path')
 const { cwd } = require('process')
 const { pathToFileURL } = require('url')
 
@@ -30,16 +30,16 @@ const getImportMap = async (importMapPath) => {
 }
 
 const getInternalFunctions = async () => {
-  const internalPath = path.join(cwd(), getPathInProject([INTERNAL_EDGE_FUNCTIONS_FOLDER]))
+  const path = join(cwd(), getPathInProject([INTERNAL_EDGE_FUNCTIONS_FOLDER]))
 
   try {
-    const stats = await fs.stat(internalPath)
+    const stats = await fs.stat(path)
 
     if (!stats.isDirectory()) {
       throw new Error('Path is not a directory')
     }
 
-    const manifestPath = path.join(internalPath, 'manifest.json')
+    const manifestPath = join(path, 'manifest.json')
     // eslint-disable-next-line import/no-dynamic-require, n/global-require
     const manifest = require(manifestPath)
 
@@ -49,11 +49,11 @@ const getInternalFunctions = async () => {
 
     const data = {
       functions: manifest.functions,
-      path: internalPath,
+      path,
     }
 
     if (manifest.import_map) {
-      const importMapPath = path.resolve(path.dirname(manifestPath), manifest.import_map)
+      const importMapPath = resolve(dirname(manifestPath), manifest.import_map)
       const importMap = await getImportMap(importMapPath)
 
       if (importMap !== null) {
@@ -71,7 +71,7 @@ const getInternalFunctions = async () => {
   } catch {
     return {
       functions: [],
-      path: null,
+      path,
     }
   }
 }
