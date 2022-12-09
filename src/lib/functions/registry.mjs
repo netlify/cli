@@ -13,7 +13,7 @@ import {
   warn,
   watchDebounced,
 } from '../../utils/command-helpers.cjs'
-import { getLogMessage } from '../log.cjs'
+import { getLogMessage } from '../log.mjs'
 
 import NetlifyFunction from './netlify-function.mjs'
 import runtimes from './runtimes/index.mjs'

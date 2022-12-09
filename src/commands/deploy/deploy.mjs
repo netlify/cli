@@ -13,7 +13,7 @@ import prettyjson from 'prettyjson'
 import { cancelDeploy } from '../../lib/api.mjs'
 import { getBuildOptions, runBuild } from '../../lib/build.mjs'
 import { normalizeFunctionsConfig } from '../../lib/functions/config.mjs'
-import { getLogMessage } from '../../lib/log.cjs'
+import { getLogMessage } from '../../lib/log.mjs'
 import { startSpinner, stopSpinner } from '../../lib/spinner.cjs'
 import {
   chalk,

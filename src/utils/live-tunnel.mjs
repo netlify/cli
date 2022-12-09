@@ -4,7 +4,7 @@ import process from 'process'
 import fetch from 'node-fetch'
 import pWaitFor from 'p-wait-for'
 
-import { fetchLatestVersion, shouldFetchLatestVersion } from '../lib/exec-fetcher.cjs'
+import { fetchLatestVersion, shouldFetchLatestVersion } from '../lib/exec-fetcher.mjs'
 import { getPathInHome } from '../lib/settings.cjs'
 
 import { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log } from './command-helpers.cjs'

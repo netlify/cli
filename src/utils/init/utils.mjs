@@ -7,7 +7,7 @@ import cleanDeep from 'clean-deep'
 import inquirer from 'inquirer'
 
 import { fileExistsAsync } from '../../lib/fs.cjs'
-import { normalizeBackslash } from '../../lib/path.cjs'
+import { normalizeBackslash } from '../../lib/path.mjs'
 import { chalk, error as failAndExit, log, warn } from '../command-helpers.cjs'
 
 import { getFrameworkInfo } from './frameworks.mjs'

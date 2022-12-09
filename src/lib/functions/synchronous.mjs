@@ -2,7 +2,7 @@
 import { Buffer } from 'buffer'
 
 import { NETLIFYDEVERR } from '../../utils/command-helpers.cjs'
-import renderErrorTemplate from '../render-error-remplate.cjs'
+import renderErrorTemplate from '../render-error-template.mjs'
 
 import { detectAwsSdkError } from './utils.mjs'
 

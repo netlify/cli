@@ -1,6 +1,6 @@
-const dotProp = require('dot-prop')
+import dotProp from 'dot-prop'
 
-const { chalk } = require('../utils/index.cjs')
+import { chalk } from '../utils/command-helpers.cjs'
 
 const RED_BACKGROUND = chalk.red('-background')
 const [PRO, BUSINESS, ENTERPRISE] = ['Pro', 'Business', 'Enterprise'].map((plan) => chalk.magenta(plan))
@@ -24,8 +24,4 @@ const messages = {
   },
 }
 
-const getLogMessage = (key) => dotProp.get(messages, key, 'Missing Log Message Key')
-
-module.exports = {
-  getLogMessage,
-}
+export const getLogMessage = (key) => dotProp.get(messages, key, 'Missing Log Message Key')

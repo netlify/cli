@@ -26,7 +26,7 @@ import {
   isEdgeFunctionsRequest,
 } from '../lib/edge-functions/proxy.mjs'
 import { fileExistsAsync, isFileAsync } from '../lib/fs.cjs'
-import renderErrorTemplate from '../lib/render-error-remplate.cjs'
+import renderErrorTemplate from '../lib/render-error-template.mjs'
 
 import { NETLIFYDEVLOG, NETLIFYDEVWARN } from './command-helpers.cjs'
 import createStreamPromise from './create-stream-promise.mjs'
