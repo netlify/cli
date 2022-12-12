@@ -15,7 +15,7 @@ const globalConfigDefaults = {
 // Memoise config result so that we only load it once
 let configStore
 
-const getGlobalConfigOnce = async function () {
+const getGlobalConfig = async function () {
   if (!configStore) {
     const configPath = getPathInHome(['config.json'])
     // Legacy config file in home ~/.netlify/config.json
@@ -31,20 +31,6 @@ const getGlobalConfigOnce = async function () {
   }
 
   return configStore
-}
-
-const getGlobalConfig = async function () {
-  const retries = 3
-  // eslint-disable-next-line fp/no-loops
-  for (let retry = 1; retry <= retries; retry++) {
-    try {
-      return await getGlobalConfigOnce()
-    } catch (error) {
-      if (retry === retries) {
-        throw error
-      }
-    }
-  }
 }
 
 export const resetConfigCache = () => {
