@@ -747,74 +747,12 @@ test('should respect in-source configuration from edge functions', async (t) => 
         },
       })
       .withEdgeFunction({
-        config: () => ({ path: '/hello' }),
+        config: () => ({ path: '/hello-1' }),
         handler: () => new Response('Hello world'),
         name: 'hello',
       })
-
-    await builder.buildAsync()
-
-    await withDevServer({ cwd: builder.directory }, async ({ port, waitForLogMatching }) => {
-      const res = await got(`http://localhost:${port}/hello`, { throwHttpErrors: false })
-
-      t.is(res.statusCode, 200)
-      t.is(res.body, 'Hello world')
-
-      // wait for file watcher to be up and running, which might take a little
-      // if we do not wait, the next file change will not be picked up
-      await pause(500)
-
-      await builder
-        .withEdgeFunction({
-          config: () => ({ path: '/hello-2' }),
-          handler: () => new Response('Hello world'),
-          name: 'hello',
-        })
-        .withEdgeFunction({
-          config: () => ({ path: '/internal-2' }),
-          handler: () => new Response('Hello from an internal function'),
-          internal: true,
-          name: 'internal',
-        })
-        .buildAsync()
-
-      await waitForLogMatching('Reloaded edge function')
-
-      const res3 = await got(`http://localhost:${port}/hello-1`, { throwHttpErrors: false })
-
-      t.is(res3.statusCode, 404)
-
-      const res4 = await got(`http://localhost:${port}/hello-2`, { throwHttpErrors: false })
-
-      t.is(res4.statusCode, 200)
-      t.is(res4.body, 'Hello world')
-
-      const res5 = await got(`http://localhost:${port}/internal-1`, { throwHttpErrors: false })
-
-      t.is(res5.statusCode, 404)
-
-      const res6 = await got(`http://localhost:${port}/internal-2`, { throwHttpErrors: false })
-
-      t.is(res6.statusCode, 200)
-      t.is(res6.body, 'Hello from an internal function')
-    })
-  })
-})
-
-test('should respect in-source configuration from internal edge functions', async (t) => {
-  await withSiteBuilder('site-with-edge-functions', async (builder) => {
-    const publicDir = 'public'
-    await builder
-      .withNetlifyToml({
-        config: {
-          build: {
-            publish: publicDir,
-            edge_functions: 'netlify/edge-functions',
-          },
-        },
-      })
       .withEdgeFunction({
-        config: () => ({ path: '/internal' }),
+        config: () => ({ path: '/internal-1' }),
         handler: () => new Response('Hello from an internal function'),
         internal: true,
         name: 'internal',
@@ -823,10 +761,15 @@ test('should respect in-source configuration from internal edge functions', asyn
     await builder.buildAsync()
 
     await withDevServer({ cwd: builder.directory }, async ({ port, waitForLogMatching }) => {
-      const res = await got(`http://localhost:${port}/internal`, { throwHttpErrors: false })
+      const res1 = await got(`http://localhost:${port}/hello-1`, { throwHttpErrors: false })
 
-      t.is(res.statusCode, 200)
-      t.is(res.body, 'Hello from an internal function')
+      t.is(res1.statusCode, 200)
+      t.is(res1.body, 'Hello world')
+
+      const res2 = await got(`http://localhost:${port}/internal-1`, { throwHttpErrors: false })
+
+      t.is(res2.statusCode, 200)
+      t.is(res2.body, 'Hello from an internal function')
 
       // wait for file watcher to be up and running, which might take a little
       // if we do not wait, the next file change will not be picked up
