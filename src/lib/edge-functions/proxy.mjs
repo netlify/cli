@@ -89,16 +89,22 @@ export const initializeProxy = async ({
     projectDir,
   })
 
+  if (!userFunctionsPath && !internalFunctionsPath) {
+    return
+  }
+
   return async (req) => {
     const registry = await server
-    if (!registry) return
-    const hasEdgeFunctions = registry.functions.length !== 0
 
-    await registry.initialize()
+    if (!registry) return
+
+    const hasEdgeFunctions = registry.functions.length !== 0
 
     if (req.headers[headers.Passthrough] !== undefined || !hasEdgeFunctions) {
       return
     }
+
+    await registry.initialize()
 
     const geoLocation = await getGeoLocation({ mode: geolocationMode, geoCountry, offline, state })
 
