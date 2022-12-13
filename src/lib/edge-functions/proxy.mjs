@@ -88,25 +88,23 @@ export const initializeProxy = async ({
     port: isolatePort,
     projectDir,
   })
-  const hasEdgeFunctions = userFunctionsPath !== undefined || internalFunctions.length !== 0
 
   return async (req) => {
+    const registry = await server
+    if (!registry) return
+    const hasEdgeFunctions = registry.functions.length !== 0
+
+    await registry.initialize()
+
     if (req.headers[headers.Passthrough] !== undefined || !hasEdgeFunctions) {
       return
     }
 
-    const [geoLocation, registry] = await Promise.all([
-      getGeoLocation({ mode: geolocationMode, geoCountry, offline, state }),
-      server,
-    ])
-
-    if (!registry) return
+    const geoLocation = await getGeoLocation({ mode: geolocationMode, geoCountry, offline, state })
 
     // Setting header with geolocation and site info.
     req.headers[headers.Geo] = JSON.stringify(geoLocation)
     req.headers[headers.Site] = createSiteInfoHeader(siteInfo)
-
-    await registry.initialize()
 
     const url = new URL(req.url, `http://${LOCAL_HOST}:${mainPort}`)
     const { functionNames, orphanedDeclarations } = await registry.matchURLPath(url.pathname)
