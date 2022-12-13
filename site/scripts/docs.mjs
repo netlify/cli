@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url'
 import markdownMagic from 'markdown-magic'
 import stripAnsi from 'strip-ansi'
 
-import { normalizeBackslash } from '../../src/lib/path.cjs'
+import { normalizeBackslash } from '../../src/lib/path.mjs'
 
 import { generateCommandData } from './generate-command-data.mjs'
 

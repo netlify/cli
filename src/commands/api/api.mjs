@@ -2,9 +2,7 @@
 import AsciiTable from 'ascii-table'
 import { methods } from 'netlify'
 
-import utils from '../../utils/index.cjs'
-
-const { chalk, error, exit, log, logJson } = utils
+import { chalk, error, exit, log, logJson } from '../../utils/command-helpers.mjs'
 
 /**
  * The api command

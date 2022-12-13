@@ -1,8 +1,6 @@
 // @ts-check
-import utils from '../../utils/index.cjs'
+import { exit, log } from '../../utils/command-helpers.mjs'
 import { track } from '../../utils/telemetry/index.mjs'
-
-const { exit, log } = utils
 
 /**
  * The unlink command

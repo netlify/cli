@@ -1,10 +1,8 @@
 // @ts-check
 import { mkdir } from 'fs/promises'
 
+import { NETLIFYDEVERR, NETLIFYDEVLOG, exit, log } from '../../utils/command-helpers.mjs'
 import { getFunctionsDir } from '../../utils/functions/index.mjs'
-import utils from '../../utils/index.cjs'
-
-const { NETLIFYDEVERR, NETLIFYDEVLOG, exit, log } = utils
 
 /**
  * The functions:build command

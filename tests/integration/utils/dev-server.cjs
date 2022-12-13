@@ -3,21 +3,24 @@ const process = require('process')
 
 const execa = require('execa')
 const getPort = require('get-port')
-const omit = require('omit.js').default
 const pTimeout = require('p-timeout')
 
 const cliPath = require('./cli-path.cjs')
 const { handleQuestions } = require('./handle-questions.cjs')
 const { killProcess } = require('./process.cjs')
 
-const ENVS_TO_OMIT = ['LANG', 'LC_ALL']
+const getExecaOptions = ({ cwd, env }) => {
+  // Unused vars here are in order to omit LANg and LC_ALL from envs
+  // eslint-disable-next-line no-unused-vars
+  const { LANG, LC_ALL, ...baseEnv } = process.env
 
-const getExecaOptions = ({ cwd, env }) => ({
-  cwd,
-  extendEnv: false,
-  env: { ...omit(process.env, ENVS_TO_OMIT), BROWSER: 'none', ...env },
-  encoding: 'utf8',
-})
+  return {
+    cwd,
+    extendEnv: false,
+    env: { ...baseEnv, BROWSER: 'none', ...env },
+    encoding: 'utf8',
+  }
+}
 
 const startServer = async ({
   cwd,

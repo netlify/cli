@@ -2,7 +2,7 @@ import AnsiToHtml from 'ansi-to-html'
 
 import { CLOCKWORK_USERAGENT } from '../../utils/functions/index.mjs'
 
-import { formatLambdaError } from './utils.cjs'
+import { formatLambdaError } from './utils.mjs'
 
 const ansiToHtml = new AnsiToHtml()
 

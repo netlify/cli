@@ -2,17 +2,16 @@
 import { get } from 'dot-prop'
 import jwtDecode from 'jwt-decode'
 
+import { NETLIFYDEVERR, NETLIFYDEVLOG, error as errorExit, log } from '../../utils/command-helpers.mjs'
+import { generateNetlifyGraphJWT } from '../../utils/dev.mjs'
 import { CLOCKWORK_USERAGENT, getInternalFunctionsDir } from '../../utils/functions/index.mjs'
-import utils from '../../utils/index.cjs'
 
-import { handleBackgroundFunction, handleBackgroundFunctionResult } from './background.cjs'
+import { handleBackgroundFunction, handleBackgroundFunctionResult } from './background.mjs'
 import { createFormSubmissionHandler } from './form-submissions-handler.mjs'
-import { FunctionsRegistry } from './registry.cjs'
+import { FunctionsRegistry } from './registry.mjs'
 import { handleScheduledFunction } from './scheduled.mjs'
-import { handleSynchronousFunction } from './synchronous.cjs'
-import { shouldBase64Encode } from './utils.cjs'
-
-const { NETLIFYDEVERR, NETLIFYDEVLOG, error: errorExit, generateNetlifyGraphJWT, log } = utils
+import { handleSynchronousFunction } from './synchronous.mjs'
+import { shouldBase64Encode } from './utils.mjs'
 
 const buildClientContext = function (headers) {
   // inject a client context based on auth header, ported over from netlify-lambda (https://github.com/netlify/netlify-lambda/pull/57)

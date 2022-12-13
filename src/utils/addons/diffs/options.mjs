@@ -1,7 +1,7 @@
 // @ts-check
 import ansiStyles from 'ansi-styles'
 
-import { chalk } from '../../command-helpers.cjs'
+import { chalk } from '../../command-helpers.mjs'
 
 const forceColor = new chalk.Instance({ level: 1 })
 

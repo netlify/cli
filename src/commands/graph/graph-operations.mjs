@@ -7,9 +7,7 @@ import {
   getNetlifyGraphConfig,
   readGraphQLOperationsSourceFile,
 } from '../../lib/one-graph/cli-netlify-graph.mjs'
-import utils from '../../utils/index.cjs'
-
-const { log } = utils
+import { log } from '../../utils/command-helpers.mjs'
 
 const { parse } = GraphQL
 

@@ -1,8 +1,13 @@
-import { describe, expect, test } from 'vitest'
+import { describe, expect, test, vi } from 'vitest'
 
 import isValidEventName from '../../../../src/utils/telemetry/validation.mjs'
 
 const getEventForProject = (projectName, eventName) => `${projectName}:${eventName}`
+
+vi.mock('../../../../src/utils/command-helpers.mjs', async () => ({
+  ...(await vi.importActual('../../../../src/utils/command-helpers.mjs')),
+  log: () => {},
+}))
 
 describe('isValidEventName', () => {
   test('validate failed with eventName without underscore', () => {

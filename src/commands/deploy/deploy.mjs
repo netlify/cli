@@ -12,30 +12,27 @@ import prettyjson from 'prettyjson'
 
 import { cancelDeploy } from '../../lib/api.mjs'
 import { getBuildOptions, runBuild } from '../../lib/build.mjs'
-import { normalizeFunctionsConfig } from '../../lib/functions/config.cjs'
-import { getLogMessage } from '../../lib/log.cjs'
+import { normalizeFunctionsConfig } from '../../lib/functions/config.mjs'
+import { getLogMessage } from '../../lib/log.mjs'
 import { startSpinner, stopSpinner } from '../../lib/spinner.cjs'
-import { getFunctionsManifestPath, getInternalFunctionsDir } from '../../utils/functions/index.mjs'
-import utils from '../../utils/index.cjs'
-import { link } from '../link/index.mjs'
-import { sitesCreate } from '../sites/index.mjs'
-
-const {
-  NETLIFYDEV,
-  NETLIFYDEVERR,
-  NETLIFYDEVLOG,
+import {
   chalk,
-  deploySite,
   error,
   exit,
   getToken,
   log,
   logJson,
-  openBrowser,
+  NETLIFYDEV,
+  NETLIFYDEVERR,
+  NETLIFYDEVLOG,
   warn,
-} = utils
-
-const DEFAULT_DEPLOY_TIMEOUT = 1.2e6
+} from '../../utils/command-helpers.mjs'
+import { DEFAULT_DEPLOY_TIMEOUT } from '../../utils/deploy/constants.mjs'
+import { deploySite } from '../../utils/deploy/deploy-site.mjs'
+import { getFunctionsManifestPath, getInternalFunctionsDir } from '../../utils/functions/index.mjs'
+import openBrowser from '../../utils/open-browser.mjs'
+import { link } from '../link/index.mjs'
+import { sitesCreate } from '../sites/index.mjs'
 
 const triggerDeploy = async ({ api, options, siteData, siteId }) => {
   try {

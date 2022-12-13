@@ -1,9 +1,7 @@
-import utils from '../../utils/index.cjs'
+import { log } from '../../utils/command-helpers.mjs'
 
 import { createOpenAdminCommand, openAdmin } from './open-admin.mjs'
 import { createOpenSiteCommand, openSite } from './open-site.mjs'
-
-const { log } = utils
 
 /**
  * The open command

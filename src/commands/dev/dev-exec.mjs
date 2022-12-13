@@ -1,8 +1,7 @@
 import execa from 'execa'
 
-import utils from '../../utils/index.cjs'
-
-const { getEnvelopeEnv, injectEnvVariables, normalizeContext } = utils
+import { injectEnvVariables } from '../../utils/dev.mjs'
+import { getEnvelopeEnv, normalizeContext } from '../../utils/env/index.mjs'
 
 /**
  * The dev:exec command

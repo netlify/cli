@@ -8,7 +8,7 @@ import gitRepoInfo from 'git-repo-info'
 import gitconfiglocal from 'gitconfiglocal'
 import parseGitRemote from 'parse-github-url'
 
-import { log } from './command-helpers.cjs'
+import { log } from './command-helpers.mjs'
 
 /**
  *

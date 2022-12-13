@@ -1,5 +1,5 @@
 // @ts-check
-import { chalk } from '../command-helpers.cjs'
+import { chalk } from '../command-helpers.mjs'
 
 /* programmatically generate CLI prompts */
 export default function generatePrompts(settings) {

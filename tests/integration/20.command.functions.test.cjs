@@ -8,34 +8,18 @@ const getPort = require('get-port')
 const waitPort = require('wait-port')
 
 const fs = require('../../src/lib/fs.cjs')
-const { NetlifyFunction } = require('../../src/lib/functions/netlify-function.cjs')
 
 const callCli = require('./utils/call-cli.cjs')
 const cliPath = require('./utils/cli-path.cjs')
 const { withDevServer } = require('./utils/dev-server.cjs')
 const got = require('./utils/got.cjs')
 const { CONFIRM, DOWN, answerWithValue, handleQuestions } = require('./utils/handle-questions.cjs')
-const { withMockApi } = require('./utils/mock-api.cjs')
+const { getCLIOptions, withMockApi } = require('./utils/mock-api.cjs')
 const { pause } = require('./utils/pause.cjs')
 const { killProcess } = require('./utils/process.cjs')
 const { withSiteBuilder } = require('./utils/site-builder.cjs')
 
 const test = isCI ? avaTest.serial.bind(avaTest) : avaTest
-
-test('should return the correct function url for a NetlifyFunction object', (t) => {
-  const port = 7331
-  const functionName = 'test-function'
-
-  const functionUrl = `http://localhost:${port}/.netlify/functions/${functionName}`
-
-  const ntlFunction = new NetlifyFunction({
-    name: functionName,
-    settings: { functionsPort: port },
-    config: { functions: { [functionName]: {} } },
-  })
-
-  t.is(ntlFunction.url, functionUrl)
-})
 
 test('should return function response when invoked with no identity argument', async (t) => {
   await withSiteBuilder('function-invoke-with-no-identity-argument', async (builder) => {
@@ -129,14 +113,7 @@ test('should create a new function directory when none is found', async (t) => {
     ]
 
     await withMockApi(routes, async ({ apiUrl }) => {
-      const childProcess = execa(cliPath, ['functions:create'], {
-        env: {
-          NETLIFY_API_URL: apiUrl,
-          NETLIFY_SITE_ID: 'site_id',
-          NETLIFY_AUTH_TOKEN: 'fake-token',
-        },
-        cwd: builder.directory,
-      })
+      const childProcess = execa(cliPath, ['functions:create'], getCLIOptions({ apiUrl, builder }))
 
       handleQuestions(childProcess, createFunctionQuestions)
 
@@ -197,14 +174,7 @@ test('should create a new edge function directory when none is found', async (t)
     ]
 
     await withMockApi(routes, async ({ apiUrl }) => {
-      const childProcess = execa(cliPath, ['functions:create'], {
-        env: {
-          NETLIFY_API_URL: apiUrl,
-          NETLIFY_SITE_ID: 'site_id',
-          NETLIFY_AUTH_TOKEN: 'fake-token',
-        },
-        cwd: builder.directory,
-      })
+      const childProcess = execa(cliPath, ['functions:create'], getCLIOptions({ apiUrl, builder }))
 
       handleQuestions(childProcess, createFunctionQuestions)
 
@@ -267,14 +237,7 @@ test('should use specified edge function directory when found', async (t) => {
     ]
 
     await withMockApi(routes, async ({ apiUrl }) => {
-      const childProcess = execa(cliPath, ['functions:create'], {
-        env: {
-          NETLIFY_API_URL: apiUrl,
-          NETLIFY_SITE_ID: 'site_id',
-          NETLIFY_AUTH_TOKEN: 'fake-token',
-        },
-        cwd: builder.directory,
-      })
+      const childProcess = execa(cliPath, ['functions:create'], getCLIOptions({ apiUrl, builder }))
 
       handleQuestions(childProcess, createFunctionQuestions)
 
@@ -343,14 +306,7 @@ test('should install function template dependencies on a site-level `package.jso
     ]
 
     await withMockApi(routes, async ({ apiUrl }) => {
-      const childProcess = execa(cliPath, ['functions:create'], {
-        env: {
-          NETLIFY_API_URL: apiUrl,
-          NETLIFY_SITE_ID: 'site_id',
-          NETLIFY_AUTH_TOKEN: 'fake-token',
-        },
-        cwd: builder.directory,
-      })
+      const childProcess = execa(cliPath, ['functions:create'], getCLIOptions({ apiUrl, builder }))
 
       handleQuestions(childProcess, createFunctionQuestions)
 
@@ -423,14 +379,7 @@ test('should install function template dependencies in the function sub-director
     ]
 
     await withMockApi(routes, async ({ apiUrl }) => {
-      const childProcess = execa(cliPath, ['functions:create'], {
-        env: {
-          NETLIFY_API_URL: apiUrl,
-          NETLIFY_SITE_ID: 'site_id',
-          NETLIFY_AUTH_TOKEN: 'fake-token',
-        },
-        cwd: builder.directory,
-      })
+      const childProcess = execa(cliPath, ['functions:create'], getCLIOptions({ apiUrl, builder }))
 
       handleQuestions(childProcess, createFunctionQuestions)
 
@@ -495,14 +444,7 @@ test('should not create a new function directory when one is found', async (t) =
     ]
 
     await withMockApi(routes, async ({ apiUrl }) => {
-      const childProcess = execa(cliPath, ['functions:create'], {
-        env: {
-          NETLIFY_API_URL: apiUrl,
-          NETLIFY_SITE_ID: 'site_id',
-          NETLIFY_AUTH_TOKEN: 'fake-token',
-        },
-        cwd: builder.directory,
-      })
+      const childProcess = execa(cliPath, ['functions:create'], getCLIOptions({ apiUrl, builder }))
 
       handleQuestions(childProcess, createFunctionQuestions)
 
@@ -559,14 +501,11 @@ test('should only show function templates for the language specified via the --l
     ]
 
     await withMockApi(routes, async ({ apiUrl }) => {
-      const childProcess = execa(cliPath, ['functions:create', '--language', 'javascript'], {
-        env: {
-          NETLIFY_API_URL: apiUrl,
-          NETLIFY_SITE_ID: 'site_id',
-          NETLIFY_AUTH_TOKEN: 'fake-token',
-        },
-        cwd: builder.directory,
-      })
+      const childProcess = execa(
+        cliPath,
+        ['functions:create', '--language', 'javascript'],
+        getCLIOptions({ apiUrl, builder }),
+      )
 
       handleQuestions(childProcess, createFunctionQuestions)
 
@@ -623,14 +562,11 @@ test('throws an error when the --language flag contains an unsupported value', a
     ]
 
     await withMockApi(routes, async ({ apiUrl }) => {
-      const childProcess = execa(cliPath, ['functions:create', '--language', 'coffeescript'], {
-        env: {
-          NETLIFY_API_URL: apiUrl,
-          NETLIFY_SITE_ID: 'site_id',
-          NETLIFY_AUTH_TOKEN: 'fake-token',
-        },
-        cwd: builder.directory,
-      })
+      const childProcess = execa(
+        cliPath,
+        ['functions:create', '--language', 'coffeescript'],
+        getCLIOptions({ apiUrl, builder }),
+      )
 
       handleQuestions(childProcess, createFunctionQuestions)
 

@@ -3,18 +3,17 @@
 import inquirer from 'inquirer'
 import pick from 'lodash/pick.js'
 import parseGitHubUrl from 'parse-github-url'
-import prettyjson from 'prettyjson'
+import { render } from 'prettyjson'
 
+import { chalk, error, getTerminalLink, log, logJson, warn } from '../../utils/command-helpers.mjs'
+import execa from '../../utils/execa.mjs'
 import getRepoData from '../../utils/get-repo-data.mjs'
-import utils from '../../utils/index.cjs'
-import { getGitHubToken } from '../../utils/init/config-github.cjs'
-import { configureRepo } from '../../utils/init/config.cjs'
-import { createRepo, getTemplatesFromGitHub, validateTemplate } from '../../utils/sites/utils.cjs'
+import { getGitHubToken } from '../../utils/init/config-github.mjs'
+import { configureRepo } from '../../utils/init/config.mjs'
+import { createRepo, getTemplatesFromGitHub, validateTemplate } from '../../utils/sites/utils.mjs'
 import { track } from '../../utils/telemetry/index.mjs'
 
 import { getSiteNameInput } from './sites-create.mjs'
-
-const { chalk, error, execa, getTerminalLink, log, logJson, warn } = utils
 
 export const fetchTemplates = async (token) => {
   const templatesFromGithubOrg = await getTemplatesFromGitHub(token)
@@ -170,7 +169,7 @@ const sitesCreateTemplate = async (repository, options, command) => {
 
   const siteUrl = site.ssl_url || site.url
   log(
-    prettyjson.render({
+    render({
       'Admin URL': site.admin_url,
       URL: siteUrl,
       'Site ID': site.id,

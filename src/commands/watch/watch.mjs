@@ -3,10 +3,8 @@ import pWaitFor from 'p-wait-for'
 import prettyjson from 'prettyjson'
 
 import { startSpinner, stopSpinner } from '../../lib/spinner.cjs'
-import utils from '../../utils/index.cjs'
+import { chalk, error, log } from '../../utils/command-helpers.mjs'
 import { init } from '../init/index.mjs'
-
-const { chalk, error, log } = utils
 
 // 1 second
 const INIT_WAIT = 1e3

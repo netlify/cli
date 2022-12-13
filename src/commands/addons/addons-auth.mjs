@@ -1,8 +1,7 @@
 // @ts-check
 import { ADDON_VALIDATION, prepareAddonCommand } from '../../utils/addons/prepare.mjs'
-import utils from '../../utils/index.cjs'
-
-const { exit, log, openBrowser } = utils
+import { exit, log } from '../../utils/command-helpers.mjs'
+import openBrowser from '../../utils/open-browser.mjs'
 
 /**
  * The addons:auth command

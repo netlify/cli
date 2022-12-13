@@ -4,9 +4,7 @@ import path from 'path'
 import process from 'process'
 
 import { getNetlifyGraphConfig } from '../../lib/one-graph/cli-netlify-graph.mjs'
-import utils from '../../utils/index.cjs'
-
-const { NETLIFYDEVERR, chalk, error, log } = utils
+import { NETLIFYDEVERR, chalk, error, log } from '../../utils/command-helpers.mjs'
 
 /**
  * Creates the `netlify graph:config:write` command

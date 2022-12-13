@@ -10,11 +10,11 @@ import hasbin from 'hasbin'
 import Listr from 'listr'
 import pathKey from 'path-key'
 
-import { fetchLatestVersion, shouldFetchLatestVersion } from '../../lib/exec-fetcher.cjs'
+import { fetchLatestVersion, shouldFetchLatestVersion } from '../../lib/exec-fetcher.mjs'
 import { fileExistsAsync, rmdirRecursiveAsync } from '../../lib/fs.cjs'
-import { normalizeBackslash } from '../../lib/path.cjs'
+import { normalizeBackslash } from '../../lib/path.mjs'
 import { getLegacyPathInHome, getPathInHome } from '../../lib/settings.cjs'
-import { chalk } from '../command-helpers.cjs'
+import { chalk } from '../command-helpers.mjs'
 
 import { checkGitLFSVersionStep, checkGitVersionStep, checkLFSFiltersStep } from './steps.mjs'
 

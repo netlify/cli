@@ -1,6 +1,5 @@
-import utils from '../../utils/index.cjs'
-
-const { error, exit, log, openBrowser, warn } = utils
+import { error, exit, log, warn } from '../../utils/command-helpers.mjs'
+import openBrowser from '../../utils/open-browser.mjs'
 
 /**
  * The open:site command
