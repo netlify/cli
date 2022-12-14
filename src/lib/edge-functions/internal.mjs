@@ -36,9 +36,16 @@ export const getInternalFunctions = async () => {
     const stats = await stat(path)
 
     if (!stats.isDirectory()) {
-      throw new Error('Path is not a directory')
+      throw new Error('Internal edge functions directory expected')
     }
+  } catch {
+    return {
+      functions: [],
+      path: null,
+    }
+  }
 
+  try {
     const manifestPath = join(path, 'manifest.json')
     const manifest = JSON.parse(await readFile(manifestPath))
 

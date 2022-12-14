@@ -88,7 +88,7 @@ export const initializeProxy = async ({
     port: isolatePort,
     projectDir,
   })
-  const hasEdgeFunctions = userFunctionsPath !== undefined || internalFunctions.length !== 0
+  const hasEdgeFunctions = userFunctionsPath !== undefined || internalFunctionsPath
 
   return async (req) => {
     if (req.headers[headers.Passthrough] !== undefined || !hasEdgeFunctions) {
