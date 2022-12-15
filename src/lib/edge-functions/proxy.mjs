@@ -165,6 +165,7 @@ const prepareServer = async ({
     const distImportMapPath = getPathInProject([DIST_IMPORT_MAP_PATH])
     const runIsolate = await bundler.serve({
       ...getDownloadUpdateFunctions(),
+      basePath: projectDir,
       certificatePath,
       debug: env.NETLIFY_DENO_DEBUG === 'true',
       distImportMapPath,
