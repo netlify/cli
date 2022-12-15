@@ -3,6 +3,8 @@ import process from 'process'
 
 import build from '@netlify/build'
 
+import { featureFlags as edgeFunctionsFeatureFlags } from './edge-functions/consts.mjs'
+
 /**
  * The buildConfig + a missing cachedConfig
  * @typedef BuildConfig
@@ -38,9 +40,8 @@ export const getBuildOptions = ({
   offline,
   cwd,
   featureFlags: {
-    edge_functions_config_export: true,
+    ...edgeFunctionsFeatureFlags,
     functionsBundlingManifest: true,
-    edge_functions_produce_eszip: true,
     project_deploy_configuration_api_use_per_function_configuration_files: true,
   },
 })

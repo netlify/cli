@@ -12,6 +12,7 @@ import prettyjson from 'prettyjson'
 
 import { cancelDeploy } from '../../lib/api.mjs'
 import { getBuildOptions, runBuild } from '../../lib/build.mjs'
+import { featureFlags as edgeFunctionsFeatureFlags } from '../../lib/edge-functions/consts.mjs'
 import { normalizeFunctionsConfig } from '../../lib/functions/config.mjs'
 import { getLogMessage } from '../../lib/log.mjs'
 import { startSpinner, stopSpinner } from '../../lib/spinner.cjs'
@@ -409,9 +410,7 @@ const bundleEdgeFunctions = async (options) => {
   const { severityCode, success } = await runCoreSteps(['edge_functions_bundling'], {
     ...options,
     buffer: true,
-    featureFlags: {
-      edge_functions_read_deno_config: true,
-    },
+    featureFlags: edgeFunctionsFeatureFlags,
   })
 
   if (!success) {
