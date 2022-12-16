@@ -119,13 +119,6 @@ To run a single test you can either use `test.only` inside the test file and ran
 npm exec vitest -- run tests/unit/tests/unit/lib/account.test.mjs -t 'test name'
 ```
 
-If you run integration tests locally you should run them with `no-threads` because the tests might interfere with each
-other
-
-```
-npm exec vitest  -- run tests/integration --no-threads
-```
-
 Some of the tests actually start the CLI in a subprocess and therefore sometimes underlying errors are not visible in
 the tests when they fail. By default the output of the subprocess is not forwarded to the main process to keep the cli
 output clean. To debug test failures like this you can set the environment variable `DEBUG_TESTS=true` and the
