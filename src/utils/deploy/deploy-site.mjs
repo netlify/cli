@@ -1,8 +1,9 @@
+import { rm } from 'fs/promises'
+
 import cleanDeep from 'clean-deep'
 import tempy from 'tempy'
 
 import { deployFileNormalizer, getDistPathIfExists, isEdgeFunctionFile } from '../../lib/edge-functions/deploy.mjs'
-import { rmdirRecursiveAsync } from '../../lib/fs.cjs'
 import { warn } from '../command-helpers.mjs'
 
 import {
@@ -170,7 +171,7 @@ For more information, visit https://ntl.fyi/cli-native-modules.`)
     phase: 'stop',
   })
 
-  await rmdirRecursiveAsync(tmpDir)
+  await rm(tmpDir, { force: true, recursive: true })
 
   const deployManifest = {
     deployId,

@@ -1,9 +1,7 @@
-const { writeFile } = require('fs').promises
+const { rm, writeFile } = require('fs').promises
 const { pathToFileURL } = require('url')
 
 const tempy = require('tempy')
-
-const { rmdirRecursiveAsync } = require('../../../src/lib/fs.cjs')
 
 // Saves to disk a JavaScript file with the contents provided and returns
 // an environment variable that replaces the `execa` module implementation.
@@ -20,7 +18,7 @@ const createMock = async (contents) => {
   }
   const cleanup = () =>
     // eslint-disable-next-line promise/prefer-await-to-then
-    rmdirRecursiveAsync(path).catch(() => {
+    rm(path, { force: true, recursive: true }).catch(() => {
       // no-op
     })
 
