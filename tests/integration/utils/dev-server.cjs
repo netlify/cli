@@ -44,6 +44,11 @@ const startServer = async ({
     getExecaOptions({ cwd, env }),
   )
 
+  if (process.env.DEBUG_TESTS) {
+    ps.stderr.pipe(process.stderr)
+    ps.stdout.pipe(process.stdout)
+  }
+
   const promptHistory = []
 
   if (prompt) {
