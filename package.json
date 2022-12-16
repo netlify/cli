@@ -211,7 +211,7 @@
     "test:init:eleventy-deps": "npm ci --prefix tests/integration/eleventy-site --no-audit",
     "test:init:hugo-deps": "npm ci --prefix tests/integration/hugo-site --no-audit",
     "test:dev:ava": "ava --verbose",
-    "test:dev:vitest": "vitest run",
+    "test:dev:vitest": "vitest run tests/unit/ && vitest run tests/integration --no-threads",
     "test:ci:ava:integration": "c8 -r json ava --concurrency 1 --no-worker-threads tests/integration/",
     "test:ci:vitest:unit": "vitest run --coverage tests/unit/",
     "test:ci:vitest:integration": "vitest run --coverage --no-threads tests/integration/",
