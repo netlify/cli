@@ -94,7 +94,7 @@ A good place to start is reading the base command README and looking at the comm
 
 ### Testing
 
-This repo uses [ava](https://github.com/avajs/ava) for testing. Unit tests are in the `tests/unit` folder and
+This repo uses [vitest](https://github.com/vitest-dev/vitest) for testing. Unit tests are in the `tests/unit` folder and
 integration tests are in the `tests/integration` folder. We use this convention since we split tests across multiple CI
 machines to speed up CI time. You can read about it more [here](https://github.com/netlify/cli/issues/4178).
 
@@ -104,6 +104,32 @@ We also test for a few other things:
 - Linting
 - Test coverage
 - Must work with Windows + Unix environments.
+
+#### Debugging tests
+
+To run a single test file you can do:
+
+```
+npm exec vitest -- run tests/unit/tests/unit/lib/account.test.mjs
+```
+
+To run a single test you can either use `test.only` inside the test file and ran the above command or run this:
+
+```
+npm exec vitest -- run tests/unit/tests/unit/lib/account.test.mjs -t 'test name'
+```
+
+Some of the tests actually start the CLI in a subprocess and therefore sometimes underlying errors are not visible in
+the tests when they fail. By default the output of the subprocess is not forwarded to the main process to keep the cli
+output clean. To debug test failures like this you can set the environment variable `DEBUG_TESTS=true` and the
+subprocess will pipe it's output to the main process for you to see.
+
+When `DEBUG_TESTS` is set the vitest reporter will be set to `tap` so the test output won't interfere with the debug
+output.
+
+```
+DEBUG_TESTS=true npm exec vitest -- run tests/unit/tests/unit/lib/account.test.mjs -t 'test name'
+```
 
 ### Lint docs per Netlify style guide
 
