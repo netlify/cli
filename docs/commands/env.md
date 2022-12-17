@@ -135,6 +135,7 @@ netlify env:list
 **Flags**
 
 - `context` (*string*) - Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev")
+- `plain` (*boolean*) - Output environment variables as plaintext
 - `scope` (*builds | functions | post-processing | runtime | any*) - Specify a scope
 - `debug` (*boolean*) - Print debugging information
 - `httpProxy` (*string*) - Proxy server address to route requests through.
@@ -147,6 +148,7 @@ netlify env:list # list variables with values in the dev context and with any sc
 netlify env:list --context production
 netlify env:list --context branch:staging
 netlify env:list --scope functions
+netlify env:list --plain
 ```
 
 ---

@@ -76,6 +76,14 @@ const envList = async (options, command) => {
     return false
   }
 
+  if (options.plain) {
+    const plaintext = Object.entries(environment)
+      .map(([key, variable]) => `${key}=${variable.value}`)
+      .join('\n')
+    log(plaintext)
+    return false
+  }
+
   const forSite = `for site ${chalk.green(siteInfo.name)}`
   const contextType = AVAILABLE_CONTEXTS.includes(context) ? 'context' : 'branch'
   const withContext = isUsingEnvelope ? `in the ${chalk.magenta(options.context)} ${contextType}` : ''
@@ -126,6 +134,7 @@ export const createEnvListCommand = (program) =>
       normalizeContext,
       'dev',
     )
+    .addOption(new Option('--plain', 'Output environment variables as plaintext'))
     .addOption(
       new Option('-s, --scope <scope>', 'Specify a scope')
         .choices(['builds', 'functions', 'post-processing', 'runtime', 'any'])
@@ -136,6 +145,7 @@ export const createEnvListCommand = (program) =>
       'netlify env:list --context production',
       'netlify env:list --context branch:staging',
       'netlify env:list --scope functions',
+      'netlify env:list --plain',
     ])
     .description('Lists resolved environment variables for site (includes netlify.toml)')
     .action(async (options, command) => {
