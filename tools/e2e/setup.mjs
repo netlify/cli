@@ -1,22 +1,15 @@
-import { appendFileSync, existsSync, promises, readFileSync, writeFileSync } from 'fs'
+import { appendFile, mkdtemp, readFile, rm, writeFile } from 'fs/promises'
 import { tmpdir } from 'os'
 import { join, sep } from 'path'
 import { cwd, env } from 'process'
 import { fileURLToPath } from 'url'
 
-import del from 'del'
 import execa from 'execa'
 import getPort from 'get-port'
 import verdaccio from 'verdaccio'
 
-// TODO: remove this once `../../src/lib/fs.js` is an esm module as well
-const rmdirRecursiveAsync = async (path) => {
-  await del(path, { force: true })
-}
+import { fileExistsAsync } from '../../src/lib/fs.cjs'
 
-const { mkdtemp } = promises
-
-// eslint-disable-next-line no-magic-numbers
 const VERDACCIO_TIMEOUT_MILLISECONDS = 60 * 1000
 const START_PORT_RANGE = 5000
 const END_PORT_RANGE = 5000
@@ -70,7 +63,7 @@ export const startRegistry = async () => {
   const storage = fileURLToPath(new URL('../../.verdaccio-storage', import.meta.url))
 
   // Remove netlify-cli from the verdaccio storage because we are going to publish it in a second
-  await rmdirRecursiveAsync(join(storage, 'netlify-cli'))
+  await rm(join(storage, 'netlify-cli'), { force: true, recursive: true })
 
   return new Promise((resolve, reject) => {
     setTimeout(() => {
@@ -105,17 +98,17 @@ export const setup = async () => {
   /** Cleans up everything */
   const cleanup = async () => {
     // remote temp folders
-    await rmdirRecursiveAsync(workspace)
+    await rm(workspace, { force: true, recursive: true })
   }
 
   env.npm_config_registry = url
 
   try {
-    if (existsSync(npmrc)) {
-      backupNpmrc = readFileSync(npmrc, 'utf-8')
-      appendFileSync(npmrc, registryWithAuth)
+    if (await fileExistsAsync(npmrc)) {
+      backupNpmrc = await readFile(npmrc, 'utf-8')
+      await appendFile(npmrc, registryWithAuth)
     } else {
-      writeFileSync(npmrc, registryWithAuth, 'utf-8')
+      await writeFile(npmrc, registryWithAuth, 'utf-8')
     }
 
     // publish the CLI package to our registry
@@ -137,10 +130,11 @@ ${error_ instanceof Error ? error_.message : error_}`,
     )
   } finally {
     // restore .npmrc
+    // eslint-disable-next-line unicorn/prefer-ternary
     if (backupNpmrc) {
-      writeFileSync(npmrc, backupNpmrc)
+      await writeFile(npmrc, backupNpmrc)
     } else {
-      await rmdirRecursiveAsync(npmrc)
+      await rm(npmrc, { force: true, recursive: true })
     }
   }
 

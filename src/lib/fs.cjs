@@ -1,26 +1,8 @@
 // @ts-check
 const {
   constants,
-  promises: { access, readFile, rm, stat },
+  promises: { access, stat },
 } = require('fs')
-const { version } = require('process')
-
-const del = require('del')
-const { gte, parse } = require('semver')
-
-const NODE_VERSION = parse(version)
-
-/**
- * reads a file async and catches potential errors
- * @param {string} filePath
- */
-const readFileAsyncCatchError = async (filePath) => {
-  try {
-    return { content: await readFile(filePath, 'utf-8') }
-  } catch (error) {
-    return { error }
-  }
-}
 
 const fileExistsAsync = async (filePath) => {
   try {
@@ -29,18 +11,6 @@ const fileExistsAsync = async (filePath) => {
   } catch {
     return false
   }
-}
-
-/**
- * Removes a directory recursively and async
- * @param {string} path
- * @returns {Promise<void>}
- */
-const rmdirRecursiveAsync = async (path) => {
-  if (gte(NODE_VERSION, '14.14.0')) {
-    return await rm(path, { force: true, recursive: true })
-  }
-  await del(path, { force: true })
 }
 
 /**
@@ -78,6 +48,4 @@ module.exports = {
   fileExistsAsync,
   isDirectoryAsync,
   isFileAsync,
-  readFileAsyncCatchError,
-  rmdirRecursiveAsync,
 }

@@ -1,5 +1,5 @@
 // @ts-check
-import { appendFile, copyFile, readFile, writeFile } from 'fs/promises'
+import { appendFile, copyFile, readFile, rm, writeFile } from 'fs/promises'
 import os from 'os'
 import path, { dirname } from 'path'
 import process from 'process'
@@ -11,7 +11,7 @@ import Listr from 'listr'
 import pathKey from 'path-key'
 
 import { fetchLatestVersion, shouldFetchLatestVersion } from '../../lib/exec-fetcher.mjs'
-import { fileExistsAsync, rmdirRecursiveAsync } from '../../lib/fs.cjs'
+import { fileExistsAsync } from '../../lib/fs.cjs'
 import { normalizeBackslash } from '../../lib/path.mjs'
 import { getLegacyPathInHome, getPathInHome } from '../../lib/settings.cjs'
 import { chalk } from '../command-helpers.mjs'
@@ -92,7 +92,7 @@ const installedWithPackageManager = async function () {
 
 const installHelper = async function () {
   // remove any old versions that might still exist in `~/.netlify/helper/bin`
-  await rmdirRecursiveAsync(getLegacyBinPath())
+  await rm(getLegacyBinPath(), { force: true, recursive: true })
   const binPath = getBinPath()
   const shouldFetch = await shouldFetchLatestVersion({
     binPath,
@@ -277,7 +277,7 @@ const cleanupShell = async function () {
 
 export const uninstall = async function () {
   await Promise.all([
-    rmdirRecursiveAsync(getHelperPath()),
+    rm(getHelperPath(), { force: true, recursive: true }),
     removeConfig(GIT_CONFIG, getGitConfigContent(getGitConfigPath())),
     cleanupShell(),
   ])

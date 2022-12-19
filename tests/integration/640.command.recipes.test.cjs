@@ -1,9 +1,8 @@
+const { readFile } = require('fs/promises')
 const { resolve } = require('path')
 
 const test = require('ava')
 const execa = require('execa')
-
-const { readFileAsyncCatchError } = require('../../src/lib/fs.cjs')
 
 const callCli = require('./utils/call-cli.cjs')
 const cliPath = require('./utils/cli-path.cjs')
@@ -35,10 +34,8 @@ test('Generates a new VS Code settings file if one does not exist', async (t) =>
 
     await childProcess
 
-    const { content, error } = await readFileAsyncCatchError(`${builder.directory}/.vscode/settings.json`)
-    const settings = JSON.parse(content)
+    const settings = JSON.parse(await readFile(`${builder.directory}/.vscode/settings.json`))
 
-    t.is(error, undefined)
     t.is(settings['deno.enable'], true)
     t.is(settings['deno.importMap'], '.netlify/edge-functions-import-map.json')
     t.deepEqual(settings['deno.enablePaths'], ['netlify/edge-functions'])
@@ -68,10 +65,8 @@ test('Updates an existing VS Code settings file', async (t) => {
 
     await childProcess
 
-    const { content, error } = await readFileAsyncCatchError(`${builder.directory}/.vscode/settings.json`)
-    const settings = JSON.parse(content)
+    const settings = JSON.parse(await readFile(`${builder.directory}/.vscode/settings.json`))
 
-    t.is(error, undefined)
     t.is(settings.someSetting, 'value')
     t.is(settings['deno.enable'], true)
     t.is(settings['deno.importMap'], '.netlify/edge-functions-import-map.json')
@@ -97,7 +92,7 @@ test('Does not generate a new VS Code settings file if the user does not confirm
 
     await childProcess
 
-    const { error } = await readFileAsyncCatchError(`${builder.directory}/.vscode/settings.json`)
+    const error = await t.throwsAsync(() => readFile(`${builder.directory}/.vscode/settings.json`))
     t.is(error.code, 'ENOENT')
   })
 })
