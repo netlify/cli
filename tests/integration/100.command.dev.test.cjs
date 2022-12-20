@@ -780,7 +780,7 @@ test('should respect in-source configuration from internal edge functions', asyn
   })
 })
 
-test('Serves edge functions with import maps coming from the Deno config file and from the internal manifest', async (t) => {
+test('Serves edge functions with import maps coming from the `functions.deno_import_map` config property and from the internal manifest', async (t) => {
   await withSiteBuilder('site-with-edge-functions-and-import-maps', async (builder) => {
     const internalEdgeFunctionsDir = path.join('.netlify', 'edge-functions')
 
@@ -789,6 +789,9 @@ test('Serves edge functions with import maps coming from the Deno config file an
         config: {
           build: {
             publish: 'public',
+          },
+          functions: {
+            deno_import_map: 'import_map.json',
           },
         },
       })
@@ -808,10 +811,6 @@ test('Serves edge functions with import maps coming from the Deno config file an
           // eslint-disable-next-line no-template-curly-in-string
           content: 'export const greet = (name: string) => `Hello, ${name}!`',
           path: 'greeter.ts',
-        },
-        {
-          content: JSON.stringify({ importMap: 'import_map.json' }),
-          path: 'deno.json',
         },
         {
           content: JSON.stringify({ imports: { greeter: './greeter.ts' } }),
