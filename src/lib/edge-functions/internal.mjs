@@ -33,7 +33,6 @@ export const getInternalFunctions = async () => {
 
     const data = {
       functions: manifest.functions,
-      importMap: manifest.import_map,
       path,
     }
 
