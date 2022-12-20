@@ -134,7 +134,7 @@ export const createEnvListCommand = (program) =>
       normalizeContext,
       'dev',
     )
-    .addOption(new Option('--plain', 'Output environment variables as plaintext'))
+    .addOption(new Option('--plain', 'Output environment variables as plaintext').conflicts('json'))
     .addOption(
       new Option('-s, --scope <scope>', 'Specify a scope')
         .choices(['builds', 'functions', 'post-processing', 'runtime', 'any'])
