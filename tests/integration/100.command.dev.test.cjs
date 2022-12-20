@@ -854,6 +854,78 @@ test('Serves edge functions with import maps coming from the Deno config file an
   })
 })
 
+test('supports bypass optimisation', async (t) => {
+  await withSiteBuilder('site-with-ef-bypass-optimisation', async (builder) => {
+    const publicDir = 'public'
+    await builder
+      .withNetlifyToml({
+        config: {
+          build: {
+            publish: publicDir,
+          },
+        },
+      })
+      .withContentFiles([
+        {
+          path: path.join(publicDir, 'index.html'),
+          content: 'Hello World',
+        },
+      ])
+      .withEdgeFunction({
+        config: () => ({ path: '/*' }),
+        handler: () => {},
+        name: 'foo',
+      })
+
+    await builder.buildAsync()
+
+    await withDevServer({ cwd: builder.directory }, async ({ port }) => {
+      const res1 = await got(`http://localhost:${port}/index.html`, { throwHttpErrors: false })
+
+      t.is(res1.statusCode, 200)
+      t.is(res1.body, 'Hello World')
+    })
+  })
+})
+
+test('edge function in front of function', async (t) => {
+  await withSiteBuilder('site-with-ef-and-function', async (builder) => {
+    const publicDir = 'public'
+    await builder
+      .withNetlifyToml({
+        config: {
+          build: {
+            publish: publicDir,
+          },
+          functions: { directory: 'functions' },
+        },
+      })
+      .withEdgeFunction({
+        config: () => ({ path: '/*' }),
+        handler: () => {
+          console.log("I was called!")
+          // early-return
+        },
+        name: 'foo',
+      })
+      .withFunction({
+        path: 'hello.js',
+        handler: async () => ({
+          statusCode: 200,
+          body: 'Hello World from Lambda',
+        }),
+      })
+
+    await builder.buildAsync()
+
+    await withDevServer({ cwd: builder.directory }, async ({ port }) => {
+      const res1 = await got(`http://localhost:${port}/.netlify/functions/hello`, { throwHttpErrors: false })
+      t.is(res1.body, 'Hello World from Lambda')
+      t.is(res1.statusCode, 200)
+    })
+  })
+})
+
 test('should have only allowed environment variables set', async (t) => {
   const siteInfo = {
     account_slug: 'test-account',

@@ -129,11 +129,16 @@ export const initializeProxy = async ({
       return
     }
 
+    const flags = {
+      edge_functions_bootstrap_early_return: true,
+    }
+
     req[headersSymbol] = {
       [headers.Functions]: functionNames.join(','),
       [headers.ForwardedHost]: `localhost:${mainPort}`,
       [headers.Passthrough]: 'passthrough',
       [headers.RequestID]: generateUUID(),
+      [headers.FeatureFlags]: Buffer.from(JSON.stringify(flags)).toString('base64'),
       [headers.IP]: LOCAL_HOST,
     }
 

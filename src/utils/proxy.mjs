@@ -20,6 +20,7 @@ import locatePath from 'locate-path'
 import pFilter from 'p-filter'
 import toReadableStream from 'to-readable-stream'
 
+import edgeFunctionHeaders from '../lib/edge-functions/headers.mjs'
 import {
   handleProxyRequest,
   initializeProxy as initializeEdgeFunctionsProxy,
@@ -305,7 +306,7 @@ const reqToURL = function (req, pathname) {
 
 const MILLISEC_TO_SEC = 1e3
 
-const initializeProxy = async function ({ configPath, distDir, host, port, projectDir }) {
+const initializeProxy = async function ({ configPath, distDir, entrypoint, host, port, projectDir }) {
   const proxy = httpProxy.createProxyServer({
     selfHandleResponse: true,
     target: {
@@ -363,6 +364,11 @@ const initializeProxy = async function ({ configPath, distDir, host, port, proje
     }
   })
   proxy.on('proxyRes', (proxyRes, req, res) => {
+    if (proxyRes.headers[edgeFunctionHeaders.EdgeFunctionBypass]) {
+      req.headers[edgeFunctionHeaders.Passthrough] = 'true'
+      return proxy.web(req, res, { target: entrypoint })
+    }
+
     if (proxyRes.statusCode === 404 || proxyRes.statusCode === 403) {
       if (req.alternativePaths && req.alternativePaths.length !== 0) {
         req.url = req.alternativePaths.shift()
@@ -559,12 +565,17 @@ export const startProxy = async function ({
     siteInfo,
     state,
   })
+
+  const scheme = settings.https ? 'https' : 'http'
+  const entrypoint = `${scheme}://localhost:${settings.port}`
+
   const proxy = await initializeProxy({
     host: settings.frameworkHost,
     port: settings.frameworkPort,
     distDir: settings.dist,
     projectDir,
     configPath,
+    entrypoint,
   })
 
   const rewriter = await createRewriter({
@@ -595,8 +606,7 @@ export const startProxy = async function ({
   server.listen({ port: settings.port })
   await once(server, 'listening')
 
-  const scheme = settings.https ? 'https' : 'http'
-  return `${scheme}://localhost:${settings.port}`
+  return entrypoint
 }
 
 const BYTES_LIMIT = 30
