@@ -358,7 +358,7 @@
     "tree-kill": "^1.2.2",
     "typescript": "^4.4.4",
     "verdaccio": "^5.10.2",
-    "vite": "^3.2.4",
+    "vite": "^4.0.0",
     "vitest": "^0.26.0"
   },
   "ava": {
