@@ -80,7 +80,7 @@ const createSiteBuilder = ({ siteName }) => {
         let content = typeof handler === 'string' ? handler : `export default ${handler.toString()}`
 
         if (config) {
-          content += `;export const config = ${config.toString()}`
+          content += `;export const config = ${JSON.stringify(config)}`
         }
 
         await ensureDir(path.dirname(dest))
