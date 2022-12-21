@@ -160,12 +160,14 @@ const prepareServer = async ({
   port,
   projectDir,
 }) => {
+  // Merging internal with user-defined import maps.
+  const importMapPaths = [...importMaps, config.functions['*'].deno_import_map]
+
   try {
     const bundler = await import('@netlify/edge-bundler')
     const distImportMapPath = getPathInProject([DIST_IMPORT_MAP_PATH])
     const runIsolate = await bundler.serve({
       ...getDownloadUpdateFunctions(),
-      basePath: projectDir,
       certificatePath,
       debug: env.NETLIFY_DENO_DEBUG === 'true',
       distImportMapPath,
@@ -175,7 +177,7 @@ const prepareServer = async ({
         )}. The file does not seem to have a function as the default export.`,
       formatImportError: (name) =>
         `${NETLIFYDEVERR} ${chalk.red('Failed')} to run Edge Function ${chalk.yellow(name)}:`,
-      importMaps,
+      importMapPaths,
       inspectSettings,
       port,
     })
