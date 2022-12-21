@@ -688,7 +688,7 @@ test('should respect in-source configuration from edge functions', async (t) => 
         },
       })
       .withEdgeFunction({
-        config: () => ({ path: '/hello-1' }),
+        config: { path: '/hello-1' },
         handler: () => new Response('Hello world'),
         name: 'hello',
       })
@@ -707,7 +707,7 @@ test('should respect in-source configuration from edge functions', async (t) => 
 
       await builder
         .withEdgeFunction({
-          config: () => ({ path: '/hello-2' }),
+          config: { path: '/hello-2' },
           handler: () => new Response('Hello world'),
           name: 'hello',
         })
@@ -739,7 +739,7 @@ test('should respect in-source configuration from internal edge functions', asyn
         },
       })
       .withEdgeFunction({
-        config: () => ({ path: '/internal-1' }),
+        config: { path: '/internal-1' },
         handler: () => new Response('Hello from an internal function'),
         internal: true,
         name: 'internal',
@@ -759,7 +759,7 @@ test('should respect in-source configuration from internal edge functions', asyn
 
       await builder
         .withEdgeFunction({
-          config: () => ({ path: '/internal-2' }),
+          config: { path: '/internal-2' },
           handler: () => new Response('Hello from an internal function'),
           internal: true,
           name: 'internal',
@@ -796,7 +796,7 @@ test('Serves edge functions with import maps coming from the `functions.deno_imp
         },
       })
       .withEdgeFunction({
-        config: () => ({ path: '/greet' }),
+        config: { path: '/greet' },
         handler: `import { greet } from "greeter"; export default async () => new Response(greet("Netlify"))`,
         name: 'greet',
       })
