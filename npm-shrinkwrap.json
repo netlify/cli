@@ -99,6 +99,7 @@
         "static-server": "^2.2.1",
         "string-similarity": "^4.0.4",
         "strip-ansi-control-characters": "^2.0.0",
+        "symlink-or-copy": "^1.3.1",
         "tabtab": "^3.0.2",
         "tempy": "^1.0.0",
         "terminal-link": "^2.1.1",
@@ -21984,6 +21985,11 @@
         "node": ">=0.10.0"
       }
     },
+    "node_modules/symlink-or-copy": {
+      "version": "1.3.1",
+      "resolved": "https://registry.npmjs.org/symlink-or-copy/-/symlink-or-copy-1.3.1.tgz",
+      "integrity": "sha512-0K91MEXFpBUaywiwSSkmKjnGcasG/rVBXFLJz5DrgGabpYD6N+3yZrfD6uUIfpuTu65DZLHi7N8CizHc07BPZA=="
+    },
     "node_modules/synckit": {
       "version": "0.8.1",
       "resolved": "https://registry.npmjs.org/synckit/-/synckit-0.8.1.tgz",
@@ -40318,6 +40324,11 @@
       "version": "1.2.0",
       "resolved": "https://registry.npmjs.org/symbol-observable/-/symbol-observable-1.2.0.tgz",
       "integrity": "sha512-e900nM8RRtGhlV36KGEU9k65K3mPb1WV70OdjfxlG2EAuM1noi/E/BaW/uMhL7bPEssK8QV57vN3esixjUvcXQ=="
+    },
+    "symlink-or-copy": {
+      "version": "1.3.1",
+      "resolved": "https://registry.npmjs.org/symlink-or-copy/-/symlink-or-copy-1.3.1.tgz",
+      "integrity": "sha512-0K91MEXFpBUaywiwSSkmKjnGcasG/rVBXFLJz5DrgGabpYD6N+3yZrfD6uUIfpuTu65DZLHi7N8CizHc07BPZA=="
     },
     "synckit": {
       "version": "0.8.1",
