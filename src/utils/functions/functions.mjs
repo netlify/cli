@@ -4,6 +4,8 @@ import { resolve } from 'path'
 import { isDirectoryAsync, isFileAsync } from '../../lib/fs.cjs'
 import { getPathInProject } from '../../lib/settings.cjs'
 
+export const INTERNAL_FUNCTIONS_FOLDER = 'functions-internal'
+
 /**
  * retrieves the function directory out of the flags or config
  * @param {object} param
@@ -27,7 +29,7 @@ export const getFunctionsManifestPath = async ({ base }) => {
 }
 
 export const getInternalFunctionsDir = async ({ base }) => {
-  const path = resolve(base, getPathInProject(['functions-internal']))
+  const path = resolve(base, getPathInProject([INTERNAL_FUNCTIONS_FOLDER]))
   const isDirectory = await isDirectoryAsync(path)
 
   return isDirectory ? path : null

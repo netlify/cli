@@ -49,7 +49,7 @@ import {
 import detectServerSettings from '../../utils/detect-server-settings.mjs'
 import { generateNetlifyGraphJWT, getSiteInformation, injectEnvVariables, processOnExit } from '../../utils/dev.mjs'
 import { getEnvelopeEnv, normalizeContext } from '../../utils/env/index.mjs'
-import { getInternalFunctionsDir } from '../../utils/functions/index.mjs'
+import { INTERNAL_FUNCTIONS_FOLDER } from '../../utils/functions/index.mjs'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.mjs'
 import { startLiveTunnel } from '../../utils/live-tunnel.mjs'
 import openBrowser from '../../utils/open-browser.mjs'
@@ -786,22 +786,13 @@ const ensureNodeModulesForPlugins = ({ siteRoot }) => {
 }
 
 const cleanInternalDirectory = async (basePath) => {
-  const internalFunctionsDirectory = await getInternalFunctionsDir({ base: basePath })
+  const ops = [INTERNAL_FUNCTIONS_FOLDER, INTERNAL_EDGE_FUNCTIONS_FOLDER, 'netlify.toml'].map((name) => {
+    const fullPath = path.resolve(basePath, getPathInProject([name]))
 
-  // Remove any internal serverless functions.
-  if (internalFunctionsDirectory) {
-    await fs.rm(internalFunctionsDirectory, { force: true, recursive: true })
-  }
+    return fs.rm(fullPath, { force: true, recursive: true })
+  })
 
-  const internalEdgeFunctionsDirectory = path.resolve(basePath, getPathInProject([INTERNAL_EDGE_FUNCTIONS_FOLDER]))
-
-  // Remove any internal edge functions.
-  await fs.rm(internalEdgeFunctionsDirectory, { force: true, recursive: true })
-
-  const configPath = path.join(basePath, 'netlify.toml')
-
-  // Remove any config file.
-  await fs.rm(configPath, { force: true })
+  await Promise.all(ops)
 }
 
 /**
