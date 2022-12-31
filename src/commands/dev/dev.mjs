@@ -66,13 +66,15 @@ const startStaticServer = async ({ settings }) => {
   server.setNotFoundHandler((_req, res) => {
     res.sendFile('404.html', settings.dist)
   })
-  server.addHook('onRequest', (req, reply) => {
+
+  server.addHook('onRequest', (req, reply, done) => {
     const validMethods = ['GET', 'HEAD']
     if (!validMethods.includes(req.method)) {
       reply.code(405).send()
-      return reply
     }
+    done()
   })
+
   await server.listen({ port: settings.frameworkPort })
   log(`\n${NETLIFYDEVLOG} Static server listening to`, settings.frameworkPort)
 }
