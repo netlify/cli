@@ -56,20 +56,20 @@ const netlifyBuildPromise = import('@netlify/build')
 
 const startStaticServer = async ({ settings }) => {
   const server = Fastify()
+  const rootPath = path.resolve(settings.dist)
   server.register(fastifyStatic, {
-    root: path.resolve(settings.dist),
-    // eslint-disable-next-line no-unused-vars
-    setHeaders: (res, _path, _stat) => {
-      res.setHeader('X-Powered-by', 'netlify-dev')
-    },
+    root: rootPath,
     etag: false,
+    acceptRanges: false,
+    lastModified: false,
   })
 
   server.setNotFoundHandler((_req, res) => {
-    res.code(404).sendFile('404.html', settings.dist)
+    res.code(404).sendFile('404.html', rootPath)
   })
 
   server.addHook('onRequest', (req, reply, done) => {
+    reply.header('X-Powered-by', 'netlify-dev')
     const validMethods = ['GET', 'HEAD']
     if (!validMethods.includes(req.method)) {
       reply.code(405).send('Method Not Allowed')
