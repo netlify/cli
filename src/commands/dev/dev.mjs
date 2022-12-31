@@ -1,5 +1,6 @@
 // @ts-check
 import events from 'events'
+import path from 'path'
 import process from 'process'
 
 import fastifyStatic from '@fastify/static'
@@ -56,7 +57,7 @@ const netlifyBuildPromise = import('@netlify/build')
 const startStaticServer = async ({ settings }) => {
   const server = Fastify()
   server.register(fastifyStatic, {
-    root: settings.dist,
+    root: path.resolve(settings.dist),
     // eslint-disable-next-line no-unused-vars
     setHeaders: (res, _path, _stat) => {
       res.setHeader('X-Powered-by', 'netlify-dev')
