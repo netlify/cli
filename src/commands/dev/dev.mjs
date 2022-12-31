@@ -61,10 +61,11 @@ const startStaticServer = async ({ settings }) => {
     setHeaders: (res, _path, _stat) => {
       res.setHeader('X-Powered-by', 'netlify-dev')
     },
+    etag: false,
   })
 
   server.setNotFoundHandler((_req, res) => {
-    res.sendFile('404.html', settings.dist)
+    res.code(404).sendFile('404.html', settings.dist)
   })
 
   server.addHook('onRequest', (req, reply, done) => {
