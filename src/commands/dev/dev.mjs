@@ -71,7 +71,7 @@ const startStaticServer = async ({ settings }) => {
   server.addHook('onRequest', (req, reply, done) => {
     const validMethods = ['GET', 'HEAD']
     if (!validMethods.includes(req.method)) {
-      reply.code(405).send()
+      reply.code(405).send('Method Not Allowed')
     }
     done()
   })

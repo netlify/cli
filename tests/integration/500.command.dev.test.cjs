@@ -166,7 +166,7 @@ test('should handle form submission with a background function', async (t) => {
   })
 })
 
-test('should not handle form submission when content type is `text/plain`', async (t) => {
+test.only('should not handle form submission when content type is `text/plain`', async (t) => {
   await withSiteBuilder('site-with-form-text-plain', async (builder) => {
     builder
       .withContentFile({
@@ -197,6 +197,7 @@ test('should not handle form submission when content type is `text/plain`', asyn
           },
         })
         .catch((error) => error.response)
+      t.is(response.statusCode, 405)
       t.is(response.body, 'Method Not Allowed')
     })
   })
