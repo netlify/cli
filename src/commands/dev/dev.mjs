@@ -1,13 +1,12 @@
 // @ts-check
 import events from 'events'
-import path from 'path'
 import process from 'process'
-import { promisify } from 'util'
 
+import fastifyStatic from '@fastify/static'
 import boxen from 'boxen'
 import { Option } from 'commander'
 import execa from 'execa'
-import StaticServer from 'static-server'
+import Fastify from 'fastify'
 import stripAnsiCc from 'strip-ansi-control-characters'
 import waitPort from 'wait-port'
 
@@ -55,16 +54,26 @@ import { createDevExecCommand } from './dev-exec.mjs'
 const netlifyBuildPromise = import('@netlify/build')
 
 const startStaticServer = async ({ settings }) => {
-  const server = new StaticServer({
-    rootPath: settings.dist,
-    name: 'netlify-dev',
-    port: settings.frameworkPort,
-    templates: {
-      notFound: path.join(settings.dist, '404.html'),
+  const server = Fastify()
+  server.register(fastifyStatic, {
+    root: settings.dist,
+    // eslint-disable-next-line no-unused-vars
+    setHeaders: (res, _path, _stat) => {
+      res.setHeader('X-Powered-by', 'netlify-dev')
     },
   })
 
-  await promisify(server.start.bind(server))()
+  server.setNotFoundHandler((_req, res) => {
+    res.sendFile('404.html', settings.dist)
+  })
+  server.addHook('onRequest', (req, reply) => {
+    const validMethods = ['GET', 'HEAD']
+    if (!validMethods.includes(req.method)) {
+      reply.code(405).send()
+      return reply
+    }
+  })
+  await server.listen({ port: settings.frameworkPort })
   log(`\n${NETLIFYDEVLOG} Static server listening to`, settings.frameworkPort)
 }
 
