@@ -210,9 +210,6 @@ const getFunctionsServer = async function (options) {
 export const startFunctionsServer = async (options) => {
   const { capabilities, config, dist, settings, site, siteUrl, timeouts } = options
   const internalFunctionsDir = await getInternalFunctionsDir({ base: site.root })
-
-  // The order of the function directories matters. Leftmost directories take
-  // precedence.
   const functionsDirectories = []
 
   // If the `dist` parameter is sent, the functions server will use the built
@@ -225,6 +222,8 @@ export const startFunctionsServer = async (options) => {
       functionsDirectories.push(distPath)
     }
   } else {
+    // The order of the function directories matters. Leftmost directories take
+    // precedence.
     functionsDirectories.push(...[settings.functions, internalFunctionsDir].filter(Boolean))
   }
 

@@ -147,10 +147,12 @@ export class FunctionsRegistry {
       )
     }
 
-    // This fixes the bug described here https://github.com/netlify/zip-it-and-ship-it/issues/637
-    // If the current function's file is a zip bundle, we ignore it and log a helpful message.
+    // If the function file is a ZIP, we extract it and rewire its main file to
+    // the new location.
     if (extname(func.mainFile) === ZIP_EXTENSION) {
-      await this.unzipFunction(func)
+      const unzippedDirectory = await this.unzipFunction(func)
+
+      func.mainFile = join(unzippedDirectory, `${func.name}.js`)
     }
 
     this.functions.set(name, func)
@@ -270,6 +272,6 @@ export class FunctionsRegistry {
 
     await extractZip(func.mainFile, { dir: targetDirectory })
 
-    func.mainFile = join(targetDirectory, `${func.name}.js`)
+    return targetDirectory
   }
 }
