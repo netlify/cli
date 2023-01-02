@@ -10,7 +10,6 @@ import { Option } from 'commander'
 import execa from 'execa'
 import StaticServer from 'static-server'
 import stripAnsiCc from 'strip-ansi-control-characters'
-import { sync as symlinkOrCopy } from 'symlink-or-copy'
 import waitPort from 'wait-port'
 
 import { INTERNAL_EDGE_FUNCTIONS_FOLDER } from '../../lib/edge-functions/consts.mjs'
@@ -448,9 +447,9 @@ const dev = async (options, command) => {
 
   let { env } = cachedConfig
 
+  // If the `serve` flag is present, we override the `framework` value so that
+  // we start a static server and not the framework's development server.
   if (options.serve) {
-    ensureNodeModulesForPlugins({ siteRoot: site.root })
-
     devConfig.framework = '#static'
   }
 
@@ -510,10 +509,15 @@ const dev = async (options, command) => {
 
   const { configPath: configPathOverride } = await runBuild({ cachedConfig, options, settings, site })
 
+  // When using the `serve` flag, we want to use the production functions built
+  // by Netlify Build rather than building them from source.
+  const dist = Boolean(options.serve)
+
   await startFunctionsServer({
     api,
     command,
     config,
+    dist,
     settings,
     site,
     siteInfo,
@@ -763,27 +767,6 @@ const getBuildOptions = ({
   quiet,
   saveConfig,
 })
-
-// Any Node modules used by internal serverless functions will be installed at
-// `.netlify/plugins/node_modules`, which isn't part of the resolution paths
-// used by code in `.netlify/functions`. To make sure modules can resolve, we
-// create a symlink for the plugin's node_modules at `.netlify/node_modules`.
-const ensureNodeModulesForPlugins = ({ siteRoot }) => {
-  const targetPath = path.resolve(siteRoot, getPathInProject(['plugins', 'node_modules']))
-  const linkPath = path.resolve(siteRoot, getPathInProject(['node_modules']))
-
-  try {
-    symlinkOrCopy(targetPath, linkPath)
-  } catch (symlinkError) {
-    if (symlinkError.code === 'EEXIST') {
-      return
-    }
-
-    warn(
-      `There was an error setting up the node_modules directory at ${linkPath}, which may cause some serverless functions to not work as expected. Please ensure that you have write permissions on this directory.`,
-    )
-  }
-}
 
 const cleanInternalDirectory = async (basePath) => {
   const ops = [INTERNAL_FUNCTIONS_FOLDER, INTERNAL_EDGE_FUNCTIONS_FOLDER, 'netlify.toml'].map((name) => {

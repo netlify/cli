@@ -28,6 +28,13 @@ export const getFunctionsManifestPath = async ({ base }) => {
   return isFile ? path : null
 }
 
+export const getFunctionsDistPath = async ({ base }) => {
+  const path = resolve(base, getPathInProject(['functions']))
+  const isDirectory = await isDirectoryAsync(path)
+
+  return isDirectory ? path : null
+}
+
 export const getInternalFunctionsDir = async ({ base }) => {
   const path = resolve(base, getPathInProject([INTERNAL_FUNCTIONS_FOLDER]))
   const isDirectory = await isDirectoryAsync(path)
