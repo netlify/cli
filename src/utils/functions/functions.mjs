@@ -5,6 +5,7 @@ import { isDirectoryAsync, isFileAsync } from '../../lib/fs.cjs'
 import { getPathInProject } from '../../lib/settings.cjs'
 
 export const INTERNAL_FUNCTIONS_FOLDER = 'functions-internal'
+export const SERVE_FUNCTIONS_FOLDER = 'functions-serve'
 
 /**
  * retrieves the function directory out of the flags or config

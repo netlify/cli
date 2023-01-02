@@ -14,6 +14,7 @@ import {
   warn,
   watchDebounced,
 } from '../../utils/command-helpers.mjs'
+import { SERVE_FUNCTIONS_FOLDER } from '../../utils/functions/functions.mjs'
 import { getLogMessage } from '../log.mjs'
 import { getPathInProject } from '../settings.cjs'
 
@@ -268,7 +269,10 @@ export class FunctionsRegistry {
   }
 
   async unzipFunction(func) {
-    const targetDirectory = resolve(this.projectRoot, getPathInProject(['functions-serve', '.unzipped', func.name]))
+    const targetDirectory = resolve(
+      this.projectRoot,
+      getPathInProject([SERVE_FUNCTIONS_FOLDER, '.unzipped', func.name]),
+    )
 
     await extractZip(func.mainFile, { dir: targetDirectory })
 
