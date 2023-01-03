@@ -332,3 +332,47 @@ test('should start static service for frameworks without port, detected framewor
     t.true(error.stdout.includes(`Failed running command: remix watch. Please verify 'remix' exists`))
   })
 })
+
+test('should run and serve a production build when the `--prod` flag is set', async (t) => {
+  await withSiteBuilder('site-with-framework', async (builder) => {
+    await builder
+      .withNetlifyToml({
+        config: {
+          build: { publish: 'public' },
+          functions: { directory: 'functions' },
+          plugins: [{ package: './plugins/frameworker' }],
+        },
+      })
+      .withBuildPlugin({
+        name: 'frameworker',
+        plugin: {
+          onPreBuild: async ({ netlifyConfig }) => {
+            // eslint-disable-next-line n/global-require
+            const { mkdir, writeFile } = require('fs').promises
+
+            const generatedFunctionsDir = 'new_functions'
+            netlifyConfig.functions.directory = generatedFunctionsDir
+
+            netlifyConfig.redirects.push({
+              from: '/hello',
+              to: '/.netlify/functions/hello',
+            })
+
+            await mkdir(generatedFunctionsDir)
+            await writeFile(
+              `${generatedFunctionsDir}/hello.js`,
+              `exports.handler = async () => ({ statusCode: 200, body: 'Hello! NETLIFY_DEV is ' + process.env.NETLIFY_DEV })`,
+            )
+          },
+        },
+      })
+      .buildAsync()
+
+    await withDevServer({ cwd: builder.directory, debug: true, prod: true }, async ({ output, url }) => {
+      const response = await got(`${url}/hello`).text()
+      t.is(response, 'Hello! NETLIFY_DEV is undefined')
+
+      t.snapshot(normalize(output, { duration: true, filePath: true }))
+    })
+  })
+})

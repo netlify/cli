@@ -29,6 +29,7 @@ const startServer = async ({
   env = {},
   args = [],
   expectFailure = false,
+  prod = false,
   prompt,
 }) => {
   const port = await getPort()
@@ -40,7 +41,18 @@ const startServer = async ({
 
   const ps = execa(
     cliPath,
-    ['dev', offline ? '--offline' : '', '-p', port, '--staticServerPort', staticPort, '--context', context, ...args],
+    [
+      'dev',
+      offline ? '--offline' : '',
+      '-p',
+      port,
+      '--staticServerPort',
+      staticPort,
+      '--context',
+      context,
+      prod ? '--prod' : '',
+      ...args,
+    ],
     getExecaOptions({ cwd, env }),
   )
 
