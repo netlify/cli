@@ -460,6 +460,11 @@ const dev = async (options, command) => {
 
   let { env } = cachedConfig
 
+  // Add `NETLIFY_DEV` to the environment variables unless `prod` is set.
+  if (!options.prod) {
+    env.NETLIFY_DEV = { sources: ['general'], value: 'true' }
+  }
+
   // If the `prod` flag is present, we override the `framework` value so that
   // we start a static server and not the framework's development server.
   if (options.prod) {
@@ -566,7 +571,7 @@ const dev = async (options, command) => {
     addonsUrls,
     config,
     configPath: configPathOverride,
-    env: command.netlify.cachedConfig.env,
+    env,
     geolocationMode: options.geo,
     geoCountry: options.country,
     getUpdatedConfig,

@@ -213,17 +213,14 @@ export class EdgeFunctionsRegistry {
       if (
         variable.sources.includes('ui') ||
         variable.sources.includes('account') ||
-        variable.sources.includes('addons')
+        variable.sources.includes('addons') ||
+        key === 'NETLIFY_DEV'
       ) {
         env[key] = variable.value
       }
     })
 
     env.DENO_REGION = 'local'
-    env.NETLIFY_DEV = 'true'
-    // We use it in the bootstrap layer to detect whether we're running in production or not
-    // (see https://github.com/netlify/edge-functions-bootstrap/blob/main/src/bootstrap/environment.ts#L2)
-    // env.DENO_DEPLOYMENT_ID = 'xxx='
 
     return env
   }

@@ -139,7 +139,7 @@ const getEnvSourceName = (source) => {
 
 // Takes a set of environment variables in the format provided by @netlify/config, augments it with variables from both
 // dot-env files and the process itself, and injects into `process.env`.
-export const injectEnvVariables = async ({ devConfig, env, prod, site }) => {
+export const injectEnvVariables = async ({ devConfig, env, site }) => {
   const environment = new Map(Object.entries(env))
   const dotEnvFiles = await loadDotEnvFiles({ envFiles: devConfig.envFiles, projectDir: site.root })
 
@@ -181,10 +181,6 @@ export const injectEnvVariables = async ({ devConfig, env, prod, site }) => {
 
       process.env[key] = variable.value
     }
-  }
-
-  if (prod !== true) {
-    process.env.NETLIFY_DEV = 'true'
   }
 }
 
