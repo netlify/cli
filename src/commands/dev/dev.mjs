@@ -518,7 +518,11 @@ const dev = async (options, command) => {
     startPollingForAPIAuthentication({ api, command, config, site, siteInfo })
   }
 
-  log(`${NETLIFYDEVWARN} Setting up local development server`)
+  if (options.prod) {
+    log(`${NETLIFYDEVWARN} Building site for production`)
+  } else {
+    log(`${NETLIFYDEVWARN} Setting up local development server`)
+  }
 
   const { configPath: configPathOverride } = await runBuild({ cachedConfig, options, settings, site })
 
