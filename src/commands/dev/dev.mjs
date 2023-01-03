@@ -462,7 +462,7 @@ const dev = async (options, command) => {
 
   // Add `NETLIFY_DEV` to the environment variables unless `prod` is set.
   if (!options.prod) {
-    env.NETLIFY_DEV = { sources: ['general'], value: 'true' }
+    env.NETLIFY_DEV = { sources: ['internal'], value: 'true' }
   }
 
   // If the `prod` flag is present, we override the `framework` value so that

@@ -148,6 +148,10 @@ export const injectEnvVariables = async ({ devConfig, env, site }) => {
       const newSourceName = `${file} file`
       const sources = environment.has(key) ? [newSourceName, ...environment.get(key).sources] : [newSourceName]
 
+      if (sources.includes('internal')) {
+        return
+      }
+
       environment.set(key, {
         sources,
         value: fileEnv[key],
@@ -174,8 +178,8 @@ export const injectEnvVariables = async ({ devConfig, env, site }) => {
     })
 
     if (!existsInProcess) {
-      // Omitting `general` env vars to reduce noise in the logs.
-      if (usedSource !== 'general') {
+      // Omitting `general` and `internal` env vars to reduce noise in the logs.
+      if (usedSource !== 'general' && usedSource !== 'internal') {
         log(`${NETLIFYDEVLOG} Injected ${usedSourceName} env var: ${chalk.yellow(key)}`)
       }
 

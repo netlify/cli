@@ -214,7 +214,7 @@ export class EdgeFunctionsRegistry {
         variable.sources.includes('ui') ||
         variable.sources.includes('account') ||
         variable.sources.includes('addons') ||
-        key === 'NETLIFY_DEV'
+        variable.sources.includes('internal')
       ) {
         env[key] = variable.value
       }
