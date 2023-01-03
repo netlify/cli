@@ -460,9 +460,9 @@ const dev = async (options, command) => {
 
   let { env } = cachedConfig
 
-  // If the `serve` flag is present, we override the `framework` value so that
+  // If the `prod` flag is present, we override the `framework` value so that
   // we start a static server and not the framework's development server.
-  if (options.serve) {
+  if (options.prod) {
     devConfig.framework = '#static'
   }
 
@@ -524,7 +524,7 @@ const dev = async (options, command) => {
 
   // When using the `serve` flag, we want to use the production functions built
   // by Netlify Build rather than building them from source.
-  const loadDistFunctions = Boolean(options.serve)
+  const loadDistFunctions = Boolean(options.prod)
 
   await startFunctionsServer({
     api,
@@ -719,7 +719,7 @@ const runBuild = async ({ cachedConfig, options, settings, site }) => {
     settings.frameworkHost = ipVersion === 6 ? '::1' : '127.0.0.1'
   }
 
-  if (options.serve) {
+  if (options.prod) {
     // Start by cleaning the internal directory, as it may have artifacts left
     // by previous builds.
     await cleanInternalDirectory(site.root)
@@ -823,7 +823,7 @@ export const createDevCommand = (program) => {
     .option('-o ,--offline', 'disables any features that require network access')
     .option('-l, --live', 'start a public live session', false)
     .option('--functionsPort <port>', 'port of functions server', (value) => Number.parseInt(value))
-    .option('-s, --serve', 'run in "serve" mode', false)
+    .option('-P, --prod', 'build the site for production', false)
     .addOption(
       new Option(
         '--geo <mode>',
