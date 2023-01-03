@@ -12,7 +12,7 @@ import WSL from 'is-wsl'
 import debounce from 'lodash/debounce.js'
 import terminalLink from 'terminal-link'
 
-import { clearSpinner, startSpinner } from '../lib/spinner.cjs'
+import { clearSpinner, startSpinner } from '../lib/spinner.mjs'
 
 import getGlobalConfig from './get-global-config.mjs'
 import getPackageJson from './get-package-json.mjs'

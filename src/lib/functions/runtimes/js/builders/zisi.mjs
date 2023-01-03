@@ -7,7 +7,7 @@ import readPkgUp from 'read-pkg-up'
 import sourceMapSupport from 'source-map-support'
 
 import { NETLIFYDEVERR } from '../../../../../utils/command-helpers.mjs'
-import { getPathInProject } from '../../../../settings.cjs'
+import { getPathInProject } from '../../../../settings.mjs'
 import { normalizeFunctionsConfig } from '../../../config.mjs'
 import { memoizedBuild } from '../../../memoized-build.mjs'
 

@@ -1,8 +1,8 @@
 // @ts-check
 import { resolve } from 'path'
 
-import { isDirectoryAsync, isFileAsync } from '../../lib/fs.cjs'
-import { getPathInProject } from '../../lib/settings.cjs'
+import { isDirectoryAsync, isFileAsync } from '../../lib/fs.mjs'
+import { getPathInProject } from '../../lib/settings.mjs'
 
 /**
  * retrieves the function directory out of the flags or config

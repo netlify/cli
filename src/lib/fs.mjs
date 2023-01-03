@@ -1,10 +1,8 @@
 // @ts-check
-const {
-  constants,
-  promises: { access, stat },
-} = require('fs')
+import { constants } from 'fs'
+import { access, stat } from 'fs/promises'
 
-const fileExistsAsync = async (filePath) => {
+export const fileExistsAsync = async (filePath) => {
   try {
     await access(filePath, constants.F_OK)
     return true
@@ -36,16 +34,10 @@ const isType = async (filePath, type) => {
  * Checks if the provided filePath is a file
  * @param {string} filePath
  */
-const isFileAsync = (filePath) => isType(filePath, 'isFile')
+export const isFileAsync = (filePath) => isType(filePath, 'isFile')
 
 /**
  * Checks if the provided filePath is a directory
  * @param {string} filePath
  */
-const isDirectoryAsync = (filePath) => isType(filePath, 'isDirectory')
-
-module.exports = {
-  fileExistsAsync,
-  isDirectoryAsync,
-  isFileAsync,
-}
+export const isDirectoryAsync = (filePath) => isType(filePath, 'isDirectory')
