@@ -335,7 +335,7 @@
   },
   "devDependencies": {
     "@babel/preset-react": "^7.12.13",
-    "@netlify/eslint-config-node": "^7.0.0",
+    "@netlify/eslint-config-node": "^7.0.1",
     "@vitest/coverage-c8": "^0.26.0",
     "ava": "^4.0.0",
     "c8": "^7.11.0",
