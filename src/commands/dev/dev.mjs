@@ -526,7 +526,7 @@ const dev = async (options, command) => {
 
   const { configPath: configPathOverride } = await runBuild({ cachedConfig, options, settings, site })
 
-  // When using the `serve` flag, we want to use the production functions built
+  // When using the `prod` flag, we want to use the production functions built
   // by Netlify Build rather than building them from source.
   const loadDistFunctions = Boolean(options.prod)
 
@@ -827,7 +827,7 @@ export const createDevCommand = (program) => {
     .option('-o ,--offline', 'disables any features that require network access')
     .option('-l, --live', 'start a public live session', false)
     .option('--functionsPort <port>', 'port of functions server', (value) => Number.parseInt(value))
-    .option('-P, --prod', 'build the site for production', false)
+    .option('-P, --prod', 'build the site for production and serve locally', false)
     .addOption(
       new Option(
         '--geo <mode>',
