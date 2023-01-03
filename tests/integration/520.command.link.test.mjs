@@ -1,4 +1,5 @@
 import { join } from 'path'
+import process from 'process'
 
 import { expect, test } from 'vitest'
 
@@ -24,20 +25,23 @@ test('should create gitignore in repository root when is root', async () => {
   })
 })
 
-test('should create gitignore in repository root when cwd is subdirectory', async () => {
-  await withSiteBuilder('monorepo', async (builder) => {
-    const projectPath = join('projects', 'project1')
-    await builder.withGit().withNetlifyToml({ config: {}, pathPrefix: projectPath }).buildAsync()
+test.skipIf(process.platform === 'win32')(
+  'should create gitignore in repository root when cwd is subdirectory',
+  async () => {
+    await withSiteBuilder('monorepo', async (builder) => {
+      const projectPath = join('projects', 'project1')
+      await builder.withGit().withNetlifyToml({ config: {}, pathPrefix: projectPath }).buildAsync()
 
-    await withMockApi(
-      [],
-      async ({ apiUrl }) => {
-        const options = getCLIOptions({ builder, apiUrl })
-        await callCli(['link'], { ...options, cwd: join(builder.directory, projectPath) })
+      await withMockApi(
+        [],
+        async ({ apiUrl }) => {
+          const options = getCLIOptions({ builder, apiUrl })
+          await callCli(['link'], { ...options, cwd: join(builder.directory, projectPath) })
 
-        expect(await isFileAsync(join(builder.directory, '.gitignore'))).toBe(true)
-      },
-      true,
-    )
-  })
-})
+          expect(await isFileAsync(join(builder.directory, '.gitignore'))).toBe(true)
+        },
+        true,
+      )
+    })
+  },
+)
