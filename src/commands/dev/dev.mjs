@@ -746,10 +746,12 @@ const runBuild = async ({ cachedConfig, options, settings, site }) => {
     return { configPath: tempConfigPath }
   }
 
-  // Enable `quiet` to suppress non-essential output from Netlify Build.
   const startDevOptions = {
     ...sharedOptions,
-    quiet: true,
+
+    // Set `quiet` to suppress non-essential output from Netlify Build unless
+    // the `debug` flag is set.
+    quiet: !options.debug,
   }
 
   // Run Netlify Build using the `startDev` entry point.
