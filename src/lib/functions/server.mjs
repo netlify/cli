@@ -208,14 +208,14 @@ const getFunctionsServer = async function (options) {
 }
 
 export const startFunctionsServer = async (options) => {
-  const { capabilities, config, debug, dist, settings, site, siteUrl, timeouts } = options
+  const { capabilities, config, debug, loadDistFunctions, settings, site, siteUrl, timeouts } = options
   const internalFunctionsDir = await getInternalFunctionsDir({ base: site.root })
   const functionsDirectories = []
 
-  // If the `dist` parameter is sent, the functions server will use the built
-  // functions created by zip-it-and-ship-it rather than building them from
-  // source.
-  if (dist) {
+  // If the `loadDistFunctions` parameter is sent, the functions server will
+  // use the built functions created by zip-it-and-ship-it rather than building
+  // them from source.
+  if (loadDistFunctions) {
     const distPath = await getFunctionsDistPath({ base: site.root })
 
     if (distPath) {

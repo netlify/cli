@@ -511,14 +511,14 @@ const dev = async (options, command) => {
 
   // When using the `serve` flag, we want to use the production functions built
   // by Netlify Build rather than building them from source.
-  const dist = Boolean(options.serve)
+  const loadDistFunctions = Boolean(options.serve)
 
   await startFunctionsServer({
     api,
     command,
     config,
     debug: options.debug,
-    dist,
+    loadDistFunctions,
     settings,
     site,
     siteInfo,
