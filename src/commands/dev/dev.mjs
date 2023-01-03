@@ -517,6 +517,7 @@ const dev = async (options, command) => {
     api,
     command,
     config,
+    debug: options.debug,
     dist,
     settings,
     site,

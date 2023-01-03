@@ -208,7 +208,7 @@ const getFunctionsServer = async function (options) {
 }
 
 export const startFunctionsServer = async (options) => {
-  const { capabilities, config, dist, settings, site, siteUrl, timeouts } = options
+  const { capabilities, config, debug, dist, settings, site, siteUrl, timeouts } = options
   const internalFunctionsDir = await getInternalFunctionsDir({ base: site.root })
   const functionsDirectories = []
 
@@ -234,6 +234,7 @@ export const startFunctionsServer = async (options) => {
   const functionsRegistry = new FunctionsRegistry({
     capabilities,
     config,
+    debug,
     isConnected: Boolean(siteUrl),
     projectRoot: site.root,
     settings,

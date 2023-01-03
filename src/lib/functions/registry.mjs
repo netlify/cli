@@ -24,9 +24,10 @@ import runtimes from './runtimes/index.mjs'
 const ZIP_EXTENSION = '.zip'
 
 export class FunctionsRegistry {
-  constructor({ capabilities, config, isConnected = false, projectRoot, settings, timeouts }) {
+  constructor({ capabilities, config, debug = false, isConnected = false, projectRoot, settings, timeouts }) {
     this.capabilities = capabilities
     this.config = config
+    this.debug = debug
     this.isConnected = isConnected
     this.projectRoot = projectRoot
     this.timeouts = timeouts
@@ -152,6 +153,10 @@ export class FunctionsRegistry {
     // the new location.
     if (extname(func.mainFile) === ZIP_EXTENSION) {
       const unzippedDirectory = await this.unzipFunction(func)
+
+      if (this.debug) {
+        log(`${NETLIFYDEVLOG} ${chalk.green('Extracted')} function ${chalk.yellow(name)} from ${func.mainFile}.`)
+      }
 
       func.mainFile = join(unzippedDirectory, `${func.name}.js`)
     }
