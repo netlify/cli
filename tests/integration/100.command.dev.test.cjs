@@ -670,7 +670,7 @@ test('should detect deleted edge functions', async (t) => {
       )
 
       t.is(authResponseMessage, 'Auth response')
-      t.is(authNotFoundMessage, 'Not Found')
+      t.is(authNotFoundMessage, '404 Not Found')
     })
   })
 })
