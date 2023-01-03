@@ -42,13 +42,13 @@ beforeAll(async () => {
   mockApi = server
 
   await callCli(['lm:uninstall'], execOptions)
-})
+}, 30_000)
 
 afterAll(async () => {
   await callCli(['lm:uninstall'], execOptions)
   await builder.cleanupAsync()
   mockApi.close()
-})
+}, 30_000)
 
 test('netlify lm:info', async () => {
   const cliResponse = await callCli(['lm:info'], execOptions)
