@@ -99,8 +99,9 @@ const formatRegistryArrayForInquirer = async function (lang, funcType) {
       // filter out markdown files
       .filter((folderName) => !folderName.endsWith('.md'))
       .map(async (folderName) => {
+        const templatePath = path.join(templatesDir, lang, folderName, '.netlify-function-template.mjs')
         // eslint-disable-next-line import/no-dynamic-require
-        const template = await import(path.join(templatesDir, lang, folderName, '.netlify-function-template.mjs'))
+        const template = await import(pathToFileURL(templatePath))
 
         return template.default
       }),
