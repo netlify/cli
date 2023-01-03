@@ -1,5 +1,4 @@
 // Handlers are meant to be async outside tests
-/* eslint-disable require-await */
 const { promises: fs } = require('fs')
 const path = require('path')
 
@@ -472,4 +471,3 @@ test('Handles errors from the `onPreDev` event', async (t) => {
     )
   })
 })
-/* eslint-enable require-await */

@@ -1,4 +1,3 @@
-/* eslint-disable require-await */
 const { join } = require('path')
 
 // eslint-disable-next-line ava/use-test
@@ -962,4 +961,3 @@ test('Ensures watcher watches included files', async (t) => {
     })
   })
 })
-/* eslint-enable require-await */

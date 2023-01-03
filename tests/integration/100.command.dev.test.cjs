@@ -1,5 +1,4 @@
 // Handlers are meant to be async outside tests
-/* eslint-disable require-await */
 const path = require('path')
 
 // eslint-disable-next-line ava/use-test
@@ -933,5 +932,3 @@ test('should have only allowed environment variables set', async (t) => {
     })
   })
 })
-
-/* eslint-enable require-await */

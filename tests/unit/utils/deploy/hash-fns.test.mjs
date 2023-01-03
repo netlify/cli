@@ -11,12 +11,10 @@ test('Hashes files in a folder', async () => {
       .withNetlifyToml({ config: { functions: { directory: 'functions' } } })
       .withFunction({
         path: 'hello.js',
-        // eslint-disable-next-line require-await
         handler: async () => ({ statusCode: 200, body: 'Hello' }),
       })
       .withFunction({
         path: 'goodbye.js',
-        // eslint-disable-next-line require-await
         handler: async () => ({ statusCode: 200, body: 'Goodbye' }),
       })
       .buildAsync()

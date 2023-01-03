@@ -99,7 +99,7 @@ module.exports = {
       },
     },
     {
-      files: ['tests/integration/**/*'],
+      files: ['tests/**/*'],
       rules: {
         'require-await': 'off',
       },

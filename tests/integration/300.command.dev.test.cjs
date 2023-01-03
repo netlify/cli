@@ -1,5 +1,4 @@
 // Handlers are meant to be async outside tests
-/* eslint-disable require-await */
 const path = require('path')
 const process = require('process')
 
@@ -281,4 +280,3 @@ test('should inject env vars based on [dev].envFiles file order', async (t) => {
     })
   })
 })
-/* eslint-enable require-await */
