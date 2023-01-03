@@ -476,7 +476,7 @@ const dev = async (options, command) => {
     log(`${NETLIFYDEVLOG} Injecting environment variable values for ${chalk.yellow('all scopes')}`)
   }
 
-  await injectEnvVariables({ devConfig, env, prod: options.prod, site })
+  await injectEnvVariables({ devConfig, env, site })
   await promptEditorHelper({ chalk, config, log, NETLIFYDEVLOG, repositoryRoot, state })
 
   const { addonsUrls, capabilities, siteUrl, timeouts } = await getSiteInformation({
