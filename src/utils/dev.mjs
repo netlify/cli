@@ -164,6 +164,7 @@ export const injectEnvVariables = async ({ devConfig, env, site }) => {
     const existsInProcess = process.env[key] !== undefined
     const [usedSource, ...overriddenSources] = existsInProcess ? ['process', ...variable.sources] : variable.sources
     const usedSourceName = getEnvSourceName(usedSource)
+    const isInternal = variable.sources.includes('internal')
 
     overriddenSources.forEach((source) => {
       const sourceName = getEnvSourceName(source)
@@ -177,9 +178,9 @@ export const injectEnvVariables = async ({ devConfig, env, site }) => {
       )
     })
 
-    if (!existsInProcess) {
+    if (!existsInProcess || isInternal) {
       // Omitting `general` and `internal` env vars to reduce noise in the logs.
-      if (usedSource !== 'general' && usedSource !== 'internal') {
+      if (usedSource !== 'general' && !isInternal) {
         log(`${NETLIFYDEVLOG} Injected ${usedSourceName} env var: ${chalk.yellow(key)}`)
       }
 
