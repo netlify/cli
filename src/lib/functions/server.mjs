@@ -2,17 +2,16 @@
 import { get } from 'dot-prop'
 import jwtDecode from 'jwt-decode'
 
+import { NETLIFYDEVERR, error as errorExit, log, logH2, logInfo } from '../../utils/command-helpers.mjs'
+import { generateNetlifyGraphJWT } from '../../utils/dev.mjs'
 import { CLOCKWORK_USERAGENT, getInternalFunctionsDir } from '../../utils/functions/index.mjs'
-import utils from '../../utils/index.cjs'
 
-import { handleBackgroundFunction, handleBackgroundFunctionResult } from './background.cjs'
+import { handleBackgroundFunction, handleBackgroundFunctionResult } from './background.mjs'
 import { createFormSubmissionHandler } from './form-submissions-handler.mjs'
-import { FunctionsRegistry } from './registry.cjs'
+import { FunctionsRegistry } from './registry.mjs'
 import { handleScheduledFunction } from './scheduled.mjs'
-import { handleSynchronousFunction } from './synchronous.cjs'
-import { shouldBase64Encode } from './utils.cjs'
-
-const { NETLIFYDEVERR, error: errorExit, generateNetlifyGraphJWT, log, logH2, logInfo } = utils
+import { handleSynchronousFunction } from './synchronous.mjs'
+import { shouldBase64Encode } from './utils.mjs'
 
 const buildClientContext = function (headers) {
   // inject a client context based on auth header, ported over from netlify-lambda (https://github.com/netlify/netlify-lambda/pull/57)
@@ -41,6 +40,14 @@ const buildClientContext = function (headers) {
   }
 }
 
+const hasBody = (req) =>
+  // copied from is-type package
+  // eslint-disable-next-line unicorn/prefer-number-properties
+  (req.header('transfer-encoding') !== undefined || !isNaN(req.header('content-length'))) &&
+  // we expect a string or a buffer, because we use the two bodyParsers(text, raw) from express
+  // eslint-disable-next-line n/prefer-global/buffer
+  (typeof req.body === 'string' || Buffer.isBuffer(req.body))
+
 export const createHandler = function (options) {
   const { config, functionsRegistry } = options
 
@@ -62,18 +69,21 @@ export const createHandler = function (options) {
       return
     }
 
-    const isBase64Encoded = shouldBase64Encode(request.headers['content-type'])
-    const body = request.get('content-length') ? request.body.toString(isBase64Encoded ? 'base64' : 'utf8') : undefined
+    const isBase64Encoded = shouldBase64Encode(request.header('content-type'))
+    let body
+    if (hasBody(request)) {
+      body = request.body.toString(isBase64Encoded ? 'base64' : 'utf8')
+    }
 
-    let remoteAddress = request.get('x-forwarded-for') || request.connection.remoteAddress || ''
+    let remoteAddress = request.header('x-forwarded-for') || request.connection.remoteAddress || ''
     remoteAddress = remoteAddress
       .split(remoteAddress.includes('.') ? ':' : ',')
       .pop()
       .trim()
 
     let requestPath = request.path
-    if (request.get('x-netlify-original-pathname')) {
-      requestPath = request.get('x-netlify-original-pathname')
+    if (request.header('x-netlify-original-pathname')) {
+      requestPath = request.header('x-netlify-original-pathname')
       delete request.headers['x-netlify-original-pathname']
     }
     const queryParams = Object.entries(request.query).reduce(

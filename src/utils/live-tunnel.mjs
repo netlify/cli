@@ -4,11 +4,11 @@ import process from 'process'
 import fetch from 'node-fetch'
 import pWaitFor from 'p-wait-for'
 
-import { fetchLatestVersion, shouldFetchLatestVersion } from '../lib/exec-fetcher.cjs'
+import { fetchLatestVersion, shouldFetchLatestVersion } from '../lib/exec-fetcher.mjs'
 import { getPathInHome } from '../lib/settings.cjs'
 
-import { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log } from './command-helpers.cjs'
-import execa from './execa.cjs'
+import { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log } from './command-helpers.mjs'
+import execa from './execa.mjs'
 
 const PACKAGE_NAME = 'live-tunnel-client'
 const EXEC_NAME = PACKAGE_NAME

@@ -5,9 +5,9 @@ import { parse as parseContentType } from 'content-type'
 import multiparty from 'multiparty'
 import getRawBody from 'raw-body'
 
-import { warn } from '../../utils/command-helpers.cjs'
+import { warn } from '../../utils/command-helpers.mjs'
 import { BACKGROUND } from '../../utils/functions/index.mjs'
-import { capitalize } from '../string.cjs'
+import { capitalize } from '../string.mjs'
 
 const getFormHandler = function ({ functionsRegistry }) {
   const handlers = ['submission-created', `submission-created${BACKGROUND}`]

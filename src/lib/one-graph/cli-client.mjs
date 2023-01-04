@@ -13,8 +13,9 @@ import gitRepoInfo from 'git-repo-info'
 import WSL from 'is-wsl'
 import { GraphQL, InternalConsole, NetlifyGraph, NetlifyGraphLockfile, OneGraphClient } from 'netlify-onegraph-internal'
 
+import { chalk, error, log, warn, watchDebounced } from '../../utils/command-helpers.mjs'
+import execa from '../../utils/execa.mjs'
 import getPackageJson from '../../utils/get-package-json.mjs'
-import utils from '../../utils/index.cjs'
 
 import {
   generateFunctionsFile,
@@ -28,7 +29,6 @@ import {
   writeGraphQLSchemaFile,
 } from './cli-netlify-graph.mjs'
 
-const { chalk, error, execa, log, warn, watchDebounced } = utils
 const { parse } = GraphQL
 const { defaultExampleOperationsDoc, extractFunctionsFromOperationDoc } = NetlifyGraph
 

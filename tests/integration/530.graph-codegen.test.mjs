@@ -6,9 +6,9 @@ import path, { dirname } from 'path'
 import process from 'process'
 import { fileURLToPath } from 'url'
 
-import test from 'ava'
 import { CodegenHelpers, GraphQL, IncludedCodegen, NetlifyGraph } from 'netlify-onegraph-internal'
 import { registerConsole } from 'netlify-onegraph-internal/dist/internalConsole.js'
+import { expect, test } from 'vitest'
 
 import {
   generateHandlerSourceByOperationId,
@@ -206,8 +206,8 @@ const testGenerateRuntime = async ({ codegenModule }) => {
   generatedRuntime.forEach((runtimeFile) => {
     const filepath = runtimeFile.name.map((step) => step.replace(':', '___')).join('/')
     // @ts-ignore
-    test(`netlify graph function library runtime codegen library [${codegenModule.id}-${codegenModule.version}]:./${filepath}}`, (t) => {
-      t.snapshot(runtimeFile.content)
+    test(`netlify graph function library runtime codegen library [${codegenModule.id}-${codegenModule.version}]:./${filepath}}`, () => {
+      expect(runtimeFile.content).toMatchSnapshot()
     })
   })
 }
@@ -254,8 +254,8 @@ const testGenerateHandlerSource = ({ builtInCodegenId, codegenModule, operationI
 
   textualSources.forEach(([filename, content]) => {
     // @ts-ignore
-    test(`netlify graph handler codegen [${codegen.id}-${codegen.version}]:/${filename}`, (t) => {
-      t.snapshot(normalize(JSON.stringify(content)))
+    test(`netlify graph handler codegen [${codegen.id}-${codegen.version}]:/${filename}`, () => {
+      expect(normalize(JSON.stringify(content))).toMatchSnapshot()
     })
   })
 }

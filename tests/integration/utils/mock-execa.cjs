@@ -1,8 +1,7 @@
-const { writeFile } = require('fs').promises
+const { rm, writeFile } = require('fs').promises
+const { pathToFileURL } = require('url')
 
 const tempy = require('tempy')
-
-const { rmdirRecursiveAsync } = require('../../../src/lib/fs.cjs')
 
 // Saves to disk a JavaScript file with the contents provided and returns
 // an environment variable that replaces the `execa` module implementation.
@@ -14,11 +13,12 @@ const createMock = async (contents) => {
   await writeFile(path, contents)
 
   const env = {
-    NETLIFY_CLI_EXECA_PATH: path,
+    // windows needs 'file://' paths
+    NETLIFY_CLI_EXECA_PATH: pathToFileURL(path).href,
   }
   const cleanup = () =>
     // eslint-disable-next-line promise/prefer-await-to-then
-    rmdirRecursiveAsync(path).catch(() => {
+    rm(path, { force: true, recursive: true }).catch(() => {
       // no-op
     })
 

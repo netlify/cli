@@ -17,7 +17,6 @@ const typeDefs = gql`
   }
 `
 
-/* eslint-disable no-magic-numbers */
 const books = [
   {
     id: 1,
@@ -62,7 +61,6 @@ const books = [
     authorName: 'JK Rowling',
   },
 ]
-/* eslint-enable no-magic-numbers */
 
 const resolvers = {
   Query: {

@@ -74,7 +74,6 @@ test('should return response from a function with setTimeout', async (t) => {
     builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withFunction({
       path: 'timeout.js',
       handler: async () => {
-        console.log('ding')
         // Wait for 4 seconds
         const FUNCTION_TIMEOUT = 4e3
         await new Promise((resolve) => {

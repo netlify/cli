@@ -2,9 +2,7 @@
 import inquirer from 'inquirer'
 
 import { ADDON_VALIDATION, prepareAddonCommand } from '../../utils/addons/prepare.mjs'
-import utils from '../../utils/index.cjs'
-
-const { error, exit, log } = utils
+import { error, exit, log } from '../../utils/command-helpers.mjs'
 
 /**
  * The addons:delete command

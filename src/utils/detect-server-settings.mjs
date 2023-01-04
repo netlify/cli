@@ -1,4 +1,5 @@
 // @ts-check
+import { readFile } from 'fs/promises'
 import { EOL } from 'os'
 import path from 'path'
 import process from 'process'
@@ -8,10 +9,8 @@ import fuzzy from 'fuzzy'
 import getPort from 'get-port'
 import isPlainObject from 'is-plain-obj'
 
-import { readFileAsyncCatchError } from '../lib/fs.cjs'
-
-import { NETLIFYDEVWARN, chalk, log } from './command-helpers.cjs'
-import { acquirePort } from './dev.cjs'
+import { NETLIFYDEVWARN, chalk, log } from './command-helpers.mjs'
+import { acquirePort } from './dev.mjs'
 import { getInternalFunctionsDir } from './functions/index.mjs'
 
 const formatProperty = (str) => chalk.magenta(`'${str}'`)
@@ -34,9 +33,9 @@ const readHttpsSettings = async (options) => {
     throw new TypeError(`Certificate file configuration should be a string`)
   }
 
-  const [{ content: key, error: keyError }, { content: cert, error: certError }] = await Promise.all([
-    readFileAsyncCatchError(keyFile),
-    readFileAsyncCatchError(certFile),
+  const [{ reason: keyError, value: key }, { reason: certError, value: cert }] = await Promise.allSettled([
+    readFile(keyFile, 'utf-8'),
+    readFile(certFile, 'utf-8'),
   ])
 
   if (keyError) {

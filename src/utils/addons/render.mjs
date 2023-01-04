@@ -1,7 +1,7 @@
 // @ts-check
 import AsciiTable from 'ascii-table'
 
-import { chalk } from '../command-helpers.cjs'
+import { chalk } from '../command-helpers.mjs'
 
 export const renderMissingValues = function (values, manifest) {
   const display = values

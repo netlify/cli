@@ -100,7 +100,6 @@ test.serial('netlify lm:setup', async (t) => {
 
 test.after('cleanup', async (t) => {
   const { builder, mockApi } = t.context
-  console.log('Performing cleanup')
   await callCli(['lm:uninstall'], t.context.execOptions)
   await builder.cleanupAsync()
   mockApi.close()

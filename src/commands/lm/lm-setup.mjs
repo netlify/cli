@@ -1,12 +1,11 @@
 // @ts-check
 import Listr from 'listr'
 
-import utils from '../../utils/index.cjs'
+import { error } from '../../utils/command-helpers.mjs'
+import execa from '../../utils/execa.mjs'
 import { installPlatform } from '../../utils/lm/install.mjs'
 import { checkHelperVersion } from '../../utils/lm/requirements.mjs'
 import { printBanner } from '../../utils/lm/ui.mjs'
-
-const { error, execa } = utils
 
 const installHelperIfMissing = async function ({ force }) {
   let installHelper = false

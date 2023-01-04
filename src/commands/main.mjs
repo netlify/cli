@@ -5,8 +5,10 @@ import { Option } from 'commander'
 import inquirer from 'inquirer'
 import { findBestMatch } from 'string-similarity'
 
+import { BANG, chalk, error, exit, log, logH1, NETLIFY_CYAN, USER_AGENT, warn } from '../utils/command-helpers.mjs'
+import execa from '../utils/execa.mjs'
+import getGlobalConfig from '../utils/get-global-config.mjs'
 import getPackageJson from '../utils/get-package-json.mjs'
-import utils from '../utils/index.cjs'
 import { track } from '../utils/telemetry/index.mjs'
 
 import { createAddonsCommand } from './addons/index.mjs'
@@ -31,8 +33,6 @@ import { createStatusCommand } from './status/index.mjs'
 import { createSwitchCommand } from './switch/index.mjs'
 import { createUnlinkCommand } from './unlink/index.mjs'
 import { createWatchCommand } from './watch/index.mjs'
-
-const { BANG, NETLIFY_CYAN, USER_AGENT, chalk, error, execa, exit, getGlobalConfig, log, logH1, warn } = utils
 
 const SUGGESTION_TIMEOUT = 1e4
 

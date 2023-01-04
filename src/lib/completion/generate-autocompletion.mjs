@@ -2,7 +2,7 @@
 import { existsSync, mkdirSync, writeFileSync } from 'fs'
 import { dirname } from 'path'
 
-import { sortOptions, warn } from '../../utils/command-helpers.cjs'
+import { sortOptions, warn } from '../../utils/command-helpers.mjs'
 
 import { AUTOCOMPLETION_FILE } from './constants.mjs'
 

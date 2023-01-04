@@ -4,7 +4,7 @@ import { readFile } from 'fs/promises'
 import HttpsProxyAgent from 'https-proxy-agent'
 import waitPort from 'wait-port'
 
-import { NETLIFYDEVERR, NETLIFYDEVWARN, exit, log } from '../utils/command-helpers.cjs'
+import { NETLIFYDEVERR, NETLIFYDEVWARN, exit, log } from '../utils/command-helpers.mjs'
 
 // https://github.com/TooTallNate/node-https-proxy-agent/issues/89
 // Maybe replace with https://github.com/delvedor/hpagent

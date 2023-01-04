@@ -1,5 +1,5 @@
 // @ts-check
-const { copyFile, mkdir, unlink, writeFile } = require('fs').promises
+const { copyFile, mkdir, rm, unlink, writeFile } = require('fs').promises
 const os = require('os')
 const path = require('path')
 const process = require('process')
@@ -9,8 +9,6 @@ const serializeJS = require('serialize-javascript')
 const tempDirectory = require('temp-dir')
 const { toToml } = require('tomlify-j0.4')
 const { v4: uuidv4 } = require('uuid')
-
-const { rmdirRecursiveAsync } = require('../../../src/lib/fs.cjs')
 
 const ensureDir = (file) => mkdir(file, { recursive: true })
 
@@ -82,7 +80,7 @@ const createSiteBuilder = ({ siteName }) => {
         let content = typeof handler === 'string' ? handler : `export default ${handler.toString()}`
 
         if (config) {
-          content += `;export const config = ${config.toString()}`
+          content += `;export const config = ${JSON.stringify(config)}`
         }
 
         await ensureDir(path.dirname(dest))
@@ -184,7 +182,7 @@ const createSiteBuilder = ({ siteName }) => {
       return builder
     },
     cleanupAsync: async () => {
-      await rmdirRecursiveAsync(directory).catch((error) => {
+      await rm(directory, { force: true, recursive: true }).catch((error) => {
         console.warn(error)
       })
       return builder

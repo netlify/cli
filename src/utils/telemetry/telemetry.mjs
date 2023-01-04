@@ -5,8 +5,8 @@ import { fileURLToPath } from 'url'
 
 import { isCI } from 'ci-info'
 
-import execa from '../execa.cjs'
-import getGlobalConfig from '../get-global-config.cjs'
+import execa from '../execa.mjs'
+import getGlobalConfig from '../get-global-config.mjs'
 
 import isValidEventName from './validation.mjs'
 

@@ -11,9 +11,7 @@ import {
   getNetlifyGraphConfig,
   readGraphQLSchemaFile,
 } from '../../lib/one-graph/cli-netlify-graph.mjs'
-import utils from '../../utils/index.cjs'
-
-const { error, log } = utils
+import { error, log } from '../../utils/command-helpers.mjs'
 
 /**
  * Creates the `netlify graph:handler` command

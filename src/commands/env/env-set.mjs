@@ -1,18 +1,13 @@
 // @ts-check
 import { Option } from 'commander'
 
-import utils from '../../utils/index.cjs'
-
-const {
+import { chalk, error, log, logJson } from '../../utils/command-helpers.mjs'
+import {
   AVAILABLE_CONTEXTS,
   AVAILABLE_SCOPES,
-  chalk,
-  error,
-  log,
-  logJson,
   normalizeContext,
   translateFromEnvelopeToMongo,
-} = utils
+} from '../../utils/env/index.mjs'
 
 /**
  * The env:set command

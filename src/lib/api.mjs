@@ -1,4 +1,4 @@
-import { warn } from '../utils/command-helpers.cjs'
+import { warn } from '../utils/command-helpers.mjs'
 
 export const cancelDeploy = async ({ api, deployId }) => {
   try {

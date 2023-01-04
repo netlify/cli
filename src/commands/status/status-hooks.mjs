@@ -2,9 +2,7 @@
 import { get } from 'dot-prop'
 import prettyjson from 'prettyjson'
 
-import utils from '../../utils/index.cjs'
-
-const { error, log, warn } = utils
+import { error, log, warn } from '../../utils/command-helpers.mjs'
 
 /**
  * The status:hooks command

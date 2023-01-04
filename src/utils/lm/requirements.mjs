@@ -1,7 +1,7 @@
 // @ts-check
 import semver from 'semver'
 
-import execa from '../execa.cjs'
+import execa from '../execa.mjs'
 
 export const checkLFSFilters = async function () {
   try {

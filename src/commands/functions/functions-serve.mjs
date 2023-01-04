@@ -2,10 +2,9 @@
 import { join } from 'path'
 
 import { startFunctionsServer } from '../../lib/functions/server.mjs'
+import { acquirePort, getSiteInformation, injectEnvVariables } from '../../utils/dev.mjs'
 import { getFunctionsDir } from '../../utils/functions/index.mjs'
-import utils from '../../utils/index.cjs'
 
-const { acquirePort, getSiteInformation, injectEnvVariables } = utils
 const DEFAULT_PORT = 9999
 
 /**

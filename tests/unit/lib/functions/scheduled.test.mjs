@@ -1,6 +1,7 @@
-import test from 'ava'
+import { expect, describe, test } from 'vitest'
 
 import { buildHelpResponse } from '../../../../src/lib/functions/scheduled.mjs'
+import { CLOCKWORK_USERAGENT } from '../../../../src/utils/functions/constants.mjs'
 
 const withAccept = (accept) =>
   buildHelpResponse({
@@ -13,31 +14,6 @@ const withAccept = (accept) =>
       statusCode: 200,
     },
   })
-
-test('buildHelpResponse does content negotiation', (t) => {
-  const html = withAccept('text/html')
-  t.is(html.contentType, 'text/html')
-  t.true(html.message.includes('<link rel='))
-  t.true(html.message.includes('<p>'))
-
-  const plain = withAccept('text/plain')
-  t.is(plain.contentType, 'text/plain')
-  t.false(plain.message.includes('<link rel='))
-  t.false(plain.message.includes('<p>'))
-})
-
-test('buildHelpResponse prints errors', (t) => {
-  const response = buildHelpResponse({
-    error: new Error('test'),
-    headers: {},
-    path: '/',
-    result: {
-      statusCode: 200,
-    },
-  })
-
-  t.true(response.message.includes('There was an error'))
-})
 
 const withUserAgent = (userAgent) =>
   buildHelpResponse({
@@ -52,7 +28,34 @@ const withUserAgent = (userAgent) =>
     },
   })
 
-test('buildHelpResponse conditionally prints notice about HTTP x scheduled functions', (t) => {
-  t.true(withUserAgent('').message.includes("it won't work in production"))
-  t.false(withUserAgent('Netlify Clockwork').message.includes("it won't work in production"))
+describe('buildHelpResponse', () => {
+  test('buildHelpResponse does content negotiation', () => {
+    const html = withAccept('text/html')
+    expect(html.contentType).toBe('text/html')
+    expect(html.message).toContain('<link rel=')
+    expect(html.message).toContain('<p>')
+
+    const plain = withAccept('text/plain')
+    expect(plain.contentType).toBe('text/plain')
+    expect(plain.message).not.toContain('<link rel=')
+    expect(plain.message).not.toContain('<p>')
+  })
+
+  test('buildHelpResponse prints errors', () => {
+    const response = buildHelpResponse({
+      error: new Error('test'),
+      headers: {},
+      path: '/',
+      result: {
+        statusCode: 200,
+      },
+    })
+
+    expect(response.message).toContain('There was an error')
+  })
+
+  test('buildHelpResponse conditionally prints notice about HTTP x scheduled functions', () => {
+    expect(withUserAgent('').message).toContain("it won't work in production")
+    expect(withUserAgent(CLOCKWORK_USERAGENT).message).not.toContain("it won't work in production")
+  })
 })

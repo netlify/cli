@@ -8,10 +8,9 @@ import {
   getNetlifyGraphConfig,
   readGraphQLOperationsSourceFile,
 } from '../../lib/one-graph/cli-netlify-graph.mjs'
-import utils from '../../utils/index.cjs'
-import { openBrowser } from '../../utils/open-browser.cjs'
+import { NETLIFYDEVERR, chalk, error, log } from '../../utils/command-helpers.mjs'
+import openBrowser from '../../utils/open-browser.mjs'
 
-const { NETLIFYDEVERR, chalk, error, log } = utils
 const { ensureAppForSite, executeCreatePersistedQueryMutation } = OneGraphCliClient
 
 /**
