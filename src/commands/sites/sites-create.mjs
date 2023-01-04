@@ -80,7 +80,7 @@ export const sitesCreate = async (options, command) => {
       }
     }
   }
-  
+
   await inputSiteName(options.name)
 
   const siteUrl = site.ssl_url || site.url
