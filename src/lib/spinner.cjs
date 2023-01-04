@@ -1,7 +1,6 @@
 // @ts-check
 const process = require('process')
 
- 
 const { Instance: ChalkInstance } = require('chalk')
 const ora = require('ora')
 
@@ -82,7 +81,6 @@ const startSpinner = ({ text }) => {
   const frames = getGradientAnimFrames()
   return ora({
     spinner: {
-       
       interval: 60,
       frames,
     },
