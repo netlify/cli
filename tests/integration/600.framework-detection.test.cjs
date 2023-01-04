@@ -339,6 +339,10 @@ test('should run and serve a production build when the `--prod` flag is set', as
       .withNetlifyToml({
         config: {
           build: { publish: 'public' },
+          context: {
+            dev: { environment: { CONTEXT_CHECK: 'DEV' } },
+            production: { environment: { CONTEXT_CHECK: 'PRODUCTION' } },
+          },
           functions: { directory: 'functions' },
           plugins: [{ package: './plugins/frameworker' }],
         },
@@ -361,16 +365,16 @@ test('should run and serve a production build when the `--prod` flag is set', as
             await mkdir(generatedFunctionsDir)
             await writeFile(
               `${generatedFunctionsDir}/hello.js`,
-              `exports.handler = async () => ({ statusCode: 200, body: 'Hello! NETLIFY_DEV is ' + process.env.NETLIFY_DEV })`,
+              `const { CONTEXT_CHECK, NETLIFY_DEV } = process.env; exports.handler = async () => ({ statusCode: 200, body: JSON.stringify({ CONTEXT_CHECK, NETLIFY_DEV }) })`,
             )
           },
         },
       })
       .buildAsync()
 
-    await withDevServer({ cwd: builder.directory, debug: true, prod: true }, async ({ output, url }) => {
-      const response = await got(`${url}/hello`).text()
-      t.is(response, 'Hello! NETLIFY_DEV is undefined')
+    await withDevServer({ cwd: builder.directory, context: null, debug: true, prod: true }, async ({ output, url }) => {
+      const response = await got(`${url}/hello`).json()
+      t.deepEqual(response, { CONTEXT_CHECK: 'PRODUCTION' })
 
       t.snapshot(normalize(output, { duration: true, filePath: true }))
     })
