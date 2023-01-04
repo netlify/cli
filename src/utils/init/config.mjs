@@ -1,20 +1,35 @@
 // @ts-check
-import { chalk, log } from '../command-helpers.mjs'
+import boxen from 'boxen'
+
+import { BRAND, chalk, log } from '../command-helpers.mjs'
 
 import { configGithub } from './config-github.mjs'
 import configManual from './config-manual.mjs'
 
 const logSuccess = (repoData) => {
   log()
-  log(chalk.greenBright.bold.underline(`Success! Netlify CI/CD Configured!`))
+  log(
+    boxen(
+      chalk.bold(
+        `Netlify CI/CD has been configured!\n\nThis site is now configured to automatically deploy from ${
+          repoData.provider
+        } branches and pull requests.\n\nNext steps:\n\n${chalk
+          .bgHex(BRAND.COLORS.BLUE)
+          .whiteBright.bold(`git push`)}: push to your git repository to trigger new site builds\n\n${chalk
+          .bgHex(BRAND.COLORS.BLUE)
+          .whiteBright.bold(`netlify open`)}: open the Netlify admin URL of your site to view your dashboard`,
+      ),
+      {
+        title: chalk.bgHex(BRAND.COLORS.BLUE).whiteBright.bold(' 🎉 Success! 🎉 '),
+        padding: 1,
+        margin: 0,
+        align: 'left',
+        borderStyle: 'doubleSingle',
+        borderColor: BRAND.COLORS.BLUE,
+      },
+    ),
+  )
   log()
-  log(`This site is now configured to automatically deploy from ${repoData.provider} branches & pull requests`)
-  log()
-  log(`Next steps:
-
-  ${chalk.cyanBright.bold('git push')}       Push to your git repository to trigger new site builds
-  ${chalk.cyanBright.bold('netlify open')}   Open the Netlify admin URL of your site
-  `)
 }
 
 /**

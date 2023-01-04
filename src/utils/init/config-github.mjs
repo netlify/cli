@@ -1,7 +1,7 @@
 // @ts-check
 import { Octokit } from '@octokit/rest'
 
-import { chalk, error as failAndExit, log } from '../command-helpers.mjs'
+import { chalk, error as failAndExit, log, logH2, logInfo, logWarn } from '../command-helpers.mjs'
 import { getGitHubToken as ghauth } from '../gh-auth.mjs'
 
 import { createDeployKey, formatErrorMessage, getBuildSettings, saveNetlifyToml, setupSite } from './utils.mjs'
@@ -39,8 +39,8 @@ export const getGitHubToken = async ({ globalConfig }) => {
         return githubToken.token
       }
     } catch {
-      log(chalk.yellow('Token is expired or invalid!'))
-      log('Generating a new Github token...')
+      logWarn({ message: 'Token is expired or invalid!' })
+      logH2({ message: 'Generating a new GitHub token...' })
     }
   }
 
@@ -60,7 +60,7 @@ const getGitHubClient = (token) =>
   })
 
 const addDeployKey = async ({ api, octokit, repoName, repoOwner }) => {
-  log('Adding deploy key to repository...')
+  logH2({ message: 'Adding deploy key to repository...' })
   const key = await createDeployKey({ api })
   try {
     await octokit.repos.createDeployKey({
@@ -70,7 +70,7 @@ const addDeployKey = async ({ api, octokit, repoName, repoOwner }) => {
       repo: repoName,
       read_only: true,
     })
-    log('Deploy key added!')
+    logInfo({ message: '🔑 Deploy key added!' })
     return key
   } catch (error) {
     let message = formatErrorMessage({ message: 'Failed adding GitHub deploy key', error })
@@ -173,13 +173,13 @@ const upsertHook = async ({ api, event, ntlHooks, siteId, token }) => {
 }
 
 const addNotificationHooks = async ({ api, siteId, token }) => {
-  log(`Creating Netlify GitHub Notification Hooks...`)
+  logH2({ message: `Creating Netlify GitHub notification hooks...` })
 
   let ntlHooks
   try {
     ntlHooks = await api.listHooksBySiteId({ siteId })
   } catch (error) {
-    const message = formatErrorMessage({ message: 'Failed retrieving Netlify hooks', error })
+    const message = formatErrorMessage({ message: 'Failed retrieving Netlify notification hooks', error })
     failAndExit(message)
   }
   await Promise.all(
@@ -187,13 +187,16 @@ const addNotificationHooks = async ({ api, siteId, token }) => {
       try {
         await upsertHook({ ntlHooks, event, api, siteId, token })
       } catch (error) {
-        const message = formatErrorMessage({ message: `Failed settings Netlify hook ${chalk.magenta(event)}`, error })
+        const message = formatErrorMessage({
+          message: `Failed setting Netlify notification hook ${chalk.magenta(event)}`,
+          error,
+        })
         failAndExit(message)
       }
     }),
   )
 
-  log(`Netlify Notification Hooks configured!`)
+  logInfo({ message: `🪝  Netlify notification hooks configured!` })
 }
 
 /**

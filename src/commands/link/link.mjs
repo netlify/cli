@@ -275,6 +275,7 @@ export const link = async (options, command) => {
 
   if (siteData) {
     // If already linked to site. exit and prompt for unlink
+    log()
     log(
       boxen(
         `${prettyjson.render({
@@ -284,7 +285,7 @@ export const link = async (options, command) => {
           'Site URL': siteData.url,
         })}`,
         {
-          title: chalk.hex(BRAND.COLORS.CYAN).bold('Oops! Your site is already linked!'),
+          title: chalk.hex(BRAND.COLORS.CYAN).bold('Your site is already linked!'),
           padding: 1,
           margin: 0,
           align: 'left',
