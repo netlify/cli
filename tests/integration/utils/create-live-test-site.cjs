@@ -34,7 +34,7 @@ const createLiveTestSite = async function (siteName) {
   console.log(`Using account ${accountSlug} to create site: ${siteName}`)
   const cliResponse = await callCli(['sites:create', '--name', siteName, '--account-slug', accountSlug])
 
-  const isSiteCreated = /Site Created/.test(cliResponse)
+  const isSiteCreated = /site created/.test(cliResponse)
   if (!isSiteCreated) {
     throw new Error(`Failed creating site: ${cliResponse}`)
   }
