@@ -8,7 +8,7 @@ import pFilter from 'p-filter'
 
 import { fileExistsAsync } from '../lib/fs.cjs'
 
-import { NETLIFYDEVLOG } from './command-helpers.mjs'
+import { logH2 } from './command-helpers.mjs'
 import { parseRedirects } from './redirects.mjs'
 
 const watchers = []
@@ -48,10 +48,10 @@ export const createRewriter = async function ({
   const watchedRedirectFiles = configPath === undefined ? redirectsFiles : [...redirectsFiles, configPath]
   onChanges(watchedRedirectFiles, async () => {
     const existingRedirectsFiles = await pFilter(watchedRedirectFiles, fileExistsAsync)
-    console.log(
-      `${NETLIFYDEVLOG} Reloading redirect rules from`,
-      existingRedirectsFiles.map((redirectFile) => path.relative(projectDir, redirectFile)),
-    )
+    logH2({
+      message: `Reloading redirect rules from 
+      ${existingRedirectsFiles.map((redirectFile) => path.relative(projectDir, redirectFile))}`,
+    })
     redirects = await parseRedirects({ redirectsFiles, configPath })
     matcher = null
   })

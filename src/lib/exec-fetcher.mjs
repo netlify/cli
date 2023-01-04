@@ -5,7 +5,7 @@ import process from 'process'
 import { fetchLatest, fetchVersion, newerVersion, updateAvailable } from 'gh-release-fetch'
 import isExe from 'isexe'
 
-import { NETLIFYDEVWARN, error, getTerminalLink, log } from '../utils/command-helpers.mjs'
+import { error, getTerminalLink, logWarning } from '../utils/command-helpers.mjs'
 import execa from '../utils/execa.mjs'
 
 const isWindows = () => process.platform === 'win32'
@@ -69,7 +69,7 @@ export const shouldFetchLatestVersion = async ({
     return outdated
   } catch (error_) {
     if (exists) {
-      log(NETLIFYDEVWARN, `failed checking for new version of '${packageName}'. Using existing version`)
+      logWarning({ message: `Failed checking for new version of '${packageName}'. Using existing version` })
       return false
     }
     throw error_

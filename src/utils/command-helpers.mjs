@@ -54,25 +54,23 @@ export const USER_AGENT = `${name}/${version} ${platform}-${arch} node-${process
 /** A list of base command flags that needs to be sorted down on documentation and on help pages */
 const BASE_FLAGS = new Set(['--debug', '--httpProxy', '--httpProxyCertificateFilename'])
 
-const BRAND = {
+export const BRAND = {
   COLORS: {
     BLUE: `#2451f5`,
     CYAN: `#5cebdf`,
     RED: `#7a122d`,
+    YELLOW: `#b7790b`,
   },
   ICONS: {
     DIAMOND: '◈',
   },
 }
 
-const NETLIFY_CYAN = chalk.hex(BRAND.COLORS.CYAN)
-export const NETLIFYDEV = `${chalk.greenBright('◈')} ${NETLIFY_CYAN('Netlify Dev')} ${chalk.greenBright('◈')}`
 export const BANG = process.platform === 'win32' ? '»' : '›'
 
 // indent on commands or description on the help page
 export const INDENT_WIDTHS = {
   HELP: 2,
-  // eslint-disable-next-line no-magic-numbers
   INFO: 4,
 }
 
@@ -123,6 +121,13 @@ export const logInfo = ({ dim = false, message }) => {
 export const logError = ({ message }) => {
   if (message) {
     log(`${chalk.bgHex(BRAND.COLORS.RED).whiteBright(` ${BRAND.ICONS.DIAMOND} ${message} `)}`)
+    log()
+  }
+}
+
+export const logWarning = ({ message }) => {
+  if (message) {
+    log(`${chalk.bgHex(BRAND.COLORS.YELLOW).whiteBright(` ${BRAND.ICONS.DIAMOND} ${message} `)}`)
     log()
   }
 }
@@ -248,6 +253,7 @@ export const warn = (message = '') => {
  * @param {boolean} [options.exit]
  */
 export const error = (message = '', options = {}) => {
+  // to do prefix with error thingy??
   const err = message instanceof Error ? message : new Error(message)
   if (options.exit === false) {
     const bang = chalk.red(BANG)

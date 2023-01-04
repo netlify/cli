@@ -4,7 +4,7 @@ import { readFile } from 'fs/promises'
 import HttpsProxyAgent from 'https-proxy-agent'
 import waitPort from 'wait-port'
 
-import { NETLIFYDEVERR, NETLIFYDEVWARN, exit, log } from '../utils/command-helpers.mjs'
+import { exit, logWarning, logError } from '../utils/command-helpers.mjs'
 
 // https://github.com/TooTallNate/node-https-proxy-agent/issues/89
 // Maybe replace with https://github.com/delvedor/hpagent
@@ -89,11 +89,11 @@ export const tryGetAgent = async ({ certificateFile, httpProxy }) => {
 export const getAgent = async ({ certificateFile, httpProxy }) => {
   const { agent, error, message, warning } = await tryGetAgent({ httpProxy, certificateFile })
   if (error) {
-    log(NETLIFYDEVERR, error, message || '')
+    logError({ message: message || '' })
     exit(1)
   }
   if (warning) {
-    log(NETLIFYDEVWARN, warning, message || '')
+    logWarning({ message: message || '' })
   }
   return agent
 }

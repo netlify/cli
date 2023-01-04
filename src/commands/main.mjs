@@ -5,7 +5,7 @@ import { Option } from 'commander'
 import inquirer from 'inquirer'
 import { findBestMatch } from 'string-similarity'
 
-import { BANG, chalk, error, exit, log, logH1, NETLIFY_CYAN, USER_AGENT, warn } from '../utils/command-helpers.mjs'
+import { BANG, chalk, error, exit, log, logH1, USER_AGENT, warn } from '../utils/command-helpers.mjs'
 import execa from '../utils/execa.mjs'
 import getGlobalConfig from '../utils/get-global-config.mjs'
 import getPackageJson from '../utils/get-package-json.mjs'
@@ -142,7 +142,8 @@ const mainCommand = async function (options, command) {
   log()
 
   if (!applySuggestion) {
-    error(`Run ${NETLIFY_CYAN(`${command.name()} help`)} for a list of available commands.`)
+    // TODO
+    error(`Run ${command.name()} help for a list of available commands.`)
   }
 
   await execa(process.argv[0], [process.argv[1], suggestion], { stdio: 'inherit' })

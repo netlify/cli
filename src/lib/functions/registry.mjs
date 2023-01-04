@@ -6,11 +6,9 @@ import { env } from 'process'
 import {
   chalk,
   getTerminalLink,
-  log,
   logError,
   logInfo,
-  NETLIFYDEVLOG,
-  NETLIFYDEVWARN,
+  logWarning,
   STATUS_MSG,
   warn,
   watchDebounced,
@@ -148,7 +146,9 @@ export class FunctionsRegistry {
     // This fixes the bug described here https://github.com/netlify/zip-it-and-ship-it/issues/637
     // If the current function's file is a zip bundle, we ignore it and log a helpful message.
     if (extname(func.mainFile) === ZIP_EXTENSION) {
-      log(`${NETLIFYDEVWARN} Skipped bundled function ${chalk.yellow(name)}. Unzip the archive to load it from source.`)
+      logWarning({
+        message: `Skipped bundled function ${chalk.yellow(name)}. Unzip the archive to load it from source.`,
+      })
       return
     }
 
@@ -253,7 +253,7 @@ export class FunctionsRegistry {
   async unregisterFunction(name) {
     this.functions.delete(name)
 
-    log(`${NETLIFYDEVLOG} ${chalk.magenta('Removed')} function ${chalk.yellow(name)}.`)
+    logWarning({ message: `Removed function ${chalk.yellow(name)}` })
 
     const watcher = this.functionWatchers.get(name)
 

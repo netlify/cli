@@ -2,7 +2,7 @@
 import { get } from 'dot-prop'
 import jwtDecode from 'jwt-decode'
 
-import { NETLIFYDEVERR, error as errorExit, log, logH2, logInfo } from '../../utils/command-helpers.mjs'
+import { error as errorExit, log, logH2, logInfo } from '../../utils/command-helpers.mjs'
 import { generateNetlifyGraphJWT } from '../../utils/dev.mjs'
 import { CLOCKWORK_USERAGENT, getInternalFunctionsDir } from '../../utils/functions/index.mjs'
 
@@ -239,7 +239,7 @@ const startWebServer = async ({ server, settings }) => {
   await new Promise((resolve) => {
     server.listen(settings.functionsPort, (err) => {
       if (err) {
-        errorExit(`${NETLIFYDEVERR} Unable to start functions server: ${err}`)
+        errorExit(`Unable to start functions server: ${err}`)
       } else {
         log()
         logInfo({ message: `Functions server is listening on ${settings.functionsPort}` })

@@ -1,6 +1,6 @@
 import { parseAllHeaders } from 'netlify-headers-parser'
 
-import { NETLIFYDEVERR, log } from './command-helpers.mjs'
+import { logError } from './command-helpers.mjs'
 
 /**
  * Get the matching headers for `path` given a set of `rules`.
@@ -39,7 +39,7 @@ const handleHeadersErrors = function (errors) {
   }
 
   const errorMessage = errors.map(getErrorMessage).join('\n\n')
-  log(NETLIFYDEVERR, `Headers syntax errors:\n${errorMessage}`)
+  logError({ message: `Headers syntax errors:\n${errorMessage}` })
 }
 
 const getErrorMessage = function ({ message }) {

@@ -13,7 +13,7 @@ import {
   refetchAndGenerateFromOneGraph,
 } from '../../lib/one-graph/cli-client.mjs'
 import { buildSchema, getNetlifyGraphConfig, readGraphQLSchemaFile } from '../../lib/one-graph/cli-netlify-graph.mjs'
-import { NETLIFYDEVERR, chalk, error, log, warn } from '../../utils/command-helpers.mjs'
+import { chalk, error, log, warn } from '../../utils/command-helpers.mjs'
 
 /**
  * Creates the `netlify graph:pull` command
@@ -58,7 +58,7 @@ const graphPull = async (options, command) => {
   }
 
   if (lockfile === undefined) {
-    error(`${NETLIFYDEVERR} Error: unable to create lockfile for site and session, exiting.`)
+    error(`Error: unable to create lockfile for site and session, exiting.`)
     return
   }
 

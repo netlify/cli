@@ -1,7 +1,7 @@
 // @ts-check
 import { fileURLToPath } from 'url'
 
-import { NETLIFYDEVERR, NETLIFYDEVLOG, STATUS_MSG, chalk, log,  logH2, logInfo, warn, watchDebounced } from '../../utils/command-helpers.mjs'
+import { STATUS_MSG, chalk, logError, logH2, logInfo, warn, watchDebounced } from '../../utils/command-helpers.mjs'
 
 /**
  * @typedef EdgeFunction
@@ -241,7 +241,7 @@ export class EdgeFunctionsRegistry {
       return
     }
 
-    log(`${NETLIFYDEVLOG} ${chalk.magenta('Reloading')} edge functions...`)
+    logH2({ message: `Reloading edge functions...` })
 
     try {
       await this.build(this.functions)
@@ -256,7 +256,7 @@ export class EdgeFunctionsRegistry {
         })
       }
     } catch {
-      log(`${NETLIFYDEVERR} ${chalk.red('Failed')} reloading edge function`)
+      logError({ message: `Failed reloading edge function` })
     }
   }
 

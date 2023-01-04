@@ -12,7 +12,7 @@ import {
   readGraphQLOperationsSourceFile,
   readGraphQLSchemaFile,
 } from '../../lib/one-graph/cli-netlify-graph.mjs'
-import { NETLIFYDEVERR, chalk, error, log } from '../../utils/command-helpers.mjs'
+import { chalk, error, log } from '../../utils/command-helpers.mjs'
 
 /**
  * Creates the `netlify graph:library` command
@@ -51,7 +51,7 @@ const graphLibrary = async (options, command) => {
 
   if (lockfile === undefined) {
     error(
-      `${NETLIFYDEVERR} Error: no lockfile found, unable to run \`netlify graph:library\`. To pull a remote schema (and create a lockfile), run ${chalk.yellow(
+      `Error: no lockfile found, unable to run \`netlify graph:library\`. To pull a remote schema (and create a lockfile), run ${chalk.yellow(
         'netlify graph:pull',
       )} `,
     )

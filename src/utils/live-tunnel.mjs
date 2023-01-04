@@ -7,7 +7,7 @@ import pWaitFor from 'p-wait-for'
 import { fetchLatestVersion, shouldFetchLatestVersion } from '../lib/exec-fetcher.mjs'
 import { getPathInHome } from '../lib/settings.cjs'
 
-import { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log } from './command-helpers.mjs'
+import { chalk, log, logH2, logError } from './command-helpers.mjs'
 import execa from './execa.mjs'
 
 const PACKAGE_NAME = 'live-tunnel-client'
@@ -22,14 +22,14 @@ const createTunnel = async function ({ netlifyApiToken, siteId }) {
   await installTunnelClient()
 
   if (!siteId) {
-    console.error(
-      `${NETLIFYDEVERR} Error: no siteId defined, did you forget to run ${chalk.yellow(
-        'netlify init',
-      )} or ${chalk.yellow('netlify link')}?`,
-    )
+    logError({
+      message: `No siteId defined! Did you forget to run ${chalk.yellow('netlify init')} or ${chalk.yellow(
+        'netlify link',
+      )}?`,
+    })
     process.exit(1)
   }
-  log(`${NETLIFYDEVLOG} Creating Live Tunnel for ${siteId}`)
+  logH2({ message: `Creating Live Tunnel for ${siteId}` })
   const url = `https://api.netlify.com/api/v1/live_sessions?site_id=${siteId}`
 
   const response = await fetch(url, {
@@ -77,7 +77,7 @@ const installTunnelClient = async function () {
     return
   }
 
-  log(`${NETLIFYDEVLOG} Installing Live Tunnel Client`)
+  logH2({ message: `Installing Live Tunnel Client` })
 
   await fetchLatestVersion({
     packageName: PACKAGE_NAME,

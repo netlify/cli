@@ -3,7 +3,7 @@ import { join } from 'path'
 import execa from 'execa'
 import inquirer from 'inquirer'
 
-import { NETLIFYDEVLOG, NETLIFYDEVWARN, chalk, error, log } from '../../utils/command-helpers.mjs'
+import { chalk, error, logH2, logWarning } from '../../utils/command-helpers.mjs'
 
 import { applySettings, getSettings, writeSettings } from './settings.mjs'
 
@@ -52,7 +52,7 @@ export const run = async ({ config, repositoryRoot }) => {
   const { DenoBridge } = await import('@netlify/edge-bundler')
   const deno = new DenoBridge({
     onBeforeDownload: () =>
-      log(`${NETLIFYDEVWARN} Setting up the Edge Functions environment. This may take a couple of minutes.`),
+      logH2({ message: `Setting up the Edge Functions environment. This may take a couple of minutes.` }),
   })
   const denoBinary = await deno.getBinaryPath()
   const settingsPath = getSettingsPath(repositoryRoot)
@@ -71,17 +71,17 @@ export const run = async ({ config, repositoryRoot }) => {
       if (denoExtConfirm) getDenoVSCodeExt()
     }
   } catch {
-    log(
-      `${NETLIFYDEVWARN} Unable to install Deno VS Code extension. To install it manually, visit ${chalk.blue(
+    logWarning({
+      message: `Unable to install Deno VS Code extension. To install it manually, visit ${chalk.blue(
         'https://ntl.fyi/deno-vscode',
-      )}.`,
-    )
+      )}`,
+    })
   }
 
   try {
     await writeSettings({ settings, settingsPath })
 
-    log(`${NETLIFYDEVLOG} VS Code settings file ${fileExists ? 'updated' : 'created'}.`)
+    logH2({ message: `VS Code settings file ${fileExists ? 'updated' : 'created'}.` })
   } catch {
     error('Could not write VS Code settings file.')
   }

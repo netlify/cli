@@ -28,7 +28,7 @@ import {
 import { fileExistsAsync, isFileAsync } from '../lib/fs.cjs'
 import renderErrorTemplate from '../lib/render-error-template.mjs'
 
-import { NETLIFYDEVLOG, NETLIFYDEVWARN } from './command-helpers.mjs'
+import { logH2, logWarning } from './command-helpers.mjs'
 import createStreamPromise from './create-stream-promise.mjs'
 import { headersForPath, parseHeaders } from './headers.mjs'
 import { createRewriter, onChanges } from './rules-proxy.mjs'
@@ -87,7 +87,7 @@ const stripOrigin = function ({ hash, pathname, search }) {
 }
 
 const proxyToExternalUrl = function ({ dest, destURL, req, res }) {
-  console.log(`${NETLIFYDEVLOG} Proxying to ${dest}`)
+  logH2({ message: `Proxying to ${dest}` })
   const handler = createProxyMiddleware({
     target: dest.origin,
     changeOrigin: true,
@@ -114,7 +114,7 @@ const render404 = async function (publicFolder) {
     const isFile = await isFileAsync(maybe404Page)
     if (isFile) return await readFile(maybe404Page, 'utf-8')
   } catch (error) {
-    console.warn(NETLIFYDEVWARN, 'Error while serving 404.html file', error.message)
+    logWarning({ message: `Error while serving 404.html file: ${error.message}` })
   }
 
   return 'Not Found'
@@ -180,18 +180,18 @@ const serveRedirect = async function ({ match, options, proxy, req, res }) {
       try {
         jwtValue = jwtDecode(token) || {}
       } catch (error) {
-        console.warn(NETLIFYDEVWARN, 'Error while decoding JWT provided in request', error.message)
+        logWarning({ message: `Error while decoding JWT provided in request: ${error.message}` })
         res.writeHead(400)
         res.end('Invalid JWT provided. Please see logs for more info.')
         return
       }
 
       if ((jwtValue.exp || 0) < Math.round(Date.now() / MILLISEC_TO_SEC)) {
-        console.warn(NETLIFYDEVWARN, 'Expired JWT provided in request', req.url)
+        logWarning({ message: `Expired JWT provided in request: ${req.url}` })
       } else {
         const presentedRoles = get(jwtValue, options.jwtRolePath) || []
         if (!Array.isArray(presentedRoles)) {
-          console.warn(NETLIFYDEVWARN, `Invalid roles value provided in JWT ${options.jwtRolePath}`, presentedRoles)
+          logWarning({ message: `Invalid roles value provided in JWT ${options.jwtRolePath} \n ${presentedRoles}` })
           res.writeHead(400)
           res.end('Invalid JWT provided. Please see logs for more info.')
           return
@@ -250,7 +250,7 @@ const serveRedirect = async function ({ match, options, proxy, req, res }) {
     }
 
     if (isRedirect(match)) {
-      console.log(`${NETLIFYDEVLOG} Redirecting ${req.url} to ${destURL}`)
+      logH2({ message: `Redirecting ${req.url} to ${destURL}` })
       res.writeHead(match.status, {
         Location: destURL,
         'Cache-Control': 'no-cache',
@@ -276,7 +276,7 @@ const serveRedirect = async function ({ match, options, proxy, req, res }) {
       req.url = destStaticFile ? destStaticFile + dest.search : destURL
       const { status } = match
       statusValue = status
-      console.log(`${NETLIFYDEVLOG} Rewrote URL to`, req.url)
+      logH2({ message: `Rewrote URL to ${req.url}` })
     }
 
     if (isFunction(options.functionsPort, req.url)) {
@@ -321,10 +321,10 @@ const initializeProxy = async function ({ configPath, distDir, host, port, proje
   const watchedHeadersFiles = configPath === undefined ? headersFiles : [...headersFiles, configPath]
   onChanges(watchedHeadersFiles, async () => {
     const existingHeadersFiles = await pFilter(watchedHeadersFiles, fileExistsAsync)
-    console.log(
-      `${NETLIFYDEVLOG} Reloading headers files from`,
-      existingHeadersFiles.map((headerFile) => path.relative(projectDir, headerFile)),
-    )
+    logH2({
+      message: `Reloading headers files from
+      ${existingHeadersFiles.map((headerFile) => path.relative(projectDir, headerFile))}`,
+    })
     headers = await parseHeaders({ headersFiles, configPath })
   })
 

@@ -6,7 +6,7 @@ import { cwd, env } from 'process'
 import getAvailablePort from 'get-port'
 import { v4 as generateUUID } from 'uuid'
 
-import { NETLIFYDEVERR, NETLIFYDEVWARN, chalk, error as printError, log } from '../../utils/command-helpers.mjs'
+import { chalk, error as printError, logWarning } from '../../utils/command-helpers.mjs'
 import { getGeoLocation } from '../geo-location.mjs'
 import { getPathInProject } from '../settings.cjs'
 import { startSpinner, stopSpinner } from '../spinner.cjs'
@@ -114,15 +114,13 @@ export const initializeProxy = async ({
     // If the request matches a config declaration for an Edge Function without
     // a matching function file, we warn the user.
     orphanedDeclarations.forEach((functionName) => {
-      log(
-        `${NETLIFYDEVWARN} Request to ${chalk.yellow(
-          url.pathname,
-        )} matches declaration for edge function ${chalk.yellow(
-          functionName,
-        )}, but there's no matching function file in ${chalk.yellow(
+      logWarning({
+        message: `Request to ${
+          url.pathname
+        } matches declaration for edge function ${functionName}, but there's no matching function file in ${chalk.yellow(
           relative(cwd(), userFunctionsPath),
         )}. Please visit ${chalk.blue('https://ntl.fyi/edge-create')} for more information.`,
-      )
+      })
     })
 
     if (functionNames.length === 0) {
@@ -172,11 +170,10 @@ const prepareServer = async ({
       debug: env.NETLIFY_DENO_DEBUG === 'true',
       distImportMapPath,
       formatExportTypeError: (name) =>
-        `${NETLIFYDEVERR} ${chalk.red('Failed')} to load Edge Function ${chalk.yellow(
+        `${chalk.red('Failed')} to load Edge Function ${chalk.yellow(
           name,
         )}. The file does not seem to have a function as the default export.`,
-      formatImportError: (name) =>
-        `${NETLIFYDEVERR} ${chalk.red('Failed')} to run Edge Function ${chalk.yellow(name)}:`,
+      formatImportError: (name) => `${chalk.red('Failed')} to run Edge Function ${chalk.yellow(name)}:`,
       importMapPaths,
       inspectSettings,
       port,

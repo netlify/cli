@@ -6,7 +6,7 @@ import { runRecipe } from '../../commands/recipes/index.mjs'
 
 const STATE_PROMPT_PROPERTY = 'promptVSCodeSettings'
 
-export const promptEditorHelper = async ({ NETLIFYDEVLOG, chalk, config, log, repositoryRoot, state }) => {
+export const promptEditorHelper = async ({ chalk, config, logInfo, repositoryRoot, state }) => {
   // This prevents tests from hanging when running them inside the VS Code
   // terminal, as otherwise we'll show the prompt and wait for a response.
   if (env.NODE_ENV === 'test') return
@@ -30,11 +30,9 @@ export const promptEditorHelper = async ({ NETLIFYDEVLOG, chalk, config, log, re
   })
 
   if (!confirm) {
-    log(
-      `${NETLIFYDEVLOG} You can start this configuration manually by running ${chalk.magenta.bold(
-        'netlify recipes vscode',
-      )}.`,
-    )
+    logInfo({
+      message: `You can start this configuration manually by running ${chalk.magenta.bold('netlify recipes vscode')}`,
+    })
 
     return
   }

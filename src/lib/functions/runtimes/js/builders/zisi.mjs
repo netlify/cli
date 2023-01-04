@@ -6,7 +6,6 @@ import decache from 'decache'
 import readPkgUp from 'read-pkg-up'
 import sourceMapSupport from 'source-map-support'
 
-import { NETLIFYDEVERR } from '../../../../../utils/command-helpers.mjs'
 import { getPathInProject } from '../../../../settings.cjs'
 import { normalizeFunctionsConfig } from '../../../config.mjs'
 import { memoizedBuild } from '../../../memoized-build.mjs'
@@ -99,7 +98,7 @@ const getTargetDirectory = async ({ errorExit }) => {
   try {
     await mkdir(targetDirectory, { recursive: true })
   } catch {
-    errorExit(`${NETLIFYDEVERR} Could not create directory: ${targetDirectory}`)
+    errorExit(`Could not create directory: ${targetDirectory}`)
   }
 
   return targetDirectory

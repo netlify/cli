@@ -7,7 +7,7 @@ import { v4 as uuidv4 } from 'uuid'
 
 import { OneGraphCliClient, ensureCLISession } from '../../lib/one-graph/cli-client.mjs'
 import { getNetlifyGraphConfig } from '../../lib/one-graph/cli-netlify-graph.mjs'
-import { NETLIFYDEVERR, chalk, error, exit, getToken, log } from '../../utils/command-helpers.mjs'
+import { chalk, error, exit, getToken, log } from '../../utils/command-helpers.mjs'
 import { translateFromEnvelopeToMongo } from '../../utils/env/index.mjs'
 
 const { ensureAppForSite, executeCreateApiTokenMutation } = OneGraphCliClient
@@ -25,7 +25,7 @@ const graphInit = async (options, command) => {
 
   if (!siteId) {
     error(
-      `${NETLIFYDEVERR} Warning: no siteId defined, unable to start Netlify Graph. To enable, run ${chalk.yellow(
+      `Warning: no siteId defined, unable to start Netlify Graph. To enable, run ${chalk.yellow(
         'netlify init',
       )} or ${chalk.yellow('netlify link')}`,
     )
@@ -37,11 +37,7 @@ const graphInit = async (options, command) => {
   }
 
   if (netlifyToken == null) {
-    error(
-      `${NETLIFYDEVERR} Error: Unable to start Netlify Graph without a login. To enable, run ${chalk.yellow(
-        'netlify login',
-      )} first`,
-    )
+    error(`Error: Unable to start Netlify Graph without a login. To enable, run ${chalk.yellow('netlify login')} first`)
     return exit()
   }
 

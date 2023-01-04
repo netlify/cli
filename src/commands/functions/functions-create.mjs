@@ -17,7 +17,7 @@ import fetch from 'node-fetch'
 import ora from 'ora'
 
 import { getAddons, getCurrentAddon, getSiteData } from '../../utils/addons/prepare.mjs'
-import { NETLIFYDEVERR, NETLIFYDEVLOG, NETLIFYDEVWARN, chalk, error, log } from '../../utils/command-helpers.mjs'
+import { chalk, error, log, logError, logInfo, logH2, logWarning } from '../../utils/command-helpers.mjs'
 import { injectEnvVariables } from '../../utils/dev.mjs'
 import execa from '../../utils/execa.mjs'
 import { readRepoURL, validateRepoURL } from '../../utils/read-repo-url.mjs'
@@ -223,7 +223,7 @@ const ensureEdgeFuncDirExists = function (command) {
   let functionsDirHolder = config.build.edge_functions
 
   if (!siteId) {
-    error(`${NETLIFYDEVERR} No site id found, please run inside a site directory or \`netlify link\``)
+    logError({ message: `No site id found, please run inside a site directory or \`netlify link\`` })
   }
 
   if (!functionsDirHolder) {
@@ -231,15 +231,15 @@ const ensureEdgeFuncDirExists = function (command) {
   }
 
   if (!fs.existsSync(functionsDirHolder)) {
-    log(
-      `${NETLIFYDEVLOG} Edge Functions directory ${chalk.magenta.inverse(
+    logH2({
+      message: `Edge Functions directory ${chalk.magenta.inverse(
         functionsDirHolder,
       )} does not exist yet, creating it...`,
-    )
+    })
 
     fs.mkdirSync(functionsDirHolder, { recursive: true })
 
-    log(`${NETLIFYDEVLOG} Edge Functions directory ${chalk.magenta.inverse(functionsDirHolder)} created.`)
+    logH2({ message: `Edge Functions directory ${chalk.magenta.inverse(functionsDirHolder)} created.` })
   }
   return functionsDirHolder
 }
@@ -255,10 +255,10 @@ const ensureFunctionDirExists = async function (command) {
   let functionsDirHolder = config.functionsDirectory
 
   if (!functionsDirHolder) {
-    log(`${NETLIFYDEVLOG} functions directory not specified in netlify.toml or UI settings`)
+    logWarning({ message: `Functions directory not specified in netlify.toml or UI settings` })
 
     if (!siteId) {
-      error(`${NETLIFYDEVERR} No site id found, please run inside a site directory or \`netlify link\``)
+      logError({ message: `No site id found, please run inside a site directory or \`netlify link\`` })
     }
 
     const { functionsDir } = await inquirer.prompt([
@@ -274,7 +274,7 @@ const ensureFunctionDirExists = async function (command) {
     functionsDirHolder = functionsDir
 
     try {
-      log(`${NETLIFYDEVLOG} updating site settings with ${chalk.magenta.inverse(functionsDirHolder)}`)
+      logH2({ message: `Updating site settings with ${chalk.magenta.inverse(functionsDirHolder)}` })
 
       // @ts-ignore Typings of API are not correct
       await api.updateSite({
@@ -286,22 +286,20 @@ const ensureFunctionDirExists = async function (command) {
         },
       })
 
-      log(`${NETLIFYDEVLOG} functions directory ${chalk.magenta.inverse(functionsDirHolder)} updated in site settings`)
+      logH2({ message: `Functions directory ${chalk.magenta.inverse(functionsDirHolder)} updated in site settings` })
     } catch {
       throw error('Error updating site settings')
     }
   }
 
   if (!fs.existsSync(functionsDirHolder)) {
-    log(
-      `${NETLIFYDEVLOG} functions directory ${chalk.magenta.inverse(
-        functionsDirHolder,
-      )} does not exist yet, creating it...`,
-    )
+    logH2({
+      message: `Functions directory ${chalk.magenta.inverse(functionsDirHolder)} does not exist yet, creating it...`,
+    })
 
     fs.mkdirSync(functionsDirHolder, { recursive: true })
 
-    log(`${NETLIFYDEVLOG} functions directory ${chalk.magenta.inverse(functionsDirHolder)} created`)
+    logH2({ message: `Functions directory ${chalk.magenta.inverse(functionsDirHolder)} created` })
   }
   return functionsDirHolder
 }
@@ -321,7 +319,7 @@ const downloadFromURL = async function (command, options, argumentName, function
   const fnFolder = path.join(functionsDir, nameToUse)
   if (fs.existsSync(`${fnFolder}.js`) && fs.lstatSync(`${fnFolder}.js`).isFile()) {
     log(
-      `${NETLIFYDEVWARN}: A single file version of the function ${nameToUse} already exists at ${fnFolder}.js. Terminating without further action.`,
+      `A single file version of the function ${nameToUse} already exists at ${fnFolder}.js. Terminating without further action.`,
     )
     process.exit(1)
   }
@@ -344,9 +342,9 @@ const downloadFromURL = async function (command, options, argumentName, function
     }),
   )
 
-  log(`${NETLIFYDEVLOG} Installing dependencies for ${nameToUse}...`)
+  logH2({ message: `Installing dependencies for ${nameToUse}...` })
   cp.exec('npm i', { cwd: path.join(functionsDir, nameToUse) }, () => {
-    log(`${NETLIFYDEVLOG} Installing dependencies for ${nameToUse} complete `)
+    logH2({ message: `Installing dependencies for ${nameToUse} complete` })
   })
 
   // read, execute, and delete function template file if exists
@@ -446,12 +444,12 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
     try {
       await downloadFromURL(command, options, argumentName, functionsDir)
     } catch (error_) {
-      error(`$${NETLIFYDEVERR} Error downloading from URL: ${options.url}`)
+      error(`Error downloading from URL: ${options.url}`)
       error(error_)
       process.exit(1)
     }
   } else if (chosenTemplate === 'report') {
-    log(`${NETLIFYDEVLOG} Open in browser: https://github.com/netlify/cli/issues/new`)
+    logH2({ message: `Open in browser: https://github.com/netlify/cli/issues/new` })
   } else {
     const { onComplete, name: templateName, lang, addons = [] } = chosenTemplate
     const pathToTemplate = path.join(templatesDir, lang, templateName)
@@ -463,7 +461,7 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
 
     const name = await getNameFromArgs(argumentName, options, templateName)
 
-    log(`${NETLIFYDEVLOG} Creating function ${chalk.cyan.inverse(name)}`)
+    logInfo({ message: `Creating function ${name}` })
     const functionPath = ensureFunctionPathIsOk(functionsDir, name)
 
     const vars = { name }
@@ -477,7 +475,8 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
       const filename = path.basename(filePath)
 
       if (!omittedFromOutput.has(filename)) {
-        log(`${NETLIFYDEVLOG} ${chalk.greenBright('Created')} ${filePath}`)
+        // TO DO style "created"
+        logH2({ message: `Created ${filePath}` })
       }
 
       fs.chmodSync(path.resolve(filePath), TEMPLATE_PERMISSIONS)
@@ -598,15 +597,15 @@ const installAddons = async function (command, functionAddons, fnPath) {
   const { api, site } = command.netlify
   const siteId = site.id
   if (!siteId) {
-    log('No site id found, please run inside a site directory or `netlify link`')
+    logWarning({ message: 'No site id found, please run inside a site directory or `netlify link`' })
     return false
   }
-  log(`${NETLIFYDEVLOG} checking Netlify APIs...`)
+  logH2({ message: `Checking Netlify APIs...` })
 
   const [siteData, siteAddons] = await Promise.all([getSiteData({ api, siteId }), getAddons({ api, siteId })])
 
   const arr = functionAddons.map(async ({ addonDidInstall, addonName }) => {
-    log(`${NETLIFYDEVLOG} installing addon: ${chalk.yellow.inverse(addonName)}`)
+    logH2({ message: `Installing addon: ${chalk.yellow.inverse(addonName)}` })
     try {
       const addonCreated = await createFunctionAddon({
         api,
@@ -618,7 +617,7 @@ const installAddons = async function (command, functionAddons, fnPath) {
 
       await handleAddonDidInstall({ addonCreated, addonDidInstall, command, fnPath })
     } catch (error_) {
-      error(`${NETLIFYDEVERR} Error installing addon: `, error_)
+      error(`Error installing addon: `, error_)
     }
   })
   return Promise.all(arr)
@@ -626,7 +625,7 @@ const installAddons = async function (command, functionAddons, fnPath) {
 
 const registerEFInToml = async (funcName) => {
   if (!fs.existsSync('netlify.toml')) {
-    log(`${NETLIFYDEVLOG} \`netlify.toml\` file does not exist yet. Creating it...`)
+    logH2({ message: '`netlify.toml` file does not exist yet. Creating it...' })
   }
 
   let { funcPath } = await inquirer.prompt([
@@ -650,11 +649,11 @@ const registerEFInToml = async (funcName) => {
 
   try {
     fs.promises.appendFile('netlify.toml', functionRegister)
-    log(
-      `${NETLIFYDEVLOG} Function '${funcName}' registered for route \`${funcPath}\`. To change, edit your \`netlify.toml\` file.`,
-    )
+    logH2({
+      message: `Function '${funcName}' registered for route \`${funcPath}\`. To change, edit your \`netlify.toml\` file.`,
+    })
   } catch {
-    error(`${NETLIFYDEVERR} Unable to register function. Please check your \`netlify.toml\` file.`)
+    logError({ message: `Unable to register function. Please check your \`netlify.toml\` file.` })
   }
 }
 
@@ -663,7 +662,7 @@ const registerEFInToml = async (funcName) => {
 const ensureFunctionPathIsOk = function (functionsDir, name) {
   const functionPath = path.join(functionsDir, name)
   if (fs.existsSync(functionPath)) {
-    log(`${NETLIFYDEVLOG} Function ${functionPath} already exists, cancelling...`)
+    logWarning({ message: `Function ${functionPath} already exists, cancelling...` })
     process.exit(1)
   }
   return functionPath

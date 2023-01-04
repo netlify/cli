@@ -9,7 +9,7 @@ import fuzzy from 'fuzzy'
 import getPort from 'get-port'
 import isPlainObject from 'is-plain-obj'
 
-import { NETLIFYDEVWARN, chalk, log } from './command-helpers.mjs'
+import { chalk, log, logH2, logWarning } from './command-helpers.mjs'
 import { acquirePort } from './dev.mjs'
 import { getInternalFunctionsDir } from './functions/index.mjs'
 
@@ -93,9 +93,9 @@ const DEFAULT_PORT = 8888
 const DEFAULT_STATIC_PORT = 3999
 
 const getDefaultDist = () => {
-  log(`${NETLIFYDEVWARN} Unable to determine public folder to serve files from. Using current working directory`)
-  log(`${NETLIFYDEVWARN} Setup a netlify.toml file with a [dev] section to specify your dev server settings.`)
-  log(`${NETLIFYDEVWARN} See docs at: https://cli.netlify.com/netlify-dev#project-detection`)
+  logWarning({ message: `Unable to determine public folder to serve files from. Using current working directory` })
+  logWarning({ message: `Setup a netlify.toml file with a [dev] section to specify your dev server settings.` })
+  logWarning({ message: `See docs at: https://cli.netlify.com/netlify-dev#project-detection` })
   return process.cwd()
 }
 
@@ -121,25 +121,25 @@ const handleStaticServer = async ({ devConfig, options, projectDir }) => {
   validateNumberProperty({ devConfig, property: 'staticServerPort' })
 
   if (options.dir) {
-    log(`${NETLIFYDEVWARN} Using simple static server because ${formatProperty('--dir')} flag was specified`)
+    logWarning({ message: `Using simple static server because ${formatProperty('--dir')} flag was specified` })
   } else if (devConfig.framework === '#static') {
-    log(
-      `${NETLIFYDEVWARN} Using simple static server because ${formatProperty(
-        '[dev.framework]',
-      )} was set to ${formatValue('#static')}`,
-    )
+    logWarning({
+      message: `Using simple static server because ${formatProperty('[dev.framework]')} was set to ${formatValue(
+        '#static',
+      )}`,
+    })
   }
 
   if (devConfig.targetPort) {
-    log(
-      `${NETLIFYDEVWARN} Ignoring ${formatProperty(
+    logWarning({
+      message: `Ignoring ${formatProperty(
         'targetPort',
-      )} setting since using a simple static server.${EOL}${NETLIFYDEVWARN} Use --staticServerPort or [dev.staticServerPort] to configure the static server port`,
-    )
+      )} setting since using a simple static server.${EOL} Use --staticServerPort or [dev.staticServerPort] to configure the static server port`,
+    })
   }
 
   const dist = options.dir || devConfig.publish || getDefaultDist()
-  log(`${NETLIFYDEVWARN} Running static server from "${path.relative(path.dirname(projectDir), dist)}"`)
+  logH2({ message: `Running static server from "${path.relative(path.dirname(projectDir), dist)}"` })
 
   const frameworkPort = await getStaticServerPort({ devConfig })
   return {
@@ -302,7 +302,7 @@ const detectServerSettings = async (devConfig, options, projectDir) => {
     const frameworkSettings = runDetection ? await detectFrameworkSettings({ projectDir }) : undefined
 
     if (frameworkSettings === undefined && runDetection) {
-      log(`${NETLIFYDEVWARN} No app server detected. Using simple static server`)
+      logWarning({ message: `No app server detected. Using simple static server` })
       settings = await handleStaticServer({ options, devConfig, projectDir })
     } else {
       validateFrameworkConfig({ devConfig })

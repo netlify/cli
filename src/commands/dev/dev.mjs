@@ -29,6 +29,7 @@ import {
 import { startSpinner, stopSpinner } from '../../lib/spinner.cjs'
 import {
   BANG,
+  BRAND,
   chalk,
   error,
   exit,
@@ -37,9 +38,7 @@ import {
   logError,
   logH1,
   logH2,
-  NETLIFYDEVERR,
-  NETLIFYDEVLOG,
-  NETLIFYDEVWARN,
+  logWarning,
   normalizeConfig,
   warn,
   watchDebounced,
@@ -80,7 +79,7 @@ const startStaticServer = async ({ settings }) => {
   })
 
   await server.listen({ port: settings.frameworkPort })
-  log(`\n${NETLIFYDEVLOG} Static server listening to`, settings.frameworkPort)
+  logH2({ message: `Static server listening to ${settings.frameworkPort}` })
 }
 
 const isNonExistingCommandError = ({ command, error: commandError }) => {
@@ -177,8 +176,8 @@ const runCommand = (command, env = {}, spinner = null) => {
         })
       } else {
         const errorMessage = result.failed
-          ? `${NETLIFYDEVERR} ${result.shortMessage}`
-          : `${NETLIFYDEVWARN} "${command}" exited with code ${result.exitCode}`
+          ? `${result.shortMessage}`
+          : `"${command}" exited with code ${result.exitCode}`
 
         log()
         logError({ message: `${errorMessage}. Shutting down netlify dev server!` })
@@ -237,8 +236,8 @@ const startFrameworkServer = async function ({ settings }) {
     stopSpinner({ error: false, spinner })
   } catch (error_) {
     stopSpinner({ error: true, spinner })
-    log(NETLIFYDEVERR, `Netlify Dev could not start or connect to localhost:${settings.frameworkPort}.`)
-    log(NETLIFYDEVERR, `Please make sure your framework server is running on port ${settings.frameworkPort}`)
+    logError({ message: `Netlify Dev could not start or connect to localhost:${settings.frameworkPort}` })
+    logWarning({ message: `Please make sure your framework server is running on port ${settings.frameworkPort}` })
     error(error_)
     exit(1)
   }
@@ -303,7 +302,7 @@ const startProxyServer = async ({
     siteInfo,
   })
   if (!url) {
-    log(NETLIFYDEVERR, `Unable to start proxy server on port '${settings.port}'`)
+    logError({ message: `Unable to start proxy server on port '${settings.port}'` })
     exit(1)
   }
 
@@ -344,6 +343,8 @@ const printBanner = ({ url }) => {
       borderColor: BRAND.COLORS.BLUE,
     }),
   )
+
+  log()
 }
 
 const startPollingForAPIAuthentication = async function (options) {
@@ -465,11 +466,11 @@ const dev = async (options, command) => {
 
   if (!options.offline && siteInfo.use_envelope) {
     env = await getEnvelopeEnv({ api, context: options.context, env, siteInfo })
-    log(`${NETLIFYDEVLOG} Injecting environment variable values for ${chalk.yellow('all scopes')}`)
+    logH2({ message: `Injecting environment variable values for ${chalk.yellow('all scopes')}` })
   }
 
   await injectEnvVariables({ devConfig, env, site })
-  await promptEditorHelper({ chalk, config, log, NETLIFYDEVLOG, repositoryRoot, state })
+  await promptEditorHelper({ chalk, config, log, repositoryRoot, state })
 
   const { addonsUrls, capabilities, siteUrl, timeouts } = await getSiteInformation({
     // inherited from base command --offline
@@ -504,7 +505,7 @@ const dev = async (options, command) => {
       cachedConfig.config.plugins = [...newPlugins, ...cachedConfig.config.plugins]
     }
   } catch (error_) {
-    log(NETLIFYDEVERR, error_.message)
+    logError({ message: error_.message })
     exit(1)
   }
 

@@ -1,7 +1,7 @@
 // @ts-check
 import { parseAllRedirects } from 'netlify-redirect-parser'
 
-import { NETLIFYDEVERR, log } from './command-helpers.mjs'
+import { logError } from './command-helpers.mjs'
 
 // Parse, normalize and validate all redirects from `_redirects` files
 // and `netlify.toml`
@@ -21,7 +21,7 @@ const handleRedirectParsingErrors = function (errors) {
   }
 
   const errorMessage = errors.map(getErrorMessage).join('\n\n')
-  log(NETLIFYDEVERR, `Redirects syntax errors:\n${errorMessage}`)
+  logError({ message: `Redirects syntax errors:\n${errorMessage}` })
 }
 
 const getErrorMessage = function ({ message }) {

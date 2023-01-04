@@ -1,7 +1,7 @@
 // @ts-check
 import { Buffer } from 'buffer'
 
-import { NETLIFYDEVERR } from '../../utils/command-helpers.mjs'
+import { logError } from '../../utils/command-helpers.mjs'
 import renderErrorTemplate from '../render-error-template.mjs'
 
 import { detectAwsSdkError } from './utils.mjs'
@@ -23,7 +23,7 @@ export const handleSynchronousFunction = function (err, result, request, respons
 
   const { error } = validateLambdaResponse(result)
   if (error) {
-    console.log(`${NETLIFYDEVERR} ${error}`)
+    logError({ message: error })
     return handleErr(error, request, response)
   }
 

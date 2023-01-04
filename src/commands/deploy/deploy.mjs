@@ -22,10 +22,9 @@ import {
   exit,
   getToken,
   log,
+  logH1,
+  logInfo,
   logJson,
-  NETLIFYDEV,
-  NETLIFYDEVERR,
-  NETLIFYDEVLOG,
   warn,
 } from '../../utils/command-helpers.mjs'
 import { DEFAULT_DEPLOY_TIMEOUT } from '../../utils/deploy/constants.mjs'
@@ -46,9 +45,9 @@ const triggerDeploy = async ({ api, options, siteData, siteId }) => {
         logs: `https://app.netlify.com/sites/${siteData.name}/deploys/${siteBuild.deploy_id}`,
       })
     } else {
-      log(
-        `${NETLIFYDEV} A new deployment was triggered successfully. Visit https://app.netlify.com/sites/${siteData.name}/deploys/${siteBuild.deploy_id} to see the logs.`,
-      )
+      logH1({
+        message: `A new deployment was triggered successfully. Visit https://app.netlify.com/sites/${siteData.name}/deploys/${siteBuild.deploy_id} to see the logs.`,
+      })
     }
   } catch (error_) {
     if (error_.status === 404) {
@@ -207,7 +206,7 @@ const SYNC_FILE_LIMIT = 1e2
 
 const prepareProductionDeploy = async ({ api, siteData }) => {
   if (isObject(siteData.published_deploy) && siteData.published_deploy.locked) {
-    log(`\n${NETLIFYDEVERR} Deployments are "locked" for production context of this site\n`)
+    logError({ message: `Deployments are "locked" for production context of this site` })
     const { unlockChoice } = await inquirer.prompt([
       {
         type: 'confirm',
@@ -218,7 +217,7 @@ const prepareProductionDeploy = async ({ api, siteData }) => {
     ])
     if (!unlockChoice) exit(0)
     await api.unlockDeploy({ deploy_id: siteData.published_deploy.id })
-    log(`\n${NETLIFYDEVLOG} "Auto publishing" has been enabled for production context\n`)
+    logInfo({ message: `Auto publishing" has been enabled for production context` })
   }
   log('Deploying to main site URL...')
 }

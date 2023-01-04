@@ -7,7 +7,7 @@ import process from 'process'
 import inquirer from 'inquirer'
 import fetch from 'node-fetch'
 
-import { NETLIFYDEVWARN, chalk, error, exit } from '../../utils/command-helpers.mjs'
+import { chalk, error, exit, logWarning } from '../../utils/command-helpers.mjs'
 import { BACKGROUND, CLOCKWORK_USERAGENT, getFunctions } from '../../utils/functions/index.mjs'
 
 const require = createRequire(import.meta.url)
@@ -149,7 +149,7 @@ const functionsInvoke = async (nameArgument, options, command) => {
   }
 
   if (!options.port)
-    console.warn(`${NETLIFYDEVWARN} "port" flag was not specified. Attempting to connect to localhost:8888 by default`)
+    logWarning({ message: `"port" flag was not specified. Attempting to connect to localhost:8888 by default` })
   const port = options.port || DEFAULT_PORT
 
   const functions = await getFunctions(functionsDir, config)

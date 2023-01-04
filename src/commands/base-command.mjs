@@ -10,7 +10,7 @@ import { NetlifyAPI } from 'netlify'
 
 import { getAgent } from '../lib/http-agent.mjs'
 import {
-  NETLIFY_CYAN,
+  BRAND,
   USER_AGENT,
   INDENT_WIDTHS,
   chalk,
@@ -37,7 +37,7 @@ const NANO_SECS_TO_MSECS = 1e6
 // The fallback width for the help terminal
 const FALLBACK_HELP_CMD_WIDTH = 80
 
-const HELP_$ = NETLIFY_CYAN('$')
+const HELP_$ = chalk.hex(BRAND.COLORS.BLUE).bold('$')
 
 // separator width between term and description
 const HELP_SEPARATOR_WIDTH = 5

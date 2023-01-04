@@ -8,7 +8,7 @@ import {
   getNetlifyGraphConfig,
   readGraphQLOperationsSourceFile,
 } from '../../lib/one-graph/cli-netlify-graph.mjs'
-import { NETLIFYDEVERR, chalk, error, log } from '../../utils/command-helpers.mjs'
+import { chalk, error, log } from '../../utils/command-helpers.mjs'
 import openBrowser from '../../utils/open-browser.mjs'
 
 const { ensureAppForSite, executeCreatePersistedQueryMutation } = OneGraphCliClient
@@ -25,7 +25,7 @@ const graphEdit = async (options, command) => {
 
   if (!site.id) {
     error(
-      `${NETLIFYDEVERR} Warning: no siteId defined, unable to start Netlify Graph. To enable, run ${chalk.yellow(
+      `Warning: no siteId defined, unable to start Netlify Graph. To enable, run ${chalk.yellow(
         'netlify init',
       )} or ${chalk.yellow('netlify link')}`,
     )
