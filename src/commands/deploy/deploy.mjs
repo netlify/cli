@@ -22,6 +22,7 @@ import {
   exit,
   getToken,
   log,
+  logError,
   logH1,
   logInfo,
   logJson,
