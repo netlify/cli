@@ -1,8 +1,10 @@
 // @ts-check
+import boxen from 'boxen'
 import inquirer from 'inquirer'
+import prettyjson from 'prettyjson'
 
 import { listSites } from '../../lib/api.mjs'
-import { chalk, error, exit, log } from '../../utils/command-helpers.mjs'
+import { BRAND, chalk, error, exit, log, logH2 } from '../../utils/command-helpers.mjs'
 import getRepoData from '../../utils/get-repo-data.mjs'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.mjs'
 import { track } from '../../utils/telemetry/index.mjs'
@@ -33,8 +35,9 @@ const linkPrompt = async (netlify, options) => {
   }
 
   log()
-  log(`${chalk.cyanBright('netlify link')} will connect this folder to a site on Netlify`)
+  logH2({ message: '`netlify link` will connect this folder to a site on Netlify' })
   log()
+
   const { linkType } = await inquirer.prompt([
     {
       type: 'list',
@@ -49,7 +52,7 @@ const linkPrompt = async (netlify, options) => {
     case GIT_REMOTE_PROMPT: {
       kind = 'gitRemote'
       log()
-      log(`Looking for sites connected to '${repoData.httpsUrl}'...`)
+      logH2({ message: `Looking for sites connected to '${repoData.httpsUrl}'...` })
       log()
       const sites = await listSites({ api, options: { filter: 'all' } })
 
@@ -272,10 +275,27 @@ export const link = async (options, command) => {
 
   if (siteData) {
     // If already linked to site. exit and prompt for unlink
-    log(`Site already linked to "${siteData.name}"`)
-    log(`Admin url: ${siteData.admin_url}`)
+    log(
+      boxen(
+        `${prettyjson.render({
+          Name: siteData.name,
+          'Site ID': siteId,
+          'Admin URL': siteData.admin_url,
+          'Site URL': siteData.url,
+        })}`,
+        {
+          title: chalk.hex(BRAND.COLORS.CYAN).bold('Oops! Your site is already linked!'),
+          padding: 1,
+          margin: 0,
+          align: 'left',
+          borderStyle: 'doubleSingle',
+          borderColor: BRAND.COLORS.CYAN,
+        },
+      ),
+    )
     log()
-    log(`To unlink this site, run: ${chalk.cyanBright('netlify unlink')}`)
+    logH2({ message: 'To unlink this site, run: `netlify unlink`' })
+    log()
   } else if (options.id) {
     try {
       // @ts-ignore types from API are wrong they cannot recognize `getSite` of API
@@ -290,7 +310,7 @@ export const link = async (options, command) => {
 
     // Save site ID
     state.set('siteId', siteData.id)
-    log(`Linked to ${siteData.name}`)
+    logH2({ message: `Your local repository has been linked to ${siteData.name}!` })
 
     await track('sites_linked', {
       siteId: siteData.id,
@@ -321,7 +341,7 @@ export const link = async (options, command) => {
     const [firstSiteData] = results
     state.set('siteId', firstSiteData.id)
 
-    log(`Linked to ${firstSiteData.name}`)
+    logH2({ message: `Your local repository has been linked to ${firstSiteData.name}!` })
 
     await track('sites_linked', {
       siteId: (firstSiteData && firstSiteData.id) || siteId,

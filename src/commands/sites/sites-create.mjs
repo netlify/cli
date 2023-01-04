@@ -1,10 +1,11 @@
 // @ts-check
+import boxen from 'boxen'
 import { InvalidArgumentError } from 'commander'
 import inquirer from 'inquirer'
 import pick from 'lodash/pick.js'
 import prettyjson from 'prettyjson'
 
-import { chalk, error, log, logJson, warn } from '../../utils/command-helpers.mjs'
+import { BRAND, chalk, error, log, logJson, warn } from '../../utils/command-helpers.mjs'
 import getRepoData from '../../utils/get-repo-data.mjs'
 import { configureRepo } from '../../utils/init/config.mjs'
 import { track } from '../../utils/telemetry/index.mjs'
@@ -81,17 +82,25 @@ export const sitesCreate = async (options, command) => {
   }
   await inputSiteName(options.name)
 
-  log()
-  log(chalk.greenBright.bold.underline(`Site Created`))
-  log()
-
   const siteUrl = site.ssl_url || site.url
+
+  log()
   log(
-    prettyjson.render({
-      'Admin URL': site.admin_url,
-      URL: siteUrl,
-      'Site ID': site.id,
-    }),
+    boxen(
+      `${prettyjson.render({
+        'Site ID': site.id,
+        'Admin URL': site.admin_url,
+        'Site URL': siteUrl,
+      })}`,
+      {
+        title: chalk.bgHex(BRAND.COLORS.BLUE).whiteBright.bold(' 🎉 New site created! 🎉 '),
+        padding: 1,
+        margin: 0,
+        align: 'left',
+        borderStyle: 'doubleSingle',
+        borderColor: BRAND.COLORS.BLUE,
+      },
+    ),
   )
 
   track('sites_created', {

@@ -1,9 +1,10 @@
 // @ts-check
+import boxen from 'boxen'
 import dotProp from 'dot-prop'
 import inquirer from 'inquirer'
 import isEmpty from 'lodash/isEmpty.js'
 
-import { chalk, exit, log, logH1 } from '../../utils/command-helpers.mjs'
+import { BRAND, chalk, exit, log, logH1, logInfo, logWarn } from '../../utils/command-helpers.mjs'
 import getRepoData from '../../utils/get-repo-data.mjs'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.mjs'
 import { configureRepo } from '../../utils/init/config.mjs'
@@ -43,9 +44,24 @@ const logExistingAndExit = ({ siteInfo }) => {
 const createNewSiteAndExit = async ({ command, state }) => {
   const siteInfo = await sitesCreate({}, command)
 
-  log(`"${siteInfo.name}" site was created`)
+  log(
+    boxen(
+      `Your site "${
+        siteInfo.name
+      }" was created!\n\nTo deploy:\n\nBuild your site using the build command, and then run ${chalk
+        .bgHex(BRAND.COLORS.BLUE)
+        .whiteBright.bold('netlify deploy')}`,
+      {
+        title: chalk.hex(BRAND.COLORS.CYAN).bold(`👉 Next steps`),
+        padding: 1,
+        margin: 0,
+        align: 'left',
+        borderStyle: 'doubleSingle',
+        borderColor: BRAND.COLORS.CYAN,
+      },
+    ),
+  )
   log()
-  log(`To deploy to this site. Run your site build and then ${chalk.cyanBright.bold('netlify deploy')}`)
 
   persistState({ state, siteInfo })
 
@@ -54,34 +70,51 @@ const createNewSiteAndExit = async ({ command, state }) => {
 
 const logGitSetupInstructionsAndExit = () => {
   log()
-  log(`${chalk.bold('To initialize a new git repo follow the steps below.')}
 
-1. Initialize a new repo:
+  log(
+    boxen(
+      chalk.bold(
+        `1. Initialize a new git repository
 
-   ${chalk.cyanBright.bold('git init')}
+  ${chalk.bgHex(BRAND.COLORS.BLUE).whiteBright.bold(`git init`)}
 
 2. Add your files
 
-   ${chalk.cyanBright.bold('git add .')}
+  ${chalk.bgHex(BRAND.COLORS.BLUE).whiteBright.bold(`git add .`)}
 
 3. Commit your files
 
-   ${chalk.cyanBright.bold("git commit -m 'initial commit'")}
+  ${chalk.bgHex(BRAND.COLORS.BLUE).whiteBright.bold(`git commit -m 'Initial commit'`)}
 
-4. Create a new repo in GitHub ${chalk.cyanBright.bold('https://github.com/new')}
+4. Create a new repo in GitHub 
+
+  ${chalk.bgHex(BRAND.COLORS.BLUE).whiteBright.bold('https://github.com/new')}
 
 5. Link the remote repo with this local directory
 
-   ${chalk.cyanBright.bold('git remote add origin git@github.com:YourGithubName/your-repo-slug.git')}
+  ${chalk
+    .bgHex(BRAND.COLORS.BLUE)
+    .whiteBright.bold('git remote add origin git@github.com:YourGithubName/your-repo-slug.git')}
 
 6. Push up your files
 
-   ${chalk.cyanBright.bold('git push -u origin main')}
+  ${chalk.bgHex(BRAND.COLORS.BLUE).whiteBright.bold('git push -u origin main')}
 
-7. Initialize your Netlify Site
+7. Initialize your new Netlify Site
 
-   ${chalk.cyanBright.bold('netlify init')}
-`)
+  ${chalk.bgHex(BRAND.COLORS.BLUE).whiteBright.bold('netlify init')}`,
+      ),
+      {
+        title: chalk.hex(BRAND.COLORS.CYAN).bold('👉 Next steps'),
+        padding: 1,
+        margin: 0,
+        align: 'left',
+        borderStyle: 'doubleSingle',
+        borderColor: BRAND.COLORS.CYAN,
+      },
+    ),
+  )
+
   exit()
 }
 
@@ -93,20 +126,27 @@ const logGitSetupInstructionsAndExit = () => {
  * @param {object} config.state
  */
 const handleNoGitRemoteAndExit = async ({ command, error, state }) => {
+  logWarn({ message: 'No git remote was found, would you like to set one up?' })
+  log(
+    boxen(
+      chalk.bold(
+        `We recommend you initialize a site that has a remote repository in GitHub. \n\nThis will allow for Netlify Continuous Deployment to build branch & PR previews automatically.\n\nFor more details, check out the docs 👉 ntl.fyi/configure-builds`,
+      ),
+      {
+        title: chalk.hex(BRAND.COLORS.CYAN).bold('For best results'),
+        padding: 1,
+        margin: 0,
+        align: 'left',
+        borderStyle: 'doubleSingle',
+        borderColor: BRAND.COLORS.CYAN,
+      },
+    ),
+  )
   log()
-  log(`${chalk.yellow('No git remote was found, would you like to set one up?')}`)
-  log(`
-It is recommended that you initialize a site that has a remote repository in GitHub.
 
-This will allow for Netlify Continuous deployment to build branch & PR previews.
-
-For more details on Netlify CI checkout the docs: http://bit.ly/2N0Jhy5
-`)
   if (error === "Couldn't find origin url") {
-    log(`Unable to find a remote origin URL. Please add a git remote.
-
-git remote add origin https://github.com/YourUserName/RepoName.git
-`)
+    logWarn({ message: `Unable to find a remote origin URL. Please add a git remote!` })
+    logInfo({ message: 'git remote add origin https://github.com/YourUserName/RepoName.git' })
   }
 
   const NEW_SITE_NO_GIT = 'Yes, create and deploy site manually'
