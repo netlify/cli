@@ -28,7 +28,7 @@ import {
 import { fileExistsAsync, isFileAsync } from '../lib/fs.cjs'
 import renderErrorTemplate from '../lib/render-error-template.mjs'
 
-import { logH2, logWarning } from './command-helpers.mjs'
+import { logH2, logWarn } from './command-helpers.mjs'
 import createStreamPromise from './create-stream-promise.mjs'
 import { headersForPath, parseHeaders } from './headers.mjs'
 import { createRewriter, onChanges } from './rules-proxy.mjs'
@@ -114,7 +114,7 @@ const render404 = async function (publicFolder) {
     const isFile = await isFileAsync(maybe404Page)
     if (isFile) return await readFile(maybe404Page, 'utf-8')
   } catch (error) {
-    logWarning({ message: `Error while serving 404.html file: ${error.message}` })
+    logWarn({ message: `Error while serving 404.html file: ${error.message}` })
   }
 
   return 'Not Found'
@@ -180,18 +180,18 @@ const serveRedirect = async function ({ match, options, proxy, req, res }) {
       try {
         jwtValue = jwtDecode(token) || {}
       } catch (error) {
-        logWarning({ message: `Error while decoding JWT provided in request: ${error.message}` })
+        logWarn({ message: `Error while decoding JWT provided in request: ${error.message}` })
         res.writeHead(400)
         res.end('Invalid JWT provided. Please see logs for more info.')
         return
       }
 
       if ((jwtValue.exp || 0) < Math.round(Date.now() / MILLISEC_TO_SEC)) {
-        logWarning({ message: `Expired JWT provided in request: ${req.url}` })
+        logWarn({ message: `Expired JWT provided in request: ${req.url}` })
       } else {
         const presentedRoles = get(jwtValue, options.jwtRolePath) || []
         if (!Array.isArray(presentedRoles)) {
-          logWarning({ message: `Invalid roles value provided in JWT ${options.jwtRolePath} \n ${presentedRoles}` })
+          logWarn({ message: `Invalid roles value provided in JWT ${options.jwtRolePath} \n ${presentedRoles}` })
           res.writeHead(400)
           res.end('Invalid JWT provided. Please see logs for more info.')
           return

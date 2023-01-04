@@ -4,7 +4,7 @@ import { basename } from 'path'
 import inquirer from 'inquirer'
 import { findBestMatch } from 'string-similarity'
 
-import { chalk, log, logError } from '../../utils/command-helpers.mjs'
+import { chalk, logError } from '../../utils/command-helpers.mjs'
 
 import { getRecipe, listRecipes } from './common.mjs'
 import { createRecipesListCommand } from './recipes-list.mjs'

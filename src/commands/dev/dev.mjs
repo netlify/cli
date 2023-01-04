@@ -38,7 +38,7 @@ import {
   logError,
   logH1,
   logH2,
-  logWarning,
+  logWarn,
   normalizeConfig,
   warn,
   watchDebounced,
@@ -237,7 +237,7 @@ const startFrameworkServer = async function ({ settings }) {
   } catch (error_) {
     stopSpinner({ error: true, spinner })
     logError({ message: `Netlify Dev could not start or connect to localhost:${settings.frameworkPort}` })
-    logWarning({ message: `Please make sure your framework server is running on port ${settings.frameworkPort}` })
+    logWarn({ message: `Please make sure your framework server is running on port ${settings.frameworkPort}` })
     error(error_)
     exit(1)
   }

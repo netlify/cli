@@ -6,7 +6,7 @@ import { cwd, env } from 'process'
 import getAvailablePort from 'get-port'
 import { v4 as generateUUID } from 'uuid'
 
-import { chalk, error as printError, logWarning } from '../../utils/command-helpers.mjs'
+import { chalk, error as printError, logWarn } from '../../utils/command-helpers.mjs'
 import { getGeoLocation } from '../geo-location.mjs'
 import { getPathInProject } from '../settings.cjs'
 import { startSpinner, stopSpinner } from '../spinner.cjs'
@@ -114,7 +114,7 @@ export const initializeProxy = async ({
     // If the request matches a config declaration for an Edge Function without
     // a matching function file, we warn the user.
     orphanedDeclarations.forEach((functionName) => {
-      logWarning({
+      logWarn({
         message: `Request to ${
           url.pathname
         } matches declaration for edge function ${functionName}, but there's no matching function file in ${chalk.yellow(

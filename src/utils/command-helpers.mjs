@@ -125,7 +125,7 @@ export const logError = ({ message }) => {
   }
 }
 
-export const logWarning = ({ message }) => {
+export const logWarn = ({ message }) => {
   if (message) {
     log(`${chalk.bgHex(BRAND.COLORS.YELLOW).whiteBright(` ${BRAND.ICONS.DIAMOND} ${message} `)}`)
     log()

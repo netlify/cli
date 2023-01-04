@@ -1,7 +1,7 @@
 // @ts-check
 const process = require('process')
 
-// eslint-disable-next-line no-restricted-modules
+ 
 const { Instance: ChalkInstance } = require('chalk')
 const ora = require('ora')
 
@@ -82,7 +82,7 @@ const startSpinner = ({ text }) => {
   const frames = getGradientAnimFrames()
   return ora({
     spinner: {
-      // eslint-disable-next-line no-magic-numbers
+       
       interval: 60,
       frames,
     },

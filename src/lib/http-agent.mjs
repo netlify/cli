@@ -4,7 +4,7 @@ import { readFile } from 'fs/promises'
 import HttpsProxyAgent from 'https-proxy-agent'
 import waitPort from 'wait-port'
 
-import { exit, logWarning, logError } from '../utils/command-helpers.mjs'
+import { exit, logWarn, logError } from '../utils/command-helpers.mjs'
 
 // https://github.com/TooTallNate/node-https-proxy-agent/issues/89
 // Maybe replace with https://github.com/delvedor/hpagent
@@ -93,7 +93,7 @@ export const getAgent = async ({ certificateFile, httpProxy }) => {
     exit(1)
   }
   if (warning) {
-    logWarning({ message: message || '' })
+    logWarn({ message: message || '' })
   }
   return agent
 }

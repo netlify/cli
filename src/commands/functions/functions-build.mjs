@@ -1,7 +1,7 @@
 // @ts-check
 import { mkdir } from 'fs/promises'
 
-import { exit, log, logError } from '../../utils/command-helpers.mjs'
+import { exit, logH2, logError } from '../../utils/command-helpers.mjs'
 import { getFunctionsDir } from '../../utils/functions/index.mjs'
 
 /**

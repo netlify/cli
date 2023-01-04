@@ -17,7 +17,7 @@ import fetch from 'node-fetch'
 import ora from 'ora'
 
 import { getAddons, getCurrentAddon, getSiteData } from '../../utils/addons/prepare.mjs'
-import { chalk, error, log, logError, logInfo, logH2, logWarning } from '../../utils/command-helpers.mjs'
+import { chalk, error, log, logError, logInfo, logH2, logWarn } from '../../utils/command-helpers.mjs'
 import { injectEnvVariables } from '../../utils/dev.mjs'
 import execa from '../../utils/execa.mjs'
 import { readRepoURL, validateRepoURL } from '../../utils/read-repo-url.mjs'
@@ -255,7 +255,7 @@ const ensureFunctionDirExists = async function (command) {
   let functionsDirHolder = config.functionsDirectory
 
   if (!functionsDirHolder) {
-    logWarning({ message: `Functions directory not specified in netlify.toml or UI settings` })
+    logWarn({ message: `Functions directory not specified in netlify.toml or UI settings` })
 
     if (!siteId) {
       logError({ message: `No site id found, please run inside a site directory or \`netlify link\`` })
@@ -597,7 +597,7 @@ const installAddons = async function (command, functionAddons, fnPath) {
   const { api, site } = command.netlify
   const siteId = site.id
   if (!siteId) {
-    logWarning({ message: 'No site id found, please run inside a site directory or `netlify link`' })
+    logWarn({ message: 'No site id found, please run inside a site directory or `netlify link`' })
     return false
   }
   logH2({ message: `Checking Netlify APIs...` })
@@ -662,7 +662,7 @@ const registerEFInToml = async (funcName) => {
 const ensureFunctionPathIsOk = function (functionsDir, name) {
   const functionPath = path.join(functionsDir, name)
   if (fs.existsSync(functionPath)) {
-    logWarning({ message: `Function ${functionPath} already exists, cancelling...` })
+    logWarn({ message: `Function ${functionPath} already exists, cancelling...` })
     process.exit(1)
   }
   return functionPath

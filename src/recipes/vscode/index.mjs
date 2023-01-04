@@ -3,7 +3,7 @@ import { join } from 'path'
 import execa from 'execa'
 import inquirer from 'inquirer'
 
-import { chalk, error, logH2, logWarning } from '../../utils/command-helpers.mjs'
+import { chalk, error, logH2, logWarn } from '../../utils/command-helpers.mjs'
 
 import { applySettings, getSettings, writeSettings } from './settings.mjs'
 
@@ -71,7 +71,7 @@ export const run = async ({ config, repositoryRoot }) => {
       if (denoExtConfirm) getDenoVSCodeExt()
     }
   } catch {
-    logWarning({
+    logWarn({
       message: `Unable to install Deno VS Code extension. To install it manually, visit ${chalk.blue(
         'https://ntl.fyi/deno-vscode',
       )}`,
