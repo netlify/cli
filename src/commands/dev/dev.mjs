@@ -831,7 +831,7 @@ export const createDevCommand = (program) => {
     .option('-o ,--offline', 'disables any features that require network access')
     .option('-l, --live', 'start a public live session', false)
     .option('--functionsPort <port>', 'port of functions server', (value) => Number.parseInt(value))
-    .option('-P, --prod', 'build the site for production and serve locally', false)
+    .option('-P, --prod', '(Beta) build the site for production and serve locally', false)
     .addOption(
       new Option(
         '--geo <mode>',
