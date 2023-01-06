@@ -372,11 +372,14 @@ test('should run and serve a production build when the `--prod` flag is set', as
       })
       .buildAsync()
 
-    await withDevServer({ cwd: builder.directory, context: null, debug: true, prod: true }, async ({ output, url }) => {
-      const response = await got(`${url}/hello`).json()
-      t.deepEqual(response, { CONTEXT_CHECK: 'PRODUCTION' })
+    await withDevServer(
+      { cwd: builder.directory, context: null, debug: true, serve: true },
+      async ({ output, url }) => {
+        const response = await got(`${url}/hello`).json()
+        t.deepEqual(response, { CONTEXT_CHECK: 'PRODUCTION' })
 
-      t.snapshot(normalize(output, { duration: true, filePath: true }))
-    })
+        t.snapshot(normalize(output, { duration: true, filePath: true }))
+      },
+    )
   })
 })

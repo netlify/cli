@@ -364,4 +364,38 @@ const formatSettingsArrForInquirer = function (frameworks) {
   return formattedArr.flat()
 }
 
+/**
+ * Returns a copy of the provided config with any plugins provided by the
+ * server settings
+ * @param {*} config
+ * @param {Partial<import('./types').ServerSettings>} settings
+ * @returns {*} Modified config
+ */
+export const getConfigWithPlugins = (config, settings) => {
+  if (!settings.plugins) {
+    return config
+  }
+
+  // If there are plugins that we should be running for this site, add them
+  // to the config as if they were declared in netlify.toml. We must check
+  // whether the plugin has already been added by another source (like the
+  // TOML file or the UI), as we don't want to run the same plugin twice.
+  const { plugins: existingPlugins = [] } = config
+  const existingPluginNames = new Set(existingPlugins.map((plugin) => plugin.package))
+  const newPlugins = settings.plugins
+    .map((pluginName) => {
+      if (existingPluginNames.has(pluginName)) {
+        return
+      }
+
+      return { package: pluginName, origin: 'config', inputs: {} }
+    })
+    .filter(Boolean)
+
+  return {
+    ...config,
+    plugins: [...newPlugins, ...config.plugins],
+  }
+}
+
 export default detectServerSettings
