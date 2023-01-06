@@ -88,7 +88,13 @@ const runNetlifyBuild = async ({ cachedConfig, options, settings, site, timeline
     }
 
     // Run Netlify Build using the main entry point.
-    await buildSite(buildSiteOptions)
+    const { success } = await buildSite(buildSiteOptions)
+
+    if (!success) {
+      error('Could not start local server due to a build error')
+
+      return {}
+    }
 
     // Start the dev server, forcing the usage of a static server as opposed to
     // the framework server.
