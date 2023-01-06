@@ -35,18 +35,16 @@ const serve = async (options, command) => {
   config.build = { ...config.build }
   /** @type {import('../dev/types').DevConfig} */
   const devConfig = {
-    framework: '#auto',
     ...(config.functionsDirectory && { functions: config.functionsDirectory }),
     ...(config.build.publish && { publish: config.build.publish }),
     ...config.dev,
     ...options,
+    // Override the `framework` value so that we start a static server and not
+    // the framework's development server.  
+    framework: '#static',
   }
 
   let { env } = cachedConfig
-
-  // Override the `framework` value so that we start a static server and not
-  // the framework's development server.
-  devConfig.framework = '#static'
 
   if (!options.offline && siteInfo.use_envelope) {
     env = await getEnvelopeEnv({ api, context: options.context, env, siteInfo })
