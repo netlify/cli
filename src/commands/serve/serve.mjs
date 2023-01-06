@@ -40,7 +40,7 @@ const serve = async (options, command) => {
     ...config.dev,
     ...options,
     // Override the `framework` value so that we start a static server and not
-    // the framework's development server.  
+    // the framework's development server.
     framework: '#static',
   }
 
@@ -151,8 +151,6 @@ export const createServeCommand = (program) =>
       normalizeContext,
     )
     .option('-p ,--port <port>', 'port of netlify dev', (value) => Number.parseInt(value))
-    .option('--targetPort <port>', 'port of target app server', (value) => Number.parseInt(value))
-    .option('--framework <name>', 'framework to use. Defaults to #auto which automatically detects a framework')
     .option('-d ,--dir <path>', 'dir with static files')
     .option('-f ,--functions <folder>', 'specify a functions folder to serve')
     .option('-o ,--offline', 'disables any features that require network access')
