@@ -197,6 +197,7 @@ test('should not handle form submission when content type is `text/plain`', asyn
           },
         })
         .catch((error) => error.response)
+      t.is(response.statusCode, 405)
       t.is(response.body, 'Method Not Allowed')
     })
   })
