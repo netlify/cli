@@ -81,7 +81,10 @@ const serve = async (options, command) => {
 
   command.setAnalyticsPayload({ projectType: settings.framework || 'custom', live: options.live, graph: options.graph })
 
-  log(`${NETLIFYDEVWARN} Building site for production`)
+  log(`${NETLIFYDEVLOG} Building site for production`)
+  log(
+    `${NETLIFYDEVWARN} Changes will not be hot-reloaded, so if you need to rebuild your site you must exit and run 'netlify serve' again`,
+  )
 
   const { configPath: configPathOverride } = await runBuildTimeline({ cachedConfig, options, settings, site })
 
