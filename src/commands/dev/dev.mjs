@@ -460,9 +460,15 @@ const dev = async (options, command) => {
 
   let { env } = cachedConfig
 
-  // Add `NETLIFY_DEV` to the environment variables unless `prod` is set.
   if (!options.prod) {
+    // Add `NETLIFY_DEV` to the environment variables.
     env.NETLIFY_DEV = { sources: ['internal'], value: 'true' }
+
+    // Ensure the internal functions directory exists so that any functions
+    // created by Netlify Build are loaded.
+    const fullPath = path.resolve(site.root, INTERNAL_FUNCTIONS_FOLDER)
+
+    await fs.mkdir(fullPath, { recursive: true })
   }
 
   // If the `prod` flag is present, we override the `framework` value so that
