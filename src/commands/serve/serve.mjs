@@ -18,6 +18,7 @@ import {
 import detectServerSettings, { getConfigWithPlugins } from '../../utils/detect-server-settings.mjs'
 import { getSiteInformation, injectEnvVariables } from '../../utils/dev.mjs'
 import { getEnvelopeEnv, normalizeContext } from '../../utils/env/index.mjs'
+import { getInternalFunctionsDir } from '../../utils/functions/functions.mjs'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.mjs'
 import openBrowser from '../../utils/open-browser.mjs'
 import { generateInspectSettings, startProxyServer } from '../../utils/proxy-server.mjs'
@@ -61,6 +62,11 @@ const serve = async (options, command) => {
     site,
     siteInfo,
   })
+
+  // Ensure the internal functions directory exists so that the functions
+  // server and registry are initialized, and any functions created by
+  // Netlify Build are loaded.
+  await getInternalFunctionsDir({ base: site.root, ensureExists: true })
 
   /** @type {Partial<import('../../utils/types').ServerSettings>} */
   let settings = {}
