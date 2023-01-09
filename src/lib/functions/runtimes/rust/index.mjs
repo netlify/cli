@@ -7,6 +7,7 @@ import findUp from 'find-up'
 import toml from 'toml'
 
 import execa from '../../../../utils/execa.mjs'
+import { SERVE_FUNCTIONS_FOLDER } from '../../../../utils/functions/functions.mjs'
 import { getPathInProject } from '../../../settings.mjs'
 import { runFunctionsProxy } from '../../local-proxy.mjs'
 
@@ -16,7 +17,7 @@ export const name = 'rs'
 
 const build = async ({ func }) => {
   const functionDirectory = dirname(func.mainFile)
-  const cacheDirectory = resolve(getPathInProject(['functions-serve']))
+  const cacheDirectory = resolve(getPathInProject([SERVE_FUNCTIONS_FOLDER]))
   const targetDirectory = join(cacheDirectory, func.name)
   const crateName = await getCrateName(functionDirectory)
   const binaryName = `${crateName}${isWindows ? '.exe' : ''}`

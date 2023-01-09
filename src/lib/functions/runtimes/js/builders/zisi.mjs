@@ -7,6 +7,7 @@ import readPkgUp from 'read-pkg-up'
 import sourceMapSupport from 'source-map-support'
 
 import { NETLIFYDEVERR } from '../../../../../utils/command-helpers.mjs'
+import { SERVE_FUNCTIONS_FOLDER } from '../../../../../utils/functions/functions.mjs'
 import { getPathInProject } from '../../../../settings.mjs'
 import { normalizeFunctionsConfig } from '../../../config.mjs'
 import { memoizedBuild } from '../../../memoized-build.mjs'
@@ -94,7 +95,7 @@ const clearFunctionsCache = (functionsPath) => {
 }
 
 const getTargetDirectory = async ({ errorExit }) => {
-  const targetDirectory = path.resolve(getPathInProject(['functions-serve']))
+  const targetDirectory = path.resolve(getPathInProject([SERVE_FUNCTIONS_FOLDER]))
 
   try {
     await mkdir(targetDirectory, { recursive: true })

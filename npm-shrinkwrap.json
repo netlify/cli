@@ -46,6 +46,7 @@
         "execa": "^5.0.0",
         "express": "^4.17.1",
         "express-logging": "^1.1.1",
+        "extract-zip": "^2.0.1",
         "fastify": "^4.10.2",
         "find-up": "^5.0.0",
         "flush-write-stream": "^2.0.0",
@@ -5612,6 +5613,15 @@
       "version": "20.2.1",
       "resolved": "https://registry.npmjs.org/@types/yargs-parser/-/yargs-parser-20.2.1.tgz",
       "integrity": "sha512-7tFImggNeNBVMsn0vLrpn1H1uPrUBdnARPTpZoitY37ZrdJREzf7I16tMrlK3hen349gr1NYh8CmZQa7CTG6Aw=="
+    },
+    "node_modules/@types/yauzl": {
+      "version": "2.10.0",
+      "resolved": "https://registry.npmjs.org/@types/yauzl/-/yauzl-2.10.0.tgz",
+      "integrity": "sha512-Cn6WYCm0tXv8p6k+A8PvbDG763EDpBoTzHdA+Q/MF6H3sapGjCm9NzoaJncJS9tUKSuCoDs9XHxYYsQDgxR6kw==",
+      "optional": true,
+      "dependencies": {
+        "@types/node": "*"
+      }
     },
     "node_modules/@typescript-eslint/eslint-plugin": {
       "version": "5.18.0",
@@ -12388,6 +12398,39 @@
       "integrity": "sha512-5BMULNob1vgFX6EjQw5izWDxrecWK9AM72rugNr0TFldMOi0fj6Jk+zeKIt0xGj4cEfQIJth4w3OKWOJ4f+AFw==",
       "engines": {
         "node": ">=0.10.0"
+      }
+    },
+    "node_modules/extract-zip": {
+      "version": "2.0.1",
+      "resolved": "https://registry.npmjs.org/extract-zip/-/extract-zip-2.0.1.tgz",
+      "integrity": "sha512-GDhU9ntwuKyGXdZBUgTIe+vXnWj0fppUEtMDL0+idd5Sta8TGpHssn/eusA9mrPr9qNDym6SxAYZjNvCn/9RBg==",
+      "dependencies": {
+        "debug": "^4.1.1",
+        "get-stream": "^5.1.0",
+        "yauzl": "^2.10.0"
+      },
+      "bin": {
+        "extract-zip": "cli.js"
+      },
+      "engines": {
+        "node": ">= 10.17.0"
+      },
+      "optionalDependencies": {
+        "@types/yauzl": "^2.9.1"
+      }
+    },
+    "node_modules/extract-zip/node_modules/get-stream": {
+      "version": "5.2.0",
+      "resolved": "https://registry.npmjs.org/get-stream/-/get-stream-5.2.0.tgz",
+      "integrity": "sha512-nBF+F1rAZVCu/p7rjzgA+Yb4lfYXrpl7a6VmJrU8wF9I1CKvP/QwPNZHnOlwbTkY6dvtFIzFMSyQXbLoTQPRpA==",
+      "dependencies": {
+        "pump": "^3.0.0"
+      },
+      "engines": {
+        "node": ">=8"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/sindresorhus"
       }
     },
     "node_modules/extsprintf": {
@@ -28175,6 +28218,15 @@
       "resolved": "https://registry.npmjs.org/@types/yargs-parser/-/yargs-parser-20.2.1.tgz",
       "integrity": "sha512-7tFImggNeNBVMsn0vLrpn1H1uPrUBdnARPTpZoitY37ZrdJREzf7I16tMrlK3hen349gr1NYh8CmZQa7CTG6Aw=="
     },
+    "@types/yauzl": {
+      "version": "2.10.0",
+      "resolved": "https://registry.npmjs.org/@types/yauzl/-/yauzl-2.10.0.tgz",
+      "integrity": "sha512-Cn6WYCm0tXv8p6k+A8PvbDG763EDpBoTzHdA+Q/MF6H3sapGjCm9NzoaJncJS9tUKSuCoDs9XHxYYsQDgxR6kw==",
+      "optional": true,
+      "requires": {
+        "@types/node": "*"
+      }
+    },
     "@typescript-eslint/eslint-plugin": {
       "version": "5.18.0",
       "resolved": "https://registry.npmjs.org/@typescript-eslint/eslint-plugin/-/eslint-plugin-5.18.0.tgz",
@@ -33298,6 +33350,27 @@
           "version": "0.1.1",
           "resolved": "https://registry.npmjs.org/is-extendable/-/is-extendable-0.1.1.tgz",
           "integrity": "sha512-5BMULNob1vgFX6EjQw5izWDxrecWK9AM72rugNr0TFldMOi0fj6Jk+zeKIt0xGj4cEfQIJth4w3OKWOJ4f+AFw=="
+        }
+      }
+    },
+    "extract-zip": {
+      "version": "2.0.1",
+      "resolved": "https://registry.npmjs.org/extract-zip/-/extract-zip-2.0.1.tgz",
+      "integrity": "sha512-GDhU9ntwuKyGXdZBUgTIe+vXnWj0fppUEtMDL0+idd5Sta8TGpHssn/eusA9mrPr9qNDym6SxAYZjNvCn/9RBg==",
+      "requires": {
+        "@types/yauzl": "^2.9.1",
+        "debug": "^4.1.1",
+        "get-stream": "^5.1.0",
+        "yauzl": "^2.10.0"
+      },
+      "dependencies": {
+        "get-stream": {
+          "version": "5.2.0",
+          "resolved": "https://registry.npmjs.org/get-stream/-/get-stream-5.2.0.tgz",
+          "integrity": "sha512-nBF+F1rAZVCu/p7rjzgA+Yb4lfYXrpl7a6VmJrU8wF9I1CKvP/QwPNZHnOlwbTkY6dvtFIzFMSyQXbLoTQPRpA==",
+          "requires": {
+            "pump": "^3.0.0"
+          }
         }
       }
     },
