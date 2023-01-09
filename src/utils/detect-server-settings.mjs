@@ -11,7 +11,6 @@ import isPlainObject from 'is-plain-obj'
 
 import { NETLIFYDEVWARN, chalk, log } from './command-helpers.mjs'
 import { acquirePort } from './dev.mjs'
-import { getInternalFunctionsDir } from './functions/index.mjs'
 
 const formatProperty = (str) => chalk.magenta(`'${str}'`)
 const formatValue = (str) => chalk.green(`'${str}'`)
@@ -328,8 +327,7 @@ const detectServerSettings = async (devConfig, options, projectDir) => {
     errorMessage: `Could not acquire required ${formatProperty('port')}`,
   })
   const functionsDir = devConfig.functions || settings.functions
-  const internalFunctionsDir = await getInternalFunctionsDir({ base: projectDir })
-  const shouldStartFunctionsServer = Boolean(functionsDir || internalFunctionsDir)
+  const functionsPort = await getPort({ port: devConfig.functionsPort || 0 })
 
   return {
     ...settings,
@@ -337,7 +335,7 @@ const detectServerSettings = async (devConfig, options, projectDir) => {
     jwtSecret: devConfig.jwtSecret || 'secret',
     jwtRolePath: devConfig.jwtRolePath || 'app_metadata.authorization.roles',
     functions: functionsDir,
-    ...(shouldStartFunctionsServer && { functionsPort: await getPort({ port: devConfig.functionsPort || 0 }) }),
+    functionsPort,
     ...(devConfig.https && { https: await readHttpsSettings(devConfig.https) }),
   }
 }
