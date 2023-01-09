@@ -1,7 +1,7 @@
 // @ts-check
 import waitPort from 'wait-port'
 
-import { startSpinner, stopSpinner } from '../lib/spinner.cjs'
+import { startSpinner, stopSpinner } from '../lib/spinner.mjs'
 
 import { error, exit, log, NETLIFYDEVERR, NETLIFYDEVLOG } from './command-helpers.mjs'
 import { runCommand } from './shell.mjs'

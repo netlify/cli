@@ -4,7 +4,7 @@ import path from 'path'
 import process from 'process'
 
 import { INTERNAL_EDGE_FUNCTIONS_FOLDER } from '../lib/edge-functions/consts.mjs'
-import { getPathInProject } from '../lib/settings.cjs'
+import { getPathInProject } from '../lib/settings.mjs'
 
 import { error } from './command-helpers.mjs'
 import { startFrameworkServer } from './framework-server.mjs'
