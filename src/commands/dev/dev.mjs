@@ -5,6 +5,7 @@ import { Option } from 'commander'
 
 import { promptEditorHelper } from '../../lib/edge-functions/editor-helper.mjs'
 import { startFunctionsServer } from '../../lib/functions/server.mjs'
+import { printBanner } from '../../utils/banner.mjs'
 import {
   BANG,
   chalk,
