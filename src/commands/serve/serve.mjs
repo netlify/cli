@@ -153,7 +153,9 @@ const serve = async (options, command) => {
 export const createServeCommand = (program) =>
   program
     .command('serve')
-    .description('(Beta) Build the site for production and serve locally. This does not watch the code for changes, so if you need to rebuild your site then you must exit and run `serve` again.')
+    .description(
+      '(Beta) Build the site for production and serve locally. This does not watch the code for changes, so if you need to rebuild your site then you must exit and run `serve` again.',
+    )
     .option(
       '--context <context>',
       'Specify a deploy context or branch for environment variables (contexts: "production", "deploy-preview", "branch-deploy", "dev")',
