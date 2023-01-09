@@ -1,5 +1,4 @@
 // Handlers are meant to be async outside tests
-/* eslint-disable require-await */
 const process = require('process')
 
 // eslint-disable-next-line ava/use-test
@@ -413,4 +412,3 @@ test('should handle multipart form data when redirecting', async (t) => {
     })
   })
 })
-/* eslint-enable require-await */

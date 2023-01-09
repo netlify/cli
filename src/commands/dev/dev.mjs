@@ -1,5 +1,6 @@
 // @ts-check
 import events from 'events'
+import { promises as fs } from 'fs'
 import path from 'path'
 import process from 'process'
 
@@ -11,6 +12,7 @@ import Fastify from 'fastify'
 import stripAnsiCc from 'strip-ansi-control-characters'
 import waitPort from 'wait-port'
 
+import { INTERNAL_EDGE_FUNCTIONS_FOLDER } from '../../lib/edge-functions/consts.mjs'
 import { promptEditorHelper } from '../../lib/edge-functions/editor-helper.mjs'
 import { startFunctionsServer } from '../../lib/functions/server.mjs'
 import {
@@ -26,6 +28,7 @@ import {
   getNetlifyGraphConfig,
   readGraphQLOperationsSourceFile,
 } from '../../lib/one-graph/cli-netlify-graph.mjs'
+import { getPathInProject } from '../../lib/settings.mjs'
 import { startSpinner, stopSpinner } from '../../lib/spinner.mjs'
 import {
   BANG,
@@ -45,6 +48,7 @@ import {
 import detectServerSettings from '../../utils/detect-server-settings.mjs'
 import { generateNetlifyGraphJWT, getSiteInformation, injectEnvVariables, processOnExit } from '../../utils/dev.mjs'
 import { getEnvelopeEnv, normalizeContext } from '../../utils/env/index.mjs'
+import { INTERNAL_FUNCTIONS_FOLDER } from '../../utils/functions/index.mjs'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.mjs'
 import { startLiveTunnel } from '../../utils/live-tunnel.mjs'
 import openBrowser from '../../utils/open-browser.mjs'
@@ -257,6 +261,7 @@ const FRAMEWORK_PORT_TIMEOUT = 6e5
  * @param {object} params
  * @param {*} params.addonsUrls
  * @param {import('../base-command.mjs').NetlifyOptions["config"]} params.config
+ * @param {string} [params.configPath] An override for the Netlify config path
  * @param {import('../base-command.mjs').NetlifyOptions["cachedConfig"]['env']} params.env
  * @param {InspectSettings} params.inspectSettings
  * @param {() => Promise<object>} params.getUpdatedConfig
@@ -272,6 +277,7 @@ const FRAMEWORK_PORT_TIMEOUT = 6e5
 const startProxyServer = async ({
   addonsUrls,
   config,
+  configPath,
   env,
   geoCountry,
   geolocationMode,
@@ -286,7 +292,7 @@ const startProxyServer = async ({
   const url = await startProxy({
     addonsUrls,
     config,
-    configPath: site.configPath,
+    configPath: configPath || site.configPath,
     env,
     geolocationMode,
     geoCountry,
@@ -441,7 +447,6 @@ const validateGeoCountryCode = (arg) => {
 const dev = async (options, command) => {
   log(`${NETLIFYDEV}`)
   const { api, cachedConfig, config, repositoryRoot, site, siteInfo, state } = command.netlify
-  const netlifyBuild = await netlifyBuildPromise
   config.dev = { ...config.dev }
   config.build = { ...config.build }
   /** @type {import('./types').DevConfig} */
@@ -454,6 +459,23 @@ const dev = async (options, command) => {
   }
 
   let { env } = cachedConfig
+
+  if (!options.prod) {
+    // Add `NETLIFY_DEV` to the environment variables.
+    env.NETLIFY_DEV = { sources: ['internal'], value: 'true' }
+
+    // Ensure the internal functions directory exists so that any functions
+    // created by Netlify Build are loaded.
+    const fullPath = path.resolve(site.root, INTERNAL_FUNCTIONS_FOLDER)
+
+    await fs.mkdir(fullPath, { recursive: true })
+  }
+
+  // If the `prod` flag is present, we override the `framework` value so that
+  // we start a static server and not the framework's development server.
+  if (options.prod) {
+    devConfig.framework = '#static'
+  }
 
   if (!options.offline && siteInfo.use_envelope) {
     env = await getEnvelopeEnv({ api, context: options.context, env, siteInfo })
@@ -507,10 +529,24 @@ const dev = async (options, command) => {
     startPollingForAPIAuthentication({ api, command, config, site, siteInfo })
   }
 
+  if (options.prod) {
+    log(`${NETLIFYDEVWARN} Building site for production`)
+  } else {
+    log(`${NETLIFYDEVWARN} Setting up local development server`)
+  }
+
+  const { configPath: configPathOverride } = await runBuild({ cachedConfig, options, settings, site })
+
+  // When using the `prod` flag, we want to use the production functions built
+  // by Netlify Build rather than building them from source.
+  const loadDistFunctions = Boolean(options.prod)
+
   await startFunctionsServer({
     api,
     command,
     config,
+    debug: options.debug,
+    loadDistFunctions,
     settings,
     site,
     siteInfo,
@@ -518,23 +554,6 @@ const dev = async (options, command) => {
     capabilities,
     timeouts,
   })
-
-  log(`${NETLIFYDEVWARN} Setting up local development server`)
-
-  const devCommand = async () => {
-    const { ipVersion } = await startFrameworkServer({ settings })
-
-    settings.frameworkHost = ipVersion === 6 ? '::1' : '127.0.0.1'
-  }
-  const startDevOptions = getBuildOptions({
-    cachedConfig,
-    options,
-  })
-  const { error: startDevError, success } = await netlifyBuild.startDev(devCommand, startDevOptions)
-
-  if (!success) {
-    error(`Could not start local development server\n\n${startDevError.message}\n\n${startDevError.stack}`)
-  }
 
   // Try to add `.netlify` to `.gitignore`.
   try {
@@ -557,7 +576,8 @@ const dev = async (options, command) => {
   let url = await startProxyServer({
     addonsUrls,
     config,
-    env: command.netlify.cachedConfig.env,
+    configPath: configPathOverride,
+    env,
     geolocationMode: options.geo,
     geoCountry: options.country,
     getUpdatedConfig,
@@ -681,9 +701,92 @@ const dev = async (options, command) => {
   printBanner({ url })
 }
 
-const getBuildOptions = ({ cachedConfig, options: { context, cwd = process.cwd(), debug, dry, offline }, token }) => ({
+// Copies `netlify.toml`, if one is defined, into the `.netlify` internal
+// directory and returns the path to its new location.
+const copyConfig = async ({ configPath, siteRoot }) => {
+  const newConfigPath = path.resolve(siteRoot, getPathInProject(['netlify.toml']))
+
+  try {
+    await fs.copyFile(configPath, newConfigPath)
+  } catch {
+    // no-op
+  }
+
+  return newConfigPath
+}
+
+// Loads and runs Netlify Build. Chooses the right flags and entry point based
+// on the options supplied.
+const runBuild = async ({ cachedConfig, options, settings, site }) => {
+  const { default: buildSite, startDev } = await netlifyBuildPromise
+  const sharedOptions = getBuildOptions({
+    cachedConfig,
+    options,
+  })
+  const devCommand = async (settingsOverrides = {}) => {
+    const { ipVersion } = await startFrameworkServer({
+      settings: {
+        ...settings,
+        ...settingsOverrides,
+      },
+    })
+
+    settings.frameworkHost = ipVersion === 6 ? '::1' : '127.0.0.1'
+  }
+
+  if (options.prod) {
+    // Start by cleaning the internal directory, as it may have artifacts left
+    // by previous builds.
+    await cleanInternalDirectory(site.root)
+
+    // Copy `netlify.toml` into the internal directory. This will be the new
+    // location of the config file for the duration of the command.
+    const tempConfigPath = await copyConfig({ configPath: cachedConfig.configPath, siteRoot: site.root })
+    const buildSiteOptions = {
+      ...sharedOptions,
+      outputConfigPath: tempConfigPath,
+      saveConfig: true,
+    }
+
+    // Run Netlify Build using the main entry point.
+    await buildSite(buildSiteOptions)
+
+    // Start the dev server, forcing the usage of a static server as opposed to
+    // the framework server.
+    await devCommand({
+      command: undefined,
+      useStaticServer: true,
+    })
+
+    return { configPath: tempConfigPath }
+  }
+
+  const startDevOptions = {
+    ...sharedOptions,
+
+    // Set `quiet` to suppress non-essential output from Netlify Build unless
+    // the `debug` flag is set.
+    quiet: !options.debug,
+  }
+
+  // Run Netlify Build using the `startDev` entry point.
+  const { error: startDevError, success } = await startDev(devCommand, startDevOptions)
+
+  if (!success) {
+    error(`Could not start local development server\n\n${startDevError.message}\n\n${startDevError.stack}`)
+  }
+
+  return {}
+}
+
+const getBuildOptions = ({
   cachedConfig,
-  token,
+  options: { configPath, context, cwd = process.cwd(), debug, dry, offline, quiet, saveConfig },
+}) => ({
+  cachedConfig,
+  configPath,
+  siteId: cachedConfig.siteInfo.id,
+  token: cachedConfig.token,
   dry,
   debug,
   context,
@@ -692,7 +795,19 @@ const getBuildOptions = ({ cachedConfig, options: { context, cwd = process.cwd()
   buffer: false,
   offline,
   cwd,
+  quiet,
+  saveConfig,
 })
+
+const cleanInternalDirectory = async (basePath) => {
+  const ops = [INTERNAL_FUNCTIONS_FOLDER, INTERNAL_EDGE_FUNCTIONS_FOLDER, 'netlify.toml'].map((name) => {
+    const fullPath = path.resolve(basePath, getPathInProject([name]))
+
+    return fs.rm(fullPath, { force: true, recursive: true })
+  })
+
+  await Promise.all(ops)
+}
 
 /**
  * Creates the `netlify dev` command
@@ -713,7 +828,6 @@ export const createDevCommand = (program) => {
       '--context <context>',
       'Specify a deploy context or branch for environment variables (contexts: "production", "deploy-preview", "branch-deploy", "dev")',
       normalizeContext,
-      'dev',
     )
     .option('-p ,--port <port>', 'port of netlify dev', (value) => Number.parseInt(value))
     .option('--targetPort <port>', 'port of target app server', (value) => Number.parseInt(value))
@@ -723,6 +837,7 @@ export const createDevCommand = (program) => {
     .option('-o ,--offline', 'disables any features that require network access')
     .option('-l, --live', 'start a public live session', false)
     .option('--functionsPort <port>', 'port of functions server', (value) => Number.parseInt(value))
+    .option('-P, --prod', '(Beta) build the site for production and serve locally', false)
     .addOption(
       new Option(
         '--geo <mode>',

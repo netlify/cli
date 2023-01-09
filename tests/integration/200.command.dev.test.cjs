@@ -1,5 +1,4 @@
 // Handlers are meant to be async outside tests
-/* eslint-disable require-await */
 const { copyFile } = require('fs').promises
 const os = require('os')
 const path = require('path')
@@ -439,4 +438,3 @@ export const handler = async function () {
     })
   })
 })
-/* eslint-enable require-await */

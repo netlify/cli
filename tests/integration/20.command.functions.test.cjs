@@ -1,5 +1,4 @@
 // Handlers are meant to be async outside tests
-/* eslint-disable require-await */
 // eslint-disable-next-line ava/use-test
 const avaTest = require('ava')
 const { isCI } = require('ci-info')
@@ -154,5 +153,3 @@ test('should handle content-types with charset', async (t) => {
     })
   })
 })
-
-/* eslint-enable require-await */

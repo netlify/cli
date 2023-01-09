@@ -4,6 +4,9 @@ import { resolve } from 'path'
 import { isDirectoryAsync, isFileAsync } from '../../lib/fs.mjs'
 import { getPathInProject } from '../../lib/settings.mjs'
 
+export const INTERNAL_FUNCTIONS_FOLDER = 'functions-internal'
+export const SERVE_FUNCTIONS_FOLDER = 'functions-serve'
+
 /**
  * retrieves the function directory out of the flags or config
  * @param {object} param
@@ -26,8 +29,15 @@ export const getFunctionsManifestPath = async ({ base }) => {
   return isFile ? path : null
 }
 
+export const getFunctionsDistPath = async ({ base }) => {
+  const path = resolve(base, getPathInProject(['functions']))
+  const isDirectory = await isDirectoryAsync(path)
+
+  return isDirectory ? path : null
+}
+
 export const getInternalFunctionsDir = async ({ base }) => {
-  const path = resolve(base, getPathInProject(['functions-internal']))
+  const path = resolve(base, getPathInProject([INTERNAL_FUNCTIONS_FOLDER]))
   const isDirectory = await isDirectoryAsync(path)
 
   return isDirectory ? path : null
