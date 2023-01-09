@@ -304,11 +304,11 @@ to do it for you.
 **Writing your own Function Templates**
 
 Function templates can specify `addons` that they rely on as well as execute arbitrary code after installation in an
-`onComplete` hook, if a special `.netlify-function-template.js` file exists in the directory:
+`onComplete` hook, if a special `.netlify-function-template.mjs` file exists in the directory:
 
 ```js
-// .netlify-function-template.js
-module.exports = {
+// .netlify-function-template.mjs
+export default {
   addons: [
     {
       addonName: 'fauna',

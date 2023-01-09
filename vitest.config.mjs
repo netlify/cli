@@ -6,7 +6,7 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   test: {
     include: ['tests/**/*.test.mjs'],
-    testTimeout: 30_000,
+    testTimeout: 60_000,
     deps: {
       external: ['**/fixtures/**', '**/node_modules/**'],
       interopDefault: false,

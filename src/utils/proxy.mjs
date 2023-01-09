@@ -25,7 +25,7 @@ import {
   initializeProxy as initializeEdgeFunctionsProxy,
   isEdgeFunctionsRequest,
 } from '../lib/edge-functions/proxy.mjs'
-import { fileExistsAsync, isFileAsync } from '../lib/fs.cjs'
+import { fileExistsAsync, isFileAsync } from '../lib/fs.mjs'
 import renderErrorTemplate from '../lib/render-error-template.mjs'
 
 import { NETLIFYDEVLOG, NETLIFYDEVWARN } from './command-helpers.mjs'

@@ -6,7 +6,7 @@ import dotProp from 'dot-prop'
 import findUp from 'find-up'
 import writeFileAtomic from 'write-file-atomic'
 
-import { getPathInProject } from '../lib/settings.cjs'
+import { getPathInProject } from '../lib/settings.mjs'
 
 const STATE_PATH = getPathInProject(['state.json'])
 const permissionError = "You don't have access to this file."
