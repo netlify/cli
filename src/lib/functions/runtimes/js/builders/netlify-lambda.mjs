@@ -5,7 +5,7 @@ import { resolve } from 'path'
 import minimist from 'minimist'
 
 import execa from '../../../../../utils/execa.mjs'
-import { fileExistsAsync } from '../../../../fs.cjs'
+import { fileExistsAsync } from '../../../../fs.mjs'
 import { memoizedBuild } from '../../../memoized-build.mjs'
 
 export const detectNetlifyLambda = async function ({ packageJson } = {}) {

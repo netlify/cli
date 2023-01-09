@@ -11,7 +11,7 @@ const addRequest = (requests, request) => {
   })
 }
 
-const startMockApi = ({ routes }) => {
+const startMockApi = ({ routes, silent }) => {
   const requests = []
   const app = express()
   app.use(express.urlencoded({ extended: true }))
@@ -34,7 +34,9 @@ const startMockApi = ({ routes }) => {
 
   app.all('*', function onRequest(req, res) {
     addRequest(requests, req)
-    console.warn(`Route not found: (${req.method.toUpperCase()}) ${req.url}`)
+    if (!silent) {
+      console.warn(`Route not found: (${req.method.toUpperCase()}) ${req.url}`)
+    }
     res.status(404)
     res.json({ message: 'Not found' })
   })
@@ -54,10 +56,10 @@ const startMockApi = ({ routes }) => {
   return returnPromise
 }
 
-const withMockApi = async (routes, testHandler) => {
+const withMockApi = async (routes, testHandler, silent = false) => {
   let mockApi
   try {
-    mockApi = await startMockApi({ routes })
+    mockApi = await startMockApi({ routes, silent })
     const apiUrl = `http://localhost:${mockApi.server.address().port}/api/v1`
     return await testHandler({ apiUrl, requests: mockApi.requests })
   } finally {

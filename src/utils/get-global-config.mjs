@@ -3,7 +3,7 @@ import { readFile } from 'fs/promises'
 import Configstore from 'configstore'
 import { v4 as uuidv4 } from 'uuid'
 
-import { getLegacyPathInHome, getPathInHome } from '../lib/settings.cjs'
+import { getLegacyPathInHome, getPathInHome } from '../lib/settings.mjs'
 
 const globalConfigDefaults = {
   /* disable stats from being sent to Netlify */

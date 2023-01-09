@@ -8,8 +8,8 @@ import { v4 as generateUUID } from 'uuid'
 
 import { NETLIFYDEVERR, NETLIFYDEVWARN, chalk, error as printError, log } from '../../utils/command-helpers.mjs'
 import { getGeoLocation } from '../geo-location.mjs'
-import { getPathInProject } from '../settings.cjs'
-import { startSpinner, stopSpinner } from '../spinner.cjs'
+import { getPathInProject } from '../settings.mjs'
+import { startSpinner, stopSpinner } from '../spinner.mjs'
 
 import { DIST_IMPORT_MAP_PATH } from './consts.mjs'
 import headers from './headers.mjs'

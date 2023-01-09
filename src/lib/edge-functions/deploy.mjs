@@ -2,7 +2,7 @@
 import { stat } from 'fs/promises'
 import { join } from 'path'
 
-import { getPathInProject } from '../settings.cjs'
+import { getPathInProject } from '../settings.mjs'
 
 import { EDGE_FUNCTIONS_FOLDER, PUBLIC_URL_PATH } from './consts.mjs'
 
