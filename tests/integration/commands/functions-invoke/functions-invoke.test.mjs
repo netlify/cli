@@ -1,4 +1,3 @@
-/* eslint-disable require-await */
 import { describe, expect, test } from 'vitest'
 
 import callCli from '../../utils/call-cli.cjs'
@@ -161,4 +160,3 @@ describe('functions:invoke command', () => {
     })
   })
 })
-/* eslint-enable require-await */
