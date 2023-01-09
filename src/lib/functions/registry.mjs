@@ -16,7 +16,7 @@ import {
 } from '../../utils/command-helpers.mjs'
 import { SERVE_FUNCTIONS_FOLDER } from '../../utils/functions/functions.mjs'
 import { getLogMessage } from '../log.mjs'
-import { getPathInProject } from '../settings.cjs'
+import { getPathInProject } from '../settings.mjs'
 
 import NetlifyFunction from './netlify-function.mjs'
 import runtimes from './runtimes/index.mjs'

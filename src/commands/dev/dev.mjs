@@ -28,7 +28,7 @@ import {
   getNetlifyGraphConfig,
   readGraphQLOperationsSourceFile,
 } from '../../lib/one-graph/cli-netlify-graph.mjs'
-import { getPathInProject } from '../../lib/settings.cjs'
+import { getPathInProject } from '../../lib/settings.mjs'
 import { startSpinner, stopSpinner } from '../../lib/spinner.mjs'
 import {
   BANG,
