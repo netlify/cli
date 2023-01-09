@@ -135,6 +135,7 @@ netlify env:list
 **Flags**
 
 - `context` (*string*) - Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev")
+- `json` (*boolean*) - Output environment variables as JSON
 - `plain` (*boolean*) - Output environment variables as plaintext
 - `scope` (*builds | functions | post-processing | runtime | any*) - Specify a scope
 - `debug` (*boolean*) - Print debugging information

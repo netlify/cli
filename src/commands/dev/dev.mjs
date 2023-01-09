@@ -29,7 +29,7 @@ import {
   readGraphQLOperationsSourceFile,
 } from '../../lib/one-graph/cli-netlify-graph.mjs'
 import { getPathInProject } from '../../lib/settings.cjs'
-import { startSpinner, stopSpinner } from '../../lib/spinner.cjs'
+import { startSpinner, stopSpinner } from '../../lib/spinner.mjs'
 import {
   BANG,
   chalk,

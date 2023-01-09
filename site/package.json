@@ -5,10 +5,6 @@
   "private": true,
   "type": "commonjs",
   "author": "Netlify Inc.",
-  "contributors": [
-    "David Wells <david.wells@netlify.com> (https://davidwells.io/)",
-    "Bret Comnes <bcomnes@gmail.com> (https://bret.io)"
-  ],
   "files": [
     "/src",
     "/dist"

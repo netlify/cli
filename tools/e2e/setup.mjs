@@ -8,7 +8,7 @@ import execa from 'execa'
 import getPort from 'get-port'
 import verdaccio from 'verdaccio'
 
-import { fileExistsAsync } from '../../src/lib/fs.cjs'
+import { fileExistsAsync } from '../../src/lib/fs.mjs'
 
 const VERDACCIO_TIMEOUT_MILLISECONDS = 60 * 1000
 const START_PORT_RANGE = 5000

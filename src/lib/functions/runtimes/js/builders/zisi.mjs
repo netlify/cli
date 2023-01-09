@@ -8,7 +8,7 @@ import sourceMapSupport from 'source-map-support'
 
 import { NETLIFYDEVERR } from '../../../../../utils/command-helpers.mjs'
 import { SERVE_FUNCTIONS_FOLDER } from '../../../../../utils/functions/functions.mjs'
-import { getPathInProject } from '../../../../settings.cjs'
+import { getPathInProject } from '../../../../settings.mjs'
 import { normalizeFunctionsConfig } from '../../../config.mjs'
 import { memoizedBuild } from '../../../memoized-build.mjs'
 

@@ -2,7 +2,7 @@
 import pWaitFor from 'p-wait-for'
 import prettyjson from 'prettyjson'
 
-import { startSpinner, stopSpinner } from '../../lib/spinner.cjs'
+import { startSpinner, stopSpinner } from '../../lib/spinner.mjs'
 import { chalk, error, log } from '../../utils/command-helpers.mjs'
 import { init } from '../init/index.mjs'
 

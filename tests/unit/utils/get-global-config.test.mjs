@@ -4,7 +4,7 @@ import { join } from 'path'
 
 import { afterAll, beforeAll, beforeEach, expect, test } from 'vitest'
 
-import { getLegacyPathInHome, getPathInHome } from '../../../src/lib/settings.cjs'
+import { getLegacyPathInHome, getPathInHome } from '../../../src/lib/settings.mjs'
 import getGlobalConfig, { resetConfigCache } from '../../../src/utils/get-global-config.mjs'
 
 const configPath = getPathInHome(['config.json'])
