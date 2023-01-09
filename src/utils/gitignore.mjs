@@ -4,7 +4,7 @@ import path from 'path'
 
 import parseIgnore from 'parse-gitignore'
 
-import { fileExistsAsync } from '../lib/fs.cjs'
+import { fileExistsAsync } from '../lib/fs.mjs'
 
 import { log } from './command-helpers.mjs'
 

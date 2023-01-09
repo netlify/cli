@@ -4,7 +4,7 @@ import path from 'path'
 
 import dotenv from 'dotenv'
 
-import { isFileAsync } from '../lib/fs.cjs'
+import { isFileAsync } from '../lib/fs.mjs'
 
 import { warn } from './command-helpers.mjs'
 

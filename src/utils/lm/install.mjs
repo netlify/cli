@@ -11,9 +11,9 @@ import Listr from 'listr'
 import pathKey from 'path-key'
 
 import { fetchLatestVersion, shouldFetchLatestVersion } from '../../lib/exec-fetcher.mjs'
-import { fileExistsAsync } from '../../lib/fs.cjs'
+import { fileExistsAsync } from '../../lib/fs.mjs'
 import { normalizeBackslash } from '../../lib/path.mjs'
-import { getLegacyPathInHome, getPathInHome } from '../../lib/settings.cjs'
+import { getLegacyPathInHome, getPathInHome } from '../../lib/settings.mjs'
 import { chalk } from '../command-helpers.mjs'
 
 import { checkGitLFSVersionStep, checkGitVersionStep, checkLFSFiltersStep } from './steps.mjs'

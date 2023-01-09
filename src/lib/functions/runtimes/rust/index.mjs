@@ -7,7 +7,7 @@ import findUp from 'find-up'
 import toml from 'toml'
 
 import execa from '../../../../utils/execa.mjs'
-import { getPathInProject } from '../../../settings.cjs'
+import { getPathInProject } from '../../../settings.mjs'
 import { runFunctionsProxy } from '../../local-proxy.mjs'
 
 const isWindows = platform === 'win32'

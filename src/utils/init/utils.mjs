@@ -6,7 +6,7 @@ import process from 'process'
 import cleanDeep from 'clean-deep'
 import inquirer from 'inquirer'
 
-import { fileExistsAsync } from '../../lib/fs.cjs'
+import { fileExistsAsync } from '../../lib/fs.mjs'
 import { normalizeBackslash } from '../../lib/path.mjs'
 import { chalk, error as failAndExit, log, warn } from '../command-helpers.mjs'
 
