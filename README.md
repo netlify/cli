@@ -34,6 +34,7 @@ See the [CLI command line reference](https://cli.netlify.com/commands/) to get s
   - [login](#login)
   - [open](#open)
   - [recipes](#recipes)
+  - [serve](#serve)
   - [sites](#sites)
   - [status](#status)
   - [switch](#switch)
@@ -218,6 +219,10 @@ Open settings for the site linked to the current folder
 |:--------------------------- |:-----|
 | [`recipes:list`](/docs/commands/recipes.md#recipeslist) | (Beta) List the recipes available to create and modify files in a project  |
 
+
+### [serve](/docs/commands/serve.md)
+
+(Beta) build the site for production and serve locally
 
 ### [sites](/docs/commands/sites.md)
 
