@@ -75,7 +75,12 @@ jobs:
         run: npm run test:init
         if: '${{ !steps.release-check.outputs.IS_RELEASE }}'
       - name: Tests
-        run: ${{ steps.testCommand.outputs.value }}
+        uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 15
+          max_attempts: 3
+          retry_on: error
+          command: ${{ steps.testCommand.outputs.value }}
         env:
           # GitHub secrets are not available when running on PR from forks
           # We set a flag so we can skip tests that access Netlify API

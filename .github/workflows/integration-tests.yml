@@ -75,8 +75,13 @@ jobs:
         run: npm run test:init
         if: '${{ !steps.release-check.outputs.IS_RELEASE }}'
       - name: Tests
+        uses: nick-fields/retry@v2
         if: '${{ !steps.release-check.outputs.IS_RELEASE }}'
-        run: npm run test:ci:vitest:integration -- --shard=${{ matrix.shard }} ${{ steps.changed.outputs.value }}
+        with:
+          timeout_minutes: 15
+          max_attempts: 3
+          retry_on: error
+          command: npm run test:ci:vitest:integration -- --shard=${{ matrix.shard }} ${{ steps.changed.outputs.value }}
         env:
           # GitHub secrets are not available when running on PR from forks
           # We set a flag so we can skip tests that access Netlify API
