@@ -332,3 +332,54 @@ test('should start static service for frameworks without port, detected framewor
     t.true(error.stdout.includes(`Failed running command: remix watch. Please verify 'remix' exists`))
   })
 })
+
+test('should run and serve a production build when using the `serve` command', async (t) => {
+  await withSiteBuilder('site-with-framework', async (builder) => {
+    await builder
+      .withNetlifyToml({
+        config: {
+          build: { publish: 'public' },
+          context: {
+            dev: { environment: { CONTEXT_CHECK: 'DEV' } },
+            production: { environment: { CONTEXT_CHECK: 'PRODUCTION' } },
+          },
+          functions: { directory: 'functions' },
+          plugins: [{ package: './plugins/frameworker' }],
+        },
+      })
+      .withBuildPlugin({
+        name: 'frameworker',
+        plugin: {
+          onPreBuild: async ({ netlifyConfig }) => {
+            // eslint-disable-next-line n/global-require
+            const { mkdir, writeFile } = require('fs').promises
+
+            const generatedFunctionsDir = 'new_functions'
+            netlifyConfig.functions.directory = generatedFunctionsDir
+
+            netlifyConfig.redirects.push({
+              from: '/hello',
+              to: '/.netlify/functions/hello',
+            })
+
+            await mkdir(generatedFunctionsDir)
+            await writeFile(
+              `${generatedFunctionsDir}/hello.js`,
+              `const { CONTEXT_CHECK, NETLIFY_DEV } = process.env; exports.handler = async () => ({ statusCode: 200, body: JSON.stringify({ CONTEXT_CHECK, NETLIFY_DEV }) })`,
+            )
+          },
+        },
+      })
+      .buildAsync()
+
+    await withDevServer(
+      { cwd: builder.directory, context: null, debug: true, serve: true },
+      async ({ output, url }) => {
+        const response = await got(`${url}/hello`).json()
+        t.deepEqual(response, { CONTEXT_CHECK: 'PRODUCTION' })
+
+        t.snapshot(normalize(output, { duration: true, filePath: true }))
+      },
+    )
+  })
+})

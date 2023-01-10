@@ -28,6 +28,7 @@ import { createLoginCommand } from './login/index.mjs'
 import { createLogoutCommand } from './logout/index.mjs'
 import { createOpenCommand } from './open/index.mjs'
 import { createRecipesCommand } from './recipes/index.mjs'
+import { createServeCommand } from './serve/serve.mjs'
 import { createSitesCommand } from './sites/index.mjs'
 import { createStatusCommand } from './status/index.mjs'
 import { createSwitchCommand } from './switch/index.mjs'
@@ -173,6 +174,7 @@ export const createMainCommand = () => {
   createLoginCommand(program)
   createLogoutCommand(program)
   createOpenCommand(program)
+  createServeCommand(program)
   createSitesCommand(program)
   createStatusCommand(program)
   createSwitchCommand(program)

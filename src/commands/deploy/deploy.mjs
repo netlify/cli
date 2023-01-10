@@ -15,7 +15,7 @@ import { getBuildOptions, runBuild } from '../../lib/build.mjs'
 import { featureFlags as edgeFunctionsFeatureFlags } from '../../lib/edge-functions/consts.mjs'
 import { normalizeFunctionsConfig } from '../../lib/functions/config.mjs'
 import { getLogMessage } from '../../lib/log.mjs'
-import { startSpinner, stopSpinner } from '../../lib/spinner.cjs'
+import { startSpinner, stopSpinner } from '../../lib/spinner.mjs'
 import {
   chalk,
   error,

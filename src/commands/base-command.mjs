@@ -469,11 +469,7 @@ export default class BaseCommand extends Command {
       return await resolveConfig({
         config: options.config,
         cwd,
-        context:
-          options.context ||
-          process.env.CONTEXT ||
-          // Dev commands have a default context of `dev`, otherwise we let netlify/config handle default behavior
-          (['dev', 'dev:exec'].includes(this.name()) ? 'dev' : undefined),
+        context: options.context || process.env.CONTEXT || this.getDefaultContext(),
         debug: this.opts().debug,
         siteId: options.siteId || (typeof options.site === 'string' && options.site) || state.get('siteId'),
         token,
@@ -504,5 +500,20 @@ export default class BaseCommand extends Command {
       console.error(message)
       exit(1)
     }
+  }
+
+  /**
+   * Returns the context that should be used in case one hasn't been explicitly
+   * set. The default context is `dev` most of the time, but some commands may
+   * wish to override that.
+   *
+   * @returns {string}
+   */
+  getDefaultContext() {
+    if (this.name() === 'serve') {
+      return 'production'
+    }
+
+    return 'dev'
   }
 }

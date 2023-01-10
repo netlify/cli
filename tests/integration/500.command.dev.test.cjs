@@ -1,5 +1,4 @@
 // Handlers are meant to be async outside tests
-/* eslint-disable require-await */
 const { promises: fs } = require('fs')
 const path = require('path')
 
@@ -197,6 +196,7 @@ test('should not handle form submission when content type is `text/plain`', asyn
           },
         })
         .catch((error) => error.response)
+      t.is(response.statusCode, 405)
       t.is(response.body, 'Method Not Allowed')
     })
   })
@@ -471,4 +471,3 @@ test('Handles errors from the `onPreDev` event', async (t) => {
     )
   })
 })
-/* eslint-enable require-await */

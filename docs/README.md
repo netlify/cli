@@ -168,6 +168,10 @@ Open settings for the site linked to the current folder
 | [`recipes:list`](/docs/commands/recipes.md#recipeslist) | (Beta) List the recipes available to create and modify files in a project  |
 
 
+### [serve](/docs/commands/serve.md)
+
+(Beta) Build the site for production and serve locally. This does not watch the code for changes, so if you need to rebuild your site then you must exit and run `serve` again.
+
 ### [sites](/docs/commands/sites.md)
 
 Handle various site operations

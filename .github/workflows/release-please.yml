@@ -7,7 +7,7 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
-      - uses: navikt/github-app-token-generator@a9cd374e271b8aef573b8c16ac46c44fb89b02db
+      - uses: navikt/github-app-token-generator@a3831f44404199df32d8f39f7c0ad9bb8fa18b1c
         id: get-token
         with:
           private-key: ${{ secrets.TOKENS_PRIVATE_KEY }}

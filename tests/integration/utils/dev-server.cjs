@@ -29,6 +29,7 @@ const startServer = async ({
   env = {},
   args = [],
   expectFailure = false,
+  serve = false,
   prompt,
 }) => {
   const port = await getPort()
@@ -38,11 +39,16 @@ const startServer = async ({
 
   console.log(`Starting dev server on port: ${port} in directory ${path.basename(cwd)}`)
 
-  const ps = execa(
-    cliPath,
-    ['dev', offline ? '--offline' : '', '-p', port, '--staticServerPort', staticPort, '--context', context, ...args],
-    getExecaOptions({ cwd, env }),
-  )
+  const baseCommand = serve ? 'serve' : 'dev'
+  const baseArgs = [baseCommand, offline ? '--offline' : '', '-p', port, '--staticServerPort', staticPort]
+
+  // We use `null` to override the default context and actually omit the flag
+  // from the command, which is useful in some test scenarios.
+  if (context !== null) {
+    baseArgs.push('--context', context)
+  }
+
+  const ps = execa(cliPath, [...baseArgs, ...args], getExecaOptions({ cwd, env }))
 
   if (process.env.DEBUG_TESTS) {
     ps.stderr.pipe(process.stderr)

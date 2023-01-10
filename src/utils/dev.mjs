@@ -148,6 +148,10 @@ export const injectEnvVariables = async ({ devConfig, env, site }) => {
       const newSourceName = `${file} file`
       const sources = environment.has(key) ? [newSourceName, ...environment.get(key).sources] : [newSourceName]
 
+      if (sources.includes('internal')) {
+        return
+      }
+
       environment.set(key, {
         sources,
         value: fileEnv[key],
@@ -160,6 +164,7 @@ export const injectEnvVariables = async ({ devConfig, env, site }) => {
     const existsInProcess = process.env[key] !== undefined
     const [usedSource, ...overriddenSources] = existsInProcess ? ['process', ...variable.sources] : variable.sources
     const usedSourceName = getEnvSourceName(usedSource)
+    const isInternal = variable.sources.includes('internal')
 
     overriddenSources.forEach((source) => {
       const sourceName = getEnvSourceName(source)
@@ -173,17 +178,15 @@ export const injectEnvVariables = async ({ devConfig, env, site }) => {
       )
     })
 
-    if (!existsInProcess) {
-      // Omitting `general` env vars to reduce noise in the logs.
-      if (usedSource !== 'general') {
+    if (!existsInProcess || isInternal) {
+      // Omitting `general` and `internal` env vars to reduce noise in the logs.
+      if (usedSource !== 'general' && !isInternal) {
         log(`${NETLIFYDEVLOG} Injected ${usedSourceName} env var: ${chalk.yellow(key)}`)
       }
 
       process.env[key] = variable.value
     }
   }
-
-  process.env.NETLIFY_DEV = 'true'
 }
 
 export const acquirePort = async ({ configuredPort, defaultPort, errorMessage }) => {
