@@ -1,4 +1,5 @@
 // @ts-check
+import { promises as fs } from 'fs'
 import { resolve } from 'path'
 
 import { isDirectoryAsync, isFileAsync } from '../../lib/fs.mjs'
@@ -36,8 +37,13 @@ export const getFunctionsDistPath = async ({ base }) => {
   return isDirectory ? path : null
 }
 
-export const getInternalFunctionsDir = async ({ base }) => {
+export const getInternalFunctionsDir = async ({ base, ensureExists }) => {
   const path = resolve(base, getPathInProject([INTERNAL_FUNCTIONS_FOLDER]))
+
+  if (ensureExists) {
+    await fs.mkdir(path, { recursive: true })
+  }
+
   const isDirectory = await isDirectoryAsync(path)
 
   return isDirectory ? path : null

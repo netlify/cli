@@ -510,10 +510,7 @@ export default class BaseCommand extends Command {
    * @returns {string}
    */
   getDefaultContext() {
-    const { prod } = this.opts()
-    const isDevCommand = ['dev', 'dev:exec'].includes(this.name())
-
-    if (isDevCommand && prod) {
+    if (this.name() === 'serve') {
       return 'production'
     }
 

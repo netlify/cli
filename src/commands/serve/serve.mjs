@@ -7,11 +7,9 @@ import { promptEditorHelper } from '../../lib/edge-functions/editor-helper.mjs'
 import { startFunctionsServer } from '../../lib/functions/server.mjs'
 import { printBanner } from '../../utils/banner.mjs'
 import {
-  BANG,
   chalk,
   exit,
   log,
-  NETLIFYDEV,
   NETLIFYDEVERR,
   NETLIFYDEVLOG,
   NETLIFYDEVWARN,
@@ -20,75 +18,34 @@ import {
 import detectServerSettings, { getConfigWithPlugins } from '../../utils/detect-server-settings.mjs'
 import { getSiteInformation, injectEnvVariables } from '../../utils/dev.mjs'
 import { getEnvelopeEnv, normalizeContext } from '../../utils/env/index.mjs'
+import { getInternalFunctionsDir } from '../../utils/functions/functions.mjs'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.mjs'
-import { startNetlifyGraph, startPollingForAPIAuthentication } from '../../utils/graph.mjs'
-import { startLiveTunnel } from '../../utils/live-tunnel.mjs'
 import openBrowser from '../../utils/open-browser.mjs'
 import { generateInspectSettings, startProxyServer } from '../../utils/proxy-server.mjs'
-import { runDevTimeline } from '../../utils/run-build.mjs'
+import { runBuildTimeline } from '../../utils/run-build.mjs'
 import { getGeoCountryArgParser } from '../../utils/validation.mjs'
 
-import { createDevExecCommand } from './dev-exec.mjs'
-
 /**
- *
- * @param {object} config
- * @param {*} config.api
- * @param {import('commander').OptionValues} config.options
- * @param {*} config.settings
- * @param {*} config.site
- * @returns
- */
-const handleLiveTunnel = async ({ api, options, settings, site }) => {
-  if (options.live) {
-    const sessionUrl = await startLiveTunnel({
-      siteId: site.id,
-      netlifyApiToken: api.accessToken,
-      localPort: settings.port,
-    })
-    process.env.BASE_URL = sessionUrl
-    return sessionUrl
-  }
-}
-
-const validateShortFlagArgs = (args) => {
-  if (args.startsWith('=')) {
-    throw new Error(
-      `Short flag options like -e or -E don't support the '=' sign
- ${chalk.red(BANG)}   Supported formats:
-      netlify dev -e
-      netlify dev -e 127.0.0.1:9229
-      netlify dev -e127.0.0.1:9229
-      netlify dev -E
-      netlify dev -E 127.0.0.1:9229
-      netlify dev -E127.0.0.1:9229`,
-    )
-  }
-  return args
-}
-
-/**
- * The dev command
+ * The serve command
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command.mjs').default} command
  */
-const dev = async (options, command) => {
-  log(`${NETLIFYDEV}`)
+const serve = async (options, command) => {
   const { api, cachedConfig, config, repositoryRoot, site, siteInfo, state } = command.netlify
   config.dev = { ...config.dev }
   config.build = { ...config.build }
-  /** @type {import('./types').DevConfig} */
+  /** @type {import('../dev/types').DevConfig} */
   const devConfig = {
-    framework: '#auto',
     ...(config.functionsDirectory && { functions: config.functionsDirectory }),
     ...(config.build.publish && { publish: config.build.publish }),
     ...config.dev,
     ...options,
+    // Override the `framework` value so that we start a static server and not
+    // the framework's development server.
+    framework: '#static',
   }
 
   let { env } = cachedConfig
-
-  env.NETLIFY_DEV = { sources: ['internal'], value: 'true' }
 
   if (!options.offline && siteInfo.use_envelope) {
     env = await getEnvelopeEnv({ api, context: options.context, env, siteInfo })
@@ -106,6 +63,11 @@ const dev = async (options, command) => {
     siteInfo,
   })
 
+  // Ensure the internal functions directory exists so that the functions
+  // server and registry are initialized, and any functions created by
+  // Netlify Build are loaded.
+  await getInternalFunctionsDir({ base: site.root, ensureExists: true })
+
   /** @type {Partial<import('../../utils/types').ServerSettings>} */
   let settings = {}
   try {
@@ -119,20 +81,19 @@ const dev = async (options, command) => {
 
   command.setAnalyticsPayload({ projectType: settings.framework || 'custom', live: options.live, graph: options.graph })
 
-  const startNetlifyGraphWatcher = Boolean(options.graph)
-  if (startNetlifyGraphWatcher) {
-    startPollingForAPIAuthentication({ api, command, config, site, siteInfo })
-  }
+  log(`${NETLIFYDEVLOG} Building site for production`)
+  log(
+    `${NETLIFYDEVWARN} Changes will not be hot-reloaded, so if you need to rebuild your site you must exit and run 'netlify serve' again`,
+  )
 
-  log(`${NETLIFYDEVWARN} Setting up local development server`)
-
-  const { configPath: configPathOverride } = await runDevTimeline({ cachedConfig, options, settings, site })
+  const { configPath: configPathOverride } = await runBuildTimeline({ cachedConfig, options, settings, site })
 
   await startFunctionsServer({
     api,
     command,
     config,
     debug: options.debug,
+    loadDistFunctions: true,
     settings,
     site,
     siteInfo,
@@ -158,8 +119,7 @@ const dev = async (options, command) => {
   }
 
   const inspectSettings = generateInspectSettings(options.edgeInspect, options.edgeInspectBrk)
-
-  let url = await startProxyServer({
+  const url = await startProxyServer({
     addonsUrls,
     config,
     configPath: configPathOverride,
@@ -175,9 +135,6 @@ const dev = async (options, command) => {
     state,
   })
 
-  const liveTunnelUrl = await handleLiveTunnel({ options, site, api, settings })
-  url = liveTunnelUrl || url
-
   if (devConfig.autoLaunch !== false) {
     await openBrowser({ url, silentBrowserNoneError: true })
   }
@@ -185,46 +142,29 @@ const dev = async (options, command) => {
   process.env.URL = url
   process.env.DEPLOY_URL = url
 
-  await startNetlifyGraph({
-    command,
-    config,
-    options,
-    settings,
-    site,
-    startNetlifyGraphWatcher,
-    state,
-  })
-
   printBanner({ url })
 }
 
 /**
- * Creates the `netlify dev` command
+ * Creates the `netlify serve` command
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
-export const createDevCommand = (program) => {
-  createDevExecCommand(program)
-
-  return program
-    .command('dev')
-    .alias('develop')
+export const createServeCommand = (program) =>
+  program
+    .command('serve')
     .description(
-      `Local dev server\nThe dev command will run a local dev server with Netlify's proxy and redirect rules`,
+      '(Beta) Build the site for production and serve locally. This does not watch the code for changes, so if you need to rebuild your site then you must exit and run `serve` again.',
     )
-    .option('-c ,--command <command>', 'command to run')
     .option(
       '--context <context>',
       'Specify a deploy context or branch for environment variables (contexts: "production", "deploy-preview", "branch-deploy", "dev")',
       normalizeContext,
     )
     .option('-p ,--port <port>', 'port of netlify dev', (value) => Number.parseInt(value))
-    .option('--targetPort <port>', 'port of target app server', (value) => Number.parseInt(value))
-    .option('--framework <name>', 'framework to use. Defaults to #auto which automatically detects a framework')
     .option('-d ,--dir <path>', 'dir with static files')
     .option('-f ,--functions <folder>', 'specify a functions folder to serve')
     .option('-o ,--offline', 'disables any features that require network access')
-    .option('-l, --live', 'start a public live session', false)
     .option('--functionsPort <port>', 'port of functions server', (value) => Number.parseInt(value))
     .addOption(
       new Option(
@@ -245,35 +185,5 @@ export const createDevCommand = (program) => {
         .argParser((value) => Number.parseInt(value))
         .hideHelp(),
     )
-    .addOption(new Option('--graph', 'enable Netlify Graph support').hideHelp())
-    .addOption(new Option('--sessionId [sessionId]', '(Graph) connect to cloud session with ID [sessionId]'))
-    .addOption(
-      new Option(
-        '-e, --edgeInspect [address]',
-        'enable the V8 Inspector Protocol for Edge Functions, with an optional address in the host:port format',
-      )
-        .conflicts('edgeInspectBrk')
-        .argParser(validateShortFlagArgs),
-    )
-    .addOption(
-      new Option(
-        '-E, --edgeInspectBrk [address]',
-        'enable the V8 Inspector Protocol for Edge Functions and pause execution on the first line of code, with an optional address in the host:port format',
-      )
-        .conflicts('edgeInspect')
-        .argParser(validateShortFlagArgs),
-    )
-    .addExamples([
-      'netlify dev',
-      'netlify dev -d public',
-      'netlify dev -c "hugo server -w" --targetPort 1313',
-      'netlify dev --context production',
-      'netlify dev --graph',
-      'netlify dev --edgeInspect',
-      'netlify dev --edgeInspect=127.0.0.1:9229',
-      'netlify dev --edgeInspectBrk',
-      'netlify dev --edgeInspectBrk=127.0.0.1:9229',
-      'BROWSER=none netlify dev # disable browser auto opening',
-    ])
-    .action(dev)
-}
+    .addExamples(['netlify serve', 'BROWSER=none netlify serve # disable browser auto opening'])
+    .action(serve)

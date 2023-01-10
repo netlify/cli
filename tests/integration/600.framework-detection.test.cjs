@@ -333,7 +333,7 @@ test('should start static service for frameworks without port, detected framewor
   })
 })
 
-test('should run and serve a production build when the `--prod` flag is set', async (t) => {
+test('should run and serve a production build when using the `serve` command', async (t) => {
   await withSiteBuilder('site-with-framework', async (builder) => {
     await builder
       .withNetlifyToml({
@@ -372,11 +372,14 @@ test('should run and serve a production build when the `--prod` flag is set', as
       })
       .buildAsync()
 
-    await withDevServer({ cwd: builder.directory, context: null, debug: true, prod: true }, async ({ output, url }) => {
-      const response = await got(`${url}/hello`).json()
-      t.deepEqual(response, { CONTEXT_CHECK: 'PRODUCTION' })
+    await withDevServer(
+      { cwd: builder.directory, context: null, debug: true, serve: true },
+      async ({ output, url }) => {
+        const response = await got(`${url}/hello`).json()
+        t.deepEqual(response, { CONTEXT_CHECK: 'PRODUCTION' })
 
-      t.snapshot(normalize(output, { duration: true, filePath: true }))
-    })
+        t.snapshot(normalize(output, { duration: true, filePath: true }))
+      },
+    )
   })
 })
