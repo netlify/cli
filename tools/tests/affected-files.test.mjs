@@ -44,9 +44,9 @@ test.only('should get all files marked as affected when the package.json is touc
   t.deepEqual(affectedFiles, mockedTestFiles)
 })
 
-test.serial('should get all files marked as affected when the npm-shrinkwrap.json is touched', async (t) => {
+test.serial('should get all files marked as affected when the package-lock.json is touched', async (t) => {
   const consoleStub = t.context.sandbox.stub(console, 'log').callsFake(() => {})
-  const { affectedFiles, mockedTestFiles } = await getAffectedFilesFromMock(['npm-shrinkwrap.json'])
+  const { affectedFiles, mockedTestFiles } = await getAffectedFilesFromMock(['package-lock.json'])
 
   t.truthy(consoleStub.firstCall.calledWith('All files are affected based on the changeset'))
   t.deepEqual(affectedFiles, mockedTestFiles)
