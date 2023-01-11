@@ -15,8 +15,10 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: lts/*
-          cache: npm
+          node-version: '*'
+          cache: 'npm'
+          cache-dependency-path: 'npm-shrinkwrap.json'
+          check-latest: true
       - name: Install dependencies
         run: npm ci --no-audit && npm prune --production
       - name: Get size

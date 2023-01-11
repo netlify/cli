@@ -47,7 +47,8 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-          cache: npm
+          cache: 'npm'
+          cache-dependency-path: 'npm-shrinkwrap.json'
           check-latest: true
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
       - name: Setup Deno
