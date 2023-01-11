@@ -38,7 +38,7 @@
     "url": "https://github.com/netlify/cli/issues"
   },
   "scripts": {
-    "prepare": "husky install node_modules/@netlify/eslint-config-node/.husky/",
+    "prepare": "is-ci || husky install node_modules/@netlify/eslint-config-node/.husky/",
     "start": "node ./bin/run.mjs",
     "test": "run-s format test:dev",
     "format": "run-s format:check-fix:*",
@@ -72,7 +72,7 @@
   },
   "config": {
     "eslint": "--ignore-path .gitignore --cache --format=codeframe --max-warnings=0 \"{src,scripts,site,tests,.github}/**/*.{mjs,cjs,js,md,html}\" \"*.{mjs,cjs,js,md,html}\" \".*.{mjs,cjs,js,md,html}\"",
-    "prettier": "--ignore-path .gitignore --loglevel=warn \"{src,tools,scripts,site,tests,.github}/**/*.{mjs,cjs,js,md,yml,json,html}\" \"*.{mjs,cjs,js,yml,json,html}\" \".*.{mjs,cjs,js,yml,json,html}\" \"!CHANGELOG.md\" \"!npm-shrinkwrap.json\" \"!**/*/package-lock.json\" \"!.github/**/*.md\""
+    "prettier": "--ignore-path .gitignore --loglevel=warn \"{src,tools,scripts,site,tests,.github}/**/*.{mjs,cjs,js,md,yml,json,html}\" \"*.{mjs,cjs,js,yml,json,html}\" \".*.{mjs,cjs,js,yml,json,html}\" \"!CHANGELOG.md\" \"!**/*/package-lock.json\" \"!.github/**/*.md\""
   },
   "dependencies": {
     "@fastify/static": "^6.6.0",
@@ -193,6 +193,7 @@
     "graphviz": "^0.0.9",
     "husky": "^8.0.0",
     "ini": "^2.0.0",
+    "is-ci": "^3.0.1",
     "mock-fs": "^5.1.2",
     "nock": "^13.2.4",
     "p-timeout": "^4.0.0",

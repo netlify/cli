@@ -1,7 +1,7 @@
 import { join } from 'path'
 
 const baseFiles = {
-  'npm-shrinkwrap.json': '',
+  'package-lock.json': '',
   'README.md': '',
 }
 
