@@ -758,7 +758,7 @@ test('should respect excluded paths', async (t) => {
   })
 })
 
-test.only('top-level exceptions should be printed properly', async (t) => {
+test('top-level exceptions should be printed properly', async (t) => {
   await withSiteBuilder('site-with-exceptions', async (builder) => {
     const publicDir = 'public'
     await builder
