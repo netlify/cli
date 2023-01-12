@@ -295,7 +295,13 @@ export class EdgeFunctionsRegistry {
       ...route,
       pattern: new RegExp(route.pattern),
     }))
-    const functionNames = routes.filter(({ pattern }) => pattern.test(urlPath)).map((route) => route.function)
+    const functionNames = routes
+      .filter(({ pattern }) => pattern.test(urlPath))
+      .filter(
+        ({ function: name }) =>
+          !manifest.function_config[name]?.excluded_patterns.some((pattern) => new RegExp(pattern).test(urlPath)),
+      )
+      .map((route) => route.function)
     const orphanedDeclarations = await this.matchURLPathAgainstOrphanedDeclarations(urlPath)
 
     return { functionNames, orphanedDeclarations }
