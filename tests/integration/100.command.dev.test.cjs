@@ -758,6 +758,35 @@ test('should respect excluded paths', async (t) => {
   })
 })
 
+test.only('top-level exceptions should be printed properly', async (t) => {
+  await withSiteBuilder('site-with-exceptions', async (builder) => {
+    const publicDir = 'public'
+    await builder
+      .withNetlifyToml({
+        config: {
+          build: {
+            publish: publicDir,
+            edge_functions: 'netlify/edge-functions',
+          },
+          edge_functions: [{ function: 'hello', path: '/foo' }],
+        },
+      })
+      .withEdgeFunction({
+        handler: "throw new Error('top-level-error')",
+        name: 'hello',
+      })
+
+    await builder.buildAsync()
+
+    await withDevServer({ cwd: builder.directory }, async ({ port }) => {
+      const res1 = await got(`http://localhost:${port}/foo`, { throwHttpErrors: false })
+
+      t.is(res1.statusCode, 200)
+      t.true(res1.body.includes('top-level-error'))
+    })
+  })
+})
+
 test('should respect in-source configuration from internal edge functions', async (t) => {
   await withSiteBuilder('site-with-internal-edge-functions', async (builder) => {
     const publicDir = 'public'
