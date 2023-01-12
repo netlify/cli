@@ -163,6 +163,7 @@ const dev = async (options, command) => {
     addonsUrls,
     config,
     configPath: configPathOverride,
+    debug: options.debug,
     env,
     geolocationMode: options.geo,
     geoCountry: options.country,
