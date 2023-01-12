@@ -297,10 +297,12 @@ export class EdgeFunctionsRegistry {
     }))
     const functionNames = routes
       .filter(({ pattern }) => pattern.test(urlPath))
-      .filter(
-        ({ function: name }) =>
-          !manifest.function_config[name]?.excluded_patterns.some((pattern) => new RegExp(pattern).test(urlPath)),
-      )
+      .filter(({ function: name }) => {
+        const isExcluded = manifest.function_config[name]?.excluded_patterns.some((pattern) =>
+          new RegExp(pattern).test(urlPath),
+        )
+        return !isExcluded
+      })
       .map((route) => route.function)
     const orphanedDeclarations = await this.matchURLPathAgainstOrphanedDeclarations(urlPath)
 
