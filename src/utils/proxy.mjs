@@ -533,6 +533,7 @@ export const startProxy = async function ({
   addonsUrls,
   config,
   configPath,
+  debug,
   env,
   geoCountry,
   geolocationMode,
@@ -548,6 +549,7 @@ export const startProxy = async function ({
   const edgeFunctionsProxy = await initializeEdgeFunctionsProxy({
     config,
     configPath,
+    debug,
     env,
     geolocationMode,
     geoCountry,

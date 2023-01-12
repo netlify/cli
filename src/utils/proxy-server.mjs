@@ -39,6 +39,7 @@ export const generateInspectSettings = (edgeInspect, edgeInspectBrk) => {
  * @param {*} params.addonsUrls
  * @param {import('../commands/base-command.mjs').NetlifyOptions["config"]} params.config
  * @param {string} [params.configPath] An override for the Netlify config path
+ * @param {boolean} params.debug
  * @param {import('../commands/base-command.mjs').NetlifyOptions["cachedConfig"]['env']} params.env
  * @param {InspectSettings} params.inspectSettings
  * @param {() => Promise<object>} params.getUpdatedConfig
@@ -55,6 +56,7 @@ export const startProxyServer = async ({
   addonsUrls,
   config,
   configPath,
+  debug,
   env,
   geoCountry,
   geolocationMode,
@@ -70,6 +72,7 @@ export const startProxyServer = async ({
     addonsUrls,
     config,
     configPath: configPath || site.configPath,
+    debug,
     env,
     geolocationMode,
     geoCountry,
