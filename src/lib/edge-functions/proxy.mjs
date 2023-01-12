@@ -56,6 +56,7 @@ export const createSiteInfoHeader = (siteInfo = {}) => {
 export const initializeProxy = async ({
   config,
   configPath,
+  debug,
   env: configEnv,
   geoCountry,
   geolocationMode,
@@ -135,6 +136,10 @@ export const initializeProxy = async ({
       [headers.Passthrough]: 'passthrough',
       [headers.RequestID]: generateUUID(),
       [headers.IP]: LOCAL_HOST,
+    }
+
+    if (debug) {
+      req[headersSymbol][headers.DebugLogging] = '1'
     }
 
     if (settings.https) {
