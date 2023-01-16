@@ -25,6 +25,11 @@ import {
 } from '../utils/command-helpers.mjs'
 import getGlobalConfig from '../utils/get-global-config.mjs'
 import openBrowser from '../utils/open-browser.mjs'
+import {
+  warnForDeprecatedOptions,
+  deprecatedArgParser,
+  returnDeprecatedOptionValue,
+} from '../utils/option-deprecation.mjs'
 import StateConfig from '../utils/state-config.mjs'
 import { identify, track } from '../utils/telemetry/index.mjs'
 
@@ -99,13 +104,19 @@ export default class BaseCommand extends Command {
         .addOption(new Option('--cwd <cwd>').hideHelp(true))
         .addOption(new Option('-o, --offline').hideHelp(true))
         .addOption(new Option('--auth <token>', 'Netlify auth token').hideHelp(true))
+        .addOption(
+          new Option('--httpProxy [address]', '[DEPRECATED IN V13] Proxy server address to route requests through.')
+            .default(process.env.HTTP_PROXY || process.env.HTTPS_PROXY)
+            .hideHelp(true)
+            .argParser(deprecatedArgParser),
+        )
         .option(
           '--httpProxyCertificateFilename [file]',
           'Certificate file to use when connecting using a proxy server',
           process.env.NETLIFY_PROXY_CERTIFICATE_FILENAME,
         )
         .option(
-          '--httpProxy [address]',
+          '--http-proxy [address]',
           'Proxy server address to route requests through.',
           process.env.HTTP_PROXY || process.env.HTTPS_PROXY,
         )
@@ -116,6 +127,11 @@ export default class BaseCommand extends Command {
           // @ts-ignore cannot type actionCommand as BaseCommand
           await this.init(actionCommand)
           debug(`${name}:preAction`)('end')
+        })
+        .hook('preAction', (parentCommand) => {
+          const options = parentCommand.opts()
+          if (!options) return
+          warnForDeprecatedOptions(options)
         })
     )
   }
@@ -420,7 +436,7 @@ export default class BaseCommand extends Command {
     const { buildDir, config, configPath, repositoryRoot, siteInfo } = cachedConfig
     const normalizedConfig = normalizeConfig(config)
     const agent = await getAgent({
-      httpProxy: options.httpProxy,
+      httpProxy: returnDeprecatedOptionValue(options.httpProxy),
       certificateFile: options.httpProxyCertificateFilename,
     })
     const apiOpts = { ...apiUrlOpts, agent }

@@ -30,7 +30,6 @@ export const createAddonsCommand = (program) => {
     .command('addons')
     .alias('addon')
     .description('(Beta) Manage Netlify Add-ons')
-    .noHelpOptions()
     .addExamples([
       'netlify addons:create addon-xyz',
       'netlify addons:list',
