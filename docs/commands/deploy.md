@@ -93,7 +93,7 @@ netlify deploy
 - `message` (*string*) - A short message to include in the deploy log
 - `open` (*boolean*) - Open site after deploy
 - `prod` (*boolean*) - Deploy to production
-- `prodIfUnlocked` (*boolean*) - Deploy to production if unlocked, create a draft otherwise
+- `prod-if-unlocked` (*boolean*) - Deploy to production if unlocked, create a draft otherwise
 - `site` (*string*) - A site name or ID to deploy to
 - `skip-functions-cache` (*boolean*) - Ignore any functions created as part of a previous `build` or `deploy` commands, forcing them to be bundled again as part of the deployment
 - `timeout` (*string*) - Timeout to wait for deployment to finish
@@ -109,7 +109,7 @@ netlify deploy
 netlify deploy --site my-first-site
 netlify deploy --prod
 netlify deploy --prod --open
-netlify deploy --prodIfUnlocked
+netlify deploy --prod-if-unlocked
 netlify deploy --message "A message with an $ENV_VAR"
 netlify deploy --auth $NETLIFY_AUTH_TOKEN
 netlify deploy --trigger
