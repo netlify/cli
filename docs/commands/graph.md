@@ -18,7 +18,7 @@ netlify graph
 
 - `debug` (*boolean*) - Print debugging information
 - `http-proxy` (*string*) - Proxy server address to route requests through.
-- `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
+- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
@@ -53,7 +53,7 @@ netlify graph:config:write
 
 - `debug` (*boolean*) - Print debugging information
 - `http-proxy` (*string*) - Proxy server address to route requests through.
-- `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
+- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 
 ---
 ## `graph:edit`
@@ -70,7 +70,7 @@ netlify graph:edit
 
 - `debug` (*boolean*) - Print debugging information
 - `http-proxy` (*string*) - Proxy server address to route requests through.
-- `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
+- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 
 ---
 ## `graph:handler`
@@ -93,7 +93,7 @@ netlify graph:handler
 - `data` (*string*) - Optional data to pass along to the code generator
 - `debug` (*boolean*) - Print debugging information
 - `http-proxy` (*string*) - Proxy server address to route requests through.
-- `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
+- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 
 ---
 ## `graph:init`
@@ -110,7 +110,7 @@ netlify graph:init
 
 - `debug` (*boolean*) - Print debugging information
 - `http-proxy` (*string*) - Proxy server address to route requests through.
-- `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
+- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 
 ---
 ## `graph:library`
@@ -127,7 +127,7 @@ netlify graph:library
 
 - `debug` (*boolean*) - Print debugging information
 - `http-proxy` (*string*) - Proxy server address to route requests through.
-- `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
+- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 
 ---
 ## `graph:operations`
@@ -144,7 +144,7 @@ netlify graph:operations
 
 - `debug` (*boolean*) - Print debugging information
 - `http-proxy` (*string*) - Proxy server address to route requests through.
-- `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
+- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 
 ---
 ## `graph:pull`
@@ -161,7 +161,7 @@ netlify graph:pull
 
 - `debug` (*boolean*) - Print debugging information
 - `http-proxy` (*string*) - Proxy server address to route requests through.
-- `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
+- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 
 ---
 

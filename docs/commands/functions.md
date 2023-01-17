@@ -19,7 +19,7 @@ netlify functions
 
 - `debug` (*boolean*) - Print debugging information
 - `http-proxy` (*string*) - Proxy server address to route requests through.
-- `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
+- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
@@ -53,8 +53,8 @@ netlify functions:build
 - `functions` (*string*) - Specify a functions directory to build to
 - `debug` (*boolean*) - Print debugging information
 - `http-proxy` (*string*) - Proxy server address to route requests through.
+- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 - `src` (*string*) - Specify the source directory for the functions
-- `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
 
 ---
 ## `functions:create`
@@ -76,9 +76,9 @@ netlify functions:create
 - `name` (*string*) - function name
 - `debug` (*boolean*) - Print debugging information
 - `http-proxy` (*string*) - Proxy server address to route requests through.
+- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 - `language` (*string*) - function language
 - `url` (*string*) - pull template from URL
-- `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
 
 **Examples**
 
@@ -113,8 +113,8 @@ netlify functions:invoke
 - `querystring` (*string*) - Querystring to add to your function invocation
 - `debug` (*boolean*) - Print debugging information
 - `http-proxy` (*string*) - Proxy server address to route requests through.
+- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 - `port` (*string*) - Port where netlify dev is accessible. e.g. 8888
-- `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
 
 **Examples**
 
@@ -148,8 +148,8 @@ netlify functions:list
 - `functions` (*string*) - Specify a functions directory to list
 - `debug` (*boolean*) - Print debugging information
 - `http-proxy` (*string*) - Proxy server address to route requests through.
+- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 - `json` (*boolean*) - Output function data as JSON
-- `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
 
 ---
 ## `functions:serve`
@@ -167,9 +167,9 @@ netlify functions:serve
 - `functions` (*string*) - Specify a functions directory to serve
 - `debug` (*boolean*) - Print debugging information
 - `http-proxy` (*string*) - Proxy server address to route requests through.
+- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 - `offline` (*boolean*) - disables any features that require network access
 - `port` (*string*) - Specify a port for the functions server
-- `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
 
 ---
 

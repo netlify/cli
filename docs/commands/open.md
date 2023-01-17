@@ -19,7 +19,7 @@ netlify open
 - `site` (*boolean*) - Open site
 - `debug` (*boolean*) - Print debugging information
 - `http-proxy` (*string*) - Proxy server address to route requests through.
-- `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
+- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
@@ -51,7 +51,7 @@ netlify open:admin
 
 - `debug` (*boolean*) - Print debugging information
 - `http-proxy` (*string*) - Proxy server address to route requests through.
-- `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
+- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 
 **Examples**
 
@@ -74,7 +74,7 @@ netlify open:site
 
 - `debug` (*boolean*) - Print debugging information
 - `http-proxy` (*string*) - Proxy server address to route requests through.
-- `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
+- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 
 **Examples**
 

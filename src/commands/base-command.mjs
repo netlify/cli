@@ -107,8 +107,16 @@ export default class BaseCommand extends Command {
             .default(process.env.HTTP_PROXY || process.env.HTTPS_PROXY)
             .hideHelp(true),
         )
+        .addOption(
+          new Option(
+            '--httpProxyCertificateFilename [file]',
+            'Old, prefer --http-proxy-certificate-filename. Certificate file to use when connecting using a proxy server.',
+          )
+            .default(process.env.NETLIFY_PROXY_CERTIFICATE_FILENAME)
+            .hideHelp(true),
+        )
         .option(
-          '--httpProxyCertificateFilename [file]',
+          '--http-proxy-certificate-filename [file]',
           'Certificate file to use when connecting using a proxy server',
           process.env.NETLIFY_PROXY_CERTIFICATE_FILENAME,
         )

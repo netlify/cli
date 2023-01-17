@@ -99,8 +99,8 @@ netlify deploy
 - `timeout` (*string*) - Timeout to wait for deployment to finish
 - `debug` (*boolean*) - Print debugging information
 - `http-proxy` (*string*) - Proxy server address to route requests through.
+- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 - `trigger` (*boolean*) - Trigger a new build of your site on Netlify without uploading local files
-- `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
 
 **Examples**
 

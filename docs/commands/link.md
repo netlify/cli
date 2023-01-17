@@ -20,8 +20,8 @@ netlify link
 - `id` (*string*) - ID of site to link to
 - `debug` (*boolean*) - Print debugging information
 - `http-proxy` (*string*) - Proxy server address to route requests through.
+- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 - `name` (*string*) - Name of site to link to
-- `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
 
 **Examples**
 
