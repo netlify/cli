@@ -252,7 +252,13 @@ export const createDevCommand = (program) => {
         .hideHelp(),
     )
     .addOption(new Option('--graph', 'enable Netlify Graph support').hideHelp())
-    .addOption(new Option('--sessionId [sessionId]', '(Graph) connect to cloud session with ID [sessionId]'))
+    .addOption(
+      new Option(
+        '--sessionId [sessionId]',
+        'Old, prefer --session-id. (Graph) connect to cloud session with ID [sessionId]',
+      ).hideHelp(true),
+    )
+    .option('--session-id [sessionId]', '(Graph) connect to cloud session with ID [sessionId]')
     .addOption(
       new Option(
         '-e, --edgeInspect [address]',
