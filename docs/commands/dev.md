@@ -25,7 +25,7 @@ netlify dev
 - `edgeInspectBrk` (*string*) - enable the V8 Inspector Protocol for Edge Functions and pause execution on the first line of code, with an optional address in the host:port format
 - `framework` (*string*) - framework to use. Defaults to #auto which automatically detects a framework
 - `functions` (*string*) - specify a functions folder to serve
-- `functionsPort` (*string*) - port of functions server
+- `functions-port` (*string*) - port of functions server
 - `geo` (*cache | mock | update*) - force geolocation data to be updated, use cached data from the last 24h if found, or use a mock location
 - `live` (*boolean*) - start a public live session
 - `offline` (*boolean*) - disables any features that require network access
