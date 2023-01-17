@@ -267,6 +267,15 @@ export const createDevCommand = (program) => {
     .addOption(
       new Option(
         '-e, --edgeInspect [address]',
+        'Old, prefer --edge-inspect. Enable the V8 Inspector Protocol for Edge Functions, with an optional address in the host:port format',
+      )
+        .conflicts('edgeInspectBrk')
+        .argParser(validateShortFlagArgs)
+        .hideHelp(true),
+    )
+    .addOption(
+      new Option(
+        '-e, --edge-inspect [address]',
         'enable the V8 Inspector Protocol for Edge Functions, with an optional address in the host:port format',
       )
         .conflicts('edgeInspectBrk')
@@ -295,8 +304,8 @@ export const createDevCommand = (program) => {
       'netlify dev -c "hugo server -w" --target-port 1313',
       'netlify dev --context production',
       'netlify dev --graph',
-      'netlify dev --edgeInspect',
-      'netlify dev --edgeInspect=127.0.0.1:9229',
+      'netlify dev --edge-inspect',
+      'netlify dev --edge-inspect=127.0.0.1:9229',
       'netlify dev --edge-inspect-brk',
       'netlify dev --edge-inspect-brk=127.0.0.1:9229',
       'BROWSER=none netlify dev # disable browser auto opening',
