@@ -220,7 +220,12 @@ export const createDevCommand = (program) => {
       normalizeContext,
     )
     .option('-p ,--port <port>', 'port of netlify dev', (value) => Number.parseInt(value))
-    .option('--targetPort <port>', 'port of target app server', (value) => Number.parseInt(value))
+    .addOption(
+      new Option('--targetPort <port>', 'Old, prefer --target-port. Port of target app server')
+        .argParser((value) => Number.parseInt(value))
+        .hideHelp(true),
+    )
+    .option('--target-port <port>', 'port of target app server', (value) => Number.parseInt(value))
     .option('--framework <name>', 'framework to use. Defaults to #auto which automatically detects a framework')
     .option('-d ,--dir <path>', 'dir with static files')
     .option('-f ,--functions <folder>', 'specify a functions folder to serve')
@@ -267,7 +272,7 @@ export const createDevCommand = (program) => {
     .addExamples([
       'netlify dev',
       'netlify dev -d public',
-      'netlify dev -c "hugo server -w" --targetPort 1313',
+      'netlify dev -c "hugo server -w" --target-port 1313',
       'netlify dev --context production',
       'netlify dev --graph',
       'netlify dev --edgeInspect',

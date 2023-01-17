@@ -31,7 +31,7 @@ netlify dev
 - `offline` (*boolean*) - disables any features that require network access
 - `port` (*string*) - port of netlify dev
 - `sessionId` (*string*) - (Graph) connect to cloud session with ID [sessionId]
-- `targetPort` (*string*) - port of target app server
+- `target-port` (*string*) - port of target app server
 - `debug` (*boolean*) - Print debugging information
 - `http-proxy` (*string*) - Proxy server address to route requests through.
 - `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
@@ -46,7 +46,7 @@ netlify dev
 ```bash
 netlify dev
 netlify dev -d public
-netlify dev -c "hugo server -w" --targetPort 1313
+netlify dev -c "hugo server -w" --target-port 1313
 netlify dev --context production
 netlify dev --graph
 netlify dev --edgeInspect
