@@ -726,6 +726,38 @@ test('should respect in-source configuration from edge functions', async (t) => 
   })
 })
 
+test('should respect excluded paths', async (t) => {
+  await withSiteBuilder('site-with-excluded-path', async (builder) => {
+    const publicDir = 'public'
+    await builder
+      .withNetlifyToml({
+        config: {
+          build: {
+            publish: publicDir,
+            edge_functions: 'netlify/edge-functions',
+          },
+        },
+      })
+      .withEdgeFunction({
+        config: { path: '/*', excludedPath: '/static/*' },
+        handler: () => new Response('Hello world'),
+        name: 'hello',
+      })
+
+    await builder.buildAsync()
+
+    await withDevServer({ cwd: builder.directory }, async ({ port }) => {
+      const res1 = await got(`http://localhost:${port}/foo`, { throwHttpErrors: false })
+
+      t.is(res1.statusCode, 200)
+      t.is(res1.body, 'Hello world')
+
+      const res2 = await got(`http://localhost:${port}/static/foo`, { throwHttpErrors: false })
+      t.is(res2.statusCode, 404)
+    })
+  })
+})
+
 test('should respect in-source configuration from internal edge functions', async (t) => {
   await withSiteBuilder('site-with-internal-edge-functions', async (builder) => {
     const publicDir = 'public'
