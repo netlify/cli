@@ -18,7 +18,7 @@ netlify functions
 **Flags**
 
 - `debug` (*boolean*) - Print debugging information
-- `httpProxy` (*string*) - Proxy server address to route requests through.
+- `http-proxy` (*string*) - Proxy server address to route requests through.
 - `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
 
 | Subcommand | description  |
@@ -51,9 +51,9 @@ netlify functions:build
 **Flags**
 
 - `functions` (*string*) - Specify a functions directory to build to
-- `src` (*string*) - Specify the source directory for the functions
 - `debug` (*boolean*) - Print debugging information
-- `httpProxy` (*string*) - Proxy server address to route requests through.
+- `http-proxy` (*string*) - Proxy server address to route requests through.
+- `src` (*string*) - Specify the source directory for the functions
 - `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
 
 ---
@@ -73,11 +73,11 @@ netlify functions:create
 
 **Flags**
 
-- `language` (*string*) - function language
 - `name` (*string*) - function name
-- `url` (*string*) - pull template from URL
 - `debug` (*boolean*) - Print debugging information
-- `httpProxy` (*string*) - Proxy server address to route requests through.
+- `http-proxy` (*string*) - Proxy server address to route requests through.
+- `language` (*string*) - function language
+- `url` (*string*) - pull template from URL
 - `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
 
 **Examples**
@@ -110,10 +110,10 @@ netlify functions:invoke
 - `name` (*string*) - function name to invoke
 - `no-identity` (*boolean*) - simulate Netlify Identity authentication JWT. pass --no-identity to affirm unauthenticated request
 - `payload` (*string*) - Supply POST payload in stringified json, or a path to a json file
-- `port` (*string*) - Port where netlify dev is accessible. e.g. 8888
 - `querystring` (*string*) - Querystring to add to your function invocation
 - `debug` (*boolean*) - Print debugging information
-- `httpProxy` (*string*) - Proxy server address to route requests through.
+- `http-proxy` (*string*) - Proxy server address to route requests through.
+- `port` (*string*) - Port where netlify dev is accessible. e.g. 8888
 - `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
 
 **Examples**
@@ -146,9 +146,9 @@ netlify functions:list
 **Flags**
 
 - `functions` (*string*) - Specify a functions directory to list
-- `json` (*boolean*) - Output function data as JSON
 - `debug` (*boolean*) - Print debugging information
-- `httpProxy` (*string*) - Proxy server address to route requests through.
+- `http-proxy` (*string*) - Proxy server address to route requests through.
+- `json` (*boolean*) - Output function data as JSON
 - `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
 
 ---
@@ -165,10 +165,10 @@ netlify functions:serve
 **Flags**
 
 - `functions` (*string*) - Specify a functions directory to serve
+- `debug` (*boolean*) - Print debugging information
+- `http-proxy` (*string*) - Proxy server address to route requests through.
 - `offline` (*boolean*) - disables any features that require network access
 - `port` (*string*) - Specify a port for the functions server
-- `debug` (*boolean*) - Print debugging information
-- `httpProxy` (*string*) - Proxy server address to route requests through.
 - `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
 
 ---

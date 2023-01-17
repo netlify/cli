@@ -33,7 +33,7 @@ netlify dev
 - `sessionId` (*string*) - (Graph) connect to cloud session with ID [sessionId]
 - `targetPort` (*string*) - port of target app server
 - `debug` (*boolean*) - Print debugging information
-- `httpProxy` (*string*) - Proxy server address to route requests through.
+- `http-proxy` (*string*) - Proxy server address to route requests through.
 - `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
 
 | Subcommand | description  |
@@ -76,7 +76,7 @@ netlify dev:exec
 
 - `context` (*string*) - Specify a deploy context or branch for environment variables (contexts: "production", "deploy-preview", "branch-deploy", "dev")
 - `debug` (*boolean*) - Print debugging information
-- `httpProxy` (*string*) - Proxy server address to route requests through.
+- `http-proxy` (*string*) - Proxy server address to route requests through.
 - `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
 
 **Examples**

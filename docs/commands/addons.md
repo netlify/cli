@@ -22,7 +22,7 @@ netlify addons
 **Flags**
 
 - `debug` (*boolean*) - Print debugging information
-- `httpProxy` (*string*) - Proxy server address to route requests through.
+- `http-proxy` (*string*) - Proxy server address to route requests through.
 - `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
 
 | Subcommand | description  |
@@ -62,7 +62,7 @@ netlify addons:auth
 **Flags**
 
 - `debug` (*boolean*) - Print debugging information
-- `httpProxy` (*string*) - Proxy server address to route requests through.
+- `http-proxy` (*string*) - Proxy server address to route requests through.
 - `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
 
 ---
@@ -83,7 +83,7 @@ netlify addons:config
 **Flags**
 
 - `debug` (*boolean*) - Print debugging information
-- `httpProxy` (*string*) - Proxy server address to route requests through.
+- `http-proxy` (*string*) - Proxy server address to route requests through.
 - `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
 
 ---
@@ -105,7 +105,7 @@ netlify addons:create
 **Flags**
 
 - `debug` (*boolean*) - Print debugging information
-- `httpProxy` (*string*) - Proxy server address to route requests through.
+- `http-proxy` (*string*) - Proxy server address to route requests through.
 - `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
 
 ---
@@ -128,7 +128,7 @@ netlify addons:delete
 
 - `force` (*boolean*) - delete without prompting (useful for CI)
 - `debug` (*boolean*) - Print debugging information
-- `httpProxy` (*string*) - Proxy server address to route requests through.
+- `http-proxy` (*string*) - Proxy server address to route requests through.
 - `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
 
 ---
@@ -146,7 +146,7 @@ netlify addons:list
 
 - `json` (*boolean*) - Output add-on data as JSON
 - `debug` (*boolean*) - Print debugging information
-- `httpProxy` (*string*) - Proxy server address to route requests through.
+- `http-proxy` (*string*) - Proxy server address to route requests through.
 - `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
 
 ---

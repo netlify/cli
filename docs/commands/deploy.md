@@ -97,9 +97,9 @@ netlify deploy
 - `site` (*string*) - A site name or ID to deploy to
 - `skip-functions-cache` (*boolean*) - Ignore any functions created as part of a previous `build` or `deploy` commands, forcing them to be bundled again as part of the deployment
 - `timeout` (*string*) - Timeout to wait for deployment to finish
-- `trigger` (*boolean*) - Trigger a new build of your site on Netlify without uploading local files
 - `debug` (*boolean*) - Print debugging information
-- `httpProxy` (*string*) - Proxy server address to route requests through.
+- `http-proxy` (*string*) - Proxy server address to route requests through.
+- `trigger` (*boolean*) - Trigger a new build of your site on Netlify without uploading local files
 - `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
 
 **Examples**

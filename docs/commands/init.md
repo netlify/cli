@@ -20,7 +20,7 @@ netlify init
 - `gitRemoteName` (*string*) - Name of Git remote to use. e.g. "origin"
 - `manual` (*boolean*) - Manually configure a git remote for CI
 - `debug` (*boolean*) - Print debugging information
-- `httpProxy` (*string*) - Proxy server address to route requests through.
+- `http-proxy` (*string*) - Proxy server address to route requests through.
 - `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
 
 
