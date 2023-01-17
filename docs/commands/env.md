@@ -116,7 +116,7 @@ netlify env:import
 
 **Flags**
 
-- `replaceExisting` (*boolean*) - Replace all existing variables instead of merging them with the current ones
+- `replace-existing` (*boolean*) - Replace all existing variables instead of merging them with the current ones
 - `debug` (*boolean*) - Print debugging information
 - `http-proxy` (*string*) - Proxy server address to route requests through.
 - `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
