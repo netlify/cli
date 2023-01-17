@@ -21,8 +21,9 @@ netlify dev
 - `context` (*string*) - Specify a deploy context or branch for environment variables (contexts: "production", "deploy-preview", "branch-deploy", "dev")
 - `country` (*string*) - Two-letter country code (https://ntl.fyi/country-codes) to use as mock geolocation (enables --geo=mock automatically)
 - `dir` (*string*) - dir with static files
+- `edge-inspect-brk` (*string*) - enable the V8 Inspector Protocol for Edge Functions and pause execution on the first line of code, with an optional address in the host:port format
 - `edgeInspect` (*string*) - enable the V8 Inspector Protocol for Edge Functions, with an optional address in the host:port format
-- `edgeInspectBrk` (*string*) - enable the V8 Inspector Protocol for Edge Functions and pause execution on the first line of code, with an optional address in the host:port format
+- `edgeInspectBrk` (*string*) - Old, prefer --edge-inspect-brk. Enable the V8 Inspector Protocol for Edge Functions and pause execution on the first line of code, with an optional address in the host:port format
 - `framework` (*string*) - framework to use. Defaults to #auto which automatically detects a framework
 - `functions` (*string*) - specify a functions folder to serve
 - `functions-port` (*string*) - port of functions server
@@ -51,8 +52,8 @@ netlify dev --context production
 netlify dev --graph
 netlify dev --edgeInspect
 netlify dev --edgeInspect=127.0.0.1:9229
-netlify dev --edgeInspectBrk
-netlify dev --edgeInspectBrk=127.0.0.1:9229
+netlify dev --edge-inspect-brk
+netlify dev --edge-inspect-brk=127.0.0.1:9229
 BROWSER=none netlify dev # disable browser auto opening
 ```
 

@@ -275,6 +275,15 @@ export const createDevCommand = (program) => {
     .addOption(
       new Option(
         '-E, --edgeInspectBrk [address]',
+        'Old, prefer --edge-inspect-brk. Enable the V8 Inspector Protocol for Edge Functions and pause execution on the first line of code, with an optional address in the host:port format',
+      )
+        .conflicts('edgeInspect')
+        .hideHelp(true)
+        .argParser(validateShortFlagArgs),
+    )
+    .addOption(
+      new Option(
+        '-E, --edge-inspect-brk [address]',
         'enable the V8 Inspector Protocol for Edge Functions and pause execution on the first line of code, with an optional address in the host:port format',
       )
         .conflicts('edgeInspect')
@@ -288,8 +297,8 @@ export const createDevCommand = (program) => {
       'netlify dev --graph',
       'netlify dev --edgeInspect',
       'netlify dev --edgeInspect=127.0.0.1:9229',
-      'netlify dev --edgeInspectBrk',
-      'netlify dev --edgeInspectBrk=127.0.0.1:9229',
+      'netlify dev --edge-inspect-brk',
+      'netlify dev --edge-inspect-brk=127.0.0.1:9229',
       'BROWSER=none netlify dev # disable browser auto opening',
     ])
     .action(dev)
