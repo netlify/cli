@@ -1,4 +1,5 @@
 // @ts-check
+import { Option } from 'commander'
 import dotProp from 'dot-prop'
 import inquirer from 'inquirer'
 import isEmpty from 'lodash/isEmpty.js'
@@ -229,5 +230,11 @@ export const createInitCommand = (program) =>
     )
     .option('-m, --manual', 'Manually configure a git remote for CI')
     .option('--force', 'Reinitialize CI hooks if the linked site is already configured to use CI')
-    .option('--gitRemoteName <name>', 'Name of Git remote to use. e.g. "origin"')
+    .addOption(
+      new Option(
+        '--gitRemoteName <name>',
+        'Old, prefer --git-remote-name. Name of Git remote to use. e.g. "origin"',
+      ).hideHelp(true),
+    )
+    .option('--git-remote-name <name>', 'Name of Git remote to use. e.g. "origin"')
     .action(init)

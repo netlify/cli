@@ -220,13 +220,23 @@ export const createDevCommand = (program) => {
       normalizeContext,
     )
     .option('-p ,--port <port>', 'port of netlify dev', (value) => Number.parseInt(value))
-    .option('--targetPort <port>', 'port of target app server', (value) => Number.parseInt(value))
+    .addOption(
+      new Option('--targetPort <port>', 'Old, prefer --target-port. Port of target app server')
+        .argParser((value) => Number.parseInt(value))
+        .hideHelp(true),
+    )
+    .option('--target-port <port>', 'port of target app server', (value) => Number.parseInt(value))
     .option('--framework <name>', 'framework to use. Defaults to #auto which automatically detects a framework')
     .option('-d ,--dir <path>', 'dir with static files')
     .option('-f ,--functions <folder>', 'specify a functions folder to serve')
     .option('-o ,--offline', 'disables any features that require network access')
     .option('-l, --live', 'start a public live session', false)
-    .option('--functionsPort <port>', 'port of functions server', (value) => Number.parseInt(value))
+    .addOption(
+      new Option('--functionsPort <port>', 'Old, prefer --functions-port. Port of functions server')
+        .argParser((value) => Number.parseInt(value))
+        .hideHelp(true),
+    )
+    .option('--functions-port <port>', 'port of functions server', (value) => Number.parseInt(value))
     .addOption(
       new Option(
         '--geo <mode>',
@@ -247,10 +257,25 @@ export const createDevCommand = (program) => {
         .hideHelp(),
     )
     .addOption(new Option('--graph', 'enable Netlify Graph support').hideHelp())
-    .addOption(new Option('--sessionId [sessionId]', '(Graph) connect to cloud session with ID [sessionId]'))
+    .addOption(
+      new Option(
+        '--sessionId [sessionId]',
+        'Old, prefer --session-id. (Graph) connect to cloud session with ID [sessionId]',
+      ).hideHelp(true),
+    )
+    .option('--session-id [sessionId]', '(Graph) connect to cloud session with ID [sessionId]')
     .addOption(
       new Option(
         '-e, --edgeInspect [address]',
+        'Old, prefer --edge-inspect. Enable the V8 Inspector Protocol for Edge Functions, with an optional address in the host:port format',
+      )
+        .conflicts('edgeInspectBrk')
+        .argParser(validateShortFlagArgs)
+        .hideHelp(true),
+    )
+    .addOption(
+      new Option(
+        '-e, --edge-inspect [address]',
         'enable the V8 Inspector Protocol for Edge Functions, with an optional address in the host:port format',
       )
         .conflicts('edgeInspectBrk')
@@ -259,6 +284,15 @@ export const createDevCommand = (program) => {
     .addOption(
       new Option(
         '-E, --edgeInspectBrk [address]',
+        'Old, prefer --edge-inspect-brk. Enable the V8 Inspector Protocol for Edge Functions and pause execution on the first line of code, with an optional address in the host:port format',
+      )
+        .conflicts('edgeInspect')
+        .hideHelp(true)
+        .argParser(validateShortFlagArgs),
+    )
+    .addOption(
+      new Option(
+        '-E, --edge-inspect-brk [address]',
         'enable the V8 Inspector Protocol for Edge Functions and pause execution on the first line of code, with an optional address in the host:port format',
       )
         .conflicts('edgeInspect')
@@ -267,13 +301,13 @@ export const createDevCommand = (program) => {
     .addExamples([
       'netlify dev',
       'netlify dev -d public',
-      'netlify dev -c "hugo server -w" --targetPort 1313',
+      'netlify dev -c "hugo server -w" --target-port 1313',
       'netlify dev --context production',
       'netlify dev --graph',
-      'netlify dev --edgeInspect',
-      'netlify dev --edgeInspect=127.0.0.1:9229',
-      'netlify dev --edgeInspectBrk',
-      'netlify dev --edgeInspectBrk=127.0.0.1:9229',
+      'netlify dev --edge-inspect',
+      'netlify dev --edge-inspect=127.0.0.1:9229',
+      'netlify dev --edge-inspect-brk',
+      'netlify dev --edge-inspect-brk=127.0.0.1:9229',
       'BROWSER=none netlify dev # disable browser auto opening',
     ])
     .action(dev)

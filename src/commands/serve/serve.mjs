@@ -165,7 +165,12 @@ export const createServeCommand = (program) =>
     .option('-d ,--dir <path>', 'dir with static files')
     .option('-f ,--functions <folder>', 'specify a functions folder to serve')
     .option('-o ,--offline', 'disables any features that require network access')
-    .option('--functionsPort <port>', 'port of functions server', (value) => Number.parseInt(value))
+    .addOption(
+      new Option('--functionsPort <port>', 'Old, prefer --functions-port. Port of functions server')
+        .argParser((value) => Number.parseInt(value))
+        .hideHelp(true),
+    )
+    .option('--functions-port <port>', 'port of functions server', (value) => Number.parseInt(value))
     .addOption(
       new Option(
         '--geo <mode>',

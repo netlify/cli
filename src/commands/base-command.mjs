@@ -99,13 +99,29 @@ export default class BaseCommand extends Command {
         .addOption(new Option('--cwd <cwd>').hideHelp(true))
         .addOption(new Option('-o, --offline').hideHelp(true))
         .addOption(new Option('--auth <token>', 'Netlify auth token').hideHelp(true))
+        .addOption(
+          new Option(
+            '--httpProxy [address]',
+            'Old, prefer --http-proxy. Proxy server address to route requests through.',
+          )
+            .default(process.env.HTTP_PROXY || process.env.HTTPS_PROXY)
+            .hideHelp(true),
+        )
+        .addOption(
+          new Option(
+            '--httpProxyCertificateFilename [file]',
+            'Old, prefer --http-proxy-certificate-filename. Certificate file to use when connecting using a proxy server.',
+          )
+            .default(process.env.NETLIFY_PROXY_CERTIFICATE_FILENAME)
+            .hideHelp(true),
+        )
         .option(
-          '--httpProxyCertificateFilename [file]',
+          '--http-proxy-certificate-filename [file]',
           'Certificate file to use when connecting using a proxy server',
           process.env.NETLIFY_PROXY_CERTIFICATE_FILENAME,
         )
         .option(
-          '--httpProxy [address]',
+          '--http-proxy [address]',
           'Proxy server address to route requests through.',
           process.env.HTTP_PROXY || process.env.HTTPS_PROXY,
         )
