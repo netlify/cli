@@ -214,7 +214,8 @@ export class EdgeFunctionsRegistry {
         variable.sources.includes('ui') ||
         variable.sources.includes('account') ||
         variable.sources.includes('addons') ||
-        variable.sources.includes('internal')
+        variable.sources.includes('internal') ||
+        variable.sources.includes('configFile')
       ) {
         env[key] = variable.value
       }
