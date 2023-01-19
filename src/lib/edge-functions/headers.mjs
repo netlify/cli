@@ -1,6 +1,5 @@
 const headers = {
   ForwardedHost: 'x-forwarded-host',
-  ForwardedProtocol: 'x-forwarded-proto',
   Functions: 'x-nf-edge-functions',
   Geo: 'x-nf-geo',
   Passthrough: 'x-nf-passthrough',
