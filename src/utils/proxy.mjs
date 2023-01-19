@@ -597,9 +597,9 @@ export const startProxy = async function ({
   }
 
   primaryServer.on('upgrade', onUpgrade)
-
   primaryServer.listen({ port: settings.port })
-  await once(primaryServer, 'listening')
+
+  const eventQueue = [once(primaryServer, 'listening')]
 
   // If we're running the main server on HTTPS, we need to start a secondary
   // server on HTTP for receiving passthrough requests from edge functions.
@@ -609,10 +609,12 @@ export const startProxy = async function ({
     const secondaryServer = http.createServer(onRequestWithOptions)
 
     secondaryServer.on('upgrade', onUpgrade)
-
     secondaryServer.listen({ port: secondaryServerPort })
-    await once(secondaryServer, 'listening')
+
+    eventQueue.push(once(secondaryServer, 'listening'))
   }
+
+  await Promise.all(eventQueue)
 
   const scheme = settings.https ? 'https' : 'http'
   return `${scheme}://localhost:${settings.port}`
