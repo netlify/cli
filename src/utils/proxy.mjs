@@ -603,8 +603,8 @@ export const startProxy = async function ({
 
   // If we're running the main server on HTTPS, we need to start a secondary
   // server on HTTP for receiving passthrough requests from edge functions.
-  // This lets us run the Deno server on HTTP and avoid complications with
-  // certificates.
+  // This lets us run the Deno server on HTTP and avoid the complications of
+  // Deno talking to Node on HTTPS with potentially untrusted certificates.
   if (secondaryServerPort) {
     const secondaryServer = http.createServer(onRequestWithOptions)
 
