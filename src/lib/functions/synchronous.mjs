@@ -6,17 +6,13 @@ import renderErrorTemplate from '../render-error-template.mjs'
 
 import { detectAwsSdkError } from './utils.mjs'
 
-const addHeaders = (headers, response, functionName) => {
+const addHeaders = (headers, response) => {
   if (!headers) {
     return
   }
 
   Object.entries(headers).forEach(([key, value]) => {
-    try {
-      response.setHeader(key, value)
-    } catch (error) {
-      log(`${NETLIFYDEVERR} Failed to set header in function ${chalk.yellow(functionName)}: ${error.message}`)
-    }
+    response.setHeader(key, value)
   })
 }
 
@@ -38,13 +34,28 @@ export const handleSynchronousFunction = function ({
   }
 
   response.statusCode = result.statusCode
-  addHeaders(result.headers, response, functionName)
-  addHeaders(result.multiValueHeaders, response, functionName)
+
+  try {
+    addHeaders(result.headers, response)
+    addHeaders(result.multiValueHeaders, response)
+  } catch (headersError) {
+    formatError(headersError)
+
+    log(`${NETLIFYDEVERR} Failed to set header in function ${chalk.yellow(functionName)}: ${headersError.message}`)
+
+    return handleErr(headersError, request, response)
+  }
 
   if (result.body) {
     response.write(result.isBase64Encoded ? Buffer.from(result.body, 'base64') : result.body)
   }
   response.end()
+}
+
+const formatError = (err) => {
+  err.errorType = err.code
+  err.errorMessage = err.message
+  err.stackTrace = err.trace
 }
 
 const formatLambdaLocalError = (err, acceptsHtml) =>
