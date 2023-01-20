@@ -147,7 +147,7 @@
     "netlify-headers-parser": "^7.1.1",
     "netlify-onegraph-internal": "0.10.1",
     "netlify-redirect-parser": "^14.1.1",
-    "netlify-redirector": "^0.3.1",
+    "netlify-redirector": "^0.4.0",
     "node-fetch": "^2.6.0",
     "node-version-alias": "^1.0.1",
     "ora": "^5.0.0",
