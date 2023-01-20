@@ -29,7 +29,7 @@ import {
 import { fileExistsAsync, isFileAsync } from '../lib/fs.mjs'
 import renderErrorTemplate from '../lib/render-error-template.mjs'
 
-import { NETLIFYDEVLOG, NETLIFYDEVWARN } from './command-helpers.mjs'
+import { NETLIFYDEVLOG, NETLIFYDEVWARN, log, chalk } from './command-helpers.mjs'
 import createStreamPromise from './create-stream-promise.mjs'
 import { headersForPath, parseHeaders } from './headers.mjs'
 import { createRewriter, onChanges } from './rules-proxy.mjs'
@@ -144,7 +144,7 @@ const alternativePathsFor = function (url) {
   return paths
 }
 
-const serveRedirect = async function ({ match, options, proxy, req, res, siteInfo }) {
+const serveRedirect = async function ({ env, match, options, proxy, req, res, siteInfo }) {
   if (!match) return proxy.web(req, res, options)
 
   options = options || req.proxyOptions || {}
@@ -157,12 +157,21 @@ const serveRedirect = async function ({ match, options, proxy, req, res, siteInf
   }
 
   if (match.signingSecret) {
-    req.headers['x-nf-sign'] = signRedirect({
-      deployContext: 'dev',
-      secret: match.signingSecret,
-      siteID: siteInfo.id,
-      siteURL: siteInfo.url,
-    })
+    const signingSecretVar = env[match.signingSecret]
+
+    if (signingSecretVar) {
+      req.headers['x-nf-sign'] = signRedirect({
+        deployContext: 'dev',
+        secret: signingSecretVar.value,
+        siteID: siteInfo.id,
+        siteURL: siteInfo.url,
+      })
+    } else {
+      log(
+        NETLIFYDEVWARN,
+        `Could not sign redirect because environment variable ${chalk.yellow(match.signingSecret)} is not set`,
+      )
+    }
   }
 
   if (isFunction(options.functionsPort, req.url)) {
@@ -316,7 +325,7 @@ const reqToURL = function (req, pathname) {
 
 const MILLISEC_TO_SEC = 1e3
 
-const initializeProxy = async function ({ configPath, distDir, host, port, projectDir, siteInfo }) {
+const initializeProxy = async function ({ configPath, distDir, env, host, port, projectDir, siteInfo }) {
   const proxy = httpProxy.createProxyServer({
     selfHandleResponse: true,
     target: {
@@ -387,13 +396,14 @@ const initializeProxy = async function ({ configPath, distDir, host, port, proje
           match: req.proxyOptions.match,
           options: req.proxyOptions,
           siteInfo,
+          env,
         })
       }
     }
 
     if (req.proxyOptions.staticFile && isRedirect({ status: proxyRes.statusCode }) && proxyRes.headers.location) {
       req.url = proxyRes.headers.location
-      return serveRedirect({ req, res, proxy: handlers, match: null, options: req.proxyOptions, siteInfo })
+      return serveRedirect({ req, res, proxy: handlers, match: null, options: req.proxyOptions, siteInfo, env })
     }
 
     const responseData = []
@@ -490,7 +500,7 @@ const initializeProxy = async function ({ configPath, distDir, host, port, proje
 }
 
 const onRequest = async (
-  { addonsUrls, edgeFunctionsProxy, functionsServer, proxy, rewriter, settings, siteInfo },
+  { addonsUrls, edgeFunctionsProxy, env, functionsServer, proxy, rewriter, settings, siteInfo },
   req,
   res,
 ) => {
@@ -530,7 +540,7 @@ const onRequest = async (
     // We don't want to generate an ETag for 3xx redirects.
     req[shouldGenerateETag] = ({ statusCode }) => statusCode < 300 || statusCode >= 400
 
-    return serveRedirect({ req, res, proxy, match, options, siteInfo })
+    return serveRedirect({ req, res, proxy, match, options, siteInfo, env })
   }
 
   // The request will be served by the framework server, which means we want to
@@ -586,6 +596,7 @@ export const startProxy = async function ({
     state,
   })
   const proxy = await initializeProxy({
+    env,
     host: settings.frameworkHost,
     port: settings.frameworkPort,
     distDir: settings.dist,
@@ -611,6 +622,7 @@ export const startProxy = async function ({
     functionsServer,
     edgeFunctionsProxy,
     siteInfo,
+    env,
   })
   const primaryServer = settings.https
     ? https.createServer({ cert: settings.https.cert, key: settings.https.key }, onRequestWithOptions)

@@ -203,7 +203,7 @@ test('should rewrite requests to an external server', async (t) => {
 
 test('should sign external redirects with the `x-nf-sign` header when a `signed` value is set', async (t) => {
   await withSiteBuilder('site-redirects-file-to-external', async (builder) => {
-    const mockSigningKey = 'iamverysecret'
+    const mockSigningSecret = 'iamverysecret'
     const externalServer = startExternalServer()
     const { port } = externalServer.address()
     const siteInfo = {
@@ -224,7 +224,10 @@ test('should sign external redirects with the `x-nf-sign` header when a `signed`
     await builder
       .withNetlifyToml({
         config: {
-          redirects: [{ from: '/sign/*', to: `http://localhost:${port}/:splat`, signed: mockSigningKey, status: 200 }],
+          build: { environment: { VAR_WITH_SIGNING_SECRET: mockSigningSecret } },
+          redirects: [
+            { from: '/sign/*', to: `http://localhost:${port}/:splat`, signed: 'VAR_WITH_SIGNING_SECRET', status: 200 },
+          ],
         },
       })
       .buildAsync()
@@ -254,7 +257,7 @@ test('should sign external redirects with the `x-nf-sign` header when a `signed`
 
           ;[getResponse, postResponse].forEach((response) => {
             const signature = response.headers['x-nf-sign']
-            const payload = jwt.verify(signature, mockSigningKey)
+            const payload = jwt.verify(signature, mockSigningSecret)
 
             t.is(payload.deploy_context, 'dev')
             t.is(payload.netlify_id, siteInfo.id)
