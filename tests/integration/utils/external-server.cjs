@@ -4,7 +4,7 @@ const startExternalServer = () => {
   const app = express()
   app.use(express.urlencoded({ extended: true }))
   app.all('*', function onRequest(req, res) {
-    res.json({ url: req.url, body: req.body, method: req.method })
+    res.json({ url: req.url, body: req.body, method: req.method, headers: req.headers })
   })
 
   return app.listen()
