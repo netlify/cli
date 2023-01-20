@@ -1,35 +1,45 @@
 // @ts-check
 import { Buffer } from 'buffer'
 
-import { NETLIFYDEVERR } from '../../utils/command-helpers.mjs'
+import { chalk, log, NETLIFYDEVERR } from '../../utils/command-helpers.mjs'
 import renderErrorTemplate from '../render-error-template.mjs'
 
 import { detectAwsSdkError } from './utils.mjs'
 
-const addHeaders = (headers, response) => {
+const addHeaders = (headers, response, functionName) => {
   if (!headers) {
     return
   }
 
   Object.entries(headers).forEach(([key, value]) => {
-    response.setHeader(key, value)
+    try {
+      response.setHeader(key, value)
+    } catch (error) {
+      log(`${NETLIFYDEVERR} Failed to set header in function ${chalk.yellow(functionName)}: ${error.message}`)
+    }
   })
 }
 
-export const handleSynchronousFunction = function (err, result, request, response) {
-  if (err) {
-    return handleErr(err, request, response)
+export const handleSynchronousFunction = function ({
+  error: invocationError,
+  functionName,
+  request,
+  response,
+  result,
+}) {
+  if (invocationError) {
+    return handleErr(invocationError, request, response)
   }
 
   const { error } = validateLambdaResponse(result)
   if (error) {
-    console.log(`${NETLIFYDEVERR} ${error}`)
+    log(`${NETLIFYDEVERR} ${error}`)
     return handleErr(error, request, response)
   }
 
   response.statusCode = result.statusCode
-  addHeaders(result.headers, response)
-  addHeaders(result.multiValueHeaders, response)
+  addHeaders(result.headers, response, functionName)
+  addHeaders(result.multiValueHeaders, response, functionName)
 
   if (result.body) {
     response.write(result.isBase64Encoded ? Buffer.from(result.body, 'base64') : result.body)
