@@ -15,8 +15,8 @@
   "author": "Netlify",
   "license": "MIT",
   "dependencies": {
-    "apollo-server-lambda": "^2.18.2",
-    "apollo-datasource-rest": "^0.15.0",
+    "apollo-server-lambda": "^3.0.0",
+    "apollo-datasource-rest": "^3.0.0",
     "graphql": "^14.1.1"
   }
 }
