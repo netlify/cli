@@ -17,6 +17,6 @@
   "dependencies": {
     "apollo-server-lambda": "^2.18.2",
     "apollo-datasource-rest": "^0.15.0",
-    "graphql": "^14.1.1"
+    "graphql": "^16.0.0"
   }
 }
