@@ -6203,13 +6203,13 @@
       "dev": true
     },
     "node_modules/@vitest/coverage-c8": {
-      "version": "0.27.1",
-      "resolved": "https://registry.npmjs.org/@vitest/coverage-c8/-/coverage-c8-0.27.1.tgz",
-      "integrity": "sha512-/9VTGDIAp4hv8PBawfyijxhkiyucfOxFRRP+7kzy3Dj0wONy1Mc2MBoPmiH4aZVc0LViQqecrQLs8JVGt42keA==",
+      "version": "0.27.3",
+      "resolved": "https://registry.npmjs.org/@vitest/coverage-c8/-/coverage-c8-0.27.3.tgz",
+      "integrity": "sha512-xIN4FXXwJqeP6z0gfQ06gbyBMRN2mYvZ4/mn4F96mKXzch0Y93fBeS81eo7D/2YtjbeJBUcU9/amPVb2T+h83Q==",
       "dev": true,
       "dependencies": {
         "c8": "^7.12.0",
-        "vitest": "0.27.1"
+        "vitest": "0.27.3"
       },
       "funding": {
         "url": "https://github.com/sponsors/antfu"
@@ -21919,6 +21919,12 @@
         "node": ">= 0.8"
       }
     },
+    "node_modules/std-env": {
+      "version": "3.3.1",
+      "resolved": "https://registry.npmjs.org/std-env/-/std-env-3.3.1.tgz",
+      "integrity": "sha512-3H20QlwQsSm2OvAxWIYhs+j01MzzqwMwGiiO1NQaJYZgJZFPuAbf95/DiKRBSTYIJ2FeGUc+B/6mPGcWP9dO3Q==",
+      "dev": true
+    },
     "node_modules/steno": {
       "version": "0.4.4",
       "resolved": "https://registry.npmjs.org/steno/-/steno-0.4.4.tgz",
@@ -24255,9 +24261,9 @@
       }
     },
     "node_modules/vite-node": {
-      "version": "0.27.1",
-      "resolved": "https://registry.npmjs.org/vite-node/-/vite-node-0.27.1.tgz",
-      "integrity": "sha512-d6+ue/3NzsfndWaPbYh/bFkHbmAWfDXI4B874zRx+WREnG6CUHUbBC8lKaRYZjeR6gCPN5m1aVNNRXBYICA9XA==",
+      "version": "0.27.3",
+      "resolved": "https://registry.npmjs.org/vite-node/-/vite-node-0.27.3.tgz",
+      "integrity": "sha512-eyJYOO64o5HIp8poc4bJX+ZNBwMZeI3f6/JdiUmJgW02Mt7LnoCtDMRVmLaY9S05SIsjGe339ZK4uo2wQ+bF9g==",
       "dev": true,
       "dependencies": {
         "cac": "^6.7.14",
@@ -24306,9 +24312,9 @@
       }
     },
     "node_modules/vitest": {
-      "version": "0.27.1",
-      "resolved": "https://registry.npmjs.org/vitest/-/vitest-0.27.1.tgz",
-      "integrity": "sha512-1sIpQ1DVFTEn7c1ici1XHcVfdU4nKiBmPtPAtGKJJJLuJjojTv/OHGgcf69P57alM4ty8V4NMv+7Yoi5Cxqx9g==",
+      "version": "0.27.3",
+      "resolved": "https://registry.npmjs.org/vitest/-/vitest-0.27.3.tgz",
+      "integrity": "sha512-Ld3UVgRVhJUtqvQ3dW89GxiApFAgBsWJZBCWzK+gA3w2yG68csXlGZZ4WDJURf+8ecNfgrScga6xY+8YSOpiMg==",
       "dev": true,
       "dependencies": {
         "@types/chai": "^4.3.4",
@@ -24322,12 +24328,13 @@
         "local-pkg": "^0.4.2",
         "picocolors": "^1.0.0",
         "source-map": "^0.6.1",
+        "std-env": "^3.3.1",
         "strip-literal": "^1.0.0",
         "tinybench": "^2.3.1",
         "tinypool": "^0.3.0",
         "tinyspy": "^1.0.2",
         "vite": "^3.0.0 || ^4.0.0",
-        "vite-node": "0.27.1",
+        "vite-node": "0.27.3",
         "why-is-node-running": "^2.2.2"
       },
       "bin": {
@@ -28755,13 +28762,13 @@
       "dev": true
     },
     "@vitest/coverage-c8": {
-      "version": "0.27.1",
-      "resolved": "https://registry.npmjs.org/@vitest/coverage-c8/-/coverage-c8-0.27.1.tgz",
-      "integrity": "sha512-/9VTGDIAp4hv8PBawfyijxhkiyucfOxFRRP+7kzy3Dj0wONy1Mc2MBoPmiH4aZVc0LViQqecrQLs8JVGt42keA==",
+      "version": "0.27.3",
+      "resolved": "https://registry.npmjs.org/@vitest/coverage-c8/-/coverage-c8-0.27.3.tgz",
+      "integrity": "sha512-xIN4FXXwJqeP6z0gfQ06gbyBMRN2mYvZ4/mn4F96mKXzch0Y93fBeS81eo7D/2YtjbeJBUcU9/amPVb2T+h83Q==",
       "dev": true,
       "requires": {
         "c8": "^7.12.0",
-        "vitest": "0.27.1"
+        "vitest": "0.27.3"
       }
     },
     "abbrev": {
@@ -40688,6 +40695,12 @@
       "resolved": "https://registry.npmjs.org/statuses/-/statuses-2.0.1.tgz",
       "integrity": "sha512-RwNA9Z/7PrK06rYLIzFMlaF+l73iwpzsqRIFgbMLbTcLD6cOao82TaWefPXQvB2fOC4AjuYSEndS7N/mTCbkdQ=="
     },
+    "std-env": {
+      "version": "3.3.1",
+      "resolved": "https://registry.npmjs.org/std-env/-/std-env-3.3.1.tgz",
+      "integrity": "sha512-3H20QlwQsSm2OvAxWIYhs+j01MzzqwMwGiiO1NQaJYZgJZFPuAbf95/DiKRBSTYIJ2FeGUc+B/6mPGcWP9dO3Q==",
+      "dev": true
+    },
     "steno": {
       "version": "0.4.4",
       "resolved": "https://registry.npmjs.org/steno/-/steno-0.4.4.tgz",
@@ -42420,9 +42433,9 @@
       }
     },
     "vite-node": {
-      "version": "0.27.1",
-      "resolved": "https://registry.npmjs.org/vite-node/-/vite-node-0.27.1.tgz",
-      "integrity": "sha512-d6+ue/3NzsfndWaPbYh/bFkHbmAWfDXI4B874zRx+WREnG6CUHUbBC8lKaRYZjeR6gCPN5m1aVNNRXBYICA9XA==",
+      "version": "0.27.3",
+      "resolved": "https://registry.npmjs.org/vite-node/-/vite-node-0.27.3.tgz",
+      "integrity": "sha512-eyJYOO64o5HIp8poc4bJX+ZNBwMZeI3f6/JdiUmJgW02Mt7LnoCtDMRVmLaY9S05SIsjGe339ZK4uo2wQ+bF9g==",
       "dev": true,
       "requires": {
         "cac": "^6.7.14",
@@ -42444,9 +42457,9 @@
       }
     },
     "vitest": {
-      "version": "0.27.1",
-      "resolved": "https://registry.npmjs.org/vitest/-/vitest-0.27.1.tgz",
-      "integrity": "sha512-1sIpQ1DVFTEn7c1ici1XHcVfdU4nKiBmPtPAtGKJJJLuJjojTv/OHGgcf69P57alM4ty8V4NMv+7Yoi5Cxqx9g==",
+      "version": "0.27.3",
+      "resolved": "https://registry.npmjs.org/vitest/-/vitest-0.27.3.tgz",
+      "integrity": "sha512-Ld3UVgRVhJUtqvQ3dW89GxiApFAgBsWJZBCWzK+gA3w2yG68csXlGZZ4WDJURf+8ecNfgrScga6xY+8YSOpiMg==",
       "dev": true,
       "requires": {
         "@types/chai": "^4.3.4",
@@ -42460,12 +42473,13 @@
         "local-pkg": "^0.4.2",
         "picocolors": "^1.0.0",
         "source-map": "^0.6.1",
+        "std-env": "^3.3.1",
         "strip-literal": "^1.0.0",
         "tinybench": "^2.3.1",
         "tinypool": "^0.3.0",
         "tinyspy": "^1.0.2",
         "vite": "^3.0.0 || ^4.0.0",
-        "vite-node": "0.27.1",
+        "vite-node": "0.27.3",
         "why-is-node-running": "^2.2.2"
       },
       "dependencies": {
