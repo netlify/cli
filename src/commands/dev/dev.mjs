@@ -88,8 +88,7 @@ const dev = async (options, command) => {
 
   let { env } = cachedConfig
 
-  process.env.NETLIFY_DEV = 'true'
-  env.NETLIFY_DEV = { sources: ['internal'], value: process.env.NETLIFY_DEV }
+  env.NETLIFY_DEV = { sources: ['internal'], value: 'true' }
 
   if (!options.offline && siteInfo.use_envelope) {
     env = await getEnvelopeEnv({ api, context: options.context, env, siteInfo })
