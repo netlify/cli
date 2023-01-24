@@ -971,7 +971,7 @@ test('should inject the `NETLIFY_DEV` environment variable in the process (legac
   const externalServerPath = path.join(__dirname, 'utils', 'external-server-cli.cjs')
   const command = `node ${externalServerPath} ${externalServerPort}`
 
-  await withSiteBuilder('site-with-edge-functions-and-env', async (builder) => {
+  await withSiteBuilder('site-with-legacy-env-vars', async (builder) => {
     const publicDir = 'public'
 
     await builder
@@ -1045,7 +1045,7 @@ test('should inject the `NETLIFY_DEV` environment variable in the process', asyn
   const externalServerPath = path.join(__dirname, 'utils', 'external-server-cli.cjs')
   const command = `node ${externalServerPath} ${externalServerPort}`
 
-  await withSiteBuilder('site-with-edge-functions-and-env', async (builder) => {
+  await withSiteBuilder('site-with-env-vars', async (builder) => {
     const publicDir = 'public'
 
     await builder
