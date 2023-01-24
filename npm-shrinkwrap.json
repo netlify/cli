@@ -78,7 +78,7 @@
         "log-update": "^5.0.0",
         "minimist": "^1.2.5",
         "multiparty": "^4.2.1",
-        "netlify": "^13.1.1",
+        "netlify": "^13.1.2",
         "netlify-headers-parser": "^7.1.1",
         "netlify-onegraph-internal": "0.10.1",
         "netlify-redirect-parser": "^14.1.1",
