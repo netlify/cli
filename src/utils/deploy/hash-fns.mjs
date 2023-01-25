@@ -119,10 +119,9 @@ const hashFns = async (
     runtime,
     displayName,
   }))
-  const fnConfig = functionZips.reduce(
-    (funcs, curr) => (curr.displayName ? { ...funcs, [curr.name]: { display_name: curr.displayName } } : funcs),
-    {},
-  )
+  const fnConfig = functionZips
+    .filter((func) => Boolean(func.displayName))
+    .reduce((funcs, curr) => ({ ...funcs, [curr.name]: { display_name: curr.displayName } }), {})
   const functionSchedules = functionZips
     .map(({ name, schedule }) => schedule && { name, cron: schedule })
     .filter(Boolean)
