@@ -95,6 +95,7 @@
     "ci-info": "^3.0.0",
     "clean-deep": "^3.0.2",
     "commander": "^9.2.0",
+    "comment-json": "^4.2.3",
     "concordance": "^5.0.0",
     "configstore": "^5.0.0",
     "content-type": "^1.0.4",

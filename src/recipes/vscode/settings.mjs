@@ -1,17 +1,17 @@
 import { mkdir, readFile, stat, writeFile } from 'fs/promises'
 import { dirname, relative } from 'path'
 
+import CommentJSON from 'comment-json'
 import unixify from 'unixify'
 
 export const applySettings = (existingSettings, { denoBinary, edgeFunctionsPath, repositoryRoot }) => {
   const relativeEdgeFunctionsPath = unixify(relative(repositoryRoot, edgeFunctionsPath))
-  const settings = {
-    ...existingSettings,
+  const settings = CommentJSON.assign(existingSettings, {
     'deno.enable': true,
     'deno.enablePaths': existingSettings['deno.enablePaths'] || [],
     'deno.unstable': true,
     'deno.importMap': '.netlify/edge-functions-import-map.json',
-  }
+  })
 
   // If the Edge Functions path isn't already in `deno.enabledPaths`, let's add
   // it.
@@ -42,7 +42,7 @@ export const getSettings = async (settingsPath) => {
 
     return {
       fileExists: true,
-      settings: JSON.parse(file),
+      settings: CommentJSON.parse(file.toString()),
     }
   } catch (error) {
     if (error.code !== 'ENOENT') {
@@ -57,7 +57,7 @@ export const getSettings = async (settingsPath) => {
 }
 
 export const writeSettings = async ({ settings, settingsPath }) => {
-  const serializedSettings = JSON.stringify(settings, null, 2)
+  const serializedSettings = CommentJSON.stringify(settings, null, 2)
 
   await mkdir(dirname(settingsPath), { recursive: true })
   await writeFile(settingsPath, serializedSettings)
