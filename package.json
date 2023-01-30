@@ -81,7 +81,7 @@
     "@netlify/edge-bundler": "^8.4.0",
     "@netlify/framework-info": "^9.7.1",
     "@netlify/local-functions-proxy": "^1.1.1",
-    "@netlify/zip-it-and-ship-it": "^8.4.1",
+    "@netlify/zip-it-and-ship-it": "^8.4.2",
     "@octokit/rest": "^19.0.0",
     "ansi-escapes": "^5.0.0",
     "ansi-styles": "^5.0.0",
