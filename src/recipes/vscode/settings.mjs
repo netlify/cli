@@ -1,12 +1,12 @@
 import { mkdir, readFile, stat, writeFile } from 'fs/promises'
 import { dirname, relative } from 'path'
 
-import CommentJSON from 'comment-json'
+import { parse, assign, stringify } from 'comment-json'
 import unixify from 'unixify'
 
 export const applySettings = (existingSettings, { denoBinary, edgeFunctionsPath, repositoryRoot }) => {
   const relativeEdgeFunctionsPath = unixify(relative(repositoryRoot, edgeFunctionsPath))
-  const settings = CommentJSON.assign(existingSettings, {
+  const settings = assign(existingSettings, {
     'deno.enable': true,
     'deno.enablePaths': existingSettings['deno.enablePaths'] || [],
     'deno.unstable': true,
@@ -42,7 +42,7 @@ export const getSettings = async (settingsPath) => {
 
     return {
       fileExists: true,
-      settings: CommentJSON.parse(file.toString()),
+      settings: parse(file.toString()),
     }
   } catch (error) {
     if (error.code !== 'ENOENT') {
@@ -57,7 +57,7 @@ export const getSettings = async (settingsPath) => {
 }
 
 export const writeSettings = async ({ settings, settingsPath }) => {
-  const serializedSettings = CommentJSON.stringify(settings, null, 2)
+  const serializedSettings = stringify(settings, null, 2)
 
   await mkdir(dirname(settingsPath), { recursive: true })
   await writeFile(settingsPath, serializedSettings)
