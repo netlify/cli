@@ -16,7 +16,7 @@ import {
 } from '../../utils/command-helpers.mjs'
 import { INTERNAL_FUNCTIONS_FOLDER, SERVE_FUNCTIONS_FOLDER } from '../../utils/functions/functions.mjs'
 import { getLogMessage } from '../log.mjs'
-import { getPathInHome, getPathInProject } from '../settings.mjs'
+import { getPathInProject } from '../settings.mjs'
 
 import NetlifyFunction from './netlify-function.mjs'
 import runtimes from './runtimes/index.mjs'
@@ -196,7 +196,7 @@ export class FunctionsRegistry {
         buildRustSource: env.NETLIFY_EXPERIMENTAL_BUILD_RUST_SOURCE === 'true',
         project_deploy_configuration_api_use_per_function_configuration_files: true,
       },
-      configFileDirectories: [join(getPathInHome(['.netlify']), INTERNAL_FUNCTIONS_FOLDER)],
+      configFileDirectories: [getPathInProject([INTERNAL_FUNCTIONS_FOLDER])],
       config: this.config.functions,
     })
 
