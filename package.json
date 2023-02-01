@@ -76,10 +76,10 @@
   },
   "dependencies": {
     "@fastify/static": "^6.6.0",
-    "@netlify/build": "^29.5.2",
+    "@netlify/build": "^29.5.4",
     "@netlify/config": "^20.3.2",
     "@netlify/edge-bundler": "^8.4.0",
-    "@netlify/framework-info": "^9.7.1",
+    "@netlify/framework-info": "^9.7.2",
     "@netlify/local-functions-proxy": "^1.1.1",
     "@netlify/zip-it-and-ship-it": "^8.5.0",
     "@octokit/rest": "^19.0.0",
