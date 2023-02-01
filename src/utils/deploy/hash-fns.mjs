@@ -1,10 +1,11 @@
 import { readFile } from 'fs/promises'
-import path, { join } from 'path'
+import path from 'path'
 import { promisify } from 'util'
 
 import fromArray from 'from2-array'
 import pumpModule from 'pump'
 
+import { getPathInProject } from '../../lib/settings.mjs'
 import { INTERNAL_FUNCTIONS_FOLDER } from '../functions/functions.mjs'
 
 import { hasherCtor, manifestCollectorCtor } from './hasher-segments.mjs'
@@ -70,7 +71,7 @@ const getFunctionZips = async ({
   return await zipFunctions(directories, tmpDir, {
     featureFlags: { project_deploy_configuration_api_use_per_function_configuration_files: true },
     basePath: rootDir,
-    configFileDirectories: [join('.netlify', INTERNAL_FUNCTIONS_FOLDER)],
+    configFileDirectories: [getPathInProject([INTERNAL_FUNCTIONS_FOLDER])],
     config: functionsConfig,
   })
 }

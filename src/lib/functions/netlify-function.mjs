@@ -18,6 +18,7 @@ export default class NetlifyFunction {
   constructor({
     config,
     directory,
+    displayName,
     mainFile,
     name,
     projectRoot,
@@ -31,6 +32,7 @@ export default class NetlifyFunction {
     this.errorExit = errorExit
     this.mainFile = mainFile
     this.name = name
+    this.displayName = displayName
     this.projectRoot = projectRoot
     this.runtime = runtime
     this.timeoutBackground = timeoutBackground
