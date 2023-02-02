@@ -6,7 +6,7 @@ description: Sync and edit your Netlify Graph library
 # `graph`
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
-(Beta) Control the Netlify Graph functions for the current site
+(deprecated) Control the Netlify Graph functions for the current site
 
 **Usage**
 
