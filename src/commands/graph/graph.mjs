@@ -39,7 +39,7 @@ export const createGraphCommand = (program) => {
         'Netlify Graph is deprecated and will be removed from the CLI in a future release at the end of April, 2023. Please migrate off of Netlify Graph beforehand.',
       )
     })
-    .description('(deprecated) Control the Netlify Graph functions for the current site')
+    .description('(Deprecated) Control the Netlify Graph functions for the current site')
     .addExamples(['netlify graph:pull', 'netlify graph:edit'])
     .action(graph)
 }
