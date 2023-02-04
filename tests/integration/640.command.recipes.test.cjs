@@ -130,7 +130,6 @@ test.only('Handles JSON with comments', async (t) => {
     await childProcess
 
     const settingsText = await readFile(`${builder.directory}/.vscode/settings.json`, { encoding: 'utf8' })
-    t.log(settingsText)
     t.true(settingsText.includes(comment))
 
     const settings = parse(settingsText, null, true)
