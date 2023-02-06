@@ -98,7 +98,7 @@ test('Does not generate a new VS Code settings file if the user does not confirm
   })
 })
 
-test.only('Handles JSON with comments', async (t) => {
+test('Handles JSON with comments', async (t) => {
   await withSiteBuilder('repo', async (builder) => {
     const comment = '// sets value for someSetting'
     await builder
