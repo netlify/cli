@@ -17690,9 +17690,9 @@
       }
     },
     "node_modules/node-fetch": {
-      "version": "2.6.8",
-      "resolved": "https://registry.npmjs.org/node-fetch/-/node-fetch-2.6.8.tgz",
-      "integrity": "sha512-RZ6dBYuj8dRSfxpUSu+NsdF1dpPpluJxwOp+6IoDp/sH2QNDSvurYsAa+F1WxY2RjA1iP93xhcsUoYbF2XBqVg==",
+      "version": "2.6.9",
+      "resolved": "https://registry.npmjs.org/node-fetch/-/node-fetch-2.6.9.tgz",
+      "integrity": "sha512-DJm/CJkZkRjKKj4Zi4BsKVZh3ValV5IR5s7LVZnW+6YMh0W1BfNA8XSs6DLMGYlId5F3KnA70uu2qepcR08Qqg==",
       "dependencies": {
         "whatwg-url": "^5.0.0"
       },
@@ -23980,6 +23980,26 @@
       "funding": {
         "type": "opencollective",
         "url": "https://opencollective.com/verdaccio"
+      }
+    },
+    "node_modules/verdaccio-audit/node_modules/node-fetch": {
+      "version": "2.6.8",
+      "resolved": "https://registry.npmjs.org/node-fetch/-/node-fetch-2.6.8.tgz",
+      "integrity": "sha512-RZ6dBYuj8dRSfxpUSu+NsdF1dpPpluJxwOp+6IoDp/sH2QNDSvurYsAa+F1WxY2RjA1iP93xhcsUoYbF2XBqVg==",
+      "dev": true,
+      "dependencies": {
+        "whatwg-url": "^5.0.0"
+      },
+      "engines": {
+        "node": "4.x || >=6.0.0"
+      },
+      "peerDependencies": {
+        "encoding": "^0.1.0"
+      },
+      "peerDependenciesMeta": {
+        "encoding": {
+          "optional": true
+        }
       }
     },
     "node_modules/verdaccio-htpasswd": {
@@ -37356,9 +37376,9 @@
       "integrity": "sha512-/jKZoMpw0F8GRwl4/eLROPA3cfcXtLApP0QzLmUT/HuPCZWyB7IY9ZrMeKw2O/nFIqPQB3PVM9aYm0F312AXDQ=="
     },
     "node-fetch": {
-      "version": "2.6.8",
-      "resolved": "https://registry.npmjs.org/node-fetch/-/node-fetch-2.6.8.tgz",
-      "integrity": "sha512-RZ6dBYuj8dRSfxpUSu+NsdF1dpPpluJxwOp+6IoDp/sH2QNDSvurYsAa+F1WxY2RjA1iP93xhcsUoYbF2XBqVg==",
+      "version": "2.6.9",
+      "resolved": "https://registry.npmjs.org/node-fetch/-/node-fetch-2.6.9.tgz",
+      "integrity": "sha512-DJm/CJkZkRjKKj4Zi4BsKVZh3ValV5IR5s7LVZnW+6YMh0W1BfNA8XSs6DLMGYlId5F3KnA70uu2qepcR08Qqg==",
       "requires": {
         "whatwg-url": "^5.0.0"
       }
@@ -42158,6 +42178,17 @@
         "express": "4.18.2",
         "https-proxy-agent": "5.0.1",
         "node-fetch": "2.6.8"
+      },
+      "dependencies": {
+        "node-fetch": {
+          "version": "2.6.8",
+          "resolved": "https://registry.npmjs.org/node-fetch/-/node-fetch-2.6.8.tgz",
+          "integrity": "sha512-RZ6dBYuj8dRSfxpUSu+NsdF1dpPpluJxwOp+6IoDp/sH2QNDSvurYsAa+F1WxY2RjA1iP93xhcsUoYbF2XBqVg==",
+          "dev": true,
+          "requires": {
+            "whatwg-url": "^5.0.0"
+          }
+        }
       }
     },
     "verdaccio-htpasswd": {
