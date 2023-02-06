@@ -38,11 +38,11 @@ export const getSettings = async (settingsPath) => {
       throw new Error(`${settingsPath} is not a valid file.`)
     }
 
-    const file = await readFile(settingsPath)
+    const file = await readFile(settingsPath, 'utf8')
 
     return {
       fileExists: true,
-      settings: parse(file.toString()),
+      settings: parse(file),
     }
   } catch (error) {
     if (error.code !== 'ENOENT') {
