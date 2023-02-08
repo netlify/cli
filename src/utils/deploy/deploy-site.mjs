@@ -56,7 +56,7 @@ export const deploySite = async (
   })
 
   const edgeFunctionsDistPath = await getDistPathIfExists({ rootDir })
-  const [{ files, filesShaMap }, { fnShaMap, functionSchedules, functions, functionsWithNativeModules }] =
+  const [{ files, filesShaMap }, { fnConfig, fnShaMap, functionSchedules, functions, functionsWithNativeModules }] =
     await Promise.all([
       hashFiles({
         assetType,
@@ -125,6 +125,7 @@ For more information, visit https://ntl.fyi/cli-native-modules.`)
       files,
       functions,
       function_schedules: functionSchedules,
+      functions_config: fnConfig,
       async: Object.keys(files).length > syncFileLimit,
       branch,
       draft,

@@ -5,6 +5,9 @@ import { promisify } from 'util'
 import fromArray from 'from2-array'
 import pumpModule from 'pump'
 
+import { getPathInProject } from '../../lib/settings.mjs'
+import { INTERNAL_FUNCTIONS_FOLDER } from '../functions/functions.mjs'
+
 import { hasherCtor, manifestCollectorCtor } from './hasher-segments.mjs'
 
 const pump = promisify(pumpModule)
@@ -65,7 +68,12 @@ const getFunctionZips = async ({
 
   const { zipFunctions } = await import('@netlify/zip-it-and-ship-it')
 
-  return await zipFunctions(directories, tmpDir, { basePath: rootDir, config: functionsConfig })
+  return await zipFunctions(directories, tmpDir, {
+    featureFlags: { project_deploy_configuration_api_use_per_function_configuration_files: true },
+    basePath: rootDir,
+    configFileDirectories: [getPathInProject([INTERNAL_FUNCTIONS_FOLDER])],
+    config: functionsConfig,
+  })
 }
 
 const hashFns = async (
@@ -100,7 +108,7 @@ const hashFns = async (
     statusCb,
     tmpDir,
   })
-  const fileObjs = functionZips.map(({ path: functionPath, runtime }) => ({
+  const fileObjs = functionZips.map(({ displayName, path: functionPath, runtime }) => ({
     filepath: functionPath,
     root: tmpDir,
     relname: path.relative(tmpDir, functionPath),
@@ -110,7 +118,11 @@ const hashFns = async (
     assetType: 'function',
     normalizedPath: path.basename(functionPath, path.extname(functionPath)),
     runtime,
+    displayName,
   }))
+  const fnConfig = functionZips
+    .filter((func) => Boolean(func.displayName))
+    .reduce((funcs, curr) => ({ ...funcs, [curr.name]: { display_name: curr.displayName } }), {})
   const functionSchedules = functionZips
     .map(({ name, schedule }) => schedule && { name, cron: schedule })
     .filter(Boolean)
@@ -130,8 +142,7 @@ const hashFns = async (
   const manifestCollector = manifestCollectorCtor(functions, fnShaMap, { statusCb, assetType })
 
   await pump(functionStream, hasher, manifestCollector)
-
-  return { functionSchedules, functions, functionsWithNativeModules, fnShaMap }
+  return { functionSchedules, functions, functionsWithNativeModules, fnShaMap, fnConfig }
 }
 
 export default hashFns
