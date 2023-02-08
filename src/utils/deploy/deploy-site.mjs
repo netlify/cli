@@ -1,7 +1,7 @@
 import { rm } from 'fs/promises'
 
 import cleanDeep from 'clean-deep'
-import tempy from 'tempy'
+import { temporaryDirectory } from 'tempy'
 
 import { deployFileNormalizer, getDistPathIfExists, isEdgeFunctionFile } from '../../lib/edge-functions/deploy.mjs'
 import { warn } from '../command-helpers.mjs'
@@ -45,7 +45,7 @@ export const deploySite = async (
       /* default to noop */
     },
     syncFileLimit = DEFAULT_SYNC_LIMIT,
-    tmpDir = tempy.directory(),
+    tmpDir = temporaryDirectory(),
     rootDir,
   } = {},
 ) => {
