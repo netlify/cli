@@ -5,6 +5,7 @@ const path = require('path')
 const avaTest = require('ava')
 const { isCI } = require('ci-info')
 const dotProp = require('dot-prop')
+const getAvailablePort = require('get-port')
 const jwt = require('jsonwebtoken')
 const { Response } = require('node-fetch')
 
@@ -959,6 +960,125 @@ test('should have only allowed environment variables set', async (t) => {
           t.false(envKeys.includes('NODE_ENV'))
           t.false(envKeys.includes('DEPLOY_URL'))
           t.false(envKeys.includes('URL'))
+        },
+      )
+    })
+  })
+})
+
+test('should inject the `NETLIFY_DEV` environment variable in the process (legacy environment variables)', async (t) => {
+  const externalServerPort = await getAvailablePort()
+  const externalServerPath = path.join(__dirname, 'utils', 'external-server-cli.cjs')
+  const command = `node ${externalServerPath} ${externalServerPort}`
+
+  await withSiteBuilder('site-with-legacy-env-vars', async (builder) => {
+    const publicDir = 'public'
+
+    await builder
+      .withNetlifyToml({
+        config: {
+          build: {
+            publish: publicDir,
+          },
+          dev: {
+            command,
+            publish: publicDir,
+            targetPort: externalServerPort,
+            framework: '#custom',
+          },
+        },
+      })
+      .buildAsync()
+
+    await withDevServer({ cwd: builder.directory }, async ({ port }) => {
+      const response = await got(`http://localhost:${port}/`).json()
+
+      t.is(response.env.NETLIFY_DEV, 'true')
+    })
+  })
+})
+
+test('should inject the `NETLIFY_DEV` environment variable in the process', async (t) => {
+  const siteInfo = {
+    account_slug: 'test-account',
+    build_settings: {
+      env: {},
+    },
+    id: 'site_id',
+    name: 'site-name',
+    use_envelope: true,
+  }
+  const existingVar = {
+    key: 'EXISTING_VAR',
+    scopes: ['builds', 'functions'],
+    values: [
+      {
+        id: '1234',
+        context: 'production',
+        value: 'envelope-prod-value',
+      },
+      {
+        id: '2345',
+        context: 'dev',
+        value: 'envelope-dev-value',
+      },
+    ],
+  }
+  const routes = [
+    { path: 'sites/site_id', response: siteInfo },
+    { path: 'sites/site_id/service-instances', response: [] },
+    {
+      path: 'accounts',
+      response: [{ slug: siteInfo.account_slug }],
+    },
+    {
+      path: 'accounts/test-account/env/EXISTING_VAR',
+      response: existingVar,
+    },
+    {
+      path: 'accounts/test-account/env',
+      response: [existingVar],
+    },
+  ]
+
+  const externalServerPort = await getAvailablePort()
+  const externalServerPath = path.join(__dirname, 'utils', 'external-server-cli.cjs')
+  const command = `node ${externalServerPath} ${externalServerPort}`
+
+  await withSiteBuilder('site-with-env-vars', async (builder) => {
+    const publicDir = 'public'
+
+    await builder
+      .withNetlifyToml({
+        config: {
+          build: {
+            publish: publicDir,
+          },
+          dev: {
+            command,
+            publish: publicDir,
+            targetPort: externalServerPort,
+            framework: '#custom',
+          },
+        },
+      })
+      .buildAsync()
+
+    await withMockApi(routes, async ({ apiUrl }) => {
+      await withDevServer(
+        {
+          cwd: builder.directory,
+          offline: false,
+          env: {
+            NETLIFY_API_URL: apiUrl,
+            NETLIFY_SITE_ID: 'site_id',
+            NETLIFY_AUTH_TOKEN: 'fake-token',
+          },
+        },
+        async ({ port }) => {
+          const response = await got(`http://localhost:${port}/`).json()
+
+          t.is(response.env.NETLIFY_DEV, 'true')
         },
       )
     })

@@ -100,7 +100,7 @@ test('should warn if using static server and `targetPort` is configured', async 
       .buildAsync()
 
     await withDevServer(
-      { cwd: builder.directory, args: ['--dir', 'public', '--targetPort', '3000'] },
+      { cwd: builder.directory, args: ['--dir', 'public', '--target-port', '3000'] },
       async ({ output, url }) => {
         const response = await got(url).text()
         t.is(response, content)
@@ -118,7 +118,7 @@ test('should run `command` when both `command` and `targetPort` are configured',
     // a failure is expected since we use `echo hello` instead of starting a server
     const error = await t.throwsAsync(() =>
       withDevServer(
-        { cwd: builder.directory, args: ['--command', 'echo hello', '--targetPort', '3000'] },
+        { cwd: builder.directory, args: ['--command', 'echo hello', '--target-port', '3000'] },
         () => {},
         true,
       ),
@@ -165,7 +165,7 @@ test('should throw if framework=#custom but command is missing', async (t) => {
     await builder.withNetlifyToml({ config: { dev: { framework: '#custom' } } }).buildAsync()
 
     const error = await t.throwsAsync(() =>
-      withDevServer({ cwd: builder.directory, args: ['--targetPort', '3000'] }, () => {}, true),
+      withDevServer({ cwd: builder.directory, args: ['--target-port', '3000'] }, () => {}, true),
     )
     t.snapshot(normalize(error.stdout, { duration: true, filePath: true }))
   })
@@ -188,7 +188,7 @@ test('should start custom command if framework=#custom, command and targetPort a
 
     const error = await t.throwsAsync(() =>
       withDevServer(
-        { cwd: builder.directory, args: ['--command', 'echo hello', '--targetPort', '3000'] },
+        { cwd: builder.directory, args: ['--command', 'echo hello', '--target-port', '3000'] },
         () => {},
         true,
       ),
@@ -208,7 +208,7 @@ test(`should print specific error when command doesn't exist`, async (t) => {
           args: [
             '--command',
             'oops-i-did-it-again forgot-to-use-a-valid-command',
-            '--targetPort',
+            '--target-port',
             '3000',
             '--framework',
             '#custom',
@@ -258,7 +258,7 @@ test('should not run framework detection if command and targetPort are configure
     // a failure is expected since the command exits early
     const error = await t.throwsAsync(() =>
       withDevServer(
-        { cwd: builder.directory, args: ['--command', 'echo hello', '--targetPort', '3000'] },
+        { cwd: builder.directory, args: ['--command', 'echo hello', '--target-port', '3000'] },
         () => {},
         true,
       ),

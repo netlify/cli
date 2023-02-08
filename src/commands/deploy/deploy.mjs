@@ -5,6 +5,7 @@ import { cwd, env } from 'process'
 
 import { runCoreSteps } from '@netlify/build'
 import { restoreConfig, updateConfig } from '@netlify/config'
+import { Option } from 'commander'
 import { get } from 'dot-prop'
 import inquirer from 'inquirer'
 import isObject from 'lodash/isObject.js'
@@ -726,7 +727,15 @@ Support for package.json's main field, and intrinsic index.js entrypoints are co
     .option('-d, --dir <path>', 'Specify a folder to deploy')
     .option('-f, --functions <folder>', 'Specify a functions folder to deploy')
     .option('-p, --prod', 'Deploy to production', false)
-    .option('--prodIfUnlocked', 'Deploy to production if unlocked, create a draft otherwise', false)
+    .addOption(
+      new Option(
+        '--prodIfUnlocked',
+        'Old, prefer --prod-if-unlocked. Deploy to production if unlocked, create a draft otherwise',
+      )
+        .default(false)
+        .hideHelp(true),
+    )
+    .option('--prod-if-unlocked', 'Deploy to production if unlocked, create a draft otherwise', false)
     .option(
       '--alias <name>',
       'Specifies the alias for deployment, the string at the beginning of the deploy subdomain. Useful for creating predictable deployment URLs. Avoid setting an alias string to the same value as a deployed branch. `alias` doesn’t create a branch deploy and can’t be used in conjunction with the branch subdomain feature. Maximum 37 characters.',
@@ -754,7 +763,7 @@ Support for package.json's main field, and intrinsic index.js entrypoints are co
       'netlify deploy --site my-first-site',
       'netlify deploy --prod',
       'netlify deploy --prod --open',
-      'netlify deploy --prodIfUnlocked',
+      'netlify deploy --prod-if-unlocked',
       'netlify deploy --message "A message with an $ENV_VAR"',
       'netlify deploy --auth $NETLIFY_AUTH_TOKEN',
       'netlify deploy --trigger',

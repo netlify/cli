@@ -89,7 +89,7 @@ OPTIONS
   -l, --live                                                   start a public live session
   -o, --offline                                                disables any features that require network access
   -p, --port=port                                              port of netlify dev
-  --targetPort=targetPort                                      port of target app server
+  --target-port=targetPort                                     port of target app server
 
 DESCRIPTION
   The dev command will run a local dev server with Netlify's proxy and redirect rules
@@ -97,7 +97,7 @@ DESCRIPTION
 EXAMPLES
   $ netlify dev
   $ netlify dev -d public
-  $ netlify dev -c "hugo server -w" --targetPort 1313
+  $ netlify dev -c "hugo server -w" --target-port 1313
 ```
 
 The command will automatically open your preferred browser to serve the application. You can customize this behaviour by

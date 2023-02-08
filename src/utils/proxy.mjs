@@ -13,6 +13,7 @@ import contentType from 'content-type'
 import cookie from 'cookie'
 import { get } from 'dot-prop'
 import generateETag from 'etag'
+import getAvailablePort from 'get-port'
 import httpProxy from 'http-proxy'
 import { createProxyMiddleware } from 'http-proxy-middleware'
 import jwtDecode from 'jwt-decode'
@@ -28,10 +29,11 @@ import {
 import { fileExistsAsync, isFileAsync } from '../lib/fs.mjs'
 import renderErrorTemplate from '../lib/render-error-template.mjs'
 
-import { NETLIFYDEVLOG, NETLIFYDEVWARN } from './command-helpers.mjs'
+import { NETLIFYDEVLOG, NETLIFYDEVWARN, log, chalk } from './command-helpers.mjs'
 import createStreamPromise from './create-stream-promise.mjs'
 import { headersForPath, parseHeaders } from './headers.mjs'
 import { createRewriter, onChanges } from './rules-proxy.mjs'
+import { signRedirect } from './sign-redirect.mjs'
 
 const decompress = util.promisify(zlib.gunzip)
 const shouldGenerateETag = Symbol('Internal: response should generate ETag')
@@ -142,7 +144,7 @@ const alternativePathsFor = function (url) {
   return paths
 }
 
-const serveRedirect = async function ({ match, options, proxy, req, res }) {
+const serveRedirect = async function ({ env, match, options, proxy, req, res, siteInfo }) {
   if (!match) return proxy.web(req, res, options)
 
   options = options || req.proxyOptions || {}
@@ -152,6 +154,24 @@ const serveRedirect = async function ({ match, options, proxy, req, res }) {
     Object.entries(match.proxyHeaders).forEach(([key, value]) => {
       req.headers[key] = value
     })
+  }
+
+  if (match.signingSecret) {
+    const signingSecretVar = env[match.signingSecret]
+
+    if (signingSecretVar) {
+      req.headers['x-nf-sign'] = signRedirect({
+        deployContext: 'dev',
+        secret: signingSecretVar.value,
+        siteID: siteInfo.id,
+        siteURL: siteInfo.url,
+      })
+    } else {
+      log(
+        NETLIFYDEVWARN,
+        `Could not sign redirect because environment variable ${chalk.yellow(match.signingSecret)} is not set`,
+      )
+    }
   }
 
   if (isFunction(options.functionsPort, req.url)) {
@@ -305,7 +325,7 @@ const reqToURL = function (req, pathname) {
 
 const MILLISEC_TO_SEC = 1e3
 
-const initializeProxy = async function ({ configPath, distDir, host, port, projectDir }) {
+const initializeProxy = async function ({ configPath, distDir, env, host, port, projectDir, siteInfo }) {
   const proxy = httpProxy.createProxyServer({
     selfHandleResponse: true,
     target: {
@@ -369,13 +389,21 @@ const initializeProxy = async function ({ configPath, distDir, host, port, proje
         return proxy.web(req, res, req.proxyOptions)
       }
       if (req.proxyOptions && req.proxyOptions.match) {
-        return serveRedirect({ req, res, proxy: handlers, match: req.proxyOptions.match, options: req.proxyOptions })
+        return serveRedirect({
+          req,
+          res,
+          proxy: handlers,
+          match: req.proxyOptions.match,
+          options: req.proxyOptions,
+          siteInfo,
+          env,
+        })
       }
     }
 
     if (req.proxyOptions.staticFile && isRedirect({ status: proxyRes.statusCode }) && proxyRes.headers.location) {
       req.url = proxyRes.headers.location
-      return serveRedirect({ req, res, proxy: handlers, match: null, options: req.proxyOptions })
+      return serveRedirect({ req, res, proxy: handlers, match: null, options: req.proxyOptions, siteInfo, env })
     }
 
     const responseData = []
@@ -471,7 +499,11 @@ const initializeProxy = async function ({ configPath, distDir, host, port, proje
   return handlers
 }
 
-const onRequest = async ({ addonsUrls, edgeFunctionsProxy, functionsServer, proxy, rewriter, settings }, req, res) => {
+const onRequest = async (
+  { addonsUrls, edgeFunctionsProxy, env, functionsServer, proxy, rewriter, settings, siteInfo },
+  req,
+  res,
+) => {
   req.originalBody = ['GET', 'OPTIONS', 'HEAD'].includes(req.method)
     ? null
     : await createStreamPromise(req, BYTES_LIMIT)
@@ -508,7 +540,7 @@ const onRequest = async ({ addonsUrls, edgeFunctionsProxy, functionsServer, prox
     // We don't want to generate an ETag for 3xx redirects.
     req[shouldGenerateETag] = ({ statusCode }) => statusCode < 300 || statusCode >= 400
 
-    return serveRedirect({ req, res, proxy, match, options })
+    return serveRedirect({ req, res, proxy, match, options, siteInfo, env })
   }
 
   // The request will be served by the framework server, which means we want to
@@ -545,6 +577,7 @@ export const startProxy = async function ({
   siteInfo,
   state,
 }) {
+  const secondaryServerPort = settings.https ? await getAvailablePort() : null
   const functionsServer = settings.functionsPort ? `http://127.0.0.1:${settings.functionsPort}` : null
   const edgeFunctionsProxy = await initializeEdgeFunctionsProxy({
     config,
@@ -555,18 +588,21 @@ export const startProxy = async function ({
     geoCountry,
     getUpdatedConfig,
     inspectSettings,
+    mainPort: settings.port,
     offline,
+    passthroughPort: secondaryServerPort || settings.port,
     projectDir,
-    settings,
     siteInfo,
     state,
   })
   const proxy = await initializeProxy({
+    env,
     host: settings.frameworkHost,
     port: settings.frameworkPort,
     distDir: settings.dist,
     projectDir,
     configPath,
+    siteInfo,
   })
 
   const rewriter = await createRewriter({
@@ -585,17 +621,35 @@ export const startProxy = async function ({
     addonsUrls,
     functionsServer,
     edgeFunctionsProxy,
+    siteInfo,
+    env,
   })
-  const server = settings.https
+  const primaryServer = settings.https
     ? https.createServer({ cert: settings.https.cert, key: settings.https.key }, onRequestWithOptions)
     : http.createServer(onRequestWithOptions)
-
-  server.on('upgrade', function onUpgrade(req, socket, head) {
+  const onUpgrade = function onUpgrade(req, socket, head) {
     proxy.ws(req, socket, head)
-  })
+  }
 
-  server.listen({ port: settings.port })
-  await once(server, 'listening')
+  primaryServer.on('upgrade', onUpgrade)
+  primaryServer.listen({ port: settings.port })
+
+  const eventQueue = [once(primaryServer, 'listening')]
+
+  // If we're running the main server on HTTPS, we need to start a secondary
+  // server on HTTP for receiving passthrough requests from edge functions.
+  // This lets us run the Deno server on HTTP and avoid the complications of
+  // Deno talking to Node on HTTPS with potentially untrusted certificates.
+  if (secondaryServerPort) {
+    const secondaryServer = http.createServer(onRequestWithOptions)
+
+    secondaryServer.on('upgrade', onUpgrade)
+    secondaryServer.listen({ port: secondaryServerPort })
+
+    eventQueue.push(once(secondaryServer, 'listening'))
+  }
+
+  await Promise.all(eventQueue)
 
   const scheme = settings.https ? 'https' : 'http'
   return `${scheme}://localhost:${settings.port}`

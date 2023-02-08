@@ -6,9 +6,9 @@ version = "0.1.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-aws_lambda_events = "0.7.2"
+aws_lambda_events = "0.7.3"
 http = "0.2.8"
-lambda_runtime = "0.7.1"
+lambda_runtime = "0.7.3"
 log = "0.4.17"
 simple_logger = "1.16.0"
-tokio = "1.22.0"
+tokio = "1.24.2"

@@ -1,9 +1,8 @@
 const headers = {
   ForwardedHost: 'x-forwarded-host',
-  ForwardedProtocol: 'x-forwarded-proto',
-  Functions: 'x-deno-functions',
+  Functions: 'x-nf-edge-functions',
   Geo: 'x-nf-geo',
-  Passthrough: 'x-deno-pass',
+  Passthrough: 'x-nf-passthrough',
   RequestID: 'X-NF-Request-ID',
   IP: 'x-nf-client-connection-ip',
   Site: 'X-NF-Site-Info',

@@ -146,6 +146,7 @@ export const getEnvelopeEnv = async ({ api, context = 'dev', env, key = '', scop
   const accountEnv = formatEnvelopeData({ context, envelopeItems: accountEnvelopeItems, scope, source: 'account' })
   const siteEnv = formatEnvelopeData({ context, envelopeItems: siteEnvelopeItems, scope, source: 'ui' })
   const generalEnv = filterEnvBySource(env, 'general')
+  const internalEnv = filterEnvBySource(env, 'internal')
   const addonsEnv = filterEnvBySource(env, 'addons')
   const configFileEnv = filterEnvBySource(env, 'configFile')
 
@@ -159,6 +160,7 @@ export const getEnvelopeEnv = async ({ api, context = 'dev', env, key = '', scop
     ...(includeConfigEnvVars ? addonsEnv : {}),
     ...siteEnv,
     ...(includeConfigEnvVars ? configFileEnv : {}),
+    ...internalEnv,
   }
 }
 
