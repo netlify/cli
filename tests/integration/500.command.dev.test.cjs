@@ -7,7 +7,6 @@ const avaTest = require('ava')
 const { isCI } = require('ci-info')
 const FormData = require('form-data')
 const getPort = require('get-port')
-const tempy = require('tempy')
 
 const { withDevServer } = require('./utils/dev-server.cjs')
 const got = require('./utils/got.cjs')
@@ -395,7 +394,9 @@ test('Runs build plugins with the `onPreDev` event', async (t) => {
       },
     };
   `
-  const pluginDirectory = await tempy.directory()
+
+  const { temporaryDirectory } = await import('tempy')
+  const pluginDirectory = await temporaryDirectory()
 
   await fs.writeFile(path.join(pluginDirectory, 'manifest.yml'), pluginManifest)
   await fs.writeFile(path.join(pluginDirectory, 'index.js'), pluginSource)
@@ -440,7 +441,9 @@ test('Handles errors from the `onPreDev` event', async (t) => {
       },
     };
   `
-  const pluginDirectory = await tempy.directory()
+
+  const { temporaryDirectory } = await import('tempy')
+  const pluginDirectory = await temporaryDirectory()
 
   await fs.writeFile(path.join(pluginDirectory, 'manifest.yml'), pluginManifest)
   await fs.writeFile(path.join(pluginDirectory, 'index.js'), pluginSource)

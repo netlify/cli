@@ -2,7 +2,7 @@
 import { dirname, extname } from 'path'
 import { platform } from 'process'
 
-import tempy from 'tempy'
+import { temporaryFile } from 'tempy'
 
 import execa from '../../../../utils/execa.mjs'
 import { runFunctionsProxy } from '../../local-proxy.mjs'
@@ -41,7 +41,7 @@ const checkGoInstallation = async ({ cwd }) => {
 
 export const getBuildFunction = ({ func }) => {
   const functionDirectory = dirname(func.mainFile)
-  const binaryPath = tempy.file(isWindows ? { extension: 'exe' } : undefined)
+  const binaryPath = temporaryFile(isWindows ? { extension: 'exe' } : undefined)
 
   return () => build({ binaryPath, functionDirectory })
 }
