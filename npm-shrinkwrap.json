@@ -30,6 +30,7 @@
         "ci-info": "^3.0.0",
         "clean-deep": "^3.0.2",
         "commander": "^9.2.0",
+        "comment-json": "^4.2.3",
         "concordance": "^5.0.0",
         "configstore": "^5.0.0",
         "content-type": "^1.0.4",
@@ -6558,6 +6559,11 @@
         "url": "https://github.com/sponsors/ljharb"
       }
     },
+    "node_modules/array-timsort": {
+      "version": "1.0.3",
+      "resolved": "https://registry.npmjs.org/array-timsort/-/array-timsort-1.0.3.tgz",
+      "integrity": "sha512-/+3GRL7dDAGEfM6TseQk/U+mi18TU2Ms9I3UlLdUMhz2hbvGNTKdj9xniwXfUqgYhHxRx0+8UnKkvlNwVU+cWQ=="
+    },
     "node_modules/array-union": {
       "version": "2.1.0",
       "resolved": "https://registry.npmjs.org/array-union/-/array-union-2.1.0.tgz",
@@ -8392,6 +8398,26 @@
       "engines": {
         "node": "^12.20.0 || >=14"
       }
+    },
+    "node_modules/comment-json": {
+      "version": "4.2.3",
+      "resolved": "https://registry.npmjs.org/comment-json/-/comment-json-4.2.3.tgz",
+      "integrity": "sha512-SsxdiOf064DWoZLH799Ata6u7iV658A11PlWtZATDlXPpKGJnbJZ5Z24ybixAi+LUUqJ/GKowAejtC5GFUG7Tw==",
+      "dependencies": {
+        "array-timsort": "^1.0.3",
+        "core-util-is": "^1.0.3",
+        "esprima": "^4.0.1",
+        "has-own-prop": "^2.0.0",
+        "repeat-string": "^1.6.1"
+      },
+      "engines": {
+        "node": ">= 6"
+      }
+    },
+    "node_modules/comment-json/node_modules/core-util-is": {
+      "version": "1.0.3",
+      "resolved": "https://registry.npmjs.org/core-util-is/-/core-util-is-1.0.3.tgz",
+      "integrity": "sha512-ZQBvi1DcpJ4GDqanjucZ2Hj3wEO5pZDS89BWbkcrvdxksJorwUDDZamX9ldFkp9aw2lmBDLgkObEA4DWNJ9FYQ=="
     },
     "node_modules/common-path-prefix": {
       "version": "3.0.0",
@@ -13441,6 +13467,14 @@
       },
       "engines": {
         "node": ">=0.10.0"
+      }
+    },
+    "node_modules/has-own-prop": {
+      "version": "2.0.0",
+      "resolved": "https://registry.npmjs.org/has-own-prop/-/has-own-prop-2.0.0.tgz",
+      "integrity": "sha512-Pq0h+hvsVm6dDEa8x82GnLSYHOzNDt7f0ddFa3FqcQlgzEiptPqL+XrOJNavjOzSYiYWIrgeVYYgGlLmnxwilQ==",
+      "engines": {
+        "node": ">=8"
       }
     },
     "node_modules/has-symbol-support-x": {
@@ -27964,6 +27998,11 @@
         "is-string": "^1.0.7"
       }
     },
+    "array-timsort": {
+      "version": "1.0.3",
+      "resolved": "https://registry.npmjs.org/array-timsort/-/array-timsort-1.0.3.tgz",
+      "integrity": "sha512-/+3GRL7dDAGEfM6TseQk/U+mi18TU2Ms9I3UlLdUMhz2hbvGNTKdj9xniwXfUqgYhHxRx0+8UnKkvlNwVU+cWQ=="
+    },
     "array-union": {
       "version": "2.1.0",
       "resolved": "https://registry.npmjs.org/array-union/-/array-union-2.1.0.tgz",
@@ -29332,6 +29371,25 @@
       "version": "9.5.0",
       "resolved": "https://registry.npmjs.org/commander/-/commander-9.5.0.tgz",
       "integrity": "sha512-KRs7WVDKg86PWiuAqhDrAQnTXZKraVcCc6vFdL14qrZ/DcWwuRo7VoiYXalXO7S5GKpqYiVEwCbgFDfxNHKJBQ=="
+    },
+    "comment-json": {
+      "version": "4.2.3",
+      "resolved": "https://registry.npmjs.org/comment-json/-/comment-json-4.2.3.tgz",
+      "integrity": "sha512-SsxdiOf064DWoZLH799Ata6u7iV658A11PlWtZATDlXPpKGJnbJZ5Z24ybixAi+LUUqJ/GKowAejtC5GFUG7Tw==",
+      "requires": {
+        "array-timsort": "^1.0.3",
+        "core-util-is": "^1.0.3",
+        "esprima": "^4.0.1",
+        "has-own-prop": "^2.0.0",
+        "repeat-string": "^1.6.1"
+      },
+      "dependencies": {
+        "core-util-is": {
+          "version": "1.0.3",
+          "resolved": "https://registry.npmjs.org/core-util-is/-/core-util-is-1.0.3.tgz",
+          "integrity": "sha512-ZQBvi1DcpJ4GDqanjucZ2Hj3wEO5pZDS89BWbkcrvdxksJorwUDDZamX9ldFkp9aw2lmBDLgkObEA4DWNJ9FYQ=="
+        }
+      }
     },
     "common-path-prefix": {
       "version": "3.0.0",
@@ -33248,6 +33306,11 @@
           }
         }
       }
+    },
+    "has-own-prop": {
+      "version": "2.0.0",
+      "resolved": "https://registry.npmjs.org/has-own-prop/-/has-own-prop-2.0.0.tgz",
+      "integrity": "sha512-Pq0h+hvsVm6dDEa8x82GnLSYHOzNDt7f0ddFa3FqcQlgzEiptPqL+XrOJNavjOzSYiYWIrgeVYYgGlLmnxwilQ=="
     },
     "has-symbol-support-x": {
       "version": "1.4.2",
