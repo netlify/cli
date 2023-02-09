@@ -167,7 +167,7 @@
     "string-similarity": "^4.0.4",
     "strip-ansi-control-characters": "^2.0.0",
     "tabtab": "^3.0.2",
-    "tempy": "^1.0.0",
+    "tempy": "^3.0.0",
     "terminal-link": "^2.1.1",
     "through2-filter": "^3.0.0",
     "through2-map": "^3.0.0",
