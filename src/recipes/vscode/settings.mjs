@@ -1,12 +1,13 @@
 import { mkdir, readFile, stat, writeFile } from 'fs/promises'
 import { dirname, relative } from 'path'
 
-import { parse, assign, stringify } from 'comment-json'
+// eslint-disable-next-line import/no-namespace
+import * as JSONC from 'comment-json'
 import unixify from 'unixify'
 
 export const applySettings = (existingSettings, { denoBinary, edgeFunctionsPath, repositoryRoot }) => {
   const relativeEdgeFunctionsPath = unixify(relative(repositoryRoot, edgeFunctionsPath))
-  const settings = assign(existingSettings, {
+  const settings = JSONC.assign(existingSettings, {
     'deno.enable': true,
     'deno.enablePaths': existingSettings['deno.enablePaths'] || [],
     'deno.unstable': true,
@@ -42,7 +43,7 @@ export const getSettings = async (settingsPath) => {
 
     return {
       fileExists: true,
-      settings: parse(file),
+      settings: JSONC.parse(file),
     }
   } catch (error) {
     if (error.code !== 'ENOENT') {
@@ -57,7 +58,7 @@ export const getSettings = async (settingsPath) => {
 }
 
 export const writeSettings = async ({ settings, settingsPath }) => {
-  const serializedSettings = stringify(settings, null, 2)
+  const serializedSettings = JSONC.stringify(settings, null, 2)
 
   await mkdir(dirname(settingsPath), { recursive: true })
   await writeFile(settingsPath, serializedSettings)
