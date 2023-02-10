@@ -109,7 +109,7 @@
     "env-paths": "^2.2.0",
     "envinfo": "^7.3.1",
     "etag": "^1.8.1",
-    "execa": "^5.0.0",
+    "execa": "^6.0.0",
     "express": "^4.17.1",
     "express-logging": "^1.1.1",
     "extract-zip": "^2.0.1",
