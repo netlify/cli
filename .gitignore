@@ -3,6 +3,7 @@
 /dist
 /tmp
 node_modules
+!**/__fixtures__/**/node_modules
 misc
 coverage
 .idea
