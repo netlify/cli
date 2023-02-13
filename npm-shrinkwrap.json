@@ -1557,9 +1557,9 @@
       }
     },
     "node_modules/@fastify/static": {
-      "version": "6.8.0",
-      "resolved": "https://registry.npmjs.org/@fastify/static/-/static-6.8.0.tgz",
-      "integrity": "sha512-MNQp7KM0NIC+722OPN3MholnfvM+Vg2ao4OwbWWNJhAJEWOKGe4fJsEjIh3OkN0z5ymhklc7EXGCG0zDaIU5ZQ==",
+      "version": "6.9.0",
+      "resolved": "https://registry.npmjs.org/@fastify/static/-/static-6.9.0.tgz",
+      "integrity": "sha512-9SBVNJi2+KTnfiW1WjiVXDsmUxliNI54OF1eOiaop264dh8FwXSuLmO62JXvx7+VD0vQXEqsyRbFCYUJ9aJxng==",
       "dependencies": {
         "@fastify/accept-negotiator": "^1.0.0",
         "@fastify/send": "^2.0.0",
@@ -24889,9 +24889,9 @@
       }
     },
     "@fastify/static": {
-      "version": "6.8.0",
-      "resolved": "https://registry.npmjs.org/@fastify/static/-/static-6.8.0.tgz",
-      "integrity": "sha512-MNQp7KM0NIC+722OPN3MholnfvM+Vg2ao4OwbWWNJhAJEWOKGe4fJsEjIh3OkN0z5ymhklc7EXGCG0zDaIU5ZQ==",
+      "version": "6.9.0",
+      "resolved": "https://registry.npmjs.org/@fastify/static/-/static-6.9.0.tgz",
+      "integrity": "sha512-9SBVNJi2+KTnfiW1WjiVXDsmUxliNI54OF1eOiaop264dh8FwXSuLmO62JXvx7+VD0vQXEqsyRbFCYUJ9aJxng==",
       "requires": {
         "@fastify/accept-negotiator": "^1.0.0",
         "@fastify/send": "^2.0.0",
