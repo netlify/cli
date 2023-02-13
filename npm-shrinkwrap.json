@@ -16,7 +16,7 @@
         "@netlify/edge-bundler": "^8.5.0",
         "@netlify/framework-info": "^9.8.1",
         "@netlify/local-functions-proxy": "^1.1.1",
-        "@netlify/zip-it-and-ship-it": "^8.5.0",
+        "@netlify/zip-it-and-ship-it": "^8.6.0",
         "@octokit/rest": "^19.0.0",
         "ansi-escapes": "^5.0.0",
         "ansi-styles": "^5.0.0",
@@ -4650,9 +4650,9 @@
       }
     },
     "node_modules/@netlify/zip-it-and-ship-it": {
-      "version": "8.5.0",
-      "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-8.5.0.tgz",
-      "integrity": "sha512-Rog5PE4e7v6WQzc9JIA9CeDnj5KaetkwYCa5abTCkbCOJo52koVDaILj1YNqMbvrMbsnsrRIvzVaBlVS1xCZGQ==",
+      "version": "8.6.0",
+      "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-8.6.0.tgz",
+      "integrity": "sha512-k1bykwO5h9nerPjFwjPe3dvL8XplnySxjL4BfPTOLMpfWnWurdpiFTpSY3nICz5jBvBzTjnaTGVe4mZOBNMViA==",
       "dependencies": {
         "@babel/parser": "7.16.8",
         "@netlify/binary-info": "^1.0.0",
@@ -4907,9 +4907,9 @@
       }
     },
     "node_modules/@netlify/zip-it-and-ship-it/node_modules/locate-path": {
-      "version": "7.1.1",
-      "resolved": "https://registry.npmjs.org/locate-path/-/locate-path-7.1.1.tgz",
-      "integrity": "sha512-vJXaRMJgRVD3+cUZs3Mncj2mxpt5mP0EmNOsxRSZRMlbqjvxzDEOIUWXGmavo0ZC9+tNZCBLQ66reA11nbpHZg==",
+      "version": "7.2.0",
+      "resolved": "https://registry.npmjs.org/locate-path/-/locate-path-7.2.0.tgz",
+      "integrity": "sha512-gvVijfZvn7R+2qyPX8mAuKcFGDf6Nc61GdvGafQsHL0sBIxfKzA+usWn4GFC/bk+QdwPUD4kWFJLhElipq+0VA==",
       "dependencies": {
         "p-locate": "^6.0.0"
       },
@@ -4921,9 +4921,9 @@
       }
     },
     "node_modules/@netlify/zip-it-and-ship-it/node_modules/minimatch": {
-      "version": "6.1.6",
-      "resolved": "https://registry.npmjs.org/minimatch/-/minimatch-6.1.6.tgz",
-      "integrity": "sha512-6bR3UIeh/DF8+p6A9Spyuy67ShOq42rOkHWi7eUe3Ua99Zo5lZfGC6lJJWkeoK4k9jQFT3Pl7czhTXimG2XheA==",
+      "version": "6.2.0",
+      "resolved": "https://registry.npmjs.org/minimatch/-/minimatch-6.2.0.tgz",
+      "integrity": "sha512-sauLxniAmvnhhRjFwPNnJKaPFYyddAgbYdeUpHULtCT/GhzdCx/MDNy+Y40lBxTQUrMzDE8e0S43Z5uqfO0REg==",
       "dependencies": {
         "brace-expansion": "^2.0.1"
       },
@@ -26747,9 +26747,9 @@
       }
     },
     "@netlify/zip-it-and-ship-it": {
-      "version": "8.5.0",
-      "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-8.5.0.tgz",
-      "integrity": "sha512-Rog5PE4e7v6WQzc9JIA9CeDnj5KaetkwYCa5abTCkbCOJo52koVDaILj1YNqMbvrMbsnsrRIvzVaBlVS1xCZGQ==",
+      "version": "8.6.0",
+      "resolved": "https://registry.npmjs.org/@netlify/zip-it-and-ship-it/-/zip-it-and-ship-it-8.6.0.tgz",
+      "integrity": "sha512-k1bykwO5h9nerPjFwjPe3dvL8XplnySxjL4BfPTOLMpfWnWurdpiFTpSY3nICz5jBvBzTjnaTGVe4mZOBNMViA==",
       "requires": {
         "@babel/parser": "7.16.8",
         "@netlify/binary-info": "^1.0.0",
@@ -26916,17 +26916,17 @@
           "integrity": "sha512-ojtSU++zLJ3jQG9bAYjg94w+/DOJtRyD7nPaerMFrBhmdVmiV5/exYH5t4uHga4G/95nT6hr1OJoKIFbYbrW5w=="
         },
         "locate-path": {
-          "version": "7.1.1",
-          "resolved": "https://registry.npmjs.org/locate-path/-/locate-path-7.1.1.tgz",
-          "integrity": "sha512-vJXaRMJgRVD3+cUZs3Mncj2mxpt5mP0EmNOsxRSZRMlbqjvxzDEOIUWXGmavo0ZC9+tNZCBLQ66reA11nbpHZg==",
+          "version": "7.2.0",
+          "resolved": "https://registry.npmjs.org/locate-path/-/locate-path-7.2.0.tgz",
+          "integrity": "sha512-gvVijfZvn7R+2qyPX8mAuKcFGDf6Nc61GdvGafQsHL0sBIxfKzA+usWn4GFC/bk+QdwPUD4kWFJLhElipq+0VA==",
           "requires": {
             "p-locate": "^6.0.0"
           }
         },
         "minimatch": {
-          "version": "6.1.6",
-          "resolved": "https://registry.npmjs.org/minimatch/-/minimatch-6.1.6.tgz",
-          "integrity": "sha512-6bR3UIeh/DF8+p6A9Spyuy67ShOq42rOkHWi7eUe3Ua99Zo5lZfGC6lJJWkeoK4k9jQFT3Pl7czhTXimG2XheA==",
+          "version": "6.2.0",
+          "resolved": "https://registry.npmjs.org/minimatch/-/minimatch-6.2.0.tgz",
+          "integrity": "sha512-sauLxniAmvnhhRjFwPNnJKaPFYyddAgbYdeUpHULtCT/GhzdCx/MDNy+Y40lBxTQUrMzDE8e0S43Z5uqfO0REg==",
           "requires": {
             "brace-expansion": "^2.0.1"
           }
