@@ -29,7 +29,7 @@
         "chokidar": "^3.0.2",
         "ci-info": "^3.0.0",
         "clean-deep": "^3.0.2",
-        "commander": "^9.2.0",
+        "commander": "^10.0.0",
         "comment-json": "^4.2.3",
         "concordance": "^5.0.0",
         "configstore": "^5.0.0",
@@ -8393,11 +8393,11 @@
       }
     },
     "node_modules/commander": {
-      "version": "9.5.0",
-      "resolved": "https://registry.npmjs.org/commander/-/commander-9.5.0.tgz",
-      "integrity": "sha512-KRs7WVDKg86PWiuAqhDrAQnTXZKraVcCc6vFdL14qrZ/DcWwuRo7VoiYXalXO7S5GKpqYiVEwCbgFDfxNHKJBQ==",
+      "version": "10.0.0",
+      "resolved": "https://registry.npmjs.org/commander/-/commander-10.0.0.tgz",
+      "integrity": "sha512-zS5PnTI22FIRM6ylNW8G4Ap0IEOyk62fhLSD0+uHRT9McRCLGpkVNvao4bjimpK/GShynyQkFFxHhwMcETmduA==",
       "engines": {
-        "node": "^12.20.0 || >=14"
+        "node": ">=14"
       }
     },
     "node_modules/comment-json": {
@@ -15193,6 +15193,14 @@
         "node": ">=6"
       }
     },
+    "node_modules/lambda-local/node_modules/commander": {
+      "version": "9.5.0",
+      "resolved": "https://registry.npmjs.org/commander/-/commander-9.5.0.tgz",
+      "integrity": "sha512-KRs7WVDKg86PWiuAqhDrAQnTXZKraVcCc6vFdL14qrZ/DcWwuRo7VoiYXalXO7S5GKpqYiVEwCbgFDfxNHKJBQ==",
+      "engines": {
+        "node": "^12.20.0 || >=14"
+      }
+    },
     "node_modules/lazystream": {
       "version": "1.0.1",
       "resolved": "https://registry.npmjs.org/lazystream/-/lazystream-1.0.1.tgz",
@@ -18752,6 +18760,14 @@
       },
       "engines": {
         "node": "^14.16.0 || >=16.0.0"
+      }
+    },
+    "node_modules/precinct/node_modules/commander": {
+      "version": "9.5.0",
+      "resolved": "https://registry.npmjs.org/commander/-/commander-9.5.0.tgz",
+      "integrity": "sha512-KRs7WVDKg86PWiuAqhDrAQnTXZKraVcCc6vFdL14qrZ/DcWwuRo7VoiYXalXO7S5GKpqYiVEwCbgFDfxNHKJBQ==",
+      "engines": {
+        "node": "^12.20.0 || >=14"
       }
     },
     "node_modules/precinct/node_modules/node-source-walk": {
@@ -23309,6 +23325,14 @@
       },
       "engines": {
         "node": ">=10"
+      }
+    },
+    "node_modules/wait-port/node_modules/commander": {
+      "version": "9.5.0",
+      "resolved": "https://registry.npmjs.org/commander/-/commander-9.5.0.tgz",
+      "integrity": "sha512-KRs7WVDKg86PWiuAqhDrAQnTXZKraVcCc6vFdL14qrZ/DcWwuRo7VoiYXalXO7S5GKpqYiVEwCbgFDfxNHKJBQ==",
+      "engines": {
+        "node": "^12.20.0 || >=14"
       }
     },
     "node_modules/wcwidth": {
@@ -29369,9 +29393,9 @@
       }
     },
     "commander": {
-      "version": "9.5.0",
-      "resolved": "https://registry.npmjs.org/commander/-/commander-9.5.0.tgz",
-      "integrity": "sha512-KRs7WVDKg86PWiuAqhDrAQnTXZKraVcCc6vFdL14qrZ/DcWwuRo7VoiYXalXO7S5GKpqYiVEwCbgFDfxNHKJBQ=="
+      "version": "10.0.0",
+      "resolved": "https://registry.npmjs.org/commander/-/commander-10.0.0.tgz",
+      "integrity": "sha512-zS5PnTI22FIRM6ylNW8G4Ap0IEOyk62fhLSD0+uHRT9McRCLGpkVNvao4bjimpK/GShynyQkFFxHhwMcETmduA=="
     },
     "comment-json": {
       "version": "4.2.3",
@@ -34536,6 +34560,13 @@
         "commander": "^9.4.0",
         "dotenv": "^16.0.2",
         "winston": "^3.8.2"
+      },
+      "dependencies": {
+        "commander": {
+          "version": "9.5.0",
+          "resolved": "https://registry.npmjs.org/commander/-/commander-9.5.0.tgz",
+          "integrity": "sha512-KRs7WVDKg86PWiuAqhDrAQnTXZKraVcCc6vFdL14qrZ/DcWwuRo7VoiYXalXO7S5GKpqYiVEwCbgFDfxNHKJBQ=="
+        }
       }
     },
     "lazystream": {
@@ -37190,6 +37221,11 @@
         "node-source-walk": "^5.0.0"
       },
       "dependencies": {
+        "commander": {
+          "version": "9.5.0",
+          "resolved": "https://registry.npmjs.org/commander/-/commander-9.5.0.tgz",
+          "integrity": "sha512-KRs7WVDKg86PWiuAqhDrAQnTXZKraVcCc6vFdL14qrZ/DcWwuRo7VoiYXalXO7S5GKpqYiVEwCbgFDfxNHKJBQ=="
+        },
         "node-source-walk": {
           "version": "5.0.0",
           "resolved": "https://registry.npmjs.org/node-source-walk/-/node-source-walk-5.0.0.tgz",
@@ -40622,6 +40658,13 @@
         "chalk": "^4.1.2",
         "commander": "^9.3.0",
         "debug": "^4.3.4"
+      },
+      "dependencies": {
+        "commander": {
+          "version": "9.5.0",
+          "resolved": "https://registry.npmjs.org/commander/-/commander-9.5.0.tgz",
+          "integrity": "sha512-KRs7WVDKg86PWiuAqhDrAQnTXZKraVcCc6vFdL14qrZ/DcWwuRo7VoiYXalXO7S5GKpqYiVEwCbgFDfxNHKJBQ=="
+        }
       }
     },
     "wcwidth": {
