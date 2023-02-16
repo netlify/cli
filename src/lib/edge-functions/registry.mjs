@@ -3,6 +3,16 @@ import { fileURLToPath } from 'url'
 
 import { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log, warn, watchDebounced } from '../../utils/command-helpers.mjs'
 
+// TODO: Import from `@netlify/edge-bundler` once it exports this type.
+/**
+ * @typedef InSourceDeclaration
+ * @type {object}
+ * @property {string} [cache]
+ * @property {string} function
+ * @property {string | string[]} [path]
+ * @property {string | string[]} [excludedPath]
+ */
+
 /**
  * @typedef EdgeFunction
  * @type {object}
@@ -21,10 +31,11 @@ import { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log, warn, watchDebounced } from '
  * @typedef EdgeFunctionDeclarationWithPattern
  * @type {object}
  * @property {string} function
- * @property {RegExp} pattern
+ * @property {string} pattern
  */
 
-/** @typedef {(EdgeFunctionDeclarationWithPath | EdgeFunctionDeclarationWithPattern) } EdgeFunctionDeclaration */
+/** @typedef {(EdgeFunctionDeclarationWithPath | EdgeFunctionDeclarationWithPattern)} EdgeFunctionDeclaration */
+/** @typedef {Awaited<ReturnType<typeof import('@netlify/edge-bundler').serve>>} RunIsolate */
 
 export class EdgeFunctionsRegistry {
   /**
@@ -37,7 +48,7 @@ export class EdgeFunctionsRegistry {
    * @param {() => Promise<object>} opts.getUpdatedConfig
    * @param {EdgeFunction[]} opts.internalFunctions
    * @param {string} opts.projectDir
-   * @param {(functions: EdgeFunction[], env?: NodeJS.ProcessEnv) => Promise<object>} opts.runIsolate
+   * @param {RunIsolate} opts.runIsolate
    */
   constructor({
     bundler,
@@ -50,9 +61,6 @@ export class EdgeFunctionsRegistry {
     projectDir,
     runIsolate,
   }) {
-    /**
-     * @type {import('@netlify/edge-bundler')}
-     */
     this.bundler = bundler
 
     /**
@@ -76,7 +84,7 @@ export class EdgeFunctionsRegistry {
     this.internalFunctions = internalFunctions
 
     /**
-     * @type {(functions: EdgeFunction[], env?: NodeJS.ProcessEnv) => Promise<object>}
+     * @type {RunIsolate}
      */
     this.runIsolate = runIsolate
 
@@ -91,7 +99,7 @@ export class EdgeFunctionsRegistry {
     this.declarationsFromConfig = this.getDeclarationsFromConfig(config)
 
     /**
-     * @type {EdgeFunctionDeclaration[]}
+     * @type {InSourceDeclaration[]}
      */
     this.declarationsFromSource = []
 
@@ -287,7 +295,7 @@ export class EdgeFunctionsRegistry {
    */
   async matchURLPath(urlPath) {
     const declarations = this.mergeDeclarations()
-    const manifest = await this.bundler.generateManifest({
+    const manifest = this.bundler.generateManifest({
       declarations,
       functions: this.functions,
     })
@@ -309,14 +317,14 @@ export class EdgeFunctionsRegistry {
     return { functionNames, orphanedDeclarations }
   }
 
-  async matchURLPathAgainstOrphanedDeclarations(urlPath) {
+  matchURLPathAgainstOrphanedDeclarations(urlPath) {
     // `generateManifest` will only include functions for which there is both a
     // function file and a config declaration, but we want to catch cases where
     // a config declaration exists without a matching function file. To do that
     // we compute a list of functions from the declarations (the `path` doesn't
     // really matter).
     const functions = this.declarationsFromConfig.map((declaration) => ({ name: declaration.function, path: '' }))
-    const manifest = await this.bundler.generateManifest({
+    const manifest = this.bundler.generateManifest({
       declarations: this.declarationsFromConfig,
       functions,
     })
@@ -346,12 +354,33 @@ export class EdgeFunctionsRegistry {
     const declarations = [...this.declarationsFromConfig]
 
     this.declarationsFromSource.forEach((declarationFromSource) => {
-      const index = declarations.findIndex(({ function: func }) => func === declarationFromSource.function)
+      const { path: pathOrPaths, ...configProps } = declarationFromSource
 
-      if (index === -1) {
-        declarations.push(declarationFromSource)
+      // Find any declarations in the config for the function.
+      const indexes = declarations
+        .filter(({ function: func }) => func === declarationFromSource.function)
+        .map((_, index) => index)
+
+      // If the in-source declaration doesn't have a path, add its properties
+      // to any existing declarations for the function.
+      if (pathOrPaths === undefined) {
+        indexes.forEach((index) => {
+          declarations[index] = { ...declarations[index], ...configProps }
+        })
       } else {
-        declarations[index] = { ...declarations[index], ...declarationFromSource }
+        // The in-source declaration has a path, and those take precedence.
+        // Discard any config declarations first.
+        indexes.forEach((index) => {
+          declarations.splice(index, 1)
+        })
+
+        // The path may be an array or a string, so let's normalize that first.
+        const paths = Array.isArray(pathOrPaths) ? pathOrPaths : [pathOrPaths]
+
+        // Create a new declaration for each path.
+        paths.forEach((path) => {
+          declarations.push({ ...configProps, path })
+        })
       }
     })
 

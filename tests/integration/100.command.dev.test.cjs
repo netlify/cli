@@ -707,7 +707,7 @@ test('should respect in-source configuration from edge functions', async (t) => 
 
       await builder
         .withEdgeFunction({
-          config: { path: '/hello-2' },
+          config: { path: ['/hello-2', '/hello-3'] },
           handler: () => new Response('Hello world'),
           name: 'hello',
         })
@@ -723,6 +723,11 @@ test('should respect in-source configuration from edge functions', async (t) => 
 
       t.is(res3.statusCode, 200)
       t.is(res3.body, 'Hello world')
+
+      const res4 = await got(`http://localhost:${port}/hello-3`, { throwHttpErrors: false })
+
+      t.is(res4.statusCode, 200)
+      t.is(res4.body, 'Hello world')
     })
   })
 })
