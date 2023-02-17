@@ -1,4 +1,5 @@
 import http from 'http'
+import net from 'net'
 import path from 'path'
 
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
@@ -6,24 +7,25 @@ import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 import { createRewriter, getWatchers } from '../../src/utils/rules-proxy.mjs'
 
 import got from './utils/got.cjs'
-import { createSiteBuilder } from './utils/site-builder.cjs'
+import { createSiteBuilder, SiteBuilder } from './utils/site-builder.cjs'
 
 describe('rules-proxy', () => {
-  let server
-  let builder
+  let server: http.Server
+  let builder: SiteBuilder
   beforeAll(async () => {
     builder = createSiteBuilder({ siteName: 'site-with-redirects-file' })
     builder.withRedirectsFile({
       redirects: [{ from: '/something ', to: '/ping', status: 200 }],
     })
 
-    await builder.buildAsync()
+    await builder.build()
 
     const rewriter = await createRewriter({
       distDir: builder.directory,
       projectDir: builder.directory,
       jwtSecret: '',
       jwtRoleClaim: '',
+      geoCountry: undefined,
       configPath: path.join(builder.directory, 'netlify.toml'),
     })
     server = http.createServer(async function onRequest(req, res) {
@@ -42,11 +44,11 @@ describe('rules-proxy', () => {
       server.close()
     })
     await Promise.all(getWatchers().map((watcher) => watcher.close()))
-    await builder.cleanupAsync()
+    await builder.cleanup()
   })
 
   test('should apply re-write rule based on _redirects file', async () => {
-    const response = await got(`http://localhost:${server.address().port}/something`).json()
+    const response = await got(`http://localhost:${(server?.address() as net.AddressInfo).port}/something`).json()
 
     expect(response.from).toBe('/something')
     expect(response.to).toBe('/ping')
