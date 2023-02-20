@@ -25,6 +25,7 @@ import { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log, warn, watchDebounced } from '
  * @type {object}
  * @property {string} function
  * @property {string} path
+ * @property {string=} name
  */
 
 /**
@@ -32,6 +33,7 @@ import { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log, warn, watchDebounced } from '
  * @type {object}
  * @property {string} function
  * @property {string} pattern
+ * @property {string=} name
  */
 
 /** @typedef {(EdgeFunctionDeclarationWithPath | EdgeFunctionDeclarationWithPattern)} EdgeFunctionDeclaration */
@@ -194,11 +196,11 @@ export class EdgeFunctionsRegistry {
       await this.build(functionsFound)
 
       deletedFunctions.forEach((func) => {
-        EdgeFunctionsRegistry.logDeletedFunction(func)
+        EdgeFunctionsRegistry.logDeletedFunction(func, this.findDisplayName(func.name))
       })
 
       newFunctions.forEach((func) => {
-        EdgeFunctionsRegistry.logAddedFunction(func)
+        EdgeFunctionsRegistry.logAddedFunction(func, this.findDisplayName(func.name))
       })
     } catch {
       // no-op
@@ -257,7 +259,8 @@ export class EdgeFunctionsRegistry {
         log(`${NETLIFYDEVLOG} ${chalk.green('Reloaded')} edge functions`)
       } else {
         functionNames.forEach((functionName) => {
-          log(`${NETLIFYDEVLOG} ${chalk.green('Reloaded')} edge function ${chalk.yellow(functionName)}`)
+          const displayName = this.findDisplayName(functionName)
+          log(`${NETLIFYDEVLOG} ${chalk.green('Reloaded')} edge function ${chalk.yellow(displayName || functionName)}`)
         })
       }
     } catch {
@@ -282,12 +285,12 @@ export class EdgeFunctionsRegistry {
     return this.initialization
   }
 
-  static logAddedFunction(func) {
-    log(`${NETLIFYDEVLOG} ${chalk.green('Loaded')} edge function ${chalk.yellow(func.name)}`)
+  static logAddedFunction(func, displayName) {
+    log(`${NETLIFYDEVLOG} ${chalk.green('Loaded')} edge function ${chalk.yellow(displayName || func.name)}`)
   }
 
-  static logDeletedFunction(func) {
-    log(`${NETLIFYDEVLOG} ${chalk.magenta('Removed')} edge function ${chalk.yellow(func.name)}`)
+  static logDeletedFunction(func, displayName) {
+    log(`${NETLIFYDEVLOG} ${chalk.magenta('Removed')} edge function ${chalk.yellow(displayName || func.name)}`)
   }
 
   /**
@@ -444,7 +447,7 @@ export class EdgeFunctionsRegistry {
     const functions = await this.bundler.find(directories)
 
     functions.forEach((func) => {
-      EdgeFunctionsRegistry.logAddedFunction(func)
+      EdgeFunctionsRegistry.logAddedFunction(func, this.findDisplayName(func.name))
     })
 
     this.functions = functions
@@ -480,5 +483,9 @@ export class EdgeFunctionsRegistry {
     })
 
     this.directoryWatchers.set(directory, watcher)
+  }
+
+  findDisplayName(func) {
+    return this.declarationsFromConfig?.find((declaration) => declaration.function === func)?.name
   }
 }
