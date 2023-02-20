@@ -56,9 +56,10 @@ test('force rewrite', async (t) => {
 test('functions rewrite echo without body', async (t) => {
   const { host, port, url } = t.context.server
   const response = await got(`${url}/api/echo?ding=dong`).json()
+  const { 'x-nf-request-id': requestID, ...headers } = response.headers
 
   t.is(response.body, undefined)
-  t.deepEqual(response.headers, {
+  t.deepEqual(headers, {
     accept: 'application/json',
     'accept-encoding': 'gzip, deflate, br',
     'client-ip': clientIP,
@@ -67,6 +68,7 @@ test('functions rewrite echo without body', async (t) => {
     'user-agent': 'got (https://github.com/sindresorhus/got)',
     'x-forwarded-for': originalIP,
   })
+  t.is(requestID.length, 26)
   t.is(response.httpMethod, 'GET')
   t.is(response.isBase64Encoded, true)
   t.is(response.path, '/api/echo')
@@ -83,9 +85,10 @@ test('functions rewrite echo with body', async (t) => {
       body: 'some=thing',
     })
     .json()
+  const { 'x-nf-request-id': requestID, ...headers } = response.headers
 
   t.is(response.body, 'some=thing')
-  t.deepEqual(response.headers, {
+  t.deepEqual(headers, {
     accept: 'application/json',
     'accept-encoding': 'gzip, deflate, br',
     'client-ip': clientIP,
@@ -96,6 +99,7 @@ test('functions rewrite echo with body', async (t) => {
     'user-agent': 'got (https://github.com/sindresorhus/got)',
     'x-forwarded-for': originalIP,
   })
+  t.is(requestID.length, 26)
   t.is(response.httpMethod, 'POST')
   t.is(response.isBase64Encoded, false)
   t.is(response.path, '/api/echo')
@@ -105,8 +109,9 @@ test('functions rewrite echo with body', async (t) => {
 test('functions echo with multiple query params', async (t) => {
   const { host, port, url } = t.context.server
   const response = await got(`${url}/.netlify/functions/echo?category=a&category=b`).json()
+  const { 'x-nf-request-id': requestID, ...headers } = response.headers
 
-  t.deepEqual(response.headers, {
+  t.deepEqual(headers, {
     accept: 'application/json',
     'accept-encoding': 'gzip, deflate, br',
     'client-ip': clientIP,
@@ -115,6 +120,7 @@ test('functions echo with multiple query params', async (t) => {
     'user-agent': 'got (https://github.com/sindresorhus/got)',
     'x-forwarded-for': originalIP,
   })
+  t.is(requestID.length, 26)
   t.is(response.httpMethod, 'GET')
   t.is(response.isBase64Encoded, true)
   t.is(response.path, '/.netlify/functions/echo')
