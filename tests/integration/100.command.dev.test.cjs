@@ -198,7 +198,7 @@ test('Serves an Edge Function that terminates a response', async (t) => {
         },
       ])
       .withEdgeFunction({
-        handler: () => new Response('Hello world'),
+        handler: (req) => new Response(req.headers.get('x-nf-request-id')),
         name: 'hello',
       })
 
@@ -208,7 +208,8 @@ test('Serves an Edge Function that terminates a response', async (t) => {
       const response = await got(`${server.url}/edge-function`)
 
       t.is(response.statusCode, 200)
-      t.is(response.body, 'Hello world')
+      t.is(response.body.length, 26)
+      t.is(response.body, response.headers['x-nf-request-id'])
     })
   })
 })
