@@ -109,6 +109,7 @@
         "through2-map": "^3.0.0",
         "to-readable-stream": "^2.1.0",
         "toml": "^3.0.0",
+        "ulid": "^2.3.0",
         "unixify": "^1.0.0",
         "update-notifier": "^6.0.0",
         "uuid": "^9.0.0",
@@ -22636,6 +22637,14 @@
         "node": ">= 0.8"
       }
     },
+    "node_modules/ulid": {
+      "version": "2.3.0",
+      "resolved": "https://registry.npmjs.org/ulid/-/ulid-2.3.0.tgz",
+      "integrity": "sha512-keqHubrlpvT6G2wH0OEfSW4mquYRcbe/J8NMmveoQOjUqmo+hXtO+ORCpWhdbZ7k72UtY61BL7haGxW6enBnjw==",
+      "bin": {
+        "ulid": "bin/cli.js"
+      }
+    },
     "node_modules/unbox-primitive": {
       "version": "1.0.1",
       "resolved": "https://registry.npmjs.org/unbox-primitive/-/unbox-primitive-1.0.1.tgz",
@@ -40847,6 +40856,11 @@
       "requires": {
         "random-bytes": "~1.0.0"
       }
+    },
+    "ulid": {
+      "version": "2.3.0",
+      "resolved": "https://registry.npmjs.org/ulid/-/ulid-2.3.0.tgz",
+      "integrity": "sha512-keqHubrlpvT6G2wH0OEfSW4mquYRcbe/J8NMmveoQOjUqmo+hXtO+ORCpWhdbZ7k72UtY61BL7haGxW6enBnjw=="
     },
     "unbox-primitive": {
       "version": "1.0.1",
