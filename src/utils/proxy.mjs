@@ -31,7 +31,8 @@ import renderErrorTemplate from '../lib/render-error-template.mjs'
 
 import { NETLIFYDEVLOG, NETLIFYDEVWARN, log, chalk } from './command-helpers.mjs'
 import createStreamPromise from './create-stream-promise.mjs'
-import { headersForPath, parseHeaders } from './headers.mjs'
+import { headersForPath, parseHeaders, NFRequestID } from './headers.mjs'
+import { generateRequestID } from './request-id.mjs'
 import { createRewriter, onChanges } from './rules-proxy.mjs'
 import { signRedirect } from './sign-redirect.mjs'
 
@@ -369,6 +370,11 @@ const initializeProxy = async function ({ configPath, distDir, env, host, port, 
     res.end(message)
   })
   proxy.on('proxyReq', (proxyReq, req) => {
+    const requestID = generateRequestID()
+
+    proxyReq.setHeader(NFRequestID, requestID)
+    req.headers[NFRequestID] = requestID
+
     if (isEdgeFunctionsRequest(req)) {
       handleProxyRequest(req, proxyReq)
     }
@@ -383,6 +389,14 @@ const initializeProxy = async function ({ configPath, distDir, env, host, port, 
     }
   })
   proxy.on('proxyRes', (proxyRes, req, res) => {
+    res.setHeader('server', 'Netlify')
+
+    const requestID = req.headers[NFRequestID]
+
+    if (requestID) {
+      res.setHeader(NFRequestID, requestID)
+    }
+
     if (proxyRes.statusCode === 404 || proxyRes.statusCode === 403) {
       if (req.alternativePaths && req.alternativePaths.length !== 0) {
         req.url = req.alternativePaths.shift()

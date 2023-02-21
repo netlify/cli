@@ -4,7 +4,6 @@ import { relative } from 'path'
 import { cwd, env } from 'process'
 
 import getAvailablePort from 'get-port'
-import { v4 as generateUUID } from 'uuid'
 
 import { NETLIFYDEVERR, NETLIFYDEVWARN, chalk, error as printError, log } from '../../utils/command-helpers.mjs'
 import { getGeoLocation } from '../geo-location.mjs'
@@ -133,7 +132,6 @@ export const initializeProxy = async ({
       [headers.Functions]: functionNames.join(','),
       [headers.ForwardedHost]: `localhost:${passthroughPort}`,
       [headers.Passthrough]: 'passthrough',
-      [headers.RequestID]: generateUUID(),
       [headers.IP]: LOCAL_HOST,
     }
 

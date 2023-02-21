@@ -21,7 +21,8 @@ export const startStaticServer = async ({ settings }) => {
   })
 
   server.addHook('onRequest', (req, reply, done) => {
-    reply.header('X-Powered-by', 'netlify-dev')
+    reply.header('age', '0')
+    reply.header('cache-control', 'public, max-age=0, must-revalidate')
     const validMethods = ['GET', 'HEAD']
     if (!validMethods.includes(req.method)) {
       reply.code(405).send('Method Not Allowed')
