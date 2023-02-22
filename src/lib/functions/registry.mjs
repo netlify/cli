@@ -194,7 +194,6 @@ export class FunctionsRegistry {
     const functions = await this.listFunctions(directories, {
       featureFlags: {
         buildRustSource: env.NETLIFY_EXPERIMENTAL_BUILD_RUST_SOURCE === 'true',
-        project_deploy_configuration_api_use_per_function_configuration_files: true,
       },
       configFileDirectories: [getPathInProject([INTERNAL_FUNCTIONS_FOLDER])],
       config: this.config.functions,
