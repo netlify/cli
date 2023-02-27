@@ -40,8 +40,8 @@ const getDefaultSettings = ({
   const recommendedPlugins = getRecommendPlugins(frameworkPlugins, config)
   const {
     command: defaultBuildCmd = frameworkBuildCommand,
-    publish: defaultBuildDir = frameworkBuildDir,
     functions: defaultFunctionsDir,
+    publish: defaultBuildDir = frameworkBuildDir,
   } = config.build
 
   return {
@@ -87,9 +87,9 @@ export const getBuildSettings = async ({ config, env, repositoryRoot, siteRoot }
   const baseDirectory = getBaseDirectory({ repositoryRoot, siteRoot })
   const nodeVersion = await detectNodeVersion({ baseDirectory, env })
   const {
-    frameworkName,
     frameworkBuildCommand,
     frameworkBuildDir,
+    frameworkName,
     frameworkPlugins = [],
   } = await getFrameworkInfo({
     baseDirectory,

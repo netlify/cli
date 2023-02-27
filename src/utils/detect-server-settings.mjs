@@ -160,13 +160,13 @@ const getSettingsFromFramework = (framework) => {
     build: { directory: dist },
     dev: {
       commands: [command],
-      port: frameworkPort,
       pollingStrategies = [],
+      port: frameworkPort,
     },
-    name: frameworkName,
-    staticAssetsDirectory: staticDir,
     env = {},
+    name: frameworkName,
     plugins,
+    staticAssetsDirectory: staticDir,
   } = framework
 
   return {
@@ -246,10 +246,10 @@ const handleCustomFramework = ({ devConfig }) => {
 const mergeSettings = async ({ devConfig, frameworkSettings = {} }) => {
   const {
     command: frameworkCommand,
-    frameworkPort: frameworkDetectedPort,
     dist,
-    framework,
     env,
+    framework,
+    frameworkPort: frameworkDetectedPort,
     pollingStrategies = [],
   } = frameworkSettings
 

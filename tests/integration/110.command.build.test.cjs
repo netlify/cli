@@ -18,7 +18,7 @@ const defaultEnvs = {
 const runBuildCommand = async function (
   t,
   cwd,
-  { apiUrl, exitCode: expectedExitCode = 0, output: outputs, flags = [], env = defaultEnvs } = {},
+  { apiUrl, env = defaultEnvs, exitCode: expectedExitCode = 0, flags = [], output: outputs } = {},
 ) {
   const { all, exitCode } = await execa(cliPath, ['build', ...flags], {
     reject: false,

@@ -22,7 +22,7 @@ export const loadDotEnvFiles = async function ({ envFiles, projectDir }) {
 // in the user configuration, the order is highest to lowest
 const defaultEnvFiles = ['.env.development.local', '.env.local', '.env.development', '.env']
 
-export const tryLoadDotEnvFiles = async ({ projectDir, dotenvFiles = defaultEnvFiles }) => {
+export const tryLoadDotEnvFiles = async ({ dotenvFiles = defaultEnvFiles, projectDir }) => {
   const results = await Promise.all(
     dotenvFiles.map(async (file) => {
       const filepath = path.resolve(projectDir, file)
