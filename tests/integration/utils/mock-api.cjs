@@ -18,7 +18,7 @@ const startMockApi = ({ routes, silent }) => {
   app.use(express.json())
   app.use(express.raw())
 
-  routes.forEach(({ method = 'get', path, response = {}, status = 200, requestBody }) => {
+  routes.forEach(({ method = 'get', path, requestBody, response = {}, status = 200 }) => {
     app[method.toLowerCase()](`/api/v1/${path}`, function onRequest(req, res) {
       // validate request body
       if (requestBody !== undefined && !isDeepStrictEqual(requestBody, req.body)) {
@@ -73,7 +73,7 @@ const getEnvironmentVariables = ({ apiUrl }) => ({
   NETLIFY_API_URL: apiUrl,
 })
 
-const getCLIOptions = ({ apiUrl, builder: { directory: cwd }, extendEnv = true, env = {} }) => ({
+const getCLIOptions = ({ apiUrl, builder: { directory: cwd }, env = {}, extendEnv = true }) => ({
   cwd,
   env: { ...getEnvironmentVariables({ apiUrl }), ...env },
   extendEnv,
