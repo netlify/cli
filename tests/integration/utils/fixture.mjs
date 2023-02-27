@@ -10,6 +10,7 @@ import callCli from './call-cli.cjs'
 import { startDevServer } from './dev-server.cjs'
 
 const FIXTURES_DIRECTORY = fileURLToPath(new URL('../__fixtures__/', import.meta.url))
+const HOOK_TIMEOUT = 30_000
 
 /**
  * @param {Object} options
@@ -29,7 +30,7 @@ export const setupFixtureTests = async function (options, factory) {
   beforeAll(async () => {
     if (options.fixture) fixture = await Fixture.create(options.fixture)
     if (options.devServer) devServer = await startDevServer({ cwd: fixture.directory })
-  })
+  }, HOOK_TIMEOUT)
 
   beforeEach((context) => {
     if (fixture) context.fixture = fixture
@@ -39,7 +40,7 @@ export const setupFixtureTests = async function (options, factory) {
   afterAll(async () => {
     if (devServer) await devServer.close()
     if (fixture) await fixture.cleanup()
-  })
+  }, HOOK_TIMEOUT)
 
   await factory()
 }
