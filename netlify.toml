@@ -5,8 +5,8 @@
   publish = "site/dist"
 
   [build.environment]
-    NODE_VERSION = "16"
-    AWS_LAMBDA_JS_RUNTIME = "nodejs14.x"
+    NODE_VERSION = "18"
+    AWS_LAMBDA_JS_RUNTIME = "nodejs18.x"
 
 [functions]
   # Sets a custom directory for Netlify Functions
