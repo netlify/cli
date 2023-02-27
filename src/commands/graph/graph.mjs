@@ -1,4 +1,6 @@
 // @ts-check
+import { warn } from '../../utils/command-helpers.mjs'
+
 import { createGraphConfigWriteCommand } from './graph-config-write.mjs'
 import { createGraphEditCommand } from './graph-edit.mjs'
 import { createGraphHandlerCommand } from './graph-handler.mjs'
@@ -32,7 +34,12 @@ export const createGraphCommand = (program) => {
 
   return program
     .command('graph')
-    .description('(Beta) Control the Netlify Graph functions for the current site')
+    .hook('preAction', () => {
+      warn(
+        'Netlify Graph is deprecated and will be removed from the CLI in a future release at the end of April, 2023. Please migrate off of Netlify Graph beforehand.',
+      )
+    })
+    .description('(Deprecated) Control the Netlify Graph functions for the current site')
     .addExamples(['netlify graph:pull', 'netlify graph:edit'])
     .action(graph)
 }

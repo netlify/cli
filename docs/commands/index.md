@@ -92,7 +92,7 @@ Manage netlify functions
 
 ### [graph](/docs/commands/graph.md)
 
-(Beta) Control the Netlify Graph functions for the current site
+(Deprecated) Control the Netlify Graph functions for the current site
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
