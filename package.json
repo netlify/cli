@@ -59,7 +59,7 @@
     "test:dev:vitest": "vitest run tests/unit/ && vitest run tests/integration",
     "test:ci:ava:integration": "c8 -r json ava --concurrency 1 --no-worker-threads tests/integration/",
     "test:ci:vitest:unit": "vitest run --coverage tests/unit/",
-    "test:ci:vitest:integration": "vitest run --coverage --no-threads tests/integration/",
+    "test:ci:vitest:integration": "vitest run --coverage tests/integration/",
     "test:affected": "node ./tools/affected-test.mjs",
     "e2e": "node ./tools/e2e/run.mjs",
     "docs": "node ./site/scripts/docs.mjs",
@@ -185,7 +185,7 @@
   "devDependencies": {
     "@babel/preset-react": "^7.12.13",
     "@netlify/eslint-config-node": "^7.0.0",
-    "@vitest/coverage-c8": "^0.28.0",
+    "@vitest/coverage-c8": "^0.29.0",
     "ava": "^4.0.0",
     "c8": "^7.11.0",
     "cpy": "^9.0.1",
@@ -209,7 +209,7 @@
     "typescript": "^4.4.4",
     "verdaccio": "^5.10.2",
     "vite": "^4.0.0",
-    "vitest": "^0.28.0"
+    "vitest": "^0.29.0"
   },
   "ava": {
     "files": [
