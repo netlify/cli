@@ -65,7 +65,7 @@
         "https-proxy-agent": "^5.0.0",
         "inquirer": "^6.5.1",
         "inquirer-autocomplete-prompt": "^1.0.1",
-        "is-docker": "^2.0.0",
+        "is-docker": "^3.0.0",
         "is-plain-obj": "^3.0.0",
         "is-wsl": "^2.2.0",
         "isexe": "^2.0.0",
@@ -8429,14 +8429,20 @@
       }
     },
     "node_modules/caniuse-lite": {
-      "version": "1.0.30001306",
-      "resolved": "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001306.tgz",
-      "integrity": "sha512-Wd1OuggRzg1rbnM5hv1wXs2VkxJH/AA+LuudlIqvZiCvivF+wJJe2mgBZC8gPMgI7D76PP5CTx8Luvaqc1V6OQ==",
+      "version": "1.0.30001458",
+      "resolved": "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001458.tgz",
+      "integrity": "sha512-lQ1VlUUq5q9ro9X+5gOEyH7i3vm+AYVT1WDCVB69XOZ17KZRhnZ9J0Sqz7wTHQaLBJccNCHq8/Ww5LlOIZbB0w==",
       "dev": true,
-      "funding": {
-        "type": "opencollective",
-        "url": "https://opencollective.com/browserslist"
-      }
+      "funding": [
+        {
+          "type": "opencollective",
+          "url": "https://opencollective.com/browserslist"
+        },
+        {
+          "type": "tidelift",
+          "url": "https://tidelift.com/funding/github/npm/caniuse-lite"
+        }
+      ]
     },
     "node_modules/caseless": {
       "version": "0.12.0",
@@ -12132,9 +12138,9 @@
       }
     },
     "node_modules/eslint-plugin-sort-destructure-keys": {
-      "version": "1.4.0",
-      "resolved": "https://registry.npmjs.org/eslint-plugin-sort-destructure-keys/-/eslint-plugin-sort-destructure-keys-1.4.0.tgz",
-      "integrity": "sha512-txU9l22mblz7YpyjJNYFy4wb5PVXiRMbc9lqFPPhvY4wKyBBYQvb31TIcduf7iRb4Bv01aiXcJiuCkOOrVY48Q==",
+      "version": "1.5.0",
+      "resolved": "https://registry.npmjs.org/eslint-plugin-sort-destructure-keys/-/eslint-plugin-sort-destructure-keys-1.5.0.tgz",
+      "integrity": "sha512-xGLyqHtbFXZNXQSvAiQ4ISBYokrbUywEhmaA50fKtSKgceCv5y3zjoNuZwcnajdM6q29Nxj+oXC9KcqfMsAPrg==",
       "dev": true,
       "dependencies": {
         "natural-compare-lite": "^1.4.0"
@@ -14936,14 +14942,14 @@
       }
     },
     "node_modules/is-docker": {
-      "version": "2.2.1",
-      "resolved": "https://registry.npmjs.org/is-docker/-/is-docker-2.2.1.tgz",
-      "integrity": "sha512-F+i2BKsFrH66iaUFc0woD8sLy8getkwTwtOBjvs56Cx4CgJDeKQeqfz8wAYiSb8JOprWhHH5p77PbmYCvvUuXQ==",
+      "version": "3.0.0",
+      "resolved": "https://registry.npmjs.org/is-docker/-/is-docker-3.0.0.tgz",
+      "integrity": "sha512-eljcgEDlEns/7AXFosB5K/2nCM4P7FQPkGc/DWLy5rmFEWvZayGrik1d9/QIY5nJ4f9YsVvBkA6kJpHn9rISdQ==",
       "bin": {
         "is-docker": "cli.js"
       },
       "engines": {
-        "node": ">=8"
+        "node": "^12.20.0 || ^14.13.1 || >=16.0.0"
       },
       "funding": {
         "url": "https://github.com/sponsors/sindresorhus"
@@ -15312,6 +15318,20 @@
       },
       "engines": {
         "node": ">=8"
+      }
+    },
+    "node_modules/is-wsl/node_modules/is-docker": {
+      "version": "2.2.1",
+      "resolved": "https://registry.npmjs.org/is-docker/-/is-docker-2.2.1.tgz",
+      "integrity": "sha512-F+i2BKsFrH66iaUFc0woD8sLy8getkwTwtOBjvs56Cx4CgJDeKQeqfz8wAYiSb8JOprWhHH5p77PbmYCvvUuXQ==",
+      "bin": {
+        "is-docker": "cli.js"
+      },
+      "engines": {
+        "node": ">=8"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/sindresorhus"
       }
     },
     "node_modules/isarray": {
@@ -18364,6 +18384,20 @@
       },
       "engines": {
         "node": ">=12"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/sindresorhus"
+      }
+    },
+    "node_modules/open/node_modules/is-docker": {
+      "version": "2.2.1",
+      "resolved": "https://registry.npmjs.org/is-docker/-/is-docker-2.2.1.tgz",
+      "integrity": "sha512-F+i2BKsFrH66iaUFc0woD8sLy8getkwTwtOBjvs56Cx4CgJDeKQeqfz8wAYiSb8JOprWhHH5p77PbmYCvvUuXQ==",
+      "bin": {
+        "is-docker": "cli.js"
+      },
+      "engines": {
+        "node": ">=8"
       },
       "funding": {
         "url": "https://github.com/sponsors/sindresorhus"
@@ -30147,9 +30181,9 @@
       }
     },
     "caniuse-lite": {
-      "version": "1.0.30001306",
-      "resolved": "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001306.tgz",
-      "integrity": "sha512-Wd1OuggRzg1rbnM5hv1wXs2VkxJH/AA+LuudlIqvZiCvivF+wJJe2mgBZC8gPMgI7D76PP5CTx8Luvaqc1V6OQ==",
+      "version": "1.0.30001458",
+      "resolved": "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001458.tgz",
+      "integrity": "sha512-lQ1VlUUq5q9ro9X+5gOEyH7i3vm+AYVT1WDCVB69XOZ17KZRhnZ9J0Sqz7wTHQaLBJccNCHq8/Ww5LlOIZbB0w==",
       "dev": true
     },
     "caseless": {
@@ -33040,9 +33074,9 @@
       }
     },
     "eslint-plugin-sort-destructure-keys": {
-      "version": "1.4.0",
-      "resolved": "https://registry.npmjs.org/eslint-plugin-sort-destructure-keys/-/eslint-plugin-sort-destructure-keys-1.4.0.tgz",
-      "integrity": "sha512-txU9l22mblz7YpyjJNYFy4wb5PVXiRMbc9lqFPPhvY4wKyBBYQvb31TIcduf7iRb4Bv01aiXcJiuCkOOrVY48Q==",
+      "version": "1.5.0",
+      "resolved": "https://registry.npmjs.org/eslint-plugin-sort-destructure-keys/-/eslint-plugin-sort-destructure-keys-1.5.0.tgz",
+      "integrity": "sha512-xGLyqHtbFXZNXQSvAiQ4ISBYokrbUywEhmaA50fKtSKgceCv5y3zjoNuZwcnajdM6q29Nxj+oXC9KcqfMsAPrg==",
       "dev": true,
       "requires": {
         "natural-compare-lite": "^1.4.0"
@@ -35083,9 +35117,9 @@
       }
     },
     "is-docker": {
-      "version": "2.2.1",
-      "resolved": "https://registry.npmjs.org/is-docker/-/is-docker-2.2.1.tgz",
-      "integrity": "sha512-F+i2BKsFrH66iaUFc0woD8sLy8getkwTwtOBjvs56Cx4CgJDeKQeqfz8wAYiSb8JOprWhHH5p77PbmYCvvUuXQ=="
+      "version": "3.0.0",
+      "resolved": "https://registry.npmjs.org/is-docker/-/is-docker-3.0.0.tgz",
+      "integrity": "sha512-eljcgEDlEns/7AXFosB5K/2nCM4P7FQPkGc/DWLy5rmFEWvZayGrik1d9/QIY5nJ4f9YsVvBkA6kJpHn9rISdQ=="
     },
     "is-error": {
       "version": "2.2.2",
@@ -35324,6 +35358,13 @@
       "integrity": "sha512-fKzAra0rGJUUBwGBgNkHZuToZcn+TtXHpeCgmkMJMMYx1sQDYaCSyjJBSCa2nH1DGm7s3n1oBnohoVTBaN7Lww==",
       "requires": {
         "is-docker": "^2.0.0"
+      },
+      "dependencies": {
+        "is-docker": {
+          "version": "2.2.1",
+          "resolved": "https://registry.npmjs.org/is-docker/-/is-docker-2.2.1.tgz",
+          "integrity": "sha512-F+i2BKsFrH66iaUFc0woD8sLy8getkwTwtOBjvs56Cx4CgJDeKQeqfz8wAYiSb8JOprWhHH5p77PbmYCvvUuXQ=="
+        }
       }
     },
     "isarray": {
@@ -37648,6 +37689,13 @@
         "define-lazy-prop": "^2.0.0",
         "is-docker": "^2.1.1",
         "is-wsl": "^2.2.0"
+      },
+      "dependencies": {
+        "is-docker": {
+          "version": "2.2.1",
+          "resolved": "https://registry.npmjs.org/is-docker/-/is-docker-2.2.1.tgz",
+          "integrity": "sha512-F+i2BKsFrH66iaUFc0woD8sLy8getkwTwtOBjvs56Cx4CgJDeKQeqfz8wAYiSb8JOprWhHH5p77PbmYCvvUuXQ=="
+        }
       }
     },
     "optionator": {

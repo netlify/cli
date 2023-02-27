@@ -16,7 +16,7 @@ const test = isCI ? avaTest.serial.bind(avaTest) : avaTest
 const DEFAULT_PORT = 9999
 const SERVE_TIMEOUT = 180_000
 
-const withFunctionsServer = async ({ builder, args = [], port = DEFAULT_PORT }, testHandler) => {
+const withFunctionsServer = async ({ args = [], builder, port = DEFAULT_PORT }, testHandler) => {
   let ps
   try {
     ps = execa(cliPath, ['functions:serve', ...args], {

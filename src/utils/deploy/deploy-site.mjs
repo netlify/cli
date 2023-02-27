@@ -39,6 +39,7 @@ export const deploySite = async (
     maxRetry = DEFAULT_MAX_RETRY,
     // API calls this the 'title'
     message: title,
+    rootDir,
     siteEnv,
     skipFunctionsCache,
     statusCb = () => {
@@ -46,7 +47,6 @@ export const deploySite = async (
     },
     syncFileLimit = DEFAULT_SYNC_LIMIT,
     tmpDir = temporaryDirectory(),
-    rootDir,
   } = {},
 ) => {
   statusCb({

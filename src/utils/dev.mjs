@@ -132,7 +132,7 @@ export const getSiteInformation = async ({ api, offline, site, siteInfo }) => {
 }
 
 const getEnvSourceName = (source) => {
-  const { printFn = chalk.green, name = source } = ENV_VAR_SOURCES[source] || {}
+  const { name = source, printFn = chalk.green } = ENV_VAR_SOURCES[source] || {}
 
   return printFn(name)
 }
