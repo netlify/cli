@@ -89,7 +89,7 @@
     "ascii-table": "0.0.9",
     "backoff": "^2.5.0",
     "better-opn": "^3.0.0",
-    "boxen": "^5.0.0",
+    "boxen": "^7.0.1",
     "chalk": "^5.0.0",
     "chokidar": "^3.0.2",
     "ci-info": "^3.0.0",

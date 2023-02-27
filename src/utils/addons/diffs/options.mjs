@@ -1,9 +1,9 @@
 // @ts-check
 import ansiStyles from 'ansi-styles'
+// eslint-disable-next-line no-restricted-imports
+import { Chalk } from 'chalk'
 
-import { chalk } from '../../command-helpers.mjs'
-
-const forceColor = new chalk.Instance({ level: 1 })
+const forceColor = new Chalk({ level: 1 })
 
 const colorTheme = {
   boolean: ansiStyles.yellow,
