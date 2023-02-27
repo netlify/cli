@@ -7929,6 +7929,20 @@
       "resolved": "https://registry.npmjs.org/ms/-/ms-2.0.0.tgz",
       "integrity": "sha512-Tpp60P6IUJDTuOq/5Z8cdskzJujfwqfOTkrwIwj7IRISpnkJnT6SyJ4PCPnGMoFjC9ddhal5KVIYtAt97ix05A=="
     },
+    "node_modules/body-parser/node_modules/raw-body": {
+      "version": "2.5.1",
+      "resolved": "https://registry.npmjs.org/raw-body/-/raw-body-2.5.1.tgz",
+      "integrity": "sha512-qqJBtEyVgS0ZmPGdCFPWJ3FreoqvG4MVQln/kCgF7Olq95IbOp0/BWyMwbdtn4VTvkM8Y7khCQ2Xgk/tcrCXig==",
+      "dependencies": {
+        "bytes": "3.1.2",
+        "http-errors": "2.0.0",
+        "iconv-lite": "0.4.24",
+        "unpipe": "1.0.0"
+      },
+      "engines": {
+        "node": ">= 0.8"
+      }
+    },
     "node_modules/boxen": {
       "version": "5.1.2",
       "resolved": "https://registry.npmjs.org/boxen/-/boxen-5.1.2.tgz",
@@ -19700,9 +19714,9 @@
       }
     },
     "node_modules/raw-body": {
-      "version": "2.5.1",
-      "resolved": "https://registry.npmjs.org/raw-body/-/raw-body-2.5.1.tgz",
-      "integrity": "sha512-qqJBtEyVgS0ZmPGdCFPWJ3FreoqvG4MVQln/kCgF7Olq95IbOp0/BWyMwbdtn4VTvkM8Y7khCQ2Xgk/tcrCXig==",
+      "version": "2.5.2",
+      "resolved": "https://registry.npmjs.org/raw-body/-/raw-body-2.5.2.tgz",
+      "integrity": "sha512-8zGqypfENjCIqGhgXToC8aB2r7YrBX+AQAfIPs/Mlk+BtPTztOvTS01NRW/3Eh60J+a48lt8qsCzirQ6loCVfA==",
       "dependencies": {
         "bytes": "3.1.2",
         "http-errors": "2.0.0",
@@ -23813,21 +23827,6 @@
       "resolved": "https://registry.npmjs.org/ms/-/ms-2.0.0.tgz",
       "integrity": "sha512-Tpp60P6IUJDTuOq/5Z8cdskzJujfwqfOTkrwIwj7IRISpnkJnT6SyJ4PCPnGMoFjC9ddhal5KVIYtAt97ix05A==",
       "dev": true
-    },
-    "node_modules/verdaccio/node_modules/raw-body": {
-      "version": "2.5.2",
-      "resolved": "https://registry.npmjs.org/raw-body/-/raw-body-2.5.2.tgz",
-      "integrity": "sha512-8zGqypfENjCIqGhgXToC8aB2r7YrBX+AQAfIPs/Mlk+BtPTztOvTS01NRW/3Eh60J+a48lt8qsCzirQ6loCVfA==",
-      "dev": true,
-      "dependencies": {
-        "bytes": "3.1.2",
-        "http-errors": "2.0.0",
-        "iconv-lite": "0.4.24",
-        "unpipe": "1.0.0"
-      },
-      "engines": {
-        "node": ">= 0.8"
-      }
     },
     "node_modules/verror": {
       "version": "1.10.0",
@@ -29778,6 +29777,17 @@
           "version": "2.0.0",
           "resolved": "https://registry.npmjs.org/ms/-/ms-2.0.0.tgz",
           "integrity": "sha512-Tpp60P6IUJDTuOq/5Z8cdskzJujfwqfOTkrwIwj7IRISpnkJnT6SyJ4PCPnGMoFjC9ddhal5KVIYtAt97ix05A=="
+        },
+        "raw-body": {
+          "version": "2.5.1",
+          "resolved": "https://registry.npmjs.org/raw-body/-/raw-body-2.5.1.tgz",
+          "integrity": "sha512-qqJBtEyVgS0ZmPGdCFPWJ3FreoqvG4MVQln/kCgF7Olq95IbOp0/BWyMwbdtn4VTvkM8Y7khCQ2Xgk/tcrCXig==",
+          "requires": {
+            "bytes": "3.1.2",
+            "http-errors": "2.0.0",
+            "iconv-lite": "0.4.24",
+            "unpipe": "1.0.0"
+          }
         }
       }
     },
@@ -38626,9 +38636,9 @@
       "integrity": "sha512-Hrgsx+orqoygnmhFbKaHE6c296J+HTAQXoxEF6gNupROmmGJRoyzfG3ccAveqCBrwr/2yxQ5BVd/GTl5agOwSg=="
     },
     "raw-body": {
-      "version": "2.5.1",
-      "resolved": "https://registry.npmjs.org/raw-body/-/raw-body-2.5.1.tgz",
-      "integrity": "sha512-qqJBtEyVgS0ZmPGdCFPWJ3FreoqvG4MVQln/kCgF7Olq95IbOp0/BWyMwbdtn4VTvkM8Y7khCQ2Xgk/tcrCXig==",
+      "version": "2.5.2",
+      "resolved": "https://registry.npmjs.org/raw-body/-/raw-body-2.5.2.tgz",
+      "integrity": "sha512-8zGqypfENjCIqGhgXToC8aB2r7YrBX+AQAfIPs/Mlk+BtPTztOvTS01NRW/3Eh60J+a48lt8qsCzirQ6loCVfA==",
       "requires": {
         "bytes": "3.1.2",
         "http-errors": "2.0.0",
@@ -41657,18 +41667,6 @@
           "resolved": "https://registry.npmjs.org/ms/-/ms-2.0.0.tgz",
           "integrity": "sha512-Tpp60P6IUJDTuOq/5Z8cdskzJujfwqfOTkrwIwj7IRISpnkJnT6SyJ4PCPnGMoFjC9ddhal5KVIYtAt97ix05A==",
           "dev": true
-        },
-        "raw-body": {
-          "version": "2.5.2",
-          "resolved": "https://registry.npmjs.org/raw-body/-/raw-body-2.5.2.tgz",
-          "integrity": "sha512-8zGqypfENjCIqGhgXToC8aB2r7YrBX+AQAfIPs/Mlk+BtPTztOvTS01NRW/3Eh60J+a48lt8qsCzirQ6loCVfA==",
-          "dev": true,
-          "requires": {
-            "bytes": "3.1.2",
-            "http-errors": "2.0.0",
-            "iconv-lite": "0.4.24",
-            "unpipe": "1.0.0"
-          }
         }
       }
     },
