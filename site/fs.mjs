@@ -1,10 +1,5 @@
 import { promises as fs } from 'fs'
 import { join, dirname } from 'path'
-import { promisify } from 'util'
-
-import rimraf from 'rimraf'
-
-const rimrafAsync = promisify(rimraf)
 
 export const copyDirRecursiveAsync = async (src, dest) => {
   try {
@@ -37,8 +32,4 @@ export const ensureFilePathAsync = async (filePath) => {
   } catch {
     // ignore any errors with mkdir - it will throw if the path already exists.
   }
-}
-
-export const removeRecursiveAsync = async (filePath) => {
-  await rimrafAsync(filePath)
 }
