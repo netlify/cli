@@ -59,7 +59,7 @@
     "test:dev:vitest": "vitest run tests/unit/ && vitest run tests/integration",
     "test:ci:ava:integration": "c8 -r json ava --concurrency 1 --no-worker-threads tests/integration/",
     "test:ci:vitest:unit": "vitest run --coverage tests/unit/",
-    "test:ci:vitest:integration": "vitest run --coverage --no-threads tests/integration/",
+    "test:ci:vitest:integration": "vitest run --coverage tests/integration/",
     "test:affected": "node ./tools/affected-test.mjs",
     "e2e": "node ./tools/e2e/run.mjs",
     "docs": "node ./site/scripts/docs.mjs",
