@@ -6,7 +6,6 @@ import { cwd, env } from 'process'
 import { runCoreSteps } from '@netlify/build'
 import { restoreConfig, updateConfig } from '@netlify/config'
 import { Option } from 'commander'
-import { get } from 'dot-prop'
 import inquirer from 'inquirer'
 import isObject from 'lodash/isObject.js'
 import prettyjson from 'prettyjson'
@@ -15,7 +14,7 @@ import { cancelDeploy } from '../../lib/api.mjs'
 import { getBuildOptions, runBuild } from '../../lib/build.mjs'
 import { featureFlags as edgeFunctionsFeatureFlags } from '../../lib/edge-functions/consts.mjs'
 import { normalizeFunctionsConfig } from '../../lib/functions/config.mjs'
-import { getLogMessage } from '../../lib/log.mjs'
+import { BACKGROUND_FUNCTIONS_NOT_SUPPORTED_WARNING } from '../../lib/log.mjs'
 import { startSpinner, stopSpinner } from '../../lib/spinner.mjs'
 import {
   chalk,
@@ -73,10 +72,10 @@ const getDeployFolder = async ({ config, options, site, siteData }) => {
   let deployFolder
   if (options.dir) {
     deployFolder = resolve(cwd(), options.dir)
-  } else if (get(config, 'build.publish')) {
-    deployFolder = resolve(site.root, get(config, 'build.publish'))
-  } else if (get(siteData, 'build_settings.dir')) {
-    deployFolder = resolve(site.root, get(siteData, 'build_settings.dir'))
+  } else if (config?.build?.publish) {
+    deployFolder = resolve(site.root, config.build.publish)
+  } else if (siteData?.build_settings?.dir) {
+    deployFolder = resolve(site.root, siteData.build_settings.dir)
   }
 
   if (!deployFolder) {
@@ -132,14 +131,14 @@ const validateDeployFolder = async ({ deployFolder }) => {
 const getFunctionsFolder = ({ config, options, site, siteData }) => {
   let functionsFolder
   // Support "functions" and "Functions"
-  const funcConfig = config.functionsDirectory
   if (options.functions) {
     functionsFolder = resolve(cwd(), options.functions)
-  } else if (funcConfig) {
-    functionsFolder = resolve(site.root, funcConfig)
-  } else if (get(siteData, 'build_settings.functions_dir')) {
-    functionsFolder = resolve(site.root, get(siteData, 'build_settings.functions_dir'))
+  } else if (config?.functionsDirectory) {
+    functionsFolder = resolve(site.root, config.functionsDirectory)
+  } else if (siteData?.build_settings?.functions_dir) {
+    functionsFolder = resolve(site.root, siteData.build_settings.functions_dir)
   }
+
   return functionsFolder
 }
 
@@ -231,14 +230,14 @@ const hasErrorMessage = (actual, expected) => {
   return false
 }
 
-const getJsonErrorMessage = (error_) => get(error_, 'json.message', '')
+const getJsonErrorMessage = (error_) => error_?.json?.message ?? ''
 
 const reportDeployError = ({ error_, failAndExit }) => {
   switch (true) {
     case error_.name === 'JSONHTTPError': {
       const message = getJsonErrorMessage(error)
       if (hasErrorMessage(message, 'Background Functions not allowed by team plan')) {
-        return failAndExit(`\n${getLogMessage('functions.backgroundNotSupported')}`)
+        return failAndExit(`\n${BACKGROUND_FUNCTIONS_NOT_SUPPORTED_WARNING}`)
       }
       warn(`JSONHTTPError: ${message} ${error_.status}`)
       warn(`\n${JSON.stringify(error_, null, '  ')}\n`)
@@ -356,9 +355,9 @@ const runDeploy = async ({
     reportDeployError({ error_, failAndExit: error })
   }
 
-  const siteUrl = results.deploy.ssl_url || results.deploy.url
-  const deployUrl = get(results, 'deploy.deploy_ssl_url') || get(results, 'deploy.deploy_url')
-  const logsUrl = `${get(results, 'deploy.admin_url')}/deploys/${get(results, 'deploy.id')}`
+  const siteUrl = results.deploy?.ssl_url || results.deploy?.url
+  const deployUrl = results.deploy?.deploy_ssl_url || results.deploy?.deploy_url
+  const logsUrl = `${results.deploy?.admin_url}/deploys/${results.deploy?.id}`
 
   return {
     siteId: results.deploy.site_id,
@@ -595,7 +594,7 @@ const deploy = async (options, command) => {
     deployFolder,
     functionsFolder,
   })
-  const siteEnv = get(siteData, 'build_settings.env')
+  const siteEnv = siteData.build_settings?.env
   const functionsConfig = normalizeFunctionsConfig({
     functionsConfig: config.functions,
     projectRoot: site.root,

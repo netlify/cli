@@ -1,6 +1,5 @@
 // @ts-check
 import { Option } from 'commander'
-import dotProp from 'dot-prop'
 import inquirer from 'inquirer'
 import isEmpty from 'lodash/isEmpty.js'
 
@@ -17,7 +16,7 @@ const persistState = ({ siteInfo, state }) => {
   state.set('siteId', siteInfo.id)
 }
 
-const getRepoUrl = ({ siteInfo }) => dotProp.get(siteInfo, 'build_settings.repo_url')
+const getRepoUrl = ({ siteInfo }) => siteInfo?.build_settings?.repo_url
 
 const logExistingAndExit = ({ siteInfo }) => {
   log()

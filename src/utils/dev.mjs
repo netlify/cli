@@ -1,7 +1,6 @@
 // @ts-check
 import process from 'process'
 
-import { get } from 'dot-prop'
 import getPort from 'get-port'
 import jwt from 'jsonwebtoken'
 import isEmpty from 'lodash/isEmpty.js'
@@ -113,7 +112,7 @@ export const getSiteInformation = async ({ api, offline, site, siteInfo }) => {
         backgroundFunctions: supportsBackgroundFunctions(account),
       },
       timeouts: {
-        syncFunctions: get(siteInfo, 'functions_config.timeout', SYNCHRONOUS_FUNCTION_TIMEOUT),
+        syncFunctions: siteInfo.functions_config?.timeout ?? SYNCHRONOUS_FUNCTION_TIMEOUT,
         backgroundFunctions: BACKGROUND_FUNCTION_TIMEOUT,
       },
     }
