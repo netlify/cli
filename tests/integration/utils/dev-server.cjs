@@ -23,14 +23,14 @@ const getExecaOptions = ({ cwd, env }) => {
 }
 
 const startServer = async ({
-  cwd,
-  context = 'dev',
-  offline = true,
-  env = {},
   args = [],
+  context = 'dev',
+  cwd,
+  env = {},
   expectFailure = false,
-  serve = false,
+  offline = true,
   prompt,
+  serve = false,
 }) => {
   const port = await getPort()
   const staticPort = await getPort()

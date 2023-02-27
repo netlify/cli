@@ -367,7 +367,7 @@ export default class Layout extends React.Component {
   }
 
   render() {
-    const { routes = [], children, route, title = 'Netlify CLI', logo } = this.props
+    const { children, logo, route, routes = [], title = 'Netlify CLI' } = this.props
 
     const { menu, update } = this.state
 

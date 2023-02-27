@@ -567,7 +567,7 @@ const deploy = async (options, command) => {
     return triggerDeploy({ api, options, siteData, siteId })
   }
 
-  const { newConfig, configMutations = [] } = await handleBuild({
+  const { configMutations = [], newConfig } = await handleBuild({
     cachedConfig: command.netlify.cachedConfig,
     options,
   })
