@@ -16,12 +16,12 @@ netlify link
 
 **Flags**
 
-- `gitRemoteName` (*string*) - Name of Git remote to use. e.g. "origin"
+- `git-remote-name` (*string*) - Name of Git remote to use. e.g. "origin"
 - `id` (*string*) - ID of site to link to
-- `name` (*string*) - Name of site to link to
 - `debug` (*boolean*) - Print debugging information
-- `httpProxy` (*string*) - Proxy server address to route requests through.
-- `httpProxyCertificateFilename` (*string*) - Certificate file to use when connecting using a proxy server
+- `http-proxy` (*string*) - Proxy server address to route requests through.
+- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
+- `name` (*string*) - Name of site to link to
 
 **Examples**
 

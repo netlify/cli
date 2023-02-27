@@ -27,10 +27,12 @@ const answerWithValue = (value) => `${value}${CONFIRM}`
 
 const CONFIRM = '\n'
 const DOWN = '\u001B[B'
+const NO = 'n'
 
 module.exports = {
   handleQuestions,
   answerWithValue,
   CONFIRM,
   DOWN,
+  NO,
 }

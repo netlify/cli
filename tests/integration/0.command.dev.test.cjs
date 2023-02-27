@@ -5,11 +5,13 @@ const { join } = require('path')
 // eslint-disable-next-line ava/use-test
 const avaTest = require('ava')
 const { isCI } = require('ci-info')
+const jwt = require('jsonwebtoken')
 const fetch = require('node-fetch')
 
 const { withDevServer } = require('./utils/dev-server.cjs')
 const { startExternalServer } = require('./utils/external-server.cjs')
 const got = require('./utils/got.cjs')
+const { withMockApi } = require('./utils/mock-api.cjs')
 const { withSiteBuilder } = require('./utils/site-builder.cjs')
 
 const test = isCI ? avaTest.serial.bind(avaTest) : avaTest
@@ -177,7 +179,9 @@ test('should rewrite requests to an external server', async (t) => {
 
     await withDevServer({ cwd: builder.directory }, async (server) => {
       const getResponse = await got(`${server.url}/api/ping`).json()
-      t.deepEqual(getResponse, { body: {}, method: 'GET', url: '/ping' })
+      t.deepEqual(getResponse.body, {})
+      t.is(getResponse.method, 'GET')
+      t.is(getResponse.url, '/ping')
 
       const postResponse = await got
         .post(`${server.url}/api/ping`, {
@@ -188,7 +192,82 @@ test('should rewrite requests to an external server', async (t) => {
           followRedirect: false,
         })
         .json()
-      t.deepEqual(postResponse, { body: { param: 'value' }, method: 'POST', url: '/ping' })
+      t.deepEqual(postResponse.body, { param: 'value' })
+      t.is(postResponse.method, 'POST')
+      t.is(postResponse.url, '/ping')
+    })
+
+    externalServer.close()
+  })
+})
+
+test('should sign external redirects with the `x-nf-sign` header when a `signed` value is set', async (t) => {
+  await withSiteBuilder('site-redirects-file-to-external', async (builder) => {
+    const mockSigningSecret = 'iamverysecret'
+    const externalServer = startExternalServer()
+    const { port } = externalServer.address()
+    const siteInfo = {
+      account_slug: 'test-account',
+      id: 'site_id',
+      name: 'site-name',
+      url: 'https://cli-test-suite.netlify.ftw',
+    }
+    const routes = [
+      { path: 'sites/site_id', response: siteInfo },
+      { path: 'sites/site_id/service-instances', response: [] },
+      {
+        path: 'accounts',
+        response: [{ slug: siteInfo.account_slug }],
+      },
+    ]
+
+    await builder
+      .withNetlifyToml({
+        config: {
+          build: { environment: { VAR_WITH_SIGNING_SECRET: mockSigningSecret } },
+          redirects: [
+            { from: '/sign/*', to: `http://localhost:${port}/:splat`, signed: 'VAR_WITH_SIGNING_SECRET', status: 200 },
+          ],
+        },
+      })
+      .buildAsync()
+
+    await withMockApi(routes, async ({ apiUrl }) => {
+      await withDevServer(
+        {
+          cwd: builder.directory,
+          offline: false,
+          env: {
+            NETLIFY_API_URL: apiUrl,
+            NETLIFY_SITE_ID: siteInfo.id,
+            NETLIFY_AUTH_TOKEN: 'fake-token',
+          },
+        },
+        async (server) => {
+          const getResponse = await got(`${server.url}/sign/ping`).json()
+          const postResponse = await got
+            .post(`${server.url}/sign/ping`, {
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+              },
+              body: 'param=value',
+              followRedirect: false,
+            })
+            .json()
+
+          ;[getResponse, postResponse].forEach((response) => {
+            const signature = response.headers['x-nf-sign']
+            const payload = jwt.verify(signature, mockSigningSecret)
+
+            t.is(payload.deploy_context, 'dev')
+            t.is(payload.netlify_id, siteInfo.id)
+            t.is(payload.site_url, siteInfo.url)
+            t.is(payload.iss, 'netlify')
+          })
+
+          t.deepEqual(postResponse.body, { param: 'value' })
+        },
+      )
     })
 
     externalServer.close()
@@ -206,11 +285,13 @@ test('should follow 301 redirect to an external server', async (t) => {
     await builder.buildAsync()
 
     await withDevServer({ cwd: builder.directory }, async (server) => {
-      const response = await got(`${server.url}/api/ping`, { followRedirect: false })
-      t.is(response.headers.location, `http://localhost:${port}/ping`)
+      const response1 = await got(`${server.url}/api/ping`, { followRedirect: false })
+      t.is(response1.headers.location, `http://localhost:${port}/ping`)
 
-      const body = await got(`${server.url}/api/ping`).json()
-      t.deepEqual(body, { body: {}, method: 'GET', url: '/ping' })
+      const response2 = await got(`${server.url}/api/ping`).json()
+      t.deepEqual(response2.body, {})
+      t.is(response2.method, 'GET')
+      t.is(response2.url, '/ping')
     })
 
     externalServer.close()

@@ -2,6 +2,7 @@
 import { readFile } from 'fs/promises'
 
 import AsciiTable from 'ascii-table'
+import { Option } from 'commander'
 import dotenv from 'dotenv'
 
 import { exit, log, logJson } from '../../utils/command-helpers.mjs'
@@ -126,8 +127,16 @@ export const createEnvImportCommand = (program) =>
   program
     .command('env:import')
     .argument('<fileName>', '.env file to import')
+    .addOption(
+      new Option(
+        '-r --replaceExisting',
+        'Old, prefer --replace-existing. Replace all existing variables instead of merging them with the current ones',
+      )
+        .default(false)
+        .hideHelp(true),
+    )
     .option(
-      '-r, --replaceExisting',
+      '-r, --replace-existing',
       'Replace all existing variables instead of merging them with the current ones',
       false,
     )

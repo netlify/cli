@@ -14,7 +14,7 @@ import {
   warn,
   watchDebounced,
 } from '../../utils/command-helpers.mjs'
-import { SERVE_FUNCTIONS_FOLDER } from '../../utils/functions/functions.mjs'
+import { INTERNAL_FUNCTIONS_FOLDER, SERVE_FUNCTIONS_FOLDER } from '../../utils/functions/functions.mjs'
 import { getLogMessage } from '../log.mjs'
 import { getPathInProject } from '../settings.mjs'
 
@@ -164,7 +164,12 @@ export class FunctionsRegistry {
     this.functions.set(name, func)
     this.buildFunctionAndWatchFiles(func)
 
-    log(`${NETLIFYDEVLOG} ${chalk.green('Loaded')} function ${getTerminalLink(chalk.yellow(name), func.url)}.`)
+    log(
+      `${NETLIFYDEVLOG} ${chalk.green('Loaded')} function ${getTerminalLink(
+        chalk.yellow(func.displayName || name),
+        func.url,
+      )}.`,
+    )
   }
 
   // This function is here so we can mock it in tests
@@ -191,6 +196,7 @@ export class FunctionsRegistry {
         buildRustSource: env.NETLIFY_EXPERIMENTAL_BUILD_RUST_SOURCE === 'true',
         project_deploy_configuration_api_use_per_function_configuration_files: true,
       },
+      configFileDirectories: [getPathInProject([INTERNAL_FUNCTIONS_FOLDER])],
       config: this.config.functions,
     })
 
@@ -207,7 +213,7 @@ export class FunctionsRegistry {
     await Promise.all(deletedFunctions.map((func) => this.unregisterFunction(func.name)))
 
     await Promise.all(
-      functions.map(async ({ mainFile, name, runtime: runtimeName }) => {
+      functions.map(async ({ displayName, mainFile, name, runtime: runtimeName }) => {
         const runtime = runtimes[runtimeName]
 
         // If there is no matching runtime, it means this function is not yet
@@ -226,6 +232,7 @@ export class FunctionsRegistry {
           directory: directories.find((directory) => mainFile.startsWith(directory)),
           mainFile,
           name,
+          displayName,
           projectRoot: this.projectRoot,
           runtime,
           timeoutBackground: this.timeouts.backgroundFunctions,

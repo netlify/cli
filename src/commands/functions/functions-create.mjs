@@ -361,7 +361,7 @@ const downloadFromURL = async function (command, options, argumentName, function
   const fnTemplateFile = path.join(fnFolder, '.netlify-function-template.mjs')
   if (await fileExistsAsync(fnTemplateFile)) {
     const {
-      default: { onComplete, addons = [] },
+      default: { addons = [], onComplete },
       // eslint-disable-next-line import/no-dynamic-require
     } = await import(pathToFileURL(fnTemplateFile).href)
 
@@ -463,7 +463,7 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
   } else if (chosenTemplate === 'report') {
     log(`${NETLIFYDEVLOG} Open in browser: https://github.com/netlify/cli/issues/new`)
   } else {
-    const { onComplete, name: templateName, lang, addons = [] } = chosenTemplate
+    const { addons = [], lang, name: templateName, onComplete } = chosenTemplate
     const pathToTemplate = path.join(templatesDir, lang, templateName)
     if (!fs.existsSync(pathToTemplate)) {
       throw new Error(

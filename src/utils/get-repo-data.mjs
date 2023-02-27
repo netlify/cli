@@ -44,7 +44,7 @@ const getRepoData = async function ({ remoteName } = {}) {
       Object.keys(gitConfig.remote[remoteName]).length === 0
     ) {
       throw new Error(
-        `The specified remote "${remoteName}" is not defined in Git repo. Please use --gitRemoteName flag to specify a remote.`,
+        `The specified remote "${remoteName}" is not defined in Git repo. Please use --git-remote-name flag to specify a remote.`,
       )
     }
 

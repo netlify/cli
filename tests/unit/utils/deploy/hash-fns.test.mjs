@@ -1,4 +1,4 @@
-import tempy from 'tempy'
+import { temporaryDirectory } from 'tempy'
 import { expect, test } from 'vitest'
 
 import { DEFAULT_CONCURRENT_HASH } from '../../../../src/utils/deploy/constants.mjs'
@@ -21,7 +21,7 @@ test('Hashes files in a folder', async () => {
 
     const expectedFunctions = ['hello', 'goodbye']
     const { fnShaMap, functions } = await hashFns(`${builder.directory}/functions`, {
-      tmpDir: tempy.directory(),
+      tmpDir: temporaryDirectory(),
       concurrentHash: DEFAULT_CONCURRENT_HASH,
       statusCb() {},
     })

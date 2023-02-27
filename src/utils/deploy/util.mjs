@@ -23,7 +23,7 @@ export const waitForDiff = async (api, deployId, siteId, timeout) => {
     switch (siteDeploy.state) {
       // https://github.com/netlify/bitballoon/blob/master/app/models/deploy.rb#L21-L33
       case 'error': {
-        const deployError = new Error(`Deploy ${deployId} had an error`)
+        const deployError = new Error(siteDeploy.error_message || `Deploy ${deployId} had an error`)
         deployError.deploy = siteDeploy
         throw deployError
       }
@@ -60,7 +60,7 @@ export const waitForDeploy = async (api, deployId, siteId, timeout) => {
     switch (siteDeploy.state) {
       // https://github.com/netlify/bitballoon/blob/master/app/models/deploy.rb#L21-L33
       case 'error': {
-        const deployError = new Error(`Deploy ${deployId} had an error`)
+        const deployError = new Error(siteDeploy.error_message || `Deploy ${deployId} had an error`)
         deployError.deploy = siteDeploy
         throw deployError
       }

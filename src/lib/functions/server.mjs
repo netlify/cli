@@ -168,7 +168,7 @@ export const createHandler = function (options) {
         return
       }
 
-      handleSynchronousFunction(error, result, request, response)
+      handleSynchronousFunction({ error, functionName: func.name, result, request, response })
     }
   }
 }
