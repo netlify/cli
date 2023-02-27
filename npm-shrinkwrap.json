@@ -12130,9 +12130,9 @@
       }
     },
     "node_modules/eslint-plugin-sort-destructure-keys": {
-      "version": "1.4.0",
-      "resolved": "https://registry.npmjs.org/eslint-plugin-sort-destructure-keys/-/eslint-plugin-sort-destructure-keys-1.4.0.tgz",
-      "integrity": "sha512-txU9l22mblz7YpyjJNYFy4wb5PVXiRMbc9lqFPPhvY4wKyBBYQvb31TIcduf7iRb4Bv01aiXcJiuCkOOrVY48Q==",
+      "version": "1.5.0",
+      "resolved": "https://registry.npmjs.org/eslint-plugin-sort-destructure-keys/-/eslint-plugin-sort-destructure-keys-1.5.0.tgz",
+      "integrity": "sha512-xGLyqHtbFXZNXQSvAiQ4ISBYokrbUywEhmaA50fKtSKgceCv5y3zjoNuZwcnajdM6q29Nxj+oXC9KcqfMsAPrg==",
       "dev": true,
       "dependencies": {
         "natural-compare-lite": "^1.4.0"
@@ -33050,9 +33050,9 @@
       }
     },
     "eslint-plugin-sort-destructure-keys": {
-      "version": "1.4.0",
-      "resolved": "https://registry.npmjs.org/eslint-plugin-sort-destructure-keys/-/eslint-plugin-sort-destructure-keys-1.4.0.tgz",
-      "integrity": "sha512-txU9l22mblz7YpyjJNYFy4wb5PVXiRMbc9lqFPPhvY4wKyBBYQvb31TIcduf7iRb4Bv01aiXcJiuCkOOrVY48Q==",
+      "version": "1.5.0",
+      "resolved": "https://registry.npmjs.org/eslint-plugin-sort-destructure-keys/-/eslint-plugin-sort-destructure-keys-1.5.0.tgz",
+      "integrity": "sha512-xGLyqHtbFXZNXQSvAiQ4ISBYokrbUywEhmaA50fKtSKgceCv5y3zjoNuZwcnajdM6q29Nxj+oXC9KcqfMsAPrg==",
       "dev": true,
       "requires": {
         "natural-compare-lite": "^1.4.0"
