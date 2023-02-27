@@ -198,7 +198,7 @@ test('Serves an Edge Function that terminates a response', async (t) => {
         },
       ])
       .withEdgeFunction({
-        handler: () => new Response('Hello world'),
+        handler: (req) => new Response(req.headers.get('x-nf-request-id')),
         name: 'hello',
       })
 
@@ -208,7 +208,8 @@ test('Serves an Edge Function that terminates a response', async (t) => {
       const response = await got(`${server.url}/edge-function`)
 
       t.is(response.statusCode, 200)
-      t.is(response.body, 'Hello world')
+      t.is(response.body.length, 26)
+      t.is(response.body, response.headers['x-nf-request-id'])
     })
   })
 })
@@ -707,7 +708,7 @@ test('should respect in-source configuration from edge functions', async (t) => 
 
       await builder
         .withEdgeFunction({
-          config: { path: '/hello-2' },
+          config: { path: ['/hello-2', '/hello-3'] },
           handler: () => new Response('Hello world'),
           name: 'hello',
         })
@@ -723,6 +724,11 @@ test('should respect in-source configuration from edge functions', async (t) => 
 
       t.is(res3.statusCode, 200)
       t.is(res3.body, 'Hello world')
+
+      const res4 = await got(`http://localhost:${port}/hello-3`, { throwHttpErrors: false })
+
+      t.is(res4.statusCode, 200)
+      t.is(res4.body, 'Hello world')
     })
   })
 })

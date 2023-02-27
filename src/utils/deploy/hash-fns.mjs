@@ -108,7 +108,7 @@ const hashFns = async (
     statusCb,
     tmpDir,
   })
-  const fileObjs = functionZips.map(({ displayName, path: functionPath, runtime }) => ({
+  const fileObjs = functionZips.map(({ displayName, generator, path: functionPath, runtime }) => ({
     filepath: functionPath,
     root: tmpDir,
     relname: path.relative(tmpDir, functionPath),
@@ -119,10 +119,14 @@ const hashFns = async (
     normalizedPath: path.basename(functionPath, path.extname(functionPath)),
     runtime,
     displayName,
+    generator,
   }))
   const fnConfig = functionZips
-    .filter((func) => Boolean(func.displayName))
-    .reduce((funcs, curr) => ({ ...funcs, [curr.name]: { display_name: curr.displayName } }), {})
+    .filter((func) => Boolean(func.displayName || func.generator))
+    .reduce(
+      (funcs, curr) => ({ ...funcs, [curr.name]: { display_name: curr.displayName, generator: curr.generator } }),
+      {},
+    )
   const functionSchedules = functionZips
     .map(({ name, schedule }) => schedule && { name, cron: schedule })
     .filter(Boolean)
