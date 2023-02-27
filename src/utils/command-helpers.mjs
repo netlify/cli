@@ -5,7 +5,7 @@ import process from 'process'
 import { format, inspect } from 'util'
 
 // eslint-disable-next-line no-restricted-imports
-import chalkModule from 'chalk'
+import { Chalk } from 'chalk'
 import chokidar from 'chokidar'
 import decache from 'decache'
 import WSL from 'is-wsl'
@@ -27,10 +27,10 @@ const argv = process.argv.slice(2)
  */
 const safeChalk = function (noColors) {
   if (noColors) {
-    const colorlessChalk = new chalkModule.Instance({ level: 0 })
+    const colorlessChalk = new Chalk({ level: 0 })
     return colorlessChalk
   }
-  return new chalkModule.Instance()
+  return new Chalk()
 }
 
 export const chalk = safeChalk(argv.includes('--json'))
