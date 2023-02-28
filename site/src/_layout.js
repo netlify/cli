@@ -352,6 +352,54 @@ const MobileNav = ({ logo, title, update }) => (
   </MobileOnly>
 )
 
+const SosumiList = styled.ul`
+  margin-top: 3rem;
+  list-style: none;
+  padding-left: 0;
+  text-align: center;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.5rem;
+
+  a {
+    color: #787878;
+    text-decoration: none;
+    border-bottom: 1px solid #555;
+
+    &:hover {
+      color: #111;
+      border-bottom-color: #111;
+    }
+  }
+`
+
+const Sosumi = () => (
+  <SosumiList>
+    <li>
+      <a href="https://www.netlify.com/trust-center/">Trust Center</a>
+    </li>
+    <li>
+      <a href="https://www.netlify.com/privacy/">Privacy</a>
+    </li>
+    <li>
+      <a href="https://www.netlify.com/security/">Security</a>
+    </li>
+    <li>
+      <a href="https://www.netlify.com/gdpr-ccpa/">GDPR/CCPA</a>
+    </li>
+    <li>
+      <a
+        href="mailto:fraud@netlify.com?subject=Abuse%20report&amp;body=Please%20include%20the%20site%20URL%20and%20reason%20for%20your%20report%2C%20and%20we%20will%20reply%20promptly."
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Abuse
+      </a>
+    </li>
+  </SosumiList>
+)
+
 const toggle = (key) => (state) => ({ [key]: !state[key] })
 const close = () => ({ menu: false })
 
@@ -427,6 +475,7 @@ export default class Layout extends React.Component {
                   <div className="doc-content">{children}</div>
                 </Content>
                 {!opts.hidePagination && <Pagination {...pagination} />}
+                <Sosumi />
               </Wrapper>
             </Main>
           </InstantSearch>
