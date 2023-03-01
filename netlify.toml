@@ -1,6 +1,6 @@
 [build]
   # This will be run the site build
-  command = "npm run site:build"
+  command = "printenv"
   # This is the directory is publishing to netlify's CDN
   publish = "site/dist"
 
