@@ -146,12 +146,16 @@ const Link = styled((props) => (
 ))([], () => ({
   borderLeft: '4px solid',
   borderColor: 'transparent',
-  '&.active, &:focus': {
-    color: '#00c2b2',
+  display: 'block',
+  '&.active, &.active:hover': {
+    color: '#04a29f',
     outline: 'none',
   },
+  '&:hover, &:focus': {
+    color: '#02807d',
+  },
   '&:focus': {
-    borderColor: 'inherit',
+    borderColor: 'currentColor',
   },
 }))
 
@@ -187,7 +191,8 @@ const SearchBoxWrapper = styled.div`
       font-size: 14px;
       padding: 7px 8px;
       width: 80%;
-      border: 1px solid black;
+      border: 1px solid #9da7b2;
+      border-radius: 4px;
       -webkit-appearance: initial;
     }
     button {
