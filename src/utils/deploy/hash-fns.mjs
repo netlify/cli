@@ -69,7 +69,6 @@ const getFunctionZips = async ({
   const { zipFunctions } = await import('@netlify/zip-it-and-ship-it')
 
   return await zipFunctions(directories, tmpDir, {
-    featureFlags: { project_deploy_configuration_api_use_per_function_configuration_files: true },
     basePath: rootDir,
     configFileDirectories: [getPathInProject([INTERNAL_FUNCTIONS_FOLDER])],
     config: functionsConfig,
