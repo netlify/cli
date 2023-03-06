@@ -1,11 +1,11 @@
 /* Syncs blog content from repo to /site/blog */
-import { promises as fs } from 'fs'
+import { copyFile, rm } from 'fs/promises'
 import { join } from 'path'
 
 import sane from 'sane'
 
 import { docs } from './config.mjs'
-import { ensureFilePathAsync, removeRecursiveAsync } from './fs.mjs'
+import { ensureFilePathAsync } from './fs.mjs'
 
 const watcher = sane(docs.srcPath, { glob: ['**/*.md'] })
 
@@ -41,12 +41,12 @@ const getFullPath = function (filePath) {
 const syncFile = async function (filePath) {
   const { destination, src } = getFullPath(filePath)
   await ensureFilePathAsync(destination)
-  await fs.copyFile(src, destination)
+  await copyFile(src, destination)
   console.log(`${filePath} synced to ${destination}`)
 }
 
 const deleteFile = async function (filePath) {
   const { destination } = getFullPath(filePath)
-  await removeRecursiveAsync(destination)
+  await rm(destination, { force: true, recursive: true })
   console.log(`${filePath} removed from ${destination}`)
 }

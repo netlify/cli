@@ -88,7 +88,7 @@ const createSiteBuilder = ({ siteName }) => {
       })
       return builder
     },
-    withRedirectsFile: ({ redirects = [], pathPrefix = '' }) => {
+    withRedirectsFile: ({ pathPrefix = '', redirects = [] }) => {
       const dest = path.join(directory, pathPrefix, '_redirects')
       tasks.push(async () => {
         const content = redirects
@@ -133,7 +133,7 @@ const createSiteBuilder = ({ siteName }) => {
       files.forEach(builder.withContentFile)
       return builder
     },
-    withEnvFile: ({ path: filePath = '.env', pathPrefix = '', env = {} }) => {
+    withEnvFile: ({ env = {}, path: filePath = '.env', pathPrefix = '' }) => {
       const dest = path.join(directory, pathPrefix, filePath)
       tasks.push(async () => {
         await ensureDir(path.dirname(dest))
