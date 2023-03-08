@@ -30,6 +30,7 @@ import {
 } from '../../utils/command-helpers.mjs'
 import { DEFAULT_DEPLOY_TIMEOUT } from '../../utils/deploy/constants.mjs'
 import { deploySite } from '../../utils/deploy/deploy-site.mjs'
+import { getEnvelopeEnv } from '../../utils/env/index.mjs'
 import { getFunctionsManifestPath, getInternalFunctionsDir } from '../../utils/functions/index.mjs'
 import openBrowser from '../../utils/open-browser.mjs'
 import { link } from '../link/index.mjs'
@@ -566,6 +567,16 @@ const deploy = async (options, command) => {
     return triggerDeploy({ api, options, siteData, siteId })
   }
 
+  const isUsingEnvelope = siteData && siteData.use_envelope
+  // if a context is passed besides dev, we need to pull env vars from that specific context
+  if (isUsingEnvelope && options.context && options.context !== 'dev') {
+    command.netlify.cachedConfig.env = await getEnvelopeEnv({
+      api,
+      context: options.context,
+      env: command.netlify.cachedConfig.env,
+      siteInfo: siteData,
+    })
+  }
   const { newConfig, configMutations = [] } = await handleBuild({
     cachedConfig: command.netlify.cachedConfig,
     options,
