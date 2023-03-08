@@ -1,5 +1,4 @@
 // Handlers are meant to be async outside tests
-/* eslint-disable require-await */
 const { promises: fs } = require('fs')
 const path = require('path')
 
@@ -8,7 +7,6 @@ const avaTest = require('ava')
 const { isCI } = require('ci-info')
 const FormData = require('form-data')
 const getPort = require('get-port')
-const tempy = require('tempy')
 
 const { withDevServer } = require('./utils/dev-server.cjs')
 const got = require('./utils/got.cjs')
@@ -197,6 +195,7 @@ test('should not handle form submission when content type is `text/plain`', asyn
           },
         })
         .catch((error) => error.response)
+      t.is(response.statusCode, 405)
       t.is(response.body, 'Method Not Allowed')
     })
   })
@@ -395,7 +394,9 @@ test('Runs build plugins with the `onPreDev` event', async (t) => {
       },
     };
   `
-  const pluginDirectory = await tempy.directory()
+
+  const { temporaryDirectory } = await import('tempy')
+  const pluginDirectory = await temporaryDirectory()
 
   await fs.writeFile(path.join(pluginDirectory, 'manifest.yml'), pluginManifest)
   await fs.writeFile(path.join(pluginDirectory, 'index.js'), pluginSource)
@@ -440,7 +441,9 @@ test('Handles errors from the `onPreDev` event', async (t) => {
       },
     };
   `
-  const pluginDirectory = await tempy.directory()
+
+  const { temporaryDirectory } = await import('tempy')
+  const pluginDirectory = await temporaryDirectory()
 
   await fs.writeFile(path.join(pluginDirectory, 'manifest.yml'), pluginManifest)
   await fs.writeFile(path.join(pluginDirectory, 'index.js'), pluginSource)
@@ -471,4 +474,3 @@ test('Handles errors from the `onPreDev` event', async (t) => {
     )
   })
 })
-/* eslint-enable require-await */

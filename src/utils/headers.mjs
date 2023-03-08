@@ -45,3 +45,5 @@ const handleHeadersErrors = function (errors) {
 const getErrorMessage = function ({ message }) {
   return message
 }
+
+export const NFRequestID = 'x-nf-request-id'

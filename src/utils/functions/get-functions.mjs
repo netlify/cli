@@ -1,5 +1,5 @@
 // @ts-check
-import { fileExistsAsync } from '../../lib/fs.cjs'
+import { fileExistsAsync } from '../../lib/fs.mjs'
 
 const getUrlPath = (functionName) => `/.netlify/functions/${functionName}`
 

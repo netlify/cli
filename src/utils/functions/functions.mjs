@@ -1,8 +1,12 @@
 // @ts-check
+import { promises as fs } from 'fs'
 import { resolve } from 'path'
 
-import { isDirectoryAsync, isFileAsync } from '../../lib/fs.cjs'
-import { getPathInProject } from '../../lib/settings.cjs'
+import { isDirectoryAsync, isFileAsync } from '../../lib/fs.mjs'
+import { getPathInProject } from '../../lib/settings.mjs'
+
+export const INTERNAL_FUNCTIONS_FOLDER = 'functions-internal'
+export const SERVE_FUNCTIONS_FOLDER = 'functions-serve'
 
 /**
  * retrieves the function directory out of the flags or config
@@ -26,8 +30,20 @@ export const getFunctionsManifestPath = async ({ base }) => {
   return isFile ? path : null
 }
 
-export const getInternalFunctionsDir = async ({ base }) => {
-  const path = resolve(base, getPathInProject(['functions-internal']))
+export const getFunctionsDistPath = async ({ base }) => {
+  const path = resolve(base, getPathInProject(['functions']))
+  const isDirectory = await isDirectoryAsync(path)
+
+  return isDirectory ? path : null
+}
+
+export const getInternalFunctionsDir = async ({ base, ensureExists }) => {
+  const path = resolve(base, getPathInProject([INTERNAL_FUNCTIONS_FOLDER]))
+
+  if (ensureExists) {
+    await fs.mkdir(path, { recursive: true })
+  }
+
   const isDirectory = await isDirectoryAsync(path)
 
   return isDirectory ? path : null

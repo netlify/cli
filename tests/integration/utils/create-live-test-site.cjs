@@ -2,8 +2,6 @@ const {
   env: { NETLIFY_TEST_ACCOUNT_SLUG },
 } = require('process')
 
-const stripAnsi = require('strip-ansi')
-
 const callCli = require('./call-cli.cjs')
 
 const generateSiteName = function (prefix) {
@@ -38,6 +36,8 @@ const createLiveTestSite = async function (siteName) {
   if (!isSiteCreated) {
     throw new Error(`Failed creating site: ${cliResponse}`)
   }
+
+  const { default: stripAnsi } = await import('strip-ansi')
 
   const matches = /Site ID:\s+([a-zA-Z\d-]+)/m.exec(stripAnsi(cliResponse))
   if (matches && Object.prototype.hasOwnProperty.call(matches, 1) && matches[1]) {

@@ -131,6 +131,27 @@ output.
 DEBUG_TESTS=true npm exec vitest -- run tests/unit/tests/unit/lib/account.test.mjs -t 'test name'
 ```
 
+### Command docs
+
+
+If you're adding a new command, make sure to also add docs for it by creating a new `[commandname].md` file to the `docs` folder and adding the following information:
+
+```md
+---
+title: Netlify CLI [command name] command
+description: A description.
+---
+
+# `command name`
+
+<!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
+
+<!-- AUTO-GENERATED-CONTENT:END -->
+
+```
+
+Then autogenerate the docs by running `npm run docs`.
+
 ### Lint docs per Netlify style guide
 
 1. [Install vale](https://docs.errata.ai/vale/install)

@@ -36,6 +36,7 @@ const normalizeRedirect = function ({
   conditions: { country, language, role, ...conditions },
   from,
   query,
+  signed,
   ...redirect
 }) {
   return {
@@ -48,5 +49,10 @@ const normalizeRedirect = function ({
       ...(country && { Country: country }),
       ...(language && { Language: language }),
     },
+    ...(signed && {
+      sign: {
+        jwt_secret: signed,
+      },
+    }),
   }
 }

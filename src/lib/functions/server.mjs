@@ -4,7 +4,7 @@ import jwtDecode from 'jwt-decode'
 
 import { NETLIFYDEVERR, NETLIFYDEVLOG, error as errorExit, log } from '../../utils/command-helpers.mjs'
 import { generateNetlifyGraphJWT } from '../../utils/dev.mjs'
-import { CLOCKWORK_USERAGENT, getInternalFunctionsDir } from '../../utils/functions/index.mjs'
+import { CLOCKWORK_USERAGENT, getFunctionsDistPath, getInternalFunctionsDir } from '../../utils/functions/index.mjs'
 
 import { handleBackgroundFunction, handleBackgroundFunctionResult } from './background.mjs'
 import { createFormSubmissionHandler } from './form-submissions-handler.mjs'
@@ -168,7 +168,7 @@ export const createHandler = function (options) {
         return
       }
 
-      handleSynchronousFunction(error, result, request, response)
+      handleSynchronousFunction({ error, functionName: func.name, result, request, response })
     }
   }
 }
@@ -208,29 +208,46 @@ const getFunctionsServer = async function (options) {
 }
 
 export const startFunctionsServer = async (options) => {
-  const { capabilities, config, settings, site, siteUrl, timeouts } = options
+  const { capabilities, config, debug, loadDistFunctions, settings, site, siteUrl, timeouts } = options
   const internalFunctionsDir = await getInternalFunctionsDir({ base: site.root })
+  const functionsDirectories = []
 
-  // The order of the function directories matters. Leftmost directories take
-  // precedence.
-  const functionsDirectories = [settings.functions, internalFunctionsDir].filter(Boolean)
+  // If the `loadDistFunctions` parameter is sent, the functions server will
+  // use the built functions created by zip-it-and-ship-it rather than building
+  // them from source.
+  if (loadDistFunctions) {
+    const distPath = await getFunctionsDistPath({ base: site.root })
 
-  if (functionsDirectories.length !== 0) {
-    const functionsRegistry = new FunctionsRegistry({
-      capabilities,
-      config,
-      isConnected: Boolean(siteUrl),
-      projectRoot: site.root,
-      settings,
-      timeouts,
-    })
+    if (distPath) {
+      functionsDirectories.push(distPath)
+    }
+  } else {
+    // The order of the function directories matters. Leftmost directories take
+    // precedence.
+    const sourceDirectories = [settings.functions, internalFunctionsDir].filter(Boolean)
 
-    await functionsRegistry.scan(functionsDirectories)
-
-    const server = await getFunctionsServer(Object.assign(options, { functionsRegistry }))
-
-    await startWebServer({ server, settings })
+    functionsDirectories.push(...sourceDirectories)
   }
+
+  if (functionsDirectories.length === 0) {
+    return
+  }
+
+  const functionsRegistry = new FunctionsRegistry({
+    capabilities,
+    config,
+    debug,
+    isConnected: Boolean(siteUrl),
+    projectRoot: site.root,
+    settings,
+    timeouts,
+  })
+
+  await functionsRegistry.scan(functionsDirectories)
+
+  const server = await getFunctionsServer(Object.assign(options, { functionsRegistry }))
+
+  await startWebServer({ server, settings })
 }
 
 const startWebServer = async ({ server, settings }) => {

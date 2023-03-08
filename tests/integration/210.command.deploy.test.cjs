@@ -1,4 +1,3 @@
-/* eslint-disable require-await */
 const { join } = require('path')
 const process = require('process')
 
@@ -795,4 +794,3 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
 test('always pass, used for forked PRs since ava fails when no tests are present', (t) => {
   t.pass()
 })
-/* eslint-enable require-await */

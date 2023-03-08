@@ -1,11 +1,11 @@
 // @ts-check
 import cp from 'child_process'
 import fs from 'fs'
-import { mkdir } from 'fs/promises'
+import { mkdir, readdir, unlink } from 'fs/promises'
 import { createRequire } from 'module'
 import path, { dirname } from 'path'
 import process from 'process'
-import { fileURLToPath } from 'url'
+import { fileURLToPath, pathToFileURL } from 'url'
 import { promisify } from 'util'
 
 import copyTemplateDirOriginal from 'copy-template-dir'
@@ -16,6 +16,7 @@ import inquirerAutocompletePrompt from 'inquirer-autocomplete-prompt'
 import fetch from 'node-fetch'
 import ora from 'ora'
 
+import { fileExistsAsync } from '../../lib/fs.mjs'
 import { getAddons, getCurrentAddon, getSiteData } from '../../utils/addons/prepare.mjs'
 import { NETLIFYDEVERR, NETLIFYDEVLOG, NETLIFYDEVWARN, chalk, error, log } from '../../utils/command-helpers.mjs'
 import { injectEnvVariables } from '../../utils/dev.mjs'
@@ -90,19 +91,26 @@ const filterRegistry = function (registry, input) {
     })
 }
 
-const formatRegistryArrayForInquirer = function (lang, funcType) {
-  const folderNames = fs.readdirSync(path.join(templatesDir, lang))
-  const registry = folderNames
-    // filter out markdown files
-    .filter((folderName) => !folderName.endsWith('.md'))
+const formatRegistryArrayForInquirer = async function (lang, funcType) {
+  const folderNames = await readdir(path.join(templatesDir, lang))
 
-    .map((folderName) =>
-      // eslint-disable-next-line import/no-dynamic-require
-      require(path.join(templatesDir, lang, folderName, '.netlify-function-template.cjs')),
-    )
-    .filter((folderName) => folderName.functionType === funcType)
-    .sort((folderNameA, folderNameB) => {
-      const priorityDiff = (folderNameA.priority || DEFAULT_PRIORITY) - (folderNameB.priority || DEFAULT_PRIORITY)
+  const imports = await Promise.all(
+    folderNames
+      // filter out markdown files
+      .filter((folderName) => !folderName.endsWith('.md'))
+      .map(async (folderName) => {
+        const templatePath = path.join(templatesDir, lang, folderName, '.netlify-function-template.mjs')
+        // eslint-disable-next-line import/no-dynamic-require
+        const template = await import(pathToFileURL(templatePath))
+
+        return template.default
+      }),
+  )
+
+  const registry = imports
+    .filter((template) => template.functionType === funcType)
+    .sort((templateA, templateB) => {
+      const priorityDiff = (templateA.priority || DEFAULT_PRIORITY) - (templateB.priority || DEFAULT_PRIORITY)
 
       if (priorityDiff !== 0) {
         return priorityDiff
@@ -112,7 +120,7 @@ const formatRegistryArrayForInquirer = function (lang, funcType) {
       // until Node 11, so the original sorting order from `fs.readdirSync`
       // was not respected. We can simplify this once we drop support for
       // Node 10.
-      return folderNameA - folderNameB
+      return templateA - templateB
     })
     .map((t) => {
       t.lang = lang
@@ -170,7 +178,7 @@ const pickTemplate = async function ({ language: languageFromFlag }, funcType) {
   let templatesForLanguage
 
   try {
-    templatesForLanguage = formatRegistryArrayForInquirer(language, funcType)
+    templatesForLanguage = await formatRegistryArrayForInquirer(language, funcType)
   } catch {
     throw error(`Invalid language: ${language}`)
   }
@@ -292,14 +300,14 @@ const ensureFunctionDirExists = async function (command) {
     }
   }
 
-  if (!fs.existsSync(functionsDirHolder)) {
+  if (!(await fileExistsAsync(functionsDirHolder))) {
     log(
       `${NETLIFYDEVLOG} functions directory ${chalk.magenta.inverse(
         functionsDirHolder,
       )} does not exist yet, creating it...`,
     )
 
-    fs.mkdirSync(functionsDirHolder, { recursive: true })
+    await mkdir(functionsDirHolder, { recursive: true })
 
     log(`${NETLIFYDEVLOG} functions directory ${chalk.magenta.inverse(functionsDirHolder)} created`)
   }
@@ -350,15 +358,17 @@ const downloadFromURL = async function (command, options, argumentName, function
   })
 
   // read, execute, and delete function template file if exists
-  const fnTemplateFile = path.join(fnFolder, '.netlify-function-template.cjs')
-  if (fs.existsSync(fnTemplateFile)) {
-    // eslint-disable-next-line import/no-dynamic-require
-    const { onComplete, addons = [] } = require(fnTemplateFile)
+  const fnTemplateFile = path.join(fnFolder, '.netlify-function-template.mjs')
+  if (await fileExistsAsync(fnTemplateFile)) {
+    const {
+      default: { addons = [], onComplete },
+      // eslint-disable-next-line import/no-dynamic-require
+    } = await import(pathToFileURL(fnTemplateFile).href)
 
     await installAddons(command, addons, path.resolve(fnFolder))
     await handleOnComplete({ command, onComplete })
     // delete
-    fs.unlinkSync(fnTemplateFile)
+    await unlink(fnTemplateFile)
   }
 }
 
@@ -453,7 +463,7 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
   } else if (chosenTemplate === 'report') {
     log(`${NETLIFYDEVLOG} Open in browser: https://github.com/netlify/cli/issues/new`)
   } else {
-    const { onComplete, name: templateName, lang, addons = [] } = chosenTemplate
+    const { addons = [], lang, name: templateName, onComplete } = chosenTemplate
     const pathToTemplate = path.join(templatesDir, lang, templateName)
     if (!fs.existsSync(pathToTemplate)) {
       throw new Error(
@@ -471,7 +481,7 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
 
     // These files will not be part of the log message because they'll likely
     // be removed before the command finishes.
-    const omittedFromOutput = new Set(['.netlify-function-template.cjs', 'package.json', 'package-lock.json'])
+    const omittedFromOutput = new Set(['.netlify-function-template.mjs', 'package.json', 'package-lock.json'])
     const createdFiles = await copyTemplateDir(pathToTemplate, functionPath, vars)
     createdFiles.forEach((filePath) => {
       const filename = path.basename(filePath)
@@ -487,7 +497,7 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
     })
 
     // delete function template file that was copied over by copydir
-    fs.unlinkSync(path.join(functionPath, '.netlify-function-template.cjs'))
+    await unlink(path.join(functionPath, '.netlify-function-template.mjs'))
 
     // npm install
     if (functionPackageJson !== undefined) {

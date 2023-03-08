@@ -20,13 +20,13 @@ const scope = {
     // handle external links
     if (!href.startsWith('/')) {
       return (
-        <Rebass.Link color="#00ad9f" href={href}>
+        <Rebass.Link color="#02807d" href={href}>
           {children}
         </Rebass.Link>
       )
     }
     return (
-      <Link style={{ color: '#00ad9f', textDecoration: 'none' }} to={href}>
+      <Link style={{ color: '#02807d', textDecoration: 'none' }} to={href}>
         {children}
       </Link>
     )

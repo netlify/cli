@@ -1,12 +1,11 @@
 const headers = {
   ForwardedHost: 'x-forwarded-host',
-  ForwardedProtocol: 'x-forwarded-proto',
-  Functions: 'x-deno-functions',
+  Functions: 'x-nf-edge-functions',
   Geo: 'x-nf-geo',
-  Passthrough: 'x-deno-pass',
-  RequestID: 'X-NF-Request-ID',
+  Passthrough: 'x-nf-passthrough',
   IP: 'x-nf-client-connection-ip',
   Site: 'X-NF-Site-Info',
+  DebugLogging: 'x-nf-debug-logging',
 }
 
 export default headers

@@ -98,5 +98,11 @@ module.exports = {
         ],
       },
     },
+    {
+      files: ['tests/**/*'],
+      rules: {
+        'require-await': 'off',
+      },
+    },
   ],
 }

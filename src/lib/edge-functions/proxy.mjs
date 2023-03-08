@@ -4,12 +4,11 @@ import { relative } from 'path'
 import { cwd, env } from 'process'
 
 import getAvailablePort from 'get-port'
-import { v4 as generateUUID } from 'uuid'
 
 import { NETLIFYDEVERR, NETLIFYDEVWARN, chalk, error as printError, log } from '../../utils/command-helpers.mjs'
 import { getGeoLocation } from '../geo-location.mjs'
-import { getPathInProject } from '../settings.cjs'
-import { startSpinner, stopSpinner } from '../spinner.cjs'
+import { getPathInProject } from '../settings.mjs'
+import { startSpinner, stopSpinner } from '../spinner.mjs'
 
 import { DIST_IMPORT_MAP_PATH } from './consts.mjs'
 import headers from './headers.mjs'
@@ -56,19 +55,20 @@ export const createSiteInfoHeader = (siteInfo = {}) => {
 export const initializeProxy = async ({
   config,
   configPath,
+  debug,
   env: configEnv,
   geoCountry,
   geolocationMode,
   getUpdatedConfig,
   inspectSettings,
+  mainPort,
   offline,
+  passthroughPort,
   projectDir,
-  settings,
   siteInfo,
   state,
 }) => {
   const { functions: internalFunctions, importMap, path: internalFunctionsPath } = await getInternalFunctions()
-  const { port: mainPort } = settings
   const userFunctionsPath = config.build.edge_functions
   const isolatePort = await getAvailablePort()
 
@@ -76,7 +76,6 @@ export const initializeProxy = async ({
   // the network if needed. We don't want to wait for that to be completed, or
   // the command will be left hanging.
   const server = prepareServer({
-    certificatePath: settings.https ? settings.https.certFilePath : undefined,
     config,
     configPath,
     directories: [internalFunctionsPath, userFunctionsPath].filter(Boolean),
@@ -131,14 +130,13 @@ export const initializeProxy = async ({
 
     req[headersSymbol] = {
       [headers.Functions]: functionNames.join(','),
-      [headers.ForwardedHost]: `localhost:${mainPort}`,
+      [headers.ForwardedHost]: `localhost:${passthroughPort}`,
       [headers.Passthrough]: 'passthrough',
-      [headers.RequestID]: generateUUID(),
       [headers.IP]: LOCAL_HOST,
     }
 
-    if (settings.https) {
-      req[headersSymbol][headers.ForwardedProtocol] = 'https'
+    if (debug) {
+      req[headersSymbol][headers.DebugLogging] = '1'
     }
 
     return `http://${LOCAL_HOST}:${isolatePort}`
@@ -148,7 +146,6 @@ export const initializeProxy = async ({
 export const isEdgeFunctionsRequest = (req) => req[headersSymbol] !== undefined
 
 const prepareServer = async ({
-  certificatePath,
   config,
   configPath,
   directories,
@@ -168,7 +165,6 @@ const prepareServer = async ({
     const distImportMapPath = getPathInProject([DIST_IMPORT_MAP_PATH])
     const runIsolate = await bundler.serve({
       ...getDownloadUpdateFunctions(),
-      certificatePath,
       debug: env.NETLIFY_DENO_DEBUG === 'true',
       distImportMapPath,
       formatExportTypeError: (name) =>

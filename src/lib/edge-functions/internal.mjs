@@ -3,7 +3,7 @@ import { readFile, stat } from 'fs/promises'
 import { dirname, join, resolve } from 'path'
 import { cwd } from 'process'
 
-import { getPathInProject } from '../settings.cjs'
+import { getPathInProject } from '../settings.mjs'
 
 import { INTERNAL_EDGE_FUNCTIONS_FOLDER } from './consts.mjs'
 
@@ -32,7 +32,7 @@ export const getInternalFunctions = async () => {
     }
 
     const data = {
-      functions: manifest.functions,
+      functions: manifest.functions || [],
       path,
     }
 

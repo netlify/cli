@@ -34,6 +34,7 @@ See the [CLI command line reference](https://cli.netlify.com/commands/) to get s
   - [login](#login)
   - [open](#open)
   - [recipes](#recipes)
+  - [serve](#serve)
   - [sites](#sites)
   - [status](#status)
   - [switch](#switch)
@@ -164,7 +165,7 @@ Manage netlify functions
 
 ### [graph](/docs/commands/graph.md)
 
-(Beta) Control the Netlify Graph functions for the current site
+(Deprecated) Control the Netlify Graph functions for the current site
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
@@ -218,6 +219,10 @@ Open settings for the site linked to the current folder
 |:--------------------------- |:-----|
 | [`recipes:list`](/docs/commands/recipes.md#recipeslist) | (Beta) List the recipes available to create and modify files in a project  |
 
+
+### [serve](/docs/commands/serve.md)
+
+(Beta) Build the site for production and serve locally. This does not watch the code for changes, so if you need to rebuild your site then you must exit and run `serve` again.
 
 ### [sites](/docs/commands/sites.md)
 

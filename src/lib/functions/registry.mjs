@@ -1,7 +1,9 @@
 // @ts-check
 import { mkdir } from 'fs/promises'
-import { extname, isAbsolute, join } from 'path'
+import { extname, isAbsolute, join, resolve } from 'path'
 import { env } from 'process'
+
+import extractZip from 'extract-zip'
 
 import {
   chalk,
@@ -9,11 +11,12 @@ import {
   log,
   NETLIFYDEVERR,
   NETLIFYDEVLOG,
-  NETLIFYDEVWARN,
   warn,
   watchDebounced,
 } from '../../utils/command-helpers.mjs'
+import { INTERNAL_FUNCTIONS_FOLDER, SERVE_FUNCTIONS_FOLDER } from '../../utils/functions/functions.mjs'
 import { getLogMessage } from '../log.mjs'
+import { getPathInProject } from '../settings.mjs'
 
 import NetlifyFunction from './netlify-function.mjs'
 import runtimes from './runtimes/index.mjs'
@@ -21,9 +24,10 @@ import runtimes from './runtimes/index.mjs'
 const ZIP_EXTENSION = '.zip'
 
 export class FunctionsRegistry {
-  constructor({ capabilities, config, isConnected = false, projectRoot, settings, timeouts }) {
+  constructor({ capabilities, config, debug = false, isConnected = false, projectRoot, settings, timeouts }) {
     this.capabilities = capabilities
     this.config = config
+    this.debug = debug
     this.isConnected = isConnected
     this.projectRoot = projectRoot
     this.timeouts = timeouts
@@ -123,7 +127,7 @@ export class FunctionsRegistry {
     return this.functions.get(name)
   }
 
-  registerFunction(name, funcBeforeHook) {
+  async registerFunction(name, funcBeforeHook) {
     const { runtime } = funcBeforeHook
 
     // The `onRegister` hook allows runtimes to modify the function before it's
@@ -145,17 +149,27 @@ export class FunctionsRegistry {
       )
     }
 
-    // This fixes the bug described here https://github.com/netlify/zip-it-and-ship-it/issues/637
-    // If the current function's file is a zip bundle, we ignore it and log a helpful message.
+    // If the function file is a ZIP, we extract it and rewire its main file to
+    // the new location.
     if (extname(func.mainFile) === ZIP_EXTENSION) {
-      log(`${NETLIFYDEVWARN} Skipped bundled function ${chalk.yellow(name)}. Unzip the archive to load it from source.`)
-      return
+      const unzippedDirectory = await this.unzipFunction(func)
+
+      if (this.debug) {
+        log(`${NETLIFYDEVLOG} ${chalk.green('Extracted')} function ${chalk.yellow(name)} from ${func.mainFile}.`)
+      }
+
+      func.mainFile = join(unzippedDirectory, `${func.name}.js`)
     }
 
     this.functions.set(name, func)
     this.buildFunctionAndWatchFiles(func)
 
-    log(`${NETLIFYDEVLOG} ${chalk.green('Loaded')} function ${getTerminalLink(chalk.yellow(name), func.url)}.`)
+    log(
+      `${NETLIFYDEVLOG} ${chalk.green('Loaded')} function ${getTerminalLink(
+        chalk.yellow(func.displayName || name),
+        func.url,
+      )}.`,
+    )
   }
 
   // This function is here so we can mock it in tests
@@ -180,8 +194,8 @@ export class FunctionsRegistry {
     const functions = await this.listFunctions(directories, {
       featureFlags: {
         buildRustSource: env.NETLIFY_EXPERIMENTAL_BUILD_RUST_SOURCE === 'true',
-        project_deploy_configuration_api_use_per_function_configuration_files: true,
       },
+      configFileDirectories: [getPathInProject([INTERNAL_FUNCTIONS_FOLDER])],
       config: this.config.functions,
     })
 
@@ -197,34 +211,37 @@ export class FunctionsRegistry {
 
     await Promise.all(deletedFunctions.map((func) => this.unregisterFunction(func.name)))
 
-    functions.forEach(({ mainFile, name, runtime: runtimeName }) => {
-      const runtime = runtimes[runtimeName]
+    await Promise.all(
+      functions.map(async ({ displayName, mainFile, name, runtime: runtimeName }) => {
+        const runtime = runtimes[runtimeName]
 
-      // If there is no matching runtime, it means this function is not yet
-      // supported in Netlify Dev.
-      if (runtime === undefined) {
-        return
-      }
+        // If there is no matching runtime, it means this function is not yet
+        // supported in Netlify Dev.
+        if (runtime === undefined) {
+          return
+        }
 
-      // If this function has already been registered, we skip it.
-      if (this.functions.has(name)) {
-        return
-      }
+        // If this function has already been registered, we skip it.
+        if (this.functions.has(name)) {
+          return
+        }
 
-      const func = new NetlifyFunction({
-        config: this.config,
-        directory: directories.find((directory) => mainFile.startsWith(directory)),
-        mainFile,
-        name,
-        projectRoot: this.projectRoot,
-        runtime,
-        timeoutBackground: this.timeouts.backgroundFunctions,
-        timeoutSynchronous: this.timeouts.syncFunctions,
-        settings: this.settings,
-      })
+        const func = new NetlifyFunction({
+          config: this.config,
+          directory: directories.find((directory) => mainFile.startsWith(directory)),
+          mainFile,
+          name,
+          displayName,
+          projectRoot: this.projectRoot,
+          runtime,
+          timeoutBackground: this.timeouts.backgroundFunctions,
+          timeoutSynchronous: this.timeouts.syncFunctions,
+          settings: this.settings,
+        })
 
-      this.registerFunction(name, func)
-    })
+        await this.registerFunction(name, func)
+      }),
+    )
 
     await Promise.all(directories.map((path) => this.setupDirectoryWatcher(path)))
   }
@@ -260,5 +277,16 @@ export class FunctionsRegistry {
     if (watcher) {
       await watcher.close()
     }
+  }
+
+  async unzipFunction(func) {
+    const targetDirectory = resolve(
+      this.projectRoot,
+      getPathInProject([SERVE_FUNCTIONS_FOLDER, '.unzipped', func.name]),
+    )
+
+    await extractZip(func.mainFile, { dir: targetDirectory })
+
+    return targetDirectory
   }
 }

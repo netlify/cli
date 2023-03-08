@@ -5,7 +5,7 @@ import fetch from 'node-fetch'
 import pWaitFor from 'p-wait-for'
 
 import { fetchLatestVersion, shouldFetchLatestVersion } from '../lib/exec-fetcher.mjs'
-import { getPathInHome } from '../lib/settings.cjs'
+import { getPathInHome } from '../lib/settings.mjs'
 
 import { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log } from './command-helpers.mjs'
 import execa from './execa.mjs'

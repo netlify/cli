@@ -6,7 +6,7 @@ import process from 'process'
 import cleanDeep from 'clean-deep'
 import inquirer from 'inquirer'
 
-import { fileExistsAsync } from '../../lib/fs.cjs'
+import { fileExistsAsync } from '../../lib/fs.mjs'
 import { normalizeBackslash } from '../../lib/path.mjs'
 import { chalk, error as failAndExit, log, warn } from '../command-helpers.mjs'
 
@@ -40,8 +40,8 @@ const getDefaultSettings = ({
   const recommendedPlugins = getRecommendPlugins(frameworkPlugins, config)
   const {
     command: defaultBuildCmd = frameworkBuildCommand,
-    publish: defaultBuildDir = frameworkBuildDir,
     functions: defaultFunctionsDir,
+    publish: defaultBuildDir = frameworkBuildDir,
   } = config.build
 
   return {
@@ -87,9 +87,9 @@ export const getBuildSettings = async ({ config, env, repositoryRoot, siteRoot }
   const baseDirectory = getBaseDirectory({ repositoryRoot, siteRoot })
   const nodeVersion = await detectNodeVersion({ baseDirectory, env })
   const {
-    frameworkName,
     frameworkBuildCommand,
     frameworkBuildDir,
+    frameworkName,
     frameworkPlugins = [],
   } = await getFrameworkInfo({
     baseDirectory,

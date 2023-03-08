@@ -537,7 +537,7 @@ test('env:import --json --replace-existing should replace all existing vars and 
 
     await withMockApi(routes, async ({ apiUrl }) => {
       const cliResponse = await callCli(
-        ['env:import', '--replaceExisting', '--json', '.env'],
+        ['env:import', '--replace-existing', '--json', '.env'],
         getCLIOptions({ builder, apiUrl }),
         true,
       )
