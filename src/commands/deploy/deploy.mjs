@@ -605,7 +605,18 @@ const deploy = async (options, command) => {
     deployFolder,
     functionsFolder,
   })
-  const siteEnv = get(siteData, 'build_settings.env')
+
+  const siteEnv = isUsingEnvelope
+    ? await getEnvelopeEnv({
+        api,
+        context: options.context,
+        env: command.netlify.cachedConfig.env,
+        raw: true,
+        scope: 'functions',
+        siteInfo: siteData,
+      })
+    : get(siteData, 'build_settings.env')
+
   const functionsConfig = normalizeFunctionsConfig({
     functionsConfig: config.functions,
     projectRoot: site.root,

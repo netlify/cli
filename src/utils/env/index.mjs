@@ -131,11 +131,12 @@ export const formatEnvelopeData = ({ context = 'dev', envelopeItems = [], scope 
  * @param {string} context - The deploy context or branch of the environment variable
  * @param {object} env - The dictionary of environment variables
  * @param {string} key - If present, fetch a single key (case-sensitive)
+ * @param {boolean} raw - Return a dictionary of raw key/value pairs for only the account and site sources
  * @param {enum<any,builds,functions,runtime,post_processing>} scope - The scope of the environment variables
  * @param {object} siteInfo - The site object
  * @returns {object} An object of environment variables keys and their metadata
  */
-export const getEnvelopeEnv = async ({ api, context = 'dev', env, key = '', scope = 'any', siteInfo }) => {
+export const getEnvelopeEnv = async ({ api, context = 'dev', env, key = '', raw = false, scope = 'any', siteInfo }) => {
   const { account_slug: accountId, id: siteId } = siteInfo
 
   const [accountEnvelopeItems, siteEnvelopeItems] = await Promise.all([
@@ -145,6 +146,18 @@ export const getEnvelopeEnv = async ({ api, context = 'dev', env, key = '', scop
 
   const accountEnv = formatEnvelopeData({ context, envelopeItems: accountEnvelopeItems, scope, source: 'account' })
   const siteEnv = formatEnvelopeData({ context, envelopeItems: siteEnvelopeItems, scope, source: 'ui' })
+
+  if (raw) {
+    const entries = Object.entries({ ...accountEnv, ...siteEnv })
+    return entries.reduce(
+      (obj, [envVarKey, metadata]) => ({
+        ...obj,
+        [envVarKey]: metadata.value,
+      }),
+      {},
+    )
+  }
+
   const generalEnv = filterEnvBySource(env, 'general')
   const addonsEnv = filterEnvBySource(env, 'addons')
   const configFileEnv = filterEnvBySource(env, 'configFile')
