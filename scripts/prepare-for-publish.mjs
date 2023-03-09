@@ -5,6 +5,9 @@ import { fileURLToPath } from 'url'
 import execa from 'execa'
 import ora from 'ora'
 
+// These scripts from package.json need to be preserved on publish
+const preserveScripts = new Set(['postinstall', 'postpack', 'preinstall', 'prepack', 'prepublish', 'prepublishOnly'])
+
 let spinner = ora({
   spinner: 'star',
   text: 'Patching package.json (removing devDependencies, scripts, etc)',
@@ -21,7 +24,7 @@ delete pkgJson.config
 
 // eslint-disable-next-line fp/no-loops
 for (const scriptName in pkgJson.scripts) {
-  if (scriptName === 'postinstall' || scriptName === 'prepublishOnly') continue
+  if (preserveScripts.has(scriptName)) continue
 
   delete pkgJson.scripts[scriptName]
 }
