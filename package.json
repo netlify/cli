@@ -114,7 +114,7 @@
     "express-logging": "^1.1.1",
     "extract-zip": "^2.0.1",
     "fastify": "^4.10.2",
-    "find-up": "^5.0.0",
+    "find-up": "^6.0.0",
     "flush-write-stream": "^2.0.0",
     "folder-walker": "^3.2.0",
     "from2-array": "^0.0.4",
