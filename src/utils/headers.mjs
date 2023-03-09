@@ -23,10 +23,11 @@ const getHeaderValues = function ({ values }) {
   return values
 }
 
-export const parseHeaders = async function ({ configPath, headersFiles }) {
+export const parseHeaders = async function ({ config, configPath, headersFiles }) {
   const { errors, headers } = await parseAllHeaders({
     headersFiles,
     netlifyConfigPath: configPath,
+    configHeaders: config.headers,
     minimal: false,
   })
   handleHeadersErrors(errors)

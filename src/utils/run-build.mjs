@@ -3,15 +3,14 @@ import { promises as fs } from 'fs'
 import path from 'path'
 import process from 'process'
 
+import buildSite, { startDev } from '@netlify/build'
+
 import { INTERNAL_EDGE_FUNCTIONS_FOLDER } from '../lib/edge-functions/consts.mjs'
 import { getPathInProject } from '../lib/settings.mjs'
 
 import { error } from './command-helpers.mjs'
 import { startFrameworkServer } from './framework-server.mjs'
 import { INTERNAL_FUNCTIONS_FOLDER } from './functions/index.mjs'
-
-const netlifyBuildPromise = import('@netlify/build')
-
 // Copies `netlify.toml`, if one is defined, into the `.netlify` internal
 // directory and returns the path to its new location.
 const copyConfig = async ({ configPath, siteRoot }) => {
@@ -57,7 +56,6 @@ const getBuildOptions = ({
 })
 
 const runNetlifyBuild = async ({ cachedConfig, options, settings, site, timeline = 'build' }) => {
-  const { default: buildSite, startDev } = await netlifyBuildPromise
   const sharedOptions = getBuildOptions({
     cachedConfig,
     options,
@@ -115,13 +113,13 @@ const runNetlifyBuild = async ({ cachedConfig, options, settings, site, timeline
   }
 
   // Run Netlify Build using the `startDev` entry point.
-  const { error: startDevError, success } = await startDev(devCommand, startDevOptions)
+  const { configMutations, error: startDevError, success } = await startDev(devCommand, startDevOptions)
 
   if (!success) {
     error(`Could not start local development server\n\n${startDevError.message}\n\n${startDevError.stack}`)
   }
 
-  return {}
+  return { configMutations }
 }
 
 export const runDevTimeline = (options) => runNetlifyBuild({ ...options, timeline: 'dev' })

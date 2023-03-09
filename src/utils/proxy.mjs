@@ -326,7 +326,7 @@ const reqToURL = function (req, pathname) {
 
 const MILLISEC_TO_SEC = 1e3
 
-const initializeProxy = async function ({ configPath, distDir, env, host, port, projectDir, siteInfo }) {
+const initializeProxy = async function ({ config, configPath, distDir, env, host, port, projectDir, siteInfo }) {
   const proxy = httpProxy.createProxyServer({
     selfHandleResponse: true,
     target: {
@@ -337,7 +337,7 @@ const initializeProxy = async function ({ configPath, distDir, env, host, port, 
 
   const headersFiles = [...new Set([path.resolve(projectDir, '_headers'), path.resolve(distDir, '_headers')])]
 
-  let headers = await parseHeaders({ headersFiles, configPath })
+  let headers = await parseHeaders({ headersFiles, configPath, config })
 
   const watchedHeadersFiles = configPath === undefined ? headersFiles : [...headersFiles, configPath]
   onChanges(watchedHeadersFiles, async () => {
@@ -611,6 +611,7 @@ export const startProxy = async function ({
   })
   const proxy = await initializeProxy({
     env,
+    config,
     host: settings.frameworkHost,
     port: settings.frameworkPort,
     distDir: settings.dist,

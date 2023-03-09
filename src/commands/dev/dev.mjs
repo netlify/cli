@@ -1,6 +1,7 @@
 // @ts-check
 import process from 'process'
 
+import { applyMutations } from '@netlify/config'
 import { Option } from 'commander'
 
 import { promptEditorHelper } from '../../lib/edge-functions/editor-helper.mjs'
@@ -126,7 +127,13 @@ const dev = async (options, command) => {
 
   log(`${NETLIFYDEVWARN} Setting up local development server`)
 
-  const { configPath: configPathOverride } = await runDevTimeline({ cachedConfig, options, settings, site })
+  const { configMutations, configPath: configPathOverride } = await runDevTimeline({
+    cachedConfig,
+    options,
+    settings,
+    site,
+  })
+  const mutatedConfig = applyMutations(config, configMutations)
 
   await startFunctionsServer({
     api,
@@ -161,7 +168,7 @@ const dev = async (options, command) => {
 
   let url = await startProxyServer({
     addonsUrls,
-    config,
+    config: mutatedConfig,
     configPath: configPathOverride,
     debug: options.debug,
     env,
@@ -188,7 +195,7 @@ const dev = async (options, command) => {
 
   await startNetlifyGraph({
     command,
-    config,
+    config: mutatedConfig,
     options,
     settings,
     site,
