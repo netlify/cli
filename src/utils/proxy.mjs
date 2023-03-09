@@ -346,7 +346,7 @@ const initializeProxy = async function ({ config, configPath, distDir, env, host
       `${NETLIFYDEVLOG} Reloading headers files from`,
       existingHeadersFiles.map((headerFile) => path.relative(projectDir, headerFile)),
     )
-    headers = await parseHeaders({ headersFiles, configPath })
+    headers = await parseHeaders({ headersFiles, configPath, config })
   })
 
   proxy.before('web', 'stream', (req) => {
