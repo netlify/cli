@@ -3,7 +3,7 @@ import { dirname } from 'path'
 import process from 'process'
 import util from 'util'
 
-import findUp from 'find-up'
+import { findUp } from 'find-up'
 import gitRepoInfo from 'git-repo-info'
 import gitconfiglocal from 'gitconfiglocal'
 import parseGitRemote from 'parse-github-url'
@@ -23,14 +23,15 @@ const getRepoData = async function ({ remoteName } = {}) {
       util.promisify(gitconfiglocal)(cwd),
       findUp('.git', { cwd, type: 'directory' }),
     ])
+
+    if (!gitDirectory || !gitConfig || !gitConfig.remote || Object.keys(gitConfig.remote).length === 0) {
+      throw new Error('No Git remote found')
+    }
+
     const baseGitPath = dirname(gitDirectory)
 
     if (cwd !== baseGitPath) {
       log(`Git directory located in ${baseGitPath}`)
-    }
-
-    if (!gitConfig || !gitConfig.remote || Object.keys(gitConfig.remote).length === 0) {
-      throw new Error('No Git remote found')
     }
 
     if (!remoteName) {

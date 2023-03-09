@@ -3,7 +3,7 @@ import { readFile } from 'fs/promises'
 import { dirname, extname, join, resolve } from 'path'
 import { platform } from 'process'
 
-import findUp from 'find-up'
+import { findUp } from 'find-up'
 import toml from 'toml'
 
 import execa from '../../../../utils/execa.mjs'
