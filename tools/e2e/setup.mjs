@@ -1,6 +1,6 @@
 import { appendFile, mkdtemp, readFile, rm, writeFile } from 'fs/promises'
 import { tmpdir } from 'os'
-import { join, normalize, sep } from 'path'
+import { dirname, join, normalize, sep } from 'path'
 import { cwd, env } from 'process'
 import { fileURLToPath } from 'url'
 
@@ -11,7 +11,7 @@ import { runServer } from 'verdaccio'
 
 import { fileExistsAsync } from '../../src/lib/fs.mjs'
 
-const dir = fileURLToPath(import.meta.url)
+const dir = dirname(fileURLToPath(import.meta.url))
 
 const VERDACCIO_TIMEOUT_MILLISECONDS = 60 * 1000
 const START_PORT_RANGE = 5000
