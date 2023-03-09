@@ -3,7 +3,7 @@ import path from 'path'
 import process from 'process'
 
 import dotProp from 'dot-prop'
-import findUp from 'find-up'
+import { findUpSync } from 'find-up'
 import writeFileAtomic from 'write-file-atomic'
 
 import { getPathInProject } from '../lib/settings.mjs'
@@ -13,7 +13,7 @@ const permissionError = "You don't have access to this file."
 
 // Finds location of `.netlify/state.json`
 const findStatePath = (cwd) => {
-  const statePath = findUp.sync([STATE_PATH], { cwd })
+  const statePath = findUpSync([STATE_PATH], { cwd })
 
   if (!statePath) {
     return path.join(cwd, STATE_PATH)

@@ -1,14 +1,17 @@
 import { appendFile, mkdtemp, readFile, rm, writeFile } from 'fs/promises'
 import { tmpdir } from 'os'
-import { join, sep } from 'path'
+import { dirname, join, normalize, sep } from 'path'
 import { cwd, env } from 'process'
 import { fileURLToPath } from 'url'
 
 import execa from 'execa'
 import getPort from 'get-port'
-import verdaccio from 'verdaccio'
+import pTimeout from 'p-timeout'
+import { runServer } from 'verdaccio'
 
 import { fileExistsAsync } from '../../src/lib/fs.mjs'
+
+const dir = dirname(fileURLToPath(import.meta.url))
 
 const VERDACCIO_TIMEOUT_MILLISECONDS = 60 * 1000
 const START_PORT_RANGE = 5000
@@ -16,10 +19,12 @@ const END_PORT_RANGE = 5000
 
 /**
  * Gets the verdaccio configuration
- * @param {string} storage The location where the artifacts are stored
  */
-const getVerdaccioConfig = (storage) => ({
-  storage,
+const getVerdaccioConfig = () => ({
+  // workaround
+  // on v5 the `self_path` still exists and will be removed in v6 of verdaccio
+  self_path: dir,
+  storage: normalize(join(dir, '../../.verdaccio-storage')),
   web: { title: 'Test Registry' },
   max_body_size: '128mb',
   // Disable creation of users this is only meant for integration testing
@@ -52,30 +57,38 @@ const getVerdaccioConfig = (storage) => ({
 })
 
 /**
+ * Start verdaccio server
+ * @returns {Promise<{ url: URL; storage: string; }>}
+ */
+const runVerdaccio = async (config, port) => {
+  const app = await runServer(config)
+
+  return new Promise((resolve, reject) => {
+    app.listen(port, 'localhost', () => {
+      resolve({ url: new URL(`http://localhost:${port}/`), storage: config.storage })
+    })
+    app.on('error', (error) => {
+      reject(error)
+    })
+  })
+}
+
+/**
  * Start verdaccio registry and store artifacts in a new temporary folder on the os
  * @returns {Promise<{ url: URL; storage: string; }>}
  */
 export const startRegistry = async () => {
+  const config = getVerdaccioConfig()
+
+  // Remove netlify-cli from the verdaccio storage because we are going to publish it in a second
+  await rm(join(config.storage, 'netlify-cli'), { force: true, recursive: true })
+
   // generate a random starting port to avoid race condition inside the promise when running a large
   // number in parallel
   const startPort = Math.floor(Math.random() * END_PORT_RANGE) + START_PORT_RANGE
   const freePort = await getPort({ host: 'localhost', port: startPort })
-  const storage = fileURLToPath(new URL('../../.verdaccio-storage', import.meta.url))
 
-  // Remove netlify-cli from the verdaccio storage because we are going to publish it in a second
-  await rm(join(storage, 'netlify-cli'), { force: true, recursive: true })
-
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      reject(new Error('Starting Verdaccio Timed out'))
-    }, VERDACCIO_TIMEOUT_MILLISECONDS)
-
-    verdaccio.default(getVerdaccioConfig(storage), freePort, storage, '1.0.0', 'verdaccio', (webServer, { port }) => {
-      webServer.listen(port, 'localhost', () => {
-        resolve({ url: new URL(`http://localhost:${port}/`), storage })
-      })
-    })
-  })
+  return await pTimeout(runVerdaccio(config, freePort), VERDACCIO_TIMEOUT_MILLISECONDS, 'Starting Verdaccio timed out')
 }
 
 /**
