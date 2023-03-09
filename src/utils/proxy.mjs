@@ -17,7 +17,7 @@ import getAvailablePort from 'get-port'
 import httpProxy from 'http-proxy'
 import { createProxyMiddleware } from 'http-proxy-middleware'
 import jwtDecode from 'jwt-decode'
-import locatePath from 'locate-path'
+import { locatePath } from 'locate-path'
 import pFilter from 'p-filter'
 import toReadableStream from 'to-readable-stream'
 

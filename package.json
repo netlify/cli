@@ -138,7 +138,7 @@
     "jwt-decode": "^3.0.0",
     "lambda-local": "^2.0.1",
     "listr": "^0.14.3",
-    "locate-path": "^6.0.0",
+    "locate-path": "^7.0.0",
     "lodash": "^4.17.20",
     "log-symbols": "^5.0.0",
     "log-update": "^5.0.0",
