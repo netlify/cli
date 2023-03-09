@@ -2,7 +2,7 @@
 import { readFile } from 'fs/promises'
 
 import { get } from 'dot-prop'
-import locatePath from 'locate-path'
+import { locatePath } from 'locate-path'
 import nodeVersionAlias from 'node-version-alias'
 
 import { warn } from '../command-helpers.mjs'
