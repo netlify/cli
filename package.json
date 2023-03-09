@@ -151,7 +151,7 @@
     "netlify-redirector": "^0.4.0",
     "node-fetch": "^2.6.0",
     "node-version-alias": "^2.0.0",
-    "ora": "^5.0.0",
+    "ora": "^6.0.0",
     "p-filter": "^3.0.0",
     "p-map": "^5.0.0",
     "p-wait-for": "^3.0.0",
