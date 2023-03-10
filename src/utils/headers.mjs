@@ -27,7 +27,7 @@ export const parseHeaders = async function ({ config, configPath, headersFiles }
   const { errors, headers } = await parseAllHeaders({
     headersFiles,
     netlifyConfigPath: configPath,
-    configHeaders: config.headers || [],
+    configHeaders: config?.headers || [],
     minimal: false,
   })
   handleHeadersErrors(errors)
