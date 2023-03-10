@@ -78,7 +78,7 @@
     "@fastify/static": "^6.6.0",
     "@netlify/build": "^29.6.6",
     "@netlify/config": "^20.3.4",
-    "@netlify/edge-bundler": "^8.11.0",
+    "@netlify/edge-bundler": "^8.11.1",
     "@netlify/framework-info": "^9.8.5",
     "@netlify/local-functions-proxy": "^1.1.1",
     "@netlify/zip-it-and-ship-it": "^8.9.0",
