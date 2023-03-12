@@ -3,40 +3,9 @@ import { fileURLToPath } from 'url'
 
 import { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log, warn, watchDebounced } from '../../utils/command-helpers.mjs'
 
-// TODO: Import from `@netlify/edge-bundler` once it exports this type.
-/**
- * @typedef InSourceDeclaration
- * @type {object}
- * @property {string} [cache]
- * @property {string} function
- * @property {string | string[]} [path]
- * @property {string | string[]} [excludedPath]
- */
-
-/**
- * @typedef EdgeFunction
- * @type {object}
- * @property {string} name
- * @property {string} path
- */
-
-/**
- * @typedef EdgeFunctionDeclarationWithPath
- * @type {object}
- * @property {string} function
- * @property {string} path
- * @property {string=} name
- */
-
-/**
- * @typedef EdgeFunctionDeclarationWithPattern
- * @type {object}
- * @property {string} function
- * @property {string} pattern
- * @property {string=} name
- */
-
-/** @typedef {(EdgeFunctionDeclarationWithPath | EdgeFunctionDeclarationWithPattern)} EdgeFunctionDeclaration */
+/** @typedef {import('@netlify/edge-bundler').Declaration} Declaration */
+/** @typedef {import('@netlify/edge-bundler').EdgeFunction} EdgeFunction */
+/** @typedef {import('@netlify/edge-bundler').FunctionConfig} FunctionConfig */
 /** @typedef {Awaited<ReturnType<typeof import('@netlify/edge-bundler').serve>>} RunIsolate */
 
 export class EdgeFunctionsRegistry {
@@ -48,7 +17,7 @@ export class EdgeFunctionsRegistry {
    * @param {string[]} opts.directories
    * @param {Record<string, string>} opts.env
    * @param {() => Promise<object>} opts.getUpdatedConfig
-   * @param {EdgeFunction[]} opts.internalFunctions
+   * @param {Declaration[]} opts.internalFunctions
    * @param {string} opts.projectDir
    * @param {RunIsolate} opts.runIsolate
    */
@@ -81,11 +50,6 @@ export class EdgeFunctionsRegistry {
     this.getUpdatedConfig = getUpdatedConfig
 
     /**
-     * @type {EdgeFunction[]}
-     */
-    this.internalFunctions = internalFunctions
-
-    /**
      * @type {RunIsolate}
      */
     this.runIsolate = runIsolate
@@ -96,14 +60,19 @@ export class EdgeFunctionsRegistry {
     this.buildError = null
 
     /**
-     * @type {EdgeFunctionDeclaration[]}
+     * @type {Declaration[]}
      */
-    this.declarationsFromConfig = this.getDeclarationsFromConfig(config)
+    this.declarationsFromDeployConfig = internalFunctions
 
     /**
-     * @type {InSourceDeclaration[]}
+     * @type {Record<string, FunctionConfig>}
      */
-    this.declarationsFromSource = []
+    this.declarationsFromSource = {}
+
+    /**
+     * @type {Declaration[]}
+     */
+    this.declarationsFromTOML = EdgeFunctionsRegistry.getDeclarationsFromTOML(config)
 
     /**
      * @type {Record<string, string>}
@@ -152,7 +121,10 @@ export class EdgeFunctionsRegistry {
       }
 
       this.buildError = null
-      this.declarationsFromSource = functions.map((func, index) => ({ function: func.name, ...functionsConfig[index] }))
+      this.declarationsFromSource = functions.reduce(
+        (acc, func, index) => ({ ...acc, [func.name]: functionsConfig[index] }),
+        {},
+      )
 
       this.processGraph(graph)
     } catch (error) {
@@ -169,14 +141,7 @@ export class EdgeFunctionsRegistry {
         (existingFunc) => func.name === existingFunc.name && func.path === existingFunc.path,
       )
 
-      if (functionExists) {
-        return
-      }
-
-      const hasDeclaration = this.declarationsFromConfig.some((declaration) => declaration.function === func.name)
-
-      // We only load the function if there's a config declaration for it.
-      return hasDeclaration
+      return !functionExists
     })
     const deletedFunctions = this.functions.filter((existingFunc) => {
       const functionExists = functionsFound.some(
@@ -207,14 +172,10 @@ export class EdgeFunctionsRegistry {
     }
   }
 
-  getDeclarationsFromConfig(config) {
-    const { edge_functions: userFunctions = [] } = config
+  static getDeclarationsFromTOML(config) {
+    const { edge_functions: edgeFunctions = [] } = config
 
-    // The order is important, since we want to run user-defined functions
-    // before internal functions.
-    const declarations = [...userFunctions, ...this.internalFunctions]
-
-    return declarations
+    return edgeFunctions
   }
 
   static getEnvironmentVariables(envConfig) {
@@ -296,8 +257,12 @@ export class EdgeFunctionsRegistry {
   /**
    * @param {string} urlPath
    */
-  async matchURLPath(urlPath) {
-    const declarations = this.mergeDeclarations()
+  matchURLPath(urlPath) {
+    const declarations = this.bundler.mergeDeclarations(
+      this.declarationsFromTOML,
+      this.declarationsFromSource,
+      this.declarationsFromDeployConfig,
+    )
     const manifest = this.bundler.generateManifest({
       declarations,
       functions: this.functions,
@@ -315,7 +280,7 @@ export class EdgeFunctionsRegistry {
         return !isExcluded
       })
       .map((route) => route.function)
-    const orphanedDeclarations = await this.matchURLPathAgainstOrphanedDeclarations(urlPath)
+    const orphanedDeclarations = this.matchURLPathAgainstOrphanedDeclarations(urlPath)
 
     return { functionNames, orphanedDeclarations }
   }
@@ -326,9 +291,9 @@ export class EdgeFunctionsRegistry {
     // a config declaration exists without a matching function file. To do that
     // we compute a list of functions from the declarations (the `path` doesn't
     // really matter).
-    const functions = this.declarationsFromConfig.map((declaration) => ({ name: declaration.function, path: '' }))
+    const functions = this.declarationsFromTOML.map((declaration) => ({ name: declaration.function, path: '' }))
     const manifest = this.bundler.generateManifest({
-      declarations: this.declarationsFromConfig,
+      declarations: this.declarationsFromTOML,
       functions,
     })
 
@@ -350,46 +315,6 @@ export class EdgeFunctionsRegistry {
       .map((route) => route.function)
 
     return functionNames
-  }
-
-  // Merges declarations coming from the config and from the function sources.
-  mergeDeclarations() {
-    const declarations = [...this.declarationsFromConfig]
-
-    this.declarationsFromSource.forEach((declarationFromSource) => {
-      const { path: pathOrPaths, ...configProps } = declarationFromSource
-
-      // Find any declarations in the config for the function.
-      const indexes = declarations
-        .filter(({ function: func }) => func === declarationFromSource.function)
-        .map((_, index) => index)
-
-      // If the in-source declaration doesn't have a path, add its properties
-      // to any existing declarations for the function.
-      if (pathOrPaths === undefined) {
-        indexes.forEach((index) => {
-          declarations[index] = { ...declarations[index], ...configProps }
-        })
-      } else {
-        // The in-source declaration has a path, and those take precedence.
-        // Discard any config declarations first.
-        indexes.forEach((index) => {
-          declarations.splice(index, 1)
-        })
-
-        // The path may be an array or a string, so let's normalize that first.
-        const paths = Array.isArray(pathOrPaths) ? pathOrPaths : [pathOrPaths]
-
-        // Create a new declaration for each path.
-        paths.forEach((path) => {
-          declarations.push({ ...configProps, path })
-        })
-      }
-    })
-
-    const filteredDeclarations = declarations.filter((declaration) => 'path' in declaration || 'pattern' in declaration)
-
-    return filteredDeclarations
   }
 
   processGraph(graph) {
@@ -462,7 +387,7 @@ export class EdgeFunctionsRegistry {
       onChange: async () => {
         const newConfig = await this.getUpdatedConfig()
 
-        this.declarationsFromConfig = this.getDeclarationsFromConfig(newConfig)
+        this.declarationsFromTOML = EdgeFunctionsRegistry.getDeclarationsFromTOML(newConfig)
 
         await this.checkForAddedOrDeletedFunctions()
       },
@@ -486,6 +411,8 @@ export class EdgeFunctionsRegistry {
   }
 
   findDisplayName(func) {
-    return this.declarationsFromConfig?.find((declaration) => declaration.function === func)?.name
+    const declarations = [...this.declarationsFromTOML, ...this.declarationsFromDeployConfig]
+
+    return declarations.find((declaration) => declaration.function === func)?.name
   }
 }
