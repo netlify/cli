@@ -102,6 +102,11 @@ netlify deploy
 - `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 - `trigger` (*boolean*) - Trigger a new build of your site on Netlify without uploading local files
 
+| Subcommand | description  |
+|:--------------------------- |:-----|
+| [`deploy:delete`](/docs/commands/deploy.md#deploydelete) | Delete a deploy  |
+
+
 **Examples**
 
 ```bash
@@ -116,5 +121,35 @@ netlify deploy --trigger
 netlify deploy --build --context deploy-preview
 ```
 
+---
+## `deploy:delete`
+
+Delete a deploy
+This command will permanently delete a deploy on Netlify. Use with caution.
+
+**Usage**
+
+```bash
+netlify deploy:delete
+```
+
+**Arguments**
+
+- deployId - Deploy ID to delete
+
+**Flags**
+
+- `force` (*boolean*) - delete without propting (useful for CI)
+- `debug` (*boolean*) - Print debugging information
+- `http-proxy` (*string*) - Proxy server address to route requests through.
+- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
+
+**Examples**
+
+```bash
+netlify deploy:delete 12a3456b71234c56de789f12
+```
+
+---
 
 <!-- AUTO-GENERATED-CONTENT:END -->

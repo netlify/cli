@@ -54,6 +54,11 @@ Run any Netlify API method
 
 Create a new deploy from the contents of a folder
 
+| Subcommand | description  |
+|:--------------------------- |:-----|
+| [`deploy:delete`](/docs/commands/deploy.md#deploydelete) | Delete a deploy  |
+
+
 ### [dev](/docs/commands/dev.md)
 
 Local dev server
