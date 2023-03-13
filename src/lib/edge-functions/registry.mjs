@@ -265,6 +265,7 @@ export class EdgeFunctionsRegistry {
     )
     const manifest = this.bundler.generateManifest({
       declarations,
+      functionConfig: this.declarationsFromSource,
       functions: this.functions,
     })
     const routes = [...manifest.routes, ...manifest.post_cache_routes].map((route) => ({
