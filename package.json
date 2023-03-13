@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "13.1.2",
+  "version": "13.1.3",
   "author": "Netlify Inc.",
   "type": "module",
   "engines": {
@@ -76,9 +76,9 @@
   },
   "dependencies": {
     "@fastify/static": "^6.6.0",
-    "@netlify/build": "^29.6.6",
-    "@netlify/config": "^20.3.4",
-    "@netlify/edge-bundler": "^8.12.0",
+    "@netlify/build": "^29.6.7",
+    "@netlify/config": "^20.3.5",
+    "@netlify/edge-bundler": "^8.11.1",
     "@netlify/framework-info": "^9.8.5",
     "@netlify/local-functions-proxy": "^1.1.1",
     "@netlify/zip-it-and-ship-it": "^8.9.0",
@@ -145,9 +145,9 @@
     "minimist": "^1.2.5",
     "multiparty": "^4.2.1",
     "netlify": "^13.1.2",
-    "netlify-headers-parser": "^7.1.1",
+    "netlify-headers-parser": "^7.1.2",
     "netlify-onegraph-internal": "0.10.1",
-    "netlify-redirect-parser": "^14.1.1",
+    "netlify-redirect-parser": "^14.1.2",
     "netlify-redirector": "^0.4.0",
     "node-fetch": "^2.6.0",
     "node-version-alias": "^2.0.0",
