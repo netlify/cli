@@ -13,7 +13,7 @@
         "@fastify/static": "^6.6.0",
         "@netlify/build": "^29.6.6",
         "@netlify/config": "^20.3.4",
-        "@netlify/edge-bundler": "^8.11.1",
+        "@netlify/edge-bundler": "^8.12.0",
         "@netlify/framework-info": "^9.8.5",
         "@netlify/local-functions-proxy": "^1.1.1",
         "@netlify/zip-it-and-ship-it": "^8.9.0",
@@ -3450,9 +3450,9 @@
       }
     },
     "node_modules/@netlify/edge-bundler": {
-      "version": "8.11.1",
-      "resolved": "https://registry.npmjs.org/@netlify/edge-bundler/-/edge-bundler-8.11.1.tgz",
-      "integrity": "sha512-pj3myy714qX0OuPwtRTfBgaQ2fZwj5qkpACyeXtrsVcaHRNnE0l7cymfZ0fS0a/xkINj9fcyTEtZBahDuuLT2g==",
+      "version": "8.12.0",
+      "resolved": "https://registry.npmjs.org/@netlify/edge-bundler/-/edge-bundler-8.12.0.tgz",
+      "integrity": "sha512-pD6JOjwztqhcdZhe6Oic3qdgPM0OwaKlD53GX/4Vhb52gBfYnAC9gbt+v6DqeXZxz2r9zh4EELmuRsCMIKAa6w==",
       "dependencies": {
         "@import-maps/resolve": "^1.0.1",
         "ajv": "^8.11.2",
@@ -3639,9 +3639,9 @@
       "integrity": "sha512-NM8/P9n3XjXhIZn1lLhkFaACTOURQXjWhV4BA/RnOv8xvgqtqpAX9IO4mRQxSx1Rlo4tqzeqb0sOlruaOy3dug=="
     },
     "node_modules/@netlify/edge-bundler/node_modules/node-fetch": {
-      "version": "3.3.0",
-      "resolved": "https://registry.npmjs.org/node-fetch/-/node-fetch-3.3.0.tgz",
-      "integrity": "sha512-BKwRP/O0UvoMKp7GNdwPlObhYGB5DQqwhEDQlNKuoqwVYSxkSZCSbHjnFFmUEtwSKRPU4kNK8PbDYYitwaE3QA==",
+      "version": "3.3.1",
+      "resolved": "https://registry.npmjs.org/node-fetch/-/node-fetch-3.3.1.tgz",
+      "integrity": "sha512-cRVc/kyto/7E5shrWca1Wsea4y6tL9iYJE5FBCius3JQfb/4P4I295PfhgbJQBLTx6lATE4z+wK0rPM4VS2uow==",
       "dependencies": {
         "data-uri-to-buffer": "^4.0.0",
         "fetch-blob": "^3.1.4",
@@ -26889,9 +26889,9 @@
       }
     },
     "@netlify/edge-bundler": {
-      "version": "8.11.1",
-      "resolved": "https://registry.npmjs.org/@netlify/edge-bundler/-/edge-bundler-8.11.1.tgz",
-      "integrity": "sha512-pj3myy714qX0OuPwtRTfBgaQ2fZwj5qkpACyeXtrsVcaHRNnE0l7cymfZ0fS0a/xkINj9fcyTEtZBahDuuLT2g==",
+      "version": "8.12.0",
+      "resolved": "https://registry.npmjs.org/@netlify/edge-bundler/-/edge-bundler-8.12.0.tgz",
+      "integrity": "sha512-pD6JOjwztqhcdZhe6Oic3qdgPM0OwaKlD53GX/4Vhb52gBfYnAC9gbt+v6DqeXZxz2r9zh4EELmuRsCMIKAa6w==",
       "requires": {
         "@import-maps/resolve": "^1.0.1",
         "ajv": "^8.11.2",
@@ -27018,9 +27018,9 @@
           "integrity": "sha512-NM8/P9n3XjXhIZn1lLhkFaACTOURQXjWhV4BA/RnOv8xvgqtqpAX9IO4mRQxSx1Rlo4tqzeqb0sOlruaOy3dug=="
         },
         "node-fetch": {
-          "version": "3.3.0",
-          "resolved": "https://registry.npmjs.org/node-fetch/-/node-fetch-3.3.0.tgz",
-          "integrity": "sha512-BKwRP/O0UvoMKp7GNdwPlObhYGB5DQqwhEDQlNKuoqwVYSxkSZCSbHjnFFmUEtwSKRPU4kNK8PbDYYitwaE3QA==",
+          "version": "3.3.1",
+          "resolved": "https://registry.npmjs.org/node-fetch/-/node-fetch-3.3.1.tgz",
+          "integrity": "sha512-cRVc/kyto/7E5shrWca1Wsea4y6tL9iYJE5FBCius3JQfb/4P4I295PfhgbJQBLTx6lATE4z+wK0rPM4VS2uow==",
           "requires": {
             "data-uri-to-buffer": "^4.0.0",
             "fetch-blob": "^3.1.4",
