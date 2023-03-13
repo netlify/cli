@@ -16,7 +16,7 @@ import { createApiCommand } from './api/index.mjs'
 import BaseCommand from './base-command.mjs'
 import { createBuildCommand } from './build/index.mjs'
 import { createCompletionCommand } from './completion/index.mjs'
-import { createDeployCommand } from './deploy/index.mjs'
+import { createDeployCommand, createDeployDeleteCommand } from './deploy/index.mjs'
 import { createDevCommand } from './dev/index.mjs'
 import { createEnvCommand } from './env/index.mjs'
 import { createFunctionsCommand } from './functions/index.mjs'
@@ -163,6 +163,7 @@ export const createMainCommand = () => {
   createBuildCommand(program)
   createCompletionCommand(program)
   createDeployCommand(program)
+  createDeployDeleteCommand(program)
   createDevCommand(program)
   createEnvCommand(program)
   createFunctionsCommand(program)
