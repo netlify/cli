@@ -295,6 +295,7 @@ export class EdgeFunctionsRegistry {
     const functions = this.declarationsFromTOML.map((declaration) => ({ name: declaration.function, path: '' }))
     const manifest = this.bundler.generateManifest({
       declarations: this.declarationsFromTOML,
+      functionConfig: this.declarationsFromSource,
       functions,
     })
 
