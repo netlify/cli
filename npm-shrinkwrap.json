@@ -4825,9 +4825,9 @@
       }
     },
     "node_modules/@netlify/open-api": {
-      "version": "2.13.0",
-      "resolved": "https://registry.npmjs.org/@netlify/open-api/-/open-api-2.13.0.tgz",
-      "integrity": "sha512-RKImnmGwHtGH3ycQ9LnqOiyWOFmsQ+07cz8wOyOfRJzNZVOdUs5P6nu0GHed9lIsAOUs4bCCPrlB9OxwpUOCrA=="
+      "version": "2.15.0",
+      "resolved": "https://registry.npmjs.org/@netlify/open-api/-/open-api-2.15.0.tgz",
+      "integrity": "sha512-ybrqtcIKfErgexSn1ZkyOBZ1iH10BRXpx+I+SYa65ScEpBEd8Y8lk1pNUZDYbhOiDWB8v8GYsv8obazT6k2H+Q=="
     },
     "node_modules/@netlify/plugins-list": {
       "version": "6.66.0",
@@ -17533,11 +17533,11 @@
       "integrity": "sha512-9iN1ka/9zmX1ZvLV9ewJYEk9h7RyRRtqdK0woXcqohu8EWIerfPUjYJPg0ULy0UqP7cslmdGc8xKDJcojlKiaw=="
     },
     "node_modules/netlify": {
-      "version": "13.1.2",
-      "resolved": "https://registry.npmjs.org/netlify/-/netlify-13.1.2.tgz",
-      "integrity": "sha512-RAQ51glVTzTGNmEXbmfMH1L27JQ2UItTrt35Ba8Uh/qIGaHBjJBxqk36/5qHRLFIGJiyeC6mFYKTi7iVgWbgdw==",
+      "version": "13.1.3",
+      "resolved": "https://registry.npmjs.org/netlify/-/netlify-13.1.3.tgz",
+      "integrity": "sha512-sKU8Q8K7EfZLP/gliYsQAz7fucKA7F3RH95INuUdyq0uwQzRizq5d3XOzL9J/rHmrviy2Gm1bEcsI3Vk3jjmtw==",
       "dependencies": {
-        "@netlify/open-api": "^2.13.0",
+        "@netlify/open-api": "^2.15.0",
         "lodash-es": "^4.17.21",
         "micro-api-client": "^3.3.0",
         "node-fetch": "^3.0.0",
@@ -23071,17 +23071,6 @@
         "url": "https://github.com/sponsors/sindresorhus"
       }
     },
-    "node_modules/update-notifier/node_modules/crypto-random-string/node_modules/type-fest": {
-      "version": "1.4.0",
-      "resolved": "https://registry.npmjs.org/type-fest/-/type-fest-1.4.0.tgz",
-      "integrity": "sha512-yGSza74xk0UG8k+pLh5oeoYirvIiWo5t0/o3zHHAO2tRDiZcxWP7fywNlXhqb6/r6sWvwi+RsyQMWhVLe4BVuA==",
-      "engines": {
-        "node": ">=10"
-      },
-      "funding": {
-        "url": "https://github.com/sponsors/sindresorhus"
-      }
-    },
     "node_modules/update-notifier/node_modules/escape-goat": {
       "version": "4.0.0",
       "resolved": "https://registry.npmjs.org/escape-goat/-/escape-goat-4.0.0.tgz",
@@ -27515,9 +27504,9 @@
       "optional": true
     },
     "@netlify/open-api": {
-      "version": "2.13.0",
-      "resolved": "https://registry.npmjs.org/@netlify/open-api/-/open-api-2.13.0.tgz",
-      "integrity": "sha512-RKImnmGwHtGH3ycQ9LnqOiyWOFmsQ+07cz8wOyOfRJzNZVOdUs5P6nu0GHed9lIsAOUs4bCCPrlB9OxwpUOCrA=="
+      "version": "2.15.0",
+      "resolved": "https://registry.npmjs.org/@netlify/open-api/-/open-api-2.15.0.tgz",
+      "integrity": "sha512-ybrqtcIKfErgexSn1ZkyOBZ1iH10BRXpx+I+SYa65ScEpBEd8Y8lk1pNUZDYbhOiDWB8v8GYsv8obazT6k2H+Q=="
     },
     "@netlify/plugins-list": {
       "version": "6.66.0",
@@ -37080,11 +37069,11 @@
       "integrity": "sha512-9iN1ka/9zmX1ZvLV9ewJYEk9h7RyRRtqdK0woXcqohu8EWIerfPUjYJPg0ULy0UqP7cslmdGc8xKDJcojlKiaw=="
     },
     "netlify": {
-      "version": "13.1.2",
-      "resolved": "https://registry.npmjs.org/netlify/-/netlify-13.1.2.tgz",
-      "integrity": "sha512-RAQ51glVTzTGNmEXbmfMH1L27JQ2UItTrt35Ba8Uh/qIGaHBjJBxqk36/5qHRLFIGJiyeC6mFYKTi7iVgWbgdw==",
+      "version": "13.1.3",
+      "resolved": "https://registry.npmjs.org/netlify/-/netlify-13.1.3.tgz",
+      "integrity": "sha512-sKU8Q8K7EfZLP/gliYsQAz7fucKA7F3RH95INuUdyq0uwQzRizq5d3XOzL9J/rHmrviy2Gm1bEcsI3Vk3jjmtw==",
       "requires": {
-        "@netlify/open-api": "^2.13.0",
+        "@netlify/open-api": "^2.15.0",
         "lodash-es": "^4.17.21",
         "micro-api-client": "^3.3.0",
         "node-fetch": "^3.0.0",
@@ -41297,13 +41286,6 @@
           "integrity": "sha512-x8dy3RnvYdlUcPOjkEHqozhiwzKNSq7GcPuXFbnyMOCHxX8V3OgIg/pYuabl2sbUPfIJaeAQB7PMOK8DFIdoRA==",
           "requires": {
             "type-fest": "^1.0.1"
-          },
-          "dependencies": {
-            "type-fest": {
-              "version": "1.4.0",
-              "resolved": "https://registry.npmjs.org/type-fest/-/type-fest-1.4.0.tgz",
-              "integrity": "sha512-yGSza74xk0UG8k+pLh5oeoYirvIiWo5t0/o3zHHAO2tRDiZcxWP7fywNlXhqb6/r6sWvwi+RsyQMWhVLe4BVuA=="
-            }
           }
         },
         "escape-goat": {
