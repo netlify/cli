@@ -10,6 +10,7 @@ import { getGeoLocation } from '../geo-location.mjs'
 import { getPathInProject } from '../settings.mjs'
 import { startSpinner, stopSpinner } from '../spinner.mjs'
 
+import { getBootstrapURL } from './bootstrap.mjs'
 import { DIST_IMPORT_MAP_PATH } from './consts.mjs'
 import headers from './headers.mjs'
 import { getInternalFunctions } from './internal.mjs'
@@ -108,7 +109,7 @@ export const initializeProxy = async ({
     await registry.initialize()
 
     const url = new URL(req.url, `http://${LOCAL_HOST}:${mainPort}`)
-    const { functionNames, orphanedDeclarations } = await registry.matchURLPath(url.pathname)
+    const { functionNames, orphanedDeclarations } = registry.matchURLPath(url.pathname)
 
     // If the request matches a config declaration for an Edge Function without
     // a matching function file, we warn the user.
@@ -165,6 +166,7 @@ const prepareServer = async ({
     const distImportMapPath = getPathInProject([DIST_IMPORT_MAP_PATH])
     const runIsolate = await bundler.serve({
       ...getDownloadUpdateFunctions(),
+      bootstrapURL: getBootstrapURL(),
       debug: env.NETLIFY_DENO_DEBUG === 'true',
       distImportMapPath,
       formatExportTypeError: (name) =>
