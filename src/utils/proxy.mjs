@@ -2,7 +2,8 @@
 import { Buffer } from 'buffer'
 import { once } from 'events'
 import { readFile } from 'fs/promises'
-import http from 'http'
+// eslint-disable-next-line no-unused-vars
+import http, { IncomingMessage, ServerResponse } from 'http'
 import https from 'https'
 import { isIPv6 } from 'net'
 import path from 'path'
@@ -17,7 +18,6 @@ import getAvailablePort from 'get-port'
 import httpProxy from 'http-proxy'
 import { createProxyMiddleware } from 'http-proxy-middleware'
 import jwtDecode from 'jwt-decode'
-import { locatePath } from 'locate-path'
 import pFilter from 'p-filter'
 import toReadableStream from 'to-readable-stream'
 
@@ -32,6 +32,10 @@ import renderErrorTemplate from '../lib/render-error-template.mjs'
 import { NETLIFYDEVLOG, NETLIFYDEVWARN, log, chalk } from './command-helpers.mjs'
 import createStreamPromise from './create-stream-promise.mjs'
 import { headersForPath, parseHeaders, NFRequestID } from './headers.mjs'
+import alternativePathsFor from './proxy/alternative-paths-for.mjs'
+import getCanonicalURLPath from './proxy/get-canonical-url-path.mjs'
+import getStatic from './proxy/get-static.mjs'
+import isFunction from './proxy/is-function.mjs'
 import { generateRequestID } from './request-id.mjs'
 import { createRewriter, onChanges } from './rules-proxy.mjs'
 import { signRedirect } from './sign-redirect.mjs'
@@ -58,27 +62,11 @@ const formatEdgeFunctionError = (errorBuffer, acceptsHtml) => {
 const isInternal = function (url) {
   return url.startsWith('/.netlify/')
 }
-const isFunction = function (functionsPort, url) {
-  return functionsPort && url.match(/^\/.netlify\/(functions|builders)\/.+/)
-}
 
 const getAddonUrl = function (addonsUrls, req) {
   const matches = req.url.match(/^\/.netlify\/([^/]+)(\/.*)/)
   const addonUrl = matches && addonsUrls[matches[1]]
   return addonUrl ? `${addonUrl}${matches[2]}` : null
-}
-
-const getStatic = async function (pathname, publicFolder) {
-  const alternatives = [pathname, ...alternativePathsFor(pathname)].map((filePath) =>
-    path.resolve(publicFolder, filePath.slice(1)),
-  )
-
-  const file = await locatePath(alternatives)
-  if (file === undefined) {
-    return false
-  }
-
-  return `/${path.relative(publicFolder, file)}`
 }
 
 const isExternal = function (match) {
@@ -121,28 +109,6 @@ const render404 = async function (publicFolder) {
   }
 
   return 'Not Found'
-}
-
-// Used as an optimization to avoid dual lookups for missing assets
-const assetExtensionRegExp = /\.(html?|png|jpg|js|css|svg|gif|ico|woff|woff2)$/
-
-const alternativePathsFor = function (url) {
-  if (isFunction(true, url)) {
-    return []
-  }
-
-  const paths = []
-  if (url[url.length - 1] === '/') {
-    const end = url.length - 1
-    if (url !== '/') {
-      paths.push(`${url.slice(0, end)}.html`, `${url.slice(0, end)}.htm`)
-    }
-    paths.push(`${url}index.html`, `${url}index.htm`)
-  } else if (!assetExtensionRegExp.test(url)) {
-    paths.push(`${url}.html`, `${url}.htm`, `${url}/index.html`, `${url}/index.htm`)
-  }
-
-  return paths
 }
 
 const serveRedirect = async function ({ env, match, options, proxy, req, res, siteInfo }) {
@@ -389,8 +355,6 @@ const initializeProxy = async function ({ configPath, distDir, env, host, port, 
     }
   })
   proxy.on('proxyRes', (proxyRes, req, res) => {
-    res.setHeader('server', 'Netlify')
-
     const requestID = req.headers[NFRequestID]
 
     if (requestID) {
@@ -513,11 +477,41 @@ const initializeProxy = async function ({ configPath, distDir, env, host, port, 
   return handlers
 }
 
+/**
+ *
+ * @param {Record<string, any>} options
+ * @param {IncomingMessage} req
+ * @param {ServerResponse} res
+ *
+ * @returns {Promise<void>}
+ */
 const onRequest = async (
   { addonsUrls, edgeFunctionsProxy, env, functionsServer, proxy, rewriter, settings, siteInfo },
   req,
   res,
 ) => {
+  res.setHeader('server', 'Netlify')
+
+  if (req.method === 'GET') {
+    const staticFile = await getStatic(decodeURIComponent(req.url), settings.dist)
+
+    if (staticFile && req.url !== staticFile && (staticFile.endsWith('.html') || staticFile.endsWith('.htm'))) {
+      const canonicalPath = getCanonicalURLPath(staticFile)
+
+      if (canonicalPath !== req.url) {
+        console.log(`${NETLIFYDEVLOG} Redirecting to canonical URL ${req.url} -> ${canonicalPath}`)
+        res.setHeader('age', '0')
+        res.setHeader('cache-control', 'public, max-age=0, must-revalidate')
+        res.setHeader(NFRequestID, generateRequestID())
+        res.shouldKeepAlive = false
+        res.writeHead(301, { Location: canonicalPath })
+        res.end()
+
+        return
+      }
+    }
+  }
+
   req.originalBody = ['GET', 'OPTIONS', 'HEAD'].includes(req.method)
     ? null
     : await createStreamPromise(req, BYTES_LIMIT)

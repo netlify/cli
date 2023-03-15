@@ -1,0 +1,21 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`alternativePathsFor > file in subfolder url 1`] = `[]`;
+
+exports[`alternativePathsFor > file url 1`] = `
+[
+  "/file.html",
+  "/file.htm",
+  "/file/index.html",
+  "/file/index.htm",
+]
+`;
+
+exports[`alternativePathsFor > folder url 1`] = `
+[
+  "/folder.html",
+  "/folder.htm",
+  "/folder/index.html",
+  "/folder/index.htm",
+]
+`;

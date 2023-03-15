@@ -3,6 +3,7 @@ const process = require('process')
 
 const execa = require('execa')
 const getPort = require('get-port')
+const got = require('got')
 const pTimeout = require('p-timeout')
 
 const cliPath = require('./cli-path.cjs')
@@ -78,6 +79,22 @@ const startServer = async ({
             port,
             errorBuffer,
             outputBuffer,
+            /**
+             * @param {string | URL} urlPath
+             * @param {import('got').OptionsOfTextResponseBody} options
+             * @returns {import('got').CancelableRequest<Response<string>>}
+             */
+            async get(urlPath, options) {
+              return got(`http://localhost:${port}${urlPath}`, options)
+            },
+            /**
+             * @param {string | URL} urlPath
+             * @param {import('got').OptionsOfTextResponseBody} options
+             * @returns {import('got').CancelableRequest<Response<string>>}
+             */
+            async post(urlPath, options) {
+              return got.post(`http://localhost:${port}${urlPath}`, options)
+            },
             waitForLogMatching(match) {
               // eslint-disable-next-line promise/param-names
               return new Promise((resolveWait) => {
