@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "13.1.3",
+  "version": "13.1.6",
   "author": "Netlify Inc.",
   "type": "module",
   "engines": {
@@ -76,8 +76,8 @@
   },
   "dependencies": {
     "@fastify/static": "^6.6.0",
-    "@netlify/build": "^29.6.7",
-    "@netlify/config": "^20.3.5",
+    "@netlify/build": "^29.6.9",
+    "@netlify/config": "^20.3.6",
     "@netlify/edge-bundler": "^8.12.1",
     "@netlify/framework-info": "^9.8.5",
     "@netlify/local-functions-proxy": "^1.1.1",
@@ -144,7 +144,7 @@
     "log-update": "^5.0.0",
     "minimist": "^1.2.5",
     "multiparty": "^4.2.1",
-    "netlify": "^13.1.2",
+    "netlify": "^13.1.3",
     "netlify-headers-parser": "^7.1.2",
     "netlify-onegraph-internal": "0.10.1",
     "netlify-redirect-parser": "^14.1.2",
