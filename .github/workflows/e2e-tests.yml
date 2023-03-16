@@ -19,7 +19,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macOS-latest, windows-latest]
-        node-version: ['14.x', '*']
+        node-version: ['14.16.0', '*']
       fail-fast: false
 
     steps:
