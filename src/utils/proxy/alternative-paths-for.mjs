@@ -4,7 +4,9 @@ import isFunction from './is-function.mjs'
 const assetExtensionRegExp = /\.(html?|png|jpg|js|css|svg|gif|ico|woff|woff2)$/
 
 /**
- * For an URL get alternative static file paths
+ * For an URL get all possible static file paths that the URL could refer to
+ *
+ * /foo/ -> /foo/index.html, /foo/index.htm, /foo.html, /foo.htm
  *
  * @param {string} url
  *

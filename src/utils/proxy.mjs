@@ -34,8 +34,8 @@ import { NETLIFYDEVLOG, NETLIFYDEVWARN, log, chalk } from './command-helpers.mjs
 import createStreamPromise from './create-stream-promise.mjs'
 import { headersForPath, parseHeaders, NFRequestID } from './headers.mjs'
 import alternativePathsFor from './proxy/alternative-paths-for.mjs'
+import findStaticFileForURLPath from './proxy/find-static-file-for-url-path.mjs'
 import getCanonicalURLPath from './proxy/get-canonical-url-path.mjs'
-import getStatic from './proxy/get-static.mjs'
 import isFunction from './proxy/is-function.mjs'
 import { generateRequestID } from './request-id.mjs'
 import { createRewriter, onChanges } from './rules-proxy.mjs'
@@ -195,7 +195,7 @@ const serveRedirect = async function ({ env, match, options, proxy, req, res, si
 
   const reqUrl = reqToURL(req)
 
-  const staticFile = await getStatic(decodeURIComponent(reqUrl.pathname), options.publicFolder)
+  const staticFile = await findStaticFileForURLPath(decodeURIComponent(reqUrl.pathname), options.publicFolder)
   if (staticFile) {
     req.url = encodeURI(staticFile) + reqUrl.search
     // if there is an existing static file and it is not a forced redirect, return the file
@@ -258,7 +258,7 @@ const serveRedirect = async function ({ env, match, options, proxy, req, res, si
       return proxy.web(req, res, { target: options.functionsServer })
     }
 
-    const destStaticFile = await getStatic(dest.pathname, options.publicFolder)
+    const destStaticFile = await findStaticFileForURLPath(dest.pathname, options.publicFolder)
     let statusValue
     if (match.force || (!staticFile && ((!options.framework && destStaticFile) || isInternal(destURL)))) {
       req.url = destStaticFile ? destStaticFile + dest.search : destURL
@@ -502,7 +502,7 @@ const onRequest = async (
   if (req.method === 'GET') {
     const url = reqToURL(req)
     const decodedUrl = decodeURIComponent(url.pathname)
-    const staticFile = await getStatic(decodedUrl, settings.dist)
+    const staticFile = await findStaticFileForURLPath(decodedUrl, settings.dist)
 
     if (staticFile) {
       const unixStaticFile = unixify(staticFile)
@@ -510,7 +510,6 @@ const onRequest = async (
         const canonicalPath = getCanonicalURLPath(unixStaticFile)
 
         if (canonicalPath !== decodedUrl) {
-          console.log(`${NETLIFYDEVLOG} Redirecting to canonical URL ${decodedUrl} -> ${canonicalPath}`)
           res.setHeader('age', '0')
           res.setHeader('cache-control', 'public, max-age=0, must-revalidate')
           res.setHeader(NFRequestID, generateRequestID())

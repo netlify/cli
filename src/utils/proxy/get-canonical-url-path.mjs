@@ -1,7 +1,6 @@
 import { basename, extname } from 'path'
 
 /**
- * @param {string} reqPath
  * @param {string} staticFile
  *
  * @returns {string}

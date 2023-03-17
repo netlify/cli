@@ -1,7 +1,7 @@
 const FUNCTION_PATH_REGEX = /^\/.netlify\/(functions|builders)\/.+/
 
 /**
- * Is the URL a function url
+ * Checks whether the URL targets a serverless function
  *
  * @param {number | undefined} functionsPort
  * @param {string} url

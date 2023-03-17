@@ -5,12 +5,14 @@ import { locatePath } from 'locate-path'
 import alternativePathsFor from './alternative-paths-for.mjs'
 
 /**
+ * Tries to find an existing static file in `publicFolder` that the `pathname`
+ * is referring to
  *
  * @param {string} pathname
  * @param {string} publicFolder
  * @returns {Promise<string | undefined>}
  */
-const getStatic = async function (pathname, publicFolder) {
+const findStaticFileForURLPath = async function (pathname, publicFolder) {
   const alternatives = [pathname, ...alternativePathsFor(pathname)].map((filePath) =>
     resolve(publicFolder, filePath.slice(1)),
   )
@@ -23,4 +25,4 @@ const getStatic = async function (pathname, publicFolder) {
   return `/${relative(publicFolder, file)}`
 }
 
-export default getStatic
+export default findStaticFileForURLPath
