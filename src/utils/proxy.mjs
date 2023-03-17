@@ -493,13 +493,14 @@ const onRequest = async (
   res.setHeader('server', 'Netlify')
 
   if (req.method === 'GET') {
-    const staticFile = await getStatic(decodeURIComponent(req.url), settings.dist)
+    const decodedUrl = decodeURIComponent(req.url)
+    const staticFile = await getStatic(decodedUrl, settings.dist)
 
-    if (staticFile && req.url !== staticFile && (staticFile.endsWith('.html') || staticFile.endsWith('.htm'))) {
+    if (staticFile && decodedUrl !== staticFile && (staticFile.endsWith('.html') || staticFile.endsWith('.htm'))) {
       const canonicalPath = getCanonicalURLPath(staticFile)
 
-      if (canonicalPath !== req.url) {
-        console.log(`${NETLIFYDEVLOG} Redirecting to canonical URL ${req.url} -> ${canonicalPath}`)
+      if (canonicalPath !== decodedUrl) {
+        console.log(`${NETLIFYDEVLOG} Redirecting to canonical URL ${decodedUrl} -> ${canonicalPath}`)
         res.setHeader('age', '0')
         res.setHeader('cache-control', 'public, max-age=0, must-revalidate')
         res.setHeader(NFRequestID, generateRequestID())

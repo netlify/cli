@@ -55,5 +55,11 @@ describe('dev command : static files', () => {
 
       expect(response.statusCode).toBe(200)
     })
+
+    test.concurrent('should not redirect /file with spaces', async ({ devServer }) => {
+      const response = await devServer.get('/file with spaces', { followRedirect: false })
+
+      expect(response.statusCode).toBe(200)
+    })
   })
 })
