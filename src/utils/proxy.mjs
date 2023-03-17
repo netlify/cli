@@ -20,6 +20,7 @@ import { createProxyMiddleware } from 'http-proxy-middleware'
 import jwtDecode from 'jwt-decode'
 import pFilter from 'p-filter'
 import toReadableStream from 'to-readable-stream'
+import unixify from 'unixify'
 
 import {
   handleProxyRequest,
@@ -503,19 +504,22 @@ const onRequest = async (
     const decodedUrl = decodeURIComponent(url.pathname)
     const staticFile = await getStatic(decodedUrl, settings.dist)
 
-    if (staticFile && decodedUrl !== staticFile && (staticFile.endsWith('.html') || staticFile.endsWith('.htm'))) {
-      const canonicalPath = getCanonicalURLPath(staticFile)
+    if (staticFile) {
+      const unixStaticFile = unixify(staticFile)
+      if (decodedUrl !== unixStaticFile && (unixStaticFile.endsWith('.html') || unixStaticFile.endsWith('.htm'))) {
+        const canonicalPath = getCanonicalURLPath(unixStaticFile)
 
-      if (canonicalPath !== decodedUrl) {
-        console.log(`${NETLIFYDEVLOG} Redirecting to canonical URL ${decodedUrl} -> ${canonicalPath}`)
-        res.setHeader('age', '0')
-        res.setHeader('cache-control', 'public, max-age=0, must-revalidate')
-        res.setHeader(NFRequestID, generateRequestID())
-        res.shouldKeepAlive = false
-        res.writeHead(301, { Location: `${canonicalPath}${url.search}` })
-        res.end()
+        if (canonicalPath !== decodedUrl) {
+          console.log(`${NETLIFYDEVLOG} Redirecting to canonical URL ${decodedUrl} -> ${canonicalPath}`)
+          res.setHeader('age', '0')
+          res.setHeader('cache-control', 'public, max-age=0, must-revalidate')
+          res.setHeader(NFRequestID, generateRequestID())
+          res.shouldKeepAlive = false
+          res.writeHead(301, { Location: `${canonicalPath}${url.search}` })
+          res.end()
 
-        return
+          return
+        }
       }
     }
   }
