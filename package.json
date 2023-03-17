@@ -76,7 +76,7 @@
   },
   "dependencies": {
     "@fastify/static": "^6.6.0",
-    "@netlify/build": "^29.6.10",
+    "@netlify/build": "^29.7.0",
     "@netlify/config": "^20.3.6",
     "@netlify/edge-bundler": "^8.12.2",
     "@netlify/framework-info": "^9.8.5",
