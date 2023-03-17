@@ -11,11 +11,25 @@ describe('dev command : static files', () => {
       expect(response.headers.location).toBe('/folder/')
     })
 
+    test.concurrent('should redirect /folder to /folder/ with query params', async ({ devServer }) => {
+      const response = await devServer.get('/folder?asdf', { followRedirect: false })
+
+      expect(response.statusCode).toBe(301)
+      expect(response.headers.location).toBe('/folder/?asdf')
+    })
+
     test.concurrent('should redirect /file/ to /file', async ({ devServer }) => {
       const response = await devServer.get('/file/', { followRedirect: false })
 
       expect(response.statusCode).toBe(301)
       expect(response.headers.location).toBe('/file')
+    })
+
+    test.concurrent('should redirect /file/ to /file with query params', async ({ devServer }) => {
+      const response = await devServer.get('/file/?asdf', { followRedirect: false })
+
+      expect(response.statusCode).toBe(301)
+      expect(response.headers.location).toBe('/file?asdf')
     })
 
     test.concurrent('should redirect /folder/index.html/ to /folder/', async ({ devServer }) => {

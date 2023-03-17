@@ -3,7 +3,7 @@ import { Buffer } from 'buffer'
 import { once } from 'events'
 import { readFile } from 'fs/promises'
 // eslint-disable-next-line no-unused-vars
-import http, { IncomingMessage, ServerResponse } from 'http'
+import http, { ClientRequest, IncomingMessage, ServerResponse } from 'http'
 import https from 'https'
 import { isIPv6 } from 'net'
 import path from 'path'
@@ -192,7 +192,7 @@ const serveRedirect = async function ({ env, match, options, proxy, req, res, si
     }
   }
 
-  const reqUrl = reqToURL(req, req.url)
+  const reqUrl = reqToURL(req)
 
   const staticFile = await getStatic(decodeURIComponent(reqUrl.pathname), options.publicFolder)
   if (staticFile) {
@@ -281,7 +281,13 @@ const serveRedirect = async function ({ env, match, options, proxy, req, res, si
   return proxy.web(req, res, options)
 }
 
-const reqToURL = function (req, pathname) {
+/**
+ *
+ * @param {IncomingMessage} req
+ * @param {string | undefined} pathname
+ * @returns {URL}
+ */
+const reqToURL = function (req, pathname = req.url) {
   return new URL(
     pathname,
     `${req.protocol || (req.headers.scheme && `${req.headers.scheme}:`) || 'http:'}//${
@@ -493,7 +499,8 @@ const onRequest = async (
   res.setHeader('server', 'Netlify')
 
   if (req.method === 'GET') {
-    const decodedUrl = decodeURIComponent(req.url)
+    const url = reqToURL(req)
+    const decodedUrl = decodeURIComponent(url.pathname)
     const staticFile = await getStatic(decodedUrl, settings.dist)
 
     if (staticFile && decodedUrl !== staticFile && (staticFile.endsWith('.html') || staticFile.endsWith('.htm'))) {
@@ -505,7 +512,7 @@ const onRequest = async (
         res.setHeader('cache-control', 'public, max-age=0, must-revalidate')
         res.setHeader(NFRequestID, generateRequestID())
         res.shouldKeepAlive = false
-        res.writeHead(301, { Location: canonicalPath })
+        res.writeHead(301, { Location: `${canonicalPath}${url.search}` })
         res.end()
 
         return
