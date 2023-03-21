@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "13.1.6",
+  "version": "13.1.7",
   "author": "Netlify Inc.",
   "type": "module",
   "engines": {
@@ -76,7 +76,7 @@
   },
   "dependencies": {
     "@fastify/static": "^6.6.0",
-    "@netlify/build": "^29.7.0",
+    "@netlify/build": "^29.7.1",
     "@netlify/config": "^20.3.6",
     "@netlify/edge-bundler": "^8.12.3",
     "@netlify/framework-info": "^9.8.5",
