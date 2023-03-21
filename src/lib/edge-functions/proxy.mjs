@@ -12,7 +12,7 @@ import { startSpinner, stopSpinner } from '../spinner.mjs'
 
 import { getBootstrapURL } from './bootstrap.mjs'
 import { DIST_IMPORT_MAP_PATH } from './consts.mjs'
-import headers from './headers.mjs'
+import { headers, getFeatureFlagsHeader } from './headers.mjs'
 import { getInternalFunctions } from './internal.mjs'
 import { EdgeFunctionsRegistry } from './registry.mjs'
 
@@ -51,12 +51,6 @@ export const createSiteInfoHeader = (siteInfo = {}) => {
   const site = { id, name, url }
   const siteString = JSON.stringify(site)
   return Buffer.from(siteString).toString('base64')
-}
-
-const getFeatureFlagsHeader = (featureFlags) => {
-  const featureFlagsObject = featureFlags.reduce((acc, flagName) => ({ ...acc, [flagName]: true }), {})
-
-  return Buffer.from(JSON.stringify(featureFlagsObject)).toString('base64')
 }
 
 export const initializeProxy = async ({
