@@ -25,3 +25,12 @@ export const getFeatureFlagsHeader = (featureFlags) => {
 
   return Buffer.from(JSON.stringify(featureFlagsObject)).toString('base64')
 }
+
+/**
+ * Takes the invocation metadata object and produces a Base64-encoded JSON
+ * object that the bootstrap layer can understand.
+ *
+ * @param {object} metadata
+ * @returns {string}
+ */
+export const getInvocationMetadataHeader = (metadata) => Buffer.from(JSON.stringify(metadata)).toString('base64')

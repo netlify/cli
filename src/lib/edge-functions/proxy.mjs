@@ -12,7 +12,7 @@ import { startSpinner, stopSpinner } from '../spinner.mjs'
 
 import { getBootstrapURL } from './bootstrap.mjs'
 import { DIST_IMPORT_MAP_PATH } from './consts.mjs'
-import { headers, getFeatureFlagsHeader } from './headers.mjs'
+import { headers, getFeatureFlagsHeader, getInvocationMetadataHeader } from './headers.mjs'
 import { getInternalFunctions } from './internal.mjs'
 import { EdgeFunctionsRegistry } from './registry.mjs'
 
@@ -110,7 +110,6 @@ export const initializeProxy = async ({
 
     const url = new URL(req.url, `http://${LOCAL_HOST}:${mainPort}`)
     const { functionNames, invocationMetadata, orphanedDeclarations } = registry.matchURLPath(url.pathname)
-    const invocationMetadataHeader = Buffer.from(JSON.stringify(invocationMetadata)).toString('base64')
 
     // If the request matches a config declaration for an Edge Function without
     // a matching function file, we warn the user.
@@ -136,7 +135,7 @@ export const initializeProxy = async ({
       [headers.FeatureFlags]: getFeatureFlagsHeader(featureFlags),
       [headers.ForwardedHost]: `localhost:${passthroughPort}`,
       [headers.Functions]: functionNames.join(','),
-      [headers.InvocationMetadata]: invocationMetadataHeader,
+      [headers.InvocationMetadata]: getInvocationMetadataHeader(invocationMetadata),
       [headers.IP]: LOCAL_HOST,
       [headers.Passthrough]: 'passthrough',
     }
