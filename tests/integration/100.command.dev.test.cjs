@@ -226,8 +226,16 @@ test('Serves an Edge Function with a rewrite', async (t) => {
           },
           edge_functions: [
             {
+              function: 'hello-legacy',
+              path: '/hello-legacy',
+            },
+            {
+              function: 'yell',
+              path: '/hello',
+            },
+            {
               function: 'hello',
-              path: '/edge-function',
+              path: '/hello',
             },
           ],
         },
@@ -239,17 +247,35 @@ test('Serves an Edge Function with a rewrite', async (t) => {
         },
       ])
       .withEdgeFunction({
+        handler: async (_, context) => {
+          const res = await context.next()
+          const text = await res.text()
+
+          return new Response(text.toUpperCase(), res)
+        },
+        name: 'yell',
+      })
+      .withEdgeFunction({
         handler: (_, context) => context.rewrite('/goodbye'),
+        name: 'hello-legacy',
+      })
+      .withEdgeFunction({
+        handler: (req) => new URL('/goodbye', req.url),
         name: 'hello',
       })
 
     await builder.buildAsync()
 
     await withDevServer({ cwd: builder.directory }, async (server) => {
-      const response = await got(`${server.url}/edge-function`)
+      const response1 = await got(`${server.url}/hello-legacy`)
 
-      t.is(response.statusCode, 200)
-      t.is(response.body, '<html>goodbye</html>')
+      t.is(response1.statusCode, 200)
+      t.is(response1.body, '<html>goodbye</html>')
+
+      const response2 = await got(`${server.url}/hello`)
+
+      t.is(response2.statusCode, 200)
+      t.is(response2.body, '<HTML>GOODBYE</HTML>')
     })
   })
 })
@@ -463,6 +489,67 @@ test('Serves an Edge Function that streams the response', async (t) => {
 
       // streamed responses arrive in more than one batch
       t.not(numberOfChunks, 1)
+    })
+  })
+})
+
+test('When an edge function fails, serves a fallback defined by its `on_error` mode', async (t) => {
+  await withSiteBuilder('site-with-edge-function-that-fails', async (builder) => {
+    const publicDir = 'public'
+    builder
+      .withNetlifyToml({
+        config: {
+          build: {
+            publish: publicDir,
+            edge_functions: 'netlify/edge-functions',
+          },
+        },
+      })
+      .withContentFiles([
+        {
+          path: path.join(publicDir, 'hello-1.html'),
+          content: '<html>hello from the origin</html>',
+        },
+      ])
+      .withContentFiles([
+        {
+          path: path.join(publicDir, 'error-page.html'),
+          content: '<html>uh-oh!</html>',
+        },
+      ])
+      .withEdgeFunction({
+        config: { onError: 'bypass', path: '/hello-1' },
+        handler: () => {
+          // eslint-disable-next-line no-undef
+          ermThisWillFail()
+
+          return new Response('I will never get here')
+        },
+        name: 'hello-1',
+      })
+      .withEdgeFunction({
+        config: { onError: '/error-page', path: '/hello-2' },
+        handler: () => {
+          // eslint-disable-next-line no-undef
+          ermThisWillFail()
+
+          return new Response('I will never get here')
+        },
+        name: 'hello-2',
+      })
+
+    await builder.buildAsync()
+
+    await withDevServer({ cwd: builder.directory }, async (server) => {
+      const response1 = await got(`${server.url}/hello-1`)
+
+      t.is(response1.statusCode, 200)
+      t.is(response1.body, '<html>hello from the origin</html>')
+
+      const response2 = await got(`${server.url}/hello-2`)
+
+      t.is(response2.statusCode, 200)
+      t.is(response2.body, '<html>uh-oh!</html>')
     })
   })
 })

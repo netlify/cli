@@ -268,6 +268,10 @@ export class EdgeFunctionsRegistry {
       functionConfig: this.declarationsFromSource,
       functions: this.functions,
     })
+    const invocationMetadata = {
+      function_config: manifest.function_config,
+      routes: manifest.routes.map((route) => ({ function: route.function, pattern: route.pattern })),
+    }
     const routes = [...manifest.routes, ...manifest.post_cache_routes].map((route) => ({
       ...route,
       pattern: new RegExp(route.pattern),
@@ -283,7 +287,7 @@ export class EdgeFunctionsRegistry {
       .map((route) => route.function)
     const orphanedDeclarations = this.matchURLPathAgainstOrphanedDeclarations(urlPath)
 
-    return { functionNames, orphanedDeclarations }
+    return { functionNames, invocationMetadata, orphanedDeclarations }
   }
 
   matchURLPathAgainstOrphanedDeclarations(urlPath) {

@@ -53,6 +53,12 @@ export const createSiteInfoHeader = (siteInfo = {}) => {
   return Buffer.from(siteString).toString('base64')
 }
 
+const getFeatureFlagsHeader = (featureFlags) => {
+  const featureFlagsObject = featureFlags.reduce((acc, flagName) => ({ ...acc, [flagName]: true }), {})
+
+  return Buffer.from(JSON.stringify(featureFlagsObject)).toString('base64')
+}
+
 export const initializeProxy = async ({
   config,
   configPath,
@@ -109,7 +115,8 @@ export const initializeProxy = async ({
     await registry.initialize()
 
     const url = new URL(req.url, `http://${LOCAL_HOST}:${mainPort}`)
-    const { functionNames, orphanedDeclarations } = registry.matchURLPath(url.pathname)
+    const { functionNames, invocationMetadata, orphanedDeclarations } = registry.matchURLPath(url.pathname)
+    const invocationMetadataHeader = Buffer.from(JSON.stringify(invocationMetadata)).toString('base64')
 
     // If the request matches a config declaration for an Edge Function without
     // a matching function file, we warn the user.
@@ -129,11 +136,15 @@ export const initializeProxy = async ({
       return
     }
 
+    const featureFlags = ['edge_functions_bootstrap_failure_mode']
+
     req[headersSymbol] = {
-      [headers.Functions]: functionNames.join(','),
+      [headers.FeatureFlags]: getFeatureFlagsHeader(featureFlags),
       [headers.ForwardedHost]: `localhost:${passthroughPort}`,
-      [headers.Passthrough]: 'passthrough',
+      [headers.Functions]: functionNames.join(','),
+      [headers.InvocationMetadata]: invocationMetadataHeader,
       [headers.IP]: LOCAL_HOST,
+      [headers.Passthrough]: 'passthrough',
     }
 
     if (debug) {
