@@ -12,7 +12,7 @@ import { startSpinner, stopSpinner } from '../spinner.mjs'
 
 import { getBootstrapURL } from './bootstrap.mjs'
 import { DIST_IMPORT_MAP_PATH } from './consts.mjs'
-import headers from './headers.mjs'
+import { headers, getFeatureFlagsHeader, getInvocationMetadataHeader } from './headers.mjs'
 import { getInternalFunctions } from './internal.mjs'
 import { EdgeFunctionsRegistry } from './registry.mjs'
 
@@ -109,7 +109,7 @@ export const initializeProxy = async ({
     await registry.initialize()
 
     const url = new URL(req.url, `http://${LOCAL_HOST}:${mainPort}`)
-    const { functionNames, orphanedDeclarations } = registry.matchURLPath(url.pathname)
+    const { functionNames, invocationMetadata, orphanedDeclarations } = registry.matchURLPath(url.pathname)
 
     // If the request matches a config declaration for an Edge Function without
     // a matching function file, we warn the user.
@@ -129,11 +129,15 @@ export const initializeProxy = async ({
       return
     }
 
+    const featureFlags = ['edge_functions_bootstrap_failure_mode']
+
     req[headersSymbol] = {
-      [headers.Functions]: functionNames.join(','),
+      [headers.FeatureFlags]: getFeatureFlagsHeader(featureFlags),
       [headers.ForwardedHost]: `localhost:${passthroughPort}`,
-      [headers.Passthrough]: 'passthrough',
+      [headers.Functions]: functionNames.join(','),
+      [headers.InvocationMetadata]: getInvocationMetadataHeader(invocationMetadata),
       [headers.IP]: LOCAL_HOST,
+      [headers.Passthrough]: 'passthrough',
     }
 
     if (debug) {
