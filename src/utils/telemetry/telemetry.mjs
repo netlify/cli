@@ -1,14 +1,17 @@
 // @ts-check
 import { dirname, join } from 'path'
-import process from 'process'
+import process, { version as nodejsVersion } from 'process'
 import { fileURLToPath } from 'url'
 
 import { isCI } from 'ci-info'
 
 import execa from '../execa.mjs'
 import getGlobalConfig from '../get-global-config.mjs'
+import getPackageJson from '../get-package-json.mjs'
 
 import isValidEventName from './validation.mjs'
+
+const { version: cliVersion } = await getPackageJson()
 
 const isTelemetryDisabled = function (config) {
   return config.get('telemetryDisabled')
@@ -80,7 +83,7 @@ export const track = async function (eventName, payload = {}) {
     anonymousId: cliId,
     duration,
     status,
-    properties,
+    properties: { ...properties, nodejsVersion, cliVersion },
   }
 
   return send('track', defaultData)
