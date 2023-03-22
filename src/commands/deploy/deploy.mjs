@@ -304,6 +304,7 @@ const runDeploy = async ({
   deployFolder,
   deployTimeout,
   deployToProduction,
+  existingFileDigest,
   functionsConfig,
   functionsFolder,
   silent,
@@ -338,6 +339,7 @@ const runDeploy = async ({
     // @ts-ignore
     results = await deploySite(api, siteId, deployFolder, {
       configPath,
+      existingFileDigest,
       fnDir: functionDirectories,
       functionsConfig,
       statusCb: silent ? () => {} : deployProgressCb(),
@@ -640,6 +642,7 @@ const deploy = async (options, command) => {
     deployFolder,
     deployTimeout: options.timeout * SEC_TO_MILLISEC || DEFAULT_DEPLOY_TIMEOUT,
     deployToProduction,
+    existingFileDigest: options.existingFileDigest,
     functionsConfig,
     // pass undefined functionsFolder if doesn't exist
     functionsFolder: functionsFolderStat && functionsFolder,
@@ -779,6 +782,11 @@ Support for package.json's main field, and intrinsic index.js entrypoints are co
       '--skip-functions-cache',
       'Ignore any functions created as part of a previous `build` or `deploy` commands, forcing them to be bundled again as part of the deployment',
       false,
+    )
+    .option(
+      '--existing-file-digest <json>',
+      'Preload the file digest with known existing assets for incremental deploys',
+      JSON.parse,
     )
     .addExamples([
       'netlify deploy',

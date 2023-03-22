@@ -31,6 +31,7 @@ export const deploySite = async (
     deployId: deployIdOpt = null,
     deployTimeout = DEFAULT_DEPLOY_TIMEOUT,
     draft = false,
+    existingFileDigest = {},
     filter,
     fnDir = [],
     functionsConfig,
@@ -122,7 +123,7 @@ For more information, visit https://ntl.fyi/cli-native-modules.`)
   let deployParams = cleanDeep({
     siteId,
     body: {
-      files,
+      files: { ...existingFileDigest.files, ...files },
       functions,
       function_schedules: functionSchedules,
       functions_config: fnConfig,
