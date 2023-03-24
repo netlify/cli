@@ -15,6 +15,9 @@ const globalConfigDefaults = {
 // Memoise config result so that we only load it once
 let configStore
 
+/**
+ * @returns {Promise<Configstore>}
+ */
 const getGlobalConfig = async function () {
   if (!configStore) {
     const configPath = getPathInHome(['config.json'])
