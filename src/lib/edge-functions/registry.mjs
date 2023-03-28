@@ -261,11 +261,13 @@ export class EdgeFunctionsRegistry {
     const declarations = this.bundler.mergeDeclarations(
       this.declarationsFromTOML,
       this.declarationsFromSource,
+      {},
       this.declarationsFromDeployConfig,
     )
     const manifest = this.bundler.generateManifest({
       declarations,
-      functionConfig: this.declarationsFromSource,
+      userFunctionConfig: this.declarationsFromSource,
+      internalFunctionConfig: {},
       functions: this.functions,
     })
     const invocationMetadata = {
@@ -279,7 +281,7 @@ export class EdgeFunctionsRegistry {
     const functionNames = routes
       .filter(({ pattern }) => pattern.test(urlPath))
       .filter(({ function: name }) => {
-        const isExcluded = manifest.function_config[name]?.excluded_patterns.some((pattern) =>
+        const isExcluded = manifest.function_config[name]?.excluded_patterns?.some((pattern) =>
           new RegExp(pattern).test(urlPath),
         )
         return !isExcluded
