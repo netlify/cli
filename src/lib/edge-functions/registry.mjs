@@ -261,11 +261,13 @@ export class EdgeFunctionsRegistry {
     const declarations = this.bundler.mergeDeclarations(
       this.declarationsFromTOML,
       this.declarationsFromSource,
+      {},
       this.declarationsFromDeployConfig,
     )
     const manifest = this.bundler.generateManifest({
       declarations,
-      functionConfig: this.declarationsFromSource,
+      userFunctionConfig: this.declarationsFromSource,
+      internalFunctionConfig: {},
       functions: this.functions,
     })
     const invocationMetadata = {
