@@ -1,48 +1,42 @@
-import { existsSync } from 'fs'
-import { mkdir, readFile, rm, writeFile } from 'fs/promises'
+import { copyFile, mkdir, readFile, rm, unlink, writeFile } from 'fs/promises'
 import os from 'os'
 import { join } from 'path'
 
-import cpy from 'cpy'
 import { afterAll, beforeAll, beforeEach, expect, test } from 'vitest'
 
 import { getLegacyPathInHome, getPathInHome } from '../../../src/lib/settings.mjs'
 import getGlobalConfig, { resetConfigCache } from '../../../src/utils/get-global-config.mjs'
 
-const configFilePath = getPathInHome(['config.json'])
-const configPath = getPathInHome([])
-const legacyConfigFilePath = getLegacyPathInHome(['config.json'])
-const legacyConfigPath = getLegacyPathInHome([''])
+const configPath = getPathInHome(['config.json'])
+const legacyConfigPath = getLegacyPathInHome(['config.json'])
 const tmpConfigBackupPath = join(os.tmpdir(), `netlify-config-backup-${Date.now()}`)
 
 beforeAll(async () => {
-  // backup current user config directory
-  await cpy(join(configPath, '**'), tmpConfigBackupPath)
+  try {
+    // backup current user config if exists
+    await copyFile(configPath, tmpConfigBackupPath)
+  } catch {}
 })
 
 afterAll(async () => {
+  try {
+    // Restore user config if exists
+    await mkdir(getPathInHome([]))
+    await copyFile(tmpConfigBackupPath, configPath)
+    // Remove tmp backup if exists
+    await unlink(tmpConfigBackupPath)
+  } catch {}
   // Remove legacy config path
-  await rm(legacyConfigPath, { force: true, recursive: true })
-
-  // Remove config path
-  await rm(configPath, { force: true, recursive: true })
-
-  // Restore user config directory if exists
-  if (existsSync(tmpConfigBackupPath)) {
-    await mkdir(configPath)
-    await cpy(join(tmpConfigBackupPath, '**'), configPath)
-    // Remove tmp backup
-    await rm(tmpConfigBackupPath, { force: true, recursive: true })
-  }
+  await rm(getLegacyPathInHome([]), { force: true, recursive: true })
 })
 
 beforeEach(async () => {
   // Remove config dirs
-  await rm(configPath, { force: true, recursive: true })
-  await rm(legacyConfigPath, { force: true, recursive: true })
+  await rm(getPathInHome([]), { force: true, recursive: true })
+  await rm(getLegacyPathInHome([]), { force: true, recursive: true })
   // Make config dirs
-  await mkdir(configPath)
-  await mkdir(legacyConfigPath)
+  await mkdir(getPathInHome([]))
+  await mkdir(getLegacyPathInHome([]))
 
   // reset the memoized config for the tests
   resetConfigCache()
@@ -51,8 +45,8 @@ beforeEach(async () => {
 test('should use legacy config values as default if exists', async () => {
   const legacyConfig = { someOldKey: 'someOldValue', overrideMe: 'oldValue' }
   const newConfig = { overrideMe: 'newValue' }
-  await writeFile(legacyConfigFilePath, JSON.stringify(legacyConfig))
-  await writeFile(configFilePath, JSON.stringify(newConfig))
+  await writeFile(legacyConfigPath, JSON.stringify(legacyConfig))
+  await writeFile(configPath, JSON.stringify(newConfig))
 
   const globalConfig = await getGlobalConfig()
 
@@ -61,7 +55,7 @@ test('should use legacy config values as default if exists', async () => {
 })
 
 test('should not throw if legacy config is invalid JSON', async () => {
-  await writeFile(legacyConfigFilePath, 'NotJson')
+  await writeFile(legacyConfigPath, 'NotJson')
 
   await expect(getGlobalConfig()).resolves.not.toThrowError()
 })
@@ -72,7 +66,7 @@ test("should create config in netlify's config dir if none exists and store new 
   await rm(getLegacyPathInHome([]), { force: true, recursive: true })
   const globalConfig = await getGlobalConfig()
   globalConfig.set('newProp', 'newValue')
-  const configFile = JSON.parse(await readFile(configFilePath, 'utf-8'))
+  const configFile = JSON.parse(await readFile(configPath, 'utf-8'))
 
   expect(globalConfig.all).toEqual(configFile)
 })

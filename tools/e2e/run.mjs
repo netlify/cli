@@ -1,7 +1,6 @@
 #!/usr/bin/env node
-import { dirname, join } from 'path'
-import { exit } from 'process'
-import { fileURLToPath } from 'url'
+import { join } from 'path'
+import { cwd, exit } from 'process'
 
 import execa from 'execa'
 
@@ -16,10 +15,9 @@ const main = async () => {
   let statusCode = 1
 
   try {
-    console.log('Start running tests for ./e2e/**/*.e2e.js')
-    const { exitCode } = await execa('vitest', ['run', '--config=vitest.e2e.config.ts', '--reporter=basic'], {
+    console.log('Start running ava tests for **/*.e2e.js')
+    const { exitCode } = await execa('ava', ['**/*.e2e.mjs', '--config', join(cwd(), 'e2e.config.mjs')], {
       stdio: 'inherit',
-      cwd: join(dirname(fileURLToPath(import.meta.url)), '../..'),
       env: {
         E2E_TEST_WORKSPACE: workspace,
         E2E_TEST_REGISTRY: registry,
