@@ -429,6 +429,14 @@ export default class Layout extends React.Component {
         <Helmet>
           <meta charSet="utf-8" />
           <title>{pageTitle}</title>
+          <script async src="https://www.googletagmanager.com/gtag/js?id=G-X2FMMZSSS9"></script>
+          <script>
+            {`window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+
+              gtag('config', 'G-X2FMMZSSS9');`}
+          </script>
         </Helmet>
 
         <MobileNav title={title} logo={logo} update={update} />
