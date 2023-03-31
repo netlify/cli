@@ -31,9 +31,6 @@ site/src/**/*.md
 # tests
 .verdaccio-storage
 .eslintcache
-tests/integration/hugo-site/resources
-tests/integration/hugo-site/out
-tests/integration/hugo-site/.hugo_build.lock
 _test_out/**
 *.crt
 *.key
