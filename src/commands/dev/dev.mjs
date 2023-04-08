@@ -47,6 +47,7 @@ const handleLiveTunnel = async ({ api, options, settings, site }) => {
       localPort: settings.port,
     })
     process.env.BASE_URL = sessionUrl
+    process.env.LIVE_URL = sessionUrl
     return sessionUrl
   }
 }
@@ -124,6 +125,8 @@ const dev = async (options, command) => {
     startPollingForAPIAuthentication({ api, command, config, site, siteInfo })
   }
 
+  const liveTunnelUrl = await handleLiveTunnel({ options, site, api, settings })
+
   log(`${NETLIFYDEVWARN} Setting up local development server`)
 
   const { configPath: configPathOverride } = await runDevTimeline({ cachedConfig, options, settings, site })
@@ -159,7 +162,7 @@ const dev = async (options, command) => {
 
   const inspectSettings = generateInspectSettings(options.edgeInspect, options.edgeInspectBrk)
 
-  let url = await startProxyServer({
+  const proxyUrl = await startProxyServer({
     addonsUrls,
     config,
     configPath: configPathOverride,
@@ -176,8 +179,7 @@ const dev = async (options, command) => {
     state,
   })
 
-  const liveTunnelUrl = await handleLiveTunnel({ options, site, api, settings })
-  url = liveTunnelUrl || url
+  const url = liveTunnelUrl || proxyUrl
 
   if (devConfig.autoLaunch !== false) {
     await openBrowser({ url, silentBrowserNoneError: true })
