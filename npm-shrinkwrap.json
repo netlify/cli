@@ -6299,15 +6299,15 @@
       "dev": true
     },
     "node_modules/@verdaccio/file-locking": {
-      "version": "10.3.0",
-      "resolved": "https://registry.npmjs.org/@verdaccio/file-locking/-/file-locking-10.3.0.tgz",
-      "integrity": "sha512-FE5D5H4wy/nhgR/d2J5e1Na9kScj2wMjlLPBHz7XF4XZAVSRdm45+kL3ZmrfA6b2HTADP/uH7H05/cnAYW8bhw==",
+      "version": "10.3.1",
+      "resolved": "https://registry.npmjs.org/@verdaccio/file-locking/-/file-locking-10.3.1.tgz",
+      "integrity": "sha512-oqYLfv3Yg3mAgw9qhASBpjD50osj2AX4IwbkUtyuhhKGyoFU9eZdrbeW6tpnqUnj6yBMtAPm2eGD4BwQuX400g==",
       "dev": true,
       "dependencies": {
         "lockfile": "1.0.4"
       },
       "engines": {
-        "node": ">=8"
+        "node": ">=12"
       },
       "funding": {
         "type": "opencollective",
@@ -6315,14 +6315,14 @@
       }
     },
     "node_modules/@verdaccio/local-storage": {
-      "version": "10.3.1",
-      "resolved": "https://registry.npmjs.org/@verdaccio/local-storage/-/local-storage-10.3.1.tgz",
-      "integrity": "sha512-f3oArjXPOAwUAA2dsBhfL/rSouqJ2sfml8k97RtnBPKOzisb28bgyAQW0mqwQvN4MTK5S/2xudmobFpvJAIatg==",
+      "version": "10.3.3",
+      "resolved": "https://registry.npmjs.org/@verdaccio/local-storage/-/local-storage-10.3.3.tgz",
+      "integrity": "sha512-/n0FH+1hxVg80YhYBfJuW7F2AuvLY2fra8/DTCilWDll9Y5yZDxwntZfcKHJLerCA4atrbJtvaqpWkoV3Q9x8w==",
       "dev": true,
       "dependencies": {
         "@verdaccio/commons-api": "10.2.0",
-        "@verdaccio/file-locking": "10.3.0",
-        "@verdaccio/streams": "10.2.0",
+        "@verdaccio/file-locking": "10.3.1",
+        "@verdaccio/streams": "10.2.1",
         "async": "3.2.4",
         "debug": "4.3.4",
         "lodash": "4.17.21",
@@ -6470,12 +6470,12 @@
       }
     },
     "node_modules/@verdaccio/streams": {
-      "version": "10.2.0",
-      "resolved": "https://registry.npmjs.org/@verdaccio/streams/-/streams-10.2.0.tgz",
-      "integrity": "sha512-FaIzCnDg0x0Js5kSQn1Le3YzDHl7XxrJ0QdIw5LrDUmLsH3VXNi4/NMlSHnw5RiTTMs4UbEf98V3RJRB8exqJA==",
+      "version": "10.2.1",
+      "resolved": "https://registry.npmjs.org/@verdaccio/streams/-/streams-10.2.1.tgz",
+      "integrity": "sha512-OojIG/f7UYKxC4dYX8x5ax8QhRx1b8OYUAMz82rUottCuzrssX/4nn5QE7Ank0DUSX3C9l/HPthc4d9uKRJqJQ==",
       "dev": true,
       "engines": {
-        "node": ">=8",
+        "node": ">=12",
         "npm": ">=5"
       },
       "funding": {
@@ -23554,18 +23554,18 @@
       }
     },
     "node_modules/verdaccio": {
-      "version": "5.23.1",
-      "resolved": "https://registry.npmjs.org/verdaccio/-/verdaccio-5.23.1.tgz",
-      "integrity": "sha512-tPEm0hQub2jV5b5ID9B/dexAKI00iI+wCvLyhhg/OSu+E6OHMyJuj5KkT58AxM4Lsz0zOG58qhNwmy9JEgq6vA==",
+      "version": "5.23.2",
+      "resolved": "https://registry.npmjs.org/verdaccio/-/verdaccio-5.23.2.tgz",
+      "integrity": "sha512-zhq+Wyvk5LqgjjHWwIpF2npfTYjfYQPOck0DTf+QzaCoGsLgtSReErY/PRc9F3eTv6yixNLj+uupIA9oBUMuXg==",
       "dev": true,
       "dependencies": {
-        "@verdaccio/config": "6.0.0-6-next.66",
+        "@verdaccio/config": "6.0.0-6-next.67",
         "@verdaccio/core": "6.0.0-6-next.67",
-        "@verdaccio/local-storage": "10.3.1",
+        "@verdaccio/local-storage": "10.3.3",
         "@verdaccio/logger-7": "6.0.0-6-next.12",
         "@verdaccio/middleware": "6.0.0-6-next.46",
         "@verdaccio/signature": "6.0.0-6-next.2",
-        "@verdaccio/streams": "10.2.0",
+        "@verdaccio/streams": "10.2.1",
         "@verdaccio/tarball": "11.0.0-6-next.36",
         "@verdaccio/ui-theme": "6.0.0-6-next.67",
         "@verdaccio/url": "11.0.0-6-next.33",
@@ -23597,7 +23597,7 @@
         "semver": "7.3.8",
         "validator": "13.9.0",
         "verdaccio-audit": "11.0.0-6-next.30",
-        "verdaccio-htpasswd": "10.5.3"
+        "verdaccio-htpasswd": "10.5.4"
       },
       "bin": {
         "verdaccio": "bin/verdaccio"
@@ -23631,12 +23631,12 @@
       }
     },
     "node_modules/verdaccio-htpasswd": {
-      "version": "10.5.3",
-      "resolved": "https://registry.npmjs.org/verdaccio-htpasswd/-/verdaccio-htpasswd-10.5.3.tgz",
-      "integrity": "sha512-3QedFZaoOpRbyDT6pdktKxGHXakACxZgGflrxWYKh/B4Ds09QNonU6KyXPJTwFJZoAFb0Eey0KP6BY8pibi2Jw==",
+      "version": "10.5.4",
+      "resolved": "https://registry.npmjs.org/verdaccio-htpasswd/-/verdaccio-htpasswd-10.5.4.tgz",
+      "integrity": "sha512-kFz/o5ObshXp+O+s/3plLFLkKFVosDBlOQjmfdxAJW08TJvpeHiH2JCvr0+oLAubG2YPWaevihUmUnqWC8Lk3g==",
       "dev": true,
       "dependencies": {
-        "@verdaccio/file-locking": "10.3.0",
+        "@verdaccio/file-locking": "10.3.1",
         "apache-md5": "1.1.8",
         "bcryptjs": "2.4.3",
         "http-errors": "2.0.0",
@@ -23675,84 +23675,6 @@
         "node": ">= 0.8"
       }
     },
-    "node_modules/verdaccio/node_modules/@verdaccio/config": {
-      "version": "6.0.0-6-next.66",
-      "resolved": "https://registry.npmjs.org/@verdaccio/config/-/config-6.0.0-6-next.66.tgz",
-      "integrity": "sha512-xV35sMMXweg8xv0LY+uu1pBwz7FHAVsEqXKCqG9j7pRM7XIgEQMJ0NVsZBUALplRoZrH3vr3iFvnL9zS0LRKSA==",
-      "dev": true,
-      "dependencies": {
-        "@verdaccio/core": "6.0.0-6-next.66",
-        "@verdaccio/utils": "6.0.0-6-next.34",
-        "debug": "4.3.4",
-        "js-yaml": "4.1.0",
-        "lodash": "4.17.21",
-        "minimatch": "3.1.2",
-        "yup": "0.32.11"
-      },
-      "engines": {
-        "node": ">=12"
-      },
-      "funding": {
-        "type": "opencollective",
-        "url": "https://opencollective.com/verdaccio"
-      }
-    },
-    "node_modules/verdaccio/node_modules/@verdaccio/config/node_modules/@verdaccio/core": {
-      "version": "6.0.0-6-next.66",
-      "resolved": "https://registry.npmjs.org/@verdaccio/core/-/core-6.0.0-6-next.66.tgz",
-      "integrity": "sha512-U31XNEbqFPgQovoEF2J56BO1CsP9kH9exmPQ87N9Le9MIQKebrSSwx3zGpHsTOw0hcckN/wi+Rj1V3roN845GA==",
-      "dev": true,
-      "dependencies": {
-        "ajv": "8.11.2",
-        "core-js": "3.28.0",
-        "http-errors": "1.8.1",
-        "http-status-codes": "2.2.0",
-        "process-warning": "1.0.0",
-        "semver": "7.3.8"
-      },
-      "engines": {
-        "node": ">=12"
-      },
-      "funding": {
-        "type": "opencollective",
-        "url": "https://opencollective.com/verdaccio"
-      }
-    },
-    "node_modules/verdaccio/node_modules/@verdaccio/config/node_modules/@verdaccio/utils": {
-      "version": "6.0.0-6-next.34",
-      "resolved": "https://registry.npmjs.org/@verdaccio/utils/-/utils-6.0.0-6-next.34.tgz",
-      "integrity": "sha512-aeGwqmcPYD880BwVb7SnqcyPLhBPKmtXWtKy159p8/RMRuU+bz+NTKHxdDotpZO/OU7P80D9GA5+7UwIpP0f+g==",
-      "dev": true,
-      "dependencies": {
-        "@verdaccio/core": "6.0.0-6-next.66",
-        "lodash": "4.17.21",
-        "minimatch": "3.1.2",
-        "semver": "7.3.8"
-      },
-      "engines": {
-        "node": ">=12"
-      },
-      "funding": {
-        "type": "opencollective",
-        "url": "https://opencollective.com/verdaccio"
-      }
-    },
-    "node_modules/verdaccio/node_modules/ajv": {
-      "version": "8.11.2",
-      "resolved": "https://registry.npmjs.org/ajv/-/ajv-8.11.2.tgz",
-      "integrity": "sha512-E4bfmKAhGiSTvMfL1Myyycaub+cUEU2/IvpylXkUu7CHBkBj1f/ikdzbD7YQ6FKUbixDxeYvB/xY4fvyroDlQg==",
-      "dev": true,
-      "dependencies": {
-        "fast-deep-equal": "^3.1.1",
-        "json-schema-traverse": "^1.0.0",
-        "require-from-string": "^2.0.2",
-        "uri-js": "^4.2.2"
-      },
-      "funding": {
-        "type": "github",
-        "url": "https://github.com/sponsors/epoberezkin"
-      }
-    },
     "node_modules/verdaccio/node_modules/body-parser": {
       "version": "1.20.2",
       "resolved": "https://registry.npmjs.org/body-parser/-/body-parser-1.20.2.tgz",
@@ -23786,7 +23708,16 @@
         "ms": "2.0.0"
       }
     },
-    "node_modules/verdaccio/node_modules/body-parser/node_modules/http-errors": {
+    "node_modules/verdaccio/node_modules/depd": {
+      "version": "2.0.0",
+      "resolved": "https://registry.npmjs.org/depd/-/depd-2.0.0.tgz",
+      "integrity": "sha512-g7nH6P6dyDioJogAAGprGpCtVImJhpPk/roCzdb3fIh61/s/nPsfR6onyMwkCAR/OlC3yBC0lESvUoQEAssIrw==",
+      "dev": true,
+      "engines": {
+        "node": ">= 0.8"
+      }
+    },
+    "node_modules/verdaccio/node_modules/http-errors": {
       "version": "2.0.0",
       "resolved": "https://registry.npmjs.org/http-errors/-/http-errors-2.0.0.tgz",
       "integrity": "sha512-FtwrG/euBzaEjYeRqOgly7G0qviiXoJWnvEH2Z1plBdXgbyjv34pHTSb9zoeHMyDy33+DWy5Wt9Wo+TURtOYSQ==",
@@ -23801,32 +23732,6 @@
       "engines": {
         "node": ">= 0.8"
       }
-    },
-    "node_modules/verdaccio/node_modules/core-js": {
-      "version": "3.28.0",
-      "resolved": "https://registry.npmjs.org/core-js/-/core-js-3.28.0.tgz",
-      "integrity": "sha512-GiZn9D4Z/rSYvTeg1ljAIsEqFm0LaN9gVtwDCrKL80zHtS31p9BAjmTxVqTQDMpwlMolJZOFntUG2uwyj7DAqw==",
-      "dev": true,
-      "hasInstallScript": true,
-      "funding": {
-        "type": "opencollective",
-        "url": "https://opencollective.com/core-js"
-      }
-    },
-    "node_modules/verdaccio/node_modules/depd": {
-      "version": "2.0.0",
-      "resolved": "https://registry.npmjs.org/depd/-/depd-2.0.0.tgz",
-      "integrity": "sha512-g7nH6P6dyDioJogAAGprGpCtVImJhpPk/roCzdb3fIh61/s/nPsfR6onyMwkCAR/OlC3yBC0lESvUoQEAssIrw==",
-      "dev": true,
-      "engines": {
-        "node": ">= 0.8"
-      }
-    },
-    "node_modules/verdaccio/node_modules/json-schema-traverse": {
-      "version": "1.0.0",
-      "resolved": "https://registry.npmjs.org/json-schema-traverse/-/json-schema-traverse-1.0.0.tgz",
-      "integrity": "sha512-NM8/P9n3XjXhIZn1lLhkFaACTOURQXjWhV4BA/RnOv8xvgqtqpAX9IO4mRQxSx1Rlo4tqzeqb0sOlruaOy3dug==",
-      "dev": true
     },
     "node_modules/verdaccio/node_modules/lru-cache": {
       "version": "7.18.3",
@@ -28779,23 +28684,23 @@
       }
     },
     "@verdaccio/file-locking": {
-      "version": "10.3.0",
-      "resolved": "https://registry.npmjs.org/@verdaccio/file-locking/-/file-locking-10.3.0.tgz",
-      "integrity": "sha512-FE5D5H4wy/nhgR/d2J5e1Na9kScj2wMjlLPBHz7XF4XZAVSRdm45+kL3ZmrfA6b2HTADP/uH7H05/cnAYW8bhw==",
+      "version": "10.3.1",
+      "resolved": "https://registry.npmjs.org/@verdaccio/file-locking/-/file-locking-10.3.1.tgz",
+      "integrity": "sha512-oqYLfv3Yg3mAgw9qhASBpjD50osj2AX4IwbkUtyuhhKGyoFU9eZdrbeW6tpnqUnj6yBMtAPm2eGD4BwQuX400g==",
       "dev": true,
       "requires": {
         "lockfile": "1.0.4"
       }
     },
     "@verdaccio/local-storage": {
-      "version": "10.3.1",
-      "resolved": "https://registry.npmjs.org/@verdaccio/local-storage/-/local-storage-10.3.1.tgz",
-      "integrity": "sha512-f3oArjXPOAwUAA2dsBhfL/rSouqJ2sfml8k97RtnBPKOzisb28bgyAQW0mqwQvN4MTK5S/2xudmobFpvJAIatg==",
+      "version": "10.3.3",
+      "resolved": "https://registry.npmjs.org/@verdaccio/local-storage/-/local-storage-10.3.3.tgz",
+      "integrity": "sha512-/n0FH+1hxVg80YhYBfJuW7F2AuvLY2fra8/DTCilWDll9Y5yZDxwntZfcKHJLerCA4atrbJtvaqpWkoV3Q9x8w==",
       "dev": true,
       "requires": {
         "@verdaccio/commons-api": "10.2.0",
-        "@verdaccio/file-locking": "10.3.0",
-        "@verdaccio/streams": "10.2.0",
+        "@verdaccio/file-locking": "10.3.1",
+        "@verdaccio/streams": "10.2.1",
         "async": "3.2.4",
         "debug": "4.3.4",
         "lodash": "4.17.21",
@@ -28890,9 +28795,9 @@
       }
     },
     "@verdaccio/streams": {
-      "version": "10.2.0",
-      "resolved": "https://registry.npmjs.org/@verdaccio/streams/-/streams-10.2.0.tgz",
-      "integrity": "sha512-FaIzCnDg0x0Js5kSQn1Le3YzDHl7XxrJ0QdIw5LrDUmLsH3VXNi4/NMlSHnw5RiTTMs4UbEf98V3RJRB8exqJA==",
+      "version": "10.2.1",
+      "resolved": "https://registry.npmjs.org/@verdaccio/streams/-/streams-10.2.1.tgz",
+      "integrity": "sha512-OojIG/f7UYKxC4dYX8x5ax8QhRx1b8OYUAMz82rUottCuzrssX/4nn5QE7Ank0DUSX3C9l/HPthc4d9uKRJqJQ==",
       "dev": true
     },
     "@verdaccio/tarball": {
@@ -41787,18 +41692,18 @@
       "integrity": "sha1-IpnwLG3tMNSllhsLn3RSShj2NPw="
     },
     "verdaccio": {
-      "version": "5.23.1",
-      "resolved": "https://registry.npmjs.org/verdaccio/-/verdaccio-5.23.1.tgz",
-      "integrity": "sha512-tPEm0hQub2jV5b5ID9B/dexAKI00iI+wCvLyhhg/OSu+E6OHMyJuj5KkT58AxM4Lsz0zOG58qhNwmy9JEgq6vA==",
+      "version": "5.23.2",
+      "resolved": "https://registry.npmjs.org/verdaccio/-/verdaccio-5.23.2.tgz",
+      "integrity": "sha512-zhq+Wyvk5LqgjjHWwIpF2npfTYjfYQPOck0DTf+QzaCoGsLgtSReErY/PRc9F3eTv6yixNLj+uupIA9oBUMuXg==",
       "dev": true,
       "requires": {
-        "@verdaccio/config": "6.0.0-6-next.66",
+        "@verdaccio/config": "6.0.0-6-next.67",
         "@verdaccio/core": "6.0.0-6-next.67",
-        "@verdaccio/local-storage": "10.3.1",
+        "@verdaccio/local-storage": "10.3.3",
         "@verdaccio/logger-7": "6.0.0-6-next.12",
         "@verdaccio/middleware": "6.0.0-6-next.46",
         "@verdaccio/signature": "6.0.0-6-next.2",
-        "@verdaccio/streams": "10.2.0",
+        "@verdaccio/streams": "10.2.1",
         "@verdaccio/tarball": "11.0.0-6-next.36",
         "@verdaccio/ui-theme": "6.0.0-6-next.67",
         "@verdaccio/url": "11.0.0-6-next.33",
@@ -41830,64 +41735,9 @@
         "semver": "7.3.8",
         "validator": "13.9.0",
         "verdaccio-audit": "11.0.0-6-next.30",
-        "verdaccio-htpasswd": "10.5.3"
+        "verdaccio-htpasswd": "10.5.4"
       },
       "dependencies": {
-        "@verdaccio/config": {
-          "version": "6.0.0-6-next.66",
-          "resolved": "https://registry.npmjs.org/@verdaccio/config/-/config-6.0.0-6-next.66.tgz",
-          "integrity": "sha512-xV35sMMXweg8xv0LY+uu1pBwz7FHAVsEqXKCqG9j7pRM7XIgEQMJ0NVsZBUALplRoZrH3vr3iFvnL9zS0LRKSA==",
-          "dev": true,
-          "requires": {
-            "@verdaccio/core": "6.0.0-6-next.66",
-            "@verdaccio/utils": "6.0.0-6-next.34",
-            "debug": "4.3.4",
-            "js-yaml": "4.1.0",
-            "lodash": "4.17.21",
-            "minimatch": "3.1.2",
-            "yup": "0.32.11"
-          },
-          "dependencies": {
-            "@verdaccio/core": {
-              "version": "6.0.0-6-next.66",
-              "resolved": "https://registry.npmjs.org/@verdaccio/core/-/core-6.0.0-6-next.66.tgz",
-              "integrity": "sha512-U31XNEbqFPgQovoEF2J56BO1CsP9kH9exmPQ87N9Le9MIQKebrSSwx3zGpHsTOw0hcckN/wi+Rj1V3roN845GA==",
-              "dev": true,
-              "requires": {
-                "ajv": "8.11.2",
-                "core-js": "3.28.0",
-                "http-errors": "1.8.1",
-                "http-status-codes": "2.2.0",
-                "process-warning": "1.0.0",
-                "semver": "7.3.8"
-              }
-            },
-            "@verdaccio/utils": {
-              "version": "6.0.0-6-next.34",
-              "resolved": "https://registry.npmjs.org/@verdaccio/utils/-/utils-6.0.0-6-next.34.tgz",
-              "integrity": "sha512-aeGwqmcPYD880BwVb7SnqcyPLhBPKmtXWtKy159p8/RMRuU+bz+NTKHxdDotpZO/OU7P80D9GA5+7UwIpP0f+g==",
-              "dev": true,
-              "requires": {
-                "@verdaccio/core": "6.0.0-6-next.66",
-                "lodash": "4.17.21",
-                "minimatch": "3.1.2",
-                "semver": "7.3.8"
-              }
-            }
-          }
-        },
-        "ajv": {
-          "version": "8.11.2",
-          "resolved": "https://registry.npmjs.org/ajv/-/ajv-8.11.2.tgz",
-          "integrity": "sha512-E4bfmKAhGiSTvMfL1Myyycaub+cUEU2/IvpylXkUu7CHBkBj1f/ikdzbD7YQ6FKUbixDxeYvB/xY4fvyroDlQg==",
-          "dev": true,
-          "requires": {
-            "fast-deep-equal": "^3.1.1",
-            "json-schema-traverse": "^1.0.0",
-            "require-from-string": "^2.0.2",
-            "uri-js": "^4.2.2"
-          }
-        },
         "body-parser": {
           "version": "1.20.2",
           "resolved": "https://registry.npmjs.org/body-parser/-/body-parser-1.20.2.tgz",
@@ -41916,27 +41766,8 @@
               "requires": {
                 "ms": "2.0.0"
               }
-            },
-            "http-errors": {
-              "version": "2.0.0",
-              "resolved": "https://registry.npmjs.org/http-errors/-/http-errors-2.0.0.tgz",
-              "integrity": "sha512-FtwrG/euBzaEjYeRqOgly7G0qviiXoJWnvEH2Z1plBdXgbyjv34pHTSb9zoeHMyDy33+DWy5Wt9Wo+TURtOYSQ==",
-              "dev": true,
-              "requires": {
-                "depd": "2.0.0",
-                "inherits": "2.0.4",
-                "setprototypeof": "1.2.0",
-                "statuses": "2.0.1",
-                "toidentifier": "1.0.1"
-              }
             }
           }
-        },
-        "core-js": {
-          "version": "3.28.0",
-          "resolved": "https://registry.npmjs.org/core-js/-/core-js-3.28.0.tgz",
-          "integrity": "sha512-GiZn9D4Z/rSYvTeg1ljAIsEqFm0LaN9gVtwDCrKL80zHtS31p9BAjmTxVqTQDMpwlMolJZOFntUG2uwyj7DAqw==",
-          "dev": true
         },
         "depd": {
           "version": "2.0.0",
@@ -41944,11 +41775,18 @@
           "integrity": "sha512-g7nH6P6dyDioJogAAGprGpCtVImJhpPk/roCzdb3fIh61/s/nPsfR6onyMwkCAR/OlC3yBC0lESvUoQEAssIrw==",
           "dev": true
         },
-        "json-schema-traverse": {
-          "version": "1.0.0",
-          "resolved": "https://registry.npmjs.org/json-schema-traverse/-/json-schema-traverse-1.0.0.tgz",
-          "integrity": "sha512-NM8/P9n3XjXhIZn1lLhkFaACTOURQXjWhV4BA/RnOv8xvgqtqpAX9IO4mRQxSx1Rlo4tqzeqb0sOlruaOy3dug==",
-          "dev": true
+        "http-errors": {
+          "version": "2.0.0",
+          "resolved": "https://registry.npmjs.org/http-errors/-/http-errors-2.0.0.tgz",
+          "integrity": "sha512-FtwrG/euBzaEjYeRqOgly7G0qviiXoJWnvEH2Z1plBdXgbyjv34pHTSb9zoeHMyDy33+DWy5Wt9Wo+TURtOYSQ==",
+          "dev": true,
+          "requires": {
+            "depd": "2.0.0",
+            "inherits": "2.0.4",
+            "setprototypeof": "1.2.0",
+            "statuses": "2.0.1",
+            "toidentifier": "1.0.1"
+          }
         },
         "lru-cache": {
           "version": "7.18.3",
@@ -41990,12 +41828,12 @@
       }
     },
     "verdaccio-htpasswd": {
-      "version": "10.5.3",
-      "resolved": "https://registry.npmjs.org/verdaccio-htpasswd/-/verdaccio-htpasswd-10.5.3.tgz",
-      "integrity": "sha512-3QedFZaoOpRbyDT6pdktKxGHXakACxZgGflrxWYKh/B4Ds09QNonU6KyXPJTwFJZoAFb0Eey0KP6BY8pibi2Jw==",
+      "version": "10.5.4",
+      "resolved": "https://registry.npmjs.org/verdaccio-htpasswd/-/verdaccio-htpasswd-10.5.4.tgz",
+      "integrity": "sha512-kFz/o5ObshXp+O+s/3plLFLkKFVosDBlOQjmfdxAJW08TJvpeHiH2JCvr0+oLAubG2YPWaevihUmUnqWC8Lk3g==",
       "dev": true,
       "requires": {
-        "@verdaccio/file-locking": "10.3.0",
+        "@verdaccio/file-locking": "10.3.1",
         "apache-md5": "1.1.8",
         "bcryptjs": "2.4.3",
         "http-errors": "2.0.0",
