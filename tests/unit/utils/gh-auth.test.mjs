@@ -3,7 +3,9 @@ import fetch from 'node-fetch'
 import { afterAll, describe, expect, test, vi } from 'vitest'
 
 import { authWithNetlify } from '../../../src/utils/gh-auth.mjs'
-import openBrowser from '../../../src/utils/open-browser.mjs'
+import importedOpenBrowser from '../../../src/utils/open-browser.mjs'
+
+const openBrowser = vi.mocked(importedOpenBrowser)
 
 vi.mock('../../../src/utils/open-browser.mjs', () => ({
   default: vi.fn(() => Promise.resolve()),
@@ -19,7 +21,7 @@ describe('gh-auth', () => {
     // wait for server to be started
     await new Promise((resolve, reject) => {
       const fibonacciBackoff = fibonacci()
-      const check = () => (openBrowser.called ? resolve() : fibonacciBackoff.backoff())
+      const check = () => (openBrowser.mock.calls.length === 0 ? fibonacciBackoff.backoff() : resolve())
 
       fibonacciBackoff.failAfter(10)
       fibonacciBackoff.on('ready', check)
@@ -33,7 +35,7 @@ describe('gh-auth', () => {
       ['provider', 'github'],
     ])
 
-    const [[{ url }]] = openBrowser.calls
+    const [[{ url }]] = openBrowser.mock.calls
     const calledParams = new URLSearchParams(url.slice(url.indexOf('?') + 1))
     const host = calledParams.get('host')
 
