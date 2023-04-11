@@ -1,8 +1,9 @@
 // @ts-check
 import { rm } from 'fs/promises'
+import { join } from 'path'
 import { fileURLToPath } from 'url'
 
-import cpy from 'cpy'
+import { copy } from 'fs-extra'
 import { temporaryDirectory } from 'tempy'
 import { afterAll, beforeAll, beforeEach } from 'vitest'
 
@@ -15,11 +16,11 @@ const HOOK_TIMEOUT = 30_000
 /**
  * @param {Object} options
  * @param {Function} factory
- * @return {Fixture}
+ * @return {Promise<void>}
  */
 export const setupFixtureTests = async function (options, factory) {
   /**
-   * @type {server}
+   * @type {any}
    */
   let devServer
   /**
@@ -29,7 +30,7 @@ export const setupFixtureTests = async function (options, factory) {
 
   beforeAll(async () => {
     if (options.fixture) fixture = await Fixture.create(options.fixture)
-    if (options.devServer) devServer = await startDevServer({ cwd: fixture.directory })
+    if (options.devServer) devServer = await startDevServer({ cwd: fixture.directory, args: ['--offline'] })
   }, HOOK_TIMEOUT)
 
   beforeEach((context) => {
@@ -59,13 +60,13 @@ export class Fixture {
 
   /**
    * @param {string} fixturePath
-   * @return {Fixture}
+   * @return {Promise<Fixture>}
    */
   static async create(fixturePath) {
     const fixture = new Fixture(fixturePath)
 
     fixture.directory = temporaryDirectory()
-    await cpy(`${fixturePath}/**`, fixture.directory, { cwd: FIXTURES_DIRECTORY })
+    await copy(join(FIXTURES_DIRECTORY, fixturePath), fixture.directory)
 
     return fixture
   }
@@ -81,7 +82,7 @@ export class Fixture {
   /**
    * Calls the CLI with a max timeout inside the fixture directory.
    * If the `parseJson` argument is specified then the result will be converted into an object.
-   * @param {readonly string[]} args
+   * @param {string[]} args
    * @param {any} options
    * @returns {Promise<string|object>}
    */
