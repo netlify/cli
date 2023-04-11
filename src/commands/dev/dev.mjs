@@ -138,8 +138,6 @@ const dev = async (options, command) => {
       DEPLOY_URL: url,
   } })
 
-  log(`${NETLIFYDEVWARN} Done with runDevTimeline`)
-
   await startFunctionsServer({
     api,
     command,
