@@ -47,7 +47,6 @@ const handleLiveTunnel = async ({ api, options, settings, site }) => {
       localPort: settings.port,
     })
     process.env.BASE_URL = sessionUrl
-    process.env.LIVE_URL = sessionUrl
     return sessionUrl
   }
 }
@@ -129,7 +128,12 @@ const dev = async (options, command) => {
 
   log(`${NETLIFYDEVWARN} Setting up local development server`)
 
-  const { configPath: configPathOverride } = await runDevTimeline({ cachedConfig, options, settings, site })
+  const { configPath: configPathOverride } = await runDevTimeline({ cachedConfig, options, settings, site, env: {
+      URL: liveTunnelUrl,
+      DEPLOY_URL: liveTunnelUrl,
+  } })
+
+  log(`${NETLIFYDEVWARN} Done with runDevTimeline`)
 
   await startFunctionsServer({
     api,
