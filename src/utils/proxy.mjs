@@ -575,6 +575,11 @@ const onRequest = async (
   proxy.web(req, res, options)
 }
 
+export const getProxyUrl = function (settings) {
+  const scheme = settings.https ? 'https' : 'http'
+  return `${scheme}://localhost:${settings.port}`
+}
+
 export const startProxy = async function ({
   addonsUrls,
   config,
@@ -665,8 +670,7 @@ export const startProxy = async function ({
 
   await Promise.all(eventQueue)
 
-  const scheme = settings.https ? 'https' : 'http'
-  return `${scheme}://localhost:${settings.port}`
+  return getProxyUrl(settings)
 }
 
 const BYTES_LIMIT = 30
