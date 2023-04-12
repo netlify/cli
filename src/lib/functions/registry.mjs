@@ -23,9 +23,6 @@ import runtimes from './runtimes/index.mjs'
 
 const ZIP_EXTENSION = '.zip'
 
-// Used to determine the precedence of duplicate functions
-const EXTENSIONS_BY_PRECEDENCE = ['.js', '.zip', '.mjs', '.cjs', '.go', '.ts', '.tsx', '.mts', '.cts', '.rs']
-
 export class FunctionsRegistry {
   constructor({ capabilities, config, debug = false, isConnected = false, projectRoot, settings, timeouts }) {
     this.capabilities = capabilities
@@ -184,19 +181,6 @@ export class FunctionsRegistry {
     return await listFunctions(...args)
   }
 
-  // Check if a function has a duplicate with a preceding extension
-  hasPrecedingDuplicate({ mainFile, name }) {
-    const registeredDupe = this.functions.get(name)
-    if (!registeredDupe) return false
-    const dupeExtension = extname(registeredDupe.mainFile)
-    const dupeExtIndex = EXTENSIONS_BY_PRECEDENCE.indexOf(dupeExtension)
-
-    const extension = extname(mainFile)
-    const extIndex = EXTENSIONS_BY_PRECEDENCE.indexOf(extension)
-
-    return dupeExtIndex < extIndex
-  }
-
   async scan(relativeDirs) {
     const directories = relativeDirs.filter(Boolean).map((dir) => (isAbsolute(dir) ? dir : join(this.projectRoot, dir)))
 
@@ -228,7 +212,8 @@ export class FunctionsRegistry {
     await Promise.all(deletedFunctions.map((func) => this.unregisterFunction(func.name)))
 
     await Promise.all(
-      functions.map(async ({ displayName, mainFile, name, runtime: runtimeName }) => {
+      // We reverse the array so we get the right functions precedence
+      functions.reverse().map(async ({ displayName, mainFile, name, runtime: runtimeName }) => {
         const runtime = runtimes[runtimeName]
 
         // If there is no matching runtime, it means this function is not yet
@@ -237,8 +222,8 @@ export class FunctionsRegistry {
           return
         }
 
-        // If this function has already been registered and this function shouldn't precede it by extension, we skip it.
-        if (this.functions.has(name) && this.hasPrecedingDuplicate({ mainFile, name })) {
+        // If this function has already been registered, we skip it.
+        if (this.functions.has(name)) {
           return
         }
 

@@ -17,20 +17,7 @@ const duplicateFunctions = [
     content: `exports.handler = async (event) => ({ statusCode: 200, body: JSON.stringify({ message: 'Hello World from .ts' }) })`,
   },
   {
-    filename: 'hello/main.go',
-    subDir: 'hello',
-    content: `package main
-    import (
-      "fmt"
-    )
-
-    func main() {
-      fmt.Println("Hello, world from a go function!")
-    }
-    `,
-  },
-  {
-    filename: 'hello2.ts',
+    filename: 'hello2.js',
     content: `exports.handler = async (event) => ({ statusCode: 200, body: JSON.stringify({ message: 'Hello World from .ts' }) })`,
   },
   {
