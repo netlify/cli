@@ -1,4 +1,4 @@
-// Vitest Snapshot v1
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`netlify graph function library runtime codegen library [netlify-builtin:nextjs-0.0.1]:./dummy/index.d.ts} 1`] = `
 "/* eslint-disable */
