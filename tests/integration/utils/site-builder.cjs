@@ -149,7 +149,9 @@ class SiteBuilder {
   }
 
   withContentFiles(files) {
-    files.forEach(this.withContentFile)
+    files.forEach((file) => {
+      this.withContentFile(file)
+    })
 
     return this
   }
