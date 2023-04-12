@@ -212,7 +212,9 @@ export class FunctionsRegistry {
     await Promise.all(deletedFunctions.map((func) => this.unregisterFunction(func.name)))
 
     await Promise.all(
-      // We reverse the array so we get the right functions precedence
+      // zip-it-ship-it returns an array sorted based on which extension should have precedence.
+      // where the last ones precede the previous ones. This is why
+      // we reverse the array so we get the right functions precedence in the cli.
       functions.reverse().map(async ({ displayName, mainFile, name, runtime: runtimeName }) => {
         const runtime = runtimes[runtimeName]
 
