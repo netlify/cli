@@ -15,7 +15,7 @@ export class EdgeFunctionsRegistry {
    * @param {object} opts.config
    * @param {string} opts.configPath
    * @param {string[]} opts.directories
-   * @param {Record<string, string>} opts.env
+   * @param {Record<string, { sources: string[], value: string}>} opts.env
    * @param {() => Promise<object>} opts.getUpdatedConfig
    * @param {Declaration[]} opts.internalFunctions
    * @param {string} opts.projectDir
@@ -178,6 +178,11 @@ export class EdgeFunctionsRegistry {
     return edgeFunctions
   }
 
+  /**
+   *
+   * @param {Record<string, { sources: string[], value: string}>} envConfig
+   * @returns {Record<string, string>}
+   */
   static getEnvironmentVariables(envConfig) {
     const env = Object.create(null)
     Object.entries(envConfig).forEach(([key, variable]) => {
@@ -185,7 +190,8 @@ export class EdgeFunctionsRegistry {
         variable.sources.includes('ui') ||
         variable.sources.includes('account') ||
         variable.sources.includes('addons') ||
-        variable.sources.includes('internal')
+        variable.sources.includes('internal') ||
+        variable.sources.some((source) => source.startsWith('.env'))
       ) {
         env[key] = variable.value
       }

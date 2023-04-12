@@ -137,30 +137,40 @@ const getEnvSourceName = (source) => {
   return printFn(name)
 }
 
-// Takes a set of environment variables in the format provided by @netlify/config, augments it with variables from both
-// dot-env files and the process itself, and injects into `process.env`.
-export const injectEnvVariables = async ({ devConfig, env, site }) => {
-  const environment = new Map(Object.entries(env))
+/**
+ * @param {{devConfig: any, env: Record<string, { sources: string[], value: string}>, site: any}} param0
+ * @returns {Promise<Record<string, { sources: string[], value: string}>>}
+ */
+export const addDotEnvVariables = async ({ devConfig, env, site }) => {
   const dotEnvFiles = await loadDotEnvFiles({ envFiles: devConfig.envFiles, projectDir: site.root })
-
   dotEnvFiles.forEach(({ env: fileEnv, file }) => {
+    const newSourceName = `${file} file`
+
     Object.keys(fileEnv).forEach((key) => {
-      const newSourceName = `${file} file`
-      const sources = environment.has(key) ? [newSourceName, ...environment.get(key).sources] : [newSourceName]
+      const sources = key in env ? [newSourceName, ...env[key].sources] : [newSourceName]
 
       if (sources.includes('internal')) {
         return
       }
 
-      environment.set(key, {
+      env[key] = {
         sources,
         value: fileEnv[key],
-      })
+      }
     })
   })
 
+  return env
+}
+
+/**
+ * Takes a set of environment variables in the format provided by @netlify/config and injects them into `process.env`
+ * @param {Record<string, { sources: string[], value: string}>} env
+ * @return {void}
+ */
+export const injectEnvVariables = (env) => {
   // eslint-disable-next-line fp/no-loops
-  for (const [key, variable] of environment) {
+  for (const [key, variable] of Object.entries(env)) {
     const existsInProcess = process.env[key] !== undefined
     const [usedSource, ...overriddenSources] = existsInProcess ? ['process', ...variable.sources] : variable.sources
     const usedSourceName = getEnvSourceName(usedSource)

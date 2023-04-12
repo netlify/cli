@@ -1,6 +1,6 @@
 import execa from 'execa'
 
-import { injectEnvVariables } from '../../utils/dev.mjs'
+import { addDotEnvVariables, injectEnvVariables } from '../../utils/dev.mjs'
 import { getEnvelopeEnv, normalizeContext } from '../../utils/env/index.mjs'
 
 /**
@@ -16,7 +16,8 @@ const devExec = async (cmd, options, command) => {
     env = await getEnvelopeEnv({ api, context: options.context, env, siteInfo })
   }
 
-  await injectEnvVariables({ devConfig: { ...config.dev }, env, site })
+  env = await addDotEnvVariables({ devConfig: { ...config.dev }, env, site })
+  injectEnvVariables(env)
 
   await execa(cmd, command.args.slice(1), {
     stdio: 'inherit',

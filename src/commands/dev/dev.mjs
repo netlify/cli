@@ -18,7 +18,7 @@ import {
   normalizeConfig,
 } from '../../utils/command-helpers.mjs'
 import detectServerSettings, { getConfigWithPlugins } from '../../utils/detect-server-settings.mjs'
-import { getSiteInformation, injectEnvVariables } from '../../utils/dev.mjs'
+import { addDotEnvVariables, getSiteInformation, injectEnvVariables } from '../../utils/dev.mjs'
 import { getEnvelopeEnv, normalizeContext } from '../../utils/env/index.mjs'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.mjs'
 import { startNetlifyGraph, startPollingForAPIAuthentication } from '../../utils/graph.mjs'
@@ -96,7 +96,8 @@ const dev = async (options, command) => {
     log(`${NETLIFYDEVLOG} Injecting environment variable values for ${chalk.yellow('all scopes')}`)
   }
 
-  await injectEnvVariables({ devConfig, env, site })
+  env = await addDotEnvVariables({ devConfig, env, site })
+  injectEnvVariables(env)
   await promptEditorHelper({ chalk, config, log, NETLIFYDEVLOG, repositoryRoot, state })
 
   const { addonsUrls, capabilities, siteUrl, timeouts } = await getSiteInformation({
