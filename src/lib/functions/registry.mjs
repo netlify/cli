@@ -187,6 +187,7 @@ export class FunctionsRegistry {
   // Check if a function has a duplicate with a preceding extension
   hasPrecedingDuplicate({ mainFile, name }) {
     const registeredDupe = this.functions.get(name)
+    if (!registeredDupe) return false
     const dupeExtension = extname(registeredDupe.mainFile)
     const dupeExtIndex = EXTENSIONS_BY_PRECEDENCE.indexOf(dupeExtension)
 
