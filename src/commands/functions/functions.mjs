@@ -39,7 +39,7 @@ The ${name} command will help you manage the functions in this site`,
     )
     .addExamples([
       'netlify functions:create --name function-xyz',
-      'netlify functions:build --name function-abc --timeout 30s',
+      'netlify functions:build --functions build/to/directory --src source/directory',
     ])
     .action(functions)
 }
