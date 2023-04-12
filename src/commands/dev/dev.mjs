@@ -24,8 +24,8 @@ import { ensureNetlifyIgnore } from '../../utils/gitignore.mjs'
 import { startNetlifyGraph, startPollingForAPIAuthentication } from '../../utils/graph.mjs'
 import { startLiveTunnel } from '../../utils/live-tunnel.mjs'
 import openBrowser from '../../utils/open-browser.mjs'
-import { getProxyUrl } from '../../utils/proxy.mjs'
 import { generateInspectSettings, startProxyServer } from '../../utils/proxy-server.mjs'
+import { getProxyUrl } from '../../utils/proxy.mjs'
 import { runDevTimeline } from '../../utils/run-build.mjs'
 import { getGeoCountryArgParser } from '../../utils/validation.mjs'
 
@@ -130,13 +130,18 @@ const dev = async (options, command) => {
   process.env.URL = url
   process.env.DEPLOY_URL = url
 
-
   log(`${NETLIFYDEVWARN} Setting up local development server`)
 
-  const { configPath: configPathOverride } = await runDevTimeline({ cachedConfig, options, settings, site, env: {
+  const { configPath: configPathOverride } = await runDevTimeline({
+    cachedConfig,
+    options,
+    settings,
+    site,
+    env: {
       URL: url,
       DEPLOY_URL: url,
-  } })
+    },
+  })
 
   await startFunctionsServer({
     api,

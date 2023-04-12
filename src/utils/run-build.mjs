@@ -56,7 +56,7 @@ const getBuildOptions = ({
   saveConfig,
 })
 
-const runNetlifyBuild = async ({ cachedConfig, options, settings, site, env, timeline = 'build' }) => {
+const runNetlifyBuild = async ({ cachedConfig, env, options, settings, site, timeline = 'build' }) => {
   const { default: buildSite, startDev } = await netlifyBuildPromise
   const sharedOptions = getBuildOptions({
     cachedConfig,
@@ -112,7 +112,7 @@ const runNetlifyBuild = async ({ cachedConfig, options, settings, site, env, tim
     // Set `quiet` to suppress non-essential output from Netlify Build unless
     // the `debug` flag is set.
     quiet: !options.debug,
-    env
+    env,
   }
 
   // Run Netlify Build using the `startDev` entry point.
