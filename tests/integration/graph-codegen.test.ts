@@ -1,6 +1,3 @@
-/* eslint-disable eslint-comments/disable-enable-pair */
-/* eslint-disable no-unused-vars */
-// @ts-check
 import fs from 'fs'
 import path, { dirname } from 'path'
 import process from 'process'
@@ -25,18 +22,13 @@ const dirPath = dirname(fileURLToPath(import.meta.url))
 
 /**
  * Given a path, ensure that the path exists
- * @param {string[]} filePath
  */
-const ensurePath = (filePath) => {
+const ensurePath = (filePath: string[]) => {
   const fullPath = path.resolve(...filePath)
   fs.mkdirSync(fullPath, { recursive: true })
 }
 
-/**
- * @constant
- * @type {NetlifyGraph.NetlifyGraphConfig}
- */
-const baseNetlifyGraphConfig = {
+const baseNetlifyGraphConfig: NetlifyGraph.NetlifyGraphConfig = {
   extension: 'js',
   netlifyGraphPath: ['netlify'],
   graphQLConfigJsonFilename: ['.graphqlrc.json'],
@@ -63,19 +55,17 @@ const parsedDoc = parse(appOperationsDoc, {
   noLocation: true,
 })
 
-/**
- *
- * @param {object} input
- * @param {Record<string, any>} input.handlerOptions
- * @param {CodegenHelpers.Codegen} input.codegen
- * @param {string} input.operationId
- * @param {string} input.operationsDoc
- * @param {NetlifyGraph.NetlifyGraphConfig} input.netlifyGraphConfig
- * @param {GraphQL.GraphQLSchema} input.schema
- * @param {string[]} input.outDir
- * @returns {[string, string][] | void} - [filename, content]
- */
-const generateHandlerText = ({
+interface GenerateHandlerTextOptions {
+  codegen: CodegenHelpers.Codegen
+  handlerOptions: Record<string, any>
+  netlifyGraphConfig: NetlifyGraph.NetlifyGraphConfig
+  operationId: string
+  operationsDoc: string
+  outDir: string[]
+  schema: GraphQL.GraphQLSchema
+}
+
+const generateHandlerText = async ({
   codegen,
   handlerOptions,
   netlifyGraphConfig,
@@ -83,8 +73,8 @@ const generateHandlerText = ({
   operationsDoc,
   outDir,
   schema,
-}) => {
-  const result = generateHandlerSourceByOperationId({
+}: GenerateHandlerTextOptions): Promise<[string, string][] | void> => {
+  const result = await generateHandlerSourceByOperationId({
     generate: codegen.generateHandler,
     netlifyGraphConfig,
     schema,
@@ -103,13 +93,13 @@ const generateHandlerText = ({
     return
   }
 
-  const sources = []
+  const sources: [string, string[], string][] = []
 
   exportedFiles.forEach((exportedFile) => {
     const { content } = exportedFile
     const isNamed = exportedFile.kind === 'NamedExportedFile'
 
-    let baseFilenameArr
+    let baseFilenameArr: string[]
 
     if (isNamed) {
       baseFilenameArr = [...exportedFile.name]
@@ -141,29 +131,20 @@ const generateHandlerText = ({
     console.warn(`No exported files found for operation ${operationId}`)
   }
 
-  const textualSource = sources
+  const textualSource: [string, string][] = sources
     .sort(([filenameA], [filenameB]) => filenameA[0].localeCompare(filenameB[0]))
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     .map(([_, baseFilenameArr, content]) => {
       // Strip the outDir from the filename so the output is the same regardless of where the tests are run
       const filename = baseFilenameArr.join('/')
       return [filename, content]
     })
 
-  // @ts-ignore
   return textualSource
 }
 
-/**
- * @param {object} input
- * @param {CodegenHelpers.CodegenModule} input.codegenModule
- */
-const testGenerateRuntime = async ({ codegenModule }) => {
-  /**
-   *
-   * @param {CodegenHelpers.NamedExportedFile} file
-   * @returns {void}
-   */
-  const writeFile = (file) => {
+const testGenerateRuntime = async ({ codegenModule }: { codegenModule: CodegenHelpers.CodegenModule }) => {
+  const writeFile = (file: CodegenHelpers.NamedExportedFile): void => {
     const outDirPath = path.join(process.cwd(), '_test_out')
     const outDir = [
       path.sep,
@@ -182,11 +163,7 @@ const testGenerateRuntime = async ({ codegenModule }) => {
     runPrettier(filePath)
   }
 
-  /**
-   * @constant
-   * @type {NetlifyGraph.NetlifyGraphConfig}
-   */
-  const netlifyGraphConfig = { ...baseNetlifyGraphConfig }
+  const netlifyGraphConfig: NetlifyGraph.NetlifyGraphConfig = { ...baseNetlifyGraphConfig }
 
   const { fragments, functions } = extractFunctionsFromOperationDoc(GraphQL, parsedDoc)
   const generatedRuntime = await generateRuntimeSource({
@@ -205,7 +182,6 @@ const testGenerateRuntime = async ({ codegenModule }) => {
 
   generatedRuntime.forEach((runtimeFile) => {
     const filepath = runtimeFile.name.map((step) => step.replace(':', '___')).join('/')
-    // @ts-ignore
     test(`netlify graph function library runtime codegen library [${codegenModule.id}-${codegenModule.version}]:./${filepath}}`, () => {
       expect(runtimeFile.content).toMatchSnapshot()
     })
@@ -219,7 +195,7 @@ const testGenerateRuntime = async ({ codegenModule }) => {
  * @param {string} input.builtInCodegenId
  * @param {string} input.operationId
  */
-const testGenerateHandlerSource = ({ builtInCodegenId, codegenModule, operationId }) => {
+const testGenerateHandlerSource = async ({ builtInCodegenId, codegenModule, operationId }) => {
   const outDirPath = path.join(process.cwd(), '_test_out')
   const outDir = [path.sep, ...outDirPath.split(path.sep), `netlify-graph-test-${builtInCodegenId}`]
 
@@ -230,19 +206,11 @@ const testGenerateHandlerSource = ({ builtInCodegenId, codegenModule, operationI
     return
   }
 
-  /**
-   * @constant
-   * @type {NetlifyGraph.NetlifyGraphConfig}
-   */
-  const netlifyGraphConfig = { ...baseNetlifyGraphConfig }
+  const netlifyGraphConfig: NetlifyGraph.NetlifyGraphConfig = { ...baseNetlifyGraphConfig }
 
-  /**
-   * @constant
-   * @type Record<string, any>
-   */
-  const handlerOptions = {}
+  const handlerOptions: Record<string, any> = {}
   const textualSources =
-    generateHandlerText({
+    (await generateHandlerText({
       codegen,
       handlerOptions,
       netlifyGraphConfig,
@@ -250,10 +218,9 @@ const testGenerateHandlerSource = ({ builtInCodegenId, codegenModule, operationI
       operationsDoc: appOperationsDoc,
       schema: commonSchema,
       outDir,
-    }) || []
+    })) || []
 
   textualSources.forEach(([filename, content]) => {
-    // @ts-ignore
     test(`netlify graph handler codegen [${codegen.id}-${codegen.version}]:/${filename}`, () => {
       expect(normalize(JSON.stringify(content))).toMatchSnapshot()
     })
@@ -261,8 +228,6 @@ const testGenerateHandlerSource = ({ builtInCodegenId, codegenModule, operationI
 }
 
 const builtInCodegenModules = IncludedCodegen.includedCodegenModules
-
-const queryWithFragmentOperationId = 'e2394c86-260c-4646-88df-7bc7370de666'
 
 builtInCodegenModules.forEach((codegenModule) => {
   registerConsole(console)
@@ -273,14 +238,18 @@ builtInCodegenModules.forEach((codegenModule) => {
 })
 
 const subscriptionWithFragmentOperationId = 'e3d4bb8b-2fb5-9898-b051-db6027224112'
-builtInCodegenModules.forEach((codegenModule) => {
-  registerConsole(console)
+await Promise.all(
+  builtInCodegenModules.map(async (codegenModule) => {
+    registerConsole(console)
 
-  codegenModule.generators.forEach((codegen) => {
-    testGenerateHandlerSource({
-      codegenModule,
-      operationId: subscriptionWithFragmentOperationId,
-      builtInCodegenId: codegen.id,
-    })
-  })
-})
+    await Promise.all(
+      codegenModule.generators.map(async (codegen) => {
+        await testGenerateHandlerSource({
+          codegenModule,
+          operationId: subscriptionWithFragmentOperationId,
+          builtInCodegenId: codegen.id,
+        })
+      }),
+    )
+  }),
+)

@@ -4,7 +4,7 @@ import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   test: {
-    include: ['tests/**/*.test.mjs'],
+    include: ['tests/**/*.test.mjs', 'tests/**/*.test.ts'],
     testTimeout: 60_000,
     deps: {
       external: ['**/fixtures/**', '**/node_modules/**'],

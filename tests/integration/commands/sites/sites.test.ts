@@ -4,25 +4,29 @@ import inquirer from 'inquirer'
 import { render } from 'prettyjson'
 import { afterAll, beforeEach, describe, expect, test, vi } from 'vitest'
 
-import BaseCommand from '../../src/commands/base-command.mjs'
-import { createSitesFromTemplateCommand, fetchTemplates } from '../../src/commands/sites/sites-create-template.mjs'
-import { createSitesCreateCommand } from '../../src/commands/sites/sites-create.mjs'
-import { getGitHubToken } from '../../src/utils/init/config-github.mjs'
-import { createRepo, getTemplatesFromGitHub } from '../../src/utils/sites/utils.mjs'
+import BaseCommand from '../../../../src/commands/base-command.mjs'
+import {
+  createSitesFromTemplateCommand,
+  fetchTemplates,
+} from '../../../../src/commands/sites/sites-create-template.mjs'
+import { createSitesCreateCommand } from '../../../../src/commands/sites/sites-create.mjs'
+import { getGitHubToken } from '../../../../src/utils/init/config-github.mjs'
+import { createRepo, getTemplatesFromGitHub } from '../../../../src/utils/sites/utils.mjs'
+import { getEnvironmentVariables, withMockApi } from '../../utils/mock-api.cjs'
 
-import { getEnvironmentVariables, withMockApi } from './utils/mock-api.cjs'
-
-vi.mock('../../src/utils/command-helpers.mjs', async () => ({
-  ...(await vi.importActual('../../src/utils/command-helpers.mjs')),
+vi.mock('../../../../src/utils/command-helpers.mjs', async () => ({
+  // @ts-expect-error No types yet for command-helpers
+  ...(await vi.importActual('../../../../src/utils/command-helpers.mjs')),
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   log: () => {},
 }))
 
 // mock the getGithubToken method with a fake token
-vi.mock('../../src/utils/init/config-github.mjs', () => ({
+vi.mock('../../../../src/utils/init/config-github.mjs', () => ({
   getGitHubToken: vi.fn().mockImplementation(() => 'my-token'),
 }))
 
-vi.mock('../../src/utils/sites/utils.mjs', () => ({
+vi.mock('../../../../src/utils/sites/utils.mjs', () => ({
   getTemplatesFromGitHub: vi.fn().mockImplementation(() => [
     {
       name: 'next-starter',
@@ -48,9 +52,12 @@ vi.mock('../../src/utils/sites/utils.mjs', () => ({
 }))
 
 vi.mock('prettyjson', async () => {
-  const realRender = await vi.importActual('prettyjson')
+  const realRender = (await vi.importActual('prettyjson')) as typeof import('prettyjson')
 
-  return { ...realRender, render: vi.fn().mockImplementation((...args) => realRender.render(...args)) }
+  return {
+    ...realRender,
+    render: vi.fn().mockImplementation((...args: Parameters<typeof realRender.render>) => realRender.render(...args)),
+  }
 })
 
 vi.spyOn(inquirer, 'prompt').mockImplementation(() => Promise.resolve({ accountSlug: 'test-account' }))
@@ -87,7 +94,7 @@ const routes = [
 
 const OLD_ENV = process.env
 
-describe('sites', () => {
+describe('sites command', () => {
   beforeEach(() => {
     vi.resetModules()
     vi.clearAllMocks()
@@ -190,17 +197,15 @@ describe('sites', () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-        const exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => {})
-
         const program = new BaseCommand('netlify')
+        // Disable process.exit() in command
+        program.exitOverride()
 
         createSitesCreateCommand(program)
 
         await expect(async () => {
           await program.parseAsync(['', '', 'sites:create', '--name', Array.from({ length: 64 }).fill('a').join('')])
         }).rejects.toThrowError('--name should be less than 64 characters')
-
-        exitSpy.mockRestore()
       })
     })
   })

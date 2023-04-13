@@ -1,4 +1,4 @@
-const { isDeepStrictEqual } = require('util')
+const { isDeepStrictEqual, promisify } = require('util')
 
 const express = require('express')
 
@@ -11,6 +11,11 @@ const addRequest = (requests, request) => {
   })
 }
 
+/**
+ *
+ * @param {*} param0
+ * @returns
+ */
 const startMockApi = ({ routes, silent }) => {
   const requests = []
   const app = express()
@@ -45,7 +50,13 @@ const startMockApi = ({ routes, silent }) => {
     const server = app.listen()
 
     server.on('listening', () => {
-      resolve({ server, requests })
+      resolve({
+        server,
+        requests,
+        async close() {
+          return promisify(server.close.bind(server))()
+        },
+      })
     })
 
     server.on('error', (error) => {
@@ -73,8 +84,13 @@ const getEnvironmentVariables = ({ apiUrl }) => ({
   NETLIFY_API_URL: apiUrl,
 })
 
-const getCLIOptions = ({ apiUrl, builder: { directory: cwd }, env = {}, extendEnv = true }) => ({
-  cwd,
+/**
+ *
+ * @param {*} param0
+ * @returns
+ */
+const getCLIOptions = ({ apiUrl, builder, env = {}, extendEnv = true }) => ({
+  cwd: builder?.directory,
   env: { ...getEnvironmentVariables({ apiUrl }), ...env },
   extendEnv,
 })
