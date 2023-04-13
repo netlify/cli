@@ -25,6 +25,7 @@ import { startNetlifyGraph, startPollingForAPIAuthentication } from '../../utils
 import { startLiveTunnel } from '../../utils/live-tunnel.mjs'
 import openBrowser from '../../utils/open-browser.mjs'
 import { generateInspectSettings, startProxyServer } from '../../utils/proxy-server.mjs'
+import { getProxyUrl } from '../../utils/proxy.mjs'
 import { runDevTimeline } from '../../utils/run-build.mjs'
 import { getGeoCountryArgParser } from '../../utils/validation.mjs'
 
@@ -124,9 +125,23 @@ const dev = async (options, command) => {
     startPollingForAPIAuthentication({ api, command, config, site, siteInfo })
   }
 
+  const liveTunnelUrl = await handleLiveTunnel({ options, site, api, settings })
+  const url = liveTunnelUrl || getProxyUrl(settings)
+  process.env.URL = url
+  process.env.DEPLOY_URL = url
+
   log(`${NETLIFYDEVWARN} Setting up local development server`)
 
-  const { configPath: configPathOverride } = await runDevTimeline({ cachedConfig, options, settings, site })
+  const { configPath: configPathOverride } = await runDevTimeline({
+    cachedConfig,
+    options,
+    settings,
+    site,
+    env: {
+      URL: url,
+      DEPLOY_URL: url,
+    },
+  })
 
   await startFunctionsServer({
     api,
@@ -159,7 +174,7 @@ const dev = async (options, command) => {
 
   const inspectSettings = generateInspectSettings(options.edgeInspect, options.edgeInspectBrk)
 
-  let url = await startProxyServer({
+  await startProxyServer({
     addonsUrls,
     config,
     configPath: configPathOverride,
@@ -176,15 +191,9 @@ const dev = async (options, command) => {
     state,
   })
 
-  const liveTunnelUrl = await handleLiveTunnel({ options, site, api, settings })
-  url = liveTunnelUrl || url
-
   if (devConfig.autoLaunch !== false) {
     await openBrowser({ url, silentBrowserNoneError: true })
   }
-
-  process.env.URL = url
-  process.env.DEPLOY_URL = url
 
   await startNetlifyGraph({
     command,
