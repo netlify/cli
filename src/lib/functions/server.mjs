@@ -222,9 +222,9 @@ export const startFunctionsServer = async (options) => {
       functionsDirectories.push(distPath)
     }
   } else {
-    // The order of the function directories matters. Leftmost directories take
+    // The order of the function directories matters. Rightmost directories take
     // precedence.
-    const sourceDirectories = [settings.functions, internalFunctionsDir].filter(Boolean)
+    const sourceDirectories = [internalFunctionsDir, settings.functions].filter(Boolean)
 
     functionsDirectories.push(...sourceDirectories)
   }
