@@ -9,7 +9,7 @@ import { answerWithValue, CONFIRM, DOWN, handleQuestions } from '../../utils/han
 import { getCLIOptions, withMockApi } from '../../utils/mock-api.cjs'
 import { withSiteBuilder } from '../../utils/site-builder.cjs'
 
-describe('functions:create command', () => {
+describe.concurrent('functions:create command', () => {
   test('should create a new function directory when none is found', async () => {
     const siteInfo = {
       admin_url: 'https://app.netlify.com/sites/site-name/overview',
@@ -259,7 +259,7 @@ describe('functions:create command', () => {
 
         await childProcess
 
-        const { dependencies } = JSON.parse(await readFile(`${builder.directory}/package.json`))
+        const { dependencies } = JSON.parse(await readFile(`${builder.directory}/package.json`, 'utf-8'))
 
         // NOTE: Ideally we should be running this test with a specific template,
         // but `inquirer-autocomplete-prompt` doesn't seem to work with the way

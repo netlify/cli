@@ -14,6 +14,7 @@ module.exports = {
     // Those rules from @netlify/eslint-config-node are currently disabled
     // TODO: remove, so those rules are enabled
     complexity: 0,
+    'func-style': 'off',
     'max-depth': 0,
     'max-lines': 0,
     'max-lines-per-function': 0,
@@ -102,6 +103,27 @@ module.exports = {
       files: ['tests/**/*'],
       rules: {
         'require-await': 'off',
+      },
+    },
+    {
+      files: ['*.ts'],
+      rules: {
+        // Pure ES modules with TypeScript require using `.js` instead of `.ts`
+        // in imports
+        'import/extensions': 'off',
+        'import/no-namespace': 'off',
+        'n/no-missing-import': 'off',
+        'no-shadow': 'off',
+        '@typescript-eslint/no-shadow': 'error',
+        'no-use-before-define': 'off',
+        '@typescript-eslint/no-use-before-define': 'error',
+      },
+    },
+    {
+      files: ['tests/**/*.ts'],
+      rules: {
+        '@typescript-eslint/no-non-null-assertion': 'off',
+        '@typescript-eslint/no-explicit-any': 'off',
       },
     },
   ],

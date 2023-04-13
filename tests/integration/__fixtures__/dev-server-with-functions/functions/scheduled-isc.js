@@ -1,8 +1,9 @@
 const { schedule } = require('@netlify/functions')
 
-module.exports.handler = schedule('@daily', async () => {
+module.exports.handler = schedule('@daily', async (event) => {
+  const { next_run } = JSON.parse(event.body)
+
   return {
-    statusCode: 200,
-    body: 'hello world',
+    statusCode: !!next_run ? 200 : 400,
   }
 })
