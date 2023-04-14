@@ -1,7 +1,7 @@
 import { appendFile, mkdtemp, readFile, rm, writeFile } from 'fs/promises'
 import { tmpdir } from 'os'
 import { dirname, join, normalize, sep } from 'path'
-import { cwd, env } from 'process'
+import { env } from 'process'
 import { fileURLToPath } from 'url'
 
 import execa from 'execa'
@@ -12,6 +12,7 @@ import { runServer } from 'verdaccio'
 import { fileExistsAsync } from '../../src/lib/fs.mjs'
 
 const dir = dirname(fileURLToPath(import.meta.url))
+const rootDir = normalize(join(dir, '../..'))
 
 const VERDACCIO_TIMEOUT_MILLISECONDS = 60 * 1000
 const START_PORT_RANGE = 5000
@@ -24,7 +25,7 @@ const getVerdaccioConfig = () => ({
   // workaround
   // on v5 the `self_path` still exists and will be removed in v6 of verdaccio
   self_path: dir,
-  storage: normalize(join(dir, '../../.verdaccio-storage')),
+  storage: normalize(join(rootDir, '.verdaccio-storage')),
   web: { title: 'Test Registry' },
   max_body_size: '128mb',
   // Disable creation of users this is only meant for integration testing
@@ -104,7 +105,7 @@ export const setup = async () => {
   const { storage, url } = await startRegistry()
   const workspace = await mkdtemp(`${tmpdir()}${sep}e2e-test-`)
 
-  const npmrc = fileURLToPath(new URL('../../.npmrc', import.meta.url))
+  const npmrc = join(rootDir, '.npmrc')
   const registryWithAuth = `//${url.hostname}:${url.port}/:_authToken=dummy`
   let backupNpmrc
 
@@ -125,9 +126,14 @@ export const setup = async () => {
     }
 
     // publish the CLI package to our registry
-    await execa('npm', ['publish', `--registry=${url}`, '--tag=testing', cwd()], {
+    await execa('npm', ['publish', `--registry=${url}`, '--tag=testing'], {
       stdio: env.DEBUG ? 'inherit' : 'ignore',
+      cwd: rootDir,
     })
+
+    // Reset the workspace, as npm publish does patch package.json etc
+    await execa('git', ['checkout', '.'], { cwd: rootDir })
+    await execa('npm', ['install', '--no-audit'], { cwd: rootDir })
 
     console.log(`------------------------------------------
   Published to ${url}

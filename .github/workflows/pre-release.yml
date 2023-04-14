@@ -11,15 +11,11 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: '*'
-          cache: 'npm'
-          check-latest: true
-          cache-dependency-path: 'npm-shrinkwrap.json'
+          node-version: lts/*
+          cache: npm
           registry-url: 'https://registry.npmjs.org'
       - name: Install core dependencies
         run: npm ci --no-audit
-      - name: Install site dependencies
-        run: npm run site:build:install
       - name: Extract tag and version
         id: extract
         run: |-
@@ -43,6 +39,6 @@ jobs:
       - name: Push changes
         run: git push --follow-tags
       - name: Run npm publish
-        run: npm publish --tag=${{ steps.extract.outputs.tag }} --ignore-scripts
+        run: npm publish --tag=${{ steps.extract.outputs.tag }}
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
