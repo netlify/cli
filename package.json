@@ -155,7 +155,7 @@
     "ora": "^6.0.0",
     "p-filter": "^3.0.0",
     "p-map": "^5.0.0",
-    "p-wait-for": "^3.0.0",
+    "p-wait-for": "^5.0.0",
     "parallel-transform": "^1.2.0",
     "parse-github-url": "^1.0.2",
     "parse-gitignore": "^2.0.0",
