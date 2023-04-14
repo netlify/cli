@@ -1,3 +1,4 @@
+// @ts-check
 import { sep } from 'path'
 
 import pWaitFor from 'p-wait-for'
@@ -43,8 +44,10 @@ export const waitForDiff = async (api, deployId, siteId, timeout) => {
 
   await pWaitFor(loadDeploy, {
     interval: DEPLOY_POLL,
-    timeout,
-    message: 'Timeout while waiting for deploy',
+    timeout: {
+      milliseconds: timeout,
+      message: 'Timeout while waiting for deploy',
+    },
   })
 
   return deploy
@@ -80,8 +83,10 @@ export const waitForDeploy = async (api, deployId, siteId, timeout) => {
 
   await pWaitFor(loadDeploy, {
     interval: DEPLOY_POLL,
-    timeout,
-    message: 'Timeout while waiting for deploy',
+    timeout: {
+      milliseconds: timeout,
+      message: 'Timeout while waiting for deploy',
+    },
   })
 
   return deploy

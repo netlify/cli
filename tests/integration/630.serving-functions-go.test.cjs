@@ -1,5 +1,4 @@
 const test = require('ava')
-const pWaitFor = require('p-wait-for')
 
 const { tryAndLogOutput, withDevServer } = require('./utils/dev-server.cjs')
 const got = require('./utils/got.cjs')
@@ -7,11 +6,9 @@ const { createMock: createExecaMock } = require('./utils/mock-execa.cjs')
 const { pause } = require('./utils/pause.cjs')
 const { withSiteBuilder } = require('./utils/site-builder.cjs')
 
-const WAIT_INTERVAL = 600
-const WAIT_TIMEOUT = 3000
 const WAIT_WRITE = 1000
 
-test('Updates a Go function when a file is modified', async (t) => {
+test.only('Updates a Go function when a file is modified', async (t) => {
   const originalBody = 'Hello, world!'
   const updatedBody = 'Hello, Netlify!'
   const [execaMock, removeExecaMock] = await createExecaMock(`
@@ -82,7 +79,7 @@ test('Updates a Go function when a file is modified', async (t) => {
           cwd: builder.directory,
           env: execaMock,
         },
-        async ({ outputBuffer, port }) => {
+        async ({ outputBuffer, port, waitForLogMatching }) => {
           await tryAndLogOutput(async () => {
             t.is(await got(`http://localhost:${port}/.netlify/functions/go-func`).text(), originalBody)
           }, outputBuffer)
@@ -93,18 +90,11 @@ test('Updates a Go function when a file is modified', async (t) => {
             .withContentFile({ path: 'functions/go-func/main.go', content: `<updated mock main.go>` })
             .buildAsync()
 
-          await tryAndLogOutput(
-            () =>
-              pWaitFor(
-                async () => {
-                  const response = await got(`http://localhost:${port}/.netlify/functions/go-func`).text()
+          await waitForLogMatching('Reloaded function go-func')
 
-                  return response === updatedBody
-                },
-                { interval: WAIT_INTERVAL, timeout: WAIT_TIMEOUT },
-              ),
-            outputBuffer,
-          )
+          const response = await got(`http://localhost:${port}/.netlify/functions/go-func`).text()
+
+          t.is(response, updatedBody)
         },
       )
     } finally {
