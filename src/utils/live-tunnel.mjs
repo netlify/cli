@@ -111,7 +111,7 @@ export const startLiveTunnel = async ({ localPort, netlifyApiToken, siteId }) =>
     return data.state === 'online'
   }
 
-  await connectTunnel({ session, netlifyApiToken, localPort })
+  connectTunnel({ session, netlifyApiToken, localPort })
 
   // Waiting for the live session to have a state of `online`.
   await pWaitFor(isLiveTunnelReady, {
