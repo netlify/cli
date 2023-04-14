@@ -159,7 +159,7 @@
     "parallel-transform": "^1.2.0",
     "parse-github-url": "^1.0.2",
     "parse-gitignore": "^2.0.0",
-    "path-key": "^3.1.1",
+    "path-key": "^4.0.0",
     "prettyjson": "^1.2.1",
     "pump": "^3.0.0",
     "raw-body": "^2.4.1",
