@@ -42,8 +42,10 @@ const waitForBuildFinish = async function (api, siteId, spinner) {
 
   await pWaitFor(waitForBuildToFinish, {
     interval: BUILD_FINISH_INTERVAL,
-    timeout: BUILD_FINISH_TIMEOUT,
-    message: 'Timeout while waiting for deploy to finish',
+    timeout: {
+      milliseconds: BUILD_FINISH_TIMEOUT,
+      message: 'Timeout while waiting for deploy to finish',
+    },
   })
 
   // return only when build done or timeout happens
