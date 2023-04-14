@@ -155,7 +155,7 @@
     "ora": "^6.0.0",
     "p-filter": "^3.0.0",
     "p-map": "^5.0.0",
-    "p-wait-for": "^3.0.0",
+    "p-wait-for": "^5.0.0",
     "parallel-transform": "^1.2.0",
     "parse-github-url": "^1.0.2",
     "parse-gitignore": "^2.0.0",
@@ -181,7 +181,7 @@
     "uuid": "^9.0.0",
     "wait-port": "^1.0.1",
     "winston": "^3.2.1",
-    "write-file-atomic": "^4.0.0"
+    "write-file-atomic": "^5.0.0"
   },
   "devDependencies": {
     "@babel/preset-react": "^7.12.13",
