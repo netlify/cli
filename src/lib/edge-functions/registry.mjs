@@ -8,6 +8,8 @@ import { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log, warn, watchDebounced } from '
 /** @typedef {import('@netlify/edge-bundler').FunctionConfig} FunctionConfig */
 /** @typedef {Awaited<ReturnType<typeof import('@netlify/edge-bundler').serve>>} RunIsolate */
 
+const featureFlags = { edge_functions_correct_order: true }
+
 export class EdgeFunctionsRegistry {
   /** @type {import('@netlify/edge-bundler')} */
   #bundler
@@ -321,12 +323,14 @@ export class EdgeFunctionsRegistry {
       this.#userFunctionConfigs,
       this.#internalFunctionConfigs,
       this.#declarationsFromDeployConfig,
+      featureFlags,
     )
     const manifest = this.#bundler.generateManifest({
       declarations,
       userFunctionConfig: this.#userFunctionConfigs,
       internalFunctionConfig: this.#internalFunctionConfigs,
       functions: this.#functions,
+      featureFlags,
     })
     const invocationMetadata = {
       function_config: manifest.function_config,
@@ -367,6 +371,7 @@ export class EdgeFunctionsRegistry {
       userFunctionConfig: this.#userFunctionConfigs,
       internalFunctionConfig: this.#internalFunctionConfigs,
       functions,
+      featureFlags,
     })
 
     const routes = [...manifest.routes, ...manifest.post_cache_routes].map((route) => ({
