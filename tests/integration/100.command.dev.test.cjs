@@ -1,4 +1,3 @@
-// Handlers are meant to be async outside tests
 const path = require('path')
 
 // eslint-disable-next-line ava/use-test
@@ -1020,6 +1019,10 @@ test('should have only allowed environment variables set', async (t) => {
         handler: () => new Response(`${JSON.stringify(Deno.env.toObject())}`),
         name: 'env',
       })
+      .withContentFile({
+        content: 'FROM_ENV="YAS"',
+        path: '.env',
+      })
 
     await builder.buildAsync()
 
@@ -1040,16 +1043,19 @@ test('should have only allowed environment variables set', async (t) => {
           )
           const envKeys = Object.keys(response)
 
-          t.false(envKeys.includes('DENO_DEPLOYMENT_ID'))
-          // t.true(envKeys.includes('DENO_DEPLOYMENT_ID'))
-          // t.is(response.DENO_DEPLOYMENT_ID, 'xxx=')
           t.true(envKeys.includes('DENO_REGION'))
           t.is(response.DENO_REGION, 'local')
+
           t.true(envKeys.includes('NETLIFY_DEV'))
           t.is(response.NETLIFY_DEV, 'true')
+
           t.true(envKeys.includes('SECRET_ENV'))
           t.is(response.SECRET_ENV, 'true')
 
+          t.true(envKeys.includes('FROM_ENV'))
+          t.is(response.FROM_ENV, 'YAS')
+
+          t.false(envKeys.includes('DENO_DEPLOYMENT_ID'))
           t.false(envKeys.includes('NODE_ENV'))
           t.false(envKeys.includes('DEPLOY_URL'))
           t.false(envKeys.includes('URL'))
