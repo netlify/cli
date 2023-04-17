@@ -39,7 +39,7 @@ describe.concurrent('functions:create command', () => {
       const createFunctionQuestions = [
         {
           question: "Select the type of function you'd like to create",
-          answer: answerWithValue(`${DOWN}${CONFIRM}`),
+          answer: answerWithValue(DOWN),
         },
         {
           question: 'Enter the path, relative to your site',
@@ -47,15 +47,15 @@ describe.concurrent('functions:create command', () => {
         },
         {
           question: 'Select the language of your function',
-          answer: answerWithValue(CONFIRM),
+          answer: CONFIRM,
         },
         {
           question: 'Pick a template',
-          answer: answerWithValue(CONFIRM),
+          answer: CONFIRM,
         },
         {
           question: 'Name your function',
-          answer: answerWithValue(CONFIRM),
+          answer: CONFIRM,
         },
       ]
 
@@ -100,19 +100,19 @@ describe.concurrent('functions:create command', () => {
       const createFunctionQuestions = [
         {
           question: "Select the type of function you'd like to create",
-          answer: answerWithValue(CONFIRM),
+          answer: CONFIRM,
         },
         {
           question: 'Select the language of your function',
-          answer: answerWithValue(CONFIRM),
+          answer: CONFIRM,
         },
         {
           question: 'Pick a template',
-          answer: answerWithValue(CONFIRM),
+          answer: CONFIRM,
         },
         {
           question: 'Name your function',
-          answer: answerWithValue(CONFIRM),
+          answer: CONFIRM,
         },
         {
           question: 'What route do you want your edge function to be invoked on?',
@@ -163,19 +163,19 @@ describe.concurrent('functions:create command', () => {
       const createFunctionQuestions = [
         {
           question: "Select the type of function you'd like to create",
-          answer: answerWithValue(CONFIRM),
+          answer: CONFIRM,
         },
         {
           question: 'Select the language of your function',
-          answer: answerWithValue(CONFIRM),
+          answer: CONFIRM,
         },
         {
           question: 'Pick a template',
-          answer: answerWithValue(CONFIRM),
+          answer: CONFIRM,
         },
         {
           question: 'Name your function',
-          answer: answerWithValue(CONFIRM),
+          answer: CONFIRM,
         },
         {
           question: 'What route do you want your edge function to be invoked on?',
@@ -232,7 +232,7 @@ describe.concurrent('functions:create command', () => {
       const createFunctionQuestions = [
         {
           question: "Select the type of function you'd like to create",
-          answer: answerWithValue(`${DOWN}${CONFIRM}`),
+          answer: answerWithValue(DOWN),
         },
         {
           question: 'Enter the path, relative to your site',
@@ -240,15 +240,15 @@ describe.concurrent('functions:create command', () => {
         },
         {
           question: 'Select the language of your function',
-          answer: answerWithValue(CONFIRM),
+          answer: CONFIRM,
         },
         {
           question: 'Pick a template',
-          answer: answerWithValue(`${DOWN}${DOWN}${CONFIRM}`),
+          answer: answerWithValue(`set-cookie`),
         },
         {
           question: 'Name your function',
-          answer: answerWithValue(CONFIRM),
+          answer: CONFIRM,
         },
       ]
 
@@ -261,14 +261,10 @@ describe.concurrent('functions:create command', () => {
 
         const { dependencies } = JSON.parse(await readFile(`${builder.directory}/package.json`, 'utf-8'))
 
-        // NOTE: Ideally we should be running this test with a specific template,
-        // but `inquirer-autocomplete-prompt` doesn't seem to work with the way
-        // we're mocking prompt responses with `handleQuestions`. Instead, we're
-        // choosing the second template in the list, assuming it's the first one
-        // that contains a `package.json` (currently that's `apollo-graphql`).
-        expect(await fileExistsAsync(`${builder.directory}/test/functions/apollo-graphql/apollo-graphql.js`)).toBe(true)
-        expect(await fileExistsAsync(`${builder.directory}/test/functions/apollo-graphql/package.json`)).toBe(false)
-        expect(typeof dependencies['apollo-server-lambda']).toBe('string')
+        expect(await fileExistsAsync(`${builder.directory}/test/functions/set-cookie/set-cookie.js`)).toBe(true)
+        expect(await fileExistsAsync(`${builder.directory}/test/functions/set-cookie/package.json`)).toBe(false)
+        expect(await fileExistsAsync(`${builder.directory}/test/functions/set-cookie/package-lock.json`)).toBe(false)
+        expect(typeof dependencies.cookie).toBe('string')
 
         expect(dependencies['@netlify/functions']).toBe('^0.1.0')
       })
@@ -304,7 +300,7 @@ describe.concurrent('functions:create command', () => {
       const createFunctionQuestions = [
         {
           question: "Select the type of function you'd like to create",
-          answer: answerWithValue(`${DOWN}${CONFIRM}`),
+          answer: answerWithValue(DOWN),
         },
         {
           question: 'Enter the path, relative to your site',
@@ -312,15 +308,15 @@ describe.concurrent('functions:create command', () => {
         },
         {
           question: 'Select the language of your function',
-          answer: answerWithValue(CONFIRM),
+          answer: CONFIRM,
         },
         {
           question: 'Pick a template',
-          answer: answerWithValue(`${DOWN}${DOWN}${CONFIRM}`),
+          answer: answerWithValue(`set-cookie`),
         },
         {
           question: 'Name your function',
-          answer: answerWithValue(CONFIRM),
+          answer: CONFIRM,
         },
       ]
 
@@ -331,13 +327,9 @@ describe.concurrent('functions:create command', () => {
 
         await childProcess
 
-        // NOTE: Ideally we should be running this test with a specific template,
-        // but `inquirer-autocomplete-prompt` doesn't seem to work with the way
-        // we're mocking prompt responses with `handleQuestions`. Instead, we're
-        // choosing the second template in the list, assuming it's the first one
-        // that contains a `package.json` (currently that's `apollo-graphql`).
-        expect(await fileExistsAsync(`${builder.directory}/test/functions/apollo-graphql/apollo-graphql.js`)).toBe(true)
-        expect(await fileExistsAsync(`${builder.directory}/test/functions/apollo-graphql/package.json`)).toBe(true)
+        expect(await fileExistsAsync(`${builder.directory}/test/functions/set-cookie/set-cookie.js`)).toBe(true)
+        expect(await fileExistsAsync(`${builder.directory}/test/functions/set-cookie/package.json`)).toBe(true)
+        expect(await fileExistsAsync(`${builder.directory}/test/functions/set-cookie/package-lock.json`)).toBe(true)
       })
     })
   })
@@ -373,19 +365,19 @@ describe.concurrent('functions:create command', () => {
       const createFunctionQuestions = [
         {
           question: "Select the type of function you'd like to create",
-          answer: answerWithValue(`${DOWN}${CONFIRM}`),
+          answer: answerWithValue(DOWN),
         },
         {
           question: 'Select the language of your function',
-          answer: answerWithValue(CONFIRM),
+          answer: CONFIRM,
         },
         {
           question: 'Pick a template',
-          answer: answerWithValue(CONFIRM),
+          answer: CONFIRM,
         },
         {
           question: 'Name your function',
-          answer: answerWithValue(CONFIRM),
+          answer: CONFIRM,
         },
       ]
 
@@ -430,7 +422,7 @@ describe.concurrent('functions:create command', () => {
       const createFunctionQuestions = [
         {
           question: "Select the type of function you'd like to create",
-          answer: answerWithValue(`${DOWN}${CONFIRM}`),
+          answer: answerWithValue(DOWN),
         },
         {
           question: 'Enter the path, relative to your site',
@@ -438,11 +430,11 @@ describe.concurrent('functions:create command', () => {
         },
         {
           question: 'Pick a template',
-          answer: answerWithValue(CONFIRM),
+          answer: CONFIRM,
         },
         {
           question: 'Name your function',
-          answer: answerWithValue(CONFIRM),
+          answer: CONFIRM,
         },
       ]
 
@@ -491,7 +483,7 @@ describe.concurrent('functions:create command', () => {
       const createFunctionQuestions = [
         {
           question: "Select the type of function you'd like to create",
-          answer: answerWithValue(`${DOWN}${CONFIRM}`),
+          answer: answerWithValue(DOWN),
         },
         {
           question: 'Enter the path, relative to your site',
@@ -499,11 +491,11 @@ describe.concurrent('functions:create command', () => {
         },
         {
           question: 'Pick a template',
-          answer: answerWithValue(CONFIRM),
+          answer: CONFIRM,
         },
         {
           question: 'Name your function',
-          answer: answerWithValue(CONFIRM),
+          answer: CONFIRM,
         },
       ]
 
