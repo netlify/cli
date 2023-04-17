@@ -29,7 +29,7 @@ test('Generates a new VS Code settings file if one does not exist', async (t) =>
     handleQuestions(childProcess, [
       {
         question: `A new VS Code settings file will be created at ${settingsPath}`,
-        answer: answerWithValue(CONFIRM),
+        answer: CONFIRM,
       },
     ])
 
@@ -60,7 +60,7 @@ test('Updates an existing VS Code settings file', async (t) => {
     handleQuestions(childProcess, [
       {
         question: `There is a VS Code settings file at ${settingsPath}. Can we update it?`,
-        answer: answerWithValue(CONFIRM),
+        answer: CONFIRM,
       },
     ])
 
@@ -87,7 +87,7 @@ test('Does not generate a new VS Code settings file if the user does not confirm
     handleQuestions(childProcess, [
       {
         question: `A new VS Code settings file will be created at ${settingsPath}`,
-        answer: answerWithValue('n'),
+        answer: answerWithValue(NO),
       },
     ])
 
@@ -119,7 +119,7 @@ test('Handles JSON with comments', async (t) => {
     handleQuestions(childProcess, [
       {
         question: `There is a VS Code settings file at ${settingsPath}. Can we update it?`,
-        answer: answerWithValue(CONFIRM),
+        answer: CONFIRM,
       },
       {
         question: 'The Deno VS Code extension is recommended. Would you like to install it now?',

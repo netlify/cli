@@ -6,7 +6,7 @@ const execa = require('execa')
 const cliPath = require('./utils/cli-path.cjs')
 const { getExecaOptions, withDevServer } = require('./utils/dev-server.cjs')
 const got = require('./utils/got.cjs')
-const { CONFIRM, DOWN, handleQuestions } = require('./utils/handle-questions.cjs')
+const { DOWN, answerWithValue, handleQuestions } = require('./utils/handle-questions.cjs')
 const { withSiteBuilder } = require('./utils/site-builder.cjs')
 const { normalize } = require('./utils/snapshots.cjs')
 
@@ -241,7 +241,7 @@ test('should prompt when multiple frameworks are detected', async (t) => {
       handleQuestions(childProcess, [
         {
           question: 'Multiple possible start commands found',
-          answer: `${DOWN}${CONFIRM}`,
+          answer: answerWithValue(DOWN),
         },
       ])
 
