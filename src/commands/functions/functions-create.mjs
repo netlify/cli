@@ -19,7 +19,7 @@ import ora from 'ora'
 import { fileExistsAsync } from '../../lib/fs.mjs'
 import { getAddons, getCurrentAddon, getSiteData } from '../../utils/addons/prepare.mjs'
 import { NETLIFYDEVERR, NETLIFYDEVLOG, NETLIFYDEVWARN, chalk, error, log } from '../../utils/command-helpers.mjs'
-import { addDotEnvVariables, injectEnvVariables } from '../../utils/dev.mjs'
+import { getDotEnvVariables, injectEnvVariables } from '../../utils/dev.mjs'
 import execa from '../../utils/execa.mjs'
 import { readRepoURL, validateRepoURL } from '../../utils/read-repo-url.mjs'
 
@@ -549,7 +549,7 @@ const handleOnComplete = async ({ command, onComplete }) => {
   const { config } = command.netlify
 
   if (onComplete) {
-    const env = await addDotEnvVariables({
+    const env = await getDotEnvVariables({
       devConfig: { ...config.dev },
       env: command.netlify.cachedConfig.env,
       site: command.netlify.site,

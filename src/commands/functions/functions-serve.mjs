@@ -2,7 +2,7 @@
 import { join } from 'path'
 
 import { startFunctionsServer } from '../../lib/functions/server.mjs'
-import { acquirePort, addDotEnvVariables, getSiteInformation, injectEnvVariables } from '../../utils/dev.mjs'
+import { acquirePort, getDotEnvVariables, getSiteInformation, injectEnvVariables } from '../../utils/dev.mjs'
 import { getFunctionsDir } from '../../utils/functions/index.mjs'
 
 const DEFAULT_PORT = 9999
@@ -20,7 +20,7 @@ const functionsServe = async (options, command) => {
 
   env.NETLIFY_DEV = { sources: ['internal'], value: 'true' }
 
-  env = await addDotEnvVariables({ devConfig: { ...config.dev }, env, site })
+  env = await getDotEnvVariables({ devConfig: { ...config.dev }, env, site })
   injectEnvVariables(env)
 
   const { capabilities, siteUrl, timeouts } = await getSiteInformation({

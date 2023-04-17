@@ -141,7 +141,7 @@ const getEnvSourceName = (source) => {
  * @param {{devConfig: any, env: Record<string, { sources: string[], value: string}>, site: any}} param0
  * @returns {Promise<Record<string, { sources: string[], value: string}>>}
  */
-export const addDotEnvVariables = async ({ devConfig, env, site }) => {
+export const getDotEnvVariables = async ({ devConfig, env, site }) => {
   const dotEnvFiles = await loadDotEnvFiles({ envFiles: devConfig.envFiles, projectDir: site.root })
   dotEnvFiles.forEach(({ env: fileEnv, file }) => {
     const newSourceName = `${file} file`
