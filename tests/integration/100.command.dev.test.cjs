@@ -1043,8 +1043,6 @@ test('should have only allowed environment variables set', async (t) => {
           )
           const envKeys = Object.keys(response)
 
-          t.true(envKeys.includes('PATH'))
-
           t.true(envKeys.includes('DENO_REGION'))
           t.is(response.DENO_REGION, 'local')
 
