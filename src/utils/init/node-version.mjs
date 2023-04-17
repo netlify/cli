@@ -1,7 +1,6 @@
 // @ts-check
 import { readFile } from 'fs/promises'
 
-import { get } from 'dot-prop'
 import { locatePath } from 'locate-path'
 import nodeVersionAlias from 'node-version-alias'
 
@@ -18,10 +17,10 @@ export const detectNodeVersion = async ({ baseDirectory, env }) => {
   try {
     const nodeVersionFile = await locatePath(['.nvmrc', '.node-version'], { cwd: baseDirectory })
     const configuredVersion =
-      nodeVersionFile === undefined ? get(env, 'NODE_VERSION.value') : await readFile(nodeVersionFile, 'utf8')
+      nodeVersionFile === undefined ? env.NODE_VERSION?.value : await readFile(nodeVersionFile, 'utf8')
 
     const version =
-      configuredVersion === undefined
+      configuredVersion === undefined || configuredVersion === null
         ? DEFAULT_NODE_VERSION
         : await nodeVersionAlias(normalizeConfiguredVersion(configuredVersion))
 
