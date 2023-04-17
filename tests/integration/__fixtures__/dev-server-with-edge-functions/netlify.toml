@@ -1,0 +1,14 @@
+[build]
+publish = "public"
+
+[[edge_functions]]
+path = "/ordertest"
+function = "user-tomlB"
+
+[[edge_functions]]
+path = "/ordertest"
+function = "user-tomlC"
+
+[[edge_functions]]
+path = "/ordertest"
+function = "user-tomlA"

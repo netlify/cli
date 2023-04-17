@@ -18,7 +18,7 @@ vendor
 .DS_STORE
 
 # Local Netlify folder
-.netlify
+/.netlify
 
 # site
 test-site

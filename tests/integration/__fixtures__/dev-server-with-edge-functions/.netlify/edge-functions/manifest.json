@@ -1,0 +1,17 @@
+{
+  "functions": [
+    {
+      "function": "integration-manifestB",
+      "path": "/ordertest"
+    },
+    {
+      "function": "integration-manifestC",
+      "path": "/ordertest"
+    },
+    {
+      "function": "integration-manifestA",
+      "path": "/ordertest"
+    }
+  ],
+  "version": 1
+}

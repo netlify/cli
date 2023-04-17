@@ -54,7 +54,7 @@ test('should serve functions on default port', async (t) => {
       .buildAsync()
 
     await withFunctionsServer({ builder }, async () => {
-      const response = await got(`http://localhost:9999/.netlify/functions/ping`, { retry: 1 }).text()
+      const response = await got(`http://localhost:9999/.netlify/functions/ping`, { retry: { limit: 1 } }).text()
       t.is(response, 'ping')
     })
   })

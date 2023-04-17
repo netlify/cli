@@ -4,6 +4,7 @@ module.exports = {
   extends: '@netlify/eslint-config-node',
   plugins: ['sort-destructure-keys'],
   parserOptions: {
+    ecmaVersion: '2020',
     babelOptions: {
       parserOpts: {
         sourceType: 'unambiguous',
@@ -80,6 +81,7 @@ module.exports = {
     {
       files: ['src/**/*.mjs', 'bin/**/*.mjs'],
       parserOptions: {
+        ecmaVersion: '2020',
         sourceType: 'module',
         babelOptions: {
           parserOpts: {

@@ -9,7 +9,7 @@ describe('scheduled functions', () => {
     test<FixtureTestContext>('should emulate next_run for scheduled functions', async ({ devServer }) => {
       const response = await got(`http://localhost:${devServer.port}/.netlify/functions/scheduled-isc`, {
         throwHttpErrors: false,
-        retry: null,
+        retry: { limit: 0 },
       })
 
       expect(response.statusCode).toBe(200)
@@ -20,7 +20,7 @@ describe('scheduled functions', () => {
     test<FixtureTestContext>('should detect file changes to scheduled function', async ({ devServer, fixture }) => {
       const { body } = await got(`http://localhost:${devServer.port}/.netlify/functions/ping`, {
         throwHttpErrors: false,
-        retry: null,
+        retry: { limit: 0 },
       })
 
       expect(body).toBe('ping')
@@ -45,7 +45,7 @@ describe('scheduled functions', () => {
 
       const { body: warning } = await got(`http://localhost:${devServer.port}/.netlify/functions/ping`, {
         throwHttpErrors: false,
-        retry: null,
+        retry: { limit: 0 },
       })
 
       expect(warning).toContain('Your function returned `body`')
