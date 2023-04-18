@@ -181,8 +181,6 @@ export const warn = (message = '') => {
 export const error = (message = '', options = {}) => {
   const err = message instanceof Error ? message : new Error(message)
 
-  reportError(err, { severity: 'error' })
-
   if (options.exit === false) {
     const bang = chalk.red(BANG)
     if (process.env.DEBUG) {
@@ -191,6 +189,7 @@ export const error = (message = '', options = {}) => {
       process.stderr.write(` ${bang}   ${chalk.red(`${err.name}:`)} ${err.message}\n`)
     }
   } else {
+    reportError(err, { severity: 'error' })
     throw err
   }
 }
