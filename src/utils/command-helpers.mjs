@@ -16,6 +16,7 @@ import { clearSpinner, startSpinner } from '../lib/spinner.mjs'
 
 import getGlobalConfig from './get-global-config.mjs'
 import getPackageJson from './get-package-json.mjs'
+import { reportError } from './telemetry/index.mjs'
 
 /** The parsed process argv without the binary only arguments and flags */
 const argv = process.argv.slice(2)
@@ -179,10 +180,13 @@ export const warn = (message = '') => {
  */
 export const error = (message = '', options = {}) => {
   const err = message instanceof Error ? message : new Error(message)
+
+  reportError(err, { severity: 'error' })
+
   if (options.exit === false) {
     const bang = chalk.red(BANG)
     if (process.env.DEBUG) {
-      process.stderr.write(` ${bang}   Warning: ${err.stack.split('\n').join(`\n ${bang}   `)}\n`)
+      process.stderr.write(` ${bang}   Warning: ${err.stack?.split('\n').join(`\n ${bang}   `)}\n`)
     } else {
       process.stderr.write(` ${bang}   ${chalk.red(`${err.name}:`)} ${err.message}\n`)
     }

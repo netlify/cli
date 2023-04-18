@@ -11,9 +11,9 @@ import getPackageJson from '../get-package-json.mjs'
 
 import isValidEventName from './validation.mjs'
 
-const { version: cliVersion } = await getPackageJson()
+export const { version: cliVersion } = await getPackageJson()
 
-const isTelemetryDisabled = function (config) {
+export const isTelemetryDisabled = function (config) {
   return config.get('telemetryDisabled')
 }
 
