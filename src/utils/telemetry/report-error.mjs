@@ -34,9 +34,9 @@ export const reportError = async function (error, config = {}) {
       cause: error.cause,
       severity: config.severity,
       user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
+        id: user?.id,
+        name: user?.name,
+        email: user?.email,
       },
       osName: process.platform,
       cliVersion,
