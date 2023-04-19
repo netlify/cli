@@ -111,7 +111,12 @@ const dev = async (options, command) => {
   /** @type {Partial<import('../../utils/types').ServerSettings>} */
   let settings = {}
   try {
-    settings = await detectServerSettings(devConfig, options, site.root)
+    settings = await detectServerSettings(devConfig, options, site.root, {
+      site: {
+        id: site.id,
+        url: siteUrl,
+      },
+    })
 
     cachedConfig.config = getConfigWithPlugins(cachedConfig.config, settings)
   } catch (error_) {

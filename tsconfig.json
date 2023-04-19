@@ -3,7 +3,8 @@
     "incremental": true,
     "lib": ["es2020"],
     "target": "es2020",
-    "module": "node16",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "declaration": true,
     "declarationMap": false,
     "sourceMap": true,
@@ -14,7 +15,9 @@
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
-    "skipLibCheck": true /* Skip type checking all .d.ts files. */
+    "skipLibCheck": true /* Skip type checking all .d.ts files. */,
+    "allowJs": true,
+    "maxNodeModuleJsDepth": 10
   },
   "include": ["src"]
 }

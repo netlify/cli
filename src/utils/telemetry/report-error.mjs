@@ -14,6 +14,7 @@ const dirPath = dirname(fileURLToPath(import.meta.url))
  * @param {import('@bugsnag/js').NotifiableError} error
  * @param {object} config
  * @param {import('@bugsnag/js').Event['severity']} config.severity
+ * @param {Record<string, Record<string, any>>} [config.metadata]
  * @returns {Promise<void>}
  */
 export const reportError = async function (error, config = {}) {
@@ -30,15 +31,17 @@ export const reportError = async function (error, config = {}) {
       user: {
         id: globalConfig.get('userId'),
       },
+      metadata: config.metadata,
       osName: process.platform,
       cliVersion,
       nodejsVersion,
     },
   })
 
-  // spawn detached child process to handle send
-  execa(process.execPath, [join(dirPath, 'request.mjs'), options], {
+  // spawn detached child process to handle send and wait for the http request to finish
+  // otherwise it can get canceled
+  await execa(process.execPath, [join(dirPath, 'request.mjs'), options], {
     detached: true,
     stdio: 'ignore',
-  }).unref()
+  })
 }

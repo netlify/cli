@@ -16,6 +16,7 @@ export const handler: Handler = async ({ body }) => {
       cause,
       cliVersion,
       message,
+      metadata = {},
       name,
       nodejsVersion,
       osName,
@@ -24,6 +25,15 @@ export const handler: Handler = async ({ body }) => {
       user,
     } = JSON.parse(body)
     Bugsnag.notify({ name, message, stack, cause }, (event) => {
+      event.app = {
+        releaseStage: 'production',
+        version: cliVersion,
+        type: 'netlify-cli',
+      }
+      // eslint-disable-next-line fp/no-loops
+      for (const [section, values] of Object.entries(metadata)) {
+        event.addMetadata(section, values as Record<string, any>)
+      }
       event.setUser(user.id, user.email, user.name)
       event.severity = severity
       event.device = {
