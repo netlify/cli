@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url'
 import execa from '../execa.mjs'
 import getGlobalConfig from '../get-global-config.mjs'
 
-import { isTelemetryDisabled, cliVersion } from './utils.mjs'
+import { cliVersion } from './utils.mjs'
 
 const dirPath = dirname(fileURLToPath(import.meta.url))
 
@@ -18,10 +18,6 @@ const dirPath = dirname(fileURLToPath(import.meta.url))
  */
 export const reportError = async function (error, config = {}) {
   const globalConfig = await getGlobalConfig()
-
-  if (isTelemetryDisabled(globalConfig)) {
-    return
-  }
 
   const options = JSON.stringify({
     type: 'error',
