@@ -23,8 +23,6 @@ export const reportError = async function (error, config = {}) {
     return
   }
 
-  const user = globalConfig.get(`users.${globalConfig.get('userId')}`)
-
   const options = JSON.stringify({
     type: 'error',
     data: {
@@ -34,9 +32,7 @@ export const reportError = async function (error, config = {}) {
       cause: error.cause,
       severity: config.severity,
       user: {
-        id: user?.id,
-        name: user?.name,
-        email: user?.email,
+        id: globalConfig.get('userId'),
       },
       osName: process.platform,
       cliVersion,
