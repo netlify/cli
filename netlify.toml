@@ -26,6 +26,12 @@
   status = 200
   force = true
 [[redirects]]
+  # Bugsnag link
+  from = "/report-error"
+  to = "/.netlify/functions/error-reporting"
+  status = 200
+  force = true
+[[redirects]]
   # Old CLI download links.
   from = "/download/latest/mac"
   to = "https://github.com/netlify/netlifyctl/releases/download/v0.4.0/netlifyctl-darwin-amd64-0.4.0.tar.gz"

@@ -14,13 +14,23 @@ const options = JSON.parse(process.argv[2])
 const CLIENT_ID = 'NETLIFY_CLI'
 const TRACK_URL = process.env.NETLIFY_TEST_TRACK_URL || 'https://cli.netlify.com/telemetry/track'
 const IDENTIFY_URL = process.env.NETLIFY_TEST_IDENTIFY_URL || 'https://cli.netlify.com/telemetry/identify'
+const REPORT_ERROR_URL = process.env.NETLIFY_TEST_ERROR_REPORT_URL || 'https://cli.netlify.com/report-error'
 
-const API_URL = options.type && options.type === 'track' ? TRACK_URL : IDENTIFY_URL
+const getApiUrl = () => {
+  switch (options.type) {
+    case 'track':
+      return TRACK_URL
+    case 'error':
+      return REPORT_ERROR_URL
+    default:
+      return IDENTIFY_URL
+  }
+}
 
 // Make telemetry call
 const makeRequest = async function () {
   try {
-    await fetch(API_URL, {
+    await fetch(getApiUrl(), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
