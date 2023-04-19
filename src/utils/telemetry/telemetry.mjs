@@ -7,15 +7,9 @@ import { isCI } from 'ci-info'
 
 import execa from '../execa.mjs'
 import getGlobalConfig from '../get-global-config.mjs'
-import getPackageJson from '../get-package-json.mjs'
 
+import { isTelemetryDisabled, cliVersion } from './utils.mjs'
 import isValidEventName from './validation.mjs'
-
-export const { version: cliVersion } = await getPackageJson()
-
-export const isTelemetryDisabled = function (config) {
-  return config.get('telemetryDisabled')
-}
 
 const dirPath = dirname(fileURLToPath(import.meta.url))
 

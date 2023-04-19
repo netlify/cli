@@ -16,7 +16,7 @@ import { clearSpinner, startSpinner } from '../lib/spinner.mjs'
 
 import getGlobalConfig from './get-global-config.mjs'
 import getPackageJson from './get-package-json.mjs'
-import { reportError } from './telemetry/index.mjs'
+import { reportError } from './telemetry/report-error.mjs'
 
 /** The parsed process argv without the binary only arguments and flags */
 const argv = process.argv.slice(2)

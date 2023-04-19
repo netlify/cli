@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url'
 import execa from '../execa.mjs'
 import getGlobalConfig from '../get-global-config.mjs'
 
-import { isTelemetryDisabled, cliVersion } from './telemetry.mjs'
+import { isTelemetryDisabled, cliVersion } from './utils.mjs'
 
 const dirPath = dirname(fileURLToPath(import.meta.url))
 
