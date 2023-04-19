@@ -122,12 +122,7 @@ export class EdgeFunctionsRegistry {
    * @returns {Promise<void>}
    */
   async #doInitialScan() {
-    const [internalFunctions, userFunctions] = await Promise.all([
-      this.#scanForFunctions(this.#internalDirectories),
-      this.#scanForFunctions(this.#directories),
-    ])
-    this.#internalFunctions = internalFunctions.all
-    this.#userFunctions = userFunctions.all
+    await this.#scanForFunctions()
 
     this.#functions.forEach((func) => {
       this.#logAddedFunction(func)
@@ -190,16 +185,7 @@ export class EdgeFunctionsRegistry {
    * @returns {Promise<void>}
    */
   async #checkForAddedOrDeletedFunctions() {
-    const [internalFunctions, userFunctions] = await Promise.all([
-      this.#scanForFunctions(this.#internalDirectories),
-      this.#scanForFunctions(this.#directories),
-    ])
-
-    this.#internalFunctions = internalFunctions.all
-    this.#userFunctions = userFunctions.all
-
-    const newFunctions = [...internalFunctions.new, ...userFunctions.new]
-    const deletedFunctions = [...internalFunctions.deleted, ...userFunctions.deleted]
+    const { deleted: deletedFunctions, new: newFunctions } = await this.#scanForFunctions()
 
     if (newFunctions.length === 0 && deletedFunctions.length === 0) {
       return
@@ -446,12 +432,16 @@ export class EdgeFunctionsRegistry {
   }
 
   /**
-   *
-   * @param {string[]} directories
    * @returns {Promise<{all: EdgeFunction[], new: EdgeFunction[], deleted: EdgeFunction[]}>}
    */
-  async #scanForFunctions(directories) {
-    const functions = await this.#bundler.find(directories)
+  async #scanForFunctions() {
+    const [internalFunctions, userFunctions] = await Promise.all([
+      this.#bundler.find(this.#internalDirectories),
+      this.#bundler.find(this.#directories),
+    ])
+
+    const functions = [...internalFunctions, ...userFunctions]
+
     const newFunctions = functions.filter((func) => {
       const functionExists = this.#functions.some(
         (existingFunc) => func.name === existingFunc.name && func.path === existingFunc.path,
@@ -466,6 +456,9 @@ export class EdgeFunctionsRegistry {
 
       return !functionExists
     })
+
+    this.#internalFunctions = internalFunctions
+    this.#userFunctions = userFunctions
 
     return { all: functions, new: newFunctions, deleted: deletedFunctions }
   }

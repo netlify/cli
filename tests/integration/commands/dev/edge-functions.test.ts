@@ -2,6 +2,7 @@ import { describe, expect, test } from 'vitest'
 
 import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
 import got from '../../utils/got.cjs'
+import { pause } from '../../utils/pause.cjs'
 
 describe('edge functions', () => {
   setupFixtureTests('dev-server-with-edge-functions', { devServer: true }, () => {
@@ -13,6 +14,25 @@ describe('edge functions', () => {
 
       expect(response.statusCode).toBe(200)
       expect(response.body).toMatchSnapshot()
+    })
+  })
+
+  setupFixtureTests('dev-server-with-edge-functions', { devServer: true }, () => {
+    test<FixtureTestContext>('should not remove other edge functions on change', async ({ devServer, fixture }) => {
+      // we need to wait till file watchers are loaded
+      await pause(500)
+
+      await fixture.builder
+        .withEdgeFunction({
+          name: 'new',
+          handler: async (_, context) => new Response('hello'),
+          config: { path: ['/new'] },
+        })
+        .build()
+
+      await devServer.waitForLogMatching('Loaded edge function new')
+
+      expect(devServer.output).not.toContain('Removed edge function')
     })
   })
 })

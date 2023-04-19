@@ -38,7 +38,7 @@ describe('scheduled functions', () => {
             }
           })`,
         })
-        .buildAsync()
+        .build()
 
       const DETECT_FILE_CHANGE_DELAY = 500
       await pause(DETECT_FILE_CHANGE_DELAY)

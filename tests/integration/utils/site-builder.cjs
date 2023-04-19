@@ -82,6 +82,11 @@ class SiteBuilder {
     return this
   }
 
+  /**
+   *
+   * @param {{config?:any, handler:any, internal?:boolean, name?:string, pathPrefix?:string}} param0
+   * @returns
+   */
   withEdgeFunction({ config, handler, internal = false, name = 'function', pathPrefix = '' }) {
     const edgeFunctionsDirectory = internal ? '.netlify/edge-functions' : 'netlify/edge-functions'
     const dest = path.join(this.directory, pathPrefix, edgeFunctionsDirectory, `${name}.js`)
