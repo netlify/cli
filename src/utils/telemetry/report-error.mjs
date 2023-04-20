@@ -1,3 +1,4 @@
+import os from 'os'
 import { dirname, join } from 'path'
 import process, { version as nodejsVersion } from 'process'
 import { fileURLToPath } from 'url'
@@ -14,6 +15,7 @@ const dirPath = dirname(fileURLToPath(import.meta.url))
  * @param {import('@bugsnag/js').NotifiableError} error
  * @param {object} config
  * @param {import('@bugsnag/js').Event['severity']} config.severity
+ * @param {Record<string, Record<string, any>>} [config.metadata]
  * @returns {Promise<void>}
  */
 export const reportError = async function (error, config = {}) {
@@ -30,15 +32,17 @@ export const reportError = async function (error, config = {}) {
       user: {
         id: globalConfig.get('userId'),
       },
-      osName: process.platform,
+      metadata: config.metadata,
+      osName: `${os.platform()}-${os.arch()}`,
       cliVersion,
       nodejsVersion,
     },
   })
 
-  // spawn detached child process to handle send
-  execa(process.execPath, [join(dirPath, 'request.mjs'), options], {
+  // spawn detached child process to handle send and wait for the http request to finish
+  // otherwise it can get canceled
+  await execa(process.execPath, [join(dirPath, 'request.mjs'), options], {
     detached: true,
     stdio: 'ignore',
-  }).unref()
+  })
 }
