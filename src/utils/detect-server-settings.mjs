@@ -205,7 +205,7 @@ const detectSettings = async (projectDir) => {
  */
 const detectChangesInNewSettings = (frameworkSettings, newSettings, metadata) => {
   /** @type {string[]} */
-  const message = []
+  const message = ['']
   const [setting] = newSettings
 
   if (frameworkSettings?.framework !== setting?.framework) {

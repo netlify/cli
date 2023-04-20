@@ -37,7 +37,10 @@ export const handler: Handler = async ({ body }) => {
       event.setUser(user.id, user.email, user.name)
       event.severity = severity
       event.device = {
-        osName: `${osName} - node.js v${nodejsVersion}`,
+        osName,
+        runtimeVersions: {
+          node: nodejsVersion,
+        },
       }
     })
   } catch (error) {

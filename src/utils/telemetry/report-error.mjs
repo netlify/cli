@@ -1,3 +1,4 @@
+import os from 'os'
 import { dirname, join } from 'path'
 import process, { version as nodejsVersion } from 'process'
 import { fileURLToPath } from 'url'
@@ -32,7 +33,7 @@ export const reportError = async function (error, config = {}) {
         id: globalConfig.get('userId'),
       },
       metadata: config.metadata,
-      osName: process.platform,
+      osName: `${os.platform()}-${os.arch()}`,
       cliVersion,
       nodejsVersion,
     },
