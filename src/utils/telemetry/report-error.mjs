@@ -3,6 +3,8 @@ import { dirname, join } from 'path'
 import process, { version as nodejsVersion } from 'process'
 import { fileURLToPath } from 'url'
 
+import { isCI } from 'ci-info'
+
 import execa from '../execa.mjs'
 import getGlobalConfig from '../get-global-config.mjs'
 
@@ -19,6 +21,10 @@ const dirPath = dirname(fileURLToPath(import.meta.url))
  * @returns {Promise<void>}
  */
 export const reportError = async function (error, config = {}) {
+  if (isCI) {
+    return
+  }
+
   const globalConfig = await getGlobalConfig()
 
   const options = JSON.stringify({
