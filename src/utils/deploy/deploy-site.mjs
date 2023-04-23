@@ -3,7 +3,7 @@ import { rm } from 'fs/promises'
 import cleanDeep from 'clean-deep'
 import { temporaryDirectory } from 'tempy'
 
-import { deployFileNormalizer, getDistPathIfExists, isEdgeFunctionFile } from '../../lib/edge-functions/deploy.mjs'
+import { getDistPathIfExists, isEdgeFunctionFile } from '../../lib/edge-functions/deploy.mjs'
 import { warn } from '../command-helpers.mjs'
 
 import {
@@ -21,9 +21,8 @@ import { getUploadList, waitForDeploy, waitForDiff } from './util.mjs'
 export const deploySite = async (
   api,
   siteId,
-  dir,
+  deployFolder,
   {
-    assetType,
     branch,
     concurrentHash = DEFAULT_CONCURRENT_HASH,
     concurrentUpload = DEFAULT_CONCURRENT_UPLOAD,
@@ -31,7 +30,6 @@ export const deploySite = async (
     deployId: deployIdOpt = null,
     deployTimeout = DEFAULT_DEPLOY_TIMEOUT,
     draft = false,
-    filter,
     fnDir = [],
     functionsConfig,
     hashAlgorithm,
@@ -55,16 +53,16 @@ export const deploySite = async (
     phase: 'start',
   })
 
-  const edgeFunctionsDistPath = await getDistPathIfExists({ rootDir })
+  const edgeFunctionsFolder = await getDistPathIfExists({ rootDir })
   const [{ files, filesShaMap }, { fnConfig, fnShaMap, functionSchedules, functions, functionsWithNativeModules }] =
     await Promise.all([
       hashFiles({
-        assetType,
         concurrentHash,
-        directories: [configPath, dir, edgeFunctionsDistPath].filter(Boolean),
-        filter,
+        configPath,
+        deployFolder,
+        edgeFunctionsFolder,
         hashAlgorithm,
-        normalizer: deployFileNormalizer.bind(null, rootDir),
+        rootDir,
         statusCb,
       }),
       hashFns(fnDir, {
@@ -73,7 +71,6 @@ export const deploySite = async (
         concurrentHash,
         hashAlgorithm,
         statusCb,
-        assetType,
         rootDir,
         manifestPath,
         skipFunctionsCache,

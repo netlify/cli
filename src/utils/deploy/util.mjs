@@ -1,16 +1,31 @@
 // @ts-check
-import { sep } from 'path'
+import { basename, relative, sep } from 'path'
 
 import pWaitFor from 'p-wait-for'
 
+import { PUBLIC_URL_PATH } from '../../lib/edge-functions/consts.mjs'
+
 import { DEPLOY_POLL } from './constants.mjs'
 
-// normalize windows paths to unix paths
-export const normalizePath = (relname) => {
-  if (relname.includes('#') || relname.includes('?')) {
-    throw new Error(`Invalid filename ${relname}. Deployed filenames cannot contain # or ? characters`)
+// normalize file objects
+export const normalizePath = (fileObj, { configPath, deployFolder, edgeFunctionsFolder }) => {
+  let normalizedPath = relative(deployFolder, fileObj.path)
+
+  if (configPath === fileObj.path) {
+    normalizedPath = basename(fileObj.path)
   }
-  return relname.split(sep).join('/')
+
+  if (edgeFunctionsFolder && fileObj.path.startsWith(`${edgeFunctionsFolder}/`)) {
+    const relpath = relative(edgeFunctionsFolder, fileObj.path)
+    normalizedPath = `${PUBLIC_URL_PATH}/${relpath}`
+  }
+
+  if (normalizedPath.includes('#') || normalizedPath.includes('?')) {
+    throw new Error(`Invalid filename ${normalizedPath}. Deployed filenames cannot contain # or ? characters`)
+  }
+
+  normalizedPath = normalizedPath.split(sep).join('/')
+  return normalizedPath
 }
 
 // poll an async deployId until its done diffing
