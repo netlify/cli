@@ -1,5 +1,5 @@
 // @ts-check
-const { copyFile, mkdir, rm, unlink, writeFile } = require('fs').promises
+const { copyFile, mkdir, rm, symlink, unlink, writeFile } = require('fs').promises
 const os = require('os')
 const path = require('path')
 const process = require('process')
@@ -201,6 +201,17 @@ class SiteBuilder {
         writeFile(path.join(this.directory, pathPrefix, 'manifest.yml'), `name: ${name}`),
         writeFile(dest, `module.exports = ${serializeJS(plugin)}`),
       ])
+    })
+
+    return this
+  }
+
+  withSymlink({ path: symlinkPath, target }) {
+    const dest = path.join(this.directory, symlinkPath)
+
+    this.tasks.push(async () => {
+      await ensureDir(path.dirname(dest))
+      await symlink(path.join(this.directory, target), path.join(this.directory, symlinkPath))
     })
 
     return this
