@@ -5,7 +5,7 @@ import path from 'path'
 import process from 'process'
 
 import { Project } from '@netlify/build-info'
-// eslint-disable-next-line import/extensions, n/no-missing-import
+// eslint-disable-next-line import/extensions
 import { NodeFS } from '@netlify/build-info/node'
 import { getFramework, listFrameworks } from '@netlify/framework-info'
 import fuzzy from 'fuzzy'
