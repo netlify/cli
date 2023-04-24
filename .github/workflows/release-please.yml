@@ -24,6 +24,10 @@ jobs:
 
   publish:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: write
+      pull-requests: write
     needs: create-release
     if: ${{ needs.create-release.outputs.release_created }}
     steps:
@@ -38,6 +42,6 @@ jobs:
       - name: Install core dependencies
         run: npm ci --no-audit
 
-      - run: npm publish
+      - run: npm publish --provenance
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
