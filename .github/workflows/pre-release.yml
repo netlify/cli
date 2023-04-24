@@ -7,6 +7,9 @@ on:
 jobs:
   prerelease:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: write
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
@@ -39,6 +42,6 @@ jobs:
       - name: Push changes
         run: git push --follow-tags
       - name: Run npm publish
-        run: npm publish --tag=${{ steps.extract.outputs.tag }}
+        run: npm publish --tag=${{ steps.extract.outputs.tag }} --provenance
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}

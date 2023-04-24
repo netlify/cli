@@ -29,7 +29,7 @@
     "static"
   ],
   "license": "MIT",
-  "repository": "netlify/cli",
+  "repository": "https://github.com/netlify/cli",
   "bin": {
     "ntl": "./bin/run.mjs",
     "netlify": "./bin/run.mjs"
