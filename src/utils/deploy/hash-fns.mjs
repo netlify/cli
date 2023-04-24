@@ -2,11 +2,10 @@ import { readFile } from 'fs/promises'
 import path from 'path'
 
 import hasha from 'hasha'
-import pMap from 'p-map';
+import pMap from 'p-map'
 
 import { getPathInProject } from '../../lib/settings.mjs'
 import { INTERNAL_FUNCTIONS_FOLDER } from '../functions/functions.mjs'
-
 
 // Maximum age of functions manifest (2 minutes).
 const MANIFEST_FILE_TTL = 12e4

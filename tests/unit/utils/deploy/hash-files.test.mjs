@@ -14,7 +14,7 @@ test('Hashes files in a folder', async () => {
         content: `Root page`,
       })
       .withSymlink({ target: 'public/index.html', path: 'public/file1.html' })
-      .withEdgeFunction({handler: async () => new Response('Edge Function works'), name: 'edge',})
+      .withEdgeFunction({ handler: async () => new Response('Edge Function works'), name: 'edge' })
       .buildAsync()
 
     const netlifyConfigFile = 'netlify.toml'
@@ -48,8 +48,12 @@ test('Hashes files in a folder', async () => {
     expect(regularDeployFileShaMapEntry.length).toBe(2)
     expect(regularDeployFileSha).toBe(symlinkDeployFileSha)
 
-    const regularDeployFileShaMapArrayEntry = regularDeployFileShaMapEntry.find(el => el.normalizedPath === regularDeployFile)
-    const symlinkDeployFileShaMapArrayEntry = regularDeployFileShaMapEntry.find(el => el.normalizedPath === symlinkDeployFile)
+    const regularDeployFileShaMapArrayEntry = regularDeployFileShaMapEntry.find(
+      (el) => el.normalizedPath === regularDeployFile,
+    )
+    const symlinkDeployFileShaMapArrayEntry = regularDeployFileShaMapEntry.find(
+      (el) => el.normalizedPath === symlinkDeployFile,
+    )
     expect(regularDeployFileShaMapArrayEntry).toBeDefined()
     expect(symlinkDeployFileShaMapArrayEntry).toBeDefined()
     expect(regularDeployFileShaMapArrayEntry.normalizedPath).toBe(regularDeployFile)
