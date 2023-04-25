@@ -91,7 +91,7 @@ const dev = async (options, command) => {
 
   env.NETLIFY_DEV = { sources: ['internal'], value: 'true' }
 
-  if (!options.offline && siteInfo.use_envelope) {
+  if (!options.offline) {
     env = await getEnvelopeEnv({ api, context: options.context, env, siteInfo })
     log(`${NETLIFYDEVLOG} Injecting environment variable values for ${chalk.yellow('all scopes')}`)
   }

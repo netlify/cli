@@ -1105,7 +1105,6 @@ test('should inject the `NETLIFY_DEV` environment variable in the process', asyn
     },
     id: 'site_id',
     name: 'site-name',
-    use_envelope: true,
   }
   const existingVar = {
     key: 'EXISTING_VAR',

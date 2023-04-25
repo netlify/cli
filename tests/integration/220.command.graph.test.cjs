@@ -5,7 +5,7 @@ const { getCLIOptions, withMockApi } = require('./utils/mock-api.cjs')
 const { withSiteBuilder } = require('./utils/site-builder.cjs')
 const { normalize } = require('./utils/snapshots.cjs')
 
-const mongoSite = {
+const basicSite = {
   account_slug: 'test-account',
   build_settings: {
     env: {
@@ -15,11 +15,7 @@ const mongoSite = {
   id: 'site_id',
   name: 'site-name',
 }
-const envelopeSite = {
-  ...mongoSite,
-  use_envelope: true,
-}
-const envelopeResponse = [
+const response = [
   {
     key: 'NETLIFY_GRAPH_WEBHOOK_SECRET',
     scopes: ['functions'],
@@ -49,12 +45,12 @@ const routes = (site) => [
   {
     path: 'accounts/test-account/env',
     method: 'GET',
-    response: [envelopeResponse[1]],
+    response: [response[1]],
   },
   {
     path: 'accounts/test-account/env',
     method: 'POST',
-    response: envelopeResponse,
+    response,
   },
 ]
 
@@ -68,30 +64,11 @@ test('netlify graph completion', async (t) => {
   t.snapshot(normalize(cliResponse))
 })
 
-test('netlify graph:init with env vars from mongo', async (t) => {
+test('netlify graph:init with env vars', async (t) => {
   await withSiteBuilder('site-env', async (builder) => {
     await builder.buildAsync()
 
-    await withMockApi(routes(mongoSite), async ({ apiUrl, requests }) => {
-      const cliResponse = await callCli(['graph:init'], getCLIOptions({ builder, apiUrl }))
-
-      const patchRequest = requests.find(
-        (request) => request.method === 'PATCH' && request.path === '/api/v1/sites/site_id',
-      )
-
-      const WEBHOOK_SECRET_LENGTH = 48
-      t.is(patchRequest.body.build_settings.env.NETLIFY_GRAPH_WEBHOOK_SECRET.length, WEBHOOK_SECRET_LENGTH)
-      t.is(patchRequest.body.build_settings.env.NETLIFY_GRAPH_PERSIST_QUERY_TOKEN, 'zxcv0987')
-      t.true(cliResponse.includes(`Finished updating Graph-related environment variables for site`))
-    })
-  })
-})
-
-test('netlify graph:init with env vars from envelope', async (t) => {
-  await withSiteBuilder('site-env', async (builder) => {
-    await builder.buildAsync()
-
-    await withMockApi(routes(envelopeSite), async ({ apiUrl, requests }) => {
+    await withMockApi(routes(basicSite), async ({ apiUrl, requests }) => {
       const cliResponse = await callCli(['graph:init'], getCLIOptions({ builder, apiUrl }))
 
       const postRequest = requests.find(

@@ -63,12 +63,8 @@ const graphInit = async (options, command) => {
   let envChanged = false
 
   // Get current environment variables set in the UI
-  let env = (siteInfo.build_settings && siteInfo.build_settings.env) || {}
-  const isUsingEnvelope = siteInfo.use_envelope
-  if (isUsingEnvelope) {
-    const envelopeVariables = await api.getEnvVars({ accountId, siteId })
-    env = translateFromEnvelopeToMongo(envelopeVariables)
-  }
+  const envVars = await api.getEnvVars({ accountId, siteId })
+  const env = translateFromEnvelopeToMongo(envVars)
 
   const newEnv = {
     ...env,
@@ -115,36 +111,22 @@ const graphInit = async (options, command) => {
   }
 
   // Apply environment variable updates
-
-  // eslint-disable-next-line unicorn/prefer-ternary
-  if (isUsingEnvelope) {
-    await api.createEnvVars({
-      accountId,
-      siteId,
-      body: [
-        !env.NETLIFY_GRAPH_WEBHOOK_SECRET && {
-          key: 'NETLIFY_GRAPH_WEBHOOK_SECRET',
-          scopes: ['functions'],
-          values: [{ context: 'all', value: newEnv.NETLIFY_GRAPH_WEBHOOK_SECRET }],
-        },
-        !env.NETLIFY_GRAPH_PERSIST_QUERY_TOKEN && {
-          key: 'NETLIFY_GRAPH_PERSIST_QUERY_TOKEN',
-          scopes: ['builds', 'functions'],
-          values: [{ context: 'all', value: newEnv.NETLIFY_GRAPH_PERSIST_QUERY_TOKEN }],
-        },
-      ].filter(Boolean),
-    })
-  } else {
-    // @ts-ignore
-    await api.updateSite({
-      siteId,
-      body: {
-        build_settings: {
-          env: newEnv,
-        },
+  await api.createEnvVars({
+    accountId,
+    siteId,
+    body: [
+      !env.NETLIFY_GRAPH_WEBHOOK_SECRET && {
+        key: 'NETLIFY_GRAPH_WEBHOOK_SECRET',
+        scopes: ['functions'],
+        values: [{ context: 'all', value: newEnv.NETLIFY_GRAPH_WEBHOOK_SECRET }],
       },
-    })
-  }
+      !env.NETLIFY_GRAPH_PERSIST_QUERY_TOKEN && {
+        key: 'NETLIFY_GRAPH_PERSIST_QUERY_TOKEN',
+        scopes: ['builds', 'functions'],
+        values: [{ context: 'all', value: newEnv.NETLIFY_GRAPH_PERSIST_QUERY_TOKEN }],
+      },
+    ].filter(Boolean),
+  })
 
   log(`Finished updating Graph-related environment variables for site ${siteInfo.name}`)
 }

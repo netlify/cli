@@ -6,7 +6,7 @@ import { Option } from 'commander'
 import inquirer from 'inquirer'
 import logUpdate from 'log-update'
 
-import { chalk, error, log, logJson } from '../../utils/command-helpers.mjs'
+import { chalk, log, logJson } from '../../utils/command-helpers.mjs'
 import { AVAILABLE_CONTEXTS, getEnvelopeEnv, getHumanReadableScopes, normalizeContext } from '../../utils/env/index.mjs'
 
 const MASK_LENGTH = 50
@@ -48,19 +48,7 @@ const envList = async (options, command) => {
   }
 
   const { env, siteInfo } = cachedConfig
-  const isUsingEnvelope = siteInfo.use_envelope
-  let environment = env
-
-  if (isUsingEnvelope) {
-    environment = await getEnvelopeEnv({ api, context, env, scope, siteInfo })
-  } else if (context !== 'dev' || scope !== 'any') {
-    error(
-      `To specify a context or scope, please run ${chalk.yellow(
-        'netlify open:admin',
-      )} to open the Netlify UI and opt in to the new environment variables experience from Site settings`,
-    )
-    return false
-  }
+  const environment = await getEnvelopeEnv({ api, context, env, scope, siteInfo })
 
   // filter out general sources
   environment = Object.fromEntries(
@@ -86,8 +74,8 @@ const envList = async (options, command) => {
 
   const forSite = `for site ${chalk.green(siteInfo.name)}`
   const contextType = AVAILABLE_CONTEXTS.includes(context) ? 'context' : 'branch'
-  const withContext = isUsingEnvelope ? `in the ${chalk.magenta(options.context)} ${contextType}` : ''
-  const withScope = isUsingEnvelope && scope !== 'any' ? `and ${chalk.yellow(options.scope)} scope` : ''
+  const withContext = `in the ${chalk.magenta(options.context)} ${contextType}`
+  const withScope = scope !== 'any' ? `and ${chalk.yellow(options.scope)} scope` : ''
   if (Object.keys(environment).length === 0) {
     log(`No environment variables set ${forSite} ${withContext} ${withScope}`)
     return false
@@ -98,11 +86,11 @@ const envList = async (options, command) => {
   log(`${count} environment variable${count === 1 ? '' : 's'} ${forSite} ${withContext} ${withScope}`)
 
   if (isCI) {
-    log(getTable({ environment, hideValues: false, scopesColumn: isUsingEnvelope }))
+    log(getTable({ environment, hideValues: false, scopesColumn: true }))
     return false
   }
 
-  logUpdate(getTable({ environment, hideValues: true, scopesColumn: isUsingEnvelope }))
+  logUpdate(getTable({ environment, hideValues: true, scopesColumn: true }))
   const { showValues } = await inquirer.prompt([
     {
       type: 'confirm',
@@ -115,7 +103,7 @@ const envList = async (options, command) => {
   if (showValues) {
     // since inquirer adds a prompt, we need to account for it when printing the table again
     log(ansiEscapes.eraseLines(3))
-    logUpdate(getTable({ environment, hideValues: false, scopesColumn: isUsingEnvelope }))
+    logUpdate(getTable({ environment, hideValues: false, scopesColumn: true }))
     log(`${chalk.cyan('?')} Show values? ${chalk.cyan('Yes')}`)
   }
 }

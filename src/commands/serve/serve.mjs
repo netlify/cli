@@ -47,7 +47,7 @@ const serve = async (options, command) => {
 
   let { env } = cachedConfig
 
-  if (!options.offline && siteInfo.use_envelope) {
+  if (!options.offline) {
     env = await getEnvelopeEnv({ api, context: options.context, env, siteInfo })
     log(`${NETLIFYDEVLOG} Injecting environment variable values for ${chalk.yellow('all scopes')}`)
   }

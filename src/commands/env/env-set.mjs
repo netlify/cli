@@ -29,21 +29,7 @@ const envSet = async (key, value, options, command) => {
   }
 
   const { siteInfo } = cachedConfig
-  let finalEnv
-
-  // Get current environment variables set in the UI
-  if (siteInfo.use_envelope) {
-    finalEnv = await setInEnvelope({ api, siteInfo, key, value, context, scope })
-  } else if (context || scope) {
-    error(
-      `To specify a context or scope, please run ${chalk.yellow(
-        'netlify open:admin',
-      )} to open the Netlify UI and opt in to the new environment variables experience from Site settings`,
-    )
-    return false
-  } else {
-    finalEnv = await setInMongo({ api, siteInfo, key, value })
-  }
+  const finalEnv = await setEnvVar({ api, siteInfo, key, value, context, scope })
 
   if (!finalEnv) {
     return false
@@ -65,32 +51,10 @@ const envSet = async (key, value, options, command) => {
 }
 
 /**
- * Updates the env for a site record with a new key/value pair
- * @returns {Promise<object>}
- */
-const setInMongo = async ({ api, key, siteInfo, value }) => {
-  const { env = {} } = siteInfo.build_settings
-  const newEnv = {
-    ...env,
-    [key]: value,
-  }
-  // Apply environment variable updates
-  await api.updateSite({
-    siteId: siteInfo.id,
-    body: {
-      build_settings: {
-        env: newEnv,
-      },
-    },
-  })
-  return newEnv
-}
-
-/**
  * Updates the env for a site configured with Envelope with a new key/value pair
  * @returns {Promise<object>}
  */
-const setInEnvelope = async ({ api, context, key, scope, siteInfo, value }) => {
+const setEnvVar = async ({ api, context, key, scope, siteInfo, value }) => {
   const accountId = siteInfo.account_slug
   const siteId = siteInfo.id
   // fetch envelope env vars

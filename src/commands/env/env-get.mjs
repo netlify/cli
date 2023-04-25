@@ -21,18 +21,7 @@ const envGet = async (name, options, command) => {
   }
 
   const { siteInfo } = cachedConfig
-  let { env } = cachedConfig
-
-  if (siteInfo.use_envelope) {
-    env = await getEnvelopeEnv({ api, context, env, key: name, scope, siteInfo })
-  } else if (context !== 'dev' || scope !== 'any') {
-    error(
-      `To specify a context or scope, please run ${chalk.yellow(
-        'netlify open:admin',
-      )} to open the Netlify UI and opt in to the new environment variables experience from Site settings`,
-    )
-    return false
-  }
+  const env = await getEnvelopeEnv({ api, context, env: cachedConfig.env, key: name, scope, siteInfo })
 
   const { value } = env[name] || {}
 
