@@ -48,7 +48,7 @@ const envList = async (options, command) => {
   }
 
   const { env, siteInfo } = cachedConfig
-  const environment = await getEnvelopeEnv({ api, context, env, scope, siteInfo })
+  let environment = await getEnvelopeEnv({ api, context, env, scope, siteInfo })
 
   // filter out general sources
   environment = Object.fromEntries(
@@ -75,7 +75,7 @@ const envList = async (options, command) => {
   const forSite = `for site ${chalk.green(siteInfo.name)}`
   const contextType = AVAILABLE_CONTEXTS.includes(context) ? 'context' : 'branch'
   const withContext = `in the ${chalk.magenta(options.context)} ${contextType}`
-  const withScope = scope !== 'any' ? `and ${chalk.yellow(options.scope)} scope` : ''
+  const withScope = scope === 'any' ? '' : `and ${chalk.yellow(options.scope)} scope`
   if (Object.keys(environment).length === 0) {
     log(`No environment variables set ${forSite} ${withContext} ${withScope}`)
     return false
