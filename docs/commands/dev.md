@@ -30,7 +30,6 @@ netlify dev
 - `live` (*boolean*) - start a public live session
 - `offline` (*boolean*) - disables any features that require network access
 - `port` (*string*) - port of netlify dev
-- `session-id` (*string*) - (Graph) connect to cloud session with ID [sessionId]
 - `target-port` (*string*) - port of target app server
 - `debug` (*boolean*) - Print debugging information
 - `http-proxy` (*string*) - Proxy server address to route requests through.
@@ -48,7 +47,6 @@ netlify dev
 netlify dev -d public
 netlify dev -c "hugo server -w" --target-port 1313
 netlify dev --context production
-netlify dev --graph
 netlify dev --edge-inspect
 netlify dev --edge-inspect=127.0.0.1:9229
 netlify dev --edge-inspect-brk
