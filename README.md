@@ -26,7 +26,7 @@ See the [CLI command line reference](https://cli.netlify.com/commands/) to get s
   - [deploy](#deploy)
   - [dev](#dev)
   - [env](#env)
-  - [functions](#functions)  
+  - [functions](#functions)
   - [init](#init)
   - [link](#link)
   - [lm](#lm)
@@ -160,6 +160,7 @@ Manage netlify functions
 | [`functions:invoke`](/docs/commands/functions.md#functionsinvoke) | Trigger a function while in netlify dev with simulated data, good for testing function calls including Netlify's Event Triggered Functions  |
 | [`functions:list`](/docs/commands/functions.md#functionslist) | List functions that exist locally  |
 | [`functions:serve`](/docs/commands/functions.md#functionsserve) | (Beta) Serve functions locally  |
+
 
 ### [init](/docs/commands/init.md)
 

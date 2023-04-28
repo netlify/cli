@@ -89,6 +89,7 @@ Manage netlify functions
 | [`functions:list`](/docs/commands/functions.md#functionslist) | List functions that exist locally  |
 | [`functions:serve`](/docs/commands/functions.md#functionsserve) | (Beta) Serve functions locally  |
 
+
 ### [init](/docs/commands/init.md)
 
 Configure continuous deployment for a new or existing site. To create a new site without continuous deployment, use `netlify sites:create`
