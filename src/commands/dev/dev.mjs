@@ -21,7 +21,6 @@ import detectServerSettings, { getConfigWithPlugins } from '../../utils/detect-s
 import { getDotEnvVariables, getSiteInformation, injectEnvVariables } from '../../utils/dev.mjs'
 import { getEnvelopeEnv, normalizeContext } from '../../utils/env/index.mjs'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.mjs'
-import { startNetlifyGraph, startPollingForAPIAuthentication } from '../../utils/graph.mjs'
 import { startLiveTunnel } from '../../utils/live-tunnel.mjs'
 import openBrowser from '../../utils/open-browser.mjs'
 import { generateInspectSettings, startProxyServer } from '../../utils/proxy-server.mjs'
@@ -124,12 +123,7 @@ const dev = async (options, command) => {
     exit(1)
   }
 
-  command.setAnalyticsPayload({ projectType: settings.framework || 'custom', live: options.live, graph: options.graph })
-
-  const startNetlifyGraphWatcher = Boolean(options.graph)
-  if (startNetlifyGraphWatcher) {
-    startPollingForAPIAuthentication({ api, command, config, site, siteInfo })
-  }
+  command.setAnalyticsPayload({ projectType: settings.framework || 'custom', live: options.live })
 
   const liveTunnelUrl = await handleLiveTunnel({ options, site, api, settings })
   const url = liveTunnelUrl || getProxyUrl(settings)
@@ -201,16 +195,6 @@ const dev = async (options, command) => {
     await openBrowser({ url, silentBrowserNoneError: true })
   }
 
-  await startNetlifyGraph({
-    command,
-    config,
-    options,
-    settings,
-    site,
-    startNetlifyGraphWatcher,
-    state,
-  })
-
   printBanner({ url })
 }
 
@@ -271,14 +255,6 @@ export const createDevCommand = (program) => {
         .argParser((value) => Number.parseInt(value))
         .hideHelp(),
     )
-    .addOption(new Option('--graph', 'enable Netlify Graph support').hideHelp())
-    .addOption(
-      new Option(
-        '--sessionId [sessionId]',
-        'Old, prefer --session-id. (Graph) connect to cloud session with ID [sessionId]',
-      ).hideHelp(true),
-    )
-    .option('--session-id [sessionId]', '(Graph) connect to cloud session with ID [sessionId]')
     .addOption(
       new Option(
         '-e, --edgeInspect [address]',
@@ -318,7 +294,6 @@ export const createDevCommand = (program) => {
       'netlify dev -d public',
       'netlify dev -c "hugo server -w" --target-port 1313',
       'netlify dev --context production',
-      'netlify dev --graph',
       'netlify dev --edge-inspect',
       'netlify dev --edge-inspect=127.0.0.1:9229',
       'netlify dev --edge-inspect-brk',
