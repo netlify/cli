@@ -110,22 +110,6 @@ Manage netlify functions
 | [`functions:list`](/docs/commands/functions.md#functionslist) | List functions that exist locally  |
 | [`functions:serve`](/docs/commands/functions.md#functionsserve) | (Beta) Serve functions locally  |
 
-
-### [graph](/docs/commands/graph.md)
-
-(Deprecated) Control the Netlify Graph functions for the current site
-
-| Subcommand | description  |
-|:--------------------------- |:-----|
-| [`graph:config:write`](/docs/commands/graph.md#graphconfigwrite) | Write a .graphqlrc.json file to the current directory for use with local tooling (e.g. the graphql extension for vscode)  |
-| [`graph:edit`](/docs/commands/graph.md#graphedit) | Launch the browser to edit your local graph functions from Netlify  |
-| [`graph:handler`](/docs/commands/graph.md#graphhandler) | Generate a handler for a Graph operation given its name. See `graph:operations` for a list of operations.  |
-| [`graph:init`](/docs/commands/graph.md#graphinit) | Initialize all the resources for Netlify Graph  |
-| [`graph:library`](/docs/commands/graph.md#graphlibrary) | Generate the Graph function library  |
-| [`graph:operations`](/docs/commands/graph.md#graphoperations) | List all of the locally available operations  |
-| [`graph:pull`](/docs/commands/graph.md#graphpull) | Pull your remote Netlify Graph schema locally, and process pending Graph edit events  |
-
-
 ### [init](/docs/commands/init.md)
 
 Configure continuous deployment for a new or existing site. To create a new site without continuous deployment, use `netlify sites:create`

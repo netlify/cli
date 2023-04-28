@@ -20,7 +20,6 @@ import { createDeployCommand } from './deploy/index.mjs'
 import { createDevCommand } from './dev/index.mjs'
 import { createEnvCommand } from './env/index.mjs'
 import { createFunctionsCommand } from './functions/index.mjs'
-import { createGraphCommand } from './graph/index.mjs'
 import { createInitCommand } from './init/index.mjs'
 import { createLinkCommand } from './link/index.mjs'
 import { createLmCommand } from './lm/index.mjs'
@@ -167,7 +166,6 @@ export const createMainCommand = () => {
   createEnvCommand(program)
   createFunctionsCommand(program)
   createRecipesCommand(program)
-  createGraphCommand(program)
   createInitCommand(program)
   createLinkCommand(program)
   createLmCommand(program)
