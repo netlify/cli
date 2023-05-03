@@ -56,7 +56,7 @@ jobs:
         with:
           deno-version: v1.x
       - name: Install core dependencies
-        run: npm ci --no-audit
+        run: npm ci --no-audit --foreground-scripts
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
       - name: Determine Test Command
         uses: haya14busa/action-cond@v1

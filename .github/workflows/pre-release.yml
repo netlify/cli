@@ -18,7 +18,7 @@ jobs:
           cache: npm
           registry-url: 'https://registry.npmjs.org'
       - name: Install core dependencies
-        run: npm ci --no-audit
+        run: npm ci --no-audit --foreground-scripts
       - name: Extract tag and version
         id: extract
         run: |-

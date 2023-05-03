@@ -40,7 +40,7 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
 
       - name: Install core dependencies
-        run: npm ci --no-audit
+        run: npm ci --no-audit --foreground-scripts
 
       - run: npm publish --provenance
         env:

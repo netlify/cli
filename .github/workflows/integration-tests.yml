@@ -56,7 +56,7 @@ jobs:
         with:
           deno-version: v1.x
       - name: Install core dependencies
-        run: npm ci --no-audit
+        run: npm ci --no-audit --foreground-scripts
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
       - name: Determine which tests to run
         if: '${{ !steps.release-check.outputs.IS_RELEASE }}'
