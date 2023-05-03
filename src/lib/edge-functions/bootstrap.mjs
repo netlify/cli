@@ -1,5 +1,5 @@
 import { env } from 'process'
 
-const latestBootstrapURL = 'https://643581608391e3000851cc94--edge.netlify.com/bootstrap/index-combined.ts'
+const latestBootstrapURL = 'https://64523ab4e7865600087fc3df--edge.netlify.com/bootstrap/index-combined.ts'
 
 export const getBootstrapURL = () => env.NETLIFY_EDGE_BOOTSTRAP || latestBootstrapURL
