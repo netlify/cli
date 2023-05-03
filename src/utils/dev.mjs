@@ -3,7 +3,6 @@ import process from 'process'
 
 import { get } from 'dot-prop'
 import getPort from 'get-port'
-import jwt from 'jsonwebtoken'
 import isEmpty from 'lodash/isEmpty.js'
 
 import { supportsBackgroundFunctions } from '../lib/account.mjs'
@@ -205,27 +204,6 @@ export const acquirePort = async ({ configuredPort, defaultPort, errorMessage })
     throw new Error(`${errorMessage}: '${configuredPort}'`)
   }
   return acquiredPort
-}
-
-// Generates a Netlify Graph JWT with the following claims:
-// - site_id
-// - netlify_token -- the bearer token for the Netlify API
-// - authlify_token_id -- the authlify token ID stored for the site after
-//   enabling API Authentication.
-export const generateNetlifyGraphJWT = ({ authlifyTokenId, netlifyToken, siteId }) => {
-  const claims = {
-    netlify_token: netlifyToken,
-    authlify_token_id: authlifyTokenId,
-    site_id: siteId,
-  }
-
-  return jwt.sign(
-    { 'https://netlify.com/jwt/claims': claims },
-    // doesn't matter. OneGraph doesn't check the signature. The presence of
-    // the Netlify API bearer token is enough because we've authenticated the
-    // user through `command.authenticate()`
-    'NOT_SIGNED',
-  )
 }
 
 export const processOnExit = (fn) => {
