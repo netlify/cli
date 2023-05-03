@@ -568,9 +568,8 @@ const deploy = async (options, command) => {
     return triggerDeploy({ api, options, siteData, siteId })
   }
 
-  const isUsingEnvelope = siteData && siteData.use_envelope
   // if a context is passed besides dev, we need to pull env vars from that specific context
-  if (isUsingEnvelope && options.context && options.context !== 'dev') {
+  if (options.context && options.context !== 'dev') {
     command.netlify.cachedConfig.env = await getEnvelopeEnv({
       api,
       context: options.context,
@@ -607,16 +606,14 @@ const deploy = async (options, command) => {
     functionsFolder,
   })
 
-  const siteEnv = isUsingEnvelope
-    ? await getEnvelopeEnv({
-        api,
-        context: options.context,
-        env: command.netlify.cachedConfig.env,
-        raw: true,
-        scope: 'functions',
-        siteInfo: siteData,
-      })
-    : get(siteData, 'build_settings.env')
+  const siteEnv = await getEnvelopeEnv({
+    api,
+    context: options.context,
+    env: command.netlify.cachedConfig.env,
+    raw: true,
+    scope: 'functions',
+    siteInfo: siteData,
+  })
 
   const functionsConfig = normalizeFunctionsConfig({
     functionsConfig: config.functions,

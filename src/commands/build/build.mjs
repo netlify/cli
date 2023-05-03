@@ -20,13 +20,10 @@ const checkOptions = ({ cachedConfig: { siteInfo = {} }, token }) => {
 }
 
 const injectEnv = async function (command, { api, buildOptions, context, site, siteInfo }) {
-  const isUsingEnvelope = siteInfo && siteInfo.use_envelope
   const authlifyTokenId = siteInfo && siteInfo.authlify_token_id
 
   const { env } = buildOptions.cachedConfig
-  if (isUsingEnvelope) {
-    buildOptions.cachedConfig.env = await getEnvelopeEnv({ api, context, env, siteInfo })
-  }
+  buildOptions.cachedConfig.env = await getEnvelopeEnv({ api, context, env, siteInfo })
 
   if (authlifyTokenId) {
     const netlifyToken = await command.authenticate()
