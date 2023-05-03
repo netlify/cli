@@ -1015,8 +1015,14 @@ test('should have only allowed environment variables set', async (t) => {
         },
       })
       .withEdgeFunction({
-        // eslint-disable-next-line no-undef
-        handler: () => new Response(`${JSON.stringify(Deno.env.toObject())}`),
+        handler: () => {
+          // eslint-disable-next-line no-undef
+          const fromDenoGlobal = Deno.env.toObject()
+          // eslint-disable-next-line no-undef
+          const fromNetlifyGlobal = Netlify.env.toObject()
+
+          return new Response(`${JSON.stringify({ fromDenoGlobal, fromNetlifyGlobal })}`)
+        },
         name: 'env',
       })
       .withContentFile({
@@ -1041,24 +1047,29 @@ test('should have only allowed environment variables set', async (t) => {
           const response = await got(`http://localhost:${port}/env`).then((edgeResponse) =>
             JSON.parse(edgeResponse.body),
           )
-          const envKeys = Object.keys(response)
+          const buckets = Object.values(response)
+          t.is(buckets.length, 2)
 
-          t.true(envKeys.includes('DENO_REGION'))
-          t.is(response.DENO_REGION, 'local')
+          buckets.forEach((bucket) => {
+            const bucketKeys = Object.keys(bucket)
 
-          t.true(envKeys.includes('NETLIFY_DEV'))
-          t.is(response.NETLIFY_DEV, 'true')
+            t.true(bucketKeys.includes('DENO_REGION'))
+            t.is(bucket.DENO_REGION, 'local')
 
-          t.true(envKeys.includes('SECRET_ENV'))
-          t.is(response.SECRET_ENV, 'true')
+            t.true(bucketKeys.includes('NETLIFY_DEV'))
+            t.is(bucket.NETLIFY_DEV, 'true')
 
-          t.true(envKeys.includes('FROM_ENV'))
-          t.is(response.FROM_ENV, 'YAS')
+            t.true(bucketKeys.includes('SECRET_ENV'))
+            t.is(bucket.SECRET_ENV, 'true')
 
-          t.false(envKeys.includes('DENO_DEPLOYMENT_ID'))
-          t.false(envKeys.includes('NODE_ENV'))
-          t.false(envKeys.includes('DEPLOY_URL'))
-          t.false(envKeys.includes('URL'))
+            t.true(bucketKeys.includes('FROM_ENV'))
+            t.is(bucket.FROM_ENV, 'YAS')
+
+            t.false(bucketKeys.includes('DENO_DEPLOYMENT_ID'))
+            t.false(bucketKeys.includes('NODE_ENV'))
+            t.false(bucketKeys.includes('DEPLOY_URL'))
+            t.false(bucketKeys.includes('URL'))
+          })
         },
       )
     })
