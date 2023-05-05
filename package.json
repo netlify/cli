@@ -65,7 +65,7 @@
     "docs": "node ./site/scripts/docs.mjs",
     "watch": "c8 --reporter=lcov ava --watch",
     "site:build": "run-s site:build:*",
-    "site:build:install": "cd site && npm ci --no-audit",
+    "site:build:install": "cd site && npm install --no-audit",
     "site:build:assets": "cd site && npm run build",
     "postinstall": "node ./scripts/postinstall.mjs",
     "prepublishOnly": "node ./scripts/prepare-for-publish.mjs",
