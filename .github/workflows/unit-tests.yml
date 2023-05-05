@@ -35,13 +35,14 @@ jobs:
           check-latest: true
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
       - name: Downgrade npm
-        run: npm install -g npm@9.2.0
+        run: npm install -g npm@9.4.0
         if: ${{ matrix.node-version == '*' }}
       - name: Install core dependencies
         run: npm ci --no-audit
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
       - name: Install site dependencies
-        run: npm run site:build:install
+        run: npm ci --no-audit --foreground-scripts
+        working-directory: site
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
       - name: Linting
         run: npm run format:ci
