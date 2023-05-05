@@ -34,6 +34,9 @@ jobs:
           cache: npm
           check-latest: true
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
+      - name: Downgrade npm
+        run: npm install -g npm@9.2.0
+        if: ${{ matrix.node-version == '*' }}
       - name: Install core dependencies
         run: npm ci --no-audit
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'

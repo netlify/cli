@@ -39,6 +39,8 @@ jobs:
           cache: npm
           registry-url: 'https://registry.npmjs.org'
 
+      - name: Downgrade npm
+        run: npm install -g npm@9.4.0
       - name: Install core dependencies
         run: npm ci --no-audit
 

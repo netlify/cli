@@ -17,6 +17,8 @@ jobs:
         with:
           node-version: lts/*
           cache: npm
+      - name: Downgrade npm
+        run: npm install -g npm@9.4.0
       - name: Install dependencies
         run: npm ci --no-audit && npm prune --production
       - name: Get size

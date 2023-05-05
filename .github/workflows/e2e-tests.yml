@@ -33,6 +33,9 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: npm
           check-latest: true
+      - name: Downgrade npm
+        run: npm install -g npm@9.4.0
+        if: ${{ matrix.node-version == '*' }}
       - name: Cache verdaccio storage
         uses: actions/cache@v3
         with:

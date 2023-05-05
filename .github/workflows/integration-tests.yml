@@ -50,6 +50,9 @@ jobs:
           cache: npm
           check-latest: true
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
+      - name: Downgrade npm
+        run: npm install -g npm@9.4.0
+        if: ${{ matrix.node-version == '*' }}
       - name: Setup Deno
         uses: denoland/setup-deno@v1
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
