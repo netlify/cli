@@ -37,9 +37,6 @@ jobs:
       - name: Install core dependencies
         run: npm ci --no-audit
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
-      - name: Install site dependencies
-        run: npm run site:build:install
-        if: '${{!steps.release-check.outputs.IS_RELEASE}}'
       - name: Linting
         run: npm run format:ci
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
