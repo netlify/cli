@@ -3,7 +3,6 @@ import { get } from 'dot-prop'
 import jwtDecode from 'jwt-decode'
 
 import { NETLIFYDEVERR, NETLIFYDEVLOG, error as errorExit, log } from '../../utils/command-helpers.mjs'
-import { generateNetlifyGraphJWT } from '../../utils/dev.mjs'
 import { CLOCKWORK_USERAGENT, getFunctionsDistPath, getInternalFunctionsDir } from '../../utils/functions/index.mjs'
 
 import { handleBackgroundFunction, handleBackgroundFunctionResult } from './background.mjs'
@@ -49,7 +48,7 @@ const hasBody = (req) =>
   (typeof req.body === 'string' || Buffer.isBuffer(req.body))
 
 export const createHandler = function (options) {
-  const { config, functionsRegistry } = options
+  const { functionsRegistry } = options
 
   return async function handler(request, response) {
     // handle proxies without path re-writes (http-servr)
@@ -113,14 +112,6 @@ export const createHandler = function (options) {
       isBase64Encoded,
       rawUrl,
       rawQuery,
-    }
-
-    if (config && config.netlifyGraphConfig && config.netlifyGraphConfig.authlifyTokenId != null) {
-      // XXX(anmonteiro): this name is deprecated. Delete after 3/31/2022
-      const jwt = generateNetlifyGraphJWT(config.netlifyGraphConfig)
-      event.authlifyToken = jwt
-      event.netlifyGraphToken = jwt
-      event.headers['X-Nf-Graph-Token'] = jwt
     }
 
     const clientContext = buildClientContext(request.headers) || {}

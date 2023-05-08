@@ -45,7 +45,6 @@ const navOrder = [
   'dev',
   'env',
   'functions',
-  'graph',
   'init',
   'link',
   'lm',

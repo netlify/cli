@@ -18,8 +18,6 @@ COMMANDS
   $ functions    Manage netlify functions
   $ recipes      (Beta) Create and modify files in a project using pre-defined
                  recipes
-  $ graph        (Deprecated) Control the Netlify Graph functions for the
-                 current site
   $ init         Configure continuous deployment for a new or existing site. To
                  create a new site without continuous deployment, use \`netlify
                  sites:create\`
