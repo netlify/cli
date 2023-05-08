@@ -214,6 +214,10 @@ export const handler = async function () {
           path: 'public/index.html',
           content: 'index',
         })
+        .withContentFile({
+          path: 'public/origin.html',
+          content: 'origin',
+        })
         .withRedirectsFile({
           redirects: [{ from: `/api/*`, to: `/.netlify/functions/:splat`, status: '200' }],
         })
@@ -226,15 +230,21 @@ export const handler = async function () {
         })
         .withEdgeFunction({
           handler: async (req, { next }) => {
-            if (!req.url.includes('?ef=true')) {
-              return
+            if (req.url.includes('?ef=true')) {
+              // eslint-disable-next-line n/callback-return
+              const res = await next()
+              const text = await res.text()
+
+              return new Response(text.toUpperCase(), res)
             }
 
-            // eslint-disable-next-line n/callback-return
-            const res = await next()
-            const text = await res.text()
+            if (req.url.includes('?ef=fetch')) {
+              const url = new URL('/origin', req.url)
+              const res = await fetch(url)
+              const text = await res.text()
 
-            return new Response(text.toUpperCase(), res)
+              return new Response(text.toUpperCase(), res)
+            }
           },
           name: 'hello',
         })
@@ -248,6 +258,7 @@ export const handler = async function () {
         const options = { https: { rejectUnauthorized: false } }
         t.is(await got(`https://localhost:${port}`, options).text(), 'index')
         t.is(await got(`https://localhost:${port}?ef=true`, options).text(), 'INDEX')
+        t.is(await got(`https://localhost:${port}?ef=fetch`, options).text(), 'ORIGIN')
         t.deepEqual(await got(`https://localhost:${port}/api/hello`, options).json(), {
           rawUrl: `https://localhost:${port}/api/hello`,
         })
