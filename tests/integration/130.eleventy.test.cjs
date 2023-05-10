@@ -8,7 +8,7 @@ const { startDevServer } = require('./utils/dev-server.cjs')
 const got = require('./utils/got.cjs')
 
 test.before(async (t) => {
-  const server = await startDevServer({ cwd: path.join(__dirname, 'eleventy-site') })
+  const server = await startDevServer({ cwd: path.join(__dirname, '__fixtures__/eleventy-site') })
 
   t.context.server = server
 })
