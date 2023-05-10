@@ -50,6 +50,10 @@ jobs:
           cache: npm
           check-latest: true
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
+      - name: Install PNPM
+        run: |
+          corepack enable
+          corepack prepare --all --activate
       - name: Setup Deno
         uses: denoland/setup-deno@v1
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
