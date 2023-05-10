@@ -53,7 +53,7 @@
     "test:init": "run-s test:init:*",
     "test:init:cli-version": "npm run start -- --version",
     "test:init:cli-help": "npm run start -- --help",
-    "test:init:eleventy-deps": "npm ci --prefix tests/integration/eleventy-site --no-audit",
+    "test:init:eleventy-deps": "cd tests/integration/__fixtures__/eleventy-site && pnpm install --frozen-lockfile",
     "test:init:hugo-deps": "npm ci --prefix tests/integration/__fixtures__/hugo-site --no-audit",
     "test:dev:ava": "ava --verbose",
     "test:dev:vitest": "vitest run tests/unit/ && vitest run tests/integration",
