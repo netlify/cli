@@ -186,6 +186,8 @@
   },
   "devDependencies": {
     "@babel/preset-react": "^7.12.13",
+    "@fastify/formbody": "^7.4.0",
+    "@fastify/url-data": "^5.3.1",
     "@netlify/eslint-config-node": "^7.0.0",
     "@netlify/functions": "^1.6.0",
     "@types/fs-extra": "^11.0.1",

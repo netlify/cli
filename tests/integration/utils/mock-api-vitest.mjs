@@ -1,13 +1,14 @@
 import { isDeepStrictEqual } from 'util'
 
-import express, { urlencoded, json, raw } from 'express'
+import fastifyUrlData from '@fastify/url-data'
+import fastify from 'fastify'
 import { afterAll, beforeAll, beforeEach } from 'vitest'
 
 // Replace mock-api.cjs with this once everything migrated
 
 const addRequest = (requests, request) => {
   requests.push({
-    path: request.path,
+    path: request.urlData().path,
     body: request.body,
     method: request.method,
     headers: request.headers,
@@ -19,47 +20,44 @@ const clearRequests = (requests) => {
   requests.length = 0
 }
 
-const startMockApi = ({ routes, silent }) => {
+const startMockApi = async ({ routes, silent }) => {
   const requests = []
-  const app = express()
-  app.use(urlencoded({ extended: true }))
-  app.use(json())
-  app.use(raw())
+  const app = fastify()
+  app.register(fastifyUrlData)
 
   routes.forEach(({ method = 'get', path, requestBody, response = {}, status = 200 }) => {
-    app[method.toLowerCase()](`/api/v1/${path}`, function onRequest(req, res) {
-      // validate request body
-      if (requestBody !== undefined && !isDeepStrictEqual(requestBody, req.body)) {
-        res.status(500)
-        res.json({ message: `Request body doesn't match` })
-        return
-      }
-      addRequest(requests, req)
-      res.status(status)
-      res.json(response)
+    app.route({
+      method: method.toUpperCase(),
+      url: `/api/v1/${path}`,
+      handler(request, reply) {
+        if (requestBody !== undefined && !isDeepStrictEqual(requestBody, request.body)) {
+          reply.statusCode = 500
+          reply.send({ message: `Request body doesn't match` })
+          return
+        }
+        addRequest(requests, request)
+        reply.statusCode = status
+        reply.send(response)
+      },
     })
   })
 
-  app.all('*', function onRequest(req, res) {
-    addRequest(requests, req)
+  app.all('*', function onRequest(request, reply) {
+    addRequest(requests, request)
     if (!silent) {
-      console.warn(`Route not found: (${req.method.toUpperCase()}) ${req.url}`)
+      console.warn(`Route not found: (${request.method.toUpperCase()}) ${request.url}`)
     }
-    res.status(404)
-    res.json({ message: 'Not found' })
+    reply.statusCode = 404
+    reply.send({ message: 'Not found' })
   })
 
-  return new Promise((resolve, reject) => {
-    const server = app.listen()
+  await app.listen()
 
-    server.on('listening', () => {
-      resolve({ server, requests, clearRequests: clearRequests.bind(null, requests) })
-    })
-
-    server.on('error', (error) => {
-      reject(error)
-    })
-  })
+  return {
+    app,
+    requests,
+    clearRequests: clearRequests.bind(null, requests),
+  }
 }
 
 export const withMockApi = async (routes, factory, silent = false) => {
@@ -69,13 +67,13 @@ export const withMockApi = async (routes, factory, silent = false) => {
   })
 
   beforeEach((context) => {
-    context.apiUrl = `http://localhost:${mockApi.server.address().port}/api/v1`
+    context.apiUrl = `http://localhost:${mockApi.app.server.address().port}/api/v1`
     context.requests = mockApi.requests
     mockApi.clearRequests()
   })
 
-  afterAll(() => {
-    mockApi.server.close()
+  afterAll(async () => {
+    if (mockApi) await mockApi.app.close()
   })
 
   factory()
