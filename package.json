@@ -81,7 +81,7 @@
     "@netlify/build": "^29.11.2",
     "@netlify/build-info": "^7.0.1",
     "@netlify/config": "^20.4.1",
-    "@netlify/edge-bundler": "^8.14.1",
+    "@netlify/edge-bundler": "^8.14.2",
     "@netlify/framework-info": "^9.8.6",
     "@netlify/local-functions-proxy": "^1.1.1",
     "@netlify/zip-it-and-ship-it": "^9.5.0",
