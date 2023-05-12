@@ -458,7 +458,7 @@ export default class BaseCommand extends Command {
           state.set('siteId', id)
         },
       },
-      // Site information retrieved using the API
+      // Site information retrieved using the API (api.getSite())
       siteInfo,
       // Configuration from netlify.[toml/yml]
       config: normalizedConfig,
