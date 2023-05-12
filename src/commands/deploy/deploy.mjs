@@ -491,7 +491,7 @@ const printResults = ({ deployToProduction, json, results, runBuildCommand }) =>
  * @param {import('../base-command.mjs').default} command
  */
 const deploy = async (options, command) => {
-  const { api, site } = command.netlify
+  const { api, site, siteInfo } = command.netlify
   const alias = options.alias || options.branch
 
   command.setAnalyticsPayload({ open: options.open, prod: options.prod, json: options.json, alias: Boolean(alias) })
@@ -506,34 +506,19 @@ const deploy = async (options, command) => {
 
   await command.authenticate(options.auth)
 
-  let siteId = options.site || site.id
+  let siteId = site.id || options.site
 
   let siteData = {}
   if (siteId) {
-    try {
-      const [{ siteError, siteFoundById }, sites] = await Promise.all([
-        api
-          .getSite({ siteId })
-          .then((data) => ({ siteFoundById: data }))
-          .catch((error_) => ({ siteError: error_ })),
-        api.listSites({ name: options.site, filter: 'all' }),
-      ])
-      const siteFoundByName = sites.find((filteredSite) => filteredSite.name === options.site)
-      if (siteFoundById) {
-        siteData = siteFoundById
-      } else if (siteFoundByName) {
-        siteData = siteFoundByName
-        siteId = siteFoundByName.id
-      } else {
-        throw siteError
-      }
-    } catch (error_) {
-      // TODO specifically handle known cases (e.g. no account access)
-      if (error_.status === 404) {
+    if (siteInfo.error) {
+      if (siteInfo.error.status === 404) {
         error('Site not found')
       } else {
-        error(error_.message)
+        error(siteInfo.error.message)
       }
+    } else {
+      siteData = siteInfo
+      siteId = siteData.id
     }
   } else {
     log("This folder isn't linked to a site yet")
