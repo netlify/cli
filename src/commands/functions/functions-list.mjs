@@ -15,7 +15,7 @@ const normalizeFunction = function (deployedFunctions, { name, urlPath: url }) {
  * @param {import('../base-command.mjs').default} command
  */
 const functionsList = async (options, command) => {
-  const { api, config, site } = command.netlify
+  const { config, site, siteInfo } = command.netlify
 
   // get deployed site details
   // copied from `netlify status`
@@ -24,22 +24,20 @@ const functionsList = async (options, command) => {
     warn('Did you run `netlify link` yet?')
     error(`You don't appear to be in a folder that is linked to a site`)
   }
-  let siteData
-  try {
-    siteData = await api.getSite({ siteId })
-  } catch (error_) {
-    // unauthorized
-    if (error_.status === 401) {
+
+  if (siteInfo.error) {
+    if (siteInfo.error === 401) {
       warn(`Log in with a different account or re-link to a site you have permission for`)
       error(`Not authorized to view the currently linked site (${siteId})`)
     }
     // missing
-    if (error_.status === 404) {
+    if (siteInfo.error === 404) {
       error(`The site this folder is linked to can't be found`)
     }
-    error(error_)
+    error(siteInfo.error)
   }
-  const deploy = siteData.published_deploy || {}
+
+  const deploy = siteInfo.published_deploy || {}
   const deployedFunctions = deploy.available_functions || []
 
   const functionsDir = getFunctionsDir({ options, config })
