@@ -5,19 +5,35 @@
   "semanticCommits": "enabled",
   "dependencyDashboard": true,
   "postUpdateOptions": ["npmDedupe"],
-  "additionalBranchPrefix": "{{parentDir}}-",
   "packageRules": [
     {
       "matchFiles": ["site/package.json"],
       "semanticCommitType": "chore",
       "addLabels": ["website"],
-      "semanticCommitScope": "website"
+      "semanticCommitScope": "website",
+      "additionalBranchPrefix": "website-"
     },
     {
       "matchPaths": ["tests/**/package.json"],
       "semanticCommitType": "chore",
       "addLabels": ["tests"],
-      "semanticCommitScope": "tests"
+      "semanticCommitScope": "tests",
+      "additionalBranchPrefix": "tests-"
+    },
+    {
+      "matchPaths": ["src/**/package.json"],
+      "semanticCommitType": "fix",
+      "addLabels": ["templates"],
+      "semanticCommitScope": "templates",
+      "additionalBranchPrefix": "templates-"
+    },
+    {
+      "matchPaths": ["tests/**/package.json"],
+      "extends": [":pinAllExceptPeerDependencies"]
+    },
+    {
+      "matchFiles": ["package.json", "site/package.json"],
+      "extends": [":pinAllExceptPeerDependencies"]
     }
   ]
 }
