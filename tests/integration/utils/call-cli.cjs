@@ -16,6 +16,7 @@ const CLI_TIMEOUT = 3e5
 const callCli = async function (args, execOptions = {}, parseJson = false) {
   const { stdout } = await execa.node(cliPath, args, {
     timeout: CLI_TIMEOUT,
+    nodeOptions: [],
     ...execOptions,
   })
   if (parseJson) {
