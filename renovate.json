@@ -5,10 +5,19 @@
   "semanticCommits": "enabled",
   "dependencyDashboard": true,
   "postUpdateOptions": ["npmDedupe"],
+  "additionalBranchPrefix": "{{parentDir}}-",
   "packageRules": [
     {
       "matchFiles": ["site/package.json"],
-      "semanticCommitType": "chore"
+      "semanticCommitType": "chore",
+      "addLabels": ["website"],
+      "semanticCommitScope": "website"
+    },
+    {
+      "matchPaths": ["tests/**/package.json"],
+      "semanticCommitType": "chore",
+      "addLabels": ["tests"],
+      "semanticCommitScope": "tests"
     }
   ]
 }
