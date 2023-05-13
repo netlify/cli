@@ -4,5 +4,11 @@
   "ignorePresets": [":prHourlyLimit2"],
   "semanticCommits": "enabled",
   "dependencyDashboard": true,
-  "postUpdateOptions": ["npmDedupe"]
+  "postUpdateOptions": ["npmDedupe"],
+  "packageRules": [
+    {
+      "matchFiles": ["site/package.json"],
+      "semanticCommitType": "chore"
+    }
+  ]
 }
