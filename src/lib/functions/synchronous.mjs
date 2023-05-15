@@ -1,6 +1,8 @@
 // @ts-check
 import { Buffer } from 'buffer'
 
+import { isStream } from 'is-stream'
+
 import { chalk, log, NETLIFYDEVERR } from '../../utils/command-helpers.mjs'
 import renderErrorTemplate from '../render-error-template.mjs'
 
@@ -47,6 +49,12 @@ export const handleSynchronousFunction = function ({
   }
 
   if (result.body) {
+    if (isStream(result.body)) {
+      result.body.pipe(response)
+
+      return
+    }
+
     response.write(result.isBase64Encoded ? Buffer.from(result.body, 'base64') : result.body)
   }
   response.end()
@@ -97,8 +105,8 @@ const validateLambdaResponse = (lambdaResponse) => {
       error: `Your function response must have a numerical statusCode. You gave: $ ${lambdaResponse.statusCode}`,
     }
   }
-  if (lambdaResponse.body && typeof lambdaResponse.body !== 'string') {
-    return { error: `Your function response must have a string body. You gave: ${lambdaResponse.body}` }
+  if (lambdaResponse.body && typeof lambdaResponse.body !== 'string' && !isStream(lambdaResponse.body)) {
+    return { error: `Your function response must have a string or a stream body. You gave: ${lambdaResponse.body}` }
   }
 
   return {}
