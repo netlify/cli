@@ -10,7 +10,6 @@ import { NodeFS } from '@netlify/build-info/node'
 import { getFramework, listFrameworks } from '@netlify/framework-info'
 import fuzzy from 'fuzzy'
 import getPort from 'get-port'
-import isPlainObject from 'is-plain-obj'
 
 import { NETLIFYDEVWARN, chalk, log } from './command-helpers.mjs'
 import { acquirePort } from './dev.mjs'
@@ -21,7 +20,7 @@ const formatProperty = (str) => chalk.magenta(`'${str}'`)
 const formatValue = (str) => chalk.green(`'${str}'`)
 
 const readHttpsSettings = async (options) => {
-  if (!isPlainObject(options)) {
+  if (typeof options !== 'object' || !options.keyFile || !options.certFile) {
     throw new TypeError(
       `https options should be an object with ${formatProperty('keyFile')} and ${formatProperty(
         'certFile',
