@@ -2,7 +2,6 @@
 import inquirer from 'inquirer'
 
 import { chalk, error, exit, log } from '../../utils/command-helpers.mjs'
-import requiresSiteInfo from '../../utils/hooks/requires-site-info.mjs'
 
 /**
  * The sites:delete command
@@ -13,17 +12,30 @@ import requiresSiteInfo from '../../utils/hooks/requires-site-info.mjs'
 const sitesDelete = async (siteId, options, command) => {
   command.setAnalyticsPayload({ force: options.force })
 
-  const { api, site, siteInfo } = command.netlify
+  const { api, site } = command.netlify
   const cwdSiteId = site.id
 
   // 1. Prompt user for verification
   await command.authenticate(options.auth)
 
+  let siteData
+  try {
+    siteData = await api.getSite({ siteId })
+  } catch (error_) {
+    if (error_.status === 404) {
+      error(`No site with id ${siteId} found. Please verify the siteId & try again.`)
+    }
+  }
+
+  if (!siteData) {
+    error(`Unable to process site`)
+  }
+
   const noForce = options.force !== true
 
   /* Verify the user wants to delete the site */
   if (noForce) {
-    log(`${chalk.redBright('Warning')}: You are about to permanently delete "${chalk.bold(siteInfo.name)}"`)
+    log(`${chalk.redBright('Warning')}: You are about to permanently delete "${chalk.bold(siteData.name)}"`)
     log(`         Verify this siteID "${siteId}" supplied is correct and proceed.`)
     log('         To skip this prompt, pass a --force flag to the delete command')
     log()
@@ -32,7 +44,7 @@ const sitesDelete = async (siteId, options, command) => {
     const { wantsToDelete } = await inquirer.prompt({
       type: 'confirm',
       name: 'wantsToDelete',
-      message: `WARNING: Are you sure you want to delete the "${siteInfo.name}" site?`,
+      message: `WARNING: Are you sure you want to delete the "${siteData.name}" site?`,
       default: false,
     })
     log()
@@ -87,5 +99,4 @@ export const createSitesDeleteCommand = (program) =>
     .argument('<siteId>', 'Site ID to delete.')
     .option('-f, --force', 'delete without prompting (useful for CI)')
     .addExamples(['netlify sites:delete 1234-3262-1211'])
-    .hook('preAction', requiresSiteInfo)
     .action(sitesDelete)
