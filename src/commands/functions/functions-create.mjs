@@ -714,4 +714,7 @@ export const createFunctionsCreateCommand = (program) =>
       'netlify functions:create hello-world',
       'netlify functions:create --name hello-world',
     ])
+    .hook('preAction', (thisCommand, actionCommand) => {
+      console.log({thisCommand, actionCommand})
+    })
     .action(functionsCreate)

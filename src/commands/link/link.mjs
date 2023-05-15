@@ -1,6 +1,7 @@
 // @ts-check
 import { Option } from 'commander'
 import inquirer from 'inquirer'
+import isEmpty from 'lodash/isEmpty.js'
 
 import { listSites } from '../../lib/api.mjs'
 import { chalk, error, exit, log } from '../../utils/command-helpers.mjs'
@@ -266,7 +267,7 @@ export const link = async (options, command) => {
     return exit()
   }
 
-  if (siteData) {
+  if (!isEmpty(siteData)) {
     // If already linked to site. exit and prompt for unlink
     log(`Site already linked to "${siteData.name}"`)
     log(`Admin url: ${siteData.admin_url}`)
