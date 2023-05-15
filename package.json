@@ -186,7 +186,7 @@
   },
   "devDependencies": {
     "@babel/preset-react": "7.18.6",
-    "@netlify/eslint-config-node": "7.0.0",
+    "@netlify/eslint-config-node": "7.0.1",
     "@netlify/functions": "1.6.0",
     "@types/fs-extra": "11.0.1",
     "@types/prettyjson": "0.0.30",
