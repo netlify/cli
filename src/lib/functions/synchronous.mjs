@@ -105,6 +105,9 @@ const validateLambdaResponse = (lambdaResponse) => {
       error: `Your function response must have a numerical statusCode. You gave: $ ${lambdaResponse.statusCode}`,
     }
   }
+  if (lambdaResponse.body && typeof lambdaResponse.body !== 'string' && !isStream(lambdaResponse.body)) {
+    return { error: `Your function response must have a string or a stream body. You gave: ${lambdaResponse.body}` }
+  }
 
   return {}
 }
