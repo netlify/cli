@@ -85,7 +85,7 @@
     "@netlify/framework-info": "9.8.7",
     "@netlify/local-functions-proxy": "1.1.1",
     "@netlify/zip-it-and-ship-it": "9.5.0",
-    "@octokit/rest": "19.0.7",
+    "@octokit/rest": "19.0.8",
     "ansi-escapes": "6.2.0",
     "ansi-styles": "6.2.1",
     "ansi-to-html": "0.7.2",
