@@ -3,6 +3,7 @@ import AsciiTable from 'ascii-table'
 
 import { error, exit, log, logJson, warn } from '../../utils/command-helpers.mjs'
 import { getFunctions, getFunctionsDir } from '../../utils/functions/index.mjs'
+import requiresSite from '../../utils/hooks/requires-site.mjs'
 
 const normalizeFunction = function (deployedFunctions, { name, urlPath: url }) {
   const isDeployed = deployedFunctions.some((deployedFunction) => deployedFunction.n === name)
@@ -15,31 +16,9 @@ const normalizeFunction = function (deployedFunctions, { name, urlPath: url }) {
  * @param {import('../base-command.mjs').default} command
  */
 const functionsList = async (options, command) => {
-  const { api, config, site } = command.netlify
+  const { config, siteInfo } = command.netlify
 
-  // get deployed site details
-  // copied from `netlify status`
-  const siteId = site.id
-  if (!siteId) {
-    warn('Did you run `netlify link` yet?')
-    error(`You don't appear to be in a folder that is linked to a site`)
-  }
-  let siteData
-  try {
-    siteData = await api.getSite({ siteId })
-  } catch (error_) {
-    // unauthorized
-    if (error_.status === 401) {
-      warn(`Log in with a different account or re-link to a site you have permission for`)
-      error(`Not authorized to view the currently linked site (${siteId})`)
-    }
-    // missing
-    if (error_.status === 404) {
-      error(`The site this folder is linked to can't be found`)
-    }
-    error(error_)
-  }
-  const deploy = siteData.published_deploy || {}
+  const deploy = siteInfo.published_deploy || {}
   const deployedFunctions = deploy.available_functions || []
 
   const functionsDir = getFunctionsDir({ options, config })
@@ -91,4 +70,5 @@ NOT the same as listing the functions that have been deployed. For that info you
     )
     .option('-f, --functions <dir>', 'Specify a functions directory to list')
     .option('--json', 'Output function data as JSON')
+    .hook('preAction', requiresSite)
     .action(functionsList)
