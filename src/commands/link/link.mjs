@@ -250,22 +250,17 @@ export const link = async (options, command) => {
     api,
     repositoryRoot,
     site: { id: siteId },
+    siteInfo,
     state,
   } = command.netlify
 
-  let siteData
-  try {
-    // @ts-ignore types from API are wrong they cannot recognize `getSite` of API
-    siteData = await api.getSite({ siteId })
-  } catch {
-    // silent api error
-  }
+  let siteData = siteInfo
 
   // Add .netlify to .gitignore file
   await ensureNetlifyIgnore(repositoryRoot)
 
   // Site id is incorrect
-  if (siteId && !siteData) {
+  if ((siteId && !siteData) || (siteId && siteData.error)) {
     log(`"${siteId}" was not found in your Netlify account.`)
     log(`Please double check your siteID and which account you are logged into via \`netlify status\`.`)
     return exit()
