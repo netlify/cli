@@ -1,6 +1,7 @@
 // @ts-check
 import { Option } from 'commander'
 import inquirer from 'inquirer'
+import isEmpty from 'lodash/isEmpty.js'
 
 import { listSites } from '../../lib/api.mjs'
 import { chalk, error, exit, log } from '../../utils/command-helpers.mjs'
@@ -250,28 +251,23 @@ export const link = async (options, command) => {
     api,
     repositoryRoot,
     site: { id: siteId },
+    siteInfo,
     state,
   } = command.netlify
 
-  let siteData
-  try {
-    // @ts-ignore types from API are wrong they cannot recognize `getSite` of API
-    siteData = await api.getSite({ siteId })
-  } catch {
-    // silent api error
-  }
+  let siteData = siteInfo
 
   // Add .netlify to .gitignore file
   await ensureNetlifyIgnore(repositoryRoot)
 
   // Site id is incorrect
-  if (siteId && !siteData) {
+  if (siteId && isEmpty(siteData)) {
     log(`"${siteId}" was not found in your Netlify account.`)
     log(`Please double check your siteID and which account you are logged into via \`netlify status\`.`)
     return exit()
   }
 
-  if (siteData) {
+  if (!isEmpty(siteInfo)) {
     // If already linked to site. exit and prompt for unlink
     log(`Site already linked to "${siteData.name}"`)
     log(`Admin url: ${siteData.admin_url}`)
