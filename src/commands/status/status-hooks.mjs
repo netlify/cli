@@ -1,7 +1,7 @@
 // @ts-check
 import prettyjson from 'prettyjson'
 
-import { error, log, warn } from '../../utils/command-helpers.mjs'
+import { log } from '../../utils/command-helpers.mjs'
 import requiresSiteInfo from '../../utils/hooks/requires-site-info.mjs'
 
 /**
@@ -42,4 +42,8 @@ Site Hook Status │
  * @returns
  */
 export const createStatusHooksCommand = (program) =>
-  program.command('status:hooks').description('Print hook information of the linked site').hook('preAction', requiresSiteInfo).action(statusHooks)
+  program
+    .command('status:hooks')
+    .description('Print hook information of the linked site')
+    .hook('preAction', requiresSiteInfo)
+    .action(statusHooks)
