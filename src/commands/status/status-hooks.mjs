@@ -2,6 +2,7 @@
 import prettyjson from 'prettyjson'
 
 import { error, log, warn } from '../../utils/command-helpers.mjs'
+import requiresSiteInfo from '../../utils/hooks/requires-site-info.mjs'
 
 /**
  * The status:hooks command
@@ -9,35 +10,13 @@ import { error, log, warn } from '../../utils/command-helpers.mjs'
  * @param {import('../base-command.mjs').default} command
  */
 const statusHooks = async (options, command) => {
-  const { api, site } = command.netlify
+  const { api, siteInfo } = command.netlify
 
   await command.authenticate()
 
-  const siteId = site.id
-  if (!siteId) {
-    warn('Did you run `netlify link` yet?')
-    error(`You don't appear to be in a folder that is linked to a site`)
-  }
-
-  let siteData
-  try {
-    siteData = await api.getSite({ siteId })
-  } catch (error_) {
-    // unauthorized
-    if (error_.status === 401) {
-      warn(`Log in with a different account or re-link to a site you have permission for`)
-      error(`Not authorized to view the currently linked site (${siteId})`)
-    }
-    // missing
-    if (error_.status === 404) {
-      error(`The site this folder is linked to can't be found`)
-    }
-    error(error_)
-  }
-
-  const ntlHooks = await api.listHooksBySiteId({ siteId: siteData.id })
+  const ntlHooks = await api.listHooksBySiteId({ siteId: siteInfo.id })
   const data = {
-    site: siteData.name,
+    site: siteInfo.name,
     hooks: {},
   }
   ntlHooks.forEach((hook) => {
@@ -47,8 +26,8 @@ const statusHooks = async (options, command) => {
       id: hook.id,
       disabled: hook.disabled,
     }
-    if (siteData.build_settings?.repo_url) {
-      data.hooks[hook.id].repo_url = siteData.build_settings.repo_url
+    if (siteInfo.build_settings?.repo_url) {
+      data.hooks[hook.id].repo_url = siteInfo.build_settings.repo_url
     }
   })
   log(`─────────────────┐
@@ -63,4 +42,4 @@ Site Hook Status │
  * @returns
  */
 export const createStatusHooksCommand = (program) =>
-  program.command('status:hooks').description('Print hook information of the linked site').action(statusHooks)
+  program.command('status:hooks').description('Print hook information of the linked site').hook('preAction', requiresSiteInfo).action(statusHooks)
