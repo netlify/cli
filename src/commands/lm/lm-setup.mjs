@@ -43,8 +43,7 @@ const provisionService = async function (siteId, api) {
   }
 }
 
-const configureLFSURL = async function (siteId, api) {
-  const siteInfo = await api.getSite({ siteId })
+const configureLFSURL = async function (siteInfo) {
   const url = `https://${siteInfo.id_domain}/.netlify/large-media`
 
   return execa('git', ['config', '-f', '.lfsconfig', 'lfs.url', url])
@@ -58,7 +57,7 @@ const configureLFSURL = async function (siteId, api) {
 const lmSetup = async (options, command) => {
   await command.authenticate()
 
-  const { api, site } = command.netlify
+  const { api, site, siteInfo } = command.netlify
 
   let helperInstalled = false
   if (!options.skipInstall) {
@@ -79,7 +78,7 @@ const lmSetup = async (options, command) => {
     {
       title: 'Configuring Git LFS for this site',
       async task() {
-        await configureLFSURL(site.id, api)
+        await configureLFSURL(siteInfo)
       },
     },
   ])
