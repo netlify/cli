@@ -43,7 +43,7 @@ const provisionService = async function (siteId, api) {
   }
 }
 
-const configureLFSURL = async function (siteInfo) {
+const configureLFSURL = function (siteInfo) {
   const url = `https://${siteInfo.id_domain}/.netlify/large-media`
 
   return execa('git', ['config', '-f', '.lfsconfig', 'lfs.url', url])
