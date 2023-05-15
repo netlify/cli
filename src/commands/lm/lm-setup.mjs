@@ -77,8 +77,8 @@ const lmSetup = async (options, command) => {
     },
     {
       title: 'Configuring Git LFS for this site',
-      async task() {
-        await configureLFSURL(siteInfo)
+      task() {
+        configureLFSURL(siteInfo)
       },
     },
   ])
