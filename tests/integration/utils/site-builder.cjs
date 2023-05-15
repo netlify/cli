@@ -206,6 +206,16 @@ class SiteBuilder {
     return this
   }
 
+  withCommand({ command }) {
+    this.tasks.push(async () => {
+      const [mainCommand, ...args] = command
+
+      await execa(mainCommand, args, { cwd: this.directory })
+    })
+
+    return this
+  }
+
   async build() {
     // eslint-disable-next-line fp/no-loops
     for (const task of this.tasks) {

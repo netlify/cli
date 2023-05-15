@@ -51,9 +51,6 @@ export const handleSynchronousFunction = function ({
   if (result.body) {
     if (isStream(result.body)) {
       result.body.pipe(response)
-      result.body.on('end', () => {
-        console.log('-> EVENT: end')
-      })
 
       return
     }
