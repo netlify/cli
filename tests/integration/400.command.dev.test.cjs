@@ -469,7 +469,14 @@ test('should support functions with streaming responses', async (t) => {
       const chunks = []
       const response = got.stream(`${server.url}/.netlify/functions/streamer`)
 
+      let lastTimestamp = 0
+
       response.on('data', (chunk) => {
+        const now = Date.now()
+
+        t.true(now > lastTimestamp)
+
+        lastTimestamp = now
         chunks.push(chunk.toString())
       })
 
