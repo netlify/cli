@@ -3,7 +3,7 @@ import { error, warn } from '../command-helpers.mjs'
  * A preAction hook that errors out if siteInfo is an empty object
  * @param {*} command
  */
-const requiresSite = async (command) => {
+const requiresSiteInfo = async (command) => {
   const {api, site} = command.netlify
   const siteId = site.id
   if (!siteId) {
@@ -27,4 +27,4 @@ const requiresSite = async (command) => {
 }
 
 
-export default requiresSite
+export default requiresSiteInfo

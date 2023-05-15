@@ -3,7 +3,7 @@ import AsciiTable from 'ascii-table'
 
 import { error, exit, log, logJson, warn } from '../../utils/command-helpers.mjs'
 import { getFunctions, getFunctionsDir } from '../../utils/functions/index.mjs'
-import requiresSite from '../../utils/hooks/requires-site.mjs'
+import requiresSiteInfo from '../../utils/hooks/requires-site-info.mjs'
 
 const normalizeFunction = function (deployedFunctions, { name, urlPath: url }) {
   const isDeployed = deployedFunctions.some((deployedFunction) => deployedFunction.n === name)
@@ -70,5 +70,5 @@ NOT the same as listing the functions that have been deployed. For that info you
     )
     .option('-f, --functions <dir>', 'Specify a functions directory to list')
     .option('--json', 'Output function data as JSON')
-    .hook('preAction', requiresSite)
+    .hook('preAction', requiresSiteInfo)
     .action(functionsList)
