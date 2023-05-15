@@ -508,8 +508,8 @@ const deploy = async (options, command) => {
 
   let siteData = {}
   if (siteId && !isEmpty(siteInfo)) {
-      siteData = siteInfo
-      siteId = siteData.id
+    siteData = siteInfo
+    siteId = siteData.id
   } else {
     log("This folder isn't linked to a site yet")
     const NEW_SITE = '+  Create & configure a new site'

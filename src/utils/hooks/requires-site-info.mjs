@@ -4,7 +4,7 @@ import { error, warn } from '../command-helpers.mjs'
  * @param {*} command
  */
 const requiresSiteInfo = async (command) => {
-  const {api, site} = command.netlify
+  const { api, site } = command.netlify
   const siteId = site.id
   if (!siteId) {
     warn('Did you run `netlify link` yet?')
@@ -25,6 +25,5 @@ const requiresSiteInfo = async (command) => {
     error(error_)
   }
 }
-
 
 export default requiresSiteInfo

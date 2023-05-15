@@ -1,7 +1,7 @@
 // @ts-check
 import AsciiTable from 'ascii-table'
 
-import { error, exit, log, logJson, warn } from '../../utils/command-helpers.mjs'
+import { exit, log, logJson } from '../../utils/command-helpers.mjs'
 import { getFunctions, getFunctionsDir } from '../../utils/functions/index.mjs'
 import requiresSiteInfo from '../../utils/hooks/requires-site-info.mjs'
 

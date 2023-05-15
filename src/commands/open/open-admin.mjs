@@ -1,4 +1,4 @@
-import { error, exit, log, warn } from '../../utils/command-helpers.mjs'
+import { exit, log } from '../../utils/command-helpers.mjs'
 import requiresSiteInfo from '../../utils/hooks/requires-site-info.mjs'
 import openBrowser from '../../utils/open-browser.mjs'
 

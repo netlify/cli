@@ -1,4 +1,4 @@
-import { error } from '../../utils/command-helpers.mjs'
+import { error } from './command-helpers.mjs'
 
 export const getSiteByName = async (api, siteName) => {
   try {
