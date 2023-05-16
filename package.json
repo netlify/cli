@@ -164,7 +164,7 @@
     "prettyjson": "1.2.5",
     "pump": "3.0.0",
     "raw-body": "2.5.2",
-    "read-pkg-up": "7.0.1",
+    "read-pkg-up": "9.1.0",
     "semver": "7.5.1",
     "source-map-support": "0.5.21",
     "string-similarity": "4.0.4",
