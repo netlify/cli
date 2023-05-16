@@ -110,7 +110,7 @@
     "decache": "4.6.1",
     "dot-prop": "6.0.1",
     "dotenv": "16.0.3",
-    "env-paths": "2.2.1",
+    "env-paths": "3.0.0",
     "envinfo": "7.8.1",
     "etag": "1.8.1",
     "execa": "5.1.1",
