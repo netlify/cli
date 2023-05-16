@@ -84,7 +84,7 @@
     "@netlify/edge-bundler": "8.14.2",
     "@netlify/framework-info": "9.8.7",
     "@netlify/local-functions-proxy": "1.1.1",
-    "@netlify/zip-it-and-ship-it": "9.5.0",
+    "@netlify/zip-it-and-ship-it": "9.6.0",
     "@octokit/rest": "19.0.8",
     "@skn0tt/lambda-local": "2.0.3",
     "ansi-escapes": "6.2.0",
