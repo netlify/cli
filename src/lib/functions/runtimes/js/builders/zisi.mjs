@@ -3,7 +3,7 @@ import { createRequire } from 'module'
 import path from 'path'
 
 import decache from 'decache'
-import readPkgUp from 'read-pkg-up'
+import { readPackageUp } from 'read-pkg-up'
 import sourceMapSupport from 'source-map-support'
 
 import { NETLIFYDEVERR } from '../../../../../utils/command-helpers.mjs'
@@ -112,7 +112,7 @@ const netlifyConfigToZisiConfig = ({ config, projectRoot }) =>
 export default async function handler({ config, directory, errorExit, func, projectRoot }) {
   const functionsConfig = netlifyConfigToZisiConfig({ config, projectRoot })
 
-  const packageJson = await readPkgUp(func.mainFile)
+  const packageJson = await readPackageUp(func.mainFile)
   const hasTypeModule = packageJson && packageJson.packageJson.type === 'module'
 
   // We must use esbuild for certain file extensions.
