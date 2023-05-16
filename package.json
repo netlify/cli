@@ -155,7 +155,7 @@
     "node-version-alias": "3.4.1",
     "ora": "6.3.0",
     "p-filter": "3.0.0",
-    "p-map": "5.5.0",
+    "p-map": "6.0.0",
     "p-wait-for": "5.0.2",
     "parallel-transform": "1.2.0",
     "parse-github-url": "1.0.2",
