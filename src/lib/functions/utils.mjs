@@ -1,12 +1,12 @@
 // @ts-check
 import { chalk, warn } from '../../utils/command-helpers.mjs'
-import { getLogMessage } from '../log.mjs'
+import { MISSING_AWS_SDK_WARNING } from '../log.mjs'
 
 export const detectAwsSdkError = ({ error }) => {
   const isAwsSdkError = error && error.errorMessage && error.errorMessage.includes("Cannot find module 'aws-sdk'")
 
   if (isAwsSdkError) {
-    warn(getLogMessage('functions.missingAwsSdk'))
+    warn(MISSING_AWS_SDK_WARNING)
   }
 }
 

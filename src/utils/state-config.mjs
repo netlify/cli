@@ -2,7 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import process from 'process'
 
-import dotProp from 'dot-prop'
+import { deleteProperty, getProperty, hasProperty, setProperty } from 'dot-prop'
 import { findUpSync } from 'find-up'
 import writeFileAtomic from 'write-file-atomic'
 
@@ -75,7 +75,7 @@ export default class StateConfig {
       // TODO figure out cleaner way of grabbing ENV vars
       return process.env.NETLIFY_SITE_ID
     }
-    return dotProp.get(this.all, key)
+    return getProperty(this.all, key)
   }
 
   set(...args) {
@@ -84,22 +84,22 @@ export default class StateConfig {
 
     if (args.length === 1) {
       Object.entries(key).forEach(([keyPart, value]) => {
-        dotProp.set(config, keyPart, value)
+        setProperty(config, keyPart, value)
       })
     } else {
-      dotProp.set(config, key, val)
+      setProperty(config, key, val)
     }
 
     this.all = config
   }
 
   has(key) {
-    return dotProp.has(this.all, key)
+    return hasProperty(this.all, key)
   }
 
   delete(key) {
     const config = this.all
-    dotProp.delete(config, key)
+    deleteProperty(config, key)
     this.all = config
   }
 

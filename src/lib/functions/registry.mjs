@@ -15,7 +15,7 @@ import {
   watchDebounced,
 } from '../../utils/command-helpers.mjs'
 import { INTERNAL_FUNCTIONS_FOLDER, SERVE_FUNCTIONS_FOLDER } from '../../utils/functions/functions.mjs'
-import { getLogMessage } from '../log.mjs'
+import { BACKGROUND_FUNCTIONS_WARNING } from '../log.mjs'
 import { getPathInProject } from '../settings.mjs'
 
 import NetlifyFunction from './netlify-function.mjs'
@@ -140,7 +140,7 @@ export class FunctionsRegistry {
     }
 
     if (func.isBackground && this.isConnected && !this.capabilities.backgroundFunctions) {
-      warn(getLogMessage('functions.backgroundNotSupported'))
+      warn(BACKGROUND_FUNCTIONS_WARNING)
     }
 
     if (!func.hasValidName()) {
