@@ -1,6 +1,5 @@
 // @ts-check
 import { Option } from 'commander'
-import dotProp from 'dot-prop'
 import inquirer from 'inquirer'
 import isEmpty from 'lodash/isEmpty.js'
 
@@ -17,7 +16,11 @@ const persistState = ({ siteInfo, state }) => {
   state.set('siteId', siteInfo.id)
 }
 
-const getRepoUrl = ({ siteInfo }) => dotProp.get(siteInfo, 'build_settings.repo_url')
+/**
+ * @param {{} | undefined} siteInfo
+ * @returns {string | undefined}
+ */
+const getRepoUrl = (siteInfo) => siteInfo?.build_settings?.repo_url
 
 const logExistingAndExit = ({ siteInfo }) => {
   log()
@@ -187,7 +190,7 @@ export const init = async (options, command) => {
   // Add .netlify to .gitignore file
   await ensureNetlifyIgnore(repositoryRoot)
 
-  const repoUrl = getRepoUrl({ siteInfo })
+  const repoUrl = getRepoUrl(siteInfo)
   if (repoUrl && !options.force) {
     logExistingAndExit({ siteInfo })
   }
@@ -205,7 +208,7 @@ export const init = async (options, command) => {
   log()
 
   // Check for existing CI setup
-  const remoteBuildRepo = getRepoUrl({ siteInfo })
+  const remoteBuildRepo = getRepoUrl(siteInfo)
   if (remoteBuildRepo && !options.force) {
     logExistingRepoSetupAndExit({ siteName: siteInfo.name, repoUrl: remoteBuildRepo })
   }

@@ -1,5 +1,4 @@
 // @ts-check
-import { get } from 'dot-prop'
 import prettyjson from 'prettyjson'
 
 import { error, log, warn } from '../../utils/command-helpers.mjs'
@@ -48,8 +47,8 @@ const statusHooks = async (options, command) => {
       id: hook.id,
       disabled: hook.disabled,
     }
-    if (get(siteData, 'build_settings.repo_url')) {
-      data.hooks[hook.id].repo_url = get(siteData, 'build_settings.repo_url')
+    if (siteData.build_settings?.repo_url) {
+      data.hooks[hook.id].repo_url = siteData.build_settings.repo_url
     }
   })
   log(`─────────────────┐

@@ -1,5 +1,4 @@
 // @ts-check
-import { get } from 'dot-prop'
 import jwtDecode from 'jwt-decode'
 
 import { NETLIFYDEVERR, NETLIFYDEVLOG, error as errorExit, log } from '../../utils/command-helpers.mjs'
@@ -94,7 +93,7 @@ export const createHandler = function (options) {
       {},
     )
     const rawQuery = new URLSearchParams(request.query).toString()
-    const protocol = get(options, 'config.dev.https') ? 'https' : 'http'
+    const protocol = options.config?.dev?.https ? 'https' : 'http'
     const url = new URL(requestPath, `${protocol}://${request.get('host') || 'localhost'}`)
     url.search = rawQuery
     const rawUrl = url.toString()

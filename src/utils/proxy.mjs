@@ -11,7 +11,7 @@ import zlib from 'zlib'
 
 import contentType from 'content-type'
 import cookie from 'cookie'
-import { get } from 'dot-prop'
+import { getProperty } from 'dot-prop'
 import generateETag from 'etag'
 import getAvailablePort from 'get-port'
 import httpProxy from 'http-proxy'
@@ -210,7 +210,7 @@ const serveRedirect = async function ({ env, match, options, proxy, req, res, si
       if ((jwtValue.exp || 0) < Math.round(Date.now() / MILLISEC_TO_SEC)) {
         console.warn(NETLIFYDEVWARN, 'Expired JWT provided in request', req.url)
       } else {
-        const presentedRoles = get(jwtValue, options.jwtRolePath) || []
+        const presentedRoles = getProperty(jwtValue, options.jwtRolePath) || []
         if (!Array.isArray(presentedRoles)) {
           console.warn(NETLIFYDEVWARN, `Invalid roles value provided in JWT ${options.jwtRolePath}`, presentedRoles)
           res.writeHead(400)

@@ -3,7 +3,6 @@ const path = require('path')
 // eslint-disable-next-line ava/use-test
 const avaTest = require('ava')
 const { isCI } = require('ci-info')
-const dotProp = require('dot-prop')
 const getAvailablePort = require('get-port')
 const jwt = require('jsonwebtoken')
 const { Response } = require('node-fetch')
@@ -17,12 +16,13 @@ const { withSiteBuilder } = require('./utils/site-builder.cjs')
 const test = isCI ? avaTest.serial.bind(avaTest) : avaTest
 
 const JWT_EXPIRY = 1_893_456_000
-const getToken = ({ jwtRolePath = 'app_metadata.authorization.roles', jwtSecret = 'secret', roles }) => {
+const getToken = async ({ jwtRolePath = 'app_metadata.authorization.roles', jwtSecret = 'secret', roles }) => {
+  const { setProperty } = await import('dot-prop')
   const payload = {
     exp: JWT_EXPIRY,
     sub: '12345678',
   }
-  return jwt.sign(dotProp.set(payload, jwtRolePath, roles), jwtSecret)
+  return jwt.sign(setProperty(payload, jwtRolePath, roles), jwtSecret)
 }
 
 const setupRoleBasedRedirectsSite = (builder) => {
@@ -44,8 +44,8 @@ const setupRoleBasedRedirectsSite = (builder) => {
 }
 
 const validateRoleBasedRedirectsSite = async ({ builder, jwtRolePath, jwtSecret, t }) => {
-  const adminToken = getToken({ jwtSecret, jwtRolePath, roles: ['admin'] })
-  const editorToken = getToken({ jwtSecret, jwtRolePath, roles: ['editor'] })
+  const adminToken = await getToken({ jwtSecret, jwtRolePath, roles: ['admin'] })
+  const editorToken = await getToken({ jwtSecret, jwtRolePath, roles: ['editor'] })
 
   await withDevServer({ cwd: builder.directory }, async (server) => {
     const unauthenticatedResponse = await got(`${server.url}/admin`, { throwHttpErrors: false })
