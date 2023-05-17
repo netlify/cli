@@ -1,8 +1,7 @@
-name: Post package size
-
+name: Post benchmarks
 on:
   workflow_run:
-    workflows: [Calculate package size]
+    workflows: [Calculate benchmarks]
     types:
       - completed
 
