@@ -28,4 +28,5 @@ jobs:
         uses: netlify/delta-action@v4
         with:
           title: '📊 Benchmark results'
+          style: 'text'
           pr_number: ${{ steps.pr_number.outputs.pr_number }}
