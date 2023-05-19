@@ -8,7 +8,7 @@ import { track } from '../../utils/telemetry/index.mjs'
  * @param {import('../base-command.mjs').default} command
  */
 const unlink = async (options, command) => {
-  const { site, state } = command.netlify
+  const { site, siteInfo, state } = command.netlify
   const siteId = site.id
 
   if (!siteId) {
@@ -16,13 +16,7 @@ const unlink = async (options, command) => {
     return exit()
   }
 
-  let siteData = {}
-  try {
-    // @ts-ignore types from API are wrong they cannot recognize `getSite` of API
-    siteData = await command.netlify.api.getSite({ siteId })
-  } catch {
-    // ignore errors if we can't get the site
-  }
+  const siteData = siteInfo
 
   state.delete('siteId')
 

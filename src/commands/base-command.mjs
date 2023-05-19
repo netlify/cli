@@ -24,6 +24,7 @@ import {
   warn,
 } from '../utils/command-helpers.mjs'
 import getGlobalConfig from '../utils/get-global-config.mjs'
+import { getSiteByName } from '../utils/get-site.mjs'
 import openBrowser from '../utils/open-browser.mjs'
 import StateConfig from '../utils/state-config.mjs'
 import { identify, track } from '../utils/telemetry/index.mjs'
@@ -440,11 +441,24 @@ export default class BaseCommand extends Command {
       certificateFile: options.httpProxyCertificateFilename,
     })
     const apiOpts = { ...apiUrlOpts, agent }
+    const api = new NetlifyAPI(token || '', apiOpts)
+
+    // If a user passes a site name as an option instead of a site ID to options.site, the siteInfo object
+    // will only have the property siteInfo.id. Checking for one of the other properties ensures that we can do
+    // a re-call of the api.getSite() that is done in @netlify/config so we have the proper site object in all
+    // commands.
+    // options.site as a site name (and not just site id) was introduced for the deploy command, so users could
+    // deploy by name along with by id
+    let siteData = siteInfo
+    if (!siteData.url && options.site) {
+      siteData = await getSiteByName(api, options.site)
+    }
+
     const globalConfig = await getGlobalConfig()
 
     actionCommand.netlify = {
       // api methods
-      api: new NetlifyAPI(token || '', apiOpts),
+      api,
       apiOpts,
       repositoryRoot,
       // current site context
@@ -458,8 +472,8 @@ export default class BaseCommand extends Command {
           state.set('siteId', id)
         },
       },
-      // Site information retrieved using the API
-      siteInfo,
+      // Site information retrieved using the API (api.getSite())
+      siteInfo: siteData,
       // Configuration from netlify.[toml/yml]
       config: normalizedConfig,
       // Used to avoid calling @netlify/config again

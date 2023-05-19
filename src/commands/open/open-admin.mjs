@@ -1,4 +1,5 @@
-import { error, exit, log, warn } from '../../utils/command-helpers.mjs'
+import { exit, log } from '../../utils/command-helpers.mjs'
+import requiresSiteInfo from '../../utils/hooks/requires-site-info.mjs'
 import openBrowser from '../../utils/open-browser.mjs'
 
 /**
@@ -7,42 +8,14 @@ import openBrowser from '../../utils/open-browser.mjs'
  * @param {import('../base-command.mjs').default} command
  */
 export const openAdmin = async (options, command) => {
-  const { api, site } = command.netlify
+  const { siteInfo } = command.netlify
 
   await command.authenticate()
 
-  const siteId = site.id
+  log(`Opening "${siteInfo.name}" site admin UI:`)
+  log(`> ${siteInfo.admin_url}`)
 
-  if (!siteId) {
-    warn(`No Site ID found in current directory.
-Run \`netlify link\` to connect to this folder to a site`)
-    return false
-  }
-
-  let siteData
-  try {
-    siteData = await api.getSite({ siteId })
-    log(`Opening "${siteData.name}" site admin UI:`)
-    log(`> ${siteData.admin_url}`)
-  } catch (error_) {
-    // unauthorized
-    if (error_.status === 401) {
-      warn(`Log in with a different account or re-link to a site you have permission for`)
-      error(`Not authorized to view the currently linked site (${siteId})`)
-    }
-    // site not found
-    if (error_.status === 404) {
-      log()
-      log('Please double check this ID and verify you are logged in with the correct account')
-      log()
-      log('To fix this, run `netlify unlink` then `netlify link` to reconnect to the correct site ID')
-      log()
-      error(`Site "${siteId}" not found in account`)
-    }
-    error(error_)
-  }
-
-  await openBrowser({ url: siteData.admin_url })
+  await openBrowser({ url: siteInfo.admin_url })
   exit()
 }
 
@@ -56,4 +29,5 @@ export const createOpenAdminCommand = (program) =>
     .command('open:admin')
     .description('Opens current site admin UI in Netlify')
     .addExamples(['netlify open:admin'])
+    .hook('preAction', requiresSiteInfo)
     .action(openAdmin)

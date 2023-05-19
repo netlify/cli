@@ -1,4 +1,5 @@
-import { error, exit, log, warn } from '../../utils/command-helpers.mjs'
+import { exit, log } from '../../utils/command-helpers.mjs'
+import requiresSiteInfo from '../../utils/hooks/requires-site-info.mjs'
 import openBrowser from '../../utils/open-browser.mjs'
 
 /**
@@ -7,33 +8,13 @@ import openBrowser from '../../utils/open-browser.mjs'
  * @param {import('../base-command.mjs').default} command
  */
 export const openSite = async (options, command) => {
-  const { api, site } = command.netlify
+  const { siteInfo } = command.netlify
 
   await command.authenticate()
 
-  const siteId = site.id
-
-  if (!siteId) {
-    warn(`No Site ID found in current directory.
-Run \`netlify link\` to connect to this folder to a site`)
-    return false
-  }
-
-  let siteData
-  let url
-  try {
-    siteData = await api.getSite({ siteId })
-    url = siteData.ssl_url || siteData.url
-    log(`Opening "${siteData.name}" site url:`)
-    log(`> ${url}`)
-  } catch (error_) {
-    // unauthorized
-    if (error_.status === 401) {
-      warn(`Log in with a different account or re-link to a site you have permission for`)
-      error(`Not authorized to view the currently linked site (${siteId})`)
-    }
-    error(error_)
-  }
+  const url = siteInfo.ssl_url || siteInfo.url
+  log(`Opening "${siteInfo.name}" site url:`)
+  log(`> ${url}`)
 
   await openBrowser({ url })
   exit()
@@ -49,4 +30,5 @@ export const createOpenSiteCommand = (program) =>
     .command('open:site')
     .description('Opens current site url in browser')
     .addExamples(['netlify open:site'])
+    .hook('preAction', requiresSiteInfo)
     .action(openSite)
