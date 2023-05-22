@@ -190,7 +190,7 @@
     "@netlify/functions": "1.6.0",
     "@types/fs-extra": "11.0.1",
     "@types/prettyjson": "0.0.30",
-    "@vitest/coverage-c8": "0.31.0",
+    "@vitest/coverage-c8": "0.31.1",
     "ava": "4.3.3",
     "c8": "7.13.0",
     "eslint-plugin-sort-destructure-keys": "1.5.0",
@@ -213,7 +213,7 @@
     "tree-kill": "1.2.2",
     "typescript": "5.0.4",
     "verdaccio": "5.24.1",
-    "vitest": "0.31.0"
+    "vitest": "0.31.1"
   },
   "ava": {
     "files": [
