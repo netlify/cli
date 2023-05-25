@@ -26,7 +26,6 @@ import {
   sortOptions,
   warn,
 } from '../utils/command-helpers.mjs'
-import { detectSettings } from '../utils/detect-server-settings.mjs'
 import getGlobalConfig from '../utils/get-global-config.mjs'
 import { getSiteByName } from '../utils/get-site.mjs'
 import openBrowser from '../utils/open-browser.mjs'
@@ -465,11 +464,10 @@ export default class BaseCommand extends Command {
     const project = new Project(fs, buildDir)
     const frameworks = await project.detectFrameworks()
 
-
-    const frameworkIDs = frameworks?.map(framework => framework.id)
+    const frameworkIDs = frameworks?.map((framework) => framework.id)
 
     if (frameworkIDs?.length !== 0) {
-      this.setAnalyticsPayload({frameworks: frameworkIDs })
+      this.setAnalyticsPayload({ frameworks: frameworkIDs })
     }
 
     const buildSystem = await project.detectBuildSystem()
