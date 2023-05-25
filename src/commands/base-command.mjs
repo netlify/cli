@@ -464,14 +464,17 @@ export default class BaseCommand extends Command {
     const fs = new NodeFS()
     const project = new Project(fs, buildDir)
     const frameworks = await project.detectFrameworks()
-    const buildSystem = await project.detectBuildSystem()
-    const packageManager = await project.detectPackageManager()
+
 
     const frameworkIDs = frameworks?.map(framework => framework.id)
 
     if (frameworkIDs?.length !== 0) {
-      this.setAnalyticsPayload({frameworks: frameworkIDs, packageManager: packageManager?.name, buildSystem })
+      this.setAnalyticsPayload({frameworks: frameworkIDs })
     }
+
+    const buildSystem = await project.detectBuildSystem()
+    const packageManager = await project.detectPackageManager()
+    this.setAnalyticsPayload({ packageManager: packageManager?.name, buildSystem })
 
     actionCommand.netlify = {
       // api methods
