@@ -189,7 +189,7 @@ const hasDevCommand = (framework) => Array.isArray(framework.dev.commands) && fr
  * The new build setting detection with build systems and frameworks combined
  * @param {string} projectDir
  */
-const detectSettings = async (projectDir) => {
+export const detectSettings = async (projectDir) => {
   const fs = new NodeFS()
   const project = new Project(fs, projectDir)
 
