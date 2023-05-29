@@ -470,7 +470,10 @@ export default class BaseCommand extends Command {
       this.setAnalyticsPayload({ frameworks: frameworkIDs })
     }
 
-    this.setAnalyticsPayload({ packageManager: project.packageManager?.name, buildSystem: project.buildSystems.map(({id}) => id) })
+    this.setAnalyticsPayload({
+      packageManager: project.packageManager?.name,
+      buildSystem: project.buildSystems.map(({ id }) => id),
+    })
 
     actionCommand.netlify = {
       // api methods
