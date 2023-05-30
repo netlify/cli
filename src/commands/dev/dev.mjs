@@ -123,7 +123,7 @@ const dev = async (options, command) => {
     exit(1)
   }
 
-  command.setAnalyticsPayload({ projectType: settings.framework || 'custom', live: options.live })
+  command.setAnalyticsPayload({ live: options.live })
 
   const liveTunnelUrl = await handleLiveTunnel({ options, site, api, settings })
   const url = liveTunnelUrl || getProxyUrl(settings)

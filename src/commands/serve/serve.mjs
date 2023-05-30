@@ -80,7 +80,7 @@ const serve = async (options, command) => {
     exit(1)
   }
 
-  command.setAnalyticsPayload({ projectType: settings.framework || 'custom', live: options.live })
+  command.setAnalyticsPayload({ live: options.live })
 
   log(`${NETLIFYDEVLOG} Building site for production`)
   log(
