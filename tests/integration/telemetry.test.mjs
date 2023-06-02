@@ -64,7 +64,13 @@ await withMockApi(routes, async () => {
     expect(Number.isInteger(request.body.duration)).toBe(true)
     expect(request.body.event).toBe('cli:command')
     expect(request.body.status).toBe('success')
-    expect(request.body.properties).toEqual({ cliVersion: version, command: 'api', nodejsVersion })
+    expect(request.body.properties).toEqual({
+      buildSystem: [],
+      cliVersion: version,
+      command: 'api',
+      nodejsVersion,
+      packageManager: 'npm',
+    })
   })
 
   test('should send correct command on failure', async ({ apiUrl, requests }) => {
@@ -76,6 +82,12 @@ await withMockApi(routes, async () => {
     expect(Number.isInteger(request.body.duration)).toBe(true)
     expect(request.body.event).toBe('cli:command')
     expect(request.body.status).toBe('error')
-    expect(request.body.properties).toEqual({ cliVersion: version, command: 'dev:exec', nodejsVersion })
+    expect(request.body.properties).toEqual({
+      buildSystem: [],
+      cliVersion: version,
+      command: 'dev:exec',
+      nodejsVersion,
+      packageManager: 'npm',
+    })
   })
 })
