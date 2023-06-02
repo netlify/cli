@@ -28,7 +28,10 @@ const recipesCommand = async (recipeName, options, command) => {
   try {
     return await runRecipe({ config, recipeName: sanitizedRecipeName, repositoryRoot })
   } catch (error) {
-    if (error.code !== 'MODULE_NOT_FOUND') {
+    if (
+      // The ESM loader throws this instead of MODULE_NOT_FOUND
+      error.code !== 'ERR_MODULE_NOT_FOUND'
+    ) {
       throw error
     }
 
