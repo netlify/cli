@@ -1,8 +1,8 @@
 // @ts-check
 import { basename } from 'path'
 
+import { closest } from 'fastest-levenshtein'
 import inquirer from 'inquirer'
-import { findBestMatch } from 'string-similarity'
 
 import { NETLIFYDEVERR, chalk, log } from '../../utils/command-helpers.mjs'
 
@@ -28,7 +28,10 @@ const recipesCommand = async (recipeName, options, command) => {
   try {
     return await runRecipe({ config, recipeName: sanitizedRecipeName, repositoryRoot })
   } catch (error) {
-    if (error.code !== 'MODULE_NOT_FOUND') {
+    if (
+      // The ESM loader throws this instead of MODULE_NOT_FOUND
+      error.code !== 'ERR_MODULE_NOT_FOUND'
+    ) {
       throw error
     }
 
@@ -36,9 +39,7 @@ const recipesCommand = async (recipeName, options, command) => {
 
     const recipes = await listRecipes()
     const recipeNames = recipes.map(({ name }) => name)
-    const {
-      bestMatch: { target: suggestion },
-    } = findBestMatch(recipeName, recipeNames)
+    const suggestion = closest(recipeName, recipeNames)
     const applySuggestion = await new Promise((resolve) => {
       const prompt = inquirer.prompt({
         type: 'confirm',
