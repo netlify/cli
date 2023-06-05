@@ -207,7 +207,7 @@
     "p-timeout": "4.1.0",
     "serialize-javascript": "6.0.1",
     "sinon": "14.0.2",
-    "strip-ansi": "7.0.1",
+    "strip-ansi": "7.1.0",
     "temp-dir": "2.0.0",
     "tomlify-j0.4": "3.0.0",
     "tree-kill": "1.2.2",
