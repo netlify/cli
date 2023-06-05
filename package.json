@@ -78,9 +78,9 @@
   "dependencies": {
     "@bugsnag/js": "7.20.2",
     "@fastify/static": "6.10.2",
-    "@netlify/build": "29.11.7",
+    "@netlify/build": "29.11.8",
     "@netlify/build-info": "7.0.4",
-    "@netlify/config": "20.4.3",
+    "@netlify/config": "20.4.4",
     "@netlify/edge-bundler": "8.16.0",
     "@netlify/framework-info": "9.8.8",
     "@netlify/local-functions-proxy": "1.1.1",
@@ -185,12 +185,12 @@
     "write-file-atomic": "5.0.1"
   },
   "devDependencies": {
-    "@babel/preset-react": "7.18.6",
+    "@babel/preset-react": "7.22.3",
     "@netlify/eslint-config-node": "7.0.0",
     "@netlify/functions": "1.6.0",
     "@types/fs-extra": "11.0.1",
     "@types/prettyjson": "0.0.30",
-    "@vitest/coverage-c8": "0.31.1",
+    "@vitest/coverage-c8": "0.31.4",
     "ava": "4.3.3",
     "c8": "7.13.0",
     "eslint-plugin-sort-destructure-keys": "1.5.0",
@@ -207,13 +207,13 @@
     "p-timeout": "4.1.0",
     "serialize-javascript": "6.0.1",
     "sinon": "14.0.2",
-    "strip-ansi": "7.0.1",
+    "strip-ansi": "7.1.0",
     "temp-dir": "2.0.0",
     "tomlify-j0.4": "3.0.0",
     "tree-kill": "1.2.2",
     "typescript": "5.0.4",
     "verdaccio": "5.24.1",
-    "vitest": "0.31.1"
+    "vitest": "0.31.4"
   },
   "ava": {
     "files": [
