@@ -27,7 +27,7 @@ netlify dev
 - `functions` (*string*) - specify a functions folder to serve
 - `functions-port` (*string*) - port of functions server
 - `geo` (*cache | mock | update*) - force geolocation data to be updated, use cached data from the last 24h if found, or use a mock location
-- `live` (*boolean*) - start a public live session
+- `live` (*string*) - start a public live session; to generate a vanity URL, supply a custom ID
 - `offline` (*boolean*) - disables any features that require network access
 - `port` (*string*) - port of netlify dev
 - `target-port` (*string*) - port of target app server
