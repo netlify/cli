@@ -50,7 +50,7 @@ const handleLiveTunnel = async ({ api, options, settings, site, state }) => {
     let message = `${NETLIFYDEVWARN} Creating live URL with ID ${chalk.yellow(slug)}`
 
     if (!customSlug) {
-      message += ` (to generate a vanity URL, use ${chalk.magenta('--live=<ID>')})`
+      message += ` (to generate a custom URL, use ${chalk.magenta('--live=<subdomain>')})`
     }
 
     log(message)
@@ -247,7 +247,11 @@ export const createDevCommand = (program) => {
     .option('-d ,--dir <path>', 'dir with static files')
     .option('-f ,--functions <folder>', 'specify a functions folder to serve')
     .option('-o ,--offline', 'disables any features that require network access')
-    .option('-l, --live [ID]', 'start a public live session; to generate a vanity URL, supply a custom ID', false)
+    .option(
+      '-l, --live [subdomain]',
+      'start a public live session; optionally, supply a subdomain to generate a custom URL',
+      false,
+    )
     .addOption(
       new Option('--functionsPort <port>', 'Old, prefer --functions-port. Port of functions server')
         .argParser((value) => Number.parseInt(value))
