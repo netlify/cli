@@ -6,6 +6,6 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "hugo-bin": "^0.106.1"
+    "hugo-bin": "^0.108.0"
   }
 }
