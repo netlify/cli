@@ -21,11 +21,7 @@ import detectServerSettings, { getConfigWithPlugins } from '../../utils/detect-s
 import { getDotEnvVariables, getSiteInformation, injectEnvVariables } from '../../utils/dev.mjs'
 import { getEnvelopeEnv, normalizeContext } from '../../utils/env/index.mjs'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.mjs'
-import {
-  generateRandomSlug as generateLiveTunnelSlug,
-  startLiveTunnel,
-  SLUG_LOCAL_STATE_KEY,
-} from '../../utils/live-tunnel.mjs'
+import { getLiveTunnelSlug, startLiveTunnel } from '../../utils/live-tunnel.mjs'
 import openBrowser from '../../utils/open-browser.mjs'
 import { generateInspectSettings, startProxyServer } from '../../utils/proxy-server.mjs'
 import { getProxyUrl } from '../../utils/proxy.mjs'
@@ -218,24 +214,6 @@ const dev = async (options, command) => {
   }
 
   printBanner({ url })
-}
-
-const getLiveTunnelSlug = (state, override) => {
-  if (override !== undefined) {
-    return override
-  }
-
-  const existingSlug = state.get(SLUG_LOCAL_STATE_KEY)
-
-  if (existingSlug !== undefined) {
-    return existingSlug
-  }
-
-  const newSlug = generateLiveTunnelSlug()
-
-  state.set(SLUG_LOCAL_STATE_KEY, newSlug)
-
-  return newSlug
 }
 
 /**

@@ -125,4 +125,22 @@ export const startLiveTunnel = async ({ localPort, netlifyApiToken, siteId, slug
   return session.session_url
 }
 
-export const generateRandomSlug = () => uuidv4().slice(0, 8)
+export const getLiveTunnelSlug = (state, override) => {
+  if (override !== undefined) {
+    return override
+  }
+
+  const existingSlug = state.get(SLUG_LOCAL_STATE_KEY)
+
+  if (existingSlug !== undefined) {
+    return existingSlug
+  }
+
+  const newSlug = generateRandomSlug()
+
+  state.set(SLUG_LOCAL_STATE_KEY, newSlug)
+
+  return newSlug
+}
+
+const generateRandomSlug = () => uuidv4().slice(0, 8)
