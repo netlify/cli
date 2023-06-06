@@ -13,8 +13,7 @@ import execa from './execa.mjs'
 
 const PACKAGE_NAME = 'live-tunnel-client'
 const EXEC_NAME = PACKAGE_NAME
-
-export const SLUG_LOCAL_STATE_KEY = 'liveTunnelSlug'
+const SLUG_LOCAL_STATE_KEY = 'liveTunnelSlug'
 
 // 1 second
 const TUNNEL_POLL_INTERVAL = 1e3
