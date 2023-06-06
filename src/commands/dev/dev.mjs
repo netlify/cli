@@ -21,7 +21,11 @@ import detectServerSettings, { getConfigWithPlugins } from '../../utils/detect-s
 import { getDotEnvVariables, getSiteInformation, injectEnvVariables } from '../../utils/dev.mjs'
 import { getEnvelopeEnv, normalizeContext } from '../../utils/env/index.mjs'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.mjs'
-import { startLiveTunnel } from '../../utils/live-tunnel.mjs'
+import {
+  generateRandomSlug as generateLiveTunnelSlug,
+  startLiveTunnel,
+  SLUG_LOCAL_STATE_KEY,
+} from '../../utils/live-tunnel.mjs'
 import openBrowser from '../../utils/open-browser.mjs'
 import { generateInspectSettings, startProxyServer } from '../../utils/proxy-server.mjs'
 import { getProxyUrl } from '../../utils/proxy.mjs'
@@ -37,16 +41,33 @@ import { createDevExecCommand } from './dev-exec.mjs'
  * @param {import('commander').OptionValues} config.options
  * @param {*} config.settings
  * @param {*} config.site
+ * @param {*} config.state
  * @returns
  */
-const handleLiveTunnel = async ({ api, options, settings, site }) => {
-  if (options.live) {
+const handleLiveTunnel = async ({ api, options, settings, site, state }) => {
+  const { live } = options
+
+  if (live) {
+    const customSlug = typeof live === 'string' && live.length !== 0 ? live : undefined
+    const slug = getLiveTunnelSlug(state, customSlug)
+
+    let message = `${NETLIFYDEVWARN} Creating live URL with ID ${chalk.yellow(slug)}`
+
+    if (!customSlug) {
+      message += ` (to generate a vanity URL, use ${chalk.magenta('--live=<ID>')})`
+    }
+
+    log(message)
+
     const sessionUrl = await startLiveTunnel({
       siteId: site.id,
       netlifyApiToken: api.accessToken,
       localPort: settings.port,
+      slug,
     })
+
     process.env.BASE_URL = sessionUrl
+
     return sessionUrl
   }
 }
@@ -125,8 +146,9 @@ const dev = async (options, command) => {
 
   command.setAnalyticsPayload({ live: options.live })
 
-  const liveTunnelUrl = await handleLiveTunnel({ options, site, api, settings })
+  const liveTunnelUrl = await handleLiveTunnel({ options, site, api, settings, state })
   const url = liveTunnelUrl || getProxyUrl(settings)
+
   process.env.URL = url
   process.env.DEPLOY_URL = url
 
@@ -198,6 +220,24 @@ const dev = async (options, command) => {
   printBanner({ url })
 }
 
+const getLiveTunnelSlug = (state, override) => {
+  if (override !== undefined) {
+    return override
+  }
+
+  const existingSlug = state.get(SLUG_LOCAL_STATE_KEY)
+
+  if (existingSlug !== undefined) {
+    return existingSlug
+  }
+
+  const newSlug = generateLiveTunnelSlug()
+
+  state.set(SLUG_LOCAL_STATE_KEY, newSlug)
+
+  return newSlug
+}
+
 /**
  * Creates the `netlify dev` command
  * @param {import('../base-command.mjs').default} program
@@ -229,7 +269,7 @@ export const createDevCommand = (program) => {
     .option('-d ,--dir <path>', 'dir with static files')
     .option('-f ,--functions <folder>', 'specify a functions folder to serve')
     .option('-o ,--offline', 'disables any features that require network access')
-    .option('-l, --live', 'start a public live session', false)
+    .option('-l, --live [ID]', 'start a public live session; to generate a vanity URL, supply a custom ID', false)
     .addOption(
       new Option('--functionsPort <port>', 'Old, prefer --functions-port. Port of functions server')
         .argParser((value) => Number.parseInt(value))

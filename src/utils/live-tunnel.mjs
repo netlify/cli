@@ -3,6 +3,7 @@ import process from 'process'
 
 import fetch from 'node-fetch'
 import pWaitFor from 'p-wait-for'
+import { v4 as uuidv4 } from 'uuid'
 
 import { fetchLatestVersion, shouldFetchLatestVersion } from '../lib/exec-fetcher.mjs'
 import { getPathInHome } from '../lib/settings.mjs'
@@ -13,12 +14,14 @@ import execa from './execa.mjs'
 const PACKAGE_NAME = 'live-tunnel-client'
 const EXEC_NAME = PACKAGE_NAME
 
+export const SLUG_LOCAL_STATE_KEY = 'liveTunnelSlug'
+
 // 1 second
 const TUNNEL_POLL_INTERVAL = 1e3
 // 5 minutes
 const TUNNEL_POLL_TIMEOUT = 3e5
 
-const createTunnel = async function ({ netlifyApiToken, siteId }) {
+const createTunnel = async function ({ netlifyApiToken, siteId, slug }) {
   await installTunnelClient()
 
   if (!siteId) {
@@ -29,9 +32,8 @@ const createTunnel = async function ({ netlifyApiToken, siteId }) {
     )
     process.exit(1)
   }
-  log(`${NETLIFYDEVLOG} Creating Live Tunnel for ${siteId}`)
-  const url = `https://api.netlify.com/api/v1/live_sessions?site_id=${siteId}`
 
+  const url = `https://api.netlify.com/api/v1/live_sessions?site_id=${siteId}&slug=${slug}`
   const response = await fetch(url, {
     method: 'POST',
     headers: {
@@ -87,10 +89,11 @@ const installTunnelClient = async function () {
   })
 }
 
-export const startLiveTunnel = async ({ localPort, netlifyApiToken, siteId }) => {
+export const startLiveTunnel = async ({ localPort, netlifyApiToken, siteId, slug }) => {
   const session = await createTunnel({
     siteId,
     netlifyApiToken,
+    slug,
   })
 
   const isLiveTunnelReady = async function () {
@@ -121,3 +124,5 @@ export const startLiveTunnel = async ({ localPort, netlifyApiToken, siteId }) =>
 
   return session.session_url
 }
+
+export const generateRandomSlug = () => uuidv4().slice(0, 8)
