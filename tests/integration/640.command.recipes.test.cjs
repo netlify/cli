@@ -139,3 +139,9 @@ test('Handles JSON with comments', async (t) => {
     t.deepEqual([...settings['deno.enablePaths']], ['/some/path', 'netlify/edge-functions'])
   })
 })
+
+test('Suggests closest matching recipe on typo', async (t) => {
+  const cliResponse = await callCli(['recipes', 'vsc'])
+
+  t.snapshot(normalize(cliResponse))
+})

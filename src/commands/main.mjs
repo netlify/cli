@@ -2,8 +2,8 @@
 import process from 'process'
 
 import { Option } from 'commander'
+import { closest } from 'fastest-levenshtein'
 import inquirer from 'inquirer'
-import { findBestMatch } from 'string-similarity'
 
 import { BANG, chalk, error, exit, log, NETLIFY_CYAN, USER_AGENT, warn } from '../utils/command-helpers.mjs'
 import execa from '../utils/execa.mjs'
@@ -118,9 +118,7 @@ const mainCommand = async function (options, command) {
   warn(`${chalk.yellow(command.args[0])} is not a ${command.name()} command.`)
 
   const allCommands = command.commands.map((cmd) => cmd.name())
-  const {
-    bestMatch: { target: suggestion },
-  } = findBestMatch(command.args[0], allCommands)
+  const suggestion = closest(command.args[0], allCommands)
 
   const applySuggestion = await new Promise((resolve) => {
     const prompt = inquirer.prompt({
