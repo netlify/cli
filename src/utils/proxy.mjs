@@ -301,7 +301,10 @@ const serveRedirect = async function ({ env, match, options, proxy, req, res, si
     }
 
     if (isFunction(options.functionsPort, req.url)) {
-      req.headers['x-netlify-original-pathname'] = reqToURL(req, originalURL).pathname
+      const url = reqToURL(req, originalURL)
+      req.headers['x-netlify-original-pathname'] = url.pathname
+      req.headers['x-netlify-original-search'] = url.search
+
       return proxy.web(req, res, { target: options.functionsServer })
     }
     const addonUrl = getAddonUrl(options.addonsUrls, req)

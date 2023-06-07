@@ -84,7 +84,14 @@ export const createHandler = function (options) {
       requestPath = request.header('x-netlify-original-pathname')
       delete request.headers['x-netlify-original-pathname']
     }
-    const queryParams = Object.entries(request.query).reduce(
+
+    let requestQuery = request.query
+    if (request.header('x-netlify-original-search')) {
+      requestQuery = Object.fromEntries(new URLSearchParams(request.header('x-netlify-original-search')))
+      delete request.headers['x-netlify-original-search']
+    }
+
+    const queryParams = Object.entries(requestQuery).reduce(
       (prev, [key, value]) => ({ ...prev, [key]: Array.isArray(value) ? value : [value] }),
       {},
     )
@@ -92,7 +99,7 @@ export const createHandler = function (options) {
       (prev, [key, value]) => ({ ...prev, [key]: Array.isArray(value) ? value : [value] }),
       {},
     )
-    const rawQuery = new URLSearchParams(request.query).toString()
+    const rawQuery = new URLSearchParams(requestQuery).toString()
     const protocol = options.config?.dev?.https ? 'https' : 'http'
     const url = new URL(requestPath, `${protocol}://${request.get('host') || 'localhost'}`)
     url.search = rawQuery
