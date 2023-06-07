@@ -129,15 +129,19 @@ export const getLiveTunnelSlug = (state, override) => {
     return override
   }
 
-  const existingSlug = state.get(SLUG_LOCAL_STATE_KEY)
-
-  if (existingSlug !== undefined) {
-    return existingSlug
-  }
-
   const newSlug = generateRandomSlug()
 
-  state.set(SLUG_LOCAL_STATE_KEY, newSlug)
+  try {
+    const existingSlug = state.get(SLUG_LOCAL_STATE_KEY)
+
+    if (existingSlug !== undefined) {
+      return existingSlug
+    }
+
+    state.set(SLUG_LOCAL_STATE_KEY, newSlug)
+  } catch (error) {
+    log(`${NETLIFYDEVERR} Could not read or write local state file: ${error.message}`)
+  }
 
   return newSlug
 }
