@@ -3,3 +3,14 @@ directory = "functions"
 
 [functions.scheduled]
 schedule = '@daily'
+
+[[redirects]]
+from = "/api/*"
+to = "/.netlify/functions/:splat"
+status = 200
+
+[[redirects]]
+from = "/with-params"
+to = "/.netlify/functions/echo?param1=hello&param2=:param2"
+status = 200
+query = { param2 = ":param2" }
