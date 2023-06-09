@@ -2,6 +2,7 @@
 import AsciiTable from 'ascii-table'
 
 import { exit, log, logJson } from '../../utils/command-helpers.mjs'
+import { isFeatureFlagEnabled } from '../../utils/feature-flags.mjs'
 import { getFunctions, getFunctionsDir } from '../../utils/functions/index.mjs'
 import requiresSiteInfo from '../../utils/hooks/requires-site-info.mjs'
 
@@ -16,7 +17,9 @@ const normalizeFunction = function (deployedFunctions, { name, urlPath: url }) {
  * @param {import('../base-command.mjs').default} command
  */
 const functionsList = async (options, command) => {
-  const { config, siteInfo } = command.netlify
+  const { api, config, siteInfo } = command.netlify
+
+  const something = await isFeatureFlagEnabled(api, siteInfo.id, 'cli_whatever')
 
   const deploy = siteInfo.published_deploy || {}
   const deployedFunctions = deploy.available_functions || []

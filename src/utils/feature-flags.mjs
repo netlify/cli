@@ -11,8 +11,10 @@
    *
    * @returns {boolean}
    */
-  export const isFeatureFlagEnabled = (siteInfo, flagName) => {
-    if (siteInfo.feature_flags[flagName] !== false) {
+  export const isFeatureFlagEnabled = async (api, siteId, flagName) => {
+    const siteInfo = await api.getSite({site_id: siteId, feature_flags: 'cli'})
+    console.log({ siteInfo })
+    if (siteInfo.feature_flags && siteInfo.feature_flags[flagName] !== false) {
       return true
     }
     return false
