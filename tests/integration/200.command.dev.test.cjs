@@ -63,8 +63,7 @@ testMatrix.forEach(({ args }) => {
           ])
 
         // query params should be taken from redirect rule for functions
-        // eslint-disable-next-line id-length
-        t.deepEqual(fromFunction.multiValueQueryStringParameters, { a: ['1', '2'] })
+        t.deepEqual(fromFunction.multiValueQueryStringParameters, { bar: ['2'], foo: ['2'] })
 
         // query params should be passed through from the request
         t.is(queryPassthrough.headers.location, '/?foo=1&foo=2&bar=1&bar=2')
