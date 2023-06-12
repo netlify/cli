@@ -1,15 +1,14 @@
-import { beforeEach, describe, expect, test, vi } from 'vitest'
+import { describe, expect, test } from 'vitest'
 
-import {isFeatureFlagEnabled} from '../../../src/utils/feature-flags.mjs'
+import { isFeatureFlagEnabled } from '../../../src/utils/feature-flags.mjs'
 
 describe('isFeatureFlagEnabled', () => {
-
   test('should return true if feature flag is not present', async () => {
     const siteInfo = {
       feature_flags: {
-        "cool_new_feature": true,
-        "amazing_feature": false,
-      }
+        cool_new_feature: true,
+        amazing_feature: false,
+      },
     }
 
     const api = { getSite: () => siteInfo }
@@ -22,9 +21,9 @@ describe('isFeatureFlagEnabled', () => {
   test('should return true if feature flag is true', async () => {
     const siteInfo = {
       feature_flags: {
-        "cool_new_feature": true,
-        "amazing_feature": false,
-      }
+        cool_new_feature: true,
+        amazing_feature: false,
+      },
     }
     const api = { getSite: () => siteInfo }
 
@@ -36,9 +35,9 @@ describe('isFeatureFlagEnabled', () => {
   test('should return true if feature flag is a string', async () => {
     const siteInfo = {
       feature_flags: {
-        "cool_new_feature": 'my string',
-        "amazing_feature": false,
-      }
+        cool_new_feature: 'my string',
+        amazing_feature: false,
+      },
     }
     const api = { getSite: () => siteInfo }
 
@@ -50,9 +49,9 @@ describe('isFeatureFlagEnabled', () => {
   test('should return true if feature flag is a number', async () => {
     const siteInfo = {
       feature_flags: {
-        "cool_new_feature": 42,
-        "amazing_feature": false,
-      }
+        cool_new_feature: 42,
+        amazing_feature: false,
+      },
     }
 
     const api = { getSite: () => siteInfo }
@@ -65,9 +64,9 @@ describe('isFeatureFlagEnabled', () => {
   test('should return true if feature flag is an object', async () => {
     const siteInfo = {
       feature_flags: {
-        "cool_new_feature": {key: 'value'},
-        "amazing_feature": false,
-      }
+        cool_new_feature: { key: 'value' },
+        amazing_feature: false,
+      },
     }
 
     const api = { getSite: () => siteInfo }
@@ -80,9 +79,9 @@ describe('isFeatureFlagEnabled', () => {
   test('should return false if feature flag is false', async () => {
     const siteInfo = {
       feature_flags: {
-        "cool_new_feature": true,
-        "amazing_feature": false,
-      }
+        cool_new_feature: true,
+        amazing_feature: false,
+      },
     }
 
     const api = { getSite: () => siteInfo }
@@ -91,5 +90,4 @@ describe('isFeatureFlagEnabled', () => {
 
     expect(result).toBe(false)
   })
-
 })
