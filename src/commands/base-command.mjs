@@ -2,6 +2,9 @@
 import process from 'process'
 import { format } from 'util'
 
+import { Project } from '@netlify/build-info'
+// eslint-disable-next-line import/extensions, n/no-missing-import
+import { NodeFS } from '@netlify/build-info/node'
 import { resolveConfig } from '@netlify/config'
 import { Command, Option } from 'commander'
 import debug from 'debug'
@@ -455,6 +458,22 @@ export default class BaseCommand extends Command {
     }
 
     const globalConfig = await getGlobalConfig()
+
+    // Get framework, add to analytics payload for every command, if a framework is set
+    const fs = new NodeFS()
+    const project = new Project(fs, buildDir)
+    const frameworks = await project.detectFrameworks()
+
+    const frameworkIDs = frameworks?.map((framework) => framework.id)
+
+    if (frameworkIDs?.length !== 0) {
+      this.setAnalyticsPayload({ frameworks: frameworkIDs })
+    }
+
+    this.setAnalyticsPayload({
+      packageManager: project.packageManager?.name,
+      buildSystem: project.buildSystems.map(({ id }) => id),
+    })
 
     actionCommand.netlify = {
       // api methods
