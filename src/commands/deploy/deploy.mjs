@@ -359,6 +359,12 @@ const runDeploy = async ({
   const deployUrl = results.deploy.deploy_ssl_url || results.deploy.deploy_url
   const logsUrl = `${results.deploy.admin_url}/deploys/${results.deploy.id}`
 
+  let functionLogsUrl = `${results.deploy.admin_url}/functions`
+
+  if (!deployToProduction) {
+    functionLogsUrl += `?scope=deploy:${deployId}`
+  }
+
   return {
     siteId: results.deploy.site_id,
     siteName: results.deploy.name,
@@ -366,6 +372,7 @@ const runDeploy = async ({
     siteUrl,
     deployUrl,
     logsUrl,
+    functionLogsUrl,
   }
 }
 
@@ -441,15 +448,15 @@ const bundleEdgeFunctions = async (options) => {
  */
 const printResults = ({ deployToProduction, json, results, runBuildCommand }) => {
   const msgData = {
-    Logs: `${results.logsUrl}`,
-    'Unique Deploy URL': results.deployUrl,
+    'Build logs': results.logsUrl,
+    'Function logs': results.functionLogsUrl,
   }
 
   if (deployToProduction) {
+    msgData['Unique deploy URL'] = results.deployUrl
     msgData['Website URL'] = results.siteUrl
   } else {
-    delete msgData['Unique Deploy URL']
-    msgData['Website Draft URL'] = results.deployUrl
+    msgData['Website draft URL'] = results.deployUrl
   }
 
   // Spacer
