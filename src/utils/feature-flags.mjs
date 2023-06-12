@@ -13,7 +13,7 @@
    */
   export const isFeatureFlagEnabled = async (api, siteId, flagName) => {
     const siteInfo = await api.getSite({site_id: siteId, feature_flags: 'cli'})
-    console.log({ siteInfo })
+    console.log({ flags: siteInfo.feature_flags })
     if (siteInfo.feature_flags && siteInfo.feature_flags[flagName] !== false) {
       return true
     }
