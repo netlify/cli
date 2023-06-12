@@ -4,7 +4,7 @@ import {isFeatureFlagEnabled} from '../../../src/utils/feature-flags.mjs'
 
 describe('isFeatureFlagEnabled', () => {
 
-  test('should return true if feature flag is not present', () => {
+  test('should return true if feature flag is not present', async () => {
     const siteInfo = {
       feature_flags: {
         "cool_new_feature": true,
@@ -12,38 +12,42 @@ describe('isFeatureFlagEnabled', () => {
       }
     }
 
-    const result = isFeatureFlagEnabled(siteInfo, 'netlify_feature')
+    const api = { getSite: () => siteInfo }
+
+    const result = await isFeatureFlagEnabled(api, siteInfo, 'netlify_feature')
 
     expect(result).toBe(true)
   })
 
-  test('should return true if feature flag is true', () => {
+  test('should return true if feature flag is true', async () => {
     const siteInfo = {
       feature_flags: {
         "cool_new_feature": true,
         "amazing_feature": false,
       }
     }
+    const api = { getSite: () => siteInfo }
 
-    const result = isFeatureFlagEnabled(siteInfo, 'cool_new_feature')
+    const result = await isFeatureFlagEnabled(api, siteInfo, 'cool_new_feature')
 
     expect(result).toBe(true)
   })
 
-  test('should return true if feature flag is a string', () => {
+  test('should return true if feature flag is a string', async () => {
     const siteInfo = {
       feature_flags: {
         "cool_new_feature": 'my string',
         "amazing_feature": false,
       }
     }
+    const api = { getSite: () => siteInfo }
 
-    const result = isFeatureFlagEnabled(siteInfo, 'cool_new_feature')
+    const result = await isFeatureFlagEnabled(api, siteInfo, 'cool_new_feature')
 
     expect(result).toBe(true)
   })
 
-  test('should return true if feature flag is a number', () => {
+  test('should return true if feature flag is a number', async () => {
     const siteInfo = {
       feature_flags: {
         "cool_new_feature": 42,
@@ -51,12 +55,14 @@ describe('isFeatureFlagEnabled', () => {
       }
     }
 
-    const result = isFeatureFlagEnabled(siteInfo, 'cool_new_feature')
+    const api = { getSite: () => siteInfo }
+
+    const result = await isFeatureFlagEnabled(api, siteInfo, 'cool_new_feature')
 
     expect(result).toBe(true)
   })
 
-  test('should return true if feature flag is an object', () => {
+  test('should return true if feature flag is an object', async () => {
     const siteInfo = {
       feature_flags: {
         "cool_new_feature": {key: 'value'},
@@ -64,12 +70,14 @@ describe('isFeatureFlagEnabled', () => {
       }
     }
 
-    const result = isFeatureFlagEnabled(siteInfo, 'cool_new_feature')
+    const api = { getSite: () => siteInfo }
+
+    const result = await isFeatureFlagEnabled(api, siteInfo, 'cool_new_feature')
 
     expect(result).toBe(true)
   })
 
-  test('should return false if feature flag is false', () => {
+  test('should return false if feature flag is false', async () => {
     const siteInfo = {
       feature_flags: {
         "cool_new_feature": true,
@@ -77,7 +85,9 @@ describe('isFeatureFlagEnabled', () => {
       }
     }
 
-    const result = isFeatureFlagEnabled(siteInfo, 'amazing_feature')
+    const api = { getSite: () => siteInfo }
+
+    const result = await isFeatureFlagEnabled(api, siteInfo, 'amazing_feature')
 
     expect(result).toBe(false)
   })
