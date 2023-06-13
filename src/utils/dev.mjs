@@ -167,7 +167,6 @@ export const getDotEnvVariables = async ({ devConfig, env, site }) => {
  * @return {void}
  */
 export const injectEnvVariables = (env) => {
-  // eslint-disable-next-line fp/no-loops
   for (const [key, variable] of Object.entries(env)) {
     const existsInProcess = process.env[key] !== undefined
     const [usedSource, ...overriddenSources] = existsInProcess ? ['process', ...variable.sources] : variable.sources
