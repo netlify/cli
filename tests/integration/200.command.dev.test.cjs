@@ -63,7 +63,7 @@ testMatrix.forEach(({ args }) => {
           ])
 
         // query params should be taken from redirect rule for functions
-        t.deepEqual(fromFunction.multiValueQueryStringParameters, { bar: ['2'], foo: ['2'] })
+        t.deepEqual(fromFunction.multiValueQueryStringParameters, { bar: ['1', '2'], foo: ['1', '2'] })
 
         // query params should be passed through from the request
         t.is(queryPassthrough.headers.location, '/?foo=1&foo=2&bar=1&bar=2')
