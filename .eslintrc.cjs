@@ -23,7 +23,7 @@ module.exports = {
     'max-statements': 0,
     'no-param-reassign': 0,
     'no-process-exit': 0,
-    'fp/no-loops': 'error',
+    'fp/no-loops': 'off',
     'import/max-dependencies': 0,
     'import/extensions': [2, 'ignorePackages'],
     'n/no-process-exit': 0,

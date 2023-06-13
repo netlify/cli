@@ -22,7 +22,6 @@ delete pkgJson.devDependencies
 delete pkgJson.ava
 delete pkgJson.config
 
-// eslint-disable-next-line fp/no-loops
 for (const scriptName in pkgJson.scripts) {
   if (preserveScripts.has(scriptName)) continue
 
