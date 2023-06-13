@@ -475,8 +475,6 @@ export default class BaseCommand extends Command {
       buildSystem: project.buildSystems.map(({ id }) => id),
     })
 
-    console.log({ siteData })
-
     actionCommand.netlify = {
       // api methods
       api,
