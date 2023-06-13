@@ -30,7 +30,7 @@ export const handler: Handler = async ({ body }) => {
         version: cliVersion,
         type: 'netlify-cli',
       }
-      // eslint-disable-next-line fp/no-loops
+
       for (const [section, values] of Object.entries(metadata)) {
         event.addMetadata(section, values as Record<string, any>)
       }

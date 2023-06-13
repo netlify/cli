@@ -116,7 +116,7 @@ const startServer = async ({
 
 const startDevServer = async (options, expectFailure) => {
   const maxAttempts = 5
-  // eslint-disable-next-line fp/no-loops
+
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       // do not use destruction, as we use getters which otherwise would be evaluated here

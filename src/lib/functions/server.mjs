@@ -87,7 +87,14 @@ export const createHandler = function (options) {
 
     let requestQuery = request.query
     if (request.header('x-netlify-original-search')) {
-      requestQuery = Object.fromEntries(new URLSearchParams(request.header('x-netlify-original-search')))
+      const newRequestQuery = {}
+      const searchParams = new URLSearchParams(request.header('x-netlify-original-search'))
+
+      for (const key of searchParams.keys()) {
+        newRequestQuery[key] = searchParams.getAll(key)
+      }
+
+      requestQuery = newRequestQuery
       delete request.headers['x-netlify-original-search']
     }
 
