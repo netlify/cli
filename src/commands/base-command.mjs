@@ -475,6 +475,8 @@ export default class BaseCommand extends Command {
       buildSystem: project.buildSystems.map(({ id }) => id),
     })
 
+    console.log({ siteData })
+
     actionCommand.netlify = {
       // api methods
       api,
@@ -527,6 +529,7 @@ export default class BaseCommand extends Command {
         pathPrefix,
         scheme,
         offline,
+        featureFlagPrefix: 'cli',
       })
     } catch (error_) {
       const isUserError = error_.customErrorInfo !== undefined && error_.customErrorInfo.type === 'resolveConfig'

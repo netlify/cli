@@ -11,9 +11,7 @@ describe('isFeatureFlagEnabled', () => {
       },
     }
 
-    const api = { getSite: () => siteInfo }
-
-    const result = await isFeatureFlagEnabled('netlify_feature', api, 'site id')
+    const result = isFeatureFlagEnabled('netlify_feature', siteInfo)
 
     expect(result).toBe(true)
   })
@@ -25,9 +23,8 @@ describe('isFeatureFlagEnabled', () => {
         amazing_feature: false,
       },
     }
-    const api = { getSite: () => siteInfo }
 
-    const result = await isFeatureFlagEnabled('cool_new_feature', api, 'site id')
+    const result = isFeatureFlagEnabled('cool_new_feature', siteInfo)
 
     expect(result).toBe(true)
   })
@@ -39,9 +36,8 @@ describe('isFeatureFlagEnabled', () => {
         amazing_feature: false,
       },
     }
-    const api = { getSite: () => siteInfo }
 
-    const result = await isFeatureFlagEnabled('cool_new_feature', api, `site id`)
+    const result = isFeatureFlagEnabled('cool_new_feature', siteInfo)
 
     expect(result).toBe(true)
   })
@@ -54,9 +50,7 @@ describe('isFeatureFlagEnabled', () => {
       },
     }
 
-    const api = { getSite: () => siteInfo }
-
-    const result = await isFeatureFlagEnabled('cool_new_feature', api, `site id`)
+    const result = isFeatureFlagEnabled('cool_new_feature', siteInfo)
 
     expect(result).toBe(true)
   })
@@ -69,9 +63,7 @@ describe('isFeatureFlagEnabled', () => {
       },
     }
 
-    const api = { getSite: () => siteInfo }
-
-    const result = await isFeatureFlagEnabled('cool_new_feature', api, `site id`)
+    const result = isFeatureFlagEnabled('cool_new_feature', siteInfo)
 
     expect(result).toBe(true)
   })
@@ -84,9 +76,7 @@ describe('isFeatureFlagEnabled', () => {
       },
     }
 
-    const api = { getSite: () => siteInfo }
-
-    const result = await isFeatureFlagEnabled('amazing_feature', api, 'side id')
+    const result = isFeatureFlagEnabled('amazing_feature', siteInfo)
 
     expect(result).toBe(false)
   })

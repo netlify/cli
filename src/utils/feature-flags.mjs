@@ -6,14 +6,12 @@
  * the absense of a flag should also evaluate to the flag being enabled.
  * Instead, we return that the feature flag is enabled if it isn't
  * specifically set to false in the response
- * @param {import('netlify').NetlifyAPI} api
  * @param {*} siteInfo
  * @param {string} flagName
  *
  * @returns {boolean}
  */
-export const isFeatureFlagEnabled = async (flagName, api, siteId) => {
-  const siteInfo = await api.getSite({ site_id: siteId, feature_flags: 'cli' })
+export const isFeatureFlagEnabled = (flagName, siteInfo) => {
   if (siteInfo.feature_flags && siteInfo.feature_flags[flagName] !== false) {
     return true
   }
