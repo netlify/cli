@@ -1,3 +1,4 @@
+import { pathToFileURL } from 'url'
 import { MessagePort, Worker } from 'worker_threads'
 
 import ResultReadStream from './result-read-stream.mjs'
@@ -10,7 +11,8 @@ export const createFunctionWorker = ({ context, event, func, timeout }) => {
     event,
     // If a function builder has defined a `buildPath` property, we use it.
     // Otherwise, we'll invoke the function's main file.
-    lambdaPath: (func.buildData && func.buildData.buildPath) || func.mainFile,
+    // Because we use import() we have to use file:// URLs for windows
+    lambdaPath: pathToFileURL((func.buildData && func.buildData.buildPath) || func.mainFile).href,
     timeout,
   }
 
