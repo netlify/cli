@@ -80,7 +80,7 @@
     "@fastify/static": "6.10.2",
     "@netlify/build": "29.12.4",
     "@netlify/build-info": "7.0.6",
-    "@netlify/config": "20.4.6",
+    "@netlify/config": "20.5.1",
     "@netlify/edge-bundler": "8.16.2",
     "@netlify/framework-info": "9.8.10",
     "@netlify/local-functions-proxy": "1.1.1",

@@ -26,6 +26,7 @@ import {
   sortOptions,
   warn,
 } from '../utils/command-helpers.mjs'
+import { isFeatureFlagEnabled } from '../utils/feature-flags.mjs'
 import getGlobalConfig from '../utils/get-global-config.mjs'
 import { getSiteByName } from '../utils/get-site.mjs'
 import openBrowser from '../utils/open-browser.mjs'
@@ -527,7 +528,7 @@ export default class BaseCommand extends Command {
         pathPrefix,
         scheme,
         offline,
-        featureFlagPrefix: 'cli',
+        siteFeatureFlagPrefix: 'cli',
       })
     } catch (error_) {
       const isUserError = error_.customErrorInfo !== undefined && error_.customErrorInfo.type === 'resolveConfig'
