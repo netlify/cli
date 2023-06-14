@@ -26,7 +26,6 @@ import {
   sortOptions,
   warn,
 } from '../utils/command-helpers.mjs'
-import { isFeatureFlagEnabled } from '../utils/feature-flags.mjs'
 import getGlobalConfig from '../utils/get-global-config.mjs'
 import { getSiteByName } from '../utils/get-site.mjs'
 import openBrowser from '../utils/open-browser.mjs'
