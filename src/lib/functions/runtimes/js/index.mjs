@@ -4,11 +4,11 @@ import lambdaLocal from '@skn0tt/lambda-local'
 import winston from 'winston'
 
 import detectNetlifyLambdaBuilder from './builders/netlify-lambda.mjs'
-import detectZisiBuilder, { parseForSchedule } from './builders/zisi.mjs'
+import detectZisiBuilder, { parseFunctionForMetadata } from './builders/zisi.mjs'
+import { SECONDS_TO_MILLISECONDS } from './constants.mjs'
+import { createFunctionWorker } from './threads/create-function-worker.mjs'
 
 export const name = 'js'
-
-const SECONDS_TO_MILLISECONDS = 1000
 
 let netlifyLambdaDetectorCache
 
@@ -37,7 +37,8 @@ export const getBuildFunction = async ({ config, directory, errorExit, func, pro
     return netlifyLambdaBuilder.build
   }
 
-  const zisiBuilder = await detectZisiBuilder({ config, directory, errorExit, func, projectRoot })
+  const metadata = await parseFunctionForMetadata({ mainFile: func.mainFile, config, projectRoot })
+  const zisiBuilder = await detectZisiBuilder({ config, directory, errorExit, func, metadata, projectRoot })
 
   if (zisiBuilder) {
     return zisiBuilder.build
@@ -48,12 +49,20 @@ export const getBuildFunction = async ({ config, directory, errorExit, func, pro
   // main file otherwise.
   const functionDirectory = dirname(func.mainFile)
   const srcFiles = functionDirectory === directory ? [func.mainFile] : [functionDirectory]
-  const schedule = await parseForSchedule({ mainFile: func.mainFile, config, projectRoot })
 
-  return () => ({ schedule, srcFiles })
+  return () => ({ schedule: metadata.schedule, srcFiles })
 }
 
-export const invokeFunction = async ({ context, event, func, timeout }) => {
+export const invokeFunction = ({ context, event, func, timeout }) =>
+  createFunctionWorker({
+    context,
+    event,
+    func,
+    timeout,
+  })
+
+// unused right now
+export const invokeFunctionDirectly = async ({ context, event, func, timeout }) => {
   // If a function builder has defined a `buildPath` property, we use it.
   // Otherwise, we'll invoke the function's main file.
   const lambdaPath = (func.buildData && func.buildData.buildPath) || func.mainFile

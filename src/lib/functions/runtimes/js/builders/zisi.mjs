@@ -27,6 +27,7 @@ const buildFunction = async ({ cache, config, directory, func, hasTypeModule, pr
     archiveFormat: 'none',
     basePath: projectRoot,
     config,
+    featureFlags: { zisi_functions_api_v2: true },
   }
   const functionDirectory = path.dirname(func.mainFile)
 
@@ -45,6 +46,7 @@ const buildFunction = async ({ cache, config, directory, func, hasTypeModule, pr
     includedFiles,
     inputs,
     path: functionPath,
+    runtimeAPIVersion,
     schedule,
   } = await memoizedBuild({
     cache,
@@ -52,7 +54,7 @@ const buildFunction = async ({ cache, config, directory, func, hasTypeModule, pr
     command: () => zipFunction(entryPath, targetDirectory, zipOptions),
   })
   const srcFiles = inputs.filter((inputPath) => !inputPath.includes(`${path.sep}node_modules${path.sep}`))
-  const buildPath = path.join(functionPath, `${func.name}.js`)
+  const buildPath = path.join(functionPath, runtimeAPIVersion === 2 ? '___netlify-entry-point.mjs' : `${func.name}.js`)
 
   // some projects include a package.json with "type=module", forcing Node to interpret every descending file
   // as ESM. ZISI outputs CJS, so we emit an overriding directive into the output directory.
@@ -67,7 +69,7 @@ const buildFunction = async ({ cache, config, directory, func, hasTypeModule, pr
 
   clearFunctionsCache(targetDirectory)
 
-  return { buildPath, includedFiles, srcFiles, schedule }
+  return { buildPath, includedFiles, runtimeAPIVersion, srcFiles, schedule }
 }
 
 /**
@@ -76,14 +78,14 @@ const buildFunction = async ({ cache, config, directory, func, hasTypeModule, pr
  * @param {string} params.mainFile
  * @param {string} params.projectRoot
  */
-export const parseForSchedule = async ({ config, mainFile, projectRoot }) => {
+export const parseFunctionForMetadata = async ({ config, mainFile, projectRoot }) => {
   const { listFunction } = await import('@netlify/zip-it-and-ship-it')
-  const listedFunction = await listFunction(mainFile, {
+
+  return await listFunction(mainFile, {
     config: netlifyConfigToZisiConfig({ config, projectRoot }),
+    featureFlags: { zisi_functions_api_v2: true },
     parseISC: true,
   })
-
-  return listedFunction && listedFunction.schedule
 }
 
 // Clears the cache for any files inside the directory from which functions are
@@ -109,26 +111,33 @@ const getTargetDirectory = async ({ errorExit }) => {
 const netlifyConfigToZisiConfig = ({ config, projectRoot }) =>
   addFunctionsConfigDefaults(normalizeFunctionsConfig({ functionsConfig: config.functions, projectRoot }))
 
-export default async function handler({ config, directory, errorExit, func, projectRoot }) {
+export default async function handler({ config, directory, errorExit, func, metadata, projectRoot }) {
   const functionsConfig = netlifyConfigToZisiConfig({ config, projectRoot })
 
   const packageJson = await readPackageUp(func.mainFile)
   const hasTypeModule = packageJson && packageJson.packageJson.type === 'module'
 
-  // We must use esbuild for certain file extensions.
-  const mustTranspile = ['.mjs', '.ts'].includes(path.extname(func.mainFile))
-  const mustUseEsbuild = hasTypeModule || mustTranspile
+  if (metadata.runtimeAPIVersion === 2) {
+    // For typescript we use NFT otherwise we leave the file untouched with the `none` bundler
+    const isTypescript = ['.ts', '.mts', '.cts'].includes(path.extname(func.mainFile))
 
-  if (mustUseEsbuild && !functionsConfig['*'].nodeBundler) {
-    functionsConfig['*'].nodeBundler = 'esbuild'
-  }
+    functionsConfig['*'].nodeBundler = isTypescript ? 'nft' : 'none'
+  } else {
+    // We must use esbuild for certain file extensions.
+    const mustTranspile = ['.mjs', '.ts', '.mts', '.cts'].includes(path.extname(func.mainFile))
+    const mustUseEsbuild = hasTypeModule || mustTranspile
 
-  // TODO: Resolve functions config globs so that we can check for the bundler
-  // on a per-function basis.
-  const isUsingEsbuild = ['esbuild_zisi', 'esbuild'].includes(functionsConfig['*'].nodeBundler)
+    if (mustUseEsbuild && !functionsConfig['*'].nodeBundler) {
+      functionsConfig['*'].nodeBundler = 'esbuild'
+    }
 
-  if (!isUsingEsbuild) {
-    return false
+    // TODO: Resolve functions config globs so that we can check for the bundler
+    // on a per-function basis.
+    const isUsingEsbuild = ['esbuild_zisi', 'esbuild'].includes(functionsConfig['*'].nodeBundler)
+
+    if (!isUsingEsbuild) {
+      return false
+    }
   }
 
   // Enable source map support.

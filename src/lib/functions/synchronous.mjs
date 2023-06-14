@@ -102,7 +102,7 @@ const validateLambdaResponse = (lambdaResponse) => {
   }
   if (!Number(lambdaResponse.statusCode)) {
     return {
-      error: `Your function response must have a numerical statusCode. You gave: $ ${lambdaResponse.statusCode}`,
+      error: `Your function response must have a numerical statusCode. You gave: ${lambdaResponse.statusCode}`,
     }
   }
   if (lambdaResponse.body && typeof lambdaResponse.body !== 'string' && !isStream(lambdaResponse.body)) {
