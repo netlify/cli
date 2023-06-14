@@ -30,7 +30,7 @@ try {
 
   // When the result body is a StreamResponse we have to create a new MessageChannel
   // where we can send the data to the main thread.
-  if (isStream(result.body)) {
+  if (result && isStream(result.body)) {
     const { port1, port2 } = new MessageChannel()
 
     const resultStream = new ResultWriteStream(port2)

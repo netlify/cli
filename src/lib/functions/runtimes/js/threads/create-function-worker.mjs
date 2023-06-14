@@ -23,7 +23,7 @@ export const createFunctionWorker = ({ context, event, func, timeout }) => {
       if (code !== 0) reject(new Error(`Lambda worker stopped with exit code ${code}`))
     })
     worker.on('message', (message) => {
-      if (message.body instanceof MessagePort) {
+      if (message && message.body instanceof MessagePort) {
         message.body = new ResultReadStream(message.body)
       }
 

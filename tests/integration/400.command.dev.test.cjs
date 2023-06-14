@@ -126,7 +126,12 @@ test('should replicate Lambda behaviour for synchronous return values', async (t
     await withDevServer({ cwd: builder.directory }, async (server) => {
       const response = await got(`${server.url}/.netlify/functions/env`, {
         throwHttpErrors: false,
+        retry: {
+          limit: 0,
+        },
       })
+
+      t.is(response.statusCode, 500)
       t.true(response.body.startsWith('no lambda response.'))
     })
   })
@@ -426,32 +431,32 @@ test('should support functions with streaming responses', async (t) => {
           class TimerSource {
             #input;
             #interval;
-          
+
             constructor(input) {
               this.#input = input;
             }
-          
+
             start(controller) {
               this.#interval = setInterval(() => {
                 const string = this.#input.shift();
-          
+
                 if (string === undefined) {
                   controller.close();
-          
+
                   clearInterval(this.#interval);
-          
+
                   return;
                 }
-          
+
                 controller.enqueue(string);
               }, 50);
             }
-          
+
             cancel() {
               clearInterval(this.#interval);
             }
           }
-          
+
           exports.handler = stream(async (event) => ({
             body: new ReadableStream(new TimerSource(["one", "two", "three"])),
             headers: {
