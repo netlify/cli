@@ -5,6 +5,7 @@ const process = require('process')
 const avaTest = require('ava')
 const { isCI } = require('ci-info')
 const FormData = require('form-data')
+const { gte } = require('semver')
 
 const { withDevServer } = require('./utils/dev-server.cjs')
 const got = require('./utils/got.cjs')
@@ -419,13 +420,14 @@ test('should handle multipart form data when redirecting', async (t) => {
   })
 })
 
-test('should support functions with streaming responses', async (t) => {
-  await withSiteBuilder('site-with-streaming-function', async (builder) => {
-    builder
-      .withPackageJson({ packageJson: { dependencies: { '@netlify/functions': 'latest' } } })
-      .withCommand({ command: ['npm', 'install'] })
-      .withContentFile({
-        content: `
+if (gte(process.version, '18.0.0')) {
+  test('should support functions with streaming responses', async (t) => {
+    await withSiteBuilder('site-with-streaming-function', async (builder) => {
+      builder
+        .withPackageJson({ packageJson: { dependencies: { '@netlify/functions': 'latest' } } })
+        .withCommand({ command: ['npm', 'install'] })
+        .withContentFile({
+          content: `
           const { stream } = require("@netlify/functions");
 
           class TimerSource {
@@ -465,29 +467,30 @@ test('should support functions with streaming responses', async (t) => {
             statusCode: 200,
           }));
       `,
-        path: 'netlify/functions/streamer.js',
+          path: 'netlify/functions/streamer.js',
+        })
+
+      await builder.buildAsync()
+
+      await withDevServer({ cwd: builder.directory }, async (server) => {
+        const chunks = []
+        const response = got.stream(`${server.url}/.netlify/functions/streamer`)
+
+        let lastTimestamp = 0
+
+        response.on('data', (chunk) => {
+          const now = Date.now()
+
+          t.true(now > lastTimestamp)
+
+          lastTimestamp = now
+          chunks.push(chunk.toString())
+        })
+
+        await pause(500)
+
+        t.deepEqual(chunks, ['one', 'two', 'three'])
       })
-
-    await builder.buildAsync()
-
-    await withDevServer({ cwd: builder.directory }, async (server) => {
-      const chunks = []
-      const response = got.stream(`${server.url}/.netlify/functions/streamer`)
-
-      let lastTimestamp = 0
-
-      response.on('data', (chunk) => {
-        const now = Date.now()
-
-        t.true(now > lastTimestamp)
-
-        lastTimestamp = now
-        chunks.push(chunk.toString())
-      })
-
-      await pause(500)
-
-      t.deepEqual(chunks, ['one', 'two', 'three'])
     })
   })
-})
+}
