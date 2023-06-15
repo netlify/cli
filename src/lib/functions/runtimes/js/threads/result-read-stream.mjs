@@ -30,7 +30,6 @@ export default class ResultReadStream extends Readable {
 
     // MessagePort will start receiving messages as soon as this listener is attached
     this.#port.on('message', (message) => {
-      console.log('stream', message)
       this.push(message)
     })
   }

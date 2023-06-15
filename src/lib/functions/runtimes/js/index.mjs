@@ -1,4 +1,5 @@
 import { dirname } from 'path'
+import { pathToFileURL } from 'url'
 
 import lambdaLocal from '@skn0tt/lambda-local'
 import winston from 'winston'
@@ -6,7 +7,7 @@ import winston from 'winston'
 import detectNetlifyLambdaBuilder from './builders/netlify-lambda.mjs'
 import detectZisiBuilder, { parseFunctionForMetadata } from './builders/zisi.mjs'
 import { SECONDS_TO_MILLISECONDS } from './constants.mjs'
-import { createFunctionWorker } from './threads/create-function-worker.mjs'
+import FunctionsWorkerPool from './threads/functions-worker-pool.mjs'
 
 export const name = 'js'
 
@@ -30,7 +31,11 @@ const detectNetlifyLambdaWithCache = () => {
   return netlifyLambdaDetectorCache
 }
 
+const pool = new FunctionsWorkerPool()
+
 export const getBuildFunction = async ({ config, directory, errorExit, func, projectRoot }) => {
+  pool.restart()
+
   const netlifyLambdaBuilder = await detectNetlifyLambdaWithCache()
 
   if (netlifyLambdaBuilder) {
@@ -53,13 +58,19 @@ export const getBuildFunction = async ({ config, directory, errorExit, func, pro
   return () => ({ schedule: metadata.schedule, srcFiles })
 }
 
-export const invokeFunction = ({ context, event, func, timeout }) =>
-  createFunctionWorker({
-    context,
+export const invokeFunction = async ({ context, event, func, timeout }) => {
+  const workerData = {
+    clientContext: JSON.stringify(context),
     event,
-    func,
+    // If a function builder has defined a `buildPath` property, we use it.
+    // Otherwise, we'll invoke the function's main file.
+    // Because we use import() we have to use file:// URLs for windows
+    lambdaPath: pathToFileURL((func.buildData && func.buildData.buildPath) || func.mainFile).href,
     timeout,
-  })
+  }
+
+  return await pool.run(workerData)
+}
 
 // unused right now
 export const invokeFunctionDirectly = async ({ context, event, func, timeout }) => {

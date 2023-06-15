@@ -175,6 +175,7 @@
     "terminal-link": "3.0.0",
     "through2-filter": "3.0.0",
     "through2-map": "3.0.0",
+    "tinypool": "0.5.0",
     "to-readable-stream": "3.0.0",
     "toml": "3.0.0",
     "ulid": "2.3.0",
