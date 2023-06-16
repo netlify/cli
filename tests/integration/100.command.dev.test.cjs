@@ -136,8 +136,10 @@ test('background function clientContext,identity should be null', async (t) => {
       })
       .buildAsync()
 
-    await withDevServer({ cwd: builder.directory }, async ({ outputBuffer, url }) => {
+    await withDevServer({ cwd: builder.directory }, async ({ outputBuffer, url, waitForLogMatching }) => {
       await got(`${url}/.netlify/functions/hello-background`)
+
+      await waitForLogMatching('__CLIENT_CONTEXT__END__')
 
       const output = outputBuffer.toString()
       const context = JSON.parse(output.match(/__CLIENT_CONTEXT__START__(.*)__CLIENT_CONTEXT__END__/)[1])
