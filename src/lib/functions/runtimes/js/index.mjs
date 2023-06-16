@@ -34,8 +34,6 @@ const detectNetlifyLambdaWithCache = () => {
 const pool = new FunctionsWorkerPool()
 
 export const getBuildFunction = async ({ config, directory, errorExit, func, projectRoot }) => {
-  pool.restart()
-
   const netlifyLambdaBuilder = await detectNetlifyLambdaWithCache()
 
   if (netlifyLambdaBuilder) {
