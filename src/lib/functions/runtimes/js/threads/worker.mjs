@@ -26,7 +26,7 @@ const worker = async function (workerData) {
       event,
       lambdaFunc,
       timeoutMs: timeout * SECONDS_TO_MILLISECONDS,
-      verboseLevel: 0,
+      verboseLevel: 3,
     })
 
     // When the result body is a StreamResponse we have to create a new MessageChannel
