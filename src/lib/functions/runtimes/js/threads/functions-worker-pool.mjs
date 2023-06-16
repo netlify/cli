@@ -1,3 +1,5 @@
+import { MessagePort } from 'worker_threads'
+
 import { Tinypool } from 'tinypool'
 
 import ResultReadStream from './result-read-stream.mjs'
