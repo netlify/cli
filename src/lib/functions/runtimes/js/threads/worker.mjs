@@ -40,14 +40,20 @@ const worker = async function (workerData) {
       // when the body is a MessagePort the main thread will stream the data from it
       result.body = port1
 
-      // tinypool requires us to set these and use move() in order to be able to transfer the MessagePort to the main thread
-      return Tinypool.move({
-        get [kValue]() {
-          return result
-        },
-        get [kTransferable]() {
-          return [port1]
-        },
+      return new Promise((resolve) => {
+        resultStream.on('finish', () =>
+          resolve(
+            // tinypool requires us to set these and use move() in order to be able to transfer the MessagePort to the main thread
+            Tinypool.move({
+              get [kValue]() {
+                return result
+              },
+              get [kTransferable]() {
+                return [port1]
+              },
+            }),
+          ),
+        )
       })
     }
 
