@@ -185,7 +185,7 @@
     "write-file-atomic": "5.0.1"
   },
   "devDependencies": {
-    "@babel/preset-react": "7.22.3",
+    "@babel/preset-react": "7.22.5",
     "@netlify/eslint-config-node": "7.0.0",
     "@netlify/functions": "1.6.0",
     "@types/fs-extra": "11.0.1",
