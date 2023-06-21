@@ -1,12 +1,15 @@
 import { env as _env, version as nodejsVersion } from 'process'
 
+import execa from 'execa'
 import { version as uuidVersion } from 'uuid'
 import { expect, test } from 'vitest'
 
 import { name, version } from '../../package.json'
 
 import callCli from './utils/call-cli.cjs'
+import cliPath from './utils/cli-path.cjs'
 import { withMockApi } from './utils/mock-api-vitest.mjs'
+import { withSiteBuilder } from './utils/site-builder.cjs'
 
 const getCLIOptions = (apiUrl) => ({
   env: {
@@ -88,6 +91,34 @@ await withMockApi(routes, async () => {
       command: 'dev:exec',
       nodejsVersion,
       packageManager: 'npm',
+    })
+  })
+
+  test('should add frameworks, buildSystem, and packageManager', async ({ apiUrl, requests }) => {
+    await withSiteBuilder('nextjs-site', async (builder) => {
+      await builder.withPackageJson({ packageJson: { dependencies: { next: '^12.13.0' } } }).buildAsync()
+
+      await execa(cliPath, ['api', 'listSites'], {
+        cwd: builder.directory,
+        ...getCLIOptions(apiUrl)
+      })
+
+      const request = requests.find(({ path }) => path === '/api/v1/track')
+      expect(request).toBeDefined()
+
+      expect(typeof request.body.anonymousId).toBe('string')
+      expect(Number.isInteger(request.body.duration)).toBe(true)
+      expect(request.body.event).toBe('cli:command')
+      expect(request.body.status).toBe('success')
+      console.log({props: request.body.properties})
+      expect(request.body.properties).toEqual({
+        frameworks: [ 'next' ],
+        buildSystem: [],
+        cliVersion: version,
+        command: 'api',
+        nodejsVersion,
+        packageManager: 'npm',
+      })
     })
   })
 })
