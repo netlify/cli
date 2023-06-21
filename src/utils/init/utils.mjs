@@ -11,7 +11,6 @@ import { normalizeBackslash } from '../../lib/path.mjs'
 import { chalk, error as failAndExit, log, warn } from '../command-helpers.mjs'
 
 import { getFrameworkInfo } from './frameworks.mjs'
-import { detectNodeVersion } from './node-version.mjs'
 import { getRecommendPlugins, getUIPlugins } from './plugins.mjs'
 
 const normalizeDir = ({ baseDirectory, defaultValue, dir }) => {
@@ -83,9 +82,8 @@ const getPromptInputs = ({ defaultBaseDir, defaultBuildCmd, defaultBuildDir }) =
 const getBaseDirectory = ({ repositoryRoot, siteRoot }) =>
   path.normalize(repositoryRoot) === path.normalize(siteRoot) ? process.cwd() : siteRoot
 
-export const getBuildSettings = async ({ config, env, repositoryRoot, siteRoot }) => {
+export const getBuildSettings = async ({ config, repositoryRoot, siteRoot }) => {
   const baseDirectory = getBaseDirectory({ repositoryRoot, siteRoot })
-  const nodeVersion = await detectNodeVersion({ baseDirectory, env })
   const {
     frameworkBuildCommand,
     frameworkBuildDir,
@@ -93,7 +91,6 @@ export const getBuildSettings = async ({ config, env, repositoryRoot, siteRoot }
     frameworkPlugins = [],
   } = await getFrameworkInfo({
     baseDirectory,
-    nodeVersion,
   })
   const { defaultBaseDir, defaultBuildCmd, defaultBuildDir, defaultFunctionsDir, recommendedPlugins } =
     await getDefaultSettings({
