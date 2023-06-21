@@ -100,7 +100,7 @@ await withMockApi(routes, async () => {
 
       await execa(cliPath, ['api', 'listSites'], {
         cwd: builder.directory,
-        ...getCLIOptions(apiUrl)
+        ...getCLIOptions(apiUrl),
       })
 
       const request = requests.find(({ path }) => path === '/api/v1/track')
@@ -110,9 +110,9 @@ await withMockApi(routes, async () => {
       expect(Number.isInteger(request.body.duration)).toBe(true)
       expect(request.body.event).toBe('cli:command')
       expect(request.body.status).toBe('success')
-      console.log({props: request.body.properties})
+      console.log({ props: request.body.properties })
       expect(request.body.properties).toEqual({
-        frameworks: [ 'next' ],
+        frameworks: ['next'],
         buildSystem: [],
         cliVersion: version,
         command: 'api',
