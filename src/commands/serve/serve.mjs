@@ -89,7 +89,10 @@ const serve = async (options, command) => {
 
   const { configPath: configPathOverride } = await runBuildTimeline({ cachedConfig, options, settings, site })
 
+  const geoConfig = { geolocationMode: options.geo, geoCountry: options.country, offline: options.offline, state }
+
   await startFunctionsServer({
+    ...geoConfig,
     api,
     command,
     config,
