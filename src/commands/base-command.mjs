@@ -478,6 +478,8 @@ export default class BaseCommand extends Command {
       buildSystem: this.project.buildSystems.map(({ id }) => id),
     })
 
+    actionCommand.project = this.project
+
     actionCommand.netlify = {
       // api methods
       api,
