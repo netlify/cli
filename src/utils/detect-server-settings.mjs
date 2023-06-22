@@ -154,39 +154,30 @@ const handleStaticServer = async ({ devConfig, options, projectDir }) => {
 
 /**
  * Retrieves the settings from a framework
- * @param {import('@netlify/build-info').FrameworkInfo} framework
+ * @param {import('@netlify/build-info').Settings} settings
  * @returns {import('./types.js').BaseServerSettings}
  */
-const getSettingsFromFramework = (framework) => {
+const getSettingsFromFramework = (settings) => {
   const {
-    build: { directory: dist },
-    dev: {
-      commands: [command],
-      pollingStrategies = [],
-      port: frameworkPort,
-    },
-    env = {},
-    name: frameworkName,
+    devCommand: command,
+    dist,
+    env,
+    framework: { name: frameworkName },
+    frameworkPort,
     plugins,
-    staticAssetsDirectory: staticDir,
-  } = framework
+    pollingStrategies,
+  } = settings
 
   return {
     command,
     frameworkPort,
-    dist: staticDir || dist,
+    dist,
     framework: frameworkName,
     env,
-    pollingStrategies: pollingStrategies.map(({ name }) => name),
+    pollingStrategies,
     plugins,
   }
 }
-
-/**
- * @param {import('@netlify/build-info').DetectedFramework} framework
- * @returns {boolean}
- */
-const hasDevCommand = (framework) => Boolean(framework.dev?.command)
 
 /**
  * The new build setting detection with build systems and frameworks combined
@@ -257,22 +248,20 @@ const detectChangesInNewSettings = (frameworkSettings, newSettings, metadata) =>
  * @param {Project} project
  */
 const detectFrameworkSettings = async (project) => {
-  const projectFrameworks = (await project.detectFrameworks()) ?? []
-  const frameworks = projectFrameworks
-    .filter((framework) => hasDevCommand(framework))
-    .map((framework) => framework.toJSON())
+  const projectSettings = await project.getBuildSettings()
+  const settings = projectSettings.filter((setting) => setting.devCommand)
 
-  if (frameworks.length === 1) {
-    return getSettingsFromFramework(frameworks[0])
+  if (settings.length === 1) {
+    return getSettingsFromFramework(settings[0])
   }
 
-  if (frameworks.length > 1) {
+  if (settings.length > 1) {
     // performance optimization, load inquirer on demand
     const { default: inquirer } = await import('inquirer')
     const { default: inquirerAutocompletePrompt } = await import('inquirer-autocomplete-prompt')
     /** multiple matching detectors, make the user choose */
     inquirer.registerPrompt('autocomplete', inquirerAutocompletePrompt)
-    const scriptInquirerOptions = formatSettingsArrForInquirer(frameworks)
+    const scriptInquirerOptions = formatSettingsArrForInquirer(settings)
     const { chosenFramework } = await inquirer.prompt({
       name: 'chosenFramework',
       message: `Multiple possible start commands found`,
@@ -453,18 +442,15 @@ const filterSettings = function (scriptInquirerOptions, input) {
 }
 
 /**
- * @param {import('@netlify/build-info').FrameworkInfo[]} frameworks
+ * @param {import('@netlify/build-info').Settings[]} settings
  * @returns
  */
-const formatSettingsArrForInquirer = function (frameworks) {
-  const formattedArr = frameworks.map((framework) =>
-    framework.dev.commands.map((command) => ({
-      name: `[${chalk.yellow(framework.name)}] '${command}'`,
-      value: { ...framework, commands: [command] },
-      short: `${framework.name}-${command}`,
-    })),
-  )
-  return formattedArr.flat()
+const formatSettingsArrForInquirer = function (settings) {
+  return settings.map((setting) => ({
+    name: `[${chalk.yellow(setting.framework.name)}] '${setting.devCommand}'`,
+    value: { ...setting, commands: [setting.devCommand] },
+    short: `${setting.name}-${setting.devCommand}`,
+  }))
 }
 
 /**
