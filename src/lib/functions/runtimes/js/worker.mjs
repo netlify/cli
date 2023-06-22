@@ -21,6 +21,7 @@ const result = await lambdaLocal.execute({
   clientContext,
   event,
   lambdaFunc,
+  region: 'dev',
   timeoutMs: timeout * SECONDS_TO_MILLISECONDS,
   verboseLevel: 3,
 })

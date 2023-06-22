@@ -161,7 +161,10 @@ const dev = async (options, command) => {
     },
   })
 
+  const geoConfig = { geolocationMode: options.geo, geoCountry: options.country, offline: options.offline, state }
+
   await startFunctionsServer({
+    ...geoConfig,
     api,
     command,
     config,
@@ -193,13 +196,12 @@ const dev = async (options, command) => {
   const inspectSettings = generateInspectSettings(options.edgeInspect, options.edgeInspectBrk)
 
   await startProxyServer({
+    ...geoConfig,
     addonsUrls,
     config,
     configPath: configPathOverride,
     debug: options.debug,
     env,
-    geolocationMode: options.geo,
-    geoCountry: options.country,
     getUpdatedConfig,
     inspectSettings,
     offline: options.offline,
