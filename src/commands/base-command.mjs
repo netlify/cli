@@ -527,6 +527,7 @@ export default class BaseCommand extends Command {
         pathPrefix,
         scheme,
         offline,
+        siteFeatureFlagPrefix: 'cli',
       })
     } catch (error_) {
       const isUserError = error_.customErrorInfo !== undefined && error_.customErrorInfo.type === 'resolveConfig'
