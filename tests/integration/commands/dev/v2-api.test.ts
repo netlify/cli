@@ -36,5 +36,17 @@ describe.runIf(gte(version, '18.13.0'))('v2 api', () => {
       const thirdChunk = await reader.read()
       expect(thirdChunk.done).toBeTruthy()
     })
+
+    test<FixtureTestContext>('receives context', async ({ devServer }) => {
+      const response = await fetch(`http://localhost:${devServer.port}/.netlify/functions/context`)
+
+      expect(response.status).toBe(200)
+
+      const context = await response.json()
+      expect(context.requestId).toEqual(response.headers.get('x-nf-request-id'))
+      expect(context.site.url).toEqual(`http://localhost:${devServer.port}`)
+      
+      // TODO: a bunch of fields are missing in context
+    })
   })
 })
