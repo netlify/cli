@@ -48,5 +48,11 @@ describe.runIf(gte(version, '18.13.0'))('v2 api', () => {
       
       // TODO: a bunch of fields are missing in context
     })
+
+    test<FixtureTestContext>('logging works', async ({ devServer }) => {
+      const response = await fetch(`http://localhost:${devServer.port}/.netlify/functions/log`)
+      expect(response.status).toBe(200)
+      expect(devServer.outputBuffer.map((buffer) => buffer.toString())).toContain('🪵🪵🪵\n')
+    })
   })
 })
