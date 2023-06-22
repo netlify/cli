@@ -3,12 +3,15 @@ import { isMainThread, workerData, parentPort } from 'worker_threads'
 
 import lambdaLocal from '@skn0tt/lambda-local'
 import { isStream } from 'is-stream'
+import sourceMapSupport from 'source-map-support'
 
 import { SECONDS_TO_MILLISECONDS } from './constants.mjs'
 
 if (isMainThread) {
   throw new Error(`Do not import "${import.meta.url}" in the main thread.`)
 }
+
+sourceMapSupport.install()
 
 lambdaLocal.getLogger().level = 'warn'
 
