@@ -72,7 +72,7 @@ const serve = async (options, command) => {
   /** @type {Partial<import('../../utils/types').ServerSettings>} */
   let settings = {}
   try {
-    settings = await detectServerSettings(devConfig, options, site.root)
+    settings = await detectServerSettings(devConfig, options, command.project, site.root)
 
     cachedConfig.config = getConfigWithPlugins(cachedConfig.config, settings)
   } catch (error_) {

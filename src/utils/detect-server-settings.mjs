@@ -366,18 +366,17 @@ const handleForcedFramework = async ({ devConfig, project }) => {
  * Get the server settings based on the flags and the devConfig
  * @param {import('../commands/dev/types.js').DevConfig} devConfig
  * @param {import('commander').OptionValues} options
+ * @param {Project} project
  * @param {string} projectDir
  * @param {Record<string, Record<string, any>>} [metadata]
  * @returns {Promise<import('./types.js').ServerSettings>}
  */
-const detectServerSettings = async (devConfig, options, projectDir, metadata) => {
+// eslint-disable-next-line max-params
+const detectServerSettings = async (devConfig, options, project, projectDir, metadata) => {
   validateStringProperty({ devConfig, property: 'framework' })
 
   /** @type {Partial<import('./types.js').BaseServerSettings>} */
   let settings = {}
-
-  const fs = new NodeFS()
-  const project = new Project(fs, projectDir)
 
   if (options.dir || devConfig.framework === '#static') {
     // serving files statically without a framework server

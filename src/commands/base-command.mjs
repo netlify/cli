@@ -88,6 +88,9 @@ export default class BaseCommand extends Command {
   /** @type {{ startTime: bigint, payload?: any}} */
   analytics = { startTime: process.hrtime.bigint() }
 
+  /** @type {Project} */
+  project
+
   /**
    * IMPORTANT this function will be called for each command!
    * Don't do anything expensive in there.
@@ -461,8 +464,8 @@ export default class BaseCommand extends Command {
 
     // Get framework, add to analytics payload for every command, if a framework is set
     const fs = new NodeFS()
-    const project = new Project(fs, buildDir)
-    const frameworks = await project.detectFrameworks()
+    this.project = new Project(fs, buildDir)
+    const frameworks = await this.project.detectFrameworks()
 
     const frameworkIDs = frameworks?.map((framework) => framework.id)
 
@@ -471,8 +474,8 @@ export default class BaseCommand extends Command {
     }
 
     this.setAnalyticsPayload({
-      packageManager: project.packageManager?.name,
-      buildSystem: project.buildSystems.map(({ id }) => id),
+      packageManager: this.project.packageManager?.name,
+      buildSystem: this.project.buildSystems.map(({ id }) => id),
     })
 
     actionCommand.netlify = {
