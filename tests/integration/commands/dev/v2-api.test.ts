@@ -17,5 +17,21 @@ describe.runIf(gte(version, '18.13.0'))('v2 api', () => {
       expect(response.statusCode).toBe(200)
       expect(response.body).toBe('pong')
     })
+
+    test<FixtureTestContext>('supports streamed responses', async ({ devServer }) => {
+      const response = await fetch(`http://localhost:${devServer.port}/.netlify/functions/stream`)
+
+      expect(response.status).toBe(200)
+
+      const reader = response.body!.getReader()
+
+      const firstChunk = await reader.read()
+      expect(new TextDecoder().decode(firstChunk.value)).toBe('first chunk')
+      expect(firstChunk.done).toBeFalsy()
+
+      const secondChunk = await reader.read()
+      expect(new TextDecoder().decode(secondChunk.value)).toBe('second chunk')
+      expect(secondChunk.done).toBeTruthy()
+    })
   })
 })
