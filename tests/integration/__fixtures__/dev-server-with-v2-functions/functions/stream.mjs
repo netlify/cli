@@ -6,7 +6,7 @@ export default async () =>
         setTimeout(() => {
           controller.enqueue('second chunk')
           controller.close()
-        }, 1000)
+        }, 50)
       },
     }),
     {

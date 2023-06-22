@@ -1,5 +1,7 @@
+import { createConnection } from 'net'
 import { dirname } from 'path'
 import { pathToFileURL } from 'url'
+import { Worker } from 'worker_threads'
 
 import lambdaLocal from '@skn0tt/lambda-local'
 import winston from 'winston'
@@ -7,7 +9,6 @@ import winston from 'winston'
 import detectNetlifyLambdaBuilder from './builders/netlify-lambda.mjs'
 import detectZisiBuilder, { parseFunctionForMetadata } from './builders/zisi.mjs'
 import { SECONDS_TO_MILLISECONDS } from './constants.mjs'
-import FunctionsWorkerPool from './threads/functions-worker-pool.mjs'
 
 export const name = 'js'
 
@@ -30,8 +31,6 @@ const detectNetlifyLambdaWithCache = () => {
 
   return netlifyLambdaDetectorCache
 }
-
-const pool = new FunctionsWorkerPool()
 
 export const getBuildFunction = async ({ config, directory, errorExit, func, projectRoot }) => {
   const netlifyLambdaBuilder = await detectNetlifyLambdaWithCache()
@@ -56,6 +55,8 @@ export const getBuildFunction = async ({ config, directory, errorExit, func, pro
   return () => ({ schedule: metadata.schedule, srcFiles })
 }
 
+const workerURL = new URL('worker.mjs', import.meta.url)
+
 export const invokeFunction = async ({ context, event, func, timeout }) => {
   const workerData = {
     clientContext: JSON.stringify(context),
@@ -67,7 +68,28 @@ export const invokeFunction = async ({ context, event, func, timeout }) => {
     timeout,
   }
 
-  return await pool.run(workerData)
+  const worker = new Worker(workerURL, { workerData })
+  return await new Promise((resolve, reject) => {
+    worker.on('message', (result) => {
+      if (result?.streamPort) {
+        const client = createConnection(
+          {
+            port: result.streamPort,
+            host: 'localhost',
+          },
+          () => {
+            result.body = client
+            resolve(result)
+          },
+        )
+        client.on('error', reject)
+      } else {
+        resolve(result)
+      }
+    })
+
+    worker.on('error', reject)
+  })
 }
 
 // unused right now

@@ -31,7 +31,10 @@ describe.runIf(gte(version, '18.13.0'))('v2 api', () => {
 
       const secondChunk = await reader.read()
       expect(new TextDecoder().decode(secondChunk.value)).toBe('second chunk')
-      expect(secondChunk.done).toBeTruthy()
+      expect(secondChunk.done).toBeFalsy()
+
+      const thirdChunk = await reader.read()
+      expect(thirdChunk.done).toBeTruthy()
     })
   })
 })
