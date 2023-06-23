@@ -8,7 +8,7 @@ export const getRecipe = async (name) => {
   const recipePath = resolve(directoryPath, '../../recipes', name, 'index.mjs')
 
   // windows needs a URL for absolute paths
-  
+
   const recipe = await import(pathToFileURL(recipePath).href)
 
   return recipe
@@ -22,7 +22,7 @@ export const listRecipes = async () => {
       const recipePath = join(recipesPath, name, 'index.mjs')
 
       // windows needs a URL for absolute paths
-      
+
       const recipe = await import(pathToFileURL(recipePath).href)
 
       return {

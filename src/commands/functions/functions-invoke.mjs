@@ -68,7 +68,7 @@ const processPayloadFromFlag = function (payloadString) {
     if (pathexists) {
       try {
         // there is code execution potential here
-        
+
         payload = require(payloadpath)
         return payload
       } catch (error_) {

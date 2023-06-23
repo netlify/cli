@@ -385,7 +385,6 @@ const getNpmInstallPackages = (existingPackages = {}, neededPackages = {}) =>
 // we don't do this check, we may be upgrading the version of a module used in
 // another part of the project, which we don't want to do.
 const installDeps = async ({ functionPackageJson, functionPath, functionsDir }) => {
-  
   const { dependencies: functionDependencies, devDependencies: functionDevDependencies } = require(functionPackageJson)
   const sitePackageJson = await findUp('package.json', { cwd: functionsDir })
   const npmInstallFlags = ['--no-audit', '--no-fund']
@@ -399,7 +398,6 @@ const installDeps = async ({ functionPackageJson, functionPath, functionsDir }) 
     return
   }
 
-  
   const { dependencies: siteDependencies, devDependencies: siteDevDependencies } = require(sitePackageJson)
   const dependencies = getNpmInstallPackages(siteDependencies, functionDependencies)
   const devDependencies = getNpmInstallPackages(siteDevDependencies, functionDevDependencies)

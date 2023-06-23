@@ -58,6 +58,10 @@ export const getBuildFunction = async ({ config, directory, errorExit, func, pro
 const workerURL = new URL('worker.mjs', import.meta.url)
 
 export const invokeFunction = async ({ context, event, func, timeout }) => {
+  if (func.runtimeAPIVersion !== 2) {
+    return await invokeFunctionDirectly({ context, event, func, timeout })
+  }
+
   const workerData = {
     clientContext: JSON.stringify(context),
     event,
@@ -92,7 +96,6 @@ export const invokeFunction = async ({ context, event, func, timeout }) => {
   })
 }
 
-// unused right now
 export const invokeFunctionDirectly = async ({ context, event, func, timeout }) => {
   // If a function builder has defined a `buildPath` property, we use it.
   // Otherwise, we'll invoke the function's main file.
