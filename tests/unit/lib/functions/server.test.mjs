@@ -33,7 +33,7 @@ describe('createHandler', () => {
     })
     await functionsRegistry.scan([functionsDirectory])
     const app = express()
-    app.all('*', createHandler({ functionsRegistry }))
+    app.all('*', createHandler({ functionsRegistry, geo: 'mock' }))
 
     return await new Promise((resolve) => {
       server = app.listen(resolve)

@@ -105,7 +105,7 @@ export const createHandler = function (options) {
       {},
     )
 
-    const geoLocation = await getGeoLocation(options)
+    const geoLocation = await getGeoLocation({ ...options, mode: options.geo })
 
     const headers = Object.entries({
       ...request.headers,
