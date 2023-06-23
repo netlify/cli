@@ -68,8 +68,8 @@ export const invokeFunction = async ({ context, event, func, timeout }) => {
     // If a function builder has defined a `buildPath` property, we use it.
     // Otherwise, we'll invoke the function's main file.
     // Because we use import() we have to use file:// URLs for Windows.
-    lambdaPath: pathToFileURL((func.buildData && func.buildData.buildPath) || func.mainFile).href,
-    timeout,
+    entryFilePath: pathToFileURL(func.buildData?.buildPath ?? func.mainFile).href,
+    timeoutMs: timeout * SECONDS_TO_MILLISECONDS,
   }
 
   const worker = new Worker(workerURL, { workerData })
@@ -99,7 +99,7 @@ export const invokeFunction = async ({ context, event, func, timeout }) => {
 export const invokeFunctionDirectly = async ({ context, event, func, timeout }) => {
   // If a function builder has defined a `buildPath` property, we use it.
   // Otherwise, we'll invoke the function's main file.
-  const lambdaPath = (func.buildData && func.buildData.buildPath) || func.mainFile
+  const lambdaPath = func.buildData?.buildPath ?? func.mainFile
   const result = await lambdaLocal.execute({
     clientContext: JSON.stringify(context),
     event,

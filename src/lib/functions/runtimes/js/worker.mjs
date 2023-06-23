@@ -5,8 +5,6 @@ import lambdaLocal from '@skn0tt/lambda-local'
 import { isStream } from 'is-stream'
 import sourceMapSupport from 'source-map-support'
 
-import { SECONDS_TO_MILLISECONDS } from './constants.mjs'
-
 if (isMainThread) {
   throw new Error(`Do not import "${import.meta.url}" in the main thread.`)
 }
@@ -15,16 +13,16 @@ sourceMapSupport.install()
 
 lambdaLocal.getLogger().level = 'warn'
 
-const { clientContext, event, lambdaPath, timeout } = workerData
+const { clientContext, entryFilePath, event, timeoutMs } = workerData
 
-const lambdaFunc = await import(lambdaPath)
+const lambdaFunc = await import(entryFilePath)
 
 const result = await lambdaLocal.execute({
   clientContext,
   event,
   lambdaFunc,
   region: 'dev',
-  timeoutMs: timeout * SECONDS_TO_MILLISECONDS,
+  timeoutMs,
   verboseLevel: 3,
 })
 
