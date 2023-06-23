@@ -89,10 +89,7 @@ const serve = async (options, command) => {
 
   const { configPath: configPathOverride } = await runBuildTimeline({ cachedConfig, options, settings, site })
 
-  const geoConfig = { geolocationMode: options.geo, geoCountry: options.country, offline: options.offline, state }
-
   await startFunctionsServer({
-    ...geoConfig,
     api,
     command,
     config,
@@ -104,6 +101,10 @@ const serve = async (options, command) => {
     siteUrl,
     capabilities,
     timeouts,
+    geolocationMode: options.geo,
+    geoCountry: options.country,
+    offline: options.offline,
+    state,
   })
 
   // Try to add `.netlify` to `.gitignore`.

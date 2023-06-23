@@ -36,10 +36,7 @@ const functionsServe = async (options, command) => {
     errorMessage: 'Could not acquire configured functions port',
   })
 
-  const geoConfig = { geolocationMode: options.geo, geoCountry: options.country, offline: options.offline, state }
-
   await startFunctionsServer({
-    ...geoConfig,
     config,
     debug: options.debug,
     api,
@@ -51,6 +48,10 @@ const functionsServe = async (options, command) => {
     timeouts,
     functionsPrefix: '/.netlify/functions/',
     buildersPrefix: '/.netlify/builders/',
+    geolocationMode: options.geo,
+    geoCountry: options.country,
+    offline: options.offline,
+    state,
   })
 }
 

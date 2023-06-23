@@ -161,10 +161,7 @@ const dev = async (options, command) => {
     },
   })
 
-  const geoConfig = { geolocationMode: options.geo, geoCountry: options.country, offline: options.offline, state }
-
   await startFunctionsServer({
-    ...geoConfig,
     api,
     command,
     config,
@@ -175,6 +172,10 @@ const dev = async (options, command) => {
     siteUrl,
     capabilities,
     timeouts,
+    geolocationMode: options.geo,
+    geoCountry: options.country,
+    offline: options.offline,
+    state,
   })
 
   // Try to add `.netlify` to `.gitignore`.
@@ -196,7 +197,6 @@ const dev = async (options, command) => {
   const inspectSettings = generateInspectSettings(options.edgeInspect, options.edgeInspectBrk)
 
   await startProxyServer({
-    ...geoConfig,
     addonsUrls,
     config,
     configPath: configPathOverride,
@@ -209,6 +209,8 @@ const dev = async (options, command) => {
     site,
     siteInfo,
     state,
+    geolocationMode: options.geo,
+    geoCountry: options.country,
   })
 
   if (devConfig.autoLaunch !== false) {
