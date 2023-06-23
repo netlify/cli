@@ -43,6 +43,7 @@ const buildFunction = async ({ cache, config, directory, func, hasTypeModule, pr
   // this case, we use `mainFile` as the function path of `zipFunction`.
   const entryPath = functionDirectory === directory ? func.mainFile : functionDirectory
   const {
+    entryFilename,
     includedFiles,
     inputs,
     path: functionPath,
@@ -54,7 +55,7 @@ const buildFunction = async ({ cache, config, directory, func, hasTypeModule, pr
     command: () => zipFunction(entryPath, targetDirectory, zipOptions),
   })
   const srcFiles = inputs.filter((inputPath) => !inputPath.includes(`${path.sep}node_modules${path.sep}`))
-  const buildPath = path.join(functionPath, runtimeAPIVersion === 2 ? '___netlify-entry-point.mjs' : `${func.name}.js`)
+  const buildPath = path.join(functionPath, entryFilename)
 
   // some projects include a package.json with "type=module", forcing Node to interpret every descending file
   // as ESM. ZISI outputs CJS, so we emit an overriding directive into the output directory.
