@@ -118,7 +118,7 @@ export default async function handler({ config, directory, errorExit, func, meta
   const hasTypeModule = packageJson && packageJson.packageJson.type === 'module'
 
   if (metadata.runtimeAPIVersion === 2) {
-    // For typescript we use NFT otherwise we leave the file untouched with the `none` bundler
+    // For TypeScript we use NFT, otherwise we leave the file untouched with the `none` bundler
     const isTypescript = ['.ts', '.mts', '.cts'].includes(path.extname(func.mainFile))
 
     functionsConfig['*'].nodeBundler = isTypescript ? 'nft' : 'none'
