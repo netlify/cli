@@ -63,5 +63,12 @@ describe.runIf(gte(version, '18.13.0'))('v2 api', () => {
       expect(response.status).toBe(200)
       expect(devServer.outputBuffer.map((buffer) => buffer.toString())).toContain('🪵🪵🪵\n')
     })
+
+    test<FixtureTestContext>('brotli encoding works', async ({ devServer }) => {
+      const response = await fetch(`http://localhost:${devServer.port}/.netlify/functions/brotli`)
+      
+      expect(response.status).toBe(200)
+      expect(await response.text()).toBe("What's 🍞🏄‍♀️? A breadboad!".repeat(100))
+    })
   })
 })
