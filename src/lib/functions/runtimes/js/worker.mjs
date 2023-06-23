@@ -17,7 +17,6 @@ lambdaLocal.getLogger().level = 'warn'
 
 const { clientContext, event, lambdaPath, timeout } = workerData
 
-// eslint-disable-next-line import/no-dynamic-require
 const lambdaFunc = await import(lambdaPath)
 
 const result = await lambdaLocal.execute({

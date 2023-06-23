@@ -100,7 +100,6 @@ const formatRegistryArrayForInquirer = async function (lang, funcType) {
       .filter((folderName) => !folderName.endsWith('.md'))
       .map(async (folderName) => {
         const templatePath = path.join(templatesDir, lang, folderName, '.netlify-function-template.mjs')
-        // eslint-disable-next-line import/no-dynamic-require
         const template = await import(pathToFileURL(templatePath))
 
         return template.default
@@ -362,7 +361,6 @@ const downloadFromURL = async function (command, options, argumentName, function
   if (await fileExistsAsync(fnTemplateFile)) {
     const {
       default: { addons = [], onComplete },
-      // eslint-disable-next-line import/no-dynamic-require
     } = await import(pathToFileURL(fnTemplateFile).href)
 
     await installAddons(command, addons, path.resolve(fnFolder))
@@ -387,7 +385,7 @@ const getNpmInstallPackages = (existingPackages = {}, neededPackages = {}) =>
 // we don't do this check, we may be upgrading the version of a module used in
 // another part of the project, which we don't want to do.
 const installDeps = async ({ functionPackageJson, functionPath, functionsDir }) => {
-  // eslint-disable-next-line import/no-dynamic-require
+  
   const { dependencies: functionDependencies, devDependencies: functionDevDependencies } = require(functionPackageJson)
   const sitePackageJson = await findUp('package.json', { cwd: functionsDir })
   const npmInstallFlags = ['--no-audit', '--no-fund']
@@ -401,7 +399,7 @@ const installDeps = async ({ functionPackageJson, functionPath, functionsDir }) 
     return
   }
 
-  // eslint-disable-next-line import/no-dynamic-require
+  
   const { dependencies: siteDependencies, devDependencies: siteDevDependencies } = require(sitePackageJson)
   const dependencies = getNpmInstallPackages(siteDependencies, functionDependencies)
   const devDependencies = getNpmInstallPackages(siteDevDependencies, functionDevDependencies)

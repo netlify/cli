@@ -10,7 +10,7 @@ import { env } from 'process'
 let execa
 
 if (env.NETLIFY_CLI_EXECA_PATH) {
-  // eslint-disable-next-line import/no-dynamic-require
+  
   const execaMock = await import(env.NETLIFY_CLI_EXECA_PATH)
   execa = execaMock.default
 } else {

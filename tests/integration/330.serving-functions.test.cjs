@@ -726,7 +726,7 @@ test('Serves functions that dynamically load files included in the `functions.in
         handler: async (event) => {
           const { name } = event.queryStringParameters
 
-          // eslint-disable-next-line import/no-dynamic-require, n/global-require
+          // eslint-disable-next-line n/global-require
           const { data } = require(`../files/${name}.json`)
 
           return {
