@@ -58,7 +58,7 @@ export const getBuildFunction = async ({ config, directory, errorExit, func, pro
 const workerURL = new URL('worker.mjs', import.meta.url)
 
 export const invokeFunction = async ({ context, event, func, timeout }) => {
-  if (func.runtimeAPIVersion !== 2) {
+  if (func.buildData.runtimeAPIVersion !== 2) {
     return await invokeFunctionDirectly({ context, event, func, timeout })
   }
 

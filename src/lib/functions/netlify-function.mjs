@@ -88,14 +88,13 @@ export default class NetlifyFunction {
     this.buildQueue = buildFunction({ cache })
 
     try {
-      const { includedFiles = [], runtimeAPIVersion, schedule, srcFiles, ...buildData } = await this.buildQueue
+      const { includedFiles = [], schedule, srcFiles, ...buildData } = await this.buildQueue
       const srcFilesSet = new Set(srcFiles)
       const srcFilesDiff = this.getSrcFilesDiff(srcFilesSet)
 
       this.buildData = buildData
       this.srcFiles = srcFilesSet
       this.schedule = schedule || this.schedule
-      this.runtimeAPIVersion = runtimeAPIVersion
 
       return { includedFiles, srcFilesDiff }
     } catch (error) {
