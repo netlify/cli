@@ -63,7 +63,7 @@ export const invokeFunction = async ({ context, event, func, timeout }) => {
     event,
     // If a function builder has defined a `buildPath` property, we use it.
     // Otherwise, we'll invoke the function's main file.
-    // Because we use import() we have to use file:// URLs for windows
+    // Because we use import() we have to use file:// URLs for Windows.
     lambdaPath: pathToFileURL((func.buildData && func.buildData.buildPath) || func.mainFile).href,
     timeout,
   }
