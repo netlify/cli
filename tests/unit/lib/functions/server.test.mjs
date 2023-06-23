@@ -8,6 +8,7 @@ import { afterAll, beforeAll, describe, expect, test, vi } from 'vitest'
 
 import { FunctionsRegistry } from '../../../../src/lib/functions/registry.mjs'
 import { createHandler } from '../../../../src/lib/functions/server.mjs'
+import StateConfig from '../../../../src/utils/state-config.mjs'
 
 vi.mock('../../../../src/utils/command-helpers.mjs', async () => ({
   ...(await vi.importActual('../../../../src/utils/command-helpers.mjs')),
@@ -33,7 +34,7 @@ describe('createHandler', () => {
     })
     await functionsRegistry.scan([functionsDirectory])
     const app = express()
-    app.all('*', createHandler({ functionsRegistry, geo: 'mock' }))
+    app.all('*', createHandler({ functionsRegistry, geo: 'mock', state: new StateConfig(projectRoot) }))
 
     return await new Promise((resolve) => {
       server = app.listen(resolve)
