@@ -16,7 +16,6 @@ export const detectNetlifyLambda = async function ({ packageJson } = {}) {
 
   const matchingScripts = Object.entries(scripts).filter(([, script]) => script.match(/netlify-lambda\s+build/))
 
-  // eslint-disable-next-line fp/no-loops
   for (const [key, script] of matchingScripts) {
     // E.g. ["netlify-lambda", "build", "functions/folder"]
     const match = minimist(script.split(' '), {

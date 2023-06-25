@@ -139,6 +139,7 @@ export const createFormSubmissionHandler = function ({ functionsRegistry, siteUr
       'content-length': data.length,
       'content-type': 'application/json',
       'x-netlify-original-pathname': originalUrl.pathname,
+      'x-netlify-original-search': originalUrl.search,
     }
 
     next()

@@ -217,7 +217,6 @@ class SiteBuilder {
   }
 
   async build() {
-    // eslint-disable-next-line fp/no-loops
     for (const task of this.tasks) {
       await task()
     }
