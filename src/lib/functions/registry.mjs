@@ -3,6 +3,7 @@ import { mkdir } from 'fs/promises'
 import { extname, isAbsolute, join, resolve } from 'path'
 import { env } from 'process'
 
+import { listFunctions } from '@netlify/zip-it-and-ship-it'
 import extractZip from 'extract-zip'
 
 import {
@@ -175,9 +176,6 @@ export class FunctionsRegistry {
   // This function is here so we can mock it in tests
   // eslint-disable-next-line class-methods-use-this
   async listFunctions(...args) {
-    // Performance optimization: load '@netlify/zip-it-and-ship-it' on demand.
-    const { listFunctions } = await import('@netlify/zip-it-and-ship-it')
-
     return await listFunctions(...args)
   }
 

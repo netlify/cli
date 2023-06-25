@@ -15,6 +15,7 @@ describe('getPackageJson', () => {
   let getPackageJson
   beforeEach(async () => {
     vi.clearAllMocks()
+    // Reevaluate modules when imported in order to avoid issues with singleton pattern in getPackageJson
     vi.resetModules()
     const newImport = await import('../../../src/utils/get-package-json.mjs')
     getPackageJson = newImport.default

@@ -2,6 +2,7 @@ import { mkdir, writeFile } from 'fs/promises'
 import { createRequire } from 'module'
 import path from 'path'
 
+import { zipFunction, listFunction } from '@netlify/zip-it-and-ship-it'
 import decache from 'decache'
 import { readPackageUp } from 'read-pkg-up'
 import sourceMapSupport from 'source-map-support'
@@ -29,9 +30,6 @@ const buildFunction = async ({ cache, config, directory, func, hasTypeModule, pr
     config,
   }
   const functionDirectory = path.dirname(func.mainFile)
-
-  // performance
-  const { zipFunction } = await import('@netlify/zip-it-and-ship-it')
 
   // If we have a function at `functions/my-func/index.js` and we pass
   // that path to `zipFunction`, it will lack the context of the whole
@@ -77,7 +75,6 @@ const buildFunction = async ({ cache, config, directory, func, hasTypeModule, pr
  * @param {string} params.projectRoot
  */
 export const parseForSchedule = async ({ config, mainFile, projectRoot }) => {
-  const { listFunction } = await import('@netlify/zip-it-and-ship-it')
   const listedFunction = await listFunction(mainFile, {
     config: netlifyConfigToZisiConfig({ config, projectRoot }),
     parseISC: true,

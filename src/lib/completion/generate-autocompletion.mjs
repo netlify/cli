@@ -1,5 +1,5 @@
 // @ts-check
-import { existsSync, mkdirSync, writeFileSync } from 'fs'
+import fs from 'fs'
 import { dirname } from 'path'
 
 import { sortOptions, warn } from '../../utils/command-helpers.mjs'
@@ -28,10 +28,10 @@ const generateAutocompletion = (program) => {
       {},
     )
 
-    if (!existsSync(dirname(AUTOCOMPLETION_FILE))) {
-      mkdirSync(dirname(AUTOCOMPLETION_FILE), { recursive: true })
+    if (!fs.existsSync(dirname(AUTOCOMPLETION_FILE))) {
+      fs.mkdirSync(dirname(AUTOCOMPLETION_FILE), { recursive: true })
     }
-    writeFileSync(AUTOCOMPLETION_FILE, JSON.stringify(autocomplete), 'utf-8')
+    fs.writeFileSync(AUTOCOMPLETION_FILE, JSON.stringify(autocomplete), 'utf-8')
   } catch (error_) {
     // Sometimes it can happen that the autocomplete generation in the postinstall script lacks permissions
     // to write files to the home directory of the user. Therefore just warn with the error and don't break install.
