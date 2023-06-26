@@ -1,15 +1,10 @@
-// @ts-check
-import { Project } from '@netlify/build-info'
-// eslint-disable-next-line import/extensions, n/no-missing-import
-import { NodeFS } from '@netlify/build-info/node'
+// @ts-checkom '@netlify/build-info'
 
 /**
- * @param {{ baseDirectory: string }} param0
+ * @param {{ project: import("@netlify/build-info").Project }} param0
  * @returns
  */
-export const getFrameworkInfo = async ({ baseDirectory }) => {
-  const fs = new NodeFS()
-  const project = new Project(fs, baseDirectory)
+export const getFrameworkInfo = async ({ project }) => {
   const frameworks = await project.detectFrameworks()
   // several frameworks can be detected - first one has highest priority
   if (frameworks && frameworks.length !== 0) {

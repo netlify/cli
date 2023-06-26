@@ -82,7 +82,11 @@ const getPromptInputs = ({ defaultBaseDir, defaultBuildCmd, defaultBuildDir }) =
 const getBaseDirectory = ({ repositoryRoot, siteRoot }) =>
   path.normalize(repositoryRoot) === path.normalize(siteRoot) ? process.cwd() : siteRoot
 
-export const getBuildSettings = async ({ config, repositoryRoot, siteRoot }) => {
+/**
+ * @param {{ config: any, repositoryRoot: any, siteRoot: any, project: import("@netlify/build-info").Project }} param0
+ * @returns
+ */
+export const getBuildSettings = async ({ config, project, repositoryRoot, siteRoot }) => {
   const baseDirectory = getBaseDirectory({ repositoryRoot, siteRoot })
   const {
     frameworkBuildCommand,
@@ -90,7 +94,7 @@ export const getBuildSettings = async ({ config, repositoryRoot, siteRoot }) => 
     frameworkName,
     frameworkPlugins = [],
   } = await getFrameworkInfo({
-    baseDirectory,
+    project,
   })
   const { defaultBaseDir, defaultBuildCmd, defaultBuildDir, defaultFunctionsDir, recommendedPlugins } =
     await getDefaultSettings({

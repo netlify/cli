@@ -62,7 +62,7 @@ export default async function configManual({ command, repoData, siteId }) {
   const { netlify } = command
   const {
     api,
-    cachedConfig: { configPath, env },
+    cachedConfig: { configPath },
     config,
     repositoryRoot,
     site: { root: siteRoot },
@@ -72,7 +72,7 @@ export default async function configManual({ command, repoData, siteId }) {
     repositoryRoot,
     siteRoot,
     config,
-    env,
+    project: command.project,
   })
   await saveNetlifyToml({ repositoryRoot, config, configPath, baseDir, buildCmd, buildDir, functionsDir })
 
