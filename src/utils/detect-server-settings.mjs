@@ -157,7 +157,7 @@ const handleStaticServer = async ({ devConfig, options, projectDir }) => {
  * @param {import('@netlify/build-info').Settings} settings
  * @returns {import('./types.js').BaseServerSettings}
  */
-const getSettingsFromFramework = (settings) => {
+const getSettingsFromDetectedSettings = (settings) => {
   const {
     devCommand: command,
     dist,
@@ -252,7 +252,7 @@ const detectFrameworkSettings = async (project) => {
   const settings = projectSettings.filter((setting) => setting.devCommand)
 
   if (settings.length === 1) {
-    return getSettingsFromFramework(settings[0])
+    return getSettingsFromDetectedSettings(settings[0])
   }
 
   if (settings.length > 1) {
@@ -262,8 +262,8 @@ const detectFrameworkSettings = async (project) => {
     /** multiple matching detectors, make the user choose */
     inquirer.registerPrompt('autocomplete', inquirerAutocompletePrompt)
     const scriptInquirerOptions = formatSettingsArrForInquirer(settings)
-    const { chosenFramework } = await inquirer.prompt({
-      name: 'chosenFramework',
+    const { chosenSettings } = await inquirer.prompt({
+      name: 'chosenSettings',
       message: `Multiple possible start commands found`,
       type: 'autocomplete',
       source(_, input) {
@@ -276,11 +276,11 @@ const detectFrameworkSettings = async (project) => {
     })
     log(
       `Add ${formatProperty(
-        `framework = "${chosenFramework.id}"`,
+        `framework = "${chosenSettings.framework.id}"`,
       )} to the [dev] section of your netlify.toml to avoid this selection prompt next time`,
     )
 
-    return getSettingsFromFramework(chosenFramework)
+    return getSettingsFromDetectedSettings(chosenSettings)
   }
 }
 
@@ -347,7 +347,7 @@ const handleForcedFramework = async ({ devConfig, project }) => {
   if (!framework) {
     throw new Error('Could not find specified framework in project.')
   }
-  const frameworkSettings = getSettingsFromFramework(framework)
+  const frameworkSettings = getSettingsFromDetectedSettings(framework)
   return mergeSettings({ devConfig, frameworkSettings })
 }
 
