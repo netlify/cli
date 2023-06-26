@@ -22,12 +22,25 @@ const addFunctionsConfigDefaults = (config) => ({
   },
 })
 
-const buildFunction = async ({ cache, config, directory, func, hasTypeModule, projectRoot, targetDirectory }) => {
+/**
+ * @param {object} params
+ * @param {import("@netlify/zip-it-and-ship-it/dist/feature_flags.js").FeatureFlags} params.featureFlags
+ */
+const buildFunction = async ({
+  cache,
+  config,
+  directory,
+  featureFlags,
+  func,
+  hasTypeModule,
+  projectRoot,
+  targetDirectory,
+}) => {
   const zipOptions = {
     archiveFormat: 'none',
     basePath: projectRoot,
     config,
-    featureFlags: { zisi_functions_api_v2: true },
+    featureFlags: { ...featureFlags, zisi_functions_api_v2: true },
   }
   const functionDirectory = path.dirname(func.mainFile)
 
@@ -118,11 +131,22 @@ export default async function handler({ config, directory, errorExit, func, meta
   const packageJson = await readPackageUp(func.mainFile)
   const hasTypeModule = packageJson && packageJson.packageJson.type === 'module'
 
+  /** @type {import("@netlify/zip-it-and-ship-it/dist/feature_flags.js").FeatureFlags} */
+  const featureFlags = {}
+
   if (metadata.runtimeAPIVersion === 2) {
     // For TypeScript we use NFT, otherwise we leave the file untouched with the `none` bundler
     const isTypescript = ['.ts', '.mts', '.cts'].includes(path.extname(func.mainFile))
 
-    functionsConfig['*'].nodeBundler = isTypescript ? 'nft' : 'none'
+    if (isTypescript) {
+      functionsConfig['*'].nodeBundler = 'nft'
+    } else {
+      // using esbuild is less performant than `none`, but it emits sourcemaps and thus
+      // enables debugging functions
+      functionsConfig['*'].nodeBundler = 'esbuild'
+      featureFlags.zisi_pure_esm = true
+      featureFlags.zisi_pure_esm_mjs = true
+    }
   } else {
     // We must use esbuild for certain file extensions.
     const mustTranspile = ['.mjs', '.ts', '.mts', '.cts'].includes(path.extname(func.mainFile))
@@ -148,7 +172,16 @@ export default async function handler({ config, directory, errorExit, func, meta
 
   return {
     build: ({ cache = {} }) =>
-      buildFunction({ cache, config: functionsConfig, directory, func, projectRoot, targetDirectory, hasTypeModule }),
+      buildFunction({
+        cache,
+        config: functionsConfig,
+        directory,
+        func,
+        projectRoot,
+        targetDirectory,
+        hasTypeModule,
+        featureFlags,
+      }),
     builderName: 'zip-it-and-ship-it',
     target: targetDirectory,
   }
