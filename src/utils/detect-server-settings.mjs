@@ -1,7 +1,7 @@
 // @ts-check
 import { readFile } from 'fs/promises'
 import { EOL } from 'os'
-import path from 'path'
+import path, { join } from 'path'
 import process from 'process'
 
 import { Project, getFramework } from '@netlify/build-info'
@@ -249,7 +249,13 @@ const detectChangesInNewSettings = (frameworkSettings, newSettings, metadata) =>
  */
 const detectFrameworkSettings = async (project) => {
   const projectSettings = await project.getBuildSettings()
-  const settings = projectSettings.filter((setting) => setting.devCommand)
+  const settings = projectSettings
+    .filter((setting) =>
+      project.workspace && !project.workspace.isRoot
+        ? process.cwd().startsWith(join(project.jsWorkspaceRoot, setting.packagePath ?? ''))
+        : true,
+    )
+    .filter((setting) => setting.devCommand)
 
   if (settings.length === 1) {
     return getSettingsFromDetectedSettings(settings[0])
