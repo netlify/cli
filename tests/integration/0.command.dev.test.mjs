@@ -1,18 +1,18 @@
 // Handlers are meant to be async outside tests
-const { promises: fs } = require('fs')
-const { join } = require('path')
+import fs from 'fs/promises'
+import { join } from 'path'
 
 // eslint-disable-next-line ava/use-test
-const avaTest = require('ava')
-const { isCI } = require('ci-info')
-const jwt = require('jsonwebtoken')
-const fetch = require('node-fetch')
+import avaTest from 'ava'
+import { isCI } from 'ci-info'
+import jwt from 'jsonwebtoken'
+import fetch from 'node-fetch'
 
-const { withDevServer } = require('./utils/dev-server.cjs')
-const { startExternalServer } = require('./utils/external-server.cjs')
-const got = require('./utils/got.cjs')
-const { withMockApi } = require('./utils/mock-api.cjs')
-const { withSiteBuilder } = require('./utils/site-builder.cjs')
+import { withDevServer } from './utils/dev-server.cjs'
+import { startExternalServer } from './utils/external-server.cjs'
+import got from './utils/got.cjs'
+import { withMockApi } from './utils/mock-api.cjs'
+import { withSiteBuilder } from './utils/site-builder.cjs'
 
 const test = isCI ? avaTest.serial.bind(avaTest) : avaTest
 

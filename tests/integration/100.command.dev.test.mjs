@@ -1,23 +1,27 @@
-const path = require('path')
+import path from 'path'
+import { fileURLToPath } from 'url'
 
 // eslint-disable-next-line ava/use-test
-const avaTest = require('ava')
-const { isCI } = require('ci-info')
-const getAvailablePort = require('get-port')
-const jwt = require('jsonwebtoken')
-const { Response } = require('node-fetch')
+import avaTest from 'ava'
+import { isCI } from 'ci-info'
+import { setProperty } from 'dot-prop'
+import getAvailablePort from 'get-port'
+import jwt from 'jsonwebtoken'
+import { Response } from 'node-fetch'
 
-const { withDevServer } = require('./utils/dev-server.cjs')
-const got = require('./utils/got.cjs')
-const { withMockApi } = require('./utils/mock-api.cjs')
-const { pause } = require('./utils/pause.cjs')
-const { withSiteBuilder } = require('./utils/site-builder.cjs')
+import { withDevServer } from './utils/dev-server.cjs'
+import got from './utils/got.cjs'
+import { withMockApi } from './utils/mock-api.cjs'
+import { pause } from './utils/pause.cjs'
+import { withSiteBuilder } from './utils/site-builder.cjs'
+
+// eslint-disable-next-line no-underscore-dangle
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const test = isCI ? avaTest.serial.bind(avaTest) : avaTest
 
 const JWT_EXPIRY = 1_893_456_000
 const getToken = async ({ jwtRolePath = 'app_metadata.authorization.roles', jwtSecret = 'secret', roles }) => {
-  const { setProperty } = await import('dot-prop')
   const payload = {
     exp: JWT_EXPIRY,
     sub: '12345678',

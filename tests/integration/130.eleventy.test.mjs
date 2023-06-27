@@ -1,11 +1,15 @@
-const path = require('path')
+import path from 'path'
+import { fileURLToPath } from 'url'
 
-const test = require('ava')
+import test from 'ava'
 
-const { clientIP, originalIP } = require('../lib/local-ip.cjs')
+import { clientIP, originalIP } from '../lib/local-ip.cjs'
 
-const { startDevServer } = require('./utils/dev-server.cjs')
-const got = require('./utils/got.cjs')
+import { startDevServer } from './utils/dev-server.cjs'
+import got from './utils/got.cjs'
+
+// eslint-disable-next-line no-underscore-dangle
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 test.before(async (t) => {
   const server = await startDevServer({ cwd: path.join(__dirname, '__fixtures__/eleventy-site') })

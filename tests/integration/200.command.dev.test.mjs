@@ -1,18 +1,22 @@
 // Handlers are meant to be async outside tests
-const { copyFile } = require('fs').promises
-const os = require('os')
-const path = require('path')
+import { copyFile } from 'fs/promises'
+import os from 'os'
+import path from 'path'
+import { fileURLToPath } from 'url'
 
 // eslint-disable-next-line ava/use-test
-const avaTest = require('ava')
-const { isCI } = require('ci-info')
-const { Response } = require('node-fetch')
+import avaTest from 'ava'
+import { isCI } from 'ci-info'
+import { Response } from 'node-fetch'
 
-const { curl } = require('./utils/curl.cjs')
-const { withDevServer } = require('./utils/dev-server.cjs')
-const got = require('./utils/got.cjs')
-const { withMockApi } = require('./utils/mock-api.cjs')
-const { withSiteBuilder } = require('./utils/site-builder.cjs')
+import { curl } from './utils/curl.cjs'
+import { withDevServer } from './utils/dev-server.cjs'
+import got from './utils/got.cjs'
+import { withMockApi } from './utils/mock-api.cjs'
+import { withSiteBuilder } from './utils/site-builder.cjs'
+
+// eslint-disable-next-line no-underscore-dangle
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const test = isCI ? avaTest.serial.bind(avaTest) : avaTest
 
@@ -85,12 +89,12 @@ testMatrix.forEach(({ args }) => {
       builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withContentFile({
         path: path.join('functions', 'esm-function', 'esm-function.js'),
         content: `
-export async function handler(event, context) {
-  return {
-    statusCode: 200,
-    body: 'esm',
-  };
-}
+          export async function handler(event, context) {
+            return {
+              statusCode: 200,
+              body: 'esm',
+            };
+          }
     `,
       })
 

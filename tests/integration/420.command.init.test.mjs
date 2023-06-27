@@ -1,15 +1,15 @@
-const { readFile } = require('fs').promises
-const process = require('process')
+import { readFile } from 'fs/promises'
+import process from 'process'
 
-const test = require('ava')
-const cleanDeep = require('clean-deep')
-const execa = require('execa')
-const toml = require('toml')
+import test from 'ava'
+import cleanDeep from 'clean-deep'
+import execa from 'execa'
+import toml from 'toml'
 
-const cliPath = require('./utils/cli-path.cjs')
-const { CONFIRM, DOWN, answerWithValue, handleQuestions } = require('./utils/handle-questions.cjs')
-const { withMockApi } = require('./utils/mock-api.cjs')
-const { withSiteBuilder } = require('./utils/site-builder.cjs')
+import cliPath from './utils/cli-path.cjs'
+import { CONFIRM, DOWN, answerWithValue, handleQuestions } from './utils/handle-questions.cjs'
+import { withMockApi } from './utils/mock-api.cjs'
+import { withSiteBuilder } from './utils/site-builder.cjs'
 
 const defaultFunctionsDirectory = 'netlify/functions'
 

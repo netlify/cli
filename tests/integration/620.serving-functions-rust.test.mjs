@@ -1,10 +1,11 @@
-const test = require('ava')
+// eslint-disable-next-line ava/no-ignored-test-files
+import test from 'ava'
 
-const { tryAndLogOutput, withDevServer } = require('./utils/dev-server.cjs')
-const got = require('./utils/got.cjs')
-const { createMock: createExecaMock } = require('./utils/mock-execa.cjs')
-const { pause } = require('./utils/pause.cjs')
-const { withSiteBuilder } = require('./utils/site-builder.cjs')
+import { tryAndLogOutput, withDevServer } from './utils/dev-server.cjs'
+import got from './utils/got.cjs'
+import { createMock as createExecaMock } from './utils/mock-execa.cjs'
+import { pause } from './utils/pause.cjs'
+import { withSiteBuilder } from './utils/site-builder.cjs'
 
 const WAIT_WRITE = 1000
 

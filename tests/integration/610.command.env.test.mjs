@@ -1,14 +1,14 @@
-const process = require('process')
+import process from 'process'
 
-const test = require('ava')
-const execa = require('execa')
+import test from 'ava'
+import execa from 'execa'
 
-const callCli = require('./utils/call-cli.cjs')
-const cliPath = require('./utils/cli-path.cjs')
-const { CONFIRM, answerWithValue, handleQuestions } = require('./utils/handle-questions.cjs')
-const { getCLIOptions, withMockApi } = require('./utils/mock-api.cjs')
-const { withSiteBuilder } = require('./utils/site-builder.cjs')
-const { normalize } = require('./utils/snapshots.cjs')
+import callCli from './utils/call-cli.cjs'
+import cliPath from './utils/cli-path.cjs'
+import { CONFIRM, answerWithValue, handleQuestions } from './utils/handle-questions.cjs'
+import { getCLIOptions, withMockApi } from './utils/mock-api.cjs'
+import { withSiteBuilder } from './utils/site-builder.cjs'
+import { normalize } from './utils/snapshots.cjs'
 
 const siteInfo = {
   account_slug: 'test-account',
