@@ -1,9 +1,9 @@
-const test = require('ava')
+import test from 'ava'
 
-const callCli = require('./utils/call-cli.cjs')
-const { getCLIOptions, withMockApi } = require('./utils/mock-api.cjs')
-const { withSiteBuilder } = require('./utils/site-builder.cjs')
-const { normalize } = require('./utils/snapshots.cjs')
+import callCli from './utils/call-cli.cjs'
+import { getCLIOptions, withMockApi } from './utils/mock-api.cjs'
+import { withSiteBuilder } from './utils/site-builder.cjs'
+import { normalize } from './utils/snapshots.cjs'
 
 const siteInfo = {
   account_slug: 'test-account',

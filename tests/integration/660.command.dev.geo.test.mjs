@@ -1,9 +1,9 @@
-const process = require('process')
+import process from 'process'
 
-const test = require('ava')
+import test from 'ava'
 
-const callCli = require('./utils/call-cli.cjs')
-const { withSiteBuilder } = require('./utils/site-builder.cjs')
+import callCli from './utils/call-cli.cjs'
+import { withSiteBuilder } from './utils/site-builder.cjs'
 
 test('should throw if invalid country arg is passed', async (t) => {
   await withSiteBuilder('site-env', async (builder) => {

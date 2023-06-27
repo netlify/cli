@@ -220,7 +220,8 @@
   "ava": {
     "files": [
       "tools/**/*.test.mjs",
-      "tests/**/*.test.cjs"
+      "tests/**/*.test.cjs",
+      "tests/**/*.test.mjs"
     ],
     "cache": true,
     "concurrency": 5,

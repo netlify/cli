@@ -1,14 +1,14 @@
 // Handlers are meant to be async outside tests
-const path = require('path')
-const process = require('process')
+import path from 'path'
+import process from 'process'
 
 // eslint-disable-next-line ava/use-test
-const avaTest = require('ava')
-const { isCI } = require('ci-info')
+import avaTest from 'ava'
+import { isCI } from 'ci-info'
 
-const { withDevServer } = require('./utils/dev-server.cjs')
-const got = require('./utils/got.cjs')
-const { withSiteBuilder } = require('./utils/site-builder.cjs')
+import { withDevServer } from './utils/dev-server.cjs'
+import got from './utils/got.cjs'
+import { withSiteBuilder } from './utils/site-builder.cjs'
 
 const test = isCI ? avaTest.serial.bind(avaTest) : avaTest
 
