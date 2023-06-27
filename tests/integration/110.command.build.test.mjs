@@ -1,6 +1,6 @@
 import path from 'path'
 
-import test from 'ava'
+import { test } from 'vitest'
 import execa from 'execa'
 
 import cliPath from './utils/cli-path.cjs'
@@ -38,9 +38,9 @@ const runBuildCommand = async function (
     outputs = [outputs]
   }
   outputs.forEach((output) => {
-    t.true(all.includes(output), `Output of build command does not include '${output}'`)
+    t.expect(all.includes(output), `Output of build command does not include '${output}'`).toBe(true)
   })
-  t.is(exitCode, expectedExitCode)
+  t.expect(exitCode).toEqual(expectedExitCode)
 }
 
 const siteInfo = {
@@ -281,7 +281,7 @@ test('should not send network requests when offline flag is set', async (t) => {
         flags: ['--offline'],
       })
 
-      t.is(requests.length, 0)
+      t.expect(requests.length).toBe(0)
     })
   })
 })

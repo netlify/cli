@@ -4,10 +4,8 @@ import os from 'os'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
-// eslint-disable-next-line ava/use-test
-import avaTest from 'ava'
+import { test } from 'vitest'
 import { isCI } from 'ci-info'
-import { Response } from 'node-fetch'
 
 import { curl } from './utils/curl.cjs'
 import { withDevServer } from './utils/dev-server.cjs'
@@ -17,8 +15,6 @@ import { withSiteBuilder } from './utils/site-builder.cjs'
 
 // eslint-disable-next-line no-underscore-dangle
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-
-const test = isCI ? avaTest.serial.bind(avaTest) : avaTest
 
 const testMatrix = [{ args: [] }]
 
@@ -67,19 +63,19 @@ testMatrix.forEach(({ args }) => {
           ])
 
         // query params should be taken from redirect rule for functions
-        t.deepEqual(fromFunction.multiValueQueryStringParameters, { bar: ['1', '2'], foo: ['1', '2'] })
+        t.expect(fromFunction.multiValueQueryStringParameters).toStrictEqual({ bar: ['1', '2'], foo: ['1', '2'] })
 
         // query params should be passed through from the request
-        t.is(queryPassthrough.headers.location, '/?foo=1&foo=2&bar=1&bar=2')
+        t.expect(queryPassthrough.headers.location).toEqual('/?foo=1&foo=2&bar=1&bar=2')
 
         // query params should be taken from the redirect rule
-        t.is(queryInRedirect.headers.location, '/?a=1&a=2')
+        t.expect(queryInRedirect.headers.location).toEqual('/?a=1&a=2')
 
         // query params should be taken from the redirect rule
-        t.is(withParamMatching.headers.location, '/?param=1')
+        t.expect(withParamMatching.headers.location).toEqual('/?param=1')
 
         // splat should be passed as query param in function redirects
-        t.deepEqual(functionWithSplat.queryStringParameters, { query: 'abc' })
+        t.expect(functionWithSplat.queryStringParameters).toStrictEqual({ query: 'abc' })
       })
     })
   })
@@ -99,12 +95,13 @@ testMatrix.forEach(({ args }) => {
       })
 
       await builder.buildAsync()
-
-      await t.throwsAsync(() =>
-        withDevServer({ cwd: builder.directory, args }, async (server) =>
-          got(`${server.url}/.netlify/functions/esm-function`).text(),
-        ),
-      )
+      await t
+        .expect(() =>
+          withDevServer({ cwd: builder.directory, args }, async (server) => {
+            await got(`${server.url}/.netlify/functions/esm-function`).text()
+          }),
+        )
+        .rejects.toThrow()
     })
   })
 
@@ -115,12 +112,12 @@ testMatrix.forEach(({ args }) => {
         .withContentFile({
           path: path.join('functions', 'esm-function', 'esm-function.js'),
           content: `
-export async function handler(event, context) {
-  return {
-    statusCode: 200,
-    body: 'esm',
-  };
-}
+            export async function handler(event, context) {
+              return {
+                statusCode: 200,
+                body: 'esm',
+              };
+            }
     `,
         })
 
@@ -128,7 +125,7 @@ export async function handler(event, context) {
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const response = await got(`${server.url}/.netlify/functions/esm-function`).text()
-        t.is(response, 'esm')
+        t.expect(response).toEqual('esm')
       })
     })
   })
@@ -160,7 +157,7 @@ export const handler = async function () {
 
         await withDevServer({ cwd: builder.directory, args }, async (server) => {
           const response = await got(`${server.url}/.netlify/functions/ts-function`).text()
-          t.is(response, 'ts')
+          t.expect(response).toEqual('ts')
         })
       })
     },
@@ -191,7 +188,7 @@ export const handler = async function () {
 
         await withDevServer({ cwd: builder.directory, args }, async (server) => {
           const response = await got(`${server.url}/.netlify/functions/ts-function`).text()
-          t.is(response, 'ts')
+          t.expect(response).toEqual('ts')
         })
       })
     },
@@ -259,10 +256,11 @@ export const handler = async function () {
       ])
       await withDevServer({ cwd: builder.directory, args }, async ({ port }) => {
         const options = { https: { rejectUnauthorized: false } }
-        t.is(await got(`https://localhost:${port}`, options).text(), 'index')
-        t.is(await got(`https://localhost:${port}?ef=true`, options).text(), 'INDEX')
-        t.is(await got(`https://localhost:${port}?ef=fetch`, options).text(), 'ORIGIN')
-        t.deepEqual(await got(`https://localhost:${port}/api/hello`, options).json(), {
+
+        await t.expect(await got(`https://localhost:${port}`, options).text()).toEqual('index')
+        await t.expect(await got(`https://localhost:${port}?ef=true`, options).text()).toEqual('INDEX')
+        await t.expect(await got(`https://localhost:${port}?ef=fetch`, options).text()).toEqual('ORIGIN')
+        await t.expect(await got(`https://localhost:${port}/api/hello`, options).json()).toStrictEqual({
           rawUrl: `https://localhost:${port}/api/hello`,
         })
       })
@@ -322,8 +320,8 @@ export const handler = async function () {
             },
           },
           async ({ url }) => {
-            const error = await t.throwsAsync(() => got(`${url}/.netlify/functions/hello`))
-            t.true(error.response.body.includes('TimeoutError: Task timed out after 1.00 seconds'))
+            const error = await got(`${url}/.netlify/functions/hello`).catch((e) => e)
+            t.expect(error.response.body.includes('TimeoutError: Task timed out after 1.00 seconds')).toBe(true)
           },
         )
       })
@@ -331,36 +329,34 @@ export const handler = async function () {
   })
 
   // we need curl to reproduce this issue
-  if (os.platform() !== 'win32') {
-    test(testName(`don't hang on 'Expect: 100-continue' header`, args), async () => {
-      await withSiteBuilder('site-with-expect-header', async (builder) => {
-        await builder
-          .withNetlifyToml({
-            config: {
-              functions: { directory: 'functions' },
-            },
-          })
-          .withFunction({
-            path: 'hello.js',
-            handler: async () => ({ statusCode: 200, body: 'Hello' }),
-          })
-          .buildAsync()
-
-        await withDevServer({ cwd: builder.directory, args }, async (server) => {
-          await curl(`${server.url}/.netlify/functions/hello`, [
-            '-i',
-            '-v',
-            '-d',
-            '{"somefield":"somevalue"}',
-            '-H',
-            'Content-Type: application/json',
-            '-H',
-            `Expect: 100-continue' header`,
-          ])
+  test.skipIf(os.platform() === 'win32')(testName(`don't hang on 'Expect: 100-continue' header`, args), async () => {
+    await withSiteBuilder('site-with-expect-header', async (builder) => {
+      await builder
+        .withNetlifyToml({
+          config: {
+            functions: { directory: 'functions' },
+          },
         })
+        .withFunction({
+          path: 'hello.js',
+          handler: async () => ({ statusCode: 200, body: 'Hello' }),
+        })
+        .buildAsync()
+
+      await withDevServer({ cwd: builder.directory, args }, async (server) => {
+        await curl(`${server.url}/.netlify/functions/hello`, [
+          '-i',
+          '-v',
+          '-d',
+          '{"somefield":"somevalue"}',
+          '-H',
+          'Content-Type: application/json',
+          '-H',
+          `Expect: 100-continue' header`,
+        ])
       })
     })
-  }
+  })
 
   test(testName(`serves non ascii static files correctly`, args), async (t) => {
     await withSiteBuilder('site-with-non-ascii-files', async (builder) => {
@@ -379,7 +375,7 @@ export const handler = async function () {
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const response = await got(`${server.url}/${encodeURIComponent('范.txt')}`)
-        t.is(response.body, 'success')
+        t.expect(response.body).toEqual('success')
       })
     })
   })
@@ -402,13 +398,13 @@ export const handler = async function () {
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const response = await got(`${server.url}/.netlify/functions/custom-headers`)
-        t.falsy(response.headers.etag)
-        t.is(response.headers['single-value-header'], 'custom-value')
-        t.is(response.headers['multi-value-header'], 'custom-value1, custom-value2')
+        t.expect(response.headers.etag).toBeFalsy()
+        t.expect(response.headers['single-value-header']).toEqual('custom-value')
+        t.expect(response.headers['multi-value-header']).toEqual('custom-value1, custom-value2')
         const builderResponse = await got(`${server.url}/.netlify/builders/custom-headers`)
-        t.falsy(builderResponse.headers.etag)
-        t.is(builderResponse.headers['single-value-header'], 'custom-value')
-        t.is(builderResponse.headers['multi-value-header'], 'custom-value1, custom-value2')
+        t.expect(builderResponse.headers.etag).toBeFalsy()
+        t.expect(builderResponse.headers['single-value-header']).toEqual('custom-value')
+        t.expect(builderResponse.headers['multi-value-header']).toEqual('custom-value1, custom-value2')
       })
     })
   })
@@ -425,8 +421,8 @@ export const handler = async function () {
           got(`${server.url}/_next/static/special[test].txt`).text(),
           got(`${server.url}/_next/static/special%5Btest%5D.txt`).text(),
         ])
-        t.is(response1, 'special')
-        t.is(response2, 'special')
+        t.expect(response1).toEqual('special')
+        t.expect(response2).toEqual('special')
       })
     })
   })
@@ -438,16 +434,14 @@ export const handler = async function () {
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         // an error is expected since we're sending a POST request to a static server
         // the important thing is that it's not proxied to the functions server
-        const error = await t.throwsAsync(() =>
-          got.post(`${server.url}/api/test`, {
-            headers: {
-              'content-type': 'application/x-www-form-urlencoded',
-            },
-            body: 'some=thing',
-          }),
-        )
-
-        t.is(error.message, 'Response code 405 (Method Not Allowed)')
+        await t.expect(() =>
+            got.post(`${server.url}/api/test`, {
+              headers: {
+                'content-type': 'application/x-www-form-urlencoded',
+              },
+              body: 'some=thing',
+            }),
+          ).rejects.toThrow('Response code 405 (Method Not Allowed)')
       })
     })
   })

@@ -2,15 +2,15 @@
 import path from 'path'
 import process from 'process'
 
-// eslint-disable-next-line ava/use-test
-import avaTest from 'ava'
+import { test } from 'vitest'
 import { isCI } from 'ci-info'
 
 import { withDevServer } from './utils/dev-server.cjs'
 import got from './utils/got.cjs'
 import { withSiteBuilder } from './utils/site-builder.cjs'
 
-const test = isCI ? avaTest.serial.bind(avaTest) : avaTest
+// FIXME: Run test serial
+// const test = isCI ? avaTest.serial.bind(avaTest) : avaTest
 
 test('should return index file when / is accessed', async (t) => {
   await withSiteBuilder('site-with-index-file', async (builder) => {
@@ -23,7 +23,7 @@ test('should return index file when / is accessed', async (t) => {
 
     await withDevServer({ cwd: builder.directory }, async (server) => {
       const response = await got(server.url).text()
-      t.is(response, '<h1>⊂◉‿◉つ</h1>')
+      t.expect(response).toEqual('<h1>⊂◉‿◉つ</h1>')
     })
   })
 })
@@ -43,7 +43,7 @@ test('should return user defined headers when / is accessed', async (t) => {
 
     await withDevServer({ cwd: builder.directory }, async (server) => {
       const { headers } = await got(server.url)
-      t.is(headers[headerName.toLowerCase()], headerValue)
+      t.expect(headers[headerName.toLowerCase()]).toEqual(headerValue)
     })
   })
 })
@@ -63,7 +63,7 @@ test('should return user defined headers when non-root path is accessed', async 
 
     await withDevServer({ cwd: builder.directory }, async (server) => {
       const { headers } = await got(`${server.url}/foo`)
-      t.is(headers[headerName.toLowerCase()], headerValue)
+      t.expect(headers[headerName.toLowerCase()]).toEqual(headerValue)
     })
   })
 })
@@ -90,9 +90,9 @@ test('should return response from a function with setTimeout', async (t) => {
 
     await withDevServer({ cwd: builder.directory }, async (server) => {
       const response = await got(`${server.url}/.netlify/functions/timeout`).text()
-      t.is(response, 'ping')
+      t.expect(response).toEqual('ping')
       const builderResponse = await got(`${server.url}/.netlify/builders/timeout`).text()
-      t.is(builderResponse, 'ping')
+      t.expect(builderResponse).toEqual('ping')
     })
   })
 })
@@ -111,16 +111,15 @@ test('should fail when no metadata is set for builder function', async (t) => {
 
     await withDevServer({ cwd: builder.directory }, async (server) => {
       const response = await got(`${server.url}/.netlify/functions/builder`)
-      t.is(response.body, 'ping')
-      t.is(response.statusCode, 200)
+      t.expect(response.body).toEqual('ping')
+      t.expect(response.statusCode).toBe(200)
       const builderResponse = await got(`${server.url}/.netlify/builders/builder`, {
         throwHttpErrors: false,
       })
-      t.is(
-        builderResponse.body,
+      t.expect(builderResponse.body).toEqual(
         `{"message":"Function is not an on-demand builder. See https://ntl.fyi/create-builder for how to convert a function to a builder."}`,
       )
-      t.is(builderResponse.statusCode, 400)
+      t.expect(builderResponse.statusCode).toBe(400)
     })
   })
 })
@@ -140,9 +139,9 @@ test('should serve function from a subdirectory', async (t) => {
 
     await withDevServer({ cwd: builder.directory }, async (server) => {
       const response = await got(`${server.url}/.netlify/functions/echo`).json()
-      t.deepEqual(response, { rawUrl: `${server.url}/.netlify/functions/echo` })
+      t.expect(response).toStrictEqual({ rawUrl: `${server.url}/.netlify/functions/echo` })
       const builderResponse = await got(`${server.url}/.netlify/builders/echo`).json()
-      t.deepEqual(builderResponse, { rawUrl: `${server.url}/.netlify/builders/echo` })
+      t.expect(builderResponse).toStrictEqual({ rawUrl: `${server.url}/.netlify/builders/echo` })
     })
   })
 })
@@ -165,9 +164,9 @@ test('should pass .env.development vars to function', async (t) => {
 
     await withDevServer({ cwd: builder.directory }, async (server) => {
       const response = await got(`${server.url}/.netlify/functions/env`).text()
-      t.is(response, 'FROM_DEV_FILE')
+      t.expect(response).toEqual('FROM_DEV_FILE')
       const builderResponse = await got(`${server.url}/.netlify/builders/env`).text()
-      t.is(builderResponse, 'FROM_DEV_FILE')
+      t.expect(builderResponse).toEqual('FROM_DEV_FILE')
     })
   })
 })
@@ -187,9 +186,9 @@ test('should pass process env vars to function', async (t) => {
 
     await withDevServer({ cwd: builder.directory, env: { TEST: 'FROM_PROCESS_ENV' } }, async (server) => {
       const response = await got(`${server.url}/.netlify/functions/env`).text()
-      t.is(response, 'FROM_PROCESS_ENV')
+      t.expect(response).toEqual('FROM_PROCESS_ENV')
       const builderResponse = await got(`${server.url}/.netlify/builders/env`).text()
-      t.is(builderResponse, 'FROM_PROCESS_ENV')
+      t.expect(builderResponse).toEqual('FROM_PROCESS_ENV')
     })
   })
 })
@@ -213,9 +212,9 @@ test('should pass [build.environment] env vars to function', async (t) => {
 
     await withDevServer({ cwd: builder.directory }, async (server) => {
       const response = await got(`${server.url}/.netlify/functions/env`).text()
-      t.is(response, 'FROM_CONFIG_FILE')
+      t.expect(response).toEqual('FROM_CONFIG_FILE')
       const builderResponse = await got(`${server.url}/.netlify/builders/env`).text()
-      t.is(builderResponse, 'FROM_CONFIG_FILE')
+      t.expect(builderResponse).toEqual('FROM_CONFIG_FILE')
     })
   })
 })
@@ -242,7 +241,7 @@ test('[context.dev.environment] should override [build.environment]', async (t) 
 
     await withDevServer({ cwd: builder.directory }, async (server) => {
       const response = await got(`${server.url}/.netlify/functions/env`).text()
-      t.is(response, 'DEV_CONTEXT')
+      t.expect(response).toEqual('DEV_CONTEXT')
     })
   })
 })
@@ -274,9 +273,9 @@ test('should inject env vars based on [dev].envFiles file order', async (t) => {
 
     await withDevServer({ cwd: builder.directory }, async (server) => {
       const response = await got(`${server.url}/.netlify/functions/env`).text()
-      t.is(response, 'FROM_PRODUCTION_FILE__FROM_DEVELOPMENT_FILE')
-      t.true(server.output.includes('Ignored .env.development file'))
-      t.true(server.output.includes('Ignored .env file'))
+      t.expect(response).toEqual('FROM_PRODUCTION_FILE__FROM_DEVELOPMENT_FILE')
+      t.expect(server.output.includes('Ignored .env.development file')).toBe(true)
+      t.expect(server.output.includes('Ignored .env file')).toBe(true)
     })
   })
 })

@@ -1,9 +1,10 @@
 import { join } from 'path'
 
-import test from 'ava'
+import { afterEach, beforeEach, test, vi } from 'vitest'
 import glob from 'fast-glob'
 import mock from 'mock-fs'
-import { stub, createSandbox } from 'sinon'
+import { stub } from 'sinon'
+import { getAffectedFiles } from '../affected-test.mjs'
 
 import { simpleMockedFileSystem } from './utils/file-systems.mjs'
 
@@ -17,7 +18,6 @@ const getAffectedFilesFromMock = async (changedFiles, fileSystem = simpleMockedF
   const mockedTestFiles = Object.keys(fileSystem).filter((file) => file.match(/\.test\.m?js$/gm))
   const globStub = stub(glob, 'sync').returns(mockedTestFiles)
 
-  const { getAffectedFiles } = await import('../affected-test.mjs')
   mock(fileSystem)
 
   const affectedFiles = getAffectedFiles(changedFiles)
@@ -28,47 +28,47 @@ const getAffectedFilesFromMock = async (changedFiles, fileSystem = simpleMockedF
   return { affectedFiles, mockedTestFiles }
 }
 
-test.beforeEach((t) => {
-  t.context.sandbox = createSandbox()
+let consoleStub
+
+beforeEach(() => {
+  consoleStub = vi.spyOn(console, 'log').mockImplementation(() => {})
 })
 
-test.afterEach((t) => {
-  t.context.sandbox.restore()
+afterEach(() => {
+  consoleStub.mockRestore()
 })
 
-test.only('should get all files marked as affected when the package.json is touched', async (t) => {
-  const consoleStub = t.context.sandbox.stub(console, 'log').callsFake(() => {})
+test('should get all files marked as affected when the package.json is touched', async (t) => {
   const { affectedFiles, mockedTestFiles } = await getAffectedFilesFromMock(['package.json'])
 
-  t.truthy(consoleStub.firstCall.calledWith('All files are affected based on the changeset'))
-  t.deepEqual(affectedFiles, mockedTestFiles)
+  t.expect(consoleStub).toHaveBeenNthCalledWith(1, 'All files are affected based on the changeset')
+  t.expect(affectedFiles).toEqual(mockedTestFiles)
 })
 
-test.serial('should get all files marked as affected when the package-lock.json is touched', async (t) => {
-  const consoleStub = t.context.sandbox.stub(console, 'log').callsFake(() => {})
+test('should get all files marked as affected when the package-lock.json is touched', async (t) => {
   const { affectedFiles, mockedTestFiles } = await getAffectedFilesFromMock(['package-lock.json'])
 
-  t.truthy(consoleStub.firstCall.calledWith('All files are affected based on the changeset'))
-  t.deepEqual(affectedFiles, mockedTestFiles)
+  t.expect(consoleStub).toHaveBeenNthCalledWith(1, 'All files are affected based on the changeset')
+  t.expect(affectedFiles).toEqual(mockedTestFiles)
 })
 
-test.serial('should get all files marked as affected when a leaf is touched that both tests depend on', async (t) => {
+test('should get all files marked as affected when a leaf is touched that both tests depend on', async (t) => {
   const consoleStub = stub(console, 'log').callsFake(() => {})
   const { affectedFiles, mockedTestFiles } = await getAffectedFilesFromMock([join('src/d.js')])
 
-  t.truthy(consoleStub.notCalled)
-  t.deepEqual(affectedFiles, mockedTestFiles)
+  t.expect(consoleStub.notCalled).toBeTruthy()
+  t.expect(affectedFiles).toEqual(mockedTestFiles)
   consoleStub.restore()
 })
 
-test.serial('should only one test affected if a file for it was called', async (t) => {
+test('should only one test affected if a file for it was called', async (t) => {
   const { affectedFiles } = await getAffectedFilesFromMock([join('src/nested/b.js')])
 
-  t.deepEqual(affectedFiles, [join('tests/a.test.js')])
+  t.expect(affectedFiles).toEqual([join('tests/a.test.js')])
 })
 
-test.serial('should not have any file affected if a different file like a readme was affected', async (t) => {
+test('should not have any file affected if a different file like a readme was affected', async (t) => {
   const { affectedFiles } = await getAffectedFilesFromMock(['README.md'])
 
-  t.is(affectedFiles.length, 0)
+  t.expect(affectedFiles.length).toBe(0)
 })

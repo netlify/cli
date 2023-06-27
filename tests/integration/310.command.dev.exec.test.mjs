@@ -1,6 +1,6 @@
 import process from 'process'
 
-import test from 'ava'
+import { test } from 'vitest'
 
 import callCli from './utils/call-cli.cjs'
 import { withSiteBuilder } from './utils/site-builder.cjs'
@@ -15,7 +15,7 @@ test('should pass .env variables to exec command', async (t) => {
       cwd: builder.directory,
     })
 
-    t.is(output.includes('Injected .env file env var: TEST'), true)
-    t.is(output.includes('TEST=ENV_VAR'), true)
+    t.expect(output.includes('Injected .env file env var: TEST')).toBe(true)
+    t.expect(output.includes('TEST=ENV_VAR')).toBe(true)
   })
 })

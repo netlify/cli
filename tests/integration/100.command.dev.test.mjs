@@ -1,13 +1,11 @@
 import path from 'path'
 import { fileURLToPath } from 'url'
 
-// eslint-disable-next-line ava/use-test
-import avaTest from 'ava'
 import { isCI } from 'ci-info'
 import { setProperty } from 'dot-prop'
 import getAvailablePort from 'get-port'
 import jwt from 'jsonwebtoken'
-import { Response } from 'node-fetch'
+import { describe, test } from 'vitest'
 
 import { withDevServer } from './utils/dev-server.cjs'
 import got from './utils/got.cjs'
@@ -18,7 +16,8 @@ import { withSiteBuilder } from './utils/site-builder.cjs'
 // eslint-disable-next-line no-underscore-dangle
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-const test = isCI ? avaTest.serial.bind(avaTest) : avaTest
+// FIXME: Run serial according to CI
+// const test = isCI ? avaTest.serial.bind(avaTest) : avaTest
 
 const JWT_EXPIRY = 1_893_456_000
 const getToken = async ({ jwtRolePath = 'app_metadata.authorization.roles', jwtSecret = 'secret', roles }) => {
@@ -53,16 +52,16 @@ const validateRoleBasedRedirectsSite = async ({ builder, jwtRolePath, jwtSecret,
 
   await withDevServer({ cwd: builder.directory }, async (server) => {
     const unauthenticatedResponse = await got(`${server.url}/admin`, { throwHttpErrors: false })
-    t.is(unauthenticatedResponse.statusCode, 404)
-    t.is(unauthenticatedResponse.body, 'Not Found')
+    t.expect(unauthenticatedResponse.statusCode).toBe(404)
+    t.expect(unauthenticatedResponse.body).toEqual('Not Found')
 
     const authenticatedResponse = await got(`${server.url}/admin/foo`, {
       headers: {
         cookie: `nf_jwt=${adminToken}`,
       },
     })
-    t.is(authenticatedResponse.statusCode, 200)
-    t.is(authenticatedResponse.body, '<html>foo</html>')
+    t.expect(authenticatedResponse.statusCode).toBe(200)
+    t.expect(authenticatedResponse.body).toEqual('<html>foo</html>')
 
     const wrongRoleResponse = await got(`${server.url}/admin/foo`, {
       headers: {
@@ -70,11 +69,10 @@ const validateRoleBasedRedirectsSite = async ({ builder, jwtRolePath, jwtSecret,
       },
       throwHttpErrors: false,
     })
-    t.is(wrongRoleResponse.statusCode, 404)
-    t.is(wrongRoleResponse.body, 'Not Found')
+    t.expect(wrongRoleResponse.statusCode).toBe(404)
+    t.expect(wrongRoleResponse.body).toEqual('Not Found')
   })
 }
-
 test('should follow redirect for fully qualified rule', async (t) => {
   await withSiteBuilder('site-with-fully-qualified-redirect-rule', async (builder) => {
     const publicDir = 'public'
@@ -103,8 +101,8 @@ test('should follow redirect for fully qualified rule', async (t) => {
     await withDevServer({ cwd: builder.directory }, async (server) => {
       const response = await got(`${server.url}/hello-world`)
 
-      t.is(response.statusCode, 200)
-      t.is(response.body, '<html>hello</html>')
+      t.expect(response.statusCode).toBe(200)
+      t.expect(response.body).toEqual('<html>hello</html>')
     })
   })
 })
@@ -122,8 +120,8 @@ test('should return 202 ok and empty response for background function', async (t
 
     await withDevServer({ cwd: builder.directory }, async (server) => {
       const response = await got(`${server.url}/.netlify/functions/hello-background`)
-      t.is(response.statusCode, 202)
-      t.is(response.body, '')
+      t.expect(response.statusCode).toBe(202)
+      t.expect(response.body).toEqual('')
     })
   })
 })
@@ -145,8 +143,8 @@ test('background function clientContext,identity should be null', async (t) => {
 
       const output = outputBuffer.toString()
       const context = JSON.parse(output.match(/__CLIENT_CONTEXT__START__(.*)__CLIENT_CONTEXT__END__/)[1])
-      t.is(context.clientContext, null)
-      t.is(context.identity, null)
+      t.expect(context.clientContext).toBeNull()
+      t.expect(context.identity).toBeNull()
     })
   })
 })
@@ -210,9 +208,9 @@ test('Serves an Edge Function that terminates a response', async (t) => {
     await withDevServer({ cwd: builder.directory }, async (server) => {
       const response = await got(`${server.url}/edge-function`)
 
-      t.is(response.statusCode, 200)
-      t.is(response.body.length, 26)
-      t.is(response.body, response.headers['x-nf-request-id'])
+      t.expect(response.statusCode).toBe(200)
+      t.expect(response.body.length).toBe(26)
+      t.expect(response.body).toEqual(response.headers['x-nf-request-id'])
     })
   })
 })
@@ -272,13 +270,13 @@ test('Serves an Edge Function with a rewrite', async (t) => {
     await withDevServer({ cwd: builder.directory }, async (server) => {
       const response1 = await got(`${server.url}/hello-legacy`)
 
-      t.is(response1.statusCode, 200)
-      t.is(response1.body, '<html>goodbye</html>')
+      t.expect(response1.statusCode).toBe(200)
+      t.expect(response1.body).toEqual('<html>goodbye</html>')
 
       const response2 = await got(`${server.url}/hello`)
 
-      t.is(response2.statusCode, 200)
-      t.is(response2.body, '<HTML>GOODBYE</HTML>')
+      t.expect(response2.statusCode).toBe(200)
+      t.expect(response2.body).toEqual('<HTML>GOODBYE</HTML>')
     })
   })
 })
@@ -318,8 +316,8 @@ test('Serves an Edge Function with caching', async (t) => {
     await withDevServer({ cwd: builder.directory }, async (server) => {
       const response = await got(`${server.url}/edge-function`)
 
-      t.is(response.statusCode, 200)
-      t.is(response.body, 'Hello world')
+      t.expect(response.statusCode).toBe(200)
+      t.expect(response.body).toEqual('Hello world')
     })
   })
 })
@@ -379,8 +377,8 @@ test('Serves an Edge Function that includes context with site information', asyn
         async (server) => {
           const response = await got(`${server.url}`)
 
-          t.is(response.statusCode, 200)
-          t.is(response.body, '{"id":"site_id","name":"site-name","url":"site-url"}')
+          t.expect(response.statusCode).toBe(200)
+          t.expect(response.body).toEqual('{"id":"site_id","name":"site-name","url":"site-url"}')
         },
       )
     })
@@ -426,8 +424,8 @@ test('Serves an Edge Function that transforms the response', async (t) => {
     await withDevServer({ cwd: builder.directory }, async (server) => {
       const response = await got(`${server.url}/hello`)
 
-      t.is(response.statusCode, 200)
-      t.is(response.body, '<HTML>HELLO</HTML>')
+      t.expect(response.statusCode).toBe(200)
+      t.expect(response.body).toEqual('<HTML>HELLO</HTML>')
     })
   })
 })
@@ -491,7 +489,7 @@ test('Serves an Edge Function that streams the response', async (t) => {
       })
 
       // streamed responses arrive in more than one batch
-      t.not(numberOfChunks, 1)
+      t.expect(numberOfChunks).not.toBe(1)
     })
   })
 })
@@ -546,13 +544,13 @@ test('When an edge function fails, serves a fallback defined by its `on_error` m
     await withDevServer({ cwd: builder.directory }, async (server) => {
       const response1 = await got(`${server.url}/hello-1`)
 
-      t.is(response1.statusCode, 200)
-      t.is(response1.body, '<html>hello from the origin</html>')
+      t.expect(response1.statusCode).toBe(200)
+      t.expect(response1.body).toEqual('<html>hello from the origin</html>')
 
       const response2 = await got(`${server.url}/hello-2`)
 
-      t.is(response2.statusCode, 200)
-      t.is(response2.body, '<html>uh-oh!</html>')
+      t.expect(response2.statusCode).toBe(200)
+      t.expect(response2.body).toEqual('<html>uh-oh!</html>')
     })
   })
 })
@@ -582,8 +580,8 @@ test('redirect with country cookie', async (t) => {
           cookie: `nf_country=ES`,
         },
       })
-      t.is(response.statusCode, 200)
-      t.is(response.body, '<html>index in spanish</html>')
+      t.expect(response.statusCode).toBe(200)
+      t.expect(response.body).toEqual('<html>index in spanish</html>')
     })
   })
 })
@@ -610,14 +608,14 @@ test('redirect with country flag', async (t) => {
     // NOTE: default fallback for country is 'US' if no flag is provided
     await withDevServer({ cwd: builder.directory }, async (server) => {
       const response = await got(`${server.url}/`)
-      t.is(response.statusCode, 200)
-      t.is(response.body, '<html>index</html>')
+      t.expect(response.statusCode).toBe(200)
+      t.expect(response.body).toEqual('<html>index</html>')
     })
 
     await withDevServer({ cwd: builder.directory, args: ['--country=ES'] }, async (server) => {
       const response = await got(`${server.url}/`)
-      t.is(response.statusCode, 200)
-      t.is(response.body, '<html>index in spanish</html>')
+      t.expect(response.statusCode).toBe(200)
+      t.expect(response.body).toEqual('<html>index in spanish</html>')
     })
   })
 })
@@ -638,8 +636,8 @@ test(`doesn't hang when sending a application/json POST request to function serv
         body: '{}',
         throwHttpErrors: false,
       })
-      t.is(response.statusCode, 404)
-      t.is(response.body, 'Function not found...')
+      t.expect(response.statusCode).toBe(404)
+      t.expect(response.body).toEqual('Function not found...')
     })
   })
 })
@@ -667,8 +665,8 @@ test(`catches invalid function names`, async (t) => {
         body: '{}',
         throwHttpErrors: false,
       })
-      t.is(response.statusCode, 400)
-      t.is(response.body, 'Function name should consist only of alphanumeric characters, hyphen & underscores.')
+      t.expect(response.statusCode).toBe(400)
+      t.expect(response.body).toEqual('Function name should consist only of alphanumeric characters, hyphen & underscores.')
     })
   })
 })
@@ -713,8 +711,8 @@ test('should detect content changes in edge functions', async (t) => {
 
       const helloBuilderMessage = await got(`http://localhost:${port}/hello`).then((response) => response.body)
 
-      t.is(helloWorldMessage, 'Hello world')
-      t.is(helloBuilderMessage, 'Hello builder')
+      t.expect(helloWorldMessage).toEqual('Hello world')
+      t.expect(helloBuilderMessage).toEqual('Hello builder')
     })
   })
 })
@@ -760,8 +758,8 @@ test('should detect deleted edge functions', async (t) => {
         (response) => response.body,
       )
 
-      t.is(authResponseMessage, 'Auth response')
-      t.is(authNotFoundMessage, '404 Not Found')
+      t.expect(authResponseMessage).toEqual('Auth response')
+      t.expect(authNotFoundMessage).toEqual('404 Not Found')
     })
   })
 })
@@ -789,8 +787,8 @@ test('should respect in-source configuration from edge functions', async (t) => 
     await withDevServer({ cwd: builder.directory }, async ({ port, waitForLogMatching }) => {
       const res1 = await got(`http://localhost:${port}/hello-1`, { throwHttpErrors: false })
 
-      t.is(res1.statusCode, 200)
-      t.is(res1.body, 'Hello world')
+      t.expect(res1.statusCode).toBe(200)
+      t.expect(res1.body).toEqual('Hello world')
 
       // wait for file watcher to be up and running, which might take a little
       // if we do not wait, the next file change will not be picked up
@@ -808,17 +806,17 @@ test('should respect in-source configuration from edge functions', async (t) => 
 
       const res2 = await got(`http://localhost:${port}/hello-1`, { throwHttpErrors: false })
 
-      t.is(res2.statusCode, 404)
+      t.expect(res2.statusCode).toBe(404)
 
       const res3 = await got(`http://localhost:${port}/hello-2`, { throwHttpErrors: false })
 
-      t.is(res3.statusCode, 200)
-      t.is(res3.body, 'Hello world')
+      t.expect(res3.statusCode).toBe(200)
+      t.expect(res3.body).toEqual('Hello world')
 
       const res4 = await got(`http://localhost:${port}/hello-3`, { throwHttpErrors: false })
 
-      t.is(res4.statusCode, 200)
-      t.is(res4.body, 'Hello world')
+      t.expect(res4.statusCode).toBe(200)
+      t.expect(res4.body).toEqual('Hello world')
     })
   })
 })
@@ -846,11 +844,11 @@ test('should respect excluded paths', async (t) => {
     await withDevServer({ cwd: builder.directory }, async ({ port }) => {
       const res1 = await got(`http://localhost:${port}/foo`, { throwHttpErrors: false })
 
-      t.is(res1.statusCode, 200)
-      t.is(res1.body, 'Hello world')
+      t.expect(res1.statusCode).toBe(200)
+      t.expect(res1.body).toEqual('Hello world')
 
       const res2 = await got(`http://localhost:${port}/static/foo`, { throwHttpErrors: false })
-      t.is(res2.statusCode, 404)
+      t.expect(res2.statusCode).toBe(404)
     })
   })
 })
@@ -878,8 +876,8 @@ test('should respect in-source configuration from internal edge functions', asyn
     await withDevServer({ cwd: builder.directory }, async ({ port, waitForLogMatching }) => {
       const res1 = await got(`http://localhost:${port}/internal-1`, { throwHttpErrors: false })
 
-      t.is(res1.statusCode, 200)
-      t.is(res1.body, 'Hello from an internal function')
+      t.expect(res1.statusCode).toBe(200)
+      t.expect(res1.body).toEqual('Hello from an internal function')
 
       // wait for file watcher to be up and running, which might take a little
       // if we do not wait, the next file change will not be picked up
@@ -898,12 +896,12 @@ test('should respect in-source configuration from internal edge functions', asyn
 
       const res2 = await got(`http://localhost:${port}/internal-1`, { throwHttpErrors: false })
 
-      t.is(res2.statusCode, 404)
+      t.expect(res2.statusCode).toBe(404)
 
       const res3 = await got(`http://localhost:${port}/internal-2`, { throwHttpErrors: false })
 
-      t.is(res3.statusCode, 200)
-      t.is(res3.body, 'Hello from an internal function')
+      t.expect(res3.statusCode).toBe(200)
+      t.expect(res3.body).toEqual('Hello from an internal function')
     })
   })
 })
@@ -970,13 +968,13 @@ test('Serves edge functions with import maps coming from the `functions.deno_imp
     await withDevServer({ cwd: builder.directory }, async ({ port }) => {
       const res1 = await got(`http://localhost:${port}/greet`, { throwHttpErrors: false })
 
-      t.is(res1.statusCode, 200)
-      t.is(res1.body, 'Hello, Netlify!')
+      t.expect(res1.statusCode).toBe(200)
+      t.expect(res1.body).toEqual('Hello, Netlify!')
 
       const res2 = await got(`http://localhost:${port}/yell`, { throwHttpErrors: false })
 
-      t.is(res2.statusCode, 200)
-      t.is(res2.body, 'NETLIFY')
+      t.expect(res2.statusCode).toBe(200)
+      t.expect(res2.body).toEqual('NETLIFY')
     })
   })
 })
@@ -1052,27 +1050,27 @@ test('should have only allowed environment variables set', async (t) => {
             JSON.parse(edgeResponse.body),
           )
           const buckets = Object.values(response)
-          t.is(buckets.length, 2)
+          t.expect(buckets.length).toBe(2)
 
           buckets.forEach((bucket) => {
             const bucketKeys = Object.keys(bucket)
 
-            t.true(bucketKeys.includes('DENO_REGION'))
-            t.is(bucket.DENO_REGION, 'local')
+            t.expect(bucketKeys.includes('DENO_REGION')).toBe(true)
+            t.expect(bucket.DENO_REGION).toEqual('local')
 
-            t.true(bucketKeys.includes('NETLIFY_DEV'))
-            t.is(bucket.NETLIFY_DEV, 'true')
+            t.expect(bucketKeys.includes('NETLIFY_DEV')).toBe(true)
+            t.expect(bucket.NETLIFY_DEV).toEqual('true')
 
-            t.true(bucketKeys.includes('SECRET_ENV'))
-            t.is(bucket.SECRET_ENV, 'true')
+            t.expect(bucketKeys.includes('SECRET_ENV')).toBe(true)
+            t.expect(bucket.SECRET_ENV).toEqual('true')
 
-            t.true(bucketKeys.includes('FROM_ENV'))
-            t.is(bucket.FROM_ENV, 'YAS')
+            t.expect(bucketKeys.includes('FROM_ENV')).toBe(true)
+            t.expect(bucket.FROM_ENV).toEqual('YAS')
 
-            t.false(bucketKeys.includes('DENO_DEPLOYMENT_ID'))
-            t.false(bucketKeys.includes('NODE_ENV'))
-            t.false(bucketKeys.includes('DEPLOY_URL'))
-            t.false(bucketKeys.includes('URL'))
+            t.expect(bucketKeys.includes('DENO_DEPLOYMENT_ID')).toBe(false)
+            t.expect(bucketKeys.includes('NODE_ENV')).toBe(false)
+            t.expect(bucketKeys.includes('DEPLOY_URL')).toBe(false)
+            t.expect(bucketKeys.includes('URL')).toBe(false)
           })
         },
       )
@@ -1107,7 +1105,7 @@ test('should inject the `NETLIFY_DEV` environment variable in the process (legac
     await withDevServer({ cwd: builder.directory }, async ({ port }) => {
       const response = await got(`http://localhost:${port}/`).json()
 
-      t.is(response.env.NETLIFY_DEV, 'true')
+      t.expect(response.env.NETLIFY_DEV).toEqual('true')
     })
   })
 })
@@ -1192,7 +1190,7 @@ test('should inject the `NETLIFY_DEV` environment variable in the process', asyn
         async ({ port }) => {
           const response = await got(`http://localhost:${port}/`).json()
 
-          t.is(response.env.NETLIFY_DEV, 'true')
+          t.expect(response.env.NETLIFY_DEV).toEqual('true')
         },
       )
     })
