@@ -25,6 +25,7 @@ module.exports = {
     'no-process-exit': 0,
     'fp/no-loops': 'off',
     'import/max-dependencies': 0,
+    'import/no-dynamic-require': 0,
     'import/extensions': [2, 'ignorePackages'],
     'n/no-process-exit': 0,
     'n/no-sync': 0,

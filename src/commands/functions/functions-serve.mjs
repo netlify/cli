@@ -13,7 +13,7 @@ const DEFAULT_PORT = 9999
  * @param {import('../base-command.mjs').default} command
  */
 const functionsServe = async (options, command) => {
-  const { api, config, site, siteInfo } = command.netlify
+  const { api, config, site, siteInfo, state } = command.netlify
 
   const functionsDir = getFunctionsDir({ options, config }, join('netlify', 'functions'))
   let { env } = command.netlify.cachedConfig
@@ -48,6 +48,10 @@ const functionsServe = async (options, command) => {
     timeouts,
     functionsPrefix: '/.netlify/functions/',
     buildersPrefix: '/.netlify/builders/',
+    geolocationMode: options.geo,
+    geoCountry: options.country,
+    offline: options.offline,
+    state,
   })
 }
 

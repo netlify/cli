@@ -73,7 +73,7 @@ const formatLambdaLocalError = (err, acceptsHtml) =>
         errorMessage: err.errorMessage,
         trace: err.stackTrace,
       })
-    : `${err.errorType}: ${err.errorMessage}\n ${err.stackTrace.join('\n ')}`
+    : `${err.errorType}: ${err.errorMessage}\n ${err.stackTrace?.join('\n ')}`
 
 const processRenderedResponse = async (err, request) => {
   const acceptsHtml = request.headers && request.headers.accept && request.headers.accept.includes('text/html')
@@ -102,7 +102,7 @@ const validateLambdaResponse = (lambdaResponse) => {
   }
   if (!Number(lambdaResponse.statusCode)) {
     return {
-      error: `Your function response must have a numerical statusCode. You gave: $ ${lambdaResponse.statusCode}`,
+      error: `Your function response must have a numerical statusCode. You gave: ${lambdaResponse.statusCode}`,
     }
   }
   if (lambdaResponse.body && typeof lambdaResponse.body !== 'string' && !isStream(lambdaResponse.body)) {
