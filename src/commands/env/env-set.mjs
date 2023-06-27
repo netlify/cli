@@ -145,11 +145,12 @@ const setInEnvelope = async ({ api, context, key, scope, secret, siteInfo, value
         if (secret) {
           scopes = scopes.filter((sco) => !/post[-_]processing/.test(sco))
           if (values.some((val) => val.context === 'all')) {
-            log(`This secret's value will still be readable in the dev context.`)
-            log(`Run \`netlify env:set ${key} <value> --context dev\` to set a different value in the dev context.`)
+            log(`This secret's value will be empty in the dev context.`)
+            log(`Run \`netlify env:set ${key} <value> --context dev\` to set a new value for the dev context.`)
             values = AVAILABLE_CONTEXTS.filter((ctx) => ctx !== 'all').map((ctx) => ({
               context: ctx,
-              value: values.find((val) => val.context === 'all').value,
+              // empty out dev value so that secret is indeed secret
+              value: ctx === 'dev' ? '' : values.find((val) => val.context === 'all').value,
             }))
           }
         }
