@@ -1,11 +1,11 @@
-import test from 'ava'
+import {test, beforeEach} from 'vitest'
 
 import { DependencyGraph } from '../project-graph/index.mjs'
 
 /** @type {DependencyGraph} */
 let graph
 
-test.beforeEach(() => {
+beforeEach(() => {
   graph = new DependencyGraph()
   graph.addDependency('tests/a.js', 'src/nested/a.js')
   graph.addDependency('tests/c.js', 'src/c/index.js')
@@ -16,16 +16,15 @@ test.beforeEach(() => {
 })
 
 test('should test if all parents are affected by changing a src file on the bottom', (t) => {
-  t.deepEqual(
+  t.expect(
     graph.affected(['src/d.js']),
-    new Set(['src/d.js', 'src/c/index.js', 'src/nested/a.js', 'tests/a.js', 'tests/c.js']),
-  )
+  ).toStrictEqual(new Set(['src/d.js', 'src/c/index.js', 'src/nested/a.js', 'tests/a.js', 'tests/c.js']))
 })
 
 test('should test only the root leaf is affected if the root one is passed', (t) => {
-  t.deepEqual([...graph.affected(['tests/a.js'])], ['tests/a.js'])
+  t.expect([...graph.affected(['tests/a.js'])]).toStrictEqual(['tests/a.js'])
 })
 
 test('should test that nothing is affected if the passed file is not in the dependency graph', (t) => {
-  t.is(graph.affected(['some-markdown.md']).size, 0)
+  t.expect(graph.affected(['some-markdown.md']).size).toEqual(0)
 })

@@ -2,8 +2,7 @@
 import fs from 'fs/promises'
 import { join } from 'path'
 
-// eslint-disable-next-line ava/use-test
-import avaTest from 'ava'
+import { test } from 'vitest'
 import { isCI } from 'ci-info'
 import jwt from 'jsonwebtoken'
 import fetch from 'node-fetch'
@@ -14,7 +13,8 @@ import got from './utils/got.cjs'
 import { withMockApi } from './utils/mock-api.cjs'
 import { withSiteBuilder } from './utils/site-builder.cjs'
 
-const test = isCI ? avaTest.serial.bind(avaTest) : avaTest
+// FIXME: Run tests serial
+// const test = isCI ? avaTest.serial.bind(avaTest) : avaTest
 
 test('should return 404.html if exists for non existing routes', async (t) => {
   await withSiteBuilder('site-with-shadowing-404', async (builder) => {
@@ -27,8 +27,8 @@ test('should return 404.html if exists for non existing routes', async (t) => {
 
     await withDevServer({ cwd: builder.directory }, async (server) => {
       const response = await got(`${server.url}/non-existent`, { throwHttpErrors: false })
-      t.is(response.headers.etag, undefined)
-      t.is(response.body, '<h1>404 - Page not found</h1>')
+      t.expect(response.headers.etag).toBeUndefined()
+      t.expect(response.body).toEqual('<h1>404 - Page not found</h1>')
     })
   })
 })
@@ -52,9 +52,9 @@ test('should return 404.html from publish folder if exists for non existing rout
 
     await withDevServer({ cwd: builder.directory }, async (server) => {
       const response = await got(`${server.url}/non-existent`, { throwHttpErrors: false })
-      t.is(response.statusCode, 404)
-      t.is(response.headers.etag, undefined)
-      t.is(response.body, '<h1>404 - My Custom 404 Page</h1>')
+      t.expect(response.statusCode).toBe(404)
+      t.expect(response.headers.etag).toBeUndefined()
+      t.expect(response.body).toEqual('<h1>404 - My Custom 404 Page</h1>')
     })
   })
 })
@@ -76,9 +76,9 @@ test('should return 404 for redirect', async (t) => {
 
     await withDevServer({ cwd: builder.directory }, async (server) => {
       const response = await got(`${server.url}/test-404`, { throwHttpErrors: false })
-      t.truthy(response.headers.etag)
-      t.is(response.statusCode, 404)
-      t.is(response.body, '<html><h1>foo')
+      t.expect(response.headers.etag).toBeTruthy()
+      t.expect(response.statusCode).toBe(404)
+      t.expect(response.body).toEqual('<html><h1>foo')
     })
   })
 })
@@ -105,8 +105,8 @@ test('should ignore 404 redirect for existing file', async (t) => {
     await withDevServer({ cwd: builder.directory }, async (server) => {
       const response = await got(`${server.url}/test-404`)
 
-      t.is(response.statusCode, 200)
-      t.is(response.body, '<html><h1>This page actually exists')
+      t.expect(response.statusCode).toBe(200)
+      t.expect(response.body).toEqual('<html><h1>This page actually exists')
     })
   })
 })
@@ -133,8 +133,8 @@ test('should follow 404 redirect even with existing file when force=true', async
     await withDevServer({ cwd: builder.directory }, async (server) => {
       const response = await got(`${server.url}/test-404`, { throwHttpErrors: false })
 
-      t.is(response.statusCode, 404)
-      t.is(response.body, '<html><h1>foo')
+      t.expect(response.statusCode).toBe(404)
+      t.expect(response.body).toEqual('<html><h1>foo')
     })
   })
 })
@@ -161,8 +161,8 @@ test('should source redirects file from publish directory', async (t) => {
     await withDevServer({ cwd: builder.directory }, async (server) => {
       const response = await got(`${server.url}/test`)
 
-      t.is(response.statusCode, 200)
-      t.is(response.body, 'index')
+      t.expect(response.statusCode).toBe(200)
+      t.expect(response.body).toEqual('index')
     })
   })
 })
@@ -179,9 +179,9 @@ test('should rewrite requests to an external server', async (t) => {
 
     await withDevServer({ cwd: builder.directory }, async (server) => {
       const getResponse = await got(`${server.url}/api/ping`).json()
-      t.deepEqual(getResponse.body, {})
-      t.is(getResponse.method, 'GET')
-      t.is(getResponse.url, '/ping')
+      t.expect(getResponse.body).toStrictEqual({})
+      t.expect(getResponse.method).toEqual('GET')
+      t.expect(getResponse.url).toEqual('/ping')
 
       const postResponse = await got
         .post(`${server.url}/api/ping`, {
@@ -192,9 +192,9 @@ test('should rewrite requests to an external server', async (t) => {
           followRedirect: false,
         })
         .json()
-      t.deepEqual(postResponse.body, { param: 'value' })
-      t.is(postResponse.method, 'POST')
-      t.is(postResponse.url, '/ping')
+      t.expect(postResponse.body).toStrictEqual({ param: 'value' })
+      t.expect(postResponse.method).toEqual('POST')
+      t.expect(postResponse.url).toEqual('/ping')
     })
 
     externalServer.close()
@@ -259,13 +259,13 @@ test('should sign external redirects with the `x-nf-sign` header when a `signed`
             const signature = response.headers['x-nf-sign']
             const payload = jwt.verify(signature, mockSigningSecret)
 
-            t.is(payload.deploy_context, 'dev')
-            t.is(payload.netlify_id, siteInfo.id)
-            t.is(payload.site_url, siteInfo.url)
-            t.is(payload.iss, 'netlify')
+            t.expect(payload.deploy_context).toEqual('dev')
+            t.expect(payload.netlify_id).toEqual(siteInfo.id)
+            t.expect(payload.site_url).toEqual(siteInfo.url)
+            t.expect(payload.iss).toEqual('netlify')
           })
 
-          t.deepEqual(postResponse.body, { param: 'value' })
+          t.expect(postResponse.body).toStrictEqual({ param: 'value' })
         },
       )
     })
@@ -286,12 +286,12 @@ test('should follow 301 redirect to an external server', async (t) => {
 
     await withDevServer({ cwd: builder.directory }, async (server) => {
       const response1 = await got(`${server.url}/api/ping`, { followRedirect: false })
-      t.is(response1.headers.location, `http://localhost:${port}/ping`)
+      t.expect(response1.headers.location).toEqual(`http://localhost:${port}/ping`)
 
       const response2 = await got(`${server.url}/api/ping`).json()
-      t.deepEqual(response2.body, {})
-      t.is(response2.method, 'GET')
-      t.is(response2.url, '/ping')
+      t.expect(response2.body).toStrictEqual({})
+      t.expect(response2.method).toEqual('GET')
+      t.expect(response2.url).toEqual('/ping')
     })
 
     externalServer.close()
@@ -310,16 +310,15 @@ test('should rewrite POST request if content-type is missing and not crash dev s
     await builder.buildAsync()
 
     await withDevServer({ cwd: builder.directory }, async (server) => {
-      const error = await t.throwsAsync(
-        async () =>
-          await got.post(`${server.url}/api/echo`, {
-            body: 'param=value',
-            followRedirect: false,
-          }),
-      )
+      const error = await got
+        .post(`${server.url}/api/echo`, {
+          body: 'param=value',
+          followRedirect: false,
+        })
+        .catch((e) => e)
 
       // Method Not Allowed
-      t.is(error.response.statusCode, 405)
+      t.expect(error.response.statusCode).toBe(405)
     })
   })
 })
@@ -341,8 +340,8 @@ test('should return .html file when file and folder have the same name', async (
     await withDevServer({ cwd: builder.directory }, async (server) => {
       const response = await got(`${server.url}/foo`)
 
-      t.is(response.statusCode, 200)
-      t.is(response.body, '<html><h1>foo')
+      t.expect(response.statusCode).toBe(200)
+      t.expect(response.body).toEqual('<html><h1>foo')
     })
   })
 })
@@ -377,8 +376,8 @@ test('should not shadow an existing file that has unsafe URL characters', async 
         got(`${server.url}/files/[file_with_brackets]`).text(),
       ])
 
-      t.is(spaces, '<html>file with spaces</html>')
-      t.is(brackets, '<html>file with brackets</html>')
+      t.expect(spaces).toEqual('<html>file with spaces</html>')
+      t.expect(brackets).toEqual('<html>file with brackets</html>')
     })
   })
 })
@@ -403,9 +402,9 @@ test('should generate an ETag for static assets', async (t) => {
       const res1 = await fetch(`${server.url}`)
       const etag = res1.headers.get('etag')
 
-      t.truthy(etag)
-      t.is(res1.status, 200)
-      t.truthy(await res1.text())
+      t.expect(etag).toBeTruthy()
+      t.expect(res1.status).toBe(200)
+      await t.expect(await res1.text()).toBeTruthy()
 
       const res2 = await fetch(`${server.url}`, {
         headers: {
@@ -413,8 +412,8 @@ test('should generate an ETag for static assets', async (t) => {
         },
       })
 
-      t.is(res2.status, 304)
-      t.falsy(await res2.text())
+      t.expect(res2.status).toBe(304)
+      t.expect(await res2.text()).toBeFalsy()
 
       const res3 = await fetch(`${server.url}`, {
         headers: {
@@ -422,9 +421,9 @@ test('should generate an ETag for static assets', async (t) => {
         },
       })
 
-      t.truthy(res3.headers.get('etag'))
-      t.is(res3.status, 200)
-      t.truthy(await res3.text())
+      t.expect(res3.headers.get('etag')).toBeTruthy()
+      t.expect(res3.status).toBe(200)
+      await t.expect(await res3.text()).toBeTruthy()
     })
   })
 })
@@ -448,7 +447,7 @@ test('should add `.netlify` to an existing `.gitignore` file', async (t) => {
       const gitignore = await fs.readFile(join(builder.directory, '.gitignore'), 'utf8')
       const entries = gitignore.split('\n')
 
-      t.true(entries.includes('.netlify'))
+      t.expect(entries.includes('.netlify')).toBe(true)
     })
   })
 })
@@ -466,7 +465,7 @@ test('should create a `.gitignore` file with `.netlify`', async (t) => {
       const gitignore = await fs.readFile(join(builder.directory, '.gitignore'), 'utf8')
       const entries = gitignore.split('\n')
 
-      t.true(entries.includes('.netlify'))
+      t.expect(entries.includes('.netlify')).toBe(true)
     })
   })
 })

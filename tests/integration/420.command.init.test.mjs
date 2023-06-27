@@ -1,7 +1,7 @@
 import { readFile } from 'fs/promises'
 import process from 'process'
 
-import test from 'ava'
+import { test } from 'vitest'
 import cleanDeep from 'clean-deep'
 import execa from 'execa'
 import toml from 'toml'
@@ -13,18 +13,17 @@ import { withSiteBuilder } from './utils/site-builder.cjs'
 
 const defaultFunctionsDirectory = 'netlify/functions'
 
-// TODO: Flaky tests enable once fixed
+// TODO: Flaky tests enable once fixed. verify if it works
 /**
  * As some of the tests are flaky on windows machines I will skip them for now
  * @type {import('ava').TestInterface}
  */
-const windowsSkip = process.platform === 'win32' ? test.skip : test
+const windowsSkip = process.platform === 'win32'
 
 const assertNetlifyToml = async (t, tomlDir, { command, functions, publish }) => {
   // assert netlify.toml was created with user inputs
   const netlifyToml = toml.parse(await readFile(`${tomlDir}/netlify.toml`, 'utf8'))
-  t.deepEqual(
-    netlifyToml,
+  t.expect(cleanDeep(netlifyToml)).toEqual(
     cleanDeep({
       build: { command, functions, publish },
     }),
@@ -617,7 +616,7 @@ test('netlify init new Gatsby site with correct default build directory and buil
   })
 })
 
-windowsSkip('netlify init monorepo root and sub directory without netlify.toml', async (t) => {
+test.skipIf(windowsSkip)('netlify init monorepo root and sub directory without netlify.toml', async (t) => {
   const initQuestions = [
     {
       question: 'Create & configure a new site',
@@ -865,7 +864,7 @@ test('netlify init monorepo root with netlify.toml, subdirectory without netlify
   })
 })
 
-windowsSkip('netlify init monorepo root and sub directory with netlify.toml', async (t) => {
+test.skipIf(windowsSkip)('netlify init monorepo root and sub directory with netlify.toml', async (t) => {
   const initQuestions = [
     {
       question: 'Create & configure a new site',

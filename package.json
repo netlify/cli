@@ -55,9 +55,7 @@
     "test:init:cli-help": "npm run start -- --help",
     "test:init:eleventy-deps": "cd tests/integration/__fixtures__/eleventy-site && pnpm install --frozen-lockfile",
     "test:init:hugo-deps": "npm ci --prefix tests/integration/__fixtures__/hugo-site --no-audit",
-    "test:dev:ava": "ava --verbose",
     "test:dev:vitest": "vitest run tests/unit/ && vitest run tests/integration",
-    "test:ci:ava:integration": "c8 -r json ava --concurrency 1 --no-worker-threads tests/integration/",
     "test:ci:vitest:unit": "vitest run --coverage tests/unit/",
     "test:ci:vitest:integration": "vitest run --coverage tests/integration/",
     "test:affected": "node ./tools/affected-test.mjs",
@@ -216,18 +214,5 @@
     "typescript": "5.1.3",
     "verdaccio": "5.24.1",
     "vitest": "0.31.4"
-  },
-  "ava": {
-    "files": [
-      "tools/**/*.test.mjs",
-      "tests/**/*.test.cjs",
-      "tests/**/*.test.mjs"
-    ],
-    "cache": true,
-    "concurrency": 5,
-    "failFast": false,
-    "failWithoutAssertions": false,
-    "tap": false,
-    "timeout": "5m"
   }
 }

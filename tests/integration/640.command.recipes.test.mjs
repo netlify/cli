@@ -1,23 +1,23 @@
-const { readFile } = require('fs/promises')
-const { resolve } = require('path')
+import { readFile } from 'fs/promises'
+import { resolve } from 'path'
 
-const test = require('ava')
-const { parse } = require('comment-json')
-const execa = require('execa')
+import { test } from 'vitest'
+import { parse } from 'comment-json'
+import execa from 'execa'
 
-const callCli = require('./utils/call-cli.cjs')
-const cliPath = require('./utils/cli-path.cjs')
-const { CONFIRM, NO, answerWithValue, handleQuestions } = require('./utils/handle-questions.cjs')
-const { withSiteBuilder } = require('./utils/site-builder.cjs')
-const { normalize } = require('./utils/snapshots.cjs')
+import callCli from './utils/call-cli.cjs'
+import cliPath from './utils/cli-path.cjs'
+import { CONFIRM, NO, answerWithValue, handleQuestions } from './utils/handle-questions.cjs'
+import { withSiteBuilder } from './utils/site-builder.cjs'
+import { normalize } from './utils/snapshots.cjs'
 
 test('Shows a list of all the available recipes', async (t) => {
   const cliResponse = await callCli(['recipes:list'])
 
-  t.snapshot(normalize(cliResponse))
+  t.expect(normalize(cliResponse)).toMatchSnapshot()
 })
 
-test('Generates a new VS Code settings file if one does not exist', async (t) => {
+test.only('Generates a new VS Code settings file if one does not exist', async (t) => {
   await withSiteBuilder('repo', async (builder) => {
     await builder.buildAsync()
 
@@ -37,13 +37,13 @@ test('Generates a new VS Code settings file if one does not exist', async (t) =>
 
     const settings = JSON.parse(await readFile(`${builder.directory}/.vscode/settings.json`))
 
-    t.is(settings['deno.enable'], true)
-    t.is(settings['deno.importMap'], '.netlify/edge-functions-import-map.json')
-    t.deepEqual(settings['deno.enablePaths'], ['netlify/edge-functions'])
+    t.expect(settings['deno.enable']).toBe(true)
+    t.expect(settings['deno.importMap']).toEqual('.netlify/edge-functions-import-map.json')
+    t.expect(settings['deno.enablePaths']).toStrictEqual(['netlify/edge-functions'])
   })
 })
 
-test('Updates an existing VS Code settings file', async (t) => {
+test.only('Updates an existing VS Code settings file', async (t) => {
   await withSiteBuilder('repo', async (builder) => {
     await builder
       .withContentFile({
@@ -68,10 +68,10 @@ test('Updates an existing VS Code settings file', async (t) => {
 
     const settings = JSON.parse(await readFile(`${builder.directory}/.vscode/settings.json`))
 
-    t.is(settings.someSetting, 'value')
-    t.is(settings['deno.enable'], true)
-    t.is(settings['deno.importMap'], '.netlify/edge-functions-import-map.json')
-    t.deepEqual(settings['deno.enablePaths'], ['/some/path', 'netlify/edge-functions'])
+    t.expect(settings.someSetting).toEqual('value')
+    t.expect(settings['deno.enable']).toBe(true)
+    t.expect(settings['deno.importMap']).toEqual('.netlify/edge-functions-import-map.json')
+    t.expect(settings['deno.enablePaths']).toStrictEqual(['/some/path', 'netlify/edge-functions'])
   })
 })
 
@@ -93,8 +93,8 @@ test('Does not generate a new VS Code settings file if the user does not confirm
 
     await childProcess
 
-    const error = await t.throwsAsync(() => readFile(`${builder.directory}/.vscode/settings.json`))
-    t.is(error.code, 'ENOENT')
+    const error = await readFile(`${builder.directory}/.vscode/settings.json`).catch(e => e)
+    t.expect(error.code).toEqual('ENOENT')
   })
 })
 
@@ -130,18 +130,18 @@ test('Handles JSON with comments', async (t) => {
     await childProcess
 
     const settingsText = await readFile(`${builder.directory}/.vscode/settings.json`, { encoding: 'utf8' })
-    t.true(settingsText.includes(comment))
+    t.expect(settingsText.includes(comment)).toBe(true)
 
     const settings = parse(settingsText, null, true)
-    t.is(settings.someSetting, 'value')
-    t.is(settings['deno.enable'], true)
-    t.is(settings['deno.importMap'], '.netlify/edge-functions-import-map.json')
-    t.deepEqual([...settings['deno.enablePaths']], ['/some/path', 'netlify/edge-functions'])
+    t.expect(settings.someSetting).toEqual('value')
+    t.expect(settings['deno.enable']).toBe(true)
+    t.expect(settings['deno.importMap']).toEqual('.netlify/edge-functions-import-map.json')
+    t.expect([...settings['deno.enablePaths']]).toStrictEqual(['/some/path', 'netlify/edge-functions'])
   })
 })
 
 test('Suggests closest matching recipe on typo', async (t) => {
   const cliResponse = await callCli(['recipes', 'vsc'])
 
-  t.snapshot(normalize(cliResponse))
+  t.expect(normalize(cliResponse)).toMatchSnapshot()
 })

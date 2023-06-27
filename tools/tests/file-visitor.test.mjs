@@ -1,7 +1,7 @@
 import { join } from 'path'
 import { format } from 'util'
 
-import test from 'ava'
+import { afterAll, beforeAll, test } from 'vitest'
 import mock, { restore } from 'mock-fs'
 
 import snapshots from '../../tests/integration/utils/snapshots.cjs'
@@ -9,19 +9,20 @@ import { DependencyGraph, fileVisitor } from '../project-graph/index.mjs'
 
 import { simpleMockedFileSystem } from './utils/file-systems.mjs'
 
-test.before(() => {
+beforeAll(() => {
   mock(simpleMockedFileSystem)
 })
 
-test.after(() => {
+afterAll(() => {
   restore()
 })
 
 test('should visit the files that are dependents from the provided main file', (t) => {
   const graph = new DependencyGraph()
   fileVisitor(join('tests/a.test.js'), { graph, visitorPlugins: [] })
-  t.is(
-    snapshots.normalize(graph.visualize().to_dot()),
+  t.expect(
+    snapshots.normalize(graph.visualize().to_dot())
+  ).toEqual(
     `digraph G {
   "src/nested/b.js";
   "src/nested/a.js";
@@ -40,8 +41,9 @@ test('should merge the graph with files from a different entry point', (t) => {
   const graph = new DependencyGraph()
   fileVisitor(join('tests/a.test.js'), { graph, visitorPlugins: [] })
   fileVisitor(join('tests/c.test.js'), { graph, visitorPlugins: [] })
-  t.is(
-    snapshots.normalize(graph.visualize().to_dot()),
+  t.expect(
+    snapshots.normalize(graph.visualize().to_dot())
+  ).toEqual(
     `digraph G {
   "src/nested/b.js";
   "src/nested/a.js";
@@ -56,7 +58,7 @@ test('should merge the graph with files from a different entry point', (t) => {
   "tests/a.test.js" -> "src/nested/a.js";
   "tests/c.test.js" -> "src/c/index.js";
   "tests/c.test.js" -> "tests/utils.js";
-}`,
+}`
   )
 })
 
@@ -65,18 +67,21 @@ test('should build a list of affected files based on a file', (t) => {
   fileVisitor(join('tests/a.test.js'), { graph, visitorPlugins: [] })
   fileVisitor(join('tests/c.test.js'), { graph, visitorPlugins: [] })
 
-  t.is(
-    format([...graph.affected([join('src/d.js')])]).replace(/\\+/gm, '/'),
+  t.expect(
+    format([...graph.affected([join('src/d.js')])]).replace(/\\+/gm, '/')
+  ).toEqual(
     `[
   'src/d.js',
   'src/c/index.js',
   'src/nested/a.js',
   'tests/a.test.js',
   'tests/c.test.js'
-]`,
+]`
   )
-  t.is(
-    format([...graph.affected([join('tests/utils.js')])]).replace(/\\+/gm, '/'),
-    "[ 'tests/utils.js', 'tests/c.test.js' ]",
+
+  t.expect(
+    format([...graph.affected([join('tests/utils.js')])]).replace(/\\+/gm, '/')
+  ).toEqual(
+    "[ 'tests/utils.js', 'tests/c.test.js' ]"
   )
 })

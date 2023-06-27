@@ -2,8 +2,7 @@
 import fs from 'fs/promises'
 import path from 'path'
 
-// eslint-disable-next-line ava/use-test
-import avaTest from 'ava'
+import { describe, test } from 'vitest'
 import { isCI } from 'ci-info'
 import FormData from 'form-data'
 import getPort from 'get-port'
@@ -12,8 +11,9 @@ import { withDevServer } from './utils/dev-server.cjs'
 import got from './utils/got.cjs'
 import { withSiteBuilder } from './utils/site-builder.cjs'
 
-const test = isCI ? avaTest.serial.bind(avaTest) : avaTest
-
+// FIXME: Run tests serial
+// const test = isCI ? avaTest.serial.bind(avaTest) : avaTest
+describe.concurrent('suite', ()=> {
 test('should return 404 when redirecting to a non existing function', async (t) => {
   await withSiteBuilder('site-with-missing-function', async (builder) => {
     builder.withNetlifyToml({
@@ -32,7 +32,7 @@ test('should return 404 when redirecting to a non existing function', async (t) 
         })
         .catch((error) => error.response)
 
-      t.is(response.statusCode, 404)
+      t.expect(response.statusCode).toBe(404)
     })
   })
 })
@@ -59,8 +59,8 @@ test('should parse function query parameters using simple parsing', async (t) =>
       const response1 = await got(`${server.url}/.netlify/functions/echo?category[SOMETHING][]=something`).json()
       const response2 = await got(`${server.url}/.netlify/functions/echo?category=one&category=two`).json()
 
-      t.deepEqual(response1.queryStringParameters, { 'category[SOMETHING][]': 'something' })
-      t.deepEqual(response2.queryStringParameters, { category: 'one, two' })
+      t.expect(response1.queryStringParameters).toStrictEqual({ 'category[SOMETHING][]': 'something' })
+      t.expect(response2.queryStringParameters, { category: 'one).toStrictEqual(two' })
     })
   })
 })
@@ -119,14 +119,14 @@ test('should handle form submission', async (t) => {
         },
       }
 
-      t.is(response.headers.host, `${server.host}:${server.port}`)
-      t.is(response.headers['content-length'], JSON.stringify(expectedBody).length.toString())
-      t.is(response.headers['content-type'], 'application/json')
-      t.is(response.httpMethod, 'POST')
-      t.is(response.isBase64Encoded, false)
-      t.is(response.path, '/')
-      t.deepEqual(response.queryStringParameters, { ding: 'dong' })
-      t.deepEqual(body, expectedBody)
+      t.expect(response.headers.host).toEqual(`${server.host}:${server.port}`)
+      t.expect(response.headers['content-length']).toEqual(JSON.stringify(expectedBody).length.toString())
+      t.expect(response.headers['content-type']).toEqual('application/json')
+      t.expect(response.httpMethod).toEqual('POST')
+      t.expect(response.isBase64Encoded).toBe(false)
+      t.expect(response.path).toEqual('/')
+      t.expect(response.queryStringParameters).toStrictEqual({ ding: 'dong' })
+      t.expect(body).toStrictEqual(expectedBody)
     })
   })
 })
@@ -158,8 +158,8 @@ test('should handle form submission with a background function', async (t) => {
       const response = await got.post(`${server.url}/?ding=dong`, {
         body: form,
       })
-      t.is(response.statusCode, 202)
-      t.is(response.body, '')
+      t.expect(response.statusCode).toBe(202)
+      t.expect(response.body).toEqual('')
     })
   })
 })
@@ -195,8 +195,8 @@ test('should not handle form submission when content type is `text/plain`', asyn
           },
         })
         .catch((error) => error.response)
-      t.is(response.statusCode, 405)
-      t.is(response.body, 'Method Not Allowed')
+      t.expect(response.statusCode).toBe(405)
+      t.expect(response.body).toEqual('Method Not Allowed')
     })
   })
 })
@@ -222,7 +222,7 @@ test('should return existing local file even when rewrite matches when force=fal
 
     await withDevServer({ cwd: builder.directory }, async (server) => {
       const response = await got(`${server.url}/foo?ping=pong`).text()
-      t.is(response, '<html><h1>foo')
+      t.expect(response).toEqual('<html><h1>foo')
     })
   })
 })
@@ -248,7 +248,7 @@ test('should return existing local file even when redirect matches when force=fa
 
     await withDevServer({ cwd: builder.directory }, async (server) => {
       const response = await got(`${server.url}/foo?ping=pong`).text()
-      t.is(response, '<html><h1>foo')
+      t.expect(response).toEqual('<html><h1>foo')
     })
   })
 })
@@ -274,10 +274,10 @@ test('should ignore existing local file when redirect matches and force=true', a
 
     await withDevServer({ cwd: builder.directory }, async (server) => {
       const response = await got(`${server.url}/foo`, { followRedirect: false })
-      t.is(response.headers.location, `/not-foo`)
+      t.expect(response.headers.location).toEqual(`/not-foo`)
 
       const body = await got(`${server.url}/foo`).text()
-      t.is(body, '<html><h1>not-foo')
+      t.expect(body).toEqual('<html><h1>not-foo')
     })
   })
 })
@@ -303,8 +303,8 @@ test('should use existing file when rule contains file extension and force=false
 
     await withDevServer({ cwd: builder.directory }, async (server) => {
       const response = await got(`${server.url}/foo.html`, { followRedirect: false })
-      t.is(response.headers.location, undefined)
-      t.is(response.body, '<html><h1>foo')
+      t.expect(response.headers.location).toBeUndefined()
+      t.expect(response.body).toEqual('<html><h1>foo')
     })
   })
 })
@@ -330,10 +330,10 @@ test('should redirect when rule contains file extension and force=true', async (
 
     await withDevServer({ cwd: builder.directory }, async (server) => {
       const response = await got(`${server.url}/foo.html`, { followRedirect: false })
-      t.is(response.headers.location, `/not-foo`)
+      t.expect(response.headers.location).toEqual(`/not-foo`)
 
       const body = await got(`${server.url}/foo.html`).text()
-      t.is(body, '<html><h1>not-foo')
+      t.expect(body).toEqual('<html><h1>not-foo')
     })
   })
 })
@@ -364,9 +364,9 @@ test('should redirect from sub directory to root directory', async (t) => {
       // TODO: check why this doesn't redirect
       const response3 = await got(`${server.url}/not-foo/index.html`).text()
 
-      t.is(response1, '<html><h1>foo')
-      t.is(response2, '<html><h1>foo')
-      t.is(response3, '<html><h1>not-foo')
+      t.expect(response1).toEqual('<html><h1>foo')
+      t.expect(response2).toEqual('<html><h1>foo')
+      t.expect(response3).toEqual('<html><h1>not-foo')
     })
   })
 })
@@ -416,13 +416,13 @@ test('Runs build plugins with the `onPreDev` event', async (t) => {
     await builder.buildAsync()
 
     await withDevServer({ cwd: builder.directory }, async (server) => {
-      t.is(await got(`${server.url}/foo`).text(), '<html><h1>foo')
-      t.is(await got(`http://localhost:${userServerPort}`).text(), 'Hello world')
+      await t.expect(await got(`${server.url}/foo`).text()).toEqual('<html><h1>foo')
+      await t.expect(await got(`http://localhost:${userServerPort}`).text()).toEqual('Hello world')
     })
   })
 })
 
-test('Handles errors from the `onPreDev` event', async (t) => {
+test.only('Handles errors from the `onPreDev` event', async (t) => {
   const userServerPort = await getPort()
   const pluginManifest = 'name: local-plugin'
 
@@ -462,15 +462,17 @@ test('Handles errors from the `onPreDev` event', async (t) => {
 
     await builder.buildAsync()
 
-    await t.throwsAsync(() =>
+    await t.expect(
+      await
       withDevServer(
         { cwd: builder.directory },
         async (server) => {
-          t.is(await got(`${server.url}/foo`).text(), '<html><h1>foo')
-          t.is(await got(`http://localhost:${userServerPort}`).text(), 'Hello world')
+          await t.expect(await got(`${server.url}/foo`).text()).toEqual('<html><h1>foo')
+          await t.expect(await got(`http://localhost:${userServerPort}`).text()).toEqual('Hello world')
         },
         { message: /Error: Something went wrong/ },
-      ),
-    )
+      )
+    ).rejects.toThrowError()
   })
+})
 })

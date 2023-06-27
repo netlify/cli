@@ -1,4 +1,4 @@
-import test from 'ava'
+import { test } from 'vitest'
 
 import { tryAndLogOutput, withDevServer } from './utils/dev-server.cjs'
 import got from './utils/got.cjs'
@@ -81,7 +81,7 @@ test('Updates a Go function when a file is modified', async (t) => {
         },
         async ({ outputBuffer, port, waitForLogMatching }) => {
           await tryAndLogOutput(async () => {
-            t.is(await got(`http://localhost:${port}/.netlify/functions/go-func`).text(), originalBody)
+            t.expect(await got(`http://localhost:${port}/.netlify/functions/go-func`).text()).toEqual(originalBody)
           }, outputBuffer)
 
           await pause(WAIT_WRITE)
@@ -94,7 +94,7 @@ test('Updates a Go function when a file is modified', async (t) => {
 
           const response = await got(`http://localhost:${port}/.netlify/functions/go-func`).text()
 
-          t.is(response, updatedBody)
+          t.expect(response).toEqual(updatedBody)
         },
       )
     } finally {
@@ -165,10 +165,10 @@ test('Detects a Go scheduled function using netlify-toml config', async (t) => {
         async ({ port }) => {
           const response = await got(`http://localhost:${port}/.netlify/functions/go-scheduled-function`)
 
-          t.regex(response.body, /You performed an HTTP request/)
-          t.regex(response.body, /Your function returned `body`/)
+          t.expect(response.body).matches(/You performed an HTTP request/)
+          t.expect(response.body).matches(/Your function returned `body`/)
 
-          t.is(response.statusCode, 200)
+          t.expect(response.statusCode).toEqual(200)
         },
       )
     } finally {

@@ -1,19 +1,18 @@
-// eslint-disable-next-line ava/use-test
-const avaTest = require('ava')
-const { isCI } = require('ci-info')
-const execa = require('execa')
+import { test } from 'vitest'
+import { isCI } from 'ci-info'
+import execa from 'execa'
 
-const cliPath = require('./utils/cli-path.cjs')
-const { getExecaOptions, withDevServer } = require('./utils/dev-server.cjs')
-const got = require('./utils/got.cjs')
-const { DOWN, answerWithValue, handleQuestions } = require('./utils/handle-questions.cjs')
-const { withSiteBuilder } = require('./utils/site-builder.cjs')
-const { normalize } = require('./utils/snapshots.cjs')
+import cliPath from './utils/cli-path.cjs'
+import { getExecaOptions, withDevServer } from './utils/dev-server.cjs'
+import got from './utils/got.cjs'
+import { DOWN, answerWithValue, handleQuestions } from './utils/handle-questions.cjs'
+import { withSiteBuilder } from './utils/site-builder.cjs'
+import { normalize } from './utils/snapshots.cjs'
 
 const content = 'Hello World!'
 
-const test = isCI ? avaTest.serial.bind(avaTest) : avaTest
-
+// FIXME: Run test serial
+// const test = isCI ? avaTest.serial.bind(avaTest) : avaTest
 test('should default to process.cwd() and static server', async (t) => {
   await withSiteBuilder('site-with-index-file', async (builder) => {
     await builder
@@ -25,9 +24,9 @@ test('should default to process.cwd() and static server', async (t) => {
 
     await withDevServer({ cwd: builder.directory }, async ({ output, url }) => {
       const response = await got(url).text()
-      t.is(response, content)
+      t.expect(response).toEqual(content)
 
-      t.snapshot(normalize(output, { duration: true, filePath: true }))
+      t.expect(normalize(output, { duration: true, filePath: true })).toMatchSnapshot()
     })
   })
 })
@@ -43,9 +42,9 @@ test('should use static server when --dir flag is passed', async (t) => {
 
     await withDevServer({ cwd: builder.directory, args: ['--dir', 'public'] }, async ({ output, url }) => {
       const response = await got(url).text()
-      t.is(response, content)
+      t.expect(response).toEqual(content)
 
-      t.snapshot(normalize(output, { duration: true, filePath: true }))
+      t.expect(normalize(output, { duration: true, filePath: true })).toMatchSnapshot()
     })
   })
 })
@@ -62,9 +61,9 @@ test('should use static server when framework is set to #static', async (t) => {
 
     await withDevServer({ cwd: builder.directory }, async ({ output, url }) => {
       const response = await got(url).text()
-      t.is(response, content)
+      t.expect(response).toEqual(content)
 
-      t.snapshot(normalize(output, { duration: true, filePath: true }))
+      t.expect(normalize(output, { duration: true, filePath: true })).toMatchSnapshot()
     })
   })
 })
@@ -82,9 +81,9 @@ test('should log the command if using static server and `command` is configured'
       { cwd: builder.directory, args: ['--dir', 'public', '--command', 'npm run start'] },
       async ({ output, url }) => {
         const response = await got(url).text()
-        t.is(response, content)
+        t.expect(response).toEqual(content)
 
-        t.snapshot(normalize(output, { duration: true, filePath: true }))
+        t.expect(normalize(output, { duration: true, filePath: true })).toMatchSnapshot()
       },
     )
   })
@@ -103,9 +102,9 @@ test('should warn if using static server and `targetPort` is configured', async 
       { cwd: builder.directory, args: ['--dir', 'public', '--target-port', '3000'] },
       async ({ output, url }) => {
         const response = await got(url).text()
-        t.is(response, content)
+        t.expect(response).toEqual(content)
 
-        t.snapshot(normalize(output, { duration: true, filePath: true }))
+        t.expect(normalize(output, { duration: true, filePath: true })).toMatchSnapshot()
       },
     )
   })
@@ -116,14 +115,12 @@ test('should run `command` when both `command` and `targetPort` are configured',
     await builder.withNetlifyToml({ config: { build: { publish: 'public' } } }).buildAsync()
 
     // a failure is expected since we use `echo hello` instead of starting a server
-    const error = await t.throwsAsync(() =>
-      withDevServer(
-        { cwd: builder.directory, args: ['--command', 'echo hello', '--target-port', '3000'] },
-        () => {},
-        true,
-      ),
-    )
-    t.snapshot(normalize(error.stdout, { duration: true, filePath: true }))
+    const error = await withDevServer(
+      { cwd: builder.directory, args: ['--command', 'echo hello', '--target-port', '3000'] },
+      () => {},
+      true,
+    ).catch((error_) => error_)
+    t.expect(normalize(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
   })
 })
 
@@ -132,8 +129,8 @@ test('should force a specific framework when configured', async (t) => {
     await builder.withNetlifyToml({ config: { dev: { framework: 'create-react-app' } } }).buildAsync()
 
     // a failure is expected since this is not a true create-react-app project
-    const error = await t.throwsAsync(() => withDevServer({ cwd: builder.directory }, () => {}, true))
-    t.snapshot(normalize(error.stdout, { duration: true, filePath: true }))
+    const error = await withDevServer({ cwd: builder.directory }, () => {}, true).catch((error_) => error_)
+    t.expect(normalize(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
   })
 })
 
@@ -141,8 +138,8 @@ test('should throw when forcing a non supported framework', async (t) => {
   await withSiteBuilder('site-with-unknown-framework', async (builder) => {
     await builder.withNetlifyToml({ config: { dev: { framework: 'to-infinity-and-beyond-js' } } }).buildAsync()
 
-    const error = await t.throwsAsync(() => withDevServer({ cwd: builder.directory }, () => {}, true))
-    t.snapshot(normalize(error.stdout, { duration: true, filePath: true }))
+    const error = await withDevServer({ cwd: builder.directory }, () => {}, true).catch((error_) => error_)
+    t.expect(normalize(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
   })
 })
 
@@ -155,8 +152,8 @@ test('should detect a known framework', async (t) => {
       .buildAsync()
 
     // a failure is expected since this is not a true create-react-app project
-    const error = await t.throwsAsync(() => withDevServer({ cwd: builder.directory }, () => {}, true))
-    t.snapshot(normalize(error.stdout, { duration: true, filePath: true }))
+    const error = await withDevServer({ cwd: builder.directory }, () => {}, true).catch((error_) => error_)
+    t.expect(normalize(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
   })
 })
 
@@ -164,10 +161,12 @@ test('should throw if framework=#custom but command is missing', async (t) => {
   await withSiteBuilder('site-with-framework-and-no-command', async (builder) => {
     await builder.withNetlifyToml({ config: { dev: { framework: '#custom' } } }).buildAsync()
 
-    const error = await t.throwsAsync(() =>
-      withDevServer({ cwd: builder.directory, args: ['--target-port', '3000'] }, () => {}, true),
-    )
-    t.snapshot(normalize(error.stdout, { duration: true, filePath: true }))
+    const error = await withDevServer(
+      { cwd: builder.directory, args: ['--target-port', '3000'] },
+      () => {},
+      true,
+    ).catch((error_) => error_)
+    t.expect(normalize(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
   })
 })
 
@@ -175,10 +174,12 @@ test('should throw if framework=#custom but targetPort is missing', async (t) =>
   await withSiteBuilder('site-with-framework-and-no-command', async (builder) => {
     await builder.withNetlifyToml({ config: { dev: { framework: '#custom' } } }).buildAsync()
 
-    const error = await t.throwsAsync(() =>
-      withDevServer({ cwd: builder.directory, args: ['--command', 'echo hello'] }, () => {}, true),
-    )
-    t.snapshot(normalize(error.stdout, { duration: true, filePath: true }))
+    const error = await withDevServer(
+      { cwd: builder.directory, args: ['--command', 'echo hello'] },
+      () => {},
+      true,
+    ).catch((error_) => error_)
+    t.expect(normalize(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
   })
 })
 
@@ -186,14 +187,12 @@ test('should start custom command if framework=#custom, command and targetPort a
   await withSiteBuilder('site-with-custom-framework', async (builder) => {
     await builder.withNetlifyToml({ config: { dev: { framework: '#custom', publish: 'public' } } }).buildAsync()
 
-    const error = await t.throwsAsync(() =>
-      withDevServer(
-        { cwd: builder.directory, args: ['--command', 'echo hello', '--target-port', '3000'] },
-        () => {},
-        true,
-      ),
-    )
-    t.snapshot(normalize(error.stdout, { duration: true, filePath: true }))
+    const error = await withDevServer(
+      { cwd: builder.directory, args: ['--command', 'echo hello', '--target-port', '3000'] },
+      () => {},
+      true,
+    ).catch((error_) => error_)
+    t.expect(normalize(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
   })
 })
 
@@ -201,24 +200,22 @@ test(`should print specific error when command doesn't exist`, async (t) => {
   await withSiteBuilder('site-with-custom-framework', async (builder) => {
     await builder.buildAsync()
 
-    const error = await t.throwsAsync(() =>
-      withDevServer(
-        {
-          cwd: builder.directory,
-          args: [
-            '--command',
-            'oops-i-did-it-again forgot-to-use-a-valid-command',
-            '--target-port',
-            '3000',
-            '--framework',
-            '#custom',
-          ],
-        },
-        () => {},
-        true,
-      ),
-    )
-    t.snapshot(normalize(error.stdout, { duration: true, filePath: true }))
+    const error = await withDevServer(
+      {
+        cwd: builder.directory,
+        args: [
+          '--command',
+          'oops-i-did-it-again forgot-to-use-a-valid-command',
+          '--target-port',
+          '3000',
+          '--framework',
+          '#custom',
+        ],
+      },
+      () => {},
+      true,
+    ).catch((error_) => error_)
+    t.expect(normalize(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
   })
 })
 
@@ -235,7 +232,7 @@ test('should prompt when multiple frameworks are detected', async (t) => {
       .buildAsync()
 
     // a failure is expected since this is not a true framework project
-    const error = await t.throwsAsync(async () => {
+    const asyncError = async () => {
       const childProcess = execa(cliPath, ['dev', '--offline'], getExecaOptions({ cwd: builder.directory }))
 
       handleQuestions(childProcess, [
@@ -246,8 +243,9 @@ test('should prompt when multiple frameworks are detected', async (t) => {
       ])
 
       await childProcess
-    })
-    t.snapshot(normalize(error.stdout, { duration: true, filePath: true }))
+    }
+    const error = await asyncError().catch((error_) => error_)
+    t.expect(normalize(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
   })
 })
 
@@ -256,14 +254,12 @@ test('should not run framework detection if command and targetPort are configure
     await builder.withContentFile({ path: 'config.toml', content: '' }).buildAsync()
 
     // a failure is expected since the command exits early
-    const error = await t.throwsAsync(() =>
-      withDevServer(
-        { cwd: builder.directory, args: ['--command', 'echo hello', '--target-port', '3000'] },
-        () => {},
-        true,
-      ),
-    )
-    t.snapshot(normalize(error.stdout, { duration: true, filePath: true }))
+    const error = await withDevServer(
+      { cwd: builder.directory, args: ['--command', 'echo hello', '--target-port', '3000'] },
+      () => {},
+      true,
+    ).catch((error_) => error_)
+    t.expect(normalize(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
   })
 })
 
@@ -281,9 +277,9 @@ test('should filter frameworks with no dev command', async (t) => {
 
     await withDevServer({ cwd: builder.directory }, async ({ output, url }) => {
       const response = await got(url).text()
-      t.is(response, content)
+      t.expect(response).toEqual(content)
 
-      t.snapshot(normalize(output, { duration: true, filePath: true }))
+      t.expect(normalize(output, { duration: true, filePath: true })).toMatchSnapshot()
     })
   })
 })
@@ -300,8 +296,8 @@ test('should pass framework-info env to framework sub process', async (t) => {
       .buildAsync()
 
     // a failure is expected since this is not a true Gatsby project
-    const error = await t.throwsAsync(() => withDevServer({ cwd: builder.directory }, () => {}, true))
-    t.snapshot(normalize(error.stdout, { duration: true, filePath: true }))
+    const error = await withDevServer({ cwd: builder.directory }, () => {}, true).catch((error_) => error_)
+    t.expect(normalize(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
   })
 })
 
@@ -310,8 +306,8 @@ test('should start static service for frameworks without port, forced framework'
     await builder.withNetlifyToml({ config: { dev: { framework: 'remix' } } }).buildAsync()
 
     // a failure is expected since this is not a true remix project
-    const error = await t.throwsAsync(() => withDevServer({ cwd: builder.directory }, () => {}, true))
-    t.true(error.stdout.includes(`Failed running command: remix watch. Please verify 'remix' exists`))
+    const error = await withDevServer({ cwd: builder.directory }, () => {}, true).catch((error_) => error_)
+    t.expect(error.stdout.includes(`Failed running command: remix watch. Please verify 'remix' exists`)).toBe(true)
   })
 })
 
@@ -328,8 +324,8 @@ test('should start static service for frameworks without port, detected framewor
       .buildAsync()
 
     // a failure is expected since this is not a true remix project
-    const error = await t.throwsAsync(() => withDevServer({ cwd: builder.directory }, () => {}, true))
-    t.true(error.stdout.includes(`Failed running command: remix watch. Please verify 'remix' exists`))
+    const error = await withDevServer({ cwd: builder.directory }, () => {}, true).catch((e) => e)
+    t.expect(error.stdout.includes(`Failed running command: remix watch. Please verify 'remix' exists`)).toBe(true)
   })
 })
 
@@ -351,8 +347,9 @@ test('should run and serve a production build when using the `serve` command', a
         name: 'frameworker',
         plugin: {
           onPreBuild: async ({ netlifyConfig }) => {
-            // eslint-disable-next-line n/global-require
-            const { mkdir, writeFile } = require('fs').promises
+            //TODO:migrate site-builder.cjs (withBuildPlugin) to ESM so that we can
+            // get rid of require and use ESM and dynamic import instead
+            const { mkdir, writeFile } = require('fs/promises')
 
             const generatedFunctionsDir = 'new_functions'
             netlifyConfig.functions.directory = generatedFunctionsDir
@@ -376,9 +373,9 @@ test('should run and serve a production build when using the `serve` command', a
       { cwd: builder.directory, context: null, debug: true, serve: true },
       async ({ output, url }) => {
         const response = await got(`${url}/hello`).json()
-        t.deepEqual(response, { CONTEXT_CHECK: 'PRODUCTION' })
+        t.expect(response).toStrictEqual({ CONTEXT_CHECK: 'PRODUCTION' })
 
-        t.snapshot(normalize(output, { duration: true, filePath: true }))
+        t.expect(normalize(output, { duration: true, filePath: true })).toMatchSnapshot()
       },
     )
   })

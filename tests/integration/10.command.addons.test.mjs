@@ -1,4 +1,4 @@
-import test from 'ava'
+import { test } from 'vitest'
 
 import callCli from './utils/call-cli.cjs'
 import { getCLIOptions, withMockApi } from './utils/mock-api.cjs'
@@ -24,7 +24,7 @@ test('netlify addons:list', async (t) => {
 
     await withMockApi(routes, async ({ apiUrl }) => {
       const cliResponse = await callCli(['addons:list'], getCLIOptions({ builder, apiUrl }))
-      t.true(cliResponse.includes('No addons currently installed'))
+      t.expect(cliResponse.includes('No addons currently installed')).toBe(true)
     })
   })
 })
@@ -36,8 +36,8 @@ test('netlify addons:list --json', async (t) => {
     await withMockApi(routes, async ({ apiUrl }) => {
       const cliResponse = await callCli(['addons:list', '--json'], getCLIOptions({ builder, apiUrl }))
       const json = JSON.parse(cliResponse)
-      t.true(Array.isArray(json))
-      t.is(json.length, 0)
+      t.expect(Array.isArray(json)).toBe(true)
+      t.expect(json.length).toBe(0)
     })
   })
 })
@@ -62,7 +62,7 @@ test('netlify addons:create demo', async (t) => {
         ['addons:create', 'demo', '--TWILIO_ACCOUNT_SID', 'foo'],
         getCLIOptions({ builder, apiUrl }),
       )
-      t.true(cliResponse.includes('Add-on "demo" created'))
+      t.expect(cliResponse.includes('Add-on "demo" created')).toBe(true)
     })
   })
 })
@@ -86,9 +86,9 @@ test('After creation netlify addons:list --json', async (t) => {
     await withMockApi(withExistingAddon, async ({ apiUrl }) => {
       const cliResponse = await callCli(['addons:list', '--json'], getCLIOptions({ builder, apiUrl }))
       const json = JSON.parse(cliResponse)
-      t.true(Array.isArray(json))
-      t.is(json.length, 1)
-      t.is(json[0].service_slug, 'demo')
+      t.expect(Array.isArray(json)).toBe(true)
+      t.expect(json.length).toBe(1)
+      t.expect(json[0].service_slug).toEqual('demo')
     })
   })
 })
@@ -121,8 +121,8 @@ test('netlify addons:config demo', async (t) => {
         ['addons:config', 'demo', '--TWILIO_ACCOUNT_SID', 'bar'],
         getCLIOptions({ builder, apiUrl }),
       )
-      t.true(cliResponse.includes('Updating demo add-on config values'))
-      t.true(cliResponse.includes('Add-on "demo" successfully updated'))
+      t.expect(cliResponse.includes('Updating demo add-on config values')).toBe(true)
+      t.expect(cliResponse.includes('Add-on "demo" successfully updated')).toBe(true)
     })
   })
 })
@@ -151,7 +151,7 @@ test('netlify addon:delete demo', async (t) => {
 
     await withMockApi(deleteRoutes, async ({ apiUrl }) => {
       const cliResponse = await callCli(['addons:delete', 'demo', '-f'], getCLIOptions({ builder, apiUrl }))
-      t.true(cliResponse.includes('Addon "demo" deleted'))
+      t.expect(cliResponse.includes('Addon "demo" deleted')).toBe(true)
     })
   })
 })
