@@ -93,6 +93,11 @@ const routes = [
   },
   {
     path: 'accounts/test-account/env/OTHER_VAR',
+    method: 'PUT',
+    response: {},
+  },
+  {
+    path: 'accounts/test-account/env/OTHER_VAR',
     method: 'DELETE',
     response: {},
   },
@@ -386,6 +391,128 @@ test('env:set --scope should set the scope of an existing env var without needin
       t.is(putRequest.body.values[1].context, 'dev')
       t.is(putRequest.body.scopes[0], 'runtime')
       t.is(putRequest.body.scopes[1], 'post-processing')
+    })
+  })
+})
+
+test('env:set --secret --context production deploy-preview branch-deploy should create new secret values', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+
+    const finalEnv = {
+      TOTALLY_NEW_SECRET: 'shhhhhhecret',
+      EXISTING_VAR: 'envelope-prod-value',
+      OTHER_VAR: 'envelope-all-value',
+    }
+
+    await withMockApi(routes, async ({ apiUrl, requests }) => {
+      const cliResponse = await callCli(
+        [
+          'env:set',
+          'TOTALLY_NEW_SECRET',
+          'shhhhhhecret',
+          '--secret',
+          '--context',
+          'production',
+          'deploy-preview',
+          'branch-deploy',
+          '--json',
+        ],
+        getCLIOptions({ builder, apiUrl }),
+        true,
+      )
+
+      t.deepEqual(cliResponse, finalEnv)
+
+      const postRequest = requests.find(
+        (request) => request.method === 'POST' && request.path === '/api/v1/accounts/test-account/env',
+      )
+
+      t.is(postRequest.body.length, 1)
+      t.is(postRequest.body[0].key, 'TOTALLY_NEW_SECRET')
+      t.is(postRequest.body[0].is_secret, true)
+      t.is(postRequest.body[0].values[0].context, 'production')
+      t.is(postRequest.body[0].values[0].value, 'shhhhhhecret')
+      t.is(postRequest.body[0].values.length, 3)
+    })
+  })
+})
+
+test('env:set --secret --context production should update a single value', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+
+    const finalEnv = {
+      EXISTING_VAR: 'envelope-new-value',
+      OTHER_VAR: 'envelope-all-value',
+    }
+
+    await withMockApi(routes, async ({ apiUrl, requests }) => {
+      const cliResponse = await callCli(
+        ['env:set', 'EXISTING_VAR', 'envelope-new-value', '--secret', '--context', 'production', '--json'],
+        getCLIOptions({ builder, apiUrl }),
+        true,
+      )
+
+      t.deepEqual(cliResponse, finalEnv)
+
+      const patchRequest = requests.find(
+        (request) => request.method === 'PATCH' && request.path === '/api/v1/accounts/test-account/env/EXISTING_VAR',
+      )
+
+      t.is(patchRequest.body.context, 'production')
+      t.is(patchRequest.body.value, 'envelope-new-value')
+    })
+  })
+})
+
+test('env:set --secret should convert an env var to a secret when no value is passed', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+
+    const finalEnv = {
+      EXISTING_VAR: 'envelope-dev-value',
+      OTHER_VAR: 'envelope-all-value',
+    }
+
+    await withMockApi(routes, async ({ apiUrl, requests }) => {
+      const cliResponse = await callCli(
+        ['env:set', 'OTHER_VAR', '--secret', '--json'],
+        getCLIOptions({ builder, apiUrl }),
+        true,
+      )
+
+      t.deepEqual(cliResponse, finalEnv)
+
+      const putRequest = requests.find(
+        (request) => request.method === 'PUT' && request.path === '/api/v1/accounts/test-account/env/OTHER_VAR',
+      )
+
+      t.is(putRequest.body.is_secret, true)
+      t.is(putRequest.body.values[0].context, 'production')
+      t.is(putRequest.body.values[0].value, 'envelope-all-value')
+      t.is(putRequest.body.values[1].context, 'deploy-preview')
+      t.is(putRequest.body.values[2].context, 'branch-deploy')
+      t.is(putRequest.body.values[3].context, 'dev')
+      t.is(putRequest.body.values[3].value, '')
+      t.is(putRequest.body.scopes.length, 3)
+      t.is(putRequest.body.scopes[0], 'builds')
+      t.is(putRequest.body.scopes[1], 'functions')
+      t.is(putRequest.body.scopes[2], 'runtime')
+    })
+  })
+})
+
+test('env:set --secret should error when a value is passed without --context', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+
+    await withMockApi(routes, async ({ apiUrl }) => {
+      const { stderr: cliResponse } = await t.throwsAsync(
+        callCli(['env:set', 'TOTALLY_NEW', 'cool-value', '--secret'], getCLIOptions({ builder, apiUrl })),
+      )
+
+      t.true(cliResponse.includes(`please specify a non-development context`))
     })
   })
 })
