@@ -466,7 +466,7 @@ test('env:set --secret --context production should update a single value', async
   })
 })
 
-test('env:set --secret should convert an env var to a secret when no value is passed', async (t) => {
+test('env:set --secret should convert an `all` env var to a secret when no value is passed', async (t) => {
   await withSiteBuilder('site-env', async (builder) => {
     await builder.buildAsync()
 
@@ -489,6 +489,7 @@ test('env:set --secret should convert an env var to a secret when no value is pa
       )
 
       t.is(putRequest.body.is_secret, true)
+      t.is(putRequest.body.values.length, 4)
       t.is(putRequest.body.values[0].context, 'production')
       t.is(putRequest.body.values[0].value, 'envelope-all-value')
       t.is(putRequest.body.values[1].context, 'deploy-preview')
@@ -499,6 +500,41 @@ test('env:set --secret should convert an env var to a secret when no value is pa
       t.is(putRequest.body.scopes[0], 'builds')
       t.is(putRequest.body.scopes[1], 'functions')
       t.is(putRequest.body.scopes[2], 'runtime')
+    })
+  })
+})
+
+test('env:set --secret should convert an env var with many values to a secret when no value is passed', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+
+    const finalEnv = {
+      EXISTING_VAR: 'envelope-dev-value',
+      OTHER_VAR: 'envelope-all-value',
+    }
+
+    await withMockApi(routes, async ({ apiUrl, requests }) => {
+      const cliResponse = await callCli(
+        ['env:set', 'EXISTING_VAR', '--secret', '--json'],
+        getCLIOptions({ builder, apiUrl }),
+        true,
+      )
+
+      t.deepEqual(cliResponse, finalEnv)
+
+      const putRequest = requests.find(
+        (request) => request.method === 'PUT' && request.path === '/api/v1/accounts/test-account/env/EXISTING_VAR',
+      )
+
+      t.is(putRequest.body.is_secret, true)
+      t.is(putRequest.body.values.length, 2)
+      t.is(putRequest.body.values[0].context, 'production')
+      t.is(putRequest.body.values[0].value, 'envelope-prod-value')
+      t.is(putRequest.body.values[1].context, 'dev')
+      t.is(putRequest.body.values[1].value, 'envelope-dev-value')
+      t.is(putRequest.body.scopes.length, 2)
+      t.is(putRequest.body.scopes[0], 'builds')
+      t.is(putRequest.body.scopes[1], 'functions')
     })
   })
 })
