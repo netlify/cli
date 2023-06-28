@@ -553,6 +553,23 @@ test('env:set --secret should error when a value is passed without --context', a
   })
 })
 
+test('env:set --secret should error when set with a post-processing --scope', async (t) => {
+  await withSiteBuilder('site-env', async (builder) => {
+    await builder.buildAsync()
+
+    await withMockApi(routes, async ({ apiUrl }) => {
+      const { stderr: cliResponse } = await t.throwsAsync(
+        callCli(
+          ['env:set', 'TOTALLY_NEW', 'cool-value', '--secret', '--scope', 'builds', 'post-processing'],
+          getCLIOptions({ builder, apiUrl }),
+        ),
+      )
+
+      t.true(cliResponse.includes(`Secret values cannot be used within the post-processing scope.`))
+    })
+  })
+})
+
 test('env:set should error when --scope and --context are passed on an existing env var', async (t) => {
   await withSiteBuilder('site-env', async (builder) => {
     await builder.buildAsync()

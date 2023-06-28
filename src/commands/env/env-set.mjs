@@ -95,6 +95,12 @@ const setInEnvelope = async ({ api, context, key, scope, secret, siteInfo, value
   const accountId = siteInfo.account_slug
   const siteId = siteInfo.id
 
+  // secret values may not be used in the post-processing scope
+  if (secret && scope && scope.some((sco) => /post[-_]processing/.test(sco))) {
+    error(`Secret values cannot be used within the post-processing scope.`)
+    return false
+  }
+
   // secret values must specify deploy contexts. `all` or `dev` are not allowed
   if (secret && value && (!context || context.includes('dev'))) {
     error(
