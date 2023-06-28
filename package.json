@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "15.6.0",
+  "version": "15.7.0",
   "author": "Netlify Inc.",
   "type": "module",
   "engines": {
@@ -84,6 +84,7 @@
     "@netlify/edge-bundler": "8.16.2",
     "@netlify/framework-info": "9.8.10",
     "@netlify/local-functions-proxy": "1.1.1",
+    "@netlify/serverless-functions-api": "1.5.1",
     "@netlify/zip-it-and-ship-it": "9.10.0",
     "@octokit/rest": "19.0.13",
     "@skn0tt/lambda-local": "2.0.3",
@@ -190,6 +191,7 @@
     "@netlify/functions": "1.6.0",
     "@types/fs-extra": "11.0.1",
     "@types/prettyjson": "0.0.30",
+    "@types/semver": "7.5.0",
     "@vitest/coverage-c8": "0.31.4",
     "ava": "4.3.3",
     "c8": "7.14.0",

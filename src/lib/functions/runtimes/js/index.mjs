@@ -1,14 +1,16 @@
+import { createConnection } from 'net'
 import { dirname } from 'path'
+import { pathToFileURL } from 'url'
+import { Worker } from 'worker_threads'
 
 import lambdaLocal from '@skn0tt/lambda-local'
 import winston from 'winston'
 
 import detectNetlifyLambdaBuilder from './builders/netlify-lambda.mjs'
-import detectZisiBuilder, { parseForSchedule } from './builders/zisi.mjs'
+import detectZisiBuilder, { parseFunctionForMetadata } from './builders/zisi.mjs'
+import { SECONDS_TO_MILLISECONDS } from './constants.mjs'
 
 export const name = 'js'
-
-const SECONDS_TO_MILLISECONDS = 1000
 
 let netlifyLambdaDetectorCache
 
@@ -37,7 +39,8 @@ export const getBuildFunction = async ({ config, directory, errorExit, func, pro
     return netlifyLambdaBuilder.build
   }
 
-  const zisiBuilder = await detectZisiBuilder({ config, directory, errorExit, func, projectRoot })
+  const metadata = await parseFunctionForMetadata({ mainFile: func.mainFile, config, projectRoot })
+  const zisiBuilder = await detectZisiBuilder({ config, directory, errorExit, func, metadata, projectRoot })
 
   if (zisiBuilder) {
     return zisiBuilder.build
@@ -48,15 +51,55 @@ export const getBuildFunction = async ({ config, directory, errorExit, func, pro
   // main file otherwise.
   const functionDirectory = dirname(func.mainFile)
   const srcFiles = functionDirectory === directory ? [func.mainFile] : [functionDirectory]
-  const schedule = await parseForSchedule({ mainFile: func.mainFile, config, projectRoot })
 
-  return () => ({ schedule, srcFiles })
+  return () => ({ schedule: metadata.schedule, srcFiles })
 }
 
+const workerURL = new URL('worker.mjs', import.meta.url)
+
 export const invokeFunction = async ({ context, event, func, timeout }) => {
+  if (func.buildData.runtimeAPIVersion !== 2) {
+    return await invokeFunctionDirectly({ context, event, func, timeout })
+  }
+
+  const workerData = {
+    clientContext: JSON.stringify(context),
+    event,
+    // If a function builder has defined a `buildPath` property, we use it.
+    // Otherwise, we'll invoke the function's main file.
+    // Because we use import() we have to use file:// URLs for Windows.
+    entryFilePath: pathToFileURL(func.buildData?.buildPath ?? func.mainFile).href,
+    timeoutMs: timeout * SECONDS_TO_MILLISECONDS,
+  }
+
+  const worker = new Worker(workerURL, { workerData })
+  return await new Promise((resolve, reject) => {
+    worker.on('message', (result) => {
+      if (result?.streamPort) {
+        const client = createConnection(
+          {
+            port: result.streamPort,
+            host: 'localhost',
+          },
+          () => {
+            result.body = client
+            resolve(result)
+          },
+        )
+        client.on('error', reject)
+      } else {
+        resolve(result)
+      }
+    })
+
+    worker.on('error', reject)
+  })
+}
+
+export const invokeFunctionDirectly = async ({ context, event, func, timeout }) => {
   // If a function builder has defined a `buildPath` property, we use it.
   // Otherwise, we'll invoke the function's main file.
-  const lambdaPath = (func.buildData && func.buildData.buildPath) || func.mainFile
+  const lambdaPath = func.buildData?.buildPath ?? func.mainFile
   const result = await lambdaLocal.execute({
     clientContext: JSON.stringify(context),
     event,
