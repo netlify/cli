@@ -70,5 +70,12 @@ describe.runIf(gte(version, '18.13.0'))('v2 api', () => {
       expect(response.status).toBe(200)
       expect(await response.text()).toBe("What's 🍞🏄‍♀️? A breadboad!".repeat(100))
     })
+
+    test<FixtureTestContext>('basic typescript function works', async ({ devServer }) => {
+      const response = await fetch(`http://localhost:${devServer.port}/.netlify/functions/ping-ts`)
+
+      expect(response.status).toBe(200)
+      expect(await response.text()).toBe('pong')
+    })
   })
 })
