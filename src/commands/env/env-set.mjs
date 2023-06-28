@@ -18,7 +18,7 @@ import {
  * @returns {Promise<boolean>}
  */
 const envSet = async (key, value, options, command) => {
-  const { context, scope } = options
+  const { context, scope, secret } = options
 
   const { api, cachedConfig, site } = command.netlify
   const siteId = site.id
@@ -33,7 +33,7 @@ const envSet = async (key, value, options, command) => {
 
   // Get current environment variables set in the UI
   if (siteInfo.use_envelope) {
-    finalEnv = await setInEnvelope({ api, siteInfo, key, value, context, scope })
+    finalEnv = await setInEnvelope({ api, siteInfo, key, value, context, scope, secret })
   } else if (context || scope) {
     error(
       `To specify a context or scope, please run ${chalk.yellow(
@@ -56,11 +56,12 @@ const envSet = async (key, value, options, command) => {
   }
 
   const withScope = scope ? ` scoped to ${chalk.white(scope)}` : ''
+  const withSecret = secret ? ` as a ${chalk.blue('secret')}` : ''
   const contextType = AVAILABLE_CONTEXTS.includes(context || 'all') ? 'context' : 'branch'
   log(
-    `Set environment variable ${chalk.yellow(`${key}${value ? '=' : ''}${value}`)}${withScope} in the ${chalk.magenta(
-      context || 'all',
-    )} ${contextType}`,
+    `Set environment variable ${chalk.yellow(
+      `${key}${value && !secret ? `=${value}` : ''}`,
+    )}${withScope}${withSecret} in the ${chalk.magenta(context || 'all')} ${contextType}`,
   )
 }
 
@@ -88,15 +89,35 @@ const setInMongo = async ({ api, key, siteInfo, value }) => {
 
 /**
  * Updates the env for a site configured with Envelope with a new key/value pair
- * @returns {Promise<object>}
+ * @returns {Promise<object | boolean>}
  */
-const setInEnvelope = async ({ api, context, key, scope, siteInfo, value }) => {
+const setInEnvelope = async ({ api, context, key, scope, secret, siteInfo, value }) => {
   const accountId = siteInfo.account_slug
   const siteId = siteInfo.id
+
+  // secret values may not be used in the post-processing scope
+  if (secret && scope && scope.some((sco) => /post[-_]processing/.test(sco))) {
+    error(`Secret values cannot be used within the post-processing scope.`)
+    return false
+  }
+
+  // secret values must specify deploy contexts. `all` or `dev` are not allowed
+  if (secret && value && (!context || context.includes('dev'))) {
+    error(
+      `To set a secret environment variable value, please specify a non-development context with the \`--context\` flag.`,
+    )
+    return false
+  }
+
   // fetch envelope env vars
   const envelopeVariables = await api.getEnvVars({ accountId, siteId })
   const contexts = context || ['all']
-  const scopes = scope || AVAILABLE_SCOPES
+  let scopes = scope || AVAILABLE_SCOPES
+
+  if (secret) {
+    // post_processing (aka post-processing) scope is not allowed with secrets
+    scopes = scopes.filter((sco) => !/post[-_]processing/.test(sco))
+  }
 
   // if the passed context is unknown, it is actually a branch name
   let values = contexts.map((ctx) =>
@@ -111,6 +132,10 @@ const setInEnvelope = async ({ api, context, key, scope, siteInfo, value }) => {
       if (!value) {
         // eslint-disable-next-line prefer-destructuring
         values = existing.values
+        if (!scope) {
+          // eslint-disable-next-line prefer-destructuring
+          scopes = existing.scopes
+        }
       }
       if (context && scope) {
         error(
@@ -123,12 +148,24 @@ const setInEnvelope = async ({ api, context, key, scope, siteInfo, value }) => {
         await Promise.all(values.map((val) => api.setEnvVarValue({ ...params, body: val })))
       } else {
         // otherwise update whole env var
-        const body = { key, scopes, values }
+        if (secret) {
+          scopes = scopes.filter((sco) => !/post[-_]processing/.test(sco))
+          if (values.some((val) => val.context === 'all')) {
+            log(`This secret's value will be empty in the dev context.`)
+            log(`Run \`netlify env:set ${key} <value> --context dev\` to set a new value for the dev context.`)
+            values = AVAILABLE_CONTEXTS.filter((ctx) => ctx !== 'all').map((ctx) => ({
+              context: ctx,
+              // empty out dev value so that secret is indeed secret
+              value: ctx === 'dev' ? '' : values.find((val) => val.context === 'all').value,
+            }))
+          }
+        }
+        const body = { key, is_secret: secret, scopes, values }
         await api.updateEnvVar({ ...params, body })
       }
     } else {
       // create whole env var
-      const body = [{ key, scopes, values }]
+      const body = [{ key, is_secret: secret, scopes, values }]
       await api.createEnvVars({ ...params, body })
     }
   } catch (error_) {
@@ -166,13 +203,16 @@ export const createEnvSetCommand = (program) =>
         'runtime',
       ]),
     )
+    .option('--secret', 'Indicate whether the environment variable value can be read again.')
     .description('Set value of environment variable')
     .addExamples([
       'netlify env:set VAR_NAME value # set in all contexts and scopes',
       'netlify env:set VAR_NAME value --context production',
       'netlify env:set VAR_NAME value --context production deploy-preview',
+      'netlify env:set VAR_NAME value --context production --secret',
       'netlify env:set VAR_NAME value --scope builds',
       'netlify env:set VAR_NAME value --scope builds functions',
+      'netlify env:set VAR_NAME --secret # convert existing variable to secret',
     ])
     .action(async (key, value, options, command) => {
       await envSet(key, value, options, command)
