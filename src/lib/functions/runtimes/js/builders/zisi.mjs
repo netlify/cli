@@ -135,18 +135,8 @@ export default async function handler({ config, directory, errorExit, func, meta
   const featureFlags = {}
 
   if (metadata.runtimeAPIVersion === 2) {
-    // For TypeScript we use NFT, otherwise we leave the file untouched with the `none` bundler
-    const isTypescript = ['.ts', '.mts', '.cts'].includes(path.extname(func.mainFile))
-
-    if (isTypescript) {
-      functionsConfig['*'].nodeBundler = 'nft'
-    } else {
-      // using esbuild is less performant than `none`, but it emits sourcemaps and thus
-      // enables debugging functions
-      functionsConfig['*'].nodeBundler = 'esbuild'
-      featureFlags.zisi_pure_esm = true
-      featureFlags.zisi_pure_esm_mjs = true
-    }
+    featureFlags.zisi_pure_esm = true
+    featureFlags.zisi_pure_esm_mjs = true
   } else {
     // We must use esbuild for certain file extensions.
     const mustTranspile = ['.mjs', '.ts', '.mts', '.cts'].includes(path.extname(func.mainFile))
