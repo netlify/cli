@@ -1,7 +1,7 @@
 import process from 'process'
 
-import { test } from 'vitest'
 import execa from 'execa'
+import { test } from 'vitest'
 
 import callCli from './utils/call-cli.cjs'
 import cliPath from './utils/cli-path.cjs'
@@ -44,7 +44,7 @@ test('env:get --context should log an error message', async (t) => {
       const { stderr: cliResponse } = await callCli(
         ['env:get', 'SOME_VAR', '--context', 'production'],
         getCLIOptions({ builder, apiUrl }),
-      ).catch((e) => e)
+      ).catch((error) => error)
 
       t.expect(cliResponse.includes(`opt in to the new environment variables experience`)).toBe(true)
     })
@@ -59,7 +59,7 @@ test('env:get --scope should log an error message', async (t) => {
       const { stderr: cliResponse } = await callCli(
         ['env:get', 'SOME_VAR', '--scope', 'functions'],
         getCLIOptions({ builder, apiUrl }),
-      ).catch((e) => e)
+      ).catch((error) => error)
 
       t.expect(cliResponse.includes(`opt in to the new environment variables experience`)).toBe(true)
     })
@@ -166,8 +166,7 @@ test('env:import should throw error if file not exists', async (t) => {
     await builder.buildAsync()
 
     await withMockApi(routes, async ({ apiUrl }) => {
-      // TODO: review if ok
-      await t.expect(callCli(['env:import', '.env'], getCLIOptions({ builder, apiUrl }))).rejects.toThrowError()
+      await t.expect(()=> callCli(['env:import', '.env'], getCLIOptions({ builder, apiUrl }))).rejects.toThrow()
     })
   })
 })
@@ -257,7 +256,7 @@ test('env:list --context should log an error message', async (t) => {
       const { stderr: cliResponse } = await callCli(
         ['env:list', '--context', 'production'],
         getCLIOptions({ builder, apiUrl }),
-      ).catch((e) => e)
+      ).catch((error) => error)
 
       t.expect(cliResponse.includes(`opt in to the new environment variables experience`)).toBe(true)
     })
@@ -272,7 +271,7 @@ test('env:list --scope should log an error message', async (t) => {
       const { stderr: cliResponse } = await callCli(
         ['env:list', '--scope', 'functions'],
         getCLIOptions({ builder, apiUrl }),
-      ).catch((e) => e)
+      ).catch((error) => error)
 
       t.expect(cliResponse.includes(`opt in to the new environment variables experience`)).toBe(true)
     })
@@ -555,7 +554,7 @@ test("env:clone should print error if --to site doesn't exist", async (t) => {
       const { stderr: cliResponse } = await callCli(
         ['env:clone', '--to', 'to-site'],
         getCLIOptions({ builder, apiUrl }),
-      ).catch((e) => e)
+      ).catch((error) => error)
 
       t.expect(cliResponse.includes(`Can't find site with id to-site. Please make sure the site exists`)).toBe(true)
     })
@@ -569,7 +568,7 @@ test("env:clone should print error if --from site doesn't exist", async (t) => {
       const { stderr: cliResponse } = await callCli(
         ['env:clone', '--from', 'from-site', '--to', 'to-site'],
         getCLIOptions({ builder, apiUrl }),
-      ).catch((e) => e)
+      ).catch((error) => error)
 
       t.expect(cliResponse.includes(`Can't find site with id from-site. Please make sure the site exists`)).toBe(true)
     })

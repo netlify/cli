@@ -1,7 +1,7 @@
 import path from 'path'
 
-import { test } from 'vitest'
 import execa from 'execa'
+import { test } from 'vitest'
 
 import cliPath from './utils/cli-path.cjs'
 import { withMockApi } from './utils/mock-api.cjs'

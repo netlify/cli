@@ -1,5 +1,6 @@
 import path from 'path'
 import process from 'process'
+import { fileURLToPath } from 'url'
 
 import { test, beforeAll, describe, afterAll } from 'vitest'
 
@@ -7,7 +8,6 @@ import callCli from './utils/call-cli.cjs'
 import { createLiveTestSite, generateSiteName } from './utils/create-live-test-site.cjs'
 import got from './utils/got.cjs'
 import { withSiteBuilder } from './utils/site-builder.cjs'
-import { fileURLToPath } from 'url'
 
 // FIXME: run tests serial
 // const test = isCI ? avaTest.serial.bind(avaTest) : avaTest
@@ -49,8 +49,8 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true')('210.command.d
     const { account, siteId } = await createLiveTestSite(SITE_NAME)
 
     context = {
-      siteId: siteId,
-      account: account,
+      siteId,
+      account,
     }
   })
 

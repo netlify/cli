@@ -1,9 +1,8 @@
 // Handlers are meant to be async outside tests
 import path from 'path'
-import process from 'process'
 
-import { test } from 'vitest'
 import { isCI } from 'ci-info'
+import { test } from 'vitest'
 
 import { withDevServer } from './utils/dev-server.cjs'
 import got from './utils/got.cjs'
@@ -150,14 +149,17 @@ test('should pass .env.development vars to function', async (t) => {
   await withSiteBuilder('site-with-env-development', async (builder) => {
     builder
       .withNetlifyToml({ config: { functions: { directory: 'functions' } } })
-      .withEnvFile({ path: '.env.development', env: { TEST: 'FROM_DEV_FILE' } })
+      .withEnvFile({ path: '.env.development', env: { NETLIFY_ENV_TEST: 'FROM_DEV_FILE' } })
       .withFunction({
         path: 'env.js',
-        handler: async () => ({
-          statusCode: 200,
-          body: `${process.env.TEST}`,
-          metadata: { builder_function: true },
-        }),
+        handler: async () => {
+          const process = require('process')
+          return {
+            statusCode: 200,
+            body: `${process.env.NETLIFY_ENV_TEST}`,
+            metadata: { builder_function: true },
+          }
+        },
       })
 
     await builder.buildAsync()
@@ -175,16 +177,19 @@ test('should pass process env vars to function', async (t) => {
   await withSiteBuilder('site-with-process-env', async (builder) => {
     builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withFunction({
       path: 'env.js',
-      handler: async () => ({
-        statusCode: 200,
-        body: `${process.env.TEST}`,
-        metadata: { builder_function: true },
-      }),
+      handler: async () => {
+        const process = require('process')
+        return {
+          statusCode: 200,
+          body: `${process.env.NETLIFY_ENV_TEST}`,
+          metadata: { builder_function: true },
+        }
+      },
     })
 
     await builder.buildAsync()
 
-    await withDevServer({ cwd: builder.directory, env: { TEST: 'FROM_PROCESS_ENV' } }, async (server) => {
+    await withDevServer({ cwd: builder.directory, env: { NETLIFY_ENV_TEST: 'FROM_PROCESS_ENV' } }, async (server) => {
       const response = await got(`${server.url}/.netlify/functions/env`).text()
       t.expect(response).toEqual('FROM_PROCESS_ENV')
       const builderResponse = await got(`${server.url}/.netlify/builders/env`).text()
@@ -197,15 +202,21 @@ test('should pass [build.environment] env vars to function', async (t) => {
   await withSiteBuilder('site-with-build-environment', async (builder) => {
     builder
       .withNetlifyToml({
-        config: { build: { environment: { TEST: 'FROM_CONFIG_FILE' } }, functions: { directory: 'functions' } },
+        config: {
+          build: { environment: { NETLIFY_ENV_TEST: 'FROM_CONFIG_FILE' } },
+          functions: { directory: 'functions' },
+        },
       })
       .withFunction({
         path: 'env.js',
-        handler: async () => ({
-          statusCode: 200,
-          body: `${process.env.TEST}`,
-          metadata: { builder_function: true },
-        }),
+        handler: async () => {
+          const process = require('process')
+          return {
+            statusCode: 200,
+            body: `${process.env.NETLIFY_ENV_TEST}`,
+            metadata: { builder_function: true },
+          }
+        },
       })
 
     await builder.buildAsync()
@@ -224,17 +235,20 @@ test('[context.dev.environment] should override [build.environment]', async (t) 
     builder
       .withNetlifyToml({
         config: {
-          build: { environment: { TEST: 'DEFAULT_CONTEXT' } },
-          context: { dev: { environment: { TEST: 'DEV_CONTEXT' } } },
+          build: { environment: { NETLIFY_ENV_TEST: 'DEFAULT_CONTEXT' } },
+          context: { dev: { environment: { NETLIFY_ENV_TEST: 'DEV_CONTEXT' } } },
           functions: { directory: 'functions' },
         },
       })
       .withFunction({
         path: 'env.js',
-        handler: async () => ({
-          statusCode: 200,
-          body: `${process.env.TEST}`,
-        }),
+        handler: async () => {
+          const process = require('process')
+          return {
+            statusCode: 200,
+            body: `${process.env.NETLIFY_ENV_TEST}`,
+          }
+        },
       })
 
     await builder.buildAsync()
@@ -255,18 +269,24 @@ test('should inject env vars based on [dev].envFiles file order', async (t) => {
           functions: { directory: 'functions' },
         },
       })
-      .withEnvFile({ path: '.env.production', env: { TEST: 'FROM_PRODUCTION_FILE' } })
+      .withEnvFile({ path: '.env.production', env: { NETLIFY_ENV_TEST: 'FROM_PRODUCTION_FILE' } })
       .withEnvFile({
         path: '.env.development',
-        env: { TEST: 'FROM_DEVELOPMENT_FILE', TEST2: 'FROM_DEVELOPMENT_FILE' },
+        env: { TEST: 'FROM_DEVELOPMENT_FILE', NETLIFY_ENV_TEST2: 'FROM_DEVELOPMENT_FILE' },
       })
-      .withEnvFile({ path: '.env', env: { TEST: 'FROM_DEFAULT_FILE', TEST2: 'FROM_DEFAULT_FILE' } })
+      .withEnvFile({
+        path: '.env',
+        env: { NETLIFY_ENV_TEST: 'FROM_DEFAULT_FILE', NETLIFY_ENV_TEST2: 'FROM_DEFAULT_FILE' },
+      })
       .withFunction({
         path: 'env.js',
-        handler: async () => ({
-          statusCode: 200,
-          body: `${process.env.TEST}__${process.env.TEST2}`,
-        }),
+        handler: async () => {
+          const process = require('process')
+          return {
+            statusCode: 200,
+            body: `${process.env.NETLIFY_ENV_TEST}__${process.env.NETLIFY_ENV_TEST2}`,
+          }
+        },
       })
 
     await builder.buildAsync()

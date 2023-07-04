@@ -1,6 +1,6 @@
-import { test } from 'vitest'
 import { isCI } from 'ci-info'
 import execa from 'execa'
+import { test } from 'vitest'
 
 import cliPath from './utils/cli-path.cjs'
 import { getExecaOptions, withDevServer } from './utils/dev-server.cjs'
@@ -324,7 +324,7 @@ test('should start static service for frameworks without port, detected framewor
       .buildAsync()
 
     // a failure is expected since this is not a true remix project
-    const error = await withDevServer({ cwd: builder.directory }, () => {}, true).catch((e) => e)
+    const error = await withDevServer({ cwd: builder.directory }, () => {}, true).catch((error_) => error_)
     t.expect(error.stdout.includes(`Failed running command: remix watch. Please verify 'remix' exists`)).toBe(true)
   })
 })
@@ -347,7 +347,7 @@ test('should run and serve a production build when using the `serve` command', a
         name: 'frameworker',
         plugin: {
           onPreBuild: async ({ netlifyConfig }) => {
-            //TODO:migrate site-builder.cjs (withBuildPlugin) to ESM so that we can
+            // TODO:migrate site-builder.cjs (withBuildPlugin) to ESM so that we can
             // get rid of require and use ESM and dynamic import instead
             const { mkdir, writeFile } = require('fs/promises')
 
