@@ -1,6 +1,5 @@
 // Handlers are meant to be async outside tests
 
-import { isCI } from 'ci-info'
 import execa from 'execa'
 import getPort from 'get-port'
 import { test } from 'vitest'
@@ -110,12 +109,16 @@ test('should inject env variables', async (t) => {
   await withSiteBuilder('site-with-env-function', async (builder) => {
     await builder
       .withNetlifyToml({
-        config: { build: { environment: { NETLIFY_ENV_TEST: 'FROM_CONFIG_FILE' } }, functions: { directory: 'functions' } },
+        config: {
+          build: { environment: { NETLIFY_ENV_TEST: 'FROM_CONFIG_FILE' } },
+          functions: { directory: 'functions' },
+        },
       })
       .withFunction({
         path: 'echo-env.js',
         handler: async () => ({
           statusCode: 200,
+          // eslint-disable-next-line n/prefer-global/process
           body: `${process.env.NETLIFY_ENV_TEST}`,
         }),
       })

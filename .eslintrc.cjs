@@ -106,6 +106,8 @@ module.exports = {
       files: ['tests/**/*'],
       rules: {
         'require-await': 'off',
+        // TODO: Remove rule when ava is totally removed from project
+        'ava/no-import-test-files': 'off',
       },
     },
     {

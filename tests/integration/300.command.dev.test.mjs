@@ -154,6 +154,7 @@ describe.concurrent('300.command.dev', () => {
           path: 'env.js',
           handler: async () => ({
             statusCode: 200,
+            // eslint-disable-next-line n/prefer-global/process
             body: `${process.env.NETLIFY_ENV_TEST}`,
             metadata: { builder_function: true },
           }),
@@ -176,6 +177,7 @@ describe.concurrent('300.command.dev', () => {
         path: 'env.js',
         handler: async () => ({
           statusCode: 200,
+          // eslint-disable-next-line n/prefer-global/process
           body: `${process.env.NETLIFY_ENV_TEST}`,
           metadata: { builder_function: true },
         }),
@@ -205,6 +207,7 @@ describe.concurrent('300.command.dev', () => {
           path: 'env.js',
           handler: async () => ({
             statusCode: 200,
+            // eslint-disable-next-line n/prefer-global/process
             body: `${process.env.NETLIFY_ENV_TEST}`,
             metadata: { builder_function: true },
           }),
@@ -235,6 +238,7 @@ describe.concurrent('300.command.dev', () => {
           path: 'env.js',
           handler: async () => ({
             statusCode: 200,
+            // eslint-disable-next-line n/prefer-global/process
             body: `${process.env.NETLIFY_ENV_TEST}`,
           }),
         })
@@ -270,6 +274,7 @@ describe.concurrent('300.command.dev', () => {
           path: 'env.js',
           handler: async () => ({
             statusCode: 200,
+            // eslint-disable-next-line n/prefer-global/process
             body: `${process.env.NETLIFY_ENV_TEST}__${process.env.NETLIFY_ENV_TEST2}`,
           }),
         })

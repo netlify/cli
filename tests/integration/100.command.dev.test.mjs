@@ -1,11 +1,10 @@
 import path from 'path'
 import { fileURLToPath } from 'url'
 
-import { isCI } from 'ci-info'
 import { setProperty } from 'dot-prop'
 import getAvailablePort from 'get-port'
 import jwt from 'jsonwebtoken'
-import { describe, test } from 'vitest'
+import { test } from 'vitest'
 
 import { withDevServer } from './utils/dev-server.cjs'
 import got from './utils/got.cjs'
@@ -698,7 +697,9 @@ test(`catches invalid function names`, async (t) => {
         throwHttpErrors: false,
       })
       t.expect(response.statusCode).toBe(400)
-      t.expect(response.body).toEqual('Function name should consist only of alphanumeric characters, hyphen & underscores.')
+      t.expect(response.body).toEqual(
+        'Function name should consist only of alphanumeric characters, hyphen & underscores.',
+      )
     })
   })
 })

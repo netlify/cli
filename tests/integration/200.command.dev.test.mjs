@@ -4,7 +4,6 @@ import os from 'os'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
-import { isCI } from 'ci-info'
 import { test } from 'vitest'
 
 import { curl } from './utils/curl.cjs'
@@ -12,6 +11,9 @@ import { withDevServer } from './utils/dev-server.cjs'
 import got from './utils/got.cjs'
 import { withMockApi } from './utils/mock-api.cjs'
 import { withSiteBuilder } from './utils/site-builder.cjs'
+
+// FIXME: Run tests serial
+// const test = isCI ? avaTest.serial.bind(avaTest) : avaTest
 
 // eslint-disable-next-line no-underscore-dangle
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -434,14 +436,16 @@ export const handler = async function () {
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         // an error is expected since we're sending a POST request to a static server
         // the important thing is that it's not proxied to the functions server
-        await t.expect(() =>
+        await t
+          .expect(() =>
             got.post(`${server.url}/api/test`, {
               headers: {
                 'content-type': 'application/x-www-form-urlencoded',
               },
               body: 'some=thing',
             }),
-          ).rejects.toThrow('Response code 405 (Method Not Allowed)')
+          )
+          .rejects.toThrow('Response code 405 (Method Not Allowed)')
       })
     })
   })

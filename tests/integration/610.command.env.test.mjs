@@ -166,7 +166,7 @@ test('env:import should throw error if file not exists', async (t) => {
     await builder.buildAsync()
 
     await withMockApi(routes, async ({ apiUrl }) => {
-      await t.expect(()=> callCli(['env:import', '.env'], getCLIOptions({ builder, apiUrl }))).rejects.toThrow()
+      await t.expect(() => callCli(['env:import', '.env'], getCLIOptions({ builder, apiUrl }))).rejects.toThrow()
     })
   })
 })

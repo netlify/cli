@@ -25,7 +25,11 @@ describe.concurrent('400.command.dev', () => {
         })
         .withFunction({
           path: 'env.js',
-          handler: async () => ({ statusCode: 200, body: `${process.env.NETLIFY_ENV_TEST}` }),
+          handler: async () => ({
+            statusCode: 200,
+            // eslint-disable-next-line n/prefer-global/process
+            body: `${process.env.NETLIFY_ENV_TEST}`,
+          }),
         })
 
       await builder.buildAsync()
@@ -50,9 +54,10 @@ describe.concurrent('400.command.dev', () => {
         .withFunction({
           path: 'env.js',
           handler: async () => ({
-              statusCode: 200,
-              body: `${process.env.NETLIFY_ENV_TEST}`,
-            }),
+            statusCode: 200,
+            // eslint-disable-next-line n/prefer-global/process
+            body: `${process.env.NETLIFY_ENV_TEST}`,
+          }),
         })
 
       await builder.buildAsync()
@@ -73,6 +78,7 @@ describe.concurrent('400.command.dev', () => {
           path: 'env.js',
           handler: async () => ({
             statusCode: 200,
+            // eslint-disable-next-line n/prefer-global/process
             body: `${process.env.NETLIFY_ENV_TEST}`,
           }),
         })
@@ -97,7 +103,11 @@ describe.concurrent('400.command.dev', () => {
         })
         .withFunction({
           path: 'env.js',
-          handler: async () => ({ statusCode: 200, body: `${process.env.NETLIFY_ENV_TEST}` }),
+          handler: async () => ({
+            statusCode: 200,
+            // eslint-disable-next-line n/prefer-global/process
+            body: `${process.env.NETLIFY_ENV_TEST}`,
+          }),
         })
 
       await builder.buildAsync()
@@ -140,6 +150,7 @@ describe.concurrent('400.command.dev', () => {
         path: 'env.js',
         handler: async () => ({
           statusCode: 200,
+          // eslint-disable-next-line n/prefer-global/process
           body: `${process.env.NETLIFY_DEV}`,
         }),
       })
@@ -159,6 +170,7 @@ describe.concurrent('400.command.dev', () => {
         path: 'env.js',
         handler: async () => ({
           statusCode: 200,
+          // eslint-disable-next-line n/prefer-global/process
           body: `${process.env.CONTEXT}`,
         }),
       })
@@ -178,6 +190,7 @@ describe.concurrent('400.command.dev', () => {
         path: 'env.js',
         handler: async () => ({
           statusCode: 200,
+          // eslint-disable-next-line n/prefer-global/process
           body: `${process.env.CONTEXT}`,
         }),
       })

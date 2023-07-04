@@ -20,9 +20,7 @@ afterAll(() => {
 test('should visit the files that are dependents from the provided main file', (t) => {
   const graph = new DependencyGraph()
   fileVisitor(join('tests/a.test.js'), { graph, visitorPlugins: [] })
-  t.expect(
-    snapshots.normalize(graph.visualize().to_dot())
-  ).toEqual(
+  t.expect(snapshots.normalize(graph.visualize().to_dot())).toEqual(
     `digraph G {
   "src/nested/b.js";
   "src/nested/a.js";
@@ -41,9 +39,7 @@ test('should merge the graph with files from a different entry point', (t) => {
   const graph = new DependencyGraph()
   fileVisitor(join('tests/a.test.js'), { graph, visitorPlugins: [] })
   fileVisitor(join('tests/c.test.js'), { graph, visitorPlugins: [] })
-  t.expect(
-    snapshots.normalize(graph.visualize().to_dot())
-  ).toEqual(
+  t.expect(snapshots.normalize(graph.visualize().to_dot())).toEqual(
     `digraph G {
   "src/nested/b.js";
   "src/nested/a.js";
@@ -58,7 +54,7 @@ test('should merge the graph with files from a different entry point', (t) => {
   "tests/a.test.js" -> "src/nested/a.js";
   "tests/c.test.js" -> "src/c/index.js";
   "tests/c.test.js" -> "tests/utils.js";
-}`
+}`,
   )
 })
 
@@ -67,21 +63,17 @@ test('should build a list of affected files based on a file', (t) => {
   fileVisitor(join('tests/a.test.js'), { graph, visitorPlugins: [] })
   fileVisitor(join('tests/c.test.js'), { graph, visitorPlugins: [] })
 
-  t.expect(
-    format([...graph.affected([join('src/d.js')])]).replace(/\\+/gm, '/')
-  ).toEqual(
+  t.expect(format([...graph.affected([join('src/d.js')])]).replace(/\\+/gm, '/')).toEqual(
     `[
   'src/d.js',
   'src/c/index.js',
   'src/nested/a.js',
   'tests/a.test.js',
   'tests/c.test.js'
-]`
+]`,
   )
 
-  t.expect(
-    format([...graph.affected([join('tests/utils.js')])]).replace(/\\+/gm, '/')
-  ).toEqual(
-    "[ 'tests/utils.js', 'tests/c.test.js' ]"
+  t.expect(format([...graph.affected([join('tests/utils.js')])]).replace(/\\+/gm, '/')).toEqual(
+    "[ 'tests/utils.js', 'tests/c.test.js' ]",
   )
 })

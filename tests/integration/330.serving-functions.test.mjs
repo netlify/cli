@@ -1,7 +1,6 @@
 import { join } from 'path'
 import { fileURLToPath } from 'url'
 
-import { isCI } from 'ci-info'
 import { describe, test } from 'vitest'
 
 import { tryAndLogOutput, withDevServer } from './utils/dev-server.cjs'
@@ -9,7 +8,7 @@ import got from './utils/got.cjs'
 import { pause } from './utils/pause.cjs'
 import { withSiteBuilder } from './utils/site-builder.cjs'
 
-
+// eslint-disable-next-line no-underscore-dangle
 const __dirname = fileURLToPath(import.meta.url)
 
 const testMatrix = [{ args: [] }, { args: ['esbuild'] }]
@@ -731,7 +730,7 @@ test('Serves functions that dynamically load files included in the `functions.in
         handler: async (event) => {
           const { name } = event.queryStringParameters
 
-          // eslint-disable-next-line n/global-require
+          // eslint-disable-next-line n/global-require, no-undef
           const { data } = require(`../files/${name}.json`)
 
           return {
@@ -893,6 +892,7 @@ test('Ensures watcher watches included files', async (t) => {
       .withFunction({
         path: 'hello.js',
         handler: async (event) => {
+          // eslint-disable-next-line n/global-require, no-undef
           const { readFileSync } = require('fs')
           const { name } = event.queryStringParameters
           const { data } = JSON.parse(readFileSync(`${__dirname}/../files/${name}.json`, 'utf-8'))
