@@ -545,8 +545,10 @@ describe.concurrent('envelope', () => {
       await builder.buildAsync()
 
       await withMockApi(routes, async ({ apiUrl }) => {
-        const { stderr: cliResponse } = await 
-          callCli(['env:set', 'TOTALLY_NEW', 'cool-value', '--secret'], getCLIOptions({ builder, apiUrl })).catch(error => error)
+        const { stderr: cliResponse } = await callCli(
+          ['env:set', 'TOTALLY_NEW', 'cool-value', '--secret'],
+          getCLIOptions({ builder, apiUrl }),
+        ).catch((error) => error)
 
         t.expect(cliResponse.includes(`please specify a non-development context`)).toBe(true)
       })
@@ -558,11 +560,10 @@ describe.concurrent('envelope', () => {
       await builder.buildAsync()
 
       await withMockApi(routes, async ({ apiUrl }) => {
-        const { stderr: cliResponse } = await 
-          callCli(
-            ['env:set', 'TOTALLY_NEW', 'cool-value', '--secret', '--scope', 'builds', 'post-processing'],
-            getCLIOptions({ builder, apiUrl }),
-          ).catch(error => error)
+        const { stderr: cliResponse } = await callCli(
+          ['env:set', 'TOTALLY_NEW', 'cool-value', '--secret', '--scope', 'builds', 'post-processing'],
+          getCLIOptions({ builder, apiUrl }),
+        ).catch((error) => error)
 
         t.expect(cliResponse.includes(`Secret values cannot be used within the post-processing scope.`)).toBe(true)
       })

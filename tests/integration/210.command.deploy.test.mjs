@@ -12,11 +12,13 @@ import { withSiteBuilder } from './utils/site-builder.cjs'
 // FIXME: run tests serial
 // const test = isCI ? avaTest.serial.bind(avaTest) : avaTest
 
+// eslint-disable-next-line no-underscore-dangle
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 let SITE_NAME
 let context = {}
 
+// eslint-disable-next-line no-shadow
 const validateContent = async ({ content, path, siteUrl, t }) => {
   try {
     const { body } = await got(`${siteUrl}${path}`)
@@ -229,7 +231,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true')('210.command.d
     })
   })
 
-  test('should return valid json when both --build and --json are passed', async (t) => {
+  test('should return valid json when both --build and --json are passed', async () => {
     await withSiteBuilder('site-with-public-folder', async (builder) => {
       const content = '<h1>⊂◉‿◉つ</h1>'
       builder
@@ -415,6 +417,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true')('210.command.d
           name: 'mutator',
           plugin: {
             onPreBuild: async ({ netlifyConfig }) => {
+              // eslint-disable-next-line n/global-require, no-undef
               const { mkdir, writeFile } = require('fs/promises')
 
               const generatedFunctionsDir = 'new_functions'

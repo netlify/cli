@@ -66,7 +66,9 @@ test('should read env vars from .env.development.local file', async () => {
     await builder.buildAsync()
 
     const results = await tryLoadDotEnvFiles({ projectDir: builder.directory })
-    expect(results).toEqual([{ file: '.env.development.local', env: { NETLIFY_ENV_TEST: 'FROM_LOCAL_DEVELOPMENT_ENV' } }])
+    expect(results).toEqual([
+      { file: '.env.development.local', env: { NETLIFY_ENV_TEST: 'FROM_LOCAL_DEVELOPMENT_ENV' } },
+    ])
   })
 })
 

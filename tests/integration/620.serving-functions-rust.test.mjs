@@ -73,7 +73,9 @@ test('Updates a Rust function when a file is modified', async (t) => {
         },
         async ({ outputBuffer, port, waitForLogMatching }) => {
           await tryAndLogOutput(async () => {
-           await t.expect(await got(`http://localhost:${port}/.netlify/functions/rust-func`).text()).toEqual(originalBody)
+            await t
+              .expect(await got(`http://localhost:${port}/.netlify/functions/rust-func`).text())
+              .toEqual(originalBody)
           }, outputBuffer)
 
           await pause(WAIT_WRITE)

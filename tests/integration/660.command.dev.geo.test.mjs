@@ -18,12 +18,11 @@ test('should throw if invalid country arg is passed', async (t) => {
     const errors = await Promise.allSettled([
       callCli(['dev', '--geo=mock', '--country=a1'], options),
       callCli(['dev', '--geo=mock', '--country=NotARealCountryCode'], options),
-      callCli(['dev', '--geo=mock', '--country='], options)
+      callCli(['dev', '--geo=mock', '--country='], options),
     ])
 
-    errors.forEach(error => {
+    errors.forEach((error) => {
       t.expect(error.status).toEqual('rejected')
     })
-
   })
 })

@@ -1,4 +1,3 @@
-import { isCI } from 'ci-info'
 import execa from 'execa'
 import { test } from 'vitest'
 
@@ -347,8 +346,7 @@ test('should run and serve a production build when using the `serve` command', a
         name: 'frameworker',
         plugin: {
           onPreBuild: async ({ netlifyConfig }) => {
-            // TODO:migrate site-builder.cjs (withBuildPlugin) to ESM so that we can
-            // get rid of require and use ESM and dynamic import instead
+            // eslint-disable-next-line n/global-require, no-undef
             const { mkdir, writeFile } = require('fs/promises')
 
             const generatedFunctionsDir = 'new_functions'

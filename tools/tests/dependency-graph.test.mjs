@@ -1,4 +1,4 @@
-import {test, beforeEach} from 'vitest'
+import { test, beforeEach } from 'vitest'
 
 import { DependencyGraph } from '../project-graph/index.mjs'
 
@@ -16,9 +16,9 @@ beforeEach(() => {
 })
 
 test('should test if all parents are affected by changing a src file on the bottom', (t) => {
-  t.expect(
-    graph.affected(['src/d.js']),
-  ).toStrictEqual(new Set(['src/d.js', 'src/c/index.js', 'src/nested/a.js', 'tests/a.js', 'tests/c.js']))
+  t.expect(graph.affected(['src/d.js'])).toStrictEqual(
+    new Set(['src/d.js', 'src/c/index.js', 'src/nested/a.js', 'tests/a.js', 'tests/c.js']),
+  )
 })
 
 test('should test only the root leaf is affected if the root one is passed', (t) => {

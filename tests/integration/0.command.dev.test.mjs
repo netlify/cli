@@ -2,7 +2,6 @@
 import fs from 'fs/promises'
 import { join } from 'path'
 
-import { isCI } from 'ci-info'
 import jwt from 'jsonwebtoken'
 import fetch from 'node-fetch'
 import { test } from 'vitest'
