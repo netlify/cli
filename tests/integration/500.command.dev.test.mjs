@@ -2,10 +2,11 @@
 import fs from 'fs/promises'
 import path from 'path'
 
-import { describe, test } from 'vitest'
 import { isCI } from 'ci-info'
 import FormData from 'form-data'
 import getPort from 'get-port'
+import { temporaryDirectory } from 'tempy'
+import { describe, test } from 'vitest'
 
 import { withDevServer } from './utils/dev-server.cjs'
 import got from './utils/got.cjs'
@@ -395,7 +396,6 @@ test('Runs build plugins with the `onPreDev` event', async (t) => {
     };
   `
 
-  const { temporaryDirectory } = await import('tempy')
   const pluginDirectory = await temporaryDirectory()
 
   await fs.writeFile(path.join(pluginDirectory, 'manifest.yml'), pluginManifest)
@@ -422,7 +422,7 @@ test('Runs build plugins with the `onPreDev` event', async (t) => {
   })
 })
 
-test.only('Handles errors from the `onPreDev` event', async (t) => {
+test('Handles errors from the `onPreDev` event', async (t) => {
   const userServerPort = await getPort()
   const pluginManifest = 'name: local-plugin'
 
@@ -442,7 +442,6 @@ test.only('Handles errors from the `onPreDev` event', async (t) => {
     };
   `
 
-  const { temporaryDirectory } = await import('tempy')
   const pluginDirectory = await temporaryDirectory()
 
   await fs.writeFile(path.join(pluginDirectory, 'manifest.yml'), pluginManifest)
@@ -462,11 +461,13 @@ test.only('Handles errors from the `onPreDev` event', async (t) => {
 
     await builder.buildAsync()
 
-    await t.expect(
-      await
+   await t.expect(
+    ()=>
       withDevServer(
         { cwd: builder.directory },
         async (server) => {
+          // FIXME: Fix test case, expects does not evaluate
+          t.expect(false).toBe(true)
           await t.expect(await got(`${server.url}/foo`).text()).toEqual('<html><h1>foo')
           await t.expect(await got(`http://localhost:${userServerPort}`).text()).toEqual('Hello world')
         },

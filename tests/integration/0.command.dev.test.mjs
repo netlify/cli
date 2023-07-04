@@ -2,10 +2,10 @@
 import fs from 'fs/promises'
 import { join } from 'path'
 
-import { test } from 'vitest'
 import { isCI } from 'ci-info'
 import jwt from 'jsonwebtoken'
 import fetch from 'node-fetch'
+import { test } from 'vitest'
 
 import { withDevServer } from './utils/dev-server.cjs'
 import { startExternalServer } from './utils/external-server.cjs'
@@ -315,7 +315,7 @@ test('should rewrite POST request if content-type is missing and not crash dev s
           body: 'param=value',
           followRedirect: false,
         })
-        .catch((e) => e)
+        .catch((error_) => error_)
 
       // Method Not Allowed
       t.expect(error.response.statusCode).toBe(405)

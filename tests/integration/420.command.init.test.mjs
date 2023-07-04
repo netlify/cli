@@ -1,10 +1,10 @@
 import { readFile } from 'fs/promises'
 import process from 'process'
 
-import { test } from 'vitest'
 import cleanDeep from 'clean-deep'
 import execa from 'execa'
 import toml from 'toml'
+import { test } from 'vitest'
 
 import cliPath from './utils/cli-path.cjs'
 import { CONFIRM, DOWN, answerWithValue, handleQuestions } from './utils/handle-questions.cjs'
@@ -18,7 +18,7 @@ const defaultFunctionsDirectory = 'netlify/functions'
  * As some of the tests are flaky on windows machines I will skip them for now
  * @type {import('ava').TestInterface}
  */
-const windowsSkip = process.platform === 'win32'
+const isWindows = process.platform === 'win32'
 
 const assertNetlifyToml = async (t, tomlDir, { command, functions, publish }) => {
   // assert netlify.toml was created with user inputs
@@ -616,7 +616,7 @@ test('netlify init new Gatsby site with correct default build directory and buil
   })
 })
 
-test.skipIf(windowsSkip)('netlify init monorepo root and sub directory without netlify.toml', async (t) => {
+test.skipIf(isWindows)('netlify init monorepo root and sub directory without netlify.toml', async (t) => {
   const initQuestions = [
     {
       question: 'Create & configure a new site',
@@ -864,7 +864,7 @@ test('netlify init monorepo root with netlify.toml, subdirectory without netlify
   })
 })
 
-test.skipIf(windowsSkip)('netlify init monorepo root and sub directory with netlify.toml', async (t) => {
+test.skipIf(isWindows)('netlify init monorepo root and sub directory with netlify.toml', async (t) => {
   const initQuestions = [
     {
       question: 'Create & configure a new site',

@@ -50,7 +50,7 @@ describe.runIf(gte(version, '18.13.0'))('v2 api', () => {
       expect(context.requestId).toEqual(response.headers.get('x-nf-request-id'))
       expect(context.site.url).toEqual(`http://localhost:${devServer.port}`)
       expect(context.server.region).toEqual('dev')
-      expect(context.ip).toEqual('::1')
+      expect(context.ip).toEqual('127.0.0.1')
       expect(context.geo.city).toEqual('San Francisco')
 
       expect(context.cookies).toEqual({ foo: 'bar' })

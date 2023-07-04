@@ -19,12 +19,12 @@ test('should read env vars from .env file', async () => {
   await withSiteBuilder('site-with-envs-file', async (builder) => {
     builder.withEnvFile({
       path: '.env',
-      env: { TEST: 'FROM_ENV' },
+      env: { NETLIFY_ENV_TEST: 'FROM_ENV' },
     })
     await builder.buildAsync()
 
     const results = await tryLoadDotEnvFiles({ projectDir: builder.directory })
-    expect(results).toEqual([{ file: '.env', env: { TEST: 'FROM_ENV' } }])
+    expect(results).toEqual([{ file: '.env', env: { NETLIFY_ENV_TEST: 'FROM_ENV' } }])
   })
 })
 
@@ -33,12 +33,12 @@ test('should read env vars from .env.development file', async () => {
   await withSiteBuilder('site-with-envs-file', async (builder) => {
     builder.withEnvFile({
       path: '.env.development',
-      env: { TEST: 'FROM_DEVELOPMENT_ENV' },
+      env: { NETLIFY_ENV_TEST: 'FROM_DEVELOPMENT_ENV' },
     })
     await builder.buildAsync()
 
     const results = await tryLoadDotEnvFiles({ projectDir: builder.directory })
-    expect(results).toEqual([{ file: '.env.development', env: { TEST: 'FROM_DEVELOPMENT_ENV' } }])
+    expect(results).toEqual([{ file: '.env.development', env: { NETLIFY_ENV_TEST: 'FROM_DEVELOPMENT_ENV' } }])
   })
 })
 
@@ -47,12 +47,12 @@ test('should read env vars from .env.local file', async () => {
   await withSiteBuilder('site-with-envs-file', async (builder) => {
     builder.withEnvFile({
       path: '.env.local',
-      env: { TEST: 'FROM_LOCAL_ENV' },
+      env: { NETLIFY_ENV_TEST: 'FROM_LOCAL_ENV' },
     })
     await builder.buildAsync()
 
     const results = await tryLoadDotEnvFiles({ projectDir: builder.directory })
-    expect(results).toEqual([{ file: '.env.local', env: { TEST: 'FROM_LOCAL_ENV' } }])
+    expect(results).toEqual([{ file: '.env.local', env: { NETLIFY_ENV_TEST: 'FROM_LOCAL_ENV' } }])
   })
 })
 
@@ -61,12 +61,12 @@ test('should read env vars from .env.development.local file', async () => {
   await withSiteBuilder('site-with-envs-file', async (builder) => {
     builder.withEnvFile({
       path: '.env.development.local',
-      env: { TEST: 'FROM_LOCAL_DEVELOPMENT_ENV' },
+      env: { NETLIFY_ENV_TEST: 'FROM_LOCAL_DEVELOPMENT_ENV' },
     })
     await builder.buildAsync()
 
     const results = await tryLoadDotEnvFiles({ projectDir: builder.directory })
-    expect(results).toEqual([{ file: '.env.development.local', env: { TEST: 'FROM_LOCAL_DEVELOPMENT_ENV' } }])
+    expect(results).toEqual([{ file: '.env.development.local', env: { NETLIFY_ENV_TEST: 'FROM_LOCAL_DEVELOPMENT_ENV' } }])
   })
 })
 

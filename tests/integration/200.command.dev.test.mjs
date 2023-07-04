@@ -4,8 +4,8 @@ import os from 'os'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
-import { test } from 'vitest'
 import { isCI } from 'ci-info'
+import { test } from 'vitest'
 
 import { curl } from './utils/curl.cjs'
 import { withDevServer } from './utils/dev-server.cjs'
@@ -320,7 +320,7 @@ export const handler = async function () {
             },
           },
           async ({ url }) => {
-            const error = await got(`${url}/.netlify/functions/hello`).catch((e) => e)
+            const error = await got(`${url}/.netlify/functions/hello`).catch((error_) => error_)
             t.expect(error.response.body.includes('TimeoutError: Task timed out after 1.00 seconds')).toBe(true)
           },
         )

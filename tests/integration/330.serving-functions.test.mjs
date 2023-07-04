@@ -1,12 +1,14 @@
 import { join } from 'path'
-import { describe, test } from 'vitest'
+import { fileURLToPath } from 'url'
+
 import { isCI } from 'ci-info'
+import { describe, test } from 'vitest'
 
 import { tryAndLogOutput, withDevServer } from './utils/dev-server.cjs'
 import got from './utils/got.cjs'
 import { pause } from './utils/pause.cjs'
 import { withSiteBuilder } from './utils/site-builder.cjs'
-import { fileURLToPath } from 'url'
+
 
 const __dirname = fileURLToPath(import.meta.url)
 
@@ -773,7 +775,7 @@ test('Uses sourcemaps to show correct paths and locations in stack trace', async
       .buildAsync()
 
     await withDevServer({ cwd: builder.directory }, async ({ port }) => {
-      const error = await got(`http://localhost:${port}/.netlify/functions/hello`).catch((e) => e)
+      const error = await got(`http://localhost:${port}/.netlify/functions/hello`).catch((error_) => error_)
       t.expect(error.response.body.includes(join(builder.directory, 'functions', 'hello.js'))).toBe(true)
       t.expect(error.response.body.includes(join('.netlify', 'functions-serve'))).toBe(false)
     })
@@ -891,8 +893,6 @@ test('Ensures watcher watches included files', async (t) => {
       .withFunction({
         path: 'hello.js',
         handler: async (event) => {
-          //TODO:migrate site-builder.cjs (withFunction) to ESM so that we can
-          // get rid of require and use ESM and dynamic import instead
           const { readFileSync } = require('fs')
           const { name } = event.queryStringParameters
           const { data } = JSON.parse(readFileSync(`${__dirname}/../files/${name}.json`, 'utf-8'))
