@@ -835,10 +835,12 @@ test('Throws an error when the function returns invalid `body`', async (t) => {
 
     await withDevServer({ cwd: builder.directory }, async ({ outputBuffer, port }) => {
       await tryAndLogOutput(async () => {
-        const response = await fetch(`http://localhost:${port}/.netlify/functions/hello`)
+        const response = await got(`http://localhost:${port}/.netlify/functions/hello`, {
+          throwHttpErrors: false,
+        })
 
-        t.is(response.status, 500)
-        t.is(await response.text(), 'Your function response must have a string or a stream body. You gave: 42')
+        t.is(response.statusCode, 500)
+        t.is(response.body, 'Your function response must have a string or a stream body. You gave: 42')
       }, outputBuffer)
     })
   })
@@ -864,10 +866,12 @@ test('Throws an error when the function returns invalid `statusCode`', async (t)
 
     await withDevServer({ cwd: builder.directory }, async ({ outputBuffer, port }) => {
       await tryAndLogOutput(async () => {
-        const response = await fetch(`http://localhost:${port}/.netlify/functions/hello`)
+        const response = await got(`http://localhost:${port}/.netlify/functions/hello`, {
+          throwHttpErrors: false,
+        })
 
-        t.is(response.status, 500)
-        t.is(await response.text(), 'Your function response must have a numerical statusCode. You gave: null')
+        t.is(response.statusCode, 500)
+        t.is(response.body, 'Your function response must have a numerical statusCode. You gave: null')
       }, outputBuffer)
     })
   })
