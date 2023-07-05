@@ -577,8 +577,10 @@ test('When an edge function throws uncaught exception, the dev server continues 
     await withDevServer({ cwd: builder.directory }, async (server) => {
       const response1 = await got(`${server.url}/hello`, {
         decompress: false,
+        throwHttpErrors: false,
       })
-      t.is(response1.statusCode, 200)
+      t.is(response1.statusCode, 500)
+      t.regex(response1.body, /TypeError: Invalid URL/)
     })
   })
 })
