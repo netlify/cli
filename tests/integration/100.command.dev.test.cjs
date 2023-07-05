@@ -553,7 +553,7 @@ test('When an edge function fails, serves a fallback defined by its `on_error` m
   })
 })
 
-test.only('When an edge function throws uncaught exception, the dev server continues working', async (t) => {
+test('When an edge function throws uncaught exception, the dev server continues working', async (t) => {
   await withSiteBuilder('site-with-edge-function-uncaught-exception', async (builder) => {
     builder
       .withNetlifyToml({
