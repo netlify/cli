@@ -98,8 +98,11 @@ export class Fixture {
   ): Promise<Record<string, unknown> | string> {
     let cliOptions: NodeOptions<string> = execOptions
     if (this.options.apiUrl) {
-      cliOptions = getCLIOptions({ apiUrl: this.options.apiUrl, cwd: this.directory, env: execOptions.env })
+      cliOptions = getCLIOptions({ apiUrl: this.options.apiUrl, env: execOptions.env })
     }
+
+    // @ts-expect-error we do not care it is readonly here
+    cliOptions.cwd = this.directory
 
     if (offline) {
       args.push('--offline')
