@@ -75,20 +75,20 @@ const formatLambdaLocalError = (err, acceptsHtml) =>
       })
     : `${err.errorType}: ${err.errorMessage}\n ${err.stackTrace?.join('\n ')}`
 
-const processRenderedResponse = async (err, request) => {
-  const acceptsHtml = request.headers && request.headers.accept && request.headers.accept.includes('text/html')
-  const errorString = typeof err === 'string' ? err : formatLambdaLocalError(err, acceptsHtml)
-
-  return acceptsHtml
-    ? await renderErrorTemplate(errorString, './templates/function-error.html', 'function')
-    : errorString
-}
-
 const handleErr = async (err, request, response) => {
   detectAwsSdkError({ err })
 
+  const acceptsHtml = request.headers && request.headers.accept && request.headers.accept.includes('text/html')
+  const errorString = typeof err === 'string' ? err : formatLambdaLocalError(err, acceptsHtml)
+
   response.statusCode = 500
-  response.end(await processRenderedResponse(err, request))
+
+  if (acceptsHtml) {
+    response.setHeader('Content-Type', 'text/html')
+    response.end(await renderErrorTemplate(errorString, './templates/function-error.html', 'function'))
+  } else {
+    response.end(errorString)
+  }
 }
 
 const validateLambdaResponse = (lambdaResponse) => {
