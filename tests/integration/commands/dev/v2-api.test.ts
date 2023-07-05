@@ -66,7 +66,7 @@ describe.runIf(gte(version, '18.13.0'))('v2 api', () => {
 
     test<FixtureTestContext>('brotli encoding works', async ({ devServer }) => {
       const response = await fetch(`http://localhost:${devServer.port}/.netlify/functions/brotli`)
-      
+
       expect(response.status).toBe(200)
       expect(await response.text()).toBe("What's 🍞🏄‍♀️? A breadboard!".repeat(100))
     })
@@ -76,6 +76,18 @@ describe.runIf(gte(version, '18.13.0'))('v2 api', () => {
 
       expect(response.status).toBe(200)
       expect(await response.text()).toBe('pong')
+    })
+
+    test<FixtureTestContext>('shows netlify-branded error screen', async ({ devServer }) => {
+      const response = await fetch(`http://localhost:${devServer.port}/.netlify/functions/uncaught-exception`, {
+        headers: {
+          Accept: 'text/html',
+        },
+      })
+
+      expect(response.status).toBe(500)
+      expect(response.headers.get('content-type')).toBe('text/html')
+      expect(await response.text()).toContain('<html>')
     })
   })
 })
