@@ -580,8 +580,8 @@ test('When an edge function throws uncaught exception, the dev server continues 
         decompress: false,
         throwHttpErrors: false,
       })
-      t.is(response1.statusCode, 500)
-      t.regex(response1.body, /TypeError: Invalid URL/)
+      t.expect(response1.statusCode).toBe(500)
+      t.expect(response1.body).toMatch(/TypeError: Invalid URL/)
     })
   })
 })

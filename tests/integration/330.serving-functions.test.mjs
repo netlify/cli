@@ -838,8 +838,8 @@ test('Throws an error when the function returns invalid `body`', async (t) => {
           throwHttpErrors: false,
         })
 
-        t.is(response.statusCode, 500)
-        t.is(response.body, 'Your function response must have a string or a stream body. You gave: 42')
+        t.expect(response.statusCode).toBe(500)
+        t.expect(response.body).toEqual('Your function response must have a string or a stream body. You gave: 42')
       }, outputBuffer)
     })
   })
@@ -869,8 +869,8 @@ test('Throws an error when the function returns invalid `statusCode`', async (t)
           throwHttpErrors: false,
         })
 
-        t.is(response.statusCode, 500)
-        t.is(response.body, 'Your function response must have a numerical statusCode. You gave: null')
+        t.expect(response.statusCode).toBe(500)
+        t.expect(response.body).toEqual('Your function response must have a numerical statusCode. You gave: null')
       }, outputBuffer)
     })
   })
