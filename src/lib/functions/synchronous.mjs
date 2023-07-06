@@ -73,22 +73,22 @@ const formatLambdaLocalError = (err, acceptsHtml) =>
         errorMessage: err.errorMessage,
         trace: err.stackTrace,
       })
-    : `${err.errorType}: ${err.errorMessage}\n ${err.stackTrace.join('\n ')}`
-
-const processRenderedResponse = async (err, request) => {
-  const acceptsHtml = request.headers && request.headers.accept && request.headers.accept.includes('text/html')
-  const errorString = typeof err === 'string' ? err : formatLambdaLocalError(err, acceptsHtml)
-
-  return acceptsHtml
-    ? await renderErrorTemplate(errorString, './templates/function-error.html', 'function')
-    : errorString
-}
+    : `${err.errorType}: ${err.errorMessage}\n ${err.stackTrace?.join('\n ')}`
 
 const handleErr = async (err, request, response) => {
   detectAwsSdkError({ err })
 
+  const acceptsHtml = request.headers && request.headers.accept && request.headers.accept.includes('text/html')
+  const errorString = typeof err === 'string' ? err : formatLambdaLocalError(err, acceptsHtml)
+
   response.statusCode = 500
-  response.end(await processRenderedResponse(err, request))
+
+  if (acceptsHtml) {
+    response.setHeader('Content-Type', 'text/html')
+    response.end(await renderErrorTemplate(errorString, './templates/function-error.html', 'function'))
+  } else {
+    response.end(errorString)
+  }
 }
 
 const validateLambdaResponse = (lambdaResponse) => {
@@ -102,7 +102,7 @@ const validateLambdaResponse = (lambdaResponse) => {
   }
   if (!Number(lambdaResponse.statusCode)) {
     return {
-      error: `Your function response must have a numerical statusCode. You gave: $ ${lambdaResponse.statusCode}`,
+      error: `Your function response must have a numerical statusCode. You gave: ${lambdaResponse.statusCode}`,
     }
   }
   if (lambdaResponse.body && typeof lambdaResponse.body !== 'string' && !isStream(lambdaResponse.body)) {
