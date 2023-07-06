@@ -1,10 +1,12 @@
-import type { FrameworkNames } from '../../utils/types';
+import type { PollingStrategy } from '@netlify/build-info'
+
+import type { FrameworkNames } from '../../utils/types'
 
 export type DevConfig = {
   framework: FrameworkNames
   /** Directory of the functions */
-  functions: string
-  publish: string
+  functions?: string
+  publish?: string
   /** Port to serve the functions */
   port: number
   live: boolean
@@ -17,6 +19,10 @@ export type DevConfig = {
   https?: {
     keyFile: string
     certFile: string
-  },
-  envFiles?:string[]
+  }
+  envFiles?: string[]
+
+  jwtSecret: string
+  jwtRolePath: string
+  pollingStrategies?: PollingStrategy[]
 }

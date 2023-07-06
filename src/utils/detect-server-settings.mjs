@@ -4,18 +4,17 @@ import { EOL } from 'os'
 import path, { join } from 'path'
 import process from 'process'
 
-import { Project, getFramework } from '@netlify/build-info'
-// eslint-disable-next-line import/extensions, n/no-missing-import
-import { NodeFS } from '@netlify/build-info/node'
+import { getFramework } from '@netlify/build-info'
 import fuzzy from 'fuzzy'
 import getPort from 'get-port'
 
 import { NETLIFYDEVWARN, chalk, log } from './command-helpers.mjs'
 import { acquirePort } from './dev.mjs'
 import { getInternalFunctionsDir } from './functions/functions.mjs'
-import { reportError } from './telemetry/report-error.mjs'
 
+/** @param {string} str */
 const formatProperty = (str) => chalk.magenta(`'${str}'`)
+/** @param {string} str */
 const formatValue = (str) => chalk.green(`'${str}'`)
 
 const readHttpsSettings = async (options) => {
@@ -50,6 +49,11 @@ const readHttpsSettings = async (options) => {
   return { key, cert, keyFilePath: path.resolve(keyFile), certFilePath: path.resolve(certFile) }
 }
 
+/**
+ * @param {object} config
+ * @param {import('../commands/dev/types.js').DevConfig} config.devConfig
+ * @param {keyof import('../commands/dev/types.js').DevConfig} config.property
+ */
 const validateStringProperty = ({ devConfig, property }) => {
   if (devConfig[property] && typeof devConfig[property] !== 'string') {
     const formattedProperty = formatProperty(property)
@@ -59,6 +63,11 @@ const validateStringProperty = ({ devConfig, property }) => {
   }
 }
 
+/**
+ * @param {object} config
+ * @param {import('../commands/dev/types.js').DevConfig} config.devConfig
+ * @param {keyof import('../commands/dev/types.js').DevConfig} config.property
+ */
 const validateNumberProperty = ({ devConfig, property }) => {
   if (devConfig[property] && typeof devConfig[property] !== 'number') {
     const formattedProperty = formatProperty(property)
@@ -68,6 +77,11 @@ const validateNumberProperty = ({ devConfig, property }) => {
   }
 }
 
+/**
+ *
+ * @param {object} config
+ * @param {import('../commands/dev/types.js').DevConfig} config.devConfig
+ */
 const validateFrameworkConfig = ({ devConfig }) => {
   validateStringProperty({ devConfig, property: 'command' })
   validateNumberProperty({ devConfig, property: 'port' })
@@ -82,6 +96,11 @@ const validateFrameworkConfig = ({ devConfig }) => {
   }
 }
 
+/**
+ * @param {object} config
+ * @param {import('../commands/dev/types.js').DevConfig} config.devConfig
+ * @param {number} config.detectedPort
+ */
 const validateConfiguredPort = ({ detectedPort, devConfig }) => {
   if (devConfig.port && devConfig.port === detectedPort) {
     const formattedPort = formatProperty('port')
@@ -101,6 +120,11 @@ const getDefaultDist = () => {
   return process.cwd()
 }
 
+/**
+ * @param {object} config
+ * @param {import('../commands/dev/types.js').DevConfig} config.devConfig
+ * @returns {Promise<number>}
+ */
 const getStaticServerPort = async ({ devConfig }) => {
   const port = await acquirePort({
     configuredPort: devConfig.staticServerPort,
@@ -113,10 +137,10 @@ const getStaticServerPort = async ({ devConfig }) => {
 
 /**
  *
- * @param {object} param0
- * @param {import('../commands/dev/types.js').DevConfig} param0.devConfig
- * @param {import('commander').OptionValues} param0.options
- * @param {string} param0.projectDir
+ * @param {object} config
+ * @param {import('../commands/dev/types.js').DevConfig} config.devConfig
+ * @param {import('commander').OptionValues} config.options
+ * @param {string} config.projectDir
  * @returns {Promise<import('./types.js').BaseServerSettings>}
  */
 const handleStaticServer = async ({ devConfig, options, projectDir }) => {
@@ -152,6 +176,28 @@ const handleStaticServer = async ({ devConfig, options, projectDir }) => {
   }
 }
 
+// these plugins represent runtimes that are
+// expected to be "automatically" installed. Even though
+// they can be installed on package/toml, we always
+// want them installed in the site settings. When installed
+// there our build will automatically install the latest without
+// user management of the versioning.
+const pluginsToAlwaysInstall = new Set(['@netlify/plugin-nextjs'])
+
+/**
+ * Retrieve a list of plugins to auto install
+ * @param {string[]=} pluginsInstalled
+ * @param {string[]=} pluginsRecommended
+ * @returns
+ */
+const getPluginsToAutoInstall = (pluginsInstalled = [], pluginsRecommended = []) =>
+  pluginsRecommended.reduce(
+    (acc, plugin) =>
+      pluginsInstalled.includes(plugin) && !pluginsToAlwaysInstall.has(plugin) ? acc : [...acc, plugin],
+    // eslint-disable-next-line no-inline-comments
+    /** @type {string[]} */ ([]),
+  )
+
 /**
  * Retrieves the settings from a framework
  * @param {import('@netlify/build-info').Settings} settings
@@ -164,7 +210,10 @@ const getSettingsFromDetectedSettings = (settings) => {
     env,
     framework: { name: frameworkName },
     frameworkPort,
-    plugins,
+    // eslint-disable-next-line camelcase
+    plugins_from_config_file,
+    // eslint-disable-next-line camelcase
+    plugins_recommended,
     pollingStrategies,
   } = settings
 
@@ -175,77 +224,12 @@ const getSettingsFromDetectedSettings = (settings) => {
     framework: frameworkName,
     env,
     pollingStrategies,
-    plugins,
+    plugins: getPluginsToAutoInstall(plugins_from_config_file, plugins_recommended),
   }
 }
 
 /**
- * The new build setting detection with build systems and frameworks combined
- * @param {string} projectDir
- */
-const detectSettings = async (projectDir) => {
-  const fs = new NodeFS()
-  const project = new Project(fs, projectDir)
-
-  return await project.getBuildSettings()
-}
-
-/**
- *
- * @param {import('./types.js').BaseServerSettings | undefined} frameworkSettings
- * @param {import('@netlify/build-info').Settings[]} newSettings
- * @param {Record<string, Record<string, any>>} [metadata]
- */
-const detectChangesInNewSettings = (frameworkSettings, newSettings, metadata) => {
-  /** @type {string[]} */
-  const message = ['']
-  const [setting] = newSettings
-
-  if (frameworkSettings?.framework !== setting?.framework?.name) {
-    message.push(
-      `- Framework does not match:`,
-      `   [old]: ${frameworkSettings?.framework}`,
-      `   [new]: ${setting?.framework}`,
-      '',
-    )
-  }
-
-  if (frameworkSettings?.command !== setting?.devCommand) {
-    message.push(
-      `- command does not match:`,
-      `   [old]: ${frameworkSettings?.command}`,
-      `   [new]: ${setting?.devCommand}`,
-      '',
-    )
-  }
-
-  if (frameworkSettings?.dist !== setting?.dist) {
-    message.push(`- dist does not match:`, `   [old]: ${frameworkSettings?.dist}`, `   [new]: ${setting?.dist}`, '')
-  }
-
-  if (frameworkSettings?.frameworkPort !== setting?.frameworkPort) {
-    message.push(
-      `- frameworkPort does not match:`,
-      `   [old]: ${frameworkSettings?.frameworkPort}`,
-      `   [new]: ${setting?.frameworkPort}`,
-      '',
-    )
-  }
-
-  if (message.length !== 0) {
-    reportError(
-      {
-        name: 'NewSettingsDetectionMismatch',
-        errorMessage: 'New Settings detection does not match old one',
-        message: message.join('\n'),
-      },
-      { severity: 'info', metadata },
-    )
-  }
-}
-
-/**
- * @param {Project} project
+ * @param {import('@netlify/build-info').Project} project
  */
 const detectFrameworkSettings = async (project) => {
   const projectSettings = await project.getBuildSettings()
@@ -290,11 +274,16 @@ const detectFrameworkSettings = async (project) => {
   }
 }
 
+/**
+ * @param {object} config
+ * @param {import('../commands/dev/types.js').DevConfig} config.devConfig
+ */
 const hasCommandAndTargetPort = ({ devConfig }) => devConfig.command && devConfig.targetPort
 
 /**
  * Creates settings for the custom framework
- * @param {*} param0
+ * @param {object} config
+ * @param {import('../commands/dev/types.js').DevConfig} config.devConfig
  * @returns {import('./types.js').BaseServerSettings}
  */
 const handleCustomFramework = ({ devConfig }) => {
@@ -344,7 +333,7 @@ const mergeSettings = async ({ devConfig, frameworkSettings = {} }) => {
 
 /**
  * Handles a forced framework and retrieves the settings for it
- * @param {{ devConfig: any, project: Project }} param0
+ * @param {{ devConfig: any, project: import('@netlify/build-info').Project }} param0
  * @returns {Promise<import('./types.js').BaseServerSettings>}
  */
 const handleForcedFramework = async ({ devConfig, project }) => {
@@ -353,6 +342,7 @@ const handleForcedFramework = async ({ devConfig, project }) => {
   if (!framework) {
     throw new Error('Could not find specified framework in project.')
   }
+  // TODO: wrap frameworks in a getSetting call
   const frameworkSettings = getSettingsFromDetectedSettings(framework)
   return mergeSettings({ devConfig, frameworkSettings })
 }
@@ -361,13 +351,12 @@ const handleForcedFramework = async ({ devConfig, project }) => {
  * Get the server settings based on the flags and the devConfig
  * @param {import('../commands/dev/types.js').DevConfig} devConfig
  * @param {import('commander').OptionValues} options
- * @param {Project} project
+ * @param {import('@netlify/build-info').Project} project
  * @param {string} projectDir
- * @param {Record<string, Record<string, any>>} [metadata]
  * @returns {Promise<import('./types.js').ServerSettings>}
  */
-// eslint-disable-next-line max-params
-const detectServerSettings = async (devConfig, options, project, projectDir, metadata) => {
+
+const detectServerSettings = async (devConfig, options, project, projectDir) => {
   validateStringProperty({ devConfig, property: 'framework' })
 
   /** @type {Partial<import('./types.js').BaseServerSettings>} */
@@ -381,19 +370,6 @@ const detectServerSettings = async (devConfig, options, project, projectDir, met
 
     const runDetection = !hasCommandAndTargetPort({ devConfig })
     const frameworkSettings = runDetection ? await detectFrameworkSettings(project) : undefined
-    const newSettings = runDetection ? await detectSettings(projectDir) : undefined
-
-    // just report differences in the settings
-    detectChangesInNewSettings(frameworkSettings, newSettings || [], {
-      ...metadata,
-      settings: {
-        projectDir,
-        devConfig,
-        options,
-        old: frameworkSettings,
-        settings: newSettings,
-      },
-    })
 
     if (frameworkSettings === undefined && runDetection) {
       log(`${NETLIFYDEVWARN} No app server detected. Using simple static server`)

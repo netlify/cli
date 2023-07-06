@@ -24,7 +24,7 @@ const argv = process.argv.slice(2)
  * Chalk instance for CLI that can be initialized with no colors mode
  * needed for json outputs where we don't want to have colors
  * @param  {boolean} noColors - disable chalk colors
- * @return {object} - default or custom chalk instance
+ * @return {import('chalk').ChalkInstance} - default or custom chalk instance
  */
 const safeChalk = function (noColors) {
   if (noColors) {

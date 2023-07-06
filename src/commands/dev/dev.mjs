@@ -94,7 +94,7 @@ const dev = async (options, command) => {
   const { api, cachedConfig, config, repositoryRoot, site, siteInfo, state } = command.netlify
   config.dev = { ...config.dev }
   config.build = { ...config.build }
-  /** @type {import('./types').DevConfig} */
+  /** @type {import('./types.js').DevConfig} */
   const devConfig = {
     framework: '#auto',
     ...(config.functionsDirectory && { functions: config.functionsDirectory }),

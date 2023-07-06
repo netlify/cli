@@ -8,6 +8,7 @@ import { NodeFS } from '@netlify/build-info/node'
 import { resolveConfig } from '@netlify/config'
 import { Command, Option } from 'commander'
 import debug from 'debug'
+import execa from 'execa'
 import merge from 'lodash/merge.js'
 import { NetlifyAPI } from 'netlify'
 
@@ -340,6 +341,11 @@ export default class BaseCommand extends Command {
     }
   }
 
+  /**
+   *
+   * @param {string|undefined} tokenFromFlag
+   * @returns
+   */
   async authenticate(tokenFromFlag) {
     const [token] = await getToken(tokenFromFlag)
     if (token) {
@@ -462,9 +468,11 @@ export default class BaseCommand extends Command {
 
     const globalConfig = await getGlobalConfig()
 
+    // retrieve the repository root
+    const rootDir = await getRepositoryRoot()
     // Get framework, add to analytics payload for every command, if a framework is set
     const fs = new NodeFS()
-    this.project = new Project(fs, buildDir)
+    this.project = new Project(fs, buildDir, rootDir).setEnvironment(process.env).setNodeVersion(process.version)
     const frameworks = await this.project.detectFrameworks()
 
     const frameworkIDs = frameworks?.map((framework) => framework.id)
@@ -570,5 +578,19 @@ export default class BaseCommand extends Command {
     }
 
     return 'dev'
+  }
+}
+
+/**
+ * Retrieves the repository root through a git command.
+ * Returns undefined if not a git project.
+ * @returns {Promise<string|undefined>}
+ */
+async function getRepositoryRoot() {
+  try {
+    const res = await execa('git', ['rev-parse', '--show-toplevel'], { preferLocal: true })
+    return res.stdout
+  } catch {
+    // noop
   }
 }
