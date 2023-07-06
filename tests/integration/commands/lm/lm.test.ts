@@ -7,8 +7,8 @@ import ini from 'ini'
 import { describe, expect, test } from 'vitest'
 
 import { getPathInHome } from '../../../../src/lib/settings.mjs'
-import { FixtureOptions, HTTPMethod, setupFixtureTests } from '../../utils/fixture.js'
-import { getCLIOptions } from '../../utils/mock-api.cjs'
+import { FixtureOptions, FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
+import { HTTPMethod, getCLIOptions } from '../../utils/mock-api-vitest.js'
 
 const siteInfo = {
   account_slug: 'test-account',
@@ -40,8 +40,8 @@ describe('lm command', () => {
     },
   }
 
-  setupFixtureTests('empty-project', fixtureOptions, ({ fixture }) => {
-    test('netlify lm:info', async () => {
+  setupFixtureTests('empty-project', fixtureOptions, () => {
+    test<FixtureTestContext>('netlify lm:info', async ({ fixture }) => {
       const cliResponse = await fixture.callCli(['lm:info'], { offline: false, execOptions })
       expect(cliResponse).toContain('Checking Git version')
       expect(cliResponse).toContain('Checking Git LFS version')
@@ -49,7 +49,7 @@ describe('lm command', () => {
       expect(cliResponse).toContain("Checking Netlify's Git Credentials version")
     })
 
-    test('netlify lm:install', async () => {
+    test<FixtureTestContext>('netlify lm:install', async ({ fixture }) => {
       const cliResponse = await fixture.callCli(['lm:install'], { offline: false, execOptions })
       expect(cliResponse).toContain('Checking Git version')
       expect(cliResponse).toContain('Checking Git LFS version')
@@ -90,7 +90,7 @@ describe('lm command', () => {
       }
     })
 
-    test('netlify lm:setup', async () => {
+    test<FixtureTestContext>('netlify lm:setup', async ({ fixture }) => {
       const cliResponse = await fixture.callCli(['lm:setup'], { offline: false, execOptions })
       expect(cliResponse).toContain('Provisioning Netlify Large Media [started]')
       expect(cliResponse).toContain('Provisioning Netlify Large Media [completed]')
