@@ -60,6 +60,7 @@ const decompressResponseBody = async function (body, contentEncoding = '') {
 }
 
 const formatEdgeFunctionError = (errorBuffer, acceptsHtml) => {
+  console.log(errorBuffer.toString())
   const {
     error: { message, name, stack },
   } = JSON.parse(errorBuffer.toString())
@@ -605,6 +606,7 @@ export const getProxyUrl = function (settings) {
 }
 
 export const startProxy = async function ({
+  accountId,
   addonsUrls,
   config,
   configPath,
@@ -617,8 +619,8 @@ export const startProxy = async function ({
   offline,
   projectDir,
   settings,
-  siteInfo,
   accountId,
+  siteInfo,
   state,
 }) {
   const secondaryServerPort = settings.https ? await getAvailablePort() : null

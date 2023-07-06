@@ -53,6 +53,7 @@ export const generateInspectSettings = (edgeInspect, edgeInspectBrk) => {
  * @returns
  */
 export const startProxyServer = async ({
+  accountId,
   addonsUrls,
   config,
   configPath,
@@ -67,7 +68,6 @@ export const startProxyServer = async ({
   site,
   siteInfo,
   state,
-  accountId,
 }) => {
   const url = await startProxy({
     addonsUrls,

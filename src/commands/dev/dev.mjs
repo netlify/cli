@@ -116,7 +116,7 @@ const dev = async (options, command) => {
   injectEnvVariables(env)
   await promptEditorHelper({ chalk, config, log, NETLIFYDEVLOG, repositoryRoot, state })
 
-  const { addonsUrls, capabilities, siteUrl, timeouts, accountId } = await getSiteInformation({
+  const { accountId, addonsUrls, capabilities, siteUrl, timeouts } = await getSiteInformation({
     // inherited from base command --offline
     offline: options.offline,
     api,

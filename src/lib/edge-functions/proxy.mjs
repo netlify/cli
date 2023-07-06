@@ -61,6 +61,7 @@ export const createAccountInfoHeader = (accountInfo = {}) => {
 }
 
 export const initializeProxy = async ({
+  accountId,
   config,
   configPath,
   debug,
@@ -74,7 +75,6 @@ export const initializeProxy = async ({
   passthroughPort,
   projectDir,
   siteInfo,
-  accountId,
   state,
 }) => {
   const { functions: internalFunctions, importMap, path: internalFunctionsPath } = await getInternalFunctions()
@@ -114,6 +114,7 @@ export const initializeProxy = async ({
     // Setting header with geolocation and site info.
     req.headers[headers.Geo] = JSON.stringify(geoLocation)
     req.headers[headers.Site] = createSiteInfoHeader(siteInfo)
+    console.log(accountId)
     req.headers[headers.Account] = createAccountInfoHeader({id: accountId})
 
     await registry.initialize()
