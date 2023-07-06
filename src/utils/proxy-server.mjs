@@ -67,6 +67,7 @@ export const startProxyServer = async ({
   site,
   siteInfo,
   state,
+  accountId,
 }) => {
   const url = await startProxy({
     addonsUrls,
@@ -83,6 +84,7 @@ export const startProxyServer = async ({
     settings,
     state,
     siteInfo,
+    accountId,
   })
   if (!url) {
     log(NETLIFYDEVERR, `Unable to start proxy server on port '${settings.port}'`)

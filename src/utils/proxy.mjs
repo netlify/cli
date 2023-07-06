@@ -618,6 +618,7 @@ export const startProxy = async function ({
   projectDir,
   settings,
   siteInfo,
+  accountId,
   state,
 }) {
   const secondaryServerPort = settings.https ? await getAvailablePort() : null
@@ -636,6 +637,7 @@ export const startProxy = async function ({
     passthroughPort: secondaryServerPort || settings.port,
     projectDir,
     siteInfo,
+    accountId,
     state,
   })
   const proxy = await initializeProxy({

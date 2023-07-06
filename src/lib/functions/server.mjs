@@ -111,6 +111,7 @@ export const createHandler = function (options) {
       ...request.headers,
       'client-ip': [remoteAddress],
       'x-nf-client-connection-ip': [remoteAddress],
+      'x-nf-account-id': [options.accountId],
       [efHeaders.Geo]: JSON.stringify(geoLocation),
     }).reduce((prev, [key, value]) => ({ ...prev, [key]: Array.isArray(value) ? value : [value] }), {})
     const rawQuery = new URLSearchParams(requestQuery).toString()

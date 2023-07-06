@@ -53,6 +53,13 @@ export const createSiteInfoHeader = (siteInfo = {}) => {
   return Buffer.from(siteString).toString('base64')
 }
 
+export const createAccountInfoHeader = (accountInfo = {}) => {
+  const { id } = accountInfo
+  const account = { id }
+  const accountString = JSON.stringify(account)
+  return Buffer.from(accountString).toString('base64')
+}
+
 export const initializeProxy = async ({
   config,
   configPath,
@@ -67,6 +74,7 @@ export const initializeProxy = async ({
   passthroughPort,
   projectDir,
   siteInfo,
+  accountId,
   state,
 }) => {
   const { functions: internalFunctions, importMap, path: internalFunctionsPath } = await getInternalFunctions()
@@ -106,6 +114,7 @@ export const initializeProxy = async ({
     // Setting header with geolocation and site info.
     req.headers[headers.Geo] = JSON.stringify(geoLocation)
     req.headers[headers.Site] = createSiteInfoHeader(siteInfo)
+    req.headers[headers.Account] = createAccountInfoHeader({id: accountId})
 
     await registry.initialize()
 
