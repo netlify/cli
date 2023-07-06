@@ -140,7 +140,7 @@
     "is-stream": "3.0.0",
     "is-wsl": "2.2.0",
     "isexe": "2.0.0",
-    "jsonwebtoken": "9.0.0",
+    "jsonwebtoken": "9.0.1",
     "jwt-decode": "3.1.2",
     "listr": "0.14.3",
     "locate-path": "7.2.0",
