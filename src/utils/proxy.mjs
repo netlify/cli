@@ -36,8 +36,28 @@ import { generateRequestID } from './request-id.mjs'
 import { createRewriter, onChanges } from './rules-proxy.mjs'
 import { signRedirect } from './sign-redirect.mjs'
 
-const decompress = util.promisify(zlib.gunzip)
+const gunzip = util.promisify(zlib.gunzip)
+const brotliDecompress = util.promisify(zlib.brotliDecompress)
+const deflate = util.promisify(zlib.deflate)
 const shouldGenerateETag = Symbol('Internal: response should generate ETag')
+
+/**
+ * @param {Buffer} body
+ * @param {string | undefined} contentEncoding
+ * @returns {Promise<Buffer>}
+ */
+const decompressResponseBody = async function (body, contentEncoding = '') {
+  switch (contentEncoding) {
+    case 'gzip':
+      return await gunzip(body)
+    case 'br':
+      return await brotliDecompress(body)
+    case 'deflate':
+      return await deflate(body)
+    default:
+      return body
+  }
+}
 
 const formatEdgeFunctionError = (errorBuffer, acceptsHtml) => {
   const {
@@ -479,7 +499,7 @@ const initializeProxy = async function ({ configPath, distDir, env, host, port, 
 
       if (isEdgeFunctionsRequest(req) && isUncaughtError) {
         const acceptsHtml = req.headers && req.headers.accept && req.headers.accept.includes('text/html')
-        const decompressedBody = await decompress(responseBody)
+        const decompressedBody = await decompressResponseBody(responseBody, req.headers['content-encoding'])
         const formattedBody = formatEdgeFunctionError(decompressedBody, acceptsHtml)
         const errorResponse = acceptsHtml
           ? await renderErrorTemplate(formattedBody, './templates/function-error.html', 'edge function')
@@ -487,6 +507,7 @@ const initializeProxy = async function ({ configPath, distDir, env, host, port, 
         const contentLength = Buffer.from(errorResponse, 'utf8').byteLength
 
         res.setHeader('content-length', contentLength)
+        res.statusCode = 500
         res.write(errorResponse)
         return res.end()
       }

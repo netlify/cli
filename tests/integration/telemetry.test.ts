@@ -1,6 +1,6 @@
 import { env as _env, version as nodejsVersion } from 'process'
 
-import execa from 'execa'
+import type { Options } from 'execa'
 import { version as uuidVersion } from 'uuid'
 import { expect, test } from 'vitest'
 
@@ -8,14 +8,14 @@ import { name, version } from '../../package.json'
 
 import callCli from './utils/call-cli.cjs'
 import cliPath from './utils/cli-path.cjs'
-import { withMockApi } from './utils/mock-api-vitest.mjs'
+import { MockApiTestContext, withMockApi } from './utils/mock-api-vitest.js'
 import { withSiteBuilder } from './utils/site-builder.cjs'
 
-const getCLIOptions = (apiUrl) => ({
+const getCLIOptions = (apiUrl): Options => ({
   env: {
     NETLIFY_TEST_TRACK_URL: `${apiUrl}/track`,
     NETLIFY_TEST_IDENTIFY_URL: `${apiUrl}/identify`,
-    NETLIFY_TEST_TELEMETRY_WAIT: true,
+    NETLIFY_TEST_TELEMETRY_WAIT: 'true',
     NETLIFY_API_URL: apiUrl,
     PATH: _env.PATH,
     HOME: _env.HOME,
@@ -31,14 +31,14 @@ const routes = [
 ]
 
 await withMockApi(routes, async () => {
-  test('should not track --telemetry-disable', async ({ apiUrl, requests }) => {
+  test<MockApiTestContext>('should not track --telemetry-disable', async ({ apiUrl, requests }) => {
     await callCli(['--telemetry-disable'], getCLIOptions(apiUrl))
     expect(requests).toEqual([])
   })
 
   const UUID_VERSION = 4
 
-  test('should track --telemetry-enable', async ({ apiUrl, requests }) => {
+  test<MockApiTestContext>('should track --telemetry-enable', async ({ apiUrl, requests }) => {
     await callCli(['--telemetry-enable'], getCLIOptions(apiUrl))
     expect(requests.length).toBe(1)
     expect(requests[0].method).toBe('POST')
@@ -49,7 +49,7 @@ await withMockApi(routes, async () => {
     expect(requests[0].body.properties).toEqual({ cliVersion: version, nodejsVersion })
   })
 
-  test('should send netlify-cli/<version> user-agent', async ({ apiUrl, requests }) => {
+  test<MockApiTestContext>('should send netlify-cli/<version> user-agent', async ({ apiUrl, requests }) => {
     await callCli(['api', 'listSites'], getCLIOptions(apiUrl))
     const request = requests.find(({ path }) => path === '/api/v1/track')
     expect(request).toBeDefined()
@@ -58,7 +58,7 @@ await withMockApi(routes, async () => {
     expect(userAgent.startsWith(`${name}/${version}`)).toBe(true)
   })
 
-  test('should send correct command on success', async ({ apiUrl, requests }) => {
+  test<MockApiTestContext>('should send correct command on success', async ({ apiUrl, requests }) => {
     await callCli(['api', 'listSites'], getCLIOptions(apiUrl))
     const request = requests.find(({ path }) => path === '/api/v1/track')
     expect(request).toBeDefined()
@@ -76,7 +76,7 @@ await withMockApi(routes, async () => {
     })
   })
 
-  test('should send correct command on failure', async ({ apiUrl, requests }) => {
+  test<MockApiTestContext>('should send correct command on failure', async ({ apiUrl, requests }) => {
     await expect(callCli(['dev:exec', 'exit 1'], getCLIOptions(apiUrl))).rejects.toThrowError()
     const request = requests.find(({ path }) => path === '/api/v1/track')
     expect(request).toBeDefined()

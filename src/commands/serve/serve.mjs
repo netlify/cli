@@ -101,6 +101,10 @@ const serve = async (options, command) => {
     siteUrl,
     capabilities,
     timeouts,
+    geolocationMode: options.geo,
+    geoCountry: options.country,
+    offline: options.offline,
+    state,
   })
 
   // Try to add `.netlify` to `.gitignore`.

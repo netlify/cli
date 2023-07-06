@@ -1,7 +1,44 @@
-import { isDeepStrictEqual } from 'util'
+import type { Server } from 'http'
+import type { AddressInfo } from 'net'
+import { isDeepStrictEqual, promisify } from 'util'
 
+import type { CommonOptions, NodeOptions } from 'execa'
 import express, { urlencoded, json, raw } from 'express'
 import { afterAll, beforeAll, beforeEach } from 'vitest'
+
+export enum HTTPMethod {
+  DELETE = 'DELETE',
+  GET = 'GET',
+  PATCH = 'PATCH',
+  POST = 'POST',
+  PUT = 'PUT',
+}
+
+export interface Route {
+  method?: HTTPMethod
+  path: string
+  response?: any
+  requestBody?: any
+  status?: number
+}
+
+interface MockApiOptions {
+  routes: Route[]
+  silent?: boolean
+}
+
+export interface MockApi {
+  apiUrl: string
+  clearRequests: () => void
+  requests: any[]
+  server: Server
+  close: () => Promise<void>
+}
+
+export interface MockApiTestContext {
+  apiUrl: string
+  requests: any[]
+}
 
 // Replace mock-api.cjs with this once everything migrated
 
@@ -19,7 +56,7 @@ const clearRequests = (requests) => {
   requests.length = 0
 }
 
-const startMockApi = ({ routes, silent }) => {
+export const startMockApi = ({ routes, silent }: MockApiOptions): Promise<MockApi> => {
   const requests = []
   const app = express()
   app.use(urlencoded({ extended: true }))
@@ -36,6 +73,9 @@ const startMockApi = ({ routes, silent }) => {
       }
       addRequest(requests, req)
       res.status(status)
+      if (status === 404) {
+        response.message = 'Not found'
+      }
       res.json(response)
     })
   })
@@ -53,7 +93,17 @@ const startMockApi = ({ routes, silent }) => {
     const server = app.listen()
 
     server.on('listening', () => {
-      resolve({ server, requests, clearRequests: clearRequests.bind(null, requests) })
+      const address: AddressInfo = server.address() as AddressInfo
+
+      resolve({
+        server,
+        apiUrl: `http://localhost:${address.port}/api/v1`,
+        requests,
+        clearRequests: clearRequests.bind(null, requests),
+        async close() {
+          return promisify(server.close.bind(server))()
+        },
+      })
     })
 
     server.on('error', (error) => {
@@ -63,13 +113,13 @@ const startMockApi = ({ routes, silent }) => {
 }
 
 export const withMockApi = async (routes, factory, silent = false) => {
-  let mockApi
+  let mockApi: MockApi
   beforeAll(async () => {
     mockApi = await startMockApi({ routes, silent })
   })
 
-  beforeEach((context) => {
-    context.apiUrl = `http://localhost:${mockApi.server.address().port}/api/v1`
+  beforeEach<MockApiTestContext>((context) => {
+    context.apiUrl = mockApi.apiUrl
     context.requests = mockApi.requests
     mockApi.clearRequests()
   })
@@ -87,8 +137,20 @@ const getEnvironmentVariables = ({ apiUrl }) => ({
   NETLIFY_API_URL: apiUrl,
 })
 
-export const getCLIOptions = ({ apiUrl, builder: { directory: cwd }, env = {}, extendEnv = true }) => ({
+export const getCLIOptions = ({
+  apiUrl,
+  builder,
   cwd,
+  env = {},
+  extendEnv = true,
+}: {
+  apiUrl?: string
+  builder?: any
+  cwd?: string
+  env?: CommonOptions<string>['env']
+  extendEnv?: CommonOptions<string>['extendEnv']
+}): NodeOptions<string> => ({
+  cwd: builder?.directory || cwd,
   env: { ...getEnvironmentVariables({ apiUrl }), ...env },
   extendEnv,
 })

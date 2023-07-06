@@ -726,7 +726,7 @@ test('Serves functions that dynamically load files included in the `functions.in
         handler: async (event) => {
           const { name } = event.queryStringParameters
 
-          // eslint-disable-next-line import/no-dynamic-require, n/global-require
+          // eslint-disable-next-line n/global-require
           const { data } = require(`../files/${name}.json`)
 
           return {
@@ -810,6 +810,68 @@ test('Populates the `event` argument', async (t) => {
         t.is(path, '/.netlify/functions/hello')
         t.is(rawQuery, 'net=lify&jam=stack')
         t.is(rawUrl, `http://localhost:${port}/.netlify/functions/hello?net=lify&jam=stack`)
+      }, outputBuffer)
+    })
+  })
+})
+
+test('Throws an error when the function returns invalid `body`', async (t) => {
+  await withSiteBuilder('function-invalid-body', async (builder) => {
+    await builder
+      .withFunction({
+        path: 'hello.js',
+        handler: async () => ({
+          statusCode: 200,
+          body: 42,
+        }),
+      })
+      .withNetlifyToml({
+        config: {
+          build: { publish: 'public' },
+          functions: { directory: 'functions' },
+        },
+      })
+      .buildAsync()
+
+    await withDevServer({ cwd: builder.directory }, async ({ outputBuffer, port }) => {
+      await tryAndLogOutput(async () => {
+        const response = await got(`http://localhost:${port}/.netlify/functions/hello`, {
+          throwHttpErrors: false,
+        })
+
+        t.is(response.statusCode, 500)
+        t.is(response.body, 'Your function response must have a string or a stream body. You gave: 42')
+      }, outputBuffer)
+    })
+  })
+})
+
+test('Throws an error when the function returns invalid `statusCode`', async (t) => {
+  await withSiteBuilder('function-invalid-statuscode', async (builder) => {
+    await builder
+      .withFunction({
+        path: 'hello.js',
+        handler: async () => ({
+          statusCode: null,
+          body: 42,
+        }),
+      })
+      .withNetlifyToml({
+        config: {
+          build: { publish: 'public' },
+          functions: { directory: 'functions' },
+        },
+      })
+      .buildAsync()
+
+    await withDevServer({ cwd: builder.directory }, async ({ outputBuffer, port }) => {
+      await tryAndLogOutput(async () => {
+        const response = await got(`http://localhost:${port}/.netlify/functions/hello`, {
+          throwHttpErrors: false,
+        })
+
+        t.is(response.statusCode, 500)
+        t.is(response.body, 'Your function response must have a numerical statusCode. You gave: null')
       }, outputBuffer)
     })
   })
