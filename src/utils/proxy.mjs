@@ -618,8 +618,8 @@ export const startProxy = async function ({
   offline,
   projectDir,
   settings,
-  siteInfo,
   accountId,
+  siteInfo,
   state,
 }) {
   const secondaryServerPort = settings.https ? await getAvailablePort() : null
