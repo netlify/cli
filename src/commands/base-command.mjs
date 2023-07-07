@@ -407,7 +407,8 @@ export default class BaseCommand extends Command {
   }
 
   setAnalyticsPayload(payload) {
-    this.analytics = { ...this.analytics, payload }
+    const newPayload = { ...this.analytics.payload, ...payload }
+    this.analytics = { ...this.analytics, payload: newPayload }
   }
 
   /**
