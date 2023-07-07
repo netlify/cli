@@ -114,7 +114,6 @@ export const initializeProxy = async ({
     // Setting header with geolocation and site info.
     req.headers[headers.Geo] = JSON.stringify(geoLocation)
     req.headers[headers.Site] = createSiteInfoHeader(siteInfo)
-    console.log(accountId)
     req.headers[headers.Account] = createAccountInfoHeader({ id: accountId })
 
     await registry.initialize()

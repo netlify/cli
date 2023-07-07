@@ -60,7 +60,6 @@ const decompressResponseBody = async function (body, contentEncoding = '') {
 }
 
 const formatEdgeFunctionError = (errorBuffer, acceptsHtml) => {
-  console.log(errorBuffer.toString())
   const {
     error: { message, name, stack },
   } = JSON.parse(errorBuffer.toString())
