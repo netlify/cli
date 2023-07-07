@@ -67,6 +67,7 @@ test('functions rewrite echo without body', async (t) => {
     host: `${host}:${port}`,
     'user-agent': 'got (https://github.com/sindresorhus/got)',
     'x-forwarded-for': originalIP,
+    'x-nf-account-id': '',
     'x-nf-client-connection-ip': clientIP,
     'x-nf-geo':
       '{"city":"San Francisco","country":{"code":"US","name":"United States"},"subdivision":{"code":"CA","name":"California"},"longitude":0,"latitude":0,"timezone":"UTC"}',
@@ -101,6 +102,7 @@ test('functions rewrite echo with body', async (t) => {
     'content-length': '10',
     'user-agent': 'got (https://github.com/sindresorhus/got)',
     'x-forwarded-for': originalIP,
+    'x-nf-account-id': '',
     'x-nf-client-connection-ip': clientIP,
     'x-nf-geo':
       '{"city":"San Francisco","country":{"code":"US","name":"United States"},"subdivision":{"code":"CA","name":"California"},"longitude":0,"latitude":0,"timezone":"UTC"}',
@@ -125,6 +127,7 @@ test('functions echo with multiple query params', async (t) => {
     host: `${host}:${port}`,
     'user-agent': 'got (https://github.com/sindresorhus/got)',
     'x-forwarded-for': originalIP,
+    'x-nf-account-id': '',
     'x-nf-client-connection-ip': clientIP,
     'x-nf-geo':
       '{"city":"San Francisco","country":{"code":"US","name":"United States"},"subdivision":{"code":"CA","name":"California"},"longitude":0,"latitude":0,"timezone":"UTC"}',
