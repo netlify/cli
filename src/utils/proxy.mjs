@@ -605,6 +605,7 @@ export const getProxyUrl = function (settings) {
 }
 
 export const startProxy = async function ({
+  accountId,
   addonsUrls,
   config,
   configPath,
@@ -636,6 +637,7 @@ export const startProxy = async function ({
     passthroughPort: secondaryServerPort || settings.port,
     projectDir,
     siteInfo,
+    accountId,
     state,
   })
   const proxy = await initializeProxy({

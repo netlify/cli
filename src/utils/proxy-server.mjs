@@ -53,6 +53,7 @@ export const generateInspectSettings = (edgeInspect, edgeInspectBrk) => {
  * @returns
  */
 export const startProxyServer = async ({
+  accountId,
   addonsUrls,
   config,
   configPath,
@@ -83,6 +84,7 @@ export const startProxyServer = async ({
     settings,
     state,
     siteInfo,
+    accountId,
   })
   if (!url) {
     log(NETLIFYDEVERR, `Unable to start proxy server on port '${settings.port}'`)

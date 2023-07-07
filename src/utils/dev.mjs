@@ -107,6 +107,7 @@ export const getSiteInformation = async ({ api, offline, site, siteInfo }) => {
     return {
       addonsUrls,
       siteUrl: siteInfo.ssl_url,
+      accountId: account.id,
       capabilities: {
         backgroundFunctions: supportsBackgroundFunctions(account),
       },
