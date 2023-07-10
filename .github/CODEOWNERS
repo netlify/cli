@@ -1,3 +1,8 @@
-*                @netlify/ecosystem-pod-developer-foundations
-docs/            @netlify/ecosystem-pod-developer-foundations @netlify/department-docs
-site/            @netlify/ecosystem-pod-developer-foundations @netlify/department-docs
+.github/CODEOWNERS 
+docs/  @netlify/department-docs
+site/  @netlify/department-docs
+/scripts/docs.js  @netlify/department-docs
+/src/functions-templates/ @netlify/ecosystem-pod-developer-foundations
+/src/lib/functions/ @netlify/ecosystem-pod-developer-foundations
+/src/lib/edge-functions/ @netlify/ecosystem-pod-developer-foundations
+/src/utils/functions/ @netlify/ecosystem-pod-developer-foundations
