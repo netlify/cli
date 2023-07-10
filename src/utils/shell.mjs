@@ -48,7 +48,11 @@ export const runCommand = (command, env = {}, spinner = null) => {
     preferLocal: true,
     // we use reject=false to avoid rejecting synchronously when the command doesn't exist
     reject: false,
-    env,
+    env: {
+      // we want always colorful terminal outputs
+      FORCE_COLOR: 'true',
+      ...env,
+    },
     // windowsHide needs to be false for child process to terminate properly on Windows
     windowsHide: false,
   })
@@ -100,6 +104,13 @@ export const runCommand = (command, env = {}, spinner = null) => {
   return commandProcess
 }
 
+/**
+ *
+ * @param {object} config
+ * @param {string} config.command
+ * @param {*} config.error
+ * @returns
+ */
 const isNonExistingCommandError = ({ command, error: commandError }) => {
   // `ENOENT` is only returned for non Windows systems
   // See https://github.com/sindresorhus/execa/pull/447
@@ -108,7 +119,7 @@ const isNonExistingCommandError = ({ command, error: commandError }) => {
   }
 
   // if the command is a package manager we let it report the error
-  if (['yarn', 'npm'].includes(command)) {
+  if (['yarn', 'npm', 'pnpm'].includes(command)) {
     return false
   }
 

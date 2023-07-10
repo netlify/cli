@@ -4,7 +4,7 @@ import { EOL } from 'os'
 import path, { join } from 'path'
 import process from 'process'
 
-import { getFramework } from '@netlify/build-info'
+import { getFramework, getSettings } from '@netlify/build-info'
 import fuzzy from 'fuzzy'
 import getPort from 'get-port'
 
@@ -17,6 +17,12 @@ const formatProperty = (str) => chalk.magenta(`'${str}'`)
 /** @param {string} str */
 const formatValue = (str) => chalk.green(`'${str}'`)
 
+/**
+ * @param {object} options
+ * @param {string} options.keyFile
+ * @param {string} options.certFile
+ * @returns {Promise<{ key: string, cert: string, keyFilePath: string, certFilePath: string }>}
+ */
 const readHttpsSettings = async (options) => {
   if (typeof options !== 'object' || !options.keyFile || !options.certFile) {
     throw new TypeError(
@@ -99,7 +105,7 @@ const validateFrameworkConfig = ({ devConfig }) => {
 /**
  * @param {object} config
  * @param {import('../commands/dev/types.js').DevConfig} config.devConfig
- * @param {number} config.detectedPort
+ * @param {number=} config.detectedPort
  */
 const validateConfiguredPort = ({ detectedPort, devConfig }) => {
   if (devConfig.port && devConfig.port === detectedPort) {
@@ -333,17 +339,14 @@ const mergeSettings = async ({ devConfig, frameworkSettings = {} }) => {
 
 /**
  * Handles a forced framework and retrieves the settings for it
- * @param {{ devConfig: any, project: import('@netlify/build-info').Project }} param0
+ * @param {{ devConfig: any, project: import('@netlify/build-info').Project }} config
  * @returns {Promise<import('./types.js').BaseServerSettings>}
  */
 const handleForcedFramework = async ({ devConfig, project }) => {
   // this throws if `devConfig.framework` is not a supported framework
   const framework = await getFramework(devConfig.framework, project)
-  if (!framework) {
-    throw new Error('Could not find specified framework in project.')
-  }
-  // TODO: wrap frameworks in a getSetting call
-  const frameworkSettings = getSettingsFromDetectedSettings(framework)
+  const settings = await getSettings(framework, project, '')
+  const frameworkSettings = getSettingsFromDetectedSettings(settings)
   return mergeSettings({ devConfig, frameworkSettings })
 }
 
@@ -371,7 +374,7 @@ const detectServerSettings = async (devConfig, options, project, projectDir) => 
     const runDetection = !hasCommandAndTargetPort({ devConfig })
     const frameworkSettings = runDetection ? await detectFrameworkSettings(project) : undefined
 
-    if (frameworkSettings === undefined && runDetection) {
+    if (frameworkSettings === undefined) {
       log(`${NETLIFYDEVWARN} No app server detected. Using simple static server`)
       settings = await handleStaticServer({ options, devConfig, projectDir })
     } else {

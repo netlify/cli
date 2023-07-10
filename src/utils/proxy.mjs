@@ -598,6 +598,10 @@ const onRequest = async (
   proxy.web(req, res, options)
 }
 
+/**
+ * @param {import('./types.js').ServerSettings} settings
+ * @returns
+ */
 export const getProxyUrl = function (settings) {
   const scheme = settings.https ? 'https' : 'http'
   return `${scheme}://localhost:${settings.port}`

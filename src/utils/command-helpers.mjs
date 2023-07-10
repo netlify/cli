@@ -174,12 +174,19 @@ export const warn = (message = '') => {
 
 /**
  * throws an error or log it
- * @param {string|Error} message
+ * @param {unknown} message
  * @param {object} [options]
  * @param {boolean} [options.exit]
  */
 export const error = (message = '', options = {}) => {
-  const err = message instanceof Error ? message : new Error(message)
+  const err =
+    message instanceof Error
+      ? message
+      : // eslint-disable-next-line unicorn/no-nested-ternary
+      typeof message === 'string'
+      ? new Error(message)
+      : // eslint-disable-next-line no-inline-comments
+        /** @type {Error} */ ({ message, stack: undefined, name: 'Error' })
 
   if (options.exit === false) {
     const bang = chalk.red(BANG)

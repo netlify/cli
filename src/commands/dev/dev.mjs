@@ -9,7 +9,6 @@ import { printBanner } from '../../utils/banner.mjs'
 import {
   BANG,
   chalk,
-  exit,
   log,
   NETLIFYDEV,
   NETLIFYDEVERR,
@@ -35,7 +34,7 @@ import { createDevExecCommand } from './dev-exec.mjs'
  * @param {object} config
  * @param {*} config.api
  * @param {import('commander').OptionValues} config.options
- * @param {*} config.settings
+ * @param {import('../../utils/types.js').ServerSettings} config.settings
  * @param {*} config.site
  * @param {*} config.state
  * @returns
@@ -68,6 +67,9 @@ const handleLiveTunnel = async ({ api, options, settings, site, state }) => {
   }
 }
 
+/**
+ * @param {string} args
+ */
 const validateShortFlagArgs = (args) => {
   if (args.startsWith('=')) {
     throw new Error(
@@ -124,20 +126,17 @@ const dev = async (options, command) => {
     siteInfo,
   })
 
-  /** @type {Partial<import('../../utils/types').ServerSettings>} */
-  let settings = {}
+  /** @type {import('../../utils/types.js').ServerSettings} */
+  let settings
   try {
-    settings = await detectServerSettings(devConfig, options, command.project, site.root, {
-      site: {
-        id: site.id,
-        url: siteUrl,
-      },
-    })
+    settings = await detectServerSettings(devConfig, options, command.project, site.root)
 
     cachedConfig.config = getConfigWithPlugins(cachedConfig.config, settings)
   } catch (error_) {
-    log(NETLIFYDEVERR, error_.message)
-    exit(1)
+    if (error_ && typeof error_ === 'object' && 'message' in error_) {
+      log(NETLIFYDEVERR, error_.message)
+    }
+    process.exit(1)
   }
 
   command.setAnalyticsPayload({ live: options.live })

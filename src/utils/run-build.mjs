@@ -12,8 +12,13 @@ import { INTERNAL_FUNCTIONS_FOLDER } from './functions/index.mjs'
 
 const netlifyBuildPromise = import('@netlify/build')
 
-// Copies `netlify.toml`, if one is defined, into the `.netlify` internal
-// directory and returns the path to its new location.
+/**
+ * Copies `netlify.toml`, if one is defined, into the `.netlify` internal
+ * directory and returns the path to its new location.
+ * @param {object} config
+ * @param {string} config.configPath
+ * @param {string} config.siteRoot
+ */
 const copyConfig = async ({ configPath, siteRoot }) => {
   const newConfigPath = path.resolve(siteRoot, getPathInProject(['netlify.toml']))
 
@@ -26,6 +31,9 @@ const copyConfig = async ({ configPath, siteRoot }) => {
   return newConfigPath
 }
 
+/**
+ * @param {string} basePath
+ */
 const cleanInternalDirectory = async (basePath) => {
   const ops = [INTERNAL_FUNCTIONS_FOLDER, INTERNAL_EDGE_FUNCTIONS_FOLDER, 'netlify.toml'].map((name) => {
     const fullPath = path.resolve(basePath, getPathInProject([name]))
@@ -36,6 +44,21 @@ const cleanInternalDirectory = async (basePath) => {
   await Promise.all(ops)
 }
 
+/**
+ *
+ * @param {object} config
+ * @param {*} config.cachedConfig
+ * @param {object} config.options
+ * @param {string} config.options.configPath
+ * @param {*} config.options.context
+ * @param {string=} config.options.cwd
+ * @param {boolean} config.options.debug
+ * @param {boolean} config.options.dry
+ * @param {boolean} config.options.offline
+ * @param {boolean} config.options.quiet
+ * @param {boolean} config.options.saveConfig
+ * @returns
+ */
 const getBuildOptions = ({
   cachedConfig,
   options: { configPath, context, cwd = process.cwd(), debug, dry, offline, quiet, saveConfig },
@@ -56,7 +79,18 @@ const getBuildOptions = ({
   saveConfig,
 })
 
-const runNetlifyBuild = async ({ cachedConfig, env, options, settings, site, timeline = 'build' }) => {
+/**
+ *
+ * @param {object} config
+ * @param {*} config.cachedConfig
+ * @param {NodeJS.ProcessEnv} config.env
+ * @param {*} config.options
+ * @param {import('./types.js').ServerSettings} config.settings
+ * @param {*} config.site
+ * @param {'build' | 'dev'} config.timeline
+ * @returns
+ */
+export const runNetlifyBuild = async ({ cachedConfig, env, options, settings, site, timeline = 'build' }) => {
   const { default: buildSite, startDev } = await netlifyBuildPromise
   const sharedOptions = getBuildOptions({
     cachedConfig,
@@ -118,13 +152,19 @@ const runNetlifyBuild = async ({ cachedConfig, env, options, settings, site, tim
   // Run Netlify Build using the `startDev` entry point.
   const { error: startDevError, success } = await startDev(devCommand, startDevOptions)
 
-  if (!success) {
+  if (!success && startDevError) {
     error(`Could not start local development server\n\n${startDevError.message}\n\n${startDevError.stack}`)
   }
 
   return {}
 }
 
+/**
+ * @param {Omit<Parameters<typeof runNetlifyBuild>[0], 'timeline'>} options
+ */
 export const runDevTimeline = (options) => runNetlifyBuild({ ...options, timeline: 'dev' })
 
+/**
+ * @param {Omit<Parameters<typeof runNetlifyBuild>[0], 'timeline'>} options
+ */
 export const runBuildTimeline = (options) => runNetlifyBuild({ ...options, timeline: 'build' })
