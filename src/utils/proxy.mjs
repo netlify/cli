@@ -507,6 +507,7 @@ const initializeProxy = async function ({ configPath, distDir, env, host, port, 
         const contentLength = Buffer.from(errorResponse, 'utf8').byteLength
 
         res.setHeader('content-length', contentLength)
+        res.statusCode = 500
         res.write(errorResponse)
         return res.end()
       }
@@ -608,6 +609,7 @@ export const getProxyUrl = function (settings) {
 }
 
 export const startProxy = async function ({
+  accountId,
   addonsUrls,
   config,
   configPath,
@@ -639,6 +641,7 @@ export const startProxy = async function ({
     passthroughPort: secondaryServerPort || settings.port,
     projectDir,
     siteInfo,
+    accountId,
     state,
   })
   const proxy = await initializeProxy({

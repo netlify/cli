@@ -52,6 +52,7 @@ const startMockApi = ({ routes, silent }) => {
     server.on('listening', () => {
       resolve({
         server,
+        apiUrl: `http://localhost:${server.address().port}/api/v1`,
         requests,
         async close() {
           return promisify(server.close.bind(server))()
@@ -71,8 +72,7 @@ const withMockApi = async (routes, testHandler, silent = false) => {
   let mockApi
   try {
     mockApi = await startMockApi({ routes, silent })
-    const apiUrl = `http://localhost:${mockApi.server.address().port}/api/v1`
-    return await testHandler({ apiUrl, requests: mockApi.requests })
+    return await testHandler({ apiUrl: mockApi.apiUrl, requests: mockApi.requests })
   } finally {
     mockApi.server.close()
   }
