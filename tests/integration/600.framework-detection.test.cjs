@@ -311,7 +311,7 @@ test('should start static service for frameworks without port, forced framework'
 
     // a failure is expected since this is not a true remix project
     const error = await t.throwsAsync(() => withDevServer({ cwd: builder.directory }, () => {}, true))
-    t.true(error.stdout.includes(`Could not find specified framework in project.`))
+    t.true(error.stdout.includes(`Failed running command: remix watch. Please verify 'remix' exists`))
   })
 })
 
