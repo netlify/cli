@@ -144,7 +144,18 @@ export async function setupFixtureTests(
       if (options.mockApi) mockApi = await startMockApi(options.mockApi)
       fixture = await Fixture.create(fixturePath, { apiUrl: mockApi?.apiUrl })
 
-      if (options.devServer) devServer = await startDevServer({ cwd: fixture.directory, args: ['--offline'] })
+      if (options.devServer) {
+        devServer = await startDevServer({
+          cwd: fixture.directory,
+          offline: !mockApi,
+          args: ['--country', 'DE'],
+          env: {
+            NETLIFY_API_URL: mockApi?.apiUrl,
+            NETLIFY_SITE_ID: 'foo',
+            NETLIFY_AUTH_TOKEN: 'fake-token',
+          },
+        })
+      }
 
       await options.setup?.({ devServer, fixture, mockApi })
     }, HOOK_TIMEOUT)
