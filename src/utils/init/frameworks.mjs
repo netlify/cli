@@ -1,25 +1,18 @@
-// @ts-checkom '@netlify/build-info'
+// @ts-check
 
 /**
  * @param {{ project: import("@netlify/build-info").Project }} param0
  * @returns
  */
 export const getFrameworkInfo = async ({ project }) => {
-  const frameworks = await project.detectFrameworks()
+  const settings = await project.getBuildSettings()
   // several frameworks can be detected - first one has highest priority
-  if (frameworks && frameworks.length !== 0) {
-    const [
-      {
-        build: { command, directory },
-        name,
-        plugins,
-      },
-    ] = frameworks
+  if (settings?.length) {
     return {
-      frameworkName: name,
-      frameworkBuildCommand: command,
-      frameworkBuildDir: directory,
-      frameworkPlugins: plugins,
+      frameworkName: settings[0].framework?.name,
+      frameworkBuildCommand: settings[0].buildCommand,
+      frameworkBuildDir: settings[0].dist,
+      frameworkPlugins: settings[0].plugins_recommended,
     }
   }
   return {}
