@@ -90,13 +90,12 @@ const buildFunction = async ({
  * @param {string} params.mainFile
  * @param {string} params.projectRoot
  */
-export const parseFunctionForMetadata = async ({ config, mainFile, projectRoot }) => {
-  return await listFunction(mainFile, {
+export const parseFunctionForMetadata = async ({ config, mainFile, projectRoot }) =>
+  await listFunction(mainFile, {
     config: netlifyConfigToZisiConfig({ config, projectRoot }),
     featureFlags: { zisi_functions_api_v2: true },
     parseISC: true,
   })
-}
 
 // Clears the cache for any files inside the directory from which functions are
 // served.
