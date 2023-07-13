@@ -1,6 +1,8 @@
 // @ts-check
 import { mkdir } from 'fs/promises'
 
+import { zipFunctions } from '@netlify/zip-it-and-ship-it'
+
 import { NETLIFYDEVERR, NETLIFYDEVLOG, exit, log } from '../../utils/command-helpers.mjs'
 import { getFunctionsDir } from '../../utils/functions/index.mjs'
 
@@ -35,8 +37,6 @@ const functionsBuild = async (options, command) => {
   await mkdir(dst, { recursive: true })
 
   log(`${NETLIFYDEVLOG} Building functions`)
-
-  const { zipFunctions } = await import('@netlify/zip-it-and-ship-it')
 
   zipFunctions(src, dst, { skipGo: true })
   log(`${NETLIFYDEVLOG} Functions built to `, dst)

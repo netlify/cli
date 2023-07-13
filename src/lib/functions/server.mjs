@@ -1,4 +1,6 @@
 // @ts-check
+import express from 'express'
+import expressLogging from 'express-logging'
 import jwtDecode from 'jwt-decode'
 
 import { NETLIFYDEVERR, NETLIFYDEVLOG, error as errorExit, log } from '../../utils/command-helpers.mjs'
@@ -111,6 +113,7 @@ export const createHandler = function (options) {
       ...request.headers,
       'client-ip': [remoteAddress],
       'x-nf-client-connection-ip': [remoteAddress],
+      'x-nf-account-id': [options.accountId],
       [efHeaders.Geo]: JSON.stringify(geoLocation),
     }).reduce((prev, [key, value]) => ({ ...prev, [key]: Array.isArray(value) ? value : [value] }), {})
     const rawQuery = new URLSearchParams(requestQuery).toString()
@@ -184,11 +187,8 @@ export const createHandler = function (options) {
   }
 }
 
-const getFunctionsServer = async function (options) {
+const getFunctionsServer = (options) => {
   const { buildersPrefix = '', functionsPrefix = '', functionsRegistry, siteUrl } = options
-  // performance optimization, load express on demand
-  const { default: express } = await import('express')
-  const { default: expressLogging } = await import('express-logging')
   const app = express()
   const functionHandler = createHandler(options)
 

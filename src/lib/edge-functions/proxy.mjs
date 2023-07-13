@@ -3,6 +3,8 @@ import { Buffer } from 'buffer'
 import { relative } from 'path'
 import { cwd, env } from 'process'
 
+// eslint-disable-next-line import/no-namespace
+import * as bundler from '@netlify/edge-bundler'
 import getAvailablePort from 'get-port'
 
 import { NETLIFYDEVERR, NETLIFYDEVWARN, chalk, error as printError, log } from '../../utils/command-helpers.mjs'
@@ -53,7 +55,15 @@ export const createSiteInfoHeader = (siteInfo = {}) => {
   return Buffer.from(siteString).toString('base64')
 }
 
+export const createAccountInfoHeader = (accountInfo = {}) => {
+  const { id } = accountInfo
+  const account = { id }
+  const accountString = JSON.stringify(account)
+  return Buffer.from(accountString).toString('base64')
+}
+
 export const initializeProxy = async ({
+  accountId,
   config,
   configPath,
   debug,
@@ -106,6 +116,7 @@ export const initializeProxy = async ({
     // Setting header with geolocation and site info.
     req.headers[headers.Geo] = JSON.stringify(geoLocation)
     req.headers[headers.Site] = createSiteInfoHeader(siteInfo)
+    req.headers[headers.Account] = createAccountInfoHeader({ id: accountId })
 
     await registry.initialize()
 
@@ -176,7 +187,6 @@ const prepareServer = async ({
   const importMapPaths = [...importMaps, config.functions['*'].deno_import_map]
 
   try {
-    const bundler = await import('@netlify/edge-bundler')
     const distImportMapPath = getPathInProject([DIST_IMPORT_MAP_PATH])
     const runIsolate = await bundler.serve({
       ...getDownloadUpdateFunctions(),

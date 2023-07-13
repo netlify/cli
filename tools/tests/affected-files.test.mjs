@@ -7,6 +7,7 @@ import { stub } from 'sinon'
 import { getAffectedFiles } from '../affected-test.mjs'
 
 import { simpleMockedFileSystem } from './utils/file-systems.mjs'
+import { getAffectedFiles } from '../affected-test.mjs'
 
 /**
  * Get a list of affected files for a mocked file system

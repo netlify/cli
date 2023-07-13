@@ -7,7 +7,6 @@ export default async (request: Request, context: Context) => {
   if (url.searchParams.get("method") !== "transform") {
     return;
   }
-
   const response = await context.next();
   const text = await response.text();
   return new Response(text.toUpperCase(), response);

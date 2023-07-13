@@ -23,7 +23,7 @@ const functionsServe = async (options, command) => {
   env = await getDotEnvVariables({ devConfig: { ...config.dev }, env, site })
   injectEnvVariables(env)
 
-  const { capabilities, siteUrl, timeouts } = await getSiteInformation({
+  const { accountId, capabilities, siteUrl, timeouts } = await getSiteInformation({
     offline: options.offline,
     api,
     site,
@@ -52,6 +52,7 @@ const functionsServe = async (options, command) => {
     geoCountry: options.country,
     offline: options.offline,
     state,
+    accountId,
   })
 }
 

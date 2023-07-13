@@ -10,6 +10,8 @@ import { NodeFS } from '@netlify/build-info/node'
 import { getFramework, listFrameworks } from '@netlify/framework-info'
 import fuzzy from 'fuzzy'
 import getPort from 'get-port'
+import inquirer from 'inquirer'
+import inquirerAutocompletePrompt from 'inquirer-autocomplete-prompt'
 
 import { NETLIFYDEVWARN, chalk, log } from './command-helpers.mjs'
 import { acquirePort } from './dev.mjs'
@@ -259,9 +261,6 @@ const detectFrameworkSettings = async ({ projectDir }) => {
   }
 
   if (frameworks.length > 1) {
-    // performance optimization, load inquirer on demand
-    const { default: inquirer } = await import('inquirer')
-    const { default: inquirerAutocompletePrompt } = await import('inquirer-autocomplete-prompt')
     /** multiple matching detectors, make the user choose */
     inquirer.registerPrompt('autocomplete', inquirerAutocompletePrompt)
     const scriptInquirerOptions = formatSettingsArrForInquirer(frameworks)

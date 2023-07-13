@@ -1,4 +1,6 @@
 // @ts-check
+import { listFunctions } from '@netlify/zip-it-and-ship-it'
+
 import { fileExistsAsync } from '../../lib/fs.mjs'
 
 const getUrlPath = (functionName) => `/.netlify/functions/${functionName}`
@@ -24,8 +26,6 @@ export const getFunctions = async (functionsSrcDir, config = {}) => {
     return []
   }
 
-  // performance optimization, load '@netlify/zip-it-and-ship-it' on demand
-  const { listFunctions } = await import('@netlify/zip-it-and-ship-it')
   const functions = await listFunctions(functionsSrcDir, {
     config: config.functions ? extractSchedule(config.functions) : undefined,
     parseISC: true,

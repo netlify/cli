@@ -11,6 +11,7 @@ export const headers = {
   IP: 'x-nf-client-connection-ip',
   Site: 'X-NF-Site-Info',
   DebugLogging: 'x-nf-debug-logging',
+  Account: 'x-nf-account-info',
 }
 
 /**
