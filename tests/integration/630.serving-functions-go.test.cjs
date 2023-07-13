@@ -8,7 +8,7 @@ const { withSiteBuilder } = require('./utils/site-builder.cjs')
 
 const WAIT_WRITE = 1000
 
-test.only('Updates a Go function when a file is modified', async (t) => {
+test('Updates a Go function when a file is modified', async (t) => {
   const originalBody = 'Hello, world!'
   const updatedBody = 'Hello, Netlify!'
   const [execaMock, removeExecaMock] = await createExecaMock(`

@@ -553,6 +553,38 @@ test('When an edge function fails, serves a fallback defined by its `on_error` m
   })
 })
 
+test('When an edge function throws uncaught exception, the dev server continues working', async (t) => {
+  await withSiteBuilder('site-with-edge-function-uncaught-exception', async (builder) => {
+    builder
+      .withNetlifyToml({
+        config: {
+          build: {
+            edge_functions: 'netlify/edge-functions',
+          },
+        },
+      })
+      .withEdgeFunction({
+        config: { path: '/hello' },
+        handler: () => {
+          const url = new URL('/shouldve-provided-a-base')
+          return new Response(url.toString())
+        },
+        name: 'hello-1',
+      })
+
+    await builder.buildAsync()
+
+    await withDevServer({ cwd: builder.directory }, async (server) => {
+      const response1 = await got(`${server.url}/hello`, {
+        decompress: false,
+        throwHttpErrors: false,
+      })
+      t.is(response1.statusCode, 500)
+      t.regex(response1.body, /TypeError: Invalid URL/)
+    })
+  })
+})
+
 test('redirect with country cookie', async (t) => {
   await withSiteBuilder('site-with-country-cookie', async (builder) => {
     builder

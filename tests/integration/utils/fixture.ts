@@ -1,29 +1,18 @@
 import { join } from 'path'
 import { fileURLToPath } from 'url'
 
+import type { NodeOptions } from 'execa'
 import { copy } from 'fs-extra'
 import { temporaryDirectory } from 'tempy'
 import { afterAll, beforeAll, beforeEach, describe } from 'vitest'
 
 import callCli from './call-cli.cjs'
 import { startDevServer } from './dev-server.cjs'
-import { startMockApi } from './mock-api.cjs'
+import { MockApi, Route, getCLIOptions, startMockApi } from './mock-api-vitest.js'
 import { SiteBuilder } from './site-builder.cjs'
 
 const FIXTURES_DIRECTORY = fileURLToPath(new URL('../__fixtures__/', import.meta.url))
 const HOOK_TIMEOUT = 30_000
-
-export enum HTTPMethod {
-  GET = 'GET',
-  POST = 'POST',
-}
-
-interface Route {
-  method?: HTTPMethod
-  path: string
-  response?: any
-  status?: number
-}
 
 interface MockApiOptions {
   routes: Route[]
@@ -32,7 +21,7 @@ interface MockApiOptions {
 export interface FixtureTestContext {
   fixture: Fixture
   devServer?: any
-  mockApi?: any
+  mockApi?: MockApi
 }
 
 type LifecycleHook = (context: FixtureTestContext) => Promise<void> | void
@@ -51,9 +40,13 @@ export interface FixtureOptions {
 }
 
 interface CallCliOptions {
-  execOptions?: Record<string, unknown>
+  execOptions?: NodeOptions<string>
   offline?: boolean
   parseJson?: boolean
+}
+
+interface FixtureSettings {
+  apiUrl?: string
 }
 
 export class Fixture {
@@ -65,16 +58,18 @@ export class Fixture {
    * The temporary directory where the test is run
    */
   directory: string
+  options: FixtureSettings
   builder: SiteBuilder
 
-  private constructor(fixturePath: string, directory: string) {
+  private constructor(fixturePath: string, directory: string, options?: FixtureSettings) {
     this.fixturePath = fixturePath
     this.directory = directory
+    this.options = options ?? {}
     this.builder = new SiteBuilder(directory)
   }
 
-  static async create(fixturePath: string): Promise<Fixture> {
-    const fixture = new Fixture(fixturePath, temporaryDirectory())
+  static async create(fixturePath: string, options?: FixtureSettings): Promise<Fixture> {
+    const fixture = new Fixture(fixturePath, temporaryDirectory(), options)
 
     await copy(join(FIXTURES_DIRECTORY, fixturePath), fixture.directory)
 
@@ -101,17 +96,23 @@ export class Fixture {
     args: string[],
     { execOptions = {}, offline = true, parseJson = false }: CallCliOptions = {},
   ): Promise<Record<string, unknown> | string> {
-    execOptions.cwd = this.directory
+    let cliOptions: NodeOptions<string> = execOptions
+    if (this.options.apiUrl) {
+      cliOptions = getCLIOptions({ apiUrl: this.options.apiUrl, env: execOptions.env })
+    }
+
+    // @ts-expect-error we do not care it is readonly here
+    cliOptions.cwd = this.directory
 
     if (offline) {
       args.push('--offline')
     }
 
-    return await callCli(args, execOptions, parseJson)
+    return await callCli(args, cliOptions, parseJson)
   }
 }
 
-type TestFactory = (context: { fixture: Fixture }) => Promise<void> | void
+type TestFactory = () => Promise<void> | void
 
 export async function setupFixtureTests(fixturePath: string, factory: TestFactory): Promise<void>
 export async function setupFixtureTests(
@@ -136,11 +137,13 @@ export async function setupFixtureTests(
 
   describe(`fixture: ${fixturePath}`, async () => {
     let devServer: any
-    let mockApi: any
-    const fixture = await Fixture.create(fixturePath)
+    let mockApi: MockApi | undefined
+    let fixture: Fixture
 
     beforeAll(async () => {
       if (options.mockApi) mockApi = await startMockApi(options.mockApi)
+      fixture = await Fixture.create(fixturePath, { apiUrl: mockApi?.apiUrl })
+
       if (options.devServer) devServer = await startDevServer({ cwd: fixture.directory, args: ['--offline'] })
 
       await options.setup?.({ devServer, fixture, mockApi })
@@ -149,10 +152,13 @@ export async function setupFixtureTests(
     beforeEach<FixtureTestContext>((context) => {
       if (fixture) context.fixture = fixture
       if (devServer) context.devServer = devServer
-      if (mockApi) context.mockApi = mockApi
+      if (mockApi) {
+        mockApi.clearRequests()
+        context.mockApi = mockApi
+      }
     })
 
-    await factory({ fixture })
+    await factory()
 
     afterAll(async () => {
       await options.teardown?.({ devServer, fixture, mockApi })

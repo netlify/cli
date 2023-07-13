@@ -116,7 +116,7 @@ const dev = async (options, command) => {
   injectEnvVariables(env)
   await promptEditorHelper({ chalk, config, log, NETLIFYDEVLOG, repositoryRoot, state })
 
-  const { addonsUrls, capabilities, siteUrl, timeouts } = await getSiteInformation({
+  const { accountId, addonsUrls, capabilities, siteUrl, timeouts } = await getSiteInformation({
     // inherited from base command --offline
     offline: options.offline,
     api,
@@ -172,6 +172,11 @@ const dev = async (options, command) => {
     siteUrl,
     capabilities,
     timeouts,
+    geolocationMode: options.geo,
+    geoCountry: options.country,
+    offline: options.offline,
+    state,
+    accountId,
   })
 
   // Try to add `.netlify` to `.gitignore`.
@@ -198,8 +203,6 @@ const dev = async (options, command) => {
     configPath: configPathOverride,
     debug: options.debug,
     env,
-    geolocationMode: options.geo,
-    geoCountry: options.country,
     getUpdatedConfig,
     inspectSettings,
     offline: options.offline,
@@ -207,6 +210,9 @@ const dev = async (options, command) => {
     site,
     siteInfo,
     state,
+    geolocationMode: options.geo,
+    geoCountry: options.country,
+    accountId,
   })
 
   if (devConfig.autoLaunch !== false) {

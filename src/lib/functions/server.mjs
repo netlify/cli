@@ -5,6 +5,8 @@ import jwtDecode from 'jwt-decode'
 
 import { NETLIFYDEVERR, NETLIFYDEVLOG, error as errorExit, log } from '../../utils/command-helpers.mjs'
 import { CLOCKWORK_USERAGENT, getFunctionsDistPath, getInternalFunctionsDir } from '../../utils/functions/index.mjs'
+import { headers as efHeaders } from '../edge-functions/headers.mjs'
+import { getGeoLocation } from '../geo-location.mjs'
 
 import { handleBackgroundFunction, handleBackgroundFunctionResult } from './background.mjs'
 import { createFormSubmissionHandler } from './form-submissions-handler.mjs'
@@ -104,10 +106,16 @@ export const createHandler = function (options) {
       (prev, [key, value]) => ({ ...prev, [key]: Array.isArray(value) ? value : [value] }),
       {},
     )
-    const headers = Object.entries({ ...request.headers, 'client-ip': [remoteAddress] }).reduce(
-      (prev, [key, value]) => ({ ...prev, [key]: Array.isArray(value) ? value : [value] }),
-      {},
-    )
+
+    const geoLocation = await getGeoLocation({ ...options, mode: options.geo })
+
+    const headers = Object.entries({
+      ...request.headers,
+      'client-ip': [remoteAddress],
+      'x-nf-client-connection-ip': [remoteAddress],
+      'x-nf-account-id': [options.accountId],
+      [efHeaders.Geo]: JSON.stringify(geoLocation),
+    }).reduce((prev, [key, value]) => ({ ...prev, [key]: Array.isArray(value) ? value : [value] }), {})
     const rawQuery = new URLSearchParams(requestQuery).toString()
     const protocol = options.config?.dev?.https ? 'https' : 'http'
     const url = new URL(requestPath, `${protocol}://${request.get('host') || 'localhost'}`)

@@ -467,17 +467,19 @@ export class EdgeFunctionsRegistry {
    * @param {string} projectDir
    */
   async #setupWatchers(projectDir) {
-    // Creating a watcher for the config file. When it changes, we update the
-    // declarations and see if we need to register or unregister any functions.
-    this.#configWatcher = await watchDebounced(this.#configPath, {
-      onChange: async () => {
-        const newConfig = await this.#getUpdatedConfig()
+    if (this.#configPath) {
+      // Creating a watcher for the config file. When it changes, we update the
+      // declarations and see if we need to register or unregister any functions.
+      this.#configWatcher = await watchDebounced(this.#configPath, {
+        onChange: async () => {
+          const newConfig = await this.#getUpdatedConfig()
 
-        this.#declarationsFromTOML = EdgeFunctionsRegistry.#getDeclarationsFromTOML(newConfig)
+          this.#declarationsFromTOML = EdgeFunctionsRegistry.#getDeclarationsFromTOML(newConfig)
 
-        await this.#checkForAddedOrDeletedFunctions()
-      },
-    })
+          await this.#checkForAddedOrDeletedFunctions()
+        },
+      })
+    }
 
     // While functions are guaranteed to be inside one of the configured
     // directories, they might be importing files that are located in

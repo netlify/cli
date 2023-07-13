@@ -175,6 +175,7 @@ netlify env:set
 - `http-proxy` (*string*) - Proxy server address to route requests through.
 - `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 - `scope` (*builds | functions | post-processing | runtime*) - Specify a scope (default: all scopes)
+- `secret` (*boolean*) - Indicate whether the environment variable value can be read again.
 
 **Examples**
 
@@ -182,8 +183,10 @@ netlify env:set
 netlify env:set VAR_NAME value # set in all contexts and scopes
 netlify env:set VAR_NAME value --context production
 netlify env:set VAR_NAME value --context production deploy-preview
+netlify env:set VAR_NAME value --context production --secret
 netlify env:set VAR_NAME value --scope builds
 netlify env:set VAR_NAME value --scope builds functions
+netlify env:set VAR_NAME --secret # convert existing variable to secret
 ```
 
 ---
