@@ -3,6 +3,8 @@ import { Buffer } from 'buffer'
 import { relative } from 'path'
 import { cwd, env } from 'process'
 
+// eslint-disable-next-line import/no-namespace
+import * as bundler from '@netlify/edge-bundler'
 import getAvailablePort from 'get-port'
 
 import { NETLIFYDEVERR, NETLIFYDEVWARN, chalk, error as printError, log } from '../../utils/command-helpers.mjs'
@@ -185,7 +187,6 @@ const prepareServer = async ({
   const importMapPaths = [...importMaps, config.functions['*'].deno_import_map]
 
   try {
-    const bundler = await import('@netlify/edge-bundler')
     const distImportMapPath = getPathInProject([DIST_IMPORT_MAP_PATH])
     const runIsolate = await bundler.serve({
       ...getDownloadUpdateFunctions(),
