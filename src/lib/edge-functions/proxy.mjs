@@ -112,7 +112,7 @@ export const initializeProxy = async ({
     if (!registry) return
 
     // Setting header with geolocation and site info.
-    req.headers[headers.Geo] = JSON.stringify(geoLocation)
+    req.headers[headers.Geo] = Buffer.from(JSON.stringify(geoLocation)).toString('base64')
     req.headers[headers.Site] = createSiteInfoHeader(siteInfo)
     req.headers[headers.Account] = createAccountInfoHeader({ id: accountId })
 
