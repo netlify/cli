@@ -214,7 +214,7 @@
     "tomlify-j0.4": "3.0.0",
     "tree-kill": "1.2.2",
     "typescript": "5.1.6",
-    "verdaccio": "5.25.0",
+    "verdaccio": "5.26.0",
     "vitest": "0.33.0"
   },
   "ava": {
