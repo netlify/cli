@@ -1,3 +1,4 @@
+const { Buffer } = require('buffer')
 const path = require('path')
 
 const test = require('ava')
@@ -69,8 +70,9 @@ test('functions rewrite echo without body', async (t) => {
     'x-forwarded-for': originalIP,
     'x-nf-account-id': '',
     'x-nf-client-connection-ip': clientIP,
-    'x-nf-geo':
+    'x-nf-geo': Buffer.from(
       '{"city":"San Francisco","country":{"code":"US","name":"United States"},"subdivision":{"code":"CA","name":"California"},"longitude":0,"latitude":0,"timezone":"UTC"}',
+    ).toString('base64'),
   })
   t.is(requestID.length, 26)
   t.is(response.httpMethod, 'GET')
@@ -104,8 +106,9 @@ test('functions rewrite echo with body', async (t) => {
     'x-forwarded-for': originalIP,
     'x-nf-account-id': '',
     'x-nf-client-connection-ip': clientIP,
-    'x-nf-geo':
+    'x-nf-geo': Buffer.from(
       '{"city":"San Francisco","country":{"code":"US","name":"United States"},"subdivision":{"code":"CA","name":"California"},"longitude":0,"latitude":0,"timezone":"UTC"}',
+    ).toString('base64'),
   })
   t.is(requestID.length, 26)
   t.is(response.httpMethod, 'POST')
@@ -129,8 +132,9 @@ test('functions echo with multiple query params', async (t) => {
     'x-forwarded-for': originalIP,
     'x-nf-account-id': '',
     'x-nf-client-connection-ip': clientIP,
-    'x-nf-geo':
+    'x-nf-geo': Buffer.from(
       '{"city":"San Francisco","country":{"code":"US","name":"United States"},"subdivision":{"code":"CA","name":"California"},"longitude":0,"latitude":0,"timezone":"UTC"}',
+    ).toString('base64'),
   })
   t.is(requestID.length, 26)
   t.is(response.httpMethod, 'GET')
