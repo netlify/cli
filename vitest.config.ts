@@ -12,7 +12,7 @@ export default defineConfig({
     },
     reporters: [process.env.DEBUG_TESTS ? 'tap' : 'default'],
     coverage: {
-      provider: 'c8',
+      provider: 'v8',
       reporter: ['text', 'lcov'],
     },
   },

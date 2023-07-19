@@ -2,6 +2,7 @@
 import process from 'process'
 
 import { Option } from 'commander'
+import envinfo from 'envinfo'
 import { closest } from 'fastest-levenshtein'
 import inquirer from 'inquirer'
 
@@ -39,7 +40,6 @@ const SUGGESTION_TIMEOUT = 1e4
 const getVersionPage = async () => {
   // performance optimization - load envinfo on demand
 
-  const envinfo = await import('envinfo')
   const data = await envinfo.run({
     System: ['OS', 'CPU'],
     Binaries: ['Node', 'Yarn', 'npm'],

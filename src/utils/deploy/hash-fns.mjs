@@ -2,6 +2,7 @@ import { readFile } from 'fs/promises'
 import path from 'path'
 import { promisify } from 'util'
 
+import { zipFunctions } from '@netlify/zip-it-and-ship-it'
 import fromArray from 'from2-array'
 import pumpModule from 'pump'
 
@@ -65,8 +66,6 @@ const getFunctionZips = async ({
       phase: 'stop',
     })
   }
-
-  const { zipFunctions } = await import('@netlify/zip-it-and-ship-it')
 
   return await zipFunctions(directories, tmpDir, {
     basePath: rootDir,
