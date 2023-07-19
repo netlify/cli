@@ -25,15 +25,19 @@ export const reportError = async function (error, config = {}) {
     return
   }
 
+  // convert a NotifiableError to an error class
+  // eslint-disable-next-line unicorn/no-nested-ternary
+  const err = error instanceof Error ? error : typeof error === 'string' ? new Error(error) : error
+
   const globalConfig = await getGlobalConfig()
 
   const options = JSON.stringify({
     type: 'error',
     data: {
-      message: error.message,
-      name: error.name,
-      stack: error.stack,
-      cause: error.cause,
+      message: err.message,
+      name: err.name,
+      stack: err.stack,
+      cause: err.cause,
       severity: config.severity,
       user: {
         id: globalConfig.get('userId'),
