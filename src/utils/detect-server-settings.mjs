@@ -209,11 +209,11 @@ const detectChangesInNewSettings = (frameworkSettings, newSettings, metadata) =>
   const message = ['']
   const [setting] = newSettings
 
-  if (frameworkSettings?.framework !== setting?.framework) {
+  if (frameworkSettings?.framework !== setting?.framework.name) {
     message.push(
       `- Framework does not match:`,
       `   [old]: ${frameworkSettings?.framework}`,
-      `   [new]: ${setting?.framework}`,
+      `   [new]: ${setting?.framework.name}`,
       '',
     )
   }
