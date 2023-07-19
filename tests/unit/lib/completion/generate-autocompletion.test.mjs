@@ -4,10 +4,10 @@ import fs from 'fs'
 import { Argument } from 'commander'
 import { describe, expect, test, vi } from 'vitest'
 
+import BaseCommand from '../../../../src/commands/base-command.mjs'
 import generateAutocompletion from '../../../../src/lib/completion/generate-autocompletion.mjs'
 
 const createTestCommand = async () => {
-  const { default: BaseCommand } = await import('../../../../src/commands/base-command.mjs')
   const program = new BaseCommand('chef')
 
   program

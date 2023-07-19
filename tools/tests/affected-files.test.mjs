@@ -6,6 +6,7 @@ import mock from 'mock-fs'
 import { stub, createSandbox } from 'sinon'
 
 import { simpleMockedFileSystem } from './utils/file-systems.mjs'
+import { getAffectedFiles } from '../affected-test.mjs'
 
 /**
  * Get a list of affected files for a mocked file system
@@ -17,7 +18,6 @@ const getAffectedFilesFromMock = async (changedFiles, fileSystem = simpleMockedF
   const mockedTestFiles = Object.keys(fileSystem).filter((file) => file.match(/\.test\.m?js$/gm))
   const globStub = stub(glob, 'sync').returns(mockedTestFiles)
 
-  const { getAffectedFiles } = await import('../affected-test.mjs')
   mock(fileSystem)
 
   const affectedFiles = getAffectedFiles(changedFiles)

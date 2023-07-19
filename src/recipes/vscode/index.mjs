@@ -1,5 +1,6 @@
 import { join } from 'path'
 
+import { DenoBridge } from '@netlify/edge-bundler'
 import execa from 'execa'
 import inquirer from 'inquirer'
 
@@ -49,7 +50,6 @@ const getDenoExtPrompt = () => {
 }
 
 export const run = async ({ config, repositoryRoot }) => {
-  const { DenoBridge } = await import('@netlify/edge-bundler')
   const deno = new DenoBridge({
     onBeforeDownload: () =>
       log(`${NETLIFYDEVWARN} Setting up the Edge Functions environment. This may take a couple of minutes.`),
