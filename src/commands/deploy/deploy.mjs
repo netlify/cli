@@ -1,7 +1,7 @@
 // @ts-check
 import { stat } from 'fs/promises'
 import { basename, resolve } from 'path'
-import { cwd, env } from 'process'
+import { env } from 'process'
 
 import { runCoreSteps } from '@netlify/build'
 import { restoreConfig, updateConfig } from '@netlify/config'
@@ -64,16 +64,17 @@ const triggerDeploy = async ({ api, options, siteData, siteId }) => {
 /**
  * g
  * @param {object} config
+ * @param {string} config.workingDir The process working directory
  * @param {object} config.config
  * @param {import('commander').OptionValues} config.options
  * @param {object} config.site
  * @param {object} config.siteData
  * @returns {Promise<string>}
  */
-const getDeployFolder = async ({ config, options, site, siteData }) => {
+const getDeployFolder = async ({ config, options, site, siteData, workingDir }) => {
   let deployFolder
   if (options.dir) {
-    deployFolder = resolve(cwd(), options.dir)
+    deployFolder = resolve(workingDir, options.dir)
   } else if (config?.build?.publish) {
     deployFolder = resolve(site.root, config.build.publish)
   } else if (siteData?.build_settings?.dir) {
@@ -82,14 +83,14 @@ const getDeployFolder = async ({ config, options, site, siteData }) => {
 
   if (!deployFolder) {
     log('Please provide a publish directory (e.g. "public" or "dist" or "."):')
-    log(cwd())
+    log(workingDir)
     const { promptPath } = await inquirer.prompt([
       {
         type: 'input',
         name: 'promptPath',
         message: 'Publish directory',
         default: '.',
-        filter: (input) => resolve(cwd(), input),
+        filter: (input) => resolve(workingDir, input),
       },
     ])
     deployFolder = promptPath
@@ -128,14 +129,15 @@ const validateDeployFolder = async ({ deployFolder }) => {
  * @param {import('commander').OptionValues} config.options
  * @param {object} config.site
  * @param {object} config.siteData
+ * @param {string} config.workingDir // The process working directory
  * @returns {string}
  */
-const getFunctionsFolder = ({ config, options, site, siteData }) => {
+const getFunctionsFolder = ({ config, options, site, siteData, workingDir }) => {
   let functionsFolder
   // Support "functions" and "Functions"
   const funcConfig = config.functionsDirectory
   if (options.functions) {
-    functionsFolder = resolve(cwd(), options.functions)
+    functionsFolder = resolve(workingDir, options.functions)
   } else if (funcConfig) {
     functionsFolder = resolve(site.root, funcConfig)
   } else if (siteData?.build_settings?.functions_dir) {
@@ -178,12 +180,21 @@ const validateFolders = async ({ deployFolder, functionsFolder }) => {
   return { deployFolderStat, functionsFolderStat }
 }
 
+/**
+ * @param {object} config
+ * @param {string} config.deployFolder
+ * @param {*} config.site
+ * @returns
+ */
 const getDeployFilesFilter = ({ deployFolder, site }) => {
   // site.root === deployFolder can happen when users run `netlify deploy --dir .`
   // in that specific case we don't want to publish the repo node_modules
   // when site.root !== deployFolder the behaviour matches our buildbot
   const skipNodeModules = site.root === deployFolder
 
+  /**
+   * @param {string} filename
+   */
   return (filename) => {
     if (filename == null) {
       return false
@@ -496,6 +507,7 @@ const printResults = ({ deployToProduction, json, results, runBuildCommand }) =>
  * @param {import('../base-command.mjs').default} command
  */
 const deploy = async (options, command) => {
+  const { workingDir } = command
   const { api, site, siteInfo } = command.netlify
   const alias = options.alias || options.branch
 
@@ -566,8 +578,8 @@ const deploy = async (options, command) => {
   })
   const config = newConfig || command.netlify.config
 
-  const deployFolder = await getDeployFolder({ options, config, site, siteData })
-  const functionsFolder = getFunctionsFolder({ options, config, site, siteData })
+  const deployFolder = await getDeployFolder({ workingDir, options, config, site, siteData })
+  const functionsFolder = getFunctionsFolder({ workingDir, options, config, site, siteData })
   const { configPath } = site
   const edgeFunctionsConfig = command.netlify.config.edge_functions
 

@@ -37,6 +37,13 @@ export const getFunctionsDistPath = async ({ base }) => {
   return isDirectory ? path : null
 }
 
+/**
+ * Retrieves the internal functions directory and creates it if ensureExists is provided
+ * @param {object} config
+ * @param {string} config.base
+ * @param {boolean=} config.ensureExists
+ * @returns
+ */
 export const getInternalFunctionsDir = async ({ base, ensureExists }) => {
   const path = resolve(base, getPathInProject([INTERNAL_FUNCTIONS_FOLDER]))
 

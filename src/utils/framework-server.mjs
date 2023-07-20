@@ -18,7 +18,7 @@ const FRAMEWORK_PORT_TIMEOUT = 6e5
 /**
  * Start a static server if the `useStaticServer` is provided or a framework specific server
  * @param {object} config
- * @param {Partial<import('./types').ServerSettings>} config.settings
+ * @param {import('./types.js').ServerSettings} config.settings
  * @returns {Promise<StartReturnObject>}
  */
 export const startFrameworkServer = async function ({ settings }) {
@@ -46,7 +46,7 @@ export const startFrameworkServer = async function ({ settings }) {
       host: 'localhost',
       output: 'silent',
       timeout: FRAMEWORK_PORT_TIMEOUT,
-      ...(settings.pollingStrategies.includes('HTTP') && { protocol: 'http' }),
+      ...(settings.pollingStrategies?.includes('HTTP') && { protocol: 'http' }),
     })
 
     if (!port.open) {

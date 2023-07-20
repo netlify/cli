@@ -12,7 +12,6 @@ import copyTemplateDirOriginal from 'copy-template-dir'
 import { findUp } from 'find-up'
 import fuzzy from 'fuzzy'
 import inquirer from 'inquirer'
-import inquirerAutocompletePrompt from 'inquirer-autocomplete-prompt'
 import fetch from 'node-fetch'
 import ora from 'ora'
 
@@ -171,8 +170,6 @@ const pickTemplate = async function ({ language: languageFromFlag }, funcType) {
 
     language = languageFromPrompt
   }
-
-  inquirer.registerPrompt('autocomplete', inquirerAutocompletePrompt)
 
   let templatesForLanguage
 

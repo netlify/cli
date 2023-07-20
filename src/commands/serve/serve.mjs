@@ -69,10 +69,10 @@ const serve = async (options, command) => {
   // Netlify Build are loaded.
   await getInternalFunctionsDir({ base: site.root, ensureExists: true })
 
-  /** @type {Partial<import('../../utils/types').ServerSettings>} */
+  /** @type {Partial<import('../../utils/types.js').ServerSettings>} */
   let settings = {}
   try {
-    settings = await detectServerSettings(devConfig, options, site.root)
+    settings = await detectServerSettings(devConfig, options, command)
 
     cachedConfig.config = getConfigWithPlugins(cachedConfig.config, settings)
   } catch (error_) {
@@ -87,7 +87,13 @@ const serve = async (options, command) => {
     `${NETLIFYDEVWARN} Changes will not be hot-reloaded, so if you need to rebuild your site you must exit and run 'netlify serve' again`,
   )
 
-  const { configPath: configPathOverride } = await runBuildTimeline({ cachedConfig, options, settings, site })
+  const { configPath: configPathOverride } = await runBuildTimeline({
+    cachedConfig,
+    options,
+    settings,
+    projectDir: command.workingDir,
+    site,
+  })
 
   await startFunctionsServer({
     api,
@@ -117,8 +123,7 @@ const serve = async (options, command) => {
 
   // TODO: We should consolidate this with the existing config watcher.
   const getUpdatedConfig = async () => {
-    const cwd = options.cwd || process.cwd()
-    const { config: newConfig } = await command.getConfig({ cwd, offline: true, state })
+    const { config: newConfig } = await command.getConfig({ cwd: command.workingDir, offline: true, state })
     const normalizedNewConfig = normalizeConfig(newConfig)
 
     return normalizedNewConfig
@@ -135,6 +140,7 @@ const serve = async (options, command) => {
     getUpdatedConfig,
     inspectSettings,
     offline: options.offline,
+    projectDir: command.workingDir,
     settings,
     site,
     siteInfo,

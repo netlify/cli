@@ -1,13 +1,17 @@
 // @ts-check
+import { join, resolve } from 'path'
 import process from 'process'
 import { format } from 'util'
 
-import { Project } from '@netlify/build-info'
+import { DefaultLogger, Project } from '@netlify/build-info'
 // eslint-disable-next-line import/extensions, n/no-missing-import
-import { NodeFS } from '@netlify/build-info/node'
+import { NodeFS, NoopLogger } from '@netlify/build-info/node'
 import { resolveConfig } from '@netlify/config'
 import { Command, Option } from 'commander'
 import debug from 'debug'
+import execa from 'execa'
+import inquirer from 'inquirer'
+import inquirerAutocompletePrompt from 'inquirer-autocomplete-prompt'
 import merge from 'lodash/merge.js'
 import { NetlifyAPI } from 'netlify'
 
@@ -30,8 +34,10 @@ import getGlobalConfig from '../utils/get-global-config.mjs'
 import { getSiteByName } from '../utils/get-site.mjs'
 import openBrowser from '../utils/open-browser.mjs'
 import StateConfig from '../utils/state-config.mjs'
-import { identify, track } from '../utils/telemetry/index.mjs'
+import { identify, reportError, track } from '../utils/telemetry/index.mjs'
 
+// load the autocomplete plugin
+inquirer.registerPrompt('autocomplete', inquirerAutocompletePrompt)
 // Netlify CLI client id. Lives in bot@netlify.com
 // TODO: setup client for multiple environments
 const CLIENT_ID = 'd6f37de6614df7ae58664cfca524744d73807a377f5ee71f1a254f78412e3750'
@@ -64,29 +70,72 @@ const getDuration = function (startTime) {
 }
 
 /**
- * The netlify object inside each command with the state
- * @typedef NetlifyOptions
- * @type {object}
- * @property {import('netlify').NetlifyAPI} api
- * @property {*} repositoryRoot
- * @property {object} site
- * @property {*} site.root
- * @property {*} site.configPath
- * @property {*} site.id
- * @property {*} siteInfo
- * @property {*} config
- * @property {*} cachedConfig
- * @property {*} globalConfig
- * @property {import('../../utils/state-config.mjs').default} state,
+ * Retrieves a workspace package based of the filter flag that is provided.
+ * If the filter flag does not match a workspace package or is not defined then it will prompt with an autocomplete to select a package
+ * @param {Project} project
+ * @param {string=} filter
+ * @returns {Promise<string>}
  */
+async function selectWorkspace(project, filter) {
+  const selected = project.workspace?.packages.find((pkg) => {
+    if (project.relativeBaseDirectory && pkg.path.startsWith(project.relativeBaseDirectory)) {
+      return true
+    }
+    return pkg.name === filter
+  })
+
+  if (!selected) {
+    log()
+    log(chalk.cyan(`We've detected multiple sites inside your repository!`))
+
+    const { result } = await inquirer.prompt({
+      name: 'result',
+      type: 'autocomplete',
+      message: 'Select a site you want to work with',
+      source: (/** @type {string} */ _, input = '') =>
+        (project.workspace?.packages || [])
+          .filter((pkg) => pkg.path.includes(input))
+          .map((pkg) => ({
+            name: `${pkg.name && `${chalk.bold(pkg.name)}`}  ${pkg.path}  ${
+              pkg.name && chalk.dim(`--filter ${pkg.name}`)
+            }`,
+            value: pkg.path,
+          })),
+    })
+
+    return result
+  }
+  return selected.path
+}
 
 /** Base command class that provides tracking and config initialization */
 export default class BaseCommand extends Command {
-  /** @type {NetlifyOptions} */
+  /**
+   * The netlify object inside each command with the state
+   * @type {import('./types.js').NetlifyOptions}
+   */
   netlify
 
   /** @type {{ startTime: bigint, payload?: any}} */
   analytics = { startTime: process.hrtime.bigint() }
+
+  /** @type {Project} */
+  project
+
+  /**
+   * The working directory that is used for reading the `netlify.toml` file and storing the state.
+   * In a monorepo context this must not be the process working directory and can be an absolute path to the
+   * Package/Site that should be worked in.
+   */
+  // here we actually want to disable the lint rule as it's value is set
+  // eslint-disable-next-line workspace/no-process-cwd
+  workingDir = process.cwd()
+
+  /**
+   * The current workspace package we should execute the commands in
+   * @type {string|undefined}
+   */
+  workspacePackage
 
   /**
    * IMPORTANT this function will be called for each command!
@@ -130,7 +179,15 @@ export default class BaseCommand extends Command {
           process.env.HTTP_PROXY || process.env.HTTPS_PROXY,
         )
         .option('--debug', 'Print debugging information')
+        .option('--config <configFilePath>', 'Custom path to a netlify configuration file')
+        .option(
+          '--filter <app>',
+          'Optional name of an application to run the command in.\nThis option is needed for working in Monorepos',
+        )
         .hook('preAction', async (_parentCommand, actionCommand) => {
+          if (actionCommand.opts()?.debug) {
+            process.env.DEBUG = '*'
+          }
           debug(`${name}:preAction`)('start')
           this.analytics = { startTime: process.hrtime.bigint() }
           // @ts-ignore cannot type actionCommand as BaseCommand
@@ -149,7 +206,7 @@ export default class BaseCommand extends Command {
     return this
   }
 
-  /** The examples list for the command (used inside doc generation and help page) */
+  /** @type {string[]} The examples list for the command (used inside doc generation and help page) */
   examples = []
 
   /**
@@ -172,7 +229,7 @@ export default class BaseCommand extends Command {
       const term =
         this.name() === 'netlify'
           ? `${HELP_$} ${command.name()} [COMMAND]`
-          : `${HELP_$} ${command.parent.name()} ${command.name()} ${command.usage()}`
+          : `${HELP_$} ${command.parent?.name()} ${command.name()} ${command.usage()}`
 
       return padLeft(term, HELP_INDENT_WIDTH)
     }
@@ -337,6 +394,11 @@ export default class BaseCommand extends Command {
     }
   }
 
+  /**
+   *
+   * @param {string|undefined} tokenFromFlag
+   * @returns
+   */
   async authenticate(tokenFromFlag) {
     const [token] = await getToken(tokenFromFlag)
     if (token) {
@@ -406,6 +468,10 @@ export default class BaseCommand extends Command {
     return accessToken
   }
 
+  /**
+   * Adds some data to the analytics payload
+   * @param {Record<string, unknown>} payload
+   */
   setAnalyticsPayload(payload) {
     const newPayload = { ...this.analytics.payload, ...payload }
     this.analytics = { ...this.analytics, payload: newPayload }
@@ -418,12 +484,45 @@ export default class BaseCommand extends Command {
    */
   async init(actionCommand) {
     debug(`${actionCommand.name()}:init`)('start')
-    const options = actionCommand.opts()
-    const cwd = options.cwd || process.cwd()
-    // Get site id & build state
-    const state = new StateConfig(cwd)
+    const flags = actionCommand.opts()
+    // here we actually want to use the process.cwd as we are setting the workingDir
+    // eslint-disable-next-line workspace/no-process-cwd
+    this.workingDir = flags.cwd || process.cwd()
 
-    const [token] = await getToken(options.auth)
+    // ==================================================
+    // Create a Project and run the Heuristics to detect
+    // if we are run inside a monorepo or not.
+    // ==================================================
+
+    // retrieve the repository root
+    const rootDir = await getRepositoryRoot()
+    // Get framework, add to analytics payload for every command, if a framework is set
+    const fs = new NodeFS()
+    // disable logging inside the project and FS if not in debug mode
+    fs.logger = actionCommand.opts()?.debug ? new DefaultLogger('debug') : new NoopLogger()
+    this.project = new Project(fs, this.workingDir, rootDir)
+      .setEnvironment(process.env)
+      .setNodeVersion(process.version)
+      // eslint-disable-next-line promise/prefer-await-to-callbacks
+      .setReportFn((err, reportConfig) => {
+        reportError(err, {
+          severity: reportConfig?.severity || 'error',
+          metadata: reportConfig?.metadata,
+        })
+      })
+    const frameworks = await this.project.detectFrameworks()
+    // check if we have detected multiple projects inside which one we have to perform our operations.
+    // only ask to select one if on the workspace root
+    if (this.project.workspace?.packages.length && this.project.workspace.isRoot) {
+      this.workspacePackage = await selectWorkspace(this.project, actionCommand.opts().filter)
+      this.workingDir = join(this.project.jsWorkspaceRoot, this.workspacePackage)
+    }
+
+    // ==================================================
+    // Retrieve Site id and build state from the state.json
+    // ==================================================
+    const state = new StateConfig(this.workingDir)
+    const [token] = await getToken(flags.auth)
 
     const apiUrlOpts = {
       userAgent: USER_AGENT,
@@ -437,12 +536,23 @@ export default class BaseCommand extends Command {
         process.env.NETLIFY_API_URL === `${apiUrl.protocol}//${apiUrl.host}` ? '/api/v1' : apiUrl.pathname
     }
 
-    const cachedConfig = await actionCommand.getConfig({ cwd, state, token, ...apiUrlOpts })
+    // ==================================================
+    // Start retrieving the configuration through the
+    // configuration file and the API
+    // ==================================================
+    const cachedConfig = await actionCommand.getConfig({
+      cwd: this.workingDir,
+      // The config flag needs to be resolved from the actual process working directory
+      configFilePath: flags.config ? resolve(flags.config) : undefined,
+      state,
+      token,
+      ...apiUrlOpts,
+    })
     const { buildDir, config, configPath, repositoryRoot, siteInfo } = cachedConfig
     const normalizedConfig = normalizeConfig(config)
     const agent = await getAgent({
-      httpProxy: options.httpProxy,
-      certificateFile: options.httpProxyCertificateFilename,
+      httpProxy: flags.httpProxy,
+      certificateFile: flags.httpProxyCertificateFilename,
     })
     const apiOpts = { ...apiUrlOpts, agent }
     const api = new NetlifyAPI(token || '', apiOpts)
@@ -454,28 +564,30 @@ export default class BaseCommand extends Command {
     // options.site as a site name (and not just site id) was introduced for the deploy command, so users could
     // deploy by name along with by id
     let siteData = siteInfo
-    if (!siteData.url && options.site) {
-      siteData = await getSiteByName(api, options.site)
+    if (!siteData.url && flags.site) {
+      siteData = await getSiteByName(api, flags.site)
     }
 
     const globalConfig = await getGlobalConfig()
 
-    // Get framework, add to analytics payload for every command, if a framework is set
-    const fs = new NodeFS()
-    const project = new Project(fs, buildDir)
-    const frameworks = await project.detectFrameworks()
-
+    // ==================================================
+    // Perform analytics reporting
+    // ==================================================
     const frameworkIDs = frameworks?.map((framework) => framework.id)
-
     if (frameworkIDs?.length !== 0) {
       this.setAnalyticsPayload({ frameworks: frameworkIDs })
     }
-
     this.setAnalyticsPayload({
-      packageManager: project.packageManager?.name,
-      buildSystem: project.buildSystems.map(({ id }) => id),
+      monorepo: Boolean(this.project.workspace),
+      packageManager: this.project.packageManager?.name,
+      buildSystem: this.project.buildSystems.map(({ id }) => id),
     })
 
+    // set the project and the netlify api object on the command,
+    // to be accessible inside each command.
+    actionCommand.project = this.project
+    actionCommand.workingDir = this.workingDir
+    actionCommand.workspacePackage = this.workspacePackage
     actionCommand.netlify = {
       // api methods
       api,
@@ -508,26 +620,36 @@ export default class BaseCommand extends Command {
 
   /**
    * Find and resolve the Netlify configuration
-   * @param {*} config
-   * @returns {ReturnType<import('@netlify/config/src/main')>}
+   * @param {object} config
+   * @param {string} config.cwd
+   * @param {string|null=} config.token
+   * @param {*} config.state
+   * @param {boolean=} config.offline
+   * @param {string=} config.configFilePath An optional path to the netlify configuration file e.g. netlify.toml
+   * @param {string=} config.repositoryRoot
+   * @param {string=} config.host
+   * @param {string=} config.pathPrefix
+   * @param {string=} config.scheme
+   * @returns {ReturnType<typeof resolveConfig>}
    */
   async getConfig(config) {
-    const options = this.opts()
-    const { cwd, host, offline = options.offline, pathPrefix, scheme, state, token } = config
+    // the flags that are passed to the command like `--debug` or `--offline`
+    const flags = this.opts()
 
     try {
       return await resolveConfig({
-        config: options.config,
-        cwd,
-        context: options.context || process.env.CONTEXT || this.getDefaultContext(),
-        debug: this.opts().debug,
-        siteId: options.siteId || (typeof options.site === 'string' && options.site) || state.get('siteId'),
-        token,
+        config: config.configFilePath,
+        repositoryRoot: config.repositoryRoot,
+        cwd: config.cwd,
+        context: flags.context || process.env.CONTEXT || this.getDefaultContext(),
+        debug: flags.debug,
+        siteId: flags.siteId || (typeof flags.site === 'string' && flags.site) || config.state.get('siteId'),
+        token: config.token,
         mode: 'cli',
-        host,
-        pathPrefix,
-        scheme,
-        offline,
+        host: config.host,
+        pathPrefix: config.pathPrefix,
+        scheme: config.scheme,
+        offline: config.offline ?? flags.offline,
         siteFeatureFlagPrefix: 'cli',
       })
     } catch (error_) {
@@ -539,17 +661,17 @@ export default class BaseCommand extends Command {
       //
       // @todo Replace this with a mechanism for calling `resolveConfig` with more granularity (i.e. having
       // the option to say that we don't need API data.)
-      if (isUserError && !offline && token) {
-        if (this.opts().debug) {
+      if (isUserError && !config.offline && config.token) {
+        if (flags.debug) {
           error(error_, { exit: false })
           warn('Failed to resolve config, falling back to offline resolution')
         }
-        return this.getConfig({ cwd, offline: true, state, token })
+        // recursive call with trying to resolve offline
+        return this.getConfig({ ...config, offline: true })
       }
 
       const message = isUserError ? error_.message : error_.stack
-      console.error(message)
-      exit(1)
+      error(message, { exit: true })
     }
   }
 
@@ -558,7 +680,7 @@ export default class BaseCommand extends Command {
    * set. The default context is `dev` most of the time, but some commands may
    * wish to override that.
    *
-   * @returns {string}
+   * @returns {'production' | 'dev'}
    */
   getDefaultContext() {
     if (this.name() === 'serve') {
@@ -566,5 +688,19 @@ export default class BaseCommand extends Command {
     }
 
     return 'dev'
+  }
+}
+
+/**
+ * Retrieves the repository root through a git command.
+ * Returns undefined if not a git project.
+ * @returns {Promise<string|undefined>}
+ */
+async function getRepositoryRoot() {
+  try {
+    const res = await execa('git', ['rev-parse', '--show-toplevel'], { preferLocal: true })
+    return res.stdout
+  } catch {
+    // noop
   }
 }

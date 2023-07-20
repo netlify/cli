@@ -9,7 +9,6 @@ import { printBanner } from '../../utils/banner.mjs'
 import {
   BANG,
   chalk,
-  exit,
   log,
   NETLIFYDEV,
   NETLIFYDEVERR,
@@ -35,7 +34,7 @@ import { createDevExecCommand } from './dev-exec.mjs'
  * @param {object} config
  * @param {*} config.api
  * @param {import('commander').OptionValues} config.options
- * @param {*} config.settings
+ * @param {import('../../utils/types.js').ServerSettings} config.settings
  * @param {*} config.site
  * @param {*} config.state
  * @returns
@@ -68,6 +67,9 @@ const handleLiveTunnel = async ({ api, options, settings, site, state }) => {
   }
 }
 
+/**
+ * @param {string} args
+ */
 const validateShortFlagArgs = (args) => {
   if (args.startsWith('=')) {
     throw new Error(
@@ -94,9 +96,10 @@ const dev = async (options, command) => {
   const { api, cachedConfig, config, repositoryRoot, site, siteInfo, state } = command.netlify
   config.dev = { ...config.dev }
   config.build = { ...config.build }
-  /** @type {import('./types').DevConfig} */
+  /** @type {import('./types.js').DevConfig} */
   const devConfig = {
     framework: '#auto',
+    autoLaunch: Boolean(options.open),
     ...(config.functionsDirectory && { functions: config.functionsDirectory }),
     ...(config.build.publish && { publish: config.build.publish }),
     ...config.dev,
@@ -124,20 +127,17 @@ const dev = async (options, command) => {
     siteInfo,
   })
 
-  /** @type {Partial<import('../../utils/types').ServerSettings>} */
-  let settings = {}
+  /** @type {import('../../utils/types.js').ServerSettings} */
+  let settings
   try {
-    settings = await detectServerSettings(devConfig, options, site.root, {
-      site: {
-        id: site.id,
-        url: siteUrl,
-      },
-    })
+    settings = await detectServerSettings(devConfig, options, command)
 
     cachedConfig.config = getConfigWithPlugins(cachedConfig.config, settings)
   } catch (error_) {
-    log(NETLIFYDEVERR, error_.message)
-    exit(1)
+    if (error_ && typeof error_ === 'object' && 'message' in error_) {
+      log(NETLIFYDEVERR, error_.message)
+    }
+    process.exit(1)
   }
 
   command.setAnalyticsPayload({ live: options.live })
@@ -154,6 +154,7 @@ const dev = async (options, command) => {
     cachedConfig,
     options,
     settings,
+    projectDir: command.workingDir,
     site,
     env: {
       URL: url,
@@ -188,8 +189,11 @@ const dev = async (options, command) => {
 
   // TODO: We should consolidate this with the existing config watcher.
   const getUpdatedConfig = async () => {
-    const cwd = options.cwd || process.cwd()
-    const { config: newConfig } = await command.getConfig({ cwd, offline: true, state })
+    const { config: newConfig } = await command.getConfig({
+      cwd: command.workingDir,
+      offline: true,
+      state,
+    })
     const normalizedNewConfig = normalizeConfig(newConfig)
 
     return normalizedNewConfig
@@ -202,6 +206,7 @@ const dev = async (options, command) => {
     config,
     configPath: configPathOverride,
     debug: options.debug,
+    projectDir: command.workingDir,
     env,
     getUpdatedConfig,
     inspectSettings,
@@ -248,6 +253,7 @@ export const createDevCommand = (program) => {
         .argParser((value) => Number.parseInt(value))
         .hideHelp(true),
     )
+    .addOption(new Option('--no-open', 'disables the automatic opening of a browser window'))
     .option('--target-port <port>', 'port of target app server', (value) => Number.parseInt(value))
     .option('--framework <name>', 'framework to use. Defaults to #auto which automatically detects a framework')
     .option('-d ,--dir <path>', 'dir with static files')
