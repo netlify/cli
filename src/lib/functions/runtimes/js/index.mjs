@@ -3,7 +3,7 @@ import { dirname } from 'path'
 import { pathToFileURL } from 'url'
 import { Worker } from 'worker_threads'
 
-import lambdaLocal from '@skn0tt/lambda-local'
+import lambdaLocal from 'lambda-local'
 import winston from 'winston'
 
 import detectNetlifyLambdaBuilder from './builders/netlify-lambda.mjs'

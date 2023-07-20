@@ -1,7 +1,7 @@
 import { createServer } from 'net'
 import { isMainThread, workerData, parentPort } from 'worker_threads'
 
-import lambdaLocal from '@skn0tt/lambda-local'
+import lambdaLocal from 'lambda-local'
 import { isStream } from 'is-stream'
 import sourceMapSupport from 'source-map-support'
 
