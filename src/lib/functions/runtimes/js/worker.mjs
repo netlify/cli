@@ -1,8 +1,8 @@
 import { createServer } from 'net'
 import { isMainThread, workerData, parentPort } from 'worker_threads'
 
-import lambdaLocal from 'lambda-local'
 import { isStream } from 'is-stream'
+import lambdaLocal from 'lambda-local'
 import sourceMapSupport from 'source-map-support'
 
 if (isMainThread) {
