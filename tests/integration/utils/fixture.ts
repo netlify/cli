@@ -144,7 +144,8 @@ export async function setupFixtureTests(
       if (options.mockApi) mockApi = await startMockApi(options.mockApi)
       fixture = await Fixture.create(fixturePath, { apiUrl: mockApi?.apiUrl })
 
-      if (options.devServer) devServer = await startDevServer({ cwd: fixture.directory, args: ['--offline'] })
+      if (options.devServer)
+        devServer = await startDevServer({ cwd: fixture.directory, args: ['--offline', '--country', 'DE'] })
 
       await options.setup?.({ devServer, fixture, mockApi })
     }, HOOK_TIMEOUT)

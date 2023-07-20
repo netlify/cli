@@ -1,4 +1,6 @@
 // @ts-check
+import { Buffer } from 'buffer'
+
 import express from 'express'
 import expressLogging from 'express-logging'
 import jwtDecode from 'jwt-decode'
@@ -47,7 +49,6 @@ const hasBody = (req) =>
   // eslint-disable-next-line unicorn/prefer-number-properties
   (req.header('transfer-encoding') !== undefined || !isNaN(req.header('content-length'))) &&
   // we expect a string or a buffer, because we use the two bodyParsers(text, raw) from express
-  // eslint-disable-next-line n/prefer-global/buffer
   (typeof req.body === 'string' || Buffer.isBuffer(req.body))
 
 export const createHandler = function (options) {
@@ -114,7 +115,7 @@ export const createHandler = function (options) {
       'client-ip': [remoteAddress],
       'x-nf-client-connection-ip': [remoteAddress],
       'x-nf-account-id': [options.accountId],
-      [efHeaders.Geo]: JSON.stringify(geoLocation),
+      [efHeaders.Geo]: Buffer.from(JSON.stringify(geoLocation)).toString('base64'),
     }).reduce((prev, [key, value]) => ({ ...prev, [key]: Array.isArray(value) ? value : [value] }), {})
     const rawQuery = new URLSearchParams(requestQuery).toString()
     const protocol = options.config?.dev?.https ? 'https' : 'http'
