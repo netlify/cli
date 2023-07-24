@@ -15,6 +15,17 @@ describe('edge functions', () => {
       expect(response.statusCode).toBe(200)
       expect(response.body).toMatchSnapshot()
     })
+
+    test<FixtureTestContext>('should provide geo location', async ({ devServer }) => {
+      const response = await got(`http://localhost:${devServer.port}/context`, {
+        throwHttpErrors: false,
+        retry: { limit: 0 },
+      })
+
+      const { geo } = JSON.parse(response.body)
+      expect(geo.city).toEqual('Mock City')
+      expect(geo.country.code).toEqual('DE')
+    })
   })
 
   setupFixtureTests('dev-server-with-edge-functions', { devServer: true }, () => {
