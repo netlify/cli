@@ -3,6 +3,7 @@ import process from 'process'
 import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
+  envPrefix: ['NETLIFY_'],
   test: {
     include: ['tests/**/*.test.mjs', 'tests/**/*.test.ts'],
     testTimeout: 60_000,
