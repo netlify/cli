@@ -78,8 +78,8 @@
   "dependencies": {
     "@bugsnag/js": "7.20.2",
     "@fastify/static": "6.10.2",
-    "@netlify/build": "29.17.1",
-    "@netlify/build-info": "7.7.1",
+    "@netlify/build": "29.17.2",
+    "@netlify/build-info": "7.7.2",
     "@netlify/config": "20.6.4",
     "@netlify/edge-bundler": "8.17.0",
     "@netlify/framework-info": "9.8.10",
