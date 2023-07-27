@@ -69,7 +69,7 @@ describe.concurrent('eleventy', () => {
   test('functions rewrite echo without body', async (t) => {
     const { host, port, url } = context.server
     const jsonResponse = await fetch(`${url}/api/echo?ding=dong`, {
-      headers: { accept: 'application/json', 'accept-encoding': 'gzip, deflate, br', },
+      headers: { accept: 'application/json', 'accept-encoding': 'gzip, deflate, br' },
     }).then((res) => res.json())
     const { 'x-nf-request-id': requestID, ...headers } = jsonResponse.headers
 
@@ -100,9 +100,9 @@ describe.concurrent('eleventy', () => {
     const response = await fetch(`${url}/api/echo?ding=dong`, {
       method: 'POST',
       headers: {
-        'content-type': 'application/x-www-form-urlencoded',
-        'Accept-Encoding': 'gzip, deflate, br',
         accept: 'application/json',
+        'accept-encoding': 'gzip, deflate, br',
+        'content-type': 'application/x-www-form-urlencoded',
       },
       body: 'some=thing',
     }).then((res) => res.json())
