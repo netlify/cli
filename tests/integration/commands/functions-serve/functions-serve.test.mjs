@@ -106,7 +106,7 @@ describe.concurrent('functions:serve command', () => {
       await builder
         .withNetlifyToml({
           config: {
-            build: { environment: { VITEST_TEST: 'FROM_CONFIG_FILE' } },
+            build: { environment: { MY_CONFIG: 'FROM_CONFIG_FILE' } },
             functions: { directory: 'functions' },
           },
         })
@@ -115,7 +115,7 @@ describe.concurrent('functions:serve command', () => {
           handler: async () => ({
             statusCode: 200,
             // eslint-disable-next-line n/prefer-global/process
-            body: `${process.env.VITEST_TEST}`,
+            body: `${process.env.MY_CONFIG}`,
           }),
         })
         .buildAsync()
