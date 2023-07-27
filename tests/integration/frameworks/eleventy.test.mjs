@@ -14,7 +14,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const context = {}
 
 beforeAll(async () => {
-  const server = await startDevServer({ cwd: path.join(__dirname, '__fixtures__/eleventy-site') })
+  const server = await startDevServer({ cwd: path.join(__dirname, '../__fixtures__/eleventy-site') })
 
   context.server = server
 })
@@ -44,7 +44,7 @@ describe('eleventy', () => {
     t.expect(await response.text()).toEqual('Redirecting to /otherthing')
   })
 
-  // TODO: un-skip this once https://github.com/netlify/cli/issues/1242 is fixed
+    // TODO: un-skip this once https://github.com/netlify/cli/issues/1242 is fixed
   test.skip('normal rewrite', async (t) => {
     const { url } = context.server
     const response = await fetch(`${url}/doesnt-exist`)
