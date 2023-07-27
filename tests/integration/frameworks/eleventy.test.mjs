@@ -68,13 +68,15 @@ describe.concurrent('eleventy', () => {
 
   test('functions rewrite echo without body', async (t) => {
     const { host, port, url } = context.server
-    const response = await fetch(`${url}/api/echo?ding=dong`).then((res) => res.json())
-    const { 'x-nf-request-id': requestID, ...headers } = response.headers
+    const jsonResponse = await fetch(`${url}/api/echo?ding=dong`, {
+      headers: { accept: 'application/json', 'accept-encoding': 'gzip, deflate, br', },
+    }).then((res) => res.json())
+    const { 'x-nf-request-id': requestID, ...headers } = jsonResponse.headers
 
-    t.expect(response.body).toBe(undefined)
+    t.expect(jsonResponse.body).toBe(undefined)
     t.expect(headers).toStrictEqual({
-      accept: '*/*',
-      'accept-encoding': 'gzip,deflate',
+      accept: 'application/json',
+      'accept-encoding': 'gzip, deflate, br',
       'client-ip': clientIP,
       connection: 'close',
       host: `${host}:${port}`,
@@ -87,10 +89,10 @@ describe.concurrent('eleventy', () => {
       ).toString('base64'),
     })
     t.expect(requestID.length).toBe(26)
-    t.expect(response.httpMethod).toEqual('GET')
-    t.expect(response.isBase64Encoded).toBe(true)
-    t.expect(response.path).toEqual('/api/echo')
-    t.expect(response.queryStringParameters).toStrictEqual({ ding: 'dong' })
+    t.expect(jsonResponse.httpMethod).toEqual('GET')
+    t.expect(jsonResponse.isBase64Encoded).toBe(true)
+    t.expect(jsonResponse.path).toEqual('/api/echo')
+    t.expect(jsonResponse.queryStringParameters).toStrictEqual({ ding: 'dong' })
   })
 
   test('functions rewrite echo with body', async (t) => {
@@ -99,6 +101,8 @@ describe.concurrent('eleventy', () => {
       method: 'POST',
       headers: {
         'content-type': 'application/x-www-form-urlencoded',
+        'Accept-Encoding': 'gzip, deflate, br',
+        accept: 'application/json',
       },
       body: 'some=thing',
     }).then((res) => res.json())
@@ -106,8 +110,8 @@ describe.concurrent('eleventy', () => {
 
     t.expect(response.body).toEqual('some=thing')
     t.expect(headers).toStrictEqual({
-      accept: '*/*',
-      'accept-encoding': 'gzip,deflate',
+      accept: 'application/json',
+      'accept-encoding': 'gzip, deflate, br',
       'client-ip': clientIP,
       connection: 'close',
       host: `${host}:${port}`,
@@ -130,12 +134,17 @@ describe.concurrent('eleventy', () => {
 
   test('functions echo with multiple query params', async (t) => {
     const { host, port, url } = context.server
-    const response = await fetch(`${url}/.netlify/functions/echo?category=a&category=b`).then((res) => res.json())
+    const response = await fetch(`${url}/.netlify/functions/echo?category=a&category=b`, {
+      headers: {
+        accept: 'application/json',
+        'accept-encoding': 'gzip, deflate, br',
+      },
+    }).then((res) => res.json())
     const { 'x-nf-request-id': requestID, ...headers } = response.headers
 
     t.expect(headers).toStrictEqual({
-      accept: '*/*',
-      'accept-encoding': 'gzip,deflate',
+      accept: 'application/json',
+      'accept-encoding': 'gzip, deflate, br',
       'client-ip': clientIP,
       connection: 'close',
       host: `${host}:${port}`,
