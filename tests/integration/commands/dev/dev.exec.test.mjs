@@ -15,7 +15,7 @@ test('should pass .env variables to exec command', async (t) => {
       cwd: builder.directory,
     })
 
-    t.expect(output.includes('Injected .env file env var: VITEST_TEST')).toBe(true)
+    t.expect(output.includes('Injected .env file env var: MY_SUPER_SECRET')).toBe(true)
     t.expect(output.includes('MY_SUPER_SECRET=SECRET')).toBe(true)
   })
 })
