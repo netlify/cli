@@ -7,7 +7,7 @@ import { withSiteBuilder } from '../../utils/site-builder.cjs'
 
 test('should pass .env variables to exec command', async (t) => {
   await withSiteBuilder('site-env-file', async (builder) => {
-    builder.withEnvFile({ env: { VITEST_TEST: 'ENV_VAR' } })
+    builder.withEnvFile({ env: { MY_SUPER_SECRET: 'SECRET' } })
     await builder.buildAsync()
 
     const cmd = process.platform === 'win32' ? 'set' : 'printenv'
