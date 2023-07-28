@@ -1,6 +1,5 @@
 import path from 'path'
 
-// eslint-disable-next-line ava/use-test
 import { describe, test } from 'vitest'
 
 import { fileURLToPath } from 'url'
@@ -16,7 +15,6 @@ const testName = (title, args) => (args.length <= 0 ? title : `${title} - ${args
 
 const WAIT_WRITE = 3000
 
-
 const gotCatch404 = async (url, options) => {
   try {
     return await got(url, options)
@@ -28,7 +26,7 @@ const gotCatch404 = async (url, options) => {
   }
 }
 
-testMatrix.forEach(({ args }) => {
+describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args }) => {
   test(testName('Updates a JavaScript function when its main file is modified', args), async (t) => {
     await withSiteBuilder('js-function-update-main-file', async (builder) => {
       const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
