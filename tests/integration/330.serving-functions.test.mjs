@@ -11,7 +11,6 @@ import { withSiteBuilder } from './utils/site-builder.cjs'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const testMatrix = [{ args: [] }, { args: ['esbuild'] }]
-const testName = (title, args) => (args.length <= 0 ? title : `${title} - ${args.join(' ')}`)
 
 const WAIT_WRITE = 3000
 
@@ -27,7 +26,7 @@ const gotCatch404 = async (url, options) => {
 }
 
 describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args }) => {
-  test(testName('Updates a JavaScript function when its main file is modified', args), async (t) => {
+  test('Updates a JavaScript function when its main file is modified', async (t) => {
     await withSiteBuilder('js-function-update-main-file', async (builder) => {
       const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
@@ -75,7 +74,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
     })
   })
 
-  test(testName('Updates a TypeScript function when its main file is modified', args), async (t) => {
+  test('Updates a TypeScript function when its main file is modified', async (t) => {
     await withSiteBuilder('ts-function-update-main-file', async (builder) => {
       const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
@@ -158,7 +157,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
     })
   })
 
-  test(testName('Updates a JavaScript function when a supporting file is modified', args), async (t) => {
+  test('Updates a JavaScript function when a supporting file is modified', async (t) => {
     await withSiteBuilder('js-function-update-supporting-file', async (builder) => {
       const functionsConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
@@ -204,7 +203,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
     })
   })
 
-  test(testName('Updates a TypeScript function when a supporting file is modified', args), async (t) => {
+  test('Updates a TypeScript function when a supporting file is modified', async (t) => {
     await withSiteBuilder('ts-function-update-supporting-file', async (builder) => {
       const functionsConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
@@ -281,7 +280,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
     })
   })
 
-  test(testName('Adds a new JavaScript function when a function file is created', args), async (t) => {
+  test('Adds a new JavaScript function when a function file is created', async (t) => {
     await withSiteBuilder('js-function-create-function-file', async (builder) => {
       const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
@@ -323,7 +322,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
     })
   })
 
-  test(testName('Adds a new TypeScript function when a function file is created', args), async (t) => {
+  test('Adds a new TypeScript function when a function file is created', async (t) => {
     await withSiteBuilder('ts-function-create-function-file', async (builder) => {
       const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
@@ -389,7 +388,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
     })
   })
 
-  test(testName('Removes a function when a function file is deleted', args), async (t) => {
+  test('Removes a function when a function file is deleted', async (t) => {
     await withSiteBuilder('function-remove-function-file', async (builder) => {
       const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
@@ -432,7 +431,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
     })
   })
 
-  test(testName(`should pick up new function files even through debounce`, args), async (t) => {
+  test(`should pick up new function files even through debounce`, async (t) => {
     await withSiteBuilder('function-file-updates', async (builder) => {
       await builder
         .withNetlifyToml({
@@ -486,7 +485,7 @@ exports.handler = async () => ({
     })
   })
 
-  test(testName('Serves functions from the internal functions directory', args), async (t) => {
+  test('Serves functions from the internal functions directory', async (t) => {
     await withSiteBuilder('function-internal', async (builder) => {
       const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
@@ -535,7 +534,7 @@ exports.handler = async () => ({
     })
   })
 
-  test(testName('User functions take precedence over internal functions', args), async (t) => {
+  test('User functions take precedence over internal functions', async (t) => {
     await withSiteBuilder('function-internal-priority', async (builder) => {
       const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
@@ -598,7 +597,7 @@ exports.handler = async () => ({
     })
   })
 
-  test(testName('Serves functions with a `.mjs` extension', args), async (t) => {
+  test('Serves functions with a `.mjs` extension', async (t) => {
     await withSiteBuilder('function-mjs', async (builder) => {
       const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
@@ -633,7 +632,7 @@ exports.handler = async () => ({
     })
   })
 
-  test(testName('Serves functions inside a "type=module" package', args), async (t) => {
+  test('Serves functions inside a "type=module" package', async (t) => {
     await withSiteBuilder('function-type-module', async (builder) => {
       const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
@@ -670,7 +669,7 @@ exports.handler = async () => ({
     })
   })
 
-  test(testName('Resembles base64 encoding of production', args), async (t) => {
+  test('Resembles base64 encoding of production', async (t) => {
     await withSiteBuilder('function-base64-encoding', async (builder) => {
       const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
