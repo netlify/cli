@@ -2,9 +2,10 @@ import path from 'path'
 
 import { describe, test } from 'vitest'
 
+import fetch from 'node-fetch'
+import got from './utils/got.cjs'
 import { fileURLToPath } from 'url'
 import { tryAndLogOutput, withDevServer } from './utils/dev-server.cjs'
-import got from './utils/got.cjs'
 import { pause } from './utils/pause.cjs'
 import { withSiteBuilder } from './utils/site-builder.cjs'
 
@@ -14,6 +15,7 @@ const testMatrix = [{ args: [] }, { args: ['esbuild'] }]
 
 const WAIT_WRITE = 3000
 
+// TODO: Remove function and got 
 const gotCatch404 = async (url, options) => {
   try {
     return await got(url, options)
@@ -49,7 +51,10 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
 
       await withDevServer({ cwd: builder.directory, args }, async ({ outputBuffer, port, waitForLogMatching }) => {
         await tryAndLogOutput(
-          async () => t.expect(await got(`http://localhost:${port}/.netlify/functions/hello`).text()).toEqual('Hello'),
+          async () =>
+            t
+              .expect(await fetch(`http://localhost:${port}/.netlify/functions/hello`).then((res) => res.text()))
+              .toEqual('Hello'),
           outputBuffer,
         )
 
@@ -67,9 +72,9 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
 
         await waitForLogMatching('Reloaded function hello')
 
-        const response = await got(`http://localhost:${port}/.netlify/functions/hello`).text()
+        const response = await fetch(`http://localhost:${port}/.netlify/functions/hello`)
 
-        t.expect(response).toEqual('Goodbye')
+        t.expect(await response.text()).toEqual('Goodbye')
       })
     })
   })
@@ -115,7 +120,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
         await tryAndLogOutput(
           async () =>
             t
-              .expect(await got(`http://localhost:${port}/.netlify/functions/hello`).text())
+              .expect(await fetch(`http://localhost:${port}/.netlify/functions/hello`).then((res) => res.text()))
               .toEqual('Modern Web Development on the JAMStack'),
           outputBuffer,
         )
@@ -150,9 +155,9 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
 
         await waitForLogMatching('Reloaded function hello')
 
-        const response = await got(`http://localhost:${port}/.netlify/functions/hello`).text()
+        const response = await fetch(`http://localhost:${port}/.netlify/functions/hello`)
 
-        t.expect(response).toEqual('Modern Web Development on the Jamstack')
+        t.expect(await response.text()).toEqual('Modern Web Development on the Jamstack')
       })
     })
   })
@@ -179,7 +184,9 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
 
       await withDevServer({ cwd: builder.directory, args }, async ({ outputBuffer, port, waitForLogMatching }) => {
         await tryAndLogOutput(async () => {
-          t.expect(await got(`http://localhost:${port}/.netlify/functions/hello`).text()).toEqual('WOOF!')
+          t.expect(await fetch(`http://localhost:${port}/.netlify/functions/hello`).then((res) => res.text())).toEqual(
+            'WOOF!',
+          )
         }, outputBuffer)
 
         await pause(WAIT_WRITE)
@@ -196,7 +203,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
           await pause(WAIT_WRITE)
         }
 
-        const response = await got(`http://localhost:${port}/.netlify/functions/hello`).text()
+        const response = await fetch(`http://localhost:${port}/.netlify/functions/hello`).then((res) => res.text())
 
         t.expect(response).toEqual('WOOF WOOF!')
       })
@@ -253,7 +260,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
 
       await withDevServer({ cwd: builder.directory, args }, async ({ outputBuffer, port, waitForLogMatching }) => {
         await tryAndLogOutput(async () => {
-          t.expect(await got(`http://localhost:${port}/.netlify/functions/hello`).text()).toEqual(
+          t.expect(await fetch(`http://localhost:${port}/.netlify/functions/hello`).then((res) => res.text())).toEqual(
             'Modern Web Development on the JAMStack',
           )
         }, outputBuffer)
@@ -273,7 +280,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
 
         await waitForLogMatching('Reloaded function hello')
 
-        const response = await got(`http://localhost:${port}/.netlify/functions/hello`).text()
+        const response = await fetch(`http://localhost:${port}/.netlify/functions/hello`).then((res) => res.text())
 
         t.expect(response).toEqual('Modern Web Development on the Jamstack')
       })
@@ -382,7 +389,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
         await waitForLogMatching('Loaded function hello')
 
         const response = await got(`http://localhost:${port}/.netlify/functions/hello`).text()
-
+        
         t.expect(response).toEqual('Modern Web Development on the Jamstack')
       })
     })
@@ -411,7 +418,9 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
 
       await withDevServer({ cwd: builder.directory, args }, async ({ outputBuffer, port, waitForLogMatching }) => {
         await tryAndLogOutput(async () => {
-          t.expect(await got(`http://localhost:${port}/.netlify/functions/hello`).text()).toEqual('Hello')
+          t.expect(await fetch(`http://localhost:${port}/.netlify/functions/hello`).then((res) => res.text())).toEqual(
+            'Hello',
+          )
         }, outputBuffer)
 
         await pause(WAIT_WRITE)
@@ -459,8 +468,8 @@ exports.handler = async () => ({
         .buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
-        const resp = await got.get(`${server.url}/.netlify/functions/hello`)
-        t.expect(resp.body).toEqual('foo')
+        const resp = await fetch(`${server.url}/.netlify/functions/hello`)
+        t.expect(await resp.text()).toEqual('foo')
 
         await builder
           .withContentFile({
@@ -479,8 +488,8 @@ exports.handler = async () => ({
         const DEBOUNCE_WAIT = 150
         await pause(DEBOUNCE_WAIT)
 
-        const resp2 = await got.get(`${server.url}/.netlify/functions/hello`)
-        t.expect(resp2.body).toEqual('bar')
+        const resp2 = await fetch(`${server.url}/.netlify/functions/hello`)
+        t.expect(await resp2.text()).toEqual('bar')
       })
     })
   })
@@ -509,7 +518,9 @@ exports.handler = async () => ({
 
       await withDevServer({ cwd: builder.directory, args }, async ({ outputBuffer, port, waitForLogMatching }) => {
         await tryAndLogOutput(async () => {
-          t.expect(await got(`http://localhost:${port}/.netlify/functions/hello`).text()).toEqual('Internal')
+          t.expect(await fetch(`http://localhost:${port}/.netlify/functions/hello`).then((res) => res.text())).toEqual(
+            'Internal',
+          )
         }, outputBuffer)
 
         await pause(WAIT_WRITE)
@@ -527,7 +538,7 @@ exports.handler = async () => ({
 
         await waitForLogMatching('Reloaded function hello')
 
-        const response = await got(`http://localhost:${port}/.netlify/functions/hello`).text()
+        const response = await fetch(`http://localhost:${port}/.netlify/functions/hello`).then((res) => res.text())
 
         t.expect(response).toEqual('Internal updated')
       })
@@ -565,7 +576,9 @@ exports.handler = async () => ({
 
       await withDevServer({ cwd: builder.directory, args }, async ({ outputBuffer, port, waitForLogMatching }) => {
         await tryAndLogOutput(async () => {
-          t.expect(await got(`http://localhost:${port}/.netlify/functions/hello`).text()).toEqual('User')
+          t.expect(await fetch(`http://localhost:${port}/.netlify/functions/hello`).then((res) => res.text())).toEqual(
+            'User',
+          )
         }, outputBuffer)
 
         await pause(WAIT_WRITE)
@@ -590,7 +603,7 @@ exports.handler = async () => ({
 
         await waitForLogMatching('Reloaded function hello')
 
-        const response = await got(`http://localhost:${port}/.netlify/functions/hello`).text()
+        const response = await fetch(`http://localhost:${port}/.netlify/functions/hello`).then((res) => res.text())
 
         t.expect(response).toEqual('User updated')
       })
@@ -626,7 +639,9 @@ exports.handler = async () => ({
 
       await withDevServer({ cwd: builder.directory, args }, async ({ outputBuffer, port }) => {
         await tryAndLogOutput(async () => {
-          t.expect(await got(`http://localhost:${port}/.netlify/functions/hello`).text()).toEqual('Hello, world!')
+          t.expect(await fetch(`http://localhost:${port}/.netlify/functions/hello`).then((res) => res.text())).toEqual(
+            'Hello, world!',
+          )
         }, outputBuffer)
       })
     })
@@ -661,7 +676,7 @@ exports.handler = async () => ({
 
       await withDevServer({ cwd: builder.directory, args }, async ({ outputBuffer, port }) => {
         await tryAndLogOutput(async () => {
-          t.expect(await got(`http://localhost:${port}/.netlify/functions/hello`).text()).toEqual(
+          t.expect(await fetch(`http://localhost:${port}/.netlify/functions/hello`).then((res) => res.text())).toEqual(
             'hello from es module!',
           )
         }, outputBuffer)
@@ -693,11 +708,11 @@ exports.handler = async () => ({
       await withDevServer({ cwd: builder.directory, args }, async ({ outputBuffer, port }) => {
         await tryAndLogOutput(async () => {
           t.expect(
-            await got(`http://localhost:${port}/.netlify/functions/echoEncoding`, {
+            await fetch(`http://localhost:${port}/.netlify/functions/echoEncoding`, {
               headers: {
                 'Content-Type': 'multipart/form-data',
               },
-            }).text(),
+            }).then((res) => res.text()),
           ).toEqual('base64')
         }, outputBuffer)
       })
@@ -743,8 +758,12 @@ describe.concurrent('serving functions', () => {
 
       await withDevServer({ cwd: builder.directory }, async ({ outputBuffer, port }) => {
         await tryAndLogOutput(async () => {
-          t.expect(await got(`http://localhost:${port}/.netlify/functions/hello?name=one`).text()).toEqual('one')
-          t.expect(await got(`http://localhost:${port}/.netlify/functions/hello?name=two`).text()).toEqual('two')
+          const [responseHelloNameOne, responseHelloNameTwo] = await Promise.all([
+            fetch(`http://localhost:${port}/.netlify/functions/hello?name=one`).then((res) => res.text()),
+            fetch(`http://localhost:${port}/.netlify/functions/hello?name=two`).then((res) => res.text()),
+          ])
+          t.expect(responseHelloNameOne).toEqual('one')
+          t.expect(responseHelloNameTwo).toEqual('two')
         }, outputBuffer)
       })
     })
@@ -768,14 +787,9 @@ describe.concurrent('serving functions', () => {
         .buildAsync()
 
       await withDevServer({ cwd: builder.directory }, async ({ port }) => {
-        try {
-          await got(`http://localhost:${port}/.netlify/functions/hello`)
-
-          t.fail() // TODO: replace with similar in vitest
-        } catch (error) {
-          t.expect(error.response.body.includes(path.join(builder.directory, 'functions', 'hello.js'))).toBe(true)
-          t.expect(error.response.body.includes(path.join('.netlify', 'functions-serve'))).toBe(false)
-        }
+        const responseWithTrace = await fetch(`http://localhost:${port}/.netlify/functions/hello`).then((res) => res.text())
+        t.expect(responseWithTrace.includes(path.join(builder.directory, 'functions', 'hello.js'))).toBe(true)
+        t.expect(responseWithTrace.includes(path.join('.netlify', 'functions-serve'))).toBe(false)
       })
     })
   })
@@ -800,9 +814,9 @@ describe.concurrent('serving functions', () => {
 
       await withDevServer({ cwd: builder.directory }, async ({ outputBuffer, port }) => {
         await tryAndLogOutput(async () => {
-          const { httpMethod, path, rawQuery, rawUrl } = await got(
+          const { httpMethod, path, rawQuery, rawUrl } = await fetch(
             `http://localhost:${port}/.netlify/functions/hello?net=lify&jam=stack`,
-          ).json()
+          ).then((res) => res.json())
 
           t.expect(httpMethod).toEqual('GET')
           t.expect(path).toEqual('/.netlify/functions/hello')
@@ -833,12 +847,12 @@ describe.concurrent('serving functions', () => {
 
       await withDevServer({ cwd: builder.directory }, async ({ outputBuffer, port }) => {
         await tryAndLogOutput(async () => {
-          const response = await got(`http://localhost:${port}/.netlify/functions/hello`, {
-            throwHttpErrors: false,
-          })
+          const errorResponse = await fetch(`http://localhost:${port}/.netlify/functions/hello`)
 
-          t.expect(response.statusCode).toBe(500)
-          t.expect(response.body).toEqual('Your function response must have a string or a stream body. You gave: 42')
+          t.expect(errorResponse.status).toBe(500)
+          t.expect(await errorResponse.text()).toEqual(
+            'Your function response must have a string or a stream body. You gave: 42',
+          )
         }, outputBuffer)
       })
     })
@@ -864,12 +878,12 @@ describe.concurrent('serving functions', () => {
 
       await withDevServer({ cwd: builder.directory }, async ({ outputBuffer, port }) => {
         await tryAndLogOutput(async () => {
-          const response = await got(`http://localhost:${port}/.netlify/functions/hello`, {
-            throwHttpErrors: false,
-          })
+          const errorResponse = await fetch(`http://localhost:${port}/.netlify/functions/hello`)
 
-          t.expect(response.statusCode).toBe(500)
-          t.expect(response.body).toEqual('Your function response must have a numerical statusCode. You gave: null')
+          t.expect(errorResponse.status).toBe(500)
+          t.expect(await errorResponse.text()).toEqual(
+            'Your function response must have a numerical statusCode. You gave: null',
+          )
         }, outputBuffer)
       })
     })
@@ -916,8 +930,12 @@ describe.concurrent('serving functions', () => {
 
       await withDevServer({ cwd: builder.directory }, async ({ outputBuffer, port }) => {
         await tryAndLogOutput(async () => {
-          t.expect(await got(`http://localhost:${port}/.netlify/functions/hello?name=one`).text()).toEqual('one')
-          t.expect(await got(`http://localhost:${port}/.netlify/functions/hello?name=two`).text()).toEqual('two')
+          const [responseHelloNameOne, responseHelloNameTwo] = await Promise.all([
+            fetch(`http://localhost:${port}/.netlify/functions/hello?name=one`).then((res) => res.text()),
+            fetch(`http://localhost:${port}/.netlify/functions/hello?name=two`).then((res) => res.text()),
+          ])
+          t.expect(responseHelloNameOne).toEqual('one')
+          t.expect(responseHelloNameTwo).toEqual('two')
         }, outputBuffer)
 
         await builder
@@ -939,8 +957,12 @@ describe.concurrent('serving functions', () => {
 
         t.expect(outputBuffer.some((buffer) => /.*Reloaded function hello.*/.test(buffer.toString()))).toBe(true)
         await tryAndLogOutput(async () => {
-          t.expect(await got(`http://localhost:${port}/.netlify/functions/hello?name=one`).text()).toEqual('three')
-          t.expect(await got(`http://localhost:${port}/.netlify/functions/hello?name=two`).text()).toEqual('four')
+          const [responseHelloNameOne, responseHelloNameTwo] = await Promise.all([
+            fetch(`http://localhost:${port}/.netlify/functions/hello?name=one`).then((res) => res.text()),
+            fetch(`http://localhost:${port}/.netlify/functions/hello?name=two`).then((res) => res.text()),
+          ])
+          t.expect(responseHelloNameOne).toEqual('three')
+          t.expect(responseHelloNameTwo).toEqual('four')
         }, outputBuffer)
       })
     })
