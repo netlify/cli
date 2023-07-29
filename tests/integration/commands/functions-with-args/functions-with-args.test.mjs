@@ -3,11 +3,11 @@ import path from 'path'
 import { describe, test } from 'vitest'
 
 import fetch from 'node-fetch'
-import got from './utils/got.cjs'
 import { fileURLToPath } from 'url'
-import { tryAndLogOutput, withDevServer } from './utils/dev-server.cjs'
-import { pause } from './utils/pause.cjs'
-import { withSiteBuilder } from './utils/site-builder.cjs'
+import { tryAndLogOutput, withDevServer } from '../../utils/dev-server.cjs'
+import got from '../../utils/got.cjs'
+import { pause } from '../../utils/pause.cjs'
+import { withSiteBuilder } from '../../utils/site-builder.cjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
