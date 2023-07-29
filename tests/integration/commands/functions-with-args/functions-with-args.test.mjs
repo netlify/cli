@@ -1,21 +1,22 @@
 import path from 'path'
-
-import { describe, test } from 'vitest'
+import { fileURLToPath } from 'url'
 
 import fetch from 'node-fetch'
-import { fileURLToPath } from 'url'
+import { describe, test } from 'vitest'
+
 import { tryAndLogOutput, withDevServer } from '../../utils/dev-server.cjs'
 import got from '../../utils/got.cjs'
 import { pause } from '../../utils/pause.cjs'
 import { withSiteBuilder } from '../../utils/site-builder.cjs'
 
+// eslint-disable-next-line no-underscore-dangle
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const testMatrix = [{ args: [] }, { args: ['esbuild'] }]
 
 const WAIT_WRITE = 3000
 
-// TODO: Remove function and got 
+// TODO: Remove function and got
 const gotCatch404 = async (url, options) => {
   try {
     return await got(url, options)
@@ -389,7 +390,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
         await waitForLogMatching('Loaded function hello')
 
         const response = await got(`http://localhost:${port}/.netlify/functions/hello`).text()
-        
+
         t.expect(response).toEqual('Modern Web Development on the Jamstack')
       })
     })
@@ -739,7 +740,7 @@ describe.concurrent('serving functions', () => {
           handler: async (event) => {
             const { name } = event.queryStringParameters
 
-            // eslint-disable-next-line n/global-require
+            // eslint-disable-next-line n/global-require, no-undef
             const { data } = require(`../files/${name}.json`)
 
             return {
@@ -787,7 +788,9 @@ describe.concurrent('serving functions', () => {
         .buildAsync()
 
       await withDevServer({ cwd: builder.directory }, async ({ port }) => {
-        const responseWithTrace = await fetch(`http://localhost:${port}/.netlify/functions/hello`).then((res) => res.text())
+        const responseWithTrace = await fetch(`http://localhost:${port}/.netlify/functions/hello`).then((res) =>
+          res.text(),
+        )
         t.expect(responseWithTrace.includes(path.join(builder.directory, 'functions', 'hello.js'))).toBe(true)
         t.expect(responseWithTrace.includes(path.join('.netlify', 'functions-serve'))).toBe(false)
       })
@@ -814,12 +817,17 @@ describe.concurrent('serving functions', () => {
 
       await withDevServer({ cwd: builder.directory }, async ({ outputBuffer, port }) => {
         await tryAndLogOutput(async () => {
-          const { httpMethod, path, rawQuery, rawUrl } = await fetch(
-            `http://localhost:${port}/.netlify/functions/hello?net=lify&jam=stack`,
-          ).then((res) => res.json())
+          const {
+            httpMethod,
+            path: thePath,
+            rawQuery,
+            rawUrl,
+          } = await fetch(`http://localhost:${port}/.netlify/functions/hello?net=lify&jam=stack`).then((res) =>
+            res.json(),
+          )
 
           t.expect(httpMethod).toEqual('GET')
-          t.expect(path).toEqual('/.netlify/functions/hello')
+          t.expect(thePath).toEqual('/.netlify/functions/hello')
           t.expect(rawQuery).toEqual('net=lify&jam=stack')
           t.expect(rawUrl).toEqual(`http://localhost:${port}/.netlify/functions/hello?net=lify&jam=stack`)
         }, outputBuffer)
@@ -905,7 +913,7 @@ describe.concurrent('serving functions', () => {
         .withFunction({
           path: 'hello.js',
           handler: async (event) => {
-            // eslint-disable-next-line n/global-require
+            // eslint-disable-next-line n/global-require, no-undef
             const { readFileSync } = require('fs')
             const { name } = event.queryStringParameters
             const { data } = JSON.parse(readFileSync(`${__dirname}/../files/${name}.json`, 'utf-8'))
