@@ -4,11 +4,10 @@ import { join } from 'path'
 
 import jwt from 'jsonwebtoken'
 import fetch from 'node-fetch'
-import { test, describe } from 'vitest'
+import { describe, test } from 'vitest'
 
 import { withDevServer } from '../../utils/dev-server.cjs'
 import { startExternalServer } from '../../utils/external-server.cjs'
-import got from '../../utils/got.cjs'
 import { withMockApi } from '../../utils/mock-api.cjs'
 import { withSiteBuilder } from '../../utils/site-builder.cjs'
 
@@ -23,9 +22,9 @@ describe.concurrent('command/dev', () => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
-        const response = await got(`${server.url}/non-existent`, { throwHttpErrors: false })
-        t.expect(response.headers.etag).toBe(undefined)
-        t.expect(response.body).toEqual('<h1>404 - Page not found</h1>')
+        const response = await fetch(`${server.url}/non-existent`)
+        t.expect(response.headers.get('etag')).toBe(null)
+        t.expect(await response.text()).toEqual('<h1>404 - Page not found</h1>')
       })
     })
   })
@@ -48,10 +47,10 @@ describe.concurrent('command/dev', () => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
-        const response = await got(`${server.url}/non-existent`, { throwHttpErrors: false })
-        t.expect(response.statusCode).toBe(404)
-        t.expect(response.headers.etag).toBe(undefined)
-        t.expect(response.body).toEqual('<h1>404 - My Custom 404 Page</h1>')
+        const response = await fetch(`${server.url}/non-existent`)
+        t.expect(response.status).toBe(404)
+        t.expect(response.headers.get('etag')).toBe(null)
+        t.expect(await response.text()).toEqual('<h1>404 - My Custom 404 Page</h1>')
       })
     })
   })
@@ -72,10 +71,10 @@ describe.concurrent('command/dev', () => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
-        const response = await got(`${server.url}/test-404`, { throwHttpErrors: false })
-        t.expect(response.headers.etag).toBeTruthy()
-        t.expect(response.statusCode).toBe(404)
-        t.expect(response.body).toEqual('<html><h1>foo')
+        const response = await fetch(`${server.url}/test-404`)
+        t.expect(response.headers.get('etag')).toBeTruthy()
+        t.expect(response.status).toBe(404)
+        t.expect(await response.text()).toEqual('<html><h1>foo')
       })
     })
   })
@@ -128,10 +127,10 @@ describe.concurrent('command/dev', () => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
-        const response = await got(`${server.url}/test-404`, { throwHttpErrors: false })
+        const response = await fetch(`${server.url}/test-404`)
 
-        t.expect(response.statusCode).toBe(404)
-        t.expect(response.body).toEqual('<html><h1>foo')
+        t.expect(response.status).toBe(404)
+        t.expect(await response.text()).toEqual('<html><h1>foo')
       })
     })
   })
@@ -181,15 +180,14 @@ describe.concurrent('command/dev', () => {
         t.expect(jsonPingWithGet.method).toEqual('GET')
         t.expect(jsonPingWithGet.url).toEqual('/ping')
 
-        const postResponse = await got
-          .post(`${server.url}/api/ping`, {
-            headers: {
-              'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: 'param=value',
-            followRedirect: false,
-          })
-          .json()
+        const postResponse = await fetch(`${server.url}/api/ping`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: 'param=value',
+          follow: 0,
+        }).then((res) => res.json())
         t.expect(postResponse.body).toStrictEqual({ param: 'value' })
         t.expect(postResponse.method).toEqual('POST')
         t.expect(postResponse.url).toEqual('/ping')
@@ -247,19 +245,19 @@ describe.concurrent('command/dev', () => {
             },
           },
           async (server) => {
-            const responseFromGet = await fetch(`${server.url}/sign/ping`)
-            const getResponse = await responseFromGet.json()
-            const postResponse = await got
-              .post(`${server.url}/sign/ping`, {
+            const [getResponse, postResponse] = await Promise.all([
+              fetch(`${server.url}/sign/ping`).then((res) => res.json()),
+              fetch(`${server.url}/sign/ping`, {
+                method: 'POST',
                 headers: {
                   'Content-Type': 'application/x-www-form-urlencoded',
                 },
                 body: 'param=value',
-                followRedirect: false,
-              })
-              .json()
+                follow: 0,
+              }).then((res) => res.json()),
+            ])
 
-            ;[getResponse, postResponse].forEach((response) => {
+            ;[(getResponse, postResponse)].forEach((response) => {
               const signature = response.headers['x-nf-sign']
               const payload = jwt.verify(signature, mockSigningSecret)
 
@@ -290,15 +288,14 @@ describe.concurrent('command/dev', () => {
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const [response1, response2] = await Promise.all([
-          got(`${server.url}/api/ping`, { followRedirect: false }),
-          fetch(`${server.url}/api/ping`),
+          fetch(`${server.url}/api/ping`, { follow: 0, redirect: 'manual' }),
+          fetch(`${server.url}/api/ping`).then(res => res.json()),
         ])
-        t.expect(response1.headers.location).toEqual(`http://localhost:${port}/ping`)
+        t.expect(response1.headers.get('location')).toEqual(`http://localhost:${port}/ping`)
 
-        const response2Json = await response2.json()
-        t.expect(response2Json.body).toStrictEqual({})
-        t.expect(response2Json.method).toEqual('GET')
-        t.expect(response2Json.url).toEqual('/ping')
+        t.expect(response2.body).toStrictEqual({})
+        t.expect(response2.method).toEqual('GET')
+        t.expect(response2.url).toEqual('/ping')
       })
 
       externalServer.close()
@@ -317,15 +314,14 @@ describe.concurrent('command/dev', () => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
-        const error = await got
-          .post(`${server.url}/api/echo`, {
-            body: 'param=value',
-            followRedirect: false,
-          })
-          .catch((error_) => error_)
+        const response = await fetch(`${server.url}/api/echo`, {
+          method: 'POST',
+          body: 'param=value',
+          follow: 0,
+        })
 
         // Method Not Allowed
-        t.expect(error.response.statusCode).toBe(405)
+        t.expect(response.status).toBe(405)
       })
     })
   })
