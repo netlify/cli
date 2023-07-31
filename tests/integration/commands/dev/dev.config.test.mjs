@@ -3,11 +3,10 @@ import { version } from 'process'
 
 import FormData from 'form-data'
 import { gte } from 'semver'
-import { test, describe } from 'vitest'
+import { describe, test } from 'vitest'
 
+import fetch from 'node-fetch'
 import { withDevServer } from '../../utils/dev-server.cjs'
-import got from '../../utils/got.cjs'
-import { pause } from '../../utils/pause.cjs'
 import { withSiteBuilder } from '../../utils/site-builder.cjs'
 
 describe.concurrent('commands/dev/config', () => {
@@ -32,8 +31,7 @@ describe.concurrent('commands/dev/config', () => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
-        const response = await got(`${server.url}/.netlify/functions/env`).text()
-        console.log('response ==>', response)
+        const response = await fetch(`${server.url}/.netlify/functions/env`).then((res) => res.text())
         t.expect(response).toEqual('DEFAULT_CONTEXT')
       })
     })
@@ -57,7 +55,7 @@ describe.concurrent('commands/dev/config', () => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory, context: 'production' }, async (server) => {
-        const response = await got(`${server.url}/.netlify/functions/env`).text()
+        const response = await fetch(`${server.url}/.netlify/functions/env`).then((res) => res.text())
         t.expect(response).toEqual('PRODUCTION_CONTEXT')
       })
     })
@@ -76,7 +74,7 @@ describe.concurrent('commands/dev/config', () => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory, env: { TEST: 'FROM_PROCESS_ENV' } }, async (server) => {
-        const response = await got(`${server.url}/.netlify/functions/env`).text()
+        const response = await fetch(`${server.url}/.netlify/functions/env`).then((res) => res.text())
         t.expect(response).toEqual('FROM_PROCESS_ENV')
       })
     })
@@ -96,7 +94,7 @@ describe.concurrent('commands/dev/config', () => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory, env: { TEST: 'FROM_PROCESS_ENV' } }, async (server) => {
-        const response = await got(`${server.url}/.netlify/functions/env`).text()
+        const response = await fetch(`${server.url}/.netlify/functions/env`).then((res) => res.text())
         t.expect(response).toEqual('FROM_PROCESS_ENV')
       })
     })
@@ -114,15 +112,11 @@ describe.concurrent('commands/dev/config', () => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
-        const response = await got(`${server.url}/.netlify/functions/env`, {
-          throwHttpErrors: false,
-          retry: {
-            limit: 0,
-          },
-        })
+        const response = await fetch(`${server.url}/.netlify/functions/env`)
+        const resposeBody = await response.text()
 
-        t.expect(response.statusCode).toBe(500)
-        t.expect(response.body.startsWith('no lambda response.')).toBe(true)
+        t.expect(response.status).toBe(500)
+        t.expect(resposeBody.startsWith('no lambda response.')).toBe(true)
       })
     })
   })
@@ -137,7 +131,7 @@ describe.concurrent('commands/dev/config', () => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory, env: { NETLIFY_DEV: 'FROM_PROCESS_ENV' } }, async (server) => {
-        const response = await got(`${server.url}/.netlify/functions/env`).text()
+        const response = await fetch(`${server.url}/.netlify/functions/env`).then((res) => res.text())
         t.expect(response).toEqual('true')
       })
     })
@@ -153,7 +147,7 @@ describe.concurrent('commands/dev/config', () => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
-        const response = await got(`${server.url}/.netlify/functions/env`).text()
+        const response = await fetch(`${server.url}/.netlify/functions/env`).then((res) => res.text())
         t.expect(response).toEqual('dev')
       })
     })
@@ -169,7 +163,7 @@ describe.concurrent('commands/dev/config', () => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory, context: 'deploy-preview' }, async (server) => {
-        const response = await got(`${server.url}/.netlify/functions/env`).text()
+        const response = await fetch(`${server.url}/.netlify/functions/env`).then((res) => res.text())
         t.expect(response).toEqual('deploy-preview')
       })
     })
@@ -195,7 +189,7 @@ describe.concurrent('commands/dev/config', () => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
-        const response = await got(`${server.url}/api/ping`).text()
+        const response = await fetch(`${server.url}/api/ping`).then((res) => res.text())
         t.expect(response).toEqual('ping')
       })
     })
@@ -221,7 +215,7 @@ describe.concurrent('commands/dev/config', () => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
-        const response = await got(`${server.url}/api/echo?ding=dong`).json()
+        const response = await fetch(`${server.url}/api/echo?ding=dong`).then((res) => res.json())
         t.expect(response.body).toBe(undefined)
         t.expect(response.headers.host).toEqual(`${server.host}:${server.port}`)
         t.expect(response.httpMethod).toEqual('GET')
@@ -252,14 +246,13 @@ describe.concurrent('commands/dev/config', () => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
-        const response = await got
-          .post(`${server.url}/api/echo?ding=dong`, {
-            headers: {
-              'content-type': 'application/x-www-form-urlencoded',
-            },
-            body: 'some=thing',
-          })
-          .json()
+        const response = await fetch(`${server.url}/api/echo?ding=dong`, {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/x-www-form-urlencoded',
+          },
+          body: 'some=thing',
+        }).then((res) => res.json())
 
         t.expect(response.body).toEqual('some=thing')
         t.expect(response.headers.host).toEqual(`${server.host}:${server.port}`)
@@ -303,14 +296,13 @@ describe.concurrent('commands/dev/config', () => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
-        const response = await got
-          .post(`${server.url}/api/echo?ding=dong`, {
-            headers: {
-              'content-type': 'application/x-www-form-urlencoded',
-            },
-            body: 'some=thing',
-          })
-          .json()
+        const response = await fetch(`${server.url}/api/echo?ding=dong`, {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/x-www-form-urlencoded',
+          },
+          body: 'some=thing',
+        }).then((res) => res.json())
 
         t.expect(response.body).toEqual('some=thing')
         t.expect(response.headers.host).toEqual(`${server.host}:${server.port}`)
@@ -343,15 +335,16 @@ describe.concurrent('commands/dev/config', () => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
-        const response = await got.post(`${server.url}/api/echo?ding=dong`, {
+        const response = await fetch(`${server.url}/api/echo?ding=dong`, {
+          method: 'POST',
           headers: {
             'content-type': 'application/x-www-form-urlencoded',
           },
           body: 'some=thing',
         })
 
-        t.expect(response.body).toEqual('')
-        t.expect(response.statusCode).toBe(200)
+        t.expect(await response.text()).toEqual('')
+        t.expect(response.status).toBe(200)
       })
     })
   })
@@ -382,14 +375,13 @@ describe.concurrent('commands/dev/config', () => {
         const expectedBoundary = form.getBoundary()
         const expectedResponseBody = form.getBuffer().toString('base64')
 
-        const response = await got
-          .post(`${server.url}/api/echo?ding=dong`, {
-            body: form,
-          })
-          .json()
+        const response = await fetch(`${server.url}/api/echo?ding=dong`, {
+          method: 'POST',
+          body: form,
+        }).then((res) => res.json())
 
         t.expect(response.headers.host).toEqual(`${server.host}:${server.port}`)
-        t.expect(response.headers['content-type']).toEqual(`multipart/form-data; boundary=${expectedBoundary}`)
+        t.expect(response.headers['content-type']).toEqual(`multipart/form-data;boundary=${expectedBoundary}`)
         t.expect(response.headers['content-length']).toEqual('164')
         t.expect(response.httpMethod).toEqual('POST')
         t.expect(response.isBase64Encoded).toBe(true)
@@ -453,20 +445,24 @@ describe.concurrent('commands/dev/config', () => {
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const chunks = []
-        const response = got.stream(`${server.url}/.netlify/functions/streamer`)
 
-        let lastTimestamp = 0
+        await new Promise(async (resolve, reject) => {
+          const stream = await fetch(`${server.url}/.netlify/functions/streamer`).then((res) => res.body)
 
-        response.on('data', (chunk) => {
-          const now = Date.now()
+          let lastTimestamp = 0
 
-          t.expect(now > lastTimestamp).toBe(true)
+          stream.on('data', (chunk) => {
+            const now = Date.now()
 
-          lastTimestamp = now
-          chunks.push(chunk.toString())
+            t.expect(now > lastTimestamp).toBe(true)
+
+            lastTimestamp = now
+            chunks.push(chunk.toString())
+          })
+
+          stream.on('end', resolve)
+          stream.on('error', reject)
         })
-
-        await pause(500)
 
         t.expect(chunks).toStrictEqual(['one', 'two', 'three'])
       })
