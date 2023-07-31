@@ -1,7 +1,7 @@
-import {test} from 'vitest'
+import fetch from 'node-fetch'
+import { test } from 'vitest'
 
 import { tryAndLogOutput, withDevServer } from '../utils/dev-server.cjs'
-import got from '../utils/got.cjs'
 import { createMock as createExecaMock } from '../utils/mock-execa.cjs'
 import { pause } from '../utils/pause.cjs'
 import { withSiteBuilder } from '../utils/site-builder.cjs'
@@ -73,7 +73,10 @@ test('Updates a Rust function when a file is modified', async (t) => {
         },
         async ({ outputBuffer, port, waitForLogMatching }) => {
           await tryAndLogOutput(async () => {
-            t.expect(await got(`http://localhost:${port}/.netlify/functions/rust-func`).text()).toEqual(originalBody)
+            const response = await fetch(`http://localhost:${port}/.netlify/functions/rust-func`).then((res) =>
+              res.text(),
+            )
+            t.expect(response).toEqual(originalBody)
           }, outputBuffer)
 
           await pause(WAIT_WRITE)
@@ -84,7 +87,9 @@ test('Updates a Rust function when a file is modified', async (t) => {
 
           await waitForLogMatching('Reloaded function rust-func')
 
-          const response = await got(`http://localhost:${port}/.netlify/functions/rust-func`).text()
+          const response = await fetch(`http://localhost:${port}/.netlify/functions/rust-func`).then((res) =>
+            res.text(),
+          )
 
           t.expect(response).toEqual(updatedBody)
         },
