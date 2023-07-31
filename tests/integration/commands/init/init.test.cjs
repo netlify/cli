@@ -6,10 +6,10 @@ const cleanDeep = require('clean-deep')
 const execa = require('execa')
 const toml = require('toml')
 
-const cliPath = require('./utils/cli-path.cjs')
-const { CONFIRM, DOWN, answerWithValue, handleQuestions } = require('./utils/handle-questions.cjs')
-const { withMockApi } = require('./utils/mock-api.cjs')
-const { withSiteBuilder } = require('./utils/site-builder.cjs')
+const cliPath = require('../../utils/cli-path.cjs')
+const { CONFIRM, DOWN, answerWithValue, handleQuestions } = require('../../utils/handle-questions.cjs')
+const { withMockApi } = require('../../utils/mock-api.cjs')
+const { withSiteBuilder } = require('../../utils/site-builder.cjs')
 
 const defaultFunctionsDirectory = 'netlify/functions'
 
