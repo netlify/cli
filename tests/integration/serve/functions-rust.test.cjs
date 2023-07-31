@@ -1,10 +1,10 @@
 const test = require('ava')
 
-const { tryAndLogOutput, withDevServer } = require('./utils/dev-server.cjs')
-const got = require('./utils/got.cjs')
-const { createMock: createExecaMock } = require('./utils/mock-execa.cjs')
-const { pause } = require('./utils/pause.cjs')
-const { withSiteBuilder } = require('./utils/site-builder.cjs')
+const { tryAndLogOutput, withDevServer } = require('../utils/dev-server.cjs')
+const got = require('../utils/got.cjs')
+const { createMock: createExecaMock } = require('../utils/mock-execa.cjs')
+const { pause } = require('../utils/pause.cjs')
+const { withSiteBuilder } = require('../utils/site-builder.cjs')
 
 const WAIT_WRITE = 1000
 
