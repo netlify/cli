@@ -1,4 +1,4 @@
-import { test } from 'vitest'
+import { describe, test } from 'vitest'
 
 import fetch from 'node-fetch'
 import { tryAndLogOutput, withDevServer } from '../utils/dev-server.cjs'
@@ -8,10 +8,11 @@ import { withSiteBuilder } from '../utils/site-builder.cjs'
 
 const WAIT_WRITE = 1000
 
-test('Updates a Go function when a file is modified', async (t) => {
-  const originalBody = 'Hello, world!'
-  const updatedBody = 'Hello, Netlify!'
-  const [execaMock, removeExecaMock] = await createExecaMock(`
+describe.concurrent('serve/functions-go', () => {
+  test('Updates a Go function when a file is modified', async (t) => {
+    const originalBody = 'Hello, world!'
+    const updatedBody = 'Hello, Netlify!'
+    const [execaMock, removeExecaMock] = await createExecaMock(`
     const { writeFileSync } = require('fs')
 
     let proxyCallCount = 0
@@ -49,66 +50,68 @@ test('Updates a Go function when a file is modified', async (t) => {
     })
   `)
 
-  await withSiteBuilder('go-function-update', async (builder) => {
-    try {
-      await builder
-        .withNetlifyToml({
-          config: {
-            build: { publish: 'public' },
-            functions: { directory: 'functions' },
-          },
-        })
-        .withContentFiles([
-          {
-            path: 'functions/go-func/go.mod',
-            content: `<mock go.mod>`,
-          },
-          {
-            path: 'functions/go-func/go.sum',
-            content: `<mock go.sum>`,
-          },
-          {
-            path: 'functions/go-func/main.go',
-            content: `<mock main.go>`,
-          },
-        ])
-        .buildAsync()
+    await withSiteBuilder('go-function-update', async (builder) => {
+      try {
+        await builder
+          .withNetlifyToml({
+            config: {
+              build: { publish: 'public' },
+              functions: { directory: 'functions' },
+            },
+          })
+          .withContentFiles([
+            {
+              path: 'functions/go-func/go.mod',
+              content: `<mock go.mod>`,
+            },
+            {
+              path: 'functions/go-func/go.sum',
+              content: `<mock go.sum>`,
+            },
+            {
+              path: 'functions/go-func/main.go',
+              content: `<mock main.go>`,
+            },
+          ])
+          .buildAsync()
 
-      await withDevServer(
-        {
-          cwd: builder.directory,
-          env: execaMock,
-        },
-        async ({ outputBuffer, port, waitForLogMatching }) => {
-          await tryAndLogOutput(async () => {
+        await withDevServer(
+          {
+            cwd: builder.directory,
+            env: execaMock,
+          },
+          async ({ outputBuffer, port, waitForLogMatching }) => {
+            await tryAndLogOutput(async () => {
+              const response = await fetch(`http://localhost:${port}/.netlify/functions/go-func`).then((res) =>
+                res.text(),
+              )
+              t.expect(response).toEqual(originalBody)
+            }, outputBuffer)
+
+            await pause(WAIT_WRITE)
+
+            await builder
+              .withContentFile({ path: 'functions/go-func/main.go', content: `<updated mock main.go>` })
+              .buildAsync()
+
+            await waitForLogMatching('Reloaded function go-func')
+
             const response = await fetch(`http://localhost:${port}/.netlify/functions/go-func`).then((res) =>
               res.text(),
             )
-            t.expect(response).toEqual(originalBody)
-          }, outputBuffer)
 
-          await pause(WAIT_WRITE)
-
-          await builder
-            .withContentFile({ path: 'functions/go-func/main.go', content: `<updated mock main.go>` })
-            .buildAsync()
-
-          await waitForLogMatching('Reloaded function go-func')
-
-          const response = await fetch(`http://localhost:${port}/.netlify/functions/go-func`).then((res) => res.text())
-
-          t.expect(response).toEqual(updatedBody)
-        },
-      )
-    } finally {
-      await removeExecaMock()
-    }
+            t.expect(response).toEqual(updatedBody)
+          },
+        )
+      } finally {
+        await removeExecaMock()
+      }
+    })
   })
-})
 
-// Reproduction test to verify the abscence/presence of a Go scheduled function
-test('Detects a Go scheduled function using netlify-toml config', async (t) => {
-  const [execaMock, removeExecaMock] = await createExecaMock(`
+  // Reproduction test to verify the abscence/presence of a Go scheduled function
+  test('Detects a Go scheduled function using netlify-toml config', async (t) => {
+    const [execaMock, removeExecaMock] = await createExecaMock(`
     const assert = require('assert')
 
     const handler = (...args) => {
@@ -135,47 +138,48 @@ test('Detects a Go scheduled function using netlify-toml config', async (t) => {
     })
   `)
 
-  await withSiteBuilder('go-scheduled-function', async (builder) => {
-    try {
-      await builder
-        .withNetlifyToml({
-          config: {
-            build: { publish: 'public' },
-            functions: { directory: 'src/', 'go-scheduled-function': { schedule: '@daily' } },
-          },
-        })
-        .withContentFiles([
-          {
-            path: 'go.mod',
-            content: `<mock go.mod>`,
-          },
-          {
-            path: 'go.sum',
-            content: `<mock go.sum>`,
-          },
-          {
-            path: 'src/go-scheduled-function/main.go',
-            content: `<mock main.go>`,
-          },
-        ])
-        .buildAsync()
+    await withSiteBuilder('go-scheduled-function', async (builder) => {
+      try {
+        await builder
+          .withNetlifyToml({
+            config: {
+              build: { publish: 'public' },
+              functions: { directory: 'src/', 'go-scheduled-function': { schedule: '@daily' } },
+            },
+          })
+          .withContentFiles([
+            {
+              path: 'go.mod',
+              content: `<mock go.mod>`,
+            },
+            {
+              path: 'go.sum',
+              content: `<mock go.sum>`,
+            },
+            {
+              path: 'src/go-scheduled-function/main.go',
+              content: `<mock main.go>`,
+            },
+          ])
+          .buildAsync()
 
-      await withDevServer(
-        {
-          cwd: builder.directory,
-          env: execaMock,
-        },
-        async ({ port }) => {
-          const response = await fetch(`http://localhost:${port}/.netlify/functions/go-scheduled-function`)
-          const responseBody = await response.text()
-          t.expect(responseBody).toMatch(/You performed an HTTP request/)
-          t.expect(responseBody).toMatch(/Your function returned `body`/)
+        await withDevServer(
+          {
+            cwd: builder.directory,
+            env: execaMock,
+          },
+          async ({ port }) => {
+            const response = await fetch(`http://localhost:${port}/.netlify/functions/go-scheduled-function`)
+            const responseBody = await response.text()
+            t.expect(responseBody).toMatch(/You performed an HTTP request/)
+            t.expect(responseBody).toMatch(/Your function returned `body`/)
 
-          t.expect(response.status).toBe(200)
-        },
-      )
-    } finally {
-      await removeExecaMock()
-    }
+            t.expect(response.status).toBe(200)
+          },
+        )
+      } finally {
+        await removeExecaMock()
+      }
+    })
   })
 })
