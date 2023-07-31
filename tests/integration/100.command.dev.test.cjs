@@ -320,8 +320,8 @@ test('Serves an Edge Function with caching', async (t) => {
   })
 })
 
-test('Serves an Edge Function that includes context with site information', async (t) => {
-  await withSiteBuilder('site-with-edge-function-printing-site-info', async (builder) => {
+test('Serves an Edge Function that includes context with site and deploy information', async (t) => {
+  await withSiteBuilder('site-with-edge-function-printing-site-deploy-info', async (builder) => {
     const publicDir = 'public'
     builder
       .withNetlifyToml({
@@ -339,7 +339,11 @@ test('Serves an Edge Function that includes context with site information', asyn
         },
       })
       .withEdgeFunction({
-        handler: async (_, context) => new Response(JSON.stringify(context.site)),
+        handler: async (_, context) => {
+          const { deploy, site } = context
+
+          return new Response(JSON.stringify({ deploy, site }))
+        },
         name: 'siteContext',
       })
 
@@ -376,7 +380,10 @@ test('Serves an Edge Function that includes context with site information', asyn
           const response = await got(`${server.url}`)
 
           t.is(response.statusCode, 200)
-          t.is(response.body, '{"id":"site_id","name":"site-name","url":"site-url"}')
+          t.deepEqual(JSON.parse(response.body), {
+            deploy: { id: '0' },
+            site: { id: 'site_id', name: 'site-name', url: 'site-url' },
+          })
         },
       )
     })
