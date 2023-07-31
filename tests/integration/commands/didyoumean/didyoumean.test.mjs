@@ -1,7 +1,7 @@
-const test = require('ava')
+import test from 'ava'
 
-const callCli = require('../../utils/call-cli.cjs')
-const { normalize } = require('../../utils/snapshots.cjs')
+import callCli from '../../utils/call-cli.cjs'
+import { normalize } from '../../utils/snapshots.cjs'
 
 test('suggests closest matching command on typo', async (t) => {
   // failures are expected since we effectively quit out of the prompts
