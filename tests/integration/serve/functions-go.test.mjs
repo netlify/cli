@@ -1,6 +1,6 @@
+import fetch from 'node-fetch'
 import { describe, test } from 'vitest'
 
-import fetch from 'node-fetch'
 import { tryAndLogOutput, withDevServer } from '../utils/dev-server.cjs'
 import { createMock as createExecaMock } from '../utils/mock-execa.cjs'
 import { pause } from '../utils/pause.cjs'
