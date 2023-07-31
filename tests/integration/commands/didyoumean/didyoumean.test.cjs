@@ -1,7 +1,7 @@
 const test = require('ava')
 
-const callCli = require('./utils/call-cli.cjs')
-const { normalize } = require('./utils/snapshots.cjs')
+const callCli = require('../../utils/call-cli.cjs')
+const { normalize } = require('../../utils/snapshots.cjs')
 
 test('suggests closest matching command on typo', async (t) => {
   // failures are expected since we effectively quit out of the prompts

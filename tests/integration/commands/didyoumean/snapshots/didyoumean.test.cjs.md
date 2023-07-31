@@ -1,4 +1,4 @@
-# Snapshot report for `tests/integration/didyoumean.test.cjs`
+# Snapshot report for `tests/integration/commands/didyoumean/didyoumean.test.cjs`
 
 The actual snapshot is saved in `didyoumean.test.cjs.snap`.
 
