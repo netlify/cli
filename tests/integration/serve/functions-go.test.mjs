@@ -1,7 +1,7 @@
 import { test } from 'vitest'
 
+import fetch from 'node-fetch'
 import { tryAndLogOutput, withDevServer } from '../utils/dev-server.cjs'
-import got from '../utils/got.cjs'
 import { createMock as createExecaMock } from '../utils/mock-execa.cjs'
 import { pause } from '../utils/pause.cjs'
 import { withSiteBuilder } from '../utils/site-builder.cjs'
@@ -81,7 +81,9 @@ test('Updates a Go function when a file is modified', async (t) => {
         },
         async ({ outputBuffer, port, waitForLogMatching }) => {
           await tryAndLogOutput(async () => {
-            const response = await got(`http://localhost:${port}/.netlify/functions/go-func`).text()
+            const response = await fetch(`http://localhost:${port}/.netlify/functions/go-func`).then((res) =>
+              res.text(),
+            )
             t.expect(response).toEqual(originalBody)
           }, outputBuffer)
 
@@ -93,7 +95,7 @@ test('Updates a Go function when a file is modified', async (t) => {
 
           await waitForLogMatching('Reloaded function go-func')
 
-          const response = await got(`http://localhost:${port}/.netlify/functions/go-func`).text()
+          const response = await fetch(`http://localhost:${port}/.netlify/functions/go-func`).then((res) => res.text())
 
           t.expect(response).toEqual(updatedBody)
         },
@@ -164,12 +166,12 @@ test('Detects a Go scheduled function using netlify-toml config', async (t) => {
           env: execaMock,
         },
         async ({ port }) => {
-          const response = await got(`http://localhost:${port}/.netlify/functions/go-scheduled-function`)
+          const response = await fetch(`http://localhost:${port}/.netlify/functions/go-scheduled-function`)
+          const responseBody = await response.text()
+          t.expect(responseBody).toMatch(/You performed an HTTP request/)
+          t.expect(responseBody).toMatch(/Your function returned `body`/)
 
-          t.expect(response.body).toMatch(/You performed an HTTP request/)
-          t.expect(response.body).toMatch(/Your function returned `body`/)
-
-          t.expect(response.statusCode).toBe(200)
+          t.expect(response.status).toBe(200)
         },
       )
     } finally {
