@@ -326,8 +326,8 @@ describe.concurrent('commands/dev', () => {
     })
   })
 
-  test('Serves an Edge Function that includes context with site information', async (t) => {
-    await withSiteBuilder('site-with-edge-function-printing-site-info', async (builder) => {
+  test('Serves an Edge Function that includes context with site and deploy information', async (t) => {
+    await withSiteBuilder('site-with-edge-function-printing-site-deploy-info', async (builder) => {
       const publicDir = 'public'
       builder
         .withNetlifyToml({
@@ -345,7 +345,10 @@ describe.concurrent('commands/dev', () => {
           },
         })
         .withEdgeFunction({
-          handler: async (_, context) => new Response(JSON.stringify(context.site)),
+          handler: async (_, context) => {
+            const { deploy, site } = context
+            return new Response(JSON.stringify({ deploy, site }))
+          },
           name: 'siteContext',
         })
 
@@ -382,7 +385,10 @@ describe.concurrent('commands/dev', () => {
             const response = await fetch(`${server.url}`)
 
             t.expect(response.status).toBe(200)
-            t.expect(await response.text()).toEqual('{"id":"site_id","name":"site-name","url":"site-url"}')
+            t.expect(JSON.parse(await response.text())).toStrictEqual({
+              deploy: { id: '0' },
+              site: { id: 'site_id', name: 'site-name', url: 'site-url' },
+            })
           },
         )
       })
@@ -1116,7 +1122,7 @@ describe.concurrent('commands/dev', () => {
 
   test('should inject the `NETLIFY_DEV` environment variable in the process (legacy environment variables)', async (t) => {
     const externalServerPort = await getAvailablePort()
-    const externalServerPath = path.join(__dirname, 'utils', 'external-server-cli.cjs')
+    const externalServerPath = path.join(__dirname, '../../utils', 'external-server-cli.cjs')
     const command = `node ${externalServerPath} ${externalServerPort}`
 
     await withSiteBuilder('site-with-legacy-env-vars', async (builder) => {
@@ -1189,7 +1195,7 @@ describe.concurrent('commands/dev', () => {
     ]
 
     const externalServerPort = await getAvailablePort()
-    const externalServerPath = path.join(__dirname, 'utils', 'external-server-cli.cjs')
+    const externalServerPath = path.join(__dirname, '../../utils', 'external-server-cli.cjs')
     const command = `node ${externalServerPath} ${externalServerPort}`
 
     await withSiteBuilder('site-with-env-vars', async (builder) => {
