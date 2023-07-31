@@ -1,4 +1,4 @@
-import test from 'ava'
+import {test} from 'vitest'
 
 import { tryAndLogOutput, withDevServer } from '../utils/dev-server.cjs'
 import got from '../utils/got.cjs'
@@ -73,7 +73,7 @@ test('Updates a Rust function when a file is modified', async (t) => {
         },
         async ({ outputBuffer, port, waitForLogMatching }) => {
           await tryAndLogOutput(async () => {
-            t.is(await got(`http://localhost:${port}/.netlify/functions/rust-func`).text(), originalBody)
+            t.expect(await got(`http://localhost:${port}/.netlify/functions/rust-func`).text()).toEqual(originalBody)
           }, outputBuffer)
 
           await pause(WAIT_WRITE)
@@ -86,7 +86,7 @@ test('Updates a Rust function when a file is modified', async (t) => {
 
           const response = await got(`http://localhost:${port}/.netlify/functions/rust-func`).text()
 
-          t.is(response, updatedBody)
+          t.expect(response).toEqual(updatedBody)
         },
       )
     } finally {
