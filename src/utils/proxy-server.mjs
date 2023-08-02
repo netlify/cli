@@ -36,19 +36,21 @@ export const generateInspectSettings = (edgeInspect, edgeInspectBrk) => {
 /**
  *
  * @param {object} params
+ * @param {string=} params.accountId
  * @param {*} params.addonsUrls
- * @param {import('../commands/base-command.mjs').NetlifyOptions["config"]} params.config
+ * @param {import('../commands/types.js').NetlifyOptions["config"]} params.config
  * @param {string} [params.configPath] An override for the Netlify config path
  * @param {boolean} params.debug
- * @param {import('../commands/base-command.mjs').NetlifyOptions["cachedConfig"]['env']} params.env
+ * @param {import('../commands/types.js').NetlifyOptions["cachedConfig"]['env']} params.env
  * @param {InspectSettings} params.inspectSettings
  * @param {() => Promise<object>} params.getUpdatedConfig
  * @param {string} params.geolocationMode
  * @param {string} params.geoCountry
  * @param {*} params.settings
  * @param {boolean} params.offline
- * @param {*} params.site
+ * @param {object} params.site
  * @param {*} params.siteInfo
+ * @param {string} params.projectDir
  * @param {import('./state-config.mjs').default} params.state
  * @returns
  */
@@ -64,6 +66,7 @@ export const startProxyServer = async ({
   getUpdatedConfig,
   inspectSettings,
   offline,
+  projectDir,
   settings,
   site,
   siteInfo,
@@ -80,7 +83,7 @@ export const startProxyServer = async ({
     getUpdatedConfig,
     inspectSettings,
     offline,
-    projectDir: site.root,
+    projectDir,
     settings,
     state,
     siteInfo,

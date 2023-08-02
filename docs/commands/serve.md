@@ -16,17 +16,18 @@ netlify serve
 
 **Flags**
 
+- `config` (*string*) - Custom path to a netlify configuration file
 - `context` (*string*) - Specify a deploy context or branch for environment variables (contexts: "production", "deploy-preview", "branch-deploy", "dev")
 - `country` (*string*) - Two-letter country code (https://ntl.fyi/country-codes) to use as mock geolocation (enables --geo=mock automatically)
 - `dir` (*string*) - dir with static files
+- `filter` (*string*) - Optional name of an application to run the command in.
+This option is needed for working in Monorepos
 - `functions` (*string*) - specify a functions folder to serve
 - `functions-port` (*string*) - port of functions server
 - `geo` (*cache | mock | update*) - force geolocation data to be updated, use cached data from the last 24h if found, or use a mock location
 - `offline` (*boolean*) - disables any features that require network access
-- `debug` (*boolean*) - Print debugging information
-- `http-proxy` (*string*) - Proxy server address to route requests through.
-- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 - `port` (*string*) - port of netlify dev
+- `debug` (*boolean*) - Print debugging information
 
 **Examples**
 

@@ -375,7 +375,6 @@ const initializeProxy = async function ({ configPath, distDir, env, host, port, 
   proxy.before('web', 'stream', (req) => {
     // See https://github.com/http-party/node-http-proxy/issues/1219#issuecomment-511110375
     if (req.headers.expect) {
-      // eslint-disable-next-line no-underscore-dangle
       req.__expectHeader = req.headers.expect
       delete req.headers.expect
     }
@@ -402,9 +401,7 @@ const initializeProxy = async function ({ configPath, distDir, env, host, port, 
       handleProxyRequest(req, proxyReq)
     }
 
-    // eslint-disable-next-line no-underscore-dangle
     if (req.__expectHeader) {
-      // eslint-disable-next-line no-underscore-dangle
       proxyReq.setHeader('Expect', req.__expectHeader)
     }
     if (req.originalBody) {
@@ -599,6 +596,10 @@ const onRequest = async (
   proxy.web(req, res, options)
 }
 
+/**
+ * @param {import('./types.js').ServerSettings} settings
+ * @returns
+ */
 export const getProxyUrl = function (settings) {
   const scheme = settings.https ? 'https' : 'http'
   return `${scheme}://localhost:${settings.port}`

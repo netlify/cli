@@ -86,8 +86,11 @@ netlify deploy
 - `auth` (*string*) - Netlify auth token to deploy with
 - `branch` (*string*) - Serves the same functionality as --alias. Deprecated and will be removed in future versions
 - `build` (*boolean*) - Run build command before deploying
+- `config` (*string*) - Custom path to a netlify configuration file
 - `context` (*string*) - Context to use when resolving build configuration
 - `dir` (*string*) - Specify a folder to deploy
+- `filter` (*string*) - Optional name of an application to run the command in.
+This option is needed for working in Monorepos
 - `functions` (*string*) - Specify a functions folder to deploy
 - `json` (*boolean*) - Output deployment data as JSON
 - `message` (*string*) - A short message to include in the deploy log
@@ -97,10 +100,8 @@ netlify deploy
 - `site` (*string*) - A site name or ID to deploy to
 - `skip-functions-cache` (*boolean*) - Ignore any functions created as part of a previous `build` or `deploy` commands, forcing them to be bundled again as part of the deployment
 - `timeout` (*string*) - Timeout to wait for deployment to finish
-- `debug` (*boolean*) - Print debugging information
-- `http-proxy` (*string*) - Proxy server address to route requests through.
-- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 - `trigger` (*boolean*) - Trigger a new build of your site on Netlify without uploading local files
+- `debug` (*boolean*) - Print debugging information
 
 **Examples**
 

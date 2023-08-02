@@ -19,8 +19,6 @@ netlify lm
 **Flags**
 
 - `debug` (*boolean*) - Print debugging information
-- `http-proxy` (*string*) - Proxy server address to route requests through.
-- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
@@ -50,9 +48,10 @@ netlify lm:info
 
 **Flags**
 
+- `config` (*string*) - Custom path to a netlify configuration file
+- `filter` (*string*) - Optional name of an application to run the command in.
+This option is needed for working in Monorepos
 - `debug` (*boolean*) - Print debugging information
-- `http-proxy` (*string*) - Proxy server address to route requests through.
-- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 
 ---
 ## `lm:install`
@@ -69,10 +68,11 @@ netlify lm:install
 
 **Flags**
 
+- `config` (*string*) - Custom path to a netlify configuration file
+- `filter` (*string*) - Optional name of an application to run the command in.
+This option is needed for working in Monorepos
 - `force` (*boolean*) - Force the credentials helper installation
 - `debug` (*boolean*) - Print debugging information
-- `http-proxy` (*string*) - Proxy server address to route requests through.
-- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 
 ---
 ## `lm:setup`
@@ -87,11 +87,12 @@ netlify lm:setup
 
 **Flags**
 
+- `config` (*string*) - Custom path to a netlify configuration file
+- `filter` (*string*) - Optional name of an application to run the command in.
+This option is needed for working in Monorepos
 - `force-install` (*boolean*) - Force the credentials helper installation
 - `skip-install` (*boolean*) - Skip the credentials helper installation check
 - `debug` (*boolean*) - Print debugging information
-- `http-proxy` (*string*) - Proxy server address to route requests through.
-- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 
 ---
 

@@ -16,10 +16,11 @@ netlify open
 **Flags**
 
 - `admin` (*boolean*) - Open Netlify site
+- `config` (*string*) - Custom path to a netlify configuration file
+- `filter` (*string*) - Optional name of an application to run the command in.
+This option is needed for working in Monorepos
 - `site` (*boolean*) - Open site
 - `debug` (*boolean*) - Print debugging information
-- `http-proxy` (*string*) - Proxy server address to route requests through.
-- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
@@ -49,9 +50,10 @@ netlify open:admin
 
 **Flags**
 
+- `config` (*string*) - Custom path to a netlify configuration file
+- `filter` (*string*) - Optional name of an application to run the command in.
+This option is needed for working in Monorepos
 - `debug` (*boolean*) - Print debugging information
-- `http-proxy` (*string*) - Proxy server address to route requests through.
-- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 
 **Examples**
 
@@ -72,9 +74,10 @@ netlify open:site
 
 **Flags**
 
+- `config` (*string*) - Custom path to a netlify configuration file
+- `filter` (*string*) - Optional name of an application to run the command in.
+This option is needed for working in Monorepos
 - `debug` (*boolean*) - Print debugging information
-- `http-proxy` (*string*) - Proxy server address to route requests through.
-- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 
 **Examples**
 

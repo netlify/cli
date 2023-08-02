@@ -1,3 +1,4 @@
+// @ts-check
 import { join } from 'path'
 
 import { DenoBridge } from '@netlify/edge-bundler'
@@ -27,15 +28,24 @@ const getPrompt = ({ fileExists, path }) => {
 const getEdgeFunctionsPath = ({ config, repositoryRoot }) =>
   config.build.edge_functions || join(repositoryRoot, 'netlify', 'edge-functions')
 
+/**
+ * @param {string} repositoryRoot
+ */
 const getSettingsPath = (repositoryRoot) => join(repositoryRoot, '.vscode', 'settings.json')
 
-const hasDenoVSCodeExt = async () => {
-  const { stdout: extensions } = await execa('code', ['--list-extensions'], { stderr: 'inherit' })
+/**
+ * @param {string} repositoryRoot
+ */
+const hasDenoVSCodeExt = async (repositoryRoot) => {
+  const { stdout: extensions } = await execa('code', ['--list-extensions'], { stderr: 'inherit', cwd: repositoryRoot })
   return extensions.split('\n').includes('denoland.vscode-deno')
 }
 
-const getDenoVSCodeExt = async () => {
-  await execa('code', ['--install-extension', 'denoland.vscode-deno'], { stdio: 'inherit' })
+/**
+ * @param {string} repositoryRoot
+ */
+const getDenoVSCodeExt = async (repositoryRoot) => {
+  await execa('code', ['--install-extension', 'denoland.vscode-deno'], { stdio: 'inherit', cwd: repositoryRoot })
 }
 
 const getDenoExtPrompt = () => {
@@ -49,6 +59,12 @@ const getDenoExtPrompt = () => {
   })
 }
 
+/**
+ * @param {object} params
+ * @param {*} params.config
+ * @param {string} params.repositoryRoot
+ * @returns
+ */
 export const run = async ({ config, repositoryRoot }) => {
   const deno = new DenoBridge({
     onBeforeDownload: () =>
@@ -66,9 +82,11 @@ export const run = async ({ config, repositoryRoot }) => {
   }
 
   try {
-    if (!(await hasDenoVSCodeExt())) {
+    if (!(await hasDenoVSCodeExt(repositoryRoot))) {
       const { confirm: denoExtConfirm } = await getDenoExtPrompt()
-      if (denoExtConfirm) getDenoVSCodeExt()
+      if (denoExtConfirm) {
+        getDenoVSCodeExt(repositoryRoot)
+      }
     }
   } catch {
     log(

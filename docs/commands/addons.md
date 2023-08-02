@@ -21,9 +21,10 @@ netlify addons
 
 **Flags**
 
+- `config` (*string*) - Custom path to a netlify configuration file
+- `filter` (*string*) - Optional name of an application to run the command in.
+This option is needed for working in Monorepos
 - `debug` (*boolean*) - Print debugging information
-- `http-proxy` (*string*) - Proxy server address to route requests through.
-- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
@@ -61,9 +62,10 @@ netlify addons:auth
 
 **Flags**
 
+- `config` (*string*) - Custom path to a netlify configuration file
+- `filter` (*string*) - Optional name of an application to run the command in.
+This option is needed for working in Monorepos
 - `debug` (*boolean*) - Print debugging information
-- `http-proxy` (*string*) - Proxy server address to route requests through.
-- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 
 ---
 ## `addons:config`
@@ -82,9 +84,10 @@ netlify addons:config
 
 **Flags**
 
+- `config` (*string*) - Custom path to a netlify configuration file
+- `filter` (*string*) - Optional name of an application to run the command in.
+This option is needed for working in Monorepos
 - `debug` (*boolean*) - Print debugging information
-- `http-proxy` (*string*) - Proxy server address to route requests through.
-- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 
 ---
 ## `addons:create`
@@ -104,9 +107,10 @@ netlify addons:create
 
 **Flags**
 
+- `config` (*string*) - Custom path to a netlify configuration file
+- `filter` (*string*) - Optional name of an application to run the command in.
+This option is needed for working in Monorepos
 - `debug` (*boolean*) - Print debugging information
-- `http-proxy` (*string*) - Proxy server address to route requests through.
-- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 
 ---
 ## `addons:delete`
@@ -126,10 +130,11 @@ netlify addons:delete
 
 **Flags**
 
+- `config` (*string*) - Custom path to a netlify configuration file
+- `filter` (*string*) - Optional name of an application to run the command in.
+This option is needed for working in Monorepos
 - `force` (*boolean*) - delete without prompting (useful for CI)
 - `debug` (*boolean*) - Print debugging information
-- `http-proxy` (*string*) - Proxy server address to route requests through.
-- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 
 ---
 ## `addons:list`
@@ -144,10 +149,11 @@ netlify addons:list
 
 **Flags**
 
+- `config` (*string*) - Custom path to a netlify configuration file
+- `filter` (*string*) - Optional name of an application to run the command in.
+This option is needed for working in Monorepos
 - `json` (*boolean*) - Output add-on data as JSON
 - `debug` (*boolean*) - Print debugging information
-- `http-proxy` (*string*) - Proxy server address to route requests through.
-- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 
 ---
 

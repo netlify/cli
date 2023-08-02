@@ -16,12 +16,13 @@ netlify link
 
 **Flags**
 
+- `config` (*string*) - Custom path to a netlify configuration file
+- `filter` (*string*) - Optional name of an application to run the command in.
+This option is needed for working in Monorepos
 - `git-remote-name` (*string*) - Name of Git remote to use. e.g. "origin"
 - `id` (*string*) - ID of site to link to
-- `debug` (*boolean*) - Print debugging information
-- `http-proxy` (*string*) - Proxy server address to route requests through.
-- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 - `name` (*string*) - Name of site to link to
+- `debug` (*boolean*) - Print debugging information
 
 **Examples**
 

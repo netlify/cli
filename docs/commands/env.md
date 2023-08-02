@@ -16,9 +16,10 @@ netlify env
 
 **Flags**
 
+- `config` (*string*) - Custom path to a netlify configuration file
+- `filter` (*string*) - Optional name of an application to run the command in.
+This option is needed for working in Monorepos
 - `debug` (*boolean*) - Print debugging information
-- `http-proxy` (*string*) - Proxy server address to route requests through.
-- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
@@ -54,11 +55,12 @@ netlify env:clone
 
 **Flags**
 
+- `config` (*string*) - Custom path to a netlify configuration file
+- `filter` (*string*) - Optional name of an application to run the command in.
+This option is needed for working in Monorepos
 - `from` (*string*) - Site ID (From)
-- `debug` (*boolean*) - Print debugging information
-- `http-proxy` (*string*) - Proxy server address to route requests through.
-- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 - `to` (*string*) - Site ID (To)
+- `debug` (*boolean*) - Print debugging information
 
 **Examples**
 
@@ -84,11 +86,12 @@ netlify env:get
 
 **Flags**
 
+- `config` (*string*) - Custom path to a netlify configuration file
 - `context` (*string*) - Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev")
-- `debug` (*boolean*) - Print debugging information
-- `http-proxy` (*string*) - Proxy server address to route requests through.
-- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
+- `filter` (*string*) - Optional name of an application to run the command in.
+This option is needed for working in Monorepos
 - `scope` (*builds | functions | post-processing | runtime | any*) - Specify a scope
+- `debug` (*boolean*) - Print debugging information
 
 **Examples**
 
@@ -116,10 +119,11 @@ netlify env:import
 
 **Flags**
 
+- `config` (*string*) - Custom path to a netlify configuration file
+- `filter` (*string*) - Optional name of an application to run the command in.
+This option is needed for working in Monorepos
 - `replace-existing` (*boolean*) - Replace all existing variables instead of merging them with the current ones
 - `debug` (*boolean*) - Print debugging information
-- `http-proxy` (*string*) - Proxy server address to route requests through.
-- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 
 ---
 ## `env:list`
@@ -134,13 +138,14 @@ netlify env:list
 
 **Flags**
 
+- `config` (*string*) - Custom path to a netlify configuration file
 - `context` (*string*) - Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev")
-- `debug` (*boolean*) - Print debugging information
-- `http-proxy` (*string*) - Proxy server address to route requests through.
-- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
+- `filter` (*string*) - Optional name of an application to run the command in.
+This option is needed for working in Monorepos
 - `json` (*boolean*) - Output environment variables as JSON
 - `plain` (*boolean*) - Output environment variables as plaintext
 - `scope` (*builds | functions | post-processing | runtime | any*) - Specify a scope
+- `debug` (*boolean*) - Print debugging information
 
 **Examples**
 
@@ -170,12 +175,13 @@ netlify env:set
 
 **Flags**
 
+- `config` (*string*) - Custom path to a netlify configuration file
 - `context` (*string*) - Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev") (default: all contexts)
-- `debug` (*boolean*) - Print debugging information
-- `http-proxy` (*string*) - Proxy server address to route requests through.
-- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
+- `filter` (*string*) - Optional name of an application to run the command in.
+This option is needed for working in Monorepos
 - `scope` (*builds | functions | post-processing | runtime*) - Specify a scope (default: all scopes)
 - `secret` (*boolean*) - Indicate whether the environment variable value can be read again.
+- `debug` (*boolean*) - Print debugging information
 
 **Examples**
 
@@ -206,10 +212,11 @@ netlify env:unset
 
 **Flags**
 
+- `config` (*string*) - Custom path to a netlify configuration file
 - `context` (*string*) - Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev") (default: all contexts)
+- `filter` (*string*) - Optional name of an application to run the command in.
+This option is needed for working in Monorepos
 - `debug` (*boolean*) - Print debugging information
-- `http-proxy` (*string*) - Proxy server address to route requests through.
-- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 
 **Examples**
 

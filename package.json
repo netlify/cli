@@ -82,7 +82,6 @@
     "@netlify/build-info": "7.7.3",
     "@netlify/config": "20.6.4",
     "@netlify/edge-bundler": "8.17.1",
-    "@netlify/framework-info": "9.8.10",
     "@netlify/local-functions-proxy": "1.1.1",
     "@netlify/serverless-functions-api": "1.5.2",
     "@netlify/zip-it-and-ship-it": "9.13.1",
@@ -186,6 +185,7 @@
     "write-file-atomic": "5.0.1"
   },
   "devDependencies": {
+    "eslint-plugin-workspace": "file:./tools/lint-rules",
     "@babel/preset-react": "7.22.5",
     "@netlify/eslint-config-node": "7.0.0",
     "@netlify/functions": "1.6.0",
