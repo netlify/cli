@@ -1,21 +1,22 @@
-const { join } = require('path')
+import path from 'path'
+import { fileURLToPath } from 'url'
 
-// eslint-disable-next-line ava/use-test
-const avaTest = require('ava')
-const { isCI } = require('ci-info')
+import fetch from 'node-fetch'
+import { describe, test } from 'vitest'
 
-const { tryAndLogOutput, withDevServer } = require('./utils/dev-server.cjs')
-const got = require('./utils/got.cjs')
-const { pause } = require('./utils/pause.cjs')
-const { withSiteBuilder } = require('./utils/site-builder.cjs')
+import { tryAndLogOutput, withDevServer } from '../../utils/dev-server.cjs'
+import got from '../../utils/got.cjs'
+import { pause } from '../../utils/pause.cjs'
+import { withSiteBuilder } from '../../utils/site-builder.cjs'
+
+// eslint-disable-next-line no-underscore-dangle
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const testMatrix = [{ args: [] }, { args: ['esbuild'] }]
-const testName = (title, args) => (args.length <= 0 ? title : `${title} - ${args.join(' ')}`)
 
 const WAIT_WRITE = 3000
 
-const test = isCI ? avaTest.serial.bind(avaTest) : avaTest
-
+// TODO: Remove function and got
 const gotCatch404 = async (url, options) => {
   try {
     return await got(url, options)
@@ -27,8 +28,8 @@ const gotCatch404 = async (url, options) => {
   }
 }
 
-testMatrix.forEach(({ args }) => {
-  test(testName('Updates a JavaScript function when its main file is modified', args), async (t) => {
+describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args }) => {
+  test('Updates a JavaScript function when its main file is modified', async (t) => {
     await withSiteBuilder('js-function-update-main-file', async (builder) => {
       const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
@@ -51,7 +52,10 @@ testMatrix.forEach(({ args }) => {
 
       await withDevServer({ cwd: builder.directory, args }, async ({ outputBuffer, port, waitForLogMatching }) => {
         await tryAndLogOutput(
-          async () => t.is(await got(`http://localhost:${port}/.netlify/functions/hello`).text(), 'Hello'),
+          async () =>
+            t
+              .expect(await fetch(`http://localhost:${port}/.netlify/functions/hello`).then((res) => res.text()))
+              .toEqual('Hello'),
           outputBuffer,
         )
 
@@ -69,14 +73,14 @@ testMatrix.forEach(({ args }) => {
 
         await waitForLogMatching('Reloaded function hello')
 
-        const response = await got(`http://localhost:${port}/.netlify/functions/hello`).text()
+        const response = await fetch(`http://localhost:${port}/.netlify/functions/hello`)
 
-        t.is(response, 'Goodbye')
+        t.expect(await response.text()).toEqual('Goodbye')
       })
     })
   })
 
-  test(testName('Updates a TypeScript function when its main file is modified', args), async (t) => {
+  test('Updates a TypeScript function when its main file is modified', async (t) => {
     await withSiteBuilder('ts-function-update-main-file', async (builder) => {
       const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
@@ -116,10 +120,9 @@ testMatrix.forEach(({ args }) => {
       await withDevServer({ cwd: builder.directory, args }, async ({ outputBuffer, port, waitForLogMatching }) => {
         await tryAndLogOutput(
           async () =>
-            t.is(
-              await got(`http://localhost:${port}/.netlify/functions/hello`).text(),
-              'Modern Web Development on the JAMStack',
-            ),
+            t
+              .expect(await fetch(`http://localhost:${port}/.netlify/functions/hello`).then((res) => res.text()))
+              .toEqual('Modern Web Development on the JAMStack'),
           outputBuffer,
         )
 
@@ -153,14 +156,14 @@ testMatrix.forEach(({ args }) => {
 
         await waitForLogMatching('Reloaded function hello')
 
-        const response = await got(`http://localhost:${port}/.netlify/functions/hello`).text()
+        const response = await fetch(`http://localhost:${port}/.netlify/functions/hello`)
 
-        t.is(response, 'Modern Web Development on the Jamstack')
+        t.expect(await response.text()).toEqual('Modern Web Development on the Jamstack')
       })
     })
   })
 
-  test(testName('Updates a JavaScript function when a supporting file is modified', args), async (t) => {
+  test('Updates a JavaScript function when a supporting file is modified', async (t) => {
     await withSiteBuilder('js-function-update-supporting-file', async (builder) => {
       const functionsConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
@@ -182,7 +185,9 @@ testMatrix.forEach(({ args }) => {
 
       await withDevServer({ cwd: builder.directory, args }, async ({ outputBuffer, port, waitForLogMatching }) => {
         await tryAndLogOutput(async () => {
-          t.is(await got(`http://localhost:${port}/.netlify/functions/hello`).text(), 'WOOF!')
+          t.expect(await fetch(`http://localhost:${port}/.netlify/functions/hello`).then((res) => res.text())).toEqual(
+            'WOOF!',
+          )
         }, outputBuffer)
 
         await pause(WAIT_WRITE)
@@ -199,14 +204,14 @@ testMatrix.forEach(({ args }) => {
           await pause(WAIT_WRITE)
         }
 
-        const response = await got(`http://localhost:${port}/.netlify/functions/hello`).text()
+        const response = await fetch(`http://localhost:${port}/.netlify/functions/hello`).then((res) => res.text())
 
-        t.is(response, 'WOOF WOOF!')
+        t.expect(response).toEqual('WOOF WOOF!')
       })
     })
   })
 
-  test(testName('Updates a TypeScript function when a supporting file is modified', args), async (t) => {
+  test('Updates a TypeScript function when a supporting file is modified', async (t) => {
     await withSiteBuilder('ts-function-update-supporting-file', async (builder) => {
       const functionsConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
@@ -256,8 +261,7 @@ testMatrix.forEach(({ args }) => {
 
       await withDevServer({ cwd: builder.directory, args }, async ({ outputBuffer, port, waitForLogMatching }) => {
         await tryAndLogOutput(async () => {
-          t.is(
-            await got(`http://localhost:${port}/.netlify/functions/hello`).text(),
+          t.expect(await fetch(`http://localhost:${port}/.netlify/functions/hello`).then((res) => res.text())).toEqual(
             'Modern Web Development on the JAMStack',
           )
         }, outputBuffer)
@@ -277,14 +281,14 @@ testMatrix.forEach(({ args }) => {
 
         await waitForLogMatching('Reloaded function hello')
 
-        const response = await got(`http://localhost:${port}/.netlify/functions/hello`).text()
+        const response = await fetch(`http://localhost:${port}/.netlify/functions/hello`).then((res) => res.text())
 
-        t.is(response, 'Modern Web Development on the Jamstack')
+        t.expect(response).toEqual('Modern Web Development on the Jamstack')
       })
     })
   })
 
-  test(testName('Adds a new JavaScript function when a function file is created', args), async (t) => {
+  test('Adds a new JavaScript function when a function file is created', async (t) => {
     await withSiteBuilder('js-function-create-function-file', async (builder) => {
       const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
@@ -302,7 +306,7 @@ testMatrix.forEach(({ args }) => {
         await tryAndLogOutput(async () => {
           const unauthenticatedResponse = await gotCatch404(`http://localhost:${port}/.netlify/functions/hello`)
 
-          t.is(unauthenticatedResponse.statusCode, 404)
+          t.expect(unauthenticatedResponse.statusCode).toBe(404)
         }, outputBuffer)
 
         await pause(WAIT_WRITE)
@@ -321,12 +325,12 @@ testMatrix.forEach(({ args }) => {
 
         const response = await got(`http://localhost:${port}/.netlify/functions/hello`).text()
 
-        t.is(response, 'Hello')
+        t.expect(response).toEqual('Hello')
       })
     })
   })
 
-  test(testName('Adds a new TypeScript function when a function file is created', args), async (t) => {
+  test('Adds a new TypeScript function when a function file is created', async (t) => {
     await withSiteBuilder('ts-function-create-function-file', async (builder) => {
       const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
@@ -352,7 +356,7 @@ testMatrix.forEach(({ args }) => {
         await tryAndLogOutput(async () => {
           const unauthenticatedResponse = await gotCatch404(`http://localhost:${port}/.netlify/functions/hello`)
 
-          t.is(unauthenticatedResponse.statusCode, 404)
+          t.expect(unauthenticatedResponse.statusCode).toBe(404)
         }, outputBuffer)
 
         await pause(WAIT_WRITE)
@@ -387,12 +391,12 @@ testMatrix.forEach(({ args }) => {
 
         const response = await got(`http://localhost:${port}/.netlify/functions/hello`).text()
 
-        t.is(response, 'Modern Web Development on the Jamstack')
+        t.expect(response).toEqual('Modern Web Development on the Jamstack')
       })
     })
   })
 
-  test(testName('Removes a function when a function file is deleted', args), async (t) => {
+  test('Removes a function when a function file is deleted', async (t) => {
     await withSiteBuilder('function-remove-function-file', async (builder) => {
       const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
@@ -415,7 +419,9 @@ testMatrix.forEach(({ args }) => {
 
       await withDevServer({ cwd: builder.directory, args }, async ({ outputBuffer, port, waitForLogMatching }) => {
         await tryAndLogOutput(async () => {
-          t.is(await got(`http://localhost:${port}/.netlify/functions/hello`).text(), 'Hello')
+          t.expect(await fetch(`http://localhost:${port}/.netlify/functions/hello`).then((res) => res.text())).toEqual(
+            'Hello',
+          )
         }, outputBuffer)
 
         await pause(WAIT_WRITE)
@@ -430,12 +436,12 @@ testMatrix.forEach(({ args }) => {
 
         const { statusCode } = await gotCatch404(`http://localhost:${port}/.netlify/functions/hello`)
 
-        t.is(statusCode, 404)
+        t.expect(statusCode).toBe(404)
       })
     })
   })
 
-  test(testName(`should pick up new function files even through debounce`, args), async (t) => {
+  test(`should pick up new function files even through debounce`, async (t) => {
     await withSiteBuilder('function-file-updates', async (builder) => {
       await builder
         .withNetlifyToml({
@@ -463,8 +469,8 @@ exports.handler = async () => ({
         .buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
-        const resp = await got.get(`${server.url}/.netlify/functions/hello`)
-        t.is(resp.body, 'foo')
+        const resp = await fetch(`${server.url}/.netlify/functions/hello`)
+        t.expect(await resp.text()).toEqual('foo')
 
         await builder
           .withContentFile({
@@ -483,13 +489,13 @@ exports.handler = async () => ({
         const DEBOUNCE_WAIT = 150
         await pause(DEBOUNCE_WAIT)
 
-        const resp2 = await got.get(`${server.url}/.netlify/functions/hello`)
-        t.is(resp2.body, 'bar')
+        const resp2 = await fetch(`${server.url}/.netlify/functions/hello`)
+        t.expect(await resp2.text()).toEqual('bar')
       })
     })
   })
 
-  test(testName('Serves functions from the internal functions directory', args), async (t) => {
+  test('Serves functions from the internal functions directory', async (t) => {
     await withSiteBuilder('function-internal', async (builder) => {
       const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
@@ -513,7 +519,9 @@ exports.handler = async () => ({
 
       await withDevServer({ cwd: builder.directory, args }, async ({ outputBuffer, port, waitForLogMatching }) => {
         await tryAndLogOutput(async () => {
-          t.is(await got(`http://localhost:${port}/.netlify/functions/hello`).text(), 'Internal')
+          t.expect(await fetch(`http://localhost:${port}/.netlify/functions/hello`).then((res) => res.text())).toEqual(
+            'Internal',
+          )
         }, outputBuffer)
 
         await pause(WAIT_WRITE)
@@ -531,14 +539,14 @@ exports.handler = async () => ({
 
         await waitForLogMatching('Reloaded function hello')
 
-        const response = await got(`http://localhost:${port}/.netlify/functions/hello`).text()
+        const response = await fetch(`http://localhost:${port}/.netlify/functions/hello`).then((res) => res.text())
 
-        t.is(response, 'Internal updated')
+        t.expect(response).toEqual('Internal updated')
       })
     })
   })
 
-  test(testName('User functions take precedence over internal functions', args), async (t) => {
+  test('User functions take precedence over internal functions', async (t) => {
     await withSiteBuilder('function-internal-priority', async (builder) => {
       const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
@@ -569,7 +577,9 @@ exports.handler = async () => ({
 
       await withDevServer({ cwd: builder.directory, args }, async ({ outputBuffer, port, waitForLogMatching }) => {
         await tryAndLogOutput(async () => {
-          t.is(await got(`http://localhost:${port}/.netlify/functions/hello`).text(), 'User')
+          t.expect(await fetch(`http://localhost:${port}/.netlify/functions/hello`).then((res) => res.text())).toEqual(
+            'User',
+          )
         }, outputBuffer)
 
         await pause(WAIT_WRITE)
@@ -594,14 +604,14 @@ exports.handler = async () => ({
 
         await waitForLogMatching('Reloaded function hello')
 
-        const response = await got(`http://localhost:${port}/.netlify/functions/hello`).text()
+        const response = await fetch(`http://localhost:${port}/.netlify/functions/hello`).then((res) => res.text())
 
-        t.is(response, 'User updated')
+        t.expect(response).toEqual('User updated')
       })
     })
   })
 
-  test(testName('Serves functions with a `.mjs` extension', args), async (t) => {
+  test('Serves functions with a `.mjs` extension', async (t) => {
     await withSiteBuilder('function-mjs', async (builder) => {
       const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
@@ -630,13 +640,15 @@ exports.handler = async () => ({
 
       await withDevServer({ cwd: builder.directory, args }, async ({ outputBuffer, port }) => {
         await tryAndLogOutput(async () => {
-          t.is(await got(`http://localhost:${port}/.netlify/functions/hello`).text(), 'Hello, world!')
+          t.expect(await fetch(`http://localhost:${port}/.netlify/functions/hello`).then((res) => res.text())).toEqual(
+            'Hello, world!',
+          )
         }, outputBuffer)
       })
     })
   })
 
-  test(testName('Serves functions inside a "type=module" package', args), async (t) => {
+  test('Serves functions inside a "type=module" package', async (t) => {
     await withSiteBuilder('function-type-module', async (builder) => {
       const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
@@ -665,13 +677,15 @@ exports.handler = async () => ({
 
       await withDevServer({ cwd: builder.directory, args }, async ({ outputBuffer, port }) => {
         await tryAndLogOutput(async () => {
-          t.is(await got(`http://localhost:${port}/.netlify/functions/hello`).text(), 'hello from es module!')
+          t.expect(await fetch(`http://localhost:${port}/.netlify/functions/hello`).then((res) => res.text())).toEqual(
+            'hello from es module!',
+          )
         }, outputBuffer)
       })
     })
   })
 
-  test(testName('Resembles base64 encoding of production', args), async (t) => {
+  test('Resembles base64 encoding of production', async (t) => {
     await withSiteBuilder('function-base64-encoding', async (builder) => {
       const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
@@ -694,256 +708,271 @@ exports.handler = async () => ({
 
       await withDevServer({ cwd: builder.directory, args }, async ({ outputBuffer, port }) => {
         await tryAndLogOutput(async () => {
-          t.is(
-            await got(`http://localhost:${port}/.netlify/functions/echoEncoding`, {
+          t.expect(
+            await fetch(`http://localhost:${port}/.netlify/functions/echoEncoding`, {
               headers: {
                 'Content-Type': 'multipart/form-data',
               },
-            }).text(),
-            'base64',
-          )
+            }).then((res) => res.text()),
+          ).toEqual('base64')
         }, outputBuffer)
       })
     })
   })
 })
 
-test('Serves functions that dynamically load files included in the `functions.included_files` config property', async (t) => {
-  await withSiteBuilder('function-with-included-files', async (builder) => {
-    await builder
-      .withContentFiles([
-        {
-          path: 'files/one.json',
-          content: `{"data": "one"}`,
-        },
-        {
-          path: 'files/two.json',
-          content: `{"data": "two"}`,
-        },
-      ])
-      .withFunction({
-        path: 'hello.js',
-        handler: async (event) => {
-          const { name } = event.queryStringParameters
-
-          // eslint-disable-next-line n/global-require
-          const { data } = require(`../files/${name}.json`)
-
-          return {
-            statusCode: 200,
-            body: data,
-          }
-        },
-      })
-      .withNetlifyToml({
-        config: {
-          build: { publish: 'public' },
-          functions: { directory: 'functions', included_files: ['files/*'], node_bundler: 'esbuild' },
-        },
-      })
-      .buildAsync()
-
-    await withDevServer({ cwd: builder.directory }, async ({ outputBuffer, port }) => {
-      await tryAndLogOutput(async () => {
-        t.is(await got(`http://localhost:${port}/.netlify/functions/hello?name=one`).text(), 'one')
-        t.is(await got(`http://localhost:${port}/.netlify/functions/hello?name=two`).text(), 'two')
-      }, outputBuffer)
-    })
-  })
-})
-
-test('Uses sourcemaps to show correct paths and locations in stack trace', async (t) => {
-  await withSiteBuilder('function-with-sourcemaps', async (builder) => {
-    await builder
-      .withFunction({
-        path: 'hello.js',
-        handler: async () => {
-          throw new Error('Something went wrong')
-        },
-      })
-      .withNetlifyToml({
-        config: {
-          build: { publish: 'public' },
-          functions: { directory: 'functions', node_bundler: 'esbuild' },
-        },
-      })
-      .buildAsync()
-
-    await withDevServer({ cwd: builder.directory }, async ({ port }) => {
-      try {
-        await got(`http://localhost:${port}/.netlify/functions/hello`)
-
-        t.fail()
-      } catch (error) {
-        t.true(error.response.body.includes(join(builder.directory, 'functions', 'hello.js')))
-        t.false(error.response.body.includes(join('.netlify', 'functions-serve')))
-      }
-    })
-  })
-})
-
-test('Populates the `event` argument', async (t) => {
-  await withSiteBuilder('function-event', async (builder) => {
-    await builder
-      .withFunction({
-        path: 'hello.js',
-        handler: async (event) => ({
-          statusCode: 200,
-          body: JSON.stringify(event),
-        }),
-      })
-      .withNetlifyToml({
-        config: {
-          build: { publish: 'public' },
-          functions: { directory: 'functions' },
-        },
-      })
-      .buildAsync()
-
-    await withDevServer({ cwd: builder.directory }, async ({ outputBuffer, port }) => {
-      await tryAndLogOutput(async () => {
-        const { httpMethod, path, rawQuery, rawUrl } = await got(
-          `http://localhost:${port}/.netlify/functions/hello?net=lify&jam=stack`,
-        ).json()
-
-        t.is(httpMethod, 'GET')
-        t.is(path, '/.netlify/functions/hello')
-        t.is(rawQuery, 'net=lify&jam=stack')
-        t.is(rawUrl, `http://localhost:${port}/.netlify/functions/hello?net=lify&jam=stack`)
-      }, outputBuffer)
-    })
-  })
-})
-
-test('Throws an error when the function returns invalid `body`', async (t) => {
-  await withSiteBuilder('function-invalid-body', async (builder) => {
-    await builder
-      .withFunction({
-        path: 'hello.js',
-        handler: async () => ({
-          statusCode: 200,
-          body: 42,
-        }),
-      })
-      .withNetlifyToml({
-        config: {
-          build: { publish: 'public' },
-          functions: { directory: 'functions' },
-        },
-      })
-      .buildAsync()
-
-    await withDevServer({ cwd: builder.directory }, async ({ outputBuffer, port }) => {
-      await tryAndLogOutput(async () => {
-        const response = await got(`http://localhost:${port}/.netlify/functions/hello`, {
-          throwHttpErrors: false,
-        })
-
-        t.is(response.statusCode, 500)
-        t.is(response.body, 'Your function response must have a string or a stream body. You gave: 42')
-      }, outputBuffer)
-    })
-  })
-})
-
-test('Throws an error when the function returns invalid `statusCode`', async (t) => {
-  await withSiteBuilder('function-invalid-statuscode', async (builder) => {
-    await builder
-      .withFunction({
-        path: 'hello.js',
-        handler: async () => ({
-          statusCode: null,
-          body: 42,
-        }),
-      })
-      .withNetlifyToml({
-        config: {
-          build: { publish: 'public' },
-          functions: { directory: 'functions' },
-        },
-      })
-      .buildAsync()
-
-    await withDevServer({ cwd: builder.directory }, async ({ outputBuffer, port }) => {
-      await tryAndLogOutput(async () => {
-        const response = await got(`http://localhost:${port}/.netlify/functions/hello`, {
-          throwHttpErrors: false,
-        })
-
-        t.is(response.statusCode, 500)
-        t.is(response.body, 'Your function response must have a numerical statusCode. You gave: null')
-      }, outputBuffer)
-    })
-  })
-})
-
-test('Ensures watcher watches included files', async (t) => {
-  await withSiteBuilder('function-with-included-files-watch', async (builder) => {
-    await builder
-      .withContentFiles([
-        {
-          path: 'files/one.json',
-          content: `{"data": "one"}`,
-        },
-        {
-          path: 'files/two.json',
-          content: `{"data": "two"}`,
-        },
-      ])
-      .withFunction({
-        path: 'hello.js',
-        handler: async (event) => {
-          // eslint-disable-next-line n/global-require
-          const { readFileSync } = require('fs')
-          const { name } = event.queryStringParameters
-          const { data } = JSON.parse(readFileSync(`${__dirname}/../files/${name}.json`, 'utf-8'))
-
-          return {
-            statusCode: 200,
-            body: data,
-          }
-        },
-      })
-      .withNetlifyToml({
-        config: {
-          build: { publish: 'public' },
-          functions: {
-            directory: 'functions',
-            included_files: ['files/*'],
-            node_bundler: 'esbuild',
-          },
-        },
-      })
-      .buildAsync()
-
-    await withDevServer({ cwd: builder.directory }, async ({ outputBuffer, port }) => {
-      await tryAndLogOutput(async () => {
-        t.is(await got(`http://localhost:${port}/.netlify/functions/hello?name=one`).text(), 'one')
-        t.is(await got(`http://localhost:${port}/.netlify/functions/hello?name=two`).text(), 'two')
-      }, outputBuffer)
-
+describe.concurrent('serving functions', () => {
+  test('Serves functions that dynamically load files included in the `functions.included_files` config property', async (t) => {
+    await withSiteBuilder('function-with-included-files', async (builder) => {
       await builder
         .withContentFiles([
           {
             path: 'files/one.json',
-            content: `{"data": "three"}`,
+            content: `{"data": "one"}`,
           },
           {
             path: 'files/two.json',
-            content: `{"data": "four"}`,
+            content: `{"data": "two"}`,
           },
         ])
+        .withFunction({
+          path: 'hello.js',
+          handler: async (event) => {
+            const { name } = event.queryStringParameters
+
+            // eslint-disable-next-line n/global-require, no-undef
+            const { data } = require(`../files/${name}.json`)
+
+            return {
+              statusCode: 200,
+              body: data,
+            }
+          },
+        })
+        .withNetlifyToml({
+          config: {
+            build: { publish: 'public' },
+            functions: { directory: 'functions', included_files: ['files/*'], node_bundler: 'esbuild' },
+          },
+        })
         .buildAsync()
 
-      // wait for the watcher to rebuild the function
-      const delay = 1000
-      await pause(delay)
+      await withDevServer({ cwd: builder.directory }, async ({ outputBuffer, port }) => {
+        await tryAndLogOutput(async () => {
+          const [responseHelloNameOne, responseHelloNameTwo] = await Promise.all([
+            fetch(`http://localhost:${port}/.netlify/functions/hello?name=one`).then((res) => res.text()),
+            fetch(`http://localhost:${port}/.netlify/functions/hello?name=two`).then((res) => res.text()),
+          ])
+          t.expect(responseHelloNameOne).toEqual('one')
+          t.expect(responseHelloNameTwo).toEqual('two')
+        }, outputBuffer)
+      })
+    })
+  })
 
-      t.true(outputBuffer.some((buffer) => /.*Reloaded function hello.*/.test(buffer.toString())))
-      await tryAndLogOutput(async () => {
-        t.is(await got(`http://localhost:${port}/.netlify/functions/hello?name=one`).text(), 'three')
-        t.is(await got(`http://localhost:${port}/.netlify/functions/hello?name=two`).text(), 'four')
-      }, outputBuffer)
+  test('Uses sourcemaps to show correct paths and locations in stack trace', async (t) => {
+    await withSiteBuilder('function-with-sourcemaps', async (builder) => {
+      await builder
+        .withFunction({
+          path: 'hello.js',
+          handler: async () => {
+            throw new Error('Something went wrong')
+          },
+        })
+        .withNetlifyToml({
+          config: {
+            build: { publish: 'public' },
+            functions: { directory: 'functions', node_bundler: 'esbuild' },
+          },
+        })
+        .buildAsync()
+
+      await withDevServer({ cwd: builder.directory }, async ({ port }) => {
+        const responseWithTrace = await fetch(`http://localhost:${port}/.netlify/functions/hello`).then((res) =>
+          res.text(),
+        )
+        t.expect(responseWithTrace.includes(path.join(builder.directory, 'functions', 'hello.js'))).toBe(true)
+        t.expect(responseWithTrace.includes(path.join('.netlify', 'functions-serve'))).toBe(false)
+      })
+    })
+  })
+
+  test('Populates the `event` argument', async (t) => {
+    await withSiteBuilder('function-event', async (builder) => {
+      await builder
+        .withFunction({
+          path: 'hello.js',
+          handler: async (event) => ({
+            statusCode: 200,
+            body: JSON.stringify(event),
+          }),
+        })
+        .withNetlifyToml({
+          config: {
+            build: { publish: 'public' },
+            functions: { directory: 'functions' },
+          },
+        })
+        .buildAsync()
+
+      await withDevServer({ cwd: builder.directory }, async ({ outputBuffer, port }) => {
+        await tryAndLogOutput(async () => {
+          const {
+            httpMethod,
+            path: thePath,
+            rawQuery,
+            rawUrl,
+          } = await fetch(`http://localhost:${port}/.netlify/functions/hello?net=lify&jam=stack`).then((res) =>
+            res.json(),
+          )
+
+          t.expect(httpMethod).toEqual('GET')
+          t.expect(thePath).toEqual('/.netlify/functions/hello')
+          t.expect(rawQuery).toEqual('net=lify&jam=stack')
+          t.expect(rawUrl).toEqual(`http://localhost:${port}/.netlify/functions/hello?net=lify&jam=stack`)
+        }, outputBuffer)
+      })
+    })
+  })
+
+  test('Throws an error when the function returns invalid `body`', async (t) => {
+    await withSiteBuilder('function-invalid-body', async (builder) => {
+      await builder
+        .withFunction({
+          path: 'hello.js',
+          handler: async () => ({
+            statusCode: 200,
+            body: 42,
+          }),
+        })
+        .withNetlifyToml({
+          config: {
+            build: { publish: 'public' },
+            functions: { directory: 'functions' },
+          },
+        })
+        .buildAsync()
+
+      await withDevServer({ cwd: builder.directory }, async ({ outputBuffer, port }) => {
+        await tryAndLogOutput(async () => {
+          const errorResponse = await fetch(`http://localhost:${port}/.netlify/functions/hello`)
+
+          t.expect(errorResponse.status).toBe(500)
+          t.expect(await errorResponse.text()).toEqual(
+            'Your function response must have a string or a stream body. You gave: 42',
+          )
+        }, outputBuffer)
+      })
+    })
+  })
+
+  test('Throws an error when the function returns invalid `statusCode`', async (t) => {
+    await withSiteBuilder('function-invalid-statuscode', async (builder) => {
+      await builder
+        .withFunction({
+          path: 'hello.js',
+          handler: async () => ({
+            statusCode: null,
+            body: 42,
+          }),
+        })
+        .withNetlifyToml({
+          config: {
+            build: { publish: 'public' },
+            functions: { directory: 'functions' },
+          },
+        })
+        .buildAsync()
+
+      await withDevServer({ cwd: builder.directory }, async ({ outputBuffer, port }) => {
+        await tryAndLogOutput(async () => {
+          const errorResponse = await fetch(`http://localhost:${port}/.netlify/functions/hello`)
+
+          t.expect(errorResponse.status).toBe(500)
+          t.expect(await errorResponse.text()).toEqual(
+            'Your function response must have a numerical statusCode. You gave: null',
+          )
+        }, outputBuffer)
+      })
+    })
+  })
+
+  test('Ensures watcher watches included files', async (t) => {
+    await withSiteBuilder('function-with-included-files-watch', async (builder) => {
+      await builder
+        .withContentFiles([
+          {
+            path: 'files/one.json',
+            content: `{"data": "one"}`,
+          },
+          {
+            path: 'files/two.json',
+            content: `{"data": "two"}`,
+          },
+        ])
+        .withFunction({
+          path: 'hello.js',
+          handler: async (event) => {
+            // eslint-disable-next-line n/global-require, no-undef
+            const { readFileSync } = require('fs')
+            const { name } = event.queryStringParameters
+            const { data } = JSON.parse(readFileSync(`${__dirname}/../files/${name}.json`, 'utf-8'))
+
+            return {
+              statusCode: 200,
+              body: data,
+            }
+          },
+        })
+        .withNetlifyToml({
+          config: {
+            build: { publish: 'public' },
+            functions: {
+              directory: 'functions',
+              included_files: ['files/*'],
+              node_bundler: 'esbuild',
+            },
+          },
+        })
+        .buildAsync()
+
+      await withDevServer({ cwd: builder.directory }, async ({ outputBuffer, port }) => {
+        await tryAndLogOutput(async () => {
+          const [responseHelloNameOne, responseHelloNameTwo] = await Promise.all([
+            fetch(`http://localhost:${port}/.netlify/functions/hello?name=one`).then((res) => res.text()),
+            fetch(`http://localhost:${port}/.netlify/functions/hello?name=two`).then((res) => res.text()),
+          ])
+          t.expect(responseHelloNameOne).toEqual('one')
+          t.expect(responseHelloNameTwo).toEqual('two')
+        }, outputBuffer)
+
+        await builder
+          .withContentFiles([
+            {
+              path: 'files/one.json',
+              content: `{"data": "three"}`,
+            },
+            {
+              path: 'files/two.json',
+              content: `{"data": "four"}`,
+            },
+          ])
+          .buildAsync()
+
+        // wait for the watcher to rebuild the function
+        const delay = 1000
+        await pause(delay)
+
+        t.expect(outputBuffer.some((buffer) => /.*Reloaded function hello.*/.test(buffer.toString()))).toBe(true)
+        await tryAndLogOutput(async () => {
+          const [responseHelloNameOne, responseHelloNameTwo] = await Promise.all([
+            fetch(`http://localhost:${port}/.netlify/functions/hello?name=one`).then((res) => res.text()),
+            fetch(`http://localhost:${port}/.netlify/functions/hello?name=two`).then((res) => res.text()),
+          ])
+          t.expect(responseHelloNameOne).toEqual('three')
+          t.expect(responseHelloNameTwo).toEqual('four')
+        }, outputBuffer)
+      })
     })
   })
 })
