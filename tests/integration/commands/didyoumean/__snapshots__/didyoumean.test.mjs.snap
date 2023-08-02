@@ -1,0 +1,21 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`suggests closest matching command on typo 1`] = `
+"›   Warning: sta is not a netlify command.
+? Did you mean api (y/N) [25D[25C"
+`;
+
+exports[`suggests closest matching command on typo 2`] = `
+"›   Warning: opeen is not a netlify command.
+? Did you mean open (y/N) [26D[26C"
+`;
+
+exports[`suggests closest matching command on typo 3`] = `
+"›   Warning: hel is not a netlify command.
+? Did you mean dev (y/N) [25D[25C"
+`;
+
+exports[`suggests closest matching command on typo 4`] = `
+"›   Warning: versio is not a netlify command.
+? Did you mean serve (y/N) [27D[27C"
+`;
