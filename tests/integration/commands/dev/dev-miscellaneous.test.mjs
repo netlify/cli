@@ -74,7 +74,7 @@ const validateRoleBasedRedirectsSite = async ({ builder, jwtRolePath, jwtSecret,
   })
 }
 
-describe.concurrent('commands/dev', () => {
+describe.concurrent('commands/dev-miscellaneous', () => {
   test('should follow redirect for fully qualified rule', async (t) => {
     await withSiteBuilder('site-with-fully-qualified-redirect-rule', async (builder) => {
       const publicDir = 'public'
