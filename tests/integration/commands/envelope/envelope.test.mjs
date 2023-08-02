@@ -1,4 +1,4 @@
-import test from 'ava'
+import { test, describe } from 'vitest'
 
 import callCli from '../../utils/call-cli.cjs'
 import { getCLIOptions, withMockApi } from '../../utils/mock-api.cjs'
@@ -108,268 +108,267 @@ const routes = [
   },
 ]
 
-test('env:import should throw error if file not exists', async (t) => {
-  await withSiteBuilder('site-env', async (builder) => {
-    await builder.buildAsync()
+describe.concurrent('command/envelope', () => {
+  test('env:import should throw error if file not exists', async (t) => {
+    await withSiteBuilder('site-env', async (builder) => {
+      await builder.buildAsync()
 
-    await withMockApi(routes, async ({ apiUrl }) => {
-      await t.throwsAsync(() => callCli(['env:import', '.env'], getCLIOptions({ builder, apiUrl })))
+      await withMockApi(routes, async ({ apiUrl }) => {
+        t.expect(callCli(['env:import', '.env'], getCLIOptions({ builder, apiUrl }))).rejects.toThrow()
+      })
     })
   })
-})
 
-test('env:import --json should import new vars and override existing vars', async (t) => {
-  await withSiteBuilder('site-env', async (builder) => {
+  test('env:import --json should import new vars and override existing vars', async (t) => {
+    await withSiteBuilder('site-env', async (builder) => {
+      const finalEnv = {
+        EXISTING_VAR: 'from-dotenv',
+        OTHER_VAR: 'envelope-all-value',
+        NEW_VAR: 'from-dotenv',
+      }
+
+      await builder
+        .withEnvFile({
+          path: '.env',
+          env: {
+            EXISTING_VAR: 'from-dotenv',
+            NEW_VAR: 'from-dotenv',
+          },
+        })
+        .buildAsync()
+
+      await withMockApi(routes, async ({ apiUrl }) => {
+        const cliResponse = await callCli(['env:import', '--json', '.env'], getCLIOptions({ builder, apiUrl }), true)
+
+        t.expect(cliResponse).toStrictEqual(finalEnv)
+      })
+    })
+  })
+
+  test('env:import --json --replace-existing should replace all existing vars and return imported', async (t) => {
+    await withSiteBuilder('site-env', async (builder) => {
+      const finalEnv = {
+        EXISTING_VAR: 'from-dotenv',
+        NEW_VAR: 'from-dotenv',
+      }
+
+      await builder
+        .withEnvFile({
+          path: '.env',
+          env: {
+            EXISTING_VAR: 'from-dotenv',
+            NEW_VAR: 'from-dotenv',
+          },
+        })
+        .buildAsync()
+
+      await withMockApi(routes, async ({ apiUrl }) => {
+        const cliResponse = await callCli(
+          ['env:import', '--replace-existing', '--json', '.env'],
+          getCLIOptions({ builder, apiUrl }),
+          true,
+        )
+
+        t.expect(cliResponse).toStrictEqual(finalEnv)
+      })
+    })
+  })
+
+  test('env:clone should return success message (mongo to envelope)', async (t) => {
+    const envFrom = {
+      CLONE_ME: 'clone_me',
+      EXISTING_VAR: 'from',
+    }
+
+    const siteInfoFrom = {
+      ...siteInfo,
+      id: 'site_id_a',
+      name: 'site-name-a',
+      build_settings: { env: envFrom },
+      use_envelope: false,
+    }
+
+    const siteInfoTo = {
+      ...siteInfo,
+      id: 'site_id_b',
+      name: 'site-name-b',
+    }
+
+    const cloneRoutes = [
+      { path: 'sites/site_id', response: siteInfo },
+      { path: 'sites/site_id_a', response: siteInfoFrom },
+      { path: 'sites/site_id_b', response: siteInfoTo },
+      { path: 'sites/site_id/service-instances', response: [] },
+      {
+        path: 'accounts',
+        response: [{ slug: siteInfo.account_slug }],
+      },
+      {
+        path: 'accounts/test-account/env',
+        response: envelopeResponse,
+      },
+      {
+        path: 'accounts/test-account/env',
+        method: 'POST',
+        response: {},
+      },
+      {
+        path: 'accounts/test-account/env/EXISTING_VAR',
+        method: 'DELETE',
+        response: {},
+      },
+    ]
+
+    await withSiteBuilder('site-env', async (builder) => {
+      await builder.buildAsync()
+      await withMockApi(cloneRoutes, async ({ apiUrl, requests }) => {
+        const cliResponse = await callCli(
+          ['env:clone', '--from', 'site_id_a', '--to', 'site_id_b'],
+          getCLIOptions({ apiUrl, builder }),
+        )
+
+        t.expect(normalize(cliResponse)).toMatchSnapshot()
+
+        const deleteRequest = requests.find((request) => request.method === 'DELETE')
+        t.expect(deleteRequest.path).toEqual('/api/v1/accounts/test-account/env/EXISTING_VAR')
+
+        const postRequest = requests.find(
+          (request) => request.method === 'POST' && request.path === '/api/v1/accounts/test-account/env',
+        )
+
+        t.expect(postRequest.body.length).toBe(2)
+        t.expect(postRequest.body[0].key).toEqual('CLONE_ME')
+        t.expect(postRequest.body[0].values[0].value).toEqual('clone_me')
+        t.expect(postRequest.body[1].key).toEqual('EXISTING_VAR')
+        t.expect(postRequest.body[1].values[0].value).toEqual('from')
+      })
+    })
+  })
+
+  test('env:clone should return success message (envelope to mongo)', async (t) => {
+    const siteInfoFrom = {
+      ...siteInfo,
+      id: 'site_id_a',
+      name: 'site-name-a',
+    }
+
+    const envTo = {
+      CLONE_ME: 'clone_me',
+      EXISTING_VAR: 'to',
+    }
+
+    const siteInfoTo = {
+      ...siteInfo,
+      id: 'site_id_b',
+      name: 'site-name-b',
+      build_settings: { env: envTo },
+      use_envelope: false,
+    }
+
     const finalEnv = {
-      EXISTING_VAR: 'from-dotenv',
+      ...envTo,
+      EXISTING_VAR: 'envelope-dev-value',
       OTHER_VAR: 'envelope-all-value',
-      NEW_VAR: 'from-dotenv',
     }
 
-    await builder
-      .withEnvFile({
-        path: '.env',
-        env: {
-          EXISTING_VAR: 'from-dotenv',
-          NEW_VAR: 'from-dotenv',
-        },
+    const cloneRoutes = [
+      { path: 'sites/site_id', response: siteInfo },
+      { path: 'sites/site_id_a', response: siteInfoFrom },
+      { path: 'sites/site_id_b', response: siteInfoTo },
+      { path: 'sites/site_id/service-instances', response: [] },
+      {
+        path: 'accounts',
+        response: [{ slug: siteInfo.account_slug }],
+      },
+      {
+        path: 'accounts/test-account/env',
+        response: envelopeResponse,
+      },
+      {
+        path: 'sites/site_id_b',
+        method: 'PATCH',
+        response: {},
+      },
+    ]
+
+    await withSiteBuilder('site-env', async (builder) => {
+      await builder.buildAsync()
+      await withMockApi(cloneRoutes, async ({ apiUrl, requests }) => {
+        const cliResponse = await callCli(
+          ['env:clone', '--from', 'site_id_a', '--to', 'site_id_b'],
+          getCLIOptions({ apiUrl, builder }),
+        )
+
+        t.expect(normalize(cliResponse)).toMatchSnapshot()
+
+        const patchRequest = requests.find(
+          (request) => request.method === 'PATCH' && request.path === '/api/v1/sites/site_id_b',
+        )
+
+        t.expect(patchRequest.body).toStrictEqual({ build_settings: { env: finalEnv } })
       })
-      .buildAsync()
-
-    await withMockApi(routes, async ({ apiUrl }) => {
-      const cliResponse = await callCli(['env:import', '--json', '.env'], getCLIOptions({ builder, apiUrl }), true)
-
-      t.deepEqual(cliResponse, finalEnv)
     })
   })
-})
 
-test('env:import --json --replace-existing should replace all existing vars and return imported', async (t) => {
-  await withSiteBuilder('site-env', async (builder) => {
-    const finalEnv = {
-      EXISTING_VAR: 'from-dotenv',
-      NEW_VAR: 'from-dotenv',
+  test('env:clone should return success message (envelope to envelope)', async (t) => {
+    const siteInfoFrom = {
+      ...siteInfo,
+      id: 'site_id_a',
+      name: 'site-name-a',
     }
 
-    await builder
-      .withEnvFile({
-        path: '.env',
-        env: {
-          EXISTING_VAR: 'from-dotenv',
-          NEW_VAR: 'from-dotenv',
-        },
+    const siteInfoTo = {
+      ...siteInfo,
+      id: 'site_id_b',
+      name: 'site-name-b',
+    }
+
+    const cloneRoutes = [
+      { path: 'sites/site_id', response: siteInfo },
+      { path: 'sites/site_id_a', response: siteInfoFrom },
+      { path: 'sites/site_id_b', response: siteInfoTo },
+      { path: 'sites/site_id/service-instances', response: [] },
+      {
+        path: 'accounts',
+        response: [{ slug: siteInfo.account_slug }],
+      },
+      {
+        path: 'accounts/test-account/env',
+        response: envelopeResponse,
+      },
+      {
+        path: 'accounts/test-account/env',
+        method: 'POST',
+        response: {},
+      },
+      {
+        path: 'accounts/test-account/env/EXISTING_VAR',
+        method: 'DELETE',
+        response: {},
+      },
+      {
+        path: 'accounts/test-account/env/OTHER_VAR',
+        method: 'DELETE',
+        response: {},
+      },
+    ]
+
+    await withSiteBuilder('site-env', async (builder) => {
+      await builder.buildAsync()
+      await withMockApi(cloneRoutes, async ({ apiUrl, requests }) => {
+        const cliResponse = await callCli(
+          ['env:clone', '--from', 'site_id_a', '--to', 'site_id_b'],
+          getCLIOptions({ apiUrl, builder }),
+        )
+
+        t.expect(normalize(cliResponse)).toMatchSnapshot()
+
+        const deleteRequests = requests.filter((request) => request.method === 'DELETE')
+        t.expect(deleteRequests.length).toBe(2)
+
+        const postRequest = requests.find((request) => request.method === 'POST')
+        t.expect(postRequest.body.map(({ key }) => key)).toStrictEqual(['EXISTING_VAR', 'OTHER_VAR'])
       })
-      .buildAsync()
-
-    await withMockApi(routes, async ({ apiUrl }) => {
-      const cliResponse = await callCli(
-        ['env:import', '--replace-existing', '--json', '.env'],
-        getCLIOptions({ builder, apiUrl }),
-        true,
-      )
-
-      t.deepEqual(cliResponse, finalEnv)
-    })
-  })
-})
-
-test('env:clone should return success message (mongo to envelope)', async (t) => {
-  const envFrom = {
-    CLONE_ME: 'clone_me',
-    EXISTING_VAR: 'from',
-  }
-
-  const siteInfoFrom = {
-    ...siteInfo,
-    id: 'site_id_a',
-    name: 'site-name-a',
-    build_settings: { env: envFrom },
-    use_envelope: false,
-  }
-
-  const siteInfoTo = {
-    ...siteInfo,
-    id: 'site_id_b',
-    name: 'site-name-b',
-  }
-
-  const cloneRoutes = [
-    { path: 'sites/site_id', response: siteInfo },
-    { path: 'sites/site_id_a', response: siteInfoFrom },
-    { path: 'sites/site_id_b', response: siteInfoTo },
-    { path: 'sites/site_id/service-instances', response: [] },
-    {
-      path: 'accounts',
-      response: [{ slug: siteInfo.account_slug }],
-    },
-    {
-      path: 'accounts/test-account/env',
-      response: envelopeResponse,
-    },
-    {
-      path: 'accounts/test-account/env',
-      method: 'POST',
-      response: {},
-    },
-    {
-      path: 'accounts/test-account/env/EXISTING_VAR',
-      method: 'DELETE',
-      response: {},
-    },
-  ]
-
-  await withSiteBuilder('site-env', async (builder) => {
-    await builder.buildAsync()
-    await withMockApi(cloneRoutes, async ({ apiUrl, requests }) => {
-      const cliResponse = await callCli(
-        ['env:clone', '--from', 'site_id_a', '--to', 'site_id_b'],
-        getCLIOptions({ apiUrl, builder }),
-      )
-
-      t.snapshot(normalize(cliResponse))
-
-      const deleteRequest = requests.find((request) => request.method === 'DELETE')
-      t.is(deleteRequest.path, '/api/v1/accounts/test-account/env/EXISTING_VAR')
-
-      const postRequest = requests.find(
-        (request) => request.method === 'POST' && request.path === '/api/v1/accounts/test-account/env',
-      )
-
-      t.is(postRequest.body.length, 2)
-      t.is(postRequest.body[0].key, 'CLONE_ME')
-      t.is(postRequest.body[0].values[0].value, 'clone_me')
-      t.is(postRequest.body[1].key, 'EXISTING_VAR')
-      t.is(postRequest.body[1].values[0].value, 'from')
-    })
-  })
-})
-
-test('env:clone should return success message (envelope to mongo)', async (t) => {
-  const siteInfoFrom = {
-    ...siteInfo,
-    id: 'site_id_a',
-    name: 'site-name-a',
-  }
-
-  const envTo = {
-    CLONE_ME: 'clone_me',
-    EXISTING_VAR: 'to',
-  }
-
-  const siteInfoTo = {
-    ...siteInfo,
-    id: 'site_id_b',
-    name: 'site-name-b',
-    build_settings: { env: envTo },
-    use_envelope: false,
-  }
-
-  const finalEnv = {
-    ...envTo,
-    EXISTING_VAR: 'envelope-dev-value',
-    OTHER_VAR: 'envelope-all-value',
-  }
-
-  const cloneRoutes = [
-    { path: 'sites/site_id', response: siteInfo },
-    { path: 'sites/site_id_a', response: siteInfoFrom },
-    { path: 'sites/site_id_b', response: siteInfoTo },
-    { path: 'sites/site_id/service-instances', response: [] },
-    {
-      path: 'accounts',
-      response: [{ slug: siteInfo.account_slug }],
-    },
-    {
-      path: 'accounts/test-account/env',
-      response: envelopeResponse,
-    },
-    {
-      path: 'sites/site_id_b',
-      method: 'PATCH',
-      response: {},
-    },
-  ]
-
-  await withSiteBuilder('site-env', async (builder) => {
-    await builder.buildAsync()
-    await withMockApi(cloneRoutes, async ({ apiUrl, requests }) => {
-      const cliResponse = await callCli(
-        ['env:clone', '--from', 'site_id_a', '--to', 'site_id_b'],
-        getCLIOptions({ apiUrl, builder }),
-      )
-
-      t.snapshot(normalize(cliResponse))
-
-      const patchRequest = requests.find(
-        (request) => request.method === 'PATCH' && request.path === '/api/v1/sites/site_id_b',
-      )
-
-      t.deepEqual(patchRequest.body, { build_settings: { env: finalEnv } })
-    })
-  })
-})
-
-test('env:clone should return success message (envelope to envelope)', async (t) => {
-  const siteInfoFrom = {
-    ...siteInfo,
-    id: 'site_id_a',
-    name: 'site-name-a',
-  }
-
-  const siteInfoTo = {
-    ...siteInfo,
-    id: 'site_id_b',
-    name: 'site-name-b',
-  }
-
-  const cloneRoutes = [
-    { path: 'sites/site_id', response: siteInfo },
-    { path: 'sites/site_id_a', response: siteInfoFrom },
-    { path: 'sites/site_id_b', response: siteInfoTo },
-    { path: 'sites/site_id/service-instances', response: [] },
-    {
-      path: 'accounts',
-      response: [{ slug: siteInfo.account_slug }],
-    },
-    {
-      path: 'accounts/test-account/env',
-      response: envelopeResponse,
-    },
-    {
-      path: 'accounts/test-account/env',
-      method: 'POST',
-      response: {},
-    },
-    {
-      path: 'accounts/test-account/env/EXISTING_VAR',
-      method: 'DELETE',
-      response: {},
-    },
-    {
-      path: 'accounts/test-account/env/OTHER_VAR',
-      method: 'DELETE',
-      response: {},
-    },
-  ]
-
-  await withSiteBuilder('site-env', async (builder) => {
-    await builder.buildAsync()
-    await withMockApi(cloneRoutes, async ({ apiUrl, requests }) => {
-      const cliResponse = await callCli(
-        ['env:clone', '--from', 'site_id_a', '--to', 'site_id_b'],
-        getCLIOptions({ apiUrl, builder }),
-      )
-
-      t.snapshot(normalize(cliResponse))
-
-      const deleteRequests = requests.filter((request) => request.method === 'DELETE')
-      t.is(deleteRequests.length, 2)
-
-      const postRequest = requests.find((request) => request.method === 'POST')
-      t.deepEqual(
-        postRequest.body.map(({ key }) => key),
-        ['EXISTING_VAR', 'OTHER_VAR'],
-      )
     })
   })
 })
