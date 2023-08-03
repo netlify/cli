@@ -75,7 +75,7 @@ const getDeployFolder = async ({ config, options, site, siteData, workingDir }) 
   console.log()
   let deployFolder
   if (options.dir) {
-    deployFolder = resolve(workingDir, options.dir)
+    deployFolder = resolve(site.root, options.dir)
   } else if (config?.build?.publish) {
     deployFolder = resolve(site.root, config.build.publish)
   } else if (siteData?.build_settings?.dir) {
@@ -84,7 +84,6 @@ const getDeployFolder = async ({ config, options, site, siteData, workingDir }) 
 
   if (!deployFolder) {
     log('Please provide a publish directory (e.g. "public" or "dist" or "."):')
-    log(workingDir)
     const { promptPath } = await inquirer.prompt([
       {
         type: 'input',
@@ -573,6 +572,7 @@ const deploy = async (options, command) => {
       siteInfo: siteData,
     })
   }
+
   const { configMutations = [], newConfig } = await handleBuild({
     cachedConfig: command.netlify.cachedConfig,
     options,
@@ -583,6 +583,7 @@ const deploy = async (options, command) => {
   const functionsFolder = getFunctionsFolder({ workingDir, options, config, site, siteData })
   const { configPath } = site
   const edgeFunctionsConfig = command.netlify.config.edge_functions
+  console.log({ functionsFolder, edgeFunctionsConfig })
 
   // build flag wasn't used and edge functions exist
   if (!options.build && edgeFunctionsConfig && edgeFunctionsConfig.length !== 0) {
