@@ -1,9 +1,9 @@
 import execa from 'execa'
+import fetch from 'node-fetch'
 import { describe, test } from 'vitest'
 
 import cliPath from '../utils/cli-path.cjs'
 import { getExecaOptions, withDevServer } from '../utils/dev-server.cjs'
-import got from '../utils/got.cjs'
 import { DOWN, answerWithValue, handleQuestions } from '../utils/handle-questions.cjs'
 import { withSiteBuilder } from '../utils/site-builder.cjs'
 import { normalize } from '../utils/snapshots.cjs'
@@ -21,7 +21,7 @@ describe.concurrent('frameworks/framework-detection', () => {
         .buildAsync()
 
       await withDevServer({ cwd: builder.directory }, async ({ output, url }) => {
-        const response = await got(url).text()
+        const response = await fetch(url).then((res) => res.text())
         t.expect(response).toEqual(content)
 
         t.expect(normalize(output, { duration: true, filePath: true })).toMatchSnapshot()
@@ -39,7 +39,7 @@ describe.concurrent('frameworks/framework-detection', () => {
         .buildAsync()
 
       await withDevServer({ cwd: builder.directory, args: ['--dir', 'public'] }, async ({ output, url }) => {
-        const response = await got(url).text()
+        const response = await fetch(url).then((res) => res.text())
         t.expect(response).toEqual(content)
 
         t.expect(normalize(output, { duration: true, filePath: true })).toMatchSnapshot()
@@ -58,7 +58,7 @@ describe.concurrent('frameworks/framework-detection', () => {
         .buildAsync()
 
       await withDevServer({ cwd: builder.directory }, async ({ output, url }) => {
-        const response = await got(url).text()
+        const response = await fetch(url).then((res) => res.text())
         t.expect(response).toEqual(content)
 
         t.expect(normalize(output, { duration: true, filePath: true })).toMatchSnapshot()
@@ -78,7 +78,7 @@ describe.concurrent('frameworks/framework-detection', () => {
       await withDevServer(
         { cwd: builder.directory, args: ['--dir', 'public', '--command', 'npm run start'] },
         async ({ output, url }) => {
-          const response = await got(url).text()
+          const response = await fetch(url).then((res) => res.text())
           t.expect(response).toEqual(content)
 
           t.expect(normalize(output, { duration: true, filePath: true })).toMatchSnapshot()
@@ -99,7 +99,7 @@ describe.concurrent('frameworks/framework-detection', () => {
       await withDevServer(
         { cwd: builder.directory, args: ['--dir', 'public', '--target-port', '3000'] },
         async ({ output, url }) => {
-          const response = await got(url).text()
+          const response = await fetch(url).then((res) => res.text())
           t.expect(response).toEqual(content)
 
           t.expect(normalize(output, { duration: true, filePath: true })).toMatchSnapshot()
@@ -277,7 +277,7 @@ describe.concurrent('frameworks/framework-detection', () => {
         .buildAsync()
 
       await withDevServer({ cwd: builder.directory }, async ({ output, url }) => {
-        const response = await got(url).text()
+        const response = await fetch(url).then((res) => res.text())
         t.expect(response).toEqual(content)
 
         t.expect(normalize(output, { duration: true, filePath: true })).toMatchSnapshot()
@@ -372,7 +372,7 @@ describe.concurrent('frameworks/framework-detection', () => {
       await withDevServer(
         { cwd: builder.directory, context: null, debug: true, serve: true },
         async ({ output, url }) => {
-          const response = await got(`${url}/hello`).json()
+          const response = await fetch(`${url}/hello`).then((res) => res.json())
           t.expect(response).toStrictEqual({ CONTEXT_CHECK: 'PRODUCTION' })
 
           t.expect(normalize(output, { duration: true, filePath: true })).toMatchSnapshot()
