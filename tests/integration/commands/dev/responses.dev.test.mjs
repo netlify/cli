@@ -1,9 +1,9 @@
 // Handlers are meant to be async outside tests
 import path from 'path'
 
+import fetch from 'node-fetch'
 import { describe, test } from 'vitest'
 
-import fetch from 'node-fetch'
 import { withDevServer } from '../../utils/dev-server.cjs'
 import { withSiteBuilder } from '../../utils/site-builder.cjs'
 
@@ -86,8 +86,8 @@ describe.concurrent('commands/responses.dev', () => {
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const [response, builderResponse] = await Promise.all([
-          fetch(`${server.url}/.netlify/functions/timeout`).then(res => res.text()),
-          fetch(`${server.url}/.netlify/builders/timeout`).then(res => res.text()),
+          fetch(`${server.url}/.netlify/functions/timeout`).then((res) => res.text()),
+          fetch(`${server.url}/.netlify/builders/timeout`).then((res) => res.text()),
         ])
 
         t.expect(response).toEqual('ping')
@@ -111,11 +111,11 @@ describe.concurrent('commands/responses.dev', () => {
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const [response, builderResponse] = await Promise.all([
           fetch(`${server.url}/.netlify/functions/builder`),
-          fetch(`${server.url}/.netlify/builders/builder`)
+          fetch(`${server.url}/.netlify/builders/builder`),
         ])
         t.expect(await response.text()).toEqual('ping')
         t.expect(response.status).toBe(200)
-        
+
         t.expect(await builderResponse.text()).toEqual(
           `{"message":"Function is not an on-demand builder. See https://ntl.fyi/create-builder for how to convert a function to a builder."}`,
         )
@@ -139,8 +139,8 @@ describe.concurrent('commands/responses.dev', () => {
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const [response, builderResponse] = await Promise.all([
-          fetch(`${server.url}/.netlify/functions/echo`).then( res => res.json()),
-          fetch(`${server.url}/.netlify/builders/echo`).then(res => res.json())
+          fetch(`${server.url}/.netlify/functions/echo`).then((res) => res.json()),
+          fetch(`${server.url}/.netlify/builders/echo`).then((res) => res.json()),
         ])
         t.expect(response).toStrictEqual({ rawUrl: `${server.url}/.netlify/functions/echo` })
         t.expect(builderResponse).toStrictEqual({ rawUrl: `${server.url}/.netlify/builders/echo` })
@@ -193,10 +193,10 @@ describe.concurrent('commands/responses.dev', () => {
 
       await withDevServer({ cwd: builder.directory, env: { TEST: 'FROM_PROCESS_ENV' } }, async (server) => {
         const [response, builderResponse] = await Promise.all([
-          fetch(`${server.url}/.netlify/functions/env`).then(res => res.text()),
-          fetch(`${server.url}/.netlify/builders/env`).then(res => res.text()),
+          fetch(`${server.url}/.netlify/functions/env`).then((res) => res.text()),
+          fetch(`${server.url}/.netlify/builders/env`).then((res) => res.text()),
         ])
-        
+
         t.expect(response).toEqual('FROM_PROCESS_ENV')
         t.expect(builderResponse).toEqual('FROM_PROCESS_ENV')
       })
@@ -226,8 +226,8 @@ describe.concurrent('commands/responses.dev', () => {
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const [response, builderResponse] = await Promise.all([
-          fetch(`${server.url}/.netlify/functions/env`).then(res => res.text()),
-          fetch(`${server.url}/.netlify/builders/env`).then(res => res.text()),
+          fetch(`${server.url}/.netlify/functions/env`).then((res) => res.text()),
+          fetch(`${server.url}/.netlify/builders/env`).then((res) => res.text()),
         ])
         t.expect(response).toEqual('FROM_CONFIG_FILE')
         t.expect(builderResponse).toEqual('FROM_CONFIG_FILE')
@@ -257,7 +257,7 @@ describe.concurrent('commands/responses.dev', () => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
-        const response = await fetch(`${server.url}/.netlify/functions/env`).then(res => res.text())
+        const response = await fetch(`${server.url}/.netlify/functions/env`).then((res) => res.text())
         t.expect(response).toEqual('DEV_CONTEXT')
       })
     })
@@ -290,7 +290,7 @@ describe.concurrent('commands/responses.dev', () => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
-        const response = await fetch(`${server.url}/.netlify/functions/env`).then(res => res.text())
+        const response = await fetch(`${server.url}/.netlify/functions/env`).then((res) => res.text())
         t.expect(response).toEqual('FROM_PRODUCTION_FILE__FROM_DEVELOPMENT_FILE')
         t.expect(server.output.includes('Ignored .env.development file')).toBe(true)
         t.expect(server.output.includes('Ignored .env file')).toBe(true)
