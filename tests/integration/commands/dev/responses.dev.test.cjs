@@ -6,9 +6,9 @@ const process = require('process')
 const avaTest = require('ava')
 const { isCI } = require('ci-info')
 
-const { withDevServer } = require('./utils/dev-server.cjs')
-const got = require('./utils/got.cjs')
-const { withSiteBuilder } = require('./utils/site-builder.cjs')
+const { withDevServer } = require('../../utils/dev-server.cjs')
+const got = require('../../utils/got.cjs')
+const { withSiteBuilder } = require('../../utils/site-builder.cjs')
 
 const test = isCI ? avaTest.serial.bind(avaTest) : avaTest
 
