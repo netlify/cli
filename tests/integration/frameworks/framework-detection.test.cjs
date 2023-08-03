@@ -3,12 +3,12 @@ const avaTest = require('ava')
 const { isCI } = require('ci-info')
 const execa = require('execa')
 
-const cliPath = require('./utils/cli-path.cjs')
-const { getExecaOptions, withDevServer } = require('./utils/dev-server.cjs')
-const got = require('./utils/got.cjs')
-const { DOWN, answerWithValue, handleQuestions } = require('./utils/handle-questions.cjs')
-const { withSiteBuilder } = require('./utils/site-builder.cjs')
-const { normalize } = require('./utils/snapshots.cjs')
+const cliPath = require('../utils/cli-path.cjs')
+const { getExecaOptions, withDevServer } = require('../utils/dev-server.cjs')
+const got = require('../utils/got.cjs')
+const { DOWN, answerWithValue, handleQuestions } = require('../utils/handle-questions.cjs')
+const { withSiteBuilder } = require('../utils/site-builder.cjs')
+const { normalize } = require('../utils/snapshots.cjs')
 
 const content = 'Hello World!'
 
