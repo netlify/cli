@@ -117,7 +117,7 @@ describe.concurrent('frameworks/framework-detection', () => {
         { cwd: builder.directory, args: ['--command', 'echo hello', '--target-port', '3000'] },
         () => {},
         true,
-      ).catch((error) => error)
+      ).catch((error_) => error_)
 
       t.expect(normalize(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
     })
@@ -128,7 +128,7 @@ describe.concurrent('frameworks/framework-detection', () => {
       await builder.withNetlifyToml({ config: { dev: { framework: 'create-react-app' } } }).buildAsync()
 
       // a failure is expected since this is not a true create-react-app project
-      const error = await withDevServer({ cwd: builder.directory }, () => {}, true).catch((error) => error)
+      const error = await withDevServer({ cwd: builder.directory }, () => {}, true).catch((error_) => error_)
       t.expect(normalize(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
     })
   })
@@ -137,7 +137,7 @@ describe.concurrent('frameworks/framework-detection', () => {
     await withSiteBuilder('site-with-unknown-framework', async (builder) => {
       await builder.withNetlifyToml({ config: { dev: { framework: 'to-infinity-and-beyond-js' } } }).buildAsync()
 
-      const error = await withDevServer({ cwd: builder.directory }, () => {}, true).catch((error) => error)
+      const error = await withDevServer({ cwd: builder.directory }, () => {}, true).catch((error_) => error_)
       t.expect(normalize(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
     })
   })
@@ -151,7 +151,7 @@ describe.concurrent('frameworks/framework-detection', () => {
         .buildAsync()
 
       // a failure is expected since this is not a true create-react-app project
-      const error = await withDevServer({ cwd: builder.directory }, () => {}, true).catch((error) => error)
+      const error = await withDevServer({ cwd: builder.directory }, () => {}, true).catch((error_) => error_)
       t.expect(normalize(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
     })
   })
@@ -164,7 +164,7 @@ describe.concurrent('frameworks/framework-detection', () => {
         { cwd: builder.directory, args: ['--target-port', '3000'] },
         () => {},
         true,
-      ).catch((error) => error)
+      ).catch((error_) => error_)
       t.expect(normalize(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
     })
   })
@@ -177,7 +177,7 @@ describe.concurrent('frameworks/framework-detection', () => {
         { cwd: builder.directory, args: ['--command', 'echo hello'] },
         () => {},
         true,
-      ).catch((error) => error)
+      ).catch((error_) => error_)
       t.expect(normalize(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
     })
   })
@@ -190,7 +190,7 @@ describe.concurrent('frameworks/framework-detection', () => {
         { cwd: builder.directory, args: ['--command', 'echo hello', '--target-port', '3000'] },
         () => {},
         true,
-      ).catch((error) => error)
+      ).catch((error_) => error_)
       t.expect(normalize(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
     })
   })
@@ -213,7 +213,7 @@ describe.concurrent('frameworks/framework-detection', () => {
         },
         () => {},
         true,
-      ).catch((error) => error)
+      ).catch((error_) => error_)
 
       t.expect(normalize(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
     })
@@ -244,7 +244,7 @@ describe.concurrent('frameworks/framework-detection', () => {
 
         await childProcess
       }
-      const error = await asyncErrorBlock().catch((error) => error)
+      const error = await asyncErrorBlock().catch((error_) => error_)
       t.expect(normalize(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
     })
   })
@@ -258,7 +258,7 @@ describe.concurrent('frameworks/framework-detection', () => {
         { cwd: builder.directory, args: ['--command', 'echo hello', '--target-port', '3000'] },
         () => {},
         true,
-      ).catch((error) => error)
+      ).catch((error_) => error_)
 
       t.expect(normalize(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
     })
@@ -297,7 +297,7 @@ describe.concurrent('frameworks/framework-detection', () => {
         .buildAsync()
 
       // a failure is expected since this is not a true Gatsby project
-      const error = await withDevServer({ cwd: builder.directory }, () => {}, true).catch((error) => error)
+      const error = await withDevServer({ cwd: builder.directory }, () => {}, true).catch((error_) => error_)
       t.expect(normalize(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
     })
   })
@@ -307,7 +307,7 @@ describe.concurrent('frameworks/framework-detection', () => {
       await builder.withNetlifyToml({ config: { dev: { framework: 'remix' } } }).buildAsync()
 
       // a failure is expected since this is not a true remix project
-      const error = await withDevServer({ cwd: builder.directory }, () => {}, true).catch((error) => error)
+      const error = await withDevServer({ cwd: builder.directory }, () => {}, true).catch((error_) => error_)
       t.expect(error.stdout.includes(`Failed running command: remix watch. Please verify 'remix' exists`)).toBe(true)
     })
   })
@@ -325,7 +325,7 @@ describe.concurrent('frameworks/framework-detection', () => {
         .buildAsync()
 
       // a failure is expected since this is not a true remix project
-      const error = await withDevServer({ cwd: builder.directory }, () => {}, true).catch((error) => error)
+      const error = await withDevServer({ cwd: builder.directory }, () => {}, true).catch((error_) => error_)
       t.expect(error.stdout.includes(`Failed running command: remix watch. Please verify 'remix' exists`)).toBe(true)
     })
   })
@@ -348,7 +348,7 @@ describe.concurrent('frameworks/framework-detection', () => {
           name: 'frameworker',
           plugin: {
             onPreBuild: async ({ netlifyConfig }) => {
-              // eslint-disable-next-line n/global-require
+              // eslint-disable-next-line n/global-require, no-undef
               const { mkdir, writeFile } = require('fs').promises
 
               const generatedFunctionsDir = 'new_functions'
