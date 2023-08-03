@@ -1,10 +1,10 @@
-const test = require('ava')
+import fetch from 'node-fetch'
+import { test } from 'vitest'
 
-const { tryAndLogOutput, withDevServer } = require('./utils/dev-server.cjs')
-const got = require('./utils/got.cjs')
-const { createMock: createExecaMock } = require('./utils/mock-execa.cjs')
-const { pause } = require('./utils/pause.cjs')
-const { withSiteBuilder } = require('./utils/site-builder.cjs')
+import { tryAndLogOutput, withDevServer } from '../utils/dev-server.cjs'
+import { createMock as createExecaMock } from '../utils/mock-execa.cjs'
+import { pause } from '../utils/pause.cjs'
+import { withSiteBuilder } from '../utils/site-builder.cjs'
 
 const WAIT_WRITE = 1000
 
@@ -73,7 +73,10 @@ test('Updates a Rust function when a file is modified', async (t) => {
         },
         async ({ outputBuffer, port, waitForLogMatching }) => {
           await tryAndLogOutput(async () => {
-            t.is(await got(`http://localhost:${port}/.netlify/functions/rust-func`).text(), originalBody)
+            const response = await fetch(`http://localhost:${port}/.netlify/functions/rust-func`).then((res) =>
+              res.text(),
+            )
+            t.expect(response).toEqual(originalBody)
           }, outputBuffer)
 
           await pause(WAIT_WRITE)
@@ -84,9 +87,11 @@ test('Updates a Rust function when a file is modified', async (t) => {
 
           await waitForLogMatching('Reloaded function rust-func')
 
-          const response = await got(`http://localhost:${port}/.netlify/functions/rust-func`).text()
+          const response = await fetch(`http://localhost:${port}/.netlify/functions/rust-func`).then((res) =>
+            res.text(),
+          )
 
-          t.is(response, updatedBody)
+          t.expect(response).toEqual(updatedBody)
         },
       )
     } finally {
