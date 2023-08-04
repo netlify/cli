@@ -3,12 +3,12 @@ const process = require('process')
 const test = require('ava')
 const execa = require('execa')
 
-const callCli = require('./utils/call-cli.cjs')
-const cliPath = require('./utils/cli-path.cjs')
-const { CONFIRM, answerWithValue, handleQuestions } = require('./utils/handle-questions.cjs')
-const { getCLIOptions, withMockApi } = require('./utils/mock-api.cjs')
-const { withSiteBuilder } = require('./utils/site-builder.cjs')
-const { normalize } = require('./utils/snapshots.cjs')
+const callCli = require('../../utils/call-cli.cjs')
+const cliPath = require('../../utils/cli-path.cjs')
+const { CONFIRM, answerWithValue, handleQuestions } = require('../../utils/handle-questions.cjs')
+const { getCLIOptions, withMockApi } = require('../../utils/mock-api.cjs')
+const { withSiteBuilder } = require('../../utils/site-builder.cjs')
+const { normalize } = require('../../utils/snapshots.cjs')
 
 const siteInfo = {
   account_slug: 'test-account',
