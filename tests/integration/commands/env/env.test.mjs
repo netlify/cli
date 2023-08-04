@@ -1,6 +1,6 @@
 import process from 'process'
 
-import test from 'ava'
+import { test } from 'vitest'
 import execa from 'execa'
 
 import callCli from '../../utils/call-cli.cjs'
@@ -31,7 +31,7 @@ test('env:get --json should return empty object if var not set', async (t) => {
     await withMockApi(routes, async ({ apiUrl }) => {
       const cliResponse = await callCli(['env:get', '--json', 'SOME_VAR'], getCLIOptions({ builder, apiUrl }), true)
 
-      t.deepEqual(cliResponse, {})
+      t.expect(cliResponse).toStrictEqual({})
     })
   })
 })
@@ -41,11 +41,12 @@ test('env:get --context should log an error message', async (t) => {
     await builder.buildAsync()
 
     await withMockApi(routes, async ({ apiUrl }) => {
-      const { stderr: cliResponse } = await t.throwsAsync(
-        callCli(['env:get', 'SOME_VAR', '--context', 'production'], getCLIOptions({ builder, apiUrl })),
-      )
+      const { stderr: cliResponse } = await callCli(
+        ['env:get', 'SOME_VAR', '--context', 'production'],
+        getCLIOptions({ builder, apiUrl }),
+      ).catch((error) => error)
 
-      t.true(cliResponse.includes(`opt in to the new environment variables experience`))
+      t.expect(cliResponse.includes(`opt in to the new environment variables experience`)).toBe(true)
     })
   })
 })
@@ -55,11 +56,12 @@ test('env:get --scope should log an error message', async (t) => {
     await builder.buildAsync()
 
     await withMockApi(routes, async ({ apiUrl }) => {
-      const { stderr: cliResponse } = await t.throwsAsync(
-        callCli(['env:get', 'SOME_VAR', '--scope', 'functions'], getCLIOptions({ builder, apiUrl })),
-      )
+      const { stderr: cliResponse } = await callCli(
+        ['env:get', 'SOME_VAR', '--scope', 'functions'],
+        getCLIOptions({ builder, apiUrl }),
+      ).catch((error) => error)
 
-      t.true(cliResponse.includes(`opt in to the new environment variables experience`))
+      t.expect(cliResponse.includes(`opt in to the new environment variables experience`)).toBe(true)
     })
   })
 })
@@ -96,7 +98,7 @@ test('env:set --json should create and return new var', async (t) => {
         true,
       )
 
-      t.deepEqual(cliResponse, newBuildSettings.env)
+      t.expect(cliResponse).toStrictEqual(newBuildSettings.env)
     })
   })
 })
@@ -133,7 +135,7 @@ test('env:set --json should update existing var', async (t) => {
         true,
       )
 
-      t.deepEqual(cliResponse, newBuildSettings.env)
+      t.expect(cliResponse).toStrictEqual(newBuildSettings.env)
     })
   })
 })
@@ -154,7 +156,7 @@ test('env:get --json should return value of existing var', async (t) => {
     await withMockApi(getRoutes, async ({ apiUrl }) => {
       const cliResponse = await callCli(['env:get', '--json', 'existing_env'], getCLIOptions({ builder, apiUrl }), true)
 
-      t.deepEqual(cliResponse, { existing_env: 'existing_value' })
+      t.expect(cliResponse).toStrictEqual({ existing_env: 'existing_value' })
     })
   })
 })
@@ -164,7 +166,7 @@ test('env:import should throw error if file not exists', async (t) => {
     await builder.buildAsync()
 
     await withMockApi(routes, async ({ apiUrl }) => {
-      await t.throwsAsync(() => callCli(['env:import', '.env'], getCLIOptions({ builder, apiUrl })))
+      await t.expect(() => callCli(['env:import', '.env'], getCLIOptions({ builder, apiUrl }))).rejects.toThrow()
     })
   })
 })
@@ -205,7 +207,7 @@ test('env:import --json should import new vars and override existing vars', asyn
     await withMockApi(importRoutes, async ({ apiUrl }) => {
       const cliResponse = await callCli(['env:import', '--json', '.env'], getCLIOptions({ builder, apiUrl }), true)
 
-      t.deepEqual(cliResponse, newBuildSettings.env)
+      t.expect(cliResponse).toStrictEqual(newBuildSettings.env)
     })
   })
 })
@@ -229,7 +231,7 @@ test('env:get --json should return value of var from netlify.toml', async (t) =>
         true,
       )
 
-      t.deepEqual(cliResponse, { from_toml_file: 'from_toml_file_value' })
+      t.expect(cliResponse).toStrictEqual({ from_toml_file: 'from_toml_file_value' })
     })
   })
 })
@@ -241,7 +243,7 @@ test('env:list --json should return empty object if no vars set', async (t) => {
     await withMockApi(routes, async ({ apiUrl }) => {
       const cliResponse = await callCli(['env:list', '--json'], getCLIOptions({ builder, apiUrl }), true)
 
-      t.deepEqual(cliResponse, {})
+      t.expect(cliResponse).toStrictEqual({})
     })
   })
 })
@@ -251,11 +253,12 @@ test('env:list --context should log an error message', async (t) => {
     await builder.buildAsync()
 
     await withMockApi(routes, async ({ apiUrl }) => {
-      const { stderr: cliResponse } = await t.throwsAsync(
-        callCli(['env:list', '--context', 'production'], getCLIOptions({ builder, apiUrl })),
-      )
+      const { stderr: cliResponse } = await callCli(
+        ['env:list', '--context', 'production'],
+        getCLIOptions({ builder, apiUrl }),
+      ).catch((error) => error)
 
-      t.true(cliResponse.includes(`opt in to the new environment variables experience`))
+      t.expect(cliResponse.includes(`opt in to the new environment variables experience`)).toBe(true)
     })
   })
 })
@@ -265,11 +268,12 @@ test('env:list --scope should log an error message', async (t) => {
     await builder.buildAsync()
 
     await withMockApi(routes, async ({ apiUrl }) => {
-      const { stderr: cliResponse } = await t.throwsAsync(
-        callCli(['env:list', '--scope', 'functions'], getCLIOptions({ builder, apiUrl })),
-      )
+      const { stderr: cliResponse } = await callCli(
+        ['env:list', '--scope', 'functions'],
+        getCLIOptions({ builder, apiUrl }),
+      ).catch((error) => error)
 
-      t.true(cliResponse.includes(`opt in to the new environment variables experience`))
+      t.expect(cliResponse.includes(`opt in to the new environment variables experience`)).toBe(true)
     })
   })
 })
@@ -298,7 +302,7 @@ test('env:list --json should return list of vars with netlify.toml taking priori
     await withMockApi(getRoutes, async ({ apiUrl }) => {
       const cliResponse = await callCli(['env:list', '--json'], getCLIOptions({ builder, apiUrl }), true)
 
-      t.deepEqual(cliResponse, { existing_env: 'from_toml_file' })
+      t.expect(cliResponse).toStrictEqual({ existing_env: 'from_toml_file' })
     })
   })
 })
@@ -343,7 +347,7 @@ test('env:list should hide variables values and prompt to show', async (t) => {
 
       const { stdout: cliResponse } = await childProcess
 
-      t.snapshot(normalize(cliResponse))
+      t.expect(normalize(cliResponse)).toMatchSnapshot()
     })
   })
 })
@@ -388,7 +392,7 @@ test('env:list should hide variables values and show on confirm', async (t) => {
 
       const { stdout: cliResponse } = await childProcess
 
-      t.snapshot(normalize(cliResponse))
+      t.expect(normalize(cliResponse)).toMatchSnapshot()
     })
   })
 })
@@ -412,7 +416,7 @@ test('env:list should not prompt on CI', async (t) => {
     await withMockApi(envListRoutes, async ({ apiUrl }) => {
       const cliResponse = await callCli(['env:list'], getCLIOptions({ builder, apiUrl, env: { CI: true } }))
 
-      t.snapshot(normalize(cliResponse))
+      t.expect(normalize(cliResponse)).toMatchSnapshot()
     })
   })
 })
@@ -445,7 +449,7 @@ test('env:set --json should be able to set var with empty value', async (t) => {
     await withMockApi(updateRoutes, async ({ apiUrl }) => {
       const cliResponse = await callCli(['env:set', '--json', 'empty'], getCLIOptions({ builder, apiUrl }), true)
 
-      t.deepEqual(cliResponse, newBuildSettings.env)
+      t.expect(cliResponse).toStrictEqual(newBuildSettings.env)
     })
   })
 })
@@ -478,7 +482,7 @@ test('env:unset --json should remove existing variable', async (t) => {
     await withMockApi(updateRoutes, async ({ apiUrl }) => {
       const cliResponse = await callCli(['env:unset', '--json', 'to_delete'], getCLIOptions({ builder, apiUrl }), true)
 
-      t.deepEqual(cliResponse, newBuildSettings.env)
+      t.expect(cliResponse).toStrictEqual(newBuildSettings.env)
     })
   })
 })
@@ -522,7 +526,7 @@ test('env:import --json --replace-existing should replace all existing vars and 
         true,
       )
 
-      t.deepEqual(cliResponse, newBuildSettings.env)
+      t.expect(cliResponse).toStrictEqual(newBuildSettings.env)
     })
   })
 })
@@ -537,7 +541,7 @@ test("env:clone should return without clone if there's no env in source site", a
     await withMockApi(createRoutes, async ({ apiUrl }) => {
       const cliResponse = await callCli(['env:clone', '--to', 'site_id_a'], getCLIOptions({ builder, apiUrl }))
 
-      t.snapshot(normalize(cliResponse))
+      t.expect(normalize(cliResponse)).toMatchSnapshot()
     })
   })
 })
@@ -547,11 +551,12 @@ test("env:clone should print error if --to site doesn't exist", async (t) => {
     await builder.buildAsync()
     const createRoutes = [{ path: 'sites/site_id', response: { ...siteInfo, build_settings: { env: {} } } }]
     await withMockApi(createRoutes, async ({ apiUrl }) => {
-      const { stderr: cliResponse } = await t.throwsAsync(
-        callCli(['env:clone', '--to', 'to-site'], getCLIOptions({ builder, apiUrl })),
-      )
+      const { stderr: cliResponse } = await callCli(
+        ['env:clone', '--to', 'to-site'],
+        getCLIOptions({ builder, apiUrl }),
+      ).catch((error) => error)
 
-      t.true(cliResponse.includes(`Can't find site with id to-site. Please make sure the site exists`))
+      t.expect(cliResponse.includes(`Can't find site with id to-site. Please make sure the site exists`)).toBe(true)
     })
   })
 })
@@ -560,11 +565,12 @@ test("env:clone should print error if --from site doesn't exist", async (t) => {
   await withSiteBuilder('site-env', async (builder) => {
     await builder.buildAsync()
     await withMockApi([], async ({ apiUrl }) => {
-      const { stderr: cliResponse } = await t.throwsAsync(
-        callCli(['env:clone', '--from', 'from-site', '--to', 'to-site'], getCLIOptions({ builder, apiUrl })),
-      )
+      const { stderr: cliResponse } = await callCli(
+        ['env:clone', '--from', 'from-site', '--to', 'to-site'],
+        getCLIOptions({ builder, apiUrl }),
+      ).catch((error) => error)
 
-      t.true(cliResponse.includes(`Can't find site with id from-site. Please make sure the site exists`))
+      t.expect(cliResponse.includes(`Can't find site with id from-site. Please make sure the site exists`)).toBe(true)
     })
   })
 })
@@ -578,7 +584,7 @@ test('env:clone should exit if the folder is not linked to a site, and --from is
       extendEnv: false,
       PATH: process.env.PATH,
     })
-    t.snapshot(normalize(cliResponse))
+    t.expect(normalize(cliResponse)).toMatchSnapshot()
   })
 })
 
@@ -630,12 +636,12 @@ test('env:clone should return success message', async (t) => {
     await withMockApi(cloneRoutes, async ({ apiUrl, requests }) => {
       const cliResponse = await callCli(['env:clone', '--to', 'site_id_a'], getCLIOptions({ apiUrl, builder }))
 
-      t.snapshot(normalize(cliResponse))
+      t.expect(normalize(cliResponse)).toMatchSnapshot()
 
       const patchRequest = requests.find(
         (request) => request.method === 'PATCH' && request.path === '/api/v1/sites/site_id_a',
       )
-      t.deepEqual(patchRequest.body, expectedPatchRequest.requestBody)
+      t.expect(patchRequest.body).toStrictEqual(expectedPatchRequest.requestBody)
     })
   })
 })
