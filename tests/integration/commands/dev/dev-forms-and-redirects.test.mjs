@@ -4,10 +4,10 @@ import path from 'path'
 
 import FormData from 'form-data'
 import getPort from 'get-port'
+import fetch from 'node-fetch'
 import { describe, test } from 'vitest'
 
 import { withDevServer } from '../../utils/dev-server.cjs'
-import got from '../../utils/got.cjs'
 import { withSiteBuilder } from '../../utils/site-builder.cjs'
 
 describe.concurrent('commands/dev-forms-and-redirects', () => {
@@ -23,13 +23,12 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
-        const response = await got
-          .post(`${server.url}/api/none`, {
-            body: 'nothing',
-          })
-          .catch((error) => error.response)
+        const response = await fetch(`${server.url}/api/none`, {
+          method: 'POST',
+          body: 'nothing',
+        })
 
-        t.expect(response.statusCode).toBe(404)
+        t.expect(response.status).toBe(404)
       })
     })
   })
@@ -53,8 +52,10 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
-        const response1 = await got(`${server.url}/.netlify/functions/echo?category[SOMETHING][]=something`).json()
-        const response2 = await got(`${server.url}/.netlify/functions/echo?category=one&category=two`).json()
+        const [response1, response2] = await Promise.all([
+          fetch(`${server.url}/.netlify/functions/echo?category[SOMETHING][]=something`).then((res) => res.json()),
+          fetch(`${server.url}/.netlify/functions/echo?category=one&category=two`).then((res) => res.json()),
+        ])
 
         t.expect(response1.queryStringParameters).toStrictEqual({ 'category[SOMETHING][]': 'something' })
         t.expect(response2.queryStringParameters).toStrictEqual({ category: 'one, two' })
@@ -87,11 +88,10 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const form = new FormData()
         form.append('some', 'thing')
-        const response = await got
-          .post(`${server.url}/?ding=dong`, {
-            body: form,
-          })
-          .json()
+        const response = await fetch(`${server.url}/?ding=dong`, {
+          method: 'POST',
+          body: form,
+        }).then((res) => res.json())
 
         const body = JSON.parse(response.body)
         const expectedBody = {
@@ -100,7 +100,7 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
             data: {
               ip: '::ffff:127.0.0.1',
               some: 'thing',
-              user_agent: 'got (https://github.com/sindresorhus/got)',
+              user_agent: 'node-fetch/1.0 (+https://github.com/bitinn/node-fetch)',
             },
             human_fields: {
               Some: 'thing',
@@ -152,11 +152,12 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const form = new FormData()
         form.append('some', 'thing')
-        const response = await got.post(`${server.url}/?ding=dong`, {
+        const response = await fetch(`${server.url}/?ding=dong`, {
+          method: 'POST',
           body: form,
         })
-        t.expect(response.statusCode).toBe(202)
-        t.expect(response.body).toEqual('')
+        t.expect(response.status).toBe(202)
+        t.expect(await response.text()).toEqual('')
       })
     })
   })
@@ -184,16 +185,15 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
-        const response = await got
-          .post(`${server.url}/?ding=dong`, {
-            body: 'Something',
-            headers: {
-              'content-type': 'text/plain',
-            },
-          })
-          .catch((error) => error.response)
-        t.expect(response.statusCode).toBe(405)
-        t.expect(response.body).toEqual('Method Not Allowed')
+        const response = await fetch(`${server.url}/?ding=dong`, {
+          method: 'POST',
+          body: 'Something',
+          headers: {
+            'content-type': 'text/plain',
+          },
+        })
+        t.expect(response.status).toBe(405)
+        t.expect(await response.text()).toEqual('Method Not Allowed')
       })
     })
   })
@@ -218,7 +218,7 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
-        const response = await got(`${server.url}/foo?ping=pong`).text()
+        const response = await fetch(`${server.url}/foo?ping=pong`).then((res) => res.text())
         t.expect(response).toEqual('<html><h1>foo')
       })
     })
@@ -244,7 +244,7 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
-        const response = await got(`${server.url}/foo?ping=pong`).text()
+        const response = await fetch(`${server.url}/foo?ping=pong`).then((res) => res.text())
         t.expect(response).toEqual('<html><h1>foo')
       })
     })
@@ -270,10 +270,12 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
-        const response = await got(`${server.url}/foo`, { followRedirect: false })
-        t.expect(response.headers.location).toEqual(`/not-foo`)
+        const [response, body] = await Promise.all([
+          fetch(`${server.url}/foo`, { redirect: 'manual' }),
+          fetch(`${server.url}/foo`).then((res) => res.text()),
+        ])
 
-        const body = await got(`${server.url}/foo`).text()
+        t.expect(response.headers.get('location')).toEqual(`${server.url}/not-foo`)
         t.expect(body).toEqual('<html><h1>not-foo')
       })
     })
@@ -299,9 +301,9 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
-        const response = await got(`${server.url}/foo.html`, { followRedirect: false })
+        const response = await fetch(`${server.url}/foo.html`, { follow: 0 })
         t.expect(response.headers.location).toBe(undefined)
-        t.expect(response.body).toEqual('<html><h1>foo')
+        t.expect(await response.text()).toEqual('<html><h1>foo')
       })
     })
   })
@@ -326,10 +328,12 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
-        const response = await got(`${server.url}/foo.html`, { followRedirect: false })
-        t.expect(response.headers.location).toEqual(`/not-foo`)
+        const [response, body] = await Promise.all([
+          fetch(`${server.url}/foo.html`, { redirect: 'manual' }),
+          fetch(`${server.url}/foo.html`).then((res) => res.text()),
+        ])
 
-        const body = await got(`${server.url}/foo.html`).text()
+        t.expect(response.headers.get('location')).toEqual(`${server.url}/not-foo`)
         t.expect(body).toEqual('<html><h1>not-foo')
       })
     })
@@ -355,11 +359,12 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
-        const response1 = await got(`${server.url}/not-foo`).text()
-        const response2 = await got(`${server.url}/not-foo/`).text()
-
-        // TODO: check why this doesn't redirect
-        const response3 = await got(`${server.url}/not-foo/index.html`).text()
+        const [response1, response2, response3] = await Promise.all([
+          fetch(`${server.url}/not-foo`).then((res) => res.text()),
+          fetch(`${server.url}/not-foo/`).then((res) => res.text()),
+          // TODO: check why this doesn't redirect
+          fetch(`${server.url}/not-foo/index.html`).then((res) => res.text()),
+        ])
 
         t.expect(response1).toEqual('<html><h1>foo')
         t.expect(response2).toEqual('<html><h1>foo')
@@ -413,8 +418,12 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
-        t.expect(await got(`${server.url}/foo`).text()).toEqual('<html><h1>foo')
-        t.expect(await got(`http://localhost:${userServerPort}`).text()).toEqual('Hello world')
+        const [response1, response2] = await Promise.all([
+          fetch(`${server.url}/foo`).then((res) => res.text()),
+          fetch(`http://localhost:${userServerPort}`).then((res) => res.text()),
+        ])
+        t.expect(response1).toEqual('<html><h1>foo')
+        t.expect(response2).toEqual('Hello world')
       })
     })
   })
@@ -463,8 +472,12 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
         withDevServer(
           { cwd: builder.directory },
           async (server) => {
-            await t.expect(await got(`${server.url}/foo`).text()).toEqual('<html><h1>foo')
-            await t.expect(await got(`http://localhost:${userServerPort}`).text()).toEqual('Hello world')
+            const [response1, response2] = await Promise.all([
+              fetch(`${server.url}/foo`).then((res) => res.text()),
+              fetch(`http://localhost:${userServerPort}`).then((res) => res.text()),
+            ])
+            await t.expect(response1).toEqual('<html><h1>foo')
+            await t.expect(response2).toEqual('Hello world')
           },
           { message: /Error: Something went wrong/ },
         ),
