@@ -1,17 +1,16 @@
 // Handlers are meant to be async outside tests
 import { copyFile } from 'fs/promises'
+import { Agent } from 'node:https'
 import os from 'os'
 import path from 'path'
-
-import { describe, test } from 'vitest'
-
 import { fileURLToPath } from 'url'
-import { curl } from '../../utils/curl.cjs'
 import { withDevServer } from '../../utils/dev-server.cjs'
 import { withMockApi } from '../../utils/mock-api.cjs'
 import { withSiteBuilder } from '../../utils/site-builder.cjs'
+
 import nodeFetch from 'node-fetch'
-import { Agent } from 'node:https'
+import { describe, test } from 'vitest'
+import { curl } from '../../utils/curl.cjs'
 
 // eslint-disable-next-line no-underscore-dangle
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -253,12 +252,18 @@ export const handler = async function () {
         }
 
         t.expect(await nodeFetch(`https://localhost:${port}`, options).then((res) => res.text())).toEqual('index')
-        t.expect(await nodeFetch(`https://localhost:${port}?ef=true`, options).then((res) => res.text())).toEqual('INDEX')
-        t.expect(await nodeFetch(`https://localhost:${port}?ef=fetch`, options).then((res) => res.text())).toEqual('ORIGIN')
-        t.expect(await nodeFetch(`https://localhost:${port}/api/hello`, options).then((res) => res.json())).toStrictEqual({
+        t.expect(await nodeFetch(`https://localhost:${port}?ef=true`, options).then((res) => res.text())).toEqual(
+          'INDEX',
+        )
+        t.expect(await nodeFetch(`https://localhost:${port}?ef=fetch`, options).then((res) => res.text())).toEqual(
+          'origin',
+        )
+        t.expect(
+          await nodeFetch(`https://localhost:${port}/api/hello`, options).then((res) => res.json()),
+        ).toStrictEqual({
           rawUrl: `https://localhost:${port}/api/hello`,
         })
-        t.is(await got(`https://localhost:${port}?ef=fetch`, options).text(), 'origin')
+        t.expect(await nodeFetch(`https://localhost:${port}?ef=fetch`, options).then(res =>res.text())).toEqual('origin')
       })
     })
   })
@@ -325,7 +330,7 @@ export const handler = async function () {
   })
 
   // we need curl to reproduce this issue
-  test.skipIf(os.platform() == 'win32')(`don't hang on 'Expect: 100-continue' header`, async (t) => {
+  test.skipIf(os.platform() === 'win32')(`don't hang on 'Expect: 100-continue' header`, async () => {
     await withSiteBuilder('site-with-expect-header', async (builder) => {
       await builder
         .withNetlifyToml({
