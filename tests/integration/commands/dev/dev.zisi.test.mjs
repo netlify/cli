@@ -10,8 +10,6 @@ import { curl } from '../../utils/curl.cjs'
 import { withDevServer } from '../../utils/dev-server.cjs'
 import { withMockApi } from '../../utils/mock-api.cjs'
 import { withSiteBuilder } from '../../utils/site-builder.cjs'
-import nodeFetch from 'node-fetch'
-import { Agent } from 'node:https'
 
 // eslint-disable-next-line no-underscore-dangle
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
