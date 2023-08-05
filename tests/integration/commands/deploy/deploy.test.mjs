@@ -1,13 +1,17 @@
-const path = require('path')
-const process = require('process')
+import path from 'path'
+import process from 'process'
 
-const test = require('ava')
-const { Response } = require('node-fetch')
+import test from 'ava'
+import { Response } from 'node-fetch'
 
-const callCli = require('../../utils/call-cli.cjs')
-const { createLiveTestSite, generateSiteName } = require('../../utils/create-live-test-site.cjs')
-const got = require('../../utils/got.cjs')
-const { withSiteBuilder } = require('../../utils/site-builder.cjs')
+import callCli from '../../utils/call-cli.cjs'
+import { createLiveTestSite, generateSiteName } from '../../utils/create-live-test-site.cjs'
+import got from '../../utils/got.cjs'
+import { withSiteBuilder } from '../../utils/site-builder.cjs'
+import { fileURLToPath } from 'url'
+
+// eslint-disable-next-line no-underscore-dangle
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const SITE_NAME = generateSiteName('netlify-test-deploy-')
 
@@ -406,8 +410,7 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
           name: 'mutator',
           plugin: {
             onPreBuild: async ({ netlifyConfig }) => {
-              // eslint-disable-next-line n/global-require
-              const { mkdir, writeFile } = require('fs').promises
+              const { mkdir, writeFile } = await import('fs/promises')
 
               const generatedFunctionsDir = 'new_functions'
               netlifyConfig.functions.directory = generatedFunctionsDir
