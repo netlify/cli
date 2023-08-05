@@ -1,7 +1,7 @@
 import process from 'process'
 
-import { describe, test } from 'vitest'
 import execa from 'execa'
+import { describe, test } from 'vitest'
 
 import callCli from '../../utils/call-cli.cjs'
 import cliPath from '../../utils/cli-path.cjs'
