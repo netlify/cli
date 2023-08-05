@@ -8,11 +8,11 @@ const avaTest = require('ava')
 const { isCI } = require('ci-info')
 const { Response } = require('node-fetch')
 
-const { curl } = require('./utils/curl.cjs')
-const { withDevServer } = require('./utils/dev-server.cjs')
-const got = require('./utils/got.cjs')
-const { withMockApi } = require('./utils/mock-api.cjs')
-const { withSiteBuilder } = require('./utils/site-builder.cjs')
+const { curl } = require('../../utils/curl.cjs')
+const { withDevServer } = require('../../utils/dev-server.cjs')
+const got = require('../../utils/got.cjs')
+const { withMockApi } = require('../../utils/mock-api.cjs')
+const { withSiteBuilder } = require('../../utils/site-builder.cjs')
 
 const test = isCI ? avaTest.serial.bind(avaTest) : avaTest
 
@@ -250,8 +250,8 @@ export const handler = async function () {
         .buildAsync()
 
       await Promise.all([
-        copyFile(`${__dirname}/../../localhost.crt`, `${builder.directory}/localhost.crt`),
-        copyFile(`${__dirname}/../../localhost.key`, `${builder.directory}/localhost.key`),
+        copyFile(`${__dirname}/../../../../localhost.crt`, `${builder.directory}/localhost.crt`),
+        copyFile(`${__dirname}/../../../../localhost.key`, `${builder.directory}/localhost.key`),
       ])
       await withDevServer({ cwd: builder.directory, args }, async ({ port }) => {
         const options = { https: { rejectUnauthorized: false } }
