@@ -1,16 +1,15 @@
 // Handlers are meant to be async outside tests
 import { copyFile } from 'fs/promises'
+import nodeFetch from 'node-fetch'
 import { Agent } from 'node:https'
 import os from 'os'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import { describe, test } from 'vitest'
+import { curl } from '../../utils/curl.cjs'
 import { withDevServer } from '../../utils/dev-server.cjs'
 import { withMockApi } from '../../utils/mock-api.cjs'
 import { withSiteBuilder } from '../../utils/site-builder.cjs'
-
-import nodeFetch from 'node-fetch'
-import { describe, test } from 'vitest'
-import { curl } from '../../utils/curl.cjs'
 
 // eslint-disable-next-line no-underscore-dangle
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
