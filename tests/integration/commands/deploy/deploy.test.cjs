@@ -1,13 +1,13 @@
-const { join } = require('path')
+const path = require('path')
 const process = require('process')
 
 const test = require('ava')
 const { Response } = require('node-fetch')
 
-const callCli = require('./utils/call-cli.cjs')
-const { createLiveTestSite, generateSiteName } = require('./utils/create-live-test-site.cjs')
-const got = require('./utils/got.cjs')
-const { withSiteBuilder } = require('./utils/site-builder.cjs')
+const callCli = require('../../utils/call-cli.cjs')
+const { createLiveTestSite, generateSiteName } = require('../../utils/create-live-test-site.cjs')
+const got = require('../../utils/got.cjs')
+const { withSiteBuilder } = require('../../utils/site-builder.cjs')
 
 const SITE_NAME = generateSiteName('netlify-test-deploy-')
 
@@ -604,7 +604,7 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
   })
 
   test.serial('should deploy pre-bundled functions when a valid manifest file is found', async (t) => {
-    const bundledFunctionPath = join(__dirname, 'assets', 'bundled-function-1.zip')
+    const bundledFunctionPath = path.join(__dirname, '../../assets', 'bundled-function-1.zip')
     const bundledFunctionData = {
       mainFile: '/some/path/bundled-function-1.js',
       name: 'bundled-function-1',
@@ -629,7 +629,7 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
             functions: [
               {
                 ...bundledFunctionData,
-                path: join(builder.directory, '.netlify', 'functions', 'bundled-function-1.zip'),
+                path: path.join(builder.directory, '.netlify', 'functions', 'bundled-function-1.zip'),
               },
             ],
             timestamp: Date.now(),
@@ -663,7 +663,7 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
   })
 
   test.serial('should not deploy pre-bundled functions when the --skip-functions-cache flag is used', async (t) => {
-    const bundledFunctionPath = join(__dirname, 'assets', 'bundled-function-1.zip')
+    const bundledFunctionPath = path.join(__dirname, '../../assets', 'bundled-function-1.zip')
     const bundledFunctionData = {
       mainFile: '/some/path/bundled-function-1.js',
       name: 'bundled-function-1',
@@ -688,7 +688,7 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
             functions: [
               {
                 ...bundledFunctionData,
-                path: join(builder.directory, '.netlify', 'functions', 'bundled-function-1.zip'),
+                path: path.join(builder.directory, '.netlify', 'functions', 'bundled-function-1.zip'),
               },
             ],
             timestamp: Date.now(),
@@ -725,7 +725,7 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
     'should not deploy pre-bundled functions when the manifest file is older than the configured TTL',
     async (t) => {
       const age = 18e4
-      const bundledFunctionPath = join(__dirname, 'assets', 'bundled-function-1.zip')
+      const bundledFunctionPath = path.join(__dirname, '../../assets', 'bundled-function-1.zip')
       const bundledFunctionData = {
         mainFile: '/some/path/bundled-function-1.js',
         name: 'bundled-function-1',
@@ -750,7 +750,7 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
               functions: [
                 {
                   ...bundledFunctionData,
-                  path: join(builder.directory, '.netlify', 'functions', 'bundled-function-1.zip'),
+                  path: path.join(builder.directory, '.netlify', 'functions', 'bundled-function-1.zip'),
                 },
               ],
               timestamp: Date.now() - age,
