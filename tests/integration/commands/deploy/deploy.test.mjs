@@ -3,10 +3,10 @@ import process from 'process'
 
 import { afterAll, beforeAll, describe, test } from 'vitest'
 
+import fetch from 'node-fetch'
 import { fileURLToPath } from 'url'
 import callCli from '../../utils/call-cli.cjs'
 import { createLiveTestSite, generateSiteName } from '../../utils/create-live-test-site.cjs'
-import got from '../../utils/got.cjs'
 import { withSiteBuilder } from '../../utils/site-builder.cjs'
 
 // eslint-disable-next-line no-underscore-dangle
@@ -15,17 +15,20 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const SITE_NAME = generateSiteName('netlify-test-deploy-')
 
 const validateContent = async ({ content, path, siteUrl, t }) => {
+  const response = await fetch(`${siteUrl}${path}`)
+  const body = await response.text()
+  const statusCode = response.status
   try {
-    const { body } = await got(`${siteUrl}${path}`)
+    if (content === undefined) {
+      t.expect(response.status).toBe(404)
+      return
+    }
     t.expect(body).toEqual(content)
   } catch (error) {
     const {
-      response: { body, statusCode, statusMessage },
+      response: { statusMessage },
     } = error
-    if (content === undefined) {
-      t.expect(statusCode).toBe(404)
-      return
-    }
+
     throw new Error(`Failed getting content: ${statusCode} - ${statusMessage} - ${body}`)
   }
 }
@@ -441,9 +444,9 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE == 'true').concurrent('com
         true,
       )
 
-      const { body, statusCode } = await got(`${deployUrl}/.netlify/functions/hello`)
-      t.expect(body).toEqual('Hello')
-      t.expect(statusCode).toBe(200)
+      const response = await fetch(`${deployUrl}/.netlify/functions/hello`)
+      t.expect(await response.text()).toEqual('Hello')
+      t.expect(response.status).toBe(200)
     })
   })
 
@@ -500,9 +503,15 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE == 'true').concurrent('com
         true,
       )
 
-      t.expect(await got(`${deployUrl}/.netlify/functions/func-1`).text()).toEqual('User 1')
-      t.expect(await got(`${deployUrl}/.netlify/functions/func-2`).text()).toEqual('User 2')
-      t.expect(await got(`${deployUrl}/.netlify/functions/func-3`).text()).toEqual('Internal 3')
+      const [response1, response2, response3] = await Promise.all([
+        fetch(`${deployUrl}/.netlify/functions/func-1`).then((res) => res.text()),
+        fetch(`${deployUrl}/.netlify/functions/func-2`).then((res) => res.text()),
+        fetch(`${deployUrl}/.netlify/functions/func-3`).then((res) => res.text()),
+      ])
+
+      t.expect(response1).toEqual('User 1')
+      t.expect(response2).toEqual('User 2')
+      t.expect(response3).toEqual('Internal 3')
     })
   })
 
@@ -533,8 +542,9 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE == 'true').concurrent('com
         },
         true,
       )
+      const response = await fetch(`${deployUrl}/.netlify/functions/func-1`).then((res) => res.text())
 
-      t.expect(await got(`${deployUrl}/.netlify/functions/func-1`).text()).toEqual('Internal')
+      t.expect(response).toEqual('Internal')
     })
   })
 
@@ -605,12 +615,18 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE == 'true').concurrent('com
 
       await validateDeploy({ deploy, siteName: SITE_NAME, content, t })
 
+      const [pluginRedirectResponse, _redirectsResponse, netlifyTomResponse] = await Promise.all([
+        fetch(`${deploy.deploy_url}/other-api/hello`).then((res) => res.text()),
+        fetch(`${deploy.deploy_url}/api/hello`).then((res) => res.text()),
+        fetch(`${deploy.deploy_url}/not-existing`).then((res) => res.text()),
+      ])
+
       // plugin redirect
-      t.expect(await got(`${deploy.deploy_url}/other-api/hello`).text()).toEqual('hello')
+      t.expect(pluginRedirectResponse).toEqual('hello')
       // _redirects redirect
-      t.expect(await got(`${deploy.deploy_url}/api/hello`).text()).toEqual('hello')
+      t.expect(_redirectsResponse).toEqual('hello')
       // netlify.toml redirect
-      t.expect(await got(`${deploy.deploy_url}/not-existing`).text()).toEqual(content)
+      t.expect(netlifyTomResponse).toEqual(content)
     })
   })
 
@@ -668,8 +684,8 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE == 'true').concurrent('com
         },
         true,
       )
-
-      t.expect(await got(`${deployUrl}/.netlify/functions/bundled-function-1`).text()).toEqual('Pre-bundled')
+      const response = await fetch(`${deployUrl}/.netlify/functions/bundled-function-1`).then((res) => res.text())
+      t.expect(response).toEqual('Pre-bundled')
     })
   })
 
@@ -728,7 +744,8 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE == 'true').concurrent('com
         true,
       )
 
-      t.expect(await got(`${deployUrl}/.netlify/functions/bundled-function-1`).text()).toEqual('Bundled at deployment')
+      const response = await fetch(`${deployUrl}/.netlify/functions/bundled-function-1`).then((res) => res.text())
+      t.expect(response).toEqual('Bundled at deployment')
     })
   })
 
@@ -788,7 +805,8 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE == 'true').concurrent('com
         true,
       )
 
-      t.expect(await got(`${deployUrl}/.netlify/functions/bundled-function-1`).text()).toEqual('Bundled at deployment')
+      const response = await fetch(`${deployUrl}/.netlify/functions/bundled-function-1`).then((res) => res.text())
+      t.expect(response).toEqual('Bundled at deployment')
     })
   })
 })
