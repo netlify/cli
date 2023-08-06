@@ -6,6 +6,7 @@ export default defineConfig({
   test: {
     include: ['tests/**/*.test.mjs', 'tests/**/*.test.ts'],
     testTimeout: 60_000,
+    hookTimeout: 60_000,
     deps: {
       external: ['**/fixtures/**', '**/node_modules/**'],
       interopDefault: false,
