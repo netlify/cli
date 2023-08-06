@@ -1,10 +1,10 @@
 import path from 'path'
 import process from 'process'
-
-import { afterAll, beforeAll, describe, test } from 'vitest'
+import { fileURLToPath } from 'url'
 
 import fetch from 'node-fetch'
-import { fileURLToPath } from 'url'
+import { afterAll, beforeAll, describe, test } from 'vitest'
+
 import callCli from '../../utils/call-cli.cjs'
 import { createLiveTestSite, generateSiteName } from '../../utils/create-live-test-site.cjs'
 import { withSiteBuilder } from '../../utils/site-builder.cjs'
@@ -14,8 +14,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const SITE_NAME = generateSiteName('netlify-test-deploy-')
 
-const validateContent = async ({ content, path, siteUrl, t }) => {
-  const response = await fetch(`${siteUrl}${path}`)
+const validateContent = async ({ content, resourcePath, siteUrl, t }) => {
+  const response = await fetch(`${siteUrl}${resourcePath}`)
   const body = await response.text()
   const statusCode = response.status
   try {
@@ -45,14 +45,14 @@ const validateDeploy = async ({ content, contentMessage, deploy, siteName, t }) 
 
 const context = {}
 
-describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE == 'true').concurrent('commands/deploy', () => {
-  beforeAll(async (t) => {
+describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('commands/deploy', () => {
+  beforeAll(async () => {
     const { account, siteId } = await createLiveTestSite(SITE_NAME)
     context.siteId = siteId
     context.account = account
   })
 
-  afterAll(async (t) => {
+  afterAll(async () => {
     const { siteId } = context
     console.log(`deleting test site "${SITE_NAME}". ${siteId}`)
     await callCli(['sites:delete', siteId, '--force'])
@@ -234,7 +234,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE == 'true').concurrent('com
     })
   })
 
-  test('should return valid json when both --build and --json are passed', async (t) => {
+  test('should return valid json when both --build and --json are passed', async () => {
     await withSiteBuilder('site-with-public-folder', async (builder) => {
       const content = '<h1>⊂◉‿◉つ</h1>'
       builder
@@ -420,6 +420,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE == 'true').concurrent('com
           name: 'mutator',
           plugin: {
             onPreBuild: async ({ netlifyConfig }) => {
+              // eslint-disable-next-line no-undef, n/global-require
               const { mkdir, writeFile } = require('fs/promises')
 
               const generatedFunctionsDir = 'new_functions'
