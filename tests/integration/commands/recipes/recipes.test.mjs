@@ -1,15 +1,15 @@
-const { readFile } = require('fs/promises')
-const { resolve } = require('path')
+import { readFile } from 'fs/promises'
+import { resolve } from 'path'
 
-const test = require('ava')
-const { parse } = require('comment-json')
-const execa = require('execa')
+import test from 'ava'
+import { parse } from 'comment-json'
+import execa from 'execa'
 
-const callCli = require('../../utils/call-cli.cjs')
-const cliPath = require('../../utils/cli-path.cjs')
-const { CONFIRM, NO, answerWithValue, handleQuestions } = require('../../utils/handle-questions.cjs')
-const { withSiteBuilder } = require('../../utils/site-builder.cjs')
-const { normalize } = require('../../utils/snapshots.cjs')
+import callCli from '../../utils/call-cli.cjs'
+import cliPath from '../../utils/cli-path.cjs'
+import { CONFIRM, NO, answerWithValue, handleQuestions } from '../../utils/handle-questions.cjs'
+import { withSiteBuilder } from '../../utils/site-builder.cjs'
+import { normalize } from '../../utils/snapshots.cjs'
 
 test('Shows a list of all the available recipes', async (t) => {
   const cliResponse = await callCli(['recipes:list'])
