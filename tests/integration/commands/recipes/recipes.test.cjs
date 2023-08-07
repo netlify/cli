@@ -5,11 +5,11 @@ const test = require('ava')
 const { parse } = require('comment-json')
 const execa = require('execa')
 
-const callCli = require('./utils/call-cli.cjs')
-const cliPath = require('./utils/cli-path.cjs')
-const { CONFIRM, NO, answerWithValue, handleQuestions } = require('./utils/handle-questions.cjs')
-const { withSiteBuilder } = require('./utils/site-builder.cjs')
-const { normalize } = require('./utils/snapshots.cjs')
+const callCli = require('../../utils/call-cli.cjs')
+const cliPath = require('../../utils/cli-path.cjs')
+const { CONFIRM, NO, answerWithValue, handleQuestions } = require('../../utils/handle-questions.cjs')
+const { withSiteBuilder } = require('../../utils/site-builder.cjs')
+const { normalize } = require('../../utils/snapshots.cjs')
 
 test('Shows a list of all the available recipes', async (t) => {
   const cliResponse = await callCli(['recipes:list'])
