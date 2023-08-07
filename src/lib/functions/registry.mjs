@@ -6,15 +6,7 @@ import { env } from 'process'
 import { listFunctions } from '@netlify/zip-it-and-ship-it'
 import extractZip from 'extract-zip'
 
-import {
-  chalk,
-  getTerminalLink,
-  log,
-  NETLIFYDEVERR,
-  NETLIFYDEVLOG,
-  warn,
-  watchDebounced,
-} from '../../utils/command-helpers.mjs'
+import { chalk, log, NETLIFYDEVERR, NETLIFYDEVLOG, warn, watchDebounced } from '../../utils/command-helpers.mjs'
 import { INTERNAL_FUNCTIONS_FOLDER, SERVE_FUNCTIONS_FOLDER } from '../../utils/functions/functions.mjs'
 import { BACKGROUND_FUNCTIONS_WARNING } from '../log.mjs'
 import { getPathInProject } from '../settings.mjs'
@@ -70,21 +62,23 @@ export class FunctionsRegistry {
     )
   }
 
-  async buildFunctionAndWatchFiles(func, { verbose = false } = {}) {
-    if (verbose) {
-      log(`${NETLIFYDEVLOG} ${chalk.magenta('Reloading')} function ${chalk.yellow(func.name)}...`)
+  async buildFunctionAndWatchFiles(func, firstLoad = false) {
+    if (!firstLoad) {
+      log(`${NETLIFYDEVLOG} ${chalk.magenta('Reloading')} function ${chalk.yellow(func.displayName)}...`)
     }
 
-    const { error_, includedFiles, srcFilesDiff } = await func.build({ cache: this.buildCache })
+    const { error: buildError, includedFiles, srcFilesDiff } = await func.build({ cache: this.buildCache })
 
-    if (error_) {
+    if (buildError) {
       log(
-        `${NETLIFYDEVERR} ${chalk.red('Failed')} reloading function ${chalk.yellow(func.name)} with error:\n${
-          error_.message
+        `${NETLIFYDEVERR} ${chalk.red('Failed to load')} function ${chalk.yellow(func.displayName)}: ${
+          buildError.message
         }`,
       )
-    } else if (verbose) {
-      log(`${NETLIFYDEVLOG} ${chalk.green('Reloaded')} function ${chalk.yellow(func.name)}`)
+    } else {
+      const verb = firstLoad ? 'Loaded' : 'Reloaded'
+
+      log(`${NETLIFYDEVLOG} ${chalk.green(verb)} function ${chalk.yellow(func.displayName)}`)
     }
 
     // If the build hasn't resulted in any files being added or removed, there
@@ -116,7 +110,7 @@ export class FunctionsRegistry {
 
       const newWatcher = await watchDebounced(filesToWatch, {
         onChange: () => {
-          this.buildFunctionAndWatchFiles(func, { verbose: true })
+          this.buildFunctionAndWatchFiles(func, false)
         },
       })
 
@@ -163,14 +157,8 @@ export class FunctionsRegistry {
     }
 
     this.functions.set(name, func)
-    this.buildFunctionAndWatchFiles(func)
 
-    log(
-      `${NETLIFYDEVLOG} ${chalk.green('Loaded')} function ${getTerminalLink(
-        chalk.yellow(func.displayName || name),
-        func.url,
-      )}.`,
-    )
+    this.buildFunctionAndWatchFiles(func, true)
   }
 
   // This function is here so we can mock it in tests
