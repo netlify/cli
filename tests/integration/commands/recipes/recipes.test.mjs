@@ -94,7 +94,7 @@ describe.concurrent('commands/recipes', () => {
 
       await childProcess
 
-      const error = await readFile(`${builder.directory}/.vscode/settings.json`).catch((error) => error)
+      const error = await readFile(`${builder.directory}/.vscode/settings.json`).catch((error_) => error_)
       t.expect(error.code).toEqual('ENOENT')
     })
   })
