@@ -99,7 +99,10 @@ const getDeployFolder = async ({ config, options, site, siteData, workingDir }) 
   return deployFolder
 }
 
-const validateDeployFolder = async ({ deployFolder }) => {
+/**
+ * @param {string} deployFolder
+ */
+const validateDeployFolder = async (deployFolder) => {
   /** @type {import('fs').Stats} */
   let stats
   try {
@@ -130,7 +133,7 @@ const validateDeployFolder = async ({ deployFolder }) => {
  * @param {object} config.site
  * @param {object} config.siteData
  * @param {string} config.workingDir // The process working directory
- * @returns {string}
+ * @returns {string|undefined}
  */
 const getFunctionsFolder = ({ config, options, site, siteData, workingDir }) => {
   let functionsFolder
@@ -146,8 +149,12 @@ const getFunctionsFolder = ({ config, options, site, siteData, workingDir }) => 
   return functionsFolder
 }
 
-const validateFunctionsFolder = async ({ functionsFolder }) => {
-  /** @type {import('fs').Stats} */
+/**
+ *
+ * @param {string|undefined} functionsFolder
+ */
+const validateFunctionsFolder = async (functionsFolder) => {
+  /** @type {import('fs').Stats|undefined} */
   let stats
   if (functionsFolder) {
     // we used to hard error if functions folder is specified but doesn't exist
@@ -175,8 +182,8 @@ const validateFunctionsFolder = async ({ functionsFolder }) => {
 }
 
 const validateFolders = async ({ deployFolder, functionsFolder }) => {
-  const deployFolderStat = await validateDeployFolder({ deployFolder })
-  const functionsFolderStat = await validateFunctionsFolder({ functionsFolder })
+  const deployFolderStat = await validateDeployFolder(deployFolder)
+  const functionsFolderStat = await validateFunctionsFolder(functionsFolder)
   return { deployFolderStat, functionsFolderStat }
 }
 
