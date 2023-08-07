@@ -11,7 +11,7 @@ if (isMainThread) {
 
 sourceMapSupport.install()
 
-lambdaLocal.getLogger().level = 'warn'
+lambdaLocal.getLogger().level = 'alert'
 
 const { clientContext, entryFilePath, event, timeoutMs } = workerData
 
