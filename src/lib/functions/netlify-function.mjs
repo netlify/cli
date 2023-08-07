@@ -1,8 +1,13 @@
 // @ts-check
+import { version as nodeVersion } from 'process'
+
 import CronParser from 'cron-parser'
+import semver from 'semver'
 
 import { error as errorExit } from '../../utils/command-helpers.mjs'
 import { BACKGROUND } from '../../utils/functions/get-functions.mjs'
+
+const V2_MIN_NODE_VERSION = '18.0.0'
 
 // Returns a new set with all elements of `setA` that don't exist in `setB`.
 const difference = (setA, setB) => new Set([...setA].filter((item) => !setB.has(item)))
@@ -27,12 +32,13 @@ export default class NetlifyFunction {
     timeoutBackground,
     timeoutSynchronous,
   }) {
+    this.buildError = null
     this.config = config
     this.directory = directory
     this.errorExit = errorExit
     this.mainFile = mainFile
     this.name = name
-    this.displayName = displayName
+    this.displayName = displayName ?? name
     this.projectRoot = projectRoot
     this.runtime = runtime
     this.timeoutBackground = timeoutBackground
@@ -61,6 +67,10 @@ export default class NetlifyFunction {
     await this.buildQueue
 
     return Boolean(this.schedule)
+  }
+
+  isSupported() {
+    return !(this.buildData?.runtimeAPIVersion === 2 && semver.lt(nodeVersion, V2_MIN_NODE_VERSION))
   }
 
   async getNextRun() {
@@ -93,11 +103,22 @@ export default class NetlifyFunction {
       const srcFilesDiff = this.getSrcFilesDiff(srcFilesSet)
 
       this.buildData = buildData
+      this.buildError = null
       this.srcFiles = srcFilesSet
       this.schedule = schedule || this.schedule
 
+      if (!this.isSupported()) {
+        throw new Error(
+          `Function requires Node.js version ${V2_MIN_NODE_VERSION} or above, but ${nodeVersion.slice(
+            1,
+          )} is installed. Refer to https://ntl.fyi/functions-node18 for information on how to update.`,
+        )
+      }
+
       return { includedFiles, srcFilesDiff }
     } catch (error) {
+      this.buildError = error
+
       return { error }
     }
   }
@@ -117,6 +138,10 @@ export default class NetlifyFunction {
   // Invokes the function and returns its response object.
   async invoke(event, context) {
     await this.buildQueue
+
+    if (this.buildError) {
+      return { result: null, error: { errorMessage: this.buildError.message } }
+    }
 
     const timeout = this.isBackground ? this.timeoutBackground : this.timeoutSynchronous
 
