@@ -1,0 +1,7 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`command/envelope > env:clone should return success message (envelope to envelope) 1`] = `"Successfully cloned environment variables from site-name-a to site-name-b"`;
+
+exports[`command/envelope > env:clone should return success message (envelope to mongo) 1`] = `"Successfully cloned environment variables from site-name-a to site-name-b"`;
+
+exports[`command/envelope > env:clone should return success message (mongo to envelope) 1`] = `"Successfully cloned environment variables from site-name-a to site-name-b"`;
