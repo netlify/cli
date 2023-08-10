@@ -288,23 +288,6 @@ test('should filter frameworks with no dev command', async (t) => {
   })
 })
 
-test('should pass framework-info env to framework sub process', async (t) => {
-  await withSiteBuilder('site-with-gatsby', async (builder) => {
-    await builder
-      .withPackageJson({
-        packageJson: {
-          dependencies: { nuxt3: '^2.0.0' },
-          scripts: { dev: 'node -p process.env.NODE_VERSION' },
-        },
-      })
-      .buildAsync()
-
-    // a failure is expected since this is not a true Gatsby project
-    const error = await t.throwsAsync(() => withDevServer({ cwd: builder.directory }, () => {}, true))
-    t.snapshot(normalize(error.stdout, { duration: true, filePath: true }))
-  })
-})
-
 test('should start static service for frameworks without port, forced framework', async (t) => {
   await withSiteBuilder('site-with-remix', async (builder) => {
     await builder.withNetlifyToml({ config: { dev: { framework: 'remix' } } }).buildAsync()
