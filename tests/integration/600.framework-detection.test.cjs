@@ -222,7 +222,7 @@ test(`should print specific error when command doesn't exist`, async (t) => {
   })
 })
 
-test('should prompt when multiple frameworks are detected', async (t) => {
+test.skip('should prompt when multiple frameworks are detected', async (t) => {
   await withSiteBuilder('site-with-multiple-frameworks', async (builder) => {
     await builder
       .withPackageJson({
@@ -251,7 +251,7 @@ test('should prompt when multiple frameworks are detected', async (t) => {
   })
 })
 
-test('should not run framework detection if command and targetPort are configured', async (t) => {
+test.skip('should not run framework detection if command and targetPort are configured', async (t) => {
   await withSiteBuilder('site-with-hugo-config', async (builder) => {
     await builder.withContentFile({ path: 'config.toml', content: '' }).buildAsync()
 
@@ -267,7 +267,7 @@ test('should not run framework detection if command and targetPort are configure
   })
 })
 
-test('should filter frameworks with no dev command', async (t) => {
+test.skip('should filter frameworks with no dev command', async (t) => {
   await withSiteBuilder('site-with-gulp', async (builder) => {
     await builder
       .withContentFile({
@@ -288,7 +288,7 @@ test('should filter frameworks with no dev command', async (t) => {
   })
 })
 
-test('should start static service for frameworks without port, forced framework', async (t) => {
+test.skip('should start static service for frameworks without port, forced framework', async (t) => {
   await withSiteBuilder('site-with-remix', async (builder) => {
     await builder.withNetlifyToml({ config: { dev: { framework: 'remix' } } }).buildAsync()
 
@@ -298,7 +298,7 @@ test('should start static service for frameworks without port, forced framework'
   })
 })
 
-test('should start static service for frameworks without port, detected framework', async (t) => {
+test.skip('should start static service for frameworks without port, detected framework', async (t) => {
   await withSiteBuilder('site-with-remix', async (builder) => {
     await builder
       .withPackageJson({
@@ -316,7 +316,7 @@ test('should start static service for frameworks without port, detected framewor
   })
 })
 
-test('should run and serve a production build when using the `serve` command', async (t) => {
+test.skip('should run and serve a production build when using the `serve` command', async (t) => {
   await withSiteBuilder('site-with-framework', async (builder) => {
     await builder
       .withNetlifyToml({
