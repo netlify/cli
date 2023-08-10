@@ -421,12 +421,15 @@ const handleBuild = async ({ cachedConfig, options }) => {
 
 /**
  *
- * @param {object} options Bundling options
+ * @param {*} options Bundling options
  * @param {import('..//base-command.mjs').default} command
  * @returns
  */
 const bundleEdgeFunctions = async (options, command) => {
-  const statusCb = options.silent ? () => {} : deployProgressCb()
+  // eslint-disable-next-line n/prefer-global/process, unicorn/prefer-set-has
+  const argv = process.argv.slice(2)
+  const statusCb =
+    options.silent || argv.includes('--json') || argv.includes('--silent') ? () => {} : deployProgressCb()
 
   statusCb({
     type: 'edge-functions-bundling',

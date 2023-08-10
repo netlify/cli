@@ -507,7 +507,7 @@ export default class BaseCommand extends Command {
     const flags = actionCommand.opts()
     // here we actually want to use the process.cwd as we are setting the workingDir
     // eslint-disable-next-line workspace/no-process-cwd
-    this.workingDir = flags.cwd || process.cwd()
+    this.workingDir = flags.cwd ? resolve(flags.cwd) : process.cwd()
 
     // ==================================================
     // Create a Project and run the Heuristics to detect
