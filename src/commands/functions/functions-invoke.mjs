@@ -148,7 +148,7 @@ const functionsInvoke = async (nameArgument, options, command) => {
 
   const functionsDir = options.functions || (config.dev && config.dev.functions) || config.functionsDirectory
   if (typeof functionsDir === 'undefined') {
-    error(`functions directory is undefined, did you forget to set it in ${relConfigFilePath}?`)
+    error(`Functions directory is undefined, did you forget to set it in ${relConfigFilePath}?`)
   }
 
   if (!options.port)

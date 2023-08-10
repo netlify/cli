@@ -15,7 +15,7 @@ const netlifyBuildPromise = import('@netlify/build')
  * Copies `netlify.toml`, if one is defined, into the `.netlify` internal
  * directory and returns the path to its new location.
  * @param {string} configPath
- * @param {string} destinationFolder The folder where it should be copied to either the root of the repo or a package inside a monorepo
+ * @param {string} destinationFolder The folder where it should be copied to. Either the root of the repo or a package inside a monorepo
  */
 const copyConfig = async (configPath, destinationFolder) => {
   const newConfigPath = path.resolve(destinationFolder, getPathInProject(['netlify.toml']))
