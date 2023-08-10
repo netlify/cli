@@ -333,7 +333,7 @@ test('should start static service for frameworks without port, detected framewor
   })
 })
 
-test.only('should run and serve a production build when using the `serve` command', async (t) => {
+test('should run and serve a production build when using the `serve` command', async (t) => {
   await withSiteBuilder('site-with-framework', async (builder) => {
     await builder
       .withNetlifyToml({
