@@ -13,7 +13,11 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const context = {}
 
 beforeAll(async () => {
-  const server = await startDevServer({ cwd: path.join(__dirname, '../__fixtures__/eleventy-site') })
+  const server = await startDevServer({
+    cwd: path.join(__dirname, '../__fixtures__/eleventy-site'),
+    // the tests are made for static serving it but our detection is to good and detects 11ty
+    args: ['--framework', '#static'],
+  })
 
   context.server = server
 })
