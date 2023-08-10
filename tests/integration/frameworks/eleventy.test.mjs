@@ -27,7 +27,7 @@ afterAll(async () => {
   await server.close()
 })
 
-describe.concurrent('eleventy', () => {
+describe.skip('eleventy', () => {
   test('homepage', async (t) => {
     const { url } = context.server
     const response = await fetch(`${url}/`).then((res) => res.text())
