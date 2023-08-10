@@ -139,7 +139,7 @@ export default class BaseCommand extends Command {
    * In a monorepo context this must not be the process working directory and can be an absolute path to the
    * Package/Site that should be worked in.
    */
-  // here we actually want to disable the lint rule as it's value is set
+  // here we actually want to disable the lint rule as its value is set
   // eslint-disable-next-line workspace/no-process-cwd
   workingDir = process.cwd()
 
