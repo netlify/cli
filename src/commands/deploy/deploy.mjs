@@ -316,6 +316,7 @@ const deployProgressCb = function () {
 const runDeploy = async ({
   alias,
   api,
+  command,
   configPath,
   deployFolder,
   deployTimeout,
@@ -362,7 +363,7 @@ const runDeploy = async ({
       // pass an existing deployId to update
       deployId,
       filter: getDeployFilesFilter({ site, deployFolder }),
-      rootDir: site.root,
+      workingDir: command.workingDir,
       manifestPath,
       skipFunctionsCache,
     })
@@ -434,6 +435,8 @@ const bundleEdgeFunctions = async (options) => {
 
   const { severityCode, success } = await runCoreSteps(['edge_functions_bundling'], {
     ...options,
+    // TODOL: add package path here
+    packagePath: 'todo',
     buffer: true,
     featureFlags: edgeFunctionsFeatureFlags,
   })
@@ -590,7 +593,6 @@ const deploy = async (options, command) => {
   const functionsFolder = getFunctionsFolder({ workingDir, options, config, site, siteData })
   const { configPath } = site
   const edgeFunctionsConfig = command.netlify.config.edge_functions
-  console.log({ functionsFolder, edgeFunctionsConfig })
 
   // build flag wasn't used and edge functions exist
   if (!options.build && edgeFunctionsConfig && edgeFunctionsConfig.length !== 0) {
@@ -636,9 +638,12 @@ const deploy = async (options, command) => {
     context: command.netlify.cachedConfig.context,
     branch: command.netlify.cachedConfig.branch,
   })
+  // console.log('skipping deploy')
+  // exit(1)
   const results = await runDeploy({
     alias,
     api,
+    command,
     configPath,
     deployFolder,
     deployTimeout: options.timeout * SEC_TO_MILLISEC || DEFAULT_DEPLOY_TIMEOUT,

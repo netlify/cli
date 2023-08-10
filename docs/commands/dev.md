@@ -18,14 +18,12 @@ netlify dev
 **Flags**
 
 - `command` (*string*) - command to run
-- `config` (*string*) - Custom path to a netlify configuration file
 - `context` (*string*) - Specify a deploy context or branch for environment variables (contexts: "production", "deploy-preview", "branch-deploy", "dev")
 - `country` (*string*) - Two-letter country code (https://ntl.fyi/country-codes) to use as mock geolocation (enables --geo=mock automatically)
 - `dir` (*string*) - dir with static files
 - `edge-inspect` (*string*) - enable the V8 Inspector Protocol for Edge Functions, with an optional address in the host:port format
 - `edge-inspect-brk` (*string*) - enable the V8 Inspector Protocol for Edge Functions and pause execution on the first line of code, with an optional address in the host:port format
-- `filter` (*string*) - Optional name of an application to run the command in.
-This option is needed for working in Monorepos
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `framework` (*string*) - framework to use. Defaults to #auto which automatically detects a framework
 - `functions` (*string*) - specify a functions folder to serve
 - `functions-port` (*string*) - port of functions server
@@ -74,10 +72,8 @@ netlify dev:exec
 
 **Flags**
 
-- `config` (*string*) - Custom path to a netlify configuration file
 - `context` (*string*) - Specify a deploy context or branch for environment variables (contexts: "production", "deploy-preview", "branch-deploy", "dev")
-- `filter` (*string*) - Optional name of an application to run the command in.
-This option is needed for working in Monorepos
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
 
 **Examples**

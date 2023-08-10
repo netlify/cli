@@ -69,6 +69,7 @@ export const runNetlifyBuild = async ({ command, env = {}, options, settings, ti
     telemetry: false,
     buffer: false,
     offline: options.offline,
+    packagePath: command.workspacePackage,
     cwd: cachedConfig.buildDir,
     quiet: options.quiet,
     saveConfig: options.saveConfig,
@@ -78,7 +79,6 @@ export const runNetlifyBuild = async ({ command, env = {}, options, settings, ti
     let cwd = command.workingDir
 
     if (command.project.workspace?.packages.length) {
-      console.log('packages', settings.baseDirectory)
       cwd = join(command.project.jsWorkspaceRoot, settings.baseDirectory || '')
     }
 

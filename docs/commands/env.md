@@ -16,9 +16,7 @@ netlify env
 
 **Flags**
 
-- `config` (*string*) - Custom path to a netlify configuration file
-- `filter` (*string*) - Optional name of an application to run the command in.
-This option is needed for working in Monorepos
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
 
 | Subcommand | description  |
@@ -55,9 +53,7 @@ netlify env:clone
 
 **Flags**
 
-- `config` (*string*) - Custom path to a netlify configuration file
-- `filter` (*string*) - Optional name of an application to run the command in.
-This option is needed for working in Monorepos
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `from` (*string*) - Site ID (From)
 - `to` (*string*) - Site ID (To)
 - `debug` (*boolean*) - Print debugging information
@@ -86,10 +82,8 @@ netlify env:get
 
 **Flags**
 
-- `config` (*string*) - Custom path to a netlify configuration file
 - `context` (*string*) - Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev")
-- `filter` (*string*) - Optional name of an application to run the command in.
-This option is needed for working in Monorepos
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `scope` (*builds | functions | post-processing | runtime | any*) - Specify a scope
 - `debug` (*boolean*) - Print debugging information
 
@@ -119,9 +113,7 @@ netlify env:import
 
 **Flags**
 
-- `config` (*string*) - Custom path to a netlify configuration file
-- `filter` (*string*) - Optional name of an application to run the command in.
-This option is needed for working in Monorepos
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `replace-existing` (*boolean*) - Replace all existing variables instead of merging them with the current ones
 - `debug` (*boolean*) - Print debugging information
 
@@ -138,10 +130,8 @@ netlify env:list
 
 **Flags**
 
-- `config` (*string*) - Custom path to a netlify configuration file
 - `context` (*string*) - Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev")
-- `filter` (*string*) - Optional name of an application to run the command in.
-This option is needed for working in Monorepos
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `json` (*boolean*) - Output environment variables as JSON
 - `plain` (*boolean*) - Output environment variables as plaintext
 - `scope` (*builds | functions | post-processing | runtime | any*) - Specify a scope
@@ -175,10 +165,8 @@ netlify env:set
 
 **Flags**
 
-- `config` (*string*) - Custom path to a netlify configuration file
 - `context` (*string*) - Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev") (default: all contexts)
-- `filter` (*string*) - Optional name of an application to run the command in.
-This option is needed for working in Monorepos
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `scope` (*builds | functions | post-processing | runtime*) - Specify a scope (default: all scopes)
 - `secret` (*boolean*) - Indicate whether the environment variable value can be read again.
 - `debug` (*boolean*) - Print debugging information
@@ -212,10 +200,8 @@ netlify env:unset
 
 **Flags**
 
-- `config` (*string*) - Custom path to a netlify configuration file
 - `context` (*string*) - Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev") (default: all contexts)
-- `filter` (*string*) - Optional name of an application to run the command in.
-This option is needed for working in Monorepos
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
 
 **Examples**

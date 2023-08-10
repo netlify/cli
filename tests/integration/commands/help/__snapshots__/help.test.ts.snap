@@ -43,10 +43,8 @@ USAGE
   $ netlify completion [options]
 
 OPTIONS
-  -h, --help                                   display help for command
-  --debug                                      Print debugging information
-  --http-proxy [address]                       Proxy server address to route requests through.
-  --http-proxy-certificate-filename [file]     Certificate file to use when connecting using a proxy server
+  -h, --help             display help for command
+  --debug                Print debugging information
 
 DESCRIPTION
   Run this command to see instructions for your shell.
@@ -55,5 +53,5 @@ EXAMPLES
   $ netlify completion:install
 
 COMMANDS
-  $ completion:install                         Generates completion script for your preferred shell"
+  $ completion:install   Generates completion script for your preferred shell"
 `;

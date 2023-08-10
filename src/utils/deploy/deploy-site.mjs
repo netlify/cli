@@ -39,7 +39,6 @@ export const deploySite = async (
     maxRetry = DEFAULT_MAX_RETRY,
     // API calls this the 'title'
     message: title,
-    rootDir,
     siteEnv,
     skipFunctionsCache,
     statusCb = () => {
@@ -47,6 +46,7 @@ export const deploySite = async (
     },
     syncFileLimit = DEFAULT_SYNC_LIMIT,
     tmpDir = temporaryDirectory(),
+    workingDir,
   } = {},
 ) => {
   statusCb({
@@ -55,7 +55,7 @@ export const deploySite = async (
     phase: 'start',
   })
 
-  const edgeFunctionsDistPath = await getDistPathIfExists({ rootDir })
+  const edgeFunctionsDistPath = await getDistPathIfExists(workingDir)
   const [{ files, filesShaMap }, { fnConfig, fnShaMap, functionSchedules, functions, functionsWithNativeModules }] =
     await Promise.all([
       hashFiles({
@@ -64,7 +64,7 @@ export const deploySite = async (
         directories: [configPath, dir, edgeFunctionsDistPath].filter(Boolean),
         filter,
         hashAlgorithm,
-        normalizer: deployFileNormalizer.bind(null, rootDir),
+        normalizer: deployFileNormalizer.bind(null, workingDir),
         statusCb,
       }),
       hashFns(fnDir, {
@@ -74,7 +74,7 @@ export const deploySite = async (
         hashAlgorithm,
         statusCb,
         assetType,
-        rootDir,
+        workingDir,
         manifestPath,
         skipFunctionsCache,
         siteEnv,

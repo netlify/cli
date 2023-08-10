@@ -86,11 +86,9 @@ netlify deploy
 - `auth` (*string*) - Netlify auth token to deploy with
 - `branch` (*string*) - Serves the same functionality as --alias. Deprecated and will be removed in future versions
 - `build` (*boolean*) - Run build command before deploying
-- `config` (*string*) - Custom path to a netlify configuration file
 - `context` (*string*) - Context to use when resolving build configuration
 - `dir` (*string*) - Specify a folder to deploy
-- `filter` (*string*) - Optional name of an application to run the command in.
-This option is needed for working in Monorepos
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `functions` (*string*) - Specify a functions folder to deploy
 - `json` (*boolean*) - Output deployment data as JSON
 - `message` (*string*) - A short message to include in the deploy log

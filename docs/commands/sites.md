@@ -17,9 +17,7 @@ netlify sites
 
 **Flags**
 
-- `config` (*string*) - Custom path to a netlify configuration file
-- `filter` (*string*) - Optional name of an application to run the command in.
-This option is needed for working in Monorepos
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
 
 | Subcommand | description  |
@@ -52,10 +50,8 @@ netlify sites:create
 **Flags**
 
 - `account-slug` (*string*) - account slug to create the site under
-- `config` (*string*) - Custom path to a netlify configuration file
 - `disable-linking` (*boolean*) - create the site without linking it to current directory
-- `filter` (*string*) - Optional name of an application to run the command in.
-This option is needed for working in Monorepos
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `manual` (*boolean*) - force manual CI setup.  Used --with-ci flag
 - `name` (*string*) - name of site
 - `with-ci` (*boolean*) - initialize CI hooks during site creation
@@ -80,9 +76,7 @@ netlify sites:create-template
 **Flags**
 
 - `account-slug` (*string*) - account slug to create the site under
-- `config` (*string*) - Custom path to a netlify configuration file
-- `filter` (*string*) - Optional name of an application to run the command in.
-This option is needed for working in Monorepos
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `name` (*string*) - name of site
 - `url` (*string*) - template url
 - `with-ci` (*boolean*) - initialize CI hooks during site creation
@@ -114,9 +108,7 @@ netlify sites:delete
 
 **Flags**
 
-- `config` (*string*) - Custom path to a netlify configuration file
-- `filter` (*string*) - Optional name of an application to run the command in.
-This option is needed for working in Monorepos
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `force` (*boolean*) - delete without prompting (useful for CI)
 - `debug` (*boolean*) - Print debugging information
 
@@ -139,9 +131,7 @@ netlify sites:list
 
 **Flags**
 
-- `config` (*string*) - Custom path to a netlify configuration file
-- `filter` (*string*) - Optional name of an application to run the command in.
-This option is needed for working in Monorepos
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `json` (*boolean*) - Output site data as JSON
 - `debug` (*boolean*) - Print debugging information
 

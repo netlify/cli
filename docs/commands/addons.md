@@ -21,9 +21,7 @@ netlify addons
 
 **Flags**
 
-- `config` (*string*) - Custom path to a netlify configuration file
-- `filter` (*string*) - Optional name of an application to run the command in.
-This option is needed for working in Monorepos
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
 
 | Subcommand | description  |
@@ -62,9 +60,7 @@ netlify addons:auth
 
 **Flags**
 
-- `config` (*string*) - Custom path to a netlify configuration file
-- `filter` (*string*) - Optional name of an application to run the command in.
-This option is needed for working in Monorepos
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
 
 ---
@@ -84,9 +80,7 @@ netlify addons:config
 
 **Flags**
 
-- `config` (*string*) - Custom path to a netlify configuration file
-- `filter` (*string*) - Optional name of an application to run the command in.
-This option is needed for working in Monorepos
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
 
 ---
@@ -107,9 +101,7 @@ netlify addons:create
 
 **Flags**
 
-- `config` (*string*) - Custom path to a netlify configuration file
-- `filter` (*string*) - Optional name of an application to run the command in.
-This option is needed for working in Monorepos
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
 
 ---
@@ -130,9 +122,7 @@ netlify addons:delete
 
 **Flags**
 
-- `config` (*string*) - Custom path to a netlify configuration file
-- `filter` (*string*) - Optional name of an application to run the command in.
-This option is needed for working in Monorepos
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `force` (*boolean*) - delete without prompting (useful for CI)
 - `debug` (*boolean*) - Print debugging information
 
@@ -149,9 +139,7 @@ netlify addons:list
 
 **Flags**
 
-- `config` (*string*) - Custom path to a netlify configuration file
-- `filter` (*string*) - Optional name of an application to run the command in.
-This option is needed for working in Monorepos
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `json` (*boolean*) - Output add-on data as JSON
 - `debug` (*boolean*) - Print debugging information
 

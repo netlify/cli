@@ -17,9 +17,7 @@ netlify functions
 
 **Flags**
 
-- `config` (*string*) - Custom path to a netlify configuration file
-- `filter` (*string*) - Optional name of an application to run the command in.
-This option is needed for working in Monorepos
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
 
 | Subcommand | description  |
@@ -51,9 +49,7 @@ netlify functions:build
 
 **Flags**
 
-- `config` (*string*) - Custom path to a netlify configuration file
-- `filter` (*string*) - Optional name of an application to run the command in.
-This option is needed for working in Monorepos
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `functions` (*string*) - Specify a functions directory to build to
 - `src` (*string*) - Specify the source directory for the functions
 - `debug` (*boolean*) - Print debugging information
@@ -75,9 +71,7 @@ netlify functions:create
 
 **Flags**
 
-- `config` (*string*) - Custom path to a netlify configuration file
-- `filter` (*string*) - Optional name of an application to run the command in.
-This option is needed for working in Monorepos
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `language` (*string*) - function language
 - `name` (*string*) - function name
 - `url` (*string*) - pull template from URL
@@ -108,9 +102,7 @@ netlify functions:invoke
 
 **Flags**
 
-- `config` (*string*) - Custom path to a netlify configuration file
-- `filter` (*string*) - Optional name of an application to run the command in.
-This option is needed for working in Monorepos
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `functions` (*string*) - Specify a functions folder to parse, overriding netlify.toml
 - `identity` (*boolean*) - simulate Netlify Identity authentication JWT. pass --identity to affirm unauthenticated request
 - `name` (*string*) - function name to invoke
@@ -149,9 +141,7 @@ netlify functions:list
 
 **Flags**
 
-- `config` (*string*) - Custom path to a netlify configuration file
-- `filter` (*string*) - Optional name of an application to run the command in.
-This option is needed for working in Monorepos
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `functions` (*string*) - Specify a functions directory to list
 - `json` (*boolean*) - Output function data as JSON
 - `debug` (*boolean*) - Print debugging information
@@ -169,9 +159,7 @@ netlify functions:serve
 
 **Flags**
 
-- `config` (*string*) - Custom path to a netlify configuration file
-- `filter` (*string*) - Optional name of an application to run the command in.
-This option is needed for working in Monorepos
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `functions` (*string*) - Specify a functions directory to serve
 - `offline` (*boolean*) - disables any features that require network access
 - `port` (*string*) - Specify a port for the functions server

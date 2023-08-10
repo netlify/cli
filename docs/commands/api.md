@@ -22,10 +22,7 @@ netlify api
 
 **Flags**
 
-- `config` (*string*) - Custom path to a netlify configuration file
 - `data` (*string*) - Data to use
-- `filter` (*string*) - Optional name of an application to run the command in.
-This option is needed for working in Monorepos
 - `list` (*boolean*) - List out available API methods
 - `debug` (*boolean*) - Print debugging information
 

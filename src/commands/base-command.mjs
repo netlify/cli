@@ -58,7 +58,7 @@ const HELP_SEPARATOR_WIDTH = 5
  * Those commands work with the system or are not writing any config files that need to be
  * workspace aware.
  */
-const COMMANDS_WITHOUT_WORKSPACE_OPTIONS = new Set(['recipes', 'completion', 'status', 'switch', 'login', 'lm'])
+const COMMANDS_WITHOUT_WORKSPACE_OPTIONS = new Set(['api', 'recipes', 'completion', 'status', 'switch', 'login', 'lm'])
 
 /**
  * Formats a help list correctly with the correct indent
@@ -199,12 +199,7 @@ export default class BaseCommand extends Command {
 
     // only add the `--config` or `--filter` option to commands that are workspace aware
     if (!COMMANDS_WITHOUT_WORKSPACE_OPTIONS.has(name)) {
-      base
-        .option('--config <configFilePath>', 'Custom path to a netlify configuration file')
-        .option(
-          '--filter <app>',
-          'Optional name of an application to run the command in.\nThis option is needed for working in Monorepos',
-        )
+      base.option('--filter <app>', 'For monorepos, specify the name of the application to run the command in')
     }
 
     return base.hook('preAction', async (_parentCommand, actionCommand) => {
@@ -581,6 +576,7 @@ export default class BaseCommand extends Command {
     const cachedConfig = await actionCommand.getConfig({
       cwd: this.jsWorkspaceRoot || this.workingDir,
       repositoryRoot: rootDir,
+      packagePath: this.workspacePackage,
       // The config flag needs to be resolved from the actual process working directory
       configFilePath: packageConfig,
       state,
@@ -674,6 +670,7 @@ export default class BaseCommand extends Command {
    * @param {*} config.state
    * @param {boolean=} config.offline
    * @param {string=} config.configFilePath An optional path to the netlify configuration file e.g. netlify.toml
+   * @param {string=} config.packagePath
    * @param {string=} config.repositoryRoot
    * @param {string=} config.host
    * @param {string=} config.pathPrefix
@@ -687,6 +684,7 @@ export default class BaseCommand extends Command {
     try {
       return await resolveConfig({
         config: config.configFilePath,
+        packagePath: config.packagePath,
         repositoryRoot: config.repositoryRoot,
         cwd: config.cwd,
         context: flags.context || process.env.CONTEXT || this.getDefaultContext(),

@@ -48,9 +48,7 @@ netlify lm:info
 
 **Flags**
 
-- `config` (*string*) - Custom path to a netlify configuration file
-- `filter` (*string*) - Optional name of an application to run the command in.
-This option is needed for working in Monorepos
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
 
 ---
@@ -68,9 +66,7 @@ netlify lm:install
 
 **Flags**
 
-- `config` (*string*) - Custom path to a netlify configuration file
-- `filter` (*string*) - Optional name of an application to run the command in.
-This option is needed for working in Monorepos
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `force` (*boolean*) - Force the credentials helper installation
 - `debug` (*boolean*) - Print debugging information
 
@@ -87,9 +83,7 @@ netlify lm:setup
 
 **Flags**
 
-- `config` (*string*) - Custom path to a netlify configuration file
-- `filter` (*string*) - Optional name of an application to run the command in.
-This option is needed for working in Monorepos
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `force-install` (*boolean*) - Force the credentials helper installation
 - `skip-install` (*boolean*) - Skip the credentials helper installation check
 - `debug` (*boolean*) - Print debugging information

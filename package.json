@@ -5,7 +5,7 @@
   "author": "Netlify Inc.",
   "type": "module",
   "engines": {
-    "node": "^14.18.0 || >=16.0.0"
+    "node": ">=16.16.0"
   },
   "files": [
     "/bin",
@@ -78,9 +78,9 @@
   "dependencies": {
     "@bugsnag/js": "7.20.2",
     "@fastify/static": "6.10.2",
-    "@netlify/build": "29.17.3",
+    "@netlify/build": "29.19.0",
     "@netlify/build-info": "7.7.3",
-    "@netlify/config": "20.6.4",
+    "@netlify/config": "20.8.0",
     "@netlify/edge-bundler": "8.17.1",
     "@netlify/local-functions-proxy": "1.1.1",
     "@netlify/serverless-functions-api": "1.5.2",

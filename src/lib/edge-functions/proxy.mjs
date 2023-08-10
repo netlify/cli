@@ -1,6 +1,6 @@
 // @ts-check
 import { Buffer } from 'buffer'
-import { relative } from 'path'
+import { join, relative } from 'path'
 import { env } from 'process'
 
 // eslint-disable-next-line import/no-namespace
@@ -217,7 +217,7 @@ const prepareServer = async ({
       ...getDownloadUpdateFunctions(),
       bootstrapURL: getBootstrapURL(),
       debug: env.NETLIFY_DENO_DEBUG === 'true',
-      distImportMapPath,
+      distImportMapPath: join(projectDir, distImportMapPath),
       formatExportTypeError: (name) =>
         `${NETLIFYDEVERR} ${chalk.red('Failed')} to load Edge Function ${chalk.yellow(
           name,
