@@ -511,7 +511,7 @@ export default class BaseCommand extends Command {
 
     // ==================================================
     // Create a Project and run the Heuristics to detect
-    // if we are run inside a monorepo or not.
+    // if we are running inside a monorepo or not.
     // ==================================================
 
     // retrieve the repository root
