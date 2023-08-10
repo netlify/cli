@@ -13,7 +13,6 @@ const commands = program.commands.sort((cmdA, cmdB) => cmdA.name().localeCompare
  * @param {import('../../src/commands/base-command.mjs').default} command
  */
 const parseCommand = function (command) {
-  // eslint-disable-next-line no-underscore-dangle
   const args = command._args.map(({ _name: name, description }) => ({
     name,
     description,
@@ -40,7 +39,7 @@ const parseCommand = function (command) {
     name: command.name(),
     description: command.description(),
     commands: commands
-      // eslint-disable-next-line no-underscore-dangle
+
       .filter((cmd) => cmd.name().startsWith(`${command.name()}:`) && !cmd._hidden)
       .map((cmd) => parseCommand(cmd)),
     examples: command.examples.length !== 0 && command.examples,
@@ -53,7 +52,7 @@ export const generateCommandData = function () {
   return (
     commands
       // filter out sub commands
-      // eslint-disable-next-line no-underscore-dangle
+
       .filter((command) => !command.name().includes(':') && !command._hidden)
       .reduce((prev, command) => ({ ...prev, [command.name()]: parseCommand(command) }), {})
   )

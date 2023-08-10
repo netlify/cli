@@ -220,7 +220,7 @@ const getFunctionsServer = (options) => {
 }
 
 export const startFunctionsServer = async (options) => {
-  const { capabilities, config, debug, loadDistFunctions, settings, site, siteUrl, timeouts } = options
+  const { capabilities, command, config, debug, loadDistFunctions, settings, site, siteUrl, timeouts } = options
   const internalFunctionsDir = await getInternalFunctionsDir({ base: site.root })
   const functionsDirectories = []
 
@@ -250,7 +250,8 @@ export const startFunctionsServer = async (options) => {
     config,
     debug,
     isConnected: Boolean(siteUrl),
-    projectRoot: site.root,
+    // functions always need to be inside the packagePath if set inside a monorepo
+    projectRoot: command.workingDir,
     settings,
     timeouts,
   })

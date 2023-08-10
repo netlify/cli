@@ -21,9 +21,6 @@
     "sync": "node ./sync.mjs",
     "clean": "rm -rf dist"
   },
-  "engines": {
-    "node": "^14.18.0 || >=16.0.0"
-  },
   "license": "MIT",
   "dependencies": {
     "@compositor/x0": "6.0.7",
