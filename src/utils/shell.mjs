@@ -91,7 +91,7 @@ export const runCommand = (command, options = {}) => {
       const [commandWithoutArgs] = command.split(' ')
       if (result.failed && isNonExistingCommandError({ command: commandWithoutArgs, error: result })) {
         log(
-          `\n\n${NETLIFYDEVERR} Failed running command: ${command}. Please verify ${chalk.magenta(
+          `${NETLIFYDEVERR} Failed running command: ${command}. Please verify ${chalk.magenta(
             `'${commandWithoutArgs}'`,
           )} exists`,
         )
@@ -100,7 +100,7 @@ export const runCommand = (command, options = {}) => {
           ? `${NETLIFYDEVERR} ${result.shortMessage}`
           : `${NETLIFYDEVWARN} "${command}" exited with code ${result.exitCode}`
 
-        log(`\n\n${errorMessage}. Shutting down Netlify Dev server`)
+        log(`${errorMessage}. Shutting down Netlify Dev server`)
       }
 
       return await cleanupBeforeExit({ exitCode: 1 })
