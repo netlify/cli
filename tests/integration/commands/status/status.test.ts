@@ -33,6 +33,8 @@ setupFixtureTests('empty-project', () => {
         offline: false,
         parseJson: true,
       })
+      // this cannot be mocked as read up from the global config
+      delete account.GitHub
 
       expect(siteData).toMatchSnapshot()
       expect(account).toMatchSnapshot()

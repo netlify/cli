@@ -113,7 +113,6 @@ await withMockApi(routes, async () => {
       expect(Number.isInteger(request.body.duration)).toBe(true)
       expect(request.body.event).toBe('cli:command')
       expect(request.body.status).toBe('success')
-
       expect(request.body.properties).toEqual({
         frameworks: ['next'],
         buildSystem: [],
