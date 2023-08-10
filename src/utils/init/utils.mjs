@@ -63,12 +63,13 @@ const normalizeSettings = (settings, config, command) => {
  */
 const getPromptInputs = ({ defaultBaseDir, defaultBuildCmd, defaultBuildDir }) => {
   const inputs = [
-    defaultBaseDir !== undefined && {
-      type: 'input',
-      name: 'baseDir',
-      message: 'Base directory `(blank for current dir):',
-      default: defaultBaseDir,
-    },
+    defaultBaseDir !== undefined &&
+      defaultBaseDir !== '' && {
+        type: 'input',
+        name: 'baseDir',
+        message: 'Base directory `(blank for current dir):',
+        default: defaultBaseDir,
+      },
     {
       type: 'input',
       name: 'buildCmd',
