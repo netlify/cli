@@ -98,7 +98,7 @@ async function selectWorkspace(project, filter) {
 
   if (!selected) {
     log()
-    log(chalk.cyan(`We've detected multiple sites inside your repository!`))
+    log(chalk.cyan(`We've detected multiple sites inside your repository`))
 
     const { result } = await inquirer.prompt({
       name: 'result',
