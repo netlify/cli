@@ -25,7 +25,7 @@ const functionsList = async (options, command) => {
 
   if (typeof functionsDir === 'undefined') {
     log('Functions directory is undefined')
-    log(`Please verify that `functions.directory` is set in your Netlify configuration file ${relConfigFilePath}`)
+    log(`Please verify that 'functions.directory' is set in your Netlify configuration file ${relConfigFilePath}`)
     log('Refer to https://docs.netlify.com/configure-builds/file-based-configuration/ for more information')
     exit(1)
   }
