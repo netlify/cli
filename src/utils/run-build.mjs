@@ -2,6 +2,7 @@
 import { promises as fs } from 'fs'
 import path, { join } from 'path'
 
+import { getBootstrapURL } from '../lib/edge-functions/bootstrap.mjs'
 import { INTERNAL_EDGE_FUNCTIONS_FOLDER } from '../lib/edge-functions/consts.mjs'
 import { getPathInProject } from '../lib/settings.mjs'
 
@@ -73,6 +74,7 @@ export const runNetlifyBuild = async ({ command, env = {}, options, settings, ti
     cwd: cachedConfig.buildDir,
     quiet: options.quiet,
     saveConfig: options.saveConfig,
+    edgeFunctionsBootstrapURL: getBootstrapURL(),
   }
 
   const devCommand = async (settingsOverrides = {}) => {
