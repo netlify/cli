@@ -422,9 +422,10 @@ const handleBuild = async ({ cachedConfig, options }) => {
 /**
  *
  * @param {object} options Bundling options
+ * @param {import('..//base-command.mjs').default} command
  * @returns
  */
-const bundleEdgeFunctions = async (options) => {
+const bundleEdgeFunctions = async (options, command) => {
   const statusCb = options.silent ? () => {} : deployProgressCb()
 
   statusCb({
@@ -435,8 +436,7 @@ const bundleEdgeFunctions = async (options) => {
 
   const { severityCode, success } = await runCoreSteps(['edge_functions_bundling'], {
     ...options,
-    // TODOL: add package path here
-    packagePath: 'todo',
+    packagePath: command.workspacePackage,
     buffer: true,
     featureFlags: edgeFunctionsFeatureFlags,
   })
@@ -596,7 +596,7 @@ const deploy = async (options, command) => {
 
   // build flag wasn't used and edge functions exist
   if (!options.build && edgeFunctionsConfig && edgeFunctionsConfig.length !== 0) {
-    await bundleEdgeFunctions(options)
+    await bundleEdgeFunctions(options, command)
   }
 
   log(
@@ -638,8 +638,6 @@ const deploy = async (options, command) => {
     context: command.netlify.cachedConfig.context,
     branch: command.netlify.cachedConfig.branch,
   })
-  // console.log('skipping deploy')
-  // exit(1)
   const results = await runDeploy({
     alias,
     api,

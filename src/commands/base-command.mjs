@@ -633,7 +633,7 @@ export default class BaseCommand extends Command {
       // api methods
       api,
       apiOpts,
-      // The Absolute Repository root (detected through @netlify/config)
+      // The absolute repository root (detected through @netlify/config)
       repositoryRoot,
       configFilePath,
       relConfigFilePath: relative(repositoryRoot, configFilePath),
