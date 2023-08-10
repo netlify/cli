@@ -103,7 +103,7 @@ async function selectWorkspace(project, filter) {
     const { result } = await inquirer.prompt({
       name: 'result',
       type: 'autocomplete',
-      message: 'Select a site you want to work with',
+      message: 'Select the site you want to work with',
       source: (/** @type {string} */ _, input = '') =>
         (project.workspace?.packages || [])
           .filter((pkg) => pkg.path.includes(input))
@@ -197,7 +197,7 @@ export default class BaseCommand extends Command {
       )
       .option('--debug', 'Print debugging information')
 
-    // only add the `--config` or `--filter` option to commands that are workspace aware
+    // only add the `--filter` option to commands that are workspace aware
     if (!COMMANDS_WITHOUT_WORKSPACE_OPTIONS.has(name)) {
       base.option('--filter <app>', 'For monorepos, specify the name of the application to run the command in')
     }
