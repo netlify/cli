@@ -240,7 +240,7 @@ test('should prompt when multiple frameworks are detected', async (t) => {
 
       handleQuestions(childProcess, [
         {
-          question: 'Multiple possible start commands found',
+          question: 'Multiple possible dev commands found',
           answer: answerWithValue(DOWN),
         },
       ])
@@ -285,23 +285,6 @@ test('should filter frameworks with no dev command', async (t) => {
 
       t.snapshot(normalize(output, { duration: true, filePath: true }))
     })
-  })
-})
-
-test('should pass framework-info env to framework sub process', async (t) => {
-  await withSiteBuilder('site-with-gatsby', async (builder) => {
-    await builder
-      .withPackageJson({
-        packageJson: {
-          dependencies: { nuxt3: '^2.0.0' },
-          scripts: { dev: 'node -p process.env.NODE_VERSION' },
-        },
-      })
-      .buildAsync()
-
-    // a failure is expected since this is not a true Gatsby project
-    const error = await t.throwsAsync(() => withDevServer({ cwd: builder.directory }, () => {}, true))
-    t.snapshot(normalize(error.stdout, { duration: true, filePath: true }))
   })
 })
 

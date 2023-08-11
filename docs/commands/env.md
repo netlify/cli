@@ -16,9 +16,8 @@ netlify env
 
 **Flags**
 
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
-- `http-proxy` (*string*) - Proxy server address to route requests through.
-- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
@@ -54,11 +53,10 @@ netlify env:clone
 
 **Flags**
 
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `from` (*string*) - Site ID (From)
-- `debug` (*boolean*) - Print debugging information
-- `http-proxy` (*string*) - Proxy server address to route requests through.
-- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 - `to` (*string*) - Site ID (To)
+- `debug` (*boolean*) - Print debugging information
 
 **Examples**
 
@@ -85,10 +83,9 @@ netlify env:get
 **Flags**
 
 - `context` (*string*) - Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev")
-- `debug` (*boolean*) - Print debugging information
-- `http-proxy` (*string*) - Proxy server address to route requests through.
-- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `scope` (*builds | functions | post-processing | runtime | any*) - Specify a scope
+- `debug` (*boolean*) - Print debugging information
 
 **Examples**
 
@@ -116,10 +113,9 @@ netlify env:import
 
 **Flags**
 
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `replace-existing` (*boolean*) - Replace all existing variables instead of merging them with the current ones
 - `debug` (*boolean*) - Print debugging information
-- `http-proxy` (*string*) - Proxy server address to route requests through.
-- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 
 ---
 ## `env:list`
@@ -135,12 +131,11 @@ netlify env:list
 **Flags**
 
 - `context` (*string*) - Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev")
-- `debug` (*boolean*) - Print debugging information
-- `http-proxy` (*string*) - Proxy server address to route requests through.
-- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `json` (*boolean*) - Output environment variables as JSON
 - `plain` (*boolean*) - Output environment variables as plaintext
 - `scope` (*builds | functions | post-processing | runtime | any*) - Specify a scope
+- `debug` (*boolean*) - Print debugging information
 
 **Examples**
 
@@ -171,11 +166,10 @@ netlify env:set
 **Flags**
 
 - `context` (*string*) - Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev") (default: all contexts)
-- `debug` (*boolean*) - Print debugging information
-- `http-proxy` (*string*) - Proxy server address to route requests through.
-- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `scope` (*builds | functions | post-processing | runtime*) - Specify a scope (default: all scopes)
 - `secret` (*boolean*) - Indicate whether the environment variable value can be read again.
+- `debug` (*boolean*) - Print debugging information
 
 **Examples**
 
@@ -207,9 +201,8 @@ netlify env:unset
 **Flags**
 
 - `context` (*string*) - Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev") (default: all contexts)
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
-- `http-proxy` (*string*) - Proxy server address to route requests through.
-- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 
 **Examples**
 

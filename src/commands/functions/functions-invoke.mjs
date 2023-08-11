@@ -2,7 +2,6 @@
 import fs from 'fs'
 import { createRequire } from 'module'
 import path from 'path'
-import process from 'process'
 
 import inquirer from 'inquirer'
 import fetch from 'node-fetch'
@@ -56,14 +55,18 @@ const formatQstring = function (querystring) {
   return ''
 }
 
-/** process payloads from flag */
-const processPayloadFromFlag = function (payloadString) {
+/**
+ * process payloads from flag
+ * @param {string} payloadString
+ * @param {string} workingDir
+ */
+const processPayloadFromFlag = function (payloadString, workingDir) {
   if (payloadString) {
     // case 1: jsonstring
     let payload = tryParseJSON(payloadString)
     if (payload) return payload
     // case 2: jsonpath
-    const payloadpath = path.join(process.cwd(), payloadString)
+    const payloadpath = path.join(workingDir, payloadString)
     const pathexists = fs.existsSync(payloadpath)
     if (pathexists) {
       try {
@@ -141,11 +144,11 @@ const getFunctionToTrigger = function (options, argumentName) {
  * @param {import('../base-command.mjs').default} command
  */
 const functionsInvoke = async (nameArgument, options, command) => {
-  const { config } = command.netlify
+  const { config, relConfigFilePath } = command.netlify
 
   const functionsDir = options.functions || (config.dev && config.dev.functions) || config.functionsDirectory
   if (typeof functionsDir === 'undefined') {
-    error('functions directory is undefined, did you forget to set it in netlify.toml?')
+    error(`Functions directory is undefined, did you forget to set it in ${relConfigFilePath}?`)
   }
 
   if (!options.port)
@@ -210,7 +213,7 @@ const functionsInvoke = async (nameArgument, options, command) => {
       // }
     }
   }
-  const payload = processPayloadFromFlag(options.payload)
+  const payload = processPayloadFromFlag(options.payload, command.workingDir)
   body = { ...body, ...payload }
 
   try {
