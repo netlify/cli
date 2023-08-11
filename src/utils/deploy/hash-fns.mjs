@@ -97,8 +97,6 @@ const hashFns = async (
     throw new Error('Missing tmpDir directory for zipping files')
   }
 
-  console.log('---> hashFns', { rootDir })
-
   const functionZips = await getFunctionZips({
     directories,
     functionsConfig,
