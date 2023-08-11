@@ -2,6 +2,7 @@
 import process from 'process'
 
 import { getBuildOptions, runBuild } from '../../lib/build.mjs'
+import { detectFrameworkSettings } from '../../utils/build-info.mjs'
 import { error, exit, getToken } from '../../utils/command-helpers.mjs'
 import { getEnvelopeEnv, normalizeContext } from '../../utils/env/index.mjs'
 
@@ -33,13 +34,21 @@ const injectEnv = async function (command, { api, buildOptions, context, siteInf
  * @param {import('../base-command.mjs').default} command
  */
 const build = async (options, command) => {
+  const { cachedConfig, siteInfo } = command.netlify
   command.setAnalyticsPayload({ dry: options.dry })
   // Retrieve Netlify Build options
   const [token] = await getToken()
+  const settings = await detectFrameworkSettings(command, 'build')
 
-  const { cachedConfig, siteInfo } = command.netlify
+  // override the build command with the detection result if no command is specified through the config
+  if (!cachedConfig.config.build.command) {
+    cachedConfig.config.build.command = settings?.buildCommand
+    cachedConfig.config.build.commandOrigin = 'heuristics'
+  }
+
   const buildOptions = await getBuildOptions({
     cachedConfig,
+    packagePath: command.workspacePackage,
     token,
     options,
   })

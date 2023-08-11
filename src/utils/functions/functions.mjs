@@ -17,11 +17,7 @@ export const SERVE_FUNCTIONS_FOLDER = 'functions-serve'
  * @returns {string}
  */
 export const getFunctionsDir = ({ config, options }, defaultValue) =>
-  options.functions ||
-  (config.dev && config.dev.functions) ||
-  config.functionsDirectory ||
-  (config.dev && config.dev.Functions) ||
-  defaultValue
+  options.functions || config.dev?.functions || config.functionsDirectory || config.dev?.Functions || defaultValue
 
 export const getFunctionsManifestPath = async ({ base }) => {
   const path = resolve(base, getPathInProject(['functions', 'manifest.json']))
@@ -37,6 +33,13 @@ export const getFunctionsDistPath = async ({ base }) => {
   return isDirectory ? path : null
 }
 
+/**
+ * Retrieves the internal functions directory and creates it if ensureExists is provided
+ * @param {object} config
+ * @param {string} config.base
+ * @param {boolean=} config.ensureExists
+ * @returns
+ */
 export const getInternalFunctionsDir = async ({ base, ensureExists }) => {
   const path = resolve(base, getPathInProject([INTERNAL_FUNCTIONS_FOLDER]))
 

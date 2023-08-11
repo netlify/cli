@@ -8,8 +8,12 @@ import { EDGE_FUNCTIONS_FOLDER, PUBLIC_URL_PATH } from './consts.mjs'
 
 const distPath = getPathInProject([EDGE_FUNCTIONS_FOLDER])
 
-export const deployFileNormalizer = (rootDir, file) => {
-  const absoluteDistPath = join(rootDir, distPath)
+/**
+ * @param {string} workingDir
+ * @param {*} file
+ */
+export const deployFileNormalizer = (workingDir, file) => {
+  const absoluteDistPath = join(workingDir, distPath)
   const isEdgeFunction = file.root === absoluteDistPath
   const normalizedPath = isEdgeFunction ? `${PUBLIC_URL_PATH}/${file.normalizedPath}` : file.normalizedPath
 
@@ -19,9 +23,12 @@ export const deployFileNormalizer = (rootDir, file) => {
   }
 }
 
-export const getDistPathIfExists = async ({ rootDir }) => {
+/**
+ * @param {string} workingDir
+ */
+export const getDistPathIfExists = async (workingDir) => {
   try {
-    const absoluteDistPath = join(rootDir, distPath)
+    const absoluteDistPath = join(workingDir, distPath)
     const stats = await stat(absoluteDistPath)
 
     if (!stats.isDirectory()) {
