@@ -19,6 +19,7 @@ import { featureFlags as edgeFunctionsFeatureFlags } from './edge-functions/cons
  *
  * @param {object} config
  * @param {*} config.cachedConfig
+ * @param {string} [config.packagePath]
  * @param {string} config.token
  * @param {import('commander').OptionValues} config.options
  * @returns {BuildConfig}
@@ -26,10 +27,12 @@ import { featureFlags as edgeFunctionsFeatureFlags } from './edge-functions/cons
 export const getBuildOptions = ({
   cachedConfig,
   options: { context, cwd, debug, dry, json, offline, silent },
+  packagePath,
   token,
 }) => ({
   cachedConfig,
   siteId: cachedConfig.siteInfo.id,
+  packagePath,
   token,
   dry,
   debug,
