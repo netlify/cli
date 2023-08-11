@@ -20,10 +20,10 @@ const getFunctionZips = async ({
   directories,
   functionsConfig,
   manifestPath,
+  rootDir,
   skipFunctionsCache,
   statusCb,
   tmpDir,
-  workingDir,
 }) => {
   statusCb({
     type: 'functions-manifest',
@@ -68,7 +68,7 @@ const getFunctionZips = async ({
   }
 
   return await zipFunctions(directories, tmpDir, {
-    basePath: workingDir,
+    basePath: rootDir,
     configFileDirectories: [getPathInProject([INTERNAL_FUNCTIONS_FOLDER])],
     config: functionsConfig,
   })
@@ -96,6 +96,8 @@ const hashFns = async (
   if (!tmpDir) {
     throw new Error('Missing tmpDir directory for zipping files')
   }
+
+  console.log('---> hashFns', { rootDir })
 
   const functionZips = await getFunctionZips({
     directories,
