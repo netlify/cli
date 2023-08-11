@@ -16,19 +16,18 @@ export type FrameworkInfo = {
 }
 
 export type BaseServerSettings = {
-  dist: string
-
-  // static serving
+  baseDirectory?: string
+  dist?: string
+  /** The command that was provided for the dev config */
+  command?: string
+  /** If it should be served like static files */
   useStaticServer?: boolean
 
-  // Framework specific part
   /** A port where a proxy can listen to it */
   frameworkPort?: number
   /** The host where a proxy can listen to it */
   frameworkHost?: '127.0.0.1' | '::1'
   functions?: string
-  /** The command that was provided for the dev config */
-  command?: string
   /** The framework name ('Create React App') */
   framework?: string
   env?: NodeJS.ProcessEnv
@@ -43,6 +42,5 @@ export type ServerSettings = BaseServerSettings & {
   jwtRolePath: string
   /** The port where the functions are running on */
   port: number
-  /** The directory of the functions */
-  functions: number
+  https?: { key: string; cert: string; keyFilePath: string; certFilePath: string }
 }

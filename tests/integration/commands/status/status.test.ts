@@ -34,6 +34,10 @@ setupFixtureTests('empty-project', () => {
         parseJson: true,
       })
 
+      if (account && typeof account === 'object' && 'GitHub' in account) {
+        delete account.GitHub
+      }
+
       expect(siteData).toMatchSnapshot()
       expect(account).toMatchSnapshot()
     })

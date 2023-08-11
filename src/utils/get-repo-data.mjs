@@ -1,6 +1,5 @@
 // @ts-check
 import { dirname } from 'path'
-import process from 'process'
 import util from 'util'
 
 import { findUp } from 'find-up'
@@ -14,14 +13,14 @@ import { log } from './command-helpers.mjs'
  *
  * @param {object} config
  * @param {string} [config.remoteName]
+ * @param {string} config.workingDir
  * @returns
  */
-const getRepoData = async function ({ remoteName } = {}) {
+const getRepoData = async function ({ remoteName, workingDir }) {
   try {
-    const cwd = process.cwd()
     const [gitConfig, gitDirectory] = await Promise.all([
-      util.promisify(gitconfiglocal)(cwd),
-      findUp('.git', { cwd, type: 'directory' }),
+      util.promisify(gitconfiglocal)(workingDir),
+      findUp('.git', { cwd: workingDir, type: 'directory' }),
     ])
 
     if (!gitDirectory || !gitConfig || !gitConfig.remote || Object.keys(gitConfig.remote).length === 0) {
@@ -30,7 +29,7 @@ const getRepoData = async function ({ remoteName } = {}) {
 
     const baseGitPath = dirname(gitDirectory)
 
-    if (cwd !== baseGitPath) {
+    if (workingDir !== baseGitPath) {
       log(`Git directory located in ${baseGitPath}`)
     }
 
