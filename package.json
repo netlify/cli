@@ -1,11 +1,11 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "15.11.0",
+  "version": "16.0.2",
   "author": "Netlify Inc.",
   "type": "module",
   "engines": {
-    "node": "^14.18.0 || >=16.0.0"
+    "node": ">=16.16.0"
   },
   "files": [
     "/bin",
@@ -78,14 +78,13 @@
   "dependencies": {
     "@bugsnag/js": "7.20.2",
     "@fastify/static": "6.10.2",
-    "@netlify/build": "29.17.3",
+    "@netlify/build": "29.20.2",
     "@netlify/build-info": "7.7.3",
-    "@netlify/config": "20.6.4",
+    "@netlify/config": "20.8.0",
     "@netlify/edge-bundler": "8.17.1",
-    "@netlify/framework-info": "9.8.10",
     "@netlify/local-functions-proxy": "1.1.1",
     "@netlify/serverless-functions-api": "1.5.2",
-    "@netlify/zip-it-and-ship-it": "9.13.1",
+    "@netlify/zip-it-and-ship-it": "9.15.1",
     "@octokit/rest": "19.0.13",
     "ansi-escapes": "6.2.0",
     "ansi-styles": "6.2.1",
@@ -196,7 +195,8 @@
     "ava": "4.3.3",
     "c8": "7.14.0",
     "eslint-plugin-sort-destructure-keys": "1.5.0",
-    "fast-glob": "3.3.0",
+    "eslint-plugin-workspace": "file:./tools/lint-rules",
+    "fast-glob": "3.3.1",
     "form-data": "4.0.0",
     "fs-extra": "11.1.1",
     "got": "11.8.6",

@@ -11,11 +11,11 @@ import { track } from '../../utils/telemetry/index.mjs'
 
 /**
  *
- * @param {import('../base-command.mjs').NetlifyOptions} netlify
+ * @param {import('../base-command.mjs').default} command
  * @param {import('commander').OptionValues} options
  */
-const linkPrompt = async (netlify, options) => {
-  const { api, state } = netlify
+const linkPrompt = async (command, options) => {
+  const { api, state } = command.netlify
 
   const SITE_NAME_PROMPT = 'Search by full or partial site name'
   const SITE_LIST_PROMPT = 'Choose from a list of your recently updated sites'
@@ -24,7 +24,7 @@ const linkPrompt = async (netlify, options) => {
   let GIT_REMOTE_PROMPT = 'Use the current git remote origin URL'
   let site
   // Get git remote data if exists
-  const repoData = await getRepoData({ remoteName: options.gitRemoteName })
+  const repoData = await getRepoData({ workingDir: command.workingDir, remoteName: options.gitRemoteName })
 
   let linkChoices = [SITE_NAME_PROMPT, SITE_LIST_PROMPT, SITE_ID_PROMPT]
 
@@ -326,7 +326,7 @@ export const link = async (options, command) => {
       kind: 'byName',
     })
   } else {
-    siteData = await linkPrompt(command.netlify, options)
+    siteData = await linkPrompt(command, options)
   }
   return siteData
 }

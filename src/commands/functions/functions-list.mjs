@@ -16,7 +16,7 @@ const normalizeFunction = function (deployedFunctions, { name, urlPath: url }) {
  * @param {import('../base-command.mjs').default} command
  */
 const functionsList = async (options, command) => {
-  const { config, siteInfo } = command.netlify
+  const { config, relConfigFilePath, siteInfo } = command.netlify
 
   const deploy = siteInfo.published_deploy || {}
   const deployedFunctions = deploy.available_functions || []
@@ -25,8 +25,8 @@ const functionsList = async (options, command) => {
 
   if (typeof functionsDir === 'undefined') {
     log('Functions directory is undefined')
-    log('Please verify functions.directory is set in your Netlify configuration file (netlify.toml/yml/json)')
-    log('See https://docs.netlify.com/configure-builds/file-based-configuration/ for more information')
+    log(`Please verify that 'functions.directory' is set in your Netlify configuration file ${relConfigFilePath}`)
+    log('Refer to https://docs.netlify.com/configure-builds/file-based-configuration/ for more information')
     exit(1)
   }
 

@@ -20,10 +20,10 @@ const getFunctionZips = async ({
   directories,
   functionsConfig,
   manifestPath,
-  rootDir,
   skipFunctionsCache,
   statusCb,
   tmpDir,
+  workingDir,
 }) => {
   statusCb({
     type: 'functions-manifest',
@@ -68,7 +68,7 @@ const getFunctionZips = async ({
   }
 
   return await zipFunctions(directories, tmpDir, {
-    basePath: rootDir,
+    basePath: workingDir,
     configFileDirectories: [getPathInProject([INTERNAL_FUNCTIONS_FOLDER])],
     config: functionsConfig,
   })

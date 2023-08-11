@@ -39,6 +39,7 @@ const functionsServe = async (options, command) => {
   await startFunctionsServer({
     config,
     debug: options.debug,
+    command,
     api,
     settings: { functions: functionsDir, functionsPort },
     site,

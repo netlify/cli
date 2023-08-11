@@ -1,0 +1,6 @@
+{
+  "name": "eslint-plugin-workspace",
+  "type": "commonjs",
+  "main": "index.js",
+  "private": true
+}
