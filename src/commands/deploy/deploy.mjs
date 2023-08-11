@@ -400,16 +400,18 @@ const runDeploy = async ({
  *
  * @param {object} config
  * @param {*} config.cachedConfig
+ * @param {string} [config.packagePath]
  * @param {import('commander').OptionValues} config.options The options of the command
  * @returns
  */
-const handleBuild = async ({ cachedConfig, options }) => {
+const handleBuild = async ({ cachedConfig, options, packagePath }) => {
   if (!options.build) {
     return {}
   }
   const [token] = await getToken()
   const resolvedOptions = await getBuildOptions({
     cachedConfig,
+    packagePath,
     token,
     options,
   })
@@ -589,6 +591,7 @@ const deploy = async (options, command) => {
   }
 
   const { configMutations = [], newConfig } = await handleBuild({
+    packagePath: command.workspacePackage,
     cachedConfig: command.netlify.cachedConfig,
     options,
   })
