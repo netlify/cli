@@ -3,6 +3,7 @@ import process from 'process'
 
 import build from '@netlify/build'
 
+import { getBootstrapURL } from './edge-functions/bootstrap.mjs'
 import { featureFlags as edgeFunctionsFeatureFlags } from './edge-functions/consts.mjs'
 
 /**
@@ -43,6 +44,7 @@ export const getBuildOptions = ({
     ...edgeFunctionsFeatureFlags,
     functionsBundlingManifest: true,
   },
+  edgeFunctionsBootstrapURL: getBootstrapURL(),
 })
 
 /**

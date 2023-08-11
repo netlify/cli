@@ -1,26 +1,28 @@
 // @ts-check
 import { readFile } from 'fs/promises'
 import { EOL } from 'os'
-import path from 'path'
-import process from 'process'
+import { dirname, relative, resolve } from 'path'
 
-import { Project } from '@netlify/build-info'
-// eslint-disable-next-line import/extensions, n/no-missing-import
-import { NodeFS } from '@netlify/build-info/node'
-import { getFramework, listFrameworks } from '@netlify/framework-info'
-import fuzzy from 'fuzzy'
+import { getFramework, getSettings } from '@netlify/build-info'
 import getPort from 'get-port'
-import inquirer from 'inquirer'
-import inquirerAutocompletePrompt from 'inquirer-autocomplete-prompt'
 
+import { detectFrameworkSettings } from './build-info.mjs'
 import { NETLIFYDEVWARN, chalk, log } from './command-helpers.mjs'
 import { acquirePort } from './dev.mjs'
 import { getInternalFunctionsDir } from './functions/functions.mjs'
-import { reportError } from './telemetry/report-error.mjs'
+import { getPluginsToAutoInstall } from './init/utils.mjs'
 
+/** @param {string} str */
 const formatProperty = (str) => chalk.magenta(`'${str}'`)
+/** @param {string} str */
 const formatValue = (str) => chalk.green(`'${str}'`)
 
+/**
+ * @param {object} options
+ * @param {string} options.keyFile
+ * @param {string} options.certFile
+ * @returns {Promise<{ key: string, cert: string, keyFilePath: string, certFilePath: string }>}
+ */
 const readHttpsSettings = async (options) => {
   if (typeof options !== 'object' || !options.keyFile || !options.certFile) {
     throw new TypeError(
@@ -38,43 +40,43 @@ const readHttpsSettings = async (options) => {
     throw new TypeError(`Certificate file configuration should be a string`)
   }
 
-  const [{ reason: keyError, value: key }, { reason: certError, value: cert }] = await Promise.allSettled([
-    readFile(keyFile, 'utf-8'),
-    readFile(certFile, 'utf-8'),
-  ])
+  const [key, cert] = await Promise.allSettled([readFile(keyFile, 'utf-8'), readFile(certFile, 'utf-8')])
 
-  if (keyError) {
-    throw new Error(`Error reading private key file: ${keyError.message}`)
+  if (key.status === 'rejected') {
+    throw new Error(`Error reading private key file: ${key.reason}`)
   }
-  if (certError) {
-    throw new Error(`Error reading certificate file: ${certError.message}`)
+  if (cert.status === 'rejected') {
+    throw new Error(`Error reading certificate file: ${cert.reason}`)
   }
 
-  return { key, cert, keyFilePath: path.resolve(keyFile), certFilePath: path.resolve(certFile) }
+  return { key: key.value, cert: cert.value, keyFilePath: resolve(keyFile), certFilePath: resolve(certFile) }
 }
 
-const validateStringProperty = ({ devConfig, property }) => {
-  if (devConfig[property] && typeof devConfig[property] !== 'string') {
+/**
+ * Validates a property inside the devConfig to be of a given type
+ * @param {import('../commands/dev/types.js').DevConfig} devConfig The devConfig
+ * @param {keyof import('../commands/dev/types.js').DevConfig} property The property to validate
+ * @param {'string' | 'number'} type The type it should have
+ */
+function validateProperty(devConfig, property, type) {
+  // eslint-disable-next-line valid-typeof
+  if (devConfig[property] && typeof devConfig[property] !== type) {
     const formattedProperty = formatProperty(property)
     throw new TypeError(
-      `Invalid ${formattedProperty} option provided in config. The value of ${formattedProperty} option must be a string`,
+      `Invalid ${formattedProperty} option provided in config. The value of ${formattedProperty} option must be of type ${type}`,
     )
   }
 }
 
-const validateNumberProperty = ({ devConfig, property }) => {
-  if (devConfig[property] && typeof devConfig[property] !== 'number') {
-    const formattedProperty = formatProperty(property)
-    throw new TypeError(
-      `Invalid ${formattedProperty} option provided in config. The value of ${formattedProperty} option must be an integer`,
-    )
-  }
-}
-
+/**
+ *
+ * @param {object} config
+ * @param {import('../commands/dev/types.js').DevConfig} config.devConfig
+ */
 const validateFrameworkConfig = ({ devConfig }) => {
-  validateStringProperty({ devConfig, property: 'command' })
-  validateNumberProperty({ devConfig, property: 'port' })
-  validateNumberProperty({ devConfig, property: 'targetPort' })
+  validateProperty(devConfig, 'command', 'string')
+  validateProperty(devConfig, 'port', 'number')
+  validateProperty(devConfig, 'targetPort', 'number')
 
   if (devConfig.targetPort && devConfig.targetPort === devConfig.port) {
     throw new Error(
@@ -85,6 +87,11 @@ const validateFrameworkConfig = ({ devConfig }) => {
   }
 }
 
+/**
+ * @param {object} config
+ * @param {import('../commands/dev/types.js').DevConfig} config.devConfig
+ * @param {number=} config.detectedPort
+ */
 const validateConfiguredPort = ({ detectedPort, devConfig }) => {
   if (devConfig.port && devConfig.port === detectedPort) {
     const formattedPort = formatProperty('port')
@@ -97,13 +104,22 @@ const validateConfiguredPort = ({ detectedPort, devConfig }) => {
 const DEFAULT_PORT = 8888
 const DEFAULT_STATIC_PORT = 3999
 
-const getDefaultDist = () => {
+/**
+ * Logs a message that it was unable to determine the dist directory and falls back to the workingDir
+ * @param {string} workingDir
+ */
+const getDefaultDist = (workingDir) => {
   log(`${NETLIFYDEVWARN} Unable to determine public folder to serve files from. Using current working directory`)
   log(`${NETLIFYDEVWARN} Setup a netlify.toml file with a [dev] section to specify your dev server settings.`)
   log(`${NETLIFYDEVWARN} See docs at: https://cli.netlify.com/netlify-dev#project-detection`)
-  return process.cwd()
+  return workingDir
 }
 
+/**
+ * @param {object} config
+ * @param {import('../commands/dev/types.js').DevConfig} config.devConfig
+ * @returns {Promise<number>}
+ */
 const getStaticServerPort = async ({ devConfig }) => {
   const port = await acquirePort({
     configuredPort: devConfig.staticServerPort,
@@ -116,16 +132,16 @@ const getStaticServerPort = async ({ devConfig }) => {
 
 /**
  *
- * @param {object} param0
- * @param {import('../commands/dev/types.js').DevConfig} param0.devConfig
- * @param {import('commander').OptionValues} param0.options
- * @param {string} param0.projectDir
- * @returns {Promise<import('./types.js').BaseServerSettings>}
+ * @param {object} config
+ * @param {import('../commands/dev/types.js').DevConfig} config.devConfig
+ * @param {import('commander').OptionValues} config.flags
+ * @param {string} config.workingDir
+ * @returns {Promise<Omit<import('./types.js').BaseServerSettings, 'command'> & {command?: string}>}
  */
-const handleStaticServer = async ({ devConfig, options, projectDir }) => {
-  validateNumberProperty({ devConfig, property: 'staticServerPort' })
+const handleStaticServer = async ({ devConfig, flags, workingDir }) => {
+  validateProperty(devConfig, 'staticServerPort', 'number')
 
-  if (options.dir) {
+  if (flags.dir) {
     log(`${NETLIFYDEVWARN} Using simple static server because ${formatProperty('--dir')} flag was specified`)
   } else if (devConfig.framework === '#static') {
     log(
@@ -143,8 +159,8 @@ const handleStaticServer = async ({ devConfig, options, projectDir }) => {
     )
   }
 
-  const dist = options.dir || devConfig.publish || getDefaultDist()
-  log(`${NETLIFYDEVWARN} Running static server from "${path.relative(path.dirname(projectDir), dist)}"`)
+  const dist = flags.dir || devConfig.publish || getDefaultDist(workingDir)
+  log(`${NETLIFYDEVWARN} Running static server from "${relative(dirname(workingDir), dist)}"`)
 
   const frameworkPort = await getStaticServerPort({ devConfig })
   return {
@@ -157,144 +173,39 @@ const handleStaticServer = async ({ devConfig, options, projectDir }) => {
 
 /**
  * Retrieves the settings from a framework
- * @param {import('./types.js').FrameworkInfo} framework
- * @returns {import('./types.js').BaseServerSettings}
+ * @param {import('@netlify/build-info').Settings} [settings]
+ * @returns {import('./types.js').BaseServerSettings | undefined}
  */
-const getSettingsFromFramework = (framework) => {
-  const {
-    build: { directory: dist },
-    dev: {
-      commands: [command],
-      pollingStrategies = [],
-      port: frameworkPort,
-    },
-    env = {},
-    name: frameworkName,
-    plugins,
-    staticAssetsDirectory: staticDir,
-  } = framework
-
+const getSettingsFromDetectedSettings = (settings) => {
+  if (!settings) {
+    return
+  }
   return {
-    command,
-    frameworkPort,
-    dist: staticDir || dist,
-    framework: frameworkName,
-    env,
-    pollingStrategies: pollingStrategies.map(({ name }) => name),
-    plugins,
+    baseDirectory: settings.baseDirectory,
+    command: settings.devCommand,
+    frameworkPort: settings.frameworkPort,
+    dist: settings.dist,
+    framework: settings.framework.name,
+    env: settings.env,
+    pollingStrategies: settings.pollingStrategies,
+    plugins: getPluginsToAutoInstall(settings.plugins_from_config_file, settings.plugins_recommended),
   }
-}
-
-const hasDevCommand = (framework) => Array.isArray(framework.dev.commands) && framework.dev.commands.length !== 0
-
-/**
- * The new build setting detection with build systems and frameworks combined
- * @param {string} projectDir
- */
-const detectSettings = async (projectDir) => {
-  const fs = new NodeFS()
-  const project = new Project(fs, projectDir)
-
-  return await project.getBuildSettings()
 }
 
 /**
- *
- * @param {import('./types.js').BaseServerSettings | undefined} frameworkSettings
- * @param {import('@netlify/build-info').Settings[]} newSettings
- * @param {Record<string, Record<string, any>>} [metadata]
+ * @param {import('../commands/dev/types.js').DevConfig} devConfig
  */
-const detectChangesInNewSettings = (frameworkSettings, newSettings, metadata) => {
-  /** @type {string[]} */
-  const message = ['']
-  const [setting] = newSettings
-
-  if (frameworkSettings?.framework !== setting?.framework.name) {
-    message.push(
-      `- Framework does not match:`,
-      `   [old]: ${frameworkSettings?.framework}`,
-      `   [new]: ${setting?.framework.name}`,
-      '',
-    )
-  }
-
-  if (frameworkSettings?.command !== setting?.devCommand) {
-    message.push(
-      `- command does not match:`,
-      `   [old]: ${frameworkSettings?.command}`,
-      `   [new]: ${setting?.devCommand}`,
-      '',
-    )
-  }
-
-  if (frameworkSettings?.dist !== setting?.dist) {
-    message.push(`- dist does not match:`, `   [old]: ${frameworkSettings?.dist}`, `   [new]: ${setting?.dist}`, '')
-  }
-
-  if (frameworkSettings?.frameworkPort !== setting?.frameworkPort) {
-    message.push(
-      `- frameworkPort does not match:`,
-      `   [old]: ${frameworkSettings?.frameworkPort}`,
-      `   [new]: ${setting?.frameworkPort}`,
-      '',
-    )
-  }
-
-  if (message.length !== 0) {
-    reportError(
-      {
-        name: 'NewSettingsDetectionMismatch',
-        errorMessage: 'New Settings detection does not match old one',
-        message: message.join('\n'),
-      },
-      { severity: 'info', metadata },
-    )
-  }
-}
-
-const detectFrameworkSettings = async ({ projectDir }) => {
-  const projectFrameworks = await listFrameworks({ projectDir })
-  const frameworks = projectFrameworks.filter((framework) => hasDevCommand(framework))
-
-  if (frameworks.length === 1) {
-    return getSettingsFromFramework(frameworks[0])
-  }
-
-  if (frameworks.length > 1) {
-    /** multiple matching detectors, make the user choose */
-    inquirer.registerPrompt('autocomplete', inquirerAutocompletePrompt)
-    const scriptInquirerOptions = formatSettingsArrForInquirer(frameworks)
-    const { chosenFramework } = await inquirer.prompt({
-      name: 'chosenFramework',
-      message: `Multiple possible start commands found`,
-      type: 'autocomplete',
-      source(_, input) {
-        if (!input || input === '') {
-          return scriptInquirerOptions
-        }
-        // only show filtered results
-        return filterSettings(scriptInquirerOptions, input)
-      },
-    })
-    log(
-      `Add ${formatProperty(
-        `framework = "${chosenFramework.id}"`,
-      )} to the [dev] section of your netlify.toml to avoid this selection prompt next time`,
-    )
-
-    return getSettingsFromFramework(chosenFramework)
-  }
-}
-
-const hasCommandAndTargetPort = ({ devConfig }) => devConfig.command && devConfig.targetPort
+const hasCommandAndTargetPort = (devConfig) => devConfig.command && devConfig.targetPort
 
 /**
  * Creates settings for the custom framework
- * @param {*} param0
+ * @param {object} config
+ * @param {import('../commands/dev/types.js').DevConfig} config.devConfig
+ * @param {string} config.workingDir
  * @returns {import('./types.js').BaseServerSettings}
  */
-const handleCustomFramework = ({ devConfig }) => {
-  if (!hasCommandAndTargetPort({ devConfig })) {
+const handleCustomFramework = ({ devConfig, workingDir }) => {
+  if (!hasCommandAndTargetPort(devConfig)) {
     throw new Error(
       `${formatProperty('command')} and ${formatProperty('targetPort')} properties are required when ${formatProperty(
         'framework',
@@ -304,101 +215,100 @@ const handleCustomFramework = ({ devConfig }) => {
   return {
     command: devConfig.command,
     frameworkPort: devConfig.targetPort,
-    dist: devConfig.publish || getDefaultDist(),
+    dist: devConfig.publish || getDefaultDist(workingDir),
     framework: '#custom',
     pollingStrategies: devConfig.pollingStrategies || [],
   }
 }
 
-const mergeSettings = async ({ devConfig, frameworkSettings = {} }) => {
-  const {
-    command: frameworkCommand,
-    dist,
-    env,
-    framework,
-    frameworkPort: frameworkDetectedPort,
-    pollingStrategies = [],
-  } = frameworkSettings
-
-  const command = devConfig.command || frameworkCommand
-  const frameworkPort = devConfig.targetPort || frameworkDetectedPort
+/**
+ * Merges the framework settings with the devConfig
+ * @param {object} config
+ * @param {import('../commands/dev/types.js').DevConfig} config.devConfig
+ * @param {string} config.workingDir
+ * @param {Partial<import('./types.js').BaseServerSettings>=} config.frameworkSettings
+ */
+const mergeSettings = async ({ devConfig, frameworkSettings = {}, workingDir }) => {
+  const command = devConfig.command || frameworkSettings.command
+  const frameworkPort = devConfig.targetPort || frameworkSettings.frameworkPort
   // if the framework doesn't start a server, we use a static one
   const useStaticServer = !(command && frameworkPort)
   return {
+    baseDirectory: devConfig.base || frameworkSettings.baseDirectory,
     command,
     frameworkPort: useStaticServer ? await getStaticServerPort({ devConfig }) : frameworkPort,
-    dist: devConfig.publish || dist || getDefaultDist(),
-    framework,
-    env,
-    pollingStrategies,
+    dist: devConfig.publish || frameworkSettings.dist || getDefaultDist(workingDir),
+    framework: frameworkSettings.framework,
+    env: frameworkSettings.env,
+    pollingStrategies: frameworkSettings.pollingStrategies || [],
     useStaticServer,
   }
 }
 
 /**
  * Handles a forced framework and retrieves the settings for it
- * @param {*} param0
+ * @param {object} config
+ * @param {import('../commands/dev/types.js').DevConfig} config.devConfig
+ * @param {import('@netlify/build-info').Project} config.project
+ * @param {string} config.workingDir
+ * @param {string=} config.workspacePackage
  * @returns {Promise<import('./types.js').BaseServerSettings>}
  */
-const handleForcedFramework = async ({ devConfig, projectDir }) => {
+const handleForcedFramework = async ({ devConfig, project, workingDir, workspacePackage }) => {
   // this throws if `devConfig.framework` is not a supported framework
-  const frameworkSettings = getSettingsFromFramework(await getFramework(devConfig.framework, { projectDir }))
-  return mergeSettings({ devConfig, frameworkSettings })
+  const framework = await getFramework(devConfig.framework, project)
+  const settings = await getSettings(framework, project, workspacePackage || '')
+  const frameworkSettings = getSettingsFromDetectedSettings(settings)
+  return mergeSettings({ devConfig, workingDir, frameworkSettings })
 }
 
 /**
  * Get the server settings based on the flags and the devConfig
  * @param {import('../commands/dev/types.js').DevConfig} devConfig
- * @param {import('commander').OptionValues} options
- * @param {string} projectDir
- * @param {Record<string, Record<string, any>>} [metadata]
+ * @param {import('commander').OptionValues} flags
+ * @param {import('../commands/base-command.mjs').default} command
  * @returns {Promise<import('./types.js').ServerSettings>}
  */
-const detectServerSettings = async (devConfig, options, projectDir, metadata) => {
-  validateStringProperty({ devConfig, property: 'framework' })
+
+const detectServerSettings = async (devConfig, flags, command) => {
+  validateProperty(devConfig, 'framework', 'string')
 
   /** @type {Partial<import('./types.js').BaseServerSettings>} */
   let settings = {}
 
-  if (options.dir || devConfig.framework === '#static') {
+  if (flags.dir || devConfig.framework === '#static') {
     // serving files statically without a framework server
-    settings = await handleStaticServer({ options, devConfig, projectDir })
+    settings = await handleStaticServer({ flags, devConfig, workingDir: command.workingDir })
   } else if (devConfig.framework === '#auto') {
     // this is the default CLI behavior
 
-    const runDetection = !hasCommandAndTargetPort({ devConfig })
-    const frameworkSettings = runDetection ? await detectFrameworkSettings({ projectDir }) : undefined
-    const newSettings = runDetection ? await detectSettings(projectDir) : undefined
-
-    // just report differences in the settings
-    detectChangesInNewSettings(frameworkSettings, newSettings || [], {
-      ...metadata,
-      settings: {
-        projectDir,
-        devConfig,
-        options,
-        old: frameworkSettings,
-        settings: newSettings,
-      },
-    })
-
+    const runDetection = !hasCommandAndTargetPort(devConfig)
+    const frameworkSettings = runDetection
+      ? getSettingsFromDetectedSettings(await detectFrameworkSettings(command, 'dev'))
+      : undefined
     if (frameworkSettings === undefined && runDetection) {
       log(`${NETLIFYDEVWARN} No app server detected. Using simple static server`)
-      settings = await handleStaticServer({ options, devConfig, projectDir })
+      settings = await handleStaticServer({ flags, devConfig, workingDir: command.workingDir })
     } else {
       validateFrameworkConfig({ devConfig })
-      settings = await mergeSettings({ devConfig, frameworkSettings })
+
+      settings = await mergeSettings({ devConfig, frameworkSettings, workingDir: command.workingDir })
     }
 
-    settings.plugins = frameworkSettings && frameworkSettings.plugins
+    settings.plugins = frameworkSettings?.plugins
   } else if (devConfig.framework === '#custom') {
     validateFrameworkConfig({ devConfig })
     // when the users wants to configure `command` and `targetPort`
-    settings = handleCustomFramework({ devConfig })
+    settings = handleCustomFramework({ devConfig, workingDir: command.workingDir })
   } else if (devConfig.framework) {
     validateFrameworkConfig({ devConfig })
     // this is when the user explicitly configures a framework, e.g. `framework = "gatsby"`
-    settings = await handleForcedFramework({ devConfig, projectDir })
+    settings = await handleForcedFramework({
+      devConfig,
+      project: command.project,
+      workingDir: command.workingDir,
+      workspacePackage: command.workspacePackage,
+    })
   }
 
   validateConfiguredPort({ devConfig, detectedPort: settings.frameworkPort })
@@ -409,7 +319,7 @@ const detectServerSettings = async (devConfig, options, projectDir, metadata) =>
     errorMessage: `Could not acquire required ${formatProperty('port')}`,
   })
   const functionsDir = devConfig.functions || settings.functions
-  const internalFunctionsDir = await getInternalFunctionsDir({ base: projectDir })
+  const internalFunctionsDir = await getInternalFunctionsDir({ base: command.workingDir })
   const shouldStartFunctionsServer = Boolean(functionsDir || internalFunctionsDir)
 
   return {
@@ -421,28 +331,6 @@ const detectServerSettings = async (devConfig, options, projectDir, metadata) =>
     ...(shouldStartFunctionsServer && { functionsPort: await getPort({ port: devConfig.functionsPort || 0 }) }),
     ...(devConfig.https && { https: await readHttpsSettings(devConfig.https) }),
   }
-}
-
-const filterSettings = function (scriptInquirerOptions, input) {
-  const filterOptions = scriptInquirerOptions.map((scriptInquirerOption) => scriptInquirerOption.name)
-  // TODO: remove once https://github.com/sindresorhus/eslint-plugin-unicorn/issues/1394 is fixed
-  // eslint-disable-next-line unicorn/no-array-method-this-argument
-  const filteredSettings = fuzzy.filter(input, filterOptions)
-  const filteredSettingNames = new Set(
-    filteredSettings.map((filteredSetting) => (input ? filteredSetting.string : filteredSetting)),
-  )
-  return scriptInquirerOptions.filter((t) => filteredSettingNames.has(t.name))
-}
-
-const formatSettingsArrForInquirer = function (frameworks) {
-  const formattedArr = frameworks.map((framework) =>
-    framework.dev.commands.map((command) => ({
-      name: `[${chalk.yellow(framework.name)}] '${command}'`,
-      value: { ...framework, commands: [command] },
-      short: `${framework.name}-${command}`,
-    })),
-  )
-  return formattedArr.flat()
 }
 
 /**

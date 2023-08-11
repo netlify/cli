@@ -87,7 +87,7 @@ const getEnvironmentVariables = ({ apiUrl }) => ({
 /**
  *
  * @param {*} param0
- * @returns
+ * @returns {import('execa').Options<string>}
  */
 const getCLIOptions = ({ apiUrl, builder, env = {}, extendEnv = true }) => ({
   cwd: builder?.directory,

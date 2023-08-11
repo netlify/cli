@@ -13,7 +13,6 @@ import { withMockApi } from '../../utils/mock-api.cjs'
 import { pause } from '../../utils/pause.cjs'
 import { withSiteBuilder } from '../../utils/site-builder.cjs'
 
-// eslint-disable-next-line no-underscore-dangle
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const JWT_EXPIRY = 1_893_456_000

@@ -24,7 +24,7 @@ const argv = process.argv.slice(2)
  * Chalk instance for CLI that can be initialized with no colors mode
  * needed for json outputs where we don't want to have colors
  * @param  {boolean} noColors - disable chalk colors
- * @return {object} - default or custom chalk instance
+ * @return {import('chalk').ChalkInstance} - default or custom chalk instance
  */
 const safeChalk = function (noColors) {
   if (noColors) {
@@ -174,12 +174,18 @@ export const warn = (message = '') => {
 
 /**
  * throws an error or log it
- * @param {string|Error} message
+ * @param {unknown} message
  * @param {object} [options]
  * @param {boolean} [options.exit]
  */
 export const error = (message = '', options = {}) => {
-  const err = message instanceof Error ? message : new Error(message)
+  const err =
+    message instanceof Error
+      ? message
+      : // eslint-disable-next-line unicorn/no-nested-ternary
+      typeof message === 'string'
+      ? new Error(message)
+      : /** @type {Error} */ ({ message, stack: undefined, name: 'Error' })
 
   if (options.exit === false) {
     const bang = chalk.red(BANG)
@@ -198,10 +204,13 @@ export const exit = (code = 0) => {
   process.exit(code)
 }
 
-// When `build.publish` is not set by the user, the CLI behavior differs in
-// several ways. It detects it by checking if `build.publish` is `undefined`.
-// However, `@netlify/config` adds a default value to `build.publish`.
-// This removes 'publish' and 'publishOrigin' in this case.
+/**
+ * When `build.publish` is not set by the user, the CLI behavior differs in
+ * several ways. It detects it by checking if `build.publish` is `undefined`.
+ * However, `@netlify/config` adds a default value to `build.publish`.
+ * This removes 'publish' and 'publishOrigin' in this case.
+ * @param {*} config
+ */
 export const normalizeConfig = (config) => {
   // Unused var here is in order to omit 'publish' from build config
   // eslint-disable-next-line no-unused-vars
