@@ -13,6 +13,7 @@ import prettyjson from 'prettyjson'
 
 import { cancelDeploy } from '../../lib/api.mjs'
 import { getBuildOptions, runBuild } from '../../lib/build.mjs'
+import { getBootstrapURL } from '../../lib/edge-functions/bootstrap.mjs'
 import { featureFlags as edgeFunctionsFeatureFlags } from '../../lib/edge-functions/consts.mjs'
 import { normalizeFunctionsConfig } from '../../lib/functions/config.mjs'
 import { BACKGROUND_FUNCTIONS_WARNING } from '../../lib/log.mjs'
@@ -399,16 +400,18 @@ const runDeploy = async ({
  *
  * @param {object} config
  * @param {*} config.cachedConfig
+ * @param {string} [config.packagePath]
  * @param {import('commander').OptionValues} config.options The options of the command
  * @returns
  */
-const handleBuild = async ({ cachedConfig, options }) => {
+const handleBuild = async ({ cachedConfig, options, packagePath }) => {
   if (!options.build) {
     return {}
   }
   const [token] = await getToken()
   const resolvedOptions = await getBuildOptions({
     cachedConfig,
+    packagePath,
     token,
     options,
   })
@@ -442,6 +445,7 @@ const bundleEdgeFunctions = async (options, command) => {
     packagePath: command.workspacePackage,
     buffer: true,
     featureFlags: edgeFunctionsFeatureFlags,
+    edgeFunctionsBootstrapURL: getBootstrapURL(),
   })
 
   if (!success) {
@@ -587,6 +591,7 @@ const deploy = async (options, command) => {
   }
 
   const { configMutations = [], newConfig } = await handleBuild({
+    packagePath: command.workspacePackage,
     cachedConfig: command.netlify.cachedConfig,
     options,
   })

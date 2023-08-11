@@ -48,6 +48,7 @@ const build = async (options, command) => {
 
   const buildOptions = await getBuildOptions({
     cachedConfig,
+    packagePath: command.workspacePackage,
     token,
     options,
   })
