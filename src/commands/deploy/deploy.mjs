@@ -13,6 +13,7 @@ import prettyjson from 'prettyjson'
 
 import { cancelDeploy } from '../../lib/api.mjs'
 import { getBuildOptions, runBuild } from '../../lib/build.mjs'
+import { getBootstrapURL } from '../../lib/edge-functions/bootstrap.mjs'
 import { featureFlags as edgeFunctionsFeatureFlags } from '../../lib/edge-functions/consts.mjs'
 import { normalizeFunctionsConfig } from '../../lib/functions/config.mjs'
 import { BACKGROUND_FUNCTIONS_WARNING } from '../../lib/log.mjs'
@@ -442,6 +443,7 @@ const bundleEdgeFunctions = async (options, command) => {
     packagePath: command.workspacePackage,
     buffer: true,
     featureFlags: edgeFunctionsFeatureFlags,
+    edgeFunctionsBootstrapURL: getBootstrapURL(),
   })
 
   if (!success) {
