@@ -40,6 +40,7 @@ export const deploySite = async (
     // API calls this the 'title'
     message: title,
     siteEnv,
+    siteRoot,
     skipFunctionsCache,
     statusCb = () => {
       /* default to noop */
@@ -78,6 +79,7 @@ export const deploySite = async (
         manifestPath,
         skipFunctionsCache,
         siteEnv,
+        rootDir: siteRoot,
       }),
     ])
   const edgeFunctionsCount = Object.keys(files).filter(isEdgeFunctionFile).length
