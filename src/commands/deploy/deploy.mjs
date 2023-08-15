@@ -13,6 +13,7 @@ import prettyjson from 'prettyjson'
 
 import { cancelDeploy } from '../../lib/api.mjs'
 import { getBuildOptions, runBuild } from '../../lib/build.mjs'
+import { getBootstrapURL } from '../../lib/edge-functions/bootstrap.mjs'
 import { featureFlags as edgeFunctionsFeatureFlags } from '../../lib/edge-functions/consts.mjs'
 import { normalizeFunctionsConfig } from '../../lib/functions/config.mjs'
 import { BACKGROUND_FUNCTIONS_WARNING } from '../../lib/log.mjs'
@@ -323,6 +324,7 @@ const runDeploy = async ({
   deployToProduction,
   functionsConfig,
   functionsFolder,
+  packagePath,
   silent,
   site,
   siteData,
@@ -344,13 +346,13 @@ const runDeploy = async ({
     results = await api.createSiteDeploy({ siteId, title, body: { draft, branch: alias } })
     deployId = results.id
 
-    const internalFunctionsFolder = await getInternalFunctionsDir({ base: site.root })
+    const internalFunctionsFolder = await getInternalFunctionsDir({ base: site.root, packagePath })
 
     // The order of the directories matter: zip-it-and-ship-it will prioritize
     // functions from the rightmost directories. In this case, we want user
     // functions to take precedence over internal functions.
     const functionDirectories = [internalFunctionsFolder, functionsFolder].filter(Boolean)
-    const manifestPath = skipFunctionsCache ? null : await getFunctionsManifestPath({ base: site.root })
+    const manifestPath = skipFunctionsCache ? null : await getFunctionsManifestPath({ base: site.root, packagePath })
 
     // @ts-ignore
     results = await deploySite(api, siteId, deployFolder, {
@@ -366,6 +368,7 @@ const runDeploy = async ({
       workingDir: command.workingDir,
       manifestPath,
       skipFunctionsCache,
+      siteRoot: site.root,
     })
   } catch (error_) {
     if (deployId) {
@@ -399,16 +402,18 @@ const runDeploy = async ({
  *
  * @param {object} config
  * @param {*} config.cachedConfig
+ * @param {string} [config.packagePath]
  * @param {import('commander').OptionValues} config.options The options of the command
  * @returns
  */
-const handleBuild = async ({ cachedConfig, options }) => {
+const handleBuild = async ({ cachedConfig, options, packagePath }) => {
   if (!options.build) {
     return {}
   }
   const [token] = await getToken()
   const resolvedOptions = await getBuildOptions({
     cachedConfig,
+    packagePath,
     token,
     options,
   })
@@ -442,6 +447,7 @@ const bundleEdgeFunctions = async (options, command) => {
     packagePath: command.workspacePackage,
     buffer: true,
     featureFlags: edgeFunctionsFeatureFlags,
+    edgeFunctionsBootstrapURL: getBootstrapURL(),
   })
 
   if (!success) {
@@ -587,6 +593,7 @@ const deploy = async (options, command) => {
   }
 
   const { configMutations = [], newConfig } = await handleBuild({
+    packagePath: command.workspacePackage,
     cachedConfig: command.netlify.cachedConfig,
     options,
   })
@@ -652,6 +659,7 @@ const deploy = async (options, command) => {
     functionsConfig,
     // pass undefined functionsFolder if doesn't exist
     functionsFolder: functionsFolderStat && functionsFolder,
+    packagePath: command.workspacePackage,
     silent: options.json || options.silent,
     site,
     siteData,
