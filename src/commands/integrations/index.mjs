@@ -18,7 +18,7 @@ const integrations = (options, command) => {
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
-export const createIntCommand = (program) => {
+export const createIntegrationCommand = (program) => {
   const integrationsCommand = program
   .command('integration')
   .alias('int')
