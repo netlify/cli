@@ -11,13 +11,14 @@ const integrations = (options, command) => {
 
 
 /**
- * Creates the `netlify int` command
+ * Creates the `netlify integration` command
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
 export const createIntCommand = (program) => {
   const integrationsCommand = program
-  .command('int')
+  .command('integration')
+  .alias('int')
   .description('Netlify integration commands')
   .action(integrations)
 
