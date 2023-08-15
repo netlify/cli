@@ -1,4 +1,4 @@
-import { log } from '../../utils/command-helpers.mjs'
+import { init as SdkInit} from '@netlify/sdk/commands'
 
 /**
  * The init command for Netlify Integrations
@@ -6,7 +6,7 @@ import { log } from '../../utils/command-helpers.mjs'
  * @param {import('../base-command.mjs').default} command
  */
 const init = async (options, command) => {
-  log('init command worked!')
+  SdkInit(options)
 }
 
 /**
@@ -14,9 +14,8 @@ const init = async (options, command) => {
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
-export const createInitCommand = (program) => {
-  return program
+export const createInitCommand = (program) => program
     .command('init')
     .description('Creates a skeleton Netlify integration project in your current directory.')
+    .option('--slug', 'The integration slug to set in the integration.yaml file.')
     .action(init)
-}
