@@ -1,4 +1,4 @@
-import { init as SdkInit} from '@netlify/sdk/commands.js'
+import { init as SdkInit} from '@netlify/sdk/commands'
 
 /**
  * The init command for Netlify Integrations
