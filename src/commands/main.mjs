@@ -22,6 +22,7 @@ import { createDevCommand } from './dev/index.mjs'
 import { createEnvCommand } from './env/index.mjs'
 import { createFunctionsCommand } from './functions/index.mjs'
 import { createInitCommand } from './init/index.mjs'
+import { createIntCommand } from './int/index.mjs'
 import { createLinkCommand } from './link/index.mjs'
 import { createLmCommand } from './lm/index.mjs'
 import { createLoginCommand } from './login/index.mjs'
@@ -165,6 +166,7 @@ export const createMainCommand = () => {
   createFunctionsCommand(program)
   createRecipesCommand(program)
   createInitCommand(program)
+  createIntCommand(program)
   createLinkCommand(program)
   createLmCommand(program)
   createLoginCommand(program)
