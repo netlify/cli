@@ -5,8 +5,8 @@ import { init as SdkInit} from '@netlify/sdk/commands'
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command.mjs').default} command
  */
-const init = async (options, command) => {
-  SdkInit(options)
+const init = async (options, _command) => {
+  await SdkInit(options)
 }
 
 /**
