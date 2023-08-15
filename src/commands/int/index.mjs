@@ -1,4 +1,5 @@
 import { createInitCommand } from './int-init.mjs'
+import { createBuildCommand } from './int-build.mjs'
 
 /**
  * The int command
@@ -23,6 +24,7 @@ export const createIntCommand = (program) => {
   .action(integrations)
 
   createInitCommand(integrationsCommand)
+  createBuildCommand(integrationsCommand)
   
   return integrationsCommand
 }
