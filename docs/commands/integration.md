@@ -18,6 +18,4 @@ netlify integration
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
-
-
 <!-- AUTO-GENERATED-CONTENT:END -->
