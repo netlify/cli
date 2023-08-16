@@ -9,7 +9,7 @@ import { getEnvelopeEnv, normalizeContext } from '../../utils/env/index.mjs'
 /**
  * @param {import('../../lib/build.mjs').BuildConfig} options
  */
-const checkOptions = ({ cachedConfig: { siteInfo = {} }, token }) => {
+export const checkOptions = ({ cachedConfig: { siteInfo = {} }, token }) => {
   if (!siteInfo.id) {
     error('Could not find the site ID. Please run netlify link.')
   }
