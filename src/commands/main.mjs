@@ -179,9 +179,9 @@ export const createMainCommand = () => {
   createUnlinkCommand(program)
   createWatchCommand(program)
 
-  if (isFeatureFlagEnabled('project_ortegas_ui', program.netlify.siteInfo)) {
+  // if (program.netlify && program.netlify.siteInfo && isFeatureFlagEnabled('project_ortegas_ui', program.netlify.siteInfo)) {
     createIntegrationCommand(program)
-  }
+  // }
 
   program
     .version(USER_AGENT, '-V')

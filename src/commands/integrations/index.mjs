@@ -1,7 +1,7 @@
-import { createInitCommand } from './int-init.mjs'
-import { createBuildCommand } from './int-build.mjs'
-import { createPreviewCommand } from './int-preview.mjs'
-import { createDevCommand } from './int-dev.mjs'
+import { createInitCommand } from './init.mjs'
+import { createBuildCommand } from './build.mjs'
+import { createPreviewCommand } from './preview.mjs'
+import { createDevCommand } from './dev.mjs'
 
 /**
  * The int command
