@@ -35,6 +35,7 @@ import { createStatusCommand } from './status/index.mjs'
 import { createSwitchCommand } from './switch/index.mjs'
 import { createUnlinkCommand } from './unlink/index.mjs'
 import { createWatchCommand } from './watch/index.mjs'
+import { isFeatureFlagEnabled } from '../utils/feature-flags.mjs'
 
 const SUGGESTION_TIMEOUT = 1e4
 
@@ -166,7 +167,6 @@ export const createMainCommand = () => {
   createFunctionsCommand(program)
   createRecipesCommand(program)
   createInitCommand(program)
-  createIntegrationCommand(program)
   createLinkCommand(program)
   createLmCommand(program)
   createLoginCommand(program)
@@ -178,6 +178,10 @@ export const createMainCommand = () => {
   createSwitchCommand(program)
   createUnlinkCommand(program)
   createWatchCommand(program)
+
+  if (isFeatureFlagEnabled('project_ortegas_ui', program.netlify.siteInfo)) {
+    createIntegrationCommand(program)
+  }
 
   program
     .version(USER_AGENT, '-V')
