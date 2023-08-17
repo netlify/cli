@@ -3,7 +3,6 @@ import { createBuildCommand } from './build.mjs'
 import { createPreviewCommand } from './preview.mjs'
 import { createDevCommand } from './dev.mjs'
 import {createDeployCommand} from './deploy.mjs'
-import { isFeatureFlagEnabled } from '../../utils/feature-flags.mjs'
 
 /**
  * The int command
@@ -31,10 +30,7 @@ export const createIntegrationCommand = (program) => {
   createBuildCommand(integrationsCommand)
   createPreviewCommand(integrationsCommand)
   createDevCommand(integrationsCommand)
-
-  if (program.netlify && program.netlify.siteInfo && isFeatureFlagEnabled('project_mariner_ui', program.netlify.siteInfo)) {
-    createDeployCommand(integrationsCommand)
-  }
+  createDeployCommand(integrationsCommand)
   
   return integrationsCommand
 }
