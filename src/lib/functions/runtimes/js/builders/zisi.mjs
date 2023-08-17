@@ -105,8 +105,15 @@ const clearFunctionsCache = (functionsPath) => {
     .forEach(decache)
 }
 
-const getTargetDirectory = async ({ errorExit }) => {
-  const targetDirectory = path.resolve(getPathInProject([SERVE_FUNCTIONS_FOLDER]))
+/**
+ *
+ * @param {object} config
+ * @param {string} config.projectRoot
+ * @param {(msg: string) => void} config.errorExit
+ * @returns
+ */
+const getTargetDirectory = async ({ errorExit, projectRoot }) => {
+  const targetDirectory = path.resolve(projectRoot, getPathInProject([SERVE_FUNCTIONS_FOLDER]))
 
   try {
     await mkdir(targetDirectory, { recursive: true })
@@ -120,6 +127,16 @@ const getTargetDirectory = async ({ errorExit }) => {
 const netlifyConfigToZisiConfig = ({ config, projectRoot }) =>
   addFunctionsConfigDefaults(normalizeFunctionsConfig({ functionsConfig: config.functions, projectRoot }))
 
+/**
+ *
+ * @param {object} param0
+ * @param {*} param0.config
+ * @param {*} param0.directory
+ * @param {*} param0.errorExit
+ * @param {*} param0.func
+ * @param {*} param0.metadata
+ * @param {string} param0.projectRoot
+ */
 export default async function handler({ config, directory, errorExit, func, metadata, projectRoot }) {
   const functionsConfig = netlifyConfigToZisiConfig({ config, projectRoot })
 
@@ -153,7 +170,7 @@ export default async function handler({ config, directory, errorExit, func, meta
   // Enable source map support.
   sourceMapSupport.install()
 
-  const targetDirectory = await getTargetDirectory({ errorExit })
+  const targetDirectory = await getTargetDirectory({ projectRoot, errorExit })
 
   return {
     build: ({ cache = {} }) =>

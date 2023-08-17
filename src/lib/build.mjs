@@ -3,6 +3,7 @@ import process from 'process'
 
 import build from '@netlify/build'
 
+import { getBootstrapURL } from './edge-functions/bootstrap.mjs'
 import { featureFlags as edgeFunctionsFeatureFlags } from './edge-functions/consts.mjs'
 
 /**
@@ -18,6 +19,7 @@ import { featureFlags as edgeFunctionsFeatureFlags } from './edge-functions/cons
  *
  * @param {object} config
  * @param {*} config.cachedConfig
+ * @param {string} [config.packagePath]
  * @param {string} config.token
  * @param {import('commander').OptionValues} config.options
  * @returns {BuildConfig}
@@ -25,10 +27,12 @@ import { featureFlags as edgeFunctionsFeatureFlags } from './edge-functions/cons
 export const getBuildOptions = ({
   cachedConfig,
   options: { context, cwd, debug, dry, json, offline, silent },
+  packagePath,
   token,
 }) => ({
   cachedConfig,
   siteId: cachedConfig.siteInfo.id,
+  packagePath,
   token,
   dry,
   debug,
@@ -43,6 +47,7 @@ export const getBuildOptions = ({
     ...edgeFunctionsFeatureFlags,
     functionsBundlingManifest: true,
   },
+  edgeFunctionsBootstrapURL: getBootstrapURL(),
 })
 
 /**

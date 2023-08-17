@@ -1,7 +1,7 @@
 // @ts-check
 import { stat } from 'fs/promises'
 import { basename, resolve } from 'path'
-import { cwd, env } from 'process'
+import { env } from 'process'
 
 import { runCoreSteps } from '@netlify/build'
 import { restoreConfig, updateConfig } from '@netlify/config'
@@ -13,6 +13,7 @@ import prettyjson from 'prettyjson'
 
 import { cancelDeploy } from '../../lib/api.mjs'
 import { getBuildOptions, runBuild } from '../../lib/build.mjs'
+import { getBootstrapURL } from '../../lib/edge-functions/bootstrap.mjs'
 import { featureFlags as edgeFunctionsFeatureFlags } from '../../lib/edge-functions/consts.mjs'
 import { normalizeFunctionsConfig } from '../../lib/functions/config.mjs'
 import { BACKGROUND_FUNCTIONS_WARNING } from '../../lib/log.mjs'
@@ -64,16 +65,18 @@ const triggerDeploy = async ({ api, options, siteData, siteId }) => {
 /**
  * g
  * @param {object} config
+ * @param {string} config.workingDir The process working directory
  * @param {object} config.config
  * @param {import('commander').OptionValues} config.options
  * @param {object} config.site
  * @param {object} config.siteData
  * @returns {Promise<string>}
  */
-const getDeployFolder = async ({ config, options, site, siteData }) => {
+const getDeployFolder = async ({ config, options, site, siteData, workingDir }) => {
+  console.log()
   let deployFolder
   if (options.dir) {
-    deployFolder = resolve(cwd(), options.dir)
+    deployFolder = resolve(site.root, options.dir)
   } else if (config?.build?.publish) {
     deployFolder = resolve(site.root, config.build.publish)
   } else if (siteData?.build_settings?.dir) {
@@ -82,14 +85,13 @@ const getDeployFolder = async ({ config, options, site, siteData }) => {
 
   if (!deployFolder) {
     log('Please provide a publish directory (e.g. "public" or "dist" or "."):')
-    log(cwd())
     const { promptPath } = await inquirer.prompt([
       {
         type: 'input',
         name: 'promptPath',
         message: 'Publish directory',
         default: '.',
-        filter: (input) => resolve(cwd(), input),
+        filter: (input) => resolve(workingDir, input),
       },
     ])
     deployFolder = promptPath
@@ -98,7 +100,10 @@ const getDeployFolder = async ({ config, options, site, siteData }) => {
   return deployFolder
 }
 
-const validateDeployFolder = async ({ deployFolder }) => {
+/**
+ * @param {string} deployFolder
+ */
+const validateDeployFolder = async (deployFolder) => {
   /** @type {import('fs').Stats} */
   let stats
   try {
@@ -128,14 +133,15 @@ const validateDeployFolder = async ({ deployFolder }) => {
  * @param {import('commander').OptionValues} config.options
  * @param {object} config.site
  * @param {object} config.siteData
- * @returns {string}
+ * @param {string} config.workingDir // The process working directory
+ * @returns {string|undefined}
  */
-const getFunctionsFolder = ({ config, options, site, siteData }) => {
+const getFunctionsFolder = ({ config, options, site, siteData, workingDir }) => {
   let functionsFolder
   // Support "functions" and "Functions"
   const funcConfig = config.functionsDirectory
   if (options.functions) {
-    functionsFolder = resolve(cwd(), options.functions)
+    functionsFolder = resolve(workingDir, options.functions)
   } else if (funcConfig) {
     functionsFolder = resolve(site.root, funcConfig)
   } else if (siteData?.build_settings?.functions_dir) {
@@ -144,8 +150,12 @@ const getFunctionsFolder = ({ config, options, site, siteData }) => {
   return functionsFolder
 }
 
-const validateFunctionsFolder = async ({ functionsFolder }) => {
-  /** @type {import('fs').Stats} */
+/**
+ *
+ * @param {string|undefined} functionsFolder
+ */
+const validateFunctionsFolder = async (functionsFolder) => {
+  /** @type {import('fs').Stats|undefined} */
   let stats
   if (functionsFolder) {
     // we used to hard error if functions folder is specified but doesn't exist
@@ -173,17 +183,26 @@ const validateFunctionsFolder = async ({ functionsFolder }) => {
 }
 
 const validateFolders = async ({ deployFolder, functionsFolder }) => {
-  const deployFolderStat = await validateDeployFolder({ deployFolder })
-  const functionsFolderStat = await validateFunctionsFolder({ functionsFolder })
+  const deployFolderStat = await validateDeployFolder(deployFolder)
+  const functionsFolderStat = await validateFunctionsFolder(functionsFolder)
   return { deployFolderStat, functionsFolderStat }
 }
 
+/**
+ * @param {object} config
+ * @param {string} config.deployFolder
+ * @param {*} config.site
+ * @returns
+ */
 const getDeployFilesFilter = ({ deployFolder, site }) => {
   // site.root === deployFolder can happen when users run `netlify deploy --dir .`
   // in that specific case we don't want to publish the repo node_modules
   // when site.root !== deployFolder the behaviour matches our buildbot
   const skipNodeModules = site.root === deployFolder
 
+  /**
+   * @param {string} filename
+   */
   return (filename) => {
     if (filename == null) {
       return false
@@ -298,12 +317,14 @@ const deployProgressCb = function () {
 const runDeploy = async ({
   alias,
   api,
+  command,
   configPath,
   deployFolder,
   deployTimeout,
   deployToProduction,
   functionsConfig,
   functionsFolder,
+  packagePath,
   silent,
   site,
   siteData,
@@ -325,13 +346,13 @@ const runDeploy = async ({
     results = await api.createSiteDeploy({ siteId, title, body: { draft, branch: alias } })
     deployId = results.id
 
-    const internalFunctionsFolder = await getInternalFunctionsDir({ base: site.root })
+    const internalFunctionsFolder = await getInternalFunctionsDir({ base: site.root, packagePath })
 
     // The order of the directories matter: zip-it-and-ship-it will prioritize
     // functions from the rightmost directories. In this case, we want user
     // functions to take precedence over internal functions.
     const functionDirectories = [internalFunctionsFolder, functionsFolder].filter(Boolean)
-    const manifestPath = skipFunctionsCache ? null : await getFunctionsManifestPath({ base: site.root })
+    const manifestPath = skipFunctionsCache ? null : await getFunctionsManifestPath({ base: site.root, packagePath })
 
     // @ts-ignore
     results = await deploySite(api, siteId, deployFolder, {
@@ -344,9 +365,10 @@ const runDeploy = async ({
       // pass an existing deployId to update
       deployId,
       filter: getDeployFilesFilter({ site, deployFolder }),
-      rootDir: site.root,
+      workingDir: command.workingDir,
       manifestPath,
       skipFunctionsCache,
+      siteRoot: site.root,
     })
   } catch (error_) {
     if (deployId) {
@@ -380,16 +402,18 @@ const runDeploy = async ({
  *
  * @param {object} config
  * @param {*} config.cachedConfig
+ * @param {string} [config.packagePath]
  * @param {import('commander').OptionValues} config.options The options of the command
  * @returns
  */
-const handleBuild = async ({ cachedConfig, options }) => {
+const handleBuild = async ({ cachedConfig, options, packagePath }) => {
   if (!options.build) {
     return {}
   }
   const [token] = await getToken()
   const resolvedOptions = await getBuildOptions({
     cachedConfig,
+    packagePath,
     token,
     options,
   })
@@ -402,11 +426,15 @@ const handleBuild = async ({ cachedConfig, options }) => {
 
 /**
  *
- * @param {object} options Bundling options
+ * @param {*} options Bundling options
+ * @param {import('..//base-command.mjs').default} command
  * @returns
  */
-const bundleEdgeFunctions = async (options) => {
-  const statusCb = options.silent ? () => {} : deployProgressCb()
+const bundleEdgeFunctions = async (options, command) => {
+  // eslint-disable-next-line n/prefer-global/process, unicorn/prefer-set-has
+  const argv = process.argv.slice(2)
+  const statusCb =
+    options.silent || argv.includes('--json') || argv.includes('--silent') ? () => {} : deployProgressCb()
 
   statusCb({
     type: 'edge-functions-bundling',
@@ -416,8 +444,10 @@ const bundleEdgeFunctions = async (options) => {
 
   const { severityCode, success } = await runCoreSteps(['edge_functions_bundling'], {
     ...options,
+    packagePath: command.workspacePackage,
     buffer: true,
     featureFlags: edgeFunctionsFeatureFlags,
+    edgeFunctionsBootstrapURL: getBootstrapURL(),
   })
 
   if (!success) {
@@ -496,6 +526,7 @@ const printResults = ({ deployToProduction, json, results, runBuildCommand }) =>
  * @param {import('../base-command.mjs').default} command
  */
 const deploy = async (options, command) => {
+  const { workingDir } = command
   const { api, site, siteInfo } = command.netlify
   const alias = options.alias || options.branch
 
@@ -560,20 +591,22 @@ const deploy = async (options, command) => {
       siteInfo: siteData,
     })
   }
+
   const { configMutations = [], newConfig } = await handleBuild({
+    packagePath: command.workspacePackage,
     cachedConfig: command.netlify.cachedConfig,
     options,
   })
   const config = newConfig || command.netlify.config
 
-  const deployFolder = await getDeployFolder({ options, config, site, siteData })
-  const functionsFolder = getFunctionsFolder({ options, config, site, siteData })
+  const deployFolder = await getDeployFolder({ workingDir, options, config, site, siteData })
+  const functionsFolder = getFunctionsFolder({ workingDir, options, config, site, siteData })
   const { configPath } = site
   const edgeFunctionsConfig = command.netlify.config.edge_functions
 
   // build flag wasn't used and edge functions exist
   if (!options.build && edgeFunctionsConfig && edgeFunctionsConfig.length !== 0) {
-    await bundleEdgeFunctions(options)
+    await bundleEdgeFunctions(options, command)
   }
 
   log(
@@ -618,6 +651,7 @@ const deploy = async (options, command) => {
   const results = await runDeploy({
     alias,
     api,
+    command,
     configPath,
     deployFolder,
     deployTimeout: options.timeout * SEC_TO_MILLISEC || DEFAULT_DEPLOY_TIMEOUT,
@@ -625,6 +659,7 @@ const deploy = async (options, command) => {
     functionsConfig,
     // pass undefined functionsFolder if doesn't exist
     functionsFolder: functionsFolderStat && functionsFolder,
+    packagePath: command.workspacePackage,
     silent: options.json || options.silent,
     site,
     siteData,

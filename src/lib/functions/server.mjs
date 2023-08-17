@@ -219,8 +219,22 @@ const getFunctionsServer = (options) => {
   return app
 }
 
+/**
+ *
+ * @param {object} options
+ * @param {import('../../commands/base-command.mjs').default} options.command
+ * @param {*} options.capabilities
+ * @param {*} options.config
+ * @param {boolean} options.debug
+ * @param {*} options.loadDistFunctions
+ * @param {*} options.settings
+ * @param {*} options.site
+ * @param {string} options.siteUrl
+ * @param {*} options.timeouts
+ * @returns
+ */
 export const startFunctionsServer = async (options) => {
-  const { capabilities, config, debug, loadDistFunctions, settings, site, siteUrl, timeouts } = options
+  const { capabilities, command, config, debug, loadDistFunctions, settings, site, siteUrl, timeouts } = options
   const internalFunctionsDir = await getInternalFunctionsDir({ base: site.root })
   const functionsDirectories = []
 
@@ -250,7 +264,8 @@ export const startFunctionsServer = async (options) => {
     config,
     debug,
     isConnected: Boolean(siteUrl),
-    projectRoot: site.root,
+    // functions always need to be inside the packagePath if set inside a monorepo
+    projectRoot: command.workingDir,
     settings,
     timeouts,
   })
@@ -259,15 +274,22 @@ export const startFunctionsServer = async (options) => {
 
   const server = await getFunctionsServer(Object.assign(options, { functionsRegistry }))
 
-  await startWebServer({ server, settings })
+  await startWebServer({ server, settings, debug })
 }
 
-const startWebServer = async ({ server, settings }) => {
-  await new Promise((resolve) => {
-    server.listen(settings.functionsPort, (err) => {
+/**
+ *
+ * @param {object} config
+ * @param {boolean} config.debug
+ * @param {ReturnType<Awaited<typeof getFunctionsServer>>} config.server
+ * @param {*} config.settings
+ */
+const startWebServer = async ({ debug, server, settings }) => {
+  await new Promise((/** @type {(resolve: void) => void} */ resolve) => {
+    server.listen(settings.functionsPort, (/** @type {unknown} */ err) => {
       if (err) {
         errorExit(`${NETLIFYDEVERR} Unable to start functions server: ${err}`)
-      } else {
+      } else if (debug) {
         log(`${NETLIFYDEVLOG} Functions server is listening on ${settings.functionsPort}`)
       }
       resolve()

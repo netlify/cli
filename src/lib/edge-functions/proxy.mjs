@@ -1,7 +1,7 @@
 // @ts-check
 import { Buffer } from 'buffer'
-import { relative } from 'path'
-import { cwd, env } from 'process'
+import { join, relative } from 'path'
+import { env } from 'process'
 
 // eslint-disable-next-line import/no-namespace
 import * as bundler from '@netlify/edge-bundler'
@@ -62,6 +62,26 @@ export const createAccountInfoHeader = (accountInfo = {}) => {
   return Buffer.from(accountString).toString('base64')
 }
 
+/**
+ *
+ * @param {object} config
+ * @param {*} config.accountId
+ * @param {*} config.config
+ * @param {*} config.configPath
+ * @param {*} config.debug
+ * @param {*} config.env
+ * @param {*} config.geoCountry
+ * @param {*} config.geolocationMode
+ * @param {*} config.getUpdatedConfig
+ * @param {*} config.inspectSettings
+ * @param {*} config.mainPort
+ * @param {boolean=} config.offline
+ * @param {*} config.passthroughPort
+ * @param {*} config.projectDir
+ * @param {*} config.siteInfo
+ * @param {*} config.state
+ * @returns
+ */
 export const initializeProxy = async ({
   accountId,
   config,
@@ -79,7 +99,11 @@ export const initializeProxy = async ({
   siteInfo,
   state,
 }) => {
-  const { functions: internalFunctions, importMap, path: internalFunctionsPath } = await getInternalFunctions()
+  const {
+    functions: internalFunctions,
+    importMap,
+    path: internalFunctionsPath,
+  } = await getInternalFunctions(projectDir)
   const userFunctionsPath = config.build.edge_functions
   const isolatePort = await getAvailablePort()
 
@@ -115,6 +139,7 @@ export const initializeProxy = async ({
 
     // Setting header with geolocation and site info.
     req.headers[headers.Geo] = Buffer.from(JSON.stringify(geoLocation)).toString('base64')
+    req.headers[headers.DeployID] = '0'
     req.headers[headers.Site] = createSiteInfoHeader(siteInfo)
     req.headers[headers.Account] = createAccountInfoHeader({ id: accountId })
 
@@ -132,7 +157,7 @@ export const initializeProxy = async ({
         )} matches declaration for edge function ${chalk.yellow(
           functionName,
         )}, but there's no matching function file in ${chalk.yellow(
-          relative(cwd(), userFunctionsPath),
+          relative(projectDir, userFunctionsPath),
         )}. Please visit ${chalk.blue('https://ntl.fyi/edge-create')} for more information.`,
       )
     })
@@ -192,7 +217,7 @@ const prepareServer = async ({
       ...getDownloadUpdateFunctions(),
       bootstrapURL: getBootstrapURL(),
       debug: env.NETLIFY_DENO_DEBUG === 'true',
-      distImportMapPath,
+      distImportMapPath: join(projectDir, distImportMapPath),
       formatExportTypeError: (name) =>
         `${NETLIFYDEVERR} ${chalk.red('Failed')} to load Edge Function ${chalk.yellow(
           name,

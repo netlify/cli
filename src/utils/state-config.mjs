@@ -11,7 +11,11 @@ import { getPathInProject } from '../lib/settings.mjs'
 const STATE_PATH = getPathInProject(['state.json'])
 const permissionError = "You don't have access to this file."
 
-// Finds location of `.netlify/state.json`
+/**
+ * Finds location of `.netlify/state.json`
+ * @param {string} cwd
+ * @returns {string}
+ */
 const findStatePath = (cwd) => {
   const statePath = findUpSync([STATE_PATH], { cwd })
 

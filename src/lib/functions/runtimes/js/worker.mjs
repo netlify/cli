@@ -1,8 +1,8 @@
 import { createServer } from 'net'
 import { isMainThread, workerData, parentPort } from 'worker_threads'
 
-import lambdaLocal from '@skn0tt/lambda-local'
 import { isStream } from 'is-stream'
+import lambdaLocal from 'lambda-local'
 import sourceMapSupport from 'source-map-support'
 
 if (isMainThread) {
@@ -11,7 +11,7 @@ if (isMainThread) {
 
 sourceMapSupport.install()
 
-lambdaLocal.getLogger().level = 'warn'
+lambdaLocal.getLogger().level = 'alert'
 
 const { clientContext, entryFilePath, event, timeoutMs } = workerData
 

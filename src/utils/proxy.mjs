@@ -75,19 +75,35 @@ const formatEdgeFunctionError = (errorBuffer, acceptsHtml) => {
   })
 }
 
-const isInternal = function (url) {
+/**
+ * @param {string} url
+ */
+function isInternal(url) {
   return url.startsWith('/.netlify/')
 }
-const isFunction = function (functionsPort, url) {
+
+/**
+ * @param {boolean|number|undefined} functionsPort
+ * @param {string} url
+ */
+function isFunction(functionsPort, url) {
   return functionsPort && url.match(/^\/.netlify\/(functions|builders)\/.+/)
 }
 
-const getAddonUrl = function (addonsUrls, req) {
-  const matches = req.url.match(/^\/.netlify\/([^/]+)(\/.*)/)
+/**
+ * @param {Record<string, string>} addonsUrls
+ * @param {http.IncomingMessage} req
+ */
+function getAddonUrl(addonsUrls, req) {
+  const matches = req.url?.match(/^\/.netlify\/([^/]+)(\/.*)/)
   const addonUrl = matches && addonsUrls[matches[1]]
   return addonUrl ? `${addonUrl}${matches[2]}` : null
 }
 
+/**
+ * @param {string} pathname
+ * @param {string} publicFolder
+ */
 const getStatic = async function (pathname, publicFolder) {
   const alternatives = [pathname, ...alternativePathsFor(pathname)].map((filePath) =>
     path.resolve(publicFolder, filePath.slice(1)),
@@ -375,7 +391,6 @@ const initializeProxy = async function ({ configPath, distDir, env, host, port, 
   proxy.before('web', 'stream', (req) => {
     // See https://github.com/http-party/node-http-proxy/issues/1219#issuecomment-511110375
     if (req.headers.expect) {
-      // eslint-disable-next-line no-underscore-dangle
       req.__expectHeader = req.headers.expect
       delete req.headers.expect
     }
@@ -402,9 +417,7 @@ const initializeProxy = async function ({ configPath, distDir, env, host, port, 
       handleProxyRequest(req, proxyReq)
     }
 
-    // eslint-disable-next-line no-underscore-dangle
     if (req.__expectHeader) {
-      // eslint-disable-next-line no-underscore-dangle
       proxyReq.setHeader('Expect', req.__expectHeader)
     }
     if (req.originalBody) {
@@ -599,6 +612,10 @@ const onRequest = async (
   proxy.web(req, res, options)
 }
 
+/**
+ * @param {import('./types.js').ServerSettings} settings
+ * @returns
+ */
 export const getProxyUrl = function (settings) {
   const scheme = settings.https ? 'https' : 'http'
   return `${scheme}://localhost:${settings.port}`
