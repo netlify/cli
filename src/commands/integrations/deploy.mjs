@@ -1,9 +1,14 @@
-import { getToken } from '../../utils/command-helpers.mjs'
+import { getToken, chalk, log } from '../../utils/command-helpers.mjs'
 import { checkOptions } from '../build/build.mjs'
 import { build as SdkBuild } from '@netlify/sdk/commands'
+import { getConfiguration } from '@netlify/sdk/cli-utils'
 import { getBuildOptions } from '../../lib/build.mjs'
 import { getSiteInformation } from '../../utils/dev.mjs'
+import { resolve } from "path";
+
+import fs from 'fs-extra'
 import fetch from 'node-fetch'
+import yaml from 'js-yaml'
 
 
 const INTEGRATION_URL = process.env.INTEGRATION_URL || 'https://api.netlifysdk.com'
@@ -44,14 +49,22 @@ const deploy = async (options, command) => {
     }
   }).then(res => res.json())
   
-  // Read from the integration config schema for 'name', 'description', and 'scopes' properties
+  const { name, description, scopes, slug } = getConfiguration();
+
+  if (slug != integration.slug) {
+    // Update the project's integration.yaml file with the Jigsaw slug since that will
+    // be considered the source of truth.
+    // Let the user know they need to commit and push the changes.
+    const updatedSlug = integration.slug;
+    const updatedIntegrationConfig = yaml.dump({ config: {name, description, scopes, slug: updatedSlug }})
+    const filePath = resolve(process.cwd(), 'integration.yaml')
+    await fs.writeFile(filePath, updatedIntegrationConfig)
+    log(chalk.green(`Updated the integration.yaml file with the slug ${updatedSlug}. Please commit and push the changes.`))
+  }
 
   // If the integration already exists in Jigsaw and the fields differ from what we're seeing (particularly 'scopes'),
   // then we need to prompt the user to confirm that they want to update them
 
-  // Register the integration on Jigsaw if one doesn't exist with that slug (and obviously need to check ownership based on the user token) - 
-  //    - likely need update the config file to support specifying scopes
-  //    - Update the integration.yaml file with the correct slug that's returned from Jigsaw
   
   // Deploy the integration to that site
   // (In the create case) Notify the user that the `integration.yaml` was updated and that they need to commit and push the changes
