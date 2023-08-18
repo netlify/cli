@@ -56,9 +56,14 @@ export const createHandler = function (options) {
   const { functionsRegistry } = options
 
   return async function handler(request, response) {
+    // If this header is set, it means we've already matched a function and we
+    // can just grab its name directly. We delete the header from the request
+    // because we don't want to expose it to user code.
     let functionName = request.header(NFFunctionName)
     delete request.headers[NFFunctionName]
 
+    // If we didn't match a function with a custom route, let's try to match
+    // using the fixed URL format.
     if (!functionName) {
       const cleanPath = request.path.replace(/^\/.netlify\/(functions|builders)/, '')
 
