@@ -122,6 +122,16 @@ export class FunctionsRegistry {
     return this.functions.get(name)
   }
 
+  async getFunctionForURLPath(urlPath) {
+    for (const func of this.functions.values()) {
+      const isMatch = await func.matchURLPath(urlPath)
+
+      if (isMatch) {
+        return func
+      }
+    }
+  }
+
   async registerFunction(name, funcBeforeHook) {
     const { runtime } = funcBeforeHook
 

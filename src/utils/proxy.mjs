@@ -31,7 +31,7 @@ import renderErrorTemplate from '../lib/render-error-template.mjs'
 
 import { NETLIFYDEVLOG, NETLIFYDEVWARN, log, chalk } from './command-helpers.mjs'
 import createStreamPromise from './create-stream-promise.mjs'
-import { headersForPath, parseHeaders, NFRequestID } from './headers.mjs'
+import { headersForPath, parseHeaders, NFFunctionName, NFRequestID } from './headers.mjs'
 import { generateRequestID } from './request-id.mjs'
 import { createRewriter, onChanges } from './rules-proxy.mjs'
 import { signRedirect } from './sign-redirect.mjs'
@@ -551,7 +551,7 @@ const initializeProxy = async function ({ configPath, distDir, env, host, port, 
 }
 
 const onRequest = async (
-  { addonsUrls, edgeFunctionsProxy, env, functionsServer, proxy, rewriter, settings, siteInfo },
+  { addonsUrls, edgeFunctionsProxy, env, functionsRegistry, functionsServer, proxy, rewriter, settings, siteInfo },
   req,
   res,
 ) => {
@@ -568,6 +568,15 @@ const onRequest = async (
   if (isFunction(settings.functionsPort, req.url)) {
     return proxy.web(req, res, { target: functionsServer })
   }
+
+  if (functionsRegistry) {
+    const functionMatch = await functionsRegistry.getFunctionForURLPath(req.url)
+
+    if (functionMatch) {
+      return proxy.web(req, res, { headers: { [NFFunctionName]: functionMatch.name }, target: functionsServer })
+    }
+  }
+
   const addonUrl = getAddonUrl(addonsUrls, req)
   if (addonUrl) {
     return handleAddonUrl({ req, res, addonUrl })
@@ -628,6 +637,7 @@ export const startProxy = async function ({
   configPath,
   debug,
   env,
+  functionsRegistry,
   geoCountry,
   geolocationMode,
   getUpdatedConfig,
@@ -681,6 +691,7 @@ export const startProxy = async function ({
     rewriter,
     settings,
     addonsUrls,
+    functionsRegistry,
     functionsServer,
     edgeFunctionsProxy,
     siteInfo,

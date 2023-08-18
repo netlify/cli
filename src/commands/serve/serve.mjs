@@ -93,7 +93,7 @@ const serve = async (options, command) => {
     options,
   })
 
-  await startFunctionsServer({
+  const functionsRegistry = await startFunctionsServer({
     api,
     command,
     config,
@@ -132,7 +132,9 @@ const serve = async (options, command) => {
     addonsUrls,
     config,
     configPath: configPathOverride,
+    debug: options.debug,
     env,
+    functionsRegistry,
     geolocationMode: options.geo,
     geoCountry: options.country,
     getUpdatedConfig,
