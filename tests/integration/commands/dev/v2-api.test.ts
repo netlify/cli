@@ -118,5 +118,35 @@ describe.runIf(gte(version, '18.13.0'))('v2 api', () => {
       expect(response.status).toBe(200)
       expect(await response.text()).toBe(`With expression path: ${url}`)
     })
+
+    describe('handles rewrites to a function', () => {
+      test<FixtureTestContext>('rewrite to legacy URL format with `force: true`', async ({ devServer }) => {
+        const url = `http://localhost:${devServer.port}/v2-to-legacy-with-force`
+        const response = await fetch(url)
+        expect(response.status).toBe(200)
+        expect(await response.text()).toBe(`With literal path: ${url}`)
+      })
+
+      test<FixtureTestContext>('rewrite to legacy URL format with `force: false`', async ({ devServer }) => {
+        const url = `http://localhost:${devServer.port}/v2-to-legacy-without-force`
+        const response = await fetch(url)
+        expect(response.status).toBe(200)
+        expect(await response.text()).toBe('/v2-to-legacy-without-force from origin')
+      })
+
+      test<FixtureTestContext>('rewrite to custom URL format with `force: true`', async ({ devServer }) => {
+        const url = `http://localhost:${devServer.port}/v2-to-custom-with-force`
+        const response = await fetch(url)
+        expect(response.status).toBe(200)
+        expect(await response.text()).toBe(`With literal path: ${url}`)
+      })
+
+      test<FixtureTestContext>('rewrite to custom URL format with `force: false`', async ({ devServer }) => {
+        const url = `http://localhost:${devServer.port}/v2-to-custom-without-force`
+        const response = await fetch(url)
+        expect(response.status).toBe(200)
+        expect(await response.text()).toBe('/v2-to-custom-without-force from origin')
+      })
+    })
   })
 })
