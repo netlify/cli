@@ -46,4 +46,5 @@ const getErrorMessage = function ({ message }) {
   return message
 }
 
+export const NFFunctionName = 'x-nf-function-name'
 export const NFRequestID = 'x-nf-request-id'
