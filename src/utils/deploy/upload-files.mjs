@@ -90,7 +90,6 @@ const retryUpload = (uploadFn, maxRetry) =>
       } catch (error) {
         lastError = error
 
-
         // We don't need to retry for 400 or 422 errors
         if (error.status === 400 || error.status === 422) {
           return reject(error)
