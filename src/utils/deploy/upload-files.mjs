@@ -90,11 +90,14 @@ const retryUpload = (uploadFn, maxRetry) =>
       } catch (error) {
         lastError = error
 
-        // observed errors: 408, 401 (4** swallowed), 502
+
         // We don't need to retry for 400 or 422 errors
-        if (error.status == 400 || error.status == 422) {
+        if (error.status === 400 || error.status === 422) {
           return reject(error)
-        } else if (error.status > 400 || error.name === 'FetchError') {
+        }
+
+        // observed errors: 408, 401 (4** swallowed), 502
+        if (error.status > 400 || error.name === 'FetchError') {
           fibonacciBackoff.backoff()
           return
         }
