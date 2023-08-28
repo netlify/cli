@@ -158,12 +158,13 @@ export default class NetlifyFunction {
     }
   }
 
+  // Matches all routes agains the path. If a match is found, then the function's `pattern` is returned.
   async matchURLPath(rawPath) {
     await this.buildQueue
 
     const path = (rawPath.endsWith('/') ? rawPath.slice(0, -1) : rawPath).toLowerCase()
     const { routes = [] } = this.buildData
-    const isMatch = routes.some(({ expression, literal }) => {
+    const match = routes.find(({ expression, literal }) => {
       if (literal !== undefined) {
         return path === literal
       }
@@ -177,7 +178,7 @@ export default class NetlifyFunction {
       return false
     })
 
-    return isMatch
+    return match?.pattern
   }
 
   get url() {

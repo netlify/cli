@@ -124,10 +124,10 @@ export class FunctionsRegistry {
 
   async getFunctionForURLPath(urlPath) {
     for (const func of this.functions.values()) {
-      const isMatch = await func.matchURLPath(urlPath)
+      const route = await func.matchURLPath(urlPath)
 
-      if (isMatch) {
-        return func
+      if (route) {
+        return { func, route }
       }
     }
   }

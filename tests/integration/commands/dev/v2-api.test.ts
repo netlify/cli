@@ -116,7 +116,7 @@ describe.runIf(gte(version, '18.13.0'))('v2 api', () => {
       const url = `http://localhost:${devServer.port}/products/netlify`
       const response = await fetch(url)
       expect(response.status).toBe(200)
-      expect(await response.text()).toBe(`With expression path: ${url}`)
+      expect(await response.text()).toBe(`With expression path: {"sku":"netlify"}`)
     })
 
     describe('handles rewrites to a function', () => {
