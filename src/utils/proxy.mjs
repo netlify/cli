@@ -13,7 +13,6 @@ import contentType from 'content-type'
 import cookie from 'cookie'
 import { getProperty } from 'dot-prop'
 import generateETag from 'etag'
-import getAvailablePort from 'get-port'
 import httpProxy from 'http-proxy'
 import { createProxyMiddleware } from 'http-proxy-middleware'
 import jwtDecode from 'jwt-decode'
@@ -681,7 +680,6 @@ export const startProxy = async function ({
   siteInfo,
   state,
 }) {
-  const secondaryServerPort = settings.https ? await getAvailablePort() : null
   const functionsServer = settings.functionsPort ? `http://127.0.0.1:${settings.functionsPort}` : null
   const edgeFunctionsProxy = await initializeEdgeFunctionsProxy({
     config,
@@ -694,10 +692,10 @@ export const startProxy = async function ({
     inspectSettings,
     mainPort: settings.port,
     offline,
-    passthroughPort: secondaryServerPort || settings.port,
     projectDir,
     siteInfo,
     accountId,
+    settings,
     state,
   })
   const proxy = await initializeProxy({
@@ -741,19 +739,6 @@ export const startProxy = async function ({
   primaryServer.listen({ port: settings.port })
 
   const eventQueue = [once(primaryServer, 'listening')]
-
-  // If we're running the main server on HTTPS, we need to start a secondary
-  // server on HTTP for receiving passthrough requests from edge functions.
-  // This lets us run the Deno server on HTTP and avoid the complications of
-  // Deno talking to Node on HTTPS with potentially untrusted certificates.
-  if (secondaryServerPort) {
-    const secondaryServer = http.createServer(onRequestWithOptions)
-
-    secondaryServer.on('upgrade', onUpgrade)
-    secondaryServer.listen({ port: secondaryServerPort })
-
-    eventQueue.push(once(secondaryServer, 'listening'))
-  }
 
   await Promise.all(eventQueue)
 

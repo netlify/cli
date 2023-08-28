@@ -5,6 +5,7 @@ export const headers = {
   DeployID: 'x-nf-deploy-id',
   FeatureFlags: 'x-nf-feature-flags',
   ForwardedHost: 'x-forwarded-host',
+  ForwardedProtocol: 'x-forwarded-proto',
   Functions: 'x-nf-edge-functions',
   InvocationMetadata: 'x-nf-edge-functions-metadata',
   Geo: 'x-nf-geo',

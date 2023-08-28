@@ -244,6 +244,10 @@ export const handler = async function () {
 
               return new Response(text.toUpperCase(), res)
             }
+
+            if (req.url.includes('?ef=url')) {
+              return new Response(req.url)
+            }
           },
           name: 'hello',
         })
@@ -255,6 +259,12 @@ export const handler = async function () {
       ])
       await withDevServer({ cwd: builder.directory, args }, async ({ port }) => {
         const options = { https: { rejectUnauthorized: false } }
+        t.is(
+          await got(`https://localhost:${port}/?ef=url`, {
+            ...options,
+          }).text(),
+          `https://localhost:${port}/?ef=url`,
+        )
         t.is(await got(`https://localhost:${port}`, options).text(), 'index')
         t.is(await got(`https://localhost:${port}?ef=true`, options).text(), 'INDEX')
         t.is(await got(`https://localhost:${port}?ef=fetch`, options).text(), 'ORIGIN')
