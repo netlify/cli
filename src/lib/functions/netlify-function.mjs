@@ -159,12 +159,16 @@ export default class NetlifyFunction {
   }
 
   // Matches all routes agains the path. If a match is found, then the function's `pattern` is returned.
-  async matchURLPath(rawPath) {
+  async matchURLPath(rawPath, method) {
     await this.buildQueue
 
     const path = (rawPath.endsWith('/') ? rawPath.slice(0, -1) : rawPath).toLowerCase()
     const { routes = [] } = this.buildData
-    const match = routes.find(({ expression, literal }) => {
+    const match = routes.find(({ expression, literal, methods }) => {
+      if (methods.length !== 0 && !methods.includes(method)) {
+        return false
+      }
+
       if (literal !== undefined) {
         return path === literal
       }

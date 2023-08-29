@@ -112,6 +112,13 @@ describe.runIf(gte(version, '18.13.0'))('v2 api', () => {
       expect(await response.text()).toBe(`With literal path: ${url}`)
     })
 
+    test<FixtureTestContext>('supports custom URLs with method matching', async ({ devServer }) => {
+      const url = `http://localhost:${devServer.port}/products/really-bad-product`
+      const response = await fetch(url, { method: 'DELETE' })
+      expect(response.status).toBe(200)
+      expect(await response.text()).toBe(`Deleted item successfully: really-bad-product`)
+    })
+
     test<FixtureTestContext>('supports custom URLs using an expression path', async ({ devServer }) => {
       const url = `http://localhost:${devServer.port}/products/netlify`
       const response = await fetch(url)

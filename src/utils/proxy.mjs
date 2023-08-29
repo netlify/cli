@@ -328,7 +328,8 @@ const serveRedirect = async function ({ env, functionsRegistry, match, options, 
       return proxy.web(req, res, { target: options.functionsServer })
     }
 
-    const functionWithCustomRoute = functionsRegistry && (await functionsRegistry.getFunctionForURLPath(destURL))
+    const functionWithCustomRoute =
+      functionsRegistry && (await functionsRegistry.getFunctionForURLPath(destURL, req.method))
     const destStaticFile = await getStatic(dest.pathname, options.publicFolder)
     let statusValue
     if (
@@ -602,7 +603,7 @@ const onRequest = async (
   }
 
   // Does the request match a function on a custom URL path?
-  const functionMatch = functionsRegistry ? await functionsRegistry.getFunctionForURLPath(req.url) : null
+  const functionMatch = functionsRegistry ? await functionsRegistry.getFunctionForURLPath(req.url, req.method) : null
 
   if (functionMatch) {
     // Setting an internal header with the function name so that we don't
