@@ -574,7 +574,7 @@ export default class BaseCommand extends Command {
     // configuration file and the API
     // ==================================================
     const cachedConfig = await actionCommand.getConfig({
-      cwd: this.jsWorkspaceRoot || this.workingDir,
+      cwd: flags.cwd ? this.workingDir : this.jsWorkspaceRoot || this.workingDir,
       repositoryRoot: rootDir,
       packagePath: this.workspacePackage,
       // The config flag needs to be resolved from the actual process working directory

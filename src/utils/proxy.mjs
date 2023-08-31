@@ -31,7 +31,7 @@ import renderErrorTemplate from '../lib/render-error-template.mjs'
 
 import { NETLIFYDEVLOG, NETLIFYDEVWARN, log, chalk } from './command-helpers.mjs'
 import createStreamPromise from './create-stream-promise.mjs'
-import { headersForPath, parseHeaders, NFRequestID } from './headers.mjs'
+import { headersForPath, parseHeaders, NFFunctionName, NFRequestID } from './headers.mjs'
 import { generateRequestID } from './request-id.mjs'
 import { createRewriter, onChanges } from './rules-proxy.mjs'
 import { signRedirect } from './sign-redirect.mjs'
@@ -75,19 +75,35 @@ const formatEdgeFunctionError = (errorBuffer, acceptsHtml) => {
   })
 }
 
-const isInternal = function (url) {
+/**
+ * @param {string} url
+ */
+function isInternal(url) {
   return url.startsWith('/.netlify/')
 }
-const isFunction = function (functionsPort, url) {
+
+/**
+ * @param {boolean|number|undefined} functionsPort
+ * @param {string} url
+ */
+function isFunction(functionsPort, url) {
   return functionsPort && url.match(/^\/.netlify\/(functions|builders)\/.+/)
 }
 
-const getAddonUrl = function (addonsUrls, req) {
-  const matches = req.url.match(/^\/.netlify\/([^/]+)(\/.*)/)
+/**
+ * @param {Record<string, string>} addonsUrls
+ * @param {http.IncomingMessage} req
+ */
+function getAddonUrl(addonsUrls, req) {
+  const matches = req.url?.match(/^\/.netlify\/([^/]+)(\/.*)/)
   const addonUrl = matches && addonsUrls[matches[1]]
   return addonUrl ? `${addonUrl}${matches[2]}` : null
 }
 
+/**
+ * @param {string} pathname
+ * @param {string} publicFolder
+ */
 const getStatic = async function (pathname, publicFolder) {
   const alternatives = [pathname, ...alternativePathsFor(pathname)].map((filePath) =>
     path.resolve(publicFolder, filePath.slice(1)),
@@ -165,7 +181,7 @@ const alternativePathsFor = function (url) {
   return paths
 }
 
-const serveRedirect = async function ({ env, match, options, proxy, req, res, siteInfo }) {
+const serveRedirect = async function ({ env, functionsRegistry, match, options, proxy, req, res, siteInfo }) {
   if (!match) return proxy.web(req, res, options)
 
   options = options || req.proxyOptions || {}
@@ -198,6 +214,7 @@ const serveRedirect = async function ({ env, match, options, proxy, req, res, si
   if (isFunction(options.functionsPort, req.url)) {
     return proxy.web(req, res, { target: options.functionsServer })
   }
+
   const urlForAddons = getAddonUrl(options.addonsUrls, req)
   if (urlForAddons) {
     return handleAddonUrl({ req, res, addonUrl: urlForAddons })
@@ -311,22 +328,28 @@ const serveRedirect = async function ({ env, match, options, proxy, req, res, si
       return proxy.web(req, res, { target: options.functionsServer })
     }
 
+    const functionWithCustomRoute = functionsRegistry && (await functionsRegistry.getFunctionForURLPath(destURL))
     const destStaticFile = await getStatic(dest.pathname, options.publicFolder)
     let statusValue
-    if (match.force || (!staticFile && ((!options.framework && destStaticFile) || isInternal(destURL)))) {
+    if (
+      match.force ||
+      (!staticFile && ((!options.framework && destStaticFile) || isInternal(destURL) || functionWithCustomRoute))
+    ) {
       req.url = destStaticFile ? destStaticFile + dest.search : destURL
       const { status } = match
       statusValue = status
       console.log(`${NETLIFYDEVLOG} Rewrote URL to`, req.url)
     }
 
-    if (isFunction(options.functionsPort, req.url)) {
+    if (isFunction(options.functionsPort, req.url) || functionWithCustomRoute) {
+      const functionHeaders = functionWithCustomRoute ? { [NFFunctionName]: functionWithCustomRoute.name } : {}
       const url = reqToURL(req, originalURL)
       req.headers['x-netlify-original-pathname'] = url.pathname
       req.headers['x-netlify-original-search'] = url.search
 
-      return proxy.web(req, res, { target: options.functionsServer })
+      return proxy.web(req, res, { headers: functionHeaders, target: options.functionsServer })
     }
+
     const addonUrl = getAddonUrl(options.addonsUrls, req)
     if (addonUrl) {
       return handleAddonUrl({ req, res, addonUrl })
@@ -418,12 +441,22 @@ const initializeProxy = async function ({ configPath, distDir, env, host, port, 
     }
 
     if (proxyRes.statusCode === 404 || proxyRes.statusCode === 403) {
+      // If a request for `/path` has failed, we'll a few variations like
+      // `/path/index.html` to mimic the CDN behavior.
       if (req.alternativePaths && req.alternativePaths.length !== 0) {
         req.url = req.alternativePaths.shift()
         return proxy.web(req, res, req.proxyOptions)
       }
+
+      // The request has failed but we might still have a matching redirect
+      // rule (without `force`) that should kick in. This is how we mimic the
+      // file shadowing behavior from the CDN.
       if (req.proxyOptions && req.proxyOptions.match) {
         return serveRedirect({
+          // We don't want to match functions at this point because any redirects
+          // to functions will have already been processed, so we don't supply a
+          // functions registry to `serveRedirect`.
+          functionsRegistry: null,
           req,
           res,
           proxy: handlers,
@@ -437,7 +470,19 @@ const initializeProxy = async function ({ configPath, distDir, env, host, port, 
 
     if (req.proxyOptions.staticFile && isRedirect({ status: proxyRes.statusCode }) && proxyRes.headers.location) {
       req.url = proxyRes.headers.location
-      return serveRedirect({ req, res, proxy: handlers, match: null, options: req.proxyOptions, siteInfo, env })
+      return serveRedirect({
+        // We don't want to match functions at this point because any redirects
+        // to functions will have already been processed, so we don't supply a
+        // functions registry to `serveRedirect`.
+        functionsRegistry: null,
+        req,
+        res,
+        proxy: handlers,
+        match: null,
+        options: req.proxyOptions,
+        siteInfo,
+        env,
+      })
     }
 
     const responseData = []
@@ -535,7 +580,7 @@ const initializeProxy = async function ({ configPath, distDir, env, host, port, 
 }
 
 const onRequest = async (
-  { addonsUrls, edgeFunctionsProxy, env, functionsServer, proxy, rewriter, settings, siteInfo },
+  { addonsUrls, edgeFunctionsProxy, env, functionsRegistry, functionsServer, proxy, rewriter, settings, siteInfo },
   req,
   res,
 ) => {
@@ -549,9 +594,22 @@ const onRequest = async (
     return proxy.web(req, res, { target: edgeFunctionsProxyURL })
   }
 
+  // Does the request match a function on the fixed URL path?
   if (isFunction(settings.functionsPort, req.url)) {
     return proxy.web(req, res, { target: functionsServer })
   }
+
+  // Does the request match a function on a custom URL path?
+  const functionMatch = functionsRegistry ? await functionsRegistry.getFunctionForURLPath(req.url) : null
+
+  if (functionMatch) {
+    // Setting an internal header with the function name so that we don't
+    // have to match the URL again in the functions server.
+    const headers = { [NFFunctionName]: functionMatch.name }
+
+    return proxy.web(req, res, { headers, target: functionsServer })
+  }
+
   const addonUrl = getAddonUrl(addonsUrls, req)
   if (addonUrl) {
     return handleAddonUrl({ req, res, addonUrl })
@@ -575,7 +633,7 @@ const onRequest = async (
     // We don't want to generate an ETag for 3xx redirects.
     req[shouldGenerateETag] = ({ statusCode }) => statusCode < 300 || statusCode >= 400
 
-    return serveRedirect({ req, res, proxy, match, options, siteInfo, env })
+    return serveRedirect({ req, res, proxy, match, options, siteInfo, env, functionsRegistry })
   }
 
   // The request will be served by the framework server, which means we want to
@@ -612,6 +670,7 @@ export const startProxy = async function ({
   configPath,
   debug,
   env,
+  functionsRegistry,
   geoCountry,
   geolocationMode,
   getUpdatedConfig,
@@ -665,6 +724,7 @@ export const startProxy = async function ({
     rewriter,
     settings,
     addonsUrls,
+    functionsRegistry,
     functionsServer,
     edgeFunctionsProxy,
     siteInfo,

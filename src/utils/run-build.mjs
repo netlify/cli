@@ -80,7 +80,7 @@ export const runNetlifyBuild = async ({ command, env = {}, options, settings, ti
   const devCommand = async (settingsOverrides = {}) => {
     let cwd = command.workingDir
 
-    if (command.project.workspace?.packages.length) {
+    if (!options.cwd && command.project.workspace?.packages.length) {
       cwd = join(command.project.jsWorkspaceRoot, settings.baseDirectory || '')
     }
 
