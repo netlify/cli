@@ -70,6 +70,7 @@ const pageNames = {
   'netlify-dev': 'Netlify Dev',
   'functions-dev': 'Functions Development',
   vscode: 'Run and debug with VSCode',
+  lm: 'lm (deprecated)',
 }
 
 const sortRoutes = (routes) =>
