@@ -239,10 +239,11 @@ export const handler = async function () {
 
             if (req.url.includes('?ef=fetch')) {
               const url = new URL('/origin', req.url)
-              const res = await fetch(url)
-              const text = await res.text()
-
-              return new Response(text.toUpperCase(), res)
+              try {
+                await fetch(url, {})
+              } catch (error) {
+                return new Response(error)
+              }
             }
 
             if (req.url.includes('?ef=url')) {
@@ -259,18 +260,16 @@ export const handler = async function () {
       ])
       await withDevServer({ cwd: builder.directory, args }, async ({ port }) => {
         const options = { https: { rejectUnauthorized: false } }
-        t.is(
-          await got(`https://localhost:${port}/?ef=url`, {
-            ...options,
-          }).text(),
-          `https://localhost:${port}/?ef=url`,
-        )
+        t.is(await got(`https://localhost:${port}/?ef=url`, options).text(), `https://localhost:${port}/?ef=url`)
         t.is(await got(`https://localhost:${port}`, options).text(), 'index')
         t.is(await got(`https://localhost:${port}?ef=true`, options).text(), 'INDEX')
-        t.is(await got(`https://localhost:${port}?ef=fetch`, options).text(), 'ORIGIN')
         t.deepEqual(await got(`https://localhost:${port}/api/hello`, options).json(), {
           rawUrl: `https://localhost:${port}/api/hello`,
         })
+
+        // the fetch will go against the `https://` url of the dev server, which isn't trusted system-wide.
+        // this is the expected behaviour for fetch, so we shouldn't change anything about it.
+        t.regex(await got(`https://localhost:${port}?ef=fetch`, options).text(), /invalid peer certificate/)
       })
     })
   })

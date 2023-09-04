@@ -94,8 +94,8 @@ export const initializeProxy = async ({
   inspectSettings,
   mainPort,
   offline,
+  passthroughPort,
   projectDir,
-  settings,
   siteInfo,
   state,
 }) => {
@@ -122,7 +122,6 @@ export const initializeProxy = async ({
     internalFunctions,
     port: isolatePort,
     projectDir,
-    settings,
   })
   const hasEdgeFunctions = userFunctionsPath !== undefined || internalFunctionsPath
 
@@ -171,12 +170,13 @@ export const initializeProxy = async ({
 
     req[headersSymbol] = {
       [headers.FeatureFlags]: getFeatureFlagsHeader(featureFlags),
-      [headers.ForwardedHost]: req.headers.host,
       [headers.ForwardedProtocol]: req.socket.encrypted ? 'https:' : 'http:',
       [headers.Functions]: functionNames.join(','),
       [headers.InvocationMetadata]: getInvocationMetadataHeader(invocationMetadata),
       [headers.IP]: LOCAL_HOST,
       [headers.Passthrough]: 'passthrough',
+      [headers.PassthroughHost]: `localhost:${passthroughPort}`,
+      [headers.PassthroughProtocol]: 'http:',
     }
 
     if (debug) {
@@ -201,7 +201,6 @@ const prepareServer = async ({
   internalFunctions,
   port,
   projectDir,
-  settings,
 }) => {
   // Merging internal with user-defined import maps.
   const importMapPaths = [...importMaps, config.functions['*'].deno_import_map]
@@ -222,7 +221,6 @@ const prepareServer = async ({
       importMapPaths,
       inspectSettings,
       port,
-      certificatePath: settings?.https?.certFilePath,
     })
     const registry = new EdgeFunctionsRegistry({
       bundler,

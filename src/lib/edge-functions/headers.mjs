@@ -10,6 +10,8 @@ export const headers = {
   InvocationMetadata: 'x-nf-edge-functions-metadata',
   Geo: 'x-nf-geo',
   Passthrough: 'x-nf-passthrough',
+  PassthroughHost: 'x-nf-passthrough-host',
+  PassthroughProtocol: 'x-nf-passthrough-proto',
   IP: 'x-nf-client-connection-ip',
   Site: 'X-NF-Site-Info',
   DebugLogging: 'x-nf-debug-logging',
