@@ -45,6 +45,24 @@ describe('edge functions', () => {
         product: 'bar',
       })
     })
+
+    test<FixtureTestContext>('should respect config.methods field', async ({ devServer }) => {
+      const responseGet = await got(`http://localhost:${devServer.port}/products/really-bad-product`, {
+        method: "GET",
+        throwHttpErrors: false,
+        retry: { limit: 0 },
+      })
+
+      expect(responseGet.statusCode).toBe(404)
+
+      const responseDelete = await got(`http://localhost:${devServer.port}/products/really-bad-product`, {
+        method: "DELETE",
+        throwHttpErrors: false,
+        retry: { limit: 0 },
+      })
+
+      expect(responseDelete.body).toEqual('Deleted item successfully: really-bad-product')
+    })
   })
 
   setupFixtureTests('dev-server-with-edge-functions', { devServer: true }, () => {
