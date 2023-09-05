@@ -6,7 +6,6 @@ const path = require('path')
 // eslint-disable-next-line ava/use-test
 const avaTest = require('ava')
 const { isCI } = require('ci-info')
-const { Response } = require('node-fetch')
 
 const { curl } = require('./utils/curl.cjs')
 const { withDevServer } = require('./utils/dev-server.cjs')
