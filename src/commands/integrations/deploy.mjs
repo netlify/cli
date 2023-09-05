@@ -6,6 +6,7 @@ import { getBuildOptions } from '../../lib/build.mjs'
 import { getSiteInformation } from '../../utils/dev.mjs'
 import { resolve } from "path";
 
+import inquirer from 'inquirer'
 import fs from 'fs-extra'
 import fetch from 'node-fetch'
 import yaml from 'js-yaml'
@@ -51,9 +52,11 @@ const deploy = async (options, command) => {
   
   const { name, description, scopes, slug } = getConfiguration();
 
-  if (slug != integration.slug) {
+  if (!integration) {
+    // Create the integration in Jigsaw
+  } else if (slug != integration.slug) {
     // Update the project's integration.yaml file with the Jigsaw slug since that will
-    // be considered the source of truth.
+    // be considered the source of truth and is a value that can't be edited by the user.
     // Let the user know they need to commit and push the changes.
     const updatedSlug = integration.slug;
     const updatedIntegrationConfig = yaml.dump({ config: {name, description, scopes, slug: updatedSlug }})
@@ -63,11 +66,28 @@ const deploy = async (options, command) => {
   }
 
   // If the integration already exists in Jigsaw and the fields differ from what we're seeing (particularly 'scopes'),
-  // then we need to prompt the user to confirm that they want to update them
+  // then we should prompt the user to confirm that they want to update them. Should also let them know that 
+  // this will only affect future installations of the integration.
+  const integrationScopes = integration.scopes;
 
+  if (scopes) {
+    log(chalk.yellow(`This integration is already registered. The current required scopes are "${integrationScopes}" and will be updated to "${scopes}" if you continue. This will only affect future installations of the integration.`))
+    
+    // Todo: where I left off - was updating the SDK to read in the scope values
+    // correctly from the integraton.yaml so we can show this prompt properly
+    const scopePrompt = await inquirer.prompt([
+      {
+        type: 'confirm',
+        name: 'updateScopes',
+        message: `Do you want to update the scopes?`,
+        default: false,
+      },
+    ])
+
+    console.log("CONFIRMED?", scopePrompt.updateScopes)
+  }
   
   // Deploy the integration to that site
-  // (In the create case) Notify the user that the `integration.yaml` was updated and that they need to commit and push the changes
 }
 
 /**
