@@ -158,12 +158,22 @@ export default class NetlifyFunction {
     }
   }
 
-  async matchURLPath(rawPath) {
+  /**
+   * Matches all routes agains the incoming request. If a match is found, then the matched route is returned.
+   * @param {string} rawPath
+   * @param {string} method
+   * @returns matched route
+   */
+  async matchURLPath(rawPath, method) {
     await this.buildQueue
 
     const path = (rawPath.endsWith('/') ? rawPath.slice(0, -1) : rawPath).toLowerCase()
     const { routes = [] } = this.buildData
-    const isMatch = routes.some(({ expression, literal }) => {
+    return routes.find(({ expression, literal, methods }) => {
+      if (methods.length !== 0 && !methods.includes(method)) {
+        return false
+      }
+
       if (literal !== undefined) {
         return path === literal
       }
@@ -176,8 +186,6 @@ export default class NetlifyFunction {
 
       return false
     })
-
-    return isMatch
   }
 
   get url() {
