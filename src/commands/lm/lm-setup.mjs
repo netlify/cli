@@ -1,7 +1,8 @@
 // @ts-check
+import inquirer from 'inquirer'
 import Listr from 'listr'
 
-import { error } from '../../utils/command-helpers.mjs'
+import { error, exit } from '../../utils/command-helpers.mjs'
 import execa from '../../utils/execa.mjs'
 import { installPlatform } from '../../utils/lm/install.mjs'
 import { checkHelperVersion } from '../../utils/lm/requirements.mjs'
@@ -56,6 +57,19 @@ const configureLFSURL = async function (siteId, api) {
  * @param {import('../base-command.mjs').default} command
  */
 const lmSetup = async (options, command) => {
+  if (!options.force && !options.f) {
+    const { wantsToProceed } = await inquirer.prompt({
+      type: 'confirm',
+      name: 'wantsToProceed',
+      message:
+        'Large media is a deprecated feature and will be removed in a future version. Are you sure you want to continue? (to skip this prompt, pass a --force flag)',
+      default: false,
+    })
+    if (!wantsToProceed) {
+      exit()
+    }
+  }
+
   await command.authenticate()
 
   const { api, site } = command.netlify
@@ -97,7 +111,7 @@ const lmSetup = async (options, command) => {
  */
 export const createLmSetupCommand = (program) =>
   program
-    .command('lm:setup')
+    .command('lm:setup', { hidden: true })
     .description('Configures your site to use Netlify Large Media')
     .option('-s, --skip-install', 'Skip the credentials helper installation check')
     .option('-f, --force-install', 'Force the credentials helper installation')
