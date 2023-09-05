@@ -242,7 +242,7 @@ export const handler = async function () {
               try {
                 await fetch(url, {})
               } catch (error) {
-                return new Response(error)
+                return new Response(error, { status: 500 })
               }
             }
 
@@ -259,7 +259,7 @@ export const handler = async function () {
         copyFile(`${__dirname}/../../localhost.key`, `${builder.directory}/localhost.key`),
       ])
       await withDevServer({ cwd: builder.directory, args }, async ({ port }) => {
-        const options = { https: { rejectUnauthorized: false } }
+        const options = { https: { rejectUnauthorized: false }, throwHttpErrors: false }
         t.is(await got(`https://localhost:${port}/?ef=url`, options).text(), `https://localhost:${port}/?ef=url`)
         t.is(await got(`https://localhost:${port}`, options).text(), 'index')
         t.is(await got(`https://localhost:${port}?ef=true`, options).text(), 'INDEX')
