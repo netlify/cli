@@ -78,6 +78,7 @@ export const createAccountInfoHeader = (accountInfo = {}) => {
  * @param {boolean=} config.offline
  * @param {*} config.passthroughPort
  * @param {*} config.projectDir
+ * @param {*} config.settings
  * @param {*} config.siteInfo
  * @param {*} config.state
  * @returns
@@ -96,6 +97,7 @@ export const initializeProxy = async ({
   offline,
   passthroughPort,
   projectDir,
+  settings,
   siteInfo,
   state,
 }) => {
@@ -170,7 +172,7 @@ export const initializeProxy = async ({
 
     req[headersSymbol] = {
       [headers.FeatureFlags]: getFeatureFlagsHeader(featureFlags),
-      [headers.ForwardedProtocol]: req.socket.encrypted ? 'https:' : 'http:',
+      [headers.ForwardedProtocol]: settings.https ? 'https:' : 'http:',
       [headers.Functions]: functionNames.join(','),
       [headers.InvocationMetadata]: getInvocationMetadataHeader(invocationMetadata),
       [headers.IP]: LOCAL_HOST,
