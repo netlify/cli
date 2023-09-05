@@ -302,8 +302,9 @@ export class EdgeFunctionsRegistry {
 
   /**
    * @param {string} urlPath
+   * @param {string} method
    */
-  matchURLPath(urlPath) {
+  matchURLPath(urlPath, method) {
     const declarations = this.#bundler.mergeDeclarations(
       this.#declarationsFromTOML,
       this.#userFunctionConfigs,
@@ -330,6 +331,10 @@ export class EdgeFunctionsRegistry {
     const routeIndexes = []
 
     routes.forEach((route, index) => {
+      if (route.methods && route.methods.length !== 0 && !route.methods.includes(method)) {
+        return
+      }
+
       if (!route.pattern.test(urlPath)) {
         return
       }
