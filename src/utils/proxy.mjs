@@ -608,7 +608,7 @@ const onRequest = async (
   if (functionMatch) {
     // Setting an internal header with the function name so that we don't
     // have to match the URL again in the functions server.
-    const headers = { [NFFunctionName]: functionMatch.func.name, [NFFunctionRoute]: functionMatch.route }
+    const headers = { [NFFunctionName]: functionMatch.func.name, [NFFunctionRoute]: functionMatch.route.pattern }
 
     return proxy.web(req, res, { headers, target: functionsServer })
   }
