@@ -91,7 +91,7 @@ describe('lm command', () => {
     })
 
     test<FixtureTestContext>('netlify lm:setup', async ({ fixture }) => {
-      const cliResponse = await fixture.callCli(['lm:setup', '--force'], { offline: false, execOptions })
+      const cliResponse = await fixture.callCli(['lm:setup'], { offline: false, execOptions })
       expect(cliResponse).toContain('Provisioning Netlify Large Media [started]')
       expect(cliResponse).toContain('Provisioning Netlify Large Media [completed]')
       expect(cliResponse).toContain('Configuring Git LFS for this site [started]')
