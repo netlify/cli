@@ -302,6 +302,7 @@ export class EdgeFunctionsRegistry {
 
   /**
    * @param {string} urlPath
+   * @param {array<string>} method
    */
   matchURLPath(urlPath, method) {
     const declarations = this.#bundler.mergeDeclarations(
