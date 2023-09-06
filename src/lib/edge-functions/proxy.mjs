@@ -148,7 +148,7 @@ export const initializeProxy = async ({
     await registry.initialize()
 
     const url = new URL(req.url, `http://${LOCAL_HOST}:${mainPort}`)
-    const { functionNames, invocationMetadata, orphanedDeclarations } = registry.matchURLPath(url.pathname)
+    const { functionNames, invocationMetadata, orphanedDeclarations } = registry.matchURLPath(url.pathname, req.method)
 
     // If the request matches a config declaration for an Edge Function without
     // a matching function file, we warn the user.
