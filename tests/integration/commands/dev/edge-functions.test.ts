@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'vitest'
+import { describe, expect, expectTypeOf, test } from 'vitest'
 
 import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
 import got from '../../utils/got.cjs'
@@ -16,15 +16,52 @@ describe('edge functions', () => {
       expect(response.body).toMatchSnapshot()
     })
 
-    test<FixtureTestContext>('should provide geo location', async ({ devServer }) => {
+    test<FixtureTestContext>('should provide context properties', async ({ devServer }) => {
       const response = await got(`http://localhost:${devServer.port}/context`, {
         throwHttpErrors: false,
         retry: { limit: 0 },
       })
 
-      const { geo } = JSON.parse(response.body)
+      const { deploy, geo, ip, params, requestId, server, site } = JSON.parse(response.body)
       expect(geo.city).toEqual('Mock City')
       expect(geo.country.code).toEqual('DE')
+      expect(deploy).toEqual({ id: '0' })
+      expectTypeOf(ip).toBeString()
+      expect(params).toEqual({})
+      expectTypeOf(requestId).toBeString()
+      expect(server).toEqual({ region: 'local' })
+      expect(site).toEqual({ id: 'foo' })
+    })
+
+    test<FixtureTestContext>('should expose URL parameters', async ({ devServer }) => {
+      const response = await got(`http://localhost:${devServer.port}/categories/foo/products/bar`, {
+        throwHttpErrors: false,
+        retry: { limit: 0 },
+      })
+
+      const { params } = JSON.parse(response.body)
+      expect(params).toEqual({
+        category: 'foo',
+        product: 'bar',
+      })
+    })
+
+    test<FixtureTestContext>('should respect config.methods field', async ({ devServer }) => {
+      const responseGet = await got(`http://localhost:${devServer.port}/products/really-bad-product`, {
+        method: "GET",
+        throwHttpErrors: false,
+        retry: { limit: 0 },
+      })
+
+      expect(responseGet.statusCode).toBe(404)
+
+      const responseDelete = await got(`http://localhost:${devServer.port}/products/really-bad-product`, {
+        method: "DELETE",
+        throwHttpErrors: false,
+        retry: { limit: 0 },
+      })
+
+      expect(responseDelete.body).toEqual('Deleted item successfully: really-bad-product')
     })
   })
 

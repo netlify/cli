@@ -161,7 +161,7 @@ const dev = async (options, command) => {
     },
   })
 
-  await startFunctionsServer({
+  const functionsRegistry = await startFunctionsServer({
     api,
     command,
     config,
@@ -217,6 +217,7 @@ const dev = async (options, command) => {
     geolocationMode: options.geo,
     geoCountry: options.country,
     accountId,
+    functionsRegistry,
   })
 
   if (devConfig.autoLaunch !== false) {

@@ -459,7 +459,6 @@ describe.concurrent('commands/dev-miscellaneous', () => {
         })
         .withEdgeFunction({
           handler: async () => {
-            // eslint-disable-next-line no-undef -- `ReadableStream` is a global in Deno
             const body = new ReadableStream({
               async start(controller) {
                 setInterval(() => {
