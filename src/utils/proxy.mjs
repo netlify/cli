@@ -698,6 +698,7 @@ export const startProxy = async function ({
     mainPort: settings.port,
     offline,
     passthroughPort: secondaryServerPort || settings.port,
+    settings,
     projectDir,
     siteInfo,
     accountId,
