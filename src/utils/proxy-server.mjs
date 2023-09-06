@@ -52,6 +52,7 @@ export const generateInspectSettings = (edgeInspect, edgeInspectBrk) => {
  * @param {*} params.siteInfo
  * @param {string} params.projectDir
  * @param {import('./state-config.mjs').default} params.state
+ * @param {import('../lib/functions/registry.mjs').FunctionsRegistry=} params.functionsRegistry
  * @returns
  */
 export const startProxyServer = async ({
@@ -61,6 +62,7 @@ export const startProxyServer = async ({
   configPath,
   debug,
   env,
+  functionsRegistry,
   geoCountry,
   geolocationMode,
   getUpdatedConfig,
@@ -78,6 +80,7 @@ export const startProxyServer = async ({
     configPath: configPath || site.configPath,
     debug,
     env,
+    functionsRegistry,
     geolocationMode,
     geoCountry,
     getUpdatedConfig,
