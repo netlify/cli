@@ -20,7 +20,7 @@ const lmInstall = async ({ force }) => {
  */
 export const createLmInstallCommand = (program) =>
   program
-    .command('lm:install')
+    .command('lm:install', { hidden: true })
     .alias('lm:init')
     .description(
       `Configures your computer to use Netlify Large Media

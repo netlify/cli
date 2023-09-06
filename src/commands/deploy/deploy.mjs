@@ -324,6 +324,7 @@ const runDeploy = async ({
   deployToProduction,
   functionsConfig,
   functionsFolder,
+  packagePath,
   silent,
   site,
   siteData,
@@ -345,13 +346,13 @@ const runDeploy = async ({
     results = await api.createSiteDeploy({ siteId, title, body: { draft, branch: alias } })
     deployId = results.id
 
-    const internalFunctionsFolder = await getInternalFunctionsDir({ base: site.root })
+    const internalFunctionsFolder = await getInternalFunctionsDir({ base: site.root, packagePath })
 
     // The order of the directories matter: zip-it-and-ship-it will prioritize
     // functions from the rightmost directories. In this case, we want user
     // functions to take precedence over internal functions.
     const functionDirectories = [internalFunctionsFolder, functionsFolder].filter(Boolean)
-    const manifestPath = skipFunctionsCache ? null : await getFunctionsManifestPath({ base: site.root })
+    const manifestPath = skipFunctionsCache ? null : await getFunctionsManifestPath({ base: site.root, packagePath })
 
     // @ts-ignore
     results = await deploySite(api, siteId, deployFolder, {
@@ -367,6 +368,7 @@ const runDeploy = async ({
       workingDir: command.workingDir,
       manifestPath,
       skipFunctionsCache,
+      siteRoot: site.root,
     })
   } catch (error_) {
     if (deployId) {
@@ -657,6 +659,7 @@ const deploy = async (options, command) => {
     functionsConfig,
     // pass undefined functionsFolder if doesn't exist
     functionsFolder: functionsFolderStat && functionsFolder,
+    packagePath: command.workspacePackage,
     silent: options.json || options.silent,
     site,
     siteData,

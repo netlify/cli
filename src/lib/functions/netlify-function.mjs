@@ -158,6 +158,36 @@ export default class NetlifyFunction {
     }
   }
 
+  /**
+   * Matches all routes agains the incoming request. If a match is found, then the matched route is returned.
+   * @param {string} rawPath
+   * @param {string} method
+   * @returns matched route
+   */
+  async matchURLPath(rawPath, method) {
+    await this.buildQueue
+
+    const path = (rawPath.endsWith('/') ? rawPath.slice(0, -1) : rawPath).toLowerCase()
+    const { routes = [] } = this.buildData
+    return routes.find(({ expression, literal, methods }) => {
+      if (methods.length !== 0 && !methods.includes(method)) {
+        return false
+      }
+
+      if (literal !== undefined) {
+        return path === literal
+      }
+
+      if (expression !== undefined) {
+        const regex = new RegExp(expression)
+
+        return regex.test(path)
+      }
+
+      return false
+    })
+  }
+
   get url() {
     // This line fixes the issue here https://github.com/netlify/cli/issues/4116
     // Not sure why `settings.port` was used here nor does a valid reference exist.
