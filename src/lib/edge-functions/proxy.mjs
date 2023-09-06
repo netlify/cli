@@ -78,6 +78,7 @@ export const createAccountInfoHeader = (accountInfo = {}) => {
  * @param {boolean=} config.offline
  * @param {*} config.passthroughPort
  * @param {*} config.projectDir
+ * @param {*} config.settings
  * @param {*} config.siteInfo
  * @param {*} config.state
  * @returns
@@ -96,6 +97,7 @@ export const initializeProxy = async ({
   offline,
   passthroughPort,
   projectDir,
+  settings,
   siteInfo,
   state,
 }) => {
@@ -167,26 +169,20 @@ export const initializeProxy = async ({
     }
 
     const featureFlags = ['edge_functions_bootstrap_failure_mode']
-    const forwardedHost = `localhost:${passthroughPort}`
 
     req[headersSymbol] = {
       [headers.FeatureFlags]: getFeatureFlagsHeader(featureFlags),
-      [headers.ForwardedHost]: forwardedHost,
+      [headers.ForwardedProtocol]: settings.https ? 'https:' : 'http:',
       [headers.Functions]: functionNames.join(','),
       [headers.InvocationMetadata]: getInvocationMetadataHeader(invocationMetadata),
       [headers.IP]: LOCAL_HOST,
       [headers.Passthrough]: 'passthrough',
+      [headers.PassthroughHost]: `localhost:${passthroughPort}`,
+      [headers.PassthroughProtocol]: 'http:',
     }
 
     if (debug) {
       req[headersSymbol][headers.DebugLogging] = '1'
-    }
-
-    // If we're using a different port for passthrough requests, which is the
-    // case when the CLI is running on HTTPS, use it on the Host header so
-    // that the request URL inside the edge function is something accessible.
-    if (mainPort !== passthroughPort) {
-      req[headersSymbol].host = forwardedHost
     }
 
     return `http://${LOCAL_HOST}:${isolatePort}`
