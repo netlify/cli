@@ -1,2 +1,27 @@
+[build]
+publish = "public"
+
 [functions]
 directory = "functions"
+
+[[redirects]]
+force = true
+from = "/v2-to-legacy-with-force"
+status = 200
+to = "/.netlify/functions/custom-path-literal"
+
+[[redirects]]
+from = "/v2-to-legacy-without-force"
+status = 200
+to = "/.netlify/functions/custom-path-literal"
+
+[[redirects]]
+force = true
+from = "/v2-to-custom-with-force"
+status = 200
+to = "/products"
+
+[[redirects]]
+from = "/v2-to-custom-without-force"
+status = 200
+to = "/products"

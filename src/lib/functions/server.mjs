@@ -7,6 +7,7 @@ import jwtDecode from 'jwt-decode'
 
 import { NETLIFYDEVERR, NETLIFYDEVLOG, error as errorExit, log } from '../../utils/command-helpers.mjs'
 import { CLOCKWORK_USERAGENT, getFunctionsDistPath, getInternalFunctionsDir } from '../../utils/functions/index.mjs'
+import { NFFunctionName, NFFunctionRoute } from '../../utils/headers.mjs'
 import { headers as efHeaders } from '../edge-functions/headers.mjs'
 import { getGeoLocation } from '../geo-location.mjs'
 
@@ -55,9 +56,22 @@ export const createHandler = function (options) {
   const { functionsRegistry } = options
 
   return async function handler(request, response) {
-    // handle proxies without path re-writes (http-servr)
-    const cleanPath = request.path.replace(/^\/.netlify\/(functions|builders)/, '')
-    const functionName = cleanPath.split('/').find(Boolean)
+    // If these headers are set, it means we've already matched a function and we
+    // can just grab its name directly. We delete the header from the request
+    // because we don't want to expose it to user code.
+    let functionName = request.header(NFFunctionName)
+    delete request.headers[NFFunctionName]
+    const functionRoute = request.header(NFFunctionRoute)
+    delete request.headers[NFFunctionRoute]
+
+    // If we didn't match a function with a custom route, let's try to match
+    // using the fixed URL format.
+    if (!functionName) {
+      const cleanPath = request.path.replace(/^\/.netlify\/(functions|builders)/, '')
+
+      functionName = cleanPath.split('/').find(Boolean)
+    }
+
     const func = functionsRegistry.get(functionName)
 
     if (func === undefined) {
@@ -136,6 +150,7 @@ export const createHandler = function (options) {
       isBase64Encoded,
       rawUrl,
       rawQuery,
+      route: functionRoute,
     }
 
     const clientContext = buildClientContext(request.headers) || {}
@@ -231,7 +246,7 @@ const getFunctionsServer = (options) => {
  * @param {*} options.site
  * @param {string} options.siteUrl
  * @param {*} options.timeouts
- * @returns
+ * @returns {Promise<import('./registry.mjs').FunctionsRegistry | undefined>}
  */
 export const startFunctionsServer = async (options) => {
   const { capabilities, command, config, debug, loadDistFunctions, settings, site, siteUrl, timeouts } = options
@@ -272,9 +287,11 @@ export const startFunctionsServer = async (options) => {
 
   await functionsRegistry.scan(functionsDirectories)
 
-  const server = await getFunctionsServer(Object.assign(options, { functionsRegistry }))
+  const server = getFunctionsServer(Object.assign(options, { functionsRegistry }))
 
   await startWebServer({ server, settings, debug })
+
+  return functionsRegistry
 }
 
 /**

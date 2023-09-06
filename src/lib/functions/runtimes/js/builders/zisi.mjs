@@ -58,6 +58,7 @@ const buildFunction = async ({
     includedFiles,
     inputs,
     path: functionPath,
+    routes,
     runtimeAPIVersion,
     schedule,
   } = await memoizedBuild({
@@ -81,7 +82,7 @@ const buildFunction = async ({
 
   clearFunctionsCache(targetDirectory)
 
-  return { buildPath, includedFiles, runtimeAPIVersion, srcFiles, schedule }
+  return { buildPath, includedFiles, routes, runtimeAPIVersion, srcFiles, schedule }
 }
 
 /**
