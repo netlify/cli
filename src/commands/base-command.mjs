@@ -54,11 +54,39 @@ const HELP_INDENT_WIDTH = 2
 const HELP_SEPARATOR_WIDTH = 5
 
 /**
- * A list of commands where we don't have to perform the workspace selection at.
- * Those commands work with the system or are not writing any config files that need to be
- * workspace aware.
+ * Determines whether a command and array of flags requires workspace selection
+ * @param {string} command
+ * @param {import('commander').OptionValues} flags
+ * @returns {boolean}
  */
-const COMMANDS_WITHOUT_WORKSPACE_OPTIONS = new Set(['api', 'recipes', 'completion', 'status', 'switch', 'login', 'lm'])
+const requiresWorkspaceSelection = (command, flags) => {
+  /**
+   * An object of commands where we don't have to perform the workspace selection at. Value describes
+   * flags that must be sent to the command such that it does not need workspace selection.
+   * Those commands work with the system or are not writing any config files that need to be
+   * workspace aware.
+   *
+   * @type {Record<string, string[]>}
+   */
+  const COMMANDS_WITHOUT_WORKSPACE_OPTIONS = {
+    api: [],
+    recipes: [],
+    completion: [],
+    status: [],
+    switch: [],
+    login: [],
+    lm: [],
+    deploy: ['trigger'],
+  }
+
+  if (
+    Object.hasOwn(COMMANDS_WITHOUT_WORKSPACE_OPTIONS, command) &&
+    COMMANDS_WITHOUT_WORKSPACE_OPTIONS[command].every((flag) => Object.hasOwn(flags, flag))
+  ) {
+    return false
+  }
+  return true
+}
 
 /**
  * Formats a help list correctly with the correct indent
@@ -198,7 +226,8 @@ export default class BaseCommand extends Command {
       .option('--debug', 'Print debugging information')
 
     // only add the `--filter` option to commands that are workspace aware
-    if (!COMMANDS_WITHOUT_WORKSPACE_OPTIONS.has(name)) {
+    // during command construction we don't know what the flags are, so we only check the name
+    if (requiresWorkspaceSelection(name, [])) {
       base.option('--filter <app>', 'For monorepos, specify the name of the application to run the command in')
     }
 
@@ -536,7 +565,7 @@ export default class BaseCommand extends Command {
     // check if we have detected multiple projects inside which one we have to perform our operations.
     // only ask to select one if on the workspace root
     if (
-      !COMMANDS_WITHOUT_WORKSPACE_OPTIONS.has(actionCommand.name()) &&
+      requiresWorkspaceSelection(actionCommand.name(), flags) &&
       this.project.workspace?.packages.length &&
       this.project.workspace.isRoot
     ) {
