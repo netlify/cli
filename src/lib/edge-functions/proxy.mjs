@@ -1,6 +1,6 @@
 // @ts-check
 import { Buffer } from 'buffer'
-import { join, relative } from 'path'
+import { join, resolve, relative } from 'path'
 import { env } from 'process'
 
 // eslint-disable-next-line import/no-namespace
@@ -206,11 +206,13 @@ const prepareServer = async ({
 }) => {
   // Merging internal with user-defined import maps.
   const importMapPaths = [...importMaps, config.functions['*'].deno_import_map]
+  const servePath = resolve(projectDir, getPathInProject(['edge-functions-serve']))
 
   try {
     const distImportMapPath = getPathInProject([DIST_IMPORT_MAP_PATH])
     const runIsolate = await bundler.serve({
       ...getDownloadUpdateFunctions(),
+      basePath: projectDir,
       bootstrapURL: getBootstrapURL(),
       debug: env.NETLIFY_DENO_DEBUG === 'true',
       distImportMapPath: join(projectDir, distImportMapPath),
@@ -223,6 +225,7 @@ const prepareServer = async ({
       importMapPaths,
       inspectSettings,
       port,
+      servePath,
     })
     const registry = new EdgeFunctionsRegistry({
       bundler,

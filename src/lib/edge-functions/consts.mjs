@@ -8,4 +8,5 @@ export const PUBLIC_URL_PATH = '.netlify/internal/edge-functions'
 export const featureFlags = {
   edge_functions_config_export: true,
   edge_functions_read_deno_config: true,
+  edge_functions_npm_modules: true,
 }
