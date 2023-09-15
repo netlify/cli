@@ -126,6 +126,14 @@ describe.runIf(gte(version, '18.13.0'))('v2 api', () => {
       expect(await response.text()).toBe(`With expression path: {"sku":"netlify"}`)
     })
 
+    test<FixtureTestContext>('returns 404 when using the default function URL to access a function with custom routes', async ({
+      devServer,
+    }) => {
+      const url = `http://localhost:${devServer.port}/.netlify/functions/custom-path-literal`
+      const response = await fetch(url)
+      expect(response.status).toBe(404)
+    })
+
     describe('handles rewrites to a function', () => {
       test<FixtureTestContext>('rewrite to legacy URL format with `force: true`', async ({ devServer }) => {
         const url = `http://localhost:${devServer.port}/v2-to-legacy-with-force`

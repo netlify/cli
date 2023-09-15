@@ -14,6 +14,7 @@ import { getPathInProject } from '../settings.mjs'
 import NetlifyFunction from './netlify-function.mjs'
 import runtimes from './runtimes/index.mjs'
 
+const DEFAULT_URL_EXPRESSION = /^\/.netlify\/(functions|builders)\/([^/]+).*/
 const ZIP_EXTENSION = '.zip'
 
 export class FunctionsRegistry {
@@ -123,6 +124,32 @@ export class FunctionsRegistry {
   }
 
   async getFunctionForURLPath(urlPath, method) {
+    const defaultURLMatch = urlPath.match(DEFAULT_URL_EXPRESSION)
+
+    if (defaultURLMatch) {
+      const func = this.get(defaultURLMatch[2])
+
+      if (!func) {
+        return
+      }
+
+      const { routes = [] } = await func.getBuildData()
+
+      if (routes.length !== 0) {
+        const paths = routes.map((route) => chalk.underline(route.pattern)).join(', ')
+
+        warn(
+          `Function ${chalk.yellow(func.name)} cannot be invoked on ${chalk.underline(
+            urlPath,
+          )}, because the function has the following URL paths defined: ${paths}`,
+        )
+
+        return
+      }
+
+      return { func, route: null }
+    }
+
     for (const func of this.functions.values()) {
       const route = await func.matchURLPath(urlPath, method)
 

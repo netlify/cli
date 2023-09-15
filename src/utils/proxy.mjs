@@ -597,18 +597,17 @@ const onRequest = async (
     return proxy.web(req, res, { target: edgeFunctionsProxyURL })
   }
 
-  // Does the request match a function on the fixed URL path?
-  if (isFunction(settings.functionsPort, req.url)) {
-    return proxy.web(req, res, { target: functionsServer })
-  }
-
-  // Does the request match a function on a custom URL path?
-  const functionMatch = functionsRegistry ? await functionsRegistry.getFunctionForURLPath(req.url, req.method) : null
+  const functionMatch = await functionsRegistry.getFunctionForURLPath(req.url, req.method)
 
   if (functionMatch) {
     // Setting an internal header with the function name so that we don't
     // have to match the URL again in the functions server.
-    const headers = { [NFFunctionName]: functionMatch.func.name, [NFFunctionRoute]: functionMatch.route.pattern }
+    /** @type {Record<string, string>} */
+    const headers = { [NFFunctionName]: functionMatch.func.name }
+
+    if (functionMatch.route) {
+      headers[NFFunctionRoute] = functionMatch.route.pattern
+    }
 
     return proxy.web(req, res, { headers, target: functionsServer })
   }
