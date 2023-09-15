@@ -45,6 +45,8 @@ export const getBuildOptions = ({
   cwd,
   featureFlags: {
     ...edgeFunctionsFeatureFlags,
+    // eslint-disable-next-line unicorn/no-useless-fallback-in-spread
+    ...(cachedConfig.siteInfo.feature_flags ?? {}),
     functionsBundlingManifest: true,
   },
   edgeFunctionsBootstrapURL: getBootstrapURL(),
