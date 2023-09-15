@@ -302,8 +302,9 @@ export class EdgeFunctionsRegistry {
 
   /**
    * @param {string} urlPath
+   * @param {string} method
    */
-  matchURLPath(urlPath) {
+  matchURLPath(urlPath, method) {
     const declarations = this.#bundler.mergeDeclarations(
       this.#declarationsFromTOML,
       this.#userFunctionConfigs,
@@ -318,23 +319,42 @@ export class EdgeFunctionsRegistry {
       functions: this.#functions,
       featureFlags,
     })
-    const invocationMetadata = {
-      function_config: manifest.function_config,
-      routes: manifest.routes.map((route) => ({ function: route.function, pattern: route.pattern })),
-    }
     const routes = [...manifest.routes, ...manifest.post_cache_routes].map((route) => ({
       ...route,
       pattern: new RegExp(route.pattern),
     }))
-    const functionNames = routes
-      .filter(({ pattern }) => pattern.test(urlPath))
-      .filter(({ function: name }) => {
-        const isExcluded = manifest.function_config[name]?.excluded_patterns?.some((pattern) =>
-          new RegExp(pattern).test(urlPath),
-        )
-        return !isExcluded
-      })
-      .map((route) => route.function)
+
+    /** @type string[] */
+    const functionNames = []
+
+    /** @type number[] */
+    const routeIndexes = []
+
+    routes.forEach((route, index) => {
+      if (route.methods && route.methods.length !== 0 && !route.methods.includes(method)) {
+        return
+      }
+
+      if (!route.pattern.test(urlPath)) {
+        return
+      }
+
+      const isExcluded = manifest.function_config[route.function]?.excluded_patterns?.some((pattern) =>
+        new RegExp(pattern).test(urlPath),
+      )
+
+      if (isExcluded) {
+        return
+      }
+
+      functionNames.push(route.function)
+      routeIndexes.push(index)
+    })
+    const invocationMetadata = {
+      function_config: manifest.function_config,
+      req_routes: routeIndexes,
+      routes: manifest.routes.map((route) => ({ function: route.function, path: route.path, pattern: route.pattern })),
+    }
     const orphanedDeclarations = this.#matchURLPathAgainstOrphanedDeclarations(urlPath)
 
     return { functionNames, invocationMetadata, orphanedDeclarations }
