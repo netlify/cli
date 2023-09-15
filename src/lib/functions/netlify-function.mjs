@@ -124,7 +124,7 @@ export default class NetlifyFunction {
   }
 
   async getBuildData() {
-    await this.buildQueue()
+    await this.buildQueue
 
     return this.buildData
   }
