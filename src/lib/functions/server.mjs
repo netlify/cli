@@ -7,7 +7,7 @@ import jwtDecode from 'jwt-decode'
 
 import { NETLIFYDEVERR, NETLIFYDEVLOG, error as errorExit, log } from '../../utils/command-helpers.mjs'
 import { CLOCKWORK_USERAGENT, getFunctionsDistPath, getInternalFunctionsDir } from '../../utils/functions/index.mjs'
-import { NFFunctionName } from '../../utils/headers.mjs'
+import { NFFunctionName, NFFunctionRoute } from '../../utils/headers.mjs'
 import { headers as efHeaders } from '../edge-functions/headers.mjs'
 import { getGeoLocation } from '../geo-location.mjs'
 
@@ -56,11 +56,13 @@ export const createHandler = function (options) {
   const { functionsRegistry } = options
 
   return async function handler(request, response) {
-    // If this header is set, it means we've already matched a function and we
+    // If these headers are set, it means we've already matched a function and we
     // can just grab its name directly. We delete the header from the request
     // because we don't want to expose it to user code.
     let functionName = request.header(NFFunctionName)
     delete request.headers[NFFunctionName]
+    const functionRoute = request.header(NFFunctionRoute)
+    delete request.headers[NFFunctionRoute]
 
     // If we didn't match a function with a custom route, let's try to match
     // using the fixed URL format.
@@ -148,6 +150,7 @@ export const createHandler = function (options) {
       isBase64Encoded,
       rawUrl,
       rawQuery,
+      route: functionRoute,
     }
 
     const clientContext = buildClientContext(request.headers) || {}

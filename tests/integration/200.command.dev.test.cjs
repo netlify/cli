@@ -6,7 +6,6 @@ const path = require('path')
 // eslint-disable-next-line ava/use-test
 const avaTest = require('ava')
 const { isCI } = require('ci-info')
-const { Response } = require('node-fetch')
 
 const { curl } = require('./utils/curl.cjs')
 const { withDevServer } = require('./utils/dev-server.cjs')
@@ -239,10 +238,15 @@ export const handler = async function () {
 
             if (req.url.includes('?ef=fetch')) {
               const url = new URL('/origin', req.url)
-              const res = await fetch(url)
-              const text = await res.text()
+              try {
+                await fetch(url, {})
+              } catch (error) {
+                return new Response(error, { status: 500 })
+              }
+            }
 
-              return new Response(text.toUpperCase(), res)
+            if (req.url.includes('?ef=url')) {
+              return new Response(req.url)
             }
           },
           name: 'hello',
@@ -254,13 +258,17 @@ export const handler = async function () {
         copyFile(`${__dirname}/../../localhost.key`, `${builder.directory}/localhost.key`),
       ])
       await withDevServer({ cwd: builder.directory, args }, async ({ port }) => {
-        const options = { https: { rejectUnauthorized: false } }
+        const options = { https: { rejectUnauthorized: false }, throwHttpErrors: false }
+        t.is(await got(`https://localhost:${port}/?ef=url`, options).text(), `https://localhost:${port}/?ef=url`)
         t.is(await got(`https://localhost:${port}`, options).text(), 'index')
         t.is(await got(`https://localhost:${port}?ef=true`, options).text(), 'INDEX')
-        t.is(await got(`https://localhost:${port}?ef=fetch`, options).text(), 'ORIGIN')
         t.deepEqual(await got(`https://localhost:${port}/api/hello`, options).json(), {
           rawUrl: `https://localhost:${port}/api/hello`,
         })
+
+        // the fetch will go against the `https://` url of the dev server, which isn't trusted system-wide.
+        // this is the expected behaviour for fetch, so we shouldn't change anything about it.
+        t.regex(await got(`https://localhost:${port}?ef=fetch`, options).text(), /invalid peer certificate/)
       })
     })
   })

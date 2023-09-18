@@ -37,4 +37,4 @@ const lmInfo = async () => {
  * @returns
  */
 export const createLmInfoCommand = (program) =>
-  program.command('lm:info').description('Show large media requirements information.').action(lmInfo)
+  program.command('lm:info', { hidden: true }).description('Show large media requirements information.').action(lmInfo)

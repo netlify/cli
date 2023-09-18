@@ -25,8 +25,10 @@ export const createLmCommand = (program) => {
   createLmUninstallCommand(program)
 
   program
-    .command('lm')
-    .description('Handle Netlify Large Media operations\nThe lm command will help you manage large media for a site')
+    .command('lm', { hidden: true })
+    .description(
+      '[Deprecated and will be removed from future versions] Handle Netlify Large Media operations\nThe lm command will help you manage large media for a site',
+    )
     .addExamples(['netlify lm:info', 'netlify lm:install', 'netlify lm:setup'])
     .action(lm)
 }

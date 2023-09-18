@@ -31,7 +31,7 @@ import renderErrorTemplate from '../lib/render-error-template.mjs'
 
 import { NETLIFYDEVLOG, NETLIFYDEVWARN, log, chalk } from './command-helpers.mjs'
 import createStreamPromise from './create-stream-promise.mjs'
-import { headersForPath, parseHeaders, NFFunctionName, NFRequestID } from './headers.mjs'
+import { headersForPath, parseHeaders, NFFunctionName, NFRequestID, NFFunctionRoute } from './headers.mjs'
 import { generateRequestID } from './request-id.mjs'
 import { createRewriter, onChanges } from './rules-proxy.mjs'
 import { signRedirect } from './sign-redirect.mjs'
@@ -328,7 +328,8 @@ const serveRedirect = async function ({ env, functionsRegistry, match, options, 
       return proxy.web(req, res, { target: options.functionsServer })
     }
 
-    const functionWithCustomRoute = functionsRegistry && (await functionsRegistry.getFunctionForURLPath(destURL))
+    const functionWithCustomRoute =
+      functionsRegistry && (await functionsRegistry.getFunctionForURLPath(destURL, req.method))
     const destStaticFile = await getStatic(dest.pathname, options.publicFolder)
     let statusValue
     if (
@@ -342,7 +343,9 @@ const serveRedirect = async function ({ env, functionsRegistry, match, options, 
     }
 
     if (isFunction(options.functionsPort, req.url) || functionWithCustomRoute) {
-      const functionHeaders = functionWithCustomRoute ? { [NFFunctionName]: functionWithCustomRoute.name } : {}
+      const functionHeaders = functionWithCustomRoute
+        ? { [NFFunctionName]: functionWithCustomRoute.func.name, [NFFunctionRoute]: functionWithCustomRoute.route }
+        : {}
       const url = reqToURL(req, originalURL)
       req.headers['x-netlify-original-pathname'] = url.pathname
       req.headers['x-netlify-original-search'] = url.search
@@ -600,12 +603,12 @@ const onRequest = async (
   }
 
   // Does the request match a function on a custom URL path?
-  const functionMatch = functionsRegistry ? await functionsRegistry.getFunctionForURLPath(req.url) : null
+  const functionMatch = functionsRegistry ? await functionsRegistry.getFunctionForURLPath(req.url, req.method) : null
 
   if (functionMatch) {
     // Setting an internal header with the function name so that we don't
     // have to match the URL again in the functions server.
-    const headers = { [NFFunctionName]: functionMatch.name }
+    const headers = { [NFFunctionName]: functionMatch.func.name, [NFFunctionRoute]: functionMatch.route.pattern }
 
     return proxy.web(req, res, { headers, target: functionsServer })
   }
@@ -695,6 +698,7 @@ export const startProxy = async function ({
     mainPort: settings.port,
     offline,
     passthroughPort: secondaryServerPort || settings.port,
+    settings,
     projectDir,
     siteInfo,
     accountId,

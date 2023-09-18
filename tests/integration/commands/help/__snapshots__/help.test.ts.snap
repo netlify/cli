@@ -23,7 +23,6 @@ COMMANDS
                  sites:create\`
   $ link         Link a local repo or project folder to an existing site on
                  Netlify
-  $ lm           Handle Netlify Large Media operations
   $ login        Login to your Netlify account
   $ open         Open settings for the site linked to the current folder
   $ serve        (Beta) Build the site for production and serve locally. This
