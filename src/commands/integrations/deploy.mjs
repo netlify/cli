@@ -22,6 +22,18 @@ function areScopesEqual(localScopes, remoteScopes) {
   return localScopes.every((scope) => remoteScopes.includes(scope))
 }
 
+function logScopeConfirmationMessage(localScopes, remoteScopes) {
+  log(chalk.yellow(`This integration is already registered. The current required scopes are:`))
+  for (const scope of registeredIntegrationScopes) {
+    log(chalk.green(`- ${scope}`))
+  }
+  log(chalk.yellow("and will be updated to:"))
+  for (const scope of localScopes) {
+    log(chalk.green(`- ${scope}`))
+  }
+  log(chalk.yellow("if you continue. This will only affect future installations of the integration."));
+}
+
 
 /**
  * The deploy command for Netlify Integrations
@@ -97,15 +109,7 @@ const deploy = async (options, command) => {
   }
 
   if (!areScopesEqual(localScopes, registeredIntegrationScopes)) {
-    log(chalk.yellow(`This integration is already registered. The current required scopes are:`))
-    for (const scope of registeredIntegrationScopes) {
-      log(chalk.green(`- ${scope}`))
-    }
-    log(chalk.yellow("and will be updated to:"))
-    for (const scope of localScopes) {
-      log(chalk.green(`- ${scope}`))
-    }
-    log(chalk.yellow("if you continue. This will only affect future installations of the integration."));
+    logScopeConfirmationMessage(localScopes, registeredIntegrationScopes)
         
     const scopePrompt = await inquirer.prompt([
       {
@@ -120,14 +124,21 @@ const deploy = async (options, command) => {
     if (scopePrompt.updateScopes) {
       // Update the scopes in remote
       scopesToWrite = scopes
-      const updatedIntegration = await fetch(`${INTEGRATION_URL}/${accountId}/integrations/${integrationSlug}`, {
+      const {body: updatedIntegration, statusCode} = await fetch(`${INTEGRATION_URL}/${accountId}/integrations/${integrationSlug}`, {
         method: 'PUT',
         headers: {
           "netlify-token": token
         },
         body: JSON.stringify({ name, description, hostSiteId: siteId, scopes: localScopes.join(',') })
-      }).then(res => res.json())
+      }).then(async res => {
+        const body = await res.json()
+        return {body, statusCode: res.status}
+      })
 
+      if (statusCode !== 200) {
+        log(chalk.red(`There was an error updating the integration. Please try again. If the problem persists, please contact support.`))
+        return;
+      }
     } else {
       // Use the scopes that are already registered
       log(chalk.white("Saving the currently registered scopes to the integration.yaml file."));
