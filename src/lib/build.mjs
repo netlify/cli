@@ -45,6 +45,7 @@ export const getBuildOptions = ({
   cwd,
   featureFlags: {
     ...edgeFunctionsFeatureFlags,
+    ...cachedConfig.siteInfo.feature_flags,
     functionsBundlingManifest: true,
   },
   edgeFunctionsBootstrapURL: getBootstrapURL(),
