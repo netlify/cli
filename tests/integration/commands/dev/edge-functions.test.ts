@@ -48,7 +48,7 @@ describe('edge functions', () => {
 
     test<FixtureTestContext>('should respect config.methods field', async ({ devServer }) => {
       const responseGet = await got(`http://localhost:${devServer.port}/products/really-bad-product`, {
-        method: "GET",
+        method: 'GET',
         throwHttpErrors: false,
         retry: { limit: 0 },
       })
@@ -56,12 +56,38 @@ describe('edge functions', () => {
       expect(responseGet.statusCode).toBe(404)
 
       const responseDelete = await got(`http://localhost:${devServer.port}/products/really-bad-product`, {
-        method: "DELETE",
+        method: 'DELETE',
         throwHttpErrors: false,
         retry: { limit: 0 },
       })
 
       expect(responseDelete.body).toEqual('Deleted item successfully: really-bad-product')
+    })
+
+    test<FixtureTestContext>('should show an error page when an edge function has an uncaught exception', async ({
+      devServer,
+    }) => {
+      // Request #1: Plain text
+      const res1 = await got(`http://localhost:${devServer.port}/uncaught-exception`, {
+        method: 'GET',
+        throwHttpErrors: false,
+        retry: { limit: 0 },
+      })
+
+      expect(res1.statusCode).toBe(500)
+      expect(res1.body).toContain('ReferenceError: thisWillThrow is not defined')
+
+      // Request #1: HTML
+      const res2 = await got(`http://localhost:${devServer.port}/uncaught-exception`, {
+        method: 'GET',
+        headers: {
+          Accept: 'text/html',
+        },
+        throwHttpErrors: false,
+        retry: { limit: 0 },
+      })
+
+      expect(res2.body).toContain('<p>An unhandled error in the function code triggered the following message:</p>')
     })
   })
 
@@ -73,7 +99,7 @@ describe('edge functions', () => {
       await fixture.builder
         .withEdgeFunction({
           name: 'new',
-          handler: async (_, context) => new Response('hello'),
+          handler: async () => new Response('hello'),
           config: { path: ['/new'] },
         })
         .build()

@@ -544,7 +544,7 @@ const initializeProxy = async function ({ configPath, distDir, env, host, port, 
 
       if (isEdgeFunctionsRequest(req) && isUncaughtError) {
         const acceptsHtml = req.headers && req.headers.accept && req.headers.accept.includes('text/html')
-        const decompressedBody = await decompressResponseBody(responseBody, req.headers['content-encoding'])
+        const decompressedBody = await decompressResponseBody(responseBody, proxyRes.headers['content-encoding'])
         const formattedBody = formatEdgeFunctionError(decompressedBody, acceptsHtml)
         const errorResponse = acceptsHtml
           ? await renderErrorTemplate(formattedBody, './templates/function-error.html', 'edge function')
