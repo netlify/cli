@@ -77,7 +77,7 @@ describe('edge functions', () => {
       expect(res1.statusCode).toBe(500)
       expect(res1.body).toContain('ReferenceError: thisWillThrow is not defined')
 
-      // Request #1: HTML
+      // Request #2: HTML
       const res2 = await got(`http://localhost:${devServer.port}/uncaught-exception`, {
         method: 'GET',
         headers: {
