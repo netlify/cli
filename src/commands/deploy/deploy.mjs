@@ -63,20 +63,24 @@ const triggerDeploy = async ({ api, options, siteData, siteId }) => {
 }
 
 /**
- * g
+ * Retrieves the folder containing the static files that need to be deployed
  * @param {object} config
- * @param {string} config.workingDir The process working directory
+ * @param {import('../base-command.mjs').default} config.command The process working directory
  * @param {object} config.config
  * @param {import('commander').OptionValues} config.options
  * @param {object} config.site
  * @param {object} config.siteData
  * @returns {Promise<string>}
  */
-const getDeployFolder = async ({ config, options, site, siteData, workingDir }) => {
-  console.log()
+const getDeployFolder = async ({ command, config, options, site, siteData }) => {
   let deployFolder
+  // if the `--dir .` flag is provided we should resolve it to the working directory.
+  // - in regular sites this is the `process.cwd`
+  // - in mono repositories this will be the root of the jsWorkspace
   if (options.dir) {
-    deployFolder = resolve(site.root, options.dir)
+    deployFolder = command.workspacePackage
+      ? resolve(command.jsWorkspaceRoot || site.root, options.dir)
+      : resolve(command.workingDir, options.dir)
   } else if (config?.build?.publish) {
     deployFolder = resolve(site.root, config.build.publish)
   } else if (siteData?.build_settings?.dir) {
@@ -91,7 +95,7 @@ const getDeployFolder = async ({ config, options, site, siteData, workingDir }) 
         name: 'promptPath',
         message: 'Publish directory',
         default: '.',
-        filter: (input) => resolve(workingDir, input),
+        filter: (input) => resolve(command.workingDir, input),
       },
     ])
     deployFolder = promptPath
@@ -599,7 +603,7 @@ const deploy = async (options, command) => {
   })
   const config = newConfig || command.netlify.config
 
-  const deployFolder = await getDeployFolder({ workingDir, options, config, site, siteData })
+  const deployFolder = await getDeployFolder({ command, options, config, site, siteData })
   const functionsFolder = getFunctionsFolder({ workingDir, options, config, site, siteData })
   const { configPath } = site
   const edgeFunctionsConfig = command.netlify.config.edge_functions
