@@ -529,7 +529,7 @@ const printResults = ({ deployToProduction, json, results, runBuildCommand }) =>
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command.mjs').default} command
  */
-const deploy = async (options, command) => {
+export const deploy = async (options, command) => {
   const { workingDir } = command
   const { api, site, siteInfo } = command.netlify
   const alias = options.alias || options.branch

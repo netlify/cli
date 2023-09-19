@@ -5,6 +5,7 @@ import { getConfiguration } from '@netlify/sdk/cli-utils'
 import { getBuildOptions } from '../../lib/build.mjs'
 import { getSiteInformation } from '../../utils/dev.mjs'
 import { resolve } from "path";
+import {deploy as siteDeploy} from '../deploy/deploy.mjs'
 
 import inquirer from 'inquirer'
 import fs from 'fs-extra'
@@ -187,7 +188,10 @@ const deploy = async (options, command) => {
     await fs.writeFile(filePath, updatedIntegrationConfig)
 
     log(chalk.yellow("Your integration.yaml file has been updated. Please commit and push these changes."));
-    return;
+      
+    // Deploy the integration to that site
+    await siteDeploy({...options}, command)
+    return
   } else if (slug != registeredIntegration.slug) {
     // Update the project's integration.yaml file with the remote slug since that will
     // be considered the source of truth and is a value that can't be edited by the user.
@@ -264,8 +268,6 @@ const deploy = async (options, command) => {
 
     log(chalk.yellow("Changes to the integration.yaml file are complete. Please commit and push these changes."));
   }
-  
-  // Deploy the integration to that site
 }
 
 /**
