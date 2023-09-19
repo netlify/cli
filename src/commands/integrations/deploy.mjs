@@ -5,7 +5,7 @@ import { getConfiguration } from '@netlify/sdk/cli-utils'
 import { getBuildOptions } from '../../lib/build.mjs'
 import { getSiteInformation } from '../../utils/dev.mjs'
 import { resolve } from "path";
-import {deploy as siteDeploy} from '../deploy/deploy.mjs'
+import { deploy as siteDeploy } from '../deploy/deploy.mjs'
 
 import inquirer from 'inquirer'
 import fs from 'fs-extra'
@@ -37,8 +37,8 @@ function logScopeConfirmationMessage(localScopes, remoteScopes) {
 
 function formatScopesToWrite(registeredIntegrationScopes) {
   let scopesToWrite = {}
-  
-  for (const i=0; i<registeredIntegrationScopes.length; i++) {
+
+  for (const i = 0; i < registeredIntegrationScopes.length; i++) {
     const scope = registeredIntegrationScopes[i]
     const [resource, permission] = scope.split(':')
     if (resource === 'all') {
@@ -93,7 +93,7 @@ function verifyRequiredFieldsAreInConfig(name, description, scopes) {
 const deploy = async (options, command) => {
   // Need to check for a linked site (see the 'checkOptions' in the build/build.mjs file for how to check for a token and linked site)
   const { api, cachedConfig, site, siteInfo } = command.netlify
-  const {id: siteId} = site
+  const { id: siteId } = site
   const [token] = await getToken()
 
   const buildOptions = await getBuildOptions({
@@ -115,16 +115,16 @@ const deploy = async (options, command) => {
     siteInfo,
   })
 
-  const {body: registeredIntegration, statusCode} = await fetch(`${INTEGRATION_URL}/${accountId}/integrations?site_id=${siteId}`, {
+  const { body: registeredIntegration, statusCode } = await fetch(`${INTEGRATION_URL}/${accountId}/integrations?site_id=${siteId}`, {
     headers: {
       "netlify-token": token
     }
   }).then(async (res) => {
     const body = await res.json()
-    return {body, statusCode: res.status}
+    return { body, statusCode: res.status }
   })
 
-  
+
   let { name, description, scopes, slug } = await getConfiguration()
   let integrationSlug = slug
 
@@ -146,13 +146,13 @@ const deploy = async (options, command) => {
       return;
     }
 
-    if(!verifyRequiredFieldsAreInConfig(name, description, scopes)) {
+    if (!verifyRequiredFieldsAreInConfig(name, description, scopes)) {
       return;
     }
-    
+
     log(chalk.white("Registering the integration..."))
 
-    const {body, statusCode} = await fetch(`${INTEGRATION_URL}/${accountId}/integrations`, {
+    const { body, statusCode } = await fetch(`${INTEGRATION_URL}/${accountId}/integrations`, {
       method: "POST",
       headers: {
         "netlify-token": token
@@ -166,7 +166,7 @@ const deploy = async (options, command) => {
       })
     }).then(async (res) => {
       const body = await res.json()
-      return {body, statusCode: res.status}
+      return { body, statusCode: res.status }
     })
 
     if (statusCode !== 201) {
@@ -182,92 +182,92 @@ const deploy = async (options, command) => {
 
     log(chalk.green(`Successfully registered the integration with the slug: ${body.slug}`))
 
-    const updatedIntegrationConfig = yaml.dump({ config: {name, description, slug: body.slug, scopes }})
+    const updatedIntegrationConfig = yaml.dump({ config: { name, description, slug: body.slug, scopes } })
 
     const filePath = resolve(process.cwd(), 'integration.yaml')
     await fs.writeFile(filePath, updatedIntegrationConfig)
 
     log(chalk.yellow("Your integration.yaml file has been updated. Please commit and push these changes."));
-      
-    // Deploy the integration to that site
-    await siteDeploy(options, command)
-    return
-  } else if (slug != registeredIntegration.slug) {
-    // Update the project's integration.yaml file with the remote slug since that will
-    // be considered the source of truth and is a value that can't be edited by the user.
-    // Let the user know they need to commit and push the changes.
-    integrationSlug = registeredIntegration.slug;
-
-    log(chalk.green(`Updated the integration.yaml file with the slug that is registered for this integration: ${integrationSlug}.`))
-  }
-
-  if (!name) {
-    name = registeredIntegration.name
-  }
-
-  if (!description) {
-    description = registeredIntegration.description
-  }
-
-  // This is returned as a comma separated string and will be easier to manage here as an array
-  const registeredIntegrationScopes = registeredIntegration.scopes.split(',');
-
-  const scopeResources = Object.keys(scopes)
-  let localScopes = []
-
-  if (scopeResources.includes('all')) {
-    localScopes = ['all']
   } else {
-    scopeResources.forEach((resource) => {
-      const permissionsRequested = scopes[resource]
-      permissionsRequested.forEach((permission) => localScopes.push(`${resource}:${permission}`))
-    })
-  }
-
-  if (!areScopesEqual(localScopes, registeredIntegrationScopes)) {
-    logScopeConfirmationMessage(localScopes, registeredIntegrationScopes)
-        
-    const scopePrompt = await inquirer.prompt([
-      {
-        type: 'confirm',
-        name: 'updateScopes',
-        message: `Do you want to update the scopes?`,
-        default: false,
-      },
-    ])
-
-    let scopesToWrite = null
-    if (scopePrompt.updateScopes) {
-      // Update the scopes in remote
-      scopesToWrite = scopes
-      const {_, statusCode} = await fetch(`${INTEGRATION_URL}/${accountId}/integrations/${integrationSlug}`, {
-        method: 'PUT',
-        headers: {
-          "netlify-token": token
-        },
-        body: JSON.stringify({ name, description, hostSiteId: siteId, scopes: localScopes.join(',') })
-      }).then(async res => {
-        const body = await res.json()
-        return {body, statusCode: res.status}
-      })
-
-      if (statusCode !== 200) {
-        log(chalk.red(`There was an error updating the integration. Please try again. If the problem persists, please contact support.`))
-        return;
-      }
-    } else {
-      // Use the scopes that are already registered
-      log(chalk.white("Saving the currently registered scopes to the integration.yaml file."));
-      scopesToWrite = formatScopesToWrite(registeredIntegrationScopes)
+    // Updating the integration
+    if (slug != registeredIntegration.slug) {
+      // Update the project's integration.yaml file with the remote slug since that will
+      // be considered the source of truth and is a value that can't be edited by the user.
+      // Let the user know they need to commit and push the changes.
+      integrationSlug = registeredIntegration.slug;
     }
 
-    const updatedIntegrationConfig = yaml.dump({ config: {name, description, slug: integrationSlug, scopes: scopesToWrite }})
+    if (!name) {
+      name = registeredIntegration.name
+    }
 
-    const filePath = resolve(process.cwd(), 'integration.yaml')
-    await fs.writeFile(filePath, updatedIntegrationConfig)
+    if (!description) {
+      description = registeredIntegration.description
+    }
 
-    log(chalk.yellow("Changes to the integration.yaml file are complete. Please commit and push these changes."));
+    // This is returned as a comma separated string and will be easier to manage here as an array
+    const registeredIntegrationScopes = registeredIntegration.scopes.split(',');
+
+    const scopeResources = Object.keys(scopes)
+    let localScopes = []
+
+    if (scopeResources.includes('all')) {
+      localScopes = ['all']
+    } else {
+      scopeResources.forEach((resource) => {
+        const permissionsRequested = scopes[resource]
+        permissionsRequested.forEach((permission) => localScopes.push(`${resource}:${permission}`))
+      })
+    }
+
+    if (!areScopesEqual(localScopes, registeredIntegrationScopes)) {
+      logScopeConfirmationMessage(localScopes, registeredIntegrationScopes)
+
+      const scopePrompt = await inquirer.prompt([
+        {
+          type: 'confirm',
+          name: 'updateScopes',
+          message: `Do you want to update the scopes?`,
+          default: false,
+        },
+      ])
+
+      let scopesToWrite = null
+      if (scopePrompt.updateScopes) {
+        // Update the scopes in remote
+        scopesToWrite = scopes
+        const { _, statusCode } = await fetch(`${INTEGRATION_URL}/${accountId}/integrations/${integrationSlug}`, {
+          method: 'PUT',
+          headers: {
+            "netlify-token": token
+          },
+          body: JSON.stringify({ name, description, hostSiteId: siteId, scopes: localScopes.join(',') })
+        }).then(async res => {
+          const body = await res.json()
+          return { body, statusCode: res.status }
+        })
+
+        if (statusCode !== 200) {
+          log(chalk.red(`There was an error updating the integration. Please try again. If the problem persists, please contact support.`))
+          return;
+        }
+      } else {
+        // Use the scopes that are already registered
+        log(chalk.white("Saving the currently registered scopes to the integration.yaml file."));
+        scopesToWrite = formatScopesToWrite(registeredIntegrationScopes)
+      }
+
+      const updatedIntegrationConfig = yaml.dump({ config: { name, description, slug: integrationSlug, scopes: scopesToWrite } })
+
+      const filePath = resolve(process.cwd(), 'integration.yaml')
+      await fs.writeFile(filePath, updatedIntegrationConfig)
+
+      log(chalk.yellow("Changes to the integration.yaml file are complete. Please commit and push these changes."));
+    }
   }
+
+  // Deploy the integration to that site
+  await siteDeploy(options, command)
 }
 
 /**
@@ -276,9 +276,8 @@ const deploy = async (options, command) => {
  * @returns
  */
 export const createDeployCommand = (program) => program
-    .command('deploy')
-    .description('Register, build and deploy a private Netlify integration.')
-    .option('--build', 'Run build command before deploying')
-    .option('-p, --prod', 'Deploy to production', false)
-    .option('-s, --site <name-or-id>', 'A site name or ID to deploy to', env.NETLIFY_SITE_ID)
-    .action(deploy)
+  .command('deploy')
+  .description('Register, build and deploy a private Netlify integration.')
+  .option('--build', 'Run build command before deploying')
+  .option('-p, --prod', 'Deploy to production', false)
+  .action(deploy)
