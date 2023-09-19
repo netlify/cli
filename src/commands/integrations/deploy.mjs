@@ -190,7 +190,7 @@ const deploy = async (options, command) => {
     log(chalk.yellow("Your integration.yaml file has been updated. Please commit and push these changes."));
       
     // Deploy the integration to that site
-    await siteDeploy({...options}, command)
+    await siteDeploy(options, command)
     return
   } else if (slug != registeredIntegration.slug) {
     // Update the project's integration.yaml file with the remote slug since that will
@@ -277,5 +277,8 @@ const deploy = async (options, command) => {
  */
 export const createDeployCommand = (program) => program
     .command('deploy')
-    .description('Build and deploy a private Netlify integration.')
+    .description('Register, build and deploy a private Netlify integration.')
+    .option('--build', 'Run build command before deploying')
+    .option('-p, --prod', 'Deploy to production', false)
+    .option('-s, --site <name-or-id>', 'A site name or ID to deploy to', env.NETLIFY_SITE_ID)
     .action(deploy)
