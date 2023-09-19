@@ -79,7 +79,7 @@ const getDeployFolder = async ({ command, config, options, site, siteData }) => 
   // - in mono repositories this will be the root of the jsWorkspace
   if (options.dir) {
     deployFolder = command.workspacePackage
-      ? resolve(command.jsWorkspaceRoot || site.root)
+      ? resolve(command.jsWorkspaceRoot || site.root, options.dir)
       : resolve(command.workingDir, options.dir)
   } else if (config?.build?.publish) {
     deployFolder = resolve(site.root, config.build.publish)
