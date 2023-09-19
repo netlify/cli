@@ -106,7 +106,7 @@ const hashFns = async (
     statusCb,
     tmpDir,
   })
-  const fileObjs = functionZips.map(({ displayName, generator, path: functionPath, runtime }) => ({
+  const fileObjs = functionZips.map(({ displayName, generator, invocationMode, path: functionPath, runtime }) => ({
     filepath: functionPath,
     root: tmpDir,
     relname: path.relative(tmpDir, functionPath),
@@ -118,6 +118,7 @@ const hashFns = async (
     runtime,
     displayName,
     generator,
+    invocationMode,
   }))
   const fnConfig = functionZips
     .filter((func) => Boolean(func.displayName || func.generator))
