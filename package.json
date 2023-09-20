@@ -83,7 +83,7 @@
     "@netlify/config": "20.9.0",
     "@netlify/edge-bundler": "8.19.1",
     "@netlify/local-functions-proxy": "1.1.1",
-    "@netlify/sdk": "^0.7.8",
+    "@netlify/sdk": "^1.0.3",
     "@netlify/serverless-functions-api": "1.7.3",
     "@netlify/zip-it-and-ship-it": "9.18.1",
     "@octokit/rest": "19.0.13",

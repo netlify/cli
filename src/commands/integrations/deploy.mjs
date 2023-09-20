@@ -25,7 +25,7 @@ function areScopesEqual(localScopes, remoteScopes) {
 
 function logScopeConfirmationMessage(localScopes, remoteScopes) {
   log(chalk.yellow(`This integration is already registered. The current required scopes are:`))
-  for (const scope of registeredIntegrationScopes) {
+  for (const scope of remoteScopes) {
     log(chalk.green(`- ${scope}`))
   }
   log(chalk.yellow("and will be updated to:"))
