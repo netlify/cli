@@ -1,5 +1,5 @@
-import { dev as SdkDev} from '@netlify/sdk/commands'
-
+/* eslint-disable import/extensions */
+import { dev as SdkDev } from '@netlify/sdk/commands'
 
 /**
  * The dev command for Netlify Integrations
@@ -14,7 +14,6 @@ const dev = async (options) => {
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
-export const createDevCommand = (program) => program
-    .command('dev')
-    .description('Build and preview the Netlify integration in your local environment.')
-    .action(dev)
+export const createDevCommand = (program) =>
+  program.command('dev').description('Build and preview the Netlify integration in your local environment.').action(dev)
+/* eslint-enable import/extensions */

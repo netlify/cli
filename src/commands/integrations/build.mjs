@@ -1,5 +1,5 @@
-import { build as SdkBuild} from '@netlify/sdk/commands'
-
+/* eslint-disable import/extensions */
+import { build as SdkBuild } from '@netlify/sdk/commands'
 
 /**
  * The build command for Netlify Integrations
@@ -14,12 +14,14 @@ const build = async (options) => {
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
-export const createBuildCommand = (program) => program
+export const createBuildCommand = (program) =>
+  program
     .command('build')
     .description('Builds the Netlify integration.')
     .option('-a, --all', 'Build all components of the integration', false)
-    .option("-c, --connector", "Build the Netlify Connect plugin of the integration", false)
-    .option("-w, --watch", "Build integration and then watch for changes", false)
-    .option("-b, --buildtime", "Build the build time component of the integration", false)
-    .option("-s, --site", "Build the serverless component of the integration", false)
+    .option('-c, --connector', 'Build the Netlify Connect plugin of the integration', false)
+    .option('-w, --watch', 'Build integration and then watch for changes', false)
+    .option('-b, --buildtime', 'Build the build time component of the integration', false)
+    .option('-s, --site', 'Build the serverless component of the integration', false)
     .action(build)
+/* eslint-enable import/extensions */

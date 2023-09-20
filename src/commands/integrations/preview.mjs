@@ -1,5 +1,5 @@
-import { preview as SdkPreview} from '@netlify/sdk/commands'
-
+/* eslint-disable import/extensions */
+import { preview as SdkPreview } from '@netlify/sdk/commands'
 
 /**
  * The preview command for Netlify Integrations
@@ -14,7 +14,9 @@ const preview = async (options) => {
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
-export const createPreviewCommand = (program) => program
+export const createPreviewCommand = (program) =>
+  program
     .command('preview')
     .description('Preview the UI of the Netlify Integration in your local environment.')
     .action(preview)
+/* eslint-enable import/extensions */
