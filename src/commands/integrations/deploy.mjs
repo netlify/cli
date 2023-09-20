@@ -39,7 +39,7 @@ function logScopeConfirmationMessage(localScopes, remoteScopes) {
 function formatScopesToWrite(registeredIntegrationScopes) {
   let scopesToWrite = {}
 
-  for (const i = 0; i < registeredIntegrationScopes.length; i++) {
+  for (let i = 0; i < registeredIntegrationScopes.length; i++) {
     const scope = registeredIntegrationScopes[i]
     const [resource, permission] = scope.split(':')
     if (resource === 'all') {
@@ -147,7 +147,7 @@ async function registerIntegration(siteId, accountId, localIntegrationConfig, to
   log(chalk.yellow("Your integration.yaml file has been updated. Please commit and push these changes."));
 }
 
-async function updateIntegration(siteId, accountId, localIntegrationConfig, token, registeredIntegration) {
+async function updateIntegration(options, siteId, accountId, localIntegrationConfig, token, registeredIntegration) {
   const { name, description, scopes, slug } = localIntegrationConfig
   let integrationSlug = slug
   if (slug != registeredIntegration.slug) {
@@ -192,7 +192,7 @@ async function updateIntegration(siteId, accountId, localIntegrationConfig, toke
       },
     ])
 
-    let scopesToWrite = null
+    let scopesToWrite
     if (scopePrompt.updateScopes) {
       // Update the scopes in remote
       scopesToWrite = scopes
@@ -212,9 +212,25 @@ async function updateIntegration(siteId, accountId, localIntegrationConfig, toke
         return;
       }
     } else {
-      // Use the scopes that are already registered
-      log(chalk.white("Saving the currently registered scopes to the integration.yaml file."));
-      scopesToWrite = formatScopesToWrite(registeredIntegrationScopes)
+      const useRegisteredScopesPrompt = await inquirer.prompt([
+        {
+          type: 'confirm',
+          name: 'useRegisteredScopes',
+          message: `Do you want to save the scopes registered for your integration in your local configuration file?`,
+          default: false,
+        },
+      ])
+
+      if (useRegisteredScopesPrompt.useRegisteredScopes) {
+        // Use the scopes that are already registered
+        log(chalk.white("Saving the currently registered scopes to the integration.yaml file."));
+        scopesToWrite = formatScopesToWrite(registeredIntegrationScopes)
+      }
+
+      if (!useRegisteredScopesPrompt.useRegisteredScopes && options.prod) {
+        log(chalk.red("Unable to deploy your integration to production without updating the registered scopes."));
+        process.exit(1);
+      }
     }
 
     const updatedIntegrationConfig = yaml.dump({ config: { name, description, slug: integrationSlug, scopes: scopesToWrite } })
@@ -274,7 +290,7 @@ const deploy = async (options, command) => {
     await registerIntegration(siteId, accountId, localIntegrationConfig, token)
   } else {
     // Updating the integration
-    await updateIntegration(siteId, accountId, localIntegrationConfig, token, registeredIntegration)
+    await updateIntegration(options, siteId, accountId, localIntegrationConfig, token, registeredIntegration)
   }
 
   // Deploy the integration to that site
