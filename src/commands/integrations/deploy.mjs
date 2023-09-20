@@ -263,7 +263,6 @@ const deploy = async (options, command) => {
   // Confirm that a site is linked and that the user is logged in
   checkOptions(buildOptions)
 
-  // Todo: Support injecting env vars similar to what we do for normal sites/builds
   await SdkBuild({ all: true })
 
   const { accountId } = await getSiteInformation({
