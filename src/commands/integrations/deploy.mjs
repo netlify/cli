@@ -6,6 +6,7 @@ import { getBuildOptions } from '../../lib/build.mjs'
 import { getSiteInformation } from '../../utils/dev.mjs'
 import { resolve } from "path";
 import { deploy as siteDeploy } from '../deploy/deploy.mjs'
+import { env } from 'process'
 
 import inquirer from 'inquirer'
 import fs from 'fs-extra'
@@ -288,6 +289,7 @@ const deploy = async (options, command) => {
 export const createDeployCommand = (program) => program
   .command('deploy')
   .description('Register, build and deploy a private Netlify integration.')
-  .option('--build', 'Run build command before deploying')
   .option('-p, --prod', 'Deploy to production', false)
+  .option('-a, --auth <token>', 'Netlify auth token to deploy with', env.NETLIFY_AUTH_TOKEN)
+  .option('-s, --site <name-or-id>', 'A site name or ID to deploy to', env.NETLIFY_SITE_ID)
   .action(deploy)
