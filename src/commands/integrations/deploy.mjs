@@ -84,6 +84,68 @@ function verifyRequiredFieldsAreInConfig(name, description, scopes) {
   return true
 }
 
+async function registerIntegration(siteId, accountId, localIntegrationConfig, token) {
+  const { name, description, scopes, slug } = localIntegrationConfig
+  log(chalk.yellow(`An integration associated with the site ID ${siteId} is not registered.`))
+  const registerPrompt = await inquirer.prompt([
+    {
+      type: 'confirm',
+      name: 'registerIntegration',
+      message: `Would you like to register a private integration for this site now?`,
+      default: false,
+    },
+  ])
+
+  if (!registerPrompt.registerIntegration) {
+    log(chalk.white("Cancelling deployment. Please run 'netlify int deploy' again when you are ready to register the integration."))
+    log(chalk.white("You can also register the integration through the Netlify UI on the 'Integrations' > 'Create private integration' page"))
+    return;
+  }
+
+  if (!verifyRequiredFieldsAreInConfig(name, description, scopes)) {
+    return;
+  }
+
+  log(chalk.white("Registering the integration..."))
+
+  const { body, statusCode } = await fetch(`${INTEGRATION_URL}/${accountId}/integrations`, {
+    method: "POST",
+    headers: {
+      "netlify-token": token
+    },
+    body: JSON.stringify({
+      name,
+      slug,
+      description,
+      hostSiteId: siteId,
+      scopes: formatScopesForRemote(scopes),
+    })
+  }).then(async (res) => {
+    const body = await res.json()
+    return { body, statusCode: res.status }
+  })
+
+  if (statusCode !== 201) {
+    log(chalk.red(`There was an error registering the integration:`))
+    log()
+    log(chalk.red(`-----------------------------------------------`))
+    log(chalk.red(body.msg))
+    log(chalk.red(`-----------------------------------------------`))
+    log()
+    log(chalk.red(`Please try again. If the problem persists, please contact support.`))
+    return;
+  }
+
+  log(chalk.green(`Successfully registered the integration with the slug: ${body.slug}`))
+
+  const updatedIntegrationConfig = yaml.dump({ config: { name, description, slug: body.slug, scopes } })
+
+  const filePath = resolve(process.cwd(), 'integration.yaml')
+  await fs.writeFile(filePath, updatedIntegrationConfig)
+
+  log(chalk.yellow("Your integration.yaml file has been updated. Please commit and push these changes."));
+}
+
 
 /**
  * The deploy command for Netlify Integrations
@@ -91,7 +153,6 @@ function verifyRequiredFieldsAreInConfig(name, description, scopes) {
  * * @param {import('../base-command.mjs').default} command
  */
 const deploy = async (options, command) => {
-  // Need to check for a linked site (see the 'checkOptions' in the build/build.mjs file for how to check for a token and linked site)
   const { api, cachedConfig, site, siteInfo } = command.netlify
   const { id: siteId } = site
   const [token] = await getToken()
@@ -127,67 +188,69 @@ const deploy = async (options, command) => {
 
   let { name, description, scopes, slug } = await getConfiguration()
   let integrationSlug = slug
+  const localIntegrationConfig = { name, description, scopes, slug }
 
   // The integration isn't registered on the remote
   if (statusCode !== 200) {
-    log(chalk.yellow(`An integration associated with the site ID ${siteId} is not registered.`))
-    const registerPrompt = await inquirer.prompt([
-      {
-        type: 'confirm',
-        name: 'registerIntegration',
-        message: `Would you like to register a private integration for this site now?`,
-        default: false,
-      },
-    ])
+    await registerIntegration(siteId, accountId, localIntegrationConfig, token)
+    // log(chalk.yellow(`An integration associated with the site ID ${siteId} is not registered.`))
+    // const registerPrompt = await inquirer.prompt([
+    //   {
+    //     type: 'confirm',
+    //     name: 'registerIntegration',
+    //     message: `Would you like to register a private integration for this site now?`,
+    //     default: false,
+    //   },
+    // ])
 
-    if (!registerPrompt.registerIntegration) {
-      log(chalk.white("Cancelling deployment. Please run 'netlify int deploy' again when you are ready to register the integration."))
-      log(chalk.white("You can also register the integration through the Netlify UI on the 'Integrations' > 'Create private integration' page"))
-      return;
-    }
+    // if (!registerPrompt.registerIntegration) {
+    //   log(chalk.white("Cancelling deployment. Please run 'netlify int deploy' again when you are ready to register the integration."))
+    //   log(chalk.white("You can also register the integration through the Netlify UI on the 'Integrations' > 'Create private integration' page"))
+    //   return;
+    // }
 
-    if (!verifyRequiredFieldsAreInConfig(name, description, scopes)) {
-      return;
-    }
+    // if (!verifyRequiredFieldsAreInConfig(name, description, scopes)) {
+    //   return;
+    // }
 
-    log(chalk.white("Registering the integration..."))
+    // log(chalk.white("Registering the integration..."))
 
-    const { body, statusCode } = await fetch(`${INTEGRATION_URL}/${accountId}/integrations`, {
-      method: "POST",
-      headers: {
-        "netlify-token": token
-      },
-      body: JSON.stringify({
-        name,
-        slug,
-        description,
-        hostSiteId: siteId,
-        scopes: formatScopesForRemote(scopes),
-      })
-    }).then(async (res) => {
-      const body = await res.json()
-      return { body, statusCode: res.status }
-    })
+    // const { body, statusCode } = await fetch(`${INTEGRATION_URL}/${accountId}/integrations`, {
+    //   method: "POST",
+    //   headers: {
+    //     "netlify-token": token
+    //   },
+    //   body: JSON.stringify({
+    //     name,
+    //     slug,
+    //     description,
+    //     hostSiteId: siteId,
+    //     scopes: formatScopesForRemote(scopes),
+    //   })
+    // }).then(async (res) => {
+    //   const body = await res.json()
+    //   return { body, statusCode: res.status }
+    // })
 
-    if (statusCode !== 201) {
-      log(chalk.red(`There was an error registering the integration:`))
-      log()
-      log(chalk.red(`-----------------------------------------------`))
-      log(chalk.red(body.msg))
-      log(chalk.red(`-----------------------------------------------`))
-      log()
-      log(chalk.red(`Please try again. If the problem persists, please contact support.`))
-      return;
-    }
+    // if (statusCode !== 201) {
+    //   log(chalk.red(`There was an error registering the integration:`))
+    //   log()
+    //   log(chalk.red(`-----------------------------------------------`))
+    //   log(chalk.red(body.msg))
+    //   log(chalk.red(`-----------------------------------------------`))
+    //   log()
+    //   log(chalk.red(`Please try again. If the problem persists, please contact support.`))
+    //   return;
+    // }
 
-    log(chalk.green(`Successfully registered the integration with the slug: ${body.slug}`))
+    // log(chalk.green(`Successfully registered the integration with the slug: ${body.slug}`))
 
-    const updatedIntegrationConfig = yaml.dump({ config: { name, description, slug: body.slug, scopes } })
+    // const updatedIntegrationConfig = yaml.dump({ config: { name, description, slug: body.slug, scopes } })
 
-    const filePath = resolve(process.cwd(), 'integration.yaml')
-    await fs.writeFile(filePath, updatedIntegrationConfig)
+    // const filePath = resolve(process.cwd(), 'integration.yaml')
+    // await fs.writeFile(filePath, updatedIntegrationConfig)
 
-    log(chalk.yellow("Your integration.yaml file has been updated. Please commit and push these changes."));
+    // log(chalk.yellow("Your integration.yaml file has been updated. Please commit and push these changes."));
   } else {
     // Updating the integration
     if (slug != registeredIntegration.slug) {
