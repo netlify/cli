@@ -35,7 +35,7 @@ jobs:
           check-latest: true
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
       - name: Install core dependencies
-        run: npm ci --no-audit
+        run: npm install
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
       - name: Linting
         run: npm run format:ci
