@@ -146,6 +146,85 @@ async function registerIntegration(siteId, accountId, localIntegrationConfig, to
   log(chalk.yellow("Your integration.yaml file has been updated. Please commit and push these changes."));
 }
 
+async function updateIntegration(siteId, accountId, localIntegrationConfig, token, registeredIntegration) {
+  const { name, description, scopes, slug } = localIntegrationConfig
+  let integrationSlug = slug
+  if (slug != registeredIntegration.slug) {
+    // Update the project's integration.yaml file with the remote slug since that will
+    // be considered the source of truth and is a value that can't be edited by the user.
+    // Let the user know they need to commit and push the changes.
+    integrationSlug = registeredIntegration.slug;
+  }
+
+  if (!name) {
+    name = registeredIntegration.name
+  }
+
+  if (!description) {
+    description = registeredIntegration.description
+  }
+
+  // This is returned as a comma separated string and will be easier to manage here as an array
+  const registeredIntegrationScopes = registeredIntegration.scopes.split(',');
+
+  const scopeResources = Object.keys(scopes)
+  let localScopes = []
+
+  if (scopeResources.includes('all')) {
+    localScopes = ['all']
+  } else {
+    scopeResources.forEach((resource) => {
+      const permissionsRequested = scopes[resource]
+      permissionsRequested.forEach((permission) => localScopes.push(`${resource}:${permission}`))
+    })
+  }
+
+  if (!areScopesEqual(localScopes, registeredIntegrationScopes)) {
+    logScopeConfirmationMessage(localScopes, registeredIntegrationScopes)
+
+    const scopePrompt = await inquirer.prompt([
+      {
+        type: 'confirm',
+        name: 'updateScopes',
+        message: `Do you want to update the scopes?`,
+        default: false,
+      },
+    ])
+
+    let scopesToWrite = null
+    if (scopePrompt.updateScopes) {
+      // Update the scopes in remote
+      scopesToWrite = scopes
+      const { _, statusCode } = await fetch(`${INTEGRATION_URL}/${accountId}/integrations/${integrationSlug}`, {
+        method: 'PUT',
+        headers: {
+          "netlify-token": token
+        },
+        body: JSON.stringify({ name, description, hostSiteId: siteId, scopes: localScopes.join(',') })
+      }).then(async res => {
+        const body = await res.json()
+        return { body, statusCode: res.status }
+      })
+
+      if (statusCode !== 200) {
+        log(chalk.red(`There was an error updating the integration. Please try again. If the problem persists, please contact support.`))
+        return;
+      }
+    } else {
+      // Use the scopes that are already registered
+      log(chalk.white("Saving the currently registered scopes to the integration.yaml file."));
+      scopesToWrite = formatScopesToWrite(registeredIntegrationScopes)
+    }
+
+    const updatedIntegrationConfig = yaml.dump({ config: { name, description, slug: integrationSlug, scopes: scopesToWrite } })
+
+    const filePath = resolve(process.cwd(), 'integration.yaml')
+    await fs.writeFile(filePath, updatedIntegrationConfig)
+
+    log(chalk.yellow("Changes to the integration.yaml file are complete. Please commit and push these changes."));
+  }
+}
+
 
 /**
  * The deploy command for Netlify Integrations
@@ -187,146 +266,14 @@ const deploy = async (options, command) => {
 
 
   let { name, description, scopes, slug } = await getConfiguration()
-  let integrationSlug = slug
   const localIntegrationConfig = { name, description, scopes, slug }
 
   // The integration isn't registered on the remote
   if (statusCode !== 200) {
     await registerIntegration(siteId, accountId, localIntegrationConfig, token)
-    // log(chalk.yellow(`An integration associated with the site ID ${siteId} is not registered.`))
-    // const registerPrompt = await inquirer.prompt([
-    //   {
-    //     type: 'confirm',
-    //     name: 'registerIntegration',
-    //     message: `Would you like to register a private integration for this site now?`,
-    //     default: false,
-    //   },
-    // ])
-
-    // if (!registerPrompt.registerIntegration) {
-    //   log(chalk.white("Cancelling deployment. Please run 'netlify int deploy' again when you are ready to register the integration."))
-    //   log(chalk.white("You can also register the integration through the Netlify UI on the 'Integrations' > 'Create private integration' page"))
-    //   return;
-    // }
-
-    // if (!verifyRequiredFieldsAreInConfig(name, description, scopes)) {
-    //   return;
-    // }
-
-    // log(chalk.white("Registering the integration..."))
-
-    // const { body, statusCode } = await fetch(`${INTEGRATION_URL}/${accountId}/integrations`, {
-    //   method: "POST",
-    //   headers: {
-    //     "netlify-token": token
-    //   },
-    //   body: JSON.stringify({
-    //     name,
-    //     slug,
-    //     description,
-    //     hostSiteId: siteId,
-    //     scopes: formatScopesForRemote(scopes),
-    //   })
-    // }).then(async (res) => {
-    //   const body = await res.json()
-    //   return { body, statusCode: res.status }
-    // })
-
-    // if (statusCode !== 201) {
-    //   log(chalk.red(`There was an error registering the integration:`))
-    //   log()
-    //   log(chalk.red(`-----------------------------------------------`))
-    //   log(chalk.red(body.msg))
-    //   log(chalk.red(`-----------------------------------------------`))
-    //   log()
-    //   log(chalk.red(`Please try again. If the problem persists, please contact support.`))
-    //   return;
-    // }
-
-    // log(chalk.green(`Successfully registered the integration with the slug: ${body.slug}`))
-
-    // const updatedIntegrationConfig = yaml.dump({ config: { name, description, slug: body.slug, scopes } })
-
-    // const filePath = resolve(process.cwd(), 'integration.yaml')
-    // await fs.writeFile(filePath, updatedIntegrationConfig)
-
-    // log(chalk.yellow("Your integration.yaml file has been updated. Please commit and push these changes."));
   } else {
     // Updating the integration
-    if (slug != registeredIntegration.slug) {
-      // Update the project's integration.yaml file with the remote slug since that will
-      // be considered the source of truth and is a value that can't be edited by the user.
-      // Let the user know they need to commit and push the changes.
-      integrationSlug = registeredIntegration.slug;
-    }
-
-    if (!name) {
-      name = registeredIntegration.name
-    }
-
-    if (!description) {
-      description = registeredIntegration.description
-    }
-
-    // This is returned as a comma separated string and will be easier to manage here as an array
-    const registeredIntegrationScopes = registeredIntegration.scopes.split(',');
-
-    const scopeResources = Object.keys(scopes)
-    let localScopes = []
-
-    if (scopeResources.includes('all')) {
-      localScopes = ['all']
-    } else {
-      scopeResources.forEach((resource) => {
-        const permissionsRequested = scopes[resource]
-        permissionsRequested.forEach((permission) => localScopes.push(`${resource}:${permission}`))
-      })
-    }
-
-    if (!areScopesEqual(localScopes, registeredIntegrationScopes)) {
-      logScopeConfirmationMessage(localScopes, registeredIntegrationScopes)
-
-      const scopePrompt = await inquirer.prompt([
-        {
-          type: 'confirm',
-          name: 'updateScopes',
-          message: `Do you want to update the scopes?`,
-          default: false,
-        },
-      ])
-
-      let scopesToWrite = null
-      if (scopePrompt.updateScopes) {
-        // Update the scopes in remote
-        scopesToWrite = scopes
-        const { _, statusCode } = await fetch(`${INTEGRATION_URL}/${accountId}/integrations/${integrationSlug}`, {
-          method: 'PUT',
-          headers: {
-            "netlify-token": token
-          },
-          body: JSON.stringify({ name, description, hostSiteId: siteId, scopes: localScopes.join(',') })
-        }).then(async res => {
-          const body = await res.json()
-          return { body, statusCode: res.status }
-        })
-
-        if (statusCode !== 200) {
-          log(chalk.red(`There was an error updating the integration. Please try again. If the problem persists, please contact support.`))
-          return;
-        }
-      } else {
-        // Use the scopes that are already registered
-        log(chalk.white("Saving the currently registered scopes to the integration.yaml file."));
-        scopesToWrite = formatScopesToWrite(registeredIntegrationScopes)
-      }
-
-      const updatedIntegrationConfig = yaml.dump({ config: { name, description, slug: integrationSlug, scopes: scopesToWrite } })
-
-      const filePath = resolve(process.cwd(), 'integration.yaml')
-      await fs.writeFile(filePath, updatedIntegrationConfig)
-
-      log(chalk.yellow("Changes to the integration.yaml file are complete. Please commit and push these changes."));
-    }
+    await updateIntegration(siteId, accountId, localIntegrationConfig, token, registeredIntegration)
   }
 
   // Deploy the integration to that site
