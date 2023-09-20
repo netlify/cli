@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "16.3.5",
+  "version": "16.4.1",
   "author": "Netlify Inc.",
   "type": "module",
   "engines": {
@@ -153,7 +153,7 @@
     "netlify": "13.1.10",
     "netlify-headers-parser": "7.1.2",
     "netlify-redirect-parser": "14.2.0",
-    "netlify-redirector": "0.4.0",
+    "netlify-redirector": "0.5.0",
     "node-fetch": "2.6.12",
     "node-version-alias": "3.4.1",
     "ora": "6.3.1",
