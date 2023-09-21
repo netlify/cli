@@ -89,6 +89,17 @@ describe('edge functions', () => {
 
       expect(res2.body).toContain('<p>An unhandled error in the function code triggered the following message:</p>')
     })
+
+    test<FixtureTestContext>('should run an edge function that imports an npm module', async ({ devServer }) => {
+      const res = await got(`http://localhost:${devServer.port}/with-npm-module`, {
+        method: 'GET',
+        throwHttpErrors: false,
+        retry: { limit: 0 },
+      })
+
+      expect(res.statusCode).toBe(200)
+      expect(res.body).toBe('Hello from an npm module!')
+    })
   })
 
   setupFixtureTests('dev-server-with-edge-functions', { devServer: true }, () => {

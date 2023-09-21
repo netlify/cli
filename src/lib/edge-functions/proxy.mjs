@@ -1,6 +1,7 @@
 // @ts-check
 import { Buffer } from 'buffer'
-import { join, relative } from 'path'
+import { rm } from 'fs/promises'
+import { join, relative, resolve } from 'path'
 import { env } from 'process'
 
 // eslint-disable-next-line import/no-namespace
@@ -13,7 +14,7 @@ import { getPathInProject } from '../settings.mjs'
 import { startSpinner, stopSpinner } from '../spinner.mjs'
 
 import { getBootstrapURL } from './bootstrap.mjs'
-import { DIST_IMPORT_MAP_PATH } from './consts.mjs'
+import { DIST_IMPORT_MAP_PATH, EDGE_FUNCTIONS_SERVE_FOLDER } from './consts.mjs'
 import { headers, getFeatureFlagsHeader, getInvocationMetadataHeader } from './headers.mjs'
 import { getInternalFunctions } from './internal.mjs'
 import { EdgeFunctionsRegistry } from './registry.mjs'
@@ -209,8 +210,13 @@ const prepareServer = async ({
 
   try {
     const distImportMapPath = getPathInProject([DIST_IMPORT_MAP_PATH])
+    const servePath = resolve(projectDir, getPathInProject([EDGE_FUNCTIONS_SERVE_FOLDER]))
+
+    await rm(servePath, { force: true, recursive: true })
+
     const runIsolate = await bundler.serve({
       ...getDownloadUpdateFunctions(),
+      basePath: projectDir,
       bootstrapURL: getBootstrapURL(),
       debug: env.NETLIFY_DENO_DEBUG === 'true',
       distImportMapPath: join(projectDir, distImportMapPath),
@@ -223,6 +229,7 @@ const prepareServer = async ({
       importMapPaths,
       inspectSettings,
       port,
+      servePath,
     })
     const registry = new EdgeFunctionsRegistry({
       bundler,
