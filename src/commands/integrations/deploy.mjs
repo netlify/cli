@@ -191,11 +191,14 @@ async function updateIntegration(
   }
 
   if (!name) {
-    ;({ name } = registeredIntegration.name)
+    // Disabling this lint rule because the destructuring was not assigning the variable correct and leading to a bug
+    // eslint-disable-next-line prefer-destructuring
+    name = registeredIntegration.name
   }
 
   if (!description) {
-    ;({ description } = registeredIntegration.description)
+    // eslint-disable-next-line prefer-destructuring
+    description = registeredIntegration.description
   }
 
   // This is returned as a comma separated string and will be easier to manage here as an array
@@ -231,24 +234,25 @@ async function updateIntegration(
     if (scopePrompt.updateScopes) {
       // Update the scopes in remote
       scopesToWrite = scopes
-      const { statusCode } = await fetch(`${INTEGRATION_URL}/${accountId}/integrations/${integrationSlug}`, {
+      const { statusCode, updateResponse } = await fetch(`${INTEGRATION_URL}/${accountId}/integrations/${integrationSlug}`, {
         method: 'PUT',
         headers: {
           'netlify-token': token,
         },
         body: JSON.stringify({ name, description, hostSiteId: siteId, scopes: localScopes.join(',') }),
       }).then(async (res) => {
-        const body = await res.json()
-        return { body, statusCode: res.status }
+        const updateResponse = await res.json()
+        return { updateResponse, statusCode: res.status }
       })
 
       if (statusCode !== 200) {
         log(
           chalk.red(
-            `There was an error updating the integration. Please try again. If the problem persists, please contact support.`,
+            `There was an error updating the integration: ${updateResponse}`,
           ),
+          chalk.red("Please try again. If the problem persists, please contact support.")
         )
-        return
+        exit(1);
       }
     } else {
       const useRegisteredScopesPrompt = await inquirer.prompt([
