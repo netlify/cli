@@ -124,7 +124,7 @@ async function registerIntegration(workingDir, siteId, accountId, localIntegrati
         "You can also register the integration through the Netlify UI on the 'Integrations' > 'Create private integration' page",
       ),
     )
-    return
+    exit(1)
   }
 
   if (!verifyRequiredFieldsAreInConfig(name, description, scopes)) {
@@ -158,7 +158,7 @@ async function registerIntegration(workingDir, siteId, accountId, localIntegrati
     log(chalk.red(`-----------------------------------------------`))
     log()
     log(chalk.red(`Please try again. If the problem persists, please contact support.`))
-    return
+    exit(1)
   }
 
   log(chalk.green(`Successfully registered the integration with the slug: ${body.slug}`))
