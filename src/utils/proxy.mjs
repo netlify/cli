@@ -658,7 +658,7 @@ const onRequest = async (
 }
 
 /**
- * @param {import('./types.js').ServerSettings} settings
+ * @param {Pick<import('./types.js').ServerSettings, "https" | "port">} settings
  * @returns
  */
 export const getProxyUrl = function (settings) {
