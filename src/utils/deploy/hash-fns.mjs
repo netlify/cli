@@ -106,7 +106,7 @@ const hashFns = async (
     statusCb,
     tmpDir,
   })
-  const fileObjs = functionZips.map(({ displayName, generator, invocationMode, path: functionPath, runtime }) => ({
+  const fileObjs = functionZips.map(({ displayName, generator, invocationMode, path: functionPath, runtime, runtimeVersion }) => ({
     filepath: functionPath,
     root: tmpDir,
     relname: path.relative(tmpDir, functionPath),
@@ -115,7 +115,7 @@ const hashFns = async (
     type: 'file',
     assetType: 'function',
     normalizedPath: path.basename(functionPath, path.extname(functionPath)),
-    runtime,
+    runtime: runtimeVersion ?? runtime,
     displayName,
     generator,
     invocationMode,
