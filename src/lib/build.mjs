@@ -45,10 +45,20 @@ export const getBuildOptions = ({
   cwd,
   featureFlags: {
     ...edgeFunctionsFeatureFlags,
-    ...cachedConfig.siteInfo.feature_flags,
+    ...getFeatureFlagsFromSiteInfo(cachedConfig.siteInfo),
     functionsBundlingManifest: true,
   },
   edgeFunctionsBootstrapURL: getBootstrapURL(),
+})
+
+/**
+ * @param {*} siteInfo
+ * @returns {Record<string, any>}
+ */
+const getFeatureFlagsFromSiteInfo = (siteInfo) => ({
+  ...siteInfo.feature_flags,
+  // see https://github.com/netlify/pod-dev-foundations/issues/581#issuecomment-1731022753
+  zisi_golang_use_al2: siteInfo.featureFlags?.cli_golang_use_al2,
 })
 
 /**
