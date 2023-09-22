@@ -2,8 +2,10 @@
 import { join } from 'path'
 
 import { startFunctionsServer } from '../../lib/functions/server.mjs'
+import { printBanner } from '../../utils/banner.mjs'
 import { acquirePort, getDotEnvVariables, getSiteInformation, injectEnvVariables } from '../../utils/dev.mjs'
 import { getFunctionsDir } from '../../utils/functions/index.mjs'
+import { getProxyUrl } from '../../utils/proxy.mjs'
 
 const DEFAULT_PORT = 9999
 
@@ -55,6 +57,9 @@ const functionsServe = async (options, command) => {
     state,
     accountId,
   })
+
+  const url = getProxyUrl({ port: functionsPort })
+  printBanner({ url })
 }
 
 /**
