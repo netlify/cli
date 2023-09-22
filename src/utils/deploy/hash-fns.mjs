@@ -106,20 +106,22 @@ const hashFns = async (
     statusCb,
     tmpDir,
   })
-  const fileObjs = functionZips.map(({ displayName, generator, invocationMode, path: functionPath, runtime }) => ({
-    filepath: functionPath,
-    root: tmpDir,
-    relname: path.relative(tmpDir, functionPath),
-    basename: path.basename(functionPath),
-    extname: path.extname(functionPath),
-    type: 'file',
-    assetType: 'function',
-    normalizedPath: path.basename(functionPath, path.extname(functionPath)),
-    runtime,
-    displayName,
-    generator,
-    invocationMode,
-  }))
+  const fileObjs = functionZips.map(
+    ({ displayName, generator, invocationMode, path: functionPath, runtime, runtimeVersion }) => ({
+      filepath: functionPath,
+      root: tmpDir,
+      relname: path.relative(tmpDir, functionPath),
+      basename: path.basename(functionPath),
+      extname: path.extname(functionPath),
+      type: 'file',
+      assetType: 'function',
+      normalizedPath: path.basename(functionPath, path.extname(functionPath)),
+      runtime: runtimeVersion ?? runtime,
+      displayName,
+      generator,
+      invocationMode,
+    }),
+  )
   const fnConfig = functionZips
     .filter((func) => Boolean(func.displayName || func.generator))
     .reduce(
