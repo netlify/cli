@@ -172,11 +172,13 @@ export async function setupFixtureTests(
     afterEach<FixtureTestContext>((context) => {
       const { meta } = context
 
-      if (meta.result?.state === 'fail') {
-        console.log(devServer.output)
-      }
+      if (devServer) {
+        if (meta.result?.state === 'fail') {
+          console.log(devServer.output)
+        }
 
-      devServer.reset()
+        devServer.reset()
+      }
     })
 
     await factory()
