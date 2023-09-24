@@ -4,7 +4,7 @@ import { fileURLToPath } from 'url'
 import type { NodeOptions } from 'execa'
 import { copy } from 'fs-extra'
 import { temporaryDirectory } from 'tempy'
-import { afterAll, beforeAll, beforeEach, describe } from 'vitest'
+import { afterAll, afterEach, beforeAll, beforeEach, describe } from 'vitest'
 
 import callCli from './call-cli.cjs'
 import { startDevServer } from './dev-server.cjs'
@@ -167,6 +167,16 @@ export async function setupFixtureTests(
         mockApi.clearRequests()
         context.mockApi = mockApi
       }
+    })
+
+    afterEach<FixtureTestContext>((context) => {
+      const { meta } = context
+
+      if (meta.result?.state === 'fail') {
+        console.log(devServer.output)
+      }
+
+      devServer.reset()
     })
 
     await factory()
