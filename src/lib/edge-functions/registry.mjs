@@ -265,7 +265,7 @@ export class EdgeFunctionsRegistry {
       return
     }
 
-    const reason = this.#debug ? ` (because ${chalk.underline(path)} has changed)` : ''
+    const reason = this.#debug ? ` because ${chalk.underline(path)} has changed` : ''
 
     log(`${NETLIFYDEVLOG} ${chalk.magenta('Reloading')} edge functions${reason}...`)
 
