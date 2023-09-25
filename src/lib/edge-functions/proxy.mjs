@@ -2,7 +2,6 @@
 import { Buffer } from 'buffer'
 import { rm } from 'fs/promises'
 import { join, relative, resolve } from 'path'
-import { env } from 'process'
 
 // eslint-disable-next-line import/no-namespace
 import * as bundler from '@netlify/edge-bundler'
@@ -116,6 +115,7 @@ export const initializeProxy = async ({
   const server = prepareServer({
     config,
     configPath,
+    debug,
     directory: userFunctionsPath,
     env: configEnv,
     getUpdatedConfig,
@@ -195,6 +195,7 @@ export const isEdgeFunctionsRequest = (req) => req[headersSymbol] !== undefined
 const prepareServer = async ({
   config,
   configPath,
+  debug,
   directory,
   env: configEnv,
   getUpdatedConfig,
@@ -218,7 +219,7 @@ const prepareServer = async ({
       ...getDownloadUpdateFunctions(),
       basePath: projectDir,
       bootstrapURL: getBootstrapURL(),
-      debug: env.NETLIFY_DENO_DEBUG === 'true',
+      debug,
       distImportMapPath: join(projectDir, distImportMapPath),
       formatExportTypeError: (name) =>
         `${NETLIFYDEVERR} ${chalk.red('Failed')} to load Edge Function ${chalk.yellow(
@@ -235,6 +236,7 @@ const prepareServer = async ({
       bundler,
       config,
       configPath,
+      debug,
       directories: [directory].filter(Boolean),
       env: configEnv,
       getUpdatedConfig,
@@ -242,6 +244,7 @@ const prepareServer = async ({
       internalFunctions,
       projectDir,
       runIsolate,
+      servePath,
     })
 
     return registry

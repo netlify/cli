@@ -227,12 +227,17 @@ const DEBOUNCE_WAIT = 100
  * @param {string | string[]} target
  * @param {Object} opts
  * @param {number} [opts.depth]
+ * @param {Array<string|RegExp>} [opts.ignored]
  * @param {() => any} [opts.onAdd]
  * @param {() => any} [opts.onChange]
  * @param {() => any} [opts.onUnlink]
  */
-export const watchDebounced = async (target, { depth, onAdd = () => {}, onChange = () => {}, onUnlink = () => {} }) => {
-  const watcher = chokidar.watch(target, { depth, ignored: /node_modules/, ignoreInitial: true })
+export const watchDebounced = async (
+  target,
+  { depth, ignored = [], onAdd = () => {}, onChange = () => {}, onUnlink = () => {} },
+) => {
+  const baseIgnores = [/\/node_modules\//, /\/.git\//]
+  const watcher = chokidar.watch(target, { depth, ignored: [...baseIgnores, ...ignored], ignoreInitial: true })
 
   await once(watcher, 'ready')
 

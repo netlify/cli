@@ -146,6 +146,7 @@ export async function setupFixtureTests(
 
       if (options.devServer) {
         devServer = await startDevServer({
+          debug: true,
           cwd: fixture.directory,
           offline: !mockApi,
           args: ['--country', 'DE'],
