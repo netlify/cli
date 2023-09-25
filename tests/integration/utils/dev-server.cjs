@@ -61,7 +61,7 @@ const startServer = async ({
     handleQuestions(ps, prompt, promptHistory)
   }
 
-  let outputBuffer = []
+  const outputBuffer = []
   const errorBuffer = []
   const serverPromise = new Promise((resolve, reject) => {
     let selfKilled = false
@@ -101,9 +101,6 @@ const startServer = async ({
             close: async () => {
               selfKilled = true
               await killProcess(ps)
-            },
-            reset: () => {
-              outputBuffer = []
             },
             promptHistory,
           }),
