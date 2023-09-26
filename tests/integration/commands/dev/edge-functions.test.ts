@@ -6,7 +6,7 @@ import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
 import got from '../../utils/got.cjs'
 import { pause } from '../../utils/pause.cjs'
 
-// Skipping tests on Windows because of an issue with t he Deno CLI throwing IO
+// Skipping tests on Windows because of an issue with the Deno CLI throwing IO
 // errors when running in the CI.
 const isWindows = process.platform === 'win32'
 
