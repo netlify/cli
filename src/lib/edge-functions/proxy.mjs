@@ -8,6 +8,7 @@ import * as bundler from '@netlify/edge-bundler'
 import getAvailablePort from 'get-port'
 
 import { NETLIFYDEVERR, NETLIFYDEVWARN, chalk, error as printError, log } from '../../utils/command-helpers.mjs'
+import { isFeatureFlagEnabled } from '../../utils/feature-flags.mjs'
 import { getGeoLocation } from '../geo-location.mjs'
 import { getPathInProject } from '../settings.mjs'
 import { startSpinner, stopSpinner } from '../spinner.mjs'
@@ -108,6 +109,10 @@ export const initializeProxy = async ({
   } = await getInternalFunctions(projectDir)
   const userFunctionsPath = config.build.edge_functions
   const isolatePort = await getAvailablePort()
+  const buildFeatureFlags = {
+    edge_functions_npm_modules: isFeatureFlagEnabled('edge_functions_npm_modules', siteInfo),
+  }
+  const runtimeFeatureFlags = ['edge_functions_bootstrap_failure_mode']
 
   // Initializes the server, bootstrapping the Deno CLI and downloading it from
   // the network if needed. We don't want to wait for that to be completed, or
@@ -118,6 +123,7 @@ export const initializeProxy = async ({
     debug,
     directory: userFunctionsPath,
     env: configEnv,
+    featureFlags: buildFeatureFlags,
     getUpdatedConfig,
     importMaps: [importMap].filter(Boolean),
     inspectSettings,
@@ -169,10 +175,8 @@ export const initializeProxy = async ({
       return
     }
 
-    const featureFlags = ['edge_functions_bootstrap_failure_mode']
-
     req[headersSymbol] = {
-      [headers.FeatureFlags]: getFeatureFlagsHeader(featureFlags),
+      [headers.FeatureFlags]: getFeatureFlagsHeader(runtimeFeatureFlags),
       [headers.ForwardedProtocol]: settings.https ? 'https:' : 'http:',
       [headers.Functions]: functionNames.join(','),
       [headers.InvocationMetadata]: getInvocationMetadataHeader(invocationMetadata),
@@ -198,6 +202,7 @@ const prepareServer = async ({
   debug,
   directory,
   env: configEnv,
+  featureFlags,
   getUpdatedConfig,
   importMaps,
   inspectSettings,
@@ -221,6 +226,7 @@ const prepareServer = async ({
       bootstrapURL: getBootstrapURL(),
       debug,
       distImportMapPath: join(projectDir, distImportMapPath),
+      featureFlags,
       formatExportTypeError: (name) =>
         `${NETLIFYDEVERR} ${chalk.red('Failed')} to load Edge Function ${chalk.yellow(
           name,

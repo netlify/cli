@@ -1,7 +1,15 @@
 // @ts-check
 import { fileURLToPath } from 'url'
 
-import { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log, warn, watchDebounced } from '../../utils/command-helpers.mjs'
+import {
+  NETLIFYDEVERR,
+  NETLIFYDEVLOG,
+  NETLIFYDEVWARN,
+  chalk,
+  log,
+  warn,
+  watchDebounced,
+} from '../../utils/command-helpers.mjs'
 
 /** @typedef {import('@netlify/edge-bundler').Declaration} Declaration */
 /** @typedef {import('@netlify/edge-bundler').EdgeFunction} EdgeFunction */
@@ -31,6 +39,9 @@ export class EdgeFunctionsRegistry {
 
   /** @type {RunIsolate} */
   #runIsolate
+
+  /** @type {boolean} */
+  #hasShownNPMWarning = false
 
   /** @type {Error | null} */
   #buildError = null
@@ -156,9 +167,22 @@ export class EdgeFunctionsRegistry {
    */
   async #build() {
     try {
-      const { functionsConfig, graph, success } = await this.#runIsolate(this.#functions, this.#env, {
+      const {
+        features = {},
+        functionsConfig,
+        graph,
+        success,
+      } = await this.#runIsolate(this.#functions, this.#env, {
         getFunctionsConfig: true,
       })
+
+      if (features.npmModules && !this.#hasShownNPMWarning) {
+        log(
+          `${NETLIFYDEVWARN} Support for npm modules in edge functions is an experimental feature. To learn more about the current state of this capability or to report a problem, refer to https://ntl.fyi/edge-functions-npm.`,
+        )
+
+        this.#hasShownNPMWarning = true
+      }
 
       if (!success) {
         throw new Error('Build error')
