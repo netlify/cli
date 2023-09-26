@@ -9,7 +9,7 @@ import callCli from '../../utils/call-cli.cjs'
 import { createLiveTestSite, generateSiteName } from '../../utils/create-live-test-site.cjs'
 import { withSiteBuilder } from '../../utils/site-builder.cjs'
 
-// eslint-disable-next-line no-underscore-dangle
+ 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const SITE_NAME = generateSiteName('netlify-test-deploy-')
