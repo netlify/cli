@@ -236,7 +236,7 @@ export const watchDebounced = async (
   target,
   { depth, ignored = [], onAdd = () => {}, onChange = () => {}, onUnlink = () => {} },
 ) => {
-  const baseIgnores = [/\/node_modules\//, /\/.git\//]
+  const baseIgnores = [/\/(node_modules|.git)\//]
   const watcher = chokidar.watch(target, { depth, ignored: [...baseIgnores, ...ignored], ignoreInitial: true })
 
   await once(watcher, 'ready')

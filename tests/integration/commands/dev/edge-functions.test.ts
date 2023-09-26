@@ -122,7 +122,7 @@ describe('edge functions', () => {
     })
   })
 
-  setupFixtureTests('dev-server-with-edge-functions', { devServer: true }, () => {
+  setupFixtureTests('dev-server-with-edge-functions', { devServer: true, mockApi: { routes } }, () => {
     test<FixtureTestContext>('should not remove other edge functions on change', async ({ devServer, fixture }) => {
       // we need to wait till file watchers are loaded
       await pause(500)
