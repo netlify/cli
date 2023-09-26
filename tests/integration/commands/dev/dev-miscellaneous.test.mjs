@@ -459,6 +459,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
         })
         .withEdgeFunction({
           handler: async () => {
+            // eslint-disable-next-line no-undef
             const body = new ReadableStream({
               async start(controller) {
                 setInterval(() => {
