@@ -4,8 +4,28 @@ import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
 import got from '../../utils/got.cjs'
 import { pause } from '../../utils/pause.cjs'
 
+const siteInfo = {
+  account_slug: 'test-account',
+  id: 'foo',
+  name: 'site-name',
+  feature_flags: {
+    edge_functions_npm_support: true,
+  },
+  functions_config: { timeout: 1 },
+}
+
+const routes = [
+  { path: 'sites/foo', response: siteInfo },
+
+  { path: 'sites/foo/service-instances', response: [] },
+  {
+    path: 'accounts',
+    response: [{ slug: siteInfo.account_slug }],
+  },
+]
+
 describe('edge functions', () => {
-  setupFixtureTests('dev-server-with-edge-functions', { devServer: true }, () => {
+  setupFixtureTests('dev-server-with-edge-functions', { devServer: true, mockApi: { routes } }, () => {
     test<FixtureTestContext>('should run edge functions in correct order', async ({ devServer }) => {
       const response = await got(`http://localhost:${devServer.port}/ordertest`, {
         throwHttpErrors: false,
