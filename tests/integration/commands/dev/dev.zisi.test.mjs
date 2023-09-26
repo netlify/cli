@@ -1,17 +1,18 @@
 // Handlers are meant to be async outside tests
 import { copyFile } from 'fs/promises'
-import nodeFetch from 'node-fetch'
 import { Agent } from 'node:https'
 import os from 'os'
 import path from 'path'
 import { fileURLToPath } from 'url'
+
+import nodeFetch from 'node-fetch'
 import { describe, test } from 'vitest'
+
 import { curl } from '../../utils/curl.cjs'
 import { withDevServer } from '../../utils/dev-server.cjs'
 import { withMockApi } from '../../utils/mock-api.cjs'
 import { withSiteBuilder } from '../../utils/site-builder.cjs'
 
-// eslint-disable-next-line no-underscore-dangle
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const testMatrix = [{ args: [] }]
@@ -262,7 +263,12 @@ export const handler = async function () {
         ).toStrictEqual({
           rawUrl: `https://localhost:${port}/api/hello`,
         })
-        t.expect(await nodeFetch(`https://localhost:${port}?ef=fetch`, options).then(res =>res.text())).toEqual('origin')
+
+        // the fetch will go against the `https://` url of the dev server, which isn't trusted system-wide.
+        // this is the expected behaviour for fetch, so we shouldn't change anything about it.
+        t.expect(await nodeFetch(`https://localhost:${port}?ef=fetch`, options).then((res) => res.text())).toEqual(
+          'origin',
+        )
       })
     })
   })
