@@ -13,7 +13,6 @@ import { withDevServer } from '../../utils/dev-server.cjs'
 import { withMockApi } from '../../utils/mock-api.cjs'
 import { withSiteBuilder } from '../../utils/site-builder.cjs'
 
-// eslint-disable-next-line no-underscore-dangle
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const testMatrix = [{ args: [] }]
@@ -270,7 +269,10 @@ export const handler = async function () {
 
         // the fetch will go against the `https://` url of the dev server, which isn't trusted system-wide.
         // this is the expected behaviour for fetch, so we shouldn't change anything about it.
-        t.regex(await got(`https://localhost:${port}?ef=fetch`, options).text(), /invalid peer certificate/)
+        t.expect(
+          await nodeFetch(`https://localhost:${port}?ef=fetch`, options).then((res) => res.text()),
+          /invalid peer certificate/,
+        )
       })
     })
   })
