@@ -50,7 +50,7 @@ describe('edge functions', () => {
       expect(params).toEqual({})
       expectTypeOf(requestId).toBeString()
       expect(server).toEqual({ region: 'local' })
-      expect(site).toEqual({ id: 'foo' })
+      expect(site).toEqual({ id: 'foo', name: 'site-name' })
     })
 
     test<FixtureTestContext>('should expose URL parameters', async ({ devServer }) => {
