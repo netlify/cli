@@ -5,7 +5,7 @@ import { init as SdkInit } from '@netlify/sdk/commands'
  * The init command for Netlify Integrations
  * @param {import('commander').OptionValues} options
  */
-const init = async (options) => {
+export const init = async (options) => {
   await SdkInit(options)
 }
 
