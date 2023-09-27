@@ -241,8 +241,8 @@ async function updateIntegration(
         },
         body: JSON.stringify({ name, description, hostSiteId: siteId, scopes: localScopes.join(',') }),
       }).then(async (res) => {
-        const updateResponse = await res.json()
-        return { updateResponse, statusCode: res.status }
+        const response = await res.json()
+        return { updateResponse: response, statusCode: res.status }
       })
 
       if (statusCode !== 200) {
