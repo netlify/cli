@@ -1,4 +1,4 @@
-import {existsSync, readdirSync} from 'fs'
+import {existsSync} from 'fs'
 import {join} from 'path'
 
 import { init as SdkInit } from '@netlify/sdk/commands'
