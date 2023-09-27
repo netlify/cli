@@ -349,7 +349,7 @@ describe.concurrent('frameworks/framework-detection', () => {
           plugin: {
             onPreBuild: async ({ netlifyConfig }) => {
               // eslint-disable-next-line n/global-require, no-undef
-              const { mkdir, writeFile } = require('fs').promises
+              const { mkdir, writeFile } = require('fs/promises')
 
               const generatedFunctionsDir = 'new_functions'
               netlifyConfig.functions.directory = generatedFunctionsDir
@@ -386,7 +386,7 @@ describe.concurrent('frameworks/framework-detection', () => {
       await builder.withNetlifyToml({ config: { dev: { framework: 'remix' } } }).buildAsync()
 
       // a failure is expected since this is not a true remix project
-      const error = await withDevServer({ cwd: builder.directory }, () => {}, true).catch((error) => error)
+      const error = await withDevServer({ cwd: builder.directory }, () => {}, true).catch((_error) => _error)
       t.expect(error.stdout.includes(`Failed running command: remix watch. Please verify 'remix' exists`)).toBe(true)
     })
   })
@@ -404,7 +404,7 @@ describe.concurrent('frameworks/framework-detection', () => {
         .buildAsync()
 
       // a failure is expected since this is not a true remix project
-      const error = await withDevServer({ cwd: builder.directory }, () => {}, true).catch((error) => error)
+      const error = await withDevServer({ cwd: builder.directory }, () => {}, true).catch((_error) => _error)
       t.expect(error.stdout.includes(`Failed running command: remix watch. Please verify 'remix' exists`)).toBe(true)
     })
   })
@@ -427,8 +427,8 @@ describe.concurrent('frameworks/framework-detection', () => {
           name: 'frameworker',
           plugin: {
             onPreBuild: async ({ netlifyConfig }) => {
-              // eslint-disable-next-line n/global-require
-              const { mkdir, writeFile } = require('fs').promises
+              // eslint-disable-next-line n/global-require, no-undef
+              const { mkdir, writeFile } = require('fs/promises')
 
               const generatedFunctionsDir = 'new_functions'
               netlifyConfig.functions.directory = generatedFunctionsDir
@@ -451,7 +451,7 @@ describe.concurrent('frameworks/framework-detection', () => {
       await withDevServer(
         { cwd: builder.directory, context: null, debug: true, serve: true },
         async ({ output, url }) => {
-          const response = await got(`${url}/hello`).json()
+          const response = await fetch(`${url}/hello`).then((res) => res.json())
           t.expect(response).toStrictEqual({ CONTEXT_CHECK: 'PRODUCTION' })
 
           t.expect(normalize(output, { duration: true, filePath: true })).toMatchSnapshot()
