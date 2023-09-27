@@ -234,25 +234,26 @@ async function updateIntegration(
     if (scopePrompt.updateScopes) {
       // Update the scopes in remote
       scopesToWrite = scopes
-      const { statusCode, updateResponse } = await fetch(`${INTEGRATION_URL}/${accountId}/integrations/${integrationSlug}`, {
-        method: 'PUT',
-        headers: {
-          'netlify-token': token,
+      const { statusCode, updateResponse } = await fetch(
+        `${INTEGRATION_URL}/${accountId}/integrations/${integrationSlug}`,
+        {
+          method: 'PUT',
+          headers: {
+            'netlify-token': token,
+          },
+          body: JSON.stringify({ name, description, hostSiteId: siteId, scopes: localScopes.join(',') }),
         },
-        body: JSON.stringify({ name, description, hostSiteId: siteId, scopes: localScopes.join(',') }),
-      }).then(async (res) => {
+      ).then(async (res) => {
         const response = await res.json()
         return { updateResponse: response, statusCode: res.status }
       })
 
       if (statusCode !== 200) {
         log(
-          chalk.red(
-            `There was an error updating the integration: ${updateResponse}`,
-          ),
-          chalk.red("Please try again. If the problem persists, please contact support.")
+          chalk.red(`There was an error updating the integration: ${updateResponse}`),
+          chalk.red('Please try again. If the problem persists, please contact support.'),
         )
-        exit(1);
+        exit(1)
       }
     } else {
       const useRegisteredScopesPrompt = await inquirer.prompt([
