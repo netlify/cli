@@ -16,7 +16,8 @@ const build = async (options) => {
  */
 export const createBuildCommand = (program) =>
   program
-    .command('build')
+    .command('integration:build')
+    .alias('int:build')
     .description('Builds the Netlify integration.')
     .option('-a, --all', 'Build all components of the integration', false)
     .option('-c, --connector', 'Build the Netlify Connect plugin of the integration', false)

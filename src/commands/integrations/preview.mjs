@@ -16,7 +16,8 @@ const preview = async (options) => {
  */
 export const createPreviewCommand = (program) =>
   program
-    .command('preview')
+    .command('integration:preview')
+    .command('int:preview')
     .description('Preview the UI of the Netlify Integration in your local environment.')
     .action(preview)
 /* eslint-enable import/extensions */

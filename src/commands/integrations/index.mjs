@@ -19,17 +19,15 @@ const integrations = (options, command) => {
  * @returns
  */
 export const createIntegrationCommand = (program) => {
-  const integrationsCommand = program
+  createInitCommand(program)
+  createBuildCommand(program)
+  createPreviewCommand(program)
+  createDevCommand(program)
+  createDeployCommand(program)
+
+  return program
     .command('integration')
     .alias('int')
     .description('Manage integrations')
     .action(integrations)
-
-  createInitCommand(integrationsCommand)
-  createBuildCommand(integrationsCommand)
-  createPreviewCommand(integrationsCommand)
-  createDevCommand(integrationsCommand)
-  createDeployCommand(integrationsCommand)
-
-  return integrationsCommand
 }

@@ -16,7 +16,8 @@ const init = async (options) => {
  */
 export const createInitCommand = (program) =>
   program
-    .command('init')
+    .command('integration:init')
+    .alias('int:init')
     .description('Creates a skeleton Netlify integration project in your current directory.')
     .option('-s, --slug', 'The integration slug.')
     .action(init)

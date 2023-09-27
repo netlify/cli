@@ -356,7 +356,8 @@ const deploy = async (options, command) => {
  */
 export const createDeployCommand = (program) =>
   program
-    .command('deploy')
+    .command('integration:deploy')
+    .alias('int:deploy')
     .description('Register, build and deploy a private Netlify integration.')
     .option('-p, --prod', 'Deploy to production', false)
     .option('-a, --auth <token>', 'Netlify auth token to deploy with', env.NETLIFY_AUTH_TOKEN)
