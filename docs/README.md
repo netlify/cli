@@ -115,6 +115,10 @@ Manage netlify functions
 
 Configure continuous deployment for a new or existing site. To create a new site without continuous deployment, use `netlify sites:create`
 
+### [integration](/docs/commands/integration.md)
+
+Manage integrations
+
 ### [link](/docs/commands/link.md)
 
 Link a local repo or project folder to an existing site on Netlify

@@ -28,6 +28,7 @@ See the [CLI command line reference](https://cli.netlify.com/commands/) to get s
   - [env](#env)
   - [functions](#functions)
   - [init](#init)
+  - [integration](#integration)
   - [link](#link)
   - [login](#login)
   - [open](#open)
@@ -164,6 +165,10 @@ Manage netlify functions
 ### [init](/docs/commands/init.md)
 
 Configure continuous deployment for a new or existing site. To create a new site without continuous deployment, use `netlify sites:create`
+
+### [integration](/docs/commands/integration.md)
+
+Manage integrations
 
 ### [link](/docs/commands/link.md)
 

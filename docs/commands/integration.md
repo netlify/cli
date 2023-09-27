@@ -6,7 +6,7 @@ description: (Beta) Create, develop, and deploy integrations.
 # `integration`
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
-Netlify integration commands
+Manage integrations
 
 **Usage**
 
@@ -18,4 +18,6 @@ netlify integration
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
+
+
 <!-- AUTO-GENERATED-CONTENT:END -->

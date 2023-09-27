@@ -22,7 +22,7 @@ export const createIntegrationCommand = (program) => {
   const integrationsCommand = program
     .command('integration')
     .alias('int')
-    .description('Netlify integration commands')
+    .description('Manage integrations')
     .action(integrations)
 
   createInitCommand(integrationsCommand)
