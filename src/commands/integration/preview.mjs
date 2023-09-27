@@ -5,7 +5,7 @@ import { preview as SdkPreview } from '@netlify/sdk/commands'
  * The preview command for Netlify Integrations
  * @param {import('commander').OptionValues} options
  */
-const preview = async (options) => {
+export const preview = async (options) => {
   await SdkPreview(options)
 }
 

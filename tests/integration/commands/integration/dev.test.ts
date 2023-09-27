@@ -6,7 +6,7 @@ import { dev } from '../../../../src/commands/integration/dev.mjs'
 vi.mock('@netlify/sdk/commands', () => ({
     dev: vi.fn() }))
 
-describe('integration:init', () => {
+describe('integration:dev', () => {
   beforeEach(async () => {
     vi.clearAllMocks()
   })

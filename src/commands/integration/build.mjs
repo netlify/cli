@@ -5,7 +5,7 @@ import { build as SdkBuild } from '@netlify/sdk/commands'
  * The build command for Netlify Integrations
  * @param {import('commander').OptionValues} options
  */
-const build = async (options) => {
+export const build = async (options) => {
   await SdkBuild(options)
 }
 
