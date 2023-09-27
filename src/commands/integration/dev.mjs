@@ -15,5 +15,9 @@ const dev = async (options) => {
  * @returns
  */
 export const createDevCommand = (program) =>
-  program.command('integration:dev').alias('int:dev').description('Build and preview the Netlify integration in your local environment.').action(dev)
+  program
+    .command('integration:dev')
+    .alias('int:dev')
+    .description('Build and preview the Netlify integration in your local environment.')
+    .action(dev)
 /* eslint-enable import/extensions */

@@ -25,9 +25,5 @@ export const createIntegrationCommand = (program) => {
   createDevCommand(program)
   createDeployCommand(program)
 
-  return program
-    .command('integration')
-    .alias('int')
-    .description('Manage integrations')
-    .action(integrations)
+  return program.command('integration').alias('int').description('Manage integrations').action(integrations)
 }
