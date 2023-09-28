@@ -18,7 +18,7 @@ import { deploy as siteDeploy } from '../deploy/deploy.mjs'
 
 const INTEGRATION_URL = env.INTEGRATION_URL || 'https://api.netlifysdk.com'
 
-function areScopesEqual(localScopes, remoteScopes) {
+export function areScopesEqual(localScopes, remoteScopes) {
   if (localScopes.length !== remoteScopes.length) {
     return false
   }
