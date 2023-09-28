@@ -2,7 +2,7 @@ const { join } = require('path')
 const process = require('process')
 
 const test = require('ava')
-const { Response } = require('node-fetch')
+const { Response, default: fetch } = require('node-fetch')
 
 const callCli = require('./utils/call-cli.cjs')
 const { createLiveTestSite, generateSiteName } = require('./utils/create-live-test-site.cjs')
