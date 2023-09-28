@@ -437,7 +437,7 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
     })
   })
 
-  test.only('should deploy functions from internal functions directory', async (t) => {
+  test.serial('should deploy functions from internal functions directory', async (t) => {
     await withSiteBuilder('site-with-internal-functions', async (builder) => {
       await builder
         .withNetlifyToml({
