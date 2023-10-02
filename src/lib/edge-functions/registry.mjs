@@ -548,7 +548,7 @@ export class EdgeFunctionsRegistry {
    * @returns {Promise<void>}
    */
   async #setupWatcherForDirectory(directory) {
-    const ignored = [new RegExp(this.#servePath)]
+    const ignored = [`${this.#servePath}/**`]
     const watcher = await watchDebounced(directory, {
       ignored,
       onAdd: () => this.#checkForAddedOrDeletedFunctions(),

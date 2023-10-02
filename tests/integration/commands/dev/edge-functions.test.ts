@@ -30,9 +30,9 @@ const routes = [
   },
 ]
 
-describe('edge functions', () => {
+describe.skipIf(isWindows)('edge functions', () => {
   setupFixtureTests('dev-server-with-edge-functions', { devServer: true, mockApi: { routes } }, () => {
-    test.skipIf(isWindows)<FixtureTestContext>('should run edge functions in correct order', async ({ devServer }) => {
+    test<FixtureTestContext>('should run edge functions in correct order', async ({ devServer }) => {
       const response = await got(`http://localhost:${devServer.port}/ordertest`, {
         throwHttpErrors: false,
         retry: { limit: 0 },
@@ -42,7 +42,7 @@ describe('edge functions', () => {
       expect(response.body).toMatchSnapshot()
     })
 
-    test.skipIf(isWindows)<FixtureTestContext>('should provide context properties', async ({ devServer }) => {
+    test<FixtureTestContext>('should provide context properties', async ({ devServer }) => {
       const response = await got(`http://localhost:${devServer.port}/context`, {
         throwHttpErrors: false,
         retry: { limit: 0 },
@@ -59,7 +59,7 @@ describe('edge functions', () => {
       expect(site).toEqual({ id: 'foo', name: 'site-name' })
     })
 
-    test.skipIf(isWindows)<FixtureTestContext>('should expose URL parameters', async ({ devServer }) => {
+    test<FixtureTestContext>('should expose URL parameters', async ({ devServer }) => {
       const response = await got(`http://localhost:${devServer.port}/categories/foo/products/bar`, {
         throwHttpErrors: false,
         retry: { limit: 0 },
@@ -72,7 +72,7 @@ describe('edge functions', () => {
       })
     })
 
-    test.skipIf(isWindows)<FixtureTestContext>('should respect config.methods field', async ({ devServer }) => {
+    test<FixtureTestContext>('should respect config.methods field', async ({ devServer }) => {
       const responseGet = await got(`http://localhost:${devServer.port}/products/really-bad-product`, {
         method: 'GET',
         throwHttpErrors: false,
@@ -90,67 +90,60 @@ describe('edge functions', () => {
       expect(responseDelete.body).toEqual('Deleted item successfully: really-bad-product')
     })
 
-    test.skipIf(isWindows)<FixtureTestContext>(
-      'should show an error page when an edge function has an uncaught exception',
-      async ({ devServer }) => {
-        // Request #1: Plain text
-        const res1 = await got(`http://localhost:${devServer.port}/uncaught-exception`, {
-          method: 'GET',
-          throwHttpErrors: false,
-          retry: { limit: 0 },
-        })
+    test<FixtureTestContext>('should show an error page when an edge function has an uncaught exception', async ({
+      devServer,
+    }) => {
+      // Request #1: Plain text
+      const res1 = await got(`http://localhost:${devServer.port}/uncaught-exception`, {
+        method: 'GET',
+        throwHttpErrors: false,
+        retry: { limit: 0 },
+      })
 
-        expect(res1.statusCode).toBe(500)
-        expect(res1.body).toContain('ReferenceError: thisWillThrow is not defined')
+      expect(res1.statusCode).toBe(500)
+      expect(res1.body).toContain('ReferenceError: thisWillThrow is not defined')
 
-        // Request #2: HTML
-        const res2 = await got(`http://localhost:${devServer.port}/uncaught-exception`, {
-          method: 'GET',
-          headers: {
-            Accept: 'text/html',
-          },
-          throwHttpErrors: false,
-          retry: { limit: 0 },
-        })
+      // Request #2: HTML
+      const res2 = await got(`http://localhost:${devServer.port}/uncaught-exception`, {
+        method: 'GET',
+        headers: {
+          Accept: 'text/html',
+        },
+        throwHttpErrors: false,
+        retry: { limit: 0 },
+      })
 
-        expect(res2.body).toContain('<p>An unhandled error in the function code triggered the following message:</p>')
-      },
-    )
+      expect(res2.body).toContain('<p>An unhandled error in the function code triggered the following message:</p>')
+    })
 
-    test.skipIf(isWindows)<FixtureTestContext>(
-      'should run an edge function that imports an npm module',
-      async ({ devServer }) => {
-        const res = await got(`http://localhost:${devServer.port}/with-npm-module`, {
-          method: 'GET',
-          throwHttpErrors: false,
-          retry: { limit: 0 },
-        })
+    test<FixtureTestContext>('should run an edge function that imports an npm module', async ({ devServer }) => {
+      const res = await got(`http://localhost:${devServer.port}/with-npm-module`, {
+        method: 'GET',
+        throwHttpErrors: false,
+        retry: { limit: 0 },
+      })
 
-        expect(res.statusCode).toBe(200)
-        expect(res.body).toBe('Hello from an npm module!')
-      },
-    )
+      expect(res.statusCode).toBe(200)
+      expect(res.body).toBe('Hello from an npm module!')
+    })
   })
 
   setupFixtureTests('dev-server-with-edge-functions', { devServer: true, mockApi: { routes } }, () => {
-    test.skipIf(isWindows)<FixtureTestContext>(
-      'should not remove other edge functions on change',
-      async ({ devServer, fixture }) => {
-        // we need to wait till file watchers are loaded
-        await pause(500)
+    test<FixtureTestContext>('should not remove other edge functions on change', async ({ devServer, fixture }) => {
+      // we need to wait till file watchers are loaded
+      await pause(500)
 
-        await fixture.builder
-          .withEdgeFunction({
-            name: 'new',
-            handler: async () => new Response('hello'),
-            config: { path: ['/new'] },
-          })
-          .build()
+      await fixture.builder
+        .withEdgeFunction({
+          name: 'new',
+          handler: async () => new Response('hello'),
+          config: { path: ['/new'] },
+        })
+        .build()
 
-        await devServer.waitForLogMatching('Loaded edge function new')
+      await devServer.waitForLogMatching('Loaded edge function new')
 
-        expect(devServer.output).not.toContain('Removed edge function')
-      },
-    )
+      expect(devServer.output).not.toContain('Removed edge function')
+    })
   })
 })
