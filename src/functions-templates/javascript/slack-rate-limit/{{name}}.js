@@ -69,7 +69,7 @@ const updateUser = function (identity, user, appMetadata) {
 // One hour
 const MESSAGE_RATE_LIMIT = 36e5
 
-export default (event, context) => {
+export default async (event, context) => {
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 410,
