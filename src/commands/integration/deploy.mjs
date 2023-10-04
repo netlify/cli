@@ -298,7 +298,6 @@ const deploy = async (options, command) => {
   const { id: siteId } = site
   const [token] = await getToken()
   const workingDir = resolve(command.workingDir)
-
   const buildOptions = await getBuildOptions({
     cachedConfig,
     packagePath: command.workspacePackage,
