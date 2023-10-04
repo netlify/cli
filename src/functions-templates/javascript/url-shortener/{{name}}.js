@@ -1,7 +1,7 @@
 const generateRoute = require('./generate-route.js')
 const getRoute = require('./get-route.js')
 
-const handler = async (event) => {
+export default async (event) => {
   const path = event.path.replace(/\.netlify\/functions\/[^/]+/, '')
   const segments = path.split('/').filter(Boolean)
   console.log('segments', segments)
@@ -26,5 +26,3 @@ const handler = async (event) => {
       }
   }
 }
-
-module.exports = { handler }

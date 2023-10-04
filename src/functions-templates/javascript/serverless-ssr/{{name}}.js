@@ -10,6 +10,4 @@ const functionName = 'serverless-http'
 const app = expressApp(functionName)
 
 // Export lambda handler
-const handler = serverless(app)
-
-module.exports = { handler }
+export default serverless(app)

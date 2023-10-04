@@ -6,7 +6,7 @@ const { ApolloServer } = require('apollo-server-lambda')
 const { introspectSchema, makeRemoteExecutableSchema } = require('graphql-tools')
 const fetch = require('node-fetch')
 
-const handler = async function (event, context) {
+export default async (event, context) => {
   /** required for Fauna GraphQL auth */
   if (!process.env.FAUNADB_SERVER_SECRET) {
     const msg = `
@@ -42,5 +42,3 @@ const handler = async function (event, context) {
     server.createHandler()(event, context, cb)
   })
 }
-
-module.exports = { handler }

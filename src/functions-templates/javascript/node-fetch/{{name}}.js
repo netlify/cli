@@ -1,6 +1,6 @@
 const fetch = require('node-fetch')
 
-const handler = async function () {
+export default async () => {
   try {
     const response = await fetch('https://icanhazdadjoke.com', {
       headers: { Accept: 'application/json' },
@@ -25,5 +25,3 @@ const handler = async function () {
     }
   }
 }
-
-module.exports = { handler }

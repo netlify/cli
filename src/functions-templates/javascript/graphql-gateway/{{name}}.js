@@ -11,7 +11,7 @@ const { ApolloServer } = require('apollo-server-lambda')
 const { introspectSchema, makeRemoteExecutableSchema, mergeSchemas } = require('graphql-tools')
 const fetch = require('node-fetch')
 
-const handler = async function (event, context) {
+export default async (event, context) => {
   // other Netlify functions which are graphql lambdas
   const schema1 = await getSchema('graphql-1')
   const schema2 = await getSchema('graphql-2')
@@ -71,5 +71,3 @@ const getSchema = async function (endpoint) {
   const executableSchema = makeRemoteExecutableSchema({ schema, link })
   return executableSchema
 }
-
-module.exports = { handler }

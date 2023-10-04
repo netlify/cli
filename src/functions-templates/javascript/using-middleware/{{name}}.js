@@ -54,7 +54,7 @@ const handler = middy(businessLogic)
   // handles common http errors and returns proper responses
   .use(httpErrorHandler())
 
-module.exports = {
+export default {
   schema,
   handler,
 }

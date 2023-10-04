@@ -2,7 +2,7 @@
 
 const fetch = require('node-fetch')
 
-const handler = async function (event, context) {
+export default async (event, context) => {
   if (!context.clientContext && !context.clientContext.identity) {
     return {
       statusCode: 500,
@@ -35,5 +35,3 @@ const handler = async function (event, context) {
     }
   }
 }
-
-module.exports = { handler }

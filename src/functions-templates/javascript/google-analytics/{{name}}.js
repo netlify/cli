@@ -52,7 +52,7 @@ const proxyToGoogleAnalytics = async function (event) {
   }
 }
 
-const handler = async function (event) {
+export default async (event) => {
   const origin = event.headers.origin || event.headers.Origin || ''
   const httpMethod = event.httpMethod.toUpperCase()
 
@@ -81,8 +81,6 @@ const handler = async function (event) {
 
   return { statusCode: 404, headers, body: 'Not found' }
 }
-
-module.exports = { handler }
 
 //
 // Docs on GA endpoint and example params

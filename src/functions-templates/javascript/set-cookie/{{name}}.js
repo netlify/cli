@@ -3,7 +3,7 @@ const cookie = require('cookie')
 // 14 days
 const COOKIE_MAX_AGE = 12_096e5
 
-const handler = async () => {
+export default async () => {
   const myCookie = cookie.serialize('my_cookie', 'lolHi', {
     secure: true,
     httpOnly: true,
@@ -40,5 +40,3 @@ const handler = async () => {
     body: html,
   }
 }
-
-module.exports = { handler }

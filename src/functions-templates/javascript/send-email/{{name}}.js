@@ -13,7 +13,7 @@ const NAME_MAX_LENGTH = 50
 const DETAILS_MIN_LENGTH = 10
 const DETAILS_MAX_LENGTH = 1e3
 
-const handler = async (event) => {
+export default async (event) => {
   if (!process.env.CONTACT_EMAIL) {
     return {
       statusCode: 500,
@@ -64,5 +64,3 @@ const handler = async (event) => {
     return { statusCode: 500, body: error.message }
   }
 }
-
-module.exports = { handler }

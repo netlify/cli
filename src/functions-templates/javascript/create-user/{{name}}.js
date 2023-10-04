@@ -1,6 +1,6 @@
 const fetch = require('node-fetch')
 
-const handler = async (event, context) => {
+export default async (event, context) => {
   if (event.httpMethod !== 'POST') return { statusCode: 400, body: 'Must POST to this function' }
 
   // send account information along with the POST
@@ -32,5 +32,3 @@ const handler = async (event, context) => {
     body: 'success!',
   }
 }
-
-module.exports = { handler }

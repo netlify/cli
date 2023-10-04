@@ -5,7 +5,7 @@
 // https://www.netlify.com/blog/2019/02/21/the-role-of-roles-and-how-to-set-them-in-netlify-identity/
 // https://docs.netlify.com/functions/functions-and-identity/
 
-const handler = async function (event) {
+export default async (event) => {
   const data = JSON.parse(event.body)
   const { user } = data
 
@@ -25,5 +25,3 @@ const handler = async function (event) {
     body: JSON.stringify(responseBody),
   }
 }
-
-module.exports = { handler }

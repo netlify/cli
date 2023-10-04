@@ -16,7 +16,7 @@ mutation verifiedp($id: uuid!, $title: String!, $content: String!) {
 }
 `
 
-const handler = async (event) => {
+export default async (event) => {
   let request
   try {
     request = JSON.parse(event.body)
@@ -36,5 +36,3 @@ const handler = async (event) => {
     return { statusCode: 500, body: error.toString() }
   }
 }
-
-module.exports = { handler }

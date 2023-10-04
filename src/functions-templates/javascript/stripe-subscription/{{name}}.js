@@ -49,4 +49,4 @@ const createCustomerAndSubscribeToPlan = async function (stripeToken, email, pro
   return subscription
 }
 
-module.exports = { handler }
+export default handler

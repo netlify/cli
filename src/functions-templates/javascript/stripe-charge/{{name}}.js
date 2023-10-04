@@ -9,7 +9,7 @@ const headers = {
   'Access-Control-Allow-Headers': 'Content-Type',
 }
 
-const handler = async function (event) {
+export default async (event) => {
   // -- We only care to do anything if this is our POST request.
   if (event.httpMethod !== 'POST' || !event.body) {
     return {
@@ -52,5 +52,3 @@ const handler = async function (event) {
     return { statusCode: 500, error: error.message }
   }
 }
-
-module.exports = { handler }

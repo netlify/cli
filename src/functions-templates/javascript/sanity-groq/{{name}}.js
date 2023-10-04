@@ -32,7 +32,7 @@ const client = sanityClient({
 //
 // Read more about restricting access to your Netlify functions at
 // https://www.netlify.com/blog/2018/03/29/jamstack-architecture-on-netlify-how-identity-and-functions-work-together/#restricting-access
-const handler = async (event) => {
+export default async (event) => {
   const { query = '' } = event.queryStringParameters
   // The rest of the query params are handled as parameters to the query
   const params = { ...event.queryStringParameters, query: null }
@@ -53,4 +53,3 @@ const handler = async (event) => {
   }
 }
 
-module.exports = { handler }
