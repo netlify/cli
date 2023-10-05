@@ -1,20 +1,13 @@
 import process from 'process'
 
-import execa from 'execa'
+import { getConfiguration } from '@netlify/sdk/cli-utils'
+import { build as SdkBuild } from '@netlify/sdk/commands'
 import { beforeAll, beforeEach, describe, expect, test, vi } from 'vitest'
 
 import BaseCommand from '../../../../src/commands/base-command.mjs'
 import { deploy as siteDeploy } from '../../../../src/commands/deploy/deploy.mjs'
-import {areScopesEqual} from '../../../../src/commands/integration/deploy.mjs'
+import {areScopesEqual, createDeployCommand, updateIntegration, registerIntegration} from '../../../../src/commands/integration/deploy.mjs'
 import { getEnvironmentVariables, withMockApi } from '../../utils/mock-api.cjs'
-
-// describe('integration:deploy', () => {
-//   beforeEach(async () => {
-//     vi.clearAllMocks()
-//   })
-
-
-// })
 
 
 // describe('integration:deploy areScopesEqual', () => {
@@ -35,95 +28,84 @@ import { getEnvironmentVariables, withMockApi } from '../../utils/mock-api.cjs'
 
 
 describe(`mocking cli in same process`, () => {
-	test("mocks pizza logger for funsies", async () => {
+  beforeEach(() => {
+    vi.resetAllMocks()
+  })
+	test("deploys an integration", async () => {
     vi.mock(`../../../../src/commands/deploy/deploy.mjs`, () => ({
       deploy: vi.fn(() => console.log(`yay it was mocked!`)),
       }))
+    vi.mock(`@netlify/sdk/commands`, () => ({
+      build: vi.fn(() => console.log(`build!`)),
+      }))
+    vi.mock(`@netlify/sdk/cli-utils`, () => ({
+      getConfiguration: vi.fn(),
+      }))
+    getConfiguration.mockReturnValue({name: 'integrationName', description: 'an integration', scopes: 'all', slug: '987645-integration'})
+    vi.mock(`../../../../src/commands/integration/deploy.mjs`, async () => {
+      const original = await vi.importActual<typeof import('../../../../src/commands/integration/deploy.mjs')>(`../../../../src/commands/integration/deploy.mjs`)
+      return {
+        ...original,
+        registerIntegration: vi.fn(),
+        updateIntegration: vi.fn(() => {
+          console.log('hiii!')
+        }),
+      }
+    })
+    console.log(updateIntegration.mock)
       const siteInfo = {
         admin_url: 'https://app.netlify.com/sites/site-name/overview',
         ssl_url: 'https://site-name.netlify.app/',
+        url: 'https:/app.netlify.com/whatever',
         id: 'site_id',
         name: 'site-name',
         build_settings: { repo_url: 'https://github.com/owner/repo' },
+        accountId: 'test-account'
       }
+
       const routes = [
         {
           path: 'accounts',
-          response: [{ slug: 'test-account' }],
+          response: [{ id: 'test-account' }],
         },
+        { path: 'sites/site_id/service-instances', response: [] },
+        { path: 'sites/site_id', response: siteInfo },
         {
           path: 'sites',
-          response: [],
+          response: [siteInfo],
         },
-        { path: 'sites/site_id', response: siteInfo },
-        { path: 'sites/site_id/service-instances', response: [] },
-        {
-          path: 'user',
-          response: { name: 'test user', slug: 'test-user', email: 'user@test.com' },
-        },
-        {
-          path: 'test-account/sites',
-          method: 'post',
-          response: siteInfo,
-        },
+        { path: 'sites/site_id', method: 'patch', response: {} },
+        { path: 'test-account/integrations', response: {} },
       ]
 
-      await withMockApi(routes, async ({apiUrl}) => {
-        Object.assign(process.env, getEnvironmentVariables({apiUrl}))
-        const program = new BaseCommand('netlify')
-        const simulatedArgv = [
-          "",
-          "",
-          "integration:deploy",
-        ]
-        try {
-          console.log('hi')
-          const someething = await program.parseAsync(simulatedArgv)
-          console.log(someething)
 
-        } catch (error) {
-          console.log(error)
-        }
 
-        expect(siteDeploy).toBeCalledTimes(1)
+        await withMockApi(routes, async ({apiUrl}) => {
+          const envVars = getEnvironmentVariables({apiUrl})
+          envVars.INTEGRATION_URL = apiUrl
 
+          Object.assign(process.env, envVars)
+          const program = new BaseCommand('netlify')
+
+          createDeployCommand(program)
+          const simulatedArgv = [
+            "",
+            "",
+            "integration:deploy",
+          ]
+          try {
+            await program.parseAsync(simulatedArgv)
+
+          } catch (error) {
+            console.log(error)
+          }
+
+          expect(SdkBuild).toBeCalledTimes(1)
+          expect(siteDeploy).toBeCalledTimes(1)
+
+        })
       })
 
-	})
+
+
 })
-
-// if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
-
-//   const routes = [
-//     { path: 'track', method: 'POST', response: {} },
-//     { path: 'sites', response: [] },
-//     { path: 'accounts', response: [] },
-//   ]
-// describe.concurrent('integration:deploy', async () => {
-//   let integrationSiteId
-//   let integrationAccount
-//   const { account, siteId } = await createLiveTestSite(SITE_NAME)
-//   integrationSiteId = siteId
-//   integrationAccount = account
-//   beforeAll(async (context) => {})
-
-
-//   test('deploys integration', async () => {
-//     await withSiteBuilder('integration', async (builder) => {
-//       await builder.buildAsync()
-
-//       await withMockApi(routes, async ({ apiUrl }) => {
-
-//         await execa(cliPath, ['integration:deploy'], {
-//           ...getCLIOptions({apiUrl, builder}),
-//         })
-
-
-
-//       })
-
-//     })
-//   })
-// })
-
-// }

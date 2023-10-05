@@ -16,7 +16,9 @@ import { getSiteInformation } from '../../utils/dev.mjs'
 import { checkOptions } from '../build/build.mjs'
 import { deploy as siteDeploy } from '../deploy/deploy.mjs'
 
-const INTEGRATION_URL = env.INTEGRATION_URL || 'https://api.netlifysdk.com'
+function getIntegrationAPIUrl() {
+  return env.INTEGRATION_URL || 'https://api.netlifysdk.com'
+}
 
 export function areScopesEqual(localScopes, remoteScopes) {
   if (localScopes.length !== remoteScopes.length) {
@@ -101,7 +103,7 @@ function verifyRequiredFieldsAreInConfig(name, description, scopes) {
 }
 
 // eslint-disable-next-line max-params
-async function registerIntegration(workingDir, siteId, accountId, localIntegrationConfig, token) {
+export async function registerIntegration(workingDir, siteId, accountId, localIntegrationConfig, token) {
   const { description, name, scopes, slug } = localIntegrationConfig
   log(chalk.yellow(`An integration associated with the site ID ${siteId} is not registered.`))
   const registerPrompt = await inquirer.prompt([
@@ -133,7 +135,7 @@ async function registerIntegration(workingDir, siteId, accountId, localIntegrati
 
   log(chalk.white('Registering the integration...'))
 
-  const { body, statusCode } = await fetch(`${INTEGRATION_URL}/${accountId}/integrations`, {
+  const { body, statusCode } = await fetch(`${getIntegrationAPIUrl()}/${accountId}/integrations`, {
     method: 'POST',
     headers: {
       'netlify-token': token,
@@ -172,7 +174,7 @@ async function registerIntegration(workingDir, siteId, accountId, localIntegrati
 }
 
 // eslint-disable-next-line max-params
-async function updateIntegration(
+export async function updateIntegration(
   workingDir,
   options,
   siteId,
@@ -235,7 +237,7 @@ async function updateIntegration(
       // Update the scopes in remote
       scopesToWrite = scopes
       const { statusCode, updateResponse } = await fetch(
-        `${INTEGRATION_URL}/${accountId}/integrations/${integrationSlug}`,
+        `${getIntegrationAPIUrl()}/${accountId}/integrations/${integrationSlug}`,
         {
           method: 'PUT',
           headers: {
@@ -309,7 +311,6 @@ const deploy = async (options, command) => {
   checkOptions(buildOptions)
 
   await SdkBuild({ all: true })
-
   const { accountId } = await getSiteInformation({
     api,
     site,
@@ -317,7 +318,7 @@ const deploy = async (options, command) => {
   })
 
   const { body: registeredIntegration, statusCode } = await fetch(
-    `${INTEGRATION_URL}/${accountId}/integrations?site_id=${siteId}`,
+    `${getIntegrationAPIUrl()}/${accountId}/integrations?site_id=${siteId}`,
     {
       headers: {
         'netlify-token': token,
