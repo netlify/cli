@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "16.5.0",
+  "version": "16.5.1",
   "author": "Netlify Inc.",
   "type": "module",
   "engines": {
@@ -78,14 +78,14 @@
   "dependencies": {
     "@bugsnag/js": "7.20.2",
     "@fastify/static": "6.10.2",
-    "@netlify/build": "29.21.1",
-    "@netlify/build-info": "7.8.0",
+    "@netlify/build": "29.21.2",
+    "@netlify/build-info": "7.9.0",
     "@netlify/config": "20.9.0",
     "@netlify/edge-bundler": "9.1.0",
     "@netlify/local-functions-proxy": "1.1.1",
     "@netlify/sdk": "^1.0.5",
     "@netlify/serverless-functions-api": "1.7.3",
-    "@netlify/zip-it-and-ship-it": "9.18.1",
+    "@netlify/zip-it-and-ship-it": "9.19.0",
     "@octokit/rest": "19.0.13",
     "ansi-escapes": "6.2.0",
     "ansi-styles": "6.2.1",
