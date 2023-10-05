@@ -8,6 +8,8 @@ import semver from 'semver'
 import { error as errorExit } from '../../utils/command-helpers.mjs'
 import { BACKGROUND } from '../../utils/functions/get-functions.mjs'
 
+import { checkTsconfigForV2Api } from './check-tsconfig-for-v2-api.mjs'
+
 const TYPESCRIPT_EXTENSIONS = new Set(['.cts', '.mts', '.ts'])
 const V2_MIN_NODE_VERSION = '18.0.0'
 
@@ -138,6 +140,13 @@ export default class NetlifyFunction {
 
     try {
       const { includedFiles = [], schedule, srcFiles, ...buildData } = await this.buildQueue
+
+      if (buildData.runtimeAPIVersion === 2) {
+        // Check f the tsconfig.json file exists for the editor support.
+        // If not create it
+        await checkTsconfigForV2Api({ functionsDir: this.directory })
+      }
+
       const srcFilesSet = new Set(srcFiles)
       const srcFilesDiff = this.getSrcFilesDiff(srcFilesSet)
 
