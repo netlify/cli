@@ -102,6 +102,32 @@ exports[`frameworks/framework-detection > should print specific error when comma
 ◈ Failed running command: oops-i-did-it-again forgot-to-use-a-valid-command. Please verify 'oops-i-did-it-again' exists"
 `;
 
+exports[`frameworks/framework-detection > should prompt when multiple frameworks are detected 1`] = `
+"◈ Netlify Dev ◈
+? Multiple possible dev commands found (Use arrow keys or type to search)
+> [Gatsby] 'npm run develop' 
+  [Create React App] 'npm run start' [2A[37D[73C[2B[2K[1A[2K[1A[2K[G? Multiple possible dev commands found 
+  [Gatsby] 'npm run develop' 
+> [Create React App] 'npm run start' [2A[37D[39C[2B[2K[1A[2K[1A[2K[G? Multiple possible dev commands found Create React App-npm run start[69D[69C
+
+Update your netlify.toml to avoid this selection prompt next time:
+
+[build]
+command = \\"react-scripts build\\"
+publish = \\"build\\"
+
+[dev]
+command = \\"npm run start\\"
+
+◈ Setting up local development server
+◈ Starting Netlify Dev with Create React App
+
+> start
+> react-scripts start
+
+◈ Command failed with exit code *: npm run start. Shutting down Netlify Dev server"
+`;
+
 exports[`frameworks/framework-detection > should run \`command\` when both \`command\` and \`targetPort\` are configured 1`] = `
 "◈ Netlify Dev ◈
 ◈ Setting up local development server
@@ -111,7 +137,12 @@ hello
 `;
 
 exports[`frameworks/framework-detection > should run and serve a production build when using the \`serve\` command 1`] = `
-"◈ Injected netlify.toml file env var: CONTEXT_CHECK
+"[project.ts]: detectFrameworks
+[project.ts]: detectBuildSystem
+[project.ts]: detectWorkspaces
+[project.ts]: detectPackageManager
+[project.ts]: detectFrameworksInPath - undefined
+◈ Injected netlify.toml file env var: CONTEXT_CHECK
 ◈ Using simple static server because '[dev.framework]' was set to '#static'
 ◈ Running static server from \\"site-with-framework/public\\"
 ◈ Building site for production
@@ -125,15 +156,31 @@ Netlify Build
 ​
 > Flags
   configPath:/file/path
+  cwd:/file/path
+  debug: true
   edgeFunctionsBootstrapURL: https://650bfd807b21ed888883e25c--edge.netlify.com/bootstrap/index-combined.ts
+  mode: cli
   offline: true
   outputConfigPath:/file/path
+  saveConfig: true
 ​
 > Current directory
  /file/path
 ​
 > Config file
  /file/path
+​
+> Resolved config
+  build:
+    environment:
+      - CONTEXT_CHECK
+    publish:/file/path
+    publishOrigin: config
+  functionsDirectory:/file/path
+  plugins:
+    - inputs: {}
+      origin: config
+      package:/file/path
 ​
 > Context
   production
@@ -144,9 +191,27 @@ Netlify Build
 /file/path (onPreBuild event)                      
 ────────────────────────────────────────────────────────────────
 ​
+Netlify configuration property \\"functions.directory\\" value changed to 'new_functions'.
 Netlify configuration property \\"redirects\\" value changed to [ { from: /file/path', to: /file/path' } ].
 ​
+> Updated config
+  build:
+    environment:
+      - CONTEXT_CHECK
+    publish:/file/path
+    publishOrigin: config
+  functionsDirectory:/file/path
+  plugins:
+    - inputs: {}
+      origin: config
+      package:/file/path
+  redirects:
+    - from:/file/path
+      to:/file/path
+  redirectsOrigin: inline
+​
 /file/path onPreBuild completed in Xms)
+Build step duration:/file/path onPreBuild completed in Xms
 ​
 Functions bundling                                            
 ────────────────────────────────────────────────────────────────
@@ -156,88 +221,80 @@ Packaging Functions from new_functions directory:
 ​
 ​
 (Functions bundling completed in Xms)
+Build step duration: Functions bundling completed in Xms
 ​
 Save deploy artifacts                                         
 ────────────────────────────────────────────────────────────────
 ​
 ​
+> Uploaded config
+  [build]
+  publish = \\"public\\"
+​
+  [context]
+​
+    [context.dev]
+​
+      [context.dev.environment]
+      CONTEXT_CHECK = \\"DEV\\"
+​
+    [context.production]
+​
+      [context.production.environment]
+      CONTEXT_CHECK = \\"PRODUCTION\\"
+​
+  [functions]
+  directory = \\"functions\\"
+​
+  [[plugins]]
+  package = /file/path\\"
+​
+> Uploaded headers
+  No headers
+​
+> Uploaded redirects
+  No redirects
+​
+​
 (Save deploy artifacts completed in Xms)
+Build step duration: Save deploy artifacts completed in Xms
 ​
 Netlify Build Complete                                        
 ────────────────────────────────────────────────────────────────
 ​
 (Netlify Build completed in Xms)
+Build step duration: Netlify Build completed in Xms
 
 ◈ Static server listening to 88888
+◈ Extracted function hello from/file/path
 ◈ Loaded function hello
-
-   ┌──────────────────────────────────────────────────┐
-   │                                                  │
-   │   ◈ Server now ready on http://localhost:88888   │
-   │                                                  │
-   └──────────────────────────────────────────────────┘"
-`;
-
-exports[`frameworks/framework-detection > should run and serve a production build when using the \`serve\` command 2`] = `
-"◈ Injected netlify.toml file env var: CONTEXT_CHECK
-◈ Using simple static server because '[dev.framework]' was set to '#static'
-◈ Running static server from \\"site-with-framework/public\\"
-◈ Building site for production
-◈ Changes will not be hot-reloaded, so if you need to rebuild your site you must exit and run 'netlify serve' again
-​
-Netlify Build                                                 
-────────────────────────────────────────────────────────────────
-​
-> Version
-  @netlify/build 0.0.0
-​
-> Flags
-  configPath:/file/path
-  edgeFunctionsBootstrapURL: https://650bfd807b21ed888883e25c--edge.netlify.com/bootstrap/index-combined.ts
-  offline: true
-  outputConfigPath:/file/path
-​
-> Current directory
- /file/path
-​
-> Config file
- /file/path
-​
-> Context
-  production
-​
-> Loading plugins
-   -/file/path from netlify.toml
-​
-/file/path (onPreBuild event)                      
-────────────────────────────────────────────────────────────────
-​
-Netlify configuration property \\"redirects\\" value changed to [ { from: /file/path', to: /file/path' } ].
-​
-/file/path onPreBuild completed in Xms)
-​
-Functions bundling                                            
-────────────────────────────────────────────────────────────────
-​
-Packaging Functions from new_functions directory:
- - hello.js
-​
-​
-(Functions bundling completed in Xms)
-​
-Save deploy artifacts                                         
-────────────────────────────────────────────────────────────────
-​
-​
-(Save deploy artifacts completed in Xms)
-​
-Netlify Build Complete                                        
-────────────────────────────────────────────────────────────────
-​
-(Netlify Build completed in Xms)
-
-◈ Static server listening to 88888
-◈ Loaded function hello
+◈ Functions server is listening on 88888
+getBinaryVersion failed Error: Command failed with ENOENT: deno --version
+spawn deno ENOENT
+    at ChildProcess._handle.onexit (node:internal/child_process:283:19)
+    at onErrorNT (node:internal/child_process:476:16)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'spawn deno',
+  path: 'deno',
+  spawnargs: [ '--version' ],
+  originalMessage: 'spawn deno ENOENT',
+  shortMessage: 'Command failed with ENOENT: deno --version/nspawn deno ENOENT',
+  command: 'deno --version',
+  escapedCommand: 'deno --version',
+  exitCode: undefined,
+  signal: undefined,
+  signalDescription: undefined,
+  stdout: '',
+  stderr: '',
+  failed: true,
+  timedOut: false,
+  isCanceled: false,
+  killed: false
+}
+No globalVersion or semver not satisfied. globalVersion: undefined, versionRange: ^1.32.5
+Using cached Deno CLI from/file/path
 
    ┌──────────────────────────────────────────────────┐
    │                                                  │

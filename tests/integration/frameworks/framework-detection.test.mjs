@@ -237,7 +237,7 @@ describe.concurrent('frameworks/framework-detection', () => {
 
         handleQuestions(childProcess, [
           {
-            question: 'Multiple possible start commands found',
+            question: 'Multiple possible dev commands found',
             answer: answerWithValue(DOWN),
           },
         ])
@@ -326,85 +326,6 @@ describe.concurrent('frameworks/framework-detection', () => {
 
       // a failure is expected since this is not a true remix project
       const error = await withDevServer({ cwd: builder.directory }, () => {}, true).catch((error_) => error_)
-      t.expect(error.stdout.includes(`Failed running command: remix watch. Please verify 'remix' exists`)).toBe(true)
-    })
-  })
-
-  test('should run and serve a production build when using the `serve` command', async (t) => {
-    await withSiteBuilder('site-with-framework', async (builder) => {
-      await builder
-        .withNetlifyToml({
-          config: {
-            build: { publish: 'public' },
-            context: {
-              dev: { environment: { CONTEXT_CHECK: 'DEV' } },
-              production: { environment: { CONTEXT_CHECK: 'PRODUCTION' } },
-            },
-            functions: { directory: 'functions' },
-            plugins: [{ package: './plugins/frameworker' }],
-          },
-        })
-        .withBuildPlugin({
-          name: 'frameworker',
-          plugin: {
-            onPreBuild: async ({ netlifyConfig }) => {
-              // eslint-disable-next-line n/global-require, no-undef
-              const { mkdir, writeFile } = require('fs/promises')
-
-              const generatedFunctionsDir = 'new_functions'
-              netlifyConfig.functions.directory = generatedFunctionsDir
-
-              netlifyConfig.redirects.push({
-                from: '/hello',
-                to: '/.netlify/functions/hello',
-              })
-
-              await mkdir(generatedFunctionsDir)
-              await writeFile(
-                `${generatedFunctionsDir}/hello.js`,
-                `const { CONTEXT_CHECK, NETLIFY_DEV } = process.env; exports.handler = async () => ({ statusCode: 200, body: JSON.stringify({ CONTEXT_CHECK, NETLIFY_DEV }) })`,
-              )
-            },
-          },
-        })
-        .buildAsync()
-
-      await withDevServer(
-        { cwd: builder.directory, context: null, debug: true, serve: true },
-        async ({ output, url }) => {
-          const response = await fetch(`${url}/hello`).then((res) => res.json())
-          t.expect(response).toStrictEqual({ CONTEXT_CHECK: 'PRODUCTION' })
-
-          t.expect(normalize(output, { duration: true, filePath: true })).toMatchSnapshot()
-        },
-      )
-    })
-  })
-
-  test('should start static service for frameworks without port, forced framework', async (t) => {
-    await withSiteBuilder('site-with-remix', async (builder) => {
-      await builder.withNetlifyToml({ config: { dev: { framework: 'remix' } } }).buildAsync()
-
-      // a failure is expected since this is not a true remix project
-      const error = await withDevServer({ cwd: builder.directory }, () => {}, true).catch((_error) => _error)
-      t.expect(error.stdout.includes(`Failed running command: remix watch. Please verify 'remix' exists`)).toBe(true)
-    })
-  })
-
-  test('should start static service for frameworks without port, detected framework', async (t) => {
-    await withSiteBuilder('site-with-remix', async (builder) => {
-      await builder
-        .withPackageJson({
-          packageJson: {
-            dependencies: { remix: '^1.0.0', '@remix-run/netlify': '^1.0.0' },
-            scripts: {},
-          },
-        })
-        .withContentFile({ path: 'remix.config.js', content: '' })
-        .buildAsync()
-
-      // a failure is expected since this is not a true remix project
-      const error = await withDevServer({ cwd: builder.directory }, () => {}, true).catch((_error) => _error)
       t.expect(error.stdout.includes(`Failed running command: remix watch. Please verify 'remix' exists`)).toBe(true)
     })
   })
