@@ -1,19 +1,20 @@
 // @ts-check
 import { Buffer } from 'buffer'
-import { join, relative } from 'path'
-import { env } from 'process'
+import { rm } from 'fs/promises'
+import { join, relative, resolve } from 'path'
 
 // eslint-disable-next-line import/no-namespace
 import * as bundler from '@netlify/edge-bundler'
 import getAvailablePort from 'get-port'
 
 import { NETLIFYDEVERR, NETLIFYDEVWARN, chalk, error as printError, log } from '../../utils/command-helpers.mjs'
+import { isFeatureFlagEnabled } from '../../utils/feature-flags.mjs'
 import { getGeoLocation } from '../geo-location.mjs'
 import { getPathInProject } from '../settings.mjs'
 import { startSpinner, stopSpinner } from '../spinner.mjs'
 
 import { getBootstrapURL } from './bootstrap.mjs'
-import { DIST_IMPORT_MAP_PATH } from './consts.mjs'
+import { DIST_IMPORT_MAP_PATH, EDGE_FUNCTIONS_SERVE_FOLDER } from './consts.mjs'
 import { headers, getFeatureFlagsHeader, getInvocationMetadataHeader } from './headers.mjs'
 import { getInternalFunctions } from './internal.mjs'
 import { EdgeFunctionsRegistry } from './registry.mjs'
@@ -108,6 +109,10 @@ export const initializeProxy = async ({
   } = await getInternalFunctions(projectDir)
   const userFunctionsPath = config.build.edge_functions
   const isolatePort = await getAvailablePort()
+  const buildFeatureFlags = {
+    edge_functions_npm_modules: isFeatureFlagEnabled('edge_functions_npm_modules', siteInfo),
+  }
+  const runtimeFeatureFlags = ['edge_functions_bootstrap_failure_mode']
 
   // Initializes the server, bootstrapping the Deno CLI and downloading it from
   // the network if needed. We don't want to wait for that to be completed, or
@@ -115,8 +120,10 @@ export const initializeProxy = async ({
   const server = prepareServer({
     config,
     configPath,
+    debug,
     directory: userFunctionsPath,
     env: configEnv,
+    featureFlags: buildFeatureFlags,
     getUpdatedConfig,
     importMaps: [importMap].filter(Boolean),
     inspectSettings,
@@ -168,10 +175,8 @@ export const initializeProxy = async ({
       return
     }
 
-    const featureFlags = ['edge_functions_bootstrap_failure_mode']
-
     req[headersSymbol] = {
-      [headers.FeatureFlags]: getFeatureFlagsHeader(featureFlags),
+      [headers.FeatureFlags]: getFeatureFlagsHeader(runtimeFeatureFlags),
       [headers.ForwardedProtocol]: settings.https ? 'https:' : 'http:',
       [headers.Functions]: functionNames.join(','),
       [headers.InvocationMetadata]: getInvocationMetadataHeader(invocationMetadata),
@@ -194,8 +199,10 @@ export const isEdgeFunctionsRequest = (req) => req[headersSymbol] !== undefined
 const prepareServer = async ({
   config,
   configPath,
+  debug,
   directory,
   env: configEnv,
+  featureFlags,
   getUpdatedConfig,
   importMaps,
   inspectSettings,
@@ -209,11 +216,17 @@ const prepareServer = async ({
 
   try {
     const distImportMapPath = getPathInProject([DIST_IMPORT_MAP_PATH])
+    const servePath = resolve(projectDir, getPathInProject([EDGE_FUNCTIONS_SERVE_FOLDER]))
+
+    await rm(servePath, { force: true, recursive: true })
+
     const runIsolate = await bundler.serve({
       ...getDownloadUpdateFunctions(),
+      basePath: projectDir,
       bootstrapURL: getBootstrapURL(),
-      debug: env.NETLIFY_DENO_DEBUG === 'true',
+      debug,
       distImportMapPath: join(projectDir, distImportMapPath),
+      featureFlags,
       formatExportTypeError: (name) =>
         `${NETLIFYDEVERR} ${chalk.red('Failed')} to load Edge Function ${chalk.yellow(
           name,
@@ -223,11 +236,13 @@ const prepareServer = async ({
       importMapPaths,
       inspectSettings,
       port,
+      servePath,
     })
     const registry = new EdgeFunctionsRegistry({
       bundler,
       config,
       configPath,
+      debug,
       directories: [directory].filter(Boolean),
       env: configEnv,
       getUpdatedConfig,
@@ -235,6 +250,7 @@ const prepareServer = async ({
       internalFunctions,
       projectDir,
       runIsolate,
+      servePath,
     })
 
     return registry

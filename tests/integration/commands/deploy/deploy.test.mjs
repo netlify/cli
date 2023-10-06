@@ -9,13 +9,13 @@ import callCli from '../../utils/call-cli.cjs'
 import { createLiveTestSite, generateSiteName } from '../../utils/create-live-test-site.cjs'
 import { withSiteBuilder } from '../../utils/site-builder.cjs'
 
- 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const SITE_NAME = generateSiteName('netlify-test-deploy-')
 
-const validateContent = async ({ content, resourcePath, siteUrl, t }) => {
-  const response = await fetch(`${siteUrl}${resourcePath}`)
+// eslint-disable-next-line no-shadow
+const validateContent = async ({ content, path, siteUrl, t }) => {
+  const response = await fetch(`${siteUrl}${path}`)
   const body = await response.text()
   const statusCode = response.status
   try {
@@ -490,7 +490,10 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
           }),
         })
         .withContentFile({
-          content: `export default async () => new Response("Internal V2 API")`,
+          content: `
+          export default async () => new Response("Internal V2 API")
+          export const config = { path: "/internal-v2-func" }
+          `,
           path: '.netlify/functions-internal/func-4.mjs',
         })
         .buildAsync()
@@ -504,15 +507,19 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         true,
       )
 
-      const [response1, response2, response3] = await Promise.all([
+      const [response1, response2, response3, response4, response5] = await Promise.all([
         fetch(`${deployUrl}/.netlify/functions/func-1`).then((res) => res.text()),
         fetch(`${deployUrl}/.netlify/functions/func-2`).then((res) => res.text()),
         fetch(`${deployUrl}/.netlify/functions/func-3`).then((res) => res.text()),
+        fetch(`${deployUrl}/.netlify/functions/func-4`),
+        fetch(`${deployUrl}/internal-v2-func`).then((res) => res.text())
       ])
 
       t.expect(response1).toEqual('User 1')
       t.expect(response2).toEqual('User 2')
       t.expect(response3).toEqual('Internal 3')
+      t.expect(response4.status).toBe(404)
+      t.expect(response5, 'Internal V2 API')
     })
   })
 
@@ -810,8 +817,4 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
       t.expect(response).toEqual('Bundled at deployment')
     })
   })
-})
-
-test('always pass, used for forked PRs since ava fails when no tests are present', (t) => {
-  t.expect(true).toBe(true)
 })
