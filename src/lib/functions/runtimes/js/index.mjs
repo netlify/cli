@@ -4,7 +4,6 @@ import { pathToFileURL } from 'url'
 import { Worker } from 'worker_threads'
 
 import lambdaLocal from 'lambda-local'
-import winston from 'winston'
 
 import detectNetlifyLambdaBuilder from './builders/netlify-lambda.mjs'
 import detectZisiBuilder, { parseFunctionForMetadata } from './builders/zisi.mjs'
@@ -14,12 +13,7 @@ export const name = 'js'
 
 let netlifyLambdaDetectorCache
 
-const logger = winston.createLogger({
-  levels: winston.config.npm.levels,
-  transports: [new winston.transports.Console({ level: 'warn' })],
-})
-
-lambdaLocal.setLogger(logger)
+lambdaLocal.getLogger().level = 'alert'
 
 // The netlify-lambda builder can't be enabled or disabled on a per-function
 // basis and its detection mechanism is also quite expensive, so we detect

@@ -123,9 +123,12 @@ const hashFns = async (
     }),
   )
   const fnConfig = functionZips
-    .filter((func) => Boolean(func.displayName || func.generator))
+    .filter((func) => Boolean(func.displayName || func.generator || func.routes))
     .reduce(
-      (funcs, curr) => ({ ...funcs, [curr.name]: { display_name: curr.displayName, generator: curr.generator } }),
+      (funcs, curr) => ({
+        ...funcs,
+        [curr.name]: { display_name: curr.displayName, generator: curr.generator, routes: curr.routes },
+      }),
       {},
     )
   const functionSchedules = functionZips

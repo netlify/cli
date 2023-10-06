@@ -2,7 +2,7 @@ const { join } = require('path')
 const process = require('process')
 
 const test = require('ava')
-const { Response } = require('node-fetch')
+const { Response, default: fetch } = require('node-fetch')
 
 const callCli = require('./utils/call-cli.cjs')
 const { createLiveTestSite, generateSiteName } = require('./utils/create-live-test-site.cjs')
@@ -476,7 +476,10 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
           }),
         })
         .withContentFile({
-          content: `export default async () => new Response("Internal V2 API")`,
+          content: `
+          export default async () => new Response("Internal V2 API")
+          export const config = { path: "/internal-v2-func" }
+          `,
           path: '.netlify/functions-internal/func-4.mjs',
         })
         .buildAsync()
@@ -493,7 +496,10 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
       t.is(await got(`${deployUrl}/.netlify/functions/func-1`).text(), 'User 1')
       t.is(await got(`${deployUrl}/.netlify/functions/func-2`).text(), 'User 2')
       t.is(await got(`${deployUrl}/.netlify/functions/func-3`).text(), 'Internal 3')
-      t.is(await got(`${deployUrl}/.netlify/functions/func-4`).text(), 'Internal V2 API')
+
+      const func4Resp = await fetch(`${deployUrl}/.netlify/functions/func-4`)
+      t.is(func4Resp.status, 404)
+      t.is(await got(`${deployUrl}/internal-v2-func`).text(), 'Internal V2 API')
     })
   })
 

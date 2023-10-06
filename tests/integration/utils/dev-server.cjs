@@ -26,6 +26,7 @@ const startServer = async ({
   args = [],
   context = 'dev',
   cwd,
+  debug = false,
   env = {},
   expectFailure = false,
   offline = true,
@@ -40,7 +41,15 @@ const startServer = async ({
   console.log(`Starting dev server on port: ${port} in directory ${path.basename(cwd)}`)
 
   const baseCommand = serve ? 'serve' : 'dev'
-  const baseArgs = [baseCommand, offline ? '--offline' : '', '-p', port, '--staticServerPort', staticPort]
+  const baseArgs = [
+    baseCommand,
+    offline ? '--offline' : '',
+    '-p',
+    port,
+    '--staticServerPort',
+    staticPort,
+    debug ? '--debug' : '',
+  ]
 
   // We use `null` to override the default context and actually omit the flag
   // from the command, which is useful in some test scenarios.
