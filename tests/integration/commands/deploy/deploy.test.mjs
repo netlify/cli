@@ -512,7 +512,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         fetch(`${deployUrl}/.netlify/functions/func-2`).then((res) => res.text()),
         fetch(`${deployUrl}/.netlify/functions/func-3`).then((res) => res.text()),
         fetch(`${deployUrl}/.netlify/functions/func-4`),
-        fetch(`${deployUrl}/internal-v2-func`).then((res) => res.text())
+        fetch(`${deployUrl}/internal-v2-func`).then((res) => res.text()),
       ])
 
       t.expect(response1).toEqual('User 1')
