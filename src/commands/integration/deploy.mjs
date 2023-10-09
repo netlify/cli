@@ -74,27 +74,27 @@ function formatScopesForRemote(scopes) {
   return scopesToWrite.join(',')
 }
 
-function verifyRequiredFieldsAreInConfig(name, description, scopes) {
+function verifyRequiredFieldsAreInConfig(name, description, scopes, integrationLevel) {
+  const missingFields = []
+
   if (!name) {
-    log(
-      chalk.yellow(
-        `The integration name is required. Please add a 'name' entry to the integration.yaml file and try again.`,
-      ),
-    )
-    return false
+    missingFields.push('name')
   }
   if (!description) {
-    log(
-      chalk.yellow(
-        `The integration description is required. Please add a 'description' entry to the integration.yaml file and try again.`,
-      ),
-    )
-    return false
+    missingFields.push('description')
   }
   if (!scopes) {
+    missingFields.push('scopes')
+  }
+  if (!integrationLevel) {
+    missingFields.push('integrationLevel')
+  }
+  if (missingFields.length !== 0) {
     log(
       chalk.yellow(
-        `Permission scopes needed for the integration to function are required. Please add a 'scopes' entry to the integration.yaml file and try again.`,
+        `You are missing the following fields for the integration to be deployed: ${missingFields.join(
+          ', ',
+        )}. Please add a these fields as an entry to the integration.yaml file and try again.`,
       ),
     )
     return false
@@ -104,7 +104,7 @@ function verifyRequiredFieldsAreInConfig(name, description, scopes) {
 
 // eslint-disable-next-line max-params
 export async function registerIntegration(workingDir, siteId, accountId, localIntegrationConfig, token) {
-  const { description, name, scopes, slug } = localIntegrationConfig
+  const { description, integrationLevel, name, scopes, slug } = localIntegrationConfig
   log(chalk.yellow(`An integration associated with the site ID ${siteId} is not registered.`))
   const registerPrompt = await inquirer.prompt([
     {
@@ -129,7 +129,7 @@ export async function registerIntegration(workingDir, siteId, accountId, localIn
     exit(1)
   }
 
-  if (!verifyRequiredFieldsAreInConfig(name, description, scopes)) {
+  if (!verifyRequiredFieldsAreInConfig(name, description, scopes, integrationLevel)) {
     return
   }
 
@@ -146,6 +146,7 @@ export async function registerIntegration(workingDir, siteId, accountId, localIn
       description,
       hostSiteId: siteId,
       scopes: formatScopesForRemote(scopes),
+      integrationLevel,
     }),
   }).then(async (res) => {
     const response = await res.json()
@@ -183,7 +184,8 @@ export async function updateIntegration(
   token,
   registeredIntegration,
 ) {
-  let { description, name, scopes, slug } = localIntegrationConfig
+  let { description, integrationLevel, name, scopes, slug } = localIntegrationConfig
+
   let integrationSlug = slug
   if (slug !== registeredIntegration.slug) {
     // Update the project's integration.yaml file with the remote slug since that will
@@ -201,6 +203,11 @@ export async function updateIntegration(
   if (!description) {
     // eslint-disable-next-line prefer-destructuring
     description = registeredIntegration.description
+  }
+
+  if (!integrationLevel) {
+    // eslint-disable-next-line prefer-destructuring
+    integrationLevel = registeredIntegration.integrationLevel
   }
 
   // This is returned as a comma separated string and will be easier to manage here as an array
@@ -243,7 +250,13 @@ export async function updateIntegration(
           headers: {
             'netlify-token': token,
           },
-          body: JSON.stringify({ name, description, hostSiteId: siteId, scopes: localScopes.join(',') }),
+          body: JSON.stringify({
+            name,
+            description,
+            hostSiteId: siteId,
+            scopes: localScopes.join(','),
+            integrationLevel,
+          }),
         },
       ).then(async (res) => {
         const response = await res.json()
@@ -329,8 +342,8 @@ const deploy = async (options, command) => {
     return { body, statusCode: res.status }
   })
 
-  const { description, name, scopes, slug } = await getConfiguration()
-  const localIntegrationConfig = { name, description, scopes, slug }
+  const { description, integrationLevel, name, scopes, slug } = await getConfiguration()
+  const localIntegrationConfig = { name, description, scopes, slug, integrationLevel }
 
   // The integration is registered on the remote
   statusCode === 200
