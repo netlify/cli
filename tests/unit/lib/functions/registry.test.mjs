@@ -110,6 +110,9 @@ test('should add included_files to watcher', async () => {
       return { srcFilesDiff: { added: ['myfile'] }, includedFiles: ['include/*'] }
     },
     getRecommendedExtension() {},
+    isTypeScript() {
+      return false
+    },
   }
 
   await registry.buildFunctionAndWatchFiles(func)
