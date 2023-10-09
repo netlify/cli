@@ -33,7 +33,16 @@ const ZIP_EXTENSION = '.zip'
  */
 
 export class FunctionsRegistry {
-  constructor({ capabilities, config, debug = false, isConnected = false, projectRoot, settings, timeouts }) {
+  constructor({
+    capabilities,
+    config,
+    debug = false,
+    isConnected = false,
+    logLambdaCompat,
+    projectRoot,
+    settings,
+    timeouts,
+  }) {
     this.capabilities = capabilities
     this.config = config
     this.debug = debug
@@ -80,6 +89,13 @@ export class FunctionsRegistry {
      * installed.
      */
     this.hasCheckedTypesPackage = false
+
+    /**
+     * Whether to log V1 functions as using the "Lambda compatibility mode"
+     *
+     * @type {boolean}
+     */
+    this.logLambdaCompat = Boolean(logLambdaCompat)
   }
 
   checkTypesPackage() {
@@ -295,7 +311,7 @@ export class FunctionsRegistry {
       const icon = warningsText ? NETLIFYDEVWARN : NETLIFYDEVLOG
       const color = warningsText ? chalk.yellow : chalk.green
       const mode =
-        func?.runtimeAPIVersion === 1
+        func?.runtimeAPIVersion === 1 && this.logLambdaCompat
           ? ` in ${getTerminalLink('Lambda compatibility mode', 'https://ntl.fyi/lambda-compat')}`
           : ''
 

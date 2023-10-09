@@ -7,6 +7,7 @@ import expressLogging from 'express-logging'
 import jwtDecode from 'jwt-decode'
 
 import { NETLIFYDEVERR, NETLIFYDEVLOG, error as errorExit, log } from '../../utils/command-helpers.mjs'
+import { isFeatureFlagEnabled } from '../../utils/feature-flags.mjs'
 import {
   CLOCKWORK_USERAGENT,
   getFunctionsDistPath,
@@ -250,12 +251,14 @@ const getFunctionsServer = (options) => {
  * @param {*} options.loadDistFunctions
  * @param {*} options.settings
  * @param {*} options.site
+ * @param {*} options.siteInfo
  * @param {string} options.siteUrl
  * @param {*} options.timeouts
  * @returns {Promise<import('./registry.mjs').FunctionsRegistry | undefined>}
  */
 export const startFunctionsServer = async (options) => {
-  const { capabilities, command, config, debug, loadDistFunctions, settings, site, siteUrl, timeouts } = options
+  const { capabilities, command, config, debug, loadDistFunctions, settings, site, siteInfo, siteUrl, timeouts } =
+    options
   const internalFunctionsDir = await getInternalFunctionsDir({ base: site.root })
   const functionsDirectories = []
 
@@ -293,6 +296,7 @@ export const startFunctionsServer = async (options) => {
     config,
     debug,
     isConnected: Boolean(siteUrl),
+    logLambdaCompat: isFeatureFlagEnabled('cli_log_lambda_compat', siteInfo),
     // functions always need to be inside the packagePath if set inside a monorepo
     projectRoot: command.workingDir,
     settings,
