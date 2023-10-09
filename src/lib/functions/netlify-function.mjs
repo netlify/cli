@@ -162,6 +162,12 @@ export default class NetlifyFunction {
     }
   }
 
+  async getBuildData() {
+    await this.buildQueue
+
+    return this.buildData
+  }
+
   // Compares a new set of source files against a previous one, returning an
   // object with two Sets, one with added and the other with deleted files.
   getSrcFilesDiff(newSrcFiles) {
