@@ -173,7 +173,8 @@ export default class NetlifyFunction {
   async matchURLPath(rawPath, method) {
     await this.buildQueue
 
-    const path = (rawPath.endsWith('/') ? rawPath.slice(0, -1) : rawPath).toLowerCase()
+    let path = rawPath !== '/' && rawPath.endsWith('/') ? rawPath.slice(0, -1) : rawPath
+    path = path.toLowerCase()
     const { routes = [] } = this.buildData
     return routes.find(({ expression, literal, methods }) => {
       if (methods.length !== 0 && !methods.includes(method)) {
