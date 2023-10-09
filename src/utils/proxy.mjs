@@ -329,13 +329,12 @@ const serveRedirect = async function ({ env, functionsRegistry, match, options, 
       return proxy.web(req, res, { target: options.functionsServer })
     }
 
-    const functionWithCustomRoute =
-      functionsRegistry && (await functionsRegistry.getFunctionForURLPath(destURL, req.method))
+    const matchingFunction = functionsRegistry && (await functionsRegistry.getFunctionForURLPath(destURL, req.method))
     const destStaticFile = await getStatic(dest.pathname, options.publicFolder)
     let statusValue
     if (
       match.force ||
-      (!staticFile && ((!options.framework && destStaticFile) || isInternal(destURL) || functionWithCustomRoute))
+      (!staticFile && ((!options.framework && destStaticFile) || isInternal(destURL) || matchingFunction))
     ) {
       req.url = destStaticFile ? destStaticFile + dest.search : destURL
       const { status } = match
@@ -343,10 +342,11 @@ const serveRedirect = async function ({ env, functionsRegistry, match, options, 
       console.log(`${NETLIFYDEVLOG} Rewrote URL to`, req.url)
     }
 
-    if (isFunction(options.functionsPort, req.url) || functionWithCustomRoute) {
-      const functionHeaders = functionWithCustomRoute
-        ? { [NFFunctionName]: functionWithCustomRoute.func.name, [NFFunctionRoute]: functionWithCustomRoute.route }
-        : {}
+    if (matchingFunction) {
+      const functionHeaders = {
+        [NFFunctionName]: matchingFunction.func.name,
+        [NFFunctionRoute]: matchingFunction.route,
+      }
       const url = reqToURL(req, originalURL)
       req.headers['x-netlify-original-pathname'] = url.pathname
       req.headers['x-netlify-original-search'] = url.search
