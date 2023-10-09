@@ -150,7 +150,7 @@ export default class NetlifyFunction {
         throw new Error(
           `Function requires Node.js version ${V2_MIN_NODE_VERSION} or above, but ${nodeVersion.slice(
             1,
-          )} is installed. Refer to https://ntl.fyi/functions-node18 for information on how to update.`,
+          )} is installed. Refer to https://ntl.fyi/functions-runtime for information on how to update.`,
         )
       }
 
