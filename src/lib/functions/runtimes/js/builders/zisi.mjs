@@ -57,6 +57,8 @@ const buildFunction = async ({
     entryFilename,
     includedFiles,
     inputs,
+    mainFile,
+    outputModuleFormat,
     path: functionPath,
     routes,
     runtimeAPIVersion,
@@ -82,7 +84,7 @@ const buildFunction = async ({
 
   clearFunctionsCache(targetDirectory)
 
-  return { buildPath, includedFiles, routes, runtimeAPIVersion, srcFiles, schedule }
+  return { buildPath, includedFiles, outputModuleFormat, mainFile, routes, runtimeAPIVersion, srcFiles, schedule }
 }
 
 /**

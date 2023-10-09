@@ -1,12 +1,18 @@
 // @ts-check
 import { Buffer } from 'buffer'
+import { promises as fs } from 'fs'
 
 import express from 'express'
 import expressLogging from 'express-logging'
 import jwtDecode from 'jwt-decode'
 
 import { NETLIFYDEVERR, NETLIFYDEVLOG, error as errorExit, log } from '../../utils/command-helpers.mjs'
-import { CLOCKWORK_USERAGENT, getFunctionsDistPath, getInternalFunctionsDir } from '../../utils/functions/index.mjs'
+import {
+  CLOCKWORK_USERAGENT,
+  getFunctionsDistPath,
+  getFunctionsServePath,
+  getInternalFunctionsDir,
+} from '../../utils/functions/index.mjs'
 import { NFFunctionName, NFFunctionRoute } from '../../utils/headers.mjs'
 import { headers as efHeaders } from '../edge-functions/headers.mjs'
 import { getGeoLocation } from '../geo-location.mjs'
@@ -268,6 +274,14 @@ export const startFunctionsServer = async (options) => {
     const sourceDirectories = [internalFunctionsDir, settings.functions].filter(Boolean)
 
     functionsDirectories.push(...sourceDirectories)
+  }
+
+  try {
+    const functionsServePath = getFunctionsServePath({ base: site.root })
+
+    await fs.rm(functionsServePath, { force: true, recursive: true })
+  } catch {
+    // no-op
   }
 
   if (functionsDirectories.length === 0) {

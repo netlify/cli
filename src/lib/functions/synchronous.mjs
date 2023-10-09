@@ -3,7 +3,7 @@ import { Buffer } from 'buffer'
 
 import { isStream } from 'is-stream'
 
-import { chalk, log, NETLIFYDEVERR } from '../../utils/command-helpers.mjs'
+import { chalk, logPadded, NETLIFYDEVERR } from '../../utils/command-helpers.mjs'
 import renderErrorTemplate from '../render-error-template.mjs'
 
 import { detectAwsSdkError } from './utils.mjs'
@@ -35,7 +35,7 @@ export const handleSynchronousFunction = function ({
   if (invocationError) {
     const error = getNormalizedError(invocationError)
 
-    log(
+    logPadded(
       `${NETLIFYDEVERR} Function ${chalk.yellow(functionName)} has returned an error: ${
         error.errorMessage
       }\n${chalk.dim(error.stackTrace.join('\n'))}`,
@@ -46,7 +46,8 @@ export const handleSynchronousFunction = function ({
 
   const { error } = validateLambdaResponse(result)
   if (error) {
-    log(`${NETLIFYDEVERR} ${error}`)
+    logPadded(`${NETLIFYDEVERR} ${error}`)
+
     return handleErr(error, request, response)
   }
 
@@ -58,7 +59,7 @@ export const handleSynchronousFunction = function ({
   } catch (headersError) {
     const normalizedError = getNormalizedError(headersError)
 
-    log(
+    logPadded(
       `${NETLIFYDEVERR} Failed to set header in function ${chalk.yellow(functionName)}: ${
         normalizedError.errorMessage
       }`,
@@ -88,11 +89,21 @@ export const handleSynchronousFunction = function ({
  */
 const getNormalizedError = (error) => {
   if (error instanceof Error) {
-    return {
+    const normalizedError = {
       errorMessage: error.message,
       errorType: error.name,
       stackTrace: error.stack ? error.stack.split('\n') : [],
     }
+
+    if ('code' in error && error.code === 'ERR_REQUIRE_ESM') {
+      return {
+        ...normalizedError,
+        errorMessage:
+          'a CommonJS file cannot import ES modules. Consider switching your function to ES modules. For more information, refer to https://ntl.fyi/functions-runtime.',
+      }
+    }
+
+    return normalizedError
   }
 
   // Formatting stack trace lines in the same way that Node.js formats native

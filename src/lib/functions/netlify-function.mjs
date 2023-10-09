@@ -1,4 +1,5 @@
 // @ts-check
+import { basename, extname } from 'path'
 import { version as nodeVersion } from 'process'
 
 import CronParser from 'cron-parser'
@@ -7,6 +8,7 @@ import semver from 'semver'
 import { error as errorExit } from '../../utils/command-helpers.mjs'
 import { BACKGROUND } from '../../utils/functions/get-functions.mjs'
 
+const TYPESCRIPT_EXTENSIONS = new Set(['.cts', '.mts', '.ts'])
 const V2_MIN_NODE_VERSION = '18.0.0'
 
 // Returns a new set with all elements of `setA` that don't exist in `setB`.
@@ -57,6 +59,35 @@ export default class NetlifyFunction {
     this.srcFiles = new Set()
   }
 
+  get filename() {
+    if (!this.buildData?.mainFile) {
+      return null
+    }
+
+    return basename(this.buildData.mainFile)
+  }
+
+  getRecommendedExtension() {
+    if (this.buildData?.runtimeAPIVersion !== 2) {
+      return
+    }
+
+    const extension = this.buildData?.mainFile ? extname(this.buildData.mainFile) : undefined
+    const moduleFormat = this.buildData?.outputModuleFormat
+
+    if (moduleFormat === 'esm') {
+      return
+    }
+
+    if (extension === '.ts') {
+      return '.mts'
+    }
+
+    if (extension === '.js') {
+      return '.mjs'
+    }
+  }
+
   hasValidName() {
     // same as https://github.com/netlify/bitballoon/blob/fbd7881e6c8e8c48e7a0145da4ee26090c794108/app/models/deploy.rb#L482
     // eslint-disable-next-line unicorn/better-regex
@@ -71,6 +102,14 @@ export default class NetlifyFunction {
 
   isSupported() {
     return !(this.buildData?.runtimeAPIVersion === 2 && semver.lt(nodeVersion, V2_MIN_NODE_VERSION))
+  }
+
+  isTypeScript() {
+    if (this.filename === null) {
+      return false
+    }
+
+    return TYPESCRIPT_EXTENSIONS.has(extname(this.filename))
   }
 
   async getNextRun() {
@@ -186,6 +225,10 @@ export default class NetlifyFunction {
 
       return false
     })
+  }
+
+  get runtimeAPIVersion() {
+    return this.buildData?.runtimeAPIVersion ?? 1
   }
 
   get url() {
