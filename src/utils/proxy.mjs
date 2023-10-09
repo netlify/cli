@@ -597,7 +597,7 @@ const onRequest = async (
     return proxy.web(req, res, { target: edgeFunctionsProxyURL })
   }
 
-  const functionMatch = await functionsRegistry.getFunctionForURLPath(req.url, req.method)
+  const functionMatch = functionsRegistry && (await functionsRegistry.getFunctionForURLPath(req.url, req.method))
 
   if (functionMatch) {
     // Setting an internal header with the function name so that we don't
