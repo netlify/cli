@@ -27,6 +27,7 @@ import {
   isEdgeFunctionsRequest,
 } from '../lib/edge-functions/proxy.mjs'
 import { fileExistsAsync, isFileAsync } from '../lib/fs.mjs'
+import { DEFAULT_FUNCTION_URL_EXPRESSION } from '../lib/functions/registry.mjs'
 import renderErrorTemplate from '../lib/render-error-template.mjs'
 
 import { NETLIFYDEVLOG, NETLIFYDEVWARN, log, chalk } from './command-helpers.mjs'
@@ -87,7 +88,7 @@ function isInternal(url) {
  * @param {string} url
  */
 function isFunction(functionsPort, url) {
-  return functionsPort && url.match(/^\/.netlify\/(functions|builders)\/.+/)
+  return functionsPort && url.match(DEFAULT_FUNCTION_URL_EXPRESSION)
 }
 
 /**

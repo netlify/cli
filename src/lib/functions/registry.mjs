@@ -14,7 +14,7 @@ import { getPathInProject } from '../settings.mjs'
 import NetlifyFunction from './netlify-function.mjs'
 import runtimes from './runtimes/index.mjs'
 
-const DEFAULT_URL_EXPRESSION = /^\/.netlify\/(functions|builders)\/([^/]+).*/
+export const DEFAULT_FUNCTION_URL_EXPRESSION = /^\/.netlify\/(functions|builders)\/([^/]+).*/
 const ZIP_EXTENSION = '.zip'
 
 export class FunctionsRegistry {
@@ -124,7 +124,7 @@ export class FunctionsRegistry {
   }
 
   async getFunctionForURLPath(urlPath, method) {
-    const defaultURLMatch = urlPath.match(DEFAULT_URL_EXPRESSION)
+    const defaultURLMatch = urlPath.match(DEFAULT_FUNCTION_URL_EXPRESSION)
 
     if (defaultURLMatch) {
       const func = this.get(defaultURLMatch[2])
