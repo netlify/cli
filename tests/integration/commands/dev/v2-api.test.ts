@@ -112,6 +112,12 @@ describe.runIf(gte(version, '18.13.0'))('v2 api', () => {
       expect(await response.text()).toBe(`With literal path: ${url}`)
     })
 
+    test<FixtureTestContext>('doesnt run form logic on paths matching function', async ({ devServer }) => {
+      const url = `http://localhost:${devServer.port}/products`
+      await fetch(url, { method: 'POST' })
+      expect(devServer.output).not.toContain("Missing form submission function handler")
+    })
+
     test<FixtureTestContext>('supports custom URLs with method matching', async ({ devServer }) => {
       const url = `http://localhost:${devServer.port}/products/really-bad-product`
       const response = await fetch(url, { method: 'DELETE' })
