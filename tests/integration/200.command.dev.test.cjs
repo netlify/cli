@@ -238,11 +238,8 @@ export const handler = async function () {
 
             if (req.url.includes('?ef=fetch')) {
               const url = new URL('/origin', req.url)
-              try {
-                await fetch(url, {})
-              } catch (error) {
-                return new Response(error, { status: 500 })
-              }
+
+              return await fetch(url)
             }
 
             if (req.url.includes('?ef=url')) {
@@ -265,10 +262,7 @@ export const handler = async function () {
         t.deepEqual(await got(`https://localhost:${port}/api/hello`, options).json(), {
           rawUrl: `https://localhost:${port}/api/hello`,
         })
-
-        // the fetch will go against the `https://` url of the dev server, which isn't trusted system-wide.
-        // this is the expected behaviour for fetch, so we shouldn't change anything about it.
-        t.regex(await got(`https://localhost:${port}?ef=fetch`, options).text(), /invalid peer certificate/)
+        t.is(await got(`https://localhost:${port}?ef=fetch`, options).text(), 'origin')
       })
     })
   })

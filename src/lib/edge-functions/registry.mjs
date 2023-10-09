@@ -1,7 +1,15 @@
 // @ts-check
 import { fileURLToPath } from 'url'
 
-import { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log, warn, watchDebounced } from '../../utils/command-helpers.mjs'
+import {
+  NETLIFYDEVERR,
+  NETLIFYDEVLOG,
+  NETLIFYDEVWARN,
+  chalk,
+  log,
+  warn,
+  watchDebounced,
+} from '../../utils/command-helpers.mjs'
 
 /** @typedef {import('@netlify/edge-bundler').Declaration} Declaration */
 /** @typedef {import('@netlify/edge-bundler').EdgeFunction} EdgeFunction */
@@ -17,6 +25,9 @@ export class EdgeFunctionsRegistry {
   /** @type {string} */
   #configPath
 
+  /** @type {boolean} */
+  #debug
+
   /** @type {string[]} */
   #directories
 
@@ -28,6 +39,9 @@ export class EdgeFunctionsRegistry {
 
   /** @type {RunIsolate} */
   #runIsolate
+
+  /** @type {boolean} */
+  #hasShownNPMWarning = false
 
   /** @type {Error | null} */
   #buildError = null
@@ -47,9 +61,6 @@ export class EdgeFunctionsRegistry {
   /** @type {Record<string, string>} */
   #env
 
-  /** @type {import('chokidar').FSWatcher} */
-  #configWatcher
-
   /** @type {Map<string, import('chokidar').FSWatcher>} */
   #directoryWatchers = new Map()
 
@@ -68,11 +79,15 @@ export class EdgeFunctionsRegistry {
   /** @type {Promise<void>} */
   #initialScan
 
+  /** @type {string} */
+  #servePath
+
   /**
    * @param {Object} opts
    * @param {import('@netlify/edge-bundler')} opts.bundler
    * @param {object} opts.config
    * @param {string} opts.configPath
+   * @param {boolean} opts.debug
    * @param {string[]} opts.directories
    * @param {Record<string, { sources: string[], value: string}>} opts.env
    * @param {() => Promise<object>} opts.getUpdatedConfig
@@ -80,11 +95,13 @@ export class EdgeFunctionsRegistry {
    * @param {Declaration[]} opts.internalFunctions
    * @param {string} opts.projectDir
    * @param {RunIsolate} opts.runIsolate
+   * @param {string} opts.servePath
    */
   constructor({
     bundler,
     config,
     configPath,
+    debug,
     directories,
     env,
     getUpdatedConfig,
@@ -92,13 +109,16 @@ export class EdgeFunctionsRegistry {
     internalFunctions,
     projectDir,
     runIsolate,
+    servePath,
   }) {
     this.#bundler = bundler
     this.#configPath = configPath
+    this.#debug = debug
     this.#directories = directories
     this.#internalDirectories = internalDirectories
     this.#getUpdatedConfig = getUpdatedConfig
     this.#runIsolate = runIsolate
+    this.#servePath = servePath
 
     this.#declarationsFromDeployConfig = internalFunctions
     this.#declarationsFromTOML = EdgeFunctionsRegistry.#getDeclarationsFromTOML(config)
@@ -147,9 +167,22 @@ export class EdgeFunctionsRegistry {
    */
   async #build() {
     try {
-      const { functionsConfig, graph, success } = await this.#runIsolate(this.#functions, this.#env, {
+      const {
+        features = {},
+        functionsConfig,
+        graph,
+        success,
+      } = await this.#runIsolate(this.#functions, this.#env, {
         getFunctionsConfig: true,
       })
+
+      if (features.npmModules && !this.#hasShownNPMWarning) {
+        log(
+          `${NETLIFYDEVWARN} Support for npm modules in edge functions is an experimental feature. To learn more about the current state of this capability or to report a problem, refer to https://ntl.fyi/edge-functions-npm.`,
+        )
+
+        this.#hasShownNPMWarning = true
+      }
 
       if (!success) {
         throw new Error('Build error')
@@ -256,7 +289,9 @@ export class EdgeFunctionsRegistry {
       return
     }
 
-    log(`${NETLIFYDEVLOG} ${chalk.magenta('Reloading')} edge functions...`)
+    const reason = this.#debug ? ` because ${chalk.underline(path)} has changed` : ''
+
+    log(`${NETLIFYDEVLOG} ${chalk.magenta('Reloading')} edge functions${reason}...`)
 
     try {
       await this.#build()
@@ -490,7 +525,7 @@ export class EdgeFunctionsRegistry {
     if (this.#configPath) {
       // Creating a watcher for the config file. When it changes, we update the
       // declarations and see if we need to register or unregister any functions.
-      this.#configWatcher = await watchDebounced(this.#configPath, {
+      await watchDebounced(this.#configPath, {
         onChange: async () => {
           const newConfig = await this.#getUpdatedConfig()
 
@@ -513,7 +548,9 @@ export class EdgeFunctionsRegistry {
    * @returns {Promise<void>}
    */
   async #setupWatcherForDirectory(directory) {
+    const ignored = [`${this.#servePath}/**`]
     const watcher = await watchDebounced(directory, {
+      ignored,
       onAdd: () => this.#checkForAddedOrDeletedFunctions(),
       onChange: (path) => this.#handleFileChange(path),
       onUnlink: () => this.#checkForAddedOrDeletedFunctions(),
