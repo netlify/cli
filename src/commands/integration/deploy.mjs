@@ -323,6 +323,9 @@ const deploy = async (options, command) => {
   // Confirm that a site is linked and that the user is logged in
   checkOptions(buildOptions)
 
+  const { description, integrationLevel, name, scopes, slug } = await getConfiguration()
+  const localIntegrationConfig = { name, description, scopes, slug, integrationLevel }
+
   await SdkBuild({ all: true })
   const { accountId } = await getSiteInformation({
     api,
@@ -342,8 +345,6 @@ const deploy = async (options, command) => {
     return { body, statusCode: res.status }
   })
 
-  const { description, integrationLevel, name, scopes, slug } = await getConfiguration()
-  const localIntegrationConfig = { name, description, scopes, slug, integrationLevel }
 
   // The integration is registered on the remote
   statusCode === 200
