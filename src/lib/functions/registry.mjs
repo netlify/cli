@@ -227,8 +227,11 @@ export class FunctionsRegistry {
   }
 
   /**
-   * Returns the first function in the registry that matches a given URL path
-   * and an HTTP method. If no match is found, `undefined` is returned.
+   * Looks for the first function that matches a given URL path. If a match is
+   * found, returns an object with the function and the route. If the URL path
+   * matches the default functions URL (i.e. can only be for a function) but no
+   * function with the given name exists, returns an object with the function
+   * and the route set to `null`. Otherwise, `undefined` is returned,
    *
    * @param {string} url
    * @param {string} method
@@ -244,7 +247,7 @@ export class FunctionsRegistry {
       const func = this.get(defaultURLMatch[2])
 
       if (!func) {
-        return
+        return { func: null, route: null }
       }
 
       const { routes = [] } = await func.getBuildData()
