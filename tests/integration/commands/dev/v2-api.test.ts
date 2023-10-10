@@ -112,6 +112,12 @@ describe.runIf(gte(version, '18.13.0'))('v2 api', () => {
       expect(await response.text()).toBe(`With literal path: ${url}`)
     })
 
+    test<FixtureTestContext>('doesnt run form logic on paths matching function', async ({ devServer }) => {
+      const url = `http://localhost:${devServer.port}/products`
+      await fetch(url, { method: 'POST' })
+      expect(devServer.output).not.toContain("Missing form submission function handler")
+    })
+
     test<FixtureTestContext>('supports custom URLs with method matching', async ({ devServer }) => {
       const url = `http://localhost:${devServer.port}/products/really-bad-product`
       const response = await fetch(url, { method: 'DELETE' })
@@ -124,6 +130,14 @@ describe.runIf(gte(version, '18.13.0'))('v2 api', () => {
       const response = await fetch(url)
       expect(response.status).toBe(200)
       expect(await response.text()).toBe(`With expression path: {"sku":"netlify"}`)
+    })
+
+    test<FixtureTestContext>('returns 404 when using the default function URL to access a function with custom routes', async ({
+      devServer,
+    }) => {
+      const url = `http://localhost:${devServer.port}/.netlify/functions/custom-path-literal`
+      const response = await fetch(url)
+      expect(response.status).toBe(404)
     })
 
     describe('handles rewrites to a function', () => {
