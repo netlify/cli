@@ -24,7 +24,7 @@ import { getPathInProject } from '../settings.mjs'
 import NetlifyFunction from './netlify-function.mjs'
 import runtimes from './runtimes/index.mjs'
 
-const DEFAULT_URL_EXPRESSION = /^\/.netlify\/(functions|builders)\/([^/]+).*/
+export const DEFAULT_FUNCTION_URL_EXPRESSION = /^\/.netlify\/(functions|builders)\/([^/]+).*/
 const TYPES_PACKAGE = '@netlify/functions'
 const ZIP_EXTENSION = '.zip'
 
@@ -238,7 +238,7 @@ export class FunctionsRegistry {
     // the incoming URL. It doesn't really matter that we don't have the actual
     // local URL with the correct port.
     const urlPath = new URL(url, 'http://localhost').pathname
-    const defaultURLMatch = urlPath.match(DEFAULT_URL_EXPRESSION)
+    const defaultURLMatch = urlPath.match(DEFAULT_FUNCTION_URL_EXPRESSION)
 
     if (defaultURLMatch) {
       const func = this.get(defaultURLMatch[2])
