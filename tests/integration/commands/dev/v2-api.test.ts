@@ -135,6 +135,12 @@ describe.runIf(gte(version, '18.13.0'))('v2 api', () => {
       expect(await response.text()).toBe(`With literal path: http://localhost:${devServer.port}/`)
     })
 
+    test<FixtureTestContext>('catchall path applies to root path', async ({ devServer }) => {
+      const response = await fetch( `http://localhost:${devServer.port}/`, { method:"PATCH"})
+      expect(response.status).toBe(200)
+      expect(await response.text()).toBe(`Catchall Path`)
+    })
+
     test<FixtureTestContext>('returns 404 when using the default function URL to access a function with custom routes', async ({
       devServer,
     }) => {
