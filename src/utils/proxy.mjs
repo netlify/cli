@@ -343,10 +343,12 @@ const serveRedirect = async function ({ env, functionsRegistry, match, options, 
     }
 
     if (matchingFunction) {
-      const functionHeaders = {
-        [NFFunctionName]: matchingFunction.func.name,
-        [NFFunctionRoute]: matchingFunction.route,
-      }
+      const functionHeaders = matchingFunction.func
+        ? {
+            [NFFunctionName]: matchingFunction.func?.name,
+            [NFFunctionRoute]: matchingFunction.route,
+          }
+        : {}
       const url = reqToURL(req, originalURL)
       req.headers['x-netlify-original-pathname'] = url.pathname
       req.headers['x-netlify-original-search'] = url.search
@@ -604,7 +606,11 @@ const onRequest = async (
     // Setting an internal header with the function name so that we don't
     // have to match the URL again in the functions server.
     /** @type {Record<string, string>} */
-    const headers = { [NFFunctionName]: functionMatch.func.name }
+    const headers = {}
+
+    if (functionMatch.func) {
+      headers[NFFunctionName] = functionMatch.func.name
+    }
 
     if (functionMatch.route) {
       headers[NFFunctionRoute] = functionMatch.route.pattern
