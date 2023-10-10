@@ -29,7 +29,12 @@ const getFormHandler = function ({ functionsRegistry }) {
 
 export const createFormSubmissionHandler = function ({ functionsRegistry, siteUrl }) {
   return async function formSubmissionHandler(req, res, next) {
-    if (req.url.startsWith('/.netlify/') || req.method !== 'POST') return next()
+    if (
+      req.url.startsWith('/.netlify/') ||
+      req.method !== 'POST' ||
+      (await functionsRegistry.getFunctionForURLPath(req.url, req.method))
+    )
+      return next()
 
     const fakeRequest = new Readable({
       read() {
