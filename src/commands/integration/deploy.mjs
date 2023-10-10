@@ -130,7 +130,7 @@ export async function registerIntegration(workingDir, siteId, accountId, localIn
   }
 
   if (!verifyRequiredFieldsAreInConfig(name, description, scopes, integrationLevel)) {
-    return
+    exit(1)
   }
 
   log(chalk.white('Registering the integration...'))
