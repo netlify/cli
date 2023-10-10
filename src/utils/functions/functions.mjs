@@ -33,6 +33,12 @@ export const getFunctionsDistPath = async ({ base, packagePath = '' }) => {
   return isDirectory ? path : null
 }
 
+export const getFunctionsServePath = ({ base, packagePath = '' }) => {
+  const path = resolve(base, packagePath, getPathInProject([SERVE_FUNCTIONS_FOLDER]))
+
+  return path
+}
+
 /**
  * Retrieves the internal functions directory and creates it if ensureExists is provided
  * @param {object} config

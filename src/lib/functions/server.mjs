@@ -1,12 +1,19 @@
 // @ts-check
 import { Buffer } from 'buffer'
+import { promises as fs } from 'fs'
 
 import express from 'express'
 import expressLogging from 'express-logging'
 import jwtDecode from 'jwt-decode'
 
 import { NETLIFYDEVERR, NETLIFYDEVLOG, error as errorExit, log } from '../../utils/command-helpers.mjs'
-import { CLOCKWORK_USERAGENT, getFunctionsDistPath, getInternalFunctionsDir } from '../../utils/functions/index.mjs'
+import { isFeatureFlagEnabled } from '../../utils/feature-flags.mjs'
+import {
+  CLOCKWORK_USERAGENT,
+  getFunctionsDistPath,
+  getFunctionsServePath,
+  getInternalFunctionsDir,
+} from '../../utils/functions/index.mjs'
 import { NFFunctionName, NFFunctionRoute } from '../../utils/headers.mjs'
 import { headers as efHeaders } from '../edge-functions/headers.mjs'
 import { getGeoLocation } from '../geo-location.mjs'
@@ -244,12 +251,14 @@ const getFunctionsServer = (options) => {
  * @param {*} options.loadDistFunctions
  * @param {*} options.settings
  * @param {*} options.site
+ * @param {*} options.siteInfo
  * @param {string} options.siteUrl
  * @param {*} options.timeouts
  * @returns {Promise<import('./registry.mjs').FunctionsRegistry | undefined>}
  */
 export const startFunctionsServer = async (options) => {
-  const { capabilities, command, config, debug, loadDistFunctions, settings, site, siteUrl, timeouts } = options
+  const { capabilities, command, config, debug, loadDistFunctions, settings, site, siteInfo, siteUrl, timeouts } =
+    options
   const internalFunctionsDir = await getInternalFunctionsDir({ base: site.root })
   const functionsDirectories = []
 
@@ -270,6 +279,14 @@ export const startFunctionsServer = async (options) => {
     functionsDirectories.push(...sourceDirectories)
   }
 
+  try {
+    const functionsServePath = getFunctionsServePath({ base: site.root })
+
+    await fs.rm(functionsServePath, { force: true, recursive: true })
+  } catch {
+    // no-op
+  }
+
   if (functionsDirectories.length === 0) {
     return
   }
@@ -279,6 +296,7 @@ export const startFunctionsServer = async (options) => {
     config,
     debug,
     isConnected: Boolean(siteUrl),
+    logLambdaCompat: isFeatureFlagEnabled('cli_log_lambda_compat', siteInfo),
     // functions always need to be inside the packagePath if set inside a monorepo
     projectRoot: command.workingDir,
     settings,

@@ -163,6 +163,12 @@ export const log = (message = '', ...args) => {
   process.stdout.write(`${format(message, ...args)}\n`)
 }
 
+export const logPadded = (message = '', ...args) => {
+  log('')
+  log(message, ...args)
+  log('')
+}
+
 /**
  * logs a warning message
  * @param {string} message
@@ -262,4 +268,4 @@ export const watchDebounced = async (
   return watcher
 }
 
-export const getTerminalLink = (text, url) => terminalLink(text, url, { fallback: () => `${text} ${url}` })
+export const getTerminalLink = (text, url) => terminalLink(text, url, { fallback: () => `${text} (${url})` })
