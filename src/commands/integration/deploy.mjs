@@ -166,7 +166,7 @@ export async function registerIntegration(workingDir, siteId, accountId, localIn
 
   log(chalk.green(`Successfully registered the integration with the slug: ${body.slug}`))
 
-  const updatedIntegrationConfig = yaml.dump({ config: { name, description, slug: body.slug, scopes } })
+  const updatedIntegrationConfig = yaml.dump({ config: { name, description, slug: body.slug, scopes, integrationLevel } })
 
   const filePath = resolve(workingDir, 'integration.yaml')
   await fs.writeFile(filePath, updatedIntegrationConfig)
