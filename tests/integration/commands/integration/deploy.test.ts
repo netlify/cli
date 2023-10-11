@@ -1,33 +1,32 @@
 import process from 'process'
 
+
 import { getConfiguration } from '@netlify/sdk/cli-utils'
 import { build as SdkBuild } from '@netlify/sdk/commands'
-import { beforeAll, beforeEach, describe, expect, test, vi } from 'vitest'
+import { beforeEach, describe, expect, test, vi } from 'vitest'
 
 import BaseCommand from '../../../../src/commands/base-command.mjs'
 import { deploy as siteDeploy } from '../../../../src/commands/deploy/deploy.mjs'
-import {areScopesEqual, createDeployCommand, updateIntegration, registerIntegration} from '../../../../src/commands/integration/deploy.mjs'
+import {areScopesEqual, createDeployCommand} from '../../../../src/commands/integration/deploy.mjs'
 import { getEnvironmentVariables, withMockApi } from '../../utils/mock-api.cjs'
 
 
-// describe('integration:deploy areScopesEqual', () => {
-//   test('it returns false when scopes are not equal', () => {
-//     const localScopes = ['all'];
-//     const registeredIntegrationScopes = ['all', 'env']
+describe('integration:deploy areScopesEqual', () => {
+  test('it returns false when scopes are not equal', () => {
+    const localScopes = ['all'];
+    const registeredIntegrationScopes = ['all', 'env']
 
-//     expect (areScopesEqual(localScopes, registeredIntegrationScopes)).toBe(false)
-//   })
-//   test('it returns true when scopes are equal', () => {
-//     const localScopes = ['all', 'user'];
-//     const registeredIntegrationScopes = ['user', 'all']
+    expect (areScopesEqual(localScopes, registeredIntegrationScopes)).toBe(false)
+  })
+  test('it returns true when scopes are equal', () => {
+    const localScopes = ['all', 'user'];
+    const registeredIntegrationScopes = ['user', 'all']
 
-//     expect (areScopesEqual(localScopes, registeredIntegrationScopes)).toBe(true)
-//   })
-// })
+    expect (areScopesEqual(localScopes, registeredIntegrationScopes)).toBe(true)
+  })
+})
 
-
-
-describe(`mocking cli in same process`, () => {
+describe(`integration:deploy`, () => {
   beforeEach(() => {
     vi.resetAllMocks()
   })
@@ -41,18 +40,8 @@ describe(`mocking cli in same process`, () => {
     vi.mock(`@netlify/sdk/cli-utils`, () => ({
       getConfiguration: vi.fn(),
       }))
-    getConfiguration.mockReturnValue({name: 'integrationName', description: 'an integration', scopes: 'all', slug: '987645-integration'})
-    vi.mock(`../../../../src/commands/integration/deploy.mjs`, async () => {
-      const original = await vi.importActual<typeof import('../../../../src/commands/integration/deploy.mjs')>(`../../../../src/commands/integration/deploy.mjs`)
-      return {
-        ...original,
-        registerIntegration: vi.fn(),
-        updateIntegration: vi.fn(() => {
-          console.log('hiii!')
-        }),
-      }
-    })
-    console.log(updateIntegration.mock)
+    getConfiguration.mockReturnValue({name: 'integrationName', description: 'an integration', scopes: { all: true }, slug: '987645-integration'})
+
       const siteInfo = {
         admin_url: 'https://app.netlify.com/sites/site-name/overview',
         ssl_url: 'https://site-name.netlify.app/',
@@ -75,10 +64,13 @@ describe(`mocking cli in same process`, () => {
           response: [siteInfo],
         },
         { path: 'sites/site_id', method: 'patch', response: {} },
-        { path: 'test-account/integrations', response: {} },
+        {
+          path: 'test-account/integrations',
+          response: {
+            scopes: `all`,
+          },
+        },
       ]
-
-
 
         await withMockApi(routes, async ({apiUrl}) => {
           const envVars = getEnvironmentVariables({apiUrl})
@@ -102,10 +94,6 @@ describe(`mocking cli in same process`, () => {
 
           expect(SdkBuild).toBeCalledTimes(1)
           expect(siteDeploy).toBeCalledTimes(1)
-
         })
       })
-
-
-
 })
