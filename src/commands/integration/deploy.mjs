@@ -97,6 +97,7 @@ function verifyRequiredFieldsAreInConfig(name, description, scopes, integrationL
         )}. Please add a these fields as an entry to the integration.yaml file and try again.`,
       ),
     )
+    log(chalk.yellow("For more information on the required fields, please see the documentation: https://sdk.netlify.com/private-integrations/#creating-a-private-integration"))
     return false
   }
   return true
@@ -349,15 +350,20 @@ const deploy = async (options, command) => {
   // The integration is registered on the remote
   statusCode === 200
     ? await updateIntegration(
-        workingDir,
-        options,
-        siteId,
-        accountId,
-        localIntegrationConfig,
-        token,
-        registeredIntegration,
-      )
+      workingDir,
+      options,
+      siteId,
+      accountId,
+      localIntegrationConfig,
+      token,
+      registeredIntegration,
+    )
     : await registerIntegration(workingDir, siteId, accountId, localIntegrationConfig, token)
+
+  // Set the prod flag to true if the integration is being initially registered because we don't want the user
+  // to be in a weird state where the card is appearing in the integrations list but there's no production
+  // version of the integration deployed
+  options = statusCode === 200 ? options : { ...options, prod: true }
 
   // Deploy the integration to that site
   await siteDeploy(options, command)
