@@ -99,7 +99,7 @@ function verifyRequiredFieldsAreInConfig(name, description, scopes, integrationL
     )
     log(
       chalk.yellow(
-        'For more information on the required fields, please see the documentation: https://sdk.netlify.com/private-integrations/#creating-a-private-integration',
+        'For more information on the required fields, please see the documentation: https://ntl.fyi/create-private-integration',
       ),
     )
     return false
