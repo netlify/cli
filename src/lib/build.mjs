@@ -58,7 +58,7 @@ export const getBuildOptions = ({
 const getFeatureFlagsFromSiteInfo = (siteInfo) => ({
   ...siteInfo.feature_flags,
   // see https://github.com/netlify/pod-dev-foundations/issues/581#issuecomment-1731022753
-  zisi_golang_use_al2: siteInfo.featureFlags?.cli_golang_use_al2,
+  zisi_golang_use_al2: siteInfo.feature_flags?.cli_golang_use_al2,
 })
 
 /**
