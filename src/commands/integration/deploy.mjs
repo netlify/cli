@@ -3,7 +3,6 @@ import { resolve } from 'path'
 import { exit, env } from 'process'
 
 import { getConfiguration } from '@netlify/sdk/cli-utils'
-import { build as SdkBuild } from '@netlify/sdk/commands'
 // eslint-disable-next-line n/no-unpublished-import
 import fs from 'fs-extra'
 import inquirer from 'inquirer'
@@ -333,7 +332,6 @@ const deploy = async (options, command) => {
   const { description, integrationLevel, name, scopes, slug } = await getConfiguration()
   const localIntegrationConfig = { name, description, scopes, slug, integrationLevel }
 
-  await SdkBuild({ all: true })
   const { accountId } = await getSiteInformation({
     api,
     site,
@@ -385,6 +383,7 @@ export const createDeployCommand = (program) =>
     .alias('int:deploy')
     .description('Register, build and deploy a private Netlify integration.')
     .option('-p, --prod', 'Deploy to production', false)
+    .option('-b, --build', 'Build the integration', false)
     .option('-a, --auth <token>', 'Netlify auth token to deploy with', env.NETLIFY_AUTH_TOKEN)
     .option('-s, --site <name-or-id>', 'A site name or ID to deploy to', env.NETLIFY_SITE_ID)
     .action(deploy)
