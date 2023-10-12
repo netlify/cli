@@ -7,12 +7,7 @@ describe('pubsub', () => {
   setupFixtureTests('dev-server-for-pubsub', { devServer: true }, () => {
     test<FixtureTestContext>('pubsub flow', async ({ devServer }) => {
       const url = `http://localhost:${devServer.port}/.netlify/pubsub/events`
-      const subscription = await fetch(url, {
-        method: 'GET',
-        headers: {
-          Authorization: 'Bearer foo',
-        },
-      })
+      const subscription = await fetch(url)
       expect(subscription.headers.get('content-type')).toEqual('text/event-stream')
 
       const events: string[] = []
