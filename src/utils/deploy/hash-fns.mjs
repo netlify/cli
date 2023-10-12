@@ -107,7 +107,7 @@ const hashFns = async (
     tmpDir,
   })
   const fileObjs = functionZips.map(
-    ({ displayName, generator, invocationMode, path: functionPath, runtime, runtimeVersion }) => ({
+    ({ buildData, displayName, generator, invocationMode, path: functionPath, runtime, runtimeVersion }) => ({
       filepath: functionPath,
       root: tmpDir,
       relname: path.relative(tmpDir, functionPath),
@@ -120,14 +120,15 @@ const hashFns = async (
       displayName,
       generator,
       invocationMode,
+      buildData
     }),
   )
   const fnConfig = functionZips
-    .filter((func) => Boolean(func.displayName || func.generator || func.routes))
+    .filter((func) => Boolean(func.displayName || func.generator || func.routes || func.buildData))
     .reduce(
       (funcs, curr) => ({
         ...funcs,
-        [curr.name]: { display_name: curr.displayName, generator: curr.generator, routes: curr.routes },
+        [curr.name]: { display_name: curr.displayName, generator: curr.generator, routes: curr.routes, buildData: curr.buildData },
       }),
       {},
     )
