@@ -14,12 +14,12 @@ export class PubSubServer {
    */
   handleRequest(req, res) {
     const match = pattern.exec(req.url, 'http://localhost')
-    if (!match) return "skip"
+    if (!match) return 'skip'
 
     const { topic } = match.pathname.groups
     if (!topic) {
       res.statusCode = 400
-      res.write("Missing topic in URL")
+      res.write('Missing topic in URL')
       res.end()
       return
     }
@@ -47,7 +47,7 @@ export class PubSubServer {
     res.setHeader('Content-Type', 'text/event-stream')
     res.statusCode = 200
 
-    const sendPing = () => res.write("event: ping\n\n")
+    const sendPing = () => res.write('event: ping\n\n')
     sendPing()
 
     const pingInterval = setInterval(sendPing, 1000)
@@ -56,7 +56,7 @@ export class PubSubServer {
 
     this.#messages.on(topic, sendMessage)
 
-    req.on("end", () => {
+    req.on('end', () => {
       clearInterval(pingInterval)
       this.#messages.off(topic, sendMessage)
     })

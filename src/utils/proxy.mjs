@@ -587,14 +587,25 @@ const initializeProxy = async function ({ configPath, distDir, env, host, port, 
 }
 
 /**
- * 
- * @param {{ pubSubServer: import("../lib/pubsub.mjs").PubSubServer}} param0 
- * @param {http.IncomingMessage} req 
- * @param {http.ServerResponse} res 
- * @returns 
+ *
+ * @param {{ pubSubServer: import("../lib/pubsub.mjs").PubSubServer}} param0
+ * @param {http.IncomingMessage} req
+ * @param {http.ServerResponse} res
+ * @returns
  */
 const onRequest = async (
-  { addonsUrls, edgeFunctionsProxy, env, functionsRegistry, functionsServer, proxy, pubSubServer, rewriter, settings, siteInfo },
+  {
+    addonsUrls,
+    edgeFunctionsProxy,
+    env,
+    functionsRegistry,
+    functionsServer,
+    proxy,
+    pubSubServer,
+    rewriter,
+    settings,
+    siteInfo,
+  },
   req,
   res,
 ) => {
@@ -608,7 +619,7 @@ const onRequest = async (
     return proxy.web(req, res, { target: edgeFunctionsProxyURL })
   }
 
-  if (pubSubServer.handleRequest(req, res) !== "skip") {
+  if (pubSubServer.handleRequest(req, res) !== 'skip') {
     return
   }
 
