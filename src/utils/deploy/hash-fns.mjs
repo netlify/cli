@@ -120,7 +120,7 @@ const hashFns = async (
       displayName,
       generator,
       invocationMode,
-      buildData
+      buildData,
     }),
   )
   const fnConfig = functionZips
@@ -128,7 +128,12 @@ const hashFns = async (
     .reduce(
       (funcs, curr) => ({
         ...funcs,
-        [curr.name]: { display_name: curr.displayName, generator: curr.generator, routes: curr.routes, buildData: curr.buildData },
+        [curr.name]: {
+          display_name: curr.displayName,
+          generator: curr.generator,
+          routes: curr.routes,
+          build_data: curr.buildData,
+        },
       }),
       {},
     )
