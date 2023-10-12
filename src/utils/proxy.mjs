@@ -28,6 +28,7 @@ import {
 } from '../lib/edge-functions/proxy.mjs'
 import { fileExistsAsync, isFileAsync } from '../lib/fs.mjs'
 import { DEFAULT_FUNCTION_URL_EXPRESSION } from '../lib/functions/registry.mjs'
+import { PubSubServer } from '../lib/pubsub.mjs'
 import renderErrorTemplate from '../lib/render-error-template.mjs'
 
 import { NETLIFYDEVLOG, NETLIFYDEVWARN, log, chalk } from './command-helpers.mjs'
@@ -585,8 +586,15 @@ const initializeProxy = async function ({ configPath, distDir, env, host, port, 
   return handlers
 }
 
+/**
+ * 
+ * @param {{ pubSubServer: import("../lib/pubsub.mjs").PubSubServer}} param0 
+ * @param {http.IncomingMessage} req 
+ * @param {http.ServerResponse} res 
+ * @returns 
+ */
 const onRequest = async (
-  { addonsUrls, edgeFunctionsProxy, env, functionsRegistry, functionsServer, proxy, rewriter, settings, siteInfo },
+  { addonsUrls, edgeFunctionsProxy, env, functionsRegistry, functionsServer, proxy, pubSubServer, rewriter, settings, siteInfo },
   req,
   res,
 ) => {
@@ -598,6 +606,10 @@ const onRequest = async (
 
   if (edgeFunctionsProxyURL !== undefined) {
     return proxy.web(req, res, { target: edgeFunctionsProxyURL })
+  }
+
+  if (pubSubServer.handleRequest(req, res) !== "skip") {
+    return
   }
 
   const functionMatch = functionsRegistry && (await functionsRegistry.getFunctionForURLPath(req.url, req.method))
@@ -720,6 +732,8 @@ export const startProxy = async function ({
     siteInfo,
   })
 
+  const pubSubServer = new PubSubServer()
+
   const rewriter = await createRewriter({
     distDir: settings.dist,
     projectDir,
@@ -736,6 +750,7 @@ export const startProxy = async function ({
     addonsUrls,
     functionsRegistry,
     functionsServer,
+    pubSubServer,
     edgeFunctionsProxy,
     siteInfo,
     env,

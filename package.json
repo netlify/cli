@@ -179,6 +179,7 @@
     "ulid": "2.3.0",
     "unixify": "1.0.0",
     "update-notifier": "6.0.2",
+    "urlpattern-polyfill": "^9.0.0",
     "uuid": "9.0.0",
     "wait-port": "1.0.4",
     "winston": "3.8.2",
