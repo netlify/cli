@@ -11,7 +11,9 @@ import { getEnvelopeEnv, normalizeContext } from '../../utils/env/index.mjs'
  */
 export const checkOptions = ({ cachedConfig: { siteInfo = {} }, token }) => {
   if (!siteInfo.id) {
-    error('Could not find the site ID. If your site is not on Netlify, please run `netlify init` or `netlify deploy` first. If it is, please run `netlify link`.')
+    error(
+      'Could not find the site ID. If your site is not on Netlify, please run `netlify init` or `netlify deploy` first. If it is, please run `netlify link`.',
+    )
   }
 
   if (!token) {
