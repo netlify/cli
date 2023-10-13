@@ -299,7 +299,7 @@ export async function updateIntegration(
     }
 
     const updatedIntegrationConfig = yaml.dump({
-      config: { name, description, slug: integrationSlug, scopes: scopesToWrite },
+      config: { name, description, slug: integrationSlug, scopes: scopesToWrite, integrationLevel },
     })
 
     const filePath = resolve(workingDir, 'integration.yaml')
