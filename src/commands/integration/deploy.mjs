@@ -114,7 +114,7 @@ export async function registerIntegration(workingDir, siteId, accountId, localIn
     {
       type: 'confirm',
       name: 'registerIntegration',
-      message: `Would you like to register a private integration for this site now?`,
+      message: `Would you like to register this site as a private integration now?`,
       default: false,
     },
   ])
