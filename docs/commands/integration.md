@@ -1,6 +1,6 @@
 ---
 title: Netlify CLI integration command
-description: (Beta) Create, develop, and deploy integrations.
+description: Create, develop, and deploy integrations.
 ---
 
 # `integration`
