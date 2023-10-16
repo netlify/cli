@@ -6,7 +6,7 @@ description: (Beta) Create, develop, and deploy integrations.
 # `integration`
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
-Manage integrations
+Manage Netlify Integrations built with the Netlify SDK
 
 **Usage**
 
@@ -21,17 +21,16 @@ netlify integration
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`integration:build`](/docs/commands/integration.md#integrationbuild) | Builds the Netlify integration.  |
-| [`integration:deploy`](/docs/commands/integration.md#integrationdeploy) | Register, build and deploy a private Netlify integration.  |
-| [`integration:dev`](/docs/commands/integration.md#integrationdev) | Build and preview the Netlify integration in your local environment.  |
-| [`integration:init`](/docs/commands/integration.md#integrationinit) | Creates a skeleton Netlify integration project in your current directory.  |
+| [`integration:build`](/docs/commands/integration.md#integrationbuild) | Builds the integration  |
+| [`integration:deploy`](/docs/commands/integration.md#integrationdeploy) | Register, build, and deploy a private integration on Netlify  |
+| [`integration:dev`](/docs/commands/integration.md#integrationdev) | Build and preview the integration in your local environment  |
 | [`integration:preview`](/docs/commands/integration.md#integrationpreview) |   |
 
 
 ---
 ## `integration:build`
 
-Builds the Netlify integration.
+Builds the integration
 
 **Usage**
 
@@ -52,7 +51,7 @@ netlify integration:build
 ---
 ## `integration:deploy`
 
-Register, build and deploy a private Netlify integration.
+Register, build, and deploy a private integration on Netlify
 
 **Usage**
 
@@ -63,6 +62,7 @@ netlify integration:deploy
 **Flags**
 
 - `auth` (*string*) - Netlify auth token to deploy with
+- `build` (*boolean*) - Build the integration
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `prod` (*boolean*) - Deploy to production
 - `site` (*string*) - A site name or ID to deploy to
@@ -71,7 +71,7 @@ netlify integration:deploy
 ---
 ## `integration:dev`
 
-Build and preview the Netlify integration in your local environment.
+Build and preview the integration in your local environment
 
 **Usage**
 
@@ -82,23 +82,6 @@ netlify integration:dev
 **Flags**
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
-- `debug` (*boolean*) - Print debugging information
-
----
-## `integration:init`
-
-Creates a skeleton Netlify integration project in your current directory.
-
-**Usage**
-
-```bash
-netlify integration:init
-```
-
-**Flags**
-
-- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
-- `slug` (*boolean*) - The integration slug.
 - `debug` (*boolean*) - Print debugging information
 
 ---

@@ -168,14 +168,13 @@ Configure continuous deployment for a new or existing site. To create a new site
 
 ### [integration](/docs/commands/integration.md)
 
-Manage integrations
+Manage Netlify Integrations built with the Netlify SDK
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`integration:build`](/docs/commands/integration.md#integrationbuild) | Builds the Netlify integration.  |
-| [`integration:deploy`](/docs/commands/integration.md#integrationdeploy) | Register, build and deploy a private Netlify integration.  |
-| [`integration:dev`](/docs/commands/integration.md#integrationdev) | Build and preview the Netlify integration in your local environment.  |
-| [`integration:init`](/docs/commands/integration.md#integrationinit) | Creates a skeleton Netlify integration project in your current directory.  |
+| [`integration:build`](/docs/commands/integration.md#integrationbuild) | Builds the integration  |
+| [`integration:deploy`](/docs/commands/integration.md#integrationdeploy) | Register, build, and deploy a private integration on Netlify  |
+| [`integration:dev`](/docs/commands/integration.md#integrationdev) | Build and preview the integration in your local environment  |
 | [`integration:preview`](/docs/commands/integration.md#integrationpreview) |   |
 
 
