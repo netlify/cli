@@ -121,10 +121,7 @@ Manage Netlify Integrations built with the Netlify SDK
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`integration:build`](/docs/commands/integration.md#integrationbuild) | Builds the integration  |
 | [`integration:deploy`](/docs/commands/integration.md#integrationdeploy) | Register, build, and deploy a private integration on Netlify  |
-| [`integration:dev`](/docs/commands/integration.md#integrationdev) | Build and preview the integration in your local environment  |
-| [`integration:preview`](/docs/commands/integration.md#integrationpreview) |   |
 
 
 ### [link](/docs/commands/link.md)
