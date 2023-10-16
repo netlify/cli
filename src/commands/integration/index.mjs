@@ -23,5 +23,9 @@ export const createIntegrationCommand = (program) => {
   createDevCommand(program)
   createDeployCommand(program)
 
-  return program.command('integration').alias('int').description('Manage Netlify Integrations built with the Netlify SDK').action(integrations)
+  return program
+    .command('integration')
+    .alias('int')
+    .description('Manage Netlify Integrations built with the Netlify SDK')
+    .action(integrations)
 }
