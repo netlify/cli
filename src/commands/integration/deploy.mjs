@@ -381,7 +381,7 @@ export const createDeployCommand = (program) =>
   program
     .command('integration:deploy')
     .alias('int:deploy')
-    .description('Register, build and deploy a private Netlify integration.')
+    .description('Register, build, and deploy a private integration on Netlify')
     .option('-p, --prod', 'Deploy to production', false)
     .option('-b, --build', 'Build the integration', false)
     .option('-a, --auth <token>', 'Netlify auth token to deploy with', env.NETLIFY_AUTH_TOKEN)

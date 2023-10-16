@@ -18,7 +18,7 @@ export const createBuildCommand = (program) =>
   program
     .command('integration:build')
     .alias('int:build')
-    .description('Builds the Netlify integration.')
+    .description('Builds the integration')
     .option('-a, --all', 'Build all components of the integration', false)
     .option('-c, --connector', 'Build the Netlify Connect plugin of the integration', false)
     .option('-w, --watch', 'Build integration and then watch for changes', false)

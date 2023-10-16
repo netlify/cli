@@ -18,6 +18,6 @@ export const createDevCommand = (program) =>
   program
     .command('integration:dev')
     .alias('int:dev')
-    .description('Build and preview the Netlify integration in your local environment.')
+    .description('Build and preview the integration in your local environment')
     .action(dev)
 /* eslint-enable import/extensions */
