@@ -18,6 +18,6 @@ export const createPreviewCommand = (program) =>
   program
     .command('integration:preview')
     .command('int:preview')
-    .description('Preview the UI of the Netlify Integration in your local environment.')
+    .description('Preview the Integration UI of the integration in your local environment')
     .action(preview)
 /* eslint-enable import/extensions */
