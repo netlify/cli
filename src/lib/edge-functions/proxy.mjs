@@ -8,7 +8,6 @@ import * as bundler from '@netlify/edge-bundler'
 import getAvailablePort from 'get-port'
 
 import { NETLIFYDEVERR, NETLIFYDEVWARN, chalk, error as printError, log } from '../../utils/command-helpers.mjs'
-import { isFeatureFlagEnabled } from '../../utils/feature-flags.mjs'
 import { getGeoLocation } from '../geo-location.mjs'
 import { getPathInProject } from '../settings.mjs'
 import { startSpinner, stopSpinner } from '../spinner.mjs'
@@ -110,7 +109,7 @@ export const initializeProxy = async ({
   const userFunctionsPath = config.build.edge_functions
   const isolatePort = await getAvailablePort()
   const buildFeatureFlags = {
-    edge_functions_npm_modules: isFeatureFlagEnabled('edge_functions_npm_modules', siteInfo),
+    edge_functions_npm_modules: true,
   }
   const runtimeFeatureFlags = ['edge_functions_bootstrap_failure_mode']
 
