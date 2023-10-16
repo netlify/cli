@@ -1,7 +1,6 @@
 import { createBuildCommand } from './build.mjs'
 import { createDeployCommand } from './deploy.mjs'
 import { createDevCommand } from './dev.mjs'
-import { createInitCommand } from './init.mjs'
 import { createPreviewCommand } from './preview.mjs'
 
 /**
@@ -19,7 +18,6 @@ const integrations = (options, command) => {
  * @returns
  */
 export const createIntegrationCommand = (program) => {
-  createInitCommand(program)
   createBuildCommand(program)
   createPreviewCommand(program)
   createDevCommand(program)
