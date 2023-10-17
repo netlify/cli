@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "16.7.0",
+  "version": "16.8.0",
   "author": "Netlify Inc.",
   "type": "module",
   "engines": {
