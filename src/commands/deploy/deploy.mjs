@@ -519,7 +519,11 @@ const printResults = ({ deployToProduction, isIntegrationDeploy, json, results, 
     if (!deployToProduction) {
       log()
       log('If everything looks good on your draft URL, deploy it to your main site URL with the --prod flag.')
-      log(`${chalk.cyanBright.bold(`netlify ${isIntegrationDeploy ? 'integration:': ''}deploy${runBuildCommand ? ' --build' : ''} --prod`)}`)
+      log(
+        `${chalk.cyanBright.bold(
+          `netlify ${isIntegrationDeploy ? 'integration:' : ''}deploy${runBuildCommand ? ' --build' : ''} --prod`,
+        )}`,
+      )
       log()
     }
   }
