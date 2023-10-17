@@ -9,6 +9,7 @@ import { Chalk } from 'chalk'
 import chokidar from 'chokidar'
 import decache from 'decache'
 import WSL from 'is-wsl'
+import debounce from 'lodash/debounce.js'
 import terminalLink from 'terminal-link'
 
 import { clearSpinner, startSpinner } from '../lib/spinner.mjs'
@@ -224,6 +225,8 @@ export const normalizeConfig = (config) => {
   return publishOrigin === 'default' ? { ...config, build } : config
 }
 
+const DEBOUNCE_WAIT = 100
+
 /**
  * Adds a file watcher to a path or set of paths and debounces the events.
  *
@@ -231,9 +234,9 @@ export const normalizeConfig = (config) => {
  * @param {Object} opts
  * @param {number} [opts.depth]
  * @param {Array<string|RegExp>} [opts.ignored]
- * @param {(path: string) => any} [opts.onAdd]
- * @param {(path: string) => any} [opts.onChange]
- * @param {(path: string) => any} [opts.onUnlink]
+ * @param {(paths: string[]) => any} [opts.onAdd]
+ * @param {(paths: string[]) => any} [opts.onChange]
+ * @param {(paths: string[]) => any} [opts.onUnlink]
  */
 export const watchDebounced = async (
   target,
@@ -244,18 +247,38 @@ export const watchDebounced = async (
 
   await once(watcher, 'ready')
 
+  let onChangeQueue = []
+  let onAddQueue = []
+  let onUnlinkQueue = []
+
+  const debouncedOnChange = debounce(() => {
+    onChange(onChangeQueue)
+    onChangeQueue = []
+  }, DEBOUNCE_WAIT)
+  const debouncedOnAdd = debounce(() => {
+    onAdd(onAddQueue)
+    onAddQueue = []
+  }, DEBOUNCE_WAIT)
+  const debouncedOnUnlink = debounce(() => {
+    onUnlink(onUnlinkQueue)
+    onUnlinkQueue = []
+  }, DEBOUNCE_WAIT)
+
   watcher
     .on('change', (path) => {
       decache(path)
-      onChange(path)
+      onChangeQueue.push(path)
+      debouncedOnChange()
     })
     .on('unlink', (path) => {
       decache(path)
-      onUnlink(path)
+      onUnlinkQueue.push(path)
+      debouncedOnUnlink()
     })
     .on('add', (path) => {
       decache(path)
-      onAdd(path)
+      onAddQueue.push(path)
+      debouncedOnAdd()
     })
 
   return watcher
