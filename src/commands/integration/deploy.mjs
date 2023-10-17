@@ -370,6 +370,8 @@ const deploy = async (options, command) => {
 
   // Deploy the integration to that site
   await siteDeploy(options, command)
+
+  log(`${chalk.cyanBright.bold(`Your integration has been deployed. Next step is to enable it for a team or site.`)} https://sdk.netlify.com/publish/private-integrations/#enable-a-private-integration`)
 }
 
 /**
