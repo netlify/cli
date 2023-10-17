@@ -200,7 +200,7 @@ export class EdgeFunctionsRegistry {
         const modules = npmSpecifiersWithExtraneousFiles.map((name) => chalk.yellow(name)).join(', ')
 
         log(
-          `${NETLIFYDEVWARN} The following npm modules, which are directly or indirectly imported by an edge function, may not be supported: ${modules}. For more information, visit https://ntl.fyi/edge-npm.`,
+          `${NETLIFYDEVWARN} The following npm modules, which are directly or indirectly imported by an edge function, may not be supported: ${modules}. For more information, visit https://ntl.fyi/edge-functions-npm.`,
         )
       }
     } catch (error) {
