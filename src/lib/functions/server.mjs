@@ -1,6 +1,7 @@
 // @ts-check
 import { Buffer } from 'buffer'
 import { promises as fs } from 'fs'
+import path from 'path'
 
 import express from 'express'
 import expressLogging from 'express-logging'
@@ -261,6 +262,7 @@ export const startFunctionsServer = async (options) => {
     options
   const internalFunctionsDir = await getInternalFunctionsDir({ base: site.root })
   const functionsDirectories = []
+  let manifest
 
   // If the `loadDistFunctions` parameter is sent, the functions server will
   // use the built functions created by zip-it-and-ship-it rather than building
@@ -270,6 +272,18 @@ export const startFunctionsServer = async (options) => {
 
     if (distPath) {
       functionsDirectories.push(distPath)
+
+      // When using built functions, read the manifest file so that we can
+      // extract metadata such as routes and API version.
+      try {
+        const manifestPath = path.join(distPath, 'manifest.json')
+        // eslint-disable-next-line unicorn/prefer-json-parse-buffer
+        const data = await fs.readFile(manifestPath, 'utf8')
+
+        manifest = JSON.parse(data)
+      } catch {
+        // no-op
+      }
     }
   } else {
     // The order of the function directories matters. Rightmost directories take
@@ -297,6 +311,7 @@ export const startFunctionsServer = async (options) => {
     debug,
     isConnected: Boolean(siteUrl),
     logLambdaCompat: isFeatureFlagEnabled('cli_log_lambda_compat', siteInfo),
+    manifest,
     // functions always need to be inside the packagePath if set inside a monorepo
     projectRoot: command.workingDir,
     settings,

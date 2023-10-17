@@ -1,5 +1,5 @@
 // @ts-check
-import { mkdir } from 'fs/promises'
+import { mkdir, stat } from 'fs/promises'
 import { createRequire } from 'module'
 import { basename, extname, isAbsolute, join, resolve } from 'path'
 import { env } from 'process'
@@ -39,6 +39,7 @@ export class FunctionsRegistry {
     debug = false,
     isConnected = false,
     logLambdaCompat,
+    manifest,
     projectRoot,
     settings,
     timeouts,
@@ -96,6 +97,14 @@ export class FunctionsRegistry {
      * @type {boolean}
      */
     this.logLambdaCompat = Boolean(logLambdaCompat)
+
+    /**
+     * Contents of a `manifest.json` file that can be looked up when dealing
+     * with built functions.
+     *
+     * @type {object}
+     */
+    this.manifest = manifest
   }
 
   checkTypesPackage() {
@@ -390,12 +399,30 @@ export class FunctionsRegistry {
         FunctionsRegistry.logEvent('extracted', { func })
       }
 
-      func.mainFile = join(unzippedDirectory, `${func.name}.js`)
+      // If there's a manifest file, look up the function in order to extract
+      // the build data.
+      const manifestEntry = (this.manifest?.functions || []).find((manifestFunc) => manifestFunc.name === func.name)
+
+      func.buildData = manifestEntry?.buildData || {}
+
+      // When we look at an unzipped function, we don't know whether it uses
+      // the legacy entry file format (i.e. `[function name].js`) or the new
+      // one (i.e. `___netlify-entry-point.mjs`). Let's look for the new one
+      // and use it if it exists, otherwise use the old one.
+      try {
+        const v2EntryPointPath = join(unzippedDirectory, '___netlify-entry-point.mjs')
+
+        await stat(v2EntryPointPath)
+
+        func.mainFile = v2EntryPointPath
+      } catch {
+        func.mainFile = join(unzippedDirectory, `${func.name}.js`)
+      }
+    } else {
+      this.buildFunctionAndWatchFiles(func, !isReload)
     }
 
     this.functions.set(name, func)
-
-    this.buildFunctionAndWatchFiles(func, !isReload)
   }
 
   /**
