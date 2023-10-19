@@ -84,7 +84,7 @@
     "@netlify/edge-bundler": "9.3.0",
     "@netlify/local-functions-proxy": "1.1.1",
     "@netlify/sdk": "^1.1.5",
-    "@netlify/serverless-functions-api": "1.9.1",
+    "@netlify/serverless-functions-api": "1.10.0",
     "@netlify/zip-it-and-ship-it": "9.25.1",
     "@octokit/rest": "19.0.13",
     "ansi-escapes": "6.2.0",
