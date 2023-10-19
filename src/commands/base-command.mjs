@@ -5,7 +5,7 @@ import process from 'process'
 import { format } from 'util'
 
 import { DefaultLogger, Project } from '@netlify/build-info'
-// eslint-disable-next-line import/extensions
+// eslint-disable-next-line import/extensions, n/no-missing-import
 import { NodeFS, NoopLogger } from '@netlify/build-info/node'
 import { resolveConfig } from '@netlify/config'
 import { Command, Option } from 'commander'

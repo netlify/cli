@@ -2,6 +2,7 @@
 import { resolve } from 'path'
 import { exit, env } from 'process'
 
+// eslint-disable-next-line n/no-missing-import
 import { getConfiguration } from '@netlify/sdk/cli-utils'
 // eslint-disable-next-line n/no-unpublished-import
 import fs from 'fs-extra'
