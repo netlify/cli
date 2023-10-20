@@ -269,12 +269,15 @@ export class EdgeFunctionsRegistry {
   }
 
   /**
-   * @param {string} path
+   * @param {string[]} paths
    * @returns {Promise<void>}
    */
-  async #handleFileChange(path) {
+  async #handleFileChange(paths) {
     const matchingFunctions = new Set(
-      [this.#functionPaths.get(path), ...(this.#dependencyPaths.get(path) || [])].filter(Boolean),
+      [
+        ...paths.map((path) => this.#functionPaths.get(path)),
+        ...paths.flatMap((path) => this.#dependencyPaths.get(path)),
+      ].filter(Boolean),
     )
 
     // If the file is not associated with any function, there's no point in
@@ -285,7 +288,7 @@ export class EdgeFunctionsRegistry {
       return
     }
 
-    const reason = this.#debug ? ` because ${chalk.underline(path)} has changed` : ''
+    const reason = this.#debug ? ` because ${chalk.underline(paths.join(','))} has changed` : ''
 
     log(`${NETLIFYDEVLOG} ${chalk.magenta('Reloading')} edge functions${reason}...`)
 
@@ -548,7 +551,7 @@ export class EdgeFunctionsRegistry {
     const watcher = await watchDebounced(directory, {
       ignored,
       onAdd: () => this.#checkForAddedOrDeletedFunctions(),
-      onChange: (path) => this.#handleFileChange(path),
+      onChange: (paths) => this.#handleFileChange(paths),
       onUnlink: () => this.#checkForAddedOrDeletedFunctions(),
     })
 
