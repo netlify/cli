@@ -475,12 +475,13 @@ const bundleEdgeFunctions = async (options, command) => {
  *
  * @param {object} config
  * @param {boolean} config.deployToProduction
+ * @param {boolean} config.isIntegrationDeploy If the user ran netlify integration:deploy instead of just netlify deploy
  * @param {boolean} config.json If the result should be printed as json message
  * @param {boolean} config.runBuildCommand If the build command should be run
  * @param {object} config.results
  * @returns {void}
  */
-const printResults = ({ deployToProduction, json, results, runBuildCommand }) => {
+const printResults = ({ deployToProduction, isIntegrationDeploy, json, results, runBuildCommand }) => {
   const msgData = {
     'Build logs': results.logsUrl,
     'Function logs': results.functionLogsUrl,
@@ -518,7 +519,11 @@ const printResults = ({ deployToProduction, json, results, runBuildCommand }) =>
     if (!deployToProduction) {
       log()
       log('If everything looks good on your draft URL, deploy it to your main site URL with the --prod flag.')
-      log(`${chalk.cyanBright.bold(`netlify deploy${runBuildCommand ? ' --build' : ''} --prod`)}`)
+      log(
+        `${chalk.cyanBright.bold(
+          `netlify ${isIntegrationDeploy ? 'integration:' : ''}deploy${runBuildCommand ? ' --build' : ''} --prod`,
+        )}`,
+      )
       log()
     }
   }
@@ -529,7 +534,7 @@ const printResults = ({ deployToProduction, json, results, runBuildCommand }) =>
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command.mjs').default} command
  */
-const deploy = async (options, command) => {
+export const deploy = async (options, command) => {
   const { workingDir } = command
   const { api, site, siteInfo } = command.netlify
   const alias = options.alias || options.branch
@@ -675,8 +680,11 @@ const deploy = async (options, command) => {
   // @ts-ignore
   await restoreConfig(configMutations, { buildDir: deployFolder, configPath, redirectsPath })
 
+  const isIntegrationDeploy = command.name() === 'integration:deploy'
+
   printResults({
     runBuildCommand: options.build,
+    isIntegrationDeploy,
     json: options.json,
     results,
     deployToProduction,

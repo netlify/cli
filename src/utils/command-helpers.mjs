@@ -163,6 +163,12 @@ export const log = (message = '', ...args) => {
   process.stdout.write(`${format(message, ...args)}\n`)
 }
 
+export const logPadded = (message = '', ...args) => {
+  log('')
+  log(message, ...args)
+  log('')
+}
+
 /**
  * logs a warning message
  * @param {string} message
@@ -228,9 +234,9 @@ const DEBOUNCE_WAIT = 100
  * @param {Object} opts
  * @param {number} [opts.depth]
  * @param {Array<string|RegExp>} [opts.ignored]
- * @param {() => any} [opts.onAdd]
- * @param {() => any} [opts.onChange]
- * @param {() => any} [opts.onUnlink]
+ * @param {(paths: string[]) => any} [opts.onAdd]
+ * @param {(paths: string[]) => any} [opts.onChange]
+ * @param {(paths: string[]) => any} [opts.onUnlink]
  */
 export const watchDebounced = async (
   target,
@@ -241,25 +247,41 @@ export const watchDebounced = async (
 
   await once(watcher, 'ready')
 
-  const debouncedOnChange = debounce(onChange, DEBOUNCE_WAIT)
-  const debouncedOnUnlink = debounce(onUnlink, DEBOUNCE_WAIT)
-  const debouncedOnAdd = debounce(onAdd, DEBOUNCE_WAIT)
+  let onChangeQueue = []
+  let onAddQueue = []
+  let onUnlinkQueue = []
+
+  const debouncedOnChange = debounce(() => {
+    onChange(onChangeQueue)
+    onChangeQueue = []
+  }, DEBOUNCE_WAIT)
+  const debouncedOnAdd = debounce(() => {
+    onAdd(onAddQueue)
+    onAddQueue = []
+  }, DEBOUNCE_WAIT)
+  const debouncedOnUnlink = debounce(() => {
+    onUnlink(onUnlinkQueue)
+    onUnlinkQueue = []
+  }, DEBOUNCE_WAIT)
 
   watcher
     .on('change', (path) => {
       decache(path)
-      debouncedOnChange(path)
+      onChangeQueue.push(path)
+      debouncedOnChange()
     })
     .on('unlink', (path) => {
       decache(path)
-      debouncedOnUnlink(path)
+      onUnlinkQueue.push(path)
+      debouncedOnUnlink()
     })
     .on('add', (path) => {
       decache(path)
-      debouncedOnAdd(path)
+      onAddQueue.push(path)
+      debouncedOnAdd()
     })
 
   return watcher
 }
 
-export const getTerminalLink = (text, url) => terminalLink(text, url, { fallback: () => `${text} ${url}` })
+export const getTerminalLink = (text, url) => terminalLink(text, url, { fallback: () => `${text} (${url})` })
