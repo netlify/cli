@@ -40,9 +40,6 @@ export class EdgeFunctionsRegistry {
   /** @type {RunIsolate} */
   #runIsolate
 
-  /** @type {boolean} */
-  #hasShownNPMWarning = false
-
   /** @type {Error | null} */
   #buildError = null
 
@@ -167,22 +164,13 @@ export class EdgeFunctionsRegistry {
    */
   async #build() {
     try {
-      const {
-        features = {},
-        functionsConfig,
-        graph,
-        success,
-      } = await this.#runIsolate(this.#functions, this.#env, {
-        getFunctionsConfig: true,
-      })
-
-      if (features.npmModules && !this.#hasShownNPMWarning) {
-        log(
-          `${NETLIFYDEVWARN} Support for npm modules in edge functions is an experimental feature. To learn more about the current state of this capability or to report a problem, refer to https://ntl.fyi/edge-functions-npm.`,
-        )
-
-        this.#hasShownNPMWarning = true
-      }
+      const { functionsConfig, graph, npmSpecifiersWithExtraneousFiles, success } = await this.#runIsolate(
+        this.#functions,
+        this.#env,
+        {
+          getFunctionsConfig: true,
+        },
+      )
 
       if (!success) {
         throw new Error('Build error')
@@ -207,6 +195,14 @@ export class EdgeFunctionsRegistry {
       )
 
       this.#processGraph(graph)
+
+      if (npmSpecifiersWithExtraneousFiles.length !== 0) {
+        const modules = npmSpecifiersWithExtraneousFiles.map((name) => chalk.yellow(name)).join(', ')
+
+        log(
+          `${NETLIFYDEVWARN} The following npm modules, which are directly or indirectly imported by an edge function, may not be supported: ${modules}. For more information, visit https://ntl.fyi/edge-functions-npm.`,
+        )
+      }
     } catch (error) {
       this.#buildError = error
 
@@ -273,12 +269,15 @@ export class EdgeFunctionsRegistry {
   }
 
   /**
-   * @param {string} path
+   * @param {string[]} paths
    * @returns {Promise<void>}
    */
-  async #handleFileChange(path) {
+  async #handleFileChange(paths) {
     const matchingFunctions = new Set(
-      [this.#functionPaths.get(path), ...(this.#dependencyPaths.get(path) || [])].filter(Boolean),
+      [
+        ...paths.map((path) => this.#functionPaths.get(path)),
+        ...paths.flatMap((path) => this.#dependencyPaths.get(path)),
+      ].filter(Boolean),
     )
 
     // If the file is not associated with any function, there's no point in
@@ -289,7 +288,7 @@ export class EdgeFunctionsRegistry {
       return
     }
 
-    const reason = this.#debug ? ` because ${chalk.underline(path)} has changed` : ''
+    const reason = this.#debug ? ` because ${chalk.underline(paths.join(','))} has changed` : ''
 
     log(`${NETLIFYDEVLOG} ${chalk.magenta('Reloading')} edge functions${reason}...`)
 
@@ -552,7 +551,7 @@ export class EdgeFunctionsRegistry {
     const watcher = await watchDebounced(directory, {
       ignored,
       onAdd: () => this.#checkForAddedOrDeletedFunctions(),
-      onChange: (path) => this.#handleFileChange(path),
+      onChange: (paths) => this.#handleFileChange(paths),
       onUnlink: () => this.#checkForAddedOrDeletedFunctions(),
     })
 
