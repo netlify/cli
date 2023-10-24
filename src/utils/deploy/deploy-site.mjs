@@ -28,7 +28,7 @@ export const deploySite = async (
     concurrentHash = DEFAULT_CONCURRENT_HASH,
     concurrentUpload = DEFAULT_CONCURRENT_UPLOAD,
     configPath = null,
-    deployId: deployIdOpt = null,
+    deployId,
     deployTimeout = DEFAULT_DEPLOY_TIMEOUT,
     draft = false,
     filter,
@@ -37,8 +37,6 @@ export const deploySite = async (
     hashAlgorithm,
     manifestPath,
     maxRetry = DEFAULT_MAX_RETRY,
-    // API calls this the 'title'
-    message: title,
     siteEnv,
     siteRoot,
     skipFunctionsCache,
@@ -120,9 +118,9 @@ For more information, visit https://ntl.fyi/cli-native-modules.`)
     phase: 'start',
   })
 
-  let deploy
-  let deployParams = cleanDeep({
+  const deployParams = cleanDeep({
     siteId,
+    deploy_id: deployId,
     body: {
       files,
       functions,
@@ -133,19 +131,11 @@ For more information, visit https://ntl.fyi/cli-native-modules.`)
       draft,
     },
   })
-  if (deployIdOpt === null) {
-    if (title) {
-      deployParams = { ...deployParams, title }
-    }
-    deploy = await api.createSiteDeploy(deployParams)
-  } else {
-    deployParams = { ...deployParams, deploy_id: deployIdOpt }
-    deploy = await api.updateSiteDeploy(deployParams)
-  }
+  let deploy = await api.updateSiteDeploy(deployParams)
 
   if (deployParams.body.async) deploy = await waitForDiff(api, deploy.id, siteId, deployTimeout)
 
-  const { id: deployId, required: requiredFiles, required_functions: requiredFns } = deploy
+  const { required: requiredFiles, required_functions: requiredFns } = deploy
 
   statusCb({
     type: 'create-deploy',
