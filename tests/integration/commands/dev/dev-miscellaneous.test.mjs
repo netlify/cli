@@ -459,7 +459,6 @@ describe.concurrent('commands/dev-miscellaneous', () => {
         })
         .withEdgeFunction({
           handler: async () => {
-             
             const body = new ReadableStream({
               async start(controller) {
                 setInterval(() => {
