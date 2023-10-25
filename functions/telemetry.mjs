@@ -1,10 +1,10 @@
-const fetch = require('node-fetch')
+import fetch from 'node-fetch'
 
 const TELEMETRY_SERVICE_URL = 'https://cli-telemetry.netlify.engineering'
 
 // This function is a workaround for our inability to redirect traffic to a ntl function in another site
 // using redirects (see https://github.com/netlify/cli-telemetry-service/issues/14)
-const handler = async function ({ path, httpMethod, headers, body }) {
+export const handler = async function ({ path, httpMethod, headers, body }) {
   const upstreamPath = path.replace(/^\/telemetry\//, '/')
 
   // Filter out some headers that shouldn't be fwded
@@ -30,8 +30,4 @@ const handler = async function ({ path, httpMethod, headers, body }) {
   return {
     statusCode: 200,
   }
-}
-
-module.exports = {
-  handler,
 }
