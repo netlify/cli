@@ -237,7 +237,7 @@ describe.concurrent('frameworks/framework-detection', () => {
 
         handleQuestions(childProcess, [
           {
-            question: 'Multiple possible start commands found',
+            question: 'Multiple possible dev commands found',
             answer: answerWithValue(DOWN),
           },
         ])
@@ -349,7 +349,7 @@ describe.concurrent('frameworks/framework-detection', () => {
           plugin: {
             onPreBuild: async ({ netlifyConfig }) => {
               // eslint-disable-next-line n/global-require, no-undef
-              const { mkdir, writeFile } = require('fs').promises
+              const { mkdir, writeFile } = require('fs/promises')
 
               const generatedFunctionsDir = 'new_functions'
               netlifyConfig.functions.directory = generatedFunctionsDir

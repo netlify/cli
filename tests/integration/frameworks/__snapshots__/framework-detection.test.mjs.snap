@@ -102,6 +102,32 @@ exports[`frameworks/framework-detection > should print specific error when comma
 ◈ Failed running command: oops-i-did-it-again forgot-to-use-a-valid-command. Please verify 'oops-i-did-it-again' exists"
 `;
 
+exports[`frameworks/framework-detection > should prompt when multiple frameworks are detected 1`] = `
+"◈ Netlify Dev ◈
+? Multiple possible dev commands found (Use arrow keys or type to search)
+> [Gatsby] 'npm run develop' 
+  [Create React App] 'npm run start' [2A[37D[73C[2B[2K[1A[2K[1A[2K[G? Multiple possible dev commands found 
+  [Gatsby] 'npm run develop' 
+> [Create React App] 'npm run start' [2A[37D[39C[2B[2K[1A[2K[1A[2K[G? Multiple possible dev commands found Create React App-npm run start[69D[69C
+
+Update your netlify.toml to avoid this selection prompt next time:
+
+[build]
+command = \\"react-scripts build\\"
+publish = \\"build\\"
+
+[dev]
+command = \\"npm run start\\"
+
+◈ Setting up local development server
+◈ Starting Netlify Dev with Create React App
+
+> start
+> react-scripts start
+
+◈ Command failed with exit code *: npm run start. Shutting down Netlify Dev server"
+`;
+
 exports[`frameworks/framework-detection > should run \`command\` when both \`command\` and \`targetPort\` are configured 1`] = `
 "◈ Netlify Dev ◈
 ◈ Setting up local development server
