@@ -1,50 +1,64 @@
-const { join } = require('path')
-const process = require('process')
+import path from 'path'
+import process from 'process'
+import { fileURLToPath } from 'url'
 
-const test = require('ava')
-const { Response, default: fetch } = require('node-fetch')
+import fetch from 'node-fetch'
+import { afterAll, beforeAll, describe, test } from 'vitest'
 
-const callCli = require('./utils/call-cli.cjs')
-const { createLiveTestSite, generateSiteName } = require('./utils/create-live-test-site.cjs')
-const got = require('./utils/got.cjs')
-const { withSiteBuilder } = require('./utils/site-builder.cjs')
+import callCli from '../../utils/call-cli.cjs'
+import { createLiveTestSite, generateSiteName } from '../../utils/create-live-test-site.cjs'
+import { withSiteBuilder } from '../../utils/site-builder.cjs'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const SITE_NAME = generateSiteName('netlify-test-deploy-')
 
+// eslint-disable-next-line no-shadow
 const validateContent = async ({ content, path, siteUrl, t }) => {
+  const response = await fetch(`${siteUrl}${path}`)
+  const body = await response.text()
+  const statusCode = response.status
   try {
-    const { body } = await got(`${siteUrl}${path}`)
-    t.is(body, content)
-  } catch (error) {
-    const {
-      response: { body, statusCode, statusMessage },
-    } = error
     if (content === undefined) {
-      t.is(statusCode, 404)
+      t.expect(response.status).toBe(404)
       return
     }
+    t.expect(body).toEqual(content)
+  } catch (error) {
+    const {
+      response: { statusMessage },
+    } = error
+
     throw new Error(`Failed getting content: ${statusCode} - ${statusMessage} - ${body}`)
   }
 }
 
 const validateDeploy = async ({ content, contentMessage, deploy, siteName, t }) => {
-  t.truthy(deploy.site_name)
-  t.truthy(deploy.deploy_url)
-  t.truthy(deploy.deploy_id)
-  t.truthy(deploy.logs)
-  t.is(deploy.site_name, siteName, contentMessage)
+  t.expect(deploy.site_name).toBeTruthy()
+  t.expect(deploy.deploy_url).toBeTruthy()
+  t.expect(deploy.deploy_id).toBeTruthy()
+  t.expect(deploy.logs).toBeTruthy()
+  t.expect(deploy.site_name, contentMessage).toEqual(siteName)
 
   await validateContent({ siteUrl: deploy.deploy_url, path: '', content, t })
 }
 
-if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
-  test.before(async (t) => {
+const context = {}
+
+describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('commands/deploy', () => {
+  beforeAll(async () => {
     const { account, siteId } = await createLiveTestSite(SITE_NAME)
-    t.context.siteId = siteId
-    t.context.account = account
+    context.siteId = siteId
+    context.account = account
   })
 
-  test.serial('should deploy site when dir flag is passed', async (t) => {
+  afterAll(async () => {
+    const { siteId } = context
+    console.log(`deleting test site "${SITE_NAME}". ${siteId}`)
+    await callCli(['sites:delete', siteId, '--force'])
+  })
+
+  test('should deploy site when dir flag is passed', async (t) => {
     await withSiteBuilder('site-with-public-folder', async (builder) => {
       const content = '<h1>⊂◉‿◉つ</h1>'
       builder.withContentFile({
@@ -56,14 +70,14 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
 
       const deploy = await callCli(['deploy', '--json', '--dir', 'public'], {
         cwd: builder.directory,
-        env: { NETLIFY_SITE_ID: t.context.siteId },
+        env: { NETLIFY_SITE_ID: context.siteId },
       }).then((output) => JSON.parse(output))
 
       await validateDeploy({ deploy, siteName: SITE_NAME, content, t })
     })
   })
 
-  test.serial('should deploy site by name', async (t) => {
+  test('should deploy site by name', async (t) => {
     await withSiteBuilder('site-with-public-folder', async (builder) => {
       const content = '<h1>⊂◉‿◉つ</h1>'
       builder
@@ -87,7 +101,7 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
     })
   })
 
-  test.serial('should deploy site when publish directory set in netlify.toml', async (t) => {
+  test('should deploy site when publish directory set in netlify.toml', async (t) => {
     await withSiteBuilder('site-with-public-folder', async (builder) => {
       const content = '<h1>⊂◉‿◉つ</h1>'
       builder
@@ -105,14 +119,14 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
 
       const deploy = await callCli(['deploy', '--json'], {
         cwd: builder.directory,
-        env: { NETLIFY_SITE_ID: t.context.siteId },
+        env: { NETLIFY_SITE_ID: context.siteId },
       }).then((output) => JSON.parse(output))
 
       await validateDeploy({ deploy, siteName: SITE_NAME, content, t })
     })
   })
 
-  test.serial('should deploy Edge Functions when directory exists', async (t) => {
+  test('should deploy Edge Functions when directory exists', async (t) => {
     await withSiteBuilder('site-with-public-folder', async (builder) => {
       const content = 'Edge Function works NOT'
       builder
@@ -135,7 +149,7 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
 
       const options = {
         cwd: builder.directory,
-        env: { NETLIFY_SITE_ID: t.context.siteId },
+        env: { NETLIFY_SITE_ID: context.siteId },
       }
 
       await callCli(['build'], options)
@@ -151,7 +165,7 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
     })
   })
 
-  test.serial('should deploy Edge Functions with custom cwd when directory exists', async (t) => {
+  test('should deploy Edge Functions with custom cwd when directory exists', async (t) => {
     await withSiteBuilder('site-with-public-folder', async (builder) => {
       const content = 'Edge Function works NOT'
       const pathPrefix = 'app/cool'
@@ -177,7 +191,7 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
 
       const options = {
         cwd: builder.directory,
-        env: { NETLIFY_SITE_ID: t.context.siteId },
+        env: { NETLIFY_SITE_ID: context.siteId },
       }
 
       await callCli(['build', '--cwd', pathPrefix], options)
@@ -195,7 +209,7 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
     })
   })
 
-  test.serial('should run build command before deploy when build flag is passed', async (t) => {
+  test('should run build command before deploy when build flag is passed', async (t) => {
     await withSiteBuilder('site-with-public-folder', async (builder) => {
       const content = '<h1>⊂◉‿◉つ</h1>'
       builder
@@ -213,14 +227,14 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
 
       const output = await callCli(['deploy', '--build'], {
         cwd: builder.directory,
-        env: { NETLIFY_SITE_ID: t.context.siteId },
+        env: { NETLIFY_SITE_ID: context.siteId },
       })
 
-      t.is(output.includes('Netlify Build completed in'), true)
+      t.expect(output.includes('Netlify Build completed in')).toBe(true)
     })
   })
 
-  test.serial('should return valid json when both --build and --json are passed', async (t) => {
+  test('should return valid json when both --build and --json are passed', async () => {
     await withSiteBuilder('site-with-public-folder', async (builder) => {
       const content = '<h1>⊂◉‿◉つ</h1>'
       builder
@@ -238,14 +252,14 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
 
       const output = await callCli(['deploy', '--build', '--json'], {
         cwd: builder.directory,
-        env: { NETLIFY_SITE_ID: t.context.siteId },
+        env: { NETLIFY_SITE_ID: context.siteId },
       })
 
       JSON.parse(output)
     })
   })
 
-  test.serial('should deploy hidden public folder but ignore hidden/__MACOSX files', async (t) => {
+  test('should deploy hidden public folder but ignore hidden/__MACOSX files', async (t) => {
     await withSiteBuilder('site-with-a-dedicated-publish-folder', async (builder) => {
       builder
         .withContentFiles([
@@ -276,7 +290,7 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
 
       const deploy = await callCli(['deploy', '--json'], {
         cwd: builder.directory,
-        env: { NETLIFY_SITE_ID: t.context.siteId },
+        env: { NETLIFY_SITE_ID: context.siteId },
       }).then((output) => JSON.parse(output))
 
       await validateDeploy({ deploy, siteName: SITE_NAME, content: 'index', t })
@@ -301,7 +315,7 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
     })
   })
 
-  test.serial('should filter node_modules from root directory', async (t) => {
+  test('should filter node_modules from root directory', async (t) => {
     await withSiteBuilder('site-with-a-project-directory', async (builder) => {
       builder
         .withContentFiles([
@@ -324,7 +338,7 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
 
       const deploy = await callCli(['deploy', '--json'], {
         cwd: builder.directory,
-        env: { NETLIFY_SITE_ID: t.context.siteId },
+        env: { NETLIFY_SITE_ID: context.siteId },
       }).then((output) => JSON.parse(output))
 
       await validateDeploy({ deploy, siteName: SITE_NAME, content: 'index', t })
@@ -337,7 +351,7 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
     })
   })
 
-  test.serial('should not filter node_modules from publish directory', async (t) => {
+  test('should not filter node_modules from publish directory', async (t) => {
     await withSiteBuilder('site-with-a-project-directory', async (builder) => {
       builder
         .withContentFiles([
@@ -360,7 +374,7 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
 
       const deploy = await callCli(['deploy', '--json'], {
         cwd: builder.directory,
-        env: { NETLIFY_SITE_ID: t.context.siteId },
+        env: { NETLIFY_SITE_ID: context.siteId },
       }).then((output) => JSON.parse(output))
 
       await validateDeploy({ deploy, siteName: SITE_NAME, content: 'index', t })
@@ -373,22 +387,22 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
     })
   })
 
-  test.serial('should exit with error when deploying an empty directory', async (t) => {
+  test('should exit with error when deploying an empty directory', async (t) => {
     await withSiteBuilder('site-with-an-empty-directory', async (builder) => {
       await builder.buildAsync()
 
       try {
         await callCli(['deploy', '--dir', '.'], {
           cwd: builder.directory,
-          env: { NETLIFY_SITE_ID: t.context.siteId },
+          env: { NETLIFY_SITE_ID: context.siteId },
         })
       } catch (error) {
-        t.is(error.stderr.includes('Error: No files or functions to deploy'), true)
+        t.expect(error.stderr.includes('Error: No files or functions to deploy')).toBe(true)
       }
     })
   })
 
-  test.serial('should refresh configuration when --build is passed', async (t) => {
+  test('should refresh configuration when --build is passed', async (t) => {
     await withSiteBuilder('site-with-public-folder', async (builder) => {
       await builder
         .withContentFile({
@@ -406,8 +420,8 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
           name: 'mutator',
           plugin: {
             onPreBuild: async ({ netlifyConfig }) => {
-              // eslint-disable-next-line n/global-require
-              const { mkdir, writeFile } = require('fs').promises
+              // eslint-disable-next-line no-undef, n/global-require
+              const { mkdir, writeFile } = require('fs/promises')
 
               const generatedFunctionsDir = 'new_functions'
               netlifyConfig.functions.directory = generatedFunctionsDir
@@ -426,18 +440,18 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
         ['deploy', '--build', '--json'],
         {
           cwd: builder.directory,
-          env: { NETLIFY_SITE_ID: t.context.siteId },
+          env: { NETLIFY_SITE_ID: context.siteId },
         },
         true,
       )
 
-      const { body, statusCode } = await got(`${deployUrl}/.netlify/functions/hello`)
-      t.is(body, 'Hello')
-      t.is(statusCode, 200)
+      const response = await fetch(`${deployUrl}/.netlify/functions/hello`)
+      t.expect(await response.text()).toEqual('Hello')
+      t.expect(response.status).toBe(200)
     })
   })
 
-  test.serial('should deploy functions from internal functions directory', async (t) => {
+  test('should deploy functions from internal functions directory', async (t) => {
     await withSiteBuilder('site-with-internal-functions', async (builder) => {
       await builder
         .withNetlifyToml({
@@ -488,57 +502,61 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
         ['deploy', '--build', '--json'],
         {
           cwd: builder.directory,
-          env: { NETLIFY_SITE_ID: t.context.siteId },
+          env: { NETLIFY_SITE_ID: context.siteId },
         },
         true,
       )
 
-      t.is(await got(`${deployUrl}/.netlify/functions/func-1`).text(), 'User 1')
-      t.is(await got(`${deployUrl}/.netlify/functions/func-2`).text(), 'User 2')
-      t.is(await got(`${deployUrl}/.netlify/functions/func-3`).text(), 'Internal 3')
+      const [response1, response2, response3, response4, response5] = await Promise.all([
+        fetch(`${deployUrl}/.netlify/functions/func-1`).then((res) => res.text()),
+        fetch(`${deployUrl}/.netlify/functions/func-2`).then((res) => res.text()),
+        fetch(`${deployUrl}/.netlify/functions/func-3`).then((res) => res.text()),
+        fetch(`${deployUrl}/.netlify/functions/func-4`),
+        fetch(`${deployUrl}/internal-v2-func`).then((res) => res.text()),
+      ])
 
-      const func4Resp = await fetch(`${deployUrl}/.netlify/functions/func-4`)
-      t.is(func4Resp.status, 404)
-      t.is(await got(`${deployUrl}/internal-v2-func`).text(), 'Internal V2 API')
+      t.expect(response1).toEqual('User 1')
+      t.expect(response2).toEqual('User 2')
+      t.expect(response3).toEqual('Internal 3')
+      t.expect(response4.status).toBe(404)
+      t.expect(response5, 'Internal V2 API')
     })
   })
 
-  test.serial(
-    'should deploy functions from internal functions directory when setting `base` to a sub-directory',
-    async (t) => {
-      await withSiteBuilder('site-with-internal-functions-sub-directory', async (builder) => {
-        await builder
-          .withNetlifyToml({
-            config: {
-              build: { base: 'sub-directory' },
-              functions: { directory: 'functions' },
-            },
-          })
-          .withFunction({
-            path: 'func-1.js',
-            pathPrefix: 'sub-directory/.netlify/functions-internal',
-            handler: async () => ({
-              statusCode: 200,
-              body: 'Internal',
-            }),
-          })
-          .buildAsync()
-
-        const { deploy_url: deployUrl } = await callCli(
-          ['deploy', '--build', '--json'],
-          {
-            cwd: builder.directory,
-            env: { NETLIFY_SITE_ID: t.context.siteId },
+  test('should deploy functions from internal functions directory when setting `base` to a sub-directory', async (t) => {
+    await withSiteBuilder('site-with-internal-functions-sub-directory', async (builder) => {
+      await builder
+        .withNetlifyToml({
+          config: {
+            build: { base: 'sub-directory' },
+            functions: { directory: 'functions' },
           },
-          true,
-        )
+        })
+        .withFunction({
+          path: 'func-1.js',
+          pathPrefix: 'sub-directory/.netlify/functions-internal',
+          handler: async () => ({
+            statusCode: 200,
+            body: 'Internal',
+          }),
+        })
+        .buildAsync()
 
-        t.is(await got(`${deployUrl}/.netlify/functions/func-1`).text(), 'Internal')
-      })
-    },
-  )
+      const { deploy_url: deployUrl } = await callCli(
+        ['deploy', '--build', '--json'],
+        {
+          cwd: builder.directory,
+          env: { NETLIFY_SITE_ID: context.siteId },
+        },
+        true,
+      )
+      const response = await fetch(`${deployUrl}/.netlify/functions/func-1`).then((res) => res.text())
 
-  test.serial('should handle redirects mutated by plugins', async (t) => {
+      t.expect(response).toEqual('Internal')
+    })
+  })
+
+  test('should handle redirects mutated by plugins', async (t) => {
     await withSiteBuilder('site-with-public-folder', async (builder) => {
       const content = '<h1>⊂◉‿◉つ</h1>'
       await builder
@@ -586,7 +604,7 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
         ['deploy', '--json', '--build'],
         {
           cwd: builder.directory,
-          env: { NETLIFY_SITE_ID: t.context.siteId },
+          env: { NETLIFY_SITE_ID: context.siteId },
         },
         true,
       )
@@ -595,27 +613,33 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
         ['api', 'getDeploy', '--data', JSON.stringify({ deploy_id: deploy.deploy_id })],
         {
           cwd: builder.directory,
-          env: { NETLIFY_SITE_ID: t.context.siteId },
+          env: { NETLIFY_SITE_ID: context.siteId },
         },
         true,
       )
 
       const redirectsMessage = fullDeploy.summary.messages.find(({ title }) => title === '3 redirect rules processed')
-      t.is(redirectsMessage.description, 'All redirect rules deployed without errors.')
+      t.expect(redirectsMessage.description).toEqual('All redirect rules deployed without errors.')
 
       await validateDeploy({ deploy, siteName: SITE_NAME, content, t })
 
+      const [pluginRedirectResponse, _redirectsResponse, netlifyTomResponse] = await Promise.all([
+        fetch(`${deploy.deploy_url}/other-api/hello`).then((res) => res.text()),
+        fetch(`${deploy.deploy_url}/api/hello`).then((res) => res.text()),
+        fetch(`${deploy.deploy_url}/not-existing`).then((res) => res.text()),
+      ])
+
       // plugin redirect
-      t.is(await got(`${deploy.deploy_url}/other-api/hello`).text(), 'hello')
+      t.expect(pluginRedirectResponse).toEqual('hello')
       // _redirects redirect
-      t.is(await got(`${deploy.deploy_url}/api/hello`).text(), 'hello')
+      t.expect(_redirectsResponse).toEqual('hello')
       // netlify.toml redirect
-      t.is(await got(`${deploy.deploy_url}/not-existing`).text(), content)
+      t.expect(netlifyTomResponse).toEqual(content)
     })
   })
 
-  test.serial('should deploy pre-bundled functions when a valid manifest file is found', async (t) => {
-    const bundledFunctionPath = join(__dirname, 'assets', 'bundled-function-1.zip')
+  test('should deploy pre-bundled functions when a valid manifest file is found', async (t) => {
+    const bundledFunctionPath = path.join(__dirname, '../../assets', 'bundled-function-1.zip')
     const bundledFunctionData = {
       mainFile: '/some/path/bundled-function-1.js',
       name: 'bundled-function-1',
@@ -640,7 +664,7 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
             functions: [
               {
                 ...bundledFunctionData,
-                path: join(builder.directory, '.netlify', 'functions', 'bundled-function-1.zip'),
+                path: path.join(builder.directory, '.netlify', 'functions', 'bundled-function-1.zip'),
               },
             ],
             timestamp: Date.now(),
@@ -664,17 +688,17 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
         ['deploy', '--json'],
         {
           cwd: builder.directory,
-          env: { NETLIFY_SITE_ID: t.context.siteId },
+          env: { NETLIFY_SITE_ID: context.siteId },
         },
         true,
       )
-
-      t.is(await got(`${deployUrl}/.netlify/functions/bundled-function-1`).text(), 'Pre-bundled')
+      const response = await fetch(`${deployUrl}/.netlify/functions/bundled-function-1`).then((res) => res.text())
+      t.expect(response).toEqual('Pre-bundled')
     })
   })
 
-  test.serial('should not deploy pre-bundled functions when the --skip-functions-cache flag is used', async (t) => {
-    const bundledFunctionPath = join(__dirname, 'assets', 'bundled-function-1.zip')
+  test('should not deploy pre-bundled functions when the --skip-functions-cache flag is used', async (t) => {
+    const bundledFunctionPath = path.join(__dirname, '../../assets', 'bundled-function-1.zip')
     const bundledFunctionData = {
       mainFile: '/some/path/bundled-function-1.js',
       name: 'bundled-function-1',
@@ -699,7 +723,7 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
             functions: [
               {
                 ...bundledFunctionData,
-                path: join(builder.directory, '.netlify', 'functions', 'bundled-function-1.zip'),
+                path: path.join(builder.directory, '.netlify', 'functions', 'bundled-function-1.zip'),
               },
             ],
             timestamp: Date.now(),
@@ -723,85 +747,74 @@ if (process.env.NETLIFY_TEST_DISABLE_LIVE !== 'true') {
         ['deploy', '--json', '--skip-functions-cache'],
         {
           cwd: builder.directory,
-          env: { NETLIFY_SITE_ID: t.context.siteId },
+          env: { NETLIFY_SITE_ID: context.siteId },
         },
         true,
       )
 
-      t.is(await got(`${deployUrl}/.netlify/functions/bundled-function-1`).text(), 'Bundled at deployment')
+      const response = await fetch(`${deployUrl}/.netlify/functions/bundled-function-1`).then((res) => res.text())
+      t.expect(response).toEqual('Bundled at deployment')
     })
   })
 
-  test.serial(
-    'should not deploy pre-bundled functions when the manifest file is older than the configured TTL',
-    async (t) => {
-      const age = 18e4
-      const bundledFunctionPath = join(__dirname, 'assets', 'bundled-function-1.zip')
-      const bundledFunctionData = {
-        mainFile: '/some/path/bundled-function-1.js',
-        name: 'bundled-function-1',
-        runtime: 'js',
-      }
+  test('should not deploy pre-bundled functions when the manifest file is older than the configured TTL', async (t) => {
+    const age = 18e4
+    const bundledFunctionPath = path.join(__dirname, '../../assets', 'bundled-function-1.zip')
+    const bundledFunctionData = {
+      mainFile: '/some/path/bundled-function-1.js',
+      name: 'bundled-function-1',
+      runtime: 'js',
+    }
 
-      await withSiteBuilder('site-with-functions-manifest-3', async (builder) => {
-        await builder
-          .withNetlifyToml({
-            config: {
-              build: { publish: 'out' },
-              functions: { directory: 'functions' },
-            },
-          })
-          .withCopiedFile({
-            src: bundledFunctionPath,
-            path: '.netlify/functions/bundled-function-1.zip',
-          })
-          .withContentFile({
-            path: '.netlify/functions/manifest.json',
-            content: JSON.stringify({
-              functions: [
-                {
-                  ...bundledFunctionData,
-                  path: join(builder.directory, '.netlify', 'functions', 'bundled-function-1.zip'),
-                },
-              ],
-              timestamp: Date.now() - age,
-              version: 1,
-            }),
-          })
-          .withContentFile({
-            path: 'out/index.html',
-            content: 'Hello world',
-          })
-          .withFunction({
-            path: 'bundled-function-1.js',
-            handler: async () => ({
-              statusCode: 200,
-              body: 'Bundled at deployment',
-            }),
-          })
-          .buildAsync()
-
-        const { deploy_url: deployUrl } = await callCli(
-          ['deploy', '--json'],
-          {
-            cwd: builder.directory,
-            env: { NETLIFY_SITE_ID: t.context.siteId },
+    await withSiteBuilder('site-with-functions-manifest-3', async (builder) => {
+      await builder
+        .withNetlifyToml({
+          config: {
+            build: { publish: 'out' },
+            functions: { directory: 'functions' },
           },
-          true,
-        )
+        })
+        .withCopiedFile({
+          src: bundledFunctionPath,
+          path: '.netlify/functions/bundled-function-1.zip',
+        })
+        .withContentFile({
+          path: '.netlify/functions/manifest.json',
+          content: JSON.stringify({
+            functions: [
+              {
+                ...bundledFunctionData,
+                path: path.join(builder.directory, '.netlify', 'functions', 'bundled-function-1.zip'),
+              },
+            ],
+            timestamp: Date.now() - age,
+            version: 1,
+          }),
+        })
+        .withContentFile({
+          path: 'out/index.html',
+          content: 'Hello world',
+        })
+        .withFunction({
+          path: 'bundled-function-1.js',
+          handler: async () => ({
+            statusCode: 200,
+            body: 'Bundled at deployment',
+          }),
+        })
+        .buildAsync()
 
-        t.is(await got(`${deployUrl}/.netlify/functions/bundled-function-1`).text(), 'Bundled at deployment')
-      })
-    },
-  )
+      const { deploy_url: deployUrl } = await callCli(
+        ['deploy', '--json'],
+        {
+          cwd: builder.directory,
+          env: { NETLIFY_SITE_ID: context.siteId },
+        },
+        true,
+      )
 
-  test.after('cleanup', async (t) => {
-    const { siteId } = t.context
-    console.log(`deleting test site "${SITE_NAME}". ${siteId}`)
-    await callCli(['sites:delete', siteId, '--force'])
+      const response = await fetch(`${deployUrl}/.netlify/functions/bundled-function-1`).then((res) => res.text())
+      t.expect(response).toEqual('Bundled at deployment')
+    })
   })
-}
-
-test('always pass, used for forked PRs since ava fails when no tests are present', (t) => {
-  t.pass()
 })
