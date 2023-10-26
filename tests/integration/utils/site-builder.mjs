@@ -7,7 +7,7 @@ import process from 'process'
 import execa from 'execa'
 import serializeJS from 'serialize-javascript'
 import tempDirectory from 'temp-dir'
-import { toToml } from 'tomlify-j0.4'
+import tomlify from 'tomlify-j0.4'
 import { v4 as uuidv4 } from 'uuid'
 
 const ensureDir = (file) => mkdir(file, { recursive: true })
@@ -28,7 +28,7 @@ export class SiteBuilder {
 
   withNetlifyToml({ config, pathPrefix = '' }) {
     const dest = path.join(this.directory, pathPrefix, 'netlify.toml')
-    const content = toToml(config, {
+    const content = tomlify.toToml(config, {
       replace: (_, val) => {
         // Strip off `.0` from integers that tomlify normally generates
 
