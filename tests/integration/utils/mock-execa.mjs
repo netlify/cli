@@ -1,5 +1,5 @@
-import { rm, writeFile } from 'fs/promises';
-import { pathToFileURL } from 'url';
+import { rm, writeFile } from 'fs/promises'
+import { pathToFileURL } from 'url'
 
 // Saves to disk a JavaScript file with the contents provided and returns
 // an environment variable that replaces the `execa` module implementation.
