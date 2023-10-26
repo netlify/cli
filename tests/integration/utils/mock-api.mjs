@@ -1,6 +1,5 @@
-const { isDeepStrictEqual, promisify } = require('util')
-
-const express = require('express')
+import { isDeepStrictEqual, promisify } from 'util';
+import express from 'express';
 
 const addRequest = (requests, request) => {
   requests.push({
@@ -16,7 +15,7 @@ const addRequest = (requests, request) => {
  * @param {*} param0
  * @returns
  */
-const startMockApi = ({ routes, silent }) => {
+export const startMockApi = ({ routes, silent }) => {
   const requests = []
   const app = express()
   app.use(express.urlencoded({ extended: true }))
@@ -68,7 +67,7 @@ const startMockApi = ({ routes, silent }) => {
   return returnPromise
 }
 
-const withMockApi = async (routes, testHandler, silent = false) => {
+export const withMockApi = async (routes, testHandler, silent = false) => {
   let mockApi
   try {
     mockApi = await startMockApi({ routes, silent })
@@ -78,7 +77,7 @@ const withMockApi = async (routes, testHandler, silent = false) => {
   }
 }
 
-const getEnvironmentVariables = ({ apiUrl }) => ({
+export const getEnvironmentVariables = ({ apiUrl }) => ({
   NETLIFY_AUTH_TOKEN: 'fake-token',
   NETLIFY_SITE_ID: 'site_id',
   NETLIFY_API_URL: apiUrl,
@@ -89,10 +88,8 @@ const getEnvironmentVariables = ({ apiUrl }) => ({
  * @param {*} param0
  * @returns {import('execa').Options<string>}
  */
-const getCLIOptions = ({ apiUrl, builder, env = {}, extendEnv = true }) => ({
+export const getCLIOptions = ({ apiUrl, builder, env = {}, extendEnv = true }) => ({
   cwd: builder?.directory,
   env: { ...getEnvironmentVariables({ apiUrl }), ...env },
   extendEnv,
 })
-
-module.exports = { withMockApi, startMockApi, getEnvironmentVariables, getCLIOptions }

@@ -4,7 +4,7 @@ import execa from 'execa'
 import { describe, test } from 'vitest'
 
 import cliPath from '../../utils/cli-path.mjs'
-import { withMockApi } from '../../utils/mock-api.cjs'
+import { withMockApi } from '../../utils/mock-api.mjs'
 import { withSiteBuilder } from '../../utils/site-builder.cjs'
 
 const defaultEnvs = {

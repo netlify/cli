@@ -9,7 +9,7 @@ import { describe, test } from 'vitest'
 
 import { withDevServer } from '../../utils/dev-server.cjs'
 import got from '../../utils/got.mjs'
-import { withMockApi } from '../../utils/mock-api.cjs'
+import { withMockApi } from '../../utils/mock-api.mjs'
 import { pause } from '../../utils/pause.cjs'
 import { withSiteBuilder } from '../../utils/site-builder.cjs'
 

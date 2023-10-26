@@ -9,7 +9,7 @@ import { fileExistsAsync } from '../../../../src/lib/fs.mjs'
 import cliPath from '../../utils/cli-path.mjs'
 import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture'
 import { CONFIRM, DOWN, answerWithValue, handleQuestions } from '../../utils/handle-questions.cjs'
-import { getCLIOptions, withMockApi } from '../../utils/mock-api.cjs'
+import { getCLIOptions, withMockApi } from '../../utils/mock-api.mjs'
 import { withSiteBuilder } from '../../utils/site-builder.cjs'
 
 describe.concurrent('functions:create command', () => {
