@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest'
 
 import { parseRedirects } from '../../../src/utils/redirects.mjs'
-import { withSiteBuilder } from '../../integration/utils/site-builder.cjs'
+import { withSiteBuilder } from '../../integration/utils/site-builder.mjs'
 
 const defaultConfig = {
   redirects: [

@@ -1,7 +1,7 @@
 import { test } from 'vitest'
 
-import callCli from '../../utils/call-cli.cjs'
-import { normalize } from '../../utils/snapshots.cjs'
+import callCli from '../../utils/call-cli.mjs'
+import { normalize } from '../../utils/snapshots.mjs'
 
 test('suggests closest matching command on typo', async (t) => {
   // failures are expected since we effectively quit out of the prompts

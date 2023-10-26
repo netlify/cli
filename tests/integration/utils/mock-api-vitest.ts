@@ -40,7 +40,7 @@ export interface MockApiTestContext {
   requests: any[]
 }
 
-// Replace mock-api.cjs with this once everything migrated
+// Replace mock-api.mjs with this once everything migrated
 
 const addRequest = (requests, request) => {
   requests.push({

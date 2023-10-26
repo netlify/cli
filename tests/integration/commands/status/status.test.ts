@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest'
 
 import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
-import { getCLIOptions, withMockApi } from '../../utils/mock-api.cjs'
+import { getCLIOptions, withMockApi } from '../../utils/mock-api.mjs'
 
 const siteInfo = {
   account_slug: 'test-account',
