@@ -5,7 +5,7 @@ import { describe, test } from 'vitest'
 import waitPort from 'wait-port'
 
 import cliPath from '../../utils/cli-path.mjs'
-import { killProcess } from '../../utils/process.cjs'
+import { killProcess } from '../../utils/process.mjs'
 import { withSiteBuilder } from '../../utils/site-builder.cjs'
 
 const DEFAULT_PORT = 9999

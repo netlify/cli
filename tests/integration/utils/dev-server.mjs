@@ -7,7 +7,7 @@ import pTimeout from 'p-timeout'
 
 import cliPath from './cli-path.mjs'
 import { handleQuestions } from './handle-questions.mjs'
-import { killProcess } from './process.cjs'
+import { killProcess } from './process.mjs'
 
 export const getExecaOptions = ({ cwd, env }) => {
   // Unused vars here are in order to omit LANg and LC_ALL from envs
