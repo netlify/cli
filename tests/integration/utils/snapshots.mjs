@@ -36,3 +36,5 @@ export const normalize = (inputString, { duration, filePath } = {}) => {
     .reduce((acc, { pattern, value }) => acc.replace(pattern, value), inputString)
     .trim()
 }
+
+export default { normalize }
