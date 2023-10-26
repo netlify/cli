@@ -5,7 +5,7 @@ import execa from 'execa'
 import getPort from 'get-port'
 import pTimeout from 'p-timeout'
 
-import cliPath from './cli-path.mjs'
+import { cliPath } from './cli-path.mjs'
 import { handleQuestions } from './handle-questions.mjs'
 import { killProcess } from './process.mjs'
 
