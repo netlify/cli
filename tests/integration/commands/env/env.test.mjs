@@ -4,7 +4,7 @@ import execa from 'execa'
 import { describe, test } from 'vitest'
 
 import callCli from '../../utils/call-cli.mjs'
-import cliPath from '../../utils/cli-path.mjs'
+import { cliPath } from '../../utils/cli-path.mjs'
 import { CONFIRM, answerWithValue, handleQuestions } from '../../utils/handle-questions.mjs'
 import { getCLIOptions, withMockApi } from '../../utils/mock-api.mjs'
 import { withSiteBuilder } from '../../utils/site-builder.mjs'
