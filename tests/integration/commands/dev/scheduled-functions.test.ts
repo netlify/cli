@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest'
 
 import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
 import got from '../../utils/got.mjs'
-import { pause } from '../../utils/pause.cjs'
+import { pause } from '../../utils/pause.mjs'
 
 describe('scheduled functions', () => {
   setupFixtureTests('dev-server-with-functions', { devServer: true }, () => {

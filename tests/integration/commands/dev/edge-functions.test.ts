@@ -4,7 +4,7 @@ import { describe, expect, expectTypeOf, test } from 'vitest'
 
 import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
 import got from '../../utils/got.mjs'
-import { pause } from '../../utils/pause.cjs'
+import { pause } from '../../utils/pause.mjs'
 
 // Skipping tests on Windows because of an issue with the Deno CLI throwing IO
 // errors when running in the CI.
