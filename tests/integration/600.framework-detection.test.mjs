@@ -334,8 +334,7 @@ test('should run and serve a production build when using the `serve` command', a
         name: 'frameworker',
         plugin: {
           onPreBuild: async ({ netlifyConfig }) => {
-            // eslint-disable-next-line n/global-require
-            const { mkdir, writeFile } = require('fs').promises
+            const { mkdir, writeFile } = await import('fs/promises')
 
             const generatedFunctionsDir = 'new_functions'
             netlifyConfig.functions.directory = generatedFunctionsDir

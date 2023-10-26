@@ -1,4 +1,5 @@
 import process from 'process'
+
 import semver from 'semver'
 
 const version = process.version.slice(1)
