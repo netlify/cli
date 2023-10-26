@@ -4,7 +4,7 @@ import { fileURLToPath } from 'url'
 import fetch from 'node-fetch'
 import { describe, test } from 'vitest'
 
-import { tryAndLogOutput, withDevServer } from '../../utils/dev-server.cjs'
+import { tryAndLogOutput, withDevServer } from '../../utils/dev-server.mjs'
 import got from '../../utils/got.mjs'
 import { pause } from '../../utils/pause.cjs'
 import { withSiteBuilder } from '../../utils/site-builder.cjs'

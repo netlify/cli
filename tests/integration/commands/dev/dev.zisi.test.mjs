@@ -9,7 +9,7 @@ import nodeFetch from 'node-fetch'
 import { describe, test } from 'vitest'
 
 import { curl } from '../../utils/curl.mjs'
-import { withDevServer } from '../../utils/dev-server.cjs'
+import { withDevServer } from '../../utils/dev-server.mjs'
 import { withMockApi } from '../../utils/mock-api.mjs'
 import { withSiteBuilder } from '../../utils/site-builder.cjs'
 

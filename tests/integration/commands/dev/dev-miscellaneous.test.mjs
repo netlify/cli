@@ -7,7 +7,7 @@ import jwt from 'jsonwebtoken'
 import fetch from 'node-fetch'
 import { describe, test } from 'vitest'
 
-import { withDevServer } from '../../utils/dev-server.cjs'
+import { withDevServer } from '../../utils/dev-server.mjs'
 import got from '../../utils/got.mjs'
 import { withMockApi } from '../../utils/mock-api.mjs'
 import { pause } from '../../utils/pause.cjs'

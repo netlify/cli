@@ -4,7 +4,7 @@ import path from 'path'
 import fetch from 'node-fetch'
 import { describe, test } from 'vitest'
 
-import { withDevServer } from '../../utils/dev-server.cjs'
+import { withDevServer } from '../../utils/dev-server.mjs'
 import { withSiteBuilder } from '../../utils/site-builder.cjs'
 
 describe.concurrent('commands/responses.dev', () => {

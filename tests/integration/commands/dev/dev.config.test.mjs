@@ -6,7 +6,7 @@ import fetch from 'node-fetch'
 import { gte } from 'semver'
 import { describe, test } from 'vitest'
 
-import { withDevServer } from '../../utils/dev-server.cjs'
+import { withDevServer } from '../../utils/dev-server.mjs'
 import { withSiteBuilder } from '../../utils/site-builder.cjs'
 
 describe.concurrent('commands/dev/config', () => {

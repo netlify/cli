@@ -4,7 +4,7 @@ import { isCI } from 'ci-info'
 import execa from 'execa'
 
 import cliPath from './utils/cli-path.mjs'
-import { getExecaOptions, withDevServer } from './utils/dev-server.cjs'
+import { getExecaOptions, withDevServer } from './utils/dev-server.mjs'
 import got from './utils/got.mjs'
 import { DOWN, answerWithValue, handleQuestions } from './utils/handle-questions.cjs'
 import { withSiteBuilder } from './utils/site-builder.cjs'
