@@ -4,7 +4,7 @@ import process from 'process'
 import { describe, expect, test } from 'vitest'
 
 import { isFileAsync } from '../../../../src/lib/fs.mjs'
-import callCli from '../../utils/call-cli.mjs'
+import { callCli } from '../../utils/call-cli.mjs'
 import { getCLIOptions, withMockApi } from '../../utils/mock-api.mjs'
 import { withSiteBuilder } from '../../utils/site-builder.mjs'
 

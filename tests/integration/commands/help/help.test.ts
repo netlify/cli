@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 
-import callCli from '../../utils/call-cli.mjs'
+import { callCli } from '../../utils/call-cli.mjs'
 import { normalize } from '../../utils/snapshots.mjs'
 
 describe('help command', () => {

@@ -1,6 +1,6 @@
 import { test, describe } from 'vitest'
 
-import callCli from '../../utils/call-cli.mjs'
+import { callCli } from '../../utils/call-cli.mjs'
 import { getCLIOptions, withMockApi } from '../../utils/mock-api.mjs'
 import { withSiteBuilder } from '../../utils/site-builder.mjs'
 import { normalize } from '../../utils/snapshots.mjs'

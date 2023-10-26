@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url'
 import fetch from 'node-fetch'
 import { afterAll, beforeAll, describe, test } from 'vitest'
 
-import callCli from '../../utils/call-cli.mjs'
+import { callCli } from '../../utils/call-cli.mjs'
 import { createLiveTestSite, generateSiteName } from '../../utils/create-live-test-site.mjs'
 import { withSiteBuilder } from '../../utils/site-builder.mjs'
 

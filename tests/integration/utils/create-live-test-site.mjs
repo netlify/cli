@@ -1,6 +1,6 @@
 import { NETLIFY_TEST_ACCOUNT_SLUG } from 'process'
 
-import callCli from './call-cli.mjs'
+import { callCli } from './call-cli.mjs'
 
 export const generateSiteName = function (prefix) {
   const randomString = Math.random()

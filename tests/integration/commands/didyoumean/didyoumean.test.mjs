@@ -1,6 +1,6 @@
 import { test } from 'vitest'
 
-import callCli from '../../utils/call-cli.mjs'
+import { callCli } from '../../utils/call-cli.mjs'
 import { normalize } from '../../utils/snapshots.mjs'
 
 test('suggests closest matching command on typo', async (t) => {
