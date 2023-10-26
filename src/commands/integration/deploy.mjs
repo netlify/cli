@@ -1,8 +1,8 @@
+import fs from 'fs'
 import { resolve } from 'path'
 import { exit, env } from 'process'
 
-// eslint-disable-next-line n/no-unpublished-import
-import fs from 'fs-extra'
+
 import inquirer from 'inquirer'
 import yaml from 'js-yaml'
 import fetch from 'node-fetch'
@@ -174,7 +174,7 @@ export async function registerIntegration(workingDir, siteId, accountId, localIn
   })
 
   const filePath = resolve(workingDir, 'integration.yaml')
-  await fs.writeFile(filePath, updatedIntegrationConfig)
+  await fs.promises.writeFile(filePath, updatedIntegrationConfig)
 
   log(chalk.yellow('Your integration.yaml file has been updated. Please commit and push these changes.'))
 }
@@ -302,7 +302,7 @@ export async function updateIntegration(
     })
 
     const filePath = resolve(workingDir, 'integration.yaml')
-    await fs.writeFile(filePath, updatedIntegrationConfig)
+    await fs.promises.writeFile(filePath, updatedIntegrationConfig)
 
     log(chalk.yellow('Changes to the integration.yaml file are complete. Please commit and push these changes.'))
   }
