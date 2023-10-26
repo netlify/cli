@@ -7,7 +7,7 @@ import { gte } from 'semver'
 import { describe, test } from 'vitest'
 
 import { withDevServer } from '../../utils/dev-server.mjs'
-import { withSiteBuilder } from '../../utils/site-builder.cjs'
+import { withSiteBuilder } from '../../utils/site-builder.mjs'
 
 describe.concurrent('commands/dev/config', () => {
   test('should use [build.environment] and not [context.production.environment]', async (t) => {

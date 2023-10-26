@@ -9,7 +9,7 @@ import { describe, test } from 'vitest'
 import { withDevServer } from '../../utils/dev-server.mjs'
 import { startExternalServer } from '../../utils/external-server.mjs'
 import { withMockApi } from '../../utils/mock-api.mjs'
-import { withSiteBuilder } from '../../utils/site-builder.cjs'
+import { withSiteBuilder } from '../../utils/site-builder.mjs'
 
 describe.concurrent('command/dev', () => {
   test('should return 404.html if exists for non existing routes', async (t) => {

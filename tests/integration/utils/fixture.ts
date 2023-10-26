@@ -9,7 +9,7 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe } from 'vitest'
 import callCli from './call-cli.cjs'
 import { startDevServer } from './dev-server.cjs'
 import { MockApi, Route, getCLIOptions, startMockApi } from './mock-api-vitest.js'
-import { SiteBuilder } from './site-builder.cjs'
+import { SiteBuilder } from './site-builder.mjs'
 
 const FIXTURES_DIRECTORY = fileURLToPath(new URL('../__fixtures__/', import.meta.url))
 const HOOK_TIMEOUT = 30_000

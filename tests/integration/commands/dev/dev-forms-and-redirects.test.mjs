@@ -8,7 +8,7 @@ import fetch from 'node-fetch'
 import { describe, test } from 'vitest'
 
 import { withDevServer } from '../../utils/dev-server.mjs'
-import { withSiteBuilder } from '../../utils/site-builder.cjs'
+import { withSiteBuilder } from '../../utils/site-builder.mjs'
 
 describe.concurrent('commands/dev-forms-and-redirects', () => {
   test('should return 404 when redirecting to a non existing function', async (t) => {

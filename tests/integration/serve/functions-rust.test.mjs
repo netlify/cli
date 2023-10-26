@@ -4,7 +4,7 @@ import { test } from 'vitest'
 import { tryAndLogOutput, withDevServer } from '../utils/dev-server.mjs'
 import { createMock as createExecaMock } from '../utils/mock-execa.mjs'
 import { pause } from '../utils/pause.cjs'
-import { withSiteBuilder } from '../utils/site-builder.cjs'
+import { withSiteBuilder } from '../utils/site-builder.mjs'
 
 const WAIT_WRITE = 1000
 

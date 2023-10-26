@@ -10,7 +10,7 @@ import cliPath from '../../utils/cli-path.mjs'
 import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture'
 import { CONFIRM, DOWN, answerWithValue, handleQuestions } from '../../utils/handle-questions.mjs'
 import { getCLIOptions, withMockApi } from '../../utils/mock-api.mjs'
-import { withSiteBuilder } from '../../utils/site-builder.cjs'
+import { withSiteBuilder } from '../../utils/site-builder.mjs'
 
 describe.concurrent('functions:create command', () => {
   const siteInfo = {

@@ -6,7 +6,7 @@ import waitPort from 'wait-port'
 
 import cliPath from '../../utils/cli-path.mjs'
 import { killProcess } from '../../utils/process.mjs'
-import { withSiteBuilder } from '../../utils/site-builder.cjs'
+import { withSiteBuilder } from '../../utils/site-builder.mjs'
 
 const DEFAULT_PORT = 9999
 const SERVE_TIMEOUT = 180_000

@@ -11,7 +11,7 @@ import { withDevServer } from '../../utils/dev-server.mjs'
 import got from '../../utils/got.mjs'
 import { withMockApi } from '../../utils/mock-api.mjs'
 import { pause } from '../../utils/pause.cjs'
-import { withSiteBuilder } from '../../utils/site-builder.cjs'
+import { withSiteBuilder } from '../../utils/site-builder.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 

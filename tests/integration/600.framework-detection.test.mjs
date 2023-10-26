@@ -7,7 +7,7 @@ import cliPath from './utils/cli-path.mjs'
 import { getExecaOptions, withDevServer } from './utils/dev-server.mjs'
 import got from './utils/got.mjs'
 import { DOWN, answerWithValue, handleQuestions } from './utils/handle-questions.mjs'
-import { withSiteBuilder } from './utils/site-builder.cjs'
+import { withSiteBuilder } from './utils/site-builder.mjs'
 import { normalize } from './utils/snapshots.mjs'
 
 const content = 'Hello World!'

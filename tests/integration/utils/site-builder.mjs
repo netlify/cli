@@ -1,18 +1,18 @@
 // @ts-check
-const { copyFile, mkdir, rm, unlink, writeFile } = require('fs').promises
-const os = require('os')
-const path = require('path')
-const process = require('process')
+import { copyFile, mkdir, rm, unlink, writeFile } from 'fs/promises'
+import os from 'os'
+import path from 'path'
+import process from 'process'
 
-const execa = require('execa')
-const serializeJS = require('serialize-javascript')
-const tempDirectory = require('temp-dir')
-const { toToml } = require('tomlify-j0.4')
-const { v4: uuidv4 } = require('uuid')
+import execa from 'execa'
+import serializeJS from 'serialize-javascript'
+import tempDirectory from 'temp-dir'
+import { toToml } from 'tomlify-j0.4'
+import { v4 as uuidv4 } from 'uuid'
 
 const ensureDir = (file) => mkdir(file, { recursive: true })
 
-class SiteBuilder {
+export class SiteBuilder {
   directory
   tasks = []
 
@@ -251,7 +251,7 @@ class SiteBuilder {
   }
 }
 
-const createSiteBuilder = ({ siteName }) => {
+export const createSiteBuilder = ({ siteName }) => {
   const directory = path.join(
     tempDirectory,
     `netlify-cli-tests-${process.version}`,
@@ -263,7 +263,7 @@ const createSiteBuilder = ({ siteName }) => {
   return new SiteBuilder(directory).ensureDirectoryExists(directory)
 }
 
-const withSiteBuilder = async (siteName, testHandler) => {
+export const withSiteBuilder = async (siteName, testHandler) => {
   let builder
   try {
     builder = createSiteBuilder({ siteName })
@@ -272,5 +272,3 @@ const withSiteBuilder = async (siteName, testHandler) => {
     if (builder) await builder.cleanup()
   }
 }
-
-module.exports = { createSiteBuilder, SiteBuilder, withSiteBuilder }

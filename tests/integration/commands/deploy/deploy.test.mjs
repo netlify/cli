@@ -7,7 +7,7 @@ import { afterAll, beforeAll, describe, test } from 'vitest'
 
 import callCli from '../../utils/call-cli.mjs'
 import { createLiveTestSite, generateSiteName } from '../../utils/create-live-test-site.mjs'
-import { withSiteBuilder } from '../../utils/site-builder.cjs'
+import { withSiteBuilder } from '../../utils/site-builder.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
