@@ -1120,7 +1120,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
 
   test('should inject the `NETLIFY_DEV` environment variable in the process (legacy environment variables)', async (t) => {
     const externalServerPort = await getAvailablePort()
-    const externalServerPath = path.join(__dirname, '../../utils', 'external-server-cli.cjs')
+    const externalServerPath = path.join(__dirname, '../../utils', 'external-server-cli.mjs')
     const command = `node ${externalServerPath} ${externalServerPort}`
 
     await withSiteBuilder('site-with-legacy-env-vars', async (builder) => {
@@ -1193,7 +1193,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
     ]
 
     const externalServerPort = await getAvailablePort()
-    const externalServerPath = path.join(__dirname, '../../utils', 'external-server-cli.cjs')
+    const externalServerPath = path.join(__dirname, '../../utils', 'external-server-cli.mjs')
     const command = `node ${externalServerPath} ${externalServerPort}`
 
     await withSiteBuilder('site-with-env-vars', async (builder) => {
