@@ -1,7 +1,7 @@
 // @ts-check
 const execa = require('execa')
 
-const cliPath = require('./cli-path.cjs')
+const cliPath = require('./cli-path.mjs')
 
 const CLI_TIMEOUT = 3e5
 

@@ -5,7 +5,7 @@ const execa = require('execa')
 const getPort = require('get-port')
 const pTimeout = require('p-timeout')
 
-const cliPath = require('./cli-path.cjs')
+const cliPath = require('./cli-path.mjs')
 const { handleQuestions } = require('./handle-questions.cjs')
 const { killProcess } = require('./process.cjs')
 
