@@ -1,11 +1,10 @@
-import fs from 'fs'
 import process from 'process'
 
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 
 import BaseCommand from '../../../../src/commands/base-command.mjs'
 import { deploy as siteDeploy } from '../../../../src/commands/deploy/deploy.mjs'
-import { areScopesEqual, createDeployCommand, getConfiguration } from '../../../../src/commands/integration/deploy.mjs'
+import { areScopesEqual, createDeployCommand } from '../../../../src/commands/integration/deploy.mjs'
 import { getEnvironmentVariables, withMockApi } from '../../utils/mock-api.cjs'
 import { withSiteBuilder } from '../../utils/site-builder.cjs'
 
