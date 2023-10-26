@@ -9,7 +9,7 @@ import callCli from '../../utils/call-cli.cjs'
 import cliPath from '../../utils/cli-path.mjs'
 import { CONFIRM, NO, answerWithValue, handleQuestions } from '../../utils/handle-questions.cjs'
 import { withSiteBuilder } from '../../utils/site-builder.cjs'
-import { normalize } from '../../utils/snapshots.cjs'
+import { normalize } from '../../utils/snapshots.mjs'
 
 describe.concurrent('commands/recipes', () => {
   test('Shows a list of all the available recipes', async (t) => {

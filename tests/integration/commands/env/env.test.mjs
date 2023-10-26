@@ -8,7 +8,7 @@ import cliPath from '../../utils/cli-path.mjs'
 import { CONFIRM, answerWithValue, handleQuestions } from '../../utils/handle-questions.cjs'
 import { getCLIOptions, withMockApi } from '../../utils/mock-api.cjs'
 import { withSiteBuilder } from '../../utils/site-builder.cjs'
-import { normalize } from '../../utils/snapshots.cjs'
+import { normalize } from '../../utils/snapshots.mjs'
 
 const siteInfo = {
   account_slug: 'test-account',
