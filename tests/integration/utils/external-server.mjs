@@ -1,6 +1,6 @@
-import { env } from 'process';
+import { env } from 'process'
 
-import express from 'express';
+import express from 'express'
 
 export const startExternalServer = ({ port } = {}) => {
   const app = express()

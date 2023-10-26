@@ -1,6 +1,6 @@
-import { isDeepStrictEqual, promisify } from 'util';
+import { isDeepStrictEqual, promisify } from 'util'
 
-import express from 'express';
+import express from 'express'
 
 const addRequest = (requests, request) => {
   requests.push({
