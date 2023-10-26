@@ -1,14 +1,14 @@
-/* eslint-disable import/extensions */
-import { resolve } from 'path'
-import { exit, env } from 'process'
 
-// eslint-disable-next-line n/no-missing-import
-import { getConfiguration } from '@netlify/sdk/cli-utils'
+import { resolve } from 'path'
+import { cwd, exit, env } from 'process'
+
 // eslint-disable-next-line n/no-unpublished-import
 import fs from 'fs-extra'
 import inquirer from 'inquirer'
 import yaml from 'js-yaml'
 import fetch from 'node-fetch'
+import { z } from "zod";
+
 
 import { getBuildOptions } from '../../lib/build.mjs'
 import { getToken, chalk, log } from '../../utils/command-helpers.mjs'
@@ -310,6 +310,69 @@ export async function updateIntegration(
   }
 }
 
+const possibleFiles = [
+  "integration.yaml",
+  "integration.yml",
+  "integration.netlify.yaml",
+  "integration.netlify.yml",
+];
+const IntegrationConfigurationSchema = z.object({
+  name: z.string().optional(),
+  description: z.string().optional(),
+  slug: z.string().regex(/^[a-z\d-]+$/, "slug must be lowercase with dashes"),
+  scopes: z
+    .object({
+      all: z.boolean().optional(),
+      site: z.array(z.enum(["read", "write"])).optional(),
+      env: z.array(z.enum(["read", "write", "delete"])).optional(),
+      user: z.array(z.enum(["read", "write"])).optional(),
+    })
+    .optional(),
+  integrationLevel: z.enum(["site", "team", "team-and-site"]).optional(),
+});
+
+const getConfigurationFile = (workingDir) => {
+  const pwd = workingDir;
+
+  const fileName = possibleFiles.find((fileName) =>
+    fs.existsSync(resolve(pwd, fileName))
+  );
+
+  return fileName;
+};
+
+export const getConfiguration = (workingDir) => {
+  const pwd = workingDir;
+
+  const fileName = getConfigurationFile(workingDir);
+
+  if (!fileName) {
+    throw new Error("No configuration file found");
+  }
+
+  try {
+    const { config } = yaml.load(
+      fs.readFileSync(resolve(pwd, fileName), "utf-8")
+    );
+
+    if (!config) {
+      throw new Error("No configuration found");
+    }
+
+    const parseResult = IntegrationConfigurationSchema.safeParse(config);
+
+    if (!parseResult.success) {
+      console.error(parseResult.error.message);
+      throw new Error("Invalid Configuration");
+    }
+
+    return config;
+  } catch (error) {
+    console.error(error);
+    console.error(`No configuration found in ${fileName} in ${pwd}`);
+    exit(1);
+  }
+};
 /**
  * The deploy command for Netlify Integrations
  * @param {import('commander').OptionValues} options
@@ -330,7 +393,7 @@ const deploy = async (options, command) => {
   // Confirm that a site is linked and that the user is logged in
   checkOptions(buildOptions)
 
-  const { description, integrationLevel, name, scopes, slug } = await getConfiguration()
+  const { description, integrationLevel, name, scopes, slug } = await getConfiguration(command.workingDir)
   const localIntegrationConfig = { name, description, scopes, slug, integrationLevel }
 
   const { accountId } = await getSiteInformation({
