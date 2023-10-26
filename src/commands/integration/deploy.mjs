@@ -2,7 +2,6 @@ import fs from 'fs'
 import { resolve } from 'path'
 import { exit, env } from 'process'
 
-
 import inquirer from 'inquirer'
 import yaml from 'js-yaml'
 import fetch from 'node-fetch'
