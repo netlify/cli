@@ -3,7 +3,7 @@ import process from 'process'
 import { describe, expect, expectTypeOf, test } from 'vitest'
 
 import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
-import got from '../../utils/got.cjs'
+import got from '../../utils/got.mjs'
 import { pause } from '../../utils/pause.cjs'
 
 // Skipping tests on Windows because of an issue with the Deno CLI throwing IO

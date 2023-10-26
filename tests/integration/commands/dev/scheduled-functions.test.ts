@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest'
 
 import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
-import got from '../../utils/got.cjs'
+import got from '../../utils/got.mjs'
 import { pause } from '../../utils/pause.cjs'
 
 describe('scheduled functions', () => {
