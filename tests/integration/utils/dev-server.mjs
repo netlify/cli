@@ -5,9 +5,9 @@ import execa from 'execa'
 import getPort from 'get-port'
 import pTimeout from 'p-timeout'
 
-import cliPath from './cli-path.js'
-import { handleQuestions } from './handle-questions.js'
-import { killProcess } from './process.js'
+import cliPath from './cli-path.mjs'
+import { handleQuestions } from './handle-questions.cjs'
+import { killProcess } from './process.cjs'
 
 export const getExecaOptions = ({ cwd, env }) => {
   // Unused vars here are in order to omit LANg and LC_ALL from envs

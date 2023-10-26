@@ -7,8 +7,8 @@ import fetch from 'node-fetch'
 import { describe, test } from 'vitest'
 
 import { withDevServer } from '../../utils/dev-server.mjs'
-import { startExternalServer } from '../../utils/external-server.cjs'
-import { withMockApi } from '../../utils/mock-api.cjs'
+import { startExternalServer } from '../../utils/external-server.mjs'
+import { withMockApi } from '../../utils/mock-api.mjs'
 import { withSiteBuilder } from '../../utils/site-builder.cjs'
 
 describe.concurrent('command/dev', () => {

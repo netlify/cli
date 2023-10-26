@@ -1,4 +1,5 @@
 import { NETLIFY_TEST_ACCOUNT_SLUG } from 'process'
+
 import callCli from './call-cli.cjs'
 
 export const generateSiteName = function (prefix) {
