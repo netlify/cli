@@ -7,7 +7,7 @@ import { temporaryDirectory } from 'tempy'
 import { afterAll, afterEach, beforeAll, beforeEach, describe } from 'vitest'
 
 import { callCli } from './call-cli.mjs'
-import { startDevServer } from './dev-server.cjs'
+import { startDevServer } from './dev-server.mjs'
 import { MockApi, Route, getCLIOptions, startMockApi } from './mock-api-vitest.js'
 import { SiteBuilder } from './site-builder.mjs'
 
