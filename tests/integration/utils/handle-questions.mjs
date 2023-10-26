@@ -1,4 +1,4 @@
-const { Buffer } = require('buffer')
+import { Buffer } from 'buffer'
 
 /**
  * Utility to mock the stdin of the cli. You must provide the correct number of
@@ -8,7 +8,7 @@ const { Buffer } = require('buffer')
  * @param {Array<number>} prompts
  *  - questions that you know the CLI will ask and respective answers to mock
  */
-const handleQuestions = (process, questions, prompts = []) => {
+export const handleQuestions = (process, questions, prompts = []) => {
   let buffer = ''
   process.stdout.on('data', (data) => {
     buffer = (buffer + data).replace(/\n/g, '')
@@ -31,16 +31,8 @@ const writeResponse = (process, responses) => {
   if (responses.length !== 0) setTimeout(() => writeResponse(process, responses), 50)
 }
 
-const answerWithValue = (value = '') => [value, CONFIRM].flat()
+export const answerWithValue = (value = '') => [value, CONFIRM].flat()
 
-const CONFIRM = '\n'
-const DOWN = '\u001B[B'
-const NO = 'n'
-
-module.exports = {
-  handleQuestions,
-  answerWithValue,
-  CONFIRM,
-  DOWN,
-  NO,
-}
+export const CONFIRM = '\n'
+export const DOWN = '\u001B[B'
+export const NO = 'n'

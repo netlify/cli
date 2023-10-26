@@ -6,7 +6,7 @@ import getPort from 'get-port'
 import pTimeout from 'p-timeout'
 
 import cliPath from './cli-path.mjs'
-import { handleQuestions } from './handle-questions.cjs'
+import { handleQuestions } from './handle-questions.mjs'
 import { killProcess } from './process.cjs'
 
 export const getExecaOptions = ({ cwd, env }) => {

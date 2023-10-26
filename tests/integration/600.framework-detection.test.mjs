@@ -6,7 +6,7 @@ import execa from 'execa'
 import cliPath from './utils/cli-path.mjs'
 import { getExecaOptions, withDevServer } from './utils/dev-server.mjs'
 import got from './utils/got.mjs'
-import { DOWN, answerWithValue, handleQuestions } from './utils/handle-questions.cjs'
+import { DOWN, answerWithValue, handleQuestions } from './utils/handle-questions.mjs'
 import { withSiteBuilder } from './utils/site-builder.cjs'
 import { normalize } from './utils/snapshots.mjs'
 
