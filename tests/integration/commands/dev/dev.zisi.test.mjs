@@ -17,7 +17,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const testMatrix = [{ args: [] }]
 
-describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args }) => {
+describe('withSiteBuilder with args: $args', ({ args }) => {
   test('should handle query params in redirects', async (t) => {
     await withSiteBuilder('site-with-query-redirects', async (builder) => {
       await builder
