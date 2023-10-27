@@ -195,7 +195,7 @@ Open settings for the site linked to the current folder
 
 ### [recipes](/docs/commands/recipes.md)
 
-(Beta) Create and modify files in a project using pre-defined recipes
+Create and modify files in a project using pre-defined recipes
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
