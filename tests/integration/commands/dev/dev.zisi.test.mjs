@@ -15,7 +15,9 @@ import { withSiteBuilder } from '../../utils/site-builder.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-describe('withSiteBuilder with args: $args', ({ args }) => {
+const testMatrix = [{ args: [] }]
+
+describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args }) => {
   test('should handle query params in redirects', async (t) => {
     await withSiteBuilder('site-with-query-redirects', async (builder) => {
       await builder
