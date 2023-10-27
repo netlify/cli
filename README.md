@@ -115,7 +115,7 @@ Build on your local machine
 
 ### [completion](/docs/commands/completion.md)
 
-(Beta) Generate shell completion script
+Generate shell completion script
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
