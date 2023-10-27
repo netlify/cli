@@ -376,7 +376,11 @@ describe.concurrent('frameworks/framework-detection', () => {
           t.expect(response).toStrictEqual({ CONTEXT_CHECK: 'PRODUCTION' })
 
           const normalizedText = normalize(output, { duration: true, filePath: true })
-          t.expect(normalizedText.includes(`Changes will not be hot-reloaded, so if you need to rebuild your site you must exit and run 'netlify serve' again`)).toEqual(true)
+          t.expect(
+            normalizedText.includes(
+              `Changes will not be hot-reloaded, so if you need to rebuild your site you must exit and run 'netlify serve' again`,
+            ),
+          ).toEqual(true)
         },
       )
     })
