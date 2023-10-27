@@ -204,7 +204,7 @@ Create and modify files in a project using pre-defined recipes
 
 ### [serve](/docs/commands/serve.md)
 
-(Beta) Build the site for production and serve locally. This does not watch the code for changes, so if you need to rebuild your site then you must exit and run `serve` again.
+Build the site for production and serve locally. This does not watch the code for changes, so if you need to rebuild your site then you must exit and run `serve` again.
 
 ### [sites](/docs/commands/sites.md)
 
