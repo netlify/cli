@@ -184,5 +184,16 @@ describe.runIf(gte(version, '18.13.0'))('v2 api', () => {
         expect(await response.text()).toBe('/v2-to-custom-without-force from origin')
       })
     })
+
+    test<FixtureTestContext>('has access to Netlify Blobs', async ({ devServer }) => {
+      const response = await fetch(`http://localhost:${devServer.port}/blobs`)
+
+      expect(response.status).toBe(200)
+
+      const body = await response.json()
+
+      expect(body.data).toBe('hello world')
+      expect(body.metadata).toEqual({ name: 'Netlify', features: { blobs: true, functions: true } })
+    })
   })
 })
