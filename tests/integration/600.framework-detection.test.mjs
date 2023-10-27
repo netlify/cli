@@ -1,5 +1,5 @@
-import { describe, test } from 'vitest'
 import execa from 'execa'
+import { describe, test } from 'vitest'
 
 import { cliPath } from './utils/cli-path.mjs'
 import { getExecaOptions, withDevServer } from './utils/dev-server.mjs'
