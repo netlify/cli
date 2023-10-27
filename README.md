@@ -199,7 +199,7 @@ Create and modify files in a project using pre-defined recipes
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`recipes:list`](/docs/commands/recipes.md#recipeslist) | (Beta) List the recipes available to create and modify files in a project  |
+| [`recipes:list`](/docs/commands/recipes.md#recipeslist) | List the recipes available to create and modify files in a project  |
 
 
 ### [serve](/docs/commands/serve.md)
