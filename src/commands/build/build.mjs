@@ -74,7 +74,7 @@ const build = async (options, command) => {
 export const createBuildCommand = (program) =>
   program
     .command('build')
-    .description('(Beta) Build on your local machine')
+    .description('Build on your local machine')
     .option(
       '--context <context>',
       'Specify a build context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev")',

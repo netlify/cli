@@ -111,7 +111,7 @@ Run any Netlify API method
 
 ### [build](/docs/commands/build.md)
 
-(Beta) Build on your local machine
+Build on your local machine
 
 ### [completion](/docs/commands/completion.md)
 
