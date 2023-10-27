@@ -1,4 +1,5 @@
 // @ts-check
+import { Buffer } from 'buffer'
 import { basename, extname } from 'path'
 import { version as nodeVersion } from 'process'
 
@@ -23,6 +24,7 @@ const getNextRun = function (schedule) {
 
 export default class NetlifyFunction {
   constructor({
+    blobsContext,
     config,
     directory,
     displayName,
@@ -34,6 +36,7 @@ export default class NetlifyFunction {
     timeoutBackground,
     timeoutSynchronous,
   }) {
+    this.blobsContext = blobsContext
     this.buildError = null
     this.config = config
     this.directory = directory
@@ -189,10 +192,32 @@ export default class NetlifyFunction {
     }
 
     const timeout = this.isBackground ? this.timeoutBackground : this.timeoutSynchronous
+    const environment = {}
+
+    if (this.blobsContext) {
+      if (this.runtimeAPIVersion === 2) {
+        // For functions using the v2 API, we inject the context object into an
+        // environment variable.
+        environment.NETLIFY_BLOBS_CONTEXT = Buffer.from(JSON.stringify(this.blobsContext)).toString('base64')
+      } else {
+        const payload = JSON.stringify({
+          url: this.blobsContext.edgeURL,
+          token: this.blobsContext.token,
+        })
+
+        // For functions using the Lambda compatibility mode, we pass the
+        // context as part of the `clientContextª property.
+        context.custom = {
+          ...context?.custom,
+          blobs: Buffer.from(payload).toString('base64'),
+        }
+      }
+    }
 
     try {
       const result = await this.runtime.invokeFunction({
         context,
+        environment,
         event,
         func: this,
         timeout,
