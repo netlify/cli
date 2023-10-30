@@ -27,6 +27,6 @@ const recipesListCommand = async () => {
 export const createRecipesListCommand = (program) =>
   program
     .command('recipes:list')
-    .description(`(Beta) List the recipes available to create and modify files in a project`)
+    .description(`List the recipes available to create and modify files in a project`)
     .addExamples(['netlify recipes:list'])
     .action(recipesListCommand)
