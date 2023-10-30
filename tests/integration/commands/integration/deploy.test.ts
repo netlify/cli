@@ -1,12 +1,12 @@
 import process from 'process'
 
-import { getConfiguration } from '@netlify/sdk/cli-utils'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 
 import BaseCommand from '../../../../src/commands/base-command.mjs'
 import { deploy as siteDeploy } from '../../../../src/commands/deploy/deploy.mjs'
 import { areScopesEqual, createDeployCommand } from '../../../../src/commands/integration/deploy.mjs'
 import { getEnvironmentVariables, withMockApi } from '../../utils/mock-api.cjs'
+import { withSiteBuilder } from '../../utils/site-builder.cjs'
 
 describe('integration:deploy areScopesEqual', () => {
   test('it returns false when scopes are not equal', () => {
@@ -31,18 +31,6 @@ describe(`integration:deploy`, () => {
     vi.mock(`../../../../src/commands/deploy/deploy.mjs`, () => ({
       deploy: vi.fn(() => console.log(`yay it was mocked!`)),
     }))
-    vi.mock(`@netlify/sdk/commands`, () => ({
-      build: vi.fn(() => console.log(`build!`)),
-    }))
-    vi.mock(`@netlify/sdk/cli-utils`, () => ({
-      getConfiguration: vi.fn(),
-    }))
-    getConfiguration.mockReturnValue({
-      name: 'integrationName',
-      description: 'an integration',
-      scopes: { all: true },
-      slug: '987645-integration',
-    })
 
     const siteInfo = {
       admin_url: 'https://app.netlify.com/sites/site-name/overview',
@@ -69,27 +57,48 @@ describe(`integration:deploy`, () => {
       {
         path: 'test-account/integrations',
         response: {
-          scopes: `all`,
+          scopes: `site:read`,
         },
       },
     ]
 
-    await withMockApi(routes, async ({ apiUrl }) => {
-      const envVars = getEnvironmentVariables({ apiUrl })
-      envVars.INTEGRATION_URL = apiUrl
+    await withSiteBuilder('my-integration', async (builder) => {
+      builder.withContentFiles([{
+        path: 'integration.yaml',
+        content: `config:
+  name: integrationName
+  description: an integration'
+  slug: 987645-integration
+  scopes:
+    site:
+        - read
+  integrationLevel: team-and-site
+      `
+      }])
+      await builder.buildAsync()
 
-      Object.assign(process.env, envVars)
-      const program = new BaseCommand('netlify')
+      vi.spyOn(process, 'cwd').mockReturnValue(builder.directory)
 
-      createDeployCommand(program)
-      const simulatedArgv = ['', '', 'integration:deploy']
-      try {
-        await program.parseAsync(simulatedArgv)
-      } catch (error) {
-        console.log(error)
-      }
+      await withMockApi(routes, async ({ apiUrl }) => {
+        const envVars = getEnvironmentVariables({ apiUrl })
+        envVars.INTEGRATION_URL = apiUrl
 
-      expect(siteDeploy).toBeCalledTimes(1)
+        Object.assign(process.env, envVars)
+        const program = new BaseCommand('netlify')
+
+        createDeployCommand(program)
+        const simulatedArgv = ['', '', 'integration:deploy']
+
+        try {
+          await program.parseAsync(simulatedArgv)
+        } catch (error) {
+          console.log(error)
+        }
+
+        expect(siteDeploy).toBeCalledTimes(1)
+      })
     })
+
+
   })
 })

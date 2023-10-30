@@ -39,11 +39,11 @@ Run any Netlify API method
 
 ### [build](/docs/commands/build.md)
 
-(Beta) Build on your local machine
+Build on your local machine
 
 ### [completion](/docs/commands/completion.md)
 
-(Beta) Generate shell completion script
+Generate shell completion script
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
@@ -123,16 +123,16 @@ Open settings for the site linked to the current folder
 
 ### [recipes](/docs/commands/recipes.md)
 
-(Beta) Create and modify files in a project using pre-defined recipes
+Create and modify files in a project using pre-defined recipes
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`recipes:list`](/docs/commands/recipes.md#recipeslist) | (Beta) List the recipes available to create and modify files in a project  |
+| [`recipes:list`](/docs/commands/recipes.md#recipeslist) | List the recipes available to create and modify files in a project  |
 
 
 ### [serve](/docs/commands/serve.md)
 
-(Beta) Build the site for production and serve locally. This does not watch the code for changes, so if you need to rebuild your site then you must exit and run `serve` again.
+Build the site for production and serve locally. This does not watch the code for changes, so if you need to rebuild your site then you must exit and run `serve` again.
 
 ### [sites](/docs/commands/sites.md)
 
