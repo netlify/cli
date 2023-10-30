@@ -1,4 +1,4 @@
-import test from 'ava'
+import { test } from 'vitest'
 
 import { DependencyGraph } from '../project-graph/index.mjs'
 

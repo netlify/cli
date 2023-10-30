@@ -69,7 +69,7 @@ jobs:
         with:
           cond: ${{ github.event_name == 'pull_request' }}
           if_true: 'npm run test:affected ${{ github.event.pull_request.base.sha }}' # on pull requests test with the project graph only the affected tests
-          if_false: 'npm run test:ci:ava:integration' # on the base branch run all the tests as security measure
+          if_false: 'npm run test:ci:vitest:integration' # on the base branch run all the tests as security measure
         if: '${{ !steps.release-check.outputs.IS_RELEASE }}'
       - name: Generate self-signed certificates
         run: npm run certs

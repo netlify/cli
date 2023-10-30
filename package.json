@@ -63,7 +63,7 @@
     "test:affected": "node ./tools/affected-test.mjs",
     "e2e": "node ./tools/e2e/run.mjs",
     "docs": "node ./site/scripts/docs.mjs",
-    "watch": "c8 --reporter=lcov ava --watch",
+    "watch": "c8 --reporter=lcov vitest --watch",
     "site:build": "run-s site:build:*",
     "site:build:install": "cd site && npm install --no-audit",
     "site:build:assets": "cd site && npm run build",
