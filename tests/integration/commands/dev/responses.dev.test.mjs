@@ -1,6 +1,7 @@
 // Handlers are meant to be async outside tests
 import path from 'path'
 
+import fetch from 'node-fetch'
 import { describe, test } from 'vitest'
 
 import { withDevServer } from '../../utils/dev-server.mjs'

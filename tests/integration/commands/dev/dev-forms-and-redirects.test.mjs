@@ -4,6 +4,7 @@ import path from 'path'
 
 import FormData from 'form-data'
 import getPort from 'get-port'
+import fetch from 'node-fetch'
 import { describe, test } from 'vitest'
 
 import { withDevServer } from '../../utils/dev-server.mjs'

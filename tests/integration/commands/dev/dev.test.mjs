@@ -3,6 +3,7 @@ import fs from 'fs/promises'
 import { join } from 'path'
 
 import jwt from 'jsonwebtoken'
+import fetch from 'node-fetch'
 import { describe, test } from 'vitest'
 
 import { withDevServer } from '../../utils/dev-server.mjs'

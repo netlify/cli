@@ -1,3 +1,5 @@
+import fetch from 'node-fetch'
+
 export const getTemplatesFromGitHub = async (token) => {
   const getPublicGitHubReposFromOrg = new URL(`https://api.github.com/orgs/netlify-templates/repos`)
   // GitHub returns 30 by default and we want to avoid our limit

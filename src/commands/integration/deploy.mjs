@@ -4,6 +4,7 @@ import { exit, env } from 'process'
 
 import inquirer from 'inquirer'
 import yaml from 'js-yaml'
+import fetch from 'node-fetch'
 import { z } from 'zod'
 
 import { getBuildOptions } from '../../lib/build.mjs'

@@ -2,6 +2,7 @@ import { Buffer } from 'buffer'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
+import fetch from 'node-fetch'
 import { afterAll, beforeAll, describe, test } from 'vitest'
 
 import { clientIP, originalIP } from '../../lib/local-ip.mjs'

@@ -1,3 +1,4 @@
+import fetch from 'node-fetch'
 import { describe, test } from 'vitest'
 
 import { tryAndLogOutput, withDevServer } from '../utils/dev-server.mjs'

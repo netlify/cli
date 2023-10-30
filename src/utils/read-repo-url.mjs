@@ -1,6 +1,8 @@
 // @ts-check
 import url from 'url'
 
+import fetch from 'node-fetch'
+
 // supported repo host types
 const GITHUB = 'GitHub'
 

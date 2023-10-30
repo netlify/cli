@@ -3,6 +3,8 @@
 // to run a s a detached process
 import process from 'process'
 
+import fetch from 'node-fetch'
+
 import getPackageJson from '../get-package-json.mjs'
 
 const { name, version } = await getPackageJson()
