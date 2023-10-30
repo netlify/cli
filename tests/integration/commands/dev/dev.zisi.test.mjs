@@ -52,11 +52,11 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const [fromFunction, queryPassthrough, queryInRedirect, withParamMatching, functionWithSplat] =
           await Promise.all([
-            fetch(`${server.url}/api/test?foo=1&foo=2&bar=1&bar=2`).then((res) => res.json()),
-            fetch(`${server.url}/foo?foo=1&foo=2&bar=1&bar=2`, { redirect: 'manual' }),
-            fetch(`${server.url}/bar?foo=1&foo=2&bar=1&bar=2`, { redirect: 'manual' }),
-            fetch(`${server.url}/test?id=1`, { redirect: 'manual' }),
-            fetch(`${server.url}/baz/abc`).then((res) => res.json()),
+            nodeFetch(`${server.url}/api/test?foo=1&foo=2&bar=1&bar=2`).then((res) => res.json()),
+            nodeFetch(`${server.url}/foo?foo=1&foo=2&bar=1&bar=2`, { redirect: 'manual' }),
+            nodeFetch(`${server.url}/bar?foo=1&foo=2&bar=1&bar=2`, { redirect: 'manual' }),
+            nodeFetch(`${server.url}/test?id=1`, { redirect: 'manual' }),
+            nodeFetch(`${server.url}/baz/abc`).then((res) => res.json()),
           ])
 
         // query params should be taken from redirect rule for functions
@@ -95,7 +95,7 @@ export async function handler(event, context) {
 
       t.expect(() =>
         withDevServer({ cwd: builder.directory, args }, async (server) =>
-          fetch(`${server.url}/.netlify/functions/esm-function`).text(),
+          nodeFetch(`${server.url}/.netlify/functions/esm-function`).text(),
         ),
       ).rejects.toThrow()
     })
@@ -120,7 +120,7 @@ export async function handler(event, context) {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
-        const response = await fetch(`${server.url}/.netlify/functions/esm-function`).then((res) => res.text())
+        const response = await nodeFetch(`${server.url}/.netlify/functions/esm-function`).then((res) => res.text())
         t.expect(response).toEqual('esm')
       })
     })
@@ -150,7 +150,7 @@ export const handler = async function () {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
-        const response = await fetch(`${server.url}/.netlify/functions/ts-function`).then((res) => res.text())
+        const response = await nodeFetch(`${server.url}/.netlify/functions/ts-function`).then((res) => res.text())
         t.expect(response).toEqual('ts')
       })
     })
@@ -178,7 +178,7 @@ export const handler = async function () {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
-        const response = await fetch(`${server.url}/.netlify/functions/ts-function`).then((res) => res.text())
+        const response = await nodeFetch(`${server.url}/.netlify/functions/ts-function`).then((res) => res.text())
         t.expect(response).toEqual('ts')
       })
     })
@@ -251,16 +251,24 @@ export const handler = async function () {
           agent: new Agent({ rejectUnauthorized: false }),
         }
 
-        t.expect(await fetch(`https://localhost:${port}`, options).then((res) => res.text())).toEqual('index')
-        t.expect(await fetch(`https://localhost:${port}?ef=true`, options).then((res) => res.text())).toEqual('INDEX')
-        t.expect(await fetch(`https://localhost:${port}?ef=fetch`, options).then((res) => res.text())).toEqual('origin')
-        t.expect(await fetch(`https://localhost:${port}/api/hello`, options).then((res) => res.json())).toStrictEqual({
+        t.expect(await nodeFetch(`https://localhost:${port}`, options).then((res) => res.text())).toEqual('index')
+        t.expect(await nodeFetch(`https://localhost:${port}?ef=true`, options).then((res) => res.text())).toEqual(
+          'INDEX',
+        )
+        t.expect(await nodeFetch(`https://localhost:${port}?ef=fetch`, options).then((res) => res.text())).toEqual(
+          'origin',
+        )
+        t.expect(
+          await nodeFetch(`https://localhost:${port}/api/hello`, options).then((res) => res.json()),
+        ).toStrictEqual({
           rawUrl: `https://localhost:${port}/api/hello`,
         })
 
         // the fetch will go against the `https://` url of the dev server, which isn't trusted system-wide.
         // this is the expected behaviour for fetch, so we shouldn't change anything about it.
-        t.expect(await fetch(`https://localhost:${port}?ef=fetch`, options).then((res) => res.text())).toEqual('origin')
+        t.expect(await nodeFetch(`https://localhost:${port}?ef=fetch`, options).then((res) => res.text())).toEqual(
+          'origin',
+        )
       })
     })
   })
@@ -318,7 +326,7 @@ export const handler = async function () {
             },
           },
           async ({ url }) => {
-            const error = await fetch(`${url}/.netlify/functions/hello`).then((res) => res.text())
+            const error = await nodeFetch(`${url}/.netlify/functions/hello`).then((res) => res.text())
             t.expect(error.includes('TimeoutError: Task timed out after 1.00 seconds')).toBe(true)
           },
         )
@@ -372,7 +380,7 @@ export const handler = async function () {
         .buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
-        const response = await fetch(`${server.url}/${encodeURIComponent('范.txt')}`)
+        const response = await nodeFetch(`${server.url}/${encodeURIComponent('范.txt')}`)
         t.expect(await response.text()).toEqual('success')
       })
     })
@@ -395,12 +403,12 @@ export const handler = async function () {
         .buildAsync()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
-        const response = await fetch(`${server.url}/.netlify/functions/custom-headers`)
+        const response = await nodeFetch(`${server.url}/.netlify/functions/custom-headers`)
         t.expect(response.headers.get('etag')).toBeFalsy()
         t.expect(response.headers.get('single-value-header')).toEqual('custom-value')
         t.expect(response.headers.get('multi-value-header')).toEqual('custom-value1, custom-value2')
 
-        const builderResponse = await fetch(`${server.url}/.netlify/builders/custom-headers`)
+        const builderResponse = await nodeFetch(`${server.url}/.netlify/builders/custom-headers`)
         t.expect(builderResponse.headers.get('etag')).toBeFalsy()
         t.expect(builderResponse.headers.get('single-value-header')).toEqual('custom-value')
         t.expect(builderResponse.headers.get('multi-value-header')).toEqual('custom-value1, custom-value2')
@@ -417,8 +425,8 @@ export const handler = async function () {
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const [response1, response2] = await Promise.all([
-          fetch(`${server.url}/_next/static/special[test].txt`).then((res) => res.text()),
-          fetch(`${server.url}/_next/static/special%5Btest%5D.txt`).then((res) => res.text()),
+          nodeFetch(`${server.url}/_next/static/special[test].txt`).then((res) => res.text()),
+          nodeFetch(`${server.url}/_next/static/special%5Btest%5D.txt`).then((res) => res.text()),
         ])
         t.expect(response1).toEqual('special')
         t.expect(response2).toEqual('special')
@@ -433,7 +441,7 @@ export const handler = async function () {
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         // an error is expected since we're sending a POST request to a static server
         // the important thing is that it's not proxied to the functions server
-        const error = await fetch(`${server.url}/api/test`, {
+        const error = await nodeFetch(`${server.url}/api/test`, {
           method: 'POST',
           headers: {
             'content-type': 'application/x-www-form-urlencoded',
