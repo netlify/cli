@@ -1,5 +1,4 @@
 import execa from 'execa'
-import fetch from 'node-fetch'
 import { describe, test } from 'vitest'
 
 import { cliPath } from './utils/cli-path.mjs'

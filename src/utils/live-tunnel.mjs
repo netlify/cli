@@ -1,7 +1,6 @@
 // @ts-check
 import process from 'process'
 
-import fetch from 'node-fetch'
 import pWaitFor from 'p-wait-for'
 import { v4 as uuidv4 } from 'uuid'
 

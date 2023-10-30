@@ -2,7 +2,6 @@
 import { version } from 'process'
 
 import FormData from 'form-data'
-import fetch from 'node-fetch'
 import { gte } from 'semver'
 import { describe, test } from 'vitest'
 

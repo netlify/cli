@@ -4,7 +4,6 @@ import { createRequire } from 'module'
 import path from 'path'
 
 import inquirer from 'inquirer'
-import fetch from 'node-fetch'
 
 import { NETLIFYDEVWARN, chalk, error, exit } from '../../utils/command-helpers.mjs'
 import { BACKGROUND, CLOCKWORK_USERAGENT, getFunctions } from '../../utils/functions/index.mjs'

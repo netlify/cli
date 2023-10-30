@@ -4,7 +4,6 @@ import { fileURLToPath } from 'url'
 import { setProperty } from 'dot-prop'
 import getAvailablePort from 'get-port'
 import jwt from 'jsonwebtoken'
-import fetch from 'node-fetch'
 import { describe, test } from 'vitest'
 
 import { withDevServer } from '../../utils/dev-server.mjs'

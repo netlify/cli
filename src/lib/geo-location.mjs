@@ -1,5 +1,4 @@
 // @ts-check
-import fetch from 'node-fetch'
 
 const API_URL = 'https://netlifind.netlify.app'
 const STATE_GEO_PROPERTY = 'geolocation'

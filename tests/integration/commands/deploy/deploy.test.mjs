@@ -2,7 +2,6 @@ import path from 'path'
 import process from 'process'
 import { fileURLToPath } from 'url'
 
-import fetch from 'node-fetch'
 import { afterAll, beforeAll, describe, test } from 'vitest'
 
 import { callCli } from '../../utils/call-cli.mjs'

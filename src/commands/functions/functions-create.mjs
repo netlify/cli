@@ -12,7 +12,6 @@ import copyTemplateDirOriginal from 'copy-template-dir'
 import { findUp } from 'find-up'
 import fuzzy from 'fuzzy'
 import inquirer from 'inquirer'
-import fetch from 'node-fetch'
 import ora from 'ora'
 
 import { fileExistsAsync } from '../../lib/fs.mjs'
