@@ -50,7 +50,7 @@ export const createCompletionCommand = (program) => {
 
   return program
     .command('completion')
-    .description('(Beta) Generate shell completion script\nRun this command to see instructions for your shell.')
+    .description('Generate shell completion script\nRun this command to see instructions for your shell.')
     .addExamples(['netlify completion:install'])
     .action((options, command) => {
       command.help()
