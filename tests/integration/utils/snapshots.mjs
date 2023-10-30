@@ -37,4 +37,5 @@ export const normalize = (inputString, { duration, filePath } = {}) => {
     .trim()
 }
 
-export default { normalize }
+const exports = { normalize }
+export default exports
