@@ -19,7 +19,6 @@ const packageJsonPath = join(dir, '../package.json')
 const pkgJson = JSON.parse(await readFile(packageJsonPath))
 
 delete pkgJson.devDependencies
-delete pkgJson.ava
 delete pkgJson.config
 
 for (const scriptName in pkgJson.scripts) {
