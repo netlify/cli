@@ -5,7 +5,7 @@ import { gte } from 'semver'
 import { describe, expect, test } from 'vitest'
 
 import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
-import got from '../../utils/got.cjs'
+import got from '../../utils/got.mjs'
 
 const siteInfo = {
   account_id: 'mock-account-id',

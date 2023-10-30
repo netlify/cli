@@ -3,12 +3,12 @@ import process from 'process'
 import execa from 'execa'
 import { describe, test } from 'vitest'
 
-import callCli from '../../utils/call-cli.cjs'
-import cliPath from '../../utils/cli-path.cjs'
-import { CONFIRM, answerWithValue, handleQuestions } from '../../utils/handle-questions.cjs'
-import { getCLIOptions, withMockApi } from '../../utils/mock-api.cjs'
-import { withSiteBuilder } from '../../utils/site-builder.cjs'
-import { normalize } from '../../utils/snapshots.cjs'
+import { callCli } from '../../utils/call-cli.mjs'
+import { cliPath } from '../../utils/cli-path.mjs'
+import { CONFIRM, answerWithValue, handleQuestions } from '../../utils/handle-questions.mjs'
+import { getCLIOptions, withMockApi } from '../../utils/mock-api.mjs'
+import { withSiteBuilder } from '../../utils/site-builder.mjs'
+import { normalize } from '../../utils/snapshots.mjs'
 
 const siteInfo = {
   account_slug: 'test-account',

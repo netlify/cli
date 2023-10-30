@@ -2,7 +2,7 @@ import { expect, test } from 'vitest'
 
 import { DEFAULT_CONCURRENT_HASH } from '../../../../src/utils/deploy/constants.mjs'
 import hashFiles from '../../../../src/utils/deploy/hash-files.mjs'
-import { withSiteBuilder } from '../../../integration/utils/site-builder.cjs'
+import { withSiteBuilder } from '../../../integration/utils/site-builder.mjs'
 
 test('Hashes files in a folder', async () => {
   await withSiteBuilder('site-with-content', async (builder) => {

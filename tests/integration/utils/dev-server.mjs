@@ -1,15 +1,15 @@
-const path = require('path')
-const process = require('process')
+import path from 'path'
+import process from 'process'
 
-const execa = require('execa')
-const getPort = require('get-port')
-const pTimeout = require('p-timeout')
+import execa from 'execa'
+import getPort from 'get-port'
+import pTimeout from 'p-timeout'
 
-const cliPath = require('./cli-path.cjs')
-const { handleQuestions } = require('./handle-questions.cjs')
-const { killProcess } = require('./process.cjs')
+import { cliPath } from './cli-path.mjs'
+import { handleQuestions } from './handle-questions.mjs'
+import { killProcess } from './process.mjs'
 
-const getExecaOptions = ({ cwd, env }) => {
+export const getExecaOptions = ({ cwd, env }) => {
   // Unused vars here are in order to omit LANg and LC_ALL from envs
   // eslint-disable-next-line no-unused-vars
   const { LANG, LC_ALL, ...baseEnv } = process.env
@@ -123,7 +123,7 @@ const startServer = async ({
   return await pTimeout(serverPromise, SERVER_START_TIMEOUT, () => ({ timeout: true, output: outputBuffer.join('') }))
 }
 
-const startDevServer = async (options, expectFailure) => {
+export const startDevServer = async (options, expectFailure) => {
   const maxAttempts = 5
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -146,7 +146,7 @@ const startDevServer = async (options, expectFailure) => {
 // 240 seconds
 const SERVER_START_TIMEOUT = 24e4
 
-const withDevServer = async (options, testHandler, expectFailure = false) => {
+export const withDevServer = async (options, testHandler, expectFailure = false) => {
   let server
   try {
     server = await startDevServer(options, expectFailure)
@@ -164,18 +164,11 @@ const withDevServer = async (options, testHandler, expectFailure = false) => {
   }
 }
 
-const tryAndLogOutput = async (func, outputBuffer) => {
+export const tryAndLogOutput = async (func, outputBuffer) => {
   try {
     await func()
   } catch (error) {
     console.log(outputBuffer.join(''))
     throw error
   }
-}
-
-module.exports = {
-  withDevServer,
-  startDevServer,
-  getExecaOptions,
-  tryAndLogOutput,
 }

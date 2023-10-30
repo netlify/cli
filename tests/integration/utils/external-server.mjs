@@ -1,8 +1,8 @@
-const { env } = require('process')
+import { env } from 'process'
 
-const express = require('express')
+import express from 'express'
 
-const startExternalServer = ({ port } = {}) => {
+export const startExternalServer = ({ port } = {}) => {
   const app = express()
   app.use(express.urlencoded({ extended: true }))
   app.all('*', function onRequest(req, res) {
@@ -10,8 +10,4 @@ const startExternalServer = ({ port } = {}) => {
   })
 
   return app.listen({ port })
-}
-
-module.exports = {
-  startExternalServer,
 }

@@ -12,7 +12,7 @@ import {
 import { createSitesCreateCommand } from '../../../../src/commands/sites/sites-create.mjs'
 import { getGitHubToken } from '../../../../src/utils/init/config-github.mjs'
 import { createRepo, getTemplatesFromGitHub } from '../../../../src/utils/sites/utils.mjs'
-import { getEnvironmentVariables, withMockApi } from '../../utils/mock-api.cjs'
+import { getEnvironmentVariables, withMockApi } from '../../utils/mock-api.mjs'
 
 vi.mock('../../../../src/utils/command-helpers.mjs', async () => ({
   // @ts-expect-error No types yet for command-helpers

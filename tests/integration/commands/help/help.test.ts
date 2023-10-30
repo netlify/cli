@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest'
 
-import callCli from '../../utils/call-cli.cjs'
-import { normalize } from '../../utils/snapshots.cjs'
+import { callCli } from '../../utils/call-cli.mjs'
+import { normalize } from '../../utils/snapshots.mjs'
 
 describe('help command', () => {
   test('netlify help', async () => {
