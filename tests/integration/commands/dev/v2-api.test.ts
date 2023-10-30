@@ -1,5 +1,6 @@
 import { version } from 'process'
 
+import execa from 'execa'
 import { gte } from 'semver'
 import { describe, expect, test } from 'vitest'
 
@@ -21,8 +22,12 @@ const routes = [
   },
 ]
 
+const setup = async ({ fixture }) => {
+  await execa('npm', ['install'], { cwd: fixture.directory })
+}
+
 describe.runIf(gte(version, '18.13.0'))('v2 api', () => {
-  setupFixtureTests('dev-server-with-v2-functions', { devServer: true, mockApi: { routes } }, () => {
+  setupFixtureTests('dev-server-with-v2-functions', { devServer: true, mockApi: { routes }, setup }, () => {
     test<FixtureTestContext>('should successfully be able to run v2 functions', async ({ devServer }) => {
       const response = await got(`http://localhost:${devServer.port}/.netlify/functions/ping`, {
         throwHttpErrors: false,
