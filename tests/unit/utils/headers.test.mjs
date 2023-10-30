@@ -3,7 +3,7 @@ import { resolve } from 'path'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 
 import { headersForPath, parseHeaders } from '../../../src/utils/headers.mjs'
-import { createSiteBuilder } from '../../integration/utils/site-builder.cjs'
+import { createSiteBuilder } from '../../integration/utils/site-builder.mjs'
 
 vi.mock('../../../src/utils/command-helpers.mjs', async () => ({
   ...(await vi.importActual('../../../src/utils/command-helpers.mjs')),

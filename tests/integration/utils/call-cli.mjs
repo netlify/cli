@@ -1,7 +1,7 @@
 // @ts-check
-const execa = require('execa')
+import execa from 'execa'
 
-const cliPath = require('./cli-path.cjs')
+import { cliPath } from './cli-path.mjs'
 
 const CLI_TIMEOUT = 3e5
 
@@ -13,7 +13,7 @@ const CLI_TIMEOUT = 3e5
  * @param {boolean} parseJson
  * @returns {Promise<string|object>}
  */
-const callCli = async function (args, execOptions = {}, parseJson = false) {
+export const callCli = async function (args, execOptions = {}, parseJson = false) {
   const { stdout } = await execa.node(cliPath, args, {
     timeout: CLI_TIMEOUT,
     nodeOptions: [],
@@ -24,5 +24,3 @@ const callCli = async function (args, execOptions = {}, parseJson = false) {
   }
   return stdout
 }
-
-module.exports = callCli
