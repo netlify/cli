@@ -184,7 +184,7 @@ export default class NetlifyFunction {
   }
 
   // Invokes the function and returns its response object.
-  async invoke(event, context) {
+  async invoke(event, context = {}) {
     await this.buildQueue
 
     if (this.buildError) {
