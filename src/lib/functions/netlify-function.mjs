@@ -206,7 +206,7 @@ export default class NetlifyFunction {
         })
 
         // For functions using the Lambda compatibility mode, we pass the
-        // context as part of the `clientContextª property.
+        // context as part of the `clientContext` property.
         context.custom = {
           ...context?.custom,
           blobs: Buffer.from(payload).toString('base64'),
