@@ -5,6 +5,7 @@ import os from 'os'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
+import nodeFetch from 'node-fetch'
 import { describe, test } from 'vitest'
 
 import { curl } from '../../utils/curl.mjs'
