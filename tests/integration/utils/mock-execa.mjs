@@ -1,11 +1,11 @@
-const { rm, writeFile } = require('fs').promises
-const { pathToFileURL } = require('url')
+import { rm, writeFile } from 'fs/promises'
+import { pathToFileURL } from 'url'
 
 // Saves to disk a JavaScript file with the contents provided and returns
 // an environment variable that replaces the `execa` module implementation.
 // A cleanup method is also returned, allowing the consumer to remove the
 // mock file.
-const createMock = async (contents) => {
+export const createMock = async (contents) => {
   const { temporaryFile } = await import('tempy')
   const path = temporaryFile({ extension: 'js' })
 
@@ -23,5 +23,3 @@ const createMock = async (contents) => {
 
   return [env, cleanup]
 }
-
-module.exports = { createMock }

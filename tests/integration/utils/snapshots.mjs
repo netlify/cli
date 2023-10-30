@@ -24,7 +24,7 @@ const optionalNormalizers = {
   duration: { pattern: /(\d[\d.]*(ms|m|s)( )?)+/g, value: 'Xms' },
 }
 
-const normalize = (inputString, { duration, filePath } = {}) => {
+export const normalize = (inputString, { duration, filePath } = {}) => {
   const normalizers = [
     ...baseNormalizers,
     duration && optionalNormalizers.duration,
@@ -36,5 +36,3 @@ const normalize = (inputString, { duration, filePath } = {}) => {
     .reduce((acc, { pattern, value }) => acc.replace(pattern, value), inputString)
     .trim()
 }
-
-module.exports = { normalize }

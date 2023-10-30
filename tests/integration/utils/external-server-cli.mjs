@@ -1,6 +1,6 @@
-const process = require('process')
+import process from 'process'
 
-const { startExternalServer } = require('./external-server.cjs')
+import { startExternalServer } from './external-server.mjs'
 
 const port = Number.parseInt(process.argv[2])
 
