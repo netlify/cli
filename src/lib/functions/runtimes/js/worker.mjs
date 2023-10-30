@@ -16,7 +16,7 @@ lambdaLocal.getLogger().level = 'alert'
 
 const { clientContext, entryFilePath, environment = {}, event, timeoutMs } = workerData
 
-// Injecting into the environmeny any properties passed in by the parent.
+// Injecting into the environment any properties passed in by the parent.
 for (const key in environment) {
   process.env[key] = environment[key]
 }
