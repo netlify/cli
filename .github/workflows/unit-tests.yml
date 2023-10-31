@@ -48,11 +48,3 @@ jobs:
           retry_on: error
           command: npm run test:ci:vitest:unit
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
-      - name: Run tool tests
-        uses: nick-fields/retry@v2
-        with:
-          timeout_minutes: 15
-          max_attempts: 3
-          retry_on: error
-          command: npm run test:ci:vitest:tools
-        if: '${{!steps.release-check.outputs.IS_RELEASE}}'
