@@ -195,22 +195,14 @@ export default class NetlifyFunction {
     const environment = {}
 
     if (this.blobsContext) {
-      if (this.runtimeAPIVersion === 2) {
-        // For functions using the v2 API, we inject the context object into an
-        // environment variable.
-        environment.NETLIFY_BLOBS_CONTEXT = Buffer.from(JSON.stringify(this.blobsContext)).toString('base64')
-      } else {
-        const payload = JSON.stringify({
-          url: this.blobsContext.edgeURL,
-          token: this.blobsContext.token,
-        })
+      const payload = JSON.stringify({
+        url: this.blobsContext.edgeURL,
+        token: this.blobsContext.token,
+      })
 
-        // For functions using the Lambda compatibility mode, we pass the
-        // context as part of the `clientContext` property.
-        context.custom = {
-          ...context?.custom,
-          blobs: Buffer.from(payload).toString('base64'),
-        }
+      context.custom = {
+        ...context?.custom,
+        blobs: Buffer.from(payload).toString('base64'),
       }
     }
 
