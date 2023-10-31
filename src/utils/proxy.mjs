@@ -675,6 +675,7 @@ export const getProxyUrl = function (settings) {
 export const startProxy = async function ({
   accountId,
   addonsUrls,
+  blobsContext,
   config,
   configPath,
   debug,
@@ -693,6 +694,7 @@ export const startProxy = async function ({
   const secondaryServerPort = settings.https ? await getAvailablePort() : null
   const functionsServer = settings.functionsPort ? `http://127.0.0.1:${settings.functionsPort}` : null
   const edgeFunctionsProxy = await initializeEdgeFunctionsProxy({
+    blobsContext,
     config,
     configPath,
     debug,

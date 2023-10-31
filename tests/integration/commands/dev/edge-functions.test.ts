@@ -1,5 +1,6 @@
 import process from 'process'
 
+import execa from 'execa'
 import { describe, expect, expectTypeOf, test } from 'vitest'
 
 import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
@@ -30,8 +31,12 @@ const routes = [
   },
 ]
 
+const setup = async ({ fixture }) => {
+  await execa('npm', ['install'], { cwd: fixture.directory })
+}
+
 describe.skipIf(isWindows)('edge functions', () => {
-  setupFixtureTests('dev-server-with-edge-functions', { devServer: true, mockApi: { routes } }, () => {
+  setupFixtureTests('dev-server-with-edge-functions', { devServer: true, mockApi: { routes }, setup }, () => {
     test<FixtureTestContext>('should run edge functions in correct order', async ({ devServer }) => {
       const response = await got(`http://localhost:${devServer.port}/ordertest`, {
         throwHttpErrors: false,
@@ -116,15 +121,19 @@ describe.skipIf(isWindows)('edge functions', () => {
       expect(res2.body).toContain('<p>An unhandled error in the function code triggered the following message:</p>')
     })
 
-    test<FixtureTestContext>('should run an edge function that imports an npm module', async ({ devServer }) => {
-      const res = await got(`http://localhost:${devServer.port}/with-npm-module`, {
+    test<FixtureTestContext>('should run an edge function that uses the Blobs npm module', async ({ devServer }) => {
+      const res = await got(`http://localhost:${devServer.port}/blobs`, {
         method: 'GET',
         throwHttpErrors: false,
         retry: { limit: 0 },
       })
 
       expect(res.statusCode).toBe(200)
-      expect(res.body).toBe('Hello from an npm module!')
+      expect(JSON.parse(res.body)).toEqual({
+        data: 'hello world',
+        fresh: false,
+        metadata: { name: 'Netlify', features: { blobs: true, functions: true } },
+      })
     })
   })
 

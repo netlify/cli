@@ -66,6 +66,7 @@ export const createAccountInfoHeader = (accountInfo = {}) => {
  *
  * @param {object} config
  * @param {*} config.accountId
+ * @param {import("../blobs/blobs.mjs").BlobsContext} config.blobsContext
  * @param {*} config.config
  * @param {*} config.configPath
  * @param {*} config.debug
@@ -85,6 +86,7 @@ export const createAccountInfoHeader = (accountInfo = {}) => {
  */
 export const initializeProxy = async ({
   accountId,
+  blobsContext,
   config,
   configPath,
   debug,
@@ -150,6 +152,12 @@ export const initializeProxy = async ({
     req.headers[headers.DeployID] = '0'
     req.headers[headers.Site] = createSiteInfoHeader(siteInfo)
     req.headers[headers.Account] = createAccountInfoHeader({ id: accountId })
+
+    if (blobsContext?.edgeURL && blobsContext?.token) {
+      req.headers[headers.BlobsInfo] = Buffer.from(
+        JSON.stringify({ url: blobsContext.edgeURL, token: blobsContext.token }),
+      ).toString('base64')
+    }
 
     await registry.initialize()
 
