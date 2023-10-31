@@ -34,6 +34,7 @@ const ZIP_EXTENSION = '.zip'
 
 export class FunctionsRegistry {
   constructor({
+    blobsContext,
     capabilities,
     config,
     debug = false,
@@ -51,6 +52,13 @@ export class FunctionsRegistry {
     this.projectRoot = projectRoot
     this.timeouts = timeouts
     this.settings = settings
+
+    /**
+     * Context object for Netlify Blobs
+     *
+     * @type {import("../blobs/blobs.mjs").BlobsContext}
+     */
+    this.blobsContext = blobsContext
 
     /**
      * An object to be shared among all functions in the registry. It can be
@@ -493,6 +501,7 @@ export class FunctionsRegistry {
         }
 
         const func = new NetlifyFunction({
+          blobsContext: this.blobsContext,
           config: this.config,
           directory: directories.find((directory) => mainFile.startsWith(directory)),
           mainFile,

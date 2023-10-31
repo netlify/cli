@@ -1,4 +1,5 @@
 // Handlers are meant to be async outside tests
+import { Buffer } from 'buffer'
 import { copyFile } from 'fs/promises'
 import { Agent } from 'node:https'
 import os from 'os'
@@ -213,9 +214,9 @@ export const handler = async function () {
         })
         .withFunction({
           path: 'hello.js',
-          handler: async (event) => ({
+          handler: async (event, context) => ({
             statusCode: 200,
-            body: JSON.stringify({ rawUrl: event.rawUrl }),
+            body: JSON.stringify({ rawUrl: event.rawUrl, blobs: context.clientContext.custom.blobs }),
           }),
         })
         .withEdgeFunction({
@@ -258,11 +259,15 @@ export const handler = async function () {
         t.expect(await nodeFetch(`https://localhost:${port}?ef=fetch`, options).then((res) => res.text())).toEqual(
           'origin',
         )
-        t.expect(
-          await nodeFetch(`https://localhost:${port}/api/hello`, options).then((res) => res.json()),
-        ).toStrictEqual({
-          rawUrl: `https://localhost:${port}/api/hello`,
-        })
+
+        const hello = await nodeFetch(`https://localhost:${port}/api/hello`, options).then((res) => res.json())
+
+        t.expect(hello.rawUrl).toBe(`https://localhost:${port}/api/hello`)
+
+        const blobsContext = JSON.parse(Buffer.from(hello.blobs, 'base64').toString())
+
+        t.expect(blobsContext.url).toBeTruthy()
+        t.expect(blobsContext.token).toBeTruthy()
 
         // the fetch will go against the `https://` url of the dev server, which isn't trusted system-wide.
         // this is the expected behaviour for fetch, so we shouldn't change anything about it.
