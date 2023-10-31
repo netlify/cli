@@ -5,7 +5,7 @@
   "author": "Netlify Inc.",
   "type": "module",
   "engines": {
-    "node": ">=16.16.0"
+    "node": ">=18.18.2"
   },
   "files": [
     "/bin",
@@ -76,6 +76,7 @@
   "dependencies": {
     "@bugsnag/js": "7.20.2",
     "@fastify/static": "6.10.2",
+    "@netlify/blobs": "^4.0.0",
     "@netlify/build": "29.23.4",
     "@netlify/build-info": "7.10.1",
     "@netlify/config": "20.9.0",
