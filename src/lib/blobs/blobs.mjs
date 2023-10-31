@@ -22,7 +22,7 @@ import { getPathInProject } from '../settings.mjs'
  * @param {boolean} options.debug
  * @param {string} options.projectRoot
  * @param {string} options.siteID
- * @returns {BlobsContext}
+ * @returns {Promise<BlobsContext>}
  */
 export const getBlobsContext = async ({ debug, projectRoot, siteID }) => {
   const token = uuidv4()

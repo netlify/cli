@@ -144,6 +144,8 @@ export async function setupFixtureTests(
       if (options.mockApi) mockApi = await startMockApi(options.mockApi)
       fixture = await Fixture.create(fixturePath, { apiUrl: mockApi?.apiUrl })
 
+      await options.setup?.({ fixture, mockApi })
+
       if (options.devServer) {
         devServer = await startDevServer({
           cwd: fixture.directory,
@@ -156,8 +158,6 @@ export async function setupFixtureTests(
           },
         })
       }
-
-      await options.setup?.({ devServer, fixture, mockApi })
     }, HOOK_TIMEOUT)
 
     beforeEach<FixtureTestContext>((context) => {
