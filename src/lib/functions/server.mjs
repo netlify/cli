@@ -245,6 +245,7 @@ const getFunctionsServer = (options) => {
 /**
  *
  * @param {object} options
+ * @param {import("../blobs/blobs.mjs").BlobsContext} options.blobsContext
  * @param {import('../../commands/base-command.mjs').default} options.command
  * @param {*} options.capabilities
  * @param {*} options.config
@@ -258,8 +259,19 @@ const getFunctionsServer = (options) => {
  * @returns {Promise<import('./registry.mjs').FunctionsRegistry | undefined>}
  */
 export const startFunctionsServer = async (options) => {
-  const { capabilities, command, config, debug, loadDistFunctions, settings, site, siteInfo, siteUrl, timeouts } =
-    options
+  const {
+    blobsContext,
+    capabilities,
+    command,
+    config,
+    debug,
+    loadDistFunctions,
+    settings,
+    site,
+    siteInfo,
+    siteUrl,
+    timeouts,
+  } = options
   const internalFunctionsDir = await getInternalFunctionsDir({ base: site.root })
   const functionsDirectories = []
   let manifest
@@ -306,6 +318,7 @@ export const startFunctionsServer = async (options) => {
   }
 
   const functionsRegistry = new FunctionsRegistry({
+    blobsContext,
     capabilities,
     config,
     debug,

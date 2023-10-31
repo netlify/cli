@@ -144,7 +144,8 @@ describe.concurrent('commands/dev-miscellaneous', () => {
 
         const output = outputBuffer.toString()
         const context = JSON.parse(output.match(/__CLIENT_CONTEXT__START__(.*)__CLIENT_CONTEXT__END__/)[1])
-        t.expect(context.clientContext).toBe(null)
+        t.expect(Object.keys(context.clientContext)).toEqual(['custom'])
+        t.expect(Object.keys(context.clientContext.custom)).toEqual(['blobs'])
         t.expect(context.identity).toBe(null)
       })
     })

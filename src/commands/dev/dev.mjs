@@ -3,6 +3,7 @@ import process from 'process'
 
 import { Option } from 'commander'
 
+import { getBlobsContext } from '../../lib/blobs/blobs.mjs'
 import { promptEditorHelper } from '../../lib/edge-functions/editor-helper.mjs'
 import { startFunctionsServer } from '../../lib/functions/server.mjs'
 import { printBanner } from '../../utils/banner.mjs'
@@ -161,8 +162,15 @@ const dev = async (options, command) => {
     },
   })
 
+  const blobsContext = await getBlobsContext({
+    debug: options.debug,
+    projectRoot: command.workingDir,
+    siteID: site.id ?? 'unknown-site-id',
+  })
+
   const functionsRegistry = await startFunctionsServer({
     api,
+    blobsContext,
     command,
     config,
     debug: options.debug,
