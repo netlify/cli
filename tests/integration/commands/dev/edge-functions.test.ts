@@ -36,7 +36,7 @@ const setup = async ({ fixture }) => {
 }
 
 describe.skipIf(isWindows)('edge functions', () => {
-  setupFixtureTests('dev-server-with-edge-functions', { devServer: true, mockApi: { routes }, setup }, () => {
+  setupFixtureTests('dev-server-with-edge-functions', { devServer: true, mockApi: { routes } }, () => {
     test<FixtureTestContext>('should run edge functions in correct order', async ({ devServer }) => {
       const response = await got(`http://localhost:${devServer.port}/ordertest`, {
         throwHttpErrors: false,
@@ -120,21 +120,6 @@ describe.skipIf(isWindows)('edge functions', () => {
 
       expect(res2.body).toContain('<p>An unhandled error in the function code triggered the following message:</p>')
     })
-
-    test<FixtureTestContext>('should run an edge function that uses the Blobs npm module', async ({ devServer }) => {
-      const res = await got(`http://localhost:${devServer.port}/blobs`, {
-        method: 'GET',
-        throwHttpErrors: false,
-        retry: { limit: 0 },
-      })
-
-      expect(res.statusCode).toBe(200)
-      expect(JSON.parse(res.body)).toEqual({
-        data: 'hello world',
-        fresh: false,
-        metadata: { name: 'Netlify', features: { blobs: true, functions: true } },
-      })
-    })
   })
 
   setupFixtureTests('dev-server-with-edge-functions', { devServer: true, mockApi: { routes } }, () => {
@@ -155,4 +140,25 @@ describe.skipIf(isWindows)('edge functions', () => {
       expect(devServer.output).not.toContain('Removed edge function')
     })
   })
+
+  setupFixtureTests(
+    'dev-server-with-edge-functions-and-npm-modules',
+    { devServer: true, mockApi: { routes }, setup },
+    () => {
+      test<FixtureTestContext>('should run an edge function that uses the Blobs npm module', async ({ devServer }) => {
+        const res = await got(`http://localhost:${devServer.port}/blobs`, {
+          method: 'GET',
+          throwHttpErrors: false,
+          retry: { limit: 0 },
+        })
+
+        expect(res.statusCode).toBe(200)
+        expect(JSON.parse(res.body)).toEqual({
+          data: 'hello world',
+          fresh: false,
+          metadata: { name: 'Netlify', features: { blobs: true, functions: true } },
+        })
+      })
+    },
+  )
 })
