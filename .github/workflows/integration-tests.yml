@@ -63,14 +63,6 @@ jobs:
       - name: Install core dependencies
         run: npm ci --no-audit
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
-      - name: Determine which tests to run
-        if: '${{ !steps.release-check.outputs.IS_RELEASE }}'
-        uses: haya14busa/action-cond@v1
-        id: changed
-        with:
-          cond: ${{ github.event_name == 'pull_request' }}
-          if_true: '--changed=${{ github.event.pull_request.base.sha }}' # on pull requests test with the project graph only the affected tests
-          if_false: '' # on the base branch run all the tests as security measure
       - name: Generate self-signed certificates
         run: npm run certs
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
@@ -85,7 +77,7 @@ jobs:
           timeout_minutes: 15
           max_attempts: 3
           retry_on: error
-          command: npm run test:ci:vitest:integration -- --shard=${{ matrix.shard }} ${{ steps.changed.outputs.value }}
+          command: npm run test:ci:vitest:integration -- --shard=${{ matrix.shard }}
         env:
           # GitHub secrets are not available when running on PR from forks
           # We set a flag so we can skip tests that access Netlify API
