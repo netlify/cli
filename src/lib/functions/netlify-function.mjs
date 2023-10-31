@@ -200,8 +200,6 @@ export default class NetlifyFunction {
         token: this.blobsContext.token,
       })
 
-      // For functions using the Lambda compatibility mode, we pass the
-      // context as part of the `clientContext` property.
       context.custom = {
         ...context?.custom,
         blobs: Buffer.from(payload).toString('base64'),
