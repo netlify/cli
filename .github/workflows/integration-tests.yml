@@ -14,14 +14,14 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macOS-latest, windows-latest]
-        node-version: ['18.0.0', '*']
+        node-version: ['18.12.0', '*']
         shard: ['1/3', '2/3', '3/3']
 
         exclude:
           - os: macOS-latest
-            node-version: '18.0.0'
+            node-version: '18.12.0'
           - os: windows-latest
-            node-version: '18.0.0'
+            node-version: '18.12.0'
       fail-fast: false
     steps:
       # Sets an output parameter if this is a release PR
