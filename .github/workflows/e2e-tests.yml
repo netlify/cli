@@ -24,7 +24,7 @@ jobs:
         #
         # os: [ubuntu-latest, macOS-latest, windows-latest]
         os: [ubuntu-latest, macOS-latest]
-        node-version: ['18.0.0', '*']
+        node-version: ['18.18.2', '*']
       fail-fast: false
 
     steps:
