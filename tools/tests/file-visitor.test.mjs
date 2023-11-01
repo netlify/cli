@@ -1,7 +1,7 @@
 import { join } from 'path'
 import { format } from 'util'
 
-import test from 'ava'
+import { test } from 'vitest'
 import mock, { restore } from 'mock-fs'
 
 import snapshots from '../../tests/integration/utils/snapshots.mjs'

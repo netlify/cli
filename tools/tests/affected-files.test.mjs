@@ -1,6 +1,6 @@
 import { join } from 'path'
 
-import test from 'ava'
+import { test } from 'vitest'
 import glob from 'fast-glob'
 import mock from 'mock-fs'
 import { stub, createSandbox } from 'sinon'

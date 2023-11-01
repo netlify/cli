@@ -55,15 +55,13 @@
     "test:init:cli-help": "npm run start -- --help",
     "test:init:eleventy-deps": "cd tests/integration/__fixtures__/eleventy-site && pnpm install --frozen-lockfile",
     "test:init:hugo-deps": "npm ci --prefix tests/integration/__fixtures__/hugo-site --no-audit",
-    "test:dev:ava": "ava --verbose",
     "test:dev:vitest": "vitest run tests/unit/ && vitest run tests/integration",
-    "test:ci:ava:integration": "c8 -r json ava --concurrency 1 --no-worker-threads tests/integration/",
     "test:ci:vitest:unit": "vitest run --coverage tests/unit/",
     "test:ci:vitest:integration": "vitest run --coverage tests/integration/",
     "test:affected": "node ./tools/affected-test.mjs",
     "e2e": "node ./tools/e2e/run.mjs",
     "docs": "node ./site/scripts/docs.mjs",
-    "watch": "c8 --reporter=lcov ava --watch",
+    "watch": "c8 --reporter=lcov vitest --watch",
     "site:build": "run-s site:build:*",
     "site:build:install": "cd site && npm install --no-audit",
     "site:build:assets": "cd site && npm run build",
@@ -193,7 +191,6 @@
     "@types/prettyjson": "0.0.30",
     "@types/semver": "7.5.0",
     "@vitest/coverage-v8": "0.33.0",
-    "ava": "4.3.3",
     "c8": "7.14.0",
     "eslint-plugin-sort-destructure-keys": "1.5.0",
     "eslint-plugin-workspace": "file:./tools/lint-rules",
@@ -222,12 +219,6 @@
     "files": [
       "tools/**/*.test.mjs",
       "tests/**/*.test.cjs"
-    ],
-    "cache": true,
-    "concurrency": 5,
-    "failFast": false,
-    "failWithoutAssertions": false,
-    "tap": false,
-    "timeout": "5m"
+    ]
   }
 }
