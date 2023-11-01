@@ -7,11 +7,11 @@ import jwt from 'jsonwebtoken'
 import fetch from 'node-fetch'
 import { describe, test } from 'vitest'
 
-import { withDevServer } from '../../utils/dev-server.cjs'
-import got from '../../utils/got.cjs'
-import { withMockApi } from '../../utils/mock-api.cjs'
-import { pause } from '../../utils/pause.cjs'
-import { withSiteBuilder } from '../../utils/site-builder.cjs'
+import { withDevServer } from '../../utils/dev-server.mjs'
+import got from '../../utils/got.mjs'
+import { withMockApi } from '../../utils/mock-api.mjs'
+import { pause } from '../../utils/pause.mjs'
+import { withSiteBuilder } from '../../utils/site-builder.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -144,7 +144,8 @@ describe.concurrent('commands/dev-miscellaneous', () => {
 
         const output = outputBuffer.toString()
         const context = JSON.parse(output.match(/__CLIENT_CONTEXT__START__(.*)__CLIENT_CONTEXT__END__/)[1])
-        t.expect(context.clientContext).toBe(null)
+        t.expect(Object.keys(context.clientContext)).toEqual(['custom'])
+        t.expect(Object.keys(context.clientContext.custom)).toEqual(['blobs'])
         t.expect(context.identity).toBe(null)
       })
     })
@@ -1120,7 +1121,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
 
   test('should inject the `NETLIFY_DEV` environment variable in the process (legacy environment variables)', async (t) => {
     const externalServerPort = await getAvailablePort()
-    const externalServerPath = path.join(__dirname, '../../utils', 'external-server-cli.cjs')
+    const externalServerPath = path.join(__dirname, '../../utils', 'external-server-cli.mjs')
     const command = `node ${externalServerPath} ${externalServerPort}`
 
     await withSiteBuilder('site-with-legacy-env-vars', async (builder) => {
@@ -1193,7 +1194,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
     ]
 
     const externalServerPort = await getAvailablePort()
-    const externalServerPath = path.join(__dirname, '../../utils', 'external-server-cli.cjs')
+    const externalServerPath = path.join(__dirname, '../../utils', 'external-server-cli.mjs')
     const command = `node ${externalServerPath} ${externalServerPort}`
 
     await withSiteBuilder('site-with-env-vars', async (builder) => {

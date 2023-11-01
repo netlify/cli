@@ -1,11 +1,11 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "16.9.2",
+  "version": "17.0.0",
   "author": "Netlify Inc.",
   "type": "module",
   "engines": {
-    "node": ">=16.16.0"
+    "node": ">=18.18.2"
   },
   "files": [
     "/bin",
@@ -78,13 +78,12 @@
   "dependencies": {
     "@bugsnag/js": "7.20.2",
     "@fastify/static": "6.10.2",
+    "@netlify/blobs": "^4.0.0",
     "@netlify/build": "29.23.4",
     "@netlify/build-info": "7.10.1",
     "@netlify/config": "20.9.0",
     "@netlify/edge-bundler": "9.4.1",
     "@netlify/local-functions-proxy": "1.1.1",
-    "@netlify/sdk": "^1.1.5",
-    "@netlify/serverless-functions-api": "1.10.0",
     "@netlify/zip-it-and-ship-it": "9.25.4",
     "@octokit/rest": "19.0.13",
     "ansi-escapes": "6.2.0",
@@ -183,8 +182,8 @@
     "update-notifier": "6.0.2",
     "uuid": "9.0.0",
     "wait-port": "1.0.4",
-    "winston": "3.8.2",
-    "write-file-atomic": "5.0.1"
+    "write-file-atomic": "5.0.1",
+    "zod": "^3.22.4"
   },
   "devDependencies": {
     "@babel/preset-react": "7.22.5",

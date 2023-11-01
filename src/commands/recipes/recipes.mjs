@@ -81,7 +81,7 @@ export const createRecipesCommand = (program) => {
   program
     .command('recipes')
     .argument('[name]', 'name of the recipe')
-    .description(`(Beta) Create and modify files in a project using pre-defined recipes`)
+    .description(`Create and modify files in a project using pre-defined recipes`)
     .option('-n, --name <name>', 'recipe name to use')
     .addExamples(['netlify recipes my-recipe', 'netlify recipes --name my-recipe'])
     .action(recipesCommand)

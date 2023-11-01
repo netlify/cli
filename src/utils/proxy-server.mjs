@@ -38,6 +38,7 @@ export const generateInspectSettings = (edgeInspect, edgeInspectBrk) => {
  * @param {object} params
  * @param {string=} params.accountId
  * @param {*} params.addonsUrls
+ * @param {import("../lib/blobs/blobs.mjs").BlobsContext} blobsContext
  * @param {import('../commands/types.js').NetlifyOptions["config"]} params.config
  * @param {string} [params.configPath] An override for the Netlify config path
  * @param {boolean} params.debug
@@ -58,6 +59,7 @@ export const generateInspectSettings = (edgeInspect, edgeInspectBrk) => {
 export const startProxyServer = async ({
   accountId,
   addonsUrls,
+  blobsContext,
   config,
   configPath,
   debug,
@@ -76,6 +78,7 @@ export const startProxyServer = async ({
 }) => {
   const url = await startProxy({
     addonsUrls,
+    blobsContext,
     config,
     configPath: configPath || site.configPath,
     debug,

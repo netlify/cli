@@ -4,7 +4,7 @@ import { format } from 'util'
 import test from 'ava'
 import mock, { restore } from 'mock-fs'
 
-import snapshots from '../../tests/integration/utils/snapshots.cjs'
+import snapshots from '../../tests/integration/utils/snapshots.mjs'
 import { DependencyGraph, fileVisitor } from '../project-graph/index.mjs'
 
 import { esModuleMockedFileSystem } from './utils/file-systems.mjs'

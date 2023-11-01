@@ -1,9 +1,9 @@
 import { test, describe } from 'vitest'
 
-import callCli from '../../utils/call-cli.cjs'
-import { getCLIOptions, withMockApi } from '../../utils/mock-api.cjs'
-import { withSiteBuilder } from '../../utils/site-builder.cjs'
-import { normalize } from '../../utils/snapshots.cjs'
+import { callCli } from '../../utils/call-cli.mjs'
+import { getCLIOptions, withMockApi } from '../../utils/mock-api.mjs'
+import { withSiteBuilder } from '../../utils/site-builder.mjs'
+import { normalize } from '../../utils/snapshots.mjs'
 
 const siteInfo = {
   account_slug: 'test-account',
