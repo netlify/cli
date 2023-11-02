@@ -399,7 +399,7 @@ describe.concurrent('commands/dev/config', () => {
     })
   })
 
-  test.runIf(gte(version, '18.0.0'))('should support functions with streaming responses', async (t) => {
+  test.runIf(gte(version, '18.14.0'))('should support functions with streaming responses', async (t) => {
     await withSiteBuilder('site-with-streaming-function', async (builder) => {
       builder
         .withPackageJson({ packageJson: { dependencies: { '@netlify/functions': 'latest' } } })

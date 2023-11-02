@@ -10,7 +10,7 @@ import { error as errorExit } from '../../utils/command-helpers.mjs'
 import { BACKGROUND } from '../../utils/functions/get-functions.mjs'
 
 const TYPESCRIPT_EXTENSIONS = new Set(['.cts', '.mts', '.ts'])
-const V2_MIN_NODE_VERSION = '18.0.0'
+const V2_MIN_NODE_VERSION = '18.14.0'
 
 // Returns a new set with all elements of `setA` that don't exist in `setB`.
 const difference = (setA, setB) => new Set([...setA].filter((item) => !setB.has(item)))
