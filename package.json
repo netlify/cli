@@ -82,7 +82,7 @@
     "@netlify/config": "20.9.0",
     "@netlify/edge-bundler": "9.4.1",
     "@netlify/local-functions-proxy": "1.1.1",
-    "@netlify/zip-it-and-ship-it": "9.25.6",
+    "@netlify/zip-it-and-ship-it": "9.25.7",
     "@octokit/rest": "19.0.13",
     "ansi-escapes": "6.2.0",
     "ansi-styles": "6.2.1",
