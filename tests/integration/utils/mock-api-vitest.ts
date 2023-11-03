@@ -70,16 +70,18 @@ export const startMockApi = ({ routes, silent }: MockApiOptions): Promise<MockAp
     Object.entries(req.headers).map(([key, value]) => {test[key] = value})
     const headers: HeadersInit = new Headers(test);
 
+    const body = req.method != 'GET' && req.method != 'HEAD' ? JSON.stringify(req.body) : undefined
+    
     await fetch(`http://localhost${req.url}`, {
       method: req.method,
       headers,
-      body: JSON.stringify(req.body),
+      body,
     }).then((response) => {
       res.status(response.status)
       res.json(response)
     }).catch((err) => {
       res.status(500)
-      res.json({ message: err })
+      res.json({ message: `Error making request from mock API: ${err}` })
     })
   })
 

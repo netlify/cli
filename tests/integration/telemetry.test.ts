@@ -34,6 +34,7 @@ const routes = [
 ]
 
 describe('telemetry', async () => {
+  let requestMade
   let unhandledRequestMade = false
   let unhandledRequest = {
     url: '',
@@ -41,11 +42,13 @@ describe('telemetry', async () => {
   }
 
   beforeEach(() => {
+    requestMade = undefined
     unhandledRequestMade = false
     unhandledRequest = {
       method: '',
       url: ''
     }
+
     server.use(
       http.post(`*`, ({ request }) => {
         unhandledRequestMade = true
@@ -54,6 +57,13 @@ describe('telemetry', async () => {
           method: request.method,
         }
         return HttpResponse.json({}, { status: 500 })
+      })
+    )
+
+    server.use(
+      http.post(`http://localhost/api/v1/track`, ({request}) => {
+        requestMade = request
+        return HttpResponse.json({}, { status: 200 })
       })
     )
   })
@@ -66,65 +76,49 @@ describe('telemetry', async () => {
   })
 
   await withMockApi(routes, async () => {
-    test<MockApiTestContext>('should not track --telemetry-disable', async ({ apiUrl, requests }) => {
-      let requestWasMade = false
-      server.use(
-        http.post(`http://localhost/api/v1/track`, () => {
-          requestWasMade = true
-          return HttpResponse.json({}, { status: 200 })
-        })
-      )
-
+    test<MockApiTestContext>('should not track --telemetry-disable', async ({ apiUrl }) => {
       await callCli(['--telemetry-disable'], getCLIOptions(apiUrl))
-      expect(requestWasMade).toEqual(false)
+      expect(requestMade).toBeUndefined()
     })
 
-    test<MockApiTestContext>('should track --telemetry-enable', async ({ apiUrl, requests }) => {
+    test<MockApiTestContext>('should track --telemetry-enable', async ({ apiUrl }) => {
       const UUID_VERSION = 4
-      let requestMade
-
-      server.use(
-        http.post(`http://localhost/api/v1/track`, ({ request }) => {
-          requestMade = request
-          return HttpResponse.json({}, { status: 200 })
-        })
-      )
 
       await callCli(['--telemetry-enable'], getCLIOptions(apiUrl))
+
       expect(requestMade).toBeDefined()
       expect(requestMade.method).toEqual('POST')
       expect(requestMade.headers.get('user-agent')).toEqual(`${name}/${version}`)
-      
+
       const body = await requestMade.json()
 
       expect(body.event).toEqual('cli:user_telemetryEnabled')
       expect(uuidVersion(body.anonymousId)).toEqual(UUID_VERSION)
       expect(body.properties).toStrictEqual({ cliVersion: version, nodejsVersion })
     })
+
+    test<MockApiTestContext>('should send netlify-cli/<version> user-agent', async ({ apiUrl }) => {
+      server.use(
+        http.get(`http://localhost/api/v1/accounts`, () => {
+          return HttpResponse.json({}, { status: 200 })
+        })
+      )
+      server.use(
+        http.get(`http://localhost/api/v1/sites`, () => {
+          return HttpResponse.json({}, { status: 200 })
+        })
+      )
+  
+      await callCli(['api', 'listSites'], getCLIOptions(apiUrl))
+      
+      expect(requestMade).toBeDefined()
+      // example: netlify-cli/6.14.25 darwin-x64 node-v16.13.0
+      const userAgent = requestMade.headers.get('user-agent')
+      expect(userAgent.startsWith(`${name}/${version}`)).toEqual(true)
+    })
   })
 })
 
-//   const UUID_VERSION = 4
-
-//   test<MockApiTestContext>('should track --telemetry-enable', async ({ apiUrl, requests }) => {
-//     await callCli(['--telemetry-enable'], getCLIOptions(apiUrl))
-//     expect(requests.length).toBe(1)
-//     expect(requests[0].method).toBe('POST')
-//     expect(requests[0].path).toBe('/api/v1/track')
-//     expect(requests[0].headers['user-agent']).toBe(`${name}/${version}`)
-//     expect(requests[0].body.event).toBe('cli:user_telemetryEnabled')
-//     expect(uuidVersion(requests[0].body.anonymousId)).toBe(UUID_VERSION)
-//     expect(requests[0].body.properties).toEqual({ cliVersion: version, nodejsVersion })
-//   })
-
-//   test<MockApiTestContext>('should send netlify-cli/<version> user-agent', async ({ apiUrl, requests }) => {
-//     await callCli(['api', 'listSites'], getCLIOptions(apiUrl))
-//     const request = requests.find(({ path }) => path === '/api/v1/track')
-//     expect(request).toBeDefined()
-//     // example: netlify-cli/6.14.25 darwin-x64 node-v16.13.0
-//     const userAgent = request.headers['user-agent']
-//     expect(userAgent.startsWith(`${name}/${version}`)).toBe(true)
-//   })
 
 //   test<MockApiTestContext>('should send correct command on success', async ({ apiUrl, requests }) => {
 //     await callCli(['api', 'listSites'], getCLIOptions(apiUrl))
