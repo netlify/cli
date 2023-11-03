@@ -4,7 +4,6 @@ import { basename, resolve } from 'path'
 import { env } from 'process'
 
 import { runCoreSteps } from '@netlify/build'
-import { restoreConfig, updateConfig } from '@netlify/config'
 import { Option } from 'commander'
 import inquirer from 'inquirer'
 import isEmpty from 'lodash/isEmpty.js'
@@ -407,10 +406,11 @@ const runDeploy = async ({
  * @param {object} config
  * @param {*} config.cachedConfig
  * @param {string} [config.packagePath]
+ * @param {*} config.deployHandler
  * @param {import('commander').OptionValues} config.options The options of the command
  * @returns
  */
-const handleBuild = async ({ cachedConfig, options, packagePath }) => {
+const handleBuild = async ({ cachedConfig, deployHandler, options, packagePath }) => {
   if (!options.build) {
     return {}
   }
@@ -420,6 +420,7 @@ const handleBuild = async ({ cachedConfig, options, packagePath }) => {
     packagePath,
     token,
     options,
+    deployHandler,
   })
   const { configMutations, exitCode, newConfig } = await runBuild(resolvedOptions)
   if (exitCode !== 0) {
@@ -529,6 +530,92 @@ const printResults = ({ deployToProduction, isIntegrationDeploy, json, results, 
   }
 }
 
+const prepAndRunDeploy = async ({
+  api,
+  command,
+  config,
+  deployToProduction,
+  options,
+  site,
+  siteData,
+  siteId,
+  workingDir,
+}) => {
+  const alias = options.alias || options.branch
+  const isUsingEnvelope = siteData && siteData.use_envelope
+  // if a context is passed besides dev, we need to pull env vars from that specific context
+  if (isUsingEnvelope && options.context && options.context !== 'dev') {
+    command.netlify.cachedConfig.env = await getEnvelopeEnv({
+      api,
+      context: options.context,
+      env: command.netlify.cachedConfig.env,
+      siteInfo: siteData,
+    })
+  }
+
+  const deployFolder = await getDeployFolder({ command, options, config, site, siteData })
+  const functionsFolder = getFunctionsFolder({ workingDir, options, config, site, siteData })
+  const { configPath } = site
+  const edgeFunctionsConfig = command.netlify.config.edge_functions
+
+  // build flag wasn't used and edge functions exist
+  if (!options.build && edgeFunctionsConfig && edgeFunctionsConfig.length !== 0) {
+    await bundleEdgeFunctions(options, command)
+  }
+
+  log(
+    prettyjson.render({
+      'Deploy path': deployFolder,
+      'Functions path': functionsFolder,
+      'Configuration path': configPath,
+    }),
+  )
+
+  const { functionsFolderStat } = await validateFolders({
+    deployFolder,
+    functionsFolder,
+  })
+
+  const siteEnv = isUsingEnvelope
+    ? await getEnvelopeEnv({
+        api,
+        context: options.context,
+        env: command.netlify.cachedConfig.env,
+        raw: true,
+        scope: 'functions',
+        siteInfo: siteData,
+      })
+    : siteData?.build_settings?.env
+
+  const functionsConfig = normalizeFunctionsConfig({
+    functionsConfig: config.functions,
+    projectRoot: site.root,
+    siteEnv,
+  })
+
+  const results = await runDeploy({
+    alias,
+    api,
+    command,
+    configPath,
+    deployFolder,
+    deployTimeout: options.timeout * SEC_TO_MILLISEC || DEFAULT_DEPLOY_TIMEOUT,
+    deployToProduction,
+    functionsConfig,
+    // pass undefined functionsFolder if doesn't exist
+    functionsFolder: functionsFolderStat && functionsFolder,
+    packagePath: command.workspacePackage,
+    silent: options.json || options.silent,
+    site,
+    siteData,
+    siteId,
+    skipFunctionsCache: options.skipFunctionsCache,
+    title: options.message,
+  })
+
+  return results
+}
+
 /**
  * The deploy command
  * @param {import('commander').OptionValues} options
@@ -584,102 +671,48 @@ export const deploy = async (options, command) => {
     }
   }
 
-  const deployToProduction = options.prod || (options.prodIfUnlocked && !siteData.published_deploy.locked)
-
   if (options.trigger) {
     return triggerDeploy({ api, options, siteData, siteId })
   }
 
-  const isUsingEnvelope = siteData && siteData.use_envelope
-  // if a context is passed besides dev, we need to pull env vars from that specific context
-  if (isUsingEnvelope && options.context && options.context !== 'dev') {
-    command.netlify.cachedConfig.env = await getEnvelopeEnv({
+  const deployToProduction = options.prod || (options.prodIfUnlocked && !siteData.published_deploy.locked)
+
+  let results = {}
+
+  if (options.build) {
+    await handleBuild({
+      packagePath: command.workspacePackage,
+      cachedConfig: command.netlify.cachedConfig,
+      options,
+      deployHandler: async ({ netlifyConfig }) => {
+        results = await prepAndRunDeploy({
+          command,
+          options,
+          workingDir,
+          api,
+          site,
+          config: netlifyConfig,
+          siteData,
+          siteId,
+          deployToProduction,
+        })
+
+        return {}
+      },
+    })
+  } else {
+    results = await prepAndRunDeploy({
+      command,
+      options,
+      workingDir,
       api,
-      context: options.context,
-      env: command.netlify.cachedConfig.env,
-      siteInfo: siteData,
+      site,
+      config: command.netlify.config,
+      siteData,
+      siteId,
+      deployToProduction,
     })
   }
-
-  const { configMutations = [], newConfig } = await handleBuild({
-    packagePath: command.workspacePackage,
-    cachedConfig: command.netlify.cachedConfig,
-    options,
-  })
-  const config = newConfig || command.netlify.config
-
-  const deployFolder = await getDeployFolder({ command, options, config, site, siteData })
-  const functionsFolder = getFunctionsFolder({ workingDir, options, config, site, siteData })
-  const { configPath } = site
-  const edgeFunctionsConfig = command.netlify.config.edge_functions
-
-  // build flag wasn't used and edge functions exist
-  if (!options.build && edgeFunctionsConfig && edgeFunctionsConfig.length !== 0) {
-    await bundleEdgeFunctions(options, command)
-  }
-
-  log(
-    prettyjson.render({
-      'Deploy path': deployFolder,
-      'Functions path': functionsFolder,
-      'Configuration path': configPath,
-    }),
-  )
-
-  const { functionsFolderStat } = await validateFolders({
-    deployFolder,
-    functionsFolder,
-  })
-
-  const siteEnv = isUsingEnvelope
-    ? await getEnvelopeEnv({
-        api,
-        context: options.context,
-        env: command.netlify.cachedConfig.env,
-        raw: true,
-        scope: 'functions',
-        siteInfo: siteData,
-      })
-    : siteData?.build_settings?.env
-
-  const functionsConfig = normalizeFunctionsConfig({
-    functionsConfig: config.functions,
-    projectRoot: site.root,
-    siteEnv,
-  })
-
-  const redirectsPath = `${deployFolder}/_redirects`
-  // @ts-ignore
-  await updateConfig(configMutations, {
-    buildDir: deployFolder,
-    configPath,
-    redirectsPath,
-    context: command.netlify.cachedConfig.context,
-    branch: command.netlify.cachedConfig.branch,
-  })
-  const results = await runDeploy({
-    alias,
-    api,
-    command,
-    configPath,
-    deployFolder,
-    deployTimeout: options.timeout * SEC_TO_MILLISEC || DEFAULT_DEPLOY_TIMEOUT,
-    deployToProduction,
-    functionsConfig,
-    // pass undefined functionsFolder if doesn't exist
-    functionsFolder: functionsFolderStat && functionsFolder,
-    packagePath: command.workspacePackage,
-    silent: options.json || options.silent,
-    site,
-    siteData,
-    siteId,
-    skipFunctionsCache: options.skipFunctionsCache,
-    title: options.message,
-  })
-
-  // @ts-ignore
-  await restoreConfig(configMutations, { buildDir: deployFolder, configPath, redirectsPath })
-
   const isIntegrationDeploy = command.name() === 'integration:deploy'
 
   printResults({

@@ -24,10 +24,12 @@ import { featureFlags as edgeFunctionsFeatureFlags } from './edge-functions/cons
  * @param {string} [config.packagePath]
  * @param {string} config.token
  * @param {import('commander').OptionValues} config.options
+ * @param {*} config.deployHandler
  * @returns {BuildConfig}
  */
 export const getBuildOptions = ({
   cachedConfig,
+  deployHandler,
   options: { context, cwd, debug, dry, json, offline, silent },
   packagePath,
   token,
@@ -49,6 +51,14 @@ export const getBuildOptions = ({
     ...edgeFunctionsFeatureFlags,
     ...getFeatureFlagsFromSiteInfo(cachedConfig.siteInfo),
     functionsBundlingManifest: true,
+  },
+  eventHandlers: {
+    onPostBuild: deployHandler
+      ? {
+          handler: deployHandler,
+          description: 'Deploy Site',
+        }
+      : undefined,
   },
   edgeFunctionsBootstrapURL: getBootstrapURL(),
 })
