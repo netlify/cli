@@ -66,9 +66,13 @@ export const startMockApi = ({ routes, silent }: MockApiOptions): Promise<MockAp
   app.use(raw())
 
   app.all('*', async function onRequest(req, res) {
-    // Erica todo: Add headers back in
+    const test = {}
+    Object.entries(req.headers).map(([key, value]) => {test[key] = value})
+    const headers: HeadersInit = new Headers(test);
+
     await fetch(`http://localhost${req.url}`, {
       method: req.method,
+      headers,
       body: req.body,
     }).then((response) => {
       res.status(response.status)
