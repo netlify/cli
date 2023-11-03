@@ -34,18 +34,34 @@ const routes = [
 ]
 
 describe('telemetry', async () => {
-  beforeAll(() => {
-    server.events.on('request:start', ({ request }) => {
-      console.log('Outgoing request:', request.method, request.url)
-    })
-    // Erica todo: figure out how to throw an error on an 
-    // unhandled request
-    server.events.on('request:unhandled', ({request}) => {
-      throw new Error(`Must handle request: ${request.method} ${request.url}`)
-    })
+  let unhandledRequestMade = false
+  let unhandledRequest = {
+    url: '',
+    method: ''
+  }
+  
+  beforeEach(() => {
+    unhandledRequestMade = false
+    unhandledRequest = {
+      method: '',
+      url: ''
+    }
+    server.use(
+      http.post(`*`, ({ request }) => {
+        unhandledRequestMade = true
+        unhandledRequest = {
+          url: request.url,
+          method: request.method,
+        }
+        return HttpResponse.json({}, { status: 500 })
+      })
+    )
   })
 
   afterEach(() => {
+    if (unhandledRequestMade) {
+      throw new Error(`Unhandled request was made: ${JSON.stringify(unhandledRequest)}}`)
+    }
     server.resetHandlers()
   })
 
