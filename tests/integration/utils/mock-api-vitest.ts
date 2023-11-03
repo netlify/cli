@@ -5,6 +5,8 @@ import { isDeepStrictEqual, promisify } from 'util'
 import type { CommonOptions, NodeOptions } from 'execa'
 import express, { urlencoded, json, raw } from 'express'
 import { afterAll, beforeAll, beforeEach } from 'vitest'
+import {http, HttpResponse} from 'msw'
+
 
 export enum HTTPMethod {
   DELETE = 'DELETE',
@@ -63,30 +65,18 @@ export const startMockApi = ({ routes, silent }: MockApiOptions): Promise<MockAp
   app.use(json())
   app.use(raw())
 
-  routes.forEach(({ method = 'get', path, requestBody, response = {}, status = 200 }) => {
-    app[method.toLowerCase()](`/api/v1/${path}`, function onRequest(req, res) {
-      // validate request body
-      if (requestBody !== undefined && !isDeepStrictEqual(requestBody, req.body)) {
-        res.status(500)
-        res.json({ message: `Request body doesn't match` })
-        return
-      }
-      addRequest(requests, req)
-      res.status(status)
-      if (status === 404) {
-        response.message = 'Not found'
-      }
+  app.all('*', async function onRequest(req, res) {
+    // Erica todo: Add headers back in
+    await fetch(`http://localhost${req.url}`, {
+      method: req.method,
+      body: req.body,
+    }).then((response) => {
+      res.status(response.status)
       res.json(response)
+    }).catch((err) => {
+      res.status(500)
+      res.json({ message: err })
     })
-  })
-
-  app.all('*', function onRequest(req, res) {
-    addRequest(requests, req)
-    if (!silent) {
-      console.warn(`Route not found: (${req.method.toUpperCase()}) ${req.url}`)
-    }
-    res.status(404)
-    res.json({ message: 'Not found' })
   })
 
   return new Promise((resolve, reject) => {
