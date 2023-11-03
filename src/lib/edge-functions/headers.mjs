@@ -2,6 +2,7 @@
 import { Buffer } from 'buffer'
 
 export const headers = {
+  BlobsInfo: 'x-nf-blobs-info',
   DeployID: 'x-nf-deploy-id',
   FeatureFlags: 'x-nf-feature-flags',
   ForwardedHost: 'x-forwarded-host',

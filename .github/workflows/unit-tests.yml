@@ -13,7 +13,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macOS-latest, windows-latest]
-        node-version: ['16.16.0', '*']
+        node-version: ['18.14.0', '*']
       fail-fast: false
     steps:
       # Sets an output parameter if this is a release PR

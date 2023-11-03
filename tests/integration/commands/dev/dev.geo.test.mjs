@@ -2,8 +2,8 @@ import process from 'process'
 
 import { test } from 'vitest'
 
-import callCli from '../../utils/call-cli.cjs'
-import { withSiteBuilder } from '../../utils/site-builder.cjs'
+import { callCli } from '../../utils/call-cli.mjs'
+import { withSiteBuilder } from '../../utils/site-builder.mjs'
 
 test('should throw if invalid country arg is passed', async (t) => {
   await withSiteBuilder('site-env', async (builder) => {

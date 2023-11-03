@@ -1,4 +1,5 @@
 // @ts-check
+import { Buffer } from 'buffer'
 import { basename, extname } from 'path'
 import { version as nodeVersion } from 'process'
 
@@ -9,7 +10,7 @@ import { error as errorExit } from '../../utils/command-helpers.mjs'
 import { BACKGROUND } from '../../utils/functions/get-functions.mjs'
 
 const TYPESCRIPT_EXTENSIONS = new Set(['.cts', '.mts', '.ts'])
-const V2_MIN_NODE_VERSION = '18.0.0'
+const V2_MIN_NODE_VERSION = '18.14.0'
 
 // Returns a new set with all elements of `setA` that don't exist in `setB`.
 const difference = (setA, setB) => new Set([...setA].filter((item) => !setB.has(item)))
@@ -23,6 +24,7 @@ const getNextRun = function (schedule) {
 
 export default class NetlifyFunction {
   constructor({
+    blobsContext,
     config,
     directory,
     displayName,
@@ -34,6 +36,7 @@ export default class NetlifyFunction {
     timeoutBackground,
     timeoutSynchronous,
   }) {
+    this.blobsContext = blobsContext
     this.buildError = null
     this.config = config
     this.directory = directory
@@ -181,7 +184,7 @@ export default class NetlifyFunction {
   }
 
   // Invokes the function and returns its response object.
-  async invoke(event, context) {
+  async invoke(event, context = {}) {
     await this.buildQueue
 
     if (this.buildError) {
@@ -189,10 +192,24 @@ export default class NetlifyFunction {
     }
 
     const timeout = this.isBackground ? this.timeoutBackground : this.timeoutSynchronous
+    const environment = {}
+
+    if (this.blobsContext) {
+      const payload = JSON.stringify({
+        url: this.blobsContext.edgeURL,
+        token: this.blobsContext.token,
+      })
+
+      context.custom = {
+        ...context?.custom,
+        blobs: Buffer.from(payload).toString('base64'),
+      }
+    }
 
     try {
       const result = await this.runtime.invokeFunction({
         context,
+        environment,
         event,
         func: this,
         timeout,

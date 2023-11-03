@@ -1,11 +1,11 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "16.9.2",
+  "version": "17.0.1",
   "author": "Netlify Inc.",
   "type": "module",
   "engines": {
-    "node": ">=16.16.0"
+    "node": ">=18.14.0"
   },
   "files": [
     "/bin",
@@ -55,15 +55,13 @@
     "test:init:cli-help": "npm run start -- --help",
     "test:init:eleventy-deps": "cd tests/integration/__fixtures__/eleventy-site && pnpm install --frozen-lockfile",
     "test:init:hugo-deps": "npm ci --prefix tests/integration/__fixtures__/hugo-site --no-audit",
-    "test:dev:ava": "ava --verbose",
     "test:dev:vitest": "vitest run tests/unit/ && vitest run tests/integration",
-    "test:ci:ava:integration": "c8 -r json ava --concurrency 1 --no-worker-threads tests/integration/",
     "test:ci:vitest:unit": "vitest run --coverage tests/unit/",
     "test:ci:vitest:integration": "vitest run --coverage tests/integration/",
     "test:affected": "node ./tools/affected-test.mjs",
     "e2e": "node ./tools/e2e/run.mjs",
     "docs": "node ./site/scripts/docs.mjs",
-    "watch": "c8 --reporter=lcov ava --watch",
+    "watch": "c8 --reporter=lcov vitest --watch",
     "site:build": "run-s site:build:*",
     "site:build:install": "cd site && npm install --no-audit",
     "site:build:assets": "cd site && npm run build",
@@ -78,14 +76,13 @@
   "dependencies": {
     "@bugsnag/js": "7.20.2",
     "@fastify/static": "6.10.2",
-    "@netlify/build": "29.23.4",
-    "@netlify/build-info": "7.10.1",
+    "@netlify/blobs": "^4.0.0",
+    "@netlify/build": "29.25.0",
+    "@netlify/build-info": "7.10.2",
     "@netlify/config": "20.9.0",
     "@netlify/edge-bundler": "9.4.1",
     "@netlify/local-functions-proxy": "1.1.1",
-    "@netlify/sdk": "^1.1.5",
-    "@netlify/serverless-functions-api": "1.10.0",
-    "@netlify/zip-it-and-ship-it": "9.25.4",
+    "@netlify/zip-it-and-ship-it": "9.25.7",
     "@octokit/rest": "19.0.13",
     "ansi-escapes": "6.2.0",
     "ansi-styles": "6.2.1",
@@ -183,8 +180,8 @@
     "update-notifier": "6.0.2",
     "uuid": "9.0.0",
     "wait-port": "1.0.4",
-    "winston": "3.8.2",
-    "write-file-atomic": "5.0.1"
+    "write-file-atomic": "5.0.1",
+    "zod": "^3.22.4"
   },
   "devDependencies": {
     "@babel/preset-react": "7.22.5",
@@ -194,7 +191,6 @@
     "@types/prettyjson": "0.0.30",
     "@types/semver": "7.5.0",
     "@vitest/coverage-v8": "0.33.0",
-    "ava": "4.3.3",
     "c8": "7.14.0",
     "eslint-plugin-sort-destructure-keys": "1.5.0",
     "eslint-plugin-workspace": "file:./tools/lint-rules",
@@ -223,12 +219,6 @@
     "files": [
       "tools/**/*.test.mjs",
       "tests/**/*.test.cjs"
-    ],
-    "cache": true,
-    "concurrency": 5,
-    "failFast": false,
-    "failWithoutAssertions": false,
-    "tap": false,
-    "timeout": "5m"
+    ]
   }
 }

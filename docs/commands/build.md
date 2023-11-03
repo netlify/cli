@@ -5,7 +5,7 @@ title: Netlify CLI build command
 # `build`
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
-(Beta) Build on your local machine
+Build on your local machine
 
 **Usage**
 
