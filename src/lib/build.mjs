@@ -52,14 +52,14 @@ export const getBuildOptions = ({
     ...getFeatureFlagsFromSiteInfo(cachedConfig.siteInfo),
     functionsBundlingManifest: true,
   },
-  eventHandlers: {
-    onPostBuild: deployHandler
-      ? {
+  eventHandlers: deployHandler
+    ? {
+        onPostBuild: {
           handler: deployHandler,
           description: 'Deploy Site',
-        }
-      : undefined,
-  },
+        },
+      }
+    : undefined,
   edgeFunctionsBootstrapURL: getBootstrapURL(),
 })
 
