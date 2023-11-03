@@ -39,7 +39,7 @@ describe('telemetry', async () => {
     url: '',
     method: ''
   }
-  
+
   beforeEach(() => {
     unhandledRequestMade = false
     unhandledRequest = {
@@ -78,14 +78,31 @@ describe('telemetry', async () => {
       await callCli(['--telemetry-disable'], getCLIOptions(apiUrl))
       expect(requestWasMade).toEqual(false)
     })
+
+    test<MockApiTestContext>('should track --telemetry-enable', async ({ apiUrl, requests }) => {
+      const UUID_VERSION = 4
+      let requestMade
+
+      server.use(
+        http.post(`http://localhost/api/v1/track`, ({ request }) => {
+          requestMade = request
+          return HttpResponse.json({}, { status: 200 })
+        })
+      )
+
+      await callCli(['--telemetry-enable'], getCLIOptions(apiUrl))
+      expect(requestMade).toBeDefined()
+      expect(requestMade.method).toEqual('POST')
+      expect(requestMade.headers.get('user-agent')).toEqual(`${name}/${version}`)
+      
+      const body = await requestMade.json()
+
+      expect(body.event).toEqual('cli:user_telemetryEnabled')
+      expect(uuidVersion(body.anonymousId)).toEqual(UUID_VERSION)
+      expect(body.properties).toStrictEqual({ cliVersion: version, nodejsVersion })
+    })
   })
 })
-
-// await withMockApi(routes, async () => {
-//   test<MockApiTestContext>('should not track --telemetry-disable', async ({ apiUrl, requests }) => {
-//     await callCli(['--telemetry-disable'], getCLIOptions(apiUrl))
-//     expect(requests).toEqual([])
-//   })
 
 //   const UUID_VERSION = 4
 

@@ -73,7 +73,7 @@ export const startMockApi = ({ routes, silent }: MockApiOptions): Promise<MockAp
     await fetch(`http://localhost${req.url}`, {
       method: req.method,
       headers,
-      body: req.body,
+      body: JSON.stringify(req.body),
     }).then((response) => {
       res.status(response.status)
       res.json(response)
