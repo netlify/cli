@@ -6,8 +6,8 @@ import fetch from 'node-fetch'
 import { gte } from 'semver'
 import { describe, test } from 'vitest'
 
-import { withDevServer } from '../../utils/dev-server.cjs'
-import { withSiteBuilder } from '../../utils/site-builder.cjs'
+import { withDevServer } from '../../utils/dev-server.mjs'
+import { withSiteBuilder } from '../../utils/site-builder.mjs'
 
 describe.concurrent('commands/dev/config', () => {
   test('should use [build.environment] and not [context.production.environment]', async (t) => {
@@ -399,7 +399,7 @@ describe.concurrent('commands/dev/config', () => {
     })
   })
 
-  test.runIf(gte(version, '18.0.0'))('should support functions with streaming responses', async (t) => {
+  test.runIf(gte(version, '18.14.0'))('should support functions with streaming responses', async (t) => {
     await withSiteBuilder('site-with-streaming-function', async (builder) => {
       builder
         .withPackageJson({ packageJson: { dependencies: { '@netlify/functions': 'latest' } } })

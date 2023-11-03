@@ -4,8 +4,8 @@ import path from 'path'
 import fetch from 'node-fetch'
 import { describe, test } from 'vitest'
 
-import { withDevServer } from '../../utils/dev-server.cjs'
-import { withSiteBuilder } from '../../utils/site-builder.cjs'
+import { withDevServer } from '../../utils/dev-server.mjs'
+import { withSiteBuilder } from '../../utils/site-builder.mjs'
 
 describe.concurrent('commands/responses.dev', () => {
   test('should return index file when / is accessed', async (t) => {

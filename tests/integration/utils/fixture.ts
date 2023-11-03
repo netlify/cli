@@ -6,10 +6,10 @@ import { copy } from 'fs-extra'
 import { temporaryDirectory } from 'tempy'
 import { afterAll, afterEach, beforeAll, beforeEach, describe } from 'vitest'
 
-import callCli from './call-cli.cjs'
-import { startDevServer } from './dev-server.cjs'
+import { callCli } from './call-cli.mjs'
+import { startDevServer } from './dev-server.mjs'
 import { MockApi, Route, getCLIOptions, startMockApi } from './mock-api-vitest.js'
-import { SiteBuilder } from './site-builder.cjs'
+import { SiteBuilder } from './site-builder.mjs'
 
 const FIXTURES_DIRECTORY = fileURLToPath(new URL('../__fixtures__/', import.meta.url))
 const HOOK_TIMEOUT = 30_000
@@ -144,6 +144,8 @@ export async function setupFixtureTests(
       if (options.mockApi) mockApi = await startMockApi(options.mockApi)
       fixture = await Fixture.create(fixturePath, { apiUrl: mockApi?.apiUrl })
 
+      await options.setup?.({ fixture, mockApi })
+
       if (options.devServer) {
         devServer = await startDevServer({
           cwd: fixture.directory,
@@ -156,8 +158,6 @@ export async function setupFixtureTests(
           },
         })
       }
-
-      await options.setup?.({ devServer, fixture, mockApi })
     }, HOOK_TIMEOUT)
 
     beforeEach<FixtureTestContext>((context) => {

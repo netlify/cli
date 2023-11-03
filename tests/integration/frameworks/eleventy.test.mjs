@@ -5,8 +5,8 @@ import { fileURLToPath } from 'url'
 import fetch from 'node-fetch'
 import { afterAll, beforeAll, describe, test } from 'vitest'
 
-import { clientIP, originalIP } from '../../lib/local-ip.cjs'
-import { startDevServer } from '../utils/dev-server.cjs'
+import { clientIP, originalIP } from '../../lib/local-ip.mjs'
+import { startDevServer } from '../utils/dev-server.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
