@@ -321,7 +321,7 @@ const runDeploy = async ({
   alias,
   api,
   command,
-  configPath,
+  config,
   deployFolder,
   deployTimeout,
   deployToProduction,
@@ -359,7 +359,7 @@ const runDeploy = async ({
 
     // @ts-ignore
     results = await deploySite(api, siteId, deployFolder, {
-      configPath,
+      config,
       fnDir: functionDirectories,
       functionsConfig,
       statusCb: silent ? () => {} : deployProgressCb(),
@@ -407,10 +407,11 @@ const runDeploy = async ({
  * @param {*} config.cachedConfig
  * @param {string} [config.packagePath]
  * @param {*} config.deployHandler
+ * @param {string} config.currentDir
  * @param {import('commander').OptionValues} config.options The options of the command
  * @returns
  */
-const handleBuild = async ({ cachedConfig, deployHandler, options, packagePath }) => {
+const handleBuild = async ({ cachedConfig, currentDir, deployHandler, options, packagePath }) => {
   if (!options.build) {
     return {}
   }
@@ -420,6 +421,7 @@ const handleBuild = async ({ cachedConfig, deployHandler, options, packagePath }
     packagePath,
     token,
     options,
+    currentDir,
     deployHandler,
   })
   const { configMutations, exitCode, newConfig } = await runBuild(resolvedOptions)
@@ -556,6 +558,7 @@ const prepAndRunDeploy = async ({
   const deployFolder = await getDeployFolder({ command, options, config, site, siteData })
   const functionsFolder = getFunctionsFolder({ workingDir, options, config, site, siteData })
   const { configPath } = site
+
   const edgeFunctionsConfig = command.netlify.config.edge_functions
 
   // build flag wasn't used and edge functions exist
@@ -597,7 +600,7 @@ const prepAndRunDeploy = async ({
     alias,
     api,
     command,
-    configPath,
+    config,
     deployFolder,
     deployTimeout: options.timeout * SEC_TO_MILLISEC || DEFAULT_DEPLOY_TIMEOUT,
     deployToProduction,
@@ -683,6 +686,7 @@ export const deploy = async (options, command) => {
     await handleBuild({
       packagePath: command.workspacePackage,
       cachedConfig: command.netlify.cachedConfig,
+      currentDir: command.workingDir,
       options,
       deployHandler: async ({ netlifyConfig }) => {
         results = await prepAndRunDeploy({

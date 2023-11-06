@@ -1,7 +1,9 @@
 // @ts-check
+import fs from 'fs'
 import process from 'process'
 
 import build from '@netlify/build'
+import tomlify from 'tomlify-j0.4'
 
 import { isFeatureFlagEnabled } from '../utils/feature-flags.mjs'
 
@@ -22,6 +24,7 @@ import { featureFlags as edgeFunctionsFeatureFlags } from './edge-functions/cons
  * @param {object} config
  * @param {*} config.cachedConfig
  * @param {string} [config.packagePath]
+ * @param {string} config.currentDir
  * @param {string} config.token
  * @param {import('commander').OptionValues} config.options
  * @param {*} config.deployHandler
@@ -29,6 +32,7 @@ import { featureFlags as edgeFunctionsFeatureFlags } from './edge-functions/cons
  */
 export const getBuildOptions = ({
   cachedConfig,
+  currentDir,
   deployHandler,
   options: { context, cwd, debug, dry, json, offline, silent },
   packagePath,
@@ -52,14 +56,21 @@ export const getBuildOptions = ({
     ...getFeatureFlagsFromSiteInfo(cachedConfig.siteInfo),
     functionsBundlingManifest: true,
   },
-  eventHandlers: deployHandler
-    ? {
-        onPostBuild: {
+  eventHandlers: {
+    onPostBuild: deployHandler
+      ? {
           handler: deployHandler,
           description: 'Deploy Site',
-        },
-      }
-    : undefined,
+        }
+      : undefined,
+    onEnd: ({ netlifyConfig }) => {
+      const string = tomlify.toToml(netlifyConfig)
+
+      fs.writeFileSync(`${currentDir}/.netlify/netlify.toml`, string)
+
+      return {}
+    },
+  },
   edgeFunctionsBootstrapURL: getBootstrapURL(),
 })
 
