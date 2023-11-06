@@ -66,6 +66,9 @@ export const getBuildOptions = ({
     onEnd: ({ netlifyConfig }) => {
       const string = tomlify.toToml(netlifyConfig)
 
+      if (!fs.existsSync(`${currentDir}/.netlify`)) {
+        fs.mkdirSync(`${currentDir}/.netlify`, { recursive: true })
+      }
       fs.writeFileSync(`${currentDir}/.netlify/netlify.toml`, string)
 
       return {}
