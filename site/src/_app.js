@@ -46,11 +46,13 @@ const navOrder = [
   'env',
   'functions',
   'init',
+  'integration',
   'link',
   'lm',
   'login',
   'logout',
   'open',
+  'serve',
   'sites',
   'status',
   'switch',
@@ -63,10 +65,9 @@ const navOrder = [
 ]
 
 const pageNames = {
-  index: 'Introduction',
+  index: 'CLI Reference',
   'getting-started': 'Getting Started',
   addons: 'addons (deprecated)',
-  commands: 'CLI Commands',
   contributing: 'Contributing',
   'netlify-dev': 'Netlify Dev',
   'functions-dev': 'Functions Development',
