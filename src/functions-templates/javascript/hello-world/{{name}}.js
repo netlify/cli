@@ -1,5 +1,5 @@
 // Docs on event and context https://docs.netlify.com/functions/build/#code-your-function-2
-const handler = async (event) => {
+export default async (event) => {
   try {
     const subject = event.queryStringParameters.name || 'World'
     return {
@@ -14,4 +14,7 @@ const handler = async (event) => {
   }
 }
 
-module.exports = { handler }
+export const config = {
+  path: "/hello",
+  method: ["GET"]
+}
