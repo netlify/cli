@@ -27,7 +27,7 @@ export const createAddonsCommand = (program) => {
   createAddonsListCommand(program)
 
   return program
-    .command('addons', {hidden: true})
+    .command('addons', { hidden: true })
     .alias('addon')
     .description('[Deprecated and will be removed from future versions] Manage Netlify Add-ons')
     .addExamples([

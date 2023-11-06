@@ -39,7 +39,7 @@ const addonsAuth = async (addonName, options, command) => {
  */
 export const createAddonsAuthCommand = (program) =>
   program
-    .command('addons:auth', {hidden: true})
+    .command('addons:auth', { hidden: true })
     .alias('addon:auth')
     .argument('<name>', 'Add-on slug')
     .description('Login to add-on provider')
