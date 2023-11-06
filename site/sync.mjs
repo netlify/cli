@@ -34,15 +34,6 @@ const syncLocalContent = async function () {
 const removeMarkDownLinks = async function (filePath) {
   const content = await fs.readFile(filePath, 'utf-8')
   const newContent = content.replace(/(\w+)\.md/gm, '$1').replace(/\/docs\/commands\//gm, '/commands/')
-  // Rename README.md to index.md
-  if (basename(filePath) === 'README.md') {
-    const newPath = join(dirname(filePath), 'index.md')
-    // Delete README.md from docs site
-    await fs.unlink(filePath)
-    // Write index.md
-    await fs.writeFile(newPath, newContent)
-    return newPath
-  }
   await fs.writeFile(filePath, newContent)
   return filePath
 }
