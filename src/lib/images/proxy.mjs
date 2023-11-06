@@ -1,28 +1,9 @@
-import { Buffer } from 'buffer'
 import { Readable } from 'stream'
 
 import express from 'express'
 import { createIPX, ipxFSStorage, ipxHttpStorage, createIPXWebServer } from 'ipx'
 
 import { log, NETLIFYDEVERR } from '../../utils/command-helpers.mjs'
-
-function readableStreamToNodeStream(readableStream) {
-  return new Readable({
-    async read() {
-      const reader = readableStream.getReader()
-      try {
-        while (true) {
-          const { done, value } = await reader.read()
-          if (done) break
-          this.push(Buffer.from(value))
-        }
-        this.push(null)
-      } catch (error) {
-        this.destroy(error)
-      }
-    },
-  })
-}
 
 export const parseAllDomains = function (config) {
   const domains = config?.images?.remote_images
@@ -86,8 +67,7 @@ export const transformImageParams = function (query) {
   params.h = query.h || query.height || null
   params.quality = query.q || query.quality || null
   params.format = query.fm || null
-  params.fit = mapImgixToFitIpx(query.fit)
-  // Todo: possibly improve crop handling here
+  params.fit = mapImgixToFitIpx(query.fit, query.crop)
   params.position = query.crop || null
 
   return Object.entries(params)
@@ -96,9 +76,13 @@ export const transformImageParams = function (query) {
     .join(',')
 }
 
-function mapImgixToFitIpx(fit) {
+function mapImgixToFitIpx(fit, crop) {
+  if (crop) {
+    return 'cover'
+  }
+
   const fitMapping = {
-    // IPX doesn't have equivalent.
+    // IPX doesn't have exact equivalent.
     clamp: null,
     clip: 'contain',
     crop: 'cover',
@@ -114,7 +98,7 @@ export const initializeProxy = async function ({ config }) {
   const remoteDomains = await parseRemoteImageDomains({ config })
 
   const ipx = createIPX({
-    storage: ipxFSStorage({ dir: './public' }),
+    storage: ipxFSStorage({ dir: config?.build?.publish ?? './public' }),
     httpStorage: ipxHttpStorage({ domains: remoteDomains }),
   })
 
@@ -132,7 +116,7 @@ export const initializeProxy = async function ({ config }) {
       res.setHeader(name, value)
     })
 
-    const nodeStream = readableStreamToNodeStream(ipxResponse.body)
+    const nodeStream = Readable.from(ipxResponse.body)
     nodeStream.pipe(res)
   })
 

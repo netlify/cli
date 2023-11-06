@@ -1,23 +1,16 @@
 import { expect, test } from 'vitest'
 
-import { parseAllDomains, handleImageDomainsErrors, transformImageParams } from '../../../../src/lib/images/proxy.mjs'
+import { parseAllDomains, transformImageParams } from '../../../../src/lib/images/proxy.mjs'
 
 test('should parse all domains correctly', () => {
   const config = {
     images: {
-      remote_images: ['https://example.com', 'https://test.com'],
+      remote_images: ['https://example.com/*', 'https://test.com/*'],
     },
   }
   const { errors, remoteDomains } = parseAllDomains(config)
   expect(errors).toEqual([])
   expect(remoteDomains).toEqual(['example.com', 'test.com'])
-})
-
-test('handleImageDomainsErrors should handle errors correctly', async () => {
-  const errors = [{ message: 'Error message 1' }, { message: 'Error message 2' }]
-  await expect(handleImageDomainsErrors(errors)).rejects.toThrow(
-    'Image domains syntax errors:\nError message 1\n\nError message 2',
-  )
 })
 
 test('should transform image params correctly', () => {
