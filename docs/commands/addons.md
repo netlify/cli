@@ -10,7 +10,7 @@ For more information on add-ons see our [Netlify partner add-ons docs](https://d
 
 ## About
 
-> ⚠️ Addons has been deprecated and will become unavailable in a future update.
+> ⚠️ The addons command is [deprecated](https://docs.netlify.com/platform/release-phases/#deprecated) and will become unavailable in a future update.
 
 **Usage**
 
