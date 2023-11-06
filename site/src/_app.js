@@ -61,14 +61,12 @@ const navOrder = [
   'netlify-dev',
   'functions-dev',
   'vscode',
-  'contributing',
 ]
 
 const pageNames = {
   index: 'CLI Reference',
   'getting-started': 'Getting Started',
   addons: 'addons (deprecated)',
-  contributing: 'Contributing',
   'netlify-dev': 'Netlify Dev',
   'functions-dev': 'Functions Development',
   vscode: 'Run and debug with VSCode',
