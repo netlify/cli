@@ -20,19 +20,6 @@ netlify [command] help
 ## Commands
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_LIST) -->
-### [addons](/docs/commands/addons.md)
-
-(Beta) Manage Netlify Add-ons
-
-| Subcommand | description  |
-|:--------------------------- |:-----|
-| [`addons:auth`](/docs/commands/addons.md#addonsauth) | Login to add-on provider  |
-| [`addons:config`](/docs/commands/addons.md#addonsconfig) | Configure add-on settings  |
-| [`addons:create`](/docs/commands/addons.md#addonscreate) | Add an add-on extension to your site  |
-| [`addons:delete`](/docs/commands/addons.md#addonsdelete) | Remove an add-on extension to your site  |
-| [`addons:list`](/docs/commands/addons.md#addonslist) | List currently installed add-ons for site  |
-
-
 ### [api](/docs/commands/api.md)
 
 Run any Netlify API method

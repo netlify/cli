@@ -168,7 +168,7 @@ const addonsConfig = async (addonName, options, command) => {
  */
 export const createAddonsConfigCommand = (program) =>
   program
-    .command('addons:config')
+    .command('addons:config', {hidden: true})
     .alias('addon:config')
     .argument('<name>', 'Add-on namespace')
     .description('Configure add-on settings')

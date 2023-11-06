@@ -10,8 +10,7 @@ For more information on add-ons see our [Netlify partner add-ons docs](https://d
 
 ## About
 
-<!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
-(Beta) Manage Netlify Add-ons
+> ⚠️ Addons has been deprecated and will become unavailable in a future update.
 
 **Usage**
 
