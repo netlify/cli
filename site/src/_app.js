@@ -65,6 +65,7 @@ const navOrder = [
 const pageNames = {
   index: 'Introduction',
   'getting-started': 'Getting Started',
+  addons: 'addons (deprecated)',
   commands: 'CLI Commands',
   contributing: 'Contributing',
   'netlify-dev': 'Netlify Dev',
