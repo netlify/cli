@@ -6,7 +6,6 @@ import http from 'http'
 import https from 'https'
 import { isIPv6 } from 'net'
 import path from 'path'
-import { parse } from 'url'
 import util from 'util'
 import zlib from 'zlib'
 
@@ -36,7 +35,6 @@ import renderErrorTemplate from '../lib/render-error-template.mjs'
 import { NETLIFYDEVLOG, NETLIFYDEVWARN, log, chalk } from './command-helpers.mjs'
 import createStreamPromise from './create-stream-promise.mjs'
 import { headersForPath, parseHeaders, NFFunctionName, NFRequestID, NFFunctionRoute } from './headers.mjs'
-import { parseRemoteImageDomains } from './images.mjs'
 import { generateRequestID } from './request-id.mjs'
 import { createRewriter, onChanges } from './rules-proxy.mjs'
 import { signRedirect } from './sign-redirect.mjs'
@@ -141,10 +139,6 @@ const proxyToExternalUrl = function ({ dest, destURL, req, res }) {
   return handler(req, res, () => {})
 }
 
-
-
-
-
 const handleAddonUrl = function ({ addonUrl, req, res }) {
   const dest = new URL(addonUrl)
   const destURL = stripOrigin(dest)
@@ -190,7 +184,17 @@ const alternativePathsFor = function (url) {
   return paths
 }
 
-const serveRedirect = async function ({ env, functionsRegistry, imageProxy, match, options, proxy, req, res, siteInfo }) {
+const serveRedirect = async function ({
+  env,
+  functionsRegistry,
+  imageProxy,
+  match,
+  options,
+  proxy,
+  req,
+  res,
+  siteInfo,
+}) {
   if (!match) return proxy.web(req, res, options)
 
   options = options || req.proxyOptions || {}
@@ -365,7 +369,7 @@ const serveRedirect = async function ({ env, functionsRegistry, imageProxy, matc
     }
     if (isImageRequest(req)) {
       return imageProxy(req, res)
-    } 
+    }
     const addonUrl = getAddonUrl(options.addonsUrls, req)
     if (addonUrl) {
       return handleAddonUrl({ req, res, addonUrl })
@@ -597,7 +601,18 @@ const initializeProxy = async function ({ configPath, distDir, env, host, imageP
 }
 
 const onRequest = async (
-  { addonsUrls, edgeFunctionsProxy, env, functionsRegistry, functionsServer, imageProxy, proxy, rewriter, settings, siteInfo },
+  {
+    addonsUrls,
+    edgeFunctionsProxy,
+    env,
+    functionsRegistry,
+    functionsServer,
+    imageProxy,
+    proxy,
+    rewriter,
+    settings,
+    siteInfo,
+  },
   req,
   res,
 ) => {

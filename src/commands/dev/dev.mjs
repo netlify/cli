@@ -187,7 +187,6 @@ const dev = async (options, command) => {
     accountId,
   })
 
-
   // Try to add `.netlify` to `.gitignore`.
   try {
     await ensureNetlifyIgnore(repositoryRoot)
