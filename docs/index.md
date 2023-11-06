@@ -1,5 +1,5 @@
 ---
-title: Netlify CLI Command reference
+title: Netlify CLI command reference
 description: All Netlify CLI commands
 ---
 
