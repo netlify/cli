@@ -1,9 +1,9 @@
 ---
-title: Netlify CLI Commands List
-description: All netlify CLI command
+title: Netlify CLI Command reference
+description: All netlify CLI commands
 ---
 
-# Available CLI Commands
+# Netlify CLI command reference
 
 To get a list of commands, run
 
