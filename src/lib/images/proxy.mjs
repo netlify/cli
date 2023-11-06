@@ -24,7 +24,7 @@ function readableStreamToNodeStream(readableStream) {
   })
 }
 
-const parseAllDomains = function (config) {
+export const parseAllDomains = function (config) {
   const domains = config?.images?.remote_images
   if (!domains) {
     return { errors: [], remoteDomains: [] }
@@ -53,7 +53,7 @@ const getErrorMessage = function ({ message }) {
   return message
 }
 
-const handleImageDomainsErrors = async function (errors) {
+export const handleImageDomainsErrors = async function (errors) {
   if (errors.length === 0) {
     return
   }
@@ -78,7 +78,7 @@ export const isImageRequest = function (req) {
   return imageUrlPattern.test(req.url)
 }
 
-const transformImageParams = function (query) {
+export const transformImageParams = function (query) {
   const params = {}
   // eslint-disable-next-line id-length
   params.w = query.w || query.width || null
