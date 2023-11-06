@@ -37,45 +37,53 @@ export const getBuildOptions = ({
   options: { context, cwd, debug, dry, json, offline, silent },
   packagePath,
   token,
-}) => ({
-  cachedConfig,
-  siteId: cachedConfig.siteInfo.id,
-  packagePath,
-  token,
-  dry,
-  debug,
-  context,
-  mode: 'cli',
-  telemetry: false,
-  // buffer = true will not stream output
-  buffer: json || silent,
-  offline,
-  cwd,
-  featureFlags: {
-    ...edgeFunctionsFeatureFlags,
-    ...getFeatureFlagsFromSiteInfo(cachedConfig.siteInfo),
-    functionsBundlingManifest: true,
-  },
-  eventHandlers: {
-    onPostBuild: deployHandler
-      ? {
-          handler: deployHandler,
-          description: 'Deploy Site',
+}) => {
+  const eventHandlers = {
+    onEnd: {
+      handler: ({ netlifyConfig }) => {
+        const string = tomlify.toToml(netlifyConfig)
+
+        if (!fs.existsSync(`${currentDir}/.netlify`)) {
+          fs.mkdirSync(`${currentDir}/.netlify`, { recursive: true })
         }
-      : undefined,
-    onEnd: ({ netlifyConfig }) => {
-      const string = tomlify.toToml(netlifyConfig)
+        fs.writeFileSync(`${currentDir}/.netlify/netlify.toml`, string)
 
-      if (!fs.existsSync(`${currentDir}/.netlify`)) {
-        fs.mkdirSync(`${currentDir}/.netlify`, { recursive: true })
-      }
-      fs.writeFileSync(`${currentDir}/.netlify/netlify.toml`, string)
-
-      return {}
+        return {}
+      },
+      description: 'Save updated config',
     },
-  },
-  edgeFunctionsBootstrapURL: getBootstrapURL(),
-})
+  }
+
+  if (deployHandler) {
+    eventHandlers.onPostBuild = {
+      handler: deployHandler,
+      description: 'Deploy Site',
+    }
+  }
+
+  return {
+    cachedConfig,
+    siteId: cachedConfig.siteInfo.id,
+    packagePath,
+    token,
+    dry,
+    debug,
+    context,
+    mode: 'cli',
+    telemetry: false,
+    // buffer = true will not stream output
+    buffer: json || silent,
+    offline,
+    cwd,
+    featureFlags: {
+      ...edgeFunctionsFeatureFlags,
+      ...getFeatureFlagsFromSiteInfo(cachedConfig.siteInfo),
+      functionsBundlingManifest: true,
+    },
+    eventHandlers,
+    edgeFunctionsBootstrapURL: getBootstrapURL(),
+  }
+}
 
 /**
  * @param {*} siteInfo
