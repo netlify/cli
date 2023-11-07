@@ -116,7 +116,7 @@ const addonsCreate = async (addonName, options, command) => {
  */
 export const createAddonsCreateCommand = (program) =>
   program
-    .command('addons:create')
+    .command('addons:create', { hidden: true })
     .alias('addon:create')
     .argument('<name>', 'Add-on namespace')
     .description(

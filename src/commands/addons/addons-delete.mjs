@@ -48,7 +48,7 @@ const addonsDelete = async (addonName, options, command) => {
  */
 export const createAddonsDeleteCommand = (program) =>
   program
-    .command('addons:delete')
+    .command('addons:delete', { hidden: true })
     .alias('addon:delete')
     .argument('<name>', 'Add-on namespace')
     .description(
