@@ -41,8 +41,8 @@ describe.concurrent('commands/dev/images', () => {
           `${server.url}/.netlify/images?url=https://images.unsplash.com/photo-1517849845537-4d257902454a&w=100&h=200&q=80&fm=avif&fit=crop&crop=left`,
           {},
         ).then((res) => {
-          t.expect(res.headers.get('content-type')).toEqual('image/avif')
           t.expect(res.status).toEqual(200)
+          t.expect(res.headers.get('content-type')).toEqual('image/avif')
           return res.buffer()
         })
       })
@@ -79,8 +79,8 @@ describe.concurrent('commands/dev/images', () => {
           `${server.url}/.netlify/images?url=/images/test.jpg&w=100&h=200&q=80&fm=avif&fit=crop&crop=left`,
           {},
         ).then((res) => {
-          t.expect(res.headers.get('content-type')).toEqual('image/avif')
           t.expect(res.status).toEqual(200)
+          t.expect(res.headers.get('content-type')).toEqual('image/avif')
           return res.buffer()
         })
       })

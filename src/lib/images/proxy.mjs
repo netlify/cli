@@ -1,7 +1,5 @@
-import { Readable } from 'stream'
-
 import express from 'express'
-import { createIPX, ipxFSStorage, ipxHttpStorage, createIPXWebServer } from 'ipx'
+import { createIPX, ipxFSStorage, ipxHttpStorage, createIPXNodeServer } from 'ipx'
 
 import { log, NETLIFYDEVERR } from '../../utils/command-helpers.mjs'
 
@@ -54,9 +52,9 @@ export const parseRemoteImageDomains = async function ({ config }) {
   return remoteDomains
 }
 
+const imageUrlPattern = '/.netlify/images'
 export const isImageRequest = function (req) {
-  const imageUrlPattern = /^\/\.netlify\/images/
-  return imageUrlPattern.test(req.url)
+  return req.url.startsWith(imageUrlPattern)
 }
 
 export const transformImageParams = function (query) {
@@ -102,22 +100,15 @@ export const initializeProxy = async function ({ config }) {
     httpStorage: ipxHttpStorage({ domains: remoteDomains }),
   })
 
-  const handler = createIPXWebServer(ipx)
+  const handler = createIPXNodeServer(ipx)
   const app = express()
 
   app.use('/.netlify/images', async (req, res) => {
     const { url, ...query } = req.query
     const modifiers = await transformImageParams(query)
     const path = `/${modifiers}/${encodeURIComponent(url)}`
-    const newUrl = new URL(path, 'http://n/')
-    const ipxResponse = await handler(new Request(newUrl), res)
-    res.status(ipxResponse.status)
-    ipxResponse.headers.forEach((value, name) => {
-      res.setHeader(name, value)
-    })
-
-    const nodeStream = Readable.from(ipxResponse.body)
-    nodeStream.pipe(res)
+    req.url = path
+    handler(req, res)
   })
 
   return app
