@@ -127,7 +127,7 @@ description: A description.
 
 If documentation looks to be out of date, it is likely that the code for the command itself is not correct.
 
-To update the documentation, update the code (rather than the markdown files) and then run `npm run site:build` to sync the docs. To confirm that the changes to the docs are correct, run `cd site && npm run dev:start` to run the docs locally.
+To update the documentation, update the code (rather than the markdown files) and then run `npm run docs` to sync the docs. To confirm that the changes to the docs are correct, run `cd site && npm run dev:start` to run the docs locally.
 
 
 ### Testing
