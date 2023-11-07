@@ -5,6 +5,7 @@ import path from 'path'
 import fetch from 'node-fetch'
 import { describe, test } from 'vitest'
 
+import { IMAGE_URL_PATTERN } from '../../../../src/lib/images/proxy.mjs'
 import { withDevServer } from '../../utils/dev-server.mjs'
 import { withSiteBuilder } from '../../utils/site-builder.mjs'
 
@@ -38,7 +39,7 @@ describe.concurrent('commands/dev/images', () => {
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         await fetch(
-          `${server.url}/.netlify/images?url=https://images.unsplash.com/photo-1517849845537-4d257902454a&w=100&h=200&q=80&fm=avif&fit=crop&crop=left`,
+          `${server.url}${IMAGE_URL_PATTERN}?url=https://images.unsplash.com/photo-1517849845537-4d257902454a&w=100&h=200&q=80&fm=avif&fit=crop&crop=left`,
           {},
         ).then((res) => {
           t.expect(res.status).toEqual(200)
@@ -49,7 +50,7 @@ describe.concurrent('commands/dev/images', () => {
     })
   })
 
-  test(`should report local image transformations for relative paths`, async (t) => {
+  test(`should support local image transformations for relative paths`, async (t) => {
     await withSiteBuilder('site-with-image-transformations', async (builder) => {
       builder
         .withContentFile({
@@ -76,7 +77,7 @@ describe.concurrent('commands/dev/images', () => {
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         await fetch(
-          `${server.url}/.netlify/images?url=/images/test.jpg&w=100&h=200&q=80&fm=avif&fit=crop&crop=left`,
+          `${server.url}${IMAGE_URL_PATTERN}?url=/images/test.jpg&w=100&h=200&q=80&fm=avif&fit=crop&crop=left`,
           {},
         ).then((res) => {
           t.expect(res.status).toEqual(200)

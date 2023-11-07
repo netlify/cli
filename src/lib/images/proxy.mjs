@@ -3,6 +3,8 @@ import { createIPX, ipxFSStorage, ipxHttpStorage, createIPXNodeServer } from 'ip
 
 import { log, NETLIFYDEVERR } from '../../utils/command-helpers.mjs'
 
+export const IMAGE_URL_PATTERN = '/.netlify/images'
+
 export const parseAllDomains = function (config) {
   const domains = config?.images?.remote_images
   if (!domains) {
@@ -51,10 +53,8 @@ export const parseRemoteImageDomains = async function ({ config }) {
 
   return remoteDomains
 }
-
-const imageUrlPattern = '/.netlify/images'
 export const isImageRequest = function (req) {
-  return req.url.startsWith(imageUrlPattern)
+  return req.url.startsWith(IMAGE_URL_PATTERN)
 }
 
 export const transformImageParams = function (query) {
@@ -103,7 +103,7 @@ export const initializeProxy = async function ({ config }) {
   const handler = createIPXNodeServer(ipx)
   const app = express()
 
-  app.use('/.netlify/images', async (req, res) => {
+  app.use(IMAGE_URL_PATTERN, async (req, res) => {
     const { url, ...query } = req.query
     const modifiers = await transformImageParams(query)
     const path = `/${modifiers}/${encodeURIComponent(url)}`
