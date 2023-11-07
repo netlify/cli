@@ -8,6 +8,8 @@ import { Option } from 'commander'
 import inquirer from 'inquirer'
 import isEmpty from 'lodash/isEmpty.js'
 import isObject from 'lodash/isObject.js'
+import { parseAllHeaders } from 'netlify-headers-parser'
+import { parseAllRedirects } from 'netlify-redirect-parser'
 import prettyjson from 'prettyjson'
 
 import { cancelDeploy } from '../../lib/api.mjs'
@@ -219,7 +221,10 @@ const getDeployFilesFilter = ({ deployFolder, site }) => {
       (skipNodeModules && base === 'node_modules') ||
       (base.startsWith('.') && base !== '.well-known') ||
       base.startsWith('__MACOSX') ||
-      base.includes('/.')
+      base.includes('/.') ||
+      // headers and redirects are bundled in the config
+      base === '_redirects' ||
+      base === '_headers'
 
     return !skipFile
   }
@@ -356,6 +361,26 @@ const runDeploy = async ({
     // functions to take precedence over internal functions.
     const functionDirectories = [internalFunctionsFolder, functionsFolder].filter(Boolean)
     const manifestPath = skipFunctionsCache ? null : await getFunctionsManifestPath({ base: site.root, packagePath })
+
+    const redirectsPath = `${deployFolder}/_redirects`
+    const headersPath = `${deployFolder}/_headers`
+
+    const { redirects } = await parseAllRedirects({
+      configRedirects: config.redirects,
+      redirectsFiles: [redirectsPath],
+      minimal: true,
+    })
+
+    config.redirects = redirects
+
+    const { headers } = await parseAllHeaders({
+      configHeaders: config.headers,
+      // @ts-ignore
+      headersFiles: [headersPath],
+      minimal: true,
+    })
+
+    config.headers = headers
 
     // @ts-ignore
     results = await deploySite(api, siteId, deployFolder, {
