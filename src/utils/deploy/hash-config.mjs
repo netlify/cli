@@ -1,17 +1,11 @@
-import { Readable } from 'stream'
-
 import hasha from 'hasha'
 import tomlify from 'tomlify-j0.4'
 
-export const hashConfig = async ({ config }) => {
+export const hashConfig = ({ config }) => {
   if (!config) throw new Error('Missing config option')
   const configString = serializeToml(config)
-  const readable = new Readable()
-  readable.push(configString, null)
-  // eslint-disable-next-line unicorn/no-array-push-push
-  readable.push(null)
 
-  const hash = await hasha.fromStream(readable, { algorithm: 'sha1' })
+  const hash = hasha(configString, { algorithm: 'sha1' })
 
   return {
     assetType: 'file',
