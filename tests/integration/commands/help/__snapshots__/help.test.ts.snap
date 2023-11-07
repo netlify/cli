@@ -8,7 +8,6 @@ USAGE
   $ netlify [COMMAND]
 
 COMMANDS
-  $ addons        (Beta) Manage Netlify Add-ons
   $ api           Run any Netlify API method
   $ build         Build on your local machine
   $ completion    Generate shell completion script
