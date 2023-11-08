@@ -113,6 +113,7 @@ const installHelper = async function () {
     return
   }
 
+  // @ts-expect-error TS(2345) FIXME: Argument of type '{ packageName: string; execName:... Remove this comment to see the full error message
   await fetchLatestVersion({
     packageName: PACKAGE_NAME,
     execName: EXEC_NAME,
