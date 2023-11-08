@@ -75,6 +75,7 @@
   },
   "dependencies": {
     "@bugsnag/js": "7.20.2",
+    "@clack/prompts": "^0.7.0",
     "@fastify/static": "6.10.2",
     "@netlify/blobs": "^4.0.0",
     "@netlify/build": "29.25.0",

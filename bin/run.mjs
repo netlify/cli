@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env node --no-warnings
 import { argv } from 'process'
 
 import updateNotifier from 'update-notifier'

@@ -1,6 +1,6 @@
 // @ts-check
 
-import inquirer from 'inquirer'
+import { confirm, select }  from '@clack/prompts'
 import pick from 'lodash/pick.js'
 import parseGitHubUrl from 'parse-github-url'
 import { render } from 'prettyjson'
@@ -40,19 +40,14 @@ const getTemplateName = async ({ ghToken, options, repository }) => {
 
   const templates = await fetchTemplates(ghToken)
 
-  log(`Choose one of our starter templates. Netlify will create a new repo for this template in your GitHub account.`)
-
-  const { templateName } = await inquirer.prompt([
-    {
-      type: 'list',
-      name: 'templateName',
-      message: 'Template:',
-      choices: templates.map((template) => ({
-        value: template.slug,
-        name: template.name,
-      })),
-    },
-  ])
+  const templateName = await select({
+    message: 'Choose one of our starter templates. Netlify will create a new repo for this template in your GitHub account.',
+    maxItems: 5,
+    options: templates.map((template) => ({
+      value: template.slug,
+      label: template.name,
+    }))
+  })
 
   return templateName
 }
@@ -96,17 +91,16 @@ const sitesCreateTemplate = async (repository, options, command) => {
   let { accountSlug } = options
 
   if (!accountSlug) {
-    const { accountSlug: accountSlugInput } = await inquirer.prompt([
-      {
-        type: 'list',
-        name: 'accountSlug',
-        message: 'Team:',
-        choices: accounts.map((account) => ({
-          value: account.slug,
-          name: account.name,
-        })),
-      },
-    ])
+
+    const accountSlugInput = await select({
+      message: 'Team:',
+      maxItems: 5,
+      options: accounts.map((account) => ({
+        value: account.slug,
+        label: account.name,
+      }))
+    })
+
     accountSlug = accountSlugInput
   }
 
@@ -183,12 +177,11 @@ const sitesCreateTemplate = async (repository, options, command) => {
     siteUrl,
   })
 
-  const { cloneConfirm } = await inquirer.prompt({
-    type: 'confirm',
-    name: 'cloneConfirm',
-    message: `Do you want to clone the repository?`,
-    default: true,
+  const cloneConfirm = await confirm({
+    message: 'Do you want to clone the repository?',
+    initialValue: true,
   })
+
   if (cloneConfirm) {
     log()
     await execa('git', ['clone', repoResp.clone_url, `${repoResp.name}`])
