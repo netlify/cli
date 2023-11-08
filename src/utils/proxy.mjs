@@ -28,6 +28,7 @@ import {
 } from '../lib/edge-functions/proxy.mjs'
 import { fileExistsAsync, isFileAsync } from '../lib/fs.mjs'
 import { DEFAULT_FUNCTION_URL_EXPRESSION } from '../lib/functions/registry.mjs'
+import { initializeProxy as initializeImageProxy, isImageRequest } from '../lib/images/proxy.mjs'
 import renderErrorTemplate from '../lib/render-error-template.mjs'
 
 import { NETLIFYDEVLOG, NETLIFYDEVWARN, log, chalk } from './command-helpers.mjs'
@@ -182,7 +183,17 @@ const alternativePathsFor = function (url) {
   return paths
 }
 
-const serveRedirect = async function ({ env, functionsRegistry, match, options, proxy, req, res, siteInfo }) {
+const serveRedirect = async function ({
+  env,
+  functionsRegistry,
+  imageProxy,
+  match,
+  options,
+  proxy,
+  req,
+  res,
+  siteInfo,
+}) {
   if (!match) return proxy.web(req, res, options)
 
   options = options || req.proxyOptions || {}
@@ -355,7 +366,9 @@ const serveRedirect = async function ({ env, functionsRegistry, match, options, 
 
       return proxy.web(req, res, { headers: functionHeaders, target: options.functionsServer })
     }
-
+    if (isImageRequest(req)) {
+      return imageProxy(req, res)
+    }
     const addonUrl = getAddonUrl(options.addonsUrls, req)
     if (addonUrl) {
       return handleAddonUrl({ req, res, addonUrl })
@@ -378,7 +391,7 @@ const reqToURL = function (req, pathname) {
 
 const MILLISEC_TO_SEC = 1e3
 
-const initializeProxy = async function ({ configPath, distDir, env, host, port, projectDir, siteInfo }) {
+const initializeProxy = async function ({ configPath, distDir, env, host, imageProxy, port, projectDir, siteInfo }) {
   const proxy = httpProxy.createProxyServer({
     selfHandleResponse: true,
     target: {
@@ -386,7 +399,6 @@ const initializeProxy = async function ({ configPath, distDir, env, host, port, 
       port,
     },
   })
-
   const headersFiles = [...new Set([path.resolve(projectDir, '_headers'), path.resolve(distDir, '_headers')])]
 
   let headers = await parseHeaders({ headersFiles, configPath })
@@ -466,6 +478,7 @@ const initializeProxy = async function ({ configPath, distDir, env, host, port, 
           req,
           res,
           proxy: handlers,
+          imageProxy,
           match: req.proxyOptions.match,
           options: req.proxyOptions,
           siteInfo,
@@ -484,6 +497,7 @@ const initializeProxy = async function ({ configPath, distDir, env, host, port, 
         req,
         res,
         proxy: handlers,
+        imageProxy,
         match: null,
         options: req.proxyOptions,
         siteInfo,
@@ -586,7 +600,18 @@ const initializeProxy = async function ({ configPath, distDir, env, host, port, 
 }
 
 const onRequest = async (
-  { addonsUrls, edgeFunctionsProxy, env, functionsRegistry, functionsServer, proxy, rewriter, settings, siteInfo },
+  {
+    addonsUrls,
+    edgeFunctionsProxy,
+    env,
+    functionsRegistry,
+    functionsServer,
+    imageProxy,
+    proxy,
+    rewriter,
+    settings,
+    siteInfo,
+  },
   req,
   res,
 ) => {
@@ -642,7 +667,7 @@ const onRequest = async (
     // We don't want to generate an ETag for 3xx redirects.
     req[shouldGenerateETag] = ({ statusCode }) => statusCode < 300 || statusCode >= 400
 
-    return serveRedirect({ req, res, proxy, match, options, siteInfo, env, functionsRegistry })
+    return serveRedirect({ req, res, proxy, imageProxy, match, options, siteInfo, env, functionsRegistry })
   }
 
   // The request will be served by the framework server, which means we want to
@@ -658,6 +683,10 @@ const onRequest = async (
     (ct.endsWith('/x-www-form-urlencoded') || ct === 'multipart/form-data')
   ) {
     return proxy.web(req, res, { target: functionsServer })
+  }
+
+  if (isImageRequest(req)) {
+    return imageProxy(req, res)
   }
 
   proxy.web(req, res, options)
@@ -714,6 +743,10 @@ export const startProxy = async function ({
     accountId,
     state,
   })
+
+  const imageProxy = await initializeImageProxy({
+    config,
+  })
   const proxy = await initializeProxy({
     env,
     host: settings.frameworkHost,
@@ -722,6 +755,7 @@ export const startProxy = async function ({
     projectDir,
     configPath,
     siteInfo,
+    imageProxy,
   })
 
   const rewriter = await createRewriter({
@@ -741,6 +775,7 @@ export const startProxy = async function ({
     functionsRegistry,
     functionsServer,
     edgeFunctionsProxy,
+    imageProxy,
     siteInfo,
     env,
   })
