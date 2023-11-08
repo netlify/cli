@@ -110,7 +110,7 @@ export const runNetlifyBuild = async ({ command, env = {}, options, settings, ti
     }
 
     // Run Netlify Build using the main entry point.
-    const { success } = await buildSite(buildSiteOptions)
+    const { netlifyConfig, success } = await buildSite(buildSiteOptions)
 
     if (!success) {
       error('Could not start local server due to a build error')
@@ -123,6 +123,7 @@ export const runNetlifyBuild = async ({ command, env = {}, options, settings, ti
     await devCommand({
       command: undefined,
       useStaticServer: true,
+      dist: netlifyConfig?.build?.publish,
     })
 
     return { configPath: tempConfigPath }
