@@ -80,7 +80,7 @@
     "@netlify/build": "29.25.0",
     "@netlify/build-info": "7.10.2",
     "@netlify/config": "20.9.0",
-    "@netlify/edge-bundler": "^10.0.0",
+    "@netlify/edge-bundler": "^10.1.0",
     "@netlify/local-functions-proxy": "1.1.1",
     "@netlify/zip-it-and-ship-it": "9.25.7",
     "@octokit/rest": "19.0.13",

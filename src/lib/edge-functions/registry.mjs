@@ -18,6 +18,7 @@ import {
  */
 /** @typedef {import('@netlify/edge-bundler').FunctionConfig} FunctionConfig */
 /** @typedef {import('@netlify/edge-bundler').Manifest} Manifest */
+/** @typedef {import('@netlify/edge-bundler').ModuleGraph} ModuleGraph */
 /** @typedef {Awaited<ReturnType<typeof import('@netlify/edge-bundler').serve>>} RunIsolate */
 /** @typedef {Omit<Manifest["routes"][0], "pattern"> & { pattern: RegExp }} Route */
 
@@ -469,6 +470,12 @@ export class EdgeFunctionsRegistry {
     return { functionNames, invocationMetadata }
   }
 
+  /**
+   * Takes the module graph returned from the server and tracks dependencies of
+   * each function.
+   *
+   * @param {ModuleGraph} graph
+   */
   #processGraph(graph) {
     if (!graph) {
       warn('Could not process edge functions dependency graph. Live reload will not be available.')
