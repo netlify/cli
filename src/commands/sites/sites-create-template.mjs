@@ -1,6 +1,6 @@
 // @ts-check
 
-import { confirm, select }  from '@clack/prompts'
+import { note, confirm, select, text, intro, log as clackLog, outro }  from '@clack/prompts'
 import pick from 'lodash/pick.js'
 import parseGitHubUrl from 'parse-github-url'
 import { render } from 'prettyjson'
@@ -68,6 +68,8 @@ const sitesCreateTemplate = async (repository, options, command) => {
   const { globalConfig } = command.netlify
   const ghToken = await getGitHubToken({ globalConfig })
 
+  intro(`${chalk.bgBlack.cyan('Create a site from a starter template')}`);
+
   const templateName = await getTemplateName({ ghToken, options, repository })
   const { exists, isTemplate } = await validateTemplate({ templateName, ghToken })
   if (!exists) {
@@ -110,7 +112,14 @@ const sitesCreateTemplate = async (repository, options, command) => {
 
   // Allow the user to reenter site name if selected one isn't available
   const inputSiteName = async (name) => {
-    const { name: inputName } = await getSiteNameInput(name)
+    const inputName = await text({
+      message: 'Site name (leave blank for a random name; you can change it later):',
+      validate: (input) => {
+          if (!/^[a-zA-Z\d-]+$/.test(input || undefined)) {
+            return 'Only alphanumeric characters and hyphens are allowed'
+          }
+        },
+    })
 
     try {
       const siteName = inputName.trim()
@@ -156,20 +165,14 @@ const sitesCreateTemplate = async (repository, options, command) => {
   }
 
   await inputSiteName(nameFlag)
-
-  log()
-  log(chalk.greenBright.bold.underline(`Site Created`))
-  log()
-
   const siteUrl = site.ssl_url || site.url
-  log(
-    render({
-      'Admin URL': site.admin_url,
-      URL: siteUrl,
-      'Site ID': site.id,
-      'Repo URL': site.build_settings.repo_url,
-    }),
-  )
+
+  note(render({
+    'Admin URL': site.admin_url,
+    URL: siteUrl,
+    'Site ID': site.id,
+    'Repo URL': site.build_settings.repo_url,
+  }), 'Site Created')
 
   track('sites_createdFromTemplate', {
     siteId: site.id,
@@ -183,9 +186,9 @@ const sitesCreateTemplate = async (repository, options, command) => {
   })
 
   if (cloneConfirm) {
-    log()
     await execa('git', ['clone', repoResp.clone_url, `${repoResp.name}`])
-    log(`🚀 Repository cloned successfully. You can find it under the ${chalk.magenta(repoResp.name)} folder`)
+    const outputStep = options.withCi ? clackLog.step : outro
+    outputStep(`🚀 Repository cloned successfully. You can find it under the ${chalk.magenta(repoResp.name)} folder`)
   }
 
   if (options.withCi) {
