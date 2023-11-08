@@ -50,7 +50,7 @@ const addonsList = async (options, command) => {
  */
 export const createAddonsListCommand = (program) =>
   program
-    .command('addons:list')
+    .command('addons:list', { hidden: true })
     .alias('addon:list')
     .description(`List currently installed add-ons for site`)
     .option('--json', 'Output add-on data as JSON')

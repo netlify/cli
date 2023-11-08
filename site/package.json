@@ -11,6 +11,8 @@
   ],
   "scripts": {
     "start": "npm run sync && run-p start:*",
+    "dev:start": "npm run sync && NODE_OPTIONS=--openssl-legacy-provider x0 src",
+    "dev:build": "npm run clean && npm run sync && NODE_OPTIONS=--openssl-legacy-provider x0 build src",
     "build": "npm run clean && run-s build:*",
     "postbuild": "cp src/_redirects dist/_redirects",
     "build:docs": "node scripts/docs.mjs",
