@@ -120,11 +120,14 @@ export const runNetlifyBuild = async ({ command, env = {}, options, settings, ti
 
     // Start the dev server, forcing the usage of a static server as opposed to
     // the framework server.
-    await devCommand({
+    const settingsOverrides = {
       command: undefined,
       useStaticServer: true,
-      dist: options.dir ? undefined : netlifyConfig?.build?.publish,
-    })
+    }
+    if (!options.dir && netlifyConfig?.build?.publish) {
+      settingsOverrides.dist = netlifyConfig.build.publish
+    }
+    await devCommand(settingsOverrides)
 
     return { configPath: tempConfigPath }
   }
