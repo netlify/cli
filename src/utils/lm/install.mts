@@ -6,7 +6,9 @@ import process from 'process'
 import { fileURLToPath } from 'url'
 
 import execa from 'execa'
+// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'hasb... Remove this comment to see the full error message
 import hasbin from 'hasbin'
+// @ts-expect-error TS(2307) FIXME: Cannot find module 'listr2' or its corresponding t... Remove this comment to see the full error message
 import { Listr } from 'listr2'
 import pathKey from 'path-key'
 
@@ -29,10 +31,13 @@ const SUPPORTED_PLATFORMS = {
   win32: 'Windows',
 }
 
+// @ts-expect-error TS(1470) FIXME: The 'import.meta' meta-property is not allowed in ... Remove this comment to see the full error message
 const dirPath = dirname(fileURLToPath(import.meta.url))
 
+// @ts-expect-error TS(7031) FIXME: Binding element 'skipInstall' implicitly has an 'a... Remove this comment to see the full error message
 const getSetupStep = ({ skipInstall }) => {
   const platform = os.platform()
+  // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
   const platformName = SUPPORTED_PLATFORMS[platform]
   if (platformName === undefined) {
     throw new Error(`Platform not supported: ${platform}.
@@ -58,11 +63,13 @@ const setupGitConfigStep = {
   task: () => configureGitConfig(),
 }
 
+// @ts-expect-error TS(7031) FIXME: Binding element 'force' implicitly has an 'any' ty... Remove this comment to see the full error message
 export const installPlatform = async function ({ force }) {
   const skipInstall = !force && (await installedWithPackageManager())
   const steps = [
     checkGitVersionStep,
     checkGitLFSVersionStep,
+    // @ts-expect-error TS(7006) FIXME: Parameter 'ctx' implicitly has an 'any' type.
     checkLFSFiltersStep(async (ctx, task, installed) => {
       if (!installed) {
         await execa('git', ['lfs', 'install'])
@@ -94,6 +101,7 @@ const installHelper = async function () {
   // remove any old versions that might still exist in `~/.netlify/helper/bin`
   await rm(getLegacyBinPath(), { force: true, recursive: true })
   const binPath = getBinPath()
+  // @ts-expect-error TS(2345) FIXME: Argument of type '{ binPath: string; packageName: ... Remove this comment to see the full error message
   const shouldFetch = await shouldFetchLatestVersion({
     binPath,
     packageName: PACKAGE_NAME,
@@ -116,6 +124,7 @@ const installHelper = async function () {
 export const isBinInPath = () => {
   const envPath = process.env[pathKey()]
   const binPath = getBinPath()
+  // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
   return envPath.replace(/"+/g, '').split(path.delimiter).includes(binPath)
 }
 
@@ -136,6 +145,7 @@ const CONTENT_COMMENT = `
 # The next line updates PATH for Netlify's Git Credential Helper.
 `
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'incFilePath' implicitly has an 'any' ty... Remove this comment to see the full error message
 const getInitContent = (incFilePath) => `${CONTENT_COMMENT}test -f '${incFilePath}' && source '${incFilePath}'`
 
 const setupUnixPath = async () => {
@@ -157,6 +167,7 @@ Set the helper path in your environment PATH: ${getBinPath()}`
   ])
 }
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
 const writeConfig = async function (name, initContent) {
   const configPath = path.join(os.homedir(), name)
   if (!(await fileExistsAsync(configPath))) {
@@ -178,6 +189,7 @@ const getCurrentCredentials = async () => {
     return currentCredentials
   } catch (error) {
     // ignore error caused by not having any credential configured
+    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
     if (error.stdout !== '') {
       throw error
     }
@@ -186,6 +198,7 @@ const getCurrentCredentials = async () => {
 }
 
 // Git expects the config path to always use / even on Windows
+// @ts-expect-error TS(7006) FIXME: Parameter 'gitConfigPath' implicitly has an 'any' ... Remove this comment to see the full error message
 const getGitConfigContent = (gitConfigPath) => `
 # This next lines include Netlify's Git Credential Helper configuration in your Git configuration.
 [include]
@@ -260,6 +273,7 @@ export const getShellInfo = function () {
   return {
     shell,
     incFilePath: `${getHelperPath()}/path.${shell}.inc`,
+    // @ts-expect-error TS(2538) FIXME: Type 'undefined' cannot be used as an index type.
     configFile: CONFIG_FILES[shell],
   }
 }
@@ -283,6 +297,7 @@ export const uninstall = async function () {
   ])
 }
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
 const removeConfig = async function (name, toRemove) {
   const configPath = path.join(os.homedir(), name)
 

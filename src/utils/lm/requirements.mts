@@ -61,6 +61,7 @@ export const checkLFSVersion = async function () {
   )
 }
 
+// @ts-expect-error TS(7006) FIXME: Parameter 'out' implicitly has an 'any' type.
 const matchVersion = function (out, regex, version, message) {
   const match = out.match(regex)
   if (!match || match.length !== 2 || semver.lt(match[1], version)) {

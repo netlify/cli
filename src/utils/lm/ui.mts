@@ -9,6 +9,7 @@ import { getShellInfo, isBinInPath } from './install.mjs'
 /**
  * @param {boolean} force
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'force' implicitly has an 'any' type.
 export const printBanner = function (force) {
   const print = force || !isBinInPath()
   const platform = os.platform()
