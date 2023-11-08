@@ -120,6 +120,7 @@ export const parseFunctionForMetadata = async ({ config, mainFile, projectRoot }
 const clearFunctionsCache = (functionsPath) => {
   Object.keys(require.cache)
     .filter((key) => key.startsWith(functionsPath))
+    // @ts-expect-error TS(2345) Argument of type 'typeof import("/Users/ericapisani/netlify/cli/node_modules/decache/decache")' is not assignable to parameter of type '(value: string, index: number, array: string[]) => void'.
     .forEach(decache)
 }
 

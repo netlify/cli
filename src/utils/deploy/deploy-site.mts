@@ -117,8 +117,10 @@ export const deploySite = async (
   }
 
   if (functionsWithNativeModules.length !== 0) {
+    // @ts-expect-error TS(7031) Binding element 'name' implicitly has an 'any' type.
+    const functionsWithNativeModulesMessage = functionsWithNativeModules.map(({ name }) => `- ${name}`).join('\n')
     warn(`Modules with native dependencies\n
-${functionsWithNativeModules.map(({ name }) => `- ${name}`).join('\n')}
+    ${functionsWithNativeModulesMessage}
 
 The serverless functions above use Node.js modules with native dependencies, which
 must be installed on a system with the same architecture as the function runtime. A
