@@ -7,8 +7,8 @@ import { error, exit, log, NETLIFYDEVERR, NETLIFYDEVLOG } from './command-helper
 import { runCommand } from './shell.mjs'
 import { startStaticServer } from './static-server.mjs'
 
-// 10 minutes
-const FRAMEWORK_PORT_TIMEOUT = 6e5
+// 20 minutes
+const FRAMEWORK_PORT_TIMEOUT = 12e5
 
 /**
  * @typedef StartReturnObject

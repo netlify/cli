@@ -1,6 +1,6 @@
 {
-  "name": "netlify-cli",
-  "description": "Netlify command line tool",
+  "name": "al-netlify-cli",
+  "description": "AL fork of Netlify command line tool",
   "version": "17.2.0",
   "author": "Netlify Inc.",
   "type": "module",
@@ -31,8 +31,8 @@
   "license": "MIT",
   "repository": "https://github.com/netlify/cli",
   "bin": {
-    "ntl": "./bin/run.mjs",
-    "netlify": "./bin/run.mjs"
+    "alntl": "./bin/run.mjs",
+    "al-netlify": "./bin/run.mjs"
   },
   "bugs": {
     "url": "https://github.com/netlify/cli/issues"
