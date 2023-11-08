@@ -27,7 +27,7 @@ const getHeaderValues = function ({ values }) {
 }
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'configPath' implicitly has an 'an... Remove this comment to see the full error message
-export const parseHeaders = async function ({ configPath, headersFiles }) {
+export const parseHeaders = async function ({ configPath, headersFiles }): Promise<Header[]> {
   const { errors, headers } = await parseAllHeaders({
     headersFiles,
     netlifyConfigPath: configPath,
