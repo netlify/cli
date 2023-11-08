@@ -123,7 +123,7 @@ export const runNetlifyBuild = async ({ command, env = {}, options, settings, ti
     await devCommand({
       command: undefined,
       useStaticServer: true,
-      dist: netlifyConfig?.build?.publish,
+      dist: options.dir ? undefined : netlifyConfig?.build?.publish,
     })
 
     return { configPath: tempConfigPath }
