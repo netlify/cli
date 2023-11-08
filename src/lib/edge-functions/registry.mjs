@@ -172,13 +172,7 @@ export class EdgeFunctionsRegistry {
     const warnings = {}
 
     try {
-      const { functionsConfig, graph, npmSpecifiersWithExtraneousFiles, success } = await this.#runIsolate(
-        this.#functions,
-        this.#env,
-        {
-          getFunctionsConfig: true,
-        },
-      )
+      const { functionsConfig, graph, npmSpecifiersWithExtraneousFiles, success } = await this.#runBuild()
 
       if (!success) {
         throw new Error('Build error')
@@ -365,7 +359,7 @@ export class EdgeFunctionsRegistry {
         })
       }
     } catch (error) {
-      this.#logEvent('buildError', { buildError: error })
+      this.#logEvent('buildError', { buildError: error?.message })
     }
   }
 
@@ -429,6 +423,9 @@ export class EdgeFunctionsRegistry {
   }
 
   /**
+   * Returns the functions in the registry that should run for a given URL path
+   * and HTTP method, based on the routes registered for each function.
+   *
    * @param {string} urlPath
    * @param {string} method
    */
@@ -521,6 +518,33 @@ export class EdgeFunctionsRegistry {
 
     this.#dependencyPaths = dependencyPaths
     this.#functionPaths = functionPaths
+  }
+
+  /**
+   * Thin wrapper for `#runIsolate` that skips running a build and returns an
+   * empty response if there are no functions in the registry.
+   */
+  async #runBuild() {
+    if (this.#functions.length === 0) {
+      return {
+        functionsConfig: [],
+        graph: {
+          modules: [],
+        },
+        npmSpecifiersWithExtraneousFiles: [],
+        success: true,
+      }
+    }
+
+    const { functionsConfig, graph, npmSpecifiersWithExtraneousFiles, success } = await this.#runIsolate(
+      this.#functions,
+      this.#env,
+      {
+        getFunctionsConfig: true,
+      },
+    )
+
+    return { functionsConfig, graph, npmSpecifiersWithExtraneousFiles, success }
   }
 
   /**
