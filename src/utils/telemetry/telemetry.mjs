@@ -1,4 +1,4 @@
-// @ts-check
+ 
 import { dirname, join } from 'path'
 import process, { version as nodejsVersion } from 'process'
 import { fileURLToPath } from 'url'

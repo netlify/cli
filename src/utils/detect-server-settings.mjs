@@ -1,4 +1,4 @@
-// @ts-check
+ 
 import { readFile } from 'fs/promises'
 import { EOL } from 'os'
 import { dirname, relative, resolve } from 'path'

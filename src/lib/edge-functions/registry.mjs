@@ -1,4 +1,4 @@
-// @ts-check
+ 
 import { fileURLToPath } from 'url'
 
 import {

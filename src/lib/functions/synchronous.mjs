@@ -1,4 +1,4 @@
-// @ts-check
+ 
 import { Buffer } from 'buffer'
 
 import { isStream } from 'is-stream'

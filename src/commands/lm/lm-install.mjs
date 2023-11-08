@@ -1,4 +1,4 @@
-// @ts-check
+ 
 import { installPlatform } from '../../utils/lm/install.mjs'
 import { printBanner } from '../../utils/lm/ui.mjs'
 

@@ -1,4 +1,4 @@
-// @ts-check
+ 
 import inquirer from 'inquirer'
 
 import { chalk, log } from '../../utils/command-helpers.mjs'

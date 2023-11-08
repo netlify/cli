@@ -1,4 +1,4 @@
-// @ts-check
+ 
 import { listSites } from '../../lib/api.mjs'
 import { startSpinner, stopSpinner } from '../../lib/spinner.mjs'
 import { chalk, log, logJson } from '../../utils/command-helpers.mjs'

@@ -1,4 +1,4 @@
-// @ts-check
+ 
 import { BANG, chalk } from './command-helpers.mjs'
 
 /**

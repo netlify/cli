@@ -1,4 +1,4 @@
-// @ts-check
+ 
 import { writeFile } from 'fs/promises'
 import path from 'path'
 

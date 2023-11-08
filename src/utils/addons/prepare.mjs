@@ -1,4 +1,4 @@
-// @ts-check
+ 
 import { chalk, error, exit, log, warn } from '../command-helpers.mjs'
 
 export const ADDON_VALIDATION = {

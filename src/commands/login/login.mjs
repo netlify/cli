@@ -1,4 +1,4 @@
-// @ts-check
+ 
 import { chalk, exit, getToken, log } from '../../utils/command-helpers.mjs'
 
 const msg = function (location) {

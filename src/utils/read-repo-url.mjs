@@ -1,4 +1,4 @@
-// @ts-check
+ 
 import url from 'url'
 
 import fetch from 'node-fetch'

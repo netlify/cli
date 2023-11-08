@@ -1,4 +1,4 @@
-// @ts-check
+ 
 import { join } from 'path'
 
 import { startFunctionsServer } from '../../lib/functions/server.mjs'

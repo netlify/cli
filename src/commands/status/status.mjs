@@ -1,4 +1,4 @@
-// @ts-check
+ 
 import clean from 'clean-deep'
 import prettyjson from 'prettyjson'
 

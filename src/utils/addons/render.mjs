@@ -1,4 +1,4 @@
-// @ts-check
+ 
 import AsciiTable from 'ascii-table'
 
 import { chalk } from '../command-helpers.mjs'

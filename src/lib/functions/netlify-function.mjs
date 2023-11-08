@@ -1,4 +1,4 @@
-// @ts-check
+ 
 import { Buffer } from 'buffer'
 import { basename, extname } from 'path'
 import { version as nodeVersion } from 'process'

@@ -1,4 +1,4 @@
-// @ts-check
+ 
 import { readFile } from 'fs/promises'
 
 import HttpsProxyAgent from 'https-proxy-agent'

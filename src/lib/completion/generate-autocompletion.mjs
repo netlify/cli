@@ -1,4 +1,4 @@
-// @ts-check
+ 
 import fs from 'fs'
 import { dirname } from 'path'
 

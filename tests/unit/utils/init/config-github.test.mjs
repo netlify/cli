@@ -1,4 +1,4 @@
-// @ts-check
+ 
 import { Octokit } from '@octokit/rest'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 

@@ -1,4 +1,4 @@
-// @ts-check
+ 
 import boxen from 'boxen'
 
 import { chalk, log, NETLIFYDEVLOG } from './command-helpers.mjs'

@@ -1,4 +1,4 @@
-// @ts-check
+ 
 import logSymbols from 'log-symbols'
 import ora from 'ora'
 

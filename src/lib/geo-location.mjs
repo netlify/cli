@@ -1,4 +1,4 @@
-// @ts-check
+ 
 import fetch from 'node-fetch'
 
 const API_URL = 'https://netlifind.netlify.app'

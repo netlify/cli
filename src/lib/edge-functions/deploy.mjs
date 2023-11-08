@@ -1,4 +1,4 @@
-// @ts-check
+ 
 import { stat } from 'fs/promises'
 import { join } from 'path'
 

@@ -1,4 +1,4 @@
-// @ts-check
+ 
 import concordance from 'concordance'
 
 import { concordanceDiffOptions, concordanceOptions } from './options.mjs'

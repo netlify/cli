@@ -1,4 +1,4 @@
-// @ts-check
+ 
 import AsciiTable from 'ascii-table'
 
 import { prepareAddonCommand } from '../../utils/addons/prepare.mjs'

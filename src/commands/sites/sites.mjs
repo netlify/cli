@@ -1,4 +1,4 @@
-// @ts-check
+ 
 import { createSitesFromTemplateCommand } from './sites-create-template.mjs'
 import { createSitesCreateCommand } from './sites-create.mjs'
 import { createSitesDeleteCommand } from './sites-delete.mjs'

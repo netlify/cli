@@ -1,4 +1,4 @@
-// @ts-check
+ 
 import { readFile } from 'fs/promises'
 import { dirname, extname, join, resolve } from 'path'
 import { platform } from 'process'

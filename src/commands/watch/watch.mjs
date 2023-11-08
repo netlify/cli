@@ -1,4 +1,4 @@
-// @ts-check
+ 
 import pWaitFor from 'p-wait-for'
 import prettyjson from 'prettyjson'
 

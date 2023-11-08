@@ -1,4 +1,4 @@
-// @ts-check
+ 
 import { existsSync, readFileSync, statSync } from 'fs'
 import { dirname, join, parse } from 'path'
 

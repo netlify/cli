@@ -1,4 +1,4 @@
-// @ts-check
+ 
 import AsciiTable from 'ascii-table'
 
 import { exit, log, logJson } from '../../utils/command-helpers.mjs'

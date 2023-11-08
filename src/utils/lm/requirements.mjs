@@ -1,4 +1,4 @@
-// @ts-check
+ 
 import semver from 'semver'
 
 import execa from '../execa.mjs'

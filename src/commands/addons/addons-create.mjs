@@ -1,4 +1,4 @@
-// @ts-check
+ 
 import inquirer from 'inquirer'
 import isEmpty from 'lodash/isEmpty.js'
 

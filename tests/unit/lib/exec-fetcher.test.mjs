@@ -1,4 +1,4 @@
-// @ts-check
+ 
 import process from 'process'
 
 import { fetchLatest } from 'gh-release-fetch'

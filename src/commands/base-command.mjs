@@ -1,4 +1,4 @@
-// @ts-check
+ 
 import { existsSync } from 'fs'
 import { join, relative, resolve } from 'path'
 import process from 'process'

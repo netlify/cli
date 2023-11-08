@@ -1,4 +1,4 @@
-// @ts-check
+ 
 import { dirname } from 'path'
 import util from 'util'
 

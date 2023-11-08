@@ -1,4 +1,4 @@
-// @ts-check
+ 
 import { basename } from 'path'
 
 import { closest } from 'fastest-levenshtein'

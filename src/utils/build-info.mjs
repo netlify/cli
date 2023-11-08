@@ -1,4 +1,4 @@
-// @ts-check
+ 
 
 import fuzzy from 'fuzzy'
 import inquirer from 'inquirer'

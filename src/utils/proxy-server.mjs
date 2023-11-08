@@ -1,4 +1,4 @@
-// @ts-check
+ 
 import { exit, log, NETLIFYDEVERR } from './command-helpers.mjs'
 import { startProxy } from './proxy.mjs'
 

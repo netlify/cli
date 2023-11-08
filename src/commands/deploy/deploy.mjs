@@ -1,4 +1,4 @@
-// @ts-check
+ 
 import { stat } from 'fs/promises'
 import { basename, resolve } from 'path'
 import { env } from 'process'

@@ -1,4 +1,4 @@
-// @ts-check
+ 
 import { Readable } from 'stream'
 
 import { parse as parseContentType } from 'content-type'

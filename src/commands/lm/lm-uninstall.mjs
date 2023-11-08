@@ -1,4 +1,4 @@
-// @ts-check
+ 
 import { uninstall } from '../../utils/lm/install.mjs'
 
 /**

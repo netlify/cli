@@ -1,4 +1,4 @@
-// @ts-check
+ 
 
 /**
  * @typedef CompletionItem

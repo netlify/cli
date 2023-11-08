@@ -1,4 +1,4 @@
-// @ts-check
+ 
 import { mkdir } from 'fs/promises'
 
 import { zipFunctions } from '@netlify/zip-it-and-ship-it'

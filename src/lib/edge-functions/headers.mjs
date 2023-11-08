@@ -1,4 +1,4 @@
-// @ts-check
+ 
 import { Buffer } from 'buffer'
 
 export const headers = {

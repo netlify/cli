@@ -1,4 +1,4 @@
-// @ts-check
+ 
 import { createEnvCloneCommand } from './env-clone.mjs'
 import { createEnvGetCommand } from './env-get.mjs'
 import { createEnvImportCommand } from './env-import.mjs'

@@ -1,4 +1,4 @@
-// @ts-check
+ 
 import { stdout } from 'process'
 
 import { getBinaryPath as getFunctionsProxyPath } from '@netlify/local-functions-proxy'

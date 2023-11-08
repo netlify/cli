@@ -1,4 +1,4 @@
-// @ts-check
+ 
 
 import inquirer from 'inquirer'
 import pick from 'lodash/pick.js'

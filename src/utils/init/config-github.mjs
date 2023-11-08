@@ -1,4 +1,4 @@
-// @ts-check
+ 
 import { Octokit } from '@octokit/rest'
 
 import { chalk, error as failAndExit, log } from '../command-helpers.mjs'

@@ -1,4 +1,4 @@
-// @ts-check
+ 
 import { createAddonsAuthCommand } from './addons-auth.mjs'
 import { createAddonsConfigCommand } from './addons-config.mjs'
 import { createAddonsCreateCommand } from './addons-create.mjs'

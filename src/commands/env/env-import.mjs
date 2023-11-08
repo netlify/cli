@@ -1,4 +1,4 @@
-// @ts-check
+ 
 import { readFile } from 'fs/promises'
 
 import AsciiTable from 'ascii-table'

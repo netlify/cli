@@ -1,4 +1,4 @@
-// @ts-check
+ 
 import process from 'process'
 
 import fetch from 'node-fetch'

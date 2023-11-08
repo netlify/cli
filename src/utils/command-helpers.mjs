@@ -1,4 +1,4 @@
-// @ts-check
+ 
 import { once } from 'events'
 import os from 'os'
 import process from 'process'

@@ -1,4 +1,4 @@
-// @ts-check
+ 
 import cp from 'child_process'
 import fs from 'fs'
 import { mkdir, readdir, unlink } from 'fs/promises'

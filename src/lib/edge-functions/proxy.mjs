@@ -1,4 +1,4 @@
-// @ts-check
+ 
 import { Buffer } from 'buffer'
 import { rm } from 'fs/promises'
 import { join, resolve } from 'path'

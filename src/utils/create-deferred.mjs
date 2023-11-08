@@ -1,4 +1,4 @@
-// @ts-check
+ 
 const createDeferred = () => {
   let resolveDeferred
   let rejectDeferred
