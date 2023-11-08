@@ -1,5 +1,4 @@
 import express from 'express'
-// @ts-expect-error TS(2307) FIXME: Cannot find module 'ipx' or its corresponding type... Remove this comment to see the full error message
 import { createIPX, ipxFSStorage, ipxHttpStorage, createIPXNodeServer } from 'ipx'
 
 import { log, NETLIFYDEVERR } from '../../utils/command-helpers.mjs'

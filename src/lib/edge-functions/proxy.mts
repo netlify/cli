@@ -273,7 +273,6 @@ const prepareServer = async ({
       importMapPaths,
       inspectSettings,
       port,
-      // @ts-expect-error TS(2345) FIXME: Argument of type '{ basePath: any; bootstrapURL: s... Remove this comment to see the full error message
       rootPath: repositoryRoot,
       servePath,
     })

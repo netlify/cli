@@ -8,7 +8,6 @@ import lambdaLocal from 'lambda-local'
 import sourceMapSupport from 'source-map-support'
 
 if (isMainThread) {
-  // @ts-expect-error TS(1470) FIXME: The 'import.meta' meta-property is not allowed in ... Remove this comment to see the full error message
   throw new Error(`Do not import "${import.meta.url}" in the main thread.`)
 }
 

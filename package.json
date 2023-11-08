@@ -11,7 +11,6 @@
     "/bin",
     "/npm-shrinkwrap.json",
     "/scripts/postinstall.mjs",
-    "/src/**/*.cjs",
     "/src/**/*.js",
     "/src/**/*.mjs",
     "/src/**/*.sh",
@@ -41,6 +40,7 @@
   "scripts": {
     "prepare": "is-ci || husky install node_modules/@netlify/eslint-config-node/.husky/",
     "start": "node ./bin/run.mjs",
+    "clean": "find . -type f -name '*.mjs' -delete && find . -type f -name '*.d.ts' ! -name 'types.d.ts' -delete",
     "build": "tsc",
     "test": "run-s format test:dev",
     "format": "run-s format:check-fix:*",
@@ -191,6 +191,7 @@
     "@netlify/eslint-config-node": "7.0.0",
     "@netlify/functions": "2.0.2",
     "@types/fs-extra": "11.0.1",
+    "@types/inquirer": "^9.0.7",
     "@types/prettyjson": "0.0.30",
     "@types/semver": "7.5.0",
     "@vitest/coverage-v8": "0.33.0",

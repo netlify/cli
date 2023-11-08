@@ -178,6 +178,7 @@ export const saveNetlifyToml = async ({
   // We don't want to create a `netlify.toml` file that overrides existing configuration
   // In a monorepo the configuration can come from a repo level netlify.toml
   // so we make sure it doesn't by checking `configPath === undefined`
+  // @ts-expect-error TS(2349) This expression is not callable.
   if (configPath === undefined && Object.keys(cleanDeep(config)).length !== 0) {
     return
   }

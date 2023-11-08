@@ -6,7 +6,6 @@ import { install, uninstall } from 'tabtab'
 
 import { generateAutocompletion } from '../../lib/completion/index.mjs'
 
-// @ts-expect-error TS(1470) FIXME: The 'import.meta' meta-property is not allowed in ... Remove this comment to see the full error message
 const completer = join(dirname(fileURLToPath(import.meta.url)), '../../lib/completion/script.mjs')
 
 /**

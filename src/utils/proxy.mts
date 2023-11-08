@@ -275,6 +275,7 @@ const serveRedirect = async function ({
     if (token) {
       let jwtValue = {}
       try {
+        // @ts-expect-error TS(2349) This expression is not callable
         jwtValue = jwtDecode(token) || {}
       } catch (error) {
         // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.

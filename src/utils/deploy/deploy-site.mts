@@ -118,7 +118,6 @@ export const deploySite = async (
 
   if (functionsWithNativeModules.length !== 0) {
     warn(`Modules with native dependencies\n
-// @ts-expect-error TS(7031) FIXME: Binding element 'name' implicitly has an 'any' typ... Remove this comment to see the full error message
 ${functionsWithNativeModules.map(({ name }) => `- ${name}`).join('\n')}
 
 The serverless functions above use Node.js modules with native dependencies, which
@@ -137,6 +136,7 @@ For more information, visit https://ntl.fyi/cli-native-modules.`)
     phase: 'start',
   })
 
+  // @ts-expect-error TS(2349) This expression is not callable.
   const deployParams = cleanDeep({
     siteId,
     deploy_id: deployId,
@@ -152,7 +152,6 @@ For more information, visit https://ntl.fyi/cli-native-modules.`)
   })
   let deploy = await api.updateSiteDeploy(deployParams)
 
-  // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
   if (deployParams.body.async) deploy = await waitForDiff(api, deploy.id, siteId, deployTimeout)
 
   const { required: requiredFiles, required_functions: requiredFns } = deploy

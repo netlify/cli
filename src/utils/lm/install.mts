@@ -8,7 +8,6 @@ import { fileURLToPath } from 'url'
 import execa from 'execa'
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'hasb... Remove this comment to see the full error message
 import hasbin from 'hasbin'
-// @ts-expect-error TS(2307) FIXME: Cannot find module 'listr2' or its corresponding t... Remove this comment to see the full error message
 import { Listr } from 'listr2'
 import pathKey from 'path-key'
 
@@ -31,7 +30,6 @@ const SUPPORTED_PLATFORMS = {
   win32: 'Windows',
 }
 
-// @ts-expect-error TS(1470) FIXME: The 'import.meta' meta-property is not allowed in ... Remove this comment to see the full error message
 const dirPath = dirname(fileURLToPath(import.meta.url))
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'skipInstall' implicitly has an 'a... Remove this comment to see the full error message

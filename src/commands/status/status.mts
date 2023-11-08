@@ -60,6 +60,7 @@ const status = async (options, command) => {
   // @ts-expect-error TS(2339) FIXME: Property 'Teams' does not exist on type '{ Name: a... Remove this comment to see the full error message
   accountData.Teams = teamsData
 
+  // @ts-expect-error TS(2349) This expression is not callable.
   const cleanAccountData = clean(accountData)
 
   log(prettyjson.render(cleanAccountData))

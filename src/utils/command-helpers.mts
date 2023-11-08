@@ -286,16 +286,19 @@ export const watchDebounced = async (
 
   watcher
     .on('change', (path) => {
+      // @ts-expect-error TS(2349) This expression is not callable.
       decache(path)
       onChangeQueue.push(path)
       debouncedOnChange()
     })
     .on('unlink', (path) => {
+      // @ts-expect-error TS(2349) This expression is not callable.
       decache(path)
       onUnlinkQueue.push(path)
       debouncedOnUnlink()
     })
     .on('add', (path) => {
+      // @ts-expect-error TS(2349) This expression is not callable.
       decache(path)
       onAddQueue.push(path)
       debouncedOnAdd()

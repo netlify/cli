@@ -102,7 +102,6 @@ const getNormalizedError = (error) => {
       stackTrace: error.stack ? error.stack.split('\n') : [],
     }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'code' does not exist on type 'never'.
     if ('code' in error && error.code === 'ERR_REQUIRE_ESM') {
       return {
         ...normalizedError,

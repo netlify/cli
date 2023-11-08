@@ -14,7 +14,6 @@ import { getPathInProject } from '../../../../settings.mjs'
 import { normalizeFunctionsConfig } from '../../../config.mjs'
 import { memoizedBuild } from '../../../memoized-build.mjs'
 
-// @ts-expect-error TS(1470) FIXME: The 'import.meta' meta-property is not allowed in ... Remove this comment to see the full error message
 const require = createRequire(import.meta.url)
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'config' implicitly has an 'any' type.

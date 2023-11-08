@@ -4,7 +4,6 @@ import { fileURLToPath } from 'url'
 
 // @ts-expect-error TS(7034) FIXME: Variable 'errorTemplateFile' implicitly has type '... Remove this comment to see the full error message
 let errorTemplateFile
-// @ts-expect-error TS(1470) FIXME: The 'import.meta' meta-property is not allowed in ... Remove this comment to see the full error message
 const dir = dirname(fileURLToPath(import.meta.url))
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'errString' implicitly has an 'any' type... Remove this comment to see the full error message

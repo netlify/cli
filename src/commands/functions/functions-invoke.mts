@@ -10,7 +10,6 @@ import fetch from 'node-fetch'
 import { NETLIFYDEVWARN, chalk, error, exit } from '../../utils/command-helpers.mjs'
 import { BACKGROUND, CLOCKWORK_USERAGENT, getFunctions } from '../../utils/functions/index.mjs'
 
-// @ts-expect-error TS(1470) FIXME: The 'import.meta' meta-property is not allowed in ... Remove this comment to see the full error message
 const require = createRequire(import.meta.url)
 
 // https://docs.netlify.com/functions/trigger-on-events/

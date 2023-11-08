@@ -27,10 +27,8 @@ import { readRepoURL, validateRepoURL } from '../../utils/read-repo-url.mjs'
 
 const copyTemplateDir = promisify(copyTemplateDirOriginal)
 
-// @ts-expect-error TS(1470) FIXME: The 'import.meta' meta-property is not allowed in ... Remove this comment to see the full error message
 const require = createRequire(import.meta.url)
 
-// @ts-expect-error TS(1470) FIXME: The 'import.meta' meta-property is not allowed in ... Remove this comment to see the full error message
 const templatesDir = path.resolve(dirname(fileURLToPath(import.meta.url)), '../../functions-templates')
 
 const showRustTemplates = process.env.NETLIFY_EXPERIMENTAL_BUILD_RUST_SOURCE === 'true'
@@ -187,7 +185,6 @@ const pickTemplate = async function ({ language: languageFromFlag }, funcType) {
       choices: langs,
       message: 'Select the language of your function',
       name: 'language',
-      // @ts-expect-error TS(2769) FIXME: No overload matches this call.
       type: 'list',
     })
 

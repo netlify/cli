@@ -54,7 +54,6 @@ export const getBuildFunction = async ({ config, directory, errorExit, func, pro
   return () => ({ schedule: metadata.schedule, srcFiles })
 }
 
-// @ts-expect-error TS(1470) FIXME: The 'import.meta' meta-property is not allowed in ... Remove this comment to see the full error message
 const workerURL = new URL('worker.mjs', import.meta.url)
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'context' implicitly has an 'any' ... Remove this comment to see the full error message

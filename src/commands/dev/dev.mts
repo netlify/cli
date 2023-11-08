@@ -140,7 +140,6 @@ const dev = async (options, command) => {
     cachedConfig.config = getConfigWithPlugins(cachedConfig.config, settings)
   } catch (error_) {
     if (error_ && typeof error_ === 'object' && 'message' in error_) {
-      // @ts-expect-error TS(2339) FIXME: Property 'message' does not exist on type 'object'... Remove this comment to see the full error message
       log(NETLIFYDEVERR, error_.message)
     }
     process.exit(1)

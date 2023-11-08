@@ -12,7 +12,6 @@ import getGlobalConfig from '../get-global-config.mjs'
 import { isTelemetryDisabled, cliVersion } from './utils.mjs'
 import isValidEventName from './validation.mjs'
 
-// @ts-expect-error TS(1470) FIXME: The 'import.meta' meta-property is not allowed in ... Remove this comment to see the full error message
 const dirPath = dirname(fileURLToPath(import.meta.url))
 
 /**

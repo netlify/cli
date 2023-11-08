@@ -11,6 +11,10 @@ coverage
 !.vscode/launch.json
 .github/styles
 
+# compiled files
+*.mjs
+*.d.mts
+
 # node sdk
 vendor
 

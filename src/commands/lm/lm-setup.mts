@@ -1,5 +1,4 @@
  
-// @ts-expect-error TS(2307) FIXME: Cannot find module 'listr2' or its corresponding t... Remove this comment to see the full error message
 import { Listr } from 'listr2'
 
 import { error } from '../../utils/command-helpers.mjs'

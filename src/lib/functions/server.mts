@@ -48,6 +48,7 @@ const buildClientContext = function (headers) {
         //   "testData": "NETLIFY_DEV_LOCALLY_EMULATED_IDENTITY"
         // }
       },
+      // @ts-expect-error TS(2349) This expression is not callable.
       user: jwtDecode(parts[1]),
     }
   } catch {
