@@ -70,8 +70,6 @@ jobs:
       - name: Prepare tests
         run: npm run test:init
         if: '${{ !steps.release-check.outputs.IS_RELEASE }}'
-      - name: Build project
-        run: npm run build
       - name: Tests
         uses: nick-fields/retry@v2
         if: '${{ !steps.release-check.outputs.IS_RELEASE }}'
