@@ -71,7 +71,7 @@ export const createFunctionsServeCommand = (program) =>
   program
     .command('functions:serve')
     .alias('function:serve')
-    .description('(Beta) Serve functions locally')
+    .description('Serve functions locally')
     .option('-f, --functions <dir>', 'Specify a functions directory to serve')
     .option('-p, --port <port>', 'Specify a port for the functions server', (value) => Number.parseInt(value))
     .option('-o, --offline', 'disables any features that require network access')
