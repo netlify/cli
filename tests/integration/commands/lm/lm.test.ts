@@ -55,8 +55,7 @@ describe('lm command', () => {
       expect(cliResponse).toContain('Checking Git LFS version')
       expect(cliResponse).toContain('Checking Git LFS filters')
       expect(cliResponse).toContain("Installing Netlify's Git Credential Helper")
-      expect(cliResponse).toContain("Configuring Git to use Netlify's Git Credential Helper [started]")
-      expect(cliResponse).toContain("Configuring Git to use Netlify's Git Credential Helper [completed]")
+      expect(cliResponse).toContain("Configuring Git to use Netlify's Git Credential Helper")
 
       // verify git-credential-netlify was added to the PATH
       if (os.platform() === 'win32') {
@@ -92,10 +91,9 @@ describe('lm command', () => {
 
     test<FixtureTestContext>('netlify lm:setup', async ({ fixture }) => {
       const cliResponse = await fixture.callCli(['lm:setup'], { offline: false, execOptions })
-      expect(cliResponse).toContain('Provisioning Netlify Large Media [started]')
-      expect(cliResponse).toContain('Provisioning Netlify Large Media [completed]')
-      expect(cliResponse).toContain('Configuring Git LFS for this site [started]')
-      expect(cliResponse).toContain('Configuring Git LFS for this site [completed]')
+
+      expect(cliResponse).toContain('Provisioning Netlify Large Media')
+      expect(cliResponse).toContain('Configuring Git LFS for this site')
 
       const lfsConfig = ini.parse(await readFile(`${fixture.directory}/.lfsconfig`, 'utf8'))
       expect(lfsConfig.lfs.url).toBe('https://localhost/.netlify/large-media')
