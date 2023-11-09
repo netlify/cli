@@ -16,6 +16,7 @@ import { createAddonsCommand } from './addons/index.mjs'
 import { createApiCommand } from './api/index.mjs'
 import BaseCommand from './base-command.mjs'
 import { createBuildCommand } from './build/index.mjs'
+import {createClackPromptsCommand} from './clack/index.mjs'
 import { createCompletionCommand } from './completion/index.mjs'
 import { createDeployCommand } from './deploy/index.mjs'
 import { createDevCommand } from './dev/index.mjs'
@@ -204,6 +205,7 @@ export const createMainCommand = () => {
   createSwitchCommand(program)
   createUnlinkCommand(program)
   createWatchCommand(program)
+  createClackPromptsCommand(program)
 
   program
     .version(USER_AGENT, '-V')
