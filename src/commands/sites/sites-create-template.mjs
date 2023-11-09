@@ -172,7 +172,7 @@ const sitesCreateTemplate = async (repository, options, command) => {
     URL: siteUrl,
     'Site ID': site.id,
     'Repo URL': site.build_settings.repo_url,
-  }), 'Site Created')
+  }, {keysColor: 'cyan'}), 'Site Created')
 
   track('sites_createdFromTemplate', {
     siteId: site.id,
