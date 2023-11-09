@@ -1,4 +1,4 @@
 export default async () => {
-  console.log("🪵🪵🪵")
-  return new Response("")
+  console.log('🪵🪵🪵')
+  return new Response('')
 }
