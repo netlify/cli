@@ -69,6 +69,7 @@
     "site:build": "run-s site:build:*",
     "site:build:install": "cd site && npm install --no-audit",
     "site:build:assets": "cd site && npm run build",
+    "postinstall-pack": "node ./scripts/postinstall.mjs",
     "postinstall": "npm run build && node ./scripts/postinstall.mjs",
     "prepublishOnly": "node ./scripts/prepare-for-publish.mjs",
     "certs": "openssl req -x509 -out localhost.crt -keyout localhost.key -newkey rsa:2048 -nodes -sha256 -subj \"/CN=localhost\" -extensions EXT -config certconf"
