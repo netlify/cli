@@ -12,8 +12,8 @@ coverage
 .github/styles
 
 # compiled files
-*.mjs
-*.d.mts
+src/**/*.mjs
+src/**/*.d.mts
 tsconfig.tsbuildinfo
 
 # node sdk
