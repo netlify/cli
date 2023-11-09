@@ -27,6 +27,7 @@ import { createLinkCommand } from './link/index.mjs'
 import { createLmCommand } from './lm/index.mjs'
 import { createLoginCommand } from './login/index.mjs'
 import { createLogoutCommand } from './logout/index.mjs'
+import { createLogsBuildCommand, createLogsFunctionCommand } from './logs/index.mjs'
 import { createOpenCommand } from './open/index.mjs'
 import { createRecipesCommand } from './recipes/index.mjs'
 import { createServeCommand } from './serve/serve.mjs'
@@ -35,6 +36,7 @@ import { createStatusCommand } from './status/index.mjs'
 import { createSwitchCommand } from './switch/index.mjs'
 import { createUnlinkCommand } from './unlink/index.mjs'
 import { createWatchCommand } from './watch/index.mjs'
+import { createWatchBuildCommand } from './watch/watch.mjs'
 
 const SUGGESTION_TIMEOUT = 1e4
 
@@ -204,6 +206,9 @@ export const createMainCommand = () => {
   createSwitchCommand(program)
   createUnlinkCommand(program)
   createWatchCommand(program)
+
+  createLogsBuildCommand(program)
+  createLogsFunctionCommand(program)
 
   program
     .version(USER_AGENT, '-V')
