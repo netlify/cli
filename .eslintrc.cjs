@@ -16,7 +16,7 @@ module.exports = {
     },
   },
   // .mjs files in this folder are compiled from TS
-  ignorePatterns: ["src/**/*.mjs"],
+  ignorePatterns: ['src/**/*.mjs'],
   rules: {
     'workspace/no-process-cwd': 'error',
     // Those rules from @netlify/eslint-config-node are currently disabled
