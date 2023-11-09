@@ -14,6 +14,7 @@ coverage
 # compiled files
 *.mjs
 *.d.mts
+tsconfig.tsbuildinfo
 
 # node sdk
 vendor
