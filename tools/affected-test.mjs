@@ -1,5 +1,5 @@
 #!/usr/bin/env node
- 
+
 import { existsSync, statSync } from 'fs'
 import { join } from 'path'
 import process from 'process'

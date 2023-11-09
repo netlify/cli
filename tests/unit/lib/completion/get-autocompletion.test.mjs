@@ -1,4 +1,3 @@
- 
 import { expect, describe, test } from 'vitest'
 
 import getAutocompletion from '../../../../src/lib/completion/get-autocompletion.mjs'

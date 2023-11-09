@@ -1,4 +1,3 @@
- 
 import { digraph } from 'graphviz'
 
 export class DependencyGraph {
