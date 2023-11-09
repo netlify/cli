@@ -28,7 +28,7 @@ for (const scriptName in pkgJson.scripts) {
   delete pkgJson.scripts[scriptName]
 }
 
-pkgJson.scripts['postinstall'] = pkgJson.scripts['postinstall-pack']
+pkgJson.scripts.postinstall = pkgJson.scripts['postinstall-pack']
 delete pkgJson.scripts['postinstall-pack']
 
 await writeFile(packageJsonPath, JSON.stringify(pkgJson, null, 2))
