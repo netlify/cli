@@ -4,7 +4,6 @@ import process from 'process'
 import { Option } from 'commander'
 import envinfo from 'envinfo'
 import { closest } from 'fastest-levenshtein'
-import inquirer from 'inquirer'
 
 import { BANG, chalk, error, exit, log, NETLIFY_CYAN, USER_AGENT, warn } from '../utils/command-helpers.mjs'
 import execa from '../utils/execa.mjs'

@@ -1,8 +1,6 @@
 // @ts-check
-import inquirer from 'inquirer'
 import pWaitFor from 'p-wait-for'
 import prettyjson from 'prettyjson'
-import WebSocket from 'ws'
 
 import { startSpinner, stopSpinner } from '../../lib/spinner.mjs'
 import { chalk, error, log } from '../../utils/command-helpers.mjs'
