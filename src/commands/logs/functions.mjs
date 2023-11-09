@@ -1,7 +1,7 @@
 import inquirer from 'inquirer'
 import WebSocket from 'ws'
 
-import { chalk, error, log } from '../../utils/command-helpers.mjs'
+import { chalk, log } from '../../utils/command-helpers.mjs'
 
 function getLog(logData) {
   let logString = ''
@@ -48,16 +48,16 @@ const logsFunction = async (options, command) => {
 
   let selectedFunction
   if (functionName) {
-    selectedFunction = functions.find((f) => f.n === functionName)
+    selectedFunction = functions.find((fn) => fn.n === functionName)
   } else {
     const { result } = await inquirer.prompt({
       name: 'result',
       type: 'list',
       message: 'Select a function',
-      choices: functions.map((f) => f.n),
+      choices: functions.map((fn) => fn.n),
     })
 
-    selectedFunction = functions.find((f) => f.n === result)
+    selectedFunction = functions.find((fn) => fn.n === result)
   }
 
   if (!selectedFunction) {

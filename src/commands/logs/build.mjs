@@ -1,7 +1,7 @@
 import inquirer from 'inquirer'
 import WebSocket from 'ws'
 
-import { chalk, error, log } from '../../utils/command-helpers.mjs'
+import { log } from '../../utils/command-helpers.mjs'
 
 export function getName(deploy) {
   switch (deploy.context) {
@@ -43,13 +43,13 @@ const logsBuild = async (options, command) => {
       name: 'result',
       type: 'list',
       message: 'Select a deploy',
-      choices: deploys.map((d) => ({
-        name: getName(d),
-        value: d.id,
+      choices: deploys.map((dep) => ({
+        name: getName(dep),
+        value: dep.id,
       })),
     })
 
-    deploy = deploys.find((d) => d.id === result)
+    deploy = deploys.find((dep) => dep.id === result)
   }
 
   const { id } = deploy

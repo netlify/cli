@@ -36,7 +36,6 @@ import { createStatusCommand } from './status/index.mjs'
 import { createSwitchCommand } from './switch/index.mjs'
 import { createUnlinkCommand } from './unlink/index.mjs'
 import { createWatchCommand } from './watch/index.mjs'
-import { createWatchBuildCommand } from './watch/watch.mjs'
 
 const SUGGESTION_TIMEOUT = 1e4
 
