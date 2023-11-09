@@ -114,7 +114,7 @@ export const runNetlifyBuild = async ({ command, env = {}, options, settings, ti
 
     // Run Netlify Build using the main entry point.
     // @ts-expect-error TS(2345) FIXME: Argument of type '{ outputConfigPath: string; save... Remove this comment to see the full error message
-    const { success } = await buildSite(buildSiteOptions)
+    const { netlifyConfig, success } = await buildSite(buildSiteOptions)
 
     if (!success) {
       error('Could not start local server due to a build error')
@@ -124,10 +124,15 @@ export const runNetlifyBuild = async ({ command, env = {}, options, settings, ti
 
     // Start the dev server, forcing the usage of a static server as opposed to
     // the framework server.
-    await devCommand({
+    const settingsOverrides = {
       command: undefined,
       useStaticServer: true,
-    })
+      dist: undefined,
+    }
+    if (!options.dir && netlifyConfig?.build?.publish) {
+      settingsOverrides.dist = netlifyConfig.build.publish
+    }
+    await devCommand(settingsOverrides)
 
     return { configPath: tempConfigPath }
   }
