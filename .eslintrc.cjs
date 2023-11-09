@@ -15,6 +15,8 @@ module.exports = {
       },
     },
   },
+  // .mjs files in this folder are compiled from TS
+  ignorePatterns: ["src/**/*.mjs"],
   rules: {
     'workspace/no-process-cwd': 'error',
     // Those rules from @netlify/eslint-config-node are currently disabled
@@ -87,7 +89,7 @@ module.exports = {
       },
     },
     {
-      files: ['src/**/*.mjs', 'bin/**/*.mjs'],
+      files: ['bin/**/*.mjs'],
       parserOptions: {
         ecmaVersion: '2020',
         sourceType: 'module',
@@ -116,7 +118,7 @@ module.exports = {
       },
     },
     {
-      files: ['*.ts'],
+      files: ['*.mts'],
       rules: {
         // Pure ES modules with TypeScript require using `.js` instead of `.ts`
         // in imports
