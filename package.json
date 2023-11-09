@@ -42,7 +42,7 @@
   "scripts": {
     "prepare": "is-ci || husky install node_modules/@netlify/eslint-config-node/.husky/",
     "start": "node ./bin/run.mjs",
-    "clean": "find . -type f -name 'src/**/*.mjs' -delete && find . -type f -name 'src/**/*.d.ts' ! -name 'types.d.ts' -delete",
+    "clean": "find . -type f -name 'src/**/*.mjs' -delete && find . -type f -name 'src/**/*.d.mts' ! -name 'types.d.ts' -delete",
     "build": "tsc",
     "test": "run-s format test:dev",
     "format": "run-s format:check-fix:*",
