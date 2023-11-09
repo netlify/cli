@@ -227,6 +227,7 @@ const dev = async (options, command) => {
     geoCountry: options.country,
     accountId,
     functionsRegistry,
+    repositoryRoot,
   })
 
   if (devConfig.autoLaunch !== false) {

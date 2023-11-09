@@ -7,7 +7,7 @@ import { fileURLToPath } from 'url'
 
 import execa from 'execa'
 import hasbin from 'hasbin'
-import Listr from 'listr'
+import { Listr } from 'listr2'
 import pathKey from 'path-key'
 
 import { fetchLatestVersion, shouldFetchLatestVersion } from '../../lib/exec-fetcher.mjs'

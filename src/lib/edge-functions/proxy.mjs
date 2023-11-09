@@ -1,13 +1,13 @@
 // @ts-check
 import { Buffer } from 'buffer'
 import { rm } from 'fs/promises'
-import { join, relative, resolve } from 'path'
+import { join, resolve } from 'path'
 
 // eslint-disable-next-line import/no-namespace
 import * as bundler from '@netlify/edge-bundler'
 import getAvailablePort from 'get-port'
 
-import { NETLIFYDEVERR, NETLIFYDEVWARN, chalk, error as printError, log } from '../../utils/command-helpers.mjs'
+import { NETLIFYDEVERR, chalk, error as printError } from '../../utils/command-helpers.mjs'
 import { getGeoLocation } from '../geo-location.mjs'
 import { getPathInProject } from '../settings.mjs'
 import { startSpinner, stopSpinner } from '../spinner.mjs'
@@ -99,6 +99,7 @@ export const initializeProxy = async ({
   offline,
   passthroughPort,
   projectDir,
+  repositoryRoot,
   settings,
   siteInfo,
   state,
@@ -132,6 +133,7 @@ export const initializeProxy = async ({
     internalFunctions,
     port: isolatePort,
     projectDir,
+    repositoryRoot,
   })
   const hasEdgeFunctions = userFunctionsPath !== undefined || internalFunctionsPath
 
@@ -162,21 +164,7 @@ export const initializeProxy = async ({
     await registry.initialize()
 
     const url = new URL(req.url, `http://${LOCAL_HOST}:${mainPort}`)
-    const { functionNames, invocationMetadata, orphanedDeclarations } = registry.matchURLPath(url.pathname, req.method)
-
-    // If the request matches a config declaration for an Edge Function without
-    // a matching function file, we warn the user.
-    orphanedDeclarations.forEach((functionName) => {
-      log(
-        `${NETLIFYDEVWARN} Request to ${chalk.yellow(
-          url.pathname,
-        )} matches declaration for edge function ${chalk.yellow(
-          functionName,
-        )}, but there's no matching function file in ${chalk.yellow(
-          relative(projectDir, userFunctionsPath),
-        )}. Please visit ${chalk.blue('https://ntl.fyi/edge-create')} for more information.`,
-      )
-    })
+    const { functionNames, invocationMetadata } = registry.matchURLPath(url.pathname, req.method)
 
     if (functionNames.length === 0) {
       return
@@ -217,6 +205,7 @@ const prepareServer = async ({
   internalFunctions,
   port,
   projectDir,
+  repositoryRoot,
 }) => {
   // Merging internal with user-defined import maps.
   const importMapPaths = [...importMaps, config.functions['*'].deno_import_map]
@@ -243,6 +232,7 @@ const prepareServer = async ({
       importMapPaths,
       inspectSettings,
       port,
+      rootPath: repositoryRoot,
       servePath,
     })
     const registry = new EdgeFunctionsRegistry({

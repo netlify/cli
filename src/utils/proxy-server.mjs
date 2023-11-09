@@ -52,6 +52,7 @@ export const generateInspectSettings = (edgeInspect, edgeInspectBrk) => {
  * @param {object} params.site
  * @param {*} params.siteInfo
  * @param {string} params.projectDir
+ * @param {string} params.repositoryRoot
  * @param {import('./state-config.mjs').default} params.state
  * @param {import('../lib/functions/registry.mjs').FunctionsRegistry=} params.functionsRegistry
  * @returns
@@ -71,6 +72,7 @@ export const startProxyServer = async ({
   inspectSettings,
   offline,
   projectDir,
+  repositoryRoot,
   settings,
   site,
   siteInfo,
@@ -94,6 +96,7 @@ export const startProxyServer = async ({
     state,
     siteInfo,
     accountId,
+    repositoryRoot,
   })
   if (!url) {
     log(NETLIFYDEVERR, `Unable to start proxy server on port '${settings.port}'`)
