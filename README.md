@@ -145,7 +145,7 @@ Manage netlify functions
 | [`functions:create`](/docs/commands/functions.md#functionscreate) | Create a new function locally  |
 | [`functions:invoke`](/docs/commands/functions.md#functionsinvoke) | Trigger a function while in netlify dev with simulated data, good for testing function calls including Netlify's Event Triggered Functions  |
 | [`functions:list`](/docs/commands/functions.md#functionslist) | List functions that exist locally  |
-| [`functions:serve`](/docs/commands/functions.md#functionsserve) | (Beta) Serve functions locally  |
+| [`functions:serve`](/docs/commands/functions.md#functionsserve) | Serve functions locally  |
 
 
 ### [init](/docs/commands/init.md)
