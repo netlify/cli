@@ -83,6 +83,12 @@ export const createHandler = function (options) {
     const func = functionsRegistry.get(functionName)
 
     if (func === undefined) {
+      if (request.path === '/favicon.ico' && request.method === 'GET') {
+        response.statusCode = 204
+        response.end()
+        return
+      }
+
       response.statusCode = 404
       response.end('Function not found...')
       return
@@ -232,10 +238,6 @@ const getFunctionsServer = (options) => {
       blacklist: ['/favicon.ico'],
     }),
   )
-
-  app.get('/favicon.ico', function onRequest(_req, res) {
-    res.status(204).end()
-  })
 
   app.all(`${functionsPrefix}*`, functionHandler)
   app.all(`${buildersPrefix}*`, functionHandler)
