@@ -1,5 +1,5 @@
 export default {
   name: 'custom-path',
-  description: 'Configures a custom path for the function to run on',
+  description: 'Configures a custom path with named parameters',
   functionType: 'serverless',
 }

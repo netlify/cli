@@ -1,5 +1,5 @@
 export default async (context) => {
-  const { city } = context.geo.city
+  const { city, country } = context.geo
 
-  return new Response(`Special message for ${city}!`)
+  return new Response(`Special message for ${city}, ${country}!`)
 }

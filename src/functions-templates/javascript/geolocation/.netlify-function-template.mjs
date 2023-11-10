@@ -1,5 +1,5 @@
 export default {
   name: 'custom-path',
-  description: 'Configures a custom path for the function to run on',
+  description: 'Serves customized content based on user geolocation',
   functionType: 'serverless',
 }

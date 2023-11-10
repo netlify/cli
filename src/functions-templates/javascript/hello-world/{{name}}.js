@@ -16,5 +16,4 @@ export default async (event) => {
 
 export const config = {
   path: '/hello',
-  method: ['GET'],
 }
