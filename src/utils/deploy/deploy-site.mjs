@@ -31,6 +31,7 @@ export const deploySite = async (
     deployId,
     deployTimeout = DEFAULT_DEPLOY_TIMEOUT,
     draft = false,
+    existingFileDigest = {},
     filter,
     fnDir = [],
     functionsConfig,
@@ -122,7 +123,7 @@ For more information, visit https://ntl.fyi/cli-native-modules.`)
     siteId,
     deploy_id: deployId,
     body: {
-      files,
+      files: { ...existingFileDigest.files, ...files },
       functions,
       function_schedules: functionSchedules,
       functions_config: fnConfig,
