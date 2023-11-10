@@ -233,10 +233,6 @@ const getFunctionsServer = (options) => {
     }),
   )
 
-  app.get('/favicon.ico', function onRequest(_req, res) {
-    res.status(204).end()
-  })
-
   app.all(`${functionsPrefix}*`, functionHandler)
   app.all(`${buildersPrefix}*`, functionHandler)
 

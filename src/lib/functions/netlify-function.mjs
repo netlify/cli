@@ -184,7 +184,7 @@ export default class NetlifyFunction {
   }
 
   // Invokes the function and returns its response object.
-  async invoke(event, context = {}) {
+  async invoke(event = {}, context = {}) {
     await this.buildQueue
 
     if (this.buildError) {
@@ -200,10 +200,7 @@ export default class NetlifyFunction {
         token: this.blobsContext.token,
       })
 
-      context.custom = {
-        ...context?.custom,
-        blobs: Buffer.from(payload).toString('base64'),
-      }
+      event.blobs = Buffer.from(payload).toString('base64')
     }
 
     try {
