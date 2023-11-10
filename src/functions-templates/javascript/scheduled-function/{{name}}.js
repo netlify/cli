@@ -1,7 +1,7 @@
 // To learn about scheduled functions and supported cron extensions,
 // see: https://ntl.fyi/sched-func
 export default async (req) => {
-  const {nextRun } = await req.json()
+  const { nextRun } = await req.json()
 
   console.log(`Next function run at ${nextRun}.`)
 
@@ -11,5 +11,5 @@ export default async (req) => {
 }
 
 export const config = {
-  schedule: "@hourly"
+  schedule: '@hourly',
 }

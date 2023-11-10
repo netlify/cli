@@ -1,9 +1,9 @@
 export default async (req, context) => {
-  const { city, country } = context.params;
+  const { city, country } = context.params
 
-  return new Response(`You're visiting ${city} in ${country}!`);
-};
+  return new Response(`You're visiting ${city} in ${country}!`)
+}
 
 export const config = {
-  path: "/travel-guide/:city/:country"
-};
+  path: '/travel-guide/:city/:country',
+}
