@@ -304,7 +304,7 @@ describe.concurrent('functions:create command', () => {
           function = \\"hello\\"
           path = \\"/test\\""
         `)
-        expect(existsSync(join(pkgBase, 'netlify/edge-functions/abtest/abtest.ts'))).toBe(true)
+        expect(existsSync(join(pkgBase, 'netlify/edge-functions/hello/hello.ts'))).toBe(true)
       })
       // we need to wait till file watchers are loaded
       // await pause(500)
