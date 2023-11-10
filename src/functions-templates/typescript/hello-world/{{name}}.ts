@@ -1,12 +1,5 @@
-import type { Context } from '@netlify/functions'
+import type { Context } from "@netlify/functions"
 
-export const handler: Handler = async (event, context) => {
-  const { name = 'stranger' } = event.queryStringParameters
-
-  return {
-    statusCode: 200,
-    body: JSON.stringify({
-      message: `Hello, ${name}!`,
-    }),
-  }
+export default async (req: Request, context: Context) => {
+  return new Response("Hello, world!")
 }
