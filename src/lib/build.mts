@@ -1,7 +1,8 @@
- 
+import fs from 'fs'
 import process from 'process'
 
 import build from '@netlify/build'
+import tomlify from 'tomlify-j0.4'
 
 import { isFeatureFlagEnabled } from '../utils/feature-flags.mjs'
 
@@ -22,40 +23,69 @@ import { featureFlags as edgeFunctionsFeatureFlags } from './edge-functions/cons
  * @param {object} config
  * @param {*} config.cachedConfig
  * @param {string} [config.packagePath]
+ * @param {string} config.currentDir
  * @param {string} config.token
  * @param {import('commander').OptionValues} config.options
+ * @param {*} config.deployHandler
  * @returns {BuildConfig}
  */
 export const getBuildOptions = ({
   // @ts-expect-error TS(7031) FIXME: Binding element 'cachedConfig' implicitly has an '... Remove this comment to see the full error message
   cachedConfig,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'context' implicitly has an 'any' ... Remove this comment to see the full error message
+  currentDir,
+  deployHandler,
   options: { context, cwd, debug, dry, json, offline, silent },
   // @ts-expect-error TS(7031) FIXME: Binding element 'packagePath' implicitly has an 'a... Remove this comment to see the full error message
   packagePath,
   // @ts-expect-error TS(7031) FIXME: Binding element 'token' implicitly has an 'any' ty... Remove this comment to see the full error message
   token,
-}) => ({
-  cachedConfig,
-  siteId: cachedConfig.siteInfo.id,
-  packagePath,
-  token,
-  dry,
-  debug,
-  context,
-  mode: 'cli',
-  telemetry: false,
-  // buffer = true will not stream output
-  buffer: json || silent,
-  offline,
-  cwd,
-  featureFlags: {
-    ...edgeFunctionsFeatureFlags,
-    ...getFeatureFlagsFromSiteInfo(cachedConfig.siteInfo),
-    functionsBundlingManifest: true,
-  },
-  edgeFunctionsBootstrapURL: getBootstrapURL(),
-})
+}) => {
+  const eventHandlers = {
+    onEnd: {
+      handler: ({ netlifyConfig }) => {
+        const string = tomlify.toToml(netlifyConfig)
+
+        if (!fs.existsSync(`${currentDir}/.netlify`)) {
+          fs.mkdirSync(`${currentDir}/.netlify`, { recursive: true })
+        }
+        fs.writeFileSync(`${currentDir}/.netlify/netlify.toml`, string)
+
+        return {}
+      },
+      description: 'Save updated config',
+    },
+  }
+
+  if (deployHandler) {
+    eventHandlers.onPostBuild = {
+      handler: deployHandler,
+      description: 'Deploy Site',
+    }
+  }
+
+  return {
+    cachedConfig,
+    siteId: cachedConfig.siteInfo.id,
+    packagePath,
+    token,
+    dry,
+    debug,
+    context,
+    mode: 'cli',
+    telemetry: false,
+    // buffer = true will not stream output
+    buffer: json || silent,
+    offline,
+    cwd,
+    featureFlags: {
+      ...edgeFunctionsFeatureFlags,
+      ...getFeatureFlagsFromSiteInfo(cachedConfig.siteInfo),
+      functionsBundlingManifest: true,
+    },
+    eventHandlers,
+    edgeFunctionsBootstrapURL: getBootstrapURL(),
+  }
+}
 
 /**
  * @param {*} siteInfo

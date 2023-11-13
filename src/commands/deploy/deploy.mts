@@ -4,12 +4,12 @@ import { basename, resolve } from 'path'
 import { env } from 'process'
 
 import { runCoreSteps } from '@netlify/build'
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module '@net... Remove this comment to see the full error message
-import { restoreConfig, updateConfig } from '@netlify/config'
 import { Option } from 'commander'
 import inquirer from 'inquirer'
 import isEmpty from 'lodash/isEmpty.js'
 import isObject from 'lodash/isObject.js'
+import { parseAllHeaders } from 'netlify-headers-parser'
+import { parseAllRedirects } from 'netlify-redirect-parser'
 import prettyjson from 'prettyjson'
 
 import { cancelDeploy } from '../../lib/api.mjs'
@@ -236,7 +236,10 @@ const getDeployFilesFilter = ({ deployFolder, site }) => {
       (skipNodeModules && base === 'node_modules') ||
       (base.startsWith('.') && base !== '.well-known') ||
       base.startsWith('__MACOSX') ||
-      base.includes('/.')
+      base.includes('/.') ||
+      // headers and redirects are bundled in the config
+      base === '_redirects' ||
+      base === '_headers'
 
     return !skipFile
   }
@@ -351,9 +354,7 @@ const runDeploy = async ({
   api,
   // @ts-expect-error TS(7031) FIXME: Binding element 'command' implicitly has an 'any' ... Remove this comment to see the full error message
   command,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'configPath' implicitly has an 'an... Remove this comment to see the full error message
-  configPath,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'deployFolder' implicitly has an '... Remove this comment to see the full error message
+  config,
   deployFolder,
   // @ts-expect-error TS(7031) FIXME: Binding element 'deployTimeout' implicitly has an ... Remove this comment to see the full error message
   deployTimeout,
@@ -401,9 +402,29 @@ const runDeploy = async ({
     const functionDirectories = [internalFunctionsFolder, functionsFolder].filter(Boolean)
     const manifestPath = skipFunctionsCache ? null : await getFunctionsManifestPath({ base: site.root, packagePath })
 
+    const redirectsPath = `${deployFolder}/_redirects`
+    const headersPath = `${deployFolder}/_headers`
+
+    const { redirects } = await parseAllRedirects({
+      configRedirects: config.redirects,
+      redirectsFiles: [redirectsPath],
+      minimal: true,
+    })
+
+    config.redirects = redirects
+
+    const { headers } = await parseAllHeaders({
+      configHeaders: config.headers,
+      // @ts-ignore
+      headersFiles: [headersPath],
+      minimal: true,
+    })
+
+    config.headers = headers
+
+    // @ts-ignore
     results = await deploySite(api, siteId, deployFolder, {
-      configPath,
-      // @ts-expect-error TS(2322) FIXME: Type 'any[]' is not assignable to type 'never[]'.
+      config,
       fnDir: functionDirectories,
       functionsConfig,
       // @ts-expect-error TS(2322) FIXME: Type '(event: any) => void' is not assignable to t... Remove this comment to see the full error message
@@ -451,11 +472,12 @@ const runDeploy = async ({
  * @param {object} config
  * @param {*} config.cachedConfig
  * @param {string} [config.packagePath]
+ * @param {*} config.deployHandler
+ * @param {string} config.currentDir
  * @param {import('commander').OptionValues} config.options The options of the command
  * @returns
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'cachedConfig' implicitly has an '... Remove this comment to see the full error message
-const handleBuild = async ({ cachedConfig, options, packagePath }) => {
+const handleBuild = async ({ cachedConfig, currentDir, deployHandler, options, packagePath }) => {
   if (!options.build) {
     return {}
   }
@@ -466,6 +488,8 @@ const handleBuild = async ({ cachedConfig, options, packagePath }) => {
     packagePath,
     token,
     options,
+    currentDir,
+    deployHandler,
   })
   const { configMutations, exitCode, newConfig } = await runBuild(resolvedOptions)
   if (exitCode !== 0) {
@@ -582,6 +606,93 @@ const printResults = ({ deployToProduction, isIntegrationDeploy, json, results, 
   }
 }
 
+const prepAndRunDeploy = async ({
+  api,
+  command,
+  config,
+  deployToProduction,
+  options,
+  site,
+  siteData,
+  siteId,
+  workingDir,
+}) => {
+  const alias = options.alias || options.branch
+  const isUsingEnvelope = siteData && siteData.use_envelope
+  // if a context is passed besides dev, we need to pull env vars from that specific context
+  if (isUsingEnvelope && options.context && options.context !== 'dev') {
+    command.netlify.cachedConfig.env = await getEnvelopeEnv({
+      api,
+      context: options.context,
+      env: command.netlify.cachedConfig.env,
+      siteInfo: siteData,
+    })
+  }
+
+  const deployFolder = await getDeployFolder({ command, options, config, site, siteData })
+  const functionsFolder = getFunctionsFolder({ workingDir, options, config, site, siteData })
+  const { configPath } = site
+
+  const edgeFunctionsConfig = command.netlify.config.edge_functions
+
+  // build flag wasn't used and edge functions exist
+  if (!options.build && edgeFunctionsConfig && edgeFunctionsConfig.length !== 0) {
+    await bundleEdgeFunctions(options, command)
+  }
+
+  log(
+    prettyjson.render({
+      'Deploy path': deployFolder,
+      'Functions path': functionsFolder,
+      'Configuration path': configPath,
+    }),
+  )
+
+  const { functionsFolderStat } = await validateFolders({
+    deployFolder,
+    functionsFolder,
+  })
+
+  const siteEnv = isUsingEnvelope
+    ? await getEnvelopeEnv({
+        api,
+        context: options.context,
+        env: command.netlify.cachedConfig.env,
+        raw: true,
+        scope: 'functions',
+        siteInfo: siteData,
+      })
+    : siteData?.build_settings?.env
+
+  const functionsConfig = normalizeFunctionsConfig({
+    functionsConfig: config.functions,
+    projectRoot: site.root,
+    siteEnv,
+  })
+
+  const results = await runDeploy({
+    alias,
+    api,
+    command,
+    config,
+    deployFolder,
+    deployTimeout: options.timeout * SEC_TO_MILLISEC || DEFAULT_DEPLOY_TIMEOUT,
+    deployToProduction,
+    functionsConfig,
+    // pass undefined functionsFolder if doesn't exist
+    functionsFolder: functionsFolderStat && functionsFolder,
+    packagePath: command.workspacePackage,
+    silent: options.json || options.silent,
+    site,
+    siteData,
+    siteId,
+    skipFunctionsCache: options.skipFunctionsCache,
+    title: options.message,
+  })
+
+  return results
+}
+
 /**
  * The deploy command
  * @param {import('commander').OptionValues} options
@@ -642,103 +753,49 @@ export const deploy = async (options, command) => {
     }
   }
 
-  // @ts-expect-error TS(2339) FIXME: Property 'published_deploy' does not exist on type... Remove this comment to see the full error message
-  const deployToProduction = options.prod || (options.prodIfUnlocked && !siteData.published_deploy.locked)
-
   if (options.trigger) {
     return triggerDeploy({ api, options, siteData, siteId })
   }
 
-  // @ts-expect-error TS(2339) FIXME: Property 'use_envelope' does not exist on type '{}... Remove this comment to see the full error message
-  const isUsingEnvelope = siteData && siteData.use_envelope
-  // if a context is passed besides dev, we need to pull env vars from that specific context
-  if (isUsingEnvelope && options.context && options.context !== 'dev') {
-    command.netlify.cachedConfig.env = await getEnvelopeEnv({
+  const deployToProduction = options.prod || (options.prodIfUnlocked && !siteData.published_deploy.locked)
+
+  let results = {}
+
+  if (options.build) {
+    await handleBuild({
+      packagePath: command.workspacePackage,
+      cachedConfig: command.netlify.cachedConfig,
+      currentDir: command.workingDir,
+      options,
+      deployHandler: async ({ netlifyConfig }) => {
+        results = await prepAndRunDeploy({
+          command,
+          options,
+          workingDir,
+          api,
+          site,
+          config: netlifyConfig,
+          siteData,
+          siteId,
+          deployToProduction,
+        })
+
+        return {}
+      },
+    })
+  } else {
+    results = await prepAndRunDeploy({
+      command,
+      options,
+      workingDir,
       api,
-      context: options.context,
-      env: command.netlify.cachedConfig.env,
-      siteInfo: siteData,
+      site,
+      config: command.netlify.config,
+      siteData,
+      siteId,
+      deployToProduction,
     })
   }
-
-  const { configMutations = [], newConfig } = await handleBuild({
-    packagePath: command.workspacePackage,
-    cachedConfig: command.netlify.cachedConfig,
-    options,
-  })
-  const config = newConfig || command.netlify.config
-
-  const deployFolder = await getDeployFolder({ command, options, config, site, siteData })
-  const functionsFolder = getFunctionsFolder({ workingDir, options, config, site, siteData })
-  const { configPath } = site
-  const edgeFunctionsConfig = command.netlify.config.edge_functions
-
-  // build flag wasn't used and edge functions exist
-  if (!options.build && edgeFunctionsConfig && edgeFunctionsConfig.length !== 0) {
-    await bundleEdgeFunctions(options, command)
-  }
-
-  log(
-    prettyjson.render({
-      'Deploy path': deployFolder,
-      'Functions path': functionsFolder,
-      'Configuration path': configPath,
-    }),
-  )
-
-  const { functionsFolderStat } = await validateFolders({
-    deployFolder,
-    functionsFolder,
-  })
-
-  const siteEnv = isUsingEnvelope
-    ? await getEnvelopeEnv({
-        api,
-        context: options.context,
-        env: command.netlify.cachedConfig.env,
-        raw: true,
-        scope: 'functions',
-        siteInfo: siteData,
-      })
-    // @ts-expect-error TS(2339) FIXME: Property 'build_settings' does not exist on type '... Remove this comment to see the full error message
-    : siteData?.build_settings?.env
-
-  const functionsConfig = normalizeFunctionsConfig({
-    functionsConfig: config.functions,
-    projectRoot: site.root,
-    siteEnv,
-  })
-
-  const redirectsPath = `${deployFolder}/_redirects`
-  await updateConfig(configMutations, {
-    buildDir: deployFolder,
-    configPath,
-    redirectsPath,
-    context: command.netlify.cachedConfig.context,
-    branch: command.netlify.cachedConfig.branch,
-  })
-  const results = await runDeploy({
-    alias,
-    api,
-    command,
-    configPath,
-    deployFolder,
-    deployTimeout: options.timeout * SEC_TO_MILLISEC || DEFAULT_DEPLOY_TIMEOUT,
-    deployToProduction,
-    functionsConfig,
-    // pass undefined functionsFolder if doesn't exist
-    functionsFolder: functionsFolderStat && functionsFolder,
-    packagePath: command.workspacePackage,
-    silent: options.json || options.silent,
-    site,
-    siteData,
-    siteId,
-    skipFunctionsCache: options.skipFunctionsCache,
-    title: options.message,
-  })
-
-  await restoreConfig(configMutations, { buildDir: deployFolder, configPath, redirectsPath })
-
   const isIntegrationDeploy = command.name() === 'integration:deploy'
 
   printResults({

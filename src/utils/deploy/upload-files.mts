@@ -17,8 +17,9 @@ const uploadFiles = async (api, deployId, uploadList, { concurrentUpload, maxRet
 
   // @ts-expect-error TS(7006) FIXME: Parameter 'fileObj' implicitly has an 'any' type.
   const uploadFile = async (fileObj, index) => {
-    const { assetType, filepath, invocationMode, normalizedPath, runtime } = fileObj
-    const readStreamCtor = () => fs.createReadStream(filepath)
+    const { assetType, body, filepath, invocationMode, normalizedPath, runtime } = fileObj
+
+    const readStreamCtor = () => body ?? fs.createReadStream(filepath)
 
     statusCb({
       type: 'upload',
