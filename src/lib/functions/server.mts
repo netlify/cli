@@ -1,4 +1,3 @@
- 
 import { Buffer } from 'buffer'
 import { promises as fs } from 'fs'
 import path from 'path'
@@ -48,7 +47,6 @@ const buildClientContext = function (headers) {
         //   "testData": "NETLIFY_DEV_LOCALLY_EMULATED_IDENTITY"
         // }
       },
-      // @ts-expect-error TS(2349) This expression is not callable.
       user: jwtDecode(parts[1]),
     }
   } catch {
@@ -242,10 +240,6 @@ const getFunctionsServer = (options) => {
       blacklist: ['/favicon.ico'],
     }),
   )
-
-  app.get('/favicon.ico', function onRequest(_req, res) {
-    res.status(204).end()
-  })
 
   app.all(`${functionsPrefix}*`, functionHandler)
   app.all(`${buildersPrefix}*`, functionHandler)

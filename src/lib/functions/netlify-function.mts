@@ -1,4 +1,4 @@
- 
+// @ts-check
 import { Buffer } from 'buffer'
 import { basename, extname } from 'path'
 import { version as nodeVersion } from 'process'
@@ -241,8 +241,7 @@ export default class NetlifyFunction {
   }
 
   // Invokes the function and returns its response object.
-  // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
-  async invoke(event, context = {}) {
+  async invoke(event = {}, context = {}) {
     // @ts-expect-error TS(2339) FIXME: Property 'buildQueue' does not exist on type 'Netl... Remove this comment to see the full error message
     await this.buildQueue
 
@@ -265,12 +264,8 @@ export default class NetlifyFunction {
         token: this.blobsContext.token,
       })
 
-      // @ts-expect-error TS(2339) FIXME: Property 'custom' does not exist on type '{}'.
-      context.custom = {
-        // @ts-expect-error TS(2339) FIXME: Property 'custom' does not exist on type '{}'.
-        ...context?.custom,
-        blobs: Buffer.from(payload).toString('base64'),
-      }
+      // @ts-expect-error TS(2339) FIXME: Property 'blobs' does not exist on type '{}'.
+      event.blobs = Buffer.from(payload).toString('base64')
     }
 
     try {
