@@ -193,7 +193,8 @@ describe.runIf(gte(version, '18.13.0'))('v2 api', () => {
         const url = `http://localhost:${devServer.port}/v2-to-custom-without-force`
         const response = await fetch(url)
         expect(response.status).toBe(200)
-        expect(await response.text()).toBe('/v2-to-custom-without-force from origin')
+        const text = await (await response.text()).trim()
+        expect(text).toBe('/v2-to-custom-without-force from origin')
       })
     })
 
