@@ -15,6 +15,7 @@ import { track, reportError } from '../utils/telemetry/index.mjs'
 import { createAddonsCommand } from './addons/index.mjs'
 import { createApiCommand } from './api/index.mjs'
 import BaseCommand from './base-command.mjs'
+import { createBlobsCommand } from './blobs/blobs.mjs'
 import { createBuildCommand } from './build/index.mjs'
 import { createCompletionCommand } from './completion/index.mjs'
 import { createDeployCommand } from './deploy/index.mjs'
@@ -184,6 +185,7 @@ export const createMainCommand = () => {
   // register all the commands
   createAddonsCommand(program)
   createApiCommand(program)
+  createBlobsCommand(program)
   createBuildCommand(program)
   createCompletionCommand(program)
   createDeployCommand(program)
