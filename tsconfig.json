@@ -15,5 +15,5 @@
     "allowJs": true
   },
   "include": ["src/**/*.mts"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "src/functions-templates"]
 }
