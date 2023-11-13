@@ -544,11 +544,6 @@ export default class BaseCommand extends Command {
       this.workingDir = join(this.project.jsWorkspaceRoot, this.workspacePackage)
     }
 
-    // const cachedTomlFile = join(this.workingDir, '.netlify', 'netlify.toml')
-    // if (existsSync(cachedTomlFile)) {
-    //   packageConfig = cachedTomlFile
-    // }
-
     this.jsWorkspaceRoot = this.project.jsWorkspaceRoot
     // detect if a toml exists in this package.
     const tomlFile = join(this.workingDir, 'netlify.toml')
