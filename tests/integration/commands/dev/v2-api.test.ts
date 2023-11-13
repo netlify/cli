@@ -152,6 +152,12 @@ describe.runIf(gte(version, '18.13.0'))('v2 api', () => {
       expect(await response.text()).toBe(`Catchall Path`)
     })
 
+    test<FixtureTestContext>('functions can also run on /favicon.ico', async ({ devServer }) => {
+      const response = await fetch(`http://localhost:${devServer.port}/favicon.ico`)
+      expect(response.status).toBe(200)
+      expect(await response.text()).toBe('custom-generated favicon')
+    })
+
     test<FixtureTestContext>('returns 404 when using the default function URL to access a function with custom routes', async ({
       devServer,
     }) => {
