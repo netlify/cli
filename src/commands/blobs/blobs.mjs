@@ -1,17 +1,15 @@
 // @ts-check
-import { chalk } from '../../utils/command-helpers.mjs'
-
 import { createBlobsDeleteCommand } from './blobs-delete.mjs'
 import { createBlobsGetCommand } from './blobs-get.mjs'
 import { createBlobsListCommand } from './blobs-list.mjs'
 import { createBlobsSetCommand } from './blobs-set.mjs'
 
 /**
- * The functions command
- * @param {import('commander').OptionValues} options
+ * The blobs command
+ * @param {import('commander').OptionValues} _options
  * @param {import('../base-command.mjs').default} command
  */
-const blobs = (options, command) => {
+const blobs = (_options, command) => {
   command.help()
 }
 
@@ -26,18 +24,17 @@ export const createBlobsCommand = (program) => {
   createBlobsListCommand(program)
   createBlobsSetCommand(program)
 
-  const name = chalk.greenBright('`blobs`')
-
   return program
     .command('blobs')
-    .alias('function')
-    .description(
-      `Manage netlify blobs
-The ${name} command will help you manage the blobs in this site`,
-    )
+    .alias('blob')
+    .description(`Manage objects in Netlify Blobs`)
     .addExamples([
-      'netlify blobs:create --name function-xyz',
-      'netlify blobs:build --blobs build/to/directory --src source/directory',
+      'netlify blobs:get my-store my-key',
+      'netlify blobs:set my-store my-key This will go in a blob',
+      'netlify blobs:set my-store my-key --input ./some-file.txt',
+      'netlify blobs:delete my-store my-key',
+      'netlify blobs:list my-store',
+      'netlify blobs:list my-store --json',
     ])
     .action(blobs)
 }
