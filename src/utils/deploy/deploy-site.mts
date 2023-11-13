@@ -13,7 +13,8 @@ import {
   DEFAULT_MAX_RETRY,
   DEFAULT_SYNC_LIMIT,
 } from './constants.mjs'
-import { hashConfig } from './hash-config.mjs'
+// @ts-expect-error TS(2691) FIXME: An import path cannot end with a '.mts' extension.... Remove this comment to see the full error message
+import { hashConfig } from './hash-config.mts'
 import hashFiles from './hash-files.mjs'
 import hashFns from './hash-fns.mjs'
 import uploadFiles from './upload-files.mjs'
@@ -33,7 +34,9 @@ export const deploySite = async (
     branch,
     concurrentHash = DEFAULT_CONCURRENT_HASH,
     concurrentUpload = DEFAULT_CONCURRENT_UPLOAD,
+    // @ts-expect-error TS(2525) FIXME: Initializer provides no value for this binding ele... Remove this comment to see the full error message
     config,
+    // @ts-expect-error TS(2525) FIXME: Initializer provides no value for this binding ele... Remove this comment to see the full error message
     deployId,
     deployTimeout = DEFAULT_DEPLOY_TIMEOUT,
     draft = false,
@@ -91,6 +94,7 @@ export const deploySite = async (
       hashAlgorithm,
       statusCb,
       assetType,
+      // @ts-expect-error TS(2345) FIXME: Argument of type '{ functionsConfig: any; tmpDir: ... Remove this comment to see the full error message
       workingDir,
       manifestPath,
       skipFunctionsCache,
@@ -124,7 +128,7 @@ export const deploySite = async (
   }
 
   if (functionsWithNativeModules.length !== 0) {
-    // @ts-expect-error TS(7031) Binding element 'name' implicitly has an 'any' type.
+    // @ts-expect-error TS(7031) FIXME: Binding element 'name' implicitly has an 'any' typ... Remove this comment to see the full error message
     const functionsWithNativeModulesMessage = functionsWithNativeModules.map(({ name }) => `- ${name}`).join('\n')
     warn(`Modules with native dependencies\n
     ${functionsWithNativeModulesMessage}
@@ -145,7 +149,7 @@ For more information, visit https://ntl.fyi/cli-native-modules.`)
     phase: 'start',
   })
 
-  // @ts-expect-error TS(2349) This expression is not callable.
+  // @ts-expect-error TS(2349) This expression is not callable
   const deployParams = cleanDeep({
     siteId,
     deploy_id: deployId,

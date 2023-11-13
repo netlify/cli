@@ -354,7 +354,9 @@ const runDeploy = async ({
   api,
   // @ts-expect-error TS(7031) FIXME: Binding element 'command' implicitly has an 'any' ... Remove this comment to see the full error message
   command,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'any' t... Remove this comment to see the full error message
   config,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'deployFolder' implicitly has an '... Remove this comment to see the full error message
   deployFolder,
   // @ts-expect-error TS(7031) FIXME: Binding element 'deployTimeout' implicitly has an ... Remove this comment to see the full error message
   deployTimeout,
@@ -415,16 +417,16 @@ const runDeploy = async ({
 
     const { headers } = await parseAllHeaders({
       configHeaders: config.headers,
-      // @ts-ignore
+      // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'never'.
       headersFiles: [headersPath],
       minimal: true,
     })
 
     config.headers = headers
 
-    // @ts-ignore
     results = await deploySite(api, siteId, deployFolder, {
       config,
+      // @ts-expect-error TS(2322) FIXME: Type 'any[]' is not assignable to type 'never[]'.
       fnDir: functionDirectories,
       functionsConfig,
       // @ts-expect-error TS(2322) FIXME: Type '(event: any) => void' is not assignable to t... Remove this comment to see the full error message
@@ -477,6 +479,7 @@ const runDeploy = async ({
  * @param {import('commander').OptionValues} config.options The options of the command
  * @returns
  */
+// @ts-expect-error TS(7031) FIXME: Binding element 'cachedConfig' implicitly has an '... Remove this comment to see the full error message
 const handleBuild = async ({ cachedConfig, currentDir, deployHandler, options, packagePath }) => {
   if (!options.build) {
     return {}
@@ -607,14 +610,23 @@ const printResults = ({ deployToProduction, isIntegrationDeploy, json, results, 
 }
 
 const prepAndRunDeploy = async ({
+  // @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
   api,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'command' implicitly has an 'any' ... Remove this comment to see the full error message
   command,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'any' t... Remove this comment to see the full error message
   config,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'deployToProduction' implicitly ha... Remove this comment to see the full error message
   deployToProduction,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'options' implicitly has an 'any' ... Remove this comment to see the full error message
   options,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'site' implicitly has an 'any' typ... Remove this comment to see the full error message
   site,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'siteData' implicitly has an 'any'... Remove this comment to see the full error message
   siteData,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'siteId' implicitly has an 'any' t... Remove this comment to see the full error message
   siteId,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'workingDir' implicitly has an 'an... Remove this comment to see the full error message
   workingDir,
 }) => {
   const alias = options.alias || options.branch
@@ -757,6 +769,7 @@ export const deploy = async (options, command) => {
     return triggerDeploy({ api, options, siteData, siteId })
   }
 
+  // @ts-expect-error TS(2339) FIXME: Property 'published_deploy' does not exist on type... Remove this comment to see the full error message
   const deployToProduction = options.prod || (options.prodIfUnlocked && !siteData.published_deploy.locked)
 
   let results = {}
@@ -767,6 +780,7 @@ export const deploy = async (options, command) => {
       cachedConfig: command.netlify.cachedConfig,
       currentDir: command.workingDir,
       options,
+      // @ts-expect-error TS(7031) FIXME: Binding element 'netlifyConfig' implicitly has an ... Remove this comment to see the full error message
       deployHandler: async ({ netlifyConfig }) => {
         results = await prepAndRunDeploy({
           command,
@@ -807,6 +821,7 @@ export const deploy = async (options, command) => {
   })
 
   if (options.open) {
+    // @ts-expect-error TS(2339) FIXME: Property 'siteUrl' does not exist on type '{}'.
     const urlToOpen = deployToProduction ? results.siteUrl : results.deployUrl
     // @ts-expect-error TS(2345) FIXME: Argument of type '{ url: any; }' is not assignable... Remove this comment to see the full error message
     await openBrowser({ url: urlToOpen })

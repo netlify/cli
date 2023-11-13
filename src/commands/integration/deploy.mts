@@ -402,6 +402,7 @@ const deploy = async (options, command) => {
   // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
   const [token] = await getToken()
   const workingDir = resolve(command.workingDir)
+  // @ts-expect-error TS(2345) FIXME: Argument of type '{ cachedConfig: any; packagePath... Remove this comment to see the full error message
   const buildOptions = await getBuildOptions({
     cachedConfig,
     packagePath: command.workspacePackage,

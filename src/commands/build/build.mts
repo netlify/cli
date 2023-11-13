@@ -53,6 +53,7 @@ const build = async (options, command) => {
     cachedConfig.config.build.commandOrigin = 'heuristics'
   }
 
+  // @ts-expect-error TS(2345) FIXME: Argument of type '{ cachedConfig: any; packagePath... Remove this comment to see the full error message
   const buildOptions = await getBuildOptions({
     cachedConfig,
     packagePath: command.workspacePackage,

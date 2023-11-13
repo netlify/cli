@@ -182,7 +182,7 @@ const pickTemplate = async function ({ language: languageFromFlag }, funcType) {
         : languages.filter(Boolean)
 
     const { language: languageFromPrompt } = await inquirer.prompt({
-      // @ts-expect-error TS(2769) FIXME: No overload matches this call.
+      // @ts-expect-error
       choices: langs,
       message: 'Select the language of your function',
       name: 'language',

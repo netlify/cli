@@ -2,6 +2,7 @@ import fs from 'fs'
 import process from 'process'
 
 import build from '@netlify/build'
+// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'toml... Remove this comment to see the full error message
 import tomlify from 'tomlify-j0.4'
 
 import { isFeatureFlagEnabled } from '../utils/feature-flags.mjs'
@@ -32,8 +33,11 @@ import { featureFlags as edgeFunctionsFeatureFlags } from './edge-functions/cons
 export const getBuildOptions = ({
   // @ts-expect-error TS(7031) FIXME: Binding element 'cachedConfig' implicitly has an '... Remove this comment to see the full error message
   cachedConfig,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'currentDir' implicitly has an 'an... Remove this comment to see the full error message
   currentDir,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'deployHandler' implicitly has an ... Remove this comment to see the full error message
   deployHandler,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'context' implicitly has an 'any' ... Remove this comment to see the full error message
   options: { context, cwd, debug, dry, json, offline, silent },
   // @ts-expect-error TS(7031) FIXME: Binding element 'packagePath' implicitly has an 'a... Remove this comment to see the full error message
   packagePath,
@@ -42,6 +46,7 @@ export const getBuildOptions = ({
 }) => {
   const eventHandlers = {
     onEnd: {
+      // @ts-expect-error TS(7031) FIXME: Binding element 'netlifyConfig' implicitly has an ... Remove this comment to see the full error message
       handler: ({ netlifyConfig }) => {
         const string = tomlify.toToml(netlifyConfig)
 
@@ -57,6 +62,7 @@ export const getBuildOptions = ({
   }
 
   if (deployHandler) {
+    // @ts-expect-error TS(2339) FIXME: Property 'onPostBuild' does not exist on type '{ o... Remove this comment to see the full error message
     eventHandlers.onPostBuild = {
       handler: deployHandler,
       description: 'Deploy Site',
