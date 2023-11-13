@@ -13,8 +13,7 @@ import {
   DEFAULT_MAX_RETRY,
   DEFAULT_SYNC_LIMIT,
 } from './constants.mjs'
-// @ts-expect-error TS(2691) FIXME: An import path cannot end with a '.mts' extension.... Remove this comment to see the full error message
-import { hashConfig } from './hash-config.mts'
+import { hashConfig } from './hash-config.mjs'
 import hashFiles from './hash-files.mjs'
 import hashFns from './hash-fns.mjs'
 import uploadFiles from './upload-files.mjs'
