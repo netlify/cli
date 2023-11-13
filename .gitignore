@@ -13,6 +13,7 @@ coverage
 
 # compiled files
 src/**/*.mjs
+!src/functions-templates/**/*.mjs
 src/**/*.d.mts
 tsconfig.tsbuildinfo
 
