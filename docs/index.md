@@ -26,7 +26,7 @@ Run any Netlify API method
 
 ### [blobs](/docs/commands/blobs.md)
 
-Manage netlify blobs
+Manage objects in Netlify Blobs
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
