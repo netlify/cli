@@ -65,31 +65,13 @@ export const transformImageParams = function (query) {
   params.h = query.h || query.height || null
   params.quality = query.q || query.quality || null
   params.format = query.fm || null
-  params.fit = mapImgixToFitIpx(query.fit, query.crop)
-  params.position = query.crop || null
+  params.fit = query.fit || null
+  params.position = query.position || null
 
   return Object.entries(params)
     .filter(([, value]) => value !== null)
     .map(([key, value]) => `${key}_${value}`)
     .join(',')
-}
-
-function mapImgixToFitIpx(fit, crop) {
-  if (crop) {
-    return 'cover'
-  }
-
-  const fitMapping = {
-    // IPX doesn't have exact equivalent.
-    clamp: null,
-    clip: 'contain',
-    crop: 'cover',
-    max: 'inside',
-    min: 'outside',
-    scale: 'fill',
-  }
-
-  return fitMapping[fit] ?? 'contain'
 }
 
 export const initializeProxy = async function ({ config }) {

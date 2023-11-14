@@ -39,7 +39,7 @@ describe.concurrent('commands/dev/images', () => {
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         await fetch(
-          `${server.url}${IMAGE_URL_PATTERN}?url=https://images.unsplash.com/photo-1517849845537-4d257902454a&w=100&h=200&q=80&fm=avif&fit=crop&crop=left`,
+          `${server.url}${IMAGE_URL_PATTERN}?url=https://images.unsplash.com/photo-1517849845537-4d257902454a&w=100&h=200&q=80&fm=avif&fit=cover&position=left`,
           {},
         ).then((res) => {
           t.expect(res.status).toEqual(200)
@@ -77,7 +77,7 @@ describe.concurrent('commands/dev/images', () => {
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         await fetch(
-          `${server.url}${IMAGE_URL_PATTERN}?url=/images/test.jpg&w=100&h=200&q=80&fm=avif&fit=crop&crop=left`,
+          `${server.url}${IMAGE_URL_PATTERN}?url=/images/test.jpg&w=100&h=200&q=80&fm=avif&fit=cover&position=left`,
           {},
         ).then((res) => {
           t.expect(res.status).toEqual(200)

@@ -22,8 +22,8 @@ test('should transform image params correctly', () => {
     // eslint-disable-next-line id-length
     q: '80',
     fm: 'jpg',
-    fit: 'crop',
-    crop: 'center',
+    fit: 'cover',
+    position: 'center',
   }
   const result = transformImageParams(query)
   expect(result).toEqual('w_100,h_200,quality_80,format_jpg,fit_cover,position_center')
