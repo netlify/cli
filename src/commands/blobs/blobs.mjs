@@ -27,7 +27,7 @@ export const createBlobsCommand = (program) => {
   return program
     .command('blobs')
     .alias('blob')
-    .description(`Manage objects in Netlify Blobs`)
+    .description(`(Beta) Manage objects in Netlify Blobs`)
     .addExamples([
       'netlify blobs:get my-store my-key',
       'netlify blobs:set my-store my-key This will go in a blob',

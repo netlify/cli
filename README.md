@@ -98,7 +98,7 @@ Run any Netlify API method
 
 ### [blobs](/docs/commands/blobs.md)
 
-Manage objects in Netlify Blobs
+(Beta) Manage objects in Netlify Blobs
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
