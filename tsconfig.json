@@ -13,7 +13,7 @@
     "strict": true,
     "skipLibCheck": true /* Skip type checking all .d.ts files. */,
     "allowJs": true,
-    "typeRoots": ["node_modules/@types", "types"],
+    "typeRoots": ["node_modules/@types", "types"]
   },
   "include": ["src/**/*.mts"],
   "exclude": ["node_modules", "src/functions-templates"]
