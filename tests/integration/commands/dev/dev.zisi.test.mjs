@@ -214,9 +214,9 @@ export const handler = async function () {
         })
         .withFunction({
           path: 'hello.js',
-          handler: async (event, context) => ({
+          handler: async (event) => ({
             statusCode: 200,
-            body: JSON.stringify({ rawUrl: event.rawUrl, blobs: context.clientContext.custom.blobs }),
+            body: JSON.stringify({ rawUrl: event.rawUrl, blobs: event.blobs }),
           }),
         })
         .withEdgeFunction({

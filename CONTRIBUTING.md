@@ -4,17 +4,28 @@
 
 These guidelines will help you send a pull request.
 
-If you’re submitting an issue instead, please skip this document.
-
-If your pull request is related to a typo or the documentation being unclear, please select on the relevant page’s
-`Edit` button (pencil icon) and directly suggest a correction instead.
+If you’re submitting an issue instead, please skip this document..
 
 This project was made with ❤️. The simplest way to give back is by starring and sharing it online.
 
 Everyone is welcome regardless of personal background. We enforce a [Code of conduct](CODE_OF_CONDUCT.md) in order to
 promote a positive and inclusive environment.
 
-## Development process
+## Table of Contents
+
+- [Developing locally](#developing-locally)
+  - [Architecture](#architecture)
+  - [Adding or updating a command](#adding-or-updating-a-command)
+  - [Updating our documentation](#updating-our-documentation)
+  - [Testing](#testing)
+    - [Debugging tests](#debugging-tests)
+  - [Lint docs per Netlify style guide](#lint-docs-per-netlify-style-guide)
+- [Pull Requests](#pull-requests)
+- [Releasing](#releasing)
+- [License](#license)
+
+
+## Developing locally
 
 First, fork and clone the repository. If you’re not sure how to do this, please watch
 [these videos](https://egghead.io/courses/how-to-contribute-to-an-open-source-project-on-github).
@@ -78,7 +89,7 @@ or (`DEBUG=true` enables printing stack traces when errors are thrown):
 DEBUG=true ./bin/run.mjs [command]
 ```
 
-## Architecture
+### Architecture
 
 The CLI is written using the [commander.js](https://github.com/tj/commander.js/) cli interface and the
 [netlify/js-client](https://github.com/netlify/js-client) open-api derived API client.
@@ -91,6 +102,33 @@ The CLI is written using the [commander.js](https://github.com/tj/commander.js/)
 A good place to start is reading the base command README and looking at the commands folder.
 
 > If you’d like to learn more on how `netlify dev` works, check [here](./docs/netlify-dev.md)
+
+
+### Adding or updating a command
+If you're adding a new command or updating an existing one, make sure to also add docs for it by running `npm run site:build`.
+
+This will automatically generate documentation for you that will look like the following:
+
+```md
+---
+title: Netlify CLI [command name] command
+description: A description.
+---
+
+# `command name`
+
+<!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
+
+<!-- AUTO-GENERATED-CONTENT:END -->
+
+```
+
+### Updating our documentation
+
+If documentation looks to be out of date, it is likely that the code for the command itself is not correct.
+
+To update the documentation, update the code (rather than the markdown files) and then run `npm run docs` to sync the docs. To confirm that the changes to the docs are correct, run `cd site && npm run dev:start` to run the docs locally.
+
 
 ### Testing
 
@@ -131,27 +169,6 @@ output.
 DEBUG_TESTS=true npm exec vitest -- run tests/unit/tests/unit/lib/account.test.mjs -t 'test name'
 ```
 
-### Command docs
-
-
-If you're adding a new command, make sure to also add docs for it by creating a new `[commandname].md` file to the `docs` folder and adding the following information:
-
-```md
----
-title: Netlify CLI [command name] command
-description: A description.
----
-
-# `command name`
-
-<!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
-
-<!-- AUTO-GENERATED-CONTENT:END -->
-
-```
-
-Then autogenerate the docs by running `npm run docs`.
-
 ### Lint docs per Netlify style guide
 
 1. [Install vale](https://docs.errata.ai/vale/install)
@@ -171,7 +188,7 @@ We actively welcome your pull requests.
 
 ## Releasing
 
-Merge the release PR
+Tag the 'release' pull request using the `automerge` label. This will merge the pull request on GitHub and publish the package to npm.
 
 ### Creating a prerelease
 

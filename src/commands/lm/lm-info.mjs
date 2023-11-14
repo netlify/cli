@@ -1,5 +1,5 @@
 // @ts-check
-import Listr from 'listr'
+import { Listr } from 'listr2'
 
 import {
   checkGitLFSVersionStep,
