@@ -11,6 +11,14 @@ export default defineConfig({
       external: ['**/fixtures/**', '**/node_modules/**'],
       interopDefault: false,
     },
+    snapshotFormat: {
+      escapeString: true,
+    },
+    poolOptions: {
+      threads: {
+        singleThread: true,
+      },
+    },
     reporters: [process.env.DEBUG_TESTS ? 'tap' : 'default'],
     coverage: {
       provider: 'v8',
