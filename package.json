@@ -13,7 +13,6 @@
     "/scripts/postinstall.mjs",
     "/src/**/*.js",
     "/src/**/*.mjs",
-    "/src/**/*.d.mts",
     "/src/**/types.d.ts",
     "/src/**/*.sh",
     "/src/**/*.ps1",
