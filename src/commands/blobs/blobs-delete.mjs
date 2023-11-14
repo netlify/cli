@@ -14,6 +14,7 @@ import requiresSiteInfo from '../../utils/hooks/requires-site-info.mjs'
 const blobsDelete = async (storeName, key, _options, command) => {
   const { api, siteInfo } = command.netlify
   const store = getStore({
+    apiURL: `${api.scheme}://${api.host}`,
     name: storeName,
     siteID: siteInfo.id ?? '',
     token: api.accessToken ?? '',

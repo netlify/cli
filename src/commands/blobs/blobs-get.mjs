@@ -4,7 +4,7 @@ import { resolve } from 'path'
 
 import { getStore } from '@netlify/blobs'
 
-import { chalk, error as printError, exit } from '../../utils/command-helpers.mjs'
+import { chalk, error as printError } from '../../utils/command-helpers.mjs'
 import requiresSiteInfo from '../../utils/hooks/requires-site-info.mjs'
 
 /**
@@ -18,6 +18,7 @@ const blobsGet = async (storeName, key, options, command) => {
   const { api, siteInfo } = command.netlify
   const { output } = options
   const store = getStore({
+    apiURL: `${api.scheme}://${api.host}`,
     name: storeName,
     siteID: siteInfo?.id ?? '',
     token: api.accessToken ?? '',
@@ -27,10 +28,7 @@ const blobsGet = async (storeName, key, options, command) => {
     const blob = await store.get(key)
 
     if (blob === null) {
-      printError(`Blob ${chalk.yellow(key)} does not exist in store ${chalk.yellow(storeName)}`, { exit: false })
-      exit(1)
-
-      return
+      return printError(`Blob ${chalk.yellow(key)} does not exist in store ${chalk.yellow(storeName)}`)
     }
 
     if (output) {

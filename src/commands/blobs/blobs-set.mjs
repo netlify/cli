@@ -20,6 +20,7 @@ const blobsSet = async (storeName, key, valueParts, options, command) => {
   const { api, siteInfo } = command.netlify
   const { input } = options
   const store = getStore({
+    apiURL: `${api.scheme}://${api.host}`,
     name: storeName,
     siteID: siteInfo.id ?? '',
     token: api.accessToken ?? '',
