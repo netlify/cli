@@ -13,6 +13,7 @@ import {
   DEFAULT_MAX_RETRY,
   DEFAULT_SYNC_LIMIT,
 } from './constants.mjs'
+import { hashConfig } from './hash-config.mjs'
 import hashFiles from './hash-files.mjs'
 import hashFns from './hash-fns.mjs'
 import uploadFiles from './upload-files.mjs'
@@ -27,7 +28,7 @@ export const deploySite = async (
     branch,
     concurrentHash = DEFAULT_CONCURRENT_HASH,
     concurrentUpload = DEFAULT_CONCURRENT_UPLOAD,
-    configPath = null,
+    config,
     deployId,
     deployTimeout = DEFAULT_DEPLOY_TIMEOUT,
     draft = false,
@@ -55,31 +56,39 @@ export const deploySite = async (
   })
 
   const edgeFunctionsDistPath = await getDistPathIfExists(workingDir)
-  const [{ files, filesShaMap }, { fnConfig, fnShaMap, functionSchedules, functions, functionsWithNativeModules }] =
-    await Promise.all([
-      hashFiles({
-        assetType,
-        concurrentHash,
-        directories: [configPath, dir, edgeFunctionsDistPath].filter(Boolean),
-        filter,
-        hashAlgorithm,
-        normalizer: deployFileNormalizer.bind(null, workingDir),
-        statusCb,
-      }),
-      hashFns(fnDir, {
-        functionsConfig,
-        tmpDir,
-        concurrentHash,
-        hashAlgorithm,
-        statusCb,
-        assetType,
-        workingDir,
-        manifestPath,
-        skipFunctionsCache,
-        siteEnv,
-        rootDir: siteRoot,
-      }),
-    ])
+  const [
+    { files: staticFiles, filesShaMap: staticShaMap },
+    { fnConfig, fnShaMap, functionSchedules, functions, functionsWithNativeModules },
+    configFile,
+  ] = await Promise.all([
+    hashFiles({
+      assetType,
+      concurrentHash,
+      directories: [dir, edgeFunctionsDistPath].filter(Boolean),
+      filter,
+      hashAlgorithm,
+      normalizer: deployFileNormalizer.bind(null, workingDir),
+      statusCb,
+    }),
+    hashFns(fnDir, {
+      functionsConfig,
+      tmpDir,
+      concurrentHash,
+      hashAlgorithm,
+      statusCb,
+      assetType,
+      workingDir,
+      manifestPath,
+      skipFunctionsCache,
+      siteEnv,
+      rootDir: siteRoot,
+    }),
+    hashConfig({ config }),
+  ])
+
+  const files = { ...staticFiles, [configFile.normalizedPath]: configFile.hash }
+  const filesShaMap = { ...staticShaMap, [configFile.hash]: [configFile] }
+
   const edgeFunctionsCount = Object.keys(files).filter(isEdgeFunctionFile).length
   const filesCount = Object.keys(files).length - edgeFunctionsCount
   const functionsCount = Object.keys(functions).length
