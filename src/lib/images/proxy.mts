@@ -77,34 +77,14 @@ export const transformImageParams = function (query) {
   // @ts-expect-error TS(2339) FIXME: Property 'format' does not exist on type '{}'.
   params.format = query.fm || null
   // @ts-expect-error TS(2339) FIXME: Property 'fit' does not exist on type '{}'.
-  params.fit = mapImgixToFitIpx(query.fit, query.crop)
+  params.fit = query.fit || null
   // @ts-expect-error TS(2339) FIXME: Property 'position' does not exist on type '{}'.
-  params.position = query.crop || null
+  params.position = query.position || null
 
   return Object.entries(params)
     .filter(([, value]) => value !== null)
     .map(([key, value]) => `${key}_${value}`)
     .join(',')
-}
-
-// @ts-expect-error TS(7006) FIXME: Parameter 'fit' implicitly has an 'any' type.
-function mapImgixToFitIpx(fit, crop) {
-  if (crop) {
-    return 'cover'
-  }
-
-  const fitMapping = {
-    // IPX doesn't have exact equivalent.
-    clamp: null,
-    clip: 'contain',
-    crop: 'cover',
-    max: 'inside',
-    min: 'outside',
-    scale: 'fill',
-  }
-
-  // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-  return fitMapping[fit] ?? 'contain'
 }
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'any' t... Remove this comment to see the full error message
