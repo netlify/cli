@@ -41,7 +41,6 @@
   "scripts": {
     "prepare": "is-ci || husky install node_modules/@netlify/eslint-config-node/.husky/",
     "start": "node ./bin/run.mjs",
-    "prepack": "git clean -fx && npm run build",
     "build": "tsc",
     "test": "run-s format test:dev",
     "format": "run-s format:check-fix:*",

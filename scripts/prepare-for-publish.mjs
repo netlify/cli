@@ -7,7 +7,6 @@ import ora from 'ora'
 
 // These scripts from package.json need to be preserved on publish
 const preserveScripts = new Set([
-  'build',
   'postinstall-pack',
   'postpack',
   'preinstall',
