@@ -9,7 +9,7 @@ declare module 'ascii-table' {
     addRow(row: Record<string, string>): void;
     addRow(row: string[], truncate: boolean): void;
     addRow(row: Record<string, string>, truncate: boolean): void;
-    addRowMatrix(matrix: string[][]): void;
+    addRowMatrix(row: Array<unknown>): void;
     setAlign(column: number, alignment: 'left' | 'center' | 'right'): void;
     setAlign(alignments: ('left' | 'center' | 'right')[]): void;
     setJustify(column: number, justify: boolean): void;
