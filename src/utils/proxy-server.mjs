@@ -36,34 +36,43 @@ export const generateInspectSettings = (edgeInspect, edgeInspectBrk) => {
 /**
  *
  * @param {object} params
+ * @param {string=} params.accountId
  * @param {*} params.addonsUrls
- * @param {import('../commands/base-command.mjs').NetlifyOptions["config"]} params.config
+ * @param {import("../lib/blobs/blobs.mjs").BlobsContext} blobsContext
+ * @param {import('../commands/types.js').NetlifyOptions["config"]} params.config
  * @param {string} [params.configPath] An override for the Netlify config path
  * @param {boolean} params.debug
- * @param {import('../commands/base-command.mjs').NetlifyOptions["cachedConfig"]['env']} params.env
+ * @param {import('../commands/types.js').NetlifyOptions["cachedConfig"]['env']} params.env
  * @param {InspectSettings} params.inspectSettings
  * @param {() => Promise<object>} params.getUpdatedConfig
  * @param {string} params.geolocationMode
  * @param {string} params.geoCountry
  * @param {*} params.settings
  * @param {boolean} params.offline
- * @param {*} params.site
+ * @param {object} params.site
  * @param {*} params.siteInfo
+ * @param {string} params.projectDir
+ * @param {string} params.repositoryRoot
  * @param {import('./state-config.mjs').default} params.state
+ * @param {import('../lib/functions/registry.mjs').FunctionsRegistry=} params.functionsRegistry
  * @returns
  */
 export const startProxyServer = async ({
   accountId,
   addonsUrls,
+  blobsContext,
   config,
   configPath,
   debug,
   env,
+  functionsRegistry,
   geoCountry,
   geolocationMode,
   getUpdatedConfig,
   inspectSettings,
   offline,
+  projectDir,
+  repositoryRoot,
   settings,
   site,
   siteInfo,
@@ -71,20 +80,23 @@ export const startProxyServer = async ({
 }) => {
   const url = await startProxy({
     addonsUrls,
+    blobsContext,
     config,
     configPath: configPath || site.configPath,
     debug,
     env,
+    functionsRegistry,
     geolocationMode,
     geoCountry,
     getUpdatedConfig,
     inspectSettings,
     offline,
-    projectDir: site.root,
+    projectDir,
     settings,
     state,
     siteInfo,
     accountId,
+    repositoryRoot,
   })
   if (!url) {
     log(NETLIFYDEVERR, `Unable to start proxy server on port '${settings.port}'`)

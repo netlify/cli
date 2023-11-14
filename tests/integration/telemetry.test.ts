@@ -1,16 +1,16 @@
 import { env as _env, version as nodejsVersion } from 'process'
 
-import execa from 'execa'
 import type { Options } from 'execa'
+import execa from 'execa'
 import { version as uuidVersion } from 'uuid'
 import { expect, test } from 'vitest'
 
 import { name, version } from '../../package.json'
 
-import callCli from './utils/call-cli.cjs'
-import cliPath from './utils/cli-path.cjs'
+import { callCli } from './utils/call-cli.mjs'
+import { cliPath } from './utils/cli-path.mjs'
 import { MockApiTestContext, withMockApi } from './utils/mock-api-vitest.js'
-import { withSiteBuilder } from './utils/site-builder.cjs'
+import { withSiteBuilder } from './utils/site-builder.mjs'
 
 const getCLIOptions = (apiUrl): Options => ({
   env: {
@@ -72,6 +72,7 @@ await withMockApi(routes, async () => {
       buildSystem: [],
       cliVersion: version,
       command: 'api',
+      monorepo: false,
       nodejsVersion,
       packageManager: 'npm',
     })
@@ -90,6 +91,7 @@ await withMockApi(routes, async () => {
       buildSystem: [],
       cliVersion: version,
       command: 'dev:exec',
+      monorepo: false,
       nodejsVersion,
       packageManager: 'npm',
     })
@@ -111,12 +113,12 @@ await withMockApi(routes, async () => {
       expect(Number.isInteger(request.body.duration)).toBe(true)
       expect(request.body.event).toBe('cli:command')
       expect(request.body.status).toBe('success')
-      console.log({ props: request.body.properties })
       expect(request.body.properties).toEqual({
         frameworks: ['next'],
         buildSystem: [],
         cliVersion: version,
         command: 'api',
+        monorepo: false,
         nodejsVersion,
         packageManager: 'npm',
       })

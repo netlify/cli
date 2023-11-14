@@ -19,7 +19,6 @@ See the [CLI command line reference](https://cli.netlify.com/commands/) to get s
 - [Usage](#usage)
 - [Documentation](#documentation)
 - [Commands](#commands)
-  - [addons](#addons)
   - [api](#api)
   - [build](#build)
   - [completion](#completion)
@@ -28,8 +27,8 @@ See the [CLI command line reference](https://cli.netlify.com/commands/) to get s
   - [env](#env)
   - [functions](#functions)
   - [init](#init)
+  - [integration](#integration)
   - [link](#link)
-  - [lm](#lm)
   - [login](#login)
   - [open](#open)
   - [recipes](#recipes)
@@ -48,7 +47,7 @@ See the [CLI command line reference](https://cli.netlify.com/commands/) to get s
 
 ## Installation
 
-Netlify CLI requires [Node.js](https://nodejs.org) version 14 or above. To install, run the following command from any
+Netlify CLI requires [Node.js](https://nodejs.org) version 18.14.0 or above. To install, run the following command from any
 directory in your terminal:
 
 ```bash
@@ -92,30 +91,17 @@ For a full command reference, see the list below, or visit [cli.netlify.com](htt
 ## Commands
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_LIST) -->
-### [addons](/docs/commands/addons.md)
-
-(Beta) Manage Netlify Add-ons
-
-| Subcommand | description  |
-|:--------------------------- |:-----|
-| [`addons:auth`](/docs/commands/addons.md#addonsauth) | Login to add-on provider  |
-| [`addons:config`](/docs/commands/addons.md#addonsconfig) | Configure add-on settings  |
-| [`addons:create`](/docs/commands/addons.md#addonscreate) | Add an add-on extension to your site  |
-| [`addons:delete`](/docs/commands/addons.md#addonsdelete) | Remove an add-on extension to your site  |
-| [`addons:list`](/docs/commands/addons.md#addonslist) | List currently installed add-ons for site  |
-
-
 ### [api](/docs/commands/api.md)
 
 Run any Netlify API method
 
 ### [build](/docs/commands/build.md)
 
-(Beta) Build on your local machine
+Build on your local machine
 
 ### [completion](/docs/commands/completion.md)
 
-(Beta) Generate shell completion script
+Generate shell completion script
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
@@ -159,27 +145,25 @@ Manage netlify functions
 | [`functions:create`](/docs/commands/functions.md#functionscreate) | Create a new function locally  |
 | [`functions:invoke`](/docs/commands/functions.md#functionsinvoke) | Trigger a function while in netlify dev with simulated data, good for testing function calls including Netlify's Event Triggered Functions  |
 | [`functions:list`](/docs/commands/functions.md#functionslist) | List functions that exist locally  |
-| [`functions:serve`](/docs/commands/functions.md#functionsserve) | (Beta) Serve functions locally  |
+| [`functions:serve`](/docs/commands/functions.md#functionsserve) | Serve functions locally  |
 
 
 ### [init](/docs/commands/init.md)
 
 Configure continuous deployment for a new or existing site. To create a new site without continuous deployment, use `netlify sites:create`
 
-### [link](/docs/commands/link.md)
+### [integration](/docs/commands/integration.md)
 
-Link a local repo or project folder to an existing site on Netlify
-
-### [lm](/docs/commands/lm.md)
-
-Handle Netlify Large Media operations
+Manage Netlify Integrations built with the Netlify SDK
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`lm:info`](/docs/commands/lm.md#lminfo) | Show large media requirements information.  |
-| [`lm:install`](/docs/commands/lm.md#lminstall) | Configures your computer to use Netlify Large Media  |
-| [`lm:setup`](/docs/commands/lm.md#lmsetup) | Configures your site to use Netlify Large Media  |
+| [`integration:deploy`](/docs/commands/integration.md#integrationdeploy) | Register, build, and deploy a private integration on Netlify  |
 
+
+### [link](/docs/commands/link.md)
+
+Link a local repo or project folder to an existing site on Netlify
 
 ### [login](/docs/commands/login.md)
 
@@ -197,16 +181,16 @@ Open settings for the site linked to the current folder
 
 ### [recipes](/docs/commands/recipes.md)
 
-(Beta) Create and modify files in a project using pre-defined recipes
+Create and modify files in a project using pre-defined recipes
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`recipes:list`](/docs/commands/recipes.md#recipeslist) | (Beta) List the recipes available to create and modify files in a project  |
+| [`recipes:list`](/docs/commands/recipes.md#recipeslist) | List the recipes available to create and modify files in a project  |
 
 
 ### [serve](/docs/commands/serve.md)
 
-(Beta) Build the site for production and serve locally. This does not watch the code for changes, so if you need to rebuild your site then you must exit and run `serve` again.
+Build the site for production and serve locally. This does not watch the code for changes, so if you need to rebuild your site then you must exit and run `serve` again.
 
 ### [sites](/docs/commands/sites.md)
 

@@ -1,14 +1,16 @@
 // @ts-check
 import { readFile, stat } from 'fs/promises'
 import { dirname, join, resolve } from 'path'
-import { cwd } from 'process'
 
 import { getPathInProject } from '../settings.mjs'
 
 import { INTERNAL_EDGE_FUNCTIONS_FOLDER } from './consts.mjs'
 
-export const getInternalFunctions = async () => {
-  const path = join(cwd(), getPathInProject([INTERNAL_EDGE_FUNCTIONS_FOLDER]))
+/**
+ * @param {string} workingDir
+ */
+export const getInternalFunctions = async (workingDir) => {
+  const path = join(workingDir, getPathInProject([INTERNAL_EDGE_FUNCTIONS_FOLDER]))
 
   try {
     const stats = await stat(path)

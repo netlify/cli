@@ -1,66 +1,75 @@
 // @ts-check
 import { writeFile } from 'fs/promises'
 import path from 'path'
-import process from 'process'
 
 import cleanDeep from 'clean-deep'
 import inquirer from 'inquirer'
 
 import { fileExistsAsync } from '../../lib/fs.mjs'
 import { normalizeBackslash } from '../../lib/path.mjs'
+import { detectBuildSettings } from '../build-info.mjs'
 import { chalk, error as failAndExit, log, warn } from '../command-helpers.mjs'
 
-import { getFrameworkInfo } from './frameworks.mjs'
-import { detectNodeVersion } from './node-version.mjs'
 import { getRecommendPlugins, getUIPlugins } from './plugins.mjs'
 
-const normalizeDir = ({ baseDirectory, defaultValue, dir }) => {
-  if (dir === undefined) {
-    return defaultValue
-  }
+// these plugins represent runtimes that are
+// expected to be "automatically" installed. Even though
+// they can be installed on package/toml, we always
+// want them installed in the site settings. When installed
+// there our build will automatically install the latest without
+// user management of the versioning.
+const pluginsToAlwaysInstall = new Set(['@netlify/plugin-nextjs'])
 
-  const relativeDir = path.relative(baseDirectory, dir)
-  return relativeDir || defaultValue
-}
+/**
+ * Retrieve a list of plugins to auto install
+ * @param {string[]=} pluginsInstalled
+ * @param {string[]=} pluginsRecommended
+ * @returns
+ */
+export const getPluginsToAutoInstall = (pluginsInstalled = [], pluginsRecommended = []) =>
+  pluginsRecommended.reduce(
+    (acc, plugin) =>
+      pluginsInstalled.includes(plugin) && !pluginsToAlwaysInstall.has(plugin) ? acc : [...acc, plugin],
 
-const getDefaultBase = ({ baseDirectory, repositoryRoot }) => {
-  if (baseDirectory !== repositoryRoot && baseDirectory.startsWith(repositoryRoot)) {
-    return path.relative(repositoryRoot, baseDirectory)
-  }
-}
+    /** @type {string[]} */ ([]),
+  )
 
-const getDefaultSettings = ({
-  baseDirectory,
-  config,
-  frameworkBuildCommand,
-  frameworkBuildDir,
-  frameworkPlugins,
-  repositoryRoot,
-}) => {
-  const recommendedPlugins = getRecommendPlugins(frameworkPlugins, config)
-  const {
-    command: defaultBuildCmd = frameworkBuildCommand,
-    functions: defaultFunctionsDir,
-    publish: defaultBuildDir = frameworkBuildDir,
-  } = config.build
+/**
+ *
+ * @param {Partial<import('@netlify/build-info').Settings>} settings
+ * @param {*} config
+ * @param {import('../../commands/base-command.mjs').default} command
+ */
+const normalizeSettings = (settings, config, command) => {
+  const plugins = getPluginsToAutoInstall(settings.plugins_from_config_file, settings.plugins_recommended)
+  const recommendedPlugins = getRecommendPlugins(plugins, config)
 
   return {
-    defaultBaseDir: getDefaultBase({ repositoryRoot, baseDirectory }),
-    defaultBuildCmd,
-    defaultBuildDir: normalizeDir({ baseDirectory, dir: defaultBuildDir, defaultValue: '.' }),
-    defaultFunctionsDir: normalizeDir({ baseDirectory, dir: defaultFunctionsDir, defaultValue: 'netlify/functions' }),
+    defaultBaseDir: settings.baseDirectory ?? command.project.relativeBaseDirectory ?? '',
+    defaultBuildCmd: config.build.command || settings.buildCommand,
+    defaultBuildDir: settings.dist,
+    defaultFunctionsDir: config.build.functions || 'netlify/functions',
     recommendedPlugins,
   }
 }
 
+/**
+ *
+ * @param {object} param0
+ * @param {string} param0.defaultBaseDir
+ * @param {string} param0.defaultBuildCmd
+ * @param {string=} param0.defaultBuildDir
+ * @returns
+ */
 const getPromptInputs = ({ defaultBaseDir, defaultBuildCmd, defaultBuildDir }) => {
   const inputs = [
-    defaultBaseDir !== undefined && {
-      type: 'input',
-      name: 'baseDir',
-      message: 'Base directory (e.g. projects/frontend):',
-      default: defaultBaseDir,
-    },
+    defaultBaseDir !== undefined &&
+      defaultBaseDir !== '' && {
+        type: 'input',
+        name: 'baseDir',
+        message: 'Base directory `(blank for current dir):',
+        default: defaultBaseDir,
+      },
     {
       type: 'input',
       name: 'buildCmd',
@@ -79,34 +88,22 @@ const getPromptInputs = ({ defaultBaseDir, defaultBuildCmd, defaultBuildDir }) =
   return inputs.filter(Boolean)
 }
 
-// `repositoryRoot === siteRoot` means the base directory wasn't detected by @netlify/config, so we use cwd()
-const getBaseDirectory = ({ repositoryRoot, siteRoot }) =>
-  path.normalize(repositoryRoot) === path.normalize(siteRoot) ? process.cwd() : siteRoot
-
-export const getBuildSettings = async ({ config, env, repositoryRoot, siteRoot }) => {
-  const baseDirectory = getBaseDirectory({ repositoryRoot, siteRoot })
-  const nodeVersion = await detectNodeVersion({ baseDirectory, env })
-  const {
-    frameworkBuildCommand,
-    frameworkBuildDir,
-    frameworkName,
-    frameworkPlugins = [],
-  } = await getFrameworkInfo({
-    baseDirectory,
-    nodeVersion,
-  })
+/**
+ * @param {object} param0
+ * @param {*} param0.config
+ * @param {import('../../commands/base-command.mjs').default} param0.command
+ */
+export const getBuildSettings = async ({ command, config }) => {
+  const settings = await detectBuildSettings(command)
+  // TODO: add prompt for asking to choose the build command
+  /** @type {Partial<import('@netlify/build-info').Settings>} */
+  // eslint-disable-next-line unicorn/explicit-length-check
+  const setting = settings.length > 0 ? settings[0] : {}
   const { defaultBaseDir, defaultBuildCmd, defaultBuildDir, defaultFunctionsDir, recommendedPlugins } =
-    await getDefaultSettings({
-      repositoryRoot,
-      config,
-      baseDirectory,
-      frameworkBuildCommand,
-      frameworkBuildDir,
-      frameworkPlugins,
-    })
+    await normalizeSettings(setting, config, command)
 
-  if (recommendedPlugins.length !== 0) {
-    log(`Configuring ${formatTitle(frameworkName)} runtime...`)
+  if (recommendedPlugins.length !== 0 && setting.framework?.name) {
+    log(`Configuring ${formatTitle(setting.framework?.name)} runtime...`)
     log()
   }
 
@@ -199,6 +196,9 @@ export const formatErrorMessage = ({ error, message }) => {
   return `${message} with error: ${chalk.red(errorMessage)}`
 }
 
+/**
+ * @param {string} title
+ */
 const formatTitle = (title) => chalk.cyan(title)
 
 export const createDeployKey = async ({ api }) => {

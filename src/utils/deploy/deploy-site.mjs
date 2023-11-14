@@ -13,6 +13,7 @@ import {
   DEFAULT_MAX_RETRY,
   DEFAULT_SYNC_LIMIT,
 } from './constants.mjs'
+import { hashConfig } from './hash-config.mjs'
 import hashFiles from './hash-files.mjs'
 import hashFns from './hash-fns.mjs'
 import uploadFiles from './upload-files.mjs'
@@ -27,8 +28,8 @@ export const deploySite = async (
     branch,
     concurrentHash = DEFAULT_CONCURRENT_HASH,
     concurrentUpload = DEFAULT_CONCURRENT_UPLOAD,
-    configPath = null,
-    deployId: deployIdOpt = null,
+    config,
+    deployId,
     deployTimeout = DEFAULT_DEPLOY_TIMEOUT,
     draft = false,
     filter,
@@ -37,16 +38,15 @@ export const deploySite = async (
     hashAlgorithm,
     manifestPath,
     maxRetry = DEFAULT_MAX_RETRY,
-    // API calls this the 'title'
-    message: title,
-    rootDir,
     siteEnv,
+    siteRoot,
     skipFunctionsCache,
     statusCb = () => {
       /* default to noop */
     },
     syncFileLimit = DEFAULT_SYNC_LIMIT,
     tmpDir = temporaryDirectory(),
+    workingDir,
   } = {},
 ) => {
   statusCb({
@@ -55,31 +55,40 @@ export const deploySite = async (
     phase: 'start',
   })
 
-  const edgeFunctionsDistPath = await getDistPathIfExists({ rootDir })
-  const [{ files, filesShaMap }, { fnConfig, fnShaMap, functionSchedules, functions, functionsWithNativeModules }] =
-    await Promise.all([
-      hashFiles({
-        assetType,
-        concurrentHash,
-        directories: [configPath, dir, edgeFunctionsDistPath].filter(Boolean),
-        filter,
-        hashAlgorithm,
-        normalizer: deployFileNormalizer.bind(null, rootDir),
-        statusCb,
-      }),
-      hashFns(fnDir, {
-        functionsConfig,
-        tmpDir,
-        concurrentHash,
-        hashAlgorithm,
-        statusCb,
-        assetType,
-        rootDir,
-        manifestPath,
-        skipFunctionsCache,
-        siteEnv,
-      }),
-    ])
+  const edgeFunctionsDistPath = await getDistPathIfExists(workingDir)
+  const [
+    { files: staticFiles, filesShaMap: staticShaMap },
+    { fnConfig, fnShaMap, functionSchedules, functions, functionsWithNativeModules },
+    configFile,
+  ] = await Promise.all([
+    hashFiles({
+      assetType,
+      concurrentHash,
+      directories: [dir, edgeFunctionsDistPath].filter(Boolean),
+      filter,
+      hashAlgorithm,
+      normalizer: deployFileNormalizer.bind(null, workingDir),
+      statusCb,
+    }),
+    hashFns(fnDir, {
+      functionsConfig,
+      tmpDir,
+      concurrentHash,
+      hashAlgorithm,
+      statusCb,
+      assetType,
+      workingDir,
+      manifestPath,
+      skipFunctionsCache,
+      siteEnv,
+      rootDir: siteRoot,
+    }),
+    hashConfig({ config }),
+  ])
+
+  const files = { ...staticFiles, [configFile.normalizedPath]: configFile.hash }
+  const filesShaMap = { ...staticShaMap, [configFile.hash]: [configFile] }
+
   const edgeFunctionsCount = Object.keys(files).filter(isEdgeFunctionFile).length
   const filesCount = Object.keys(files).length - edgeFunctionsCount
   const functionsCount = Object.keys(functions).length
@@ -118,9 +127,9 @@ For more information, visit https://ntl.fyi/cli-native-modules.`)
     phase: 'start',
   })
 
-  let deploy
-  let deployParams = cleanDeep({
+  const deployParams = cleanDeep({
     siteId,
+    deploy_id: deployId,
     body: {
       files,
       functions,
@@ -131,19 +140,11 @@ For more information, visit https://ntl.fyi/cli-native-modules.`)
       draft,
     },
   })
-  if (deployIdOpt === null) {
-    if (title) {
-      deployParams = { ...deployParams, title }
-    }
-    deploy = await api.createSiteDeploy(deployParams)
-  } else {
-    deployParams = { ...deployParams, deploy_id: deployIdOpt }
-    deploy = await api.updateSiteDeploy(deployParams)
-  }
+  let deploy = await api.updateSiteDeploy(deployParams)
 
   if (deployParams.body.async) deploy = await waitForDiff(api, deploy.id, siteId, deployTimeout)
 
-  const { id: deployId, required: requiredFiles, required_functions: requiredFns } = deploy
+  const { required: requiredFiles, required_functions: requiredFns } = deploy
 
   statusCb({
     type: 'create-deploy',

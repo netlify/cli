@@ -3,7 +3,7 @@ import cp from 'child_process'
 import fs from 'fs'
 import { mkdir, readdir, unlink } from 'fs/promises'
 import { createRequire } from 'module'
-import path, { dirname } from 'path'
+import path, { dirname, join, relative } from 'path'
 import process from 'process'
 import { fileURLToPath, pathToFileURL } from 'url'
 import { promisify } from 'util'
@@ -12,7 +12,6 @@ import copyTemplateDirOriginal from 'copy-template-dir'
 import { findUp } from 'find-up'
 import fuzzy from 'fuzzy'
 import inquirer from 'inquirer'
-import inquirerAutocompletePrompt from 'inquirer-autocomplete-prompt'
 import fetch from 'node-fetch'
 import ora from 'ora'
 
@@ -31,8 +30,10 @@ const templatesDir = path.resolve(dirname(fileURLToPath(import.meta.url)), '../.
 
 const showRustTemplates = process.env.NETLIFY_EXPERIMENTAL_BUILD_RUST_SOURCE === 'true'
 
-// Ensure that there's a sub-directory in `src/functions-templates` named after
-// each `value` property in this list.
+/**
+ * Ensure that there's a sub-directory in `src/functions-templates` named after
+ * each `value` property in this list.
+ */
 const languages = [
   { name: 'JavaScript', value: 'javascript' },
   { name: 'TypeScript', value: 'typescript' },
@@ -91,23 +92,28 @@ const filterRegistry = function (registry, input) {
     })
 }
 
+/**
+ * @param {string} lang
+ * @param {'edge' | 'serverless'} funcType
+ */
 const formatRegistryArrayForInquirer = async function (lang, funcType) {
-  const folderNames = await readdir(path.join(templatesDir, lang))
+  const folders = await readdir(path.join(templatesDir, lang), { withFileTypes: true })
 
   const imports = await Promise.all(
-    folderNames
-      // filter out markdown files
-      .filter((folderName) => !folderName.endsWith('.md'))
-      .map(async (folderName) => {
-        const templatePath = path.join(templatesDir, lang, folderName, '.netlify-function-template.mjs')
-        const template = await import(pathToFileURL(templatePath))
-
-        return template.default
+    folders
+      .filter((folder) => Boolean(folder?.isDirectory()))
+      .map(async ({ name }) => {
+        try {
+          const templatePath = path.join(templatesDir, lang, name, '.netlify-function-template.mjs')
+          const template = await import(pathToFileURL(templatePath))
+          return template.default
+        } catch {
+          // noop if import fails we don't break the whole inquirer
+        }
       }),
   )
-
   const registry = imports
-    .filter((template) => template.functionType === funcType)
+    .filter((template) => template?.functionType === funcType)
     .sort((templateA, templateB) => {
       const priorityDiff = (templateA.priority || DEFAULT_PRIORITY) - (templateB.priority || DEFAULT_PRIORITY)
 
@@ -136,7 +142,7 @@ const formatRegistryArrayForInquirer = async function (lang, funcType) {
 /**
  * pick template from our existing templates
  * @param {import('commander').OptionValues} config
- *
+ * @param {'edge' | 'serverless'} funcType
  */
 const pickTemplate = async function ({ language: languageFromFlag }, funcType) {
   const specialCommands = [
@@ -172,8 +178,6 @@ const pickTemplate = async function ({ language: languageFromFlag }, funcType) {
     language = languageFromPrompt
   }
 
-  inquirer.registerPrompt('autocomplete', inquirerAutocompletePrompt)
-
   let templatesForLanguage
 
   try {
@@ -207,6 +211,7 @@ const pickTemplate = async function ({ language: languageFromFlag }, funcType) {
 
 const DEFAULT_PRIORITY = 999
 
+/** @returns {Promise<'edge' | 'serverless'>} */
 const selectTypeOfFunc = async () => {
   const functionTypes = [
     { name: 'Edge function (Deno)', value: 'edge' },
@@ -224,92 +229,100 @@ const selectTypeOfFunc = async () => {
   return functionType
 }
 
+/**
+ * @param {import('../base-command.mjs').default} command
+ */
 const ensureEdgeFuncDirExists = function (command) {
   const { config, site } = command.netlify
   const siteId = site.id
-  let functionsDirHolder = config.build.edge_functions
 
   if (!siteId) {
     error(`${NETLIFYDEVERR} No site id found, please run inside a site directory or \`netlify link\``)
   }
 
-  if (!functionsDirHolder) {
-    functionsDirHolder = 'netlify/edge-functions'
-  }
+  const functionsDir = config.build?.edge_functions ?? join(command.workingDir, 'netlify/edge-functions')
+  const relFunctionsDir = relative(command.workingDir, functionsDir)
 
-  if (!fs.existsSync(functionsDirHolder)) {
+  if (!fs.existsSync(functionsDir)) {
     log(
       `${NETLIFYDEVLOG} Edge Functions directory ${chalk.magenta.inverse(
-        functionsDirHolder,
+        relFunctionsDir,
       )} does not exist yet, creating it...`,
     )
 
-    fs.mkdirSync(functionsDirHolder, { recursive: true })
+    fs.mkdirSync(functionsDir, { recursive: true })
 
-    log(`${NETLIFYDEVLOG} Edge Functions directory ${chalk.magenta.inverse(functionsDirHolder)} created.`)
+    log(`${NETLIFYDEVLOG} Edge Functions directory ${chalk.magenta.inverse(relFunctionsDir)} created.`)
   }
-  return functionsDirHolder
+
+  return functionsDir
+}
+
+/**
+ * Prompts the user to choose a functions directory
+ * @param {import('../base-command.mjs').default} command
+ * @returns {Promise<string>} - functions directory or throws an error
+ */
+const promptFunctionsDirectory = async (command) => {
+  const { api, relConfigFilePath, site } = command.netlify
+  log(`\n${NETLIFYDEVLOG} functions directory not specified in ${relConfigFilePath} or UI settings`)
+
+  if (!site.id) {
+    error(`${NETLIFYDEVERR} No site id found, please run inside a site directory or \`netlify link\``)
+  }
+
+  const { functionsDir } = await inquirer.prompt([
+    {
+      type: 'input',
+      name: 'functionsDir',
+      message: 'Enter the path, relative to your site, where your functions should live:',
+      default: 'netlify/functions',
+    },
+  ])
+
+  try {
+    log(`${NETLIFYDEVLOG} updating site settings with ${chalk.magenta.inverse(functionsDir)}`)
+
+    // @ts-ignore Typings of API are not correct
+    await api.updateSite({
+      siteId: site.id,
+      body: {
+        build_settings: {
+          functions_dir: functionsDir,
+        },
+      },
+    })
+
+    log(`${NETLIFYDEVLOG} functions directory ${chalk.magenta.inverse(functionsDir)} updated in site settings`)
+  } catch {
+    throw error('Error updating site settings')
+  }
+  return functionsDir
 }
 
 /**
  * Get functions directory (and make it if necessary)
  * @param {import('../base-command.mjs').default} command
- * @returns {Promise<string|never>} - functions directory or throws an error
+ * @returns {Promise<string>} - functions directory or throws an error
  */
 const ensureFunctionDirExists = async function (command) {
-  const { api, config, site } = command.netlify
-  const siteId = site.id
-  let functionsDirHolder = config.functionsDirectory
+  const { config } = command.netlify
+  const functionsDirHolder =
+    config.functionsDirectory || join(command.workingDir, await promptFunctionsDirectory(command))
+  const relFunctionsDirHolder = relative(command.workingDir, functionsDirHolder)
 
-  if (!functionsDirHolder) {
-    log(`${NETLIFYDEVLOG} functions directory not specified in netlify.toml or UI settings`)
-
-    if (!siteId) {
-      error(`${NETLIFYDEVERR} No site id found, please run inside a site directory or \`netlify link\``)
-    }
-
-    const { functionsDir } = await inquirer.prompt([
-      {
-        type: 'input',
-        name: 'functionsDir',
-        message:
-          'Enter the path, relative to your site’s base directory in your repository, where your functions should live:',
-        default: 'netlify/functions',
-      },
-    ])
-
-    functionsDirHolder = functionsDir
-
-    try {
-      log(`${NETLIFYDEVLOG} updating site settings with ${chalk.magenta.inverse(functionsDirHolder)}`)
-
-      // @ts-ignore Typings of API are not correct
-      await api.updateSite({
-        siteId: site.id,
-        body: {
-          build_settings: {
-            functions_dir: functionsDirHolder,
-          },
-        },
-      })
-
-      log(`${NETLIFYDEVLOG} functions directory ${chalk.magenta.inverse(functionsDirHolder)} updated in site settings`)
-    } catch {
-      throw error('Error updating site settings')
-    }
-  }
-
-  if (!(await fileExistsAsync(functionsDirHolder))) {
+  if (!fs.existsSync(functionsDirHolder)) {
     log(
       `${NETLIFYDEVLOG} functions directory ${chalk.magenta.inverse(
-        functionsDirHolder,
+        relFunctionsDirHolder,
       )} does not exist yet, creating it...`,
     )
 
     await mkdir(functionsDirHolder, { recursive: true })
 
-    log(`${NETLIFYDEVLOG} functions directory ${chalk.magenta.inverse(functionsDirHolder)} created`)
+    log(`${NETLIFYDEVLOG} functions directory ${chalk.magenta.inverse(relFunctionsDirHolder)} created`)
   }
+
   return functionsDirHolder
 }
 
@@ -370,20 +383,24 @@ const downloadFromURL = async function (command, options, argumentName, function
   }
 }
 
-// Takes a list of existing packages and a list of packages required by a
-// function, and returns the packages from the latter that aren't present
-// in the former. The packages are returned as an array of strings with the
-// name and version range (e.g. '@netlify/functions@0.1.0').
+/**
+ * Takes a list of existing packages and a list of packages required by a
+ * function, and returns the packages from the latter that aren't present
+ * in the former. The packages are returned as an array of strings with the
+ * name and version range (e.g. '@netlify/functions@0.1.0').
+ */
 const getNpmInstallPackages = (existingPackages = {}, neededPackages = {}) =>
   Object.entries(neededPackages)
     .filter(([name]) => existingPackages[name] === undefined)
     .map(([name, version]) => `${name}@${version}`)
 
-// When installing a function's dependencies, we first try to find a site-level
-// `package.json` file. If we do, we look for any dependencies of the function
-// that aren't already listed as dependencies of the site and install them. If
-// we don't do this check, we may be upgrading the version of a module used in
-// another part of the project, which we don't want to do.
+/**
+ * When installing a function's dependencies, we first try to find a site-level
+ * `package.json` file. If we do, we look for any dependencies of the function
+ * that aren't already listed as dependencies of the site and install them. If
+ * we don't do this check, we may be upgrading the version of a module used in
+ * another part of the project, which we don't want to do.
+ */
 const installDeps = async ({ functionPackageJson, functionPath, functionsDir }) => {
   const { dependencies: functionDependencies, devDependencies: functionDevDependencies } = require(functionPackageJson)
   const sitePackageJson = await findUp('package.json', { cwd: functionsDir })
@@ -430,8 +447,8 @@ const installDeps = async ({ functionPackageJson, functionPath, functionsDir }) 
  * @param {import('../base-command.mjs').default} command
  * @param {import('commander').OptionValues} options
  * @param {string} argumentName
- * @param {string} functionsDir
- * @param {string} funcType
+ * @param {string} functionsDir Absolute path of the functions directory
+ * @param {'edge' | 'serverless'} funcType
  */
 // eslint-disable-next-line max-params
 const scaffoldFromTemplate = async function (command, options, argumentName, functionsDir, funcType) {
@@ -443,7 +460,7 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
         name: 'chosenUrl',
         message: 'URL to clone: ',
         type: 'input',
-        validate: (val) => Boolean(validateRepoURL(val)),
+        validate: (/** @type {string} */ val) => Boolean(validateRepoURL(val)),
         // make sure it is not undefined and is a valid filename.
         // this has some nuance i have ignored, eg crossenv and i18n concerns
       },
@@ -506,7 +523,7 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
     }
 
     if (funcType === 'edge') {
-      registerEFInToml(name)
+      registerEFInToml(name, command.netlify)
     }
 
     await installAddons(command, addons, path.resolve(functionPath))
@@ -631,9 +648,15 @@ const installAddons = async function (command, functionAddons, fnPath) {
   return Promise.all(arr)
 }
 
-const registerEFInToml = async (funcName) => {
-  if (!fs.existsSync('netlify.toml')) {
-    log(`${NETLIFYDEVLOG} \`netlify.toml\` file does not exist yet. Creating it...`)
+/**
+ *
+ * @param {string} funcName
+ * @param {import('../types.js').NetlifyOptions} options
+ */
+const registerEFInToml = async (funcName, options) => {
+  const { configFilePath, relConfigFilePath } = options
+  if (!fs.existsSync(configFilePath)) {
+    log(`${NETLIFYDEVLOG} \`${relConfigFilePath}\` file does not exist yet. Creating it...`)
   }
 
   let { funcPath } = await inquirer.prompt([
@@ -656,17 +679,22 @@ const registerEFInToml = async (funcName) => {
   const functionRegister = `\n\n[[edge_functions]]\nfunction = "${funcName}"\npath = "${funcPath}"`
 
   try {
-    fs.promises.appendFile('netlify.toml', functionRegister)
+    fs.promises.appendFile(configFilePath, functionRegister)
     log(
-      `${NETLIFYDEVLOG} Function '${funcName}' registered for route \`${funcPath}\`. To change, edit your \`netlify.toml\` file.`,
+      `${NETLIFYDEVLOG} Function '${funcName}' registered for route \`${funcPath}\`. To change, edit your \`${relConfigFilePath}\` file.`,
     )
   } catch {
-    error(`${NETLIFYDEVERR} Unable to register function. Please check your \`netlify.toml\` file.`)
+    error(`${NETLIFYDEVERR} Unable to register function. Please check your \`${relConfigFilePath}\` file.`)
   }
 }
 
-// we used to allow for a --dir command,
-// but have retired that to force every scaffolded function to be a directory
+/**
+ * we used to allow for a --dir command,
+ * but have retired that to force every scaffolded function to be a directory
+ * @param {string} functionsDir
+ * @param {string} name
+ * @returns
+ */
 const ensureFunctionPathIsOk = function (functionsDir, name) {
   const functionPath = path.join(functionsDir, name)
   if (fs.existsSync(functionPath)) {
@@ -678,6 +706,7 @@ const ensureFunctionPathIsOk = function (functionsDir, name) {
 
 /**
  * The functions:create command
+ * @param {string} name
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command.mjs').default} command
  */

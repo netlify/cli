@@ -88,6 +88,7 @@ netlify deploy
 - `build` (*boolean*) - Run build command before deploying
 - `context` (*string*) - Context to use when resolving build configuration
 - `dir` (*string*) - Specify a folder to deploy
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `functions` (*string*) - Specify a functions folder to deploy
 - `json` (*boolean*) - Output deployment data as JSON
 - `message` (*string*) - A short message to include in the deploy log
@@ -97,10 +98,8 @@ netlify deploy
 - `site` (*string*) - A site name or ID to deploy to
 - `skip-functions-cache` (*boolean*) - Ignore any functions created as part of a previous `build` or `deploy` commands, forcing them to be bundled again as part of the deployment
 - `timeout` (*string*) - Timeout to wait for deployment to finish
-- `debug` (*boolean*) - Print debugging information
-- `http-proxy` (*string*) - Proxy server address to route requests through.
-- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 - `trigger` (*boolean*) - Trigger a new build of your site on Netlify without uploading local files
+- `debug` (*boolean*) - Print debugging information
 
 **Examples**
 

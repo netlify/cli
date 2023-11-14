@@ -17,9 +17,8 @@ netlify functions
 
 **Flags**
 
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
-- `http-proxy` (*string*) - Proxy server address to route requests through.
-- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
@@ -27,7 +26,7 @@ netlify functions
 | [`functions:create`](/docs/commands/functions.md#functionscreate) | Create a new function locally  |
 | [`functions:invoke`](/docs/commands/functions.md#functionsinvoke) | Trigger a function while in netlify dev with simulated data, good for testing function calls including Netlify's Event Triggered Functions  |
 | [`functions:list`](/docs/commands/functions.md#functionslist) | List functions that exist locally  |
-| [`functions:serve`](/docs/commands/functions.md#functionsserve) | (Beta) Serve functions locally  |
+| [`functions:serve`](/docs/commands/functions.md#functionsserve) | Serve functions locally  |
 
 
 **Examples**
@@ -50,11 +49,10 @@ netlify functions:build
 
 **Flags**
 
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `functions` (*string*) - Specify a functions directory to build to
-- `debug` (*boolean*) - Print debugging information
-- `http-proxy` (*string*) - Proxy server address to route requests through.
-- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 - `src` (*string*) - Specify the source directory for the functions
+- `debug` (*boolean*) - Print debugging information
 
 ---
 ## `functions:create`
@@ -73,12 +71,11 @@ netlify functions:create
 
 **Flags**
 
-- `name` (*string*) - function name
-- `debug` (*boolean*) - Print debugging information
-- `http-proxy` (*string*) - Proxy server address to route requests through.
-- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `language` (*string*) - function language
+- `name` (*string*) - function name
 - `url` (*string*) - pull template from URL
+- `debug` (*boolean*) - Print debugging information
 
 **Examples**
 
@@ -105,16 +102,15 @@ netlify functions:invoke
 
 **Flags**
 
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `functions` (*string*) - Specify a functions folder to parse, overriding netlify.toml
 - `identity` (*boolean*) - simulate Netlify Identity authentication JWT. pass --identity to affirm unauthenticated request
 - `name` (*string*) - function name to invoke
 - `no-identity` (*boolean*) - simulate Netlify Identity authentication JWT. pass --no-identity to affirm unauthenticated request
 - `payload` (*string*) - Supply POST payload in stringified json, or a path to a json file
+- `port` (*string*) - Port where netlify dev is accessible. e.g. 8888
 - `querystring` (*string*) - Querystring to add to your function invocation
 - `debug` (*boolean*) - Print debugging information
-- `http-proxy` (*string*) - Proxy server address to route requests through.
-- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
-- `port` (*string*) - Port where netlify dev is accessible. e.g. 8888
 
 **Examples**
 
@@ -145,16 +141,15 @@ netlify functions:list
 
 **Flags**
 
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `functions` (*string*) - Specify a functions directory to list
-- `debug` (*boolean*) - Print debugging information
-- `http-proxy` (*string*) - Proxy server address to route requests through.
-- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 - `json` (*boolean*) - Output function data as JSON
+- `debug` (*boolean*) - Print debugging information
 
 ---
 ## `functions:serve`
 
-(Beta) Serve functions locally
+Serve functions locally
 
 **Usage**
 
@@ -164,12 +159,11 @@ netlify functions:serve
 
 **Flags**
 
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `functions` (*string*) - Specify a functions directory to serve
-- `debug` (*boolean*) - Print debugging information
-- `http-proxy` (*string*) - Proxy server address to route requests through.
-- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 - `offline` (*boolean*) - disables any features that require network access
 - `port` (*string*) - Specify a port for the functions server
+- `debug` (*boolean*) - Print debugging information
 
 ---
 

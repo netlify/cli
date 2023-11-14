@@ -24,7 +24,7 @@ const argv = process.argv.slice(2)
  * Chalk instance for CLI that can be initialized with no colors mode
  * needed for json outputs where we don't want to have colors
  * @param  {boolean} noColors - disable chalk colors
- * @return {object} - default or custom chalk instance
+ * @return {import('chalk').ChalkInstance} - default or custom chalk instance
  */
 const safeChalk = function (noColors) {
   if (noColors) {
@@ -163,6 +163,12 @@ export const log = (message = '', ...args) => {
   process.stdout.write(`${format(message, ...args)}\n`)
 }
 
+export const logPadded = (message = '', ...args) => {
+  log('')
+  log(message, ...args)
+  log('')
+}
+
 /**
  * logs a warning message
  * @param {string} message
@@ -174,12 +180,18 @@ export const warn = (message = '') => {
 
 /**
  * throws an error or log it
- * @param {string|Error} message
+ * @param {unknown} message
  * @param {object} [options]
  * @param {boolean} [options.exit]
  */
 export const error = (message = '', options = {}) => {
-  const err = message instanceof Error ? message : new Error(message)
+  const err =
+    message instanceof Error
+      ? message
+      : // eslint-disable-next-line unicorn/no-nested-ternary
+      typeof message === 'string'
+      ? new Error(message)
+      : /** @type {Error} */ ({ message, stack: undefined, name: 'Error' })
 
   if (options.exit === false) {
     const bang = chalk.red(BANG)
@@ -198,10 +210,13 @@ export const exit = (code = 0) => {
   process.exit(code)
 }
 
-// When `build.publish` is not set by the user, the CLI behavior differs in
-// several ways. It detects it by checking if `build.publish` is `undefined`.
-// However, `@netlify/config` adds a default value to `build.publish`.
-// This removes 'publish' and 'publishOrigin' in this case.
+/**
+ * When `build.publish` is not set by the user, the CLI behavior differs in
+ * several ways. It detects it by checking if `build.publish` is `undefined`.
+ * However, `@netlify/config` adds a default value to `build.publish`.
+ * This removes 'publish' and 'publishOrigin' in this case.
+ * @param {*} config
+ */
 export const normalizeConfig = (config) => {
   // Unused var here is in order to omit 'publish' from build config
   // eslint-disable-next-line no-unused-vars
@@ -218,34 +233,55 @@ const DEBOUNCE_WAIT = 100
  * @param {string | string[]} target
  * @param {Object} opts
  * @param {number} [opts.depth]
- * @param {() => any} [opts.onAdd]
- * @param {() => any} [opts.onChange]
- * @param {() => any} [opts.onUnlink]
+ * @param {Array<string|RegExp>} [opts.ignored]
+ * @param {(paths: string[]) => any} [opts.onAdd]
+ * @param {(paths: string[]) => any} [opts.onChange]
+ * @param {(paths: string[]) => any} [opts.onUnlink]
  */
-export const watchDebounced = async (target, { depth, onAdd = () => {}, onChange = () => {}, onUnlink = () => {} }) => {
-  const watcher = chokidar.watch(target, { depth, ignored: /node_modules/, ignoreInitial: true })
+export const watchDebounced = async (
+  target,
+  { depth, ignored = [], onAdd = () => {}, onChange = () => {}, onUnlink = () => {} },
+) => {
+  const baseIgnores = [/\/(node_modules|.git)\//]
+  const watcher = chokidar.watch(target, { depth, ignored: [...baseIgnores, ...ignored], ignoreInitial: true })
 
   await once(watcher, 'ready')
 
-  const debouncedOnChange = debounce(onChange, DEBOUNCE_WAIT)
-  const debouncedOnUnlink = debounce(onUnlink, DEBOUNCE_WAIT)
-  const debouncedOnAdd = debounce(onAdd, DEBOUNCE_WAIT)
+  let onChangeQueue = []
+  let onAddQueue = []
+  let onUnlinkQueue = []
+
+  const debouncedOnChange = debounce(() => {
+    onChange(onChangeQueue)
+    onChangeQueue = []
+  }, DEBOUNCE_WAIT)
+  const debouncedOnAdd = debounce(() => {
+    onAdd(onAddQueue)
+    onAddQueue = []
+  }, DEBOUNCE_WAIT)
+  const debouncedOnUnlink = debounce(() => {
+    onUnlink(onUnlinkQueue)
+    onUnlinkQueue = []
+  }, DEBOUNCE_WAIT)
 
   watcher
     .on('change', (path) => {
       decache(path)
-      debouncedOnChange(path)
+      onChangeQueue.push(path)
+      debouncedOnChange()
     })
     .on('unlink', (path) => {
       decache(path)
-      debouncedOnUnlink(path)
+      onUnlinkQueue.push(path)
+      debouncedOnUnlink()
     })
     .on('add', (path) => {
       decache(path)
-      debouncedOnAdd(path)
+      onAddQueue.push(path)
+      debouncedOnAdd()
     })
 
   return watcher
 }
 
-export const getTerminalLink = (text, url) => terminalLink(text, url, { fallback: () => `${text} ${url}` })
+export const getTerminalLink = (text, url) => terminalLink(text, url, { fallback: () => `${text} (${url})` })

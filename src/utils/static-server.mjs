@@ -6,6 +6,10 @@ import Fastify from 'fastify'
 
 import { log, NETLIFYDEVLOG } from './command-helpers.mjs'
 
+/**
+ * @param {object} config
+ * @param {import('./types.js').ServerSettings} config.settings
+ */
 export const startStaticServer = async ({ settings }) => {
   const server = Fastify()
   const rootPath = path.resolve(settings.dist)

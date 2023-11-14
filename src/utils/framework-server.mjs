@@ -18,13 +18,14 @@ const FRAMEWORK_PORT_TIMEOUT = 6e5
 /**
  * Start a static server if the `useStaticServer` is provided or a framework specific server
  * @param {object} config
- * @param {Partial<import('./types').ServerSettings>} config.settings
+ * @param {import('./types.js').ServerSettings} config.settings
+ * @param {string} config.cwd
  * @returns {Promise<StartReturnObject>}
  */
-export const startFrameworkServer = async function ({ settings }) {
+export const startFrameworkServer = async function ({ cwd, settings }) {
   if (settings.useStaticServer) {
     if (settings.command) {
-      runCommand(settings.command, settings.env)
+      runCommand(settings.command, { env: settings.env, cwd })
     }
     await startStaticServer({ settings })
 
@@ -37,7 +38,7 @@ export const startFrameworkServer = async function ({ settings }) {
     text: `Waiting for framework port ${settings.frameworkPort}. This can be configured using the 'targetPort' property in the netlify.toml`,
   })
 
-  runCommand(settings.command, settings.env, spinner)
+  runCommand(settings.command, { env: settings.env, spinner, cwd })
 
   let port
   try {
@@ -46,7 +47,7 @@ export const startFrameworkServer = async function ({ settings }) {
       host: 'localhost',
       output: 'silent',
       timeout: FRAMEWORK_PORT_TIMEOUT,
-      ...(settings.pollingStrategies.includes('HTTP') && { protocol: 'http' }),
+      ...(settings.pollingStrategies?.includes('HTTP') && { protocol: 'http' }),
     })
 
     if (!port.open) {

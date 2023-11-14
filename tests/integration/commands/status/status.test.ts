@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest'
 
 import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
-import { getCLIOptions, withMockApi } from '../../utils/mock-api.cjs'
+import { getCLIOptions, withMockApi } from '../../utils/mock-api.mjs'
 
 const siteInfo = {
   account_slug: 'test-account',
@@ -33,6 +33,10 @@ setupFixtureTests('empty-project', () => {
         offline: false,
         parseJson: true,
       })
+
+      if (account && typeof account === 'object' && 'GitHub' in account) {
+        delete account.GitHub
+      }
 
       expect(siteData).toMatchSnapshot()
       expect(account).toMatchSnapshot()

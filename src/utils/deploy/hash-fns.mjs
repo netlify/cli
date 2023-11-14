@@ -106,23 +106,35 @@ const hashFns = async (
     statusCb,
     tmpDir,
   })
-  const fileObjs = functionZips.map(({ displayName, generator, path: functionPath, runtime }) => ({
-    filepath: functionPath,
-    root: tmpDir,
-    relname: path.relative(tmpDir, functionPath),
-    basename: path.basename(functionPath),
-    extname: path.extname(functionPath),
-    type: 'file',
-    assetType: 'function',
-    normalizedPath: path.basename(functionPath, path.extname(functionPath)),
-    runtime,
-    displayName,
-    generator,
-  }))
+  const fileObjs = functionZips.map(
+    ({ buildData, displayName, generator, invocationMode, path: functionPath, runtime, runtimeVersion }) => ({
+      filepath: functionPath,
+      root: tmpDir,
+      relname: path.relative(tmpDir, functionPath),
+      basename: path.basename(functionPath),
+      extname: path.extname(functionPath),
+      type: 'file',
+      assetType: 'function',
+      normalizedPath: path.basename(functionPath, path.extname(functionPath)),
+      runtime: runtimeVersion ?? runtime,
+      displayName,
+      generator,
+      invocationMode,
+      buildData,
+    }),
+  )
   const fnConfig = functionZips
-    .filter((func) => Boolean(func.displayName || func.generator))
+    .filter((func) => Boolean(func.displayName || func.generator || func.routes || func.buildData))
     .reduce(
-      (funcs, curr) => ({ ...funcs, [curr.name]: { display_name: curr.displayName, generator: curr.generator } }),
+      (funcs, curr) => ({
+        ...funcs,
+        [curr.name]: {
+          display_name: curr.displayName,
+          generator: curr.generator,
+          routes: curr.routes,
+          build_data: curr.buildData,
+        },
+      }),
       {},
     )
   const functionSchedules = functionZips

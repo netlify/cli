@@ -1,5 +1,5 @@
 // @ts-check
-import Listr from 'listr'
+import { Listr } from 'listr2'
 
 import { error } from '../../utils/command-helpers.mjs'
 import execa from '../../utils/execa.mjs'
@@ -97,7 +97,7 @@ const lmSetup = async (options, command) => {
  */
 export const createLmSetupCommand = (program) =>
   program
-    .command('lm:setup')
+    .command('lm:setup', { hidden: true })
     .description('Configures your site to use Netlify Large Media')
     .option('-s, --skip-install', 'Skip the credentials helper installation check')
     .option('-f, --force-install', 'Force the credentials helper installation')

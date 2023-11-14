@@ -2,12 +2,17 @@
 import { Buffer } from 'buffer'
 
 export const headers = {
+  BlobsInfo: 'x-nf-blobs-info',
+  DeployID: 'x-nf-deploy-id',
   FeatureFlags: 'x-nf-feature-flags',
   ForwardedHost: 'x-forwarded-host',
+  ForwardedProtocol: 'x-forwarded-proto',
   Functions: 'x-nf-edge-functions',
   InvocationMetadata: 'x-nf-edge-functions-metadata',
   Geo: 'x-nf-geo',
   Passthrough: 'x-nf-passthrough',
+  PassthroughHost: 'x-nf-passthrough-host',
+  PassthroughProtocol: 'x-nf-passthrough-proto',
   IP: 'x-nf-client-connection-ip',
   Site: 'X-NF-Site-Info',
   DebugLogging: 'x-nf-debug-logging',

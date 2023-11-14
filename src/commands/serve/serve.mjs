@@ -38,6 +38,7 @@ const serve = async (options, command) => {
   const devConfig = {
     ...(config.functionsDirectory && { functions: config.functionsDirectory }),
     ...(config.build.publish && { publish: config.build.publish }),
+
     ...config.dev,
     ...options,
     // Override the `framework` value so that we start a static server and not
@@ -69,10 +70,9 @@ const serve = async (options, command) => {
   // Netlify Build are loaded.
   await getInternalFunctionsDir({ base: site.root, ensureExists: true })
 
-  /** @type {Partial<import('../../utils/types').ServerSettings>} */
-  let settings = {}
+  let settings = /** @type {import('../../utils/types.js').ServerSettings} */ ({})
   try {
-    settings = await detectServerSettings(devConfig, options, site.root)
+    settings = await detectServerSettings(devConfig, options, command)
 
     cachedConfig.config = getConfigWithPlugins(cachedConfig.config, settings)
   } catch (error_) {
@@ -87,9 +87,13 @@ const serve = async (options, command) => {
     `${NETLIFYDEVWARN} Changes will not be hot-reloaded, so if you need to rebuild your site you must exit and run 'netlify serve' again`,
   )
 
-  const { configPath: configPathOverride } = await runBuildTimeline({ cachedConfig, options, settings, site })
+  const { configPath: configPathOverride } = await runBuildTimeline({
+    command,
+    settings,
+    options,
+  })
 
-  await startFunctionsServer({
+  const functionsRegistry = await startFunctionsServer({
     api,
     command,
     config,
@@ -117,8 +121,7 @@ const serve = async (options, command) => {
 
   // TODO: We should consolidate this with the existing config watcher.
   const getUpdatedConfig = async () => {
-    const cwd = options.cwd || process.cwd()
-    const { config: newConfig } = await command.getConfig({ cwd, offline: true, state })
+    const { config: newConfig } = await command.getConfig({ cwd: command.workingDir, offline: true, state })
     const normalizedNewConfig = normalizeConfig(newConfig)
 
     return normalizedNewConfig
@@ -129,12 +132,15 @@ const serve = async (options, command) => {
     addonsUrls,
     config,
     configPath: configPathOverride,
+    debug: options.debug,
     env,
+    functionsRegistry,
     geolocationMode: options.geo,
     geoCountry: options.country,
     getUpdatedConfig,
     inspectSettings,
     offline: options.offline,
+    projectDir: command.workingDir,
     settings,
     site,
     siteInfo,
@@ -161,7 +167,7 @@ export const createServeCommand = (program) =>
   program
     .command('serve')
     .description(
-      '(Beta) Build the site for production and serve locally. This does not watch the code for changes, so if you need to rebuild your site then you must exit and run `serve` again.',
+      'Build the site for production and serve locally. This does not watch the code for changes, so if you need to rebuild your site then you must exit and run `serve` again.',
     )
     .option(
       '--context <context>',

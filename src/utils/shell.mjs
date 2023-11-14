@@ -40,17 +40,26 @@ const cleanupBeforeExit = async ({ exitCode }) => {
 /**
  * Run a command and pipe stdout, stderr and stdin
  * @param {string} command
- * @param {NodeJS.ProcessEnv} env
+ * @param {object} options
+ * @param {import('ora').Ora|null} [options.spinner]
+ * @param {NodeJS.ProcessEnv} [options.env]
+ * @param {string} [options.cwd]
  * @returns {execa.ExecaChildProcess<string>}
  */
-export const runCommand = (command, env = {}, spinner = null) => {
+export const runCommand = (command, options = {}) => {
+  const { cwd, env = {}, spinner = null } = options
   const commandProcess = execa.command(command, {
     preferLocal: true,
     // we use reject=false to avoid rejecting synchronously when the command doesn't exist
     reject: false,
-    env,
+    env: {
+      // we want always colorful terminal outputs
+      FORCE_COLOR: 'true',
+      ...env,
+    },
     // windowsHide needs to be false for child process to terminate properly on Windows
     windowsHide: false,
+    cwd,
   })
 
   // This ensures that an active spinner stays at the bottom of the commandline
@@ -82,8 +91,9 @@ export const runCommand = (command, env = {}, spinner = null) => {
       const [commandWithoutArgs] = command.split(' ')
       if (result.failed && isNonExistingCommandError({ command: commandWithoutArgs, error: result })) {
         log(
-          NETLIFYDEVERR,
-          `Failed running command: ${command}. Please verify ${chalk.magenta(`'${commandWithoutArgs}'`)} exists`,
+          `${NETLIFYDEVERR} Failed running command: ${command}. Please verify ${chalk.magenta(
+            `'${commandWithoutArgs}'`,
+          )} exists`,
         )
       } else {
         const errorMessage = result.failed
@@ -100,6 +110,13 @@ export const runCommand = (command, env = {}, spinner = null) => {
   return commandProcess
 }
 
+/**
+ *
+ * @param {object} config
+ * @param {string} config.command
+ * @param {*} config.error
+ * @returns
+ */
 const isNonExistingCommandError = ({ command, error: commandError }) => {
   // `ENOENT` is only returned for non Windows systems
   // See https://github.com/sindresorhus/execa/pull/447
@@ -108,7 +125,7 @@ const isNonExistingCommandError = ({ command, error: commandError }) => {
   }
 
   // if the command is a package manager we let it report the error
-  if (['yarn', 'npm'].includes(command)) {
+  if (['yarn', 'npm', 'pnpm'].includes(command)) {
     return false
   }
 

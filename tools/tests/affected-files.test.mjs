@@ -1,6 +1,6 @@
 import { join } from 'path'
 
-import test from 'ava'
+import { test } from 'vitest'
 import glob from 'fast-glob'
 import mock from 'mock-fs'
 import { stub, createSandbox } from 'sinon'
@@ -36,7 +36,7 @@ test.afterEach((t) => {
   t.context.sandbox.restore()
 })
 
-test.only('should get all files marked as affected when the package.json is touched', async (t) => {
+test('should get all files marked as affected when the package.json is touched', async (t) => {
   const consoleStub = t.context.sandbox.stub(console, 'log').callsFake(() => {})
   const { affectedFiles, mockedTestFiles } = await getAffectedFilesFromMock(['package.json'])
 

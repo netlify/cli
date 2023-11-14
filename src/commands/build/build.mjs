@@ -2,15 +2,18 @@
 import process from 'process'
 
 import { getBuildOptions, runBuild } from '../../lib/build.mjs'
+import { detectFrameworkSettings } from '../../utils/build-info.mjs'
 import { error, exit, getToken } from '../../utils/command-helpers.mjs'
 import { getEnvelopeEnv, normalizeContext } from '../../utils/env/index.mjs'
 
 /**
  * @param {import('../../lib/build.mjs').BuildConfig} options
  */
-const checkOptions = ({ cachedConfig: { siteInfo = {} }, token }) => {
+export const checkOptions = ({ cachedConfig: { siteInfo = {} }, token }) => {
   if (!siteInfo.id) {
-    error('Could not find the site ID. Please run netlify link.')
+    error(
+      'Could not find the site ID. If your site is not on Netlify, please run `netlify init` or `netlify deploy` first. If it is, please run `netlify link`.',
+    )
   }
 
   if (!token) {
@@ -33,13 +36,22 @@ const injectEnv = async function (command, { api, buildOptions, context, siteInf
  * @param {import('../base-command.mjs').default} command
  */
 const build = async (options, command) => {
+  const { cachedConfig, siteInfo } = command.netlify
   command.setAnalyticsPayload({ dry: options.dry })
   // Retrieve Netlify Build options
   const [token] = await getToken()
+  const settings = await detectFrameworkSettings(command, 'build')
 
-  const { cachedConfig, siteInfo } = command.netlify
+  // override the build command with the detection result if no command is specified through the config
+  if (!cachedConfig.config.build.command) {
+    cachedConfig.config.build.command = settings?.buildCommand
+    cachedConfig.config.build.commandOrigin = 'heuristics'
+  }
+
   const buildOptions = await getBuildOptions({
     cachedConfig,
+    packagePath: command.workspacePackage,
+    currentDir: command.workingDir,
     token,
     options,
   })
@@ -63,7 +75,7 @@ const build = async (options, command) => {
 export const createBuildCommand = (program) =>
   program
     .command('build')
-    .description('(Beta) Build on your local machine')
+    .description('Build on your local machine')
     .option(
       '--context <context>',
       'Specify a build context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev")',

@@ -13,14 +13,18 @@ import isValidEventName from './validation.mjs'
 
 const dirPath = dirname(fileURLToPath(import.meta.url))
 
-const send = function (type, payload) {
+/**
+ * @param {'track' | 'identify'} type
+ * @param {object} payload
+ */
+function send(type, payload) {
   const requestFile = join(dirPath, 'request.mjs')
   const options = JSON.stringify({
     data: payload,
     type,
   })
 
-  const args = [process.execPath, [requestFile, options]]
+  const args = /** @type {const} */ ([process.execPath, [requestFile, options]])
   if (process.env.NETLIFY_TEST_TELEMETRY_WAIT === 'true') {
     return execa(...args, {
       stdio: 'inherit',
@@ -46,7 +50,12 @@ const eventConfig = {
   ],
 }
 
-export const track = async function (eventName, payload = {}) {
+/**
+ * Tracks a custom event with the provided payload
+ * @param {string} eventName
+ * @param {{status?: string, duration?: number, [key: string]: unknown}} [payload]
+ */
+export async function track(eventName, payload = {}) {
   if (isCI) {
     return
   }
@@ -83,7 +92,14 @@ export const track = async function (eventName, payload = {}) {
   return send('track', defaultData)
 }
 
-export const identify = async function (payload) {
+/**
+ * @param {object} payload
+ * @param {string} payload.name
+ * @param {string} payload.email
+ * @param {string} payload.userId
+ * @returns
+ */
+export async function identify(payload) {
   if (isCI) {
     return
   }

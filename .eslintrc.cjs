@@ -2,7 +2,11 @@ const { overrides } = require('@netlify/eslint-config-node')
 
 module.exports = {
   extends: '@netlify/eslint-config-node',
-  plugins: ['sort-destructure-keys'],
+  plugins: [
+    'sort-destructure-keys',
+    // custom workspace lint rules found under `./tools/lint-rules`
+    'workspace',
+  ],
   parserOptions: {
     ecmaVersion: '2020',
     babelOptions: {
@@ -12,9 +16,12 @@ module.exports = {
     },
   },
   rules: {
+    'workspace/no-process-cwd': 'error',
     // Those rules from @netlify/eslint-config-node are currently disabled
     // TODO: remove, so those rules are enabled
     complexity: 0,
+    'no-inline-comments': 'off',
+    'no-underscore-dangle': 'off',
     'func-style': 'off',
     'max-depth': 0,
     'max-lines': 0,

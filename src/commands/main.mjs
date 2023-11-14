@@ -10,7 +10,7 @@ import { BANG, chalk, error, exit, log, NETLIFY_CYAN, USER_AGENT, warn } from '.
 import execa from '../utils/execa.mjs'
 import getGlobalConfig from '../utils/get-global-config.mjs'
 import getPackageJson from '../utils/get-package-json.mjs'
-import { track } from '../utils/telemetry/index.mjs'
+import { track, reportError } from '../utils/telemetry/index.mjs'
 
 import { createAddonsCommand } from './addons/index.mjs'
 import { createApiCommand } from './api/index.mjs'
@@ -22,6 +22,7 @@ import { createDevCommand } from './dev/index.mjs'
 import { createEnvCommand } from './env/index.mjs'
 import { createFunctionsCommand } from './functions/index.mjs'
 import { createInitCommand } from './init/index.mjs'
+import { createIntegrationCommand } from './integration/index.mjs'
 import { createLinkCommand } from './link/index.mjs'
 import { createLmCommand } from './lm/index.mjs'
 import { createLoginCommand } from './login/index.mjs'
@@ -37,15 +38,41 @@ import { createWatchCommand } from './watch/index.mjs'
 
 const SUGGESTION_TIMEOUT = 1e4
 
-const getVersionPage = async () => {
-  // performance optimization - load envinfo on demand
+process.on('uncaughtException', async (err) => {
+  console.log('')
+  error(
+    `${chalk.red(
+      'Netlify CLI has terminated unexpectedly',
+    )}\nThis is a problem with the Netlify CLI, not with your application.\nIf you recently updated the CLI, consider reverting to an older version by running:\n\n${chalk.bold(
+      'npm install -g netlify-cli@VERSION',
+    )}\n\nYou can use any version from ${chalk.underline(
+      'https://ntl.fyi/cli-versions',
+    )}.\n\nPlease report this problem at ${chalk.underline(
+      'https://ntl.fyi/cli-error',
+    )} including the error details below.\n`,
+    { exit: false },
+  )
 
-  const data = await envinfo.run({
+  const systemInfo = await getSystemInfo()
+
+  console.log(chalk.dim(err.stack || err))
+  console.log(chalk.dim(systemInfo))
+
+  reportError(err, { severity: 'error' })
+
+  process.exit(1)
+})
+
+const getSystemInfo = () =>
+  envinfo.run({
     System: ['OS', 'CPU'],
     Binaries: ['Node', 'Yarn', 'npm'],
     Browsers: ['Chrome', 'Edge', 'Firefox', 'Safari'],
     npmGlobalPackages: ['netlify-cli'],
   })
+
+const getVersionPage = async () => {
+  const data = await getSystemInfo()
 
   return `
 ────────────────────┐
@@ -165,6 +192,7 @@ export const createMainCommand = () => {
   createFunctionsCommand(program)
   createRecipesCommand(program)
   createInitCommand(program)
+  createIntegrationCommand(program)
   createLinkCommand(program)
   createLmCommand(program)
   createLoginCommand(program)

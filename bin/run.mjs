@@ -4,6 +4,7 @@ import { argv } from 'process'
 import updateNotifier from 'update-notifier'
 
 import { createMainCommand } from '../src/commands/index.mjs'
+import { error } from '../src/utils/command-helpers.mjs'
 import getPackageJson from '../src/utils/get-package-json.mjs'
 
 // 12 hours
@@ -15,9 +16,9 @@ try {
     pkg,
     updateCheckInterval: UPDATE_CHECK_INTERVAL,
   }).notify()
-} catch (error) {
-  console.log('Error checking for updates:')
-  console.log(error)
+} catch (error_) {
+  error('Error checking for updates:')
+  error(error_)
 }
 
 const program = createMainCommand()
@@ -25,6 +26,6 @@ const program = createMainCommand()
 try {
   await program.parseAsync(argv)
   program.onEnd()
-} catch (error) {
-  program.onEnd(error)
+} catch (error_) {
+  program.onEnd(error_)
 }

@@ -46,30 +46,25 @@ const navOrder = [
   'env',
   'functions',
   'init',
+  'integration',
   'link',
   'lm',
   'login',
   'logout',
   'open',
+  'serve',
   'sites',
   'status',
   'switch',
   'unlink',
   'watch',
-  'netlify-dev',
-  'functions-dev',
-  'vscode',
-  'contributing',
 ]
 
 const pageNames = {
-  index: 'Introduction',
+  index: 'CLI Reference',
   'getting-started': 'Getting Started',
-  commands: 'CLI Commands',
-  contributing: 'Contributing',
-  'netlify-dev': 'Netlify Dev',
-  'functions-dev': 'Functions Development',
-  vscode: 'Run and debug with VSCode',
+  addons: 'addons (deprecated)',
+  lm: 'lm (deprecated)',
 }
 
 const sortRoutes = (routes) =>

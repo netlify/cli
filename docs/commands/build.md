@@ -5,7 +5,7 @@ title: Netlify CLI build command
 # `build`
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
-(Beta) Build on your local machine
+Build on your local machine
 
 **Usage**
 
@@ -17,10 +17,9 @@ netlify build
 
 - `context` (*string*) - Specify a build context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev")
 - `dry` (*boolean*) - Dry run: show instructions without running them
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `offline` (*boolean*) - disables any features that require network access
 - `debug` (*boolean*) - Print debugging information
-- `http-proxy` (*string*) - Proxy server address to route requests through.
-- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 
 **Examples**
 

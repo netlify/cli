@@ -4,7 +4,6 @@ import { pathToFileURL } from 'url'
 import { Worker } from 'worker_threads'
 
 import lambdaLocal from 'lambda-local'
-import winston from 'winston'
 
 import detectNetlifyLambdaBuilder from './builders/netlify-lambda.mjs'
 import detectZisiBuilder, { parseFunctionForMetadata } from './builders/zisi.mjs'
@@ -14,12 +13,7 @@ export const name = 'js'
 
 let netlifyLambdaDetectorCache
 
-const logger = winston.createLogger({
-  levels: winston.config.npm.levels,
-  transports: [new winston.transports.Console({ level: 'warn' })],
-})
-
-lambdaLocal.setLogger(logger)
+lambdaLocal.getLogger().level = 'alert'
 
 // The netlify-lambda builder can't be enabled or disabled on a per-function
 // basis and its detection mechanism is also quite expensive, so we detect
@@ -57,13 +51,14 @@ export const getBuildFunction = async ({ config, directory, errorExit, func, pro
 
 const workerURL = new URL('worker.mjs', import.meta.url)
 
-export const invokeFunction = async ({ context, event, func, timeout }) => {
+export const invokeFunction = async ({ context, environment, event, func, timeout }) => {
   if (func.buildData.runtimeAPIVersion !== 2) {
     return await invokeFunctionDirectly({ context, event, func, timeout })
   }
 
   const workerData = {
     clientContext: JSON.stringify(context),
+    environment,
     event,
     // If a function builder has defined a `buildPath` property, we use it.
     // Otherwise, we'll invoke the function's main file.

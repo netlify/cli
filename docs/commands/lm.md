@@ -6,8 +6,10 @@ title: Netlify CLI lm command
 
 ## About
 
-<!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
+> ⚠️ The Large Media feature was deprecated on September 1st, 2023 and will become unavailable in a future update. [Learn more and discover alternative solutions](https://answers.netlify.com/t/large-media-feature-deprecated-but-not-removed/100804)
+
 Handle Netlify Large Media operations
+
 The lm command will help you manage large media for a site
 
 **Usage**
@@ -19,8 +21,6 @@ netlify lm
 **Flags**
 
 - `debug` (*boolean*) - Print debugging information
-- `http-proxy` (*string*) - Proxy server address to route requests through.
-- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
@@ -50,9 +50,8 @@ netlify lm:info
 
 **Flags**
 
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
-- `http-proxy` (*string*) - Proxy server address to route requests through.
-- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 
 ---
 ## `lm:install`
@@ -69,10 +68,9 @@ netlify lm:install
 
 **Flags**
 
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `force` (*boolean*) - Force the credentials helper installation
 - `debug` (*boolean*) - Print debugging information
-- `http-proxy` (*string*) - Proxy server address to route requests through.
-- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 
 ---
 ## `lm:setup`
@@ -87,12 +85,10 @@ netlify lm:setup
 
 **Flags**
 
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `force-install` (*boolean*) - Force the credentials helper installation
 - `skip-install` (*boolean*) - Skip the credentials helper installation check
 - `debug` (*boolean*) - Print debugging information
-- `http-proxy` (*string*) - Proxy server address to route requests through.
-- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 
 ---
-
 <!-- AUTO-GENERATED-CONTENT:END -->

@@ -5,7 +5,12 @@ import { exit, log } from '../command-helpers.mjs'
 
 import { createDeployKey, getBuildSettings, saveNetlifyToml, setupSite } from './utils.mjs'
 
-const addDeployKey = async ({ deployKey }) => {
+/**
+ * Prompts for granting the netlify ssh public key access to your repo
+ * @param {object} deployKey
+ * @param {string} deployKey.public_key
+ */
+const addDeployKey = async (deployKey) => {
   log('\nGive this Netlify SSH public key access to your repository:\n')
   log(`\n${deployKey.public_key}\n\n`)
 
@@ -23,6 +28,11 @@ const addDeployKey = async ({ deployKey }) => {
   }
 }
 
+/**
+ * @param {object} config
+ * @param {Awaited<ReturnType<import('../../utils/get-repo-data.mjs').default>>} config.repoData
+ * @returns {Promise<string>}
+ */
 const getRepoPath = async ({ repoData }) => {
   const { repoPath } = await inquirer.prompt([
     {
@@ -30,6 +40,9 @@ const getRepoPath = async ({ repoData }) => {
       name: 'repoPath',
       message: 'The SSH URL of the remote git repo:',
       default: repoData.url,
+      /**
+       * @param {string} url
+       */
       validate: (url) => SSH_URL_REGEXP.test(url) || 'The URL provided does not use the SSH protocol',
     },
   ])
@@ -37,7 +50,11 @@ const getRepoPath = async ({ repoData }) => {
   return repoPath
 }
 
-const addDeployHook = async ({ deployHook }) => {
+/**
+ * @param {string} deployHook
+ * @returns
+ */
+const addDeployHook = async (deployHook) => {
   log('\nConfigure the following webhook for your repository:\n')
   log(`\n${deployHook}\n\n`)
   const { deployHookAdded } = await inquirer.prompt([
@@ -55,14 +72,14 @@ const addDeployHook = async ({ deployHook }) => {
 /**
  * @param {object} config
  * @param {import('../../commands/base-command.mjs').default} config.command
- * @param {*} config.repoData
+ * @param {Awaited<ReturnType<import('../../utils/get-repo-data.mjs').default>>} config.repoData
  * @param {string} config.siteId
  */
 export default async function configManual({ command, repoData, siteId }) {
   const { netlify } = command
   const {
     api,
-    cachedConfig: { configPath, env },
+    cachedConfig: { configPath },
     config,
     repositoryRoot,
     site: { root: siteRoot },
@@ -72,12 +89,12 @@ export default async function configManual({ command, repoData, siteId }) {
     repositoryRoot,
     siteRoot,
     config,
-    env,
+    command,
   })
   await saveNetlifyToml({ repositoryRoot, config, configPath, baseDir, buildCmd, buildDir, functionsDir })
 
   const deployKey = await createDeployKey({ api })
-  await addDeployKey({ deployKey })
+  await addDeployKey(deployKey)
 
   const repoPath = await getRepoPath({ repoData })
   const repo = {
@@ -99,7 +116,7 @@ export default async function configManual({ command, repoData, siteId }) {
     configPlugins: config.plugins,
     pluginsToInstall,
   })
-  const deployHookAdded = await addDeployHook({ deployHook: updatedSite.deploy_hook })
+  const deployHookAdded = await addDeployHook(updatedSite.deploy_hook)
   if (!deployHookAdded) {
     exit()
   }

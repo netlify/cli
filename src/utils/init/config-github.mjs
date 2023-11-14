@@ -207,7 +207,7 @@ export const configGithub = async ({ command, repoName, repoOwner, siteId }) => 
   const { netlify } = command
   const {
     api,
-    cachedConfig: { configPath, env },
+    cachedConfig: { configPath },
     config,
     globalConfig,
     repositoryRoot,
@@ -220,7 +220,7 @@ export const configGithub = async ({ command, repoName, repoOwner, siteId }) => 
     repositoryRoot,
     siteRoot,
     config,
-    env,
+    command,
   })
   await saveNetlifyToml({ repositoryRoot, config, configPath, baseDir, buildCmd, buildDir, functionsDir })
 

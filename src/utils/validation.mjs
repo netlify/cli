@@ -1,6 +1,10 @@
 // @ts-check
 import { BANG, chalk } from './command-helpers.mjs'
 
+/**
+ * @param {string} exampleCommand
+ * @returns {(value:string, previous: unknown) => unknown}
+ */
 export const getGeoCountryArgParser = (exampleCommand) => (arg) => {
   // Validate that the arg passed is two letters only for country
   // See https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes

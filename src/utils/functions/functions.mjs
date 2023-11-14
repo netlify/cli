@@ -17,28 +17,38 @@ export const SERVE_FUNCTIONS_FOLDER = 'functions-serve'
  * @returns {string}
  */
 export const getFunctionsDir = ({ config, options }, defaultValue) =>
-  options.functions ||
-  (config.dev && config.dev.functions) ||
-  config.functionsDirectory ||
-  (config.dev && config.dev.Functions) ||
-  defaultValue
+  options.functions || config.dev?.functions || config.functionsDirectory || config.dev?.Functions || defaultValue
 
-export const getFunctionsManifestPath = async ({ base }) => {
-  const path = resolve(base, getPathInProject(['functions', 'manifest.json']))
+export const getFunctionsManifestPath = async ({ base, packagePath = '' }) => {
+  const path = resolve(base, packagePath, getPathInProject(['functions', 'manifest.json']))
   const isFile = await isFileAsync(path)
 
   return isFile ? path : null
 }
 
-export const getFunctionsDistPath = async ({ base }) => {
-  const path = resolve(base, getPathInProject(['functions']))
+export const getFunctionsDistPath = async ({ base, packagePath = '' }) => {
+  const path = resolve(base, packagePath, getPathInProject(['functions']))
   const isDirectory = await isDirectoryAsync(path)
 
   return isDirectory ? path : null
 }
 
-export const getInternalFunctionsDir = async ({ base, ensureExists }) => {
-  const path = resolve(base, getPathInProject([INTERNAL_FUNCTIONS_FOLDER]))
+export const getFunctionsServePath = ({ base, packagePath = '' }) => {
+  const path = resolve(base, packagePath, getPathInProject([SERVE_FUNCTIONS_FOLDER]))
+
+  return path
+}
+
+/**
+ * Retrieves the internal functions directory and creates it if ensureExists is provided
+ * @param {object} config
+ * @param {string} config.base
+ * @param {boolean=} config.ensureExists
+ * @param {string} config.packagePath
+ * @returns
+ */
+export const getInternalFunctionsDir = async ({ base, ensureExists, packagePath = '' }) => {
+  const path = resolve(base, packagePath, getPathInProject([INTERNAL_FUNCTIONS_FOLDER]))
 
   if (ensureExists) {
     await fs.mkdir(path, { recursive: true })

@@ -7,6 +7,7 @@ import fetch from 'node-fetch'
 const GITHUB = 'GitHub'
 
 /**
+ * @param {string} _url
  * Takes a url like https://github.com/netlify-labs/all-the-functions/tree/master/functions/9-using-middleware
  * and returns https://api.github.com/repos/netlify-labs/all-the-functions/contents/functions/9-using-middleware
  */
@@ -36,6 +37,9 @@ const getRepoURLContents = async function (repoHost, ownerAndRepo, contentsPath)
   throw new Error('unsupported host ', repoHost)
 }
 
+/**
+ * @param {string} _url
+ */
 export const validateRepoURL = function (_url) {
   // TODO: use `url.URL()` instead
   // eslint-disable-next-line n/no-deprecated-api

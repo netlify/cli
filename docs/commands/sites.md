@@ -17,9 +17,8 @@ netlify sites
 
 **Flags**
 
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
-- `http-proxy` (*string*) - Proxy server address to route requests through.
-- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
@@ -52,12 +51,11 @@ netlify sites:create
 
 - `account-slug` (*string*) - account slug to create the site under
 - `disable-linking` (*boolean*) - create the site without linking it to current directory
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `manual` (*boolean*) - force manual CI setup.  Used --with-ci flag
 - `name` (*string*) - name of site
 - `with-ci` (*boolean*) - initialize CI hooks during site creation
 - `debug` (*boolean*) - Print debugging information
-- `http-proxy` (*string*) - Proxy server address to route requests through.
-- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 
 ---
 ## `sites:create-template`
@@ -78,12 +76,11 @@ netlify sites:create-template
 **Flags**
 
 - `account-slug` (*string*) - account slug to create the site under
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `name` (*string*) - name of site
-- `debug` (*boolean*) - Print debugging information
-- `http-proxy` (*string*) - Proxy server address to route requests through.
-- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 - `url` (*string*) - template url
 - `with-ci` (*boolean*) - initialize CI hooks during site creation
+- `debug` (*boolean*) - Print debugging information
 
 **Examples**
 
@@ -111,10 +108,9 @@ netlify sites:delete
 
 **Flags**
 
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `force` (*boolean*) - delete without prompting (useful for CI)
 - `debug` (*boolean*) - Print debugging information
-- `http-proxy` (*string*) - Proxy server address to route requests through.
-- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 
 **Examples**
 
@@ -135,10 +131,9 @@ netlify sites:list
 
 **Flags**
 
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `json` (*boolean*) - Output site data as JSON
 - `debug` (*boolean*) - Print debugging information
-- `http-proxy` (*string*) - Proxy server address to route requests through.
-- `http-proxy-certificate-filename` (*string*) - Certificate file to use when connecting using a proxy server
 
 ---
 

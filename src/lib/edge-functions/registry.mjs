@@ -1,12 +1,26 @@
 // @ts-check
 import { fileURLToPath } from 'url'
 
-import { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log, warn, watchDebounced } from '../../utils/command-helpers.mjs'
+import {
+  NETLIFYDEVERR,
+  NETLIFYDEVLOG,
+  NETLIFYDEVWARN,
+  chalk,
+  log,
+  warn,
+  watchDebounced,
+} from '../../utils/command-helpers.mjs'
 
 /** @typedef {import('@netlify/edge-bundler').Declaration} Declaration */
 /** @typedef {import('@netlify/edge-bundler').EdgeFunction} EdgeFunction */
+/**
+ * @typedef {"buildError" | "loaded" | "reloaded" | "reloading" | "removed"} EdgeFunctionEvent
+ */
 /** @typedef {import('@netlify/edge-bundler').FunctionConfig} FunctionConfig */
+/** @typedef {import('@netlify/edge-bundler').Manifest} Manifest */
+/** @typedef {import('@netlify/edge-bundler').ModuleGraph} ModuleGraph */
 /** @typedef {Awaited<ReturnType<typeof import('@netlify/edge-bundler').serve>>} RunIsolate */
+/** @typedef {Omit<Manifest["routes"][0], "pattern"> & { pattern: RegExp }} Route */
 
 const featureFlags = { edge_functions_correct_order: true }
 
@@ -16,6 +30,9 @@ export class EdgeFunctionsRegistry {
 
   /** @type {string} */
   #configPath
+
+  /** @type {boolean} */
+  #debug
 
   /** @type {string[]} */
   #directories
@@ -35,20 +52,11 @@ export class EdgeFunctionsRegistry {
   /** @type {Declaration[]} */
   #declarationsFromDeployConfig
 
-  /** @type {Record<string, FunctionConfig>} */
-  #userFunctionConfigs = {}
-
-  /** @type {Record<string, FunctionConfig>} */
-  #internalFunctionConfigs = {}
-
   /** @type {Declaration[]} */
   #declarationsFromTOML
 
   /** @type {Record<string, string>} */
   #env
-
-  /** @type {import('chokidar').FSWatcher} */
-  #configWatcher
 
   /** @type {Map<string, import('chokidar').FSWatcher>} */
   #directoryWatchers = new Map()
@@ -59,6 +67,9 @@ export class EdgeFunctionsRegistry {
   /** @type {Map<string, string>} */
   #functionPaths = new Map()
 
+  /** @type {Manifest | null} */
+  #manifest = null
+
   /** @type {EdgeFunction[]} */
   #userFunctions = []
 
@@ -68,11 +79,18 @@ export class EdgeFunctionsRegistry {
   /** @type {Promise<void>} */
   #initialScan
 
+  /** @type {Route[]} */
+  #routes = []
+
+  /** @type {string} */
+  #servePath
+
   /**
    * @param {Object} opts
    * @param {import('@netlify/edge-bundler')} opts.bundler
    * @param {object} opts.config
    * @param {string} opts.configPath
+   * @param {boolean} opts.debug
    * @param {string[]} opts.directories
    * @param {Record<string, { sources: string[], value: string}>} opts.env
    * @param {() => Promise<object>} opts.getUpdatedConfig
@@ -80,11 +98,13 @@ export class EdgeFunctionsRegistry {
    * @param {Declaration[]} opts.internalFunctions
    * @param {string} opts.projectDir
    * @param {RunIsolate} opts.runIsolate
+   * @param {string} opts.servePath
    */
   constructor({
     bundler,
     config,
     configPath,
+    debug,
     directories,
     env,
     getUpdatedConfig,
@@ -92,21 +112,22 @@ export class EdgeFunctionsRegistry {
     internalFunctions,
     projectDir,
     runIsolate,
+    servePath,
   }) {
     this.#bundler = bundler
     this.#configPath = configPath
+    this.#debug = debug
     this.#directories = directories
     this.#internalDirectories = internalDirectories
     this.#getUpdatedConfig = getUpdatedConfig
     this.#runIsolate = runIsolate
+    this.#servePath = servePath
 
     this.#declarationsFromDeployConfig = internalFunctions
     this.#declarationsFromTOML = EdgeFunctionsRegistry.#getDeclarationsFromTOML(config)
     this.#env = EdgeFunctionsRegistry.#getEnvironmentVariables(env)
 
     this.#buildError = null
-    this.#userFunctionConfigs = {}
-    this.#internalFunctionConfigs = {}
     this.#directoryWatchers = new Map()
     this.#dependencyPaths = new Map()
     this.#functionPaths = new Map()
@@ -124,12 +145,12 @@ export class EdgeFunctionsRegistry {
   async #doInitialScan() {
     await this.#scanForFunctions()
 
-    this.#functions.forEach((func) => {
-      this.#logAddedFunction(func)
-    })
-
     try {
-      await this.#build()
+      const { warnings } = await this.#build()
+
+      this.#functions.forEach((func) => {
+        this.#logEvent('loaded', { functionName: func.name, warnings: warnings[func.name] })
+      })
     } catch {
       // no-op
     }
@@ -143,13 +164,16 @@ export class EdgeFunctionsRegistry {
   }
 
   /**
-   * @return {Promise<void>}
+   * @return {Promise<{warnings: Record<string, string[]>}>}
    */
   async #build() {
+    /**
+     * @type Record<string, string[]>
+     */
+    const warnings = {}
+
     try {
-      const { functionsConfig, graph, success } = await this.#runIsolate(this.#functions, this.#env, {
-        getFunctionsConfig: true,
-      })
+      const { functionsConfig, graph, npmSpecifiersWithExtraneousFiles, success } = await this.#runBuild()
 
       if (!success) {
         throw new Error('Build error')
@@ -161,24 +185,87 @@ export class EdgeFunctionsRegistry {
       // functionsConfig therefore contains first all internal functionConfigs and then user functionConfigs
       let index = 0
 
-      this.#internalFunctionConfigs = this.#internalFunctions.reduce(
+      /** @type {Record<string, FunctionConfig>} */
+      const internalFunctionConfigs = this.#internalFunctions.reduce(
         // eslint-disable-next-line no-plusplus
         (acc, func) => ({ ...acc, [func.name]: functionsConfig[index++] }),
         {},
       )
 
-      this.#userFunctionConfigs = this.#userFunctions.reduce(
+      /** @type {Record<string, FunctionConfig>} */
+      const userFunctionConfigs = this.#userFunctions.reduce(
         // eslint-disable-next-line no-plusplus
         (acc, func) => ({ ...acc, [func.name]: functionsConfig[index++] }),
         {},
       )
+
+      const { manifest, routes, unroutedFunctions } = this.#buildRoutes(internalFunctionConfigs, userFunctionConfigs)
+
+      this.#manifest = manifest
+      this.#routes = routes
+
+      unroutedFunctions.forEach((name) => {
+        warnings[name] = warnings[name] || []
+        warnings[name].push(
+          `Edge function is not accessible because it does not have a path configured. Learn more at https://ntl.fyi/edge-create.`,
+        )
+      })
+
+      for (const functionName in userFunctionConfigs) {
+        if ('paths' in userFunctionConfigs[functionName]) {
+          warnings[functionName] = warnings[functionName] || []
+          warnings[functionName].push(`Unknown 'paths' configuration property. Did you mean 'path'?`)
+        }
+      }
 
       this.#processGraph(graph)
+
+      if (npmSpecifiersWithExtraneousFiles.length !== 0) {
+        const modules = npmSpecifiersWithExtraneousFiles.map((name) => chalk.yellow(name)).join(', ')
+
+        log(
+          `${NETLIFYDEVWARN} The following npm modules, which are directly or indirectly imported by an edge function, may not be supported: ${modules}. For more information, visit https://ntl.fyi/edge-functions-npm.`,
+        )
+      }
+
+      return { warnings }
     } catch (error) {
       this.#buildError = error
 
       throw error
     }
+  }
+
+  /**
+   * Builds a manifest and corresponding routes for the functions in the
+   * registry, taking into account the declarations from the TOML, from
+   * the deploy configuration API, and from the in-source configuration
+   * found in both internal and user functions.
+   *
+   * @param {Record<string, FunctionConfig>} internalFunctionConfigs
+   * @param {Record<string, FunctionConfig>} userFunctionConfigs
+   */
+  #buildRoutes(internalFunctionConfigs, userFunctionConfigs) {
+    const declarations = this.#bundler.mergeDeclarations(
+      this.#declarationsFromTOML,
+      userFunctionConfigs,
+      internalFunctionConfigs,
+      this.#declarationsFromDeployConfig,
+      featureFlags,
+    )
+    const { declarationsWithoutFunction, manifest, unroutedFunctions } = this.#bundler.generateManifest({
+      declarations,
+      userFunctionConfig: userFunctionConfigs,
+      internalFunctionConfig: internalFunctionConfigs,
+      functions: this.#functions,
+      featureFlags,
+    })
+    const routes = [...manifest.routes, ...manifest.post_cache_routes].map((route) => ({
+      ...route,
+      pattern: new RegExp(route.pattern),
+    }))
+
+    return { declarationsWithoutFunction, manifest, routes, unroutedFunctions }
   }
 
   /**
@@ -192,14 +279,14 @@ export class EdgeFunctionsRegistry {
     }
 
     try {
-      await this.#build()
+      const { warnings } = await this.#build()
 
       deletedFunctions.forEach((func) => {
-        this.#logDeletedFunction(func)
+        this.#logEvent('removed', { functionName: func.name, warnings: warnings[func.name] })
       })
 
       newFunctions.forEach((func) => {
-        this.#logAddedFunction(func)
+        this.#logEvent('loaded', { functionName: func.name, warnings: warnings[func.name] })
       })
     } catch {
       // no-op
@@ -240,12 +327,15 @@ export class EdgeFunctionsRegistry {
   }
 
   /**
-   * @param {string} path
+   * @param {string[]} paths
    * @returns {Promise<void>}
    */
-  async #handleFileChange(path) {
+  async #handleFileChange(paths) {
     const matchingFunctions = new Set(
-      [this.#functionPaths.get(path), ...(this.#dependencyPaths.get(path) || [])].filter(Boolean),
+      [
+        ...paths.map((path) => this.#functionPaths.get(path)),
+        ...paths.flatMap((path) => this.#dependencyPaths.get(path)),
+      ].filter(Boolean),
     )
 
     // If the file is not associated with any function, there's no point in
@@ -256,26 +346,21 @@ export class EdgeFunctionsRegistry {
       return
     }
 
-    log(`${NETLIFYDEVLOG} ${chalk.magenta('Reloading')} edge functions...`)
+    this.#logEvent('reloading', {})
 
     try {
-      await this.#build()
-
+      const { warnings } = await this.#build()
       const functionNames = [...matchingFunctions]
 
       if (functionNames.length === 0) {
-        log(`${NETLIFYDEVLOG} ${chalk.green('Reloaded')} edge functions`)
+        this.#logEvent('reloaded', {})
       } else {
         functionNames.forEach((functionName) => {
-          log(
-            `${NETLIFYDEVLOG} ${chalk.green('Reloaded')} edge function ${chalk.yellow(
-              this.#getDisplayName(functionName),
-            )}`,
-          )
+          this.#logEvent('reloaded', { functionName, warnings: warnings[functionName] })
         })
       }
-    } catch {
-      log(`${NETLIFYDEVERR} ${chalk.red('Failed')} reloading edge function`)
+    } catch (error) {
+      this.#logEvent('buildError', { buildError: error?.message })
     }
   }
 
@@ -287,99 +372,110 @@ export class EdgeFunctionsRegistry {
   }
 
   /**
-   * @param {EdgeFunction} func
+   * Logs an event associated with functions.
+   *
+   * @param {EdgeFunctionEvent} event
+   * @param {object} data
+   * @param {Error} [data.buildError]
+   * @param {string} [data.functionName]
+   * @param {string[]} [data.warnings]
+   * @returns
    */
-  #logAddedFunction(func) {
-    log(`${NETLIFYDEVLOG} ${chalk.green('Loaded')} edge function ${chalk.yellow(this.#getDisplayName(func.name))}`)
-  }
+  #logEvent(event, { buildError, functionName, warnings = [] }) {
+    const subject = functionName
+      ? `edge function ${chalk.yellow(this.#getDisplayName(functionName))}`
+      : 'edge functions'
+    const warningsText =
+      warnings.length === 0 ? '' : ` with warnings:\n${warnings.map((warning) => `  - ${warning}`).join('\n')}`
 
-  /**
-   * @param {EdgeFunction} func
-   */
-  #logDeletedFunction(func) {
-    log(`${NETLIFYDEVLOG} ${chalk.magenta('Removed')} edge function ${chalk.yellow(this.#getDisplayName(func.name))}`)
-  }
+    if (event === 'buildError') {
+      log(`${NETLIFYDEVERR} ${chalk.red('Failed to load')} ${subject}: ${buildError}`)
 
-  /**
-   * @param {string} urlPath
-   */
-  matchURLPath(urlPath) {
-    const declarations = this.#bundler.mergeDeclarations(
-      this.#declarationsFromTOML,
-      this.#userFunctionConfigs,
-      this.#internalFunctionConfigs,
-      this.#declarationsFromDeployConfig,
-      featureFlags,
-    )
-    const manifest = this.#bundler.generateManifest({
-      declarations,
-      userFunctionConfig: this.#userFunctionConfigs,
-      internalFunctionConfig: this.#internalFunctionConfigs,
-      functions: this.#functions,
-      featureFlags,
-    })
-    const invocationMetadata = {
-      function_config: manifest.function_config,
-      routes: manifest.routes.map((route) => ({ function: route.function, pattern: route.pattern })),
+      return
     }
-    const routes = [...manifest.routes, ...manifest.post_cache_routes].map((route) => ({
-      ...route,
-      pattern: new RegExp(route.pattern),
-    }))
-    const functionNames = routes
-      .filter(({ pattern }) => pattern.test(urlPath))
-      .filter(({ function: name }) => {
-        const isExcluded = manifest.function_config[name]?.excluded_patterns?.some((pattern) =>
-          new RegExp(pattern).test(urlPath),
-        )
-        return !isExcluded
-      })
-      .map((route) => route.function)
-    const orphanedDeclarations = this.#matchURLPathAgainstOrphanedDeclarations(urlPath)
 
-    return { functionNames, invocationMetadata, orphanedDeclarations }
+    if (event === 'loaded') {
+      const icon = warningsText ? NETLIFYDEVWARN : NETLIFYDEVLOG
+      const color = warningsText ? chalk.yellow : chalk.green
+
+      log(`${icon} ${color('Loaded')} ${subject}${warningsText}`)
+
+      return
+    }
+
+    if (event === 'reloaded') {
+      const icon = warningsText ? NETLIFYDEVWARN : NETLIFYDEVLOG
+      const color = warningsText ? chalk.yellow : chalk.green
+
+      log(`${icon} ${color('Reloaded')} ${subject}${warningsText}`)
+
+      return
+    }
+
+    if (event === 'reloading') {
+      log(`${NETLIFYDEVLOG} ${chalk.magenta('Reloading')} ${subject}...`)
+
+      return
+    }
+
+    if (event === 'removed') {
+      log(`${NETLIFYDEVLOG} ${chalk.magenta('Removed')} ${subject}`)
+    }
   }
 
   /**
+   * Returns the functions in the registry that should run for a given URL path
+   * and HTTP method, based on the routes registered for each function.
    *
    * @param {string} urlPath
-   * @returns {string[]}
+   * @param {string} method
    */
-  #matchURLPathAgainstOrphanedDeclarations(urlPath) {
-    // `generateManifest` will only include functions for which there is both a
-    // function file and a config declaration, but we want to catch cases where
-    // a config declaration exists without a matching function file. To do that
-    // we compute a list of functions from the declarations (the `path` doesn't
-    // really matter).
-    const functions = this.#declarationsFromTOML.map((declaration) => ({ name: declaration.function, path: '' }))
-    const manifest = this.#bundler.generateManifest({
-      declarations: this.#declarationsFromTOML,
-      userFunctionConfig: this.#userFunctionConfigs,
-      internalFunctionConfig: this.#internalFunctionConfigs,
-      functions,
-      featureFlags,
+  matchURLPath(urlPath, method) {
+    /** @type string[] */
+    const functionNames = []
+
+    /** @type number[] */
+    const routeIndexes = []
+
+    this.#routes.forEach((route, index) => {
+      if (route.methods && route.methods.length !== 0 && !route.methods.includes(method)) {
+        return
+      }
+
+      if (!route.pattern.test(urlPath)) {
+        return
+      }
+
+      const isExcluded = this.#manifest?.function_config[route.function]?.excluded_patterns?.some((pattern) =>
+        new RegExp(pattern).test(urlPath),
+      )
+
+      if (isExcluded) {
+        return
+      }
+
+      functionNames.push(route.function)
+      routeIndexes.push(index)
     })
+    const invocationMetadata = {
+      function_config: this.#manifest?.function_config,
+      req_routes: routeIndexes,
+      routes: this.#manifest?.routes.map((route) => ({
+        function: route.function,
+        path: route.path,
+        pattern: route.pattern,
+      })),
+    }
 
-    const routes = [...manifest.routes, ...manifest.post_cache_routes].map((route) => ({
-      ...route,
-      pattern: new RegExp(route.pattern),
-    }))
-
-    const functionNames = routes
-      .filter((route) => {
-        const hasFunctionFile = this.#functions.some((func) => func.name === route.function)
-
-        if (hasFunctionFile) {
-          return false
-        }
-
-        return route.pattern.test(urlPath)
-      })
-      .map((route) => route.function)
-
-    return functionNames
+    return { functionNames, invocationMetadata }
   }
 
+  /**
+   * Takes the module graph returned from the server and tracks dependencies of
+   * each function.
+   *
+   * @param {ModuleGraph} graph
+   */
   #processGraph(graph) {
     if (!graph) {
       warn('Could not process edge functions dependency graph. Live reload will not be available.')
@@ -432,6 +528,33 @@ export class EdgeFunctionsRegistry {
   }
 
   /**
+   * Thin wrapper for `#runIsolate` that skips running a build and returns an
+   * empty response if there are no functions in the registry.
+   */
+  async #runBuild() {
+    if (this.#functions.length === 0) {
+      return {
+        functionsConfig: [],
+        graph: {
+          modules: [],
+        },
+        npmSpecifiersWithExtraneousFiles: [],
+        success: true,
+      }
+    }
+
+    const { functionsConfig, graph, npmSpecifiersWithExtraneousFiles, success } = await this.#runIsolate(
+      this.#functions,
+      this.#env,
+      {
+        getFunctionsConfig: true,
+      },
+    )
+
+    return { functionsConfig, graph, npmSpecifiersWithExtraneousFiles, success }
+  }
+
+  /**
    * @returns {Promise<{all: EdgeFunction[], new: EdgeFunction[], deleted: EdgeFunction[]}>}
    */
   async #scanForFunctions() {
@@ -470,7 +593,7 @@ export class EdgeFunctionsRegistry {
     if (this.#configPath) {
       // Creating a watcher for the config file. When it changes, we update the
       // declarations and see if we need to register or unregister any functions.
-      this.#configWatcher = await watchDebounced(this.#configPath, {
+      await watchDebounced(this.#configPath, {
         onChange: async () => {
           const newConfig = await this.#getUpdatedConfig()
 
@@ -493,9 +616,11 @@ export class EdgeFunctionsRegistry {
    * @returns {Promise<void>}
    */
   async #setupWatcherForDirectory(directory) {
+    const ignored = [`${this.#servePath}/**`]
     const watcher = await watchDebounced(directory, {
+      ignored,
       onAdd: () => this.#checkForAddedOrDeletedFunctions(),
-      onChange: (path) => this.#handleFileChange(path),
+      onChange: (paths) => this.#handleFileChange(paths),
       onUnlink: () => this.#checkForAddedOrDeletedFunctions(),
     })
 

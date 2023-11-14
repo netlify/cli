@@ -196,7 +196,7 @@ export const init = async (options, command) => {
   }
 
   // Look for local repo
-  const repoData = await getRepoData({ remoteName: options.gitRemoteName })
+  const repoData = await getRepoData({ workingDir: command.workingDir, remoteName: options.gitRemoteName })
   if (repoData.error) {
     await handleNoGitRemoteAndExit({ command, error: repoData.error, state })
   }
