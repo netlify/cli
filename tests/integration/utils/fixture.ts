@@ -171,7 +171,7 @@ export async function setupFixtureTests(
     })
 
     afterEach<FixtureTestContext>((context) => {
-      if (devServer && context.meta.result?.state === 'fail') {
+      if (devServer && context.task.result?.state === 'fail') {
         console.log(devServer.output)
       }
     })
