@@ -116,7 +116,7 @@ describe('blobs:* commands', () => {
         fixture.callCli(['blobs:get', 'my-store', 'my-key'], {
           offline: false,
         }),
-      ).rejects.toThrowError('Error: Could not retrieve blob my-key from store my-store')
+      ).rejects.toThrowError('Error: Blob my-key does not exist in store my-store')
     })
   })
 })

@@ -24,22 +24,24 @@ const blobsGet = async (storeName, key, options, command) => {
     token: api.accessToken ?? '',
   })
 
+  let blob
+
   try {
-    const blob = await store.get(key)
-
-    if (blob === null) {
-      return printError(`Blob ${chalk.yellow(key)} does not exist in store ${chalk.yellow(storeName)}`)
-    }
-
-    if (output) {
-      const path = resolve(output)
-
-      await fs.writeFile(path, blob)
-    } else {
-      console.log(blob)
-    }
+    blob = await store.get(key)
   } catch {
     return printError(`Could not retrieve blob ${chalk.yellow(key)} from store ${chalk.yellow(storeName)}`)
+  }
+
+  if (blob === null) {
+    return printError(`Blob ${chalk.yellow(key)} does not exist in store ${chalk.yellow(storeName)}`)
+  }
+
+  if (output) {
+    const path = resolve(output)
+
+    await fs.writeFile(path, blob)
+  } else {
+    console.log(blob)
   }
 }
 
