@@ -123,6 +123,8 @@ description: A description.
 
 ```
 
+When adding a new command, you will also need to add it to the nav sidebar manually by adding it to the `navOrder` array in `site/src/_app.js`
+
 ### Updating our documentation
 
 If documentation looks to be out of date, it is likely that the code for the command itself is not correct.
