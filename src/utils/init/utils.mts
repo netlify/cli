@@ -150,7 +150,7 @@ const getNetlifyToml = ({
   #  port = 3000 # Port that the dev server will be listening on
   #  publish = "dist" # Folder with the static content for _redirect file
 
-  ## more info on configuring this file: https://docs.netlify.com/configure-builds/file-based-configuration/
+  ## more info on configuring this file: https://ntl.fyi/file-based-build-config
 `
 
 export const saveNetlifyToml = async ({

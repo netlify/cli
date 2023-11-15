@@ -122,7 +122,7 @@ const mainCommand = async function (options, command) {
     const pkg = await getPackageJson()
 
     const title = `${chalk.bgBlack.cyan('⬥ Netlify CLI')}`
-    const docsMsg = `${chalk.greenBright('Read the docs:')} https://docs.netlify.com/cli/get-started/`
+    const docsMsg = `${chalk.greenBright('Read the docs:')} https://ntl.fyi/get-started-with-netlify-cli`
     const supportMsg = `${chalk.magentaBright('Support and bugs:')} ${pkg.bugs.url}`
 
     console.log()
