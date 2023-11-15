@@ -95,5 +95,6 @@ const logsBuild = async (options, command) => {
 export const createLogsBuildCommand = (program) =>
   program
     .command('logs:deploy')
+    .alias('logs:build')
     .description('(Beta) Stream the logs of active deploys to the console')
     .action(logsBuild)
