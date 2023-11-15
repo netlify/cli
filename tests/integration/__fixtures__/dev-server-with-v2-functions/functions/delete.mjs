@@ -2,5 +2,5 @@ export default async (req, context) => new Response(`Deleted item successfully: 
 
 export const config = {
   path: '/products/:sku',
-  method: "DELETE"
+  method: 'DELETE',
 }
