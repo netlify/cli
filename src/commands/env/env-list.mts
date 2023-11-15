@@ -1,4 +1,3 @@
- 
 import ansiEscapes from 'ansi-escapes'
 import AsciiTable from 'ascii-table'
 import { isCI } from 'ci-info'
