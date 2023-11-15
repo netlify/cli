@@ -1,4 +1,3 @@
-// @ts-check
 import execa from 'execa'
 
 import { cliPath } from './cli-path.mjs'
