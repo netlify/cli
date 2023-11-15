@@ -1,4 +1,3 @@
-// @ts-check
 import { createBlobsDeleteCommand } from './blobs-delete.mjs'
 import { createBlobsGetCommand } from './blobs-get.mjs'
 import { createBlobsListCommand } from './blobs-list.mjs'
