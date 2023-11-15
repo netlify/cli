@@ -15,6 +15,7 @@ coverage
 src/**/*.mjs
 !src/functions-templates/**/*.mjs
 src/**/*.d.mts
+src/**/*.d.mts.map
 tsconfig.tsbuildinfo
 
 # node sdk

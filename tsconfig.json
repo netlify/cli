@@ -6,7 +6,7 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "declaration": true,
-    "declarationMap": false,
+    "declarationMap": true,
     "removeComments": false,
     "downlevelIteration": true,
     "forceConsistentCasingInFileNames": true,
