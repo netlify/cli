@@ -82,12 +82,13 @@ export const transformImageParams = function (query) {
     // eslint-disable-next-line id-length
     params.h = height
   }
-  // @ts-expect-error TS(2339) FIXME: Property 'quality' does not exist on type '{}'.  
+  // @ts-expect-error TS(2339) FIXME: Property 'quality' does not exist on type '{}'.
   params.quality = query.q || query.quality || null
   // @ts-expect-error TS(2339) FIXME: Property 'format' does not exist on type '{}'.
   params.format = query.fm || null
+  const fit = query.fit || null
   // @ts-expect-error TS(2339) FIXME: Property 'fit' does not exist on type '{}'.
-  params.fit = query.fit || null
+  params.fit = fit === 'contain' ? 'inside' : fit
   // @ts-expect-error TS(2339) FIXME: Property 'position' does not exist on type '{}'.
   params.position = query.position || null
 
