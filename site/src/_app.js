@@ -58,18 +58,12 @@ const navOrder = [
   'switch',
   'unlink',
   'watch',
-  'netlify-dev',
-  'functions-dev',
-  'vscode',
 ]
 
 const pageNames = {
   index: 'CLI Reference',
   'getting-started': 'Getting Started',
   addons: 'addons (deprecated)',
-  'netlify-dev': 'Netlify Dev',
-  'functions-dev': 'Functions Development',
-  vscode: 'Run and debug with VSCode',
   lm: 'lm (deprecated)',
 }
 

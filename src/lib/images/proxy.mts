@@ -66,13 +66,23 @@ export const isImageRequest = function (req) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'query' implicitly has an 'any' type.
 export const transformImageParams = function (query) {
   const params = {}
-  // @ts-expect-error TS(2339) FIXME: Property 'w' does not exist on type '{}'.
-  // eslint-disable-next-line id-length
-  params.w = query.w || query.width || null
-  // @ts-expect-error TS(2339) FIXME: Property 'h' does not exist on type '{}'.
-  // eslint-disable-next-line id-length
-  params.h = query.h || query.height || null
-  // @ts-expect-error TS(2339) FIXME: Property 'quality' does not exist on type '{}'.
+
+  const width = query.w || query.width || null
+  const height = query.h || query.height || null
+
+  if (width && height) {
+    // @ts-expect-error TS(2339) FIXME: Property 's' does not exist on type '{}'.
+    // eslint-disable-next-line id-length
+    params.s = `${width}x${height}`
+  } else {
+    // @ts-expect-error TS(2339) FIXME: Property 'w' does not exist on type '{}'.
+    // eslint-disable-next-line id-length
+    params.w = width
+    // @ts-expect-error TS(2339) FIXME: Property 'j' does not exist on type '{}'.
+    // eslint-disable-next-line id-length
+    params.h = height
+  }
+  // @ts-expect-error TS(2339) FIXME: Property 'quality' does not exist on type '{}'.  
   params.quality = query.q || query.quality || null
   // @ts-expect-error TS(2339) FIXME: Property 'format' does not exist on type '{}'.
   params.format = query.fm || null
