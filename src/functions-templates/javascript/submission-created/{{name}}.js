@@ -7,7 +7,7 @@ const process = require('process')
 const fetch = require('node-fetch')
 
 const { EMAIL_TOKEN } = process.env
-const handler = async (event) => {
+export default async (event) => {
   const { email } = JSON.parse(event.body).payload
   console.log(`Received a submission: ${email}`)
   try {
@@ -25,5 +25,3 @@ const handler = async (event) => {
     return { statusCode: 422, body: String(error) }
   }
 }
-
-module.exports = { handler }

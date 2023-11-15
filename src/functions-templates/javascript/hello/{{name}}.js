@@ -3,3 +3,7 @@ export default async (request) => {
     headers: { 'content-type': 'text/html' },
   })
 }
+
+export const config = {
+  path: '/hello',
+}
