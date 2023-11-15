@@ -60,16 +60,17 @@ export const isImageRequest = function (req) {
 export const transformImageParams = function (query) {
   const params = {}
 
-  if ((query.w || query.width) && (query.h || query.height)) {
-    const width = query.w || query.width
-    const height = query.h || query.height
+  const width = query.w || query.width || null
+  const height = query.h || query.height || null
+
+  if (width && height) {
     // eslint-disable-next-line id-length
     params.s = `${width}x${height}`
   } else {
     // eslint-disable-next-line id-length
-    params.w = query.w || query.width || null
+    params.w = width
     // eslint-disable-next-line id-length
-    params.h = query.h || query.height || null
+    params.h = height
   }
 
   params.quality = query.q || query.quality || null
