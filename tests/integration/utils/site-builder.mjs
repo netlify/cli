@@ -1,4 +1,3 @@
-// @ts-check
 import { copyFile, mkdir, rm, unlink, writeFile } from 'fs/promises'
 import os from 'os'
 import path from 'path'

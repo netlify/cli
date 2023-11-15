@@ -1,5 +1,5 @@
 export default {
-  onBuild({netlifyConfig}){
-    netlifyConfig.build.publish = "dist"
-  }
+  onBuild({ netlifyConfig }) {
+    netlifyConfig.build.publish = 'dist'
+  },
 }

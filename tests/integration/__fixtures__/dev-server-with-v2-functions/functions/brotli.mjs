@@ -1,4 +1,4 @@
-import { brotliCompressSync } from "node:zlib"
+import { brotliCompressSync } from 'node:zlib'
 
 export default async () => {
   const text = "What's 🍞🏄‍♀️? A breadboard!".repeat(100)
@@ -7,7 +7,7 @@ export default async () => {
   return new Response(brotli, {
     status: 200,
     headers: {
-      "Content-Encoding": "br",
-    }
+      'Content-Encoding': 'br',
+    },
   })
 }

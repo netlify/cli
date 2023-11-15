@@ -26,5 +26,5 @@ test('should transform image params correctly', () => {
     position: 'center',
   }
   const result = transformImageParams(query)
-  expect(result).toEqual('w_100,h_200,quality_80,format_jpg,fit_cover,position_center')
+  expect(result).toEqual('s_100x200,quality_80,format_jpg,fit_cover,position_center')
 })
