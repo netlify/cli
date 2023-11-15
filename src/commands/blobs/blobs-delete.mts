@@ -6,8 +6,7 @@ import requiresSiteInfo from '../../utils/hooks/requires-site-info.mjs'
 /**
  * The blobs:delete command
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'command' implicitly has an 'any' type.
-const blobsDelete = async (storeName: string, key: string, _options: Record<string, unknown>, command) => {
+const blobsDelete = async (storeName: string, key: string, _options: Record<string, unknown>, command: any) => {
   const { api, siteInfo } = command.netlify
   const store = getStore({
     apiURL: `${api.scheme}://${api.host}`,
