@@ -16,6 +16,7 @@ import fetch from 'node-fetch'
 import ora from 'ora'
 
 import { fileExistsAsync } from '../../lib/fs.mjs'
+import { checkTsconfigForV2Api } from '../../lib/functions/check-tsconfig-for-v2-api.mjs'
 import { getAddons, getCurrentAddon, getSiteData } from '../../utils/addons/prepare.mjs'
 import { NETLIFYDEVERR, NETLIFYDEVLOG, NETLIFYDEVWARN, chalk, error, log } from '../../utils/command-helpers.mjs'
 import { getDotEnvVariables, injectEnvVariables } from '../../utils/dev.mjs'
@@ -714,6 +715,10 @@ const functionsCreate = async (name, options, command) => {
   const functionType = await selectTypeOfFunc()
   const functionsDir =
     functionType === 'edge' ? await ensureEdgeFuncDirExists(command) : await ensureFunctionDirExists(command)
+
+  if (functionType === 'serverless') {
+    await checkTsconfigForV2Api({ functionsDir })
+  }
 
   /* either download from URL or scaffold from template */
   const mainFunc = options.url ? downloadFromURL : scaffoldFromTemplate
