@@ -1,22 +1,33 @@
 import inquirer from 'inquirer'
 import WebSocket from 'ws'
 
-import { log } from '../../utils/command-helpers.mjs'
+import { log, chalk } from '../../utils/command-helpers.mjs'
 
-export function getName(deploy) {
+export function getName({ deploy, userId }) {
+  let normalisedName = ''
+  const isUserDeploy = deploy.user_id === userId
+
   switch (deploy.context) {
     case 'branch-deploy':
-      return 'Branch Deploy'
+      normalisedName = 'Branch Deploy'
+      break
     case 'deploy-preview': {
       // Deploys via the CLI can have the `deploy-preview` context
       // but no review id because they don't come from a PR.
       //
       const id = deploy.review_id
-      return id ? `Deploy Preview #${id}` : 'Deploy Preview'
+      normalisedName = id ? `Deploy Preview #${id}` : 'Deploy Preview'
+      break
     }
     default:
-      return 'Production'
+      normalisedName = 'Production'
   }
+
+  if (isUserDeploy) {
+    normalisedName += chalk.yellow('*')
+  }
+
+  return `(${deploy.id.slice(0, 7)}) ${normalisedName}`
 }
 
 /**
@@ -29,6 +40,7 @@ const logsBuild = async (options, command) => {
   const client = command.netlify.api
   const { site } = command.netlify
   const { id: siteId } = site
+  const userId = command.netlify.globalConfig.get('userId')
 
   const deploys = await client.listSiteDeploys({ siteId, state: 'building' })
 
@@ -42,9 +54,9 @@ const logsBuild = async (options, command) => {
     const { result } = await inquirer.prompt({
       name: 'result',
       type: 'list',
-      message: 'Select a deploy',
+      message: `Select a deploy\n\n${chalk.yellow('*')} indicates a deploy created by you`,
       choices: deploys.map((dep) => ({
-        name: getName(dep),
+        name: getName({ deploy: dep, userId }),
         value: dep.id,
       })),
     })
@@ -61,12 +73,17 @@ const logsBuild = async (options, command) => {
   })
 
   ws.on('message', (data) => {
-    const { message } = JSON.parse(data)
+    const { message, section, type } = JSON.parse(data)
     log(message)
+
+    if (type === 'report' && section === 'building') {
+      // end of build
+      ws.close()
+    }
   })
 
   ws.on('close', () => {
-    log('Connection closed')
+    log('---')
   })
 }
 
@@ -75,4 +92,8 @@ const logsBuild = async (options, command) => {
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
-export const createLogsBuildCommand = (program) => program.command('logs:deploy').action(logsBuild)
+export const createLogsBuildCommand = (program) =>
+  program
+    .command('logs:deploy')
+    .description('(Beta) Stream the logs of active deploys to the console')
+    .action(logsBuild)

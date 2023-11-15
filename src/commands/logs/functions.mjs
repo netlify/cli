@@ -92,4 +92,8 @@ const logsFunction = async (options, command) => {
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
-export const createLogsFunctionCommand = (program) => program.command('logs:function').action(logsFunction)
+export const createLogsFunctionCommand = (program) =>
+  program
+    .command('logs:function')
+    .description('(Beta) Stream serverless function logs to the console')
+    .action(logsFunction)
