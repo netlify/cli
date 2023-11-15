@@ -22,10 +22,10 @@ netlify sites
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`sites:create`](/docs/commands/sites.md#sitescreate) | Create an empty site (advanced)  |
-| [`sites:create-template`](/docs/commands/sites.md#sitescreate-template) | (Beta) Create a site from a starter template  |
-| [`sites:delete`](/docs/commands/sites.md#sitesdelete) | Delete a site  |
-| [`sites:list`](/docs/commands/sites.md#siteslist) | List all sites you have access to  |
+| [`sites:create`](/commands/sites#sitescreate) | Create an empty site (advanced)  |
+| [`sites:create-template`](/commands/sites#sitescreate-template) | (Beta) Create a site from a starter template  |
+| [`sites:delete`](/commands/sites#sitesdelete) | Delete a site  |
+| [`sites:list`](/commands/sites#siteslist) | List all sites you have access to  |
 
 
 **Examples**
