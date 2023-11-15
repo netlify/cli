@@ -1,0 +1,66 @@
+pip install flask
+from flask import Flask, render_template, request
+
+app = Flask(_name_)
+
+def count_vitamins(image):
+    # This is a fictional function for demonstration purposes.
+    # In a real-world scenario, you would use image processing and machine learning.
+    # Replace this function with your actual vitamin counting logic.
+    return {
+        'vitamin_A': 100,
+        'vitamin_B': 50,
+        'vitamin_C': 75,
+    }
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/upload', methods=['POST'])
+def upload():
+    if 'file' not in request.files:
+        return 'No file part'
+
+    file = request.files['file']
+
+    if file.filename == '':
+        return 'No selected file'
+
+    vitamins = count_vitamins(file)
+
+    return render_template('result.html', vitamins=vitamins)
+
+if _name_ == '_main_':
+    app.run(debug=True)
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vitamin Scanner</title>
+</head>
+<body>
+    <h1>Vitamin Scanner</h1>
+    <form action="/upload" method="post" enctype="multipart/form-data">
+        <input type="file" name="file" accept="image/*" required>
+        <button type="submit">Scan</button>
+    </form>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vitamin Results</title>
+</head>
+<body>
+    <h1>Vitamin Results</h1>
+    <ul>
+        {% for vitamin, count in vitamins.items() %}
+            <li>{{ vitamin }}: {{ count }} units</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
