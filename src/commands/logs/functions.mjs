@@ -1,7 +1,7 @@
 import inquirer from 'inquirer'
-import WebSocket from 'ws'
 
 import { chalk, log } from '../../utils/command-helpers.mjs'
+import { getWebSocket } from '../../utils/websockets/index.mjs'
 
 function getLog(logData) {
   let logString = ''
@@ -28,15 +28,12 @@ function getLog(logData) {
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command.mjs').default} command
  */
-const logsFunction = async (options, command) => {
-  await command.authenticate()
+const logsFunction = async (functionName, options, command) => {
   const client = command.netlify.api
   const { site } = command.netlify
   const { id: siteId } = site
 
   const { functions } = await client.searchSiteFunctions({ siteId })
-
-  const [functionName] = command.args
 
   let selectedFunction
   if (functionName) {
@@ -59,9 +56,9 @@ const logsFunction = async (options, command) => {
 
   const { a: accountId, oid: functionId } = selectedFunction
 
-  const ws = new WebSocket(`wss://socketeer.services.netlify.com/function/logs`)
+  const ws = getWebSocket('wss://socketeer.services.netlify.com/function/logs')
 
-  ws.on('open', function open() {
+  ws.on('open', () => {
     ws.send(
       JSON.stringify({
         function_id: functionId,

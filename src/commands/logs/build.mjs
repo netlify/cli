@@ -1,7 +1,7 @@
 import inquirer from 'inquirer'
-import WebSocket from 'ws'
 
 import { log, chalk } from '../../utils/command-helpers.mjs'
+import { getWebSocket } from '../../utils/websockets/index.mjs'
 
 export function getName({ deploy, userId }) {
   let normalisedName = ''
@@ -66,7 +66,7 @@ const logsBuild = async (options, command) => {
 
   const { id } = deploy
 
-  const ws = new WebSocket(`wss://socketeer.services.netlify.com/build/logs`)
+  const ws = getWebSocket(`wss://socketeer.services.netlify.com/build/logs`)
 
   ws.on('open', function open() {
     ws.send(JSON.stringify({ deploy_id: id, site_id: siteId, access_token: client.accessToken }))
