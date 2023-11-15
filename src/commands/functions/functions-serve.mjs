@@ -14,7 +14,7 @@ const DEFAULT_PORT = 9999
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command.mjs').default} command
  */
-const functionsServe = async (options, command) => {
+export const functionsServe = async (options, command) => {
   const { api, config, site, siteInfo, state } = command.netlify
 
   const functionsDir = getFunctionsDir({ options, config }, join('netlify', 'functions'))
@@ -61,19 +61,3 @@ const functionsServe = async (options, command) => {
   const url = getProxyUrl({ port: functionsPort })
   printBanner({ url })
 }
-
-/**
- * Creates the `netlify functions:serve` command
- * @param {import('../base-command.mjs').default} program
- * @returns
- */
-export const createFunctionsServeCommand = (program) =>
-  program
-    .command('functions:serve')
-    .alias('function:serve')
-    .description('Serve functions locally')
-    .option('-f, --functions <dir>', 'Specify a functions directory to serve')
-    .option('-p, --port <port>', 'Specify a port for the functions server', (value) => Number.parseInt(value))
-    .option('-o, --offline', 'disables any features that require network access')
-    .addHelpText('after', 'Helpful for debugging functions.')
-    .action(functionsServe)

@@ -10,7 +10,7 @@ import openBrowser from '../../utils/open-browser.mjs'
  * @param {import('../base-command.mjs').default} command
  * @returns {Promise<boolean>}
  */
-const addonsAuth = async (addonName, options, command) => {
+export const addonsAuth = async (addonName, options, command) => {
   const { addon } = await prepareAddonCommand({
     command,
     addonName,
@@ -31,18 +31,3 @@ const addonsAuth = async (addonName, options, command) => {
   await openBrowser({ url: addon.auth_url })
   exit()
 }
-
-/**
- * Creates the `netlify addons:auth` command
- * @param {import('../base-command.mjs').default} program
- * @returns
- */
-export const createAddonsAuthCommand = (program) =>
-  program
-    .command('addons:auth', { hidden: true })
-    .alias('addon:auth')
-    .argument('<name>', 'Add-on slug')
-    .description('Login to add-on provider')
-    .action(async (addonName, options, command) => {
-      await addonsAuth(addonName, options, command)
-    })

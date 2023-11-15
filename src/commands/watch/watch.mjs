@@ -4,7 +4,8 @@ import prettyjson from 'prettyjson'
 
 import { startSpinner, stopSpinner } from '../../lib/spinner.mjs'
 import { chalk, error, log } from '../../utils/command-helpers.mjs'
-import { init } from '../init/index.mjs'
+
+const importInitPromise = import('../init/init.mjs')
 
 // 1 second
 const INIT_WAIT = 1e3
@@ -63,6 +64,8 @@ const watch = async (options, command) => {
   let siteId = command.netlify.site.id
 
   if (!siteId) {
+    const { init } = await importInitPromise
+
     // TODO: build init command
     const siteData = await init({}, command)
     siteId = siteData.id

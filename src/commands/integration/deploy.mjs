@@ -366,7 +366,7 @@ export const getConfiguration = (workingDir) => {
  * @param {import('commander').OptionValues} options
  * * @param {import('../base-command.mjs').default} command
  */
-const deploy = async (options, command) => {
+export const deploy = async (options, command) => {
   const { api, cachedConfig, site, siteInfo } = command.netlify
   const { id: siteId } = site
   const [token] = await getToken()
@@ -430,19 +430,3 @@ const deploy = async (options, command) => {
     )} https://ntl.fyi/create-private-integration`,
   )
 }
-
-/**
- * Creates the `netlify int deploy` command
- * @param {import('../base-command.mjs').default} program
- * @returns
- */
-export const createDeployCommand = (program) =>
-  program
-    .command('integration:deploy')
-    .alias('int:deploy')
-    .description('Register, build, and deploy a private integration on Netlify')
-    .option('-p, --prod', 'Deploy to production', false)
-    .option('-b, --build', 'Build the integration', false)
-    .option('-a, --auth <token>', 'Netlify auth token to deploy with', env.NETLIFY_AUTH_TOKEN)
-    .option('-s, --site <name-or-id>', 'A site name or ID to deploy to', env.NETLIFY_SITE_ID)
-    .action(deploy)

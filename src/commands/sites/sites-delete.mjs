@@ -9,7 +9,7 @@ import { chalk, error, exit, log } from '../../utils/command-helpers.mjs'
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command.mjs').default} command
  */
-const sitesDelete = async (siteId, options, command) => {
+export const sitesDelete = async (siteId, options, command) => {
   command.setAnalyticsPayload({ force: options.force })
 
   const { api, site } = command.netlify
@@ -86,17 +86,3 @@ const sitesDelete = async (siteId, options, command) => {
   }
   log(`Site "${siteId}" successfully deleted!`)
 }
-
-/**
- * Creates the `netlify sites:delete` command
- * @param {import('../base-command.mjs').default} program
- * @returns
- */
-export const createSitesDeleteCommand = (program) =>
-  program
-    .command('sites:delete')
-    .description('Delete a site\nThis command will permanently delete the site on Netlify. Use with caution.')
-    .argument('<siteId>', 'Site ID to delete.')
-    .option('-f, --force', 'delete without prompting (useful for CI)')
-    .addExamples(['netlify sites:delete 1234-3262-1211'])
-    .action(sitesDelete)

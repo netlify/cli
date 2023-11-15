@@ -143,7 +143,7 @@ const getFunctionToTrigger = function (options, argumentName) {
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command.mjs').default} command
  */
-const functionsInvoke = async (nameArgument, options, command) => {
+export const functionsInvoke = async (nameArgument, options, command) => {
   const { config, relConfigFilePath } = command.netlify
 
   const functionsDir = options.functions || (config.dev && config.dev.functions) || config.functionsDirectory
@@ -231,42 +231,3 @@ const functionsInvoke = async (nameArgument, options, command) => {
     error(`Ran into an error invoking your function: ${error_.message}`)
   }
 }
-
-/**
- * Creates the `netlify functions:invoke` command
- * @param {import('../base-command.mjs').default} program
- * @returns
- */
-export const createFunctionsInvokeCommand = (program) =>
-  program
-    .command('functions:invoke')
-    .alias('function:trigger')
-    .argument('[name]', 'function name to invoke')
-    .description(
-      `Trigger a function while in netlify dev with simulated data, good for testing function calls including Netlify's Event Triggered Functions`,
-    )
-    .option('-n, --name <name>', 'function name to invoke')
-    .option('-f, --functions <dir>', 'Specify a functions folder to parse, overriding netlify.toml')
-    .option('-q, --querystring <query>', 'Querystring to add to your function invocation')
-    .option('-p, --payload <data>', 'Supply POST payload in stringified json, or a path to a json file')
-    // TODO: refactor to not need the `undefined` state by removing the --identity flag (value `identity` will be then always defined to true or false)
-    .option(
-      '--identity',
-      'simulate Netlify Identity authentication JWT. pass --identity to affirm unauthenticated request',
-    )
-    .option(
-      '--no-identity',
-      'simulate Netlify Identity authentication JWT. pass --no-identity to affirm unauthenticated request',
-    )
-    .option('--port <port>', 'Port where netlify dev is accessible. e.g. 8888', (value) => Number.parseInt(value))
-    .addExamples([
-      'netlify functions:invoke',
-      'netlify functions:invoke myfunction',
-      'netlify functions:invoke --name myfunction',
-      'netlify functions:invoke --name myfunction --identity',
-      'netlify functions:invoke --name myfunction --no-identity',
-      `netlify functions:invoke myfunction --payload '{"foo": 1}'`,
-      'netlify functions:invoke myfunction --querystring "foo=1',
-      'netlify functions:invoke myfunction --payload "./pathTo.json"',
-    ])
-    .action(functionsInvoke)

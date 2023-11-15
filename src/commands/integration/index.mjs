@@ -1,4 +1,4 @@
-import { createDeployCommand } from './deploy.mjs'
+import { createDeployCommand } from './integration.mjs'
 
 /**
  * The int command

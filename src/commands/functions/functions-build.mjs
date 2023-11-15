@@ -11,7 +11,7 @@ import { getFunctionsDir } from '../../utils/functions/index.mjs'
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command.mjs').default} command
  */
-const functionsBuild = async (options, command) => {
+export const functionsBuild = async (options, command) => {
   const { config } = command.netlify
 
   const src = options.src || config.build.functionsSource
@@ -41,17 +41,3 @@ const functionsBuild = async (options, command) => {
   zipFunctions(src, dst, { skipGo: true })
   log(`${NETLIFYDEVLOG} Functions built to `, dst)
 }
-
-/**
- * Creates the `netlify functions:build` command
- * @param {import('../base-command.mjs').default} program
- * @returns
- */
-export const createFunctionsBuildCommand = (program) =>
-  program
-    .command('functions:build')
-    .alias('function:build')
-    .description('Build functions locally')
-    .option('-f, --functions <directory>', 'Specify a functions directory to build to')
-    .option('-s, --src <directory>', 'Specify the source directory for the functions')
-    .action(functionsBuild)

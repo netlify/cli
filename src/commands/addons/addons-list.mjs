@@ -10,7 +10,7 @@ import { log, logJson } from '../../utils/command-helpers.mjs'
  * @param {import('../base-command.mjs').default} command
  * @returns {Promise<boolean>}
  */
-const addonsList = async (options, command) => {
+export const addonsList = async (options, command) => {
   const { addons, siteData } = await prepareAddonCommand({ command })
   // Return json response for piping commands
   if (options.json) {
@@ -42,18 +42,3 @@ const addonsList = async (options, command) => {
   // Log da addons
   log(table.toString())
 }
-
-/**
- * Creates the `netlify addons:list` command
- * @param {import('../base-command.mjs').default} program
- * @returns
- */
-export const createAddonsListCommand = (program) =>
-  program
-    .command('addons:list', { hidden: true })
-    .alias('addon:list')
-    .description(`List currently installed add-ons for site`)
-    .option('--json', 'Output add-on data as JSON')
-    .action(async (options, command) => {
-      await addonsList(options, command)
-    })

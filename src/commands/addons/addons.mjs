@@ -1,9 +1,4 @@
 // @ts-check
-import { createAddonsAuthCommand } from './addons-auth.mjs'
-import { createAddonsConfigCommand } from './addons-config.mjs'
-import { createAddonsCreateCommand } from './addons-create.mjs'
-import { createAddonsDeleteCommand } from './addons-delete.mjs'
-import { createAddonsListCommand } from './addons-list.mjs'
 
 /**
  * The addons command
@@ -20,11 +15,65 @@ const addons = (options, command) => {
  * @returns
  */
 export const createAddonsCommand = (program) => {
-  createAddonsAuthCommand(program)
-  createAddonsConfigCommand(program)
-  createAddonsCreateCommand(program)
-  createAddonsDeleteCommand(program)
-  createAddonsListCommand(program)
+  program
+    .command('addons:auth', { hidden: true })
+    .alias('addon:auth')
+    .argument('<name>', 'Add-on slug')
+    .description('Login to add-on provider')
+    .action(async (addonName, options, command) => {
+      const { addonsAuth } = await import('./addons-auth.mjs')
+      await addonsAuth(addonName, options, command)
+    })
+
+  program
+    .command('addons:config', { hidden: true })
+    .alias('addon:config')
+    .argument('<name>', 'Add-on namespace')
+    .description('Configure add-on settings')
+    // allow for any flags. Handy for variadic configuration options
+    .allowUnknownOption(true)
+    .action(async (addonName, options, command) => {
+      const { addonsConfig } = await import('./addons-config.mjs')
+      await addonsConfig(addonName, options, command)
+    })
+
+  program
+    .command('addons:create', { hidden: true })
+    .alias('addon:create')
+    .argument('<name>', 'Add-on namespace')
+    .description(
+      `Add an add-on extension to your site
+Add-ons are a way to extend the functionality of your Netlify site`,
+    )
+    // allow for any flags. Handy for variadic configuration options
+    .allowUnknownOption(true)
+    .action(async (addonName, options, command) => {
+      const { addonsCreate } = await import('./addons-create.mjs')
+      await addonsCreate(addonName, options, command)
+    })
+
+  program
+    .command('addons:delete', { hidden: true })
+    .alias('addon:delete')
+    .argument('<name>', 'Add-on namespace')
+    .description(
+      `Remove an add-on extension to your site\nAdd-ons are a way to extend the functionality of your Netlify site`,
+    )
+    .option('-f, --force', 'delete without prompting (useful for CI)')
+    .action(async (addonName, options, command) => {
+      const { addonsDelete } = await import('./addons-delete.mjs')
+      await addonsDelete(addonName, options, command)
+    })
+
+  program
+    .command('addons:list', { hidden: true })
+    .alias('addon:list')
+    .description(`List currently installed add-ons for site`)
+    .option('--json', 'Output add-on data as JSON')
+    .action(async (options, command) => {
+      const { addonsList } = await import('./addons-list.mjs')
+      await addonsList(options, command)
+    })
 
   return program
     .command('addons', { hidden: true })

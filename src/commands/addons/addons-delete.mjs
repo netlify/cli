@@ -10,7 +10,7 @@ import { error, exit, log } from '../../utils/command-helpers.mjs'
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command.mjs').default} command
  */
-const addonsDelete = async (addonName, options, command) => {
+export const addonsDelete = async (addonName, options, command) => {
   const { addon } = await prepareAddonCommand({
     command,
     addonName,
@@ -40,19 +40,3 @@ const addonsDelete = async (addonName, options, command) => {
     error(error_.message)
   }
 }
-
-/**
- * Creates the `netlify addons:delete` command
- * @param {import('../base-command.mjs').default} program
- * @returns
- */
-export const createAddonsDeleteCommand = (program) =>
-  program
-    .command('addons:delete', { hidden: true })
-    .alias('addon:delete')
-    .argument('<name>', 'Add-on namespace')
-    .description(
-      `Remove an add-on extension to your site\nAdd-ons are a way to extend the functionality of your Netlify site`,
-    )
-    .option('-f, --force', 'delete without prompting (useful for CI)')
-    .action(addonsDelete)

@@ -65,7 +65,7 @@ const getGitHubLink = ({ options, templateName }) => options.url || `https://git
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command.mjs').default} command
  */
-const sitesCreateTemplate = async (repository, options, command) => {
+export const sitesCreateTemplate = async (repository, options, command) => {
   const { api } = command.netlify
 
   await command.authenticate()
@@ -233,28 +233,3 @@ const sitesCreateTemplate = async (repository, options, command) => {
 
   return site
 }
-
-/**
- * Creates the `netlify sites:create-template` command
- * @param {import('../base-command.mjs').default} program
- * @returns
- */
-export const createSitesFromTemplateCommand = (program) =>
-  program
-    .command('sites:create-template')
-    .description(
-      `(Beta) Create a site from a starter template
-Create a site from a starter template.`,
-    )
-    .option('-n, --name [name]', 'name of site')
-    .option('-u, --url [url]', 'template url')
-    .option('-a, --account-slug [slug]', 'account slug to create the site under')
-    .option('-c, --with-ci', 'initialize CI hooks during site creation')
-    .argument('[repository]', 'repository to use as starter template')
-    .addHelpText('after', `(Beta) Create a site from starter template.`)
-    .addExamples([
-      'netlify sites:create-template',
-      'netlify sites:create-template nextjs-blog-theme',
-      'netlify sites:create-template my-github-profile/my-template',
-    ])
-    .action(sitesCreateTemplate)

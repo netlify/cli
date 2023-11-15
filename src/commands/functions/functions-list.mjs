@@ -3,7 +3,6 @@ import AsciiTable from 'ascii-table'
 
 import { exit, log, logJson } from '../../utils/command-helpers.mjs'
 import { getFunctions, getFunctionsDir } from '../../utils/functions/index.mjs'
-import requiresSiteInfo from '../../utils/hooks/requires-site-info.mjs'
 
 const normalizeFunction = function (deployedFunctions, { name, urlPath: url }) {
   const isDeployed = deployedFunctions.some((deployedFunction) => deployedFunction.n === name)
@@ -15,7 +14,7 @@ const normalizeFunction = function (deployedFunctions, { name, urlPath: url }) {
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command.mjs').default} command
  */
-const functionsList = async (options, command) => {
+export const functionsList = async (options, command) => {
   const { config, relConfigFilePath, siteInfo } = command.netlify
 
   const deploy = siteInfo.published_deploy || {}
@@ -52,23 +51,3 @@ const functionsList = async (options, command) => {
   })
   log(table.toString())
 }
-
-/**
- * Creates the `netlify functions:list` command
- * @param {import('../base-command.mjs').default} program
- * @returns
- */
-export const createFunctionsListCommand = (program) =>
-  program
-    .command('functions:list')
-    .alias('function:list')
-    .description(
-      `List functions that exist locally
-Helpful for making sure that you have formatted your functions correctly
-
-NOT the same as listing the functions that have been deployed. For that info you need to go to your Netlify deploy log.`,
-    )
-    .option('-f, --functions <dir>', 'Specify a functions directory to list')
-    .option('--json', 'Output function data as JSON')
-    .hook('preAction', requiresSiteInfo)
-    .action(functionsList)

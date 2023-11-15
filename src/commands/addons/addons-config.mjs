@@ -44,7 +44,7 @@ const update = async function ({ addonName, api, currentConfig, instanceId, newC
  * @param {import('../base-command.mjs').default} command
  * @returns {Promise<boolean>}
  */
-const addonsConfig = async (addonName, options, command) => {
+export const addonsConfig = async (addonName, options, command) => {
   const { addon, manifest, siteData } = await prepareAddonCommand({
     command,
     addonName,
@@ -160,20 +160,3 @@ const addonsConfig = async (addonName, options, command) => {
     })
   }
 }
-
-/**
- * Creates the `netlify addons:config` command
- * @param {import('../base-command.mjs').default} program
- * @returns
- */
-export const createAddonsConfigCommand = (program) =>
-  program
-    .command('addons:config', { hidden: true })
-    .alias('addon:config')
-    .argument('<name>', 'Add-on namespace')
-    .description('Configure add-on settings')
-    // allow for any flags. Handy for variadic configuration options
-    .allowUnknownOption(true)
-    .action(async (addonName, options, command) => {
-      await addonsConfig(addonName, options, command)
-    })

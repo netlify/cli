@@ -55,7 +55,7 @@ const configureLFSURL = async function (siteId, api) {
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command.mjs').default} command
  */
-const lmSetup = async (options, command) => {
+export const lmSetup = async (options, command) => {
   await command.authenticate()
 
   const { api, site } = command.netlify
@@ -89,17 +89,3 @@ const lmSetup = async (options, command) => {
     printBanner(options.forceInstall)
   }
 }
-
-/**
- * Creates the `netlify lm:setup` command
- * @param {import('../base-command.mjs').default} program
- * @returns
- */
-export const createLmSetupCommand = (program) =>
-  program
-    .command('lm:setup', { hidden: true })
-    .description('Configures your site to use Netlify Large Media')
-    .option('-s, --skip-install', 'Skip the credentials helper installation check')
-    .option('-f, --force-install', 'Force the credentials helper installation')
-    .addHelpText('after', 'It runs the install command if you have not installed the dependencies yet.')
-    .action(lmSetup)

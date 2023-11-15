@@ -5,11 +5,8 @@ import { render } from 'prettyjson'
 import { afterAll, beforeEach, describe, expect, test, vi } from 'vitest'
 
 import BaseCommand from '../../../../src/commands/base-command.mjs'
-import {
-  createSitesFromTemplateCommand,
-  fetchTemplates,
-} from '../../../../src/commands/sites/sites-create-template.mjs'
-import { createSitesCreateCommand } from '../../../../src/commands/sites/sites-create.mjs'
+import { fetchTemplates } from '../../../../src/commands/sites/sites-create-template.mjs'
+import { createSitesCreateCommand, createSitesFromTemplateCommand } from '../../../../src/commands/sites/sites.mjs'
 import { getGitHubToken } from '../../../../src/utils/init/config-github.mjs'
 import { createRepo, getTemplatesFromGitHub } from '../../../../src/utils/sites/utils.mjs'
 import { getEnvironmentVariables, withMockApi } from '../../utils/mock-api.mjs'

@@ -710,7 +710,7 @@ const ensureFunctionPathIsOk = function (functionsDir, name) {
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command.mjs').default} command
  */
-const functionsCreate = async (name, options, command) => {
+export const functionsCreate = async (name, options, command) => {
   const functionType = await selectTypeOfFunc()
   const functionsDir =
     functionType === 'edge' ? await ensureEdgeFuncDirExists(command) : await ensureFunctionDirExists(command)
@@ -719,24 +719,3 @@ const functionsCreate = async (name, options, command) => {
   const mainFunc = options.url ? downloadFromURL : scaffoldFromTemplate
   await mainFunc(command, options, name, functionsDir, functionType)
 }
-
-/**
- * Creates the `netlify functions:create` command
- * @param {import('../base-command.mjs').default} program
- * @returns
- */
-export const createFunctionsCreateCommand = (program) =>
-  program
-    .command('functions:create')
-    .alias('function:create')
-    .argument('[name]', 'name of your new function file inside your functions directory')
-    .description('Create a new function locally')
-    .option('-n, --name <name>', 'function name')
-    .option('-u, --url <url>', 'pull template from URL')
-    .option('-l, --language <lang>', 'function language')
-    .addExamples([
-      'netlify functions:create',
-      'netlify functions:create hello-world',
-      'netlify functions:create --name hello-world',
-    ])
-    .action(functionsCreate)

@@ -33,7 +33,7 @@ const createAddon = async ({ addonName, api, config, siteData, siteId }) => {
  * @param {import('../base-command.mjs').default} command
  * @returns {Promise<boolean>}
  */
-const addonsCreate = async (addonName, options, command) => {
+export const addonsCreate = async (addonName, options, command) => {
   const { manifest, siteData } = await prepareAddonCommand({
     command,
     addonName,
@@ -108,23 +108,3 @@ const addonsCreate = async (addonName, options, command) => {
 
   await createAddon({ api, siteId, addonName, config: configValues, siteData })
 }
-
-/**
- * Creates the `netlify addons:create` command
- * @param {import('../base-command.mjs').default} program
- * @returns
- */
-export const createAddonsCreateCommand = (program) =>
-  program
-    .command('addons:create', { hidden: true })
-    .alias('addon:create')
-    .argument('<name>', 'Add-on namespace')
-    .description(
-      `Add an add-on extension to your site
-Add-ons are a way to extend the functionality of your Netlify site`,
-    )
-    // allow for any flags. Handy for variadic configuration options
-    .allowUnknownOption(true)
-    .action(async (addonName, options, command) => {
-      await addonsCreate(addonName, options, command)
-    })

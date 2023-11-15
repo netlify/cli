@@ -9,7 +9,7 @@ import { chalk, log, logJson } from '../../utils/command-helpers.mjs'
  * @param {import('../base-command.mjs').default} command
  * @returns {Promise<{ id: any; name: any; ssl_url: any; account_name: any; }|boolean>}
  */
-const sitesList = async (options, command) => {
+export const sitesList = async (options, command) => {
   const { api } = command.netlify
   /** @type {import('ora').Ora} */
   let spinner
@@ -72,16 +72,3 @@ Count: ${logSites.length}
     })
   }
 }
-
-/**
- * Creates the `netlify sites:list` command
- * @param {import('../base-command.mjs').default} program
- */
-export const createSitesListCommand = (program) =>
-  program
-    .command('sites:list')
-    .description('List all sites you have access to')
-    .option('--json', 'Output site data as JSON')
-    .action(async (options, command) => {
-      await sitesList(options, command)
-    })

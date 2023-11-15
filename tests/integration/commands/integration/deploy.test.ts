@@ -4,7 +4,8 @@ import { beforeEach, describe, expect, test, vi } from 'vitest'
 
 import BaseCommand from '../../../../src/commands/base-command.mjs'
 import { deploy as siteDeploy } from '../../../../src/commands/deploy/deploy.mjs'
-import { areScopesEqual, createDeployCommand } from '../../../../src/commands/integration/deploy.mjs'
+import { areScopesEqual } from '../../../../src/commands/integration/deploy.mjs'
+import { createDeployCommand } from '../../../../src/commands/integration/integration.mjs'
 import { getEnvironmentVariables, withMockApi } from '../../utils/mock-api.mjs'
 import { withSiteBuilder } from '../../utils/site-builder.mjs'
 
@@ -63,9 +64,10 @@ describe(`integration:deploy`, () => {
     ]
 
     await withSiteBuilder('my-integration', async (builder) => {
-      builder.withContentFiles([{
-        path: 'integration.yaml',
-        content: `config:
+      builder.withContentFiles([
+        {
+          path: 'integration.yaml',
+          content: `config:
   name: integrationName
   description: an integration'
   slug: 987645-integration
@@ -73,8 +75,9 @@ describe(`integration:deploy`, () => {
     site:
         - read
   integrationLevel: team-and-site
-      `
-      }])
+      `,
+        },
+      ])
       await builder.buildAsync()
 
       vi.spyOn(process, 'cwd').mockReturnValue(builder.directory)
@@ -98,7 +101,5 @@ describe(`integration:deploy`, () => {
         expect(siteDeploy).toBeCalledTimes(1)
       })
     })
-
-
   })
 })
