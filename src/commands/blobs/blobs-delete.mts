@@ -32,7 +32,7 @@ const blobsDelete = async (storeName: string, key: string, _options: Record<stri
 export const createBlobsDeleteCommand = (program) =>
   program
     .command('blobs:delete')
-    .description(`(Beta) Deletes an object with a given key from a Netlify Blobs, if one exists`)
+    .description(`(Beta) Deletes an object with a given key, if it exists, from a Netlify Blobs store`)
     .argument('<store>', 'Name of the store')
     .argument('<key>', 'Object key')
     .alias('blob:delete')
