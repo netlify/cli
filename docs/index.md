@@ -20,137 +20,137 @@ netlify [command] help
 ## Commands
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_LIST) -->
-### [api](/docs/commands/api.md)
+### [api](/commands/api)
 
 Run any Netlify API method
 
-### [build](/docs/commands/build.md)
+### [build](/commands/build)
 
 Build on your local machine
 
-### [completion](/docs/commands/completion.md)
+### [completion](/commands/completion)
 
 Generate shell completion script
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`completion:install`](/docs/commands/completion.md#completioninstall) | Generates completion script for your preferred shell  |
+| [`completion:install`](/commands/completion#completioninstall) | Generates completion script for your preferred shell  |
 
 
-### [deploy](/docs/commands/deploy.md)
+### [deploy](/commands/deploy)
 
 Create a new deploy from the contents of a folder
 
-### [dev](/docs/commands/dev.md)
+### [dev](/commands/dev)
 
 Local dev server
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`dev:exec`](/docs/commands/dev.md#devexec) | Exec command  |
+| [`dev:exec`](/commands/dev#devexec) | Exec command  |
 
 
-### [env](/docs/commands/env.md)
+### [env](/commands/env)
 
 Control environment variables for the current site
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`env:clone`](/docs/commands/env.md#envclone) | Clone environment variables from one site to another  |
-| [`env:get`](/docs/commands/env.md#envget) | Get resolved value of specified environment variable (includes netlify.toml)  |
-| [`env:import`](/docs/commands/env.md#envimport) | Import and set environment variables from .env file  |
-| [`env:list`](/docs/commands/env.md#envlist) | Lists resolved environment variables for site (includes netlify.toml)  |
-| [`env:set`](/docs/commands/env.md#envset) | Set value of environment variable  |
-| [`env:unset`](/docs/commands/env.md#envunset) | Unset an environment variable which removes it from the UI  |
+| [`env:clone`](/commands/env#envclone) | Clone environment variables from one site to another  |
+| [`env:get`](/commands/env#envget) | Get resolved value of specified environment variable (includes netlify.toml)  |
+| [`env:import`](/commands/env#envimport) | Import and set environment variables from .env file  |
+| [`env:list`](/commands/env#envlist) | Lists resolved environment variables for site (includes netlify.toml)  |
+| [`env:set`](/commands/env#envset) | Set value of environment variable  |
+| [`env:unset`](/commands/env#envunset) | Unset an environment variable which removes it from the UI  |
 
 
-### [functions](/docs/commands/functions.md)
+### [functions](/commands/functions)
 
 Manage netlify functions
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`functions:build`](/docs/commands/functions.md#functionsbuild) | Build functions locally  |
-| [`functions:create`](/docs/commands/functions.md#functionscreate) | Create a new function locally  |
-| [`functions:invoke`](/docs/commands/functions.md#functionsinvoke) | Trigger a function while in netlify dev with simulated data, good for testing function calls including Netlify's Event Triggered Functions  |
-| [`functions:list`](/docs/commands/functions.md#functionslist) | List functions that exist locally  |
-| [`functions:serve`](/docs/commands/functions.md#functionsserve) | Serve functions locally  |
+| [`functions:build`](/commands/functions#functionsbuild) | Build functions locally  |
+| [`functions:create`](/commands/functions#functionscreate) | Create a new function locally  |
+| [`functions:invoke`](/commands/functions#functionsinvoke) | Trigger a function while in netlify dev with simulated data, good for testing function calls including Netlify's Event Triggered Functions  |
+| [`functions:list`](/commands/functions#functionslist) | List functions that exist locally  |
+| [`functions:serve`](/commands/functions#functionsserve) | Serve functions locally  |
 
 
-### [init](/docs/commands/init.md)
+### [init](/commands/init)
 
 Configure continuous deployment for a new or existing site. To create a new site without continuous deployment, use `netlify sites:create`
 
-### [integration](/docs/commands/integration.md)
+### [integration](/commands/integration)
 
 Manage Netlify Integrations built with the Netlify SDK
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`integration:deploy`](/docs/commands/integration.md#integrationdeploy) | Register, build, and deploy a private integration on Netlify  |
+| [`integration:deploy`](/commands/integration#integrationdeploy) | Register, build, and deploy a private integration on Netlify  |
 
 
-### [link](/docs/commands/link.md)
+### [link](/commands/link)
 
 Link a local repo or project folder to an existing site on Netlify
 
-### [login](/docs/commands/login.md)
+### [login](/commands/login)
 
 Login to your Netlify account
 
-### [open](/docs/commands/open.md)
+### [open](/commands/open)
 
 Open settings for the site linked to the current folder
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`open:admin`](/docs/commands/open.md#openadmin) | Opens current site admin UI in Netlify  |
-| [`open:site`](/docs/commands/open.md#opensite) | Opens current site url in browser  |
+| [`open:admin`](/commands/open#openadmin) | Opens current site admin UI in Netlify  |
+| [`open:site`](/commands/open#opensite) | Opens current site url in browser  |
 
 
-### [recipes](/docs/commands/recipes.md)
+### [recipes](/commands/recipes)
 
 Create and modify files in a project using pre-defined recipes
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`recipes:list`](/docs/commands/recipes.md#recipeslist) | List the recipes available to create and modify files in a project  |
+| [`recipes:list`](/commands/recipes#recipeslist) | List the recipes available to create and modify files in a project  |
 
 
-### [serve](/docs/commands/serve.md)
+### [serve](/commands/serve)
 
 Build the site for production and serve locally. This does not watch the code for changes, so if you need to rebuild your site then you must exit and run `serve` again.
 
-### [sites](/docs/commands/sites.md)
+### [sites](/commands/sites)
 
 Handle various site operations
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`sites:create`](/docs/commands/sites.md#sitescreate) | Create an empty site (advanced)  |
-| [`sites:create-template`](/docs/commands/sites.md#sitescreate-template) | (Beta) Create a site from a starter template  |
-| [`sites:delete`](/docs/commands/sites.md#sitesdelete) | Delete a site  |
-| [`sites:list`](/docs/commands/sites.md#siteslist) | List all sites you have access to  |
+| [`sites:create`](/commands/sites#sitescreate) | Create an empty site (advanced)  |
+| [`sites:create-template`](/commands/sites#sitescreate-template) | (Beta) Create a site from a starter template  |
+| [`sites:delete`](/commands/sites#sitesdelete) | Delete a site  |
+| [`sites:list`](/commands/sites#siteslist) | List all sites you have access to  |
 
 
-### [status](/docs/commands/status.md)
+### [status](/commands/status)
 
 Print status information
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`status:hooks`](/docs/commands/status.md#statushooks) | Print hook information of the linked site  |
+| [`status:hooks`](/commands/status#statushooks) | Print hook information of the linked site  |
 
 
-### [switch](/docs/commands/switch.md)
+### [switch](/commands/switch)
 
 Switch your active Netlify account
 
-### [unlink](/docs/commands/unlink.md)
+### [unlink](/commands/unlink)
 
 Unlink a local folder from a Netlify site
 
-### [watch](/docs/commands/watch.md)
+### [watch](/commands/watch)
 
 Watch for site deploy to finish
 

@@ -24,7 +24,7 @@ netlify recipes
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`recipes:list`](/docs/commands/recipes.md#recipeslist) | List the recipes available to create and modify files in a project  |
+| [`recipes:list`](/commands/recipes#recipeslist) | List the recipes available to create and modify files in a project  |
 
 
 **Examples**
