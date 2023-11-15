@@ -34,17 +34,9 @@ const logsFunction = async (options, command) => {
   const { site } = command.netlify
   const { id: siteId } = site
 
-  const token = client.accessToken
-
-  const functionsRes = await fetch(`https://api.netlify.com/api/v1/sites/${siteId}/functions`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
+  const { functions } = await client.searchSiteFunctions({ siteId })
 
   const [functionName] = command.args
-
-  const { functions } = await functionsRes.json()
 
   let selectedFunction
   if (functionName) {
