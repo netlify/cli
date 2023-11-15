@@ -1,4 +1,4 @@
-// @ts-check
+ 
 import { basename } from 'path'
 import { env } from 'process'
 import { fileURLToPath } from 'url'

@@ -1,4 +1,3 @@
-// @ts-check
 import fs from 'fs'
 
 import { Argument } from 'commander'
