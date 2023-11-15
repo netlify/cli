@@ -1,22 +1,17 @@
-// @ts-check
 import { promises as fs } from 'fs'
 import { resolve } from 'path'
 
 import { getStore } from '@netlify/blobs'
 
-import { chalk, error as printError } from '../../utils/command-helpers.mjs'
+import { chalk, error as printError, isNodeError } from '../../utils/command-helpers.mjs'
 import requiresSiteInfo from '../../utils/hooks/requires-site-info.mjs'
 
-/**
- * The blobs:set command
- * @param {string} storeName
- * @param {string} key
- * @param {string[]} valueParts
- * @param {import('commander').OptionValues} options
- * @param {import('../base-command.mjs').default} command
- */
+interface Options {
+  input?: string
+}
+
 // eslint-disable-next-line max-params
-const blobsSet = async (storeName, key, valueParts, options, command) => {
+const blobsSet = async (storeName: string, key: string, valueParts: string[], options: Options, command: any) => {
   const { api, siteInfo } = command.netlify
   const { input } = options
   const store = getStore({
@@ -34,13 +29,13 @@ const blobsSet = async (storeName, key, valueParts, options, command) => {
     try {
       value = await fs.readFile(inputPath, 'utf8')
     } catch (error) {
-      if (error.code === 'ENOENT') {
+      if (isNodeError(error) && error.code === 'ENOENT') {
         return printError(
           `Could not set blob ${chalk.yellow(key)} because the file ${chalk.underline(inputPath)} does not exist`,
         )
       }
 
-      if (error.code === 'EISDIR') {
+      if (isNodeError(error) && error.code === 'EISDIR') {
         return printError(
           `Could not set blob ${chalk.yellow(key)} because the path ${chalk.underline(inputPath)} is a directory`,
         )
@@ -65,10 +60,8 @@ const blobsSet = async (storeName, key, valueParts, options, command) => {
 
 /**
  * Creates the `netlify blobs:set` command
- * @param {import('../base-command.mjs').default} program
- * @returns
  */
-export const createBlobsSetCommand = (program) =>
+export const createBlobsSetCommand = (program: any) =>
   program
     .command('blobs:set')
     .description(
@@ -76,7 +69,7 @@ export const createBlobsSetCommand = (program) =>
     )
     .argument('<store>', 'Name of the store')
     .argument('<key>', 'Object key')
-    .argument('[value...]', 'Object key')
+    .argument('[value...]', 'Object value')
     .option('-i, --input <path>', 'Defines the filesystem path where the blob data should be read from')
     .alias('blob:set')
     .hook('preAction', requiresSiteInfo)

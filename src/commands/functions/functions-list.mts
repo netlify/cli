@@ -1,5 +1,3 @@
- 
- 
 import AsciiTable from 'ascii-table'
 
 import { exit, log, logJson } from '../../utils/command-helpers.mjs'
@@ -44,7 +42,6 @@ const functionsList = async (options, command) => {
   }
 
   if (options.json) {
-    // @ts-expect-error TS(2345) FIXME: Argument of type '{ name: any; url: any; isDeploye... Remove this comment to see the full error message
     logJson(normalizedFunctions)
     exit()
   }

@@ -6,19 +6,15 @@ import { createBlobsSetCommand } from './blobs-set.mjs'
 
 /**
  * The blobs command
- * @param {import('commander').OptionValues} _options
- * @param {import('../base-command.mjs').default} command
  */
-const blobs = (_options, command) => {
+const blobs = (_options: Record<string, unknown>, command: any) => {
   command.help()
 }
 
 /**
  * Creates the `netlify blobs` command
- * @param {import('../base-command.mjs').default} program
- * @returns
  */
-export const createBlobsCommand = (program) => {
+export const createBlobsCommand = (program: any) => {
   createBlobsDeleteCommand(program)
   createBlobsGetCommand(program)
   createBlobsListCommand(program)

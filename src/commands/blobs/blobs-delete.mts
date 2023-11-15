@@ -1,4 +1,3 @@
-// @ts-check
 import { getStore } from '@netlify/blobs'
 
 import { chalk, error as printError } from '../../utils/command-helpers.mjs'
@@ -6,12 +5,9 @@ import requiresSiteInfo from '../../utils/hooks/requires-site-info.mjs'
 
 /**
  * The blobs:delete command
- * @param {string} storeName
- * @param {string} key
- * @param {import('commander').OptionValues} _options
- * @param {import('../base-command.mjs').default} command
  */
-const blobsDelete = async (storeName, key, _options, command) => {
+// @ts-expect-error TS(7006) FIXME: Parameter 'command' implicitly has an 'any' type.
+const blobsDelete = async (storeName: string, key: string, _options: Record<string, unknown>, command) => {
   const { api, siteInfo } = command.netlify
   const store = getStore({
     apiURL: `${api.scheme}://${api.host}`,
@@ -32,6 +28,7 @@ const blobsDelete = async (storeName, key, _options, command) => {
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'program' implicitly has an 'any' type.
 export const createBlobsDeleteCommand = (program) =>
   program
     .command('blobs:delete')

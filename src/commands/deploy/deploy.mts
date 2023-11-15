@@ -1,4 +1,3 @@
- 
 import { stat } from 'fs/promises'
 import { basename, resolve } from 'path'
 import { env } from 'process'
@@ -44,7 +43,6 @@ const triggerDeploy = async ({ api, options, siteData, siteId }) => {
   try {
     const siteBuild = await api.createSiteBuild({ siteId })
     if (options.json) {
-      // @ts-expect-error TS(2345) FIXME: Argument of type '{ site_id: any; site_name: any; ... Remove this comment to see the full error message
       logJson({
         site_id: siteId,
         site_name: siteData.name,
@@ -590,7 +588,6 @@ const printResults = ({ deployToProduction, isIntegrationDeploy, json, results, 
       jsonData.url = results.siteUrl
     }
 
-    // @ts-expect-error TS(2345) FIXME: Argument of type '{ name: any; site_id: any; site_... Remove this comment to see the full error message
     logJson(jsonData)
     exit(0)
   } else {

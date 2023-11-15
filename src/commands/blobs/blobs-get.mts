@@ -1,4 +1,3 @@
-// @ts-check
 import { promises as fs } from 'fs'
 import { resolve } from 'path'
 
@@ -7,14 +6,11 @@ import { getStore } from '@netlify/blobs'
 import { chalk, error as printError } from '../../utils/command-helpers.mjs'
 import requiresSiteInfo from '../../utils/hooks/requires-site-info.mjs'
 
-/**
- * The blobs:get command
- * @param {string} storeName
- * @param {string} key
- * @param {import('commander').OptionValues} options
- * @param {import('../base-command.mjs').default} command
- */
-const blobsGet = async (storeName, key, options, command) => {
+interface Options {
+  output?: string
+}
+
+const blobsGet = async (storeName: string, key: string, options: Options, command: any) => {
   const { api, siteInfo } = command.netlify
   const { output } = options
   const store = getStore({
@@ -47,10 +43,8 @@ const blobsGet = async (storeName, key, options, command) => {
 
 /**
  * Creates the `netlify blobs:get` command
- * @param {import('../base-command.mjs').default} program
- * @returns
  */
-export const createBlobsGetCommand = (program) =>
+export const createBlobsGetCommand = (program: any) =>
   program
     .command('blobs:get')
     .description(
