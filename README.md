@@ -20,6 +20,7 @@ See the [CLI command line reference](https://cli.netlify.com/commands/) to get s
 - [Documentation](#documentation)
 - [Commands](#commands)
   - [api](#api)
+  - [blobs](#blobs)
   - [build](#build)
   - [completion](#completion)
   - [deploy](#deploy)

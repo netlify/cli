@@ -39,6 +39,7 @@ const navOrder = [
   'commands',
   'addons',
   'api',
+  'blobs',
   'build',
   'completion',
   'deploy',

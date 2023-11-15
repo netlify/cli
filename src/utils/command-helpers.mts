@@ -1,4 +1,3 @@
- 
 import { once } from 'events'
 import os from 'os'
 import process from 'process'
@@ -153,9 +152,8 @@ const isDefaultJson = () => argv[0] === 'functions:invoke' || (argv[0] === 'api'
 
 /**
  * logs a json message
- * @param {string|object} message
  */
-export const logJson = (message = '') => {
+export const logJson = (message: unknown = '') => {
   if (argv.includes('--json') || isDefaultJson()) {
     process.stdout.write(JSON.stringify(message, null, 2))
   }
@@ -201,7 +199,7 @@ export const error = (message = '', options = {}) => {
       : // eslint-disable-next-line unicorn/no-nested-ternary
       typeof message === 'string'
       ? new Error(message)
-      : /** @type {Error} */ ({ message, stack: undefined, name: 'Error' })
+      : /** @type {Error} */ { message, stack: undefined, name: 'Error' }
 
   // @ts-expect-error TS(2339) FIXME: Property 'exit' does not exist on type '{}'.
   if (options.exit === false) {
@@ -309,3 +307,5 @@ export const watchDebounced = async (
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
 export const getTerminalLink = (text, url) => terminalLink(text, url, { fallback: () => `${text} (${url})` })
+
+export const isNodeError = (err: unknown): err is NodeJS.ErrnoException => error instanceof Error
