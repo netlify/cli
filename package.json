@@ -42,6 +42,7 @@
     "prepare": "is-ci || husky install node_modules/@netlify/eslint-config-node/.husky/",
     "start": "node ./bin/run.mjs",
     "build": "tsc",
+    "dev": "tsc --watch",
     "test": "run-s format test:dev",
     "format": "run-s format:check-fix:*",
     "format:ci": "run-s format:check:*",

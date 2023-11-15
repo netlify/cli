@@ -87,7 +87,7 @@ const validateFrameworkConfig = ({ devConfig }) => {
     throw new Error(
       `${formatProperty('port')} and ${formatProperty(
         'targetPort',
-      )} options cannot have same values. Please consult the documentation for more details: https://cli.netlify.com/netlify-dev#netlifytoml-dev-block`,
+      )} options cannot have same values. Please consult the documentation for more details: https://ntl.fyi/ports-and-netlify-dev`,
     )
   }
 }
