@@ -1,4 +1,4 @@
- 
+
 import { basename } from 'path'
 import { env } from 'process'
 import { fileURLToPath } from 'url'
@@ -11,7 +11,7 @@ import { normalizeBackslash } from '../../src/lib/path.mjs'
 import { generateCommandData } from './generate-command-data.mjs'
 
 const rootDir = normalizeBackslash(fileURLToPath(new URL('../..', import.meta.url)))
-const markdownFiles = [`${rootDir}/README.md`, `${rootDir}/docs/**/**.md`]
+const markdownFiles = [`${rootDir}/docs/**/**.md`]
 
 env.DOCS_GEN = 'TRUE'
 
