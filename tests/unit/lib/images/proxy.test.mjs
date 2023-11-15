@@ -18,13 +18,11 @@ test('should transform image params correctly - without fit or position', () => 
     // eslint-disable-next-line id-length
     w: '100',
     // eslint-disable-next-line id-length
-    h: '200',
-    // eslint-disable-next-line id-length
     q: '80',
     fm: 'jpg',
   }
   const result = transformImageParams(query)
-  expect(result).toEqual('w_100,h_200,quality_80,format_jpg')
+  expect(result).toEqual('w_100,quality_80,format_jpg')
 })
 
 test('should transform image params correctly - resize', () => {
