@@ -59,14 +59,23 @@ export const isImageRequest = function (req) {
 
 export const transformImageParams = function (query) {
   const params = {}
-  // eslint-disable-next-line id-length
-  params.w = query.w || query.width || null
-  // eslint-disable-next-line id-length
-  params.h = query.h || query.height || null
+
+  if ((query.w || query.width) && (query.h || query.height)) {
+    const width = query.w || query.width
+    const height = query.h || query.height
+    // eslint-disable-next-line id-length
+    params.s = `${width}x${height}`
+  } else {
+    // eslint-disable-next-line id-length
+    params.w = query.w || query.width || null
+    // eslint-disable-next-line id-length
+    params.h = query.h || query.height || null
+  }
+
   params.quality = query.q || query.quality || null
   params.format = query.fm || null
-  params.fit = query.fit || null
   params.position = query.position || null
+  params.fit = query.fit || null
 
   return Object.entries(params)
     .filter(([, value]) => value !== null)
@@ -76,7 +85,6 @@ export const transformImageParams = function (query) {
 
 export const initializeProxy = async function ({ config }) {
   const remoteDomains = await parseRemoteImageDomains({ config })
-
   const ipx = createIPX({
     storage: ipxFSStorage({ dir: config?.build?.publish ?? './public' }),
     httpStorage: ipxHttpStorage({ domains: remoteDomains }),
@@ -89,7 +97,9 @@ export const initializeProxy = async function ({ config }) {
     const { url, ...query } = req.query
     const modifiers = await transformImageParams(query)
     const path = `/${modifiers}/${encodeURIComponent(url)}`
+    console.log(`ipx: ${path}`)
     req.url = path
+    console.log(`ipx2: ${req.url}`)
     handler(req, res)
   })
 
