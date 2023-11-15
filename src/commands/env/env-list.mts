@@ -1,6 +1,6 @@
  
 import ansiEscapes from 'ansi-escapes'
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'asci... Remove this comment to see the full error message
+ 
 import AsciiTable from 'ascii-table'
 import { isCI } from 'ci-info'
 import { Option } from 'commander'

@@ -1,7 +1,7 @@
  
 import { readFile } from 'fs/promises'
 
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'asci... Remove this comment to see the full error message
+ 
 import AsciiTable from 'ascii-table'
 import { Option } from 'commander'
 import dotenv from 'dotenv'
