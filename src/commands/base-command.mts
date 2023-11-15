@@ -1,11 +1,9 @@
- 
 import { existsSync } from 'fs'
 import { join, relative, resolve } from 'path'
 import process from 'process'
 import { format } from 'util'
 
 import { DefaultLogger, Project } from '@netlify/build-info'
-// eslint-disable-next-line import/extensions, n/no-missing-import
 import { NodeFS, NoopLogger } from '@netlify/build-info/node'
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module '@net... Remove this comment to see the full error message
 import { resolveConfig } from '@netlify/config'
@@ -448,13 +446,7 @@ export default class BaseCommand extends Command {
     }
   }
 
-  /**
-   *
-   * @param {string|undefined} tokenFromFlag
-   * @returns
-   */
-  // @ts-expect-error TS(7006) FIXME: Parameter 'tokenFromFlag' implicitly has an 'any' ... Remove this comment to see the full error message
-  async authenticate(tokenFromFlag) {
+  async authenticate(tokenFromFlag?: string) {
     const [token] = await getToken(tokenFromFlag)
     if (token) {
       return token

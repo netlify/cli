@@ -1,9 +1,11 @@
+import { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 
 import { log, chalk } from '../../utils/command-helpers.mjs'
 import { getWebSocket } from '../../utils/websockets/index.mjs'
+import BaseCommand from '../base-command.mjs'
 
-export function getName({ deploy, userId }) {
+export function getName({ deploy, userId }: { deploy: any; userId: string }) {
   let normalisedName = ''
   const isUserDeploy = deploy.user_id === userId
 
@@ -30,12 +32,7 @@ export function getName({ deploy, userId }) {
   return `(${deploy.id.slice(0, 7)}) ${normalisedName}`
 }
 
-/**
- * The stream build logs command
- * @param {import('commander').OptionValues} options
- * @param {import('../base-command.mjs').default} command
- */
-const logsBuild = async (options, command) => {
+const logsBuild = async (options: OptionValues, command: BaseCommand) => {
   await command.authenticate()
   const client = command.netlify.api
   const { site } = command.netlify
@@ -55,13 +52,13 @@ const logsBuild = async (options, command) => {
       name: 'result',
       type: 'list',
       message: `Select a deploy\n\n${chalk.yellow('*')} indicates a deploy created by you`,
-      choices: deploys.map((dep) => ({
+      choices: deploys.map((dep: any) => ({
         name: getName({ deploy: dep, userId }),
         value: dep.id,
       })),
     })
 
-    deploy = deploys.find((dep) => dep.id === result)
+    deploy = deploys.find((dep: any) => dep.id === result)
   }
 
   const { id } = deploy
@@ -72,7 +69,7 @@ const logsBuild = async (options, command) => {
     ws.send(JSON.stringify({ deploy_id: id, site_id: siteId, access_token: client.accessToken }))
   })
 
-  ws.on('message', (data) => {
+  ws.on('message', (data: string) => {
     const { message, section, type } = JSON.parse(data)
     log(message)
 
@@ -87,12 +84,7 @@ const logsBuild = async (options, command) => {
   })
 }
 
-/**
- * Creates the `netlify watch` command
- * @param {import('../base-command.mjs').default} program
- * @returns
- */
-export const createLogsBuildCommand = (program) =>
+export const createLogsBuildCommand = (program: BaseCommand) =>
   program
     .command('logs:deploy')
     .alias('logs:build')

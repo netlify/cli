@@ -1,9 +1,11 @@
+import { Argument, OptionValues } from 'commander'
 import inquirer from 'inquirer'
 
 import { chalk, log } from '../../utils/command-helpers.mjs'
 import { getWebSocket } from '../../utils/websockets/index.mjs'
+import BaseCommand from '../base-command.mjs'
 
-function getLog(logData) {
+function getLog(logData: { level: string; message: string }) {
   let logString = ''
   switch (logData.level) {
     case 'INFO':
@@ -28,7 +30,7 @@ function getLog(logData) {
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command.mjs').default} command
  */
-const logsFunction = async (functionName, options, command) => {
+const logsFunction = async (functionName: string, options: OptionValues, command: BaseCommand) => {
   const client = command.netlify.api
   const { site } = command.netlify
   const { id: siteId } = site
@@ -37,16 +39,16 @@ const logsFunction = async (functionName, options, command) => {
 
   let selectedFunction
   if (functionName) {
-    selectedFunction = functions.find((fn) => fn.n === functionName)
+    selectedFunction = functions.find((fn: any) => fn.n === functionName)
   } else {
     const { result } = await inquirer.prompt({
       name: 'result',
       type: 'list',
       message: 'Select a function',
-      choices: functions.map((fn) => fn.n),
+      choices: functions.map((fn: any) => fn.n),
     })
 
-    selectedFunction = functions.find((fn) => fn.n === result)
+    selectedFunction = functions.find((fn: any) => fn.n === result)
   }
 
   if (!selectedFunction) {
@@ -69,7 +71,7 @@ const logsFunction = async (functionName, options, command) => {
     )
   })
 
-  ws.on('message', (data) => {
+  ws.on('message', (data: string) => {
     const logData = JSON.parse(data)
     log(getLog(logData))
   })
@@ -78,7 +80,7 @@ const logsFunction = async (functionName, options, command) => {
     log('Connection closed')
   })
 
-  ws.on('error', (err) => {
+  ws.on('error', (err: any) => {
     log('Connection error')
     log(err)
   })
@@ -89,10 +91,10 @@ const logsFunction = async (functionName, options, command) => {
  * @param {import('../base-command.mjs').default} program
  * @returns
  */
-export const createLogsFunctionCommand = (program) =>
+export const createLogsFunctionCommand = (program: BaseCommand) =>
   program
     .command('logs:function')
-    .addArgument('<functionName>', 'The name of the function to stream logs for')
+    .addArgument(new Argument('functionName', 'Name of the function to stream logs for'))
     .addExamples(['netlify logs:function my-function', 'netlify logs:function'])
     .description('(Beta) Stream serverless function logs to the console')
     .action(logsFunction)
