@@ -1,5 +1,5 @@
  
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'asci... Remove this comment to see the full error message
+ 
 import AsciiTable from 'ascii-table'
 
 import { exit, log, logJson } from '../../utils/command-helpers.mjs'
@@ -31,7 +31,7 @@ const functionsList = async (options, command) => {
   if (typeof functionsDir === 'undefined') {
     log('Functions directory is undefined')
     log(`Please verify that 'functions.directory' is set in your Netlify configuration file ${relConfigFilePath}`)
-    log('Refer to https://docs.netlify.com/configure-builds/file-based-configuration/ for more information')
+    log('Refer to https://ntl.fyi/file-based-build-config for more information')
     exit(1)
   }
 
