@@ -30,7 +30,7 @@ Run any Netlify API method
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`blobs:delete`](/commands/blobs#blobsdelete) | (Beta) Deletes an object with a given key from a Netlify Blobs, if one exists  |
+| [`blobs:delete`](/commands/blobs#blobsdelete) | (Beta) Deletes an object with a given key, if it exists, from a Netlify Blobs store  |
 | [`blobs:get`](/commands/blobs#blobsget) | (Beta) Reads an object with a given key from a Netlify Blobs store and, if it exists, prints the content to the terminal or saves it to a file  |
 | [`blobs:list`](/commands/blobs#blobslist) | (Beta) Lists objects in a Netlify Blobs store  |
 | [`blobs:set`](/commands/blobs#blobsset) | (Beta) Writes to a Netlify Blobs store an object with the data provided in the command or the contents of a file defined by the 'input' parameter  |
