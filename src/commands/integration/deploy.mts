@@ -2,6 +2,7 @@ import fs from 'fs'
 import { resolve } from 'path'
 import { exit, env } from 'process'
 
+import { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'js-y... Remove this comment to see the full error message
 import yaml from 'js-yaml'
@@ -12,6 +13,7 @@ import { z } from 'zod'
 import { getBuildOptions } from '../../lib/build.mjs'
 import { getToken, chalk, log } from '../../utils/command-helpers.mjs'
 import { getSiteInformation } from '../../utils/dev.mjs'
+import BaseCommand from '../base-command.mjs'
 import { checkOptions } from '../build/build.mjs'
 import { deploy as siteDeploy } from '../deploy/deploy.mjs'
 
@@ -390,24 +392,19 @@ export const getConfiguration = (workingDir) => {
     exit(1)
   }
 }
-/**
- * The deploy command for Netlify Integrations
- * @param {import('commander').OptionValues} options
- * * @param {import('../base-command.mjs').default} command
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
-const deploy = async (options, command) => {
+
+export const deploy = async (options: OptionValues, command: BaseCommand) => {
   const { api, cachedConfig, site, siteInfo } = command.netlify
   const { id: siteId } = site
   // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
   const [token] = await getToken()
   const workingDir = resolve(command.workingDir)
-  // @ts-expect-error TS(2345) FIXME: Argument of type '{ cachedConfig: any; packagePath... Remove this comment to see the full error message
   const buildOptions = await getBuildOptions({
     cachedConfig,
     packagePath: command.workspacePackage,
     currentDir: command.workingDir,
     token,
+      // @ts-expect-error TS(2740)
     options,
   })
 
@@ -464,20 +461,3 @@ const deploy = async (options, command) => {
     )} https://ntl.fyi/create-private-integration`,
   )
 }
-
-/**
- * Creates the `netlify int deploy` command
- * @param {import('../base-command.mjs').default} program
- * @returns
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'program' implicitly has an 'any' type.
-export const createDeployCommand = (program) =>
-  program
-    .command('integration:deploy')
-    .alias('int:deploy')
-    .description('Register, build, and deploy a private integration on Netlify')
-    .option('-p, --prod', 'Deploy to production', false)
-    .option('-b, --build', 'Build the integration', false)
-    .option('-a, --auth <token>', 'Netlify auth token to deploy with', env.NETLIFY_AUTH_TOKEN)
-    .option('-s, --site <name-or-id>', 'A site name or ID to deploy to', env.NETLIFY_SITE_ID)
-    .action(deploy)
