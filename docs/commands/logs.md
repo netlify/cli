@@ -20,8 +20,8 @@ netlify logs
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`logs:deploy`](/commands/logs#logsdeploy) | (Beta) Stream the logs of active deploys to the console  |
-| [`logs:function`](/commands/logs#logsfunction) | (Beta) Stream serverless function logs to the console  |
+| [`logs:deploy`](/commands/logs#logsdeploy) | (Beta) Stream the logs of deploys currently being built to the console  |
+| [`logs:function`](/commands/logs#logsfunction) | (Beta) Stream netlify function logs to the console  |
 
 
 **Examples**
@@ -35,7 +35,7 @@ netlify logs:function my-function
 ---
 ## `logs:deploy`
 
-(Beta) Stream the logs of active deploys to the console
+(Beta) Stream the logs of deploys currently being built to the console
 
 **Usage**
 
@@ -51,7 +51,7 @@ netlify logs:deploy
 ---
 ## `logs:function`
 
-(Beta) Stream serverless function logs to the console
+(Beta) Stream netlify function logs to the console
 
 **Usage**
 
