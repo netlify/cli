@@ -25,7 +25,7 @@ function getLog(logData: { level: string; message: string }) {
   return `${logString} ${logData.message}`
 }
 
-const logsFunction = async (functionName: string | undefined, options: OptionValues, command: BaseCommand) => {
+export const logsFunction = async (functionName: string | undefined, options: OptionValues, command: BaseCommand) => {
   const client = command.netlify.api
   const { site } = command.netlify
   const { id: siteId } = site
@@ -80,12 +80,3 @@ const logsFunction = async (functionName: string | undefined, options: OptionVal
     log(err)
   })
 }
-
-export const createLogsFunctionCommand = (program: BaseCommand) =>
-  program
-    .command('logs:function')
-    .alias('logs:functions')
-    .addArgument(new Argument('[functionName]', 'Name of the function to stream logs for'))
-    .addExamples(['netlify logs:function my-function', 'netlify logs:function'])
-    .description('(Beta) Stream netlify function logs to the console')
-    .action(logsFunction)

@@ -1,4 +1,4 @@
-import { OptionValues } from 'commander'
+import { OptionValues, Argument } from 'commander'
 
 import BaseCommand from '../base-command.mjs'
 
@@ -14,7 +14,16 @@ export const createLogsCommand = (program: BaseCommand) => {
     await logsBuild(options, command)
   })
 
-  createLogsFunctionCommand(program)
+  program
+    .command('logs:function')
+    .alias('logs:functions')
+    .addArgument(new Argument('[functionName]', 'Name of the function to stream logs for'))
+    .addExamples(['netlify logs:function my-function', 'netlify logs:function'])
+    .description('(Beta) Stream netlify function logs to the console')
+    .action(async (functionName: string | undefined, options: OptionValues, command: BaseCommand) => {
+      const { logsFunction } = await import('./functions.mjs')
+      await logsFunction(functionName, options, command)
+    })
 
   return program
     .command('logs')
