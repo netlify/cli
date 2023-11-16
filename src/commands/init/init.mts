@@ -10,7 +10,7 @@ import { configureRepo } from '../../utils/init/config.mjs'
 import { track } from '../../utils/telemetry/index.mjs'
 import BaseCommand from '../base-command.mjs'
 import { link } from '../link/link.mjs'
-import { sitesCreate } from '../sites/index.mjs'
+import { sitesCreate } from '../sites/sites-create.mjs'
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'siteInfo' implicitly has an 'any'... Remove this comment to see the full error message
 const persistState = ({ siteInfo, state }) => {
