@@ -1,17 +1,12 @@
 import clean from 'clean-deep'
+import { OptionValues } from 'commander'
 import prettyjson from 'prettyjson'
 
 import { chalk, error, exit, getToken, log, logJson, warn } from '../../utils/command-helpers.mjs'
+import BaseCommand from '../base-command.mjs'
 
-import { createStatusHooksCommand } from './status-hooks.mjs'
 
-/**
- * The status command
- * @param {import('commander').OptionValues} options
- * @param {import('../base-command.mjs').default} command
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
-const status = async (options, command) => {
+export const status = async (options: OptionValues, command: BaseCommand) => {
   const { api, globalConfig, site } = command.netlify
   const current = globalConfig.get('userId')
   // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
@@ -34,7 +29,7 @@ const status = async (options, command) => {
   let user
 
   try {
-    ;[accounts, user] = await Promise.all([api.listAccountsForUser(), api.getCurrentUser()])
+    [accounts, user] = await Promise.all([api.listAccountsForUser(), api.getCurrentUser()])
   } catch (error_) {
     // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
     if (error_.status === 401) {
@@ -114,20 +109,4 @@ const status = async (options, command) => {
     }),
   )
   log()
-}
-
-/**
- * Creates the `netlify status` command
- * @param {import('../base-command.mjs').default} program
- * @returns
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'program' implicitly has an 'any' type.
-export const createStatusCommand = (program) => {
-  createStatusHooksCommand(program)
-
-  return program
-    .command('status')
-    .description('Print status information')
-    .option('--verbose', 'Output system info')
-    .action(status)
 }
