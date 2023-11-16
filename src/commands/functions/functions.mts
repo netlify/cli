@@ -5,8 +5,6 @@ import { chalk } from '../../utils/command-helpers.mjs'
 import requiresSiteInfo from '../../utils/hooks/requires-site-info.mjs'
 import BaseCommand from '../base-command.mjs'
 
-import { createFunctionsServeCommand } from './functions-serve.mjs'
-
 const functions = (options: OptionValues, command: BaseCommand) => {
   command.help()
 }
@@ -96,7 +94,18 @@ NOT the same as listing the functions that have been deployed. For that info you
       await functionsList(options, command)
     })
 
-  createFunctionsServeCommand(program)
+    program
+    .command('functions:serve')
+    .alias('function:serve')
+    .description('Serve functions locally')
+    .option('-f, --functions <dir>', 'Specify a functions directory to serve')
+    .option('-p, --port <port>', 'Specify a port for the functions server', (value) => Number.parseInt(value))
+    .option('-o, --offline', 'disables any features that require network access')
+    .addHelpText('after', 'Helpful for debugging functions.')
+    .action(async(options: OptionValues, command: BaseCommand) => {
+      const { functionsServe } = await import('./functions-serve.mjs')
+      await functionsServe(options, command)
+    })
 
   const name = chalk.greenBright('`functions`')
 
