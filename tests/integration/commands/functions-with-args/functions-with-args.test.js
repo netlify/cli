@@ -449,15 +449,15 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
           },
         })
         .withContentFile({
-          path: 'functions/hello/dist/index.js',
+          path: '/functions/hello/dist/index.js',
           content: `module.exports = "foo"`,
         })
         .withContentFile({
-          path: 'functions/hello/dist/index.d.ts',
+          path: '/functions/hello/dist/index.d.ts',
           content: `export default "foo"`,
         })
         .withContentFile({
-          path: 'functions/hello/index.js',
+          path: '/functions/hello/index.js',
           content: `
 const response = require("./dist")
 exports.handler = async () => ({
@@ -473,14 +473,14 @@ exports.handler = async () => ({
 
         await builder
           .withContentFile({
-            path: 'functions/hello/dist/index.d.ts',
+            path: '/functions/hello/dist/index.d.ts',
             content: `export default "bar"`,
           })
           .buildAsync()
 
         await builder
           .withContentFile({
-            path: 'functions/hello/dist/index.js',
+            path: '/functions/hello/dist/index.js',
             content: `module.exports = "bar"`,
           })
           .buildAsync()
