@@ -3,7 +3,6 @@ import { OptionValues } from 'commander'
 
 import BaseCommand from '../base-command.mjs'
 
-import { createAddonsCreateCommand } from './addons-create.mjs'
 import { createAddonsDeleteCommand } from './addons-delete.mjs'
 import { createAddonsListCommand } from './addons-list.mjs'
 
@@ -43,7 +42,22 @@ export const createAddonsCommand = (program) => {
     await addonsConfig(addonName, options, command)
   })
 
-  createAddonsCreateCommand(program)
+  program
+  .command('addons:create', { hidden: true })
+  .alias('addon:create')
+  .argument('<name>', 'Add-on namespace')
+  .description(
+    `Add an add-on extension to your site
+Add-ons are a way to extend the functionality of your Netlify site`,
+  )
+  // allow for any flags. Handy for variadic configuration options
+  .allowUnknownOption(true)
+  // @ts-expect-error TS(7006) FIXME: Parameter 'addonName' implicitly has an 'any' type... Remove this comment to see the full error message
+  .action(async (addonName, options, command) => {
+    const { addonsCreate } = await import('./addons-create.mjs')
+    await addonsCreate(addonName, options, command)
+  })
+
   createAddonsDeleteCommand(program)
   createAddonsListCommand(program)
 

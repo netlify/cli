@@ -1,4 +1,5 @@
- 
+
+import { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 import isEmpty from 'lodash/isEmpty.js'
 
@@ -8,6 +9,7 @@ import { renderConfigValues, renderMissingValues } from '../../utils/addons/rend
 import { missingConfigValues, requiredConfigValues, updateConfigValues } from '../../utils/addons/validation.mjs'
 import { chalk, error, log } from '../../utils/command-helpers.mjs'
 import { parseRawFlags } from '../../utils/parse-raw-flags.mjs'
+import BaseCommand from '../base-command.mjs'
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'addonName' implicitly has an 'any... Remove this comment to see the full error message
 const createAddon = async ({ addonName, api, config, siteData, siteId }) => {
@@ -28,15 +30,8 @@ const createAddon = async ({ addonName, api, config, siteData, siteId }) => {
   }
 }
 
-/**
- * The addons:create command
- * @param {string} addonName
- * @param {import('commander').OptionValues} options
- * @param {import('../base-command.mjs').default} command
- * @returns {Promise<boolean>}
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'addonName' implicitly has an 'any' type... Remove this comment to see the full error message
-const addonsCreate = async (addonName, options, command) => {
+
+export const addonsCreate = async (addonName: string, options: OptionValues, command: BaseCommand) => {
   const { manifest, siteData } = await prepareAddonCommand({
     command,
     addonName,
@@ -112,25 +107,3 @@ const addonsCreate = async (addonName, options, command) => {
 
   await createAddon({ api, siteId, addonName, config: configValues, siteData })
 }
-
-/**
- * Creates the `netlify addons:create` command
- * @param {import('../base-command.mjs').default} program
- * @returns
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'program' implicitly has an 'any' type.
-export const createAddonsCreateCommand = (program) =>
-  program
-    .command('addons:create', { hidden: true })
-    .alias('addon:create')
-    .argument('<name>', 'Add-on namespace')
-    .description(
-      `Add an add-on extension to your site
-Add-ons are a way to extend the functionality of your Netlify site`,
-    )
-    // allow for any flags. Handy for variadic configuration options
-    .allowUnknownOption(true)
-    // @ts-expect-error TS(7006) FIXME: Parameter 'addonName' implicitly has an 'any' type... Remove this comment to see the full error message
-    .action(async (addonName, options, command) => {
-      await addonsCreate(addonName, options, command)
-    })
