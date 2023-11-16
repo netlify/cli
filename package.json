@@ -20,7 +20,8 @@
     "/src/lib/templates/**",
     "!/src/**/node_modules/**",
     "!/src/**/*.test.js",
-    "!/src/**/*.mts"
+    "!/src/**/*.mts",
+    "!/src/**/*.d.mts.map"
   ],
   "homepage": "https://github.com/netlify/cli",
   "keywords": [
