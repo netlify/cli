@@ -1,10 +1,19 @@
+import { OptionValues } from 'commander'
+
 import BaseCommand from '../base-command.mjs'
 
-import { createLogsBuildCommand } from './build.mjs'
 import { createLogsFunctionCommand } from './functions.mjs'
 
 export const createLogsCommand = (program: BaseCommand) => {
-  createLogsBuildCommand(program)
+  program
+  .command('logs:deploy')
+  .alias('logs:build')
+  .description('(Beta) Stream the logs of deploys currently being built to the console')
+  .action(async (options: OptionValues, command: BaseCommand) => {
+    const { logsBuild } = await import('./build.mjs')
+    await logsBuild(options, command)
+  })
+
   createLogsFunctionCommand(program)
 
   return program
