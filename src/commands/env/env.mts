@@ -5,7 +5,6 @@ import {  normalizeContext } from '../../utils/env/index.mjs'
 import BaseCommand from '../base-command.mjs'
 
 import { createEnvCloneCommand } from './env-clone.mjs'
-import { createEnvUnsetCommand } from './env-unset.mjs'
 
 
 const env = (options: OptionValues, command: BaseCommand) => {
@@ -125,7 +124,28 @@ export const createEnvCommand = (program: BaseCommand) => {
     })
 
 
-  createEnvUnsetCommand(program)
+    program
+    .command('env:unset')
+    .aliases(['env:delete', 'env:remove'])
+    .argument('<key>', 'Environment variable key')
+    .option(
+      '-c, --context <context...>',
+      'Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev") (default: all contexts)',
+      // spread over an array for variadic options
+      // @ts-expect-error TS(7006) FIXME: Parameter 'context' implicitly has an 'any' type.
+      (context, previous = []) => [...previous, normalizeContext(context)],
+    )
+    .addExamples([
+      'netlify env:unset VAR_NAME # unset in all contexts',
+      'netlify env:unset VAR_NAME --context production',
+      'netlify env:unset VAR_NAME --context production deploy-preview',
+    ])
+    .description('Unset an environment variable which removes it from the UI')
+    .action(async (key: string, options: OptionValues, command: BaseCommand) => {
+      const {envUnset} = await import('./env-unset.mjs')
+      await envUnset(key, options, command)
+    })
+
   createEnvCloneCommand(program)
 
   return program
