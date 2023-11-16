@@ -1,5 +1,5 @@
 
-import { Option, OptionValues } from 'commander'
+import { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 import isEmpty from 'lodash/isEmpty.js'
 
