@@ -23,7 +23,6 @@ export const createAddonsCommand = (program) => {
   .alias('addon:auth')
   .argument('<name>', 'Add-on slug')
   .description('Login to add-on provider')
-  // @ts-expect-error TS(7006) FIXME: Parameter 'addonName' implicitly has an 'any' type... Remove this comment to see the full error message
   .action(async (addonName, options, command) => {
     const { addonsAuth } = await import('./addons-auth.mjs')
     await addonsAuth(addonName, options, command)
@@ -36,7 +35,6 @@ export const createAddonsCommand = (program) => {
   .description('Configure add-on settings')
   // allow for any flags. Handy for variadic configuration options
   .allowUnknownOption(true)
-  // @ts-expect-error TS(7006) FIXME: Parameter 'addonName' implicitly has an 'any' type... Remove this comment to see the full error message
   .action(async (addonName, options, command) => {
     const { addonsConfig } = await import('./addons-config.mjs')
     await addonsConfig(addonName, options, command)
@@ -52,13 +50,25 @@ Add-ons are a way to extend the functionality of your Netlify site`,
   )
   // allow for any flags. Handy for variadic configuration options
   .allowUnknownOption(true)
-  // @ts-expect-error TS(7006) FIXME: Parameter 'addonName' implicitly has an 'any' type... Remove this comment to see the full error message
   .action(async (addonName, options, command) => {
     const { addonsCreate } = await import('./addons-create.mjs')
     await addonsCreate(addonName, options, command)
   })
 
-  createAddonsDeleteCommand(program)
+  program
+  .command('addons:delete', { hidden: true })
+  .alias('addon:delete')
+  .argument('<name>', 'Add-on namespace')
+  .description(
+    `Remove an add-on extension to your site\nAdd-ons are a way to extend the functionality of your Netlify site`,
+  )
+  .option('-f, --force', 'delete without prompting (useful for CI)')
+  .action(async (addonName, options, command) => {
+    const { addonsDelete } = await import('./addons-delete.mjs')
+    await addonsDelete(addonName, options, command)
+  })
+
+
   createAddonsListCommand(program)
 
   return program

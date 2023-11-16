@@ -1,4 +1,3 @@
-
 import { OptionValues } from 'commander'
 
 import { ADDON_VALIDATION, prepareAddonCommand } from '../../utils/addons/prepare.mjs'
