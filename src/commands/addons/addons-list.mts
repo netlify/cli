@@ -1,18 +1,12 @@
- 
- 
 import AsciiTable from 'ascii-table'
+import { OptionValues } from 'commander'
 
 import { prepareAddonCommand } from '../../utils/addons/prepare.mjs'
 import { log, logJson } from '../../utils/command-helpers.mjs'
+import BaseCommand from '../base-command.mjs'
 
-/**
- * The addons:list command
- * @param {import('commander').OptionValues} options
- * @param {import('../base-command.mjs').default} command
- * @returns {Promise<boolean>}
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
-const addonsList = async (options, command) => {
+
+export const addonsList = async (options: OptionValues, command: BaseCommand) => {
   // @ts-expect-error TS(2345) FIXME: Argument of type '{ command: any; }' is not assign... Remove this comment to see the full error message
   const { addons, siteData } = await prepareAddonCommand({ command })
   // Return json response for piping commands

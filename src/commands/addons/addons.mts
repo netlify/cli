@@ -1,11 +1,6 @@
-
 import { OptionValues } from 'commander'
 
 import BaseCommand from '../base-command.mjs'
-
-import { createAddonsDeleteCommand } from './addons-delete.mjs'
-import { createAddonsListCommand } from './addons-list.mjs'
-
 
 const addons = (options: OptionValues, command: BaseCommand) => {
   command.help()
@@ -69,7 +64,15 @@ Add-ons are a way to extend the functionality of your Netlify site`,
   })
 
 
-  createAddonsListCommand(program)
+  program
+  .command('addons:list', { hidden: true })
+  .alias('addon:list')
+  .description(`List currently installed add-ons for site`)
+  .option('--json', 'Output add-on data as JSON')
+  .action(async (options, command) => {
+    const {addonsList} = await import('./addons-list.mjs')
+    await addonsList(options, command)
+  })
 
   return program
     .command('addons', { hidden: true })
