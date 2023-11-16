@@ -50,7 +50,7 @@
     "format:check-fix:lint": "run-s format:check:lint format:fix:lint",
     "format:check:lint": "cross-env-shell eslint $npm_package_config_eslint",
     "format:fix:lint": "cross-env-shell eslint --fix $npm_package_config_eslint",
-    "format:check-fix:prettier": "run-e format:check:prettier format:fix:prettier",
+    "format:check-fix:prettier": "run-s format:check:prettier format:fix:prettier",
     "format:check:prettier": "cross-env-shell prettier --check $npm_package_config_prettier --ignore-path .prettierignore",
     "format:fix:prettier": "cross-env-shell prettier --write $npm_package_config_prettier --ignore-path .prettierignore",
     "test:dev": "run-s certs test:init:* test:dev:*",
