@@ -6,13 +6,7 @@ const addons = (options: OptionValues, command: BaseCommand) => {
   command.help()
 }
 
-/**
- * Creates the `netlify addons` command
- * @param {import('../base-command.mjs').default} program
- * @returns
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'program' implicitly has an 'any' type.
-export const createAddonsCommand = (program) => {
+export const createAddonsCommand = (program: BaseCommand) => {
   program
   .command('addons:auth', { hidden: true })
   .alias('addon:auth')
