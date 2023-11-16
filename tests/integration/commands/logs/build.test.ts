@@ -46,10 +46,6 @@ const routes = [
 ]
 
 describe('logs:deploy command', () => {
-  //   beforeEach(() => {
-  //     vi.resetModules()
-  //     vi.clearAllMocks()
-  //   })
   let program: BaseCommand
 
   afterEach(() => {

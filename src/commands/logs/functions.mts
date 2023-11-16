@@ -3,7 +3,7 @@ import inquirer from 'inquirer'
 
 import { chalk, log } from '../../utils/command-helpers.mjs'
 import { getWebSocket } from '../../utils/websockets/index.mjs'
-import BaseCommand from '../base-command.mjs'
+import type BaseCommand from '../base-command.mjs'
 
 function getLog(logData: { level: string; message: string }) {
   let logString = ''
@@ -25,11 +25,6 @@ function getLog(logData: { level: string; message: string }) {
   return `${logString} ${logData.message}`
 }
 
-/**
- * The stream build logs command
- * @param {import('commander').OptionValues} options
- * @param {import('../base-command.mjs').default} command
- */
 const logsFunction = async (functionName: string | undefined, options: OptionValues, command: BaseCommand) => {
   const client = command.netlify.api
   const { site } = command.netlify
@@ -86,16 +81,11 @@ const logsFunction = async (functionName: string | undefined, options: OptionVal
   })
 }
 
-/**
- * Creates the `netlify watch` command
- * @param {import('../base-command.mjs').default} program
- * @returns
- */
 export const createLogsFunctionCommand = (program: BaseCommand) =>
   program
     .command('logs:function')
     .alias('logs:functions')
     .addArgument(new Argument('[functionName]', 'Name of the function to stream logs for'))
     .addExamples(['netlify logs:function my-function', 'netlify logs:function'])
-    .description('(Beta) Stream serverless function logs to the console')
+    .description('(Beta) Stream netlify function logs to the console')
     .action(logsFunction)

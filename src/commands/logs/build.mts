@@ -1,9 +1,9 @@
-import { OptionValues } from 'commander'
+import type { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 
 import { log, chalk } from '../../utils/command-helpers.mjs'
 import { getWebSocket } from '../../utils/websockets/index.mjs'
-import BaseCommand from '../base-command.mjs'
+import type BaseCommand from '../base-command.mjs'
 
 export function getName({ deploy, userId }: { deploy: any; userId: string }) {
   let normalisedName = ''
@@ -88,5 +88,5 @@ export const createLogsBuildCommand = (program: BaseCommand) =>
   program
     .command('logs:deploy')
     .alias('logs:build')
-    .description('(Beta) Stream the logs of active deploys to the console')
+    .description('(Beta) Stream the logs of deploys currently being built to the console')
     .action(logsBuild)
