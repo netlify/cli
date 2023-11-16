@@ -1,18 +1,12 @@
- 
- 
 import AsciiTable from 'ascii-table'
+import { OptionValues } from 'commander'
 import { methods } from 'netlify'
 
 import { chalk, error, exit, log, logJson } from '../../utils/command-helpers.mjs'
+import BaseCommand from '../base-command.mjs'
 
-/**
- * The api command
- * @param {string} apiMethod
- * @param {import('commander').OptionValues} options
- * @param {import('../base-command.mjs').default} command
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'apiMethod' implicitly has an 'any' type... Remove this comment to see the full error message
-const apiCommand = async (apiMethod, options, command) => {
+
+export const apiCommand = async (apiMethod: string, options: OptionValues, command: BaseCommand) => {
   const { api } = command.netlify
 
   if (options.list) {
@@ -52,23 +46,3 @@ const apiCommand = async (apiMethod, options, command) => {
   }
 }
 
-/**
- * Creates the `netlify api` command
- * @param {import('../base-command.mjs').default} program
- * @returns
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'program' implicitly has an 'any' type.
-export const createApiCommand = (program) =>
-  program
-    .command('api')
-    .argument('[apiMethod]', 'Open API method to run')
-    .description(
-      `Run any Netlify API method
-For more information on available methods checkout https://open-api.netlify.com/ or run '${chalk.grey(
-        'netlify api --list',
-      )}'`,
-    )
-    .option('-d, --data <data>', 'Data to use')
-    .option('--list', 'List out available API methods', false)
-    .addExamples(['netlify api --list', `netlify api getSite --data '{ "site_id": "123456" }'`])
-    .action(apiCommand)
