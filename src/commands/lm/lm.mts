@@ -3,8 +3,6 @@ import { OptionValues } from 'commander'
 
 import BaseCommand from '../base-command.mjs'
 
-import { createLmUninstallCommand } from './lm-uninstall.mjs'
-
 
 const lm = (options: OptionValues, command: BaseCommand) => {
   command.help()
@@ -45,7 +43,16 @@ and configures your Git environment with the right credentials.`,
     })
 
 
-  createLmUninstallCommand(program)
+    program
+    .command('lm:uninstall', { hidden: true })
+    .alias('lm:remove')
+    .description(
+      'Uninstalls Netlify git credentials helper and cleans up any related configuration changes made by the install command.',
+    )
+    .action(async() => {
+      const { lmUninstall } = await import('./lm-uninstall.mjs')
+      await lmUninstall()
+    })
 
   program
     .command('lm', { hidden: true })
