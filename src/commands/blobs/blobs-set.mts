@@ -5,7 +5,6 @@ import { getStore } from '@netlify/blobs'
 import { OptionValues } from 'commander'
 
 import { chalk, error as printError, isNodeError } from '../../utils/command-helpers.mjs'
-import requiresSiteInfo from '../../utils/hooks/requires-site-info.mjs'
 import BaseCommand from '../base-command.mjs'
 
 interface Options extends OptionValues {
