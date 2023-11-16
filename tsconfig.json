@@ -15,6 +15,6 @@
     "allowJs": true,
     "typeRoots": ["node_modules/@types", "types"]
   },
-  "include": ["src/**/*.mts"],
+  "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "src/functions-templates"]
 }
