@@ -2,16 +2,18 @@ import { promises as fs } from 'fs'
 import { resolve } from 'path'
 
 import { getStore } from '@netlify/blobs'
+import { OptionValues } from 'commander'
 
 import { chalk, error as printError, isNodeError } from '../../utils/command-helpers.mjs'
 import requiresSiteInfo from '../../utils/hooks/requires-site-info.mjs'
+import BaseCommand from '../base-command.mjs'
 
-interface Options {
+interface Options extends OptionValues {
   input?: string
 }
 
 // eslint-disable-next-line max-params
-const blobsSet = async (storeName: string, key: string, valueParts: string[], options: Options, command: any) => {
+export const blobsSet = async (storeName: string, key: string, valueParts: string[], options: Options, command: BaseCommand) => {
   const { api, siteInfo } = command.netlify
   const { input } = options
   const store = getStore({
@@ -57,20 +59,3 @@ const blobsSet = async (storeName: string, key: string, valueParts: string[], op
     return printError(`Could not set blob ${chalk.yellow(key)} in store ${chalk.yellow(storeName)}`)
   }
 }
-
-/**
- * Creates the `netlify blobs:set` command
- */
-export const createBlobsSetCommand = (program: any) =>
-  program
-    .command('blobs:set')
-    .description(
-      `(Beta) Writes to a Netlify Blobs store an object with the data provided in the command or the contents of a file defined by the 'input' parameter`,
-    )
-    .argument('<store>', 'Name of the store')
-    .argument('<key>', 'Object key')
-    .argument('[value...]', 'Object value')
-    .option('-i, --input <path>', 'Defines the filesystem path where the blob data should be read from')
-    .alias('blob:set')
-    .hook('preAction', requiresSiteInfo)
-    .action(blobsSet)

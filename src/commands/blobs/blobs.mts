@@ -3,8 +3,6 @@ import { OptionValues } from 'commander'
 import requiresSiteInfo from '../../utils/hooks/requires-site-info.mjs'
 import BaseCommand from '../base-command.mjs'
 
-import { createBlobsSetCommand } from './blobs-set.mjs'
-
 /**
  * The blobs command
  */
@@ -63,7 +61,22 @@ export const createBlobsCommand = (program: BaseCommand) => {
       await blobsList(storeName, options, command)
     })
 
-  createBlobsSetCommand(program)
+    program
+    .command('blobs:set')
+    .description(
+      `(Beta) Writes to a Netlify Blobs store an object with the data provided in the command or the contents of a file defined by the 'input' parameter`,
+    )
+    .argument('<store>', 'Name of the store')
+    .argument('<key>', 'Object key')
+    .argument('[value...]', 'Object value')
+    .option('-i, --input <path>', 'Defines the filesystem path where the blob data should be read from')
+    .alias('blob:set')
+    .hook('preAction', requiresSiteInfo)
+    // eslint-disable-next-line max-params
+    .action(async(storeName: string, key: string, valueParts: string[], options: OptionValues, command: BaseCommand) => {
+      const { blobsSet } = await import('./blobs-set.mjs')
+      await blobsSet(storeName, key, valueParts, options, command)
+    })
 
   return program
     .command('blobs')
