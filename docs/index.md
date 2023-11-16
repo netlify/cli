@@ -110,6 +110,16 @@ Link a local repo or project folder to an existing site on Netlify
 
 Login to your Netlify account
 
+### [logs](/commands/logs)
+
+Stream logs from your site
+
+| Subcommand | description  |
+|:--------------------------- |:-----|
+| [`logs:deploy`](/commands/logs#logsdeploy) | (Beta) Stream the logs of deploys currently being built to the console  |
+| [`logs:function`](/commands/logs#logsfunction) | (Beta) Stream netlify function logs to the console  |
+
+
 ### [open](/commands/open)
 
 Open settings for the site linked to the current folder

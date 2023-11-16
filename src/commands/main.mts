@@ -1,4 +1,3 @@
- 
 import process from 'process'
 
 import { Option } from 'commander'
@@ -30,6 +29,7 @@ import { createLinkCommand } from './link/index.mjs'
 import { createLmCommand } from './lm/index.mjs'
 import { createLoginCommand } from './login/index.mjs'
 import { createLogoutCommand } from './logout/index.mjs'
+import { createLogsCommand } from './logs/index.mjs'
 import { createOpenCommand } from './open/index.mjs'
 import { createRecipesCommand } from './recipes/index.mjs'
 import { createServeCommand } from './serve/serve.mjs'
@@ -212,6 +212,7 @@ export const createMainCommand = () => {
   createSwitchCommand(program)
   createUnlinkCommand(program)
   createWatchCommand(program)
+  createLogsCommand(program)
 
   program
     .version(USER_AGENT, '-V')

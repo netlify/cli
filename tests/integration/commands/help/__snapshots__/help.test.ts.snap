@@ -16,8 +16,6 @@ COMMANDS
   $ dev           Local dev server
   $ env           Control environment variables for the current site
   $ functions     Manage netlify functions
-  $ recipes       Create and modify files in a project using pre-defined
-                  recipes
   $ init          Configure continuous deployment for a new or existing site.
                   To create a new site without continuous deployment, use
                   \`netlify sites:create\`
@@ -25,7 +23,10 @@ COMMANDS
   $ link          Link a local repo or project folder to an existing site on
                   Netlify
   $ login         Login to your Netlify account
+  $ logs          Stream logs from your site
   $ open          Open settings for the site linked to the current folder
+  $ recipes       Create and modify files in a project using pre-defined
+                  recipes
   $ serve         Build the site for production and serve locally. This does
                   not watch the code for changes, so if you need to rebuild
                   your site then you must exit and run \`serve\` again.

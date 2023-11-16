@@ -1,15 +1,13 @@
- 
 import { existsSync } from 'fs'
 import { join, relative, resolve } from 'path'
 import process from 'process'
 import { format } from 'util'
 
 import { DefaultLogger, Project } from '@netlify/build-info'
-// eslint-disable-next-line import/extensions, n/no-missing-import
 import { NodeFS, NoopLogger } from '@netlify/build-info/node'
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module '@net... Remove this comment to see the full error message
 import { resolveConfig } from '@netlify/config'
-import { Command, Option } from 'commander'
+import { Command, Help, Option } from 'commander'
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'debu... Remove this comment to see the full error message
 import debug from 'debug'
 import { findUp } from 'find-up'
@@ -129,6 +127,13 @@ async function selectWorkspace(project, filter) {
     return result
   }
   return selected.path
+}
+
+async function getRepositoryRoot(cwd?: string): Promise<string | undefined> {
+  const res = await findUp('.git', { cwd, type: 'directory' })
+  if (res) {
+    return join(res, '..')
+  }
 }
 
 /** Base command class that provides tracking and config initialization */
@@ -267,33 +272,26 @@ export default class BaseCommand extends Command {
       return padLeft(term, HELP_INDENT_WIDTH)
     }
 
-    /**
-     * @param {BaseCommand} command
-     */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'command' implicitly has an 'any' type.
-    const getCommands = (command) => {
+    // eslint-disable-next-line unicorn/consistent-function-scoping
+    const getCommands = (command: BaseCommand) => {
       const parentCommand = this.name() === 'netlify' ? command : command.parent
       return (
-        // @ts-expect-error TS(7006) FIXME: Parameter 'cmd' implicitly has an 'any' type.
-        parentCommand?.commands.filter((cmd) => {
-          if (cmd._hidden) return false
-          // the root command
-          if (this.name() === 'netlify') {
-            // don't include subcommands on the main page
-            return !cmd.name().includes(':')
-          }
-          return cmd.name().startsWith(`${command.name()}:`)
-        }) || []
+        parentCommand?.commands
+          .filter((cmd) => {
+            if ((cmd as any)._hidden) return false
+            // the root command
+            if (this.name() === 'netlify') {
+              // don't include subcommands on the main page
+              return !cmd.name().includes(':')
+            }
+            return cmd.name().startsWith(`${command.name()}:`)
+          })
+          // eslint-disable-next-line id-length
+          .sort((a, b) => a.name().localeCompare(b.name())) || []
       )
     }
 
-    /**
-     * override the longestSubcommandTermLength
-     * @param {BaseCommand} command
-     * @returns {number}
-     */
-    help.longestSubcommandTermLength = (command) =>
-      // @ts-expect-error TS(7006) FIXME: Parameter 'max' implicitly has an 'any' type.
+    help.longestSubcommandTermLength = (command: BaseCommand): number =>
       getCommands(command).reduce((max, cmd) => Math.max(max, cmd.name().length), 0)
 
     /**
@@ -308,13 +306,7 @@ export default class BaseCommand extends Command {
         helper.visibleOptions(command).reduce((max, option) => Math.max(max, helper.optionTerm(option).length), 0)) ||
       0
 
-    /**
-     * override the format help function to style it correctly
-     * @param {BaseCommand} command
-     * @param {import('commander').Help} helper
-     * @returns {string}
-     */
-    help.formatHelp = (command, helper) => {
+    help.formatHelp = (command: BaseCommand, helper: Help): string => {
       const parentCommand = this.name() === 'netlify' ? command : command.parent
       const termWidth = helper.padWidth(command, helper)
       const helpWidth = helper.helpWidth || FALLBACK_HELP_CMD_WIDTH
@@ -367,7 +359,6 @@ export default class BaseCommand extends Command {
         output = [...output, chalk.bold('ARGUMENTS'), formatHelpList(argumentList), '']
       }
 
-      // @ts-expect-error TS(2551) FIXME: Property 'noBaseOptions' does not exist on type 'C... Remove this comment to see the full error message
       if (command.noBaseOptions === false) {
         // Options
         const optionList = helper
@@ -393,18 +384,15 @@ export default class BaseCommand extends Command {
         output = [...output, chalk.bold('ALIASES'), formatHelpList(aliases), '']
       }
 
-      // @ts-expect-error TS(2339) FIXME: Property 'examples' does not exist on type 'Comman... Remove this comment to see the full error message
       if (command.examples.length !== 0) {
         output = [
           ...output,
           chalk.bold('EXAMPLES'),
-          // @ts-expect-error TS(2339) FIXME: Property 'examples' does not exist on type 'Comman... Remove this comment to see the full error message
           formatHelpList(command.examples.map((example) => `${HELP_$} ${example}`)),
           '',
         ]
       }
 
-      // @ts-expect-error TS(7006) FIXME: Parameter 'cmd' implicitly has an 'any' type.
       const commandList = getCommands(command).map((cmd) =>
         formatItem(cmd.name(), helper.subcommandDescription(cmd).split('\n')[0], true),
       )
@@ -448,13 +436,7 @@ export default class BaseCommand extends Command {
     }
   }
 
-  /**
-   *
-   * @param {string|undefined} tokenFromFlag
-   * @returns
-   */
-  // @ts-expect-error TS(7006) FIXME: Parameter 'tokenFromFlag' implicitly has an 'any' ... Remove this comment to see the full error message
-  async authenticate(tokenFromFlag) {
+  async authenticate(tokenFromFlag?: string) {
     const [token] = await getToken(tokenFromFlag)
     if (token) {
       return token
@@ -553,7 +535,6 @@ export default class BaseCommand extends Command {
     // ==================================================
 
     // retrieve the repository root
-    // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
     const rootDir = await getRepositoryRoot()
     // Get framework, add to analytics payload for every command, if a framework is set
     const fs = new NodeFS()
@@ -778,19 +759,5 @@ export default class BaseCommand extends Command {
    */
   getDefaultContext() {
     return this.name() === 'serve' ? 'production' : 'dev'
-  }
-}
-
-/**
- * Retrieves the repository root through a git command.
- * Returns undefined if not a git project.
- * @param {string} [cwd] The optional current working directory
- * @returns {Promise<string|undefined>}
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'cwd' implicitly has an 'any' type.
-async function getRepositoryRoot(cwd) {
-  const res = await findUp('.git', { cwd, type: 'directory' })
-  if (res) {
-    return join(res, '..')
   }
 }
