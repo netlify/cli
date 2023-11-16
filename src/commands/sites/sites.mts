@@ -4,12 +4,10 @@ import { OptionValues , InvalidArgumentError } from 'commander'
 import BaseCommand from '../base-command.mjs'
 
 import { createSitesDeleteCommand } from './sites-delete.mjs'
-import { createSitesListCommand } from './sites-list.mjs'
 
 const MAX_SITE_NAME_LENGTH = 63
+
 // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
-
-
 const validateName = function (value) {
   // netlify sites:create --name <A string of more than 63 words>
   if (typeof value === 'string' && value.length > MAX_SITE_NAME_LENGTH) {
@@ -68,7 +66,16 @@ Create a site from a starter template.`,
       await sitesCreateTemplate(repository, options, command)
     })
 
-  createSitesListCommand(program)
+    program
+    .command('sites:list')
+    .description('List all sites you have access to')
+    .option('--json', 'Output site data as JSON')
+    .action(async (options: OptionValues, command: BaseCommand) => {
+      const {sitesList} = await import('./sites-list.mjs')
+      await sitesList(options, command)
+    })
+
+
   createSitesDeleteCommand(program)
 
   return program

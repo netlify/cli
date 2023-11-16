@@ -1,16 +1,13 @@
- 
+
+import { OptionValues } from 'commander'
+
 import { listSites } from '../../lib/api.mjs'
 import { startSpinner, stopSpinner } from '../../lib/spinner.mjs'
 import { chalk, log, logJson } from '../../utils/command-helpers.mjs'
+import BaseCommand from '../base-command.mjs'
 
-/**
- * The sites:list command
- * @param {import('commander').OptionValues} options
- * @param {import('../base-command.mjs').default} command
- * @returns {Promise<{ id: any; name: any; ssl_url: any; account_name: any; }|boolean>}
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
-const sitesList = async (options, command) => {
+
+export const sitesList = async (options: OptionValues, command: BaseCommand) => {
   const { api } = command.netlify
   /** @type {import('ora').Ora} */
   let spinner
@@ -78,18 +75,3 @@ Count: ${logSites.length}
     })
   }
 }
-
-/**
- * Creates the `netlify sites:list` command
- * @param {import('../base-command.mjs').default} program
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'program' implicitly has an 'any' type.
-export const createSitesListCommand = (program) =>
-  program
-    .command('sites:list')
-    .description('List all sites you have access to')
-    .option('--json', 'Output site data as JSON')
-    // @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
-    .action(async (options, command) => {
-      await sitesList(options, command)
-    })
