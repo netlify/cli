@@ -2,9 +2,9 @@
 import { OptionValues } from 'commander'
 
 import { chalk } from '../../utils/command-helpers.mjs'
+import requiresSiteInfo from '../../utils/hooks/requires-site-info.mjs'
 import BaseCommand from '../base-command.mjs'
 
-import { createFunctionsListCommand } from './functions-list.mjs'
 import { createFunctionsServeCommand } from './functions-serve.mjs'
 
 const functions = (options: OptionValues, command: BaseCommand) => {
@@ -79,7 +79,23 @@ export const createFunctionsCommand = (program: BaseCommand) => {
     })
 
 
-  createFunctionsListCommand(program)
+    program
+    .command('functions:list')
+    .alias('function:list')
+    .description(
+      `List functions that exist locally
+Helpful for making sure that you have formatted your functions correctly
+
+NOT the same as listing the functions that have been deployed. For that info you need to go to your Netlify deploy log.`,
+    )
+    .option('-f, --functions <dir>', 'Specify a functions directory to list')
+    .option('--json', 'Output function data as JSON')
+    .hook('preAction', requiresSiteInfo)
+    .action(async(options: OptionValues, command: BaseCommand) => {
+      const { functionsList } = await import('./functions-list.mjs')
+      await functionsList(options, command)
+    })
+
   createFunctionsServeCommand(program)
 
   const name = chalk.greenBright('`functions`')
