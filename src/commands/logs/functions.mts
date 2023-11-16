@@ -30,7 +30,7 @@ function getLog(logData: { level: string; message: string }) {
  * @param {import('commander').OptionValues} options
  * @param {import('../base-command.mjs').default} command
  */
-const logsFunction = async (functionName: string, options: OptionValues, command: BaseCommand) => {
+const logsFunction = async (functionName: string | undefined, options: OptionValues, command: BaseCommand) => {
   const client = command.netlify.api
   const { site } = command.netlify
   const { id: siteId } = site

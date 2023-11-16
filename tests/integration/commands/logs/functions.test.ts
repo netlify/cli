@@ -1,14 +1,10 @@
-import execa from 'execa'
 import { Mock, afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 
 import BaseCommand from '../../../../src/commands/base-command.mjs'
 import { createLogsFunctionCommand } from '../../../../src/commands/logs/functions.mjs'
 import { getWebSocket } from '../../../../src/utils/websockets/index.mjs'
-import { cliPath } from '../../utils/cli-path.mjs'
-import { Fixture, FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
-import { CONFIRM, handleQuestions } from '../../utils/handle-questions.mjs'
-import { startMockApi } from '../../utils/mock-api-vitest.js'
-import { getCLIOptions, getEnvironmentVariables, withMockApi } from '../../utils/mock-api.mjs'
+import { startMockApi } from '../../utils/mock-api-vitest.ts'
+import { getEnvironmentVariables } from '../../utils/mock-api.mjs'
 
 vi.mock('../../../../src/utils/websockets/index.mjs', () => ({
   getWebSocket: vi.fn(),
@@ -59,10 +55,6 @@ const routes = [
 ]
 
 describe('logs:function command', () => {
-  //   beforeEach(() => {
-  //     vi.resetModules()
-  //     vi.clearAllMocks()
-  //   })
   let program: BaseCommand
 
   afterEach(() => {

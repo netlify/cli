@@ -21,6 +21,7 @@ const blobsList = async (storeName: string, options: Options, command: any) => {
 
   try {
     const { blobs, directories } = await store.list({
+      // @ts-expect-error TS(2769)
       directories: Boolean(options.directories),
       prefix: options.prefix,
     })

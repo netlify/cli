@@ -52,6 +52,7 @@ const navOrder = [
   'lm',
   'login',
   'logout',
+  'logs',
   'open',
   'recipes',
   'serve',
