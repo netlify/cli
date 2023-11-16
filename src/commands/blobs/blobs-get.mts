@@ -2,15 +2,13 @@ import { promises as fs } from 'fs'
 import { resolve } from 'path'
 
 import { getStore } from '@netlify/blobs'
+import { OptionValues } from 'commander'
 
 import { chalk, error as printError } from '../../utils/command-helpers.mjs'
-import requiresSiteInfo from '../../utils/hooks/requires-site-info.mjs'
+import BaseCommand from '../base-command.mjs'
 
-interface Options {
-  output?: string
-}
 
-const blobsGet = async (storeName: string, key: string, options: Options, command: any) => {
+export const blobsGet = async (storeName: string, key: string, options: OptionValues, command: BaseCommand) => {
   const { api, siteInfo } = command.netlify
   const { output } = options
   const store = getStore({
@@ -40,19 +38,3 @@ const blobsGet = async (storeName: string, key: string, options: Options, comman
     console.log(blob)
   }
 }
-
-/**
- * Creates the `netlify blobs:get` command
- */
-export const createBlobsGetCommand = (program: any) =>
-  program
-    .command('blobs:get')
-    .description(
-      `(Beta) Reads an object with a given key from a Netlify Blobs store and, if it exists, prints the content to the terminal or saves it to a file`,
-    )
-    .argument('<store>', 'Name of the store')
-    .argument('<key>', 'Object key')
-    .option('-o, --output <path>', 'Defines the filesystem path where the blob data should be persisted')
-    .alias('blob:get')
-    .hook('preAction', requiresSiteInfo)
-    .action(blobsGet)
