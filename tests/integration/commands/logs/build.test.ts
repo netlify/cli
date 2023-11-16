@@ -1,7 +1,7 @@
 import { Mock, afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 
 import BaseCommand from '../../../../src/commands/base-command.mjs'
-import { createLogsBuildCommand } from '../../../../src/commands/logs/build.mjs'
+import { createLogsBuildCommand } from '../../../../src/commands/logs/index.mjs'
 import { getWebSocket } from '../../../../src/utils/websockets/index.mjs'
 import { startMockApi } from '../../utils/mock-api-vitest.js'
 import { getEnvironmentVariables } from '../../utils/mock-api.mjs'
