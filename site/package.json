@@ -18,9 +18,9 @@
     "build:docs": "node scripts/docs.mjs",
     "build:site": "npm run sync && x0 build src",
     "start:site": "x0 src",
-    "start:watch": "node ./watch.js",
-    "watch": "node ./watch.js",
-    "sync": "node ./sync.js",
+    "start:watch": "node ./watch.mjs",
+    "watch": "node ./watch.mjs",
+    "sync": "node ./sync.mjs",
     "clean": "rm -rf dist"
   },
   "license": "MIT",
