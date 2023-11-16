@@ -1,13 +1,13 @@
 import ansiEscapes from 'ansi-escapes'
-
 import AsciiTable from 'ascii-table'
 import { isCI } from 'ci-info'
-import { Option } from 'commander'
+import { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 import logUpdate from 'log-update'
 
 import { chalk, error, log, logJson } from '../../utils/command-helpers.mjs'
-import { AVAILABLE_CONTEXTS, getEnvelopeEnv, getHumanReadableScopes, normalizeContext } from '../../utils/env/index.mjs'
+import { AVAILABLE_CONTEXTS, getEnvelopeEnv, getHumanReadableScopes } from '../../utils/env/index.mjs'
+import BaseCommand from '../base-command.mjs'
 
 const MASK_LENGTH = 50
 const MASK = '*'.repeat(MASK_LENGTH)
@@ -34,14 +34,7 @@ const getTable = ({ environment, hideValues, scopesColumn }) => {
   return table.toString()
 }
 
-/**
- * The env:list command
- * @param {import('commander').OptionValues} options
- * @param {import('../base-command.mjs').default} command
- * @returns {Promise<boolean>}
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
-const envList = async (options, command) => {
+export const envList = async (options: OptionValues, command: BaseCommand) => {
   const { context, scope } = options
   const { api, cachedConfig, site } = command.netlify
   const siteId = site.id
@@ -126,38 +119,3 @@ const envList = async (options, command) => {
     log(`${chalk.cyan('?')} Show values? ${chalk.cyan('Yes')}`)
   }
 }
-
-/**
- * Creates the `netlify env:list` command
- * @param {import('../base-command.mjs').default} program
- * @returns
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'program' implicitly has an 'any' type.
-export const createEnvListCommand = (program) =>
-  program
-    .command('env:list')
-    .option(
-      '-c, --context <context>',
-      'Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev")',
-      normalizeContext,
-      'dev',
-    )
-    .option('--json', 'Output environment variables as JSON')
-    .addOption(new Option('--plain', 'Output environment variables as plaintext').conflicts('json'))
-    .addOption(
-      new Option('-s, --scope <scope>', 'Specify a scope')
-        .choices(['builds', 'functions', 'post-processing', 'runtime', 'any'])
-        .default('any'),
-    )
-    .addExamples([
-      'netlify env:list # list variables with values in the dev context and with any scope',
-      'netlify env:list --context production',
-      'netlify env:list --context branch:staging',
-      'netlify env:list --scope functions',
-      'netlify env:list --plain',
-    ])
-    .description('Lists resolved environment variables for site (includes netlify.toml)')
-    // @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
-    .action(async (options, command) => {
-      await envList(options, command)
-    })

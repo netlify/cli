@@ -5,7 +5,6 @@ import {  normalizeContext } from '../../utils/env/index.mjs'
 import BaseCommand from '../base-command.mjs'
 
 import { createEnvCloneCommand } from './env-clone.mjs'
-import { createEnvListCommand } from './env-list.mjs'
 import { createEnvSetCommand } from './env-set.mjs'
 import { createEnvUnsetCommand } from './env-unset.mjs'
 
@@ -63,7 +62,33 @@ export const createEnvCommand = (program: BaseCommand) => {
       await envImport(fileName, options, command)
     })
 
-  createEnvListCommand(program)
+    program
+    .command('env:list')
+    .option(
+      '-c, --context <context>',
+      'Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev")',
+      normalizeContext,
+      'dev',
+    )
+    .option('--json', 'Output environment variables as JSON')
+    .addOption(new Option('--plain', 'Output environment variables as plaintext').conflicts('json'))
+    .addOption(
+      new Option('-s, --scope <scope>', 'Specify a scope')
+        .choices(['builds', 'functions', 'post-processing', 'runtime', 'any'])
+        .default('any'),
+    )
+    .addExamples([
+      'netlify env:list # list variables with values in the dev context and with any scope',
+      'netlify env:list --context production',
+      'netlify env:list --context branch:staging',
+      'netlify env:list --scope functions',
+      'netlify env:list --plain',
+    ])
+    .description('Lists resolved environment variables for site (includes netlify.toml)')
+    .action(async (options: OptionValues, command: BaseCommand) => {
+      const {envList} = await import('./env-list.mjs')
+      await envList(options, command)
+    })
   createEnvSetCommand(program)
   createEnvUnsetCommand(program)
   createEnvCloneCommand(program)
