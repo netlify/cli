@@ -47,7 +47,7 @@
     "test": "run-s format test:dev",
     "format": "run-s format:check-fix:*",
     "format:ci": "run-s format:check:*",
-    "format:check-fix:lint": "run-e format:check:lint format:fix:lint",
+    "format:check-fix:lint": "run-s format:check:lint format:fix:lint",
     "format:check:lint": "cross-env-shell eslint $npm_package_config_eslint",
     "format:fix:lint": "cross-env-shell eslint --fix $npm_package_config_eslint",
     "format:check-fix:prettier": "run-e format:check:prettier format:fix:prettier",
