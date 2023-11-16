@@ -2,7 +2,7 @@ import { OptionValues, Argument } from 'commander'
 
 import BaseCommand from '../base-command.mjs'
 
-export const createLogsCommand = (program: BaseCommand) => {
+export const createLogsBuildCommand = (program: BaseCommand) => {
   program
   .command('logs:deploy')
   .alias('logs:build')
@@ -11,7 +11,9 @@ export const createLogsCommand = (program: BaseCommand) => {
     const { logsBuild } = await import('./build.mjs')
     await logsBuild(options, command)
   })
+}
 
+export const createLogsFunctionCommand = (program: BaseCommand) => {
   program
     .command('logs:function')
     .alias('logs:functions')
@@ -22,6 +24,13 @@ export const createLogsCommand = (program: BaseCommand) => {
       const { logsFunction } = await import('./functions.mjs')
       await logsFunction(functionName, options, command)
     })
+ }
+
+export const createLogsCommand = (program: BaseCommand) => {
+
+  createLogsBuildCommand(program)
+
+  createLogsFunctionCommand(program)
 
   return program
     .command('logs')
