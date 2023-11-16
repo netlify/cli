@@ -1,6 +1,6 @@
 import { test } from 'vitest'
 
-import { DependencyGraph } from '../project-graph/index.mjs'
+import { DependencyGraph } from '../project-graph/index.js'
 
 /** @type {DependencyGraph} */
 let graph

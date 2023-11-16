@@ -6,10 +6,10 @@ import { copy } from 'fs-extra'
 import { temporaryDirectory } from 'tempy'
 import { afterAll, afterEach, beforeAll, beforeEach, describe } from 'vitest'
 
-import { callCli } from './call-cli.mjs'
-import { startDevServer } from './dev-server.mjs'
+import { callCli } from './call-cli.js'
+import { startDevServer } from './dev-server.js'
 import { MockApi, Route, getCLIOptions, startMockApi } from './mock-api-vitest.js'
-import { SiteBuilder } from './site-builder.mjs'
+import { SiteBuilder } from './site-builder.js'
 
 const FIXTURES_DIRECTORY = fileURLToPath(new URL('../__fixtures__/', import.meta.url))
 const HOOK_TIMEOUT = 30_000

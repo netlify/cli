@@ -5,8 +5,8 @@ import glob from 'fast-glob'
 import mock from 'mock-fs'
 import { stub, createSandbox } from 'sinon'
 
-import { simpleMockedFileSystem } from './utils/file-systems.mjs'
-import { getAffectedFiles } from '../affected-test.mjs'
+import { simpleMockedFileSystem } from './utils/file-systems.js'
+import { getAffectedFiles } from '../affected-test.js'
 
 /**
  * Get a list of affected files for a mocked file system

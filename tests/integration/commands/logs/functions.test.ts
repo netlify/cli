@@ -1,12 +1,12 @@
 import { Mock, afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 
-import BaseCommand from '../../../../src/commands/base-command.mjs'
-import { createLogsFunctionCommand } from '../../../../src/commands/logs/functions.mjs'
-import { getWebSocket } from '../../../../src/utils/websockets/index.mjs'
+import BaseCommand from '../../../../src/commands/base-command.js'
+import { createLogsFunctionCommand } from '../../../../src/commands/logs/functions.js'
+import { getWebSocket } from '../../../../src/utils/websockets/index.js'
 import { startMockApi } from '../../utils/mock-api-vitest.ts'
-import { getEnvironmentVariables } from '../../utils/mock-api.mjs'
+import { getEnvironmentVariables } from '../../utils/mock-api.js'
 
-vi.mock('../../../../src/utils/websockets/index.mjs', () => ({
+vi.mock('../../../../src/utils/websockets/index.js', () => ({
   getWebSocket: vi.fn(),
 }))
 

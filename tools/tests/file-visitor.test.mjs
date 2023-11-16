@@ -4,10 +4,10 @@ import { format } from 'util'
 import { test } from 'vitest'
 import mock, { restore } from 'mock-fs'
 
-import snapshots from '../../tests/integration/utils/snapshots.mjs'
-import { DependencyGraph, fileVisitor } from '../project-graph/index.mjs'
+import snapshots from '../../tests/integration/utils/snapshots.js'
+import { DependencyGraph, fileVisitor } from '../project-graph/index.js'
 
-import { simpleMockedFileSystem } from './utils/file-systems.mjs'
+import { simpleMockedFileSystem } from './utils/file-systems.js'
 
 test.before(() => {
   mock(simpleMockedFileSystem)
