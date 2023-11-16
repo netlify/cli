@@ -3,7 +3,6 @@ import { OptionValues , InvalidArgumentError } from 'commander'
 
 import BaseCommand from '../base-command.mjs'
 
-import { createSitesFromTemplateCommand } from './sites-create-template.mjs'
 import { createSitesDeleteCommand } from './sites-delete.mjs'
 import { createSitesListCommand } from './sites-list.mjs'
 
@@ -47,7 +46,28 @@ Create a blank site that isn't associated with any git remote. Will link the sit
   })
 
 
-  createSitesFromTemplateCommand(program)
+  program
+    .command('sites:create-template')
+    .description(
+      `(Beta) Create a site from a starter template
+Create a site from a starter template.`,
+    )
+    .option('-n, --name [name]', 'name of site')
+    .option('-u, --url [url]', 'template url')
+    .option('-a, --account-slug [slug]', 'account slug to create the site under')
+    .option('-c, --with-ci', 'initialize CI hooks during site creation')
+    .argument('[repository]', 'repository to use as starter template')
+    .addHelpText('after', `(Beta) Create a site from starter template.`)
+    .addExamples([
+      'netlify sites:create-template',
+      'netlify sites:create-template nextjs-blog-theme',
+      'netlify sites:create-template my-github-profile/my-template',
+    ])
+    .action(async (repository: string, options: OptionValues, command: BaseCommand) => {
+      const { sitesCreateTemplate } = await import('./sites-create-template.mjs')
+      await sitesCreateTemplate(repository, options, command)
+    })
+
   createSitesListCommand(program)
   createSitesDeleteCommand(program)
 
