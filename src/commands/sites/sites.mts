@@ -19,6 +19,30 @@ const sites = (options: OptionValues, command: BaseCommand) => {
   command.help()
 }
 
+export const createSitesFromTemplateCommand = (program: BaseCommand) => {
+  program
+    .command('sites:create-template')
+    .description(
+      `(Beta) Create a site from a starter template
+Create a site from a starter template.`,
+    )
+    .option('-n, --name [name]', 'name of site')
+    .option('-u, --url [url]', 'template url')
+    .option('-a, --account-slug [slug]', 'account slug to create the site under')
+    .option('-c, --with-ci', 'initialize CI hooks during site creation')
+    .argument('[repository]', 'repository to use as starter template')
+    .addHelpText('after', `(Beta) Create a site from starter template.`)
+    .addExamples([
+      'netlify sites:create-template',
+      'netlify sites:create-template nextjs-blog-theme',
+      'netlify sites:create-template my-github-profile/my-template',
+    ])
+    .action(async (repository: string, options: OptionValues, command: BaseCommand) => {
+      const { sitesCreateTemplate } = await import('./sites-create-template.mjs')
+      await sitesCreateTemplate(repository, options, command)
+    })
+}
+
 
 export const createSitesCommand = (program: BaseCommand) => {
   program
@@ -41,28 +65,7 @@ Create a blank site that isn't associated with any git remote. Will link the sit
     await sitesCreate(options, command)
   })
 
-
-  program
-    .command('sites:create-template')
-    .description(
-      `(Beta) Create a site from a starter template
-Create a site from a starter template.`,
-    )
-    .option('-n, --name [name]', 'name of site')
-    .option('-u, --url [url]', 'template url')
-    .option('-a, --account-slug [slug]', 'account slug to create the site under')
-    .option('-c, --with-ci', 'initialize CI hooks during site creation')
-    .argument('[repository]', 'repository to use as starter template')
-    .addHelpText('after', `(Beta) Create a site from starter template.`)
-    .addExamples([
-      'netlify sites:create-template',
-      'netlify sites:create-template nextjs-blog-theme',
-      'netlify sites:create-template my-github-profile/my-template',
-    ])
-    .action(async (repository: string, options: OptionValues, command: BaseCommand) => {
-      const { sitesCreateTemplate } = await import('./sites-create-template.mjs')
-      await sitesCreateTemplate(repository, options, command)
-    })
+    createSitesFromTemplateCommand(program)
 
     program
     .command('sites:list')
