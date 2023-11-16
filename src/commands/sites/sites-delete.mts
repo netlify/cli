@@ -1,16 +1,12 @@
- 
+
+import { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 
 import { chalk, error, exit, log } from '../../utils/command-helpers.mjs'
+import BaseCommand from '../base-command.mjs'
 
-/**
- * The sites:delete command
- * @param {string} siteId
- * @param {import('commander').OptionValues} options
- * @param {import('../base-command.mjs').default} command
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'siteId' implicitly has an 'any' type.
-const sitesDelete = async (siteId, options, command) => {
+
+export const sitesDelete = async (siteId: string, options: OptionValues, command: BaseCommand) => {
   command.setAnalyticsPayload({ force: options.force })
 
   const { api, site } = command.netlify
@@ -90,18 +86,3 @@ const sitesDelete = async (siteId, options, command) => {
   }
   log(`Site "${siteId}" successfully deleted!`)
 }
-
-/**
- * Creates the `netlify sites:delete` command
- * @param {import('../base-command.mjs').default} program
- * @returns
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'program' implicitly has an 'any' type.
-export const createSitesDeleteCommand = (program) =>
-  program
-    .command('sites:delete')
-    .description('Delete a site\nThis command will permanently delete the site on Netlify. Use with caution.')
-    .argument('<siteId>', 'Site ID to delete.')
-    .option('-f, --force', 'delete without prompting (useful for CI)')
-    .addExamples(['netlify sites:delete 1234-3262-1211'])
-    .action(sitesDelete)

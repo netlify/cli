@@ -3,8 +3,6 @@ import { OptionValues , InvalidArgumentError } from 'commander'
 
 import BaseCommand from '../base-command.mjs'
 
-import { createSitesDeleteCommand } from './sites-delete.mjs'
-
 const MAX_SITE_NAME_LENGTH = 63
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
@@ -75,8 +73,16 @@ Create a site from a starter template.`,
       await sitesList(options, command)
     })
 
-
-  createSitesDeleteCommand(program)
+    program
+    .command('sites:delete')
+    .description('Delete a site\nThis command will permanently delete the site on Netlify. Use with caution.')
+    .argument('<siteId>', 'Site ID to delete.')
+    .option('-f, --force', 'delete without prompting (useful for CI)')
+    .addExamples(['netlify sites:delete 1234-3262-1211'])
+    .action(async (siteId: string, options: OptionValues, command: BaseCommand) => {
+      const { sitesDelete } = await import('./sites-delete.mjs')
+      await sitesDelete(siteId, options, command)
+    })
 
   return program
     .command('sites')
