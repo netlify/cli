@@ -33,7 +33,8 @@ COMMANDS
   $ status        Print status information
   $ switch        Switch your active Netlify account
   $ unlink        Unlink a local folder from a Netlify site
-  $ watch         Watch for site deploy to finish"
+  $ watch         Watch for site deploy to finish
+  $ logs          Stream logs from your site"
 `;
 
 exports[`help command > netlify help completion 1`] = `
