@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "17.3.2",
+  "version": "17.4.0",
   "author": "Netlify Inc.",
   "type": "module",
   "engines": {
@@ -43,6 +43,7 @@
     "prepare": "is-ci || husky install node_modules/@netlify/eslint-config-node/.husky/",
     "start": "node ./bin/run.mjs",
     "build": "tsc",
+    "dev": "tsc --watch",
     "test": "run-s format test:dev",
     "format": "run-s format:check-fix:*",
     "format:ci": "run-s format:check:*",
@@ -80,7 +81,7 @@
   "dependencies": {
     "@bugsnag/js": "7.20.2",
     "@fastify/static": "6.10.2",
-    "@netlify/blobs": "4.0.0",
+    "@netlify/blobs": "6.3.0",
     "@netlify/build": "29.26.6",
     "@netlify/build-info": "7.11.1",
     "@netlify/config": "20.10.0",
@@ -195,8 +196,10 @@
     "@netlify/functions": "2.0.2",
     "@types/fs-extra": "11.0.1",
     "@types/inquirer": "9.0.7",
+    "@types/node": "20.9.0",
     "@types/prettyjson": "0.0.30",
     "@types/semver": "7.5.0",
+    "@types/uuid": "9.0.7",
     "@vitest/coverage-v8": "1.0.0-beta.4",
     "c8": "7.14.0",
     "eslint-plugin-sort-destructure-keys": "1.5.0",

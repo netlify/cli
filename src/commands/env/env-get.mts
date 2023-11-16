@@ -1,4 +1,3 @@
- 
 import { Option } from 'commander'
 
 import { chalk, error, log, logJson } from '../../utils/command-helpers.mjs'
@@ -39,7 +38,6 @@ const envGet = async (name, options, command) => {
 
   // Return json response for piping commands
   if (options.json) {
-    // @ts-expect-error TS(2345) FIXME: Argument of type '{ [x: number]: any; }' is not as... Remove this comment to see the full error message
     logJson(value ? { [name]: value } : {})
     return false
   }

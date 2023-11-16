@@ -143,7 +143,7 @@ export const createHandler = function (options) {
       'client-ip': [remoteAddress],
       'x-nf-client-connection-ip': [remoteAddress],
       'x-nf-account-id': [options.accountId],
-      'x-nf-site-id': [options?.siteInfo?.id],
+      'x-nf-site-id': [options?.siteInfo?.id] ?? 'unlinked',
       [efHeaders.Geo]: Buffer.from(JSON.stringify(geoLocation)).toString('base64'),
     }).reduce((prev, [key, value]) => ({ ...prev, [key]: Array.isArray(value) ? value : [value] }), {})
     const rawQuery = new URLSearchParams(requestQuery).toString()

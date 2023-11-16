@@ -1,10 +1,8 @@
- 
 import process from 'process'
 
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'node... Remove this comment to see the full error message
 import fetch from 'node-fetch'
 import pWaitFor from 'p-wait-for'
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'uuid... Remove this comment to see the full error message
 import { v4 as uuidv4 } from 'uuid'
 
 import { fetchLatestVersion, shouldFetchLatestVersion } from '../lib/exec-fetcher.mjs'
