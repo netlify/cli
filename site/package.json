@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Docs site for Netlify CLI",
   "private": true,
-  "type": "commonjs",
+  "type": "module",
   "author": "Netlify Inc.",
   "files": [
     "/src",
