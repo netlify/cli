@@ -268,20 +268,21 @@ export default class BaseCommand extends Command {
     /**
      * @param {BaseCommand} command
      */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'command' implicitly has an 'any' type.
-    const getCommands = (command) => {
+    const getCommands = (command: Command) => {
       const parentCommand = this.name() === 'netlify' ? command : command.parent
       return (
-        // @ts-expect-error TS(7006) FIXME: Parameter 'cmd' implicitly has an 'any' type.
-        parentCommand?.commands.filter((cmd) => {
-          if (cmd._hidden) return false
-          // the root command
-          if (this.name() === 'netlify') {
-            // don't include subcommands on the main page
-            return !cmd.name().includes(':')
-          }
-          return cmd.name().startsWith(`${command.name()}:`)
-        }) || []
+        parentCommand?.commands
+          .filter((cmd) => {
+            if ((cmd as any)._hidden) return false
+            // the root command
+            if (this.name() === 'netlify') {
+              // don't include subcommands on the main page
+              return !cmd.name().includes(':')
+            }
+            return cmd.name().startsWith(`${command.name()}:`)
+          })
+          // eslint-disable-next-line id-length
+          .sort((a, b) => a.name().localeCompare(b.name())) || []
       )
     }
 
