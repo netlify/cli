@@ -1,5 +1,5 @@
- 
-import { Option } from 'commander'
+
+import { Option, OptionValues } from 'commander'
 import inquirer from 'inquirer'
 import isEmpty from 'lodash/isEmpty.js'
 
@@ -8,6 +8,7 @@ import getRepoData from '../../utils/get-repo-data.mjs'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.mjs'
 import { configureRepo } from '../../utils/init/config.mjs'
 import { track } from '../../utils/telemetry/index.mjs'
+import BaseCommand from '../base-command.mjs'
 import { link } from '../link/index.mjs'
 import { sitesCreate } from '../sites/index.mjs'
 
@@ -181,13 +182,7 @@ const logExistingRepoSetupAndExit = ({ repoUrl, siteName }) => {
   exit()
 }
 
-/**
- * The init command
- * @param {import('commander').OptionValues} options
- * @param {import('../base-command.mjs').default} command
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
-export const init = async (options, command) => {
+export const init = async (options: OptionValues, command: BaseCommand) => {
   command.setAnalyticsPayload({ manual: options.manual, force: options.force })
 
   const { repositoryRoot, state } = command.netlify
@@ -228,26 +223,3 @@ export const init = async (options, command) => {
 
   return siteInfo
 }
-
-/**
- * Creates the `netlify init` command
- * @param {import('../base-command.mjs').default} program
- * @returns
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'program' implicitly has an 'any' type.
-export const createInitCommand = (program) =>
-  program
-    .command('init')
-    .description(
-      'Configure continuous deployment for a new or existing site. To create a new site without continuous deployment, use `netlify sites:create`',
-    )
-    .option('-m, --manual', 'Manually configure a git remote for CI')
-    .option('--force', 'Reinitialize CI hooks if the linked site is already configured to use CI')
-    .addOption(
-      new Option(
-        '--gitRemoteName <name>',
-        'Old, prefer --git-remote-name. Name of Git remote to use. e.g. "origin"',
-      ).hideHelp(true),
-    )
-    .option('--git-remote-name <name>', 'Name of Git remote to use. e.g. "origin"')
-    .action(init)
