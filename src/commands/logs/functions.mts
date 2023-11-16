@@ -94,7 +94,7 @@ const logsFunction = async (functionName: string, options: OptionValues, command
 export const createLogsFunctionCommand = (program: BaseCommand) =>
   program
     .command('logs:function')
-    .alias('logs:function')
+    .alias('logs:functions')
     .addArgument(new Argument('[functionName]', 'Name of the function to stream logs for'))
     .addExamples(['netlify logs:function my-function', 'netlify logs:function'])
     .description('(Beta) Stream serverless function logs to the console')
