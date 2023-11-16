@@ -8,8 +8,7 @@ import BaseCommand from '../../../../src/commands/base-command.mjs'
 import {
   fetchTemplates,
 } from '../../../../src/commands/sites/sites-create-template.mjs'
-import { createSitesCreateCommand } from '../../../../src/commands/sites/sites-create.mjs'
-import {
+import { createSitesCreateCommand ,
   createSitesFromTemplateCommand
 } from '../../../../src/commands/sites/sites.mjs'
 import { getGitHubToken } from '../../../../src/utils/init/config-github.mjs'

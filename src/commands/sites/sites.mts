@@ -43,8 +43,7 @@ Create a site from a starter template.`,
     })
 }
 
-
-export const createSitesCommand = (program: BaseCommand) => {
+export const createSitesCreateCommand = (program: BaseCommand) => {
   program
   .command('sites:create')
   .description(
@@ -64,7 +63,12 @@ Create a blank site that isn't associated with any git remote. Will link the sit
     const { sitesCreate } = await import('./sites-create.mjs')
     await sitesCreate(options, command)
   })
+ }
 
+
+export const createSitesCommand = (program: BaseCommand) => {
+
+    createSitesCreateCommand(program)
     createSitesFromTemplateCommand(program)
 
     program
