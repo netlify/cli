@@ -2,8 +2,6 @@ import { OptionValues, Argument } from 'commander'
 
 import BaseCommand from '../base-command.mjs'
 
-import { createLogsFunctionCommand } from './functions.mjs'
-
 export const createLogsCommand = (program: BaseCommand) => {
   program
   .command('logs:deploy')
