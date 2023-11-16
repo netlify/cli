@@ -2,7 +2,6 @@ import { readFile } from 'fs/promises'
 
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'conf... Remove this comment to see the full error message
 import Configstore from 'configstore'
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'uuid... Remove this comment to see the full error message
 import { v4 as uuidv4 } from 'uuid'
 
 import { getLegacyPathInHome, getPathInHome } from '../lib/settings.mjs'

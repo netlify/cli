@@ -80,7 +80,7 @@
   "dependencies": {
     "@bugsnag/js": "7.20.2",
     "@fastify/static": "6.10.2",
-    "@netlify/blobs": "6.2.0",
+    "@netlify/blobs": "^6.3.0",
     "@netlify/build": "29.26.6",
     "@netlify/build-info": "7.11.1",
     "@netlify/config": "20.10.0",
@@ -200,6 +200,7 @@
     "@types/prettyjson": "0.0.30",
     "@types/semver": "7.5.0",
     "@types/ws": "^8.5.9",
+    "@types/uuid": "^9.0.7",
     "@vitest/coverage-v8": "1.0.0-beta.4",
     "c8": "7.14.0",
     "eslint-plugin-sort-destructure-keys": "1.5.0",
