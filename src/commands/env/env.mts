@@ -5,7 +5,6 @@ import {  normalizeContext } from '../../utils/env/index.mjs'
 import BaseCommand from '../base-command.mjs'
 
 import { createEnvCloneCommand } from './env-clone.mjs'
-import { createEnvImportCommand } from './env-import.mjs'
 import { createEnvListCommand } from './env-list.mjs'
 import { createEnvSetCommand } from './env-set.mjs'
 import { createEnvUnsetCommand } from './env-unset.mjs'
@@ -14,7 +13,6 @@ import { createEnvUnsetCommand } from './env-unset.mjs'
 const env = (options: OptionValues, command: BaseCommand) => {
   command.help()
 }
-
 
 export const createEnvCommand = (program: BaseCommand) => {
   program
@@ -43,7 +41,28 @@ export const createEnvCommand = (program: BaseCommand) => {
     await envGet(name, options, command)
   })
 
-  createEnvImportCommand(program)
+  program
+    .command('env:import')
+    .argument('<fileName>', '.env file to import')
+    .addOption(
+      new Option(
+        '-r --replaceExisting',
+        'Old, prefer --replace-existing. Replace all existing variables instead of merging them with the current ones',
+      )
+        .default(false)
+        .hideHelp(true),
+    )
+    .option(
+      '-r, --replace-existing',
+      'Replace all existing variables instead of merging them with the current ones',
+      false,
+    )
+    .description('Import and set environment variables from .env file')
+    .action(async (fileName: string, options: OptionValues, command: BaseCommand) => {
+      const {envImport} = await import('./env-import.mjs')
+      await envImport(fileName, options, command)
+    })
+
   createEnvListCommand(program)
   createEnvSetCommand(program)
   createEnvUnsetCommand(program)

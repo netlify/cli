@@ -1,65 +1,15 @@
- 
+
 import { readFile } from 'fs/promises'
 
- 
+
 import AsciiTable from 'ascii-table'
-import { Option } from 'commander'
+import { OptionValues } from 'commander'
 import dotenv from 'dotenv'
 
 import { exit, log, logJson } from '../../utils/command-helpers.mjs'
 import { translateFromEnvelopeToMongo, translateFromMongoToEnvelope } from '../../utils/env/index.mjs'
+import BaseCommand from '../base-command.mjs'
 
-/**
- * The env:import command
- * @param {string} fileName .env file to import
- * @param {import('commander').OptionValues} options
- * @param {import('../base-command.mjs').default} command
- * @returns {Promise<boolean>}
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'fileName' implicitly has an 'any' type.
-const envImport = async (fileName, options, command) => {
-  const { api, cachedConfig, site } = command.netlify
-  const siteId = site.id
-
-  if (!siteId) {
-    log('No site id found, please run inside a site folder or `netlify link`')
-    return false
-  }
-
-  let importedEnv = {}
-  try {
-    const envFileContents = await readFile(fileName, 'utf-8')
-    importedEnv = dotenv.parse(envFileContents)
-  } catch (error) {
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    log(error.message)
-    exit(1)
-  }
-
-  if (Object.keys(importedEnv).length === 0) {
-    log(`No environment variables found in file ${fileName} to import`)
-    return false
-  }
-
-  const { siteInfo } = cachedConfig
-
-  const importIntoService = siteInfo.use_envelope ? importIntoEnvelope : importIntoMongo
-  const finalEnv = await importIntoService({ api, importedEnv, options, siteInfo })
-
-  // Return new environment variables of site if using json flag
-  if (options.json) {
-    logJson(finalEnv)
-    return false
-  }
-
-  // List newly imported environment variables in a table
-  log(`site: ${siteInfo.name}`)
-  const table = new AsciiTable(`Imported environment variables`)
-
-  table.setHeading('Key', 'Value')
-  table.addRowMatrix(Object.entries(importedEnv))
-  log(table.toString())
-}
 
 /**
  * Updates the imported env in the site record
@@ -128,31 +78,47 @@ const importIntoEnvelope = async ({ api, importedEnv, options, siteInfo }) => {
   }
 }
 
-/**
- * Creates the `netlify env:import` command
- * @param {import('../base-command.mjs').default} program
- * @returns
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'program' implicitly has an 'any' type.
-export const createEnvImportCommand = (program) =>
-  program
-    .command('env:import')
-    .argument('<fileName>', '.env file to import')
-    .addOption(
-      new Option(
-        '-r --replaceExisting',
-        'Old, prefer --replace-existing. Replace all existing variables instead of merging them with the current ones',
-      )
-        .default(false)
-        .hideHelp(true),
-    )
-    .option(
-      '-r, --replace-existing',
-      'Replace all existing variables instead of merging them with the current ones',
-      false,
-    )
-    .description('Import and set environment variables from .env file')
-    // @ts-expect-error TS(7006) FIXME: Parameter 'fileName' implicitly has an 'any' type.
-    .action(async (fileName, options, command) => {
-      await envImport(fileName, options, command)
-    })
+
+export const envImport = async (fileName: string, options: OptionValues, command: BaseCommand) => {
+  const { api, cachedConfig, site } = command.netlify
+  const siteId = site.id
+
+  if (!siteId) {
+    log('No site id found, please run inside a site folder or `netlify link`')
+    return false
+  }
+
+  let importedEnv = {}
+  try {
+    const envFileContents = await readFile(fileName, 'utf-8')
+    importedEnv = dotenv.parse(envFileContents)
+  } catch (error) {
+    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+    log(error.message)
+    exit(1)
+  }
+
+  if (Object.keys(importedEnv).length === 0) {
+    log(`No environment variables found in file ${fileName} to import`)
+    return false
+  }
+
+  const { siteInfo } = cachedConfig
+
+  const importIntoService = siteInfo.use_envelope ? importIntoEnvelope : importIntoMongo
+  const finalEnv = await importIntoService({ api, importedEnv, options, siteInfo })
+
+  // Return new environment variables of site if using json flag
+  if (options.json) {
+    logJson(finalEnv)
+    return false
+  }
+
+  // List newly imported environment variables in a table
+  log(`site: ${siteInfo.name}`)
+  const table = new AsciiTable(`Imported environment variables`)
+
+  table.setHeading('Key', 'Value')
+  table.addRowMatrix(Object.entries(importedEnv))
+  log(table.toString())
+}
