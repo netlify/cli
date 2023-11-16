@@ -1,29 +1,48 @@
- 
+
+import { OptionValues, Option } from 'commander'
+
+import {  normalizeContext } from '../../utils/env/index.mjs'
+import BaseCommand from '../base-command.mjs'
+
 import { createEnvCloneCommand } from './env-clone.mjs'
-import { createEnvGetCommand } from './env-get.mjs'
 import { createEnvImportCommand } from './env-import.mjs'
 import { createEnvListCommand } from './env-list.mjs'
 import { createEnvSetCommand } from './env-set.mjs'
 import { createEnvUnsetCommand } from './env-unset.mjs'
 
-/**
- * The env command
- * @param {import('commander').OptionValues} options
- * @param {import('../base-command.mjs').default} command
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
-const env = (options, command) => {
+
+const env = (options: OptionValues, command: BaseCommand) => {
   command.help()
 }
 
-/**
- * Creates the `netlify env` command
- * @param {import('../base-command.mjs').default} program
- * @returns
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'program' implicitly has an 'any' type.
-export const createEnvCommand = (program) => {
-  createEnvGetCommand(program)
+
+export const createEnvCommand = (program: BaseCommand) => {
+  program
+  .command('env:get')
+  .argument('<name>', 'Environment variable name')
+  .option(
+    '-c, --context <context>',
+    'Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev")',
+    normalizeContext,
+    'dev',
+  )
+  .addOption(
+    new Option('-s, --scope <scope>', 'Specify a scope')
+      .choices(['builds', 'functions', 'post-processing', 'runtime', 'any'])
+      .default('any'),
+  )
+  .addExamples([
+    'netlify env:get MY_VAR # get value for MY_VAR in dev context',
+    'netlify env:get MY_VAR --context production',
+    'netlify env:get MY_VAR --context branch:staging',
+    'netlify env:get MY_VAR --scope functions',
+  ])
+  .description('Get resolved value of specified environment variable (includes netlify.toml)')
+  .action(async (name: string, options: OptionValues, command: BaseCommand) => {
+    const { envGet } = await import('./env-get.mjs')
+    await envGet(name, options, command)
+  })
+
   createEnvImportCommand(program)
   createEnvListCommand(program)
   createEnvSetCommand(program)

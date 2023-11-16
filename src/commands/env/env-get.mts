@@ -1,16 +1,11 @@
-import { Option } from 'commander'
+import { OptionValues } from 'commander'
 
 import { chalk, error, log, logJson } from '../../utils/command-helpers.mjs'
-import { AVAILABLE_CONTEXTS, getEnvelopeEnv, normalizeContext } from '../../utils/env/index.mjs'
+import { AVAILABLE_CONTEXTS, getEnvelopeEnv } from '../../utils/env/index.mjs'
+import BaseCommand from '../base-command.mjs'
 
-/**
- * The env:get command
- * @param {string} name Environment variable name
- * @param {import('commander').OptionValues} options
- * @param {import('../base-command.mjs').default} command
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-const envGet = async (name, options, command) => {
+
+export const envGet = async (name: string, options: OptionValues, command: BaseCommand) => {
   const { context, scope } = options
   const { api, cachedConfig, site } = command.netlify
   const siteId = site.id
@@ -52,36 +47,3 @@ const envGet = async (name, options, command) => {
 
   log(value)
 }
-
-/**
- * Creates the `netlify env:get` command
- * @param {import('../base-command.mjs').default} program
- * @returns
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'program' implicitly has an 'any' type.
-export const createEnvGetCommand = (program) =>
-  program
-    .command('env:get')
-    .argument('<name>', 'Environment variable name')
-    .option(
-      '-c, --context <context>',
-      'Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev")',
-      normalizeContext,
-      'dev',
-    )
-    .addOption(
-      new Option('-s, --scope <scope>', 'Specify a scope')
-        .choices(['builds', 'functions', 'post-processing', 'runtime', 'any'])
-        .default('any'),
-    )
-    .addExamples([
-      'netlify env:get MY_VAR # get value for MY_VAR in dev context',
-      'netlify env:get MY_VAR --context production',
-      'netlify env:get MY_VAR --context branch:staging',
-      'netlify env:get MY_VAR --scope functions',
-    ])
-    .description('Get resolved value of specified environment variable (includes netlify.toml)')
-    // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-    .action(async (name, options, command) => {
-      await envGet(name, options, command)
-    })
