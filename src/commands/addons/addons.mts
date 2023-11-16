@@ -1,5 +1,4 @@
- 
-import { createAddonsAuthCommand } from './addons-auth.mjs'
+
 import { createAddonsConfigCommand } from './addons-config.mjs'
 import { createAddonsCreateCommand } from './addons-create.mjs'
 import { createAddonsDeleteCommand } from './addons-delete.mjs'
@@ -22,7 +21,16 @@ const addons = (options, command) => {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'program' implicitly has an 'any' type.
 export const createAddonsCommand = (program) => {
-  createAddonsAuthCommand(program)
+  program
+  .command('addons:auth', { hidden: true })
+  .alias('addon:auth')
+  .argument('<name>', 'Add-on slug')
+  .description('Login to add-on provider')
+  // @ts-expect-error TS(7006) FIXME: Parameter 'addonName' implicitly has an 'any' type... Remove this comment to see the full error message
+  .action(async (addonName, options, command) => {
+    const { addonsAuth } = await import('./addons-auth.mjs')
+    await addonsAuth(addonName, options, command)
+  })
   createAddonsConfigCommand(program)
   createAddonsCreateCommand(program)
   createAddonsDeleteCommand(program)

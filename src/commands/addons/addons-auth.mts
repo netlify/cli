@@ -1,17 +1,13 @@
- 
+
+import { OptionValues } from 'commander'
+
 import { ADDON_VALIDATION, prepareAddonCommand } from '../../utils/addons/prepare.mjs'
 import { exit, log } from '../../utils/command-helpers.mjs'
 import openBrowser from '../../utils/open-browser.mjs'
+import BaseCommand from '../base-command.mjs'
 
-/**
- * The addons:auth command
- * @param {string} addonName
- * @param {import('commander').OptionValues} options
- * @param {import('../base-command.mjs').default} command
- * @returns {Promise<boolean>}
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'addonName' implicitly has an 'any' type... Remove this comment to see the full error message
-const addonsAuth = async (addonName, options, command) => {
+
+export const addonsAuth = async (addonName: string, options: OptionValues, command: BaseCommand) => {
   const { addon } = await prepareAddonCommand({
     command,
     addonName,
@@ -32,20 +28,3 @@ const addonsAuth = async (addonName, options, command) => {
   await openBrowser({ url: addon.auth_url })
   exit()
 }
-
-/**
- * Creates the `netlify addons:auth` command
- * @param {import('../base-command.mjs').default} program
- * @returns
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'program' implicitly has an 'any' type.
-export const createAddonsAuthCommand = (program) =>
-  program
-    .command('addons:auth', { hidden: true })
-    .alias('addon:auth')
-    .argument('<name>', 'Add-on slug')
-    .description('Login to add-on provider')
-    // @ts-expect-error TS(7006) FIXME: Parameter 'addonName' implicitly has an 'any' type... Remove this comment to see the full error message
-    .action(async (addonName, options, command) => {
-      await addonsAuth(addonName, options, command)
-    })
