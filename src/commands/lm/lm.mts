@@ -3,7 +3,6 @@ import { OptionValues } from 'commander'
 
 import BaseCommand from '../base-command.mjs'
 
-import { createLmSetupCommand } from './lm-setup.mjs'
 import { createLmUninstallCommand } from './lm-uninstall.mjs'
 
 
@@ -34,7 +33,18 @@ and configures your Git environment with the right credentials.`,
     await lmInstall(options)
   })
 
-  createLmSetupCommand(program)
+  program
+    .command('lm:setup', { hidden: true })
+    .description('Configures your site to use Netlify Large Media')
+    .option('-s, --skip-install', 'Skip the credentials helper installation check')
+    .option('-f, --force-install', 'Force the credentials helper installation')
+    .addHelpText('after', 'It runs the install command if you have not installed the dependencies yet.')
+    .action(async (options: OptionValues, command: BaseCommand) => {
+      const { lmSetup } = await import('./lm-setup.mjs')
+      await lmSetup(options, command)
+    })
+
+
   createLmUninstallCommand(program)
 
   program
