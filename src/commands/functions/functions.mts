@@ -1,30 +1,30 @@
- 
-import { chalk } from '../../utils/command-helpers.mjs'
 
-import { createFunctionsBuildCommand } from './functions-build.mjs'
+import { OptionValues } from 'commander'
+
+import { chalk } from '../../utils/command-helpers.mjs'
+import BaseCommand from '../base-command.mjs'
+
 import { createFunctionsCreateCommand } from './functions-create.mjs'
 import { createFunctionsInvokeCommand } from './functions-invoke.mjs'
 import { createFunctionsListCommand } from './functions-list.mjs'
 import { createFunctionsServeCommand } from './functions-serve.mjs'
 
-/**
- * The functions command
- * @param {import('commander').OptionValues} options
- * @param {import('../base-command.mjs').default} command
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
-const functions = (options, command) => {
+const functions = (options: OptionValues, command: BaseCommand) => {
   command.help()
 }
 
-/**
- * Creates the `netlify functions` command
- * @param {import('../base-command.mjs').default} program
- * @returns
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'program' implicitly has an 'any' type.
-export const createFunctionsCommand = (program) => {
-  createFunctionsBuildCommand(program)
+export const createFunctionsCommand = (program: BaseCommand) => {
+  program
+    .command('functions:build')
+    .alias('function:build')
+    .description('Build functions locally')
+    .option('-f, --functions <directory>', 'Specify a functions directory to build to')
+    .option('-s, --src <directory>', 'Specify the source directory for the functions')
+    .action(async(options: OptionValues, command: BaseCommand) => {
+      const { functionsBuild } = await import('./functions-build.mjs')
+      await functionsBuild(options, command)
+    })
+
   createFunctionsCreateCommand(program)
   createFunctionsInvokeCommand(program)
   createFunctionsListCommand(program)
