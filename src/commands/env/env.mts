@@ -4,8 +4,6 @@ import { OptionValues, Option } from 'commander'
 import {  normalizeContext } from '../../utils/env/index.mjs'
 import BaseCommand from '../base-command.mjs'
 
-import { createEnvCloneCommand } from './env-clone.mjs'
-
 
 const env = (options: OptionValues, command: BaseCommand) => {
   command.help()
@@ -146,7 +144,18 @@ export const createEnvCommand = (program: BaseCommand) => {
       await envUnset(key, options, command)
     })
 
-  createEnvCloneCommand(program)
+    program
+    .command('env:clone')
+    .alias('env:migrate')
+    .option('-f, --from <from>', 'Site ID (From)')
+    .requiredOption('-t, --to <to>', 'Site ID (To)')
+    .description(`Clone environment variables from one site to another`)
+    .addExamples(['netlify env:clone --to <to-site-id>', 'netlify env:clone --to <to-site-id> --from <from-site-id>'])
+    .action(async (options: OptionValues, command: BaseCommand) => {
+      const {envClone} = await import('./env-clone.mjs')
+      await envClone(options, command)
+    })
+
 
   return program
     .command('env')
