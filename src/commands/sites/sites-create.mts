@@ -1,4 +1,4 @@
- 
+
 import { InvalidArgumentError } from 'commander'
 import inquirer from 'inquirer'
 import pick from 'lodash/pick.js'
@@ -8,7 +8,7 @@ import { chalk, error, log, logJson, warn } from '../../utils/command-helpers.mj
 import getRepoData from '../../utils/get-repo-data.mjs'
 import { configureRepo } from '../../utils/init/config.mjs'
 import { track } from '../../utils/telemetry/index.mjs'
-import { link } from '../link/index.mjs'
+import { link } from '../link/link.mjs'
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
 export const getSiteNameInput = async (name) => {

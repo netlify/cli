@@ -35,7 +35,7 @@ import { getEnvelopeEnv } from '../../utils/env/index.mjs'
 import { getFunctionsManifestPath, getInternalFunctionsDir } from '../../utils/functions/index.mjs'
 import openBrowser from '../../utils/open-browser.mjs'
 import BaseCommand from '../base-command.mjs'
-import { link } from '../link/index.mjs'
+import { link } from '../link/link.mjs'
 import { sitesCreate } from '../sites/index.mjs'
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message

@@ -1,5 +1,5 @@
- 
-import { Option } from 'commander'
+
+import { Option, OptionValues } from 'commander'
 import inquirer from 'inquirer'
 import isEmpty from 'lodash/isEmpty.js'
 
@@ -8,6 +8,7 @@ import { chalk, error, exit, log } from '../../utils/command-helpers.mjs'
 import getRepoData from '../../utils/get-repo-data.mjs'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.mjs'
 import { track } from '../../utils/telemetry/index.mjs'
+import BaseCommand from '../base-command.mjs'
 
 /**
  *
@@ -250,13 +251,8 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
   return site
 }
 
-/**
- * The link command
- * @param {import('commander').OptionValues} options
- * @param {import('../base-command.mjs').default} command
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
-export const link = async (options, command) => {
+
+export const link = async (options: OptionValues, command: BaseCommand) => {
   await command.authenticate()
 
   const {
@@ -348,25 +344,3 @@ export const link = async (options, command) => {
   }
   return siteData
 }
-
-/**
- * Creates the `netlify link` command
- * @param {import('../base-command.mjs').default} program
- * @returns
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'program' implicitly has an 'any' type.
-export const createLinkCommand = (program) =>
-  program
-    .command('link')
-    .description('Link a local repo or project folder to an existing site on Netlify')
-    .option('--id <id>', 'ID of site to link to')
-    .option('--name <name>', 'Name of site to link to')
-    .addOption(
-      new Option(
-        '--gitRemoteName <name>',
-        'Old, prefer --git-remote-name. Name of Git remote to use. e.g. "origin"',
-      ).hideHelp(true),
-    )
-    .option('--git-remote-name <name>', 'Name of Git remote to use. e.g. "origin"')
-    .addExamples(['netlify link', 'netlify link --id 123-123-123-123', 'netlify link --name my-site-name'])
-    .action(link)
