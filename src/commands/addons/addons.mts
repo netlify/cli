@@ -18,7 +18,7 @@ export const createAddonsCommand = (program) => {
   .alias('addon:auth')
   .argument('<name>', 'Add-on slug')
   .description('Login to add-on provider')
-  .action(async (addonName, options, command) => {
+  .action(async (addonName: string, options: OptionValues, command: BaseCommand) => {
     const { addonsAuth } = await import('./addons-auth.mjs')
     await addonsAuth(addonName, options, command)
   })
@@ -30,7 +30,7 @@ export const createAddonsCommand = (program) => {
   .description('Configure add-on settings')
   // allow for any flags. Handy for variadic configuration options
   .allowUnknownOption(true)
-  .action(async (addonName, options, command) => {
+  .action(async (addonName: string, options: OptionValues, command: BaseCommand) => {
     const { addonsConfig } = await import('./addons-config.mjs')
     await addonsConfig(addonName, options, command)
   })
@@ -45,7 +45,7 @@ Add-ons are a way to extend the functionality of your Netlify site`,
   )
   // allow for any flags. Handy for variadic configuration options
   .allowUnknownOption(true)
-  .action(async (addonName, options, command) => {
+  .action(async (addonName: string, options: OptionValues, command: BaseCommand) => {
     const { addonsCreate } = await import('./addons-create.mjs')
     await addonsCreate(addonName, options, command)
   })
@@ -58,7 +58,7 @@ Add-ons are a way to extend the functionality of your Netlify site`,
     `Remove an add-on extension to your site\nAdd-ons are a way to extend the functionality of your Netlify site`,
   )
   .option('-f, --force', 'delete without prompting (useful for CI)')
-  .action(async (addonName, options, command) => {
+  .action(async (addonName: string, options: OptionValues, command: BaseCommand) => {
     const { addonsDelete } = await import('./addons-delete.mjs')
     await addonsDelete(addonName, options, command)
   })
@@ -69,7 +69,7 @@ Add-ons are a way to extend the functionality of your Netlify site`,
   .alias('addon:list')
   .description(`List currently installed add-ons for site`)
   .option('--json', 'Output add-on data as JSON')
-  .action(async (options, command) => {
+  .action(async (options: OptionValues, command: BaseCommand) => {
     const {addonsList} = await import('./addons-list.mjs')
     await addonsList(options, command)
   })
