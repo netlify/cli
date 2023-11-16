@@ -7,8 +7,11 @@ import { OptionValues } from 'commander'
 import { chalk, error as printError } from '../../utils/command-helpers.mjs'
 import BaseCommand from '../base-command.mjs'
 
+interface Options extends OptionValues {
+  output?: string
+}
 
-export const blobsGet = async (storeName: string, key: string, options: OptionValues, command: BaseCommand) => {
+export const blobsGet = async (storeName: string, key: string, options: Options, command: BaseCommand) => {
   const { api, siteInfo } = command.netlify
   const { output } = options
   const store = getStore({

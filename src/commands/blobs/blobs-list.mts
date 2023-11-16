@@ -1,16 +1,17 @@
 import { getStore } from '@netlify/blobs'
 import AsciiTable from 'ascii-table'
+import { OptionValues } from 'commander'
 
 import { chalk, error as printError, log, logJson } from '../../utils/command-helpers.mjs'
-import requiresSiteInfo from '../../utils/hooks/requires-site-info.mjs'
+import BaseCommand from '../base-command.mjs'
 
-interface Options {
+interface Options extends OptionValues {
   directories?: boolean
   json?: boolean
   prefix?: string
 }
 
-const blobsList = async (storeName: string, options: Options, command: any) => {
+export const blobsList = async (storeName: string, options: Options, command: BaseCommand) => {
   const { api, siteInfo } = command.netlify
   const store = getStore({
     apiURL: `${api.scheme}://${api.host}`,
@@ -48,24 +49,3 @@ const blobsList = async (storeName: string, options: Options, command: any) => {
     return printError(`Could not list blobs from store ${chalk.yellow(storeName)}`)
   }
 }
-
-/**
- * Creates the `netlify blobs:list` command
- */
-export const createBlobsListCommand = (program: any) =>
-  program
-    .command('blobs:list')
-    .description(`(Beta) Lists objects in a Netlify Blobs store`)
-    .argument('<store>', 'Name of the store')
-    .option(
-      '-d, --directories',
-      `Indicates that keys with the '/' character should be treated as directories, returning a list of sub-directories at a given level rather than all the keys inside them`,
-    )
-    .option(
-      '-p, --prefix <prefix>',
-      `A string for filtering down the entries; when specified, only the entries whose key starts with that prefix are returned`,
-    )
-    .option('--json', `Output list contents as JSON`)
-    .alias('blob:list')
-    .hook('preAction', requiresSiteInfo)
-    .action(blobsList)

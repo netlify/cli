@@ -3,7 +3,6 @@ import { OptionValues } from 'commander'
 import requiresSiteInfo from '../../utils/hooks/requires-site-info.mjs'
 import BaseCommand from '../base-command.mjs'
 
-import { createBlobsListCommand } from './blobs-list.mjs'
 import { createBlobsSetCommand } from './blobs-set.mjs'
 
 /**
@@ -29,7 +28,6 @@ export const createBlobsCommand = (program: BaseCommand) => {
       await blobsDelete(storeName, key, _options, command)
     })
 
-
     program
     .command('blobs:get')
     .description(
@@ -45,7 +43,26 @@ export const createBlobsCommand = (program: BaseCommand) => {
       await blobsGet(storeName, key, options, command)
     })
 
-  createBlobsListCommand(program)
+    program
+    .command('blobs:list')
+    .description(`(Beta) Lists objects in a Netlify Blobs store`)
+    .argument('<store>', 'Name of the store')
+    .option(
+      '-d, --directories',
+      `Indicates that keys with the '/' character should be treated as directories, returning a list of sub-directories at a given level rather than all the keys inside them`,
+    )
+    .option(
+      '-p, --prefix <prefix>',
+      `A string for filtering down the entries; when specified, only the entries whose key starts with that prefix are returned`,
+    )
+    .option('--json', `Output list contents as JSON`)
+    .alias('blob:list')
+    .hook('preAction', requiresSiteInfo)
+    .action(async(storeName: string, options: OptionValues, command: BaseCommand) => {
+      const { blobsList } = await import('./blobs-list.mjs')
+      await blobsList(storeName, options, command)
+    })
+
   createBlobsSetCommand(program)
 
   return program
