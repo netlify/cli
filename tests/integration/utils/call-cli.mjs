@@ -13,7 +13,6 @@ const CLI_TIMEOUT = 3e5
  * @returns {Promise<string|object>}
  */
 export const callCli = async function (args, execOptions = {}, parseJson = false) {
-  console.log({ args, cliPath, execOptions })
   const { stdout } = await execa.node(cliPath, args, {
     timeout: CLI_TIMEOUT,
     nodeOptions: [],
