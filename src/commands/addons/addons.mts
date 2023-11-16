@@ -1,16 +1,14 @@
 
-import { createAddonsConfigCommand } from './addons-config.mjs'
+import { OptionValues } from 'commander'
+
+import BaseCommand from '../base-command.mjs'
+
 import { createAddonsCreateCommand } from './addons-create.mjs'
 import { createAddonsDeleteCommand } from './addons-delete.mjs'
 import { createAddonsListCommand } from './addons-list.mjs'
 
-/**
- * The addons command
- * @param {import('commander').OptionValues} options
- * @param {import('../base-command.mjs').default} command
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
-const addons = (options, command) => {
+
+const addons = (options: OptionValues, command: BaseCommand) => {
   command.help()
 }
 
@@ -31,7 +29,20 @@ export const createAddonsCommand = (program) => {
     const { addonsAuth } = await import('./addons-auth.mjs')
     await addonsAuth(addonName, options, command)
   })
-  createAddonsConfigCommand(program)
+
+  program
+  .command('addons:config', { hidden: true })
+  .alias('addon:config')
+  .argument('<name>', 'Add-on namespace')
+  .description('Configure add-on settings')
+  // allow for any flags. Handy for variadic configuration options
+  .allowUnknownOption(true)
+  // @ts-expect-error TS(7006) FIXME: Parameter 'addonName' implicitly has an 'any' type... Remove this comment to see the full error message
+  .action(async (addonName, options, command) => {
+    const { addonsConfig } = await import('./addons-config.mjs')
+    await addonsConfig(addonName, options, command)
+  })
+
   createAddonsCreateCommand(program)
   createAddonsDeleteCommand(program)
   createAddonsListCommand(program)
