@@ -2,9 +2,8 @@ import process from 'process'
 
 import chalk from 'chalk'
 
-import { createMainCommand } from '../src/commands/index.mjs'
-// TODO: use destructuring again once the imported file is esm
-import { generateAutocompletion } from '../src/lib/completion/index.mjs'
+import { createMainCommand } from '../src/commands/index.js'
+import { generateAutocompletion } from '../src/lib/completion/index.js'
 
 const id = (message) => message
 

@@ -6,12 +6,15 @@ import { join } from 'path'
 import { copy } from 'fs-extra'
 import { afterAll, beforeAll, beforeEach, expect, test } from 'vitest'
 
+// eslint-disable-next-line import/no-deprecated
 import { getLegacyPathInHome, getPathInHome } from '../../../src/lib/settings.js'
 import getGlobalConfig, { resetConfigCache } from '../../../src/utils/get-global-config.js'
 
 const configFilePath = getPathInHome(['config.json'])
 const configPath = getPathInHome([])
+// eslint-disable-next-line import/no-deprecated
 const legacyConfigFilePath = getLegacyPathInHome(['config.json'])
+// eslint-disable-next-line import/no-deprecated
 const legacyConfigPath = getLegacyPathInHome([''])
 const tmpConfigBackupPath = join(os.tmpdir(), `netlify-config-backup-${Date.now()}`)
 
@@ -71,6 +74,7 @@ test('should not throw if legacy config is invalid JSON', async () => {
 test("should create config in netlify's config dir if none exists and store new values", async () => {
   // Remove config dirs
   await rm(getPathInHome([]), { force: true, recursive: true })
+  // eslint-disable-next-line import/no-deprecated
   await rm(getLegacyPathInHome([]), { force: true, recursive: true })
   const globalConfig = await getGlobalConfig()
   globalConfig.set('newProp', 'newValue')
