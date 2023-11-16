@@ -5,7 +5,6 @@ import {  normalizeContext } from '../../utils/env/index.mjs'
 import BaseCommand from '../base-command.mjs'
 
 import { createEnvCloneCommand } from './env-clone.mjs'
-import { createEnvSetCommand } from './env-set.mjs'
 import { createEnvUnsetCommand } from './env-unset.mjs'
 
 
@@ -89,7 +88,43 @@ export const createEnvCommand = (program: BaseCommand) => {
       const {envList} = await import('./env-list.mjs')
       await envList(options, command)
     })
-  createEnvSetCommand(program)
+
+    program
+    .command('env:set')
+    .argument('<key>', 'Environment variable key')
+    .argument('[value]', 'Value to set to', '')
+    .option(
+      '-c, --context <context...>',
+      'Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev") (default: all contexts)',
+      // spread over an array for variadic options
+      // @ts-expect-error TS(7006) FIXME: Parameter 'context' implicitly has an 'any' type.
+      (context, previous = []) => [...previous, normalizeContext(context)],
+    )
+    .addOption(
+      new Option('-s, --scope <scope...>', 'Specify a scope (default: all scopes)').choices([
+        'builds',
+        'functions',
+        'post-processing',
+        'runtime',
+      ]),
+    )
+    .option('--secret', 'Indicate whether the environment variable value can be read again.')
+    .description('Set value of environment variable')
+    .addExamples([
+      'netlify env:set VAR_NAME value # set in all contexts and scopes',
+      'netlify env:set VAR_NAME value --context production',
+      'netlify env:set VAR_NAME value --context production deploy-preview',
+      'netlify env:set VAR_NAME value --context production --secret',
+      'netlify env:set VAR_NAME value --scope builds',
+      'netlify env:set VAR_NAME value --scope builds functions',
+      'netlify env:set VAR_NAME --secret # convert existing variable to secret',
+    ])
+    .action(async (key: string, value:string, options: OptionValues, command: BaseCommand) => {
+      const {envSet} = await import('./env-set.mjs')
+      await envSet(key, value, options, command)
+    })
+
+
   createEnvUnsetCommand(program)
   createEnvCloneCommand(program)
 
