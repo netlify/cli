@@ -1,18 +1,15 @@
 
+import { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 
 import { chalk, log } from '../../utils/command-helpers.mjs'
+import BaseCommand from '../base-command.mjs'
 import { login } from '../login/login.mjs'
 
 const LOGIN_NEW = 'I would like to login to a new account'
 
-/**
- * The switch command
- * @param {import('commander').OptionValues} options
- * @param {import('../base-command.mjs').default} command
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
-const switchCommand = async (options, command) => {
+
+export const switchCommand = async (options: OptionValues, command: BaseCommand) => {
   const availableUsersChoices = Object.values(command.netlify.globalConfig.get('users') || {}).reduce(
     (prev, current) =>
       // @ts-expect-error TS(2769) FIXME: No overload matches this call.
@@ -44,12 +41,3 @@ const switchCommand = async (options, command) => {
     log(`You're now using ${chalk.bold(selectedAccount[1])}.`)
   }
 }
-
-/**
- * Creates the `netlify switch` command
- * @param {import('../base-command.mjs').default} program
- * @returns
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'program' implicitly has an 'any' type.
-export const createSwitchCommand = (program) =>
-  program.command('switch').description('Switch your active Netlify account').action(switchCommand)
