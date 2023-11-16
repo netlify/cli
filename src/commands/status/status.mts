@@ -1,4 +1,3 @@
- 
 import clean from 'clean-deep'
 import prettyjson from 'prettyjson'
 
@@ -35,7 +34,7 @@ const status = async (options, command) => {
   let user
 
   try {
-    [accounts, user] = await Promise.all([api.listAccountsForUser(), api.getCurrentUser()])
+    ;[accounts, user] = await Promise.all([api.listAccountsForUser(), api.getCurrentUser()])
   } catch (error_) {
     // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
     if (error_.status === 401) {
@@ -90,7 +89,6 @@ const status = async (options, command) => {
 
   // Json only logs out if --json flag is passed
   if (options.json) {
-    // @ts-expect-error TS(2345) FIXME: Argument of type '{ account: Partial<{ Name: any; ... Remove this comment to see the full error message
     logJson({
       account: cleanAccountData,
       siteData: {

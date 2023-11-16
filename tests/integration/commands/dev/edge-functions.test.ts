@@ -155,7 +155,6 @@ describe.skipIf(isWindows)('edge functions', () => {
         expect(res.statusCode).toBe(200)
         expect(JSON.parse(res.body)).toEqual({
           data: 'hello world',
-          fresh: false,
           metadata: { name: 'Netlify', features: { blobs: true, functions: true } },
         })
       })

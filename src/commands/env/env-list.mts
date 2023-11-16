@@ -1,6 +1,5 @@
- 
 import ansiEscapes from 'ansi-escapes'
- 
+
 import AsciiTable from 'ascii-table'
 import { isCI } from 'ci-info'
 import { Option } from 'commander'
@@ -79,7 +78,6 @@ const envList = async (options, command) => {
       // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
       Object.entries(environment).map(([key, variable]) => [key, variable.value]),
     )
-    // @ts-expect-error TS(2345) FIXME: Argument of type '{ [k: string]: any; }' is not as... Remove this comment to see the full error message
     logJson(envDictionary)
     return false
   }
