@@ -1,4 +1,4 @@
- 
+
 import cp from 'child_process'
 import fs from 'fs'
 import { mkdir, readdir, unlink } from 'fs/promises'
@@ -8,6 +8,7 @@ import process from 'process'
 import { fileURLToPath, pathToFileURL } from 'url'
 import { promisify } from 'util'
 
+import { OptionValues } from 'commander'
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'copy... Remove this comment to see the full error message
 import copyTemplateDirOriginal from 'copy-template-dir'
 import { findUp } from 'find-up'
@@ -24,6 +25,7 @@ import { getDotEnvVariables, injectEnvVariables } from '../../utils/dev.mjs'
 // @ts-expect-error TS(7034) FIXME: Variable 'execa' implicitly has type 'any' in some... Remove this comment to see the full error message
 import execa from '../../utils/execa.mjs'
 import { readRepoURL, validateRepoURL } from '../../utils/read-repo-url.mjs'
+import BaseCommand from '../base-command.mjs'
 
 const copyTemplateDir = promisify(copyTemplateDirOriginal)
 
@@ -745,14 +747,8 @@ const ensureFunctionPathIsOk = function (functionsDir, name) {
   return functionPath
 }
 
-/**
- * The functions:create command
- * @param {string} name
- * @param {import('commander').OptionValues} options
- * @param {import('../base-command.mjs').default} command
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-const functionsCreate = async (name, options, command) => {
+
+export const functionsCreate = async (name: string, options: OptionValues, command: BaseCommand) => {
   const functionType = await selectTypeOfFunc()
   const functionsDir =
     functionType === 'edge' ? await ensureEdgeFuncDirExists(command) : await ensureFunctionDirExists(command)
@@ -761,25 +757,3 @@ const functionsCreate = async (name, options, command) => {
   const mainFunc = options.url ? downloadFromURL : scaffoldFromTemplate
   await mainFunc(command, options, name, functionsDir, functionType)
 }
-
-/**
- * Creates the `netlify functions:create` command
- * @param {import('../base-command.mjs').default} program
- * @returns
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'program' implicitly has an 'any' type.
-export const createFunctionsCreateCommand = (program) =>
-  program
-    .command('functions:create')
-    .alias('function:create')
-    .argument('[name]', 'name of your new function file inside your functions directory')
-    .description('Create a new function locally')
-    .option('-n, --name <name>', 'function name')
-    .option('-u, --url <url>', 'pull template from URL')
-    .option('-l, --language <lang>', 'function language')
-    .addExamples([
-      'netlify functions:create',
-      'netlify functions:create hello-world',
-      'netlify functions:create --name hello-world',
-    ])
-    .action(functionsCreate)

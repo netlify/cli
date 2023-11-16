@@ -4,7 +4,6 @@ import { OptionValues } from 'commander'
 import { chalk } from '../../utils/command-helpers.mjs'
 import BaseCommand from '../base-command.mjs'
 
-import { createFunctionsCreateCommand } from './functions-create.mjs'
 import { createFunctionsInvokeCommand } from './functions-invoke.mjs'
 import { createFunctionsListCommand } from './functions-list.mjs'
 import { createFunctionsServeCommand } from './functions-serve.mjs'
@@ -25,7 +24,25 @@ export const createFunctionsCommand = (program: BaseCommand) => {
       await functionsBuild(options, command)
     })
 
-  createFunctionsCreateCommand(program)
+  program
+  .command('functions:create')
+  .alias('function:create')
+  .argument('[name]', 'name of your new function file inside your functions directory')
+  .description('Create a new function locally')
+  .option('-n, --name <name>', 'function name')
+  .option('-u, --url <url>', 'pull template from URL')
+  .option('-l, --language <lang>', 'function language')
+  .addExamples([
+    'netlify functions:create',
+    'netlify functions:create hello-world',
+    'netlify functions:create --name hello-world',
+  ])
+  .action(async(name: string, options: OptionValues, command: BaseCommand) => {
+    const { functionsCreate } = await import('./functions-create.mjs')
+    await functionsCreate(name, options, command)
+  })
+
+
   createFunctionsInvokeCommand(program)
   createFunctionsListCommand(program)
   createFunctionsServeCommand(program)
