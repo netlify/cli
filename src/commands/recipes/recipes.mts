@@ -1,24 +1,27 @@
- 
+
 import { basename } from 'path'
 
+import { OptionValues } from 'commander'
 import { closest } from 'fastest-levenshtein'
 import inquirer from 'inquirer'
 
 import { NETLIFYDEVERR, chalk, log } from '../../utils/command-helpers.mjs'
+import BaseCommand from '../base-command.mjs'
 
 import { getRecipe, listRecipes } from './common.mjs'
-import { createRecipesListCommand } from './recipes-list.mjs'
 
 const SUGGESTION_TIMEOUT = 1e4
 
-/**
- * The recipes command
- * @param {string} recipeName
- * @param {import('commander').OptionValues} options
- * @param {import('../base-command.mjs').default} command
- */
-// @ts-expect-error TS(7023) FIXME: 'recipesCommand' implicitly has return type 'any' ... Remove this comment to see the full error message
-const recipesCommand = async (recipeName, options, command) => {
+
+// @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'any' t... Remove this comment to see the full error message
+export const runRecipe = async ({ config, recipeName, repositoryRoot }) => {
+  const recipe = await getRecipe(recipeName)
+
+  return recipe.run({ config, repositoryRoot })
+}
+
+
+export const recipesCommand = async (recipeName: string, options: OptionValues, command: BaseCommand): Promise<any> => {
   const { config, repositoryRoot } = command.netlify
   const sanitizedRecipeName = basename(recipeName || '').toLowerCase()
 
@@ -64,29 +67,4 @@ const recipesCommand = async (recipeName, options, command) => {
       return recipesCommand(suggestion, options, command)
     }
   }
-}
-
-// @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'any' t... Remove this comment to see the full error message
-export const runRecipe = async ({ config, recipeName, repositoryRoot }) => {
-  const recipe = await getRecipe(recipeName)
-
-  return recipe.run({ config, repositoryRoot })
-}
-
-/**
- * Creates the `netlify recipes` command
- * @param {import('../base-command.mjs').default} program
- * @returns
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'program' implicitly has an 'any' type.
-export const createRecipesCommand = (program) => {
-  createRecipesListCommand(program)
-
-  program
-    .command('recipes')
-    .argument('[name]', 'name of the recipe')
-    .description(`Create and modify files in a project using pre-defined recipes`)
-    .option('-n, --name <name>', 'recipe name to use')
-    .addExamples(['netlify recipes my-recipe', 'netlify recipes --name my-recipe'])
-    .action(recipesCommand)
 }

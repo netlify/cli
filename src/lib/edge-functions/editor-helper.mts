@@ -2,7 +2,7 @@ import { env } from 'process'
 
 import inquirer from 'inquirer'
 
-import { runRecipe } from '../../commands/recipes/index.mjs'
+import { runRecipe } from '../../commands/recipes/recipes.mjs'
 
 const STATE_PROMPT_PROPERTY = 'promptVSCodeSettings'
 
