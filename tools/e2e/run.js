@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url'
 
 import execa from 'execa'
 
-import { setup } from './setup.mjs'
+import { setup } from './setup.js'
 
 /** The main test runner function */
 const main = async () => {

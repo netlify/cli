@@ -10,9 +10,9 @@
   "files": [
     "/bin",
     "/npm-shrinkwrap.json",
-    "/scripts/postinstall.mjs",
+    "/scripts/postinstall.js",
     "/src/**/*.js",
-    "/src/**/*.mjs",
+    "/src/**/*.js",
     "/src/**/types.d.ts",
     "/src/**/*.sh",
     "/src/**/*.ps1",
@@ -33,15 +33,15 @@
   "license": "MIT",
   "repository": "https://github.com/netlify/cli",
   "bin": {
-    "ntl": "./bin/run.mjs",
-    "netlify": "./bin/run.mjs"
+    "ntl": "./bin/run.js",
+    "netlify": "./bin/run.js"
   },
   "bugs": {
     "url": "https://github.com/netlify/cli/issues"
   },
   "scripts": {
     "prepare": "is-ci || husky install node_modules/@netlify/eslint-config-node/.husky/",
-    "start": "node ./bin/run.mjs",
+    "start": "node ./bin/run.js",
     "build": "tsc",
     "dev": "tsc --watch",
     "test": "run-s format test:dev",
@@ -62,16 +62,16 @@
     "test:dev:vitest": "vitest run tests/unit/ && vitest run tests/integration",
     "test:ci:vitest:unit": "vitest run --coverage tests/unit/",
     "test:ci:vitest:integration": "vitest run --coverage tests/integration/",
-    "test:affected": "node ./tools/affected-test.mjs",
-    "e2e": "node ./tools/e2e/run.mjs",
-    "docs": "node ./site/scripts/docs.mjs",
+    "test:affected": "node ./tools/affected-test.js",
+    "e2e": "node ./tools/e2e/run.js",
+    "docs": "node ./site/scripts/docs.js",
     "watch": "c8 --reporter=lcov vitest --watch",
     "site:build": "run-s site:build:*",
     "site:build:install": "cd site && npm install --no-audit",
     "site:build:assets": "cd site && npm run build",
-    "postinstall-pack": "node ./scripts/postinstall.mjs",
-    "postinstall": "npm run build && node ./scripts/postinstall.mjs",
-    "prepublishOnly": "node ./scripts/prepare-for-publish.mjs",
+    "postinstall-pack": "node ./scripts/postinstall.js",
+    "postinstall": "npm run build && node ./scripts/postinstall.js",
+    "prepublishOnly": "node ./scripts/prepare-for-publish.js",
     "certs": "openssl req -x509 -out localhost.crt -keyout localhost.key -newkey rsa:2048 -nodes -sha256 -subj \"/CN=localhost\" -extensions EXT -config certconf"
   },
   "config": {
@@ -228,7 +228,7 @@
   },
   "ava": {
     "files": [
-      "tools/**/*.test.mjs",
+      "tools/**/*.test.js",
       "tests/**/*.test.cjs"
     ]
   }

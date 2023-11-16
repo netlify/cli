@@ -8,7 +8,7 @@ import { fileURLToPath } from 'url'
 import execa from 'execa'
 import { expect, test } from 'vitest'
 
-import { packageManagerConfig, packageManagerExists } from './utils.mjs'
+import { packageManagerConfig, packageManagerExists } from './utils.js'
 
 const { version } = JSON.parse(readFileSync(fileURLToPath(new URL('../package.json', import.meta.url)), 'utf-8'))
 

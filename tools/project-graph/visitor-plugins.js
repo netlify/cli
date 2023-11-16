@@ -2,7 +2,7 @@ import { join } from 'path'
 
 import ts from 'typescript'
 
-import { resolveRelativeModule } from './file-visitor.mjs'
+import { resolveRelativeModule } from './file-visitor.js'
 
 const COMMANDS = 'src/commands'
 

@@ -89,7 +89,7 @@ module.exports = {
       },
     },
     {
-      files: ['bin/**/*.mjs'],
+      files: ['bin/**/*.js'],
       parserOptions: {
         ecmaVersion: '2020',
         sourceType: 'module',
@@ -106,7 +106,7 @@ module.exports = {
           {
             name: 'chalk',
             message:
-              'Please use the safe chalk import that handles colors for json output. `import { chalk } from "src/utils/command-helpers.mjs"`',
+              'Please use the safe chalk import that handles colors for json output. `import { chalk } from "src/utils/command-helpers.js"`',
           },
         ],
       },

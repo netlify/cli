@@ -3,7 +3,7 @@ import { dirname, join, parse } from 'path'
 
 import ts from 'typescript'
 
-import { DependencyGraph } from './dependency-graph.mjs'
+import { DependencyGraph } from './dependency-graph.js'
 
 /**
  * tries to resolve a relative javascript module based on its specifier
@@ -26,11 +26,11 @@ export const resolveRelativeModule = (moduleSpecifier) => {
   if (existsSync(`${moduleSpecifier}/index.cjs`)) {
     return `${moduleSpecifier}/index.cjs`
   }
-  if (existsSync(`${moduleSpecifier}.mjs`)) {
-    return `${moduleSpecifier}.mjs`
+  if (existsSync(`${moduleSpecifier}.js`)) {
+    return `${moduleSpecifier}.js`
   }
-  if (existsSync(`${moduleSpecifier}/index.mjs`)) {
-    return `${moduleSpecifier}/index.mjs`
+  if (existsSync(`${moduleSpecifier}/index.js`)) {
+    return `${moduleSpecifier}/index.js`
   }
   if (existsSync(`${moduleSpecifier}.ts`)) {
     return `${moduleSpecifier}.ts`

@@ -9,7 +9,7 @@ import chalk from 'chalk'
 import execa from 'execa'
 import glob from 'fast-glob'
 
-import { DependencyGraph, fileVisitor, visitorPlugins } from './project-graph/index.mjs'
+import { DependencyGraph, fileVisitor, visitorPlugins } from './project-graph/index.js'
 
 export const TEST_MATCHING_GLOB = /\.test\.cjs$/gm
 

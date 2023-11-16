@@ -1,8 +1,8 @@
 import { promises as fs } from 'fs'
 import { join, basename, dirname } from 'path'
 
-import { docs } from './config.mjs'
-import { copyDirRecursiveAsync } from './fs.mjs'
+import { docs } from './config.js'
+import { copyDirRecursiveAsync } from './fs.js'
 
 const readDir = async function (dir, allFiles = []) {
   const filenames = await fs.readdir(dir)
