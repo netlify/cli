@@ -1,4 +1,3 @@
- 
 import process from 'process'
 
 import { Option } from 'commander'
@@ -24,6 +23,7 @@ import openBrowser from '../../utils/open-browser.mjs'
 import { generateInspectSettings, startProxyServer } from '../../utils/proxy-server.mjs'
 import { runBuildTimeline } from '../../utils/run-build.mjs'
 import { getGeoCountryArgParser } from '../../utils/validation.mjs'
+import { getBlobsContext } from '../../lib/blobs/blobs.mjs'
 
 /**
  * The serve command
@@ -71,7 +71,7 @@ const serve = async (options, command) => {
   // Netlify Build are loaded.
   await getInternalFunctionsDir({ base: site.root, ensureExists: true })
 
-  let settings = /** @type {import('../../utils/types.js').ServerSettings} */ ({})
+  let settings = /** @type {import('../../utils/types.js').ServerSettings} */ {}
   try {
     settings = await detectServerSettings(devConfig, options, command)
 
@@ -95,8 +95,15 @@ const serve = async (options, command) => {
     options,
   })
 
+  const blobsContext = await getBlobsContext({
+    debug: options.debug,
+    projectRoot: command.workingDir,
+    siteID: site.id ?? 'unknown-site-id',
+  })
+
   const functionsRegistry = await startFunctionsServer({
     api,
+    blobsContext,
     command,
     config,
     debug: options.debug,
