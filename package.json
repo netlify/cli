@@ -76,7 +76,7 @@
   },
   "config": {
     "eslint": "--cache --format=codeframe --max-warnings=0 \"{src,scripts,tests,.github}/**/*.{mjs,cjs,js,md,html}\" \"*.{mjs,cjs,js,md,html}\" \".*.{mjs,cjs,js,md,html}\"",
-    "prettier": "--ignore-path .eslintignore --loglevel=warn \"{src,tools,scripts,tests,.github}/**/*.{mjs,cjs,js,md,yml,json,html}\" \"*.{mjs,cjs,js,yml,json,html}\" \".*.{mjs,cjs,js,yml,json,html}\" \"!CHANGELOG.md\" \"!**/*/package-lock.json\" \"!.github/**/*.md\""
+    "prettier": "--ignore-path .eslintignore --loglevel=warn \"{src,tools,scripts,tests,.github}/**/*.{mjs,cjs,js,mts,md,yml,json,html}\" \"*.{mjs,cjs,js,mts,yml,json,html}\" \".*.{mjs,cjs,js,yml,json,html}\" \"!CHANGELOG.md\" \"!**/*/package-lock.json\" \"!.github/**/*.md\""
   },
   "dependencies": {
     "@bugsnag/js": "7.20.2",

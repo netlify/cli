@@ -1,5 +1,3 @@
- 
-
 /**
  * @typedef CompletionItem
  * @type import('tabtab').CompletionItem

@@ -1,5 +1,4 @@
 #!/usr/bin/env node
- 
 
 // This script is run by the completion (every log output will be displayed on tab)
 // src/commands/completion/completion.mjs -> dynamically references this file

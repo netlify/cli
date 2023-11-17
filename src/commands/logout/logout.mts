@@ -1,4 +1,3 @@
- 
 import { exit, getToken, log } from '../../utils/command-helpers.mjs'
 import { track } from '../../utils/telemetry/index.mjs'
 

@@ -1,4 +1,3 @@
- 
 import { mkdir, stat } from 'fs/promises'
 import { createRequire } from 'module'
 import { basename, extname, isAbsolute, join, resolve } from 'path'

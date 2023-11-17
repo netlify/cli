@@ -1,2 +1,3 @@
 node_modules
 src/**/*.mjs
+src/**/*.d.mts
