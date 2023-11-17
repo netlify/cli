@@ -22,8 +22,8 @@ jobs:
         # root cause and add Windows back to the OS matrix:
         # https://github.com/netlify/cli/pull/6039
         #
-        # os: [ubuntu-latest, macOS-latest, windows-latest]
-        os: [ubuntu-latest, macOS-latest]
+        os: [ubuntu-latest, macOS-latest, windows-latest]
+        # os: [ubuntu-latest, macOS-latest]
         node-version: ['18.14.0', '*']
       fail-fast: false
 
