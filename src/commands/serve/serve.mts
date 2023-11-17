@@ -2,6 +2,7 @@ import process from 'process'
 
 import { Option } from 'commander'
 
+import { getBlobsContext } from '../../lib/blobs/blobs.mjs'
 import { promptEditorHelper } from '../../lib/edge-functions/editor-helper.mjs'
 import { startFunctionsServer } from '../../lib/functions/server.mjs'
 import { printBanner } from '../../utils/banner.mjs'
@@ -22,8 +23,8 @@ import { ensureNetlifyIgnore } from '../../utils/gitignore.mjs'
 import openBrowser from '../../utils/open-browser.mjs'
 import { generateInspectSettings, startProxyServer } from '../../utils/proxy-server.mjs'
 import { runBuildTimeline } from '../../utils/run-build.mjs'
+import type { ServerSettings } from '../../utils/types.js'
 import { getGeoCountryArgParser } from '../../utils/validation.mjs'
-import { getBlobsContext } from '../../lib/blobs/blobs.mjs'
 
 /**
  * The serve command
@@ -71,7 +72,8 @@ const serve = async (options, command) => {
   // Netlify Build are loaded.
   await getInternalFunctionsDir({ base: site.root, ensureExists: true })
 
-  let settings = /** @type {import('../../utils/types.js').ServerSettings} */ {}
+  // @ts-expect-error TS(2571) FIXME: Type '{}' is not assignable to type 'ServerSettings'.
+  let settings: ServerSettings = {}
   try {
     settings = await detectServerSettings(devConfig, options, command)
 
