@@ -1,4 +1,3 @@
- 
 // A simple ghauth inspired library for getting a personal access token
 import http from 'http'
 import process from 'process'

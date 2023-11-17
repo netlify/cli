@@ -163,7 +163,7 @@ export async function registerIntegration(workingDir, siteId, accountId, localIn
       scopes: formatScopesForRemote(scopes),
       integrationLevel,
     }),
-  // @ts-expect-error TS(7006) FIXME: Parameter 'res' implicitly has an 'any' type.
+    // @ts-expect-error TS(7006) FIXME: Parameter 'res' implicitly has an 'any' type.
   }).then(async (res) => {
     const response = await res.json()
     return { body: response, statusCode: res.status }
@@ -288,7 +288,7 @@ export async function updateIntegration(
             integrationLevel,
           }),
         },
-      // @ts-expect-error TS(7006) FIXME: Parameter 'res' implicitly has an 'any' type.
+        // @ts-expect-error TS(7006) FIXME: Parameter 'res' implicitly has an 'any' type.
       ).then(async (res) => {
         const response = await res.json()
         return { updateResponse: response, statusCode: res.status }
@@ -431,7 +431,7 @@ const deploy = async (options, command) => {
         'netlify-token': token,
       },
     },
-  // @ts-expect-error TS(7006) FIXME: Parameter 'res' implicitly has an 'any' type.
+    // @ts-expect-error TS(7006) FIXME: Parameter 'res' implicitly has an 'any' type.
   ).then(async (res) => {
     const body = await res.json()
     return { body, statusCode: res.status }

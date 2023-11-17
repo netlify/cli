@@ -1,5 +1,3 @@
- 
-
 import fuzzy from 'fuzzy'
 import inquirer from 'inquirer'
 
@@ -97,15 +95,17 @@ command = "${chosenSettings.devCommand}"
 export const detectBuildSettings = async (command) => {
   const { project, workspacePackage } = command
   const buildSettings = await project.getBuildSettings(project.workspace ? workspacePackage : '')
-  return buildSettings
-    // @ts-expect-error TS(7006) FIXME: Parameter 'setting' implicitly has an 'any' type.
-    .filter((setting) => {
-      if (project.workspace && project.relativeBaseDirectory && setting.packagePath) {
-        return project.relativeBaseDirectory.startsWith(setting.packagePath)
-      }
+  return (
+    buildSettings
+      // @ts-expect-error TS(7006) FIXME: Parameter 'setting' implicitly has an 'any' type.
+      .filter((setting) => {
+        if (project.workspace && project.relativeBaseDirectory && setting.packagePath) {
+          return project.relativeBaseDirectory.startsWith(setting.packagePath)
+        }
 
-      return true
-    })
-    // @ts-expect-error TS(7006) FIXME: Parameter 'setting' implicitly has an 'any' type.
-    .filter((setting) => setting.devCommand)
+        return true
+      })
+      // @ts-expect-error TS(7006) FIXME: Parameter 'setting' implicitly has an 'any' type.
+      .filter((setting) => setting.devCommand)
+  )
 }

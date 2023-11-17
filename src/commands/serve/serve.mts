@@ -1,4 +1,3 @@
- 
 import process from 'process'
 
 import { Option } from 'commander'
@@ -71,7 +70,7 @@ const serve = async (options, command) => {
   // Netlify Build are loaded.
   await getInternalFunctionsDir({ base: site.root, ensureExists: true })
 
-  let settings = /** @type {import('../../utils/types.js').ServerSettings} */ ({})
+  let settings = /** @type {import('../../utils/types.js').ServerSettings} */ {}
   try {
     settings = await detectServerSettings(devConfig, options, command)
 

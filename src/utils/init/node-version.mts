@@ -1,4 +1,3 @@
- 
 import { readFile } from 'fs/promises'
 
 import { locatePath } from 'locate-path'

@@ -1,5 +1,3 @@
- 
- 
 import AsciiTable from 'ascii-table'
 import { methods } from 'netlify'
 
