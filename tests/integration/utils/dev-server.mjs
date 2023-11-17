@@ -57,7 +57,7 @@ const startServer = async ({
     baseArgs.push('--context', context)
   }
 
-  const ps = await execa(cliPath, [...baseArgs, ...args], getExecaOptions({ cwd, env }))
+  const ps = execa(cliPath, [...baseArgs, ...args], getExecaOptions({ cwd, env }))
 
   if (process.env.DEBUG_TESTS) {
     ps.stderr.pipe(process.stderr)
