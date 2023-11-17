@@ -1,6 +1,6 @@
-import { Option, OptionValues } from "commander";
+import { Option, OptionValues } from 'commander'
 
-import BaseCommand from "../base-command.mjs";
+import BaseCommand from '../base-command.mjs'
 
 export const createInitCommand = (program: BaseCommand) =>
   program
@@ -17,7 +17,7 @@ export const createInitCommand = (program: BaseCommand) =>
       ).hideHelp(true),
     )
     .option('--git-remote-name <name>', 'Name of Git remote to use. e.g. "origin"')
-    .action(async(options: OptionValues, command: BaseCommand) => {
+    .action(async (options: OptionValues, command: BaseCommand) => {
       const { init } = await import('./init.mjs')
       await init(options, command)
     })

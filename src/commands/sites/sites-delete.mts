@@ -4,7 +4,6 @@ import inquirer from 'inquirer'
 import { chalk, error, exit, log } from '../../utils/command-helpers.mjs'
 import BaseCommand from '../base-command.mjs'
 
-
 export const sitesDelete = async (siteId: string, options: OptionValues, command: BaseCommand) => {
   command.setAnalyticsPayload({ force: options.force })
 

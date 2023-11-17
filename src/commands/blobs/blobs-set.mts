@@ -12,7 +12,13 @@ interface Options extends OptionValues {
 }
 
 // eslint-disable-next-line max-params
-export const blobsSet = async (storeName: string, key: string, valueParts: string[], options: Options, command: BaseCommand) => {
+export const blobsSet = async (
+  storeName: string,
+  key: string,
+  valueParts: string[],
+  options: Options,
+  command: BaseCommand,
+) => {
   const { api, siteInfo } = command.netlify
   const { input } = options
   const store = getStore({

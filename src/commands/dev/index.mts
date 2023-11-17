@@ -1,10 +1,7 @@
 import { Option, OptionValues } from 'commander'
 
-import {
-  BANG,
-  chalk,
-} from '../../utils/command-helpers.mjs'
-import {  normalizeContext } from '../../utils/env/index.mjs'
+import { BANG, chalk } from '../../utils/command-helpers.mjs'
+import { normalizeContext } from '../../utils/env/index.mjs'
 import { getGeoCountryArgParser } from '../../utils/validation.mjs'
 import BaseCommand from '../base-command.mjs'
 
@@ -26,24 +23,23 @@ const validateShortFlagArgs = (args: string) => {
 
 export const createDevCommand = (program: BaseCommand) => {
   program
-  .command('dev:exec')
-  .argument('<...cmd>', `the command that should be executed`)
-  .option(
-    '--context <context>',
-    'Specify a deploy context or branch for environment variables (contexts: "production", "deploy-preview", "branch-deploy", "dev")',
-    normalizeContext,
-    'dev',
-  )
-  .description(
-    'Exec command\nRuns a command within the netlify dev environment, e.g. with env variables from any installed addons',
-  )
-  .allowExcessArguments(true)
-  .addExamples(['netlify dev:exec npm run bootstrap'])
-  .action(async (cmd:string, options: OptionValues, command: BaseCommand) => {
-    const { devExec } = await import('./dev-exec.mjs')
-    await devExec(cmd, options, command)
-  })
-
+    .command('dev:exec')
+    .argument('<...cmd>', `the command that should be executed`)
+    .option(
+      '--context <context>',
+      'Specify a deploy context or branch for environment variables (contexts: "production", "deploy-preview", "branch-deploy", "dev")',
+      normalizeContext,
+      'dev',
+    )
+    .description(
+      'Exec command\nRuns a command within the netlify dev environment, e.g. with env variables from any installed addons',
+    )
+    .allowExcessArguments(true)
+    .addExamples(['netlify dev:exec npm run bootstrap'])
+    .action(async (cmd: string, options: OptionValues, command: BaseCommand) => {
+      const { devExec } = await import('./dev-exec.mjs')
+      await devExec(cmd, options, command)
+    })
 
   return program
     .command('dev')

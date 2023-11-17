@@ -24,7 +24,6 @@ import { generateInspectSettings, startProxyServer } from '../../utils/proxy-ser
 import { runBuildTimeline } from '../../utils/run-build.mjs'
 import BaseCommand from '../base-command.mjs'
 
-
 export const serve = async (options: OptionValues, command: BaseCommand) => {
   const { api, cachedConfig, config, repositoryRoot, site, siteInfo, state } = command.netlify
   config.dev = { ...config.dev }

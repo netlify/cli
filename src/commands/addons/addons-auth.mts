@@ -5,7 +5,6 @@ import { exit, log } from '../../utils/command-helpers.mjs'
 import openBrowser from '../../utils/open-browser.mjs'
 import BaseCommand from '../base-command.mjs'
 
-
 export const addonsAuth = async (addonName: string, options: OptionValues, command: BaseCommand) => {
   const { addon } = await prepareAddonCommand({
     command,

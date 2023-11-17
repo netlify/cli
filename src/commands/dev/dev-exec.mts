@@ -5,8 +5,7 @@ import { getDotEnvVariables, injectEnvVariables } from '../../utils/dev.mjs'
 import { getEnvelopeEnv } from '../../utils/env/index.mjs'
 import BaseCommand from '../base-command.mjs'
 
-
-export const devExec = async (cmd:string, options: OptionValues, command: BaseCommand) => {
+export const devExec = async (cmd: string, options: OptionValues, command: BaseCommand) => {
   const { api, cachedConfig, config, site, siteInfo } = command.netlify
 
   let { env } = cachedConfig

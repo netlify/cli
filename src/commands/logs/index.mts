@@ -4,13 +4,13 @@ import BaseCommand from '../base-command.mjs'
 
 export const createLogsBuildCommand = (program: BaseCommand) => {
   program
-  .command('logs:deploy')
-  .alias('logs:build')
-  .description('(Beta) Stream the logs of deploys currently being built to the console')
-  .action(async (options: OptionValues, command: BaseCommand) => {
-    const { logsBuild } = await import('./build.mjs')
-    await logsBuild(options, command)
-  })
+    .command('logs:deploy')
+    .alias('logs:build')
+    .description('(Beta) Stream the logs of deploys currently being built to the console')
+    .action(async (options: OptionValues, command: BaseCommand) => {
+      const { logsBuild } = await import('./build.mjs')
+      await logsBuild(options, command)
+    })
 }
 
 export const createLogsFunctionCommand = (program: BaseCommand) => {
@@ -24,10 +24,9 @@ export const createLogsFunctionCommand = (program: BaseCommand) => {
       const { logsFunction } = await import('./functions.mjs')
       await logsFunction(functionName, options, command)
     })
- }
+}
 
 export const createLogsCommand = (program: BaseCommand) => {
-
   createLogsBuildCommand(program)
 
   createLogsFunctionCommand(program)

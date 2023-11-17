@@ -33,7 +33,6 @@ const injectEnv = async function (command, { api, buildOptions, context, siteInf
   }
 }
 
-
 export const build = async (options: OptionValues, command: BaseCommand) => {
   const { cachedConfig, siteInfo } = command.netlify
   command.setAnalyticsPayload({ dry: options.dry })
@@ -53,7 +52,7 @@ export const build = async (options: OptionValues, command: BaseCommand) => {
     packagePath: command.workspacePackage,
     currentDir: command.workingDir,
     token,
-  // @ts-expect-error TS(2740)
+    // @ts-expect-error TS(2740)
     options,
   })
 
@@ -68,4 +67,3 @@ export const build = async (options: OptionValues, command: BaseCommand) => {
   const { exitCode } = await runBuild(buildOptions)
   exit(exitCode)
 }
-

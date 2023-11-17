@@ -819,4 +819,3 @@ export const deploy = async (options: OptionValues, command: BaseCommand) => {
     exit()
   }
 }
-

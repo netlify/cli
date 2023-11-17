@@ -4,7 +4,6 @@ import { exit, getToken, log } from '../../utils/command-helpers.mjs'
 import { track } from '../../utils/telemetry/index.mjs'
 import BaseCommand from '../base-command.mjs'
 
-
 export const logout = async (options: OptionValues, command: BaseCommand) => {
   // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
   const [accessToken, location] = await getToken()

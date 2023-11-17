@@ -1,18 +1,18 @@
-import { OptionValues } from "commander"
+import { OptionValues } from 'commander'
 
 import requiresSiteInfo from '../../utils/hooks/requires-site-info.mjs'
-import BaseCommand from "../base-command.mjs"
+import BaseCommand from '../base-command.mjs'
 
 export const createOpenCommand = (program: BaseCommand) => {
   program
-  .command('open:admin')
-  .description('Opens current site admin UI in Netlify')
-  .addExamples(['netlify open:admin'])
-  .hook('preAction', requiresSiteInfo)
-  .action(async (options: OptionValues, command: BaseCommand) => {
-    const { openAdmin } = await import('./open-admin.mjs')
-    await openAdmin(options, command)
-  })
+    .command('open:admin')
+    .description('Opens current site admin UI in Netlify')
+    .addExamples(['netlify open:admin'])
+    .hook('preAction', requiresSiteInfo)
+    .action(async (options: OptionValues, command: BaseCommand) => {
+      const { openAdmin } = await import('./open-admin.mjs')
+      await openAdmin(options, command)
+    })
 
   program
     .command('open:site')
@@ -23,7 +23,6 @@ export const createOpenCommand = (program: BaseCommand) => {
       const { openSite } = await import('./open-site.mjs')
       await openSite(options, command)
     })
-
 
   return program
     .command('open')

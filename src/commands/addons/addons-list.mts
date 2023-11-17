@@ -5,7 +5,6 @@ import { prepareAddonCommand } from '../../utils/addons/prepare.mjs'
 import { log, logJson } from '../../utils/command-helpers.mjs'
 import BaseCommand from '../base-command.mjs'
 
-
 export const addonsList = async (options: OptionValues, command: BaseCommand) => {
   // @ts-expect-error TS(2345) FIXME: Argument of type '{ command: any; }' is not assign... Remove this comment to see the full error message
   const { addons, siteData } = await prepareAddonCommand({ command })

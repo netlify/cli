@@ -26,7 +26,7 @@ export const createBlobsCommand = (program: BaseCommand) => {
       await blobsDelete(storeName, key, _options, command)
     })
 
-    program
+  program
     .command('blobs:get')
     .description(
       `(Beta) Reads an object with a given key from a Netlify Blobs store and, if it exists, prints the content to the terminal or saves it to a file`,
@@ -36,12 +36,12 @@ export const createBlobsCommand = (program: BaseCommand) => {
     .option('-o, --output <path>', 'Defines the filesystem path where the blob data should be persisted')
     .alias('blob:get')
     .hook('preAction', requiresSiteInfo)
-    .action(async(storeName: string, key: string, options: OptionValues, command: BaseCommand) => {
+    .action(async (storeName: string, key: string, options: OptionValues, command: BaseCommand) => {
       const { blobsGet } = await import('./blobs-get.mjs')
       await blobsGet(storeName, key, options, command)
     })
 
-    program
+  program
     .command('blobs:list')
     .description(`(Beta) Lists objects in a Netlify Blobs store`)
     .argument('<store>', 'Name of the store')
@@ -56,12 +56,12 @@ export const createBlobsCommand = (program: BaseCommand) => {
     .option('--json', `Output list contents as JSON`)
     .alias('blob:list')
     .hook('preAction', requiresSiteInfo)
-    .action(async(storeName: string, options: OptionValues, command: BaseCommand) => {
+    .action(async (storeName: string, options: OptionValues, command: BaseCommand) => {
       const { blobsList } = await import('./blobs-list.mjs')
       await blobsList(storeName, options, command)
     })
 
-    program
+  program
     .command('blobs:set')
     .description(
       `(Beta) Writes to a Netlify Blobs store an object with the data provided in the command or the contents of a file defined by the 'input' parameter`,
@@ -73,10 +73,12 @@ export const createBlobsCommand = (program: BaseCommand) => {
     .alias('blob:set')
     .hook('preAction', requiresSiteInfo)
     // eslint-disable-next-line max-params
-    .action(async(storeName: string, key: string, valueParts: string[], options: OptionValues, command: BaseCommand) => {
-      const { blobsSet } = await import('./blobs-set.mjs')
-      await blobsSet(storeName, key, valueParts, options, command)
-    })
+    .action(
+      async (storeName: string, key: string, valueParts: string[], options: OptionValues, command: BaseCommand) => {
+        const { blobsSet } = await import('./blobs-set.mjs')
+        await blobsSet(storeName, key, valueParts, options, command)
+      },
+    )
 
   return program
     .command('blobs')

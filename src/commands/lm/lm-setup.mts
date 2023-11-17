@@ -57,7 +57,6 @@ const configureLFSURL = async function (siteId, api) {
   return execa('git', ['config', '-f', '.lfsconfig', 'lfs.url', url])
 }
 
-
 export const lmSetup = async (options: OptionValues, command: BaseCommand) => {
   await command.authenticate()
 

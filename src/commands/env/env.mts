@@ -1,9 +1,7 @@
-
 import { OptionValues, Option } from 'commander'
 
-import {  normalizeContext } from '../../utils/env/index.mjs'
+import { normalizeContext } from '../../utils/env/index.mjs'
 import BaseCommand from '../base-command.mjs'
-
 
 const env = (options: OptionValues, command: BaseCommand) => {
   command.help()
@@ -11,30 +9,30 @@ const env = (options: OptionValues, command: BaseCommand) => {
 
 export const createEnvCommand = (program: BaseCommand) => {
   program
-  .command('env:get')
-  .argument('<name>', 'Environment variable name')
-  .option(
-    '-c, --context <context>',
-    'Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev")',
-    normalizeContext,
-    'dev',
-  )
-  .addOption(
-    new Option('-s, --scope <scope>', 'Specify a scope')
-      .choices(['builds', 'functions', 'post-processing', 'runtime', 'any'])
-      .default('any'),
-  )
-  .addExamples([
-    'netlify env:get MY_VAR # get value for MY_VAR in dev context',
-    'netlify env:get MY_VAR --context production',
-    'netlify env:get MY_VAR --context branch:staging',
-    'netlify env:get MY_VAR --scope functions',
-  ])
-  .description('Get resolved value of specified environment variable (includes netlify.toml)')
-  .action(async (name: string, options: OptionValues, command: BaseCommand) => {
-    const { envGet } = await import('./env-get.mjs')
-    await envGet(name, options, command)
-  })
+    .command('env:get')
+    .argument('<name>', 'Environment variable name')
+    .option(
+      '-c, --context <context>',
+      'Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev")',
+      normalizeContext,
+      'dev',
+    )
+    .addOption(
+      new Option('-s, --scope <scope>', 'Specify a scope')
+        .choices(['builds', 'functions', 'post-processing', 'runtime', 'any'])
+        .default('any'),
+    )
+    .addExamples([
+      'netlify env:get MY_VAR # get value for MY_VAR in dev context',
+      'netlify env:get MY_VAR --context production',
+      'netlify env:get MY_VAR --context branch:staging',
+      'netlify env:get MY_VAR --scope functions',
+    ])
+    .description('Get resolved value of specified environment variable (includes netlify.toml)')
+    .action(async (name: string, options: OptionValues, command: BaseCommand) => {
+      const { envGet } = await import('./env-get.mjs')
+      await envGet(name, options, command)
+    })
 
   program
     .command('env:import')
@@ -54,11 +52,11 @@ export const createEnvCommand = (program: BaseCommand) => {
     )
     .description('Import and set environment variables from .env file')
     .action(async (fileName: string, options: OptionValues, command: BaseCommand) => {
-      const {envImport} = await import('./env-import.mjs')
+      const { envImport } = await import('./env-import.mjs')
       await envImport(fileName, options, command)
     })
 
-    program
+  program
     .command('env:list')
     .option(
       '-c, --context <context>',
@@ -82,11 +80,11 @@ export const createEnvCommand = (program: BaseCommand) => {
     ])
     .description('Lists resolved environment variables for site (includes netlify.toml)')
     .action(async (options: OptionValues, command: BaseCommand) => {
-      const {envList} = await import('./env-list.mjs')
+      const { envList } = await import('./env-list.mjs')
       await envList(options, command)
     })
 
-    program
+  program
     .command('env:set')
     .argument('<key>', 'Environment variable key')
     .argument('[value]', 'Value to set to', '')
@@ -116,13 +114,12 @@ export const createEnvCommand = (program: BaseCommand) => {
       'netlify env:set VAR_NAME value --scope builds functions',
       'netlify env:set VAR_NAME --secret # convert existing variable to secret',
     ])
-    .action(async (key: string, value:string, options: OptionValues, command: BaseCommand) => {
-      const {envSet} = await import('./env-set.mjs')
+    .action(async (key: string, value: string, options: OptionValues, command: BaseCommand) => {
+      const { envSet } = await import('./env-set.mjs')
       await envSet(key, value, options, command)
     })
 
-
-    program
+  program
     .command('env:unset')
     .aliases(['env:delete', 'env:remove'])
     .argument('<key>', 'Environment variable key')
@@ -140,11 +137,11 @@ export const createEnvCommand = (program: BaseCommand) => {
     ])
     .description('Unset an environment variable which removes it from the UI')
     .action(async (key: string, options: OptionValues, command: BaseCommand) => {
-      const {envUnset} = await import('./env-unset.mjs')
+      const { envUnset } = await import('./env-unset.mjs')
       await envUnset(key, options, command)
     })
 
-    program
+  program
     .command('env:clone')
     .alias('env:migrate')
     .option('-f, --from <from>', 'Site ID (From)')
@@ -152,10 +149,9 @@ export const createEnvCommand = (program: BaseCommand) => {
     .description(`Clone environment variables from one site to another`)
     .addExamples(['netlify env:clone --to <to-site-id>', 'netlify env:clone --to <to-site-id> --from <from-site-id>'])
     .action(async (options: OptionValues, command: BaseCommand) => {
-      const {envClone} = await import('./env-clone.mjs')
+      const { envClone } = await import('./env-clone.mjs')
       await envClone(options, command)
     })
-
 
   return program
     .command('env')

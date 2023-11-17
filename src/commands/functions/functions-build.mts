@@ -7,7 +7,6 @@ import { NETLIFYDEVERR, NETLIFYDEVLOG, exit, log } from '../../utils/command-hel
 import { getFunctionsDir } from '../../utils/functions/index.mjs'
 import BaseCommand from '../base-command.mjs'
 
-
 export const functionsBuild = async (options: OptionValues, command: BaseCommand) => {
   const { config } = command.netlify
 

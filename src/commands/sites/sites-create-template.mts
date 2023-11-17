@@ -69,7 +69,6 @@ const getTemplateName = async ({ ghToken, options, repository }) => {
 // @ts-expect-error TS(7031) FIXME: Binding element 'options' implicitly has an 'any' ... Remove this comment to see the full error message
 const getGitHubLink = ({ options, templateName }) => options.url || `https://github.com/${templateName}`
 
-
 export const sitesCreateTemplate = async (repository: string, options: OptionValues, command: BaseCommand) => {
   const { api } = command.netlify
 

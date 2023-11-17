@@ -7,7 +7,6 @@ import { login } from '../login/login.mjs'
 
 const LOGIN_NEW = 'I would like to login to a new account'
 
-
 export const switchCommand = async (options: OptionValues, command: BaseCommand) => {
   const availableUsersChoices = Object.values(command.netlify.globalConfig.get('users') || {}).reduce(
     (prev, current) =>

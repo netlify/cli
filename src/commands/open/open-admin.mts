@@ -4,7 +4,6 @@ import { exit, log } from '../../utils/command-helpers.mjs'
 import openBrowser from '../../utils/open-browser.mjs'
 import BaseCommand from '../base-command.mjs'
 
-
 export const openAdmin = async (options: OptionValues, command: BaseCommand) => {
   const { siteInfo } = command.netlify
 

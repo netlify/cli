@@ -1,7 +1,7 @@
-import { OptionValues } from "commander"
+import { OptionValues } from 'commander'
 
 import requiresSiteInfo from '../../utils/hooks/requires-site-info.mjs'
-import BaseCommand from "../base-command.mjs"
+import BaseCommand from '../base-command.mjs'
 
 export const createStatusCommand = (program: BaseCommand) => {
   program

@@ -56,7 +56,6 @@ const waitForBuildFinish = async function (api, siteId, spinner) {
   return firstPass
 }
 
-
 export const watch = async (options: OptionValues, command: BaseCommand) => {
   await command.authenticate()
   const client = command.netlify.api

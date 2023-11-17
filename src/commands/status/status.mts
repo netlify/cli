@@ -5,7 +5,6 @@ import prettyjson from 'prettyjson'
 import { chalk, error, exit, getToken, log, logJson, warn } from '../../utils/command-helpers.mjs'
 import BaseCommand from '../base-command.mjs'
 
-
 export const status = async (options: OptionValues, command: BaseCommand) => {
   const { api, globalConfig, site, siteInfo } = command.netlify
   const current = globalConfig.get('userId')

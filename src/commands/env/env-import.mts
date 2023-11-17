@@ -8,7 +8,6 @@ import { exit, log, logJson } from '../../utils/command-helpers.mjs'
 import { translateFromEnvelopeToMongo, translateFromMongoToEnvelope } from '../../utils/env/index.mjs'
 import BaseCommand from '../base-command.mjs'
 
-
 /**
  * Updates the imported env in the site record
  * @returns {Promise<object>}
@@ -75,7 +74,6 @@ const importIntoEnvelope = async ({ api, importedEnv, options, siteInfo }) => {
     ...importedEnv,
   }
 }
-
 
 export const envImport = async (fileName: string, options: OptionValues, command: BaseCommand) => {
   const { api, cachedConfig, site } = command.netlify

@@ -1,7 +1,7 @@
 import process from 'process'
 
 import { normalizeContext } from '../../utils/env/index.mjs'
-import BaseCommand from "../base-command.mjs";
+import BaseCommand from '../base-command.mjs'
 
 export const createBuildCommand = (program: BaseCommand) =>
   program
@@ -16,7 +16,7 @@ export const createBuildCommand = (program: BaseCommand) =>
     .option('--dry', 'Dry run: show instructions without running them', false)
     .option('-o, --offline', 'disables any features that require network access', false)
     .addExamples(['netlify build'])
-    .action(async(options, command) => {
+    .action(async (options, command) => {
       const { build } = await import('./build.mjs')
-      await build(options, command )
+      await build(options, command)
     })

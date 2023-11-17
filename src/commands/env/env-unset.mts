@@ -1,4 +1,3 @@
-
 import { OptionValues } from 'commander'
 
 import { chalk, error, log, logJson } from '../../utils/command-helpers.mjs'
@@ -93,7 +92,6 @@ const unsetInEnvelope = async ({ api, context, key, siteInfo }) => {
   return env
 }
 
-
 export const envUnset = async (key: string, options: OptionValues, command: BaseCommand) => {
   const { context } = options
   const { api, cachedConfig, site } = command.netlify
@@ -129,4 +127,3 @@ export const envUnset = async (key: string, options: OptionValues, command: Base
   const contextType = AVAILABLE_CONTEXTS.includes(context || 'all') ? 'context' : 'branch'
   log(`Unset environment variable ${chalk.yellow(key)} in the ${chalk.magenta(context || 'all')} ${contextType}`)
 }
-

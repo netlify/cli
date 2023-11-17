@@ -2,33 +2,32 @@ import { OptionValues } from 'commander'
 
 import BaseCommand from '../base-command.mjs'
 
-
 const lm = (options: OptionValues, command: BaseCommand) => {
   command.help()
 }
 
 export const createLmCommand = (program: BaseCommand) => {
   program
-  .command('lm:info', { hidden: true })
-  .description('Show large media requirements information.')
-  .action(async () => {
-    const { lmInfo } = await import('./lm-info.mjs')
-    await lmInfo()
-  })
+    .command('lm:info', { hidden: true })
+    .description('Show large media requirements information.')
+    .action(async () => {
+      const { lmInfo } = await import('./lm-info.mjs')
+      await lmInfo()
+    })
 
   program
-  .command('lm:install', { hidden: true })
-  .alias('lm:init')
-  .description(
-    `Configures your computer to use Netlify Large Media
+    .command('lm:install', { hidden: true })
+    .alias('lm:init')
+    .description(
+      `Configures your computer to use Netlify Large Media
 It installs the required credentials helper for Git,
 and configures your Git environment with the right credentials.`,
-  )
-  .option('-f, --force', 'Force the credentials helper installation')
-  .action(async (options: OptionValues) => {
-    const { lmInstall } = await import('./lm-install.mjs')
-    await lmInstall(options)
-  })
+    )
+    .option('-f, --force', 'Force the credentials helper installation')
+    .action(async (options: OptionValues) => {
+      const { lmInstall } = await import('./lm-install.mjs')
+      await lmInstall(options)
+    })
 
   program
     .command('lm:setup', { hidden: true })
@@ -41,14 +40,13 @@ and configures your Git environment with the right credentials.`,
       await lmSetup(options, command)
     })
 
-
-    program
+  program
     .command('lm:uninstall', { hidden: true })
     .alias('lm:remove')
     .description(
       'Uninstalls Netlify git credentials helper and cleans up any related configuration changes made by the install command.',
     )
-    .action(async() => {
+    .action(async () => {
       const { lmUninstall } = await import('./lm-uninstall.mjs')
       await lmUninstall()
     })

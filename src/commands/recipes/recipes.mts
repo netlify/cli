@@ -11,14 +11,12 @@ import { getRecipe, listRecipes } from './common.mjs'
 
 const SUGGESTION_TIMEOUT = 1e4
 
-
 // @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'any' t... Remove this comment to see the full error message
 export const runRecipe = async ({ config, recipeName, repositoryRoot }) => {
   const recipe = await getRecipe(recipeName)
 
   return recipe.run({ config, repositoryRoot })
 }
-
 
 export const recipesCommand = async (recipeName: string, options: OptionValues, command: BaseCommand): Promise<any> => {
   const { config, repositoryRoot } = command.netlify

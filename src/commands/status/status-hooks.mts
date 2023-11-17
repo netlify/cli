@@ -4,7 +4,6 @@ import prettyjson from 'prettyjson'
 import { log } from '../../utils/command-helpers.mjs'
 import BaseCommand from '../base-command.mjs'
 
-
 export const statusHooks = async (options: OptionValues, command: BaseCommand) => {
   const { api, siteInfo } = command.netlify
 

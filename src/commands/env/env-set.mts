@@ -1,14 +1,8 @@
-
 import { OptionValues } from 'commander'
 
 import { chalk, error, log, logJson } from '../../utils/command-helpers.mjs'
-import {
-  AVAILABLE_CONTEXTS,
-  AVAILABLE_SCOPES,
-  translateFromEnvelopeToMongo,
-} from '../../utils/env/index.mjs'
+import { AVAILABLE_CONTEXTS, AVAILABLE_SCOPES, translateFromEnvelopeToMongo } from '../../utils/env/index.mjs'
 import BaseCommand from '../base-command.mjs'
-
 
 /**
  * Updates the env for a site record with a new key/value pair
@@ -135,7 +129,6 @@ const setInEnvelope = async ({ api, context, key, scope, secret, siteInfo, value
     [key]: value || env[key],
   }
 }
-
 
 export const envSet = async (key: string, value: string, options: OptionValues, command: BaseCommand) => {
   const { context, scope, secret } = options

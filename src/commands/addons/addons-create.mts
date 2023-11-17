@@ -29,7 +29,6 @@ const createAddon = async ({ addonName, api, config, siteData, siteId }) => {
   }
 }
 
-
 export const addonsCreate = async (addonName: string, options: OptionValues, command: BaseCommand) => {
   const { manifest, siteData } = await prepareAddonCommand({
     command,

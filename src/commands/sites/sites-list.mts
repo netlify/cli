@@ -5,7 +5,6 @@ import { startSpinner, stopSpinner } from '../../lib/spinner.mjs'
 import { chalk, log, logJson } from '../../utils/command-helpers.mjs'
 import BaseCommand from '../base-command.mjs'
 
-
 export const sitesList = async (options: OptionValues, command: BaseCommand) => {
   const { api } = command.netlify
   /** @type {import('ora').Ora} */

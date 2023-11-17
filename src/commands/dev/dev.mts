@@ -26,7 +26,6 @@ import { getProxyUrl } from '../../utils/proxy.mjs'
 import { runDevTimeline } from '../../utils/run-build.mjs'
 import BaseCommand from '../base-command.mjs'
 
-
 /**
  *
  * @param {object} config
@@ -65,7 +64,6 @@ const handleLiveTunnel = async ({ api, options, settings, site, state }) => {
     return sessionUrl
   }
 }
-
 
 export const dev = async (options: OptionValues, command: BaseCommand) => {
   log(`${NETLIFYDEV}`)

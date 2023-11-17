@@ -1,4 +1,3 @@
-
 import { OptionValues } from 'commander'
 
 import { chalk } from '../../utils/command-helpers.mjs'
@@ -16,29 +15,28 @@ export const createFunctionsCommand = (program: BaseCommand) => {
     .description('Build functions locally')
     .option('-f, --functions <directory>', 'Specify a functions directory to build to')
     .option('-s, --src <directory>', 'Specify the source directory for the functions')
-    .action(async(options: OptionValues, command: BaseCommand) => {
+    .action(async (options: OptionValues, command: BaseCommand) => {
       const { functionsBuild } = await import('./functions-build.mjs')
       await functionsBuild(options, command)
     })
 
   program
-  .command('functions:create')
-  .alias('function:create')
-  .argument('[name]', 'name of your new function file inside your functions directory')
-  .description('Create a new function locally')
-  .option('-n, --name <name>', 'function name')
-  .option('-u, --url <url>', 'pull template from URL')
-  .option('-l, --language <lang>', 'function language')
-  .addExamples([
-    'netlify functions:create',
-    'netlify functions:create hello-world',
-    'netlify functions:create --name hello-world',
-  ])
-  .action(async(name: string, options: OptionValues, command: BaseCommand) => {
-    const { functionsCreate } = await import('./functions-create.mjs')
-    await functionsCreate(name, options, command)
-  })
-
+    .command('functions:create')
+    .alias('function:create')
+    .argument('[name]', 'name of your new function file inside your functions directory')
+    .description('Create a new function locally')
+    .option('-n, --name <name>', 'function name')
+    .option('-u, --url <url>', 'pull template from URL')
+    .option('-l, --language <lang>', 'function language')
+    .addExamples([
+      'netlify functions:create',
+      'netlify functions:create hello-world',
+      'netlify functions:create --name hello-world',
+    ])
+    .action(async (name: string, options: OptionValues, command: BaseCommand) => {
+      const { functionsCreate } = await import('./functions-create.mjs')
+      await functionsCreate(name, options, command)
+    })
 
   program
     .command('functions:invoke')
@@ -71,13 +69,12 @@ export const createFunctionsCommand = (program: BaseCommand) => {
       'netlify functions:invoke myfunction --querystring "foo=1',
       'netlify functions:invoke myfunction --payload "./pathTo.json"',
     ])
-    .action(async(name: string, options: OptionValues, command: BaseCommand) => {
+    .action(async (name: string, options: OptionValues, command: BaseCommand) => {
       const { functionsInvoke } = await import('./functions-invoke.mjs')
       await functionsInvoke(name, options, command)
     })
 
-
-    program
+  program
     .command('functions:list')
     .alias('function:list')
     .description(
@@ -89,12 +86,12 @@ NOT the same as listing the functions that have been deployed. For that info you
     .option('-f, --functions <dir>', 'Specify a functions directory to list')
     .option('--json', 'Output function data as JSON')
     .hook('preAction', requiresSiteInfo)
-    .action(async(options: OptionValues, command: BaseCommand) => {
+    .action(async (options: OptionValues, command: BaseCommand) => {
       const { functionsList } = await import('./functions-list.mjs')
       await functionsList(options, command)
     })
 
-    program
+  program
     .command('functions:serve')
     .alias('function:serve')
     .description('Serve functions locally')
@@ -102,7 +99,7 @@ NOT the same as listing the functions that have been deployed. For that info you
     .option('-p, --port <port>', 'Specify a port for the functions server', (value) => Number.parseInt(value))
     .option('-o, --offline', 'disables any features that require network access')
     .addHelpText('after', 'Helpful for debugging functions.')
-    .action(async(options: OptionValues, command: BaseCommand) => {
+    .action(async (options: OptionValues, command: BaseCommand) => {
       const { functionsServe } = await import('./functions-serve.mjs')
       await functionsServe(options, command)
     })

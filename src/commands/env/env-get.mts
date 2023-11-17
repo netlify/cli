@@ -4,7 +4,6 @@ import { chalk, error, log, logJson } from '../../utils/command-helpers.mjs'
 import { AVAILABLE_CONTEXTS, getEnvelopeEnv } from '../../utils/env/index.mjs'
 import BaseCommand from '../base-command.mjs'
 
-
 export const envGet = async (name: string, options: OptionValues, command: BaseCommand) => {
   const { context, scope } = options
   const { api, cachedConfig, site } = command.netlify

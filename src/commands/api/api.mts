@@ -5,7 +5,6 @@ import { methods } from 'netlify'
 import { chalk, error, exit, log, logJson } from '../../utils/command-helpers.mjs'
 import BaseCommand from '../base-command.mjs'
 
-
 export const apiCommand = async (apiMethod: string, options: OptionValues, command: BaseCommand) => {
   const { api } = command.netlify
 
@@ -45,4 +44,3 @@ export const apiCommand = async (apiMethod: string, options: OptionValues, comma
     error(error_)
   }
 }
-

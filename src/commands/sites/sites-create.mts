@@ -28,7 +28,6 @@ export const getSiteNameInput = async (name) => {
   return { name }
 }
 
-
 export const sitesCreate = async (options: OptionValues, command: BaseCommand) => {
   const { api } = command.netlify
 
@@ -154,4 +153,3 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand) =
 
   return site
 }
-

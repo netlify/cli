@@ -1,4 +1,4 @@
-import { OptionValues , InvalidArgumentError } from 'commander'
+import { OptionValues, InvalidArgumentError } from 'commander'
 
 import BaseCommand from '../base-command.mjs'
 
@@ -44,42 +44,40 @@ Create a site from a starter template.`,
 
 export const createSitesCreateCommand = (program: BaseCommand) => {
   program
-  .command('sites:create')
-  .description(
-    `Create an empty site (advanced)
+    .command('sites:create')
+    .description(
+      `Create an empty site (advanced)
 Create a blank site that isn't associated with any git remote. Will link the site to the current working directory.`,
-  )
-  .option('-n, --name <name>', 'name of site', validateName)
-  .option('-a, --account-slug <slug>', 'account slug to create the site under')
-  .option('-c, --with-ci', 'initialize CI hooks during site creation')
-  .option('-m, --manual', 'force manual CI setup.  Used --with-ci flag')
-  .option('--disable-linking', 'create the site without linking it to current directory')
-  .addHelpText(
-    'after',
-    `Create a blank site that isn't associated with any git remote. Will link the site to the current working directory.`,
-  )
-  .action(async (options: OptionValues, command: BaseCommand) => {
-    const { sitesCreate } = await import('./sites-create.mjs')
-    await sitesCreate(options, command)
-  })
- }
-
+    )
+    .option('-n, --name <name>', 'name of site', validateName)
+    .option('-a, --account-slug <slug>', 'account slug to create the site under')
+    .option('-c, --with-ci', 'initialize CI hooks during site creation')
+    .option('-m, --manual', 'force manual CI setup.  Used --with-ci flag')
+    .option('--disable-linking', 'create the site without linking it to current directory')
+    .addHelpText(
+      'after',
+      `Create a blank site that isn't associated with any git remote. Will link the site to the current working directory.`,
+    )
+    .action(async (options: OptionValues, command: BaseCommand) => {
+      const { sitesCreate } = await import('./sites-create.mjs')
+      await sitesCreate(options, command)
+    })
+}
 
 export const createSitesCommand = (program: BaseCommand) => {
+  createSitesCreateCommand(program)
+  createSitesFromTemplateCommand(program)
 
-    createSitesCreateCommand(program)
-    createSitesFromTemplateCommand(program)
-
-    program
+  program
     .command('sites:list')
     .description('List all sites you have access to')
     .option('--json', 'Output site data as JSON')
     .action(async (options: OptionValues, command: BaseCommand) => {
-      const {sitesList} = await import('./sites-list.mjs')
+      const { sitesList } = await import('./sites-list.mjs')
       await sitesList(options, command)
     })
 
-    program
+  program
     .command('sites:delete')
     .description('Delete a site\nThis command will permanently delete the site on Netlify. Use with caution.')
     .argument('<siteId>', 'Site ID to delete.')

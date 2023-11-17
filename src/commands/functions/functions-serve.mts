@@ -11,7 +11,6 @@ import BaseCommand from '../base-command.mjs'
 
 const DEFAULT_PORT = 9999
 
-
 export const functionsServe = async (options: OptionValues, command: BaseCommand) => {
   const { api, config, site, siteInfo, state } = command.netlify
 
@@ -59,4 +58,3 @@ export const functionsServe = async (options: OptionValues, command: BaseCommand
   const url = getProxyUrl({ port: functionsPort })
   printBanner({ url })
 }
-

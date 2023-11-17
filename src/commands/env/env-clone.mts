@@ -1,4 +1,3 @@
-
 import { OptionValues } from 'commander'
 
 import { chalk, error as logError, log } from '../../utils/command-helpers.mjs'
@@ -87,7 +86,6 @@ const envelopeToEnvelope = async ({ api, siteFrom, siteTo }) => {
   return true
 }
 
-
 /**
  * Copies the env from a site not configured with Envelope to a different site not configured with Envelope
  * @returns {Promise<boolean>}
@@ -163,7 +161,6 @@ const mongoToEnvelope = async ({ api, siteFrom, siteTo }) => {
 
   return true
 }
-
 
 export const envClone = async (options: OptionValues, command: BaseCommand) => {
   const { api, site } = command.netlify

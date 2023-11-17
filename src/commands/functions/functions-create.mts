@@ -750,7 +750,6 @@ const ensureFunctionPathIsOk = function (functionsDir, name) {
   return functionPath
 }
 
-
 export const functionsCreate = async (name: string, options: OptionValues, command: BaseCommand) => {
   const functionType = await selectTypeOfFunc()
   const functionsDir =

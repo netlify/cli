@@ -1,8 +1,8 @@
-import { Option } from "commander";
+import { Option } from 'commander'
 
-import {  normalizeContext } from '../../utils/env/index.mjs'
+import { normalizeContext } from '../../utils/env/index.mjs'
 import { getGeoCountryArgParser } from '../../utils/validation.mjs'
-import BaseCommand from "../base-command.mjs";
+import BaseCommand from '../base-command.mjs'
 
 export const createServeCommand = (program: BaseCommand) =>
   program

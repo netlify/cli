@@ -1,7 +1,6 @@
-import { Option, OptionValues } from "commander";
+import { Option, OptionValues } from 'commander'
 
-import BaseCommand from "../base-command.mjs";
-
+import BaseCommand from '../base-command.mjs'
 
 export const createLinkCommand = (program: BaseCommand) =>
   program
