@@ -1,6 +1,6 @@
 import { NetlifyConfig } from '@netlify/build'
 import express from 'express'
-import { createIPX, ipxFSStorage, ipxHttpStorage, createIPXNodeServer, IPX } from 'ipx'
+import { createIPX, ipxFSStorage, ipxHttpStorage, createIPXNodeServer } from 'ipx'
 
 import { log, NETLIFYDEVERR } from '../../utils/command-helpers.mjs'
 import { getProxyUrl } from '../../utils/proxy.mjs'
@@ -117,7 +117,7 @@ export const transformImageParams = function (query: QueryParams): string {
 
   params.position = query.position || null
 
-  return Object.entries(params as IpxParams)
+  return Object.entries(params)
     .filter(([, value]) => value !== null)
     .map(([key, value]) => `${key}_${value}`)
     .join(',')
