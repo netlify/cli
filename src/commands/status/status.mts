@@ -7,7 +7,7 @@ import BaseCommand from '../base-command.mjs'
 
 
 export const status = async (options: OptionValues, command: BaseCommand) => {
-  const { api, globalConfig, site } = command.netlify
+  const { api, globalConfig, site, siteInfo } = command.netlify
   const current = globalConfig.get('userId')
   // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
   const [accessToken] = await getToken()
@@ -29,7 +29,8 @@ export const status = async (options: OptionValues, command: BaseCommand) => {
   let user
 
   try {
-    [accounts, user] = await Promise.all([api.listAccountsForUser(), api.getCurrentUser()])
+    // eslint-disable-next-line @typescript-eslint/no-extra-semi
+    ;[accounts, user] = await Promise.all([api.listAccountsForUser(), api.getCurrentUser()])
   } catch (error_) {
     // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
     if (error_.status === 401) {
@@ -63,23 +64,9 @@ export const status = async (options: OptionValues, command: BaseCommand) => {
     warn('Did you run `netlify link` yet?')
     error(`You don't appear to be in a folder that is linked to a site`)
   }
-  let siteData
-  try {
-    siteData = await api.getSite({ siteId })
-  } catch (error_) {
-    // unauthorized
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    if (error_.status === 401) {
-      warn(`Log in with a different account or re-link to a site you have permission for`)
-      error(`Not authorized to view the currently linked site (${siteId})`)
-    }
-    // missing
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    if (error_.status === 404) {
-      error(`The site this folder is linked to can't be found`)
-    }
-    // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
-    error(error_)
+
+  if (!siteInfo) {
+    error(`No site info found for site ${siteId}`)
   }
 
   // Json only logs out if --json flag is passed
@@ -87,11 +74,11 @@ export const status = async (options: OptionValues, command: BaseCommand) => {
     logJson({
       account: cleanAccountData,
       siteData: {
-        'site-name': `${siteData.name}`,
+        'site-name': `${siteInfo.name}`,
         'config-path': site.configPath,
-        'admin-url': siteData.admin_url,
-        'site-url': siteData.ssl_url || siteData.url,
-        'site-id': siteData.id,
+        'admin-url': siteInfo.admin_url,
+        'site-url': siteInfo.ssl_url || siteInfo.url,
+        'site-id': siteInfo.id,
       },
     })
   }
@@ -101,11 +88,11 @@ export const status = async (options: OptionValues, command: BaseCommand) => {
 ────────────────────┘`)
   log(
     prettyjson.render({
-      'Current site': `${siteData.name}`,
+      'Current site': `${siteInfo.name}`,
       'Netlify TOML': site.configPath,
-      'Admin URL': chalk.magentaBright(siteData.admin_url),
-      'Site URL': chalk.cyanBright(siteData.ssl_url || siteData.url),
-      'Site Id': chalk.yellowBright(siteData.id),
+      'Admin URL': chalk.magentaBright(siteInfo.admin_url),
+      'Site URL': chalk.cyanBright(siteInfo.ssl_url || siteInfo.url),
+      'Site Id': chalk.yellowBright(siteInfo.id),
     }),
   )
   log()

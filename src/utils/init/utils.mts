@@ -1,4 +1,3 @@
- 
 import { writeFile } from 'fs/promises'
 import path from 'path'
 
@@ -31,7 +30,7 @@ export const getPluginsToAutoInstall = (pluginsInstalled = [], pluginsRecommende
     (acc, plugin) =>
       pluginsInstalled.includes(plugin) && !pluginsToAlwaysInstall.has(plugin) ? acc : [...acc, plugin],
 
-    /** @type {string[]} */ ([]),
+    /** @type {string[]} */ [],
   )
 
 /**

@@ -1,4 +1,3 @@
-
 import cp from 'child_process'
 import fs from 'fs'
 import { mkdir, readdir, unlink } from 'fs/promises'
@@ -90,17 +89,21 @@ const filterRegistry = function (registry, input) {
   const filteredTemplateNames = new Set(
     filteredTemplates.map((filteredTemplate) => (input ? filteredTemplate.string : filteredTemplate)),
   )
-  return registry
-    // @ts-expect-error TS(7006) FIXME: Parameter 't' implicitly has an 'any' type.
-    .filter((t) => filteredTemplateNames.has(t.name + t.description))
-    // @ts-expect-error TS(7006) FIXME: Parameter 't' implicitly has an 'any' type.
-    .map((t) => {
-      // add the score
-      // @ts-expect-error TS(2339) FIXME: Property 'score' does not exist on type 'FilterRes... Remove this comment to see the full error message
-      const { score } = filteredTemplates.find((filteredTemplate) => filteredTemplate.string === t.name + t.description)
-      t.score = score
-      return t
-    })
+  return (
+    registry
+      // @ts-expect-error TS(7006) FIXME: Parameter 't' implicitly has an 'any' type.
+      .filter((t) => filteredTemplateNames.has(t.name + t.description))
+      // @ts-expect-error TS(7006) FIXME: Parameter 't' implicitly has an 'any' type.
+      .map((t) => {
+        // add the score
+        // @ts-expect-error TS(2339) FIXME: Property 'score' does not exist on type 'FilterRes... Remove this comment to see the full error message
+        const { score } = filteredTemplates.find(
+          (filteredTemplate) => filteredTemplate.string === t.name + t.description,
+        )
+        t.score = score
+        return t
+      })
+  )
 }
 
 /**
@@ -179,8 +182,8 @@ const pickTemplate = async function ({ language: languageFromFlag }, funcType) {
   if (language === undefined) {
     const langs =
       funcType === 'edge'
-        // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'false | {... Remove this comment to see the full error message
-        ? languages.filter((lang) => lang.value === 'javascript' || lang.value === 'typescript')
+        ? // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'false | {... Remove this comment to see the full error message
+          languages.filter((lang) => lang.value === 'javascript' || lang.value === 'typescript')
         : languages.filter(Boolean)
 
     const { language: languageFromPrompt } = await inquirer.prompt({

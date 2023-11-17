@@ -1,4 +1,3 @@
-
 import { uninstall } from '../../utils/lm/install.mjs'
 
 /**

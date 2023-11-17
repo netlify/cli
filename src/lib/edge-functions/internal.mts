@@ -1,4 +1,3 @@
- 
 import { readFile, stat } from 'fs/promises'
 import { dirname, join, resolve } from 'path'
 

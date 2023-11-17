@@ -1,4 +1,3 @@
- 
 import process from 'process'
 
 import execa from 'execa'
@@ -108,8 +107,8 @@ export const runCommand = (command, options = {}) => {
         )
       } else {
         const errorMessage = result.failed
-          // @ts-expect-error TS(2339) FIXME: Property 'shortMessage' does not exist on type 'Ex... Remove this comment to see the full error message
-          ? `${NETLIFYDEVERR} ${result.shortMessage}`
+          ? // @ts-expect-error TS(2339) FIXME: Property 'shortMessage' does not exist on type 'Ex... Remove this comment to see the full error message
+            `${NETLIFYDEVERR} ${result.shortMessage}`
           : `${NETLIFYDEVWARN} "${command}" exited with code ${result.exitCode}`
 
         log(`${errorMessage}. Shutting down Netlify Dev server`)

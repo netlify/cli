@@ -1,4 +1,3 @@
-
 import { OptionValues } from 'commander'
 
 import { chalk, exit, getToken, log } from '../../utils/command-helpers.mjs'

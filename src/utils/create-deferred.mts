@@ -1,4 +1,3 @@
- 
 const createDeferred = () => {
   let resolveDeferred
   let rejectDeferred

@@ -30,7 +30,12 @@ export const logsFunction = async (functionName: string | undefined, options: Op
   const { site } = command.netlify
   const { id: siteId } = site
 
-  const { functions } = await client.searchSiteFunctions({ siteId })
+  const { functions = [] } = await client.searchSiteFunctions({ siteId })
+
+  if (functions.length === 0) {
+    log(`No functions found for the site`)
+    return
+  }
 
   let selectedFunction
   if (functionName) {

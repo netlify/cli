@@ -1,6 +1,4 @@
-
 import { readFile } from 'fs/promises'
-
 
 import AsciiTable from 'ascii-table'
 import { OptionValues } from 'commander'

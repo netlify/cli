@@ -1,6 +1,5 @@
-
 import { OptionValues } from 'commander'
-import inquirer, { BaseChoiceMap } from 'inquirer'
+import inquirer from 'inquirer'
 import pick from 'lodash/pick.js'
 import prettyjson from 'prettyjson'
 

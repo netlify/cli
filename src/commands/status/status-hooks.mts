@@ -1,4 +1,3 @@
-
 import { OptionValues } from 'commander'
 import prettyjson from 'prettyjson'
 

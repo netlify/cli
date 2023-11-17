@@ -1,4 +1,3 @@
-
 import { OptionValues } from 'commander'
 
 import { installPlatform } from '../../utils/lm/install.mjs'

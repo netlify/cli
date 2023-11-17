@@ -1,4 +1,3 @@
-
 import { OptionValues } from 'commander'
 import { Listr } from 'listr2'
 

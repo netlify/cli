@@ -1,4 +1,3 @@
-
 import { basename } from 'path'
 
 import { OptionValues } from 'commander'
