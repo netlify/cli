@@ -837,6 +837,7 @@ export const startProxy = async function ({
 
   const imageProxy = await initializeImageProxy({
     config,
+    settings,
   })
   const proxy = await initializeProxy({
     env,
