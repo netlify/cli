@@ -28,7 +28,7 @@ jobs:
       - name: Get TypeScript conversion progress
         run:
           grep -r --exclude-dir="node_modules" --include="*.mts" "@ts-expect-error" . | wc -l | xargs >
-          .delta.tsConversion && echo " (Number of `@ts-expect-error` directives)" >> .delta.tsConversion
+          .delta.tsConversion && echo " (Number of ts-expect-error directives)" >> .delta.tsConversion
       - name: Save PR number
         if: github.event_name == 'pull_request'
         run: echo ${{ github.event.number }} > ./pr_number
