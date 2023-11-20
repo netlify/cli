@@ -384,14 +384,15 @@ export class EdgeFunctionsRegistry {
       routeIndexes.push(index)
     })
 
+    const routes = [...(this.manifest?.routes || []), ...(this.manifest?.post_cache_routes || [])].map((route) => ({
+      function: route.function,
+      path: route.path,
+      pattern: route.pattern,
+    }))
     const invocationMetadata = {
       function_config: this.manifest?.function_config,
       req_routes: routeIndexes,
-      routes: this.manifest?.routes.map((route) => ({
-        function: route.function,
-        path: route.path,
-        pattern: route.pattern,
-      })),
+      routes,
     }
 
     return { functionNames, invocationMetadata }
