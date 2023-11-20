@@ -72,8 +72,7 @@ const serve = async (options, command) => {
   // Netlify Build are loaded.
   await getInternalFunctionsDir({ base: site.root, ensureExists: true })
 
-  // @ts-expect-error TS(2571) FIXME: Type '{}' is not assignable to type 'ServerSettings'.
-  let settings: ServerSettings = {}
+  let settings: ServerSettings
   try {
     settings = await detectServerSettings(devConfig, options, command)
 
@@ -81,7 +80,7 @@ const serve = async (options, command) => {
   } catch (error_) {
     // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
     log(NETLIFYDEVERR, error_.message)
-    exit(1)
+    return exit(1)
   }
 
   command.setAnalyticsPayload({ live: options.live })
