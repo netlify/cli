@@ -77,6 +77,21 @@ describe.skipIf(isWindows)('edge functions', () => {
       })
     })
 
+    test<FixtureTestContext>('should expose URL parameters to edge functions with `cache: "manual"`', async ({
+      devServer,
+    }) => {
+      const response = await got(`http://localhost:${devServer.port}/categories-after-cache/foo/products/bar`, {
+        throwHttpErrors: false,
+        retry: { limit: 0 },
+      })
+
+      const { params } = JSON.parse(response.body)
+      expect(params).toEqual({
+        category: 'foo',
+        product: 'bar',
+      })
+    })
+
     test<FixtureTestContext>('should respect config.methods field', async ({ devServer }) => {
       const responseGet = await got(`http://localhost:${devServer.port}/products/really-bad-product`, {
         method: 'GET',
