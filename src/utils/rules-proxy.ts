@@ -1,4 +1,3 @@
- 
 import path from 'path'
 
 import chokidar from 'chokidar'

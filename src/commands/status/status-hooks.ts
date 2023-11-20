@@ -1,4 +1,3 @@
- 
 import prettyjson from 'prettyjson'
 
 import { log } from '../../utils/command-helpers.js'

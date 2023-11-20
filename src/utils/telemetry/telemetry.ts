@@ -1,4 +1,3 @@
- 
 import { dirname, join } from 'path'
 import process, { version as nodejsVersion } from 'process'
 import { fileURLToPath } from 'url'
@@ -26,7 +25,7 @@ function send(type, payload) {
     type,
   })
 
-  const args = /** @type {const} */ ([process.execPath, [requestFile, options]])
+  const args = /** @type {const} */ [process.execPath, [requestFile, options]]
   if (process.env.NETLIFY_TEST_TELEMETRY_WAIT === 'true') {
     // @ts-expect-error TS(7005) FIXME: Variable 'execa' implicitly has an 'any' type.
     return execa(...args, {

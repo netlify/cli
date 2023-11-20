@@ -1,8 +1,8 @@
- 
 import process from 'process'
 
 import { Option } from 'commander'
 
+import { getBlobsContext } from '../../lib/blobs/blobs.js'
 import { promptEditorHelper } from '../../lib/edge-functions/editor-helper.js'
 import { startFunctionsServer } from '../../lib/functions/server.js'
 import { printBanner } from '../../utils/banner.js'
@@ -23,6 +23,7 @@ import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import openBrowser from '../../utils/open-browser.js'
 import { generateInspectSettings, startProxyServer } from '../../utils/proxy-server.js'
 import { runBuildTimeline } from '../../utils/run-build.js'
+import type { ServerSettings } from '../../utils/types.js'
 import { getGeoCountryArgParser } from '../../utils/validation.js'
 
 /**
@@ -71,7 +72,7 @@ const serve = async (options, command) => {
   // Netlify Build are loaded.
   await getInternalFunctionsDir({ base: site.root, ensureExists: true })
 
-  let settings = /** @type {import('../../utils/types.js').ServerSettings} */ ({})
+  let settings: ServerSettings
   try {
     settings = await detectServerSettings(devConfig, options, command)
 
@@ -79,7 +80,7 @@ const serve = async (options, command) => {
   } catch (error_) {
     // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
     log(NETLIFYDEVERR, error_.message)
-    exit(1)
+    return exit(1)
   }
 
   command.setAnalyticsPayload({ live: options.live })
@@ -95,8 +96,15 @@ const serve = async (options, command) => {
     options,
   })
 
+  const blobsContext = await getBlobsContext({
+    debug: options.debug,
+    projectRoot: command.workingDir,
+    siteID: site.id ?? 'unknown-site-id',
+  })
+
   const functionsRegistry = await startFunctionsServer({
     api,
+    blobsContext,
     command,
     config,
     debug: options.debug,

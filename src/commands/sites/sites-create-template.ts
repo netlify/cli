@@ -1,5 +1,3 @@
- 
-
 import inquirer from 'inquirer'
 import pick from 'lodash/pick.js'
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'pars... Remove this comment to see the full error message
@@ -21,15 +19,17 @@ import { getSiteNameInput } from './sites-create.js'
 export const fetchTemplates = async (token) => {
   const templatesFromGithubOrg = await getTemplatesFromGitHub(token)
 
-  return templatesFromGithubOrg
-    // @ts-expect-error TS(7006) FIXME: Parameter 'repo' implicitly has an 'any' type.
-    .filter((repo) => !repo.archived && !repo.disabled)
-    // @ts-expect-error TS(7006) FIXME: Parameter 'template' implicitly has an 'any' type.
-    .map((template) => ({
-      name: template.name,
-      sourceCodeUrl: template.html_url,
-      slug: template.full_name,
-    }))
+  return (
+    templatesFromGithubOrg
+      // @ts-expect-error TS(7006) FIXME: Parameter 'repo' implicitly has an 'any' type.
+      .filter((repo) => !repo.archived && !repo.disabled)
+      // @ts-expect-error TS(7006) FIXME: Parameter 'template' implicitly has an 'any' type.
+      .map((template) => ({
+        name: template.name,
+        sourceCodeUrl: template.html_url,
+        slug: template.full_name,
+      }))
+  )
 }
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'ghToken' implicitly has an 'any' ... Remove this comment to see the full error message

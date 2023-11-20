@@ -1,4 +1,3 @@
- 
 import path from 'path'
 import process from 'process'
 
@@ -126,10 +125,10 @@ export const fetchLatestVersion = async ({ destination, execName, extension, lat
 
   const options = getOptions()
   const fetch = latestVersion
-    // @ts-expect-error TS(2345) FIXME: Argument of type '{ headers: { Authorization: stri... Remove this comment to see the full error message
-    ? fetchVersion({ ...release, version: latestVersion }, options)
-    // @ts-expect-error TS(2345) FIXME: Argument of type '{ repository: string; package: s... Remove this comment to see the full error message
-    : fetchLatest(release, options)
+    ? // @ts-expect-error TS(2345) FIXME: Argument of type '{ headers: { Authorization: stri... Remove this comment to see the full error message
+      fetchVersion({ ...release, version: latestVersion }, options)
+    : // @ts-expect-error TS(2345) FIXME: Argument of type '{ repository: string; package: s... Remove this comment to see the full error message
+      fetchLatest(release, options)
 
   try {
     await fetch

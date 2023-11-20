@@ -1,4 +1,3 @@
- 
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'conc... Remove this comment to see the full error message
 import concordance from 'concordance'
 

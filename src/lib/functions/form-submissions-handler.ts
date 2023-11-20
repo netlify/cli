@@ -1,4 +1,3 @@
- 
 import { Readable } from 'stream'
 
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'cont... Remove this comment to see the full error message
@@ -71,7 +70,7 @@ export const createFormSubmissionHandler = function ({ functionsRegistry, siteUr
       fields = Object.fromEntries(new URLSearchParams(bodyData.toString()))
     } else if (ct.type === 'multipart/form-data') {
       try {
-        [fields, files] = await new Promise((resolve, reject) => {
+        ;[fields, files] = await new Promise((resolve, reject) => {
           const form = new multiparty.Form({ encoding: ct.parameters.charset || 'utf8' })
           // @ts-expect-error TS(7006) FIXME: Parameter 'err' implicitly has an 'any' type.
           form.parse(fakeRequest, (err, Fields, Files) => {

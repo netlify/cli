@@ -1,4 +1,3 @@
- 
 import { InvalidArgumentError } from 'commander'
 import inquirer from 'inquirer'
 import pick from 'lodash/pick.js'

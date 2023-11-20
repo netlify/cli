@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "17.4.0",
+  "version": "17.5.2",
   "author": "Netlify Inc.",
   "type": "module",
   "engines": {
@@ -76,7 +76,7 @@
   },
   "config": {
     "eslint": "--cache --format=codeframe --max-warnings=0 \"{src,scripts,tests,.github}/**/*.{mjs,cjs,js,md,html}\" \"*.{mjs,cjs,js,md,html}\" \".*.{mjs,cjs,js,md,html}\"",
-    "prettier": "--ignore-path .eslintignore --loglevel=warn \"{src,tools,scripts,tests,.github}/**/*.{mjs,cjs,js,md,yml,json,html}\" \"*.{mjs,cjs,js,yml,json,html}\" \".*.{mjs,cjs,js,yml,json,html}\" \"!CHANGELOG.md\" \"!**/*/package-lock.json\" \"!.github/**/*.md\""
+    "prettier": "--ignore-path .eslintignore --loglevel=warn \"{src,tools,scripts,tests,.github}/**/*.{mjs,cjs,js,mts,md,yml,json,html}\" \"*.{mjs,cjs,js,mts,yml,json,html}\" \".*.{mjs,cjs,js,yml,json,html}\" \"!CHANGELOG.md\" \"!**/*/package-lock.json\" \"!.github/**/*.md\""
   },
   "dependencies": {
     "@bugsnag/js": "7.20.2",
@@ -85,7 +85,7 @@
     "@netlify/build": "29.26.6",
     "@netlify/build-info": "7.11.1",
     "@netlify/config": "20.10.0",
-    "@netlify/edge-bundler": "10.1.2",
+    "@netlify/edge-bundler": "10.1.3",
     "@netlify/local-functions-proxy": "1.1.1",
     "@netlify/zip-it-and-ship-it": "9.26.1",
     "@octokit/rest": "19.0.13",
@@ -188,20 +188,20 @@
     "uuid": "9.0.0",
     "wait-port": "1.0.4",
     "write-file-atomic": "5.0.1",
-    "ws": "^8.14.2",
+    "ws": "8.14.2",
     "zod": "3.22.4"
   },
   "devDependencies": {
     "@babel/preset-react": "7.22.5",
     "@netlify/eslint-config-node": "7.0.0",
-    "@netlify/functions": "2.0.2",
-    "@types/fs-extra": "11.0.1",
+    "@netlify/functions": "2.4.0",
+    "@types/fs-extra": "11.0.4",
     "@types/inquirer": "9.0.7",
     "@types/node": "20.9.0",
     "@types/prettyjson": "0.0.30",
     "@types/semver": "7.5.0",
-    "@types/ws": "^8.5.9",
     "@types/uuid": "9.0.7",
+    "@types/ws": "8.5.9",
     "@vitest/coverage-v8": "1.0.0-beta.4",
     "c8": "7.14.0",
     "eslint-plugin-sort-destructure-keys": "1.5.0",

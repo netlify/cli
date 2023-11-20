@@ -1,4 +1,3 @@
- 
 import { listFunctions } from '@netlify/zip-it-and-ship-it'
 
 import { fileExistsAsync } from '../../lib/fs.js'

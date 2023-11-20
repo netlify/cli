@@ -1,4 +1,3 @@
- 
 import { Option } from 'commander'
 
 import { chalk, error, log, logJson } from '../../utils/command-helpers.js'

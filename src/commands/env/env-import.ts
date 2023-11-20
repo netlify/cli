@@ -1,7 +1,5 @@
- 
 import { readFile } from 'fs/promises'
 
- 
 import AsciiTable from 'ascii-table'
 import { Option } from 'commander'
 import dotenv from 'dotenv'

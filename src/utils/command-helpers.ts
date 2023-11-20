@@ -237,47 +237,39 @@ export const normalizeConfig = (config) => {
 
 const DEBOUNCE_WAIT = 100
 
+interface WatchDebouncedOptions {
+  depth?: number
+  ignored?: (string | RegExp)[]
+  onAdd?: (paths: string[]) => void
+  onChange?: (paths: string[]) => void
+  onUnlink?: (paths: string[]) => void
+}
+
 /**
  * Adds a file watcher to a path or set of paths and debounces the events.
- *
- * @param {string | string[]} target
- * @param {Object} opts
- * @param {number} [opts.depth]
- * @param {Array<string|RegExp>} [opts.ignored]
- * @param {(paths: string[]) => any} [opts.onAdd]
- * @param {(paths: string[]) => any} [opts.onChange]
- * @param {(paths: string[]) => any} [opts.onUnlink]
  */
 export const watchDebounced = async (
-  // @ts-expect-error TS(7006) FIXME: Parameter 'target' implicitly has an 'any' type.
-  target,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'depth' implicitly has an 'any' ty... Remove this comment to see the full error message
-  { depth, ignored = [], onAdd = () => {}, onChange = () => {}, onUnlink = () => {} },
+  target: string | string[],
+  { depth, ignored = [], onAdd = noOp, onChange = noOp, onUnlink = noOp }: WatchDebouncedOptions,
 ) => {
   const baseIgnores = [/\/(node_modules|.git)\//]
   const watcher = chokidar.watch(target, { depth, ignored: [...baseIgnores, ...ignored], ignoreInitial: true })
 
   await once(watcher, 'ready')
 
-  // @ts-expect-error TS(7034) FIXME: Variable 'onChangeQueue' implicitly has type 'any[... Remove this comment to see the full error message
-  let onChangeQueue = []
-  // @ts-expect-error TS(7034) FIXME: Variable 'onAddQueue' implicitly has type 'any[]' ... Remove this comment to see the full error message
-  let onAddQueue = []
-  // @ts-expect-error TS(7034) FIXME: Variable 'onUnlinkQueue' implicitly has type 'any[... Remove this comment to see the full error message
-  let onUnlinkQueue = []
+  let onChangeQueue: string[] = []
+  let onAddQueue: string[] = []
+  let onUnlinkQueue: string[] = []
 
   const debouncedOnChange = debounce(() => {
-    // @ts-expect-error TS(2554) FIXME: Expected 0 arguments, but got 1.
     onChange(onChangeQueue)
     onChangeQueue = []
   }, DEBOUNCE_WAIT)
   const debouncedOnAdd = debounce(() => {
-    // @ts-expect-error TS(2554) FIXME: Expected 0 arguments, but got 1.
     onAdd(onAddQueue)
     onAddQueue = []
   }, DEBOUNCE_WAIT)
   const debouncedOnUnlink = debounce(() => {
-    // @ts-expect-error TS(2554) FIXME: Expected 0 arguments, but got 1.
     onUnlink(onUnlinkQueue)
     onUnlinkQueue = []
   }, DEBOUNCE_WAIT)
@@ -309,3 +301,12 @@ export const watchDebounced = async (
 export const getTerminalLink = (text, url) => terminalLink(text, url, { fallback: () => `${text} (${url})` })
 
 export const isNodeError = (err: unknown): err is NodeJS.ErrnoException => error instanceof Error
+
+// FIXME: tsc is throwing the following error:
+// @ts-expect-error TS7060: This syntax is reserved in files with the .mts or .cts extension. Add a trailing comma or explicit constraint.
+// Adding a trailing comma to the generic type fixes the problem, but annoyingly Prettier is undoing that.
+export const nonNullable = <T>(value: T): value is NonNullable<T> => value !== null && value !== undefined
+
+export const noOp = () => {
+  // no-op
+}

@@ -1,4 +1,3 @@
- 
 import { parseAllRedirects } from 'netlify-redirect-parser'
 
 import { NETLIFYDEVERR, log } from './command-helpers.js'

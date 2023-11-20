@@ -1,4 +1,3 @@
- 
 import inquirer from 'inquirer'
 
 import { ADDON_VALIDATION, prepareAddonCommand } from '../../utils/addons/prepare.js'

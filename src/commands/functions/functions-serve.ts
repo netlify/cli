@@ -1,4 +1,3 @@
- 
 import { join } from 'path'
 
 import { startFunctionsServer } from '../../lib/functions/server.js'

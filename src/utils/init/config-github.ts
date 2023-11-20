@@ -1,4 +1,3 @@
- 
 import { Octokit } from '@octokit/rest'
 
 import { chalk, error as failAndExit, log } from '../command-helpers.js'

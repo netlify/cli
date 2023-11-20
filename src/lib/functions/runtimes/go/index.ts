@@ -1,4 +1,3 @@
- 
 import { dirname, extname } from 'path'
 import { platform } from 'process'
 

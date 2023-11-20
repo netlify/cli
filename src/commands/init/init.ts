@@ -1,4 +1,3 @@
- 
 import { Option } from 'commander'
 import inquirer from 'inquirer'
 import isEmpty from 'lodash/isEmpty.js'

@@ -52,12 +52,14 @@ export const createCompletionCommand = (program) => {
       })
     })
 
-  return program
-    .command('completion')
-    .description('Generate shell completion script\nRun this command to see instructions for your shell.')
-    .addExamples(['netlify completion:install'])
-    // @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
-    .action((options, command) => {
-      command.help()
-    })
+  return (
+    program
+      .command('completion')
+      .description('Generate shell completion script\nRun this command to see instructions for your shell.')
+      .addExamples(['netlify completion:install'])
+      // @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
+      .action((options, command) => {
+        command.help()
+      })
+  )
 }

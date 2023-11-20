@@ -1,4 +1,3 @@
- 
 import { join } from 'path'
 
 import { DenoBridge } from '@netlify/edge-bundler'
