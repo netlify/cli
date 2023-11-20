@@ -1,4 +1,3 @@
- 
 import { sep } from 'path'
 
 import pWaitFor from 'p-wait-for'

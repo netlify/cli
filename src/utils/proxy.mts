@@ -1,4 +1,3 @@
- 
 import { Buffer } from 'buffer'
 import { once } from 'events'
 import { readFile } from 'fs/promises'

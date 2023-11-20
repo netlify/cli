@@ -1,5 +1,3 @@
- 
-
 /**
  * @param {any} account
  * @param {string} capability

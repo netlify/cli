@@ -1,4 +1,3 @@
- 
 import { chalk, warn } from '../../utils/command-helpers.mjs'
 import { MISSING_AWS_SDK_WARNING } from '../log.mjs'
 

@@ -1,4 +1,3 @@
- 
 import { chalk } from '../command-helpers.mjs'
 
 /* programmatically generate CLI prompts */

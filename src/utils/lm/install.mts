@@ -1,4 +1,3 @@
- 
 import { appendFile, copyFile, readFile, rm, writeFile } from 'fs/promises'
 import os from 'os'
 import path, { dirname } from 'path'

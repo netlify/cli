@@ -1,4 +1,3 @@
- 
 import { chalk, exit, getToken, log } from '../../utils/command-helpers.mjs'
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'location' implicitly has an 'any' type.
