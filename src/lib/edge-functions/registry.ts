@@ -11,6 +11,7 @@ import {
   log,
   warn,
   watchDebounced,
+  isNodeError,
 } from '../../utils/command-helpers.js'
 
 //  TODO: Replace with a proper type for the entire config object.

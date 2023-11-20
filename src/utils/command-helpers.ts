@@ -302,9 +302,6 @@ export const getTerminalLink = (text, url) => terminalLink(text, url, { fallback
 
 export const isNodeError = (err: unknown): err is NodeJS.ErrnoException => error instanceof Error
 
-// FIXME: tsc is throwing the following error:
-// @ts-expect-error TS7060: This syntax is reserved in files with the .mts or .cts extension. Add a trailing comma or explicit constraint.
-// Adding a trailing comma to the generic type fixes the problem, but annoyingly Prettier is undoing that.
 export const nonNullable = <T>(value: T): value is NonNullable<T> => value !== null && value !== undefined
 
 export const noOp = () => {
