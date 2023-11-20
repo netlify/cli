@@ -12,7 +12,6 @@
     "/npm-shrinkwrap.json",
     "/scripts/postinstall.js",
     "/src/**/*.js",
-    "/src/**/*.js",
     "/src/**/types.d.ts",
     "/src/**/*.sh",
     "/src/**/*.ps1",
