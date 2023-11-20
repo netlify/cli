@@ -261,7 +261,6 @@ export class FunctionsRegistry {
     // we create a new watcher and watch them.
     if (srcFilesDiff.added.size !== 0) {
       const filesToWatch = [...srcFilesDiff.added, ...includedFiles]
-      // @ts-expect-error TS(2345) FIXME: Argument of type '{ onChange: () => void; }' is no... Remove this comment to see the full error message
       const newWatcher = await watchDebounced(filesToWatch, {
         onChange: () => {
           this.buildFunctionAndWatchFiles(func, false)
