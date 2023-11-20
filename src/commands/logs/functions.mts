@@ -6,7 +6,7 @@ import { getWebSocket } from '../../utils/websockets/index.mjs'
 import type BaseCommand from '../base-command.mjs'
 
 // Source: Source: https://docs.aws.amazon.com/lambda/latest/dg/monitoring-cloudwatchlogs.html#monitoring-cloudwatchlogs-advanced
-const LOG_LEVELS = {
+export const LOG_LEVELS = {
   TRACE: 'TRACE',
   DEBUG: 'DEBUG',
   INFO: 'INFO',

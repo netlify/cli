@@ -1,7 +1,7 @@
 import { Mock, afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 
 import BaseCommand from '../../../../src/commands/base-command.mjs'
-import { createLogsFunctionCommand } from '../../../../src/commands/logs/functions.mjs'
+import { LOG_LEVELS, createLogsFunctionCommand } from '../../../../src/commands/logs/functions.mjs'
 import { getWebSocket } from '../../../../src/utils/websockets/index.mjs'
 import { log } from '../../../../src/utils/command-helpers.mjs'
 import { startMockApi } from '../../utils/mock-api-vitest.ts'
@@ -145,11 +145,11 @@ describe('logs:function command', () => {
     const messageCallback = spyOn.mock.calls.find((args) => args[0] === 'message')
     const messageCallbackFunc = messageCallback[1]
     const mockInfoData = {
-      "level": "INFO",
+      "level": LOG_LEVELS.INFO,
       "message": "Hello World",
     }
     const mockWarnData = {
-      "level": "WARN",
+      "level": LOG_LEVELS.WARN,
       "message": "There was a warning",
     }
 
@@ -177,11 +177,11 @@ describe('logs:function command', () => {
     const messageCallback = spyOn.mock.calls.find((args) => args[0] === 'message')
     const messageCallbackFunc = messageCallback[1]
     const mockInfoData = {
-      "level": "INFO",
+      "level": LOG_LEVELS.INFO,
       "message": "Hello World",
     }
     const mockWarnData = {
-      "level": "WARN",
+      "level": LOG_LEVELS.WARN,
       "message": "There was a warning",
     }
 
