@@ -70,7 +70,7 @@ describe.concurrent('commands/dev/images', () => {
         .withContentFile({
           // eslint-disable-next-line no-undef
           content: fs.readFileSync(path.join(__dirname, `/../../__fixtures__/images/test.jpg`)),
-          path: 'public/images/test.jpg',
+          path: '/images/test.jpg',
         })
 
       await builder.buildAsync()

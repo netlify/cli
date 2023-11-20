@@ -1,19 +1,44 @@
+import { NetlifyConfig } from '@netlify/build'
 import express from 'express'
 import { createIPX, ipxFSStorage, ipxHttpStorage, createIPXNodeServer } from 'ipx'
 
 import { log, NETLIFYDEVERR } from '../../utils/command-helpers.mjs'
+import { getProxyUrl } from '../../utils/proxy.mjs'
+import type { ServerSettings } from '../../utils/types.d.ts'
 
 export const IMAGE_URL_PATTERN = '/.netlify/images'
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'config' implicitly has an 'any' type.
-export const parseAllDomains = function (config) {
-  const domains = config?.images?.remote_images
-  if (!domains) {
-    return { errors: [], remoteDomains: [] }
-  }
+interface QueryParams {
+  w?: string
+  width?: string
+  h?: string
+  height?: string
+  q?: string
+  quality?: string
+  fm?: string
+  fit?: string
+  position?: string
+}
 
-  const remoteDomains = []
-  const errors = []
+interface IpxParams {
+  w?: string | null
+  h?: string | null
+  s?: string | null
+  quality?: string | null
+  format?: string | null
+  fit?: string | null
+  position?: string | null
+}
+
+// @ts-expect-error TS(7006) FIXME: Parameter 'config' implicitly has an 'any' type.
+export const parseAllDomains = function (config): { errors: ErrorObject[]; remoteDomains: string[] } {
+  const remoteDomains = [] as string[]
+  const errors = [] as ErrorObject[]
+  const domains = config?.images?.remote_images
+
+  if (!domains) {
+    return { errors, remoteDomains }
+  }
 
   for (const patternString of domains) {
     try {
@@ -21,24 +46,29 @@ export const parseAllDomains = function (config) {
       if (url.hostname) {
         remoteDomains.push(url.hostname)
       } else {
-        errors.push(`The URL '${patternString}' does not have a valid hostname.`)
+        errors.push({ message: `The URL '${patternString}' does not have a valid hostname.` })
       }
     } catch (error) {
-      // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-      errors.push(`Invalid URL '${patternString}': ${error.message}`)
+      if (error instanceof Error) {
+        errors.push({ message: `Invalid URL '${patternString}': ${error.message}` })
+      } else {
+        errors.push({ message: `Invalid URL '${patternString}': An unknown error occurred` })
+      }
     }
   }
 
   return { errors, remoteDomains }
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'message' implicitly has an 'any' ... Remove this comment to see the full error message
-const getErrorMessage = function ({ message }) {
+interface ErrorObject {
+  message: string
+}
+
+const getErrorMessage = function ({ message }: { message: string }): string {
   return message
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'errors' implicitly has an 'any' type.
-export const handleImageDomainsErrors = async function (errors) {
+export const handleImageDomainsErrors = async function (errors: ErrorObject[]) {
   if (errors.length === 0) {
     return
   }
@@ -58,38 +88,33 @@ export const parseRemoteImageDomains = async function ({ config }) {
 
   return remoteDomains
 }
-// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
-export const isImageRequest = function (req) {
+
+export const isImageRequest = function (req: Request): boolean {
   return req.url.startsWith(IMAGE_URL_PATTERN)
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'query' implicitly has an 'any' type.
-export const transformImageParams = function (query) {
-  const params = {}
+export const transformImageParams = function (query: QueryParams): string {
+  const params: IpxParams = {}
 
   const width = query.w || query.width || null
   const height = query.h || query.height || null
 
   if (width && height) {
-    // @ts-expect-error TS(2339) FIXME: Property 's' does not exist on type '{}'.
     // eslint-disable-next-line id-length
     params.s = `${width}x${height}`
   } else {
-    // @ts-expect-error TS(2339) FIXME: Property 'w' does not exist on type '{}'.
     // eslint-disable-next-line id-length
     params.w = width
-    // @ts-expect-error TS(2339) FIXME: Property 'j' does not exist on type '{}'.
     // eslint-disable-next-line id-length
     params.h = height
   }
-  // @ts-expect-error TS(2339) FIXME: Property 'quality' does not exist on type '{}'.
+
   params.quality = query.q || query.quality || null
-  // @ts-expect-error TS(2339) FIXME: Property 'format' does not exist on type '{}'.
   params.format = query.fm || null
+
   const fit = query.fit || null
-  // @ts-expect-error TS(2339) FIXME: Property 'fit' does not exist on type '{}'.
   params.fit = fit === 'contain' ? 'inside' : fit
-  // @ts-expect-error TS(2339) FIXME: Property 'position' does not exist on type '{}'.
+
   params.position = query.position || null
 
   return Object.entries(params)
@@ -98,13 +123,19 @@ export const transformImageParams = function (query) {
     .join(',')
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'any' t... Remove this comment to see the full error message
-export const initializeProxy = async function ({ config }) {
+export const initializeProxy = async function ({
+  config,
+  settings,
+}: {
+  config: NetlifyConfig
+  settings: ServerSettings
+}) {
   const remoteDomains = await parseRemoteImageDomains({ config })
+  const devServerUrl = getProxyUrl(settings)
 
   const ipx = createIPX({
     storage: ipxFSStorage({ dir: config?.build?.publish ?? './public' }),
-    httpStorage: ipxHttpStorage({ domains: remoteDomains }),
+    httpStorage: ipxHttpStorage({ domains: [...remoteDomains, devServerUrl] }),
   })
 
   const handler = createIPXNodeServer(ipx)
@@ -112,10 +143,19 @@ export const initializeProxy = async function ({ config }) {
 
   app.use(IMAGE_URL_PATTERN, async (req, res) => {
     const { url, ...query } = req.query
-    const modifiers = await transformImageParams(query)
-    // @ts-expect-error TS(2345) FIXME: Argument of type 'string | string[] | ParsedQs | P... Remove this comment to see the full error message
-    const path = `/${modifiers}/${encodeURIComponent(url)}`
-    req.url = path
+    const sourceImagePath = url as string
+    const modifiers = (await transformImageParams(query)) || `_`
+    if (!sourceImagePath.startsWith('http://') && !sourceImagePath.startsWith('https://')) {
+      // Construct the full URL for relative paths to request from development server
+      const sourceImagePathWithLeadingSlash = sourceImagePath.startsWith('/') ? sourceImagePath : `/${sourceImagePath}`
+      const fullImageUrl = `${devServerUrl}/${encodeURIComponent(sourceImagePathWithLeadingSlash)}`
+      console.log(`fullImageUrl: ${fullImageUrl}`)
+      req.url = `/${modifiers}/${fullImageUrl}`
+    } else {
+      // If the image is remote, we can just pass the URL as is
+      req.url = `/${modifiers}/${encodeURIComponent(sourceImagePath)}`
+    }
+
     handler(req, res)
   })
 
