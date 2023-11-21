@@ -35,8 +35,8 @@ import { getEnvelopeEnv } from '../../utils/env/index.js'
 import { getFunctionsManifestPath, getInternalFunctionsDir } from '../../utils/functions/index.js'
 import openBrowser from '../../utils/open-browser.js'
 import BaseCommand from '../base-command.js'
-import { link } from '../link/index.js'
-import { sitesCreate } from '../sites/index.js'
+import { link } from '../link/link.js'
+import { sitesCreate } from '../sites/sites-create.js'
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
 const triggerDeploy = async ({ api, options, siteData, siteId }) => {
