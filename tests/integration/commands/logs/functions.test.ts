@@ -11,8 +11,8 @@ vi.mock('../../../../src/utils/websockets/index.js', () => ({
   getWebSocket: vi.fn(),
 }))
 
-vi.mock('../../../../src/utils/command-helpers.mjs', async () => {
-  const actual = await vi.importActual("../../../../src/utils/command-helpers.mjs")
+vi.mock('../../../../src/utils/command-helpers.js', async () => {
+  const actual = await vi.importActual("../../../../src/utils/command-helpers.js")
   return {
     ...actual,
     log: vi.fn(),
