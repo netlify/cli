@@ -367,19 +367,18 @@ const runDeploy = async ({
   // @ts-expect-error TS(7031) FIXME: Binding element 'packagePath' implicitly has an 'a... Remove this comment to see the full error message
   packagePath,
   // @ts-expect-error TS(7031) FIXME: Binding element 'silent' implicitly has an 'any' t... Remove this comment to see the full error message
-  silent,
+  results,
   // @ts-expect-error TS(7031) FIXME: Binding element 'site' implicitly has an 'any' typ... Remove this comment to see the full error message
-  site,
+  silent,
   // @ts-expect-error TS(7031) FIXME: Binding element 'siteData' implicitly has an 'any'... Remove this comment to see the full error message
-  siteData,
+  site,
   // @ts-expect-error TS(7031) FIXME: Binding element 'siteId' implicitly has an 'any' t... Remove this comment to see the full error message
-  siteId,
+  siteData,
   // @ts-expect-error TS(7031) FIXME: Binding element 'skipFunctionsCache' implicitly ha... Remove this comment to see the full error message
+  siteId,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'results' implicitly ha... Remove this comment to see the full error message
   skipFunctionsCache,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'title' implicitly has an 'any' ty... Remove this comment to see the full error message
-  title,
 }) => {
-  let results
   let deployId
 
   try {
@@ -389,8 +388,8 @@ const runDeploy = async ({
       log('Deploying to draft URL...')
     }
 
-    const draft = !deployToProduction && !alias
-    results = await api.createSiteDeploy({ siteId, title, body: { draft, branch: alias } })
+    // const draft = !deployToProduction && !alias
+    // results = await api.createSiteDeploy({ siteId, title, body: { draft, branch: alias } })
     deployId = results.id
 
     // @ts-expect-error TS(2345) FIXME: Argument of type '{ base: any; packagePath: any; }... Remove this comment to see the full error message
@@ -618,12 +617,14 @@ const prepAndRunDeploy = async ({
   // @ts-expect-error TS(7031) FIXME: Binding element 'options' implicitly has an 'any' ... Remove this comment to see the full error message
   options,
   // @ts-expect-error TS(7031) FIXME: Binding element 'site' implicitly has an 'any' typ... Remove this comment to see the full error message
-  site,
+  results: deployResult,
   // @ts-expect-error TS(7031) FIXME: Binding element 'siteData' implicitly has an 'any'... Remove this comment to see the full error message
-  siteData,
+  site,
   // @ts-expect-error TS(7031) FIXME: Binding element 'siteId' implicitly has an 'any' t... Remove this comment to see the full error message
-  siteId,
+  siteData,
   // @ts-expect-error TS(7031) FIXME: Binding element 'workingDir' implicitly has an 'an... Remove this comment to see the full error message
+  siteId,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'results' implicitly has an 'an... Remove this comment to see the full error message
   workingDir,
 }) => {
   const alias = options.alias || options.branch
@@ -696,7 +697,7 @@ const prepAndRunDeploy = async ({
     siteData,
     siteId,
     skipFunctionsCache: options.skipFunctionsCache,
-    title: options.message,
+    results: deployResult,
   })
 
   return results
@@ -770,6 +771,14 @@ export const deploy = async (options, command) => {
   const deployToProduction = options.prod || (options.prodIfUnlocked && !siteData.published_deploy.locked)
 
   let results = {}
+  const draft = !deployToProduction && !alias
+  const deployResult = await api.createSiteDeploy({ siteId, title: options.message, body: { draft, branch: alias } })
+  process.env.DEPLOY_ID = deployResult.id
+
+  command.netlify.cachedConfig.env.DEPLOY_ID = {
+    sources: ['general'],
+    value: deployResult.id,
+  }
 
   if (options.build) {
     await handleBuild({
@@ -789,6 +798,7 @@ export const deploy = async (options, command) => {
           siteData,
           siteId,
           deployToProduction,
+          results: deployResult,
         })
 
         return {}
@@ -805,6 +815,7 @@ export const deploy = async (options, command) => {
       siteData,
       siteId,
       deployToProduction,
+      results: deployResult,
     })
   }
   const isIntegrationDeploy = command.name() === 'integration:deploy'
