@@ -6,7 +6,7 @@ import execa from 'execa'
 import ini from 'ini'
 import { describe, expect, test } from 'vitest'
 
-import { getPathInHome } from '../../../../src/lib/settings.mjs'
+import { getPathInHome } from '../../../../src/lib/settings.js'
 import { FixtureOptions, FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
 import { HTTPMethod, getCLIOptions } from '../../utils/mock-api-vitest.js'
 

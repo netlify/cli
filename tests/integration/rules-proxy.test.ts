@@ -4,10 +4,10 @@ import path from 'path'
 
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 
-import { createRewriter, getWatchers } from '../../src/utils/rules-proxy.mjs'
+import { createRewriter, getWatchers } from '../../src/utils/rules-proxy.js'
 
-import got from './utils/got.mjs'
-import { createSiteBuilder, SiteBuilder } from './utils/site-builder.mjs'
+import got from './utils/got.js'
+import { createSiteBuilder, SiteBuilder } from './utils/site-builder.js'
 
 describe('rules-proxy', () => {
   let server: http.Server

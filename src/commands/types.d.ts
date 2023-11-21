@@ -1,7 +1,7 @@
 import { NetlifyTOML } from '@netlify/build-info'
 import type { NetlifyAPI } from 'netlify'
 
-import StateConfig from '../utils/state-config.mjs'
+import StateConfig from '../utils/state-config.js'
 
 export type NetlifySite = {
   root?: string

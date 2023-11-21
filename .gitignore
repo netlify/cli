@@ -12,10 +12,10 @@ coverage
 .github/styles
 
 # compiled files
-src/**/*.mjs
-!src/functions-templates/**/*.mjs
-src/**/*.d.mts
-src/**/*.d.mts.map
+src/**/*.js
+!src/functions-templates/**/*.js
+src/**/*.d.ts
+src/**/*.d.ts.map
 tsconfig.tsbuildinfo
 
 # node sdk

@@ -50,7 +50,7 @@ Running some integration tests requires an active Netlify account to create a li
 
 You can either provide a
 [Netlify Auth Token](https://docs.netlify.com/cli/get-started/#obtain-a-token-in-the-netlify-ui) (through the
-`NETLIFY_AUTH_TOKEN` environment variable) or login via `./bin/run.mjs login` before running the tests.
+`NETLIFY_AUTH_TOKEN` environment variable) or login via `./bin/run.js login` before running the tests.
 
 The tests don’t count towards Netlify build minutes since they build a site locally and deploy it using the API.
 
@@ -80,13 +80,13 @@ Alternatively, you can set up your IDE to integrate with Prettier and ESLint for
 To run the CLI locally:
 
 ```bash
-./bin/run.mjs [command]
+./bin/run.js [command]
 ```
 
 or (`DEBUG=true` enables printing stack traces when errors are thrown):
 
 ```bash
-DEBUG=true ./bin/run.mjs [command]
+DEBUG=true ./bin/run.js [command]
 ```
 
 ### Architecture
@@ -150,13 +150,13 @@ We also test for a few other things:
 To run a single test file you can do:
 
 ```
-npm exec vitest -- run tests/unit/tests/unit/lib/account.test.mjs
+npm exec vitest -- run tests/unit/tests/unit/lib/account.test.js
 ```
 
 To run a single test you can either use `test.only` inside the test file and ran the above command or run this:
 
 ```
-npm exec vitest -- run tests/unit/tests/unit/lib/account.test.mjs -t 'test name'
+npm exec vitest -- run tests/unit/tests/unit/lib/account.test.js -t 'test name'
 ```
 
 Some of the tests actually start the CLI in a subprocess and therefore sometimes underlying errors are not visible in
@@ -168,7 +168,7 @@ When `DEBUG_TESTS` is set the vitest reporter will be set to `tap` so the test o
 output.
 
 ```
-DEBUG_TESTS=true npm exec vitest -- run tests/unit/tests/unit/lib/account.test.mjs -t 'test name'
+DEBUG_TESTS=true npm exec vitest -- run tests/unit/tests/unit/lib/account.test.js -t 'test name'
 ```
 
 ### Lint docs per Netlify style guide
