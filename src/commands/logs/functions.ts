@@ -5,17 +5,8 @@ import { chalk, log } from '../../utils/command-helpers.js'
 import { getWebSocket } from '../../utils/websockets/index.js'
 import type BaseCommand from '../base-command.js'
 
-// Source: Source: https://docs.aws.amazon.com/lambda/latest/dg/monitoring-cloudwatchlogs.html#monitoring-cloudwatchlogs-advanced
-export const LOG_LEVELS = {
-  TRACE: 'TRACE',
-  DEBUG: 'DEBUG',
-  INFO: 'INFO',
-  WARN: 'WARN',
-  ERROR: 'ERROR',
-  FATAL: 'FATAL',
-}
-const LOG_LEVELS_LIST = Object.values(LOG_LEVELS).map((level) => level.toLowerCase())
-const CLI_LOG_LEVEL_CHOICES_STRING = LOG_LEVELS_LIST.map((level) => ` ${level}`)
+import { CLI_LOG_LEVEL_CHOICES_STRING, LOG_LEVELS, LOG_LEVELS_LIST } from './log-levels.js'
+
 
 function getLog(logData: { level: string; message: string }) {
   let logString = ''
