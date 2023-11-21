@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest'
 
 import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
-import got from '../../utils/got.mjs'
+import got from '../../utils/got.js'
 
 describe('redirects', () => {
   setupFixtureTests('dev-server-with-functions', { devServer: true }, () => {

@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "17.5.2",
+  "version": "17.6.0",
   "author": "Netlify Inc.",
   "type": "module",
   "engines": {
@@ -10,9 +10,8 @@
   "files": [
     "/bin",
     "/npm-shrinkwrap.json",
-    "/scripts/postinstall.mjs",
+    "/scripts/postinstall.js",
     "/src/**/*.js",
-    "/src/**/*.mjs",
     "/src/**/types.d.ts",
     "/src/**/*.sh",
     "/src/**/*.ps1",
@@ -20,8 +19,8 @@
     "/src/lib/templates/**",
     "!/src/**/node_modules/**",
     "!/src/**/*.test.js",
-    "!/src/**/*.mts",
-    "!/src/**/*.d.mts.map"
+    "!/src/**/*.ts",
+    "!/src/**/*.d.ts.map"
   ],
   "homepage": "https://github.com/netlify/cli",
   "keywords": [
@@ -33,24 +32,24 @@
   "license": "MIT",
   "repository": "https://github.com/netlify/cli",
   "bin": {
-    "ntl": "./bin/run.mjs",
-    "netlify": "./bin/run.mjs"
+    "ntl": "./bin/run.js",
+    "netlify": "./bin/run.js"
   },
   "bugs": {
     "url": "https://github.com/netlify/cli/issues"
   },
   "scripts": {
     "prepare": "is-ci || husky install node_modules/@netlify/eslint-config-node/.husky/",
-    "start": "node ./bin/run.mjs",
+    "start": "node ./bin/run.js",
     "build": "tsc",
     "dev": "tsc --watch",
     "test": "run-s format test:dev",
     "format": "run-s format:check-fix:*",
     "format:ci": "run-s format:check:*",
-    "format:check-fix:lint": "run-e format:check:lint format:fix:lint",
+    "format:check-fix:lint": "run-s format:check:lint format:fix:lint",
     "format:check:lint": "cross-env-shell eslint $npm_package_config_eslint",
     "format:fix:lint": "cross-env-shell eslint --fix $npm_package_config_eslint",
-    "format:check-fix:prettier": "run-e format:check:prettier format:fix:prettier",
+    "format:check-fix:prettier": "run-s format:check:prettier format:fix:prettier",
     "format:check:prettier": "cross-env-shell prettier --check $npm_package_config_prettier --ignore-path .prettierignore",
     "format:fix:prettier": "cross-env-shell prettier --write $npm_package_config_prettier --ignore-path .prettierignore",
     "test:dev": "run-s certs test:init:* test:dev:*",
@@ -62,16 +61,16 @@
     "test:dev:vitest": "vitest run tests/unit/ && vitest run tests/integration",
     "test:ci:vitest:unit": "vitest run --coverage tests/unit/",
     "test:ci:vitest:integration": "vitest run --coverage tests/integration/",
-    "test:affected": "node ./tools/affected-test.mjs",
-    "e2e": "node ./tools/e2e/run.mjs",
+    "test:affected": "node ./tools/affected-test.js",
+    "e2e": "node ./tools/e2e/run.js",
     "docs": "node ./site/scripts/docs.mjs",
     "watch": "c8 --reporter=lcov vitest --watch",
     "site:build": "run-s site:build:*",
     "site:build:install": "cd site && npm install --no-audit",
     "site:build:assets": "cd site && npm run build",
-    "postinstall-pack": "node ./scripts/postinstall.mjs",
-    "postinstall": "npm run build && node ./scripts/postinstall.mjs",
-    "prepublishOnly": "node ./scripts/prepare-for-publish.mjs",
+    "postinstall-pack": "node ./scripts/postinstall.js",
+    "postinstall": "npm run build && node ./scripts/postinstall.js",
+    "prepublishOnly": "node ./scripts/prepare-for-publish.js",
     "certs": "openssl req -x509 -out localhost.crt -keyout localhost.key -newkey rsa:2048 -nodes -sha256 -subj \"/CN=localhost\" -extensions EXT -config certconf"
   },
   "config": {
@@ -82,7 +81,7 @@
     "@bugsnag/js": "7.20.2",
     "@fastify/static": "6.10.2",
     "@netlify/blobs": "6.3.0",
-    "@netlify/build": "29.26.6",
+    "@netlify/build": "29.27.0",
     "@netlify/build-info": "7.11.1",
     "@netlify/config": "20.10.0",
     "@netlify/edge-bundler": "10.1.3",
@@ -228,7 +227,7 @@
   },
   "ava": {
     "files": [
-      "tools/**/*.test.mjs",
+      "tools/**/*.test.js",
       "tests/**/*.test.cjs"
     ]
   }

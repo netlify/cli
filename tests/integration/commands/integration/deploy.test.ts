@@ -2,12 +2,12 @@ import process from 'process'
 
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 
-import BaseCommand from '../../../../src/commands/base-command.mjs'
-import { deploy as siteDeploy } from '../../../../src/commands/deploy/deploy.mjs'
-import { areScopesEqual } from '../../../../src/commands/integration/deploy.mjs'
-import { createIntegrationDeployCommand } from '../../../../src/commands/integration/index.mjs'
-import { getEnvironmentVariables, withMockApi } from '../../utils/mock-api.mjs'
-import { withSiteBuilder } from '../../utils/site-builder.mjs'
+import BaseCommand from '../../../../src/commands/base-command.js'
+import { deploy as siteDeploy } from '../../../../src/commands/deploy/deploy.js'
+import { areScopesEqual } from '../../../../src/commands/integration/deploy.js'
+import { createIntegrationDeployCommand } from '../../../../src/commands/integration/index.js'
+import { getEnvironmentVariables, withMockApi } from '../../utils/mock-api.js'
+import { withSiteBuilder } from '../../utils/site-builder.js'
 
 describe('integration:deploy areScopesEqual', () => {
   test('it returns false when scopes are not equal', () => {
@@ -29,7 +29,7 @@ describe(`integration:deploy`, () => {
     vi.resetAllMocks()
   })
   test('deploys an integration', async () => {
-    vi.mock(`../../../../src/commands/deploy/deploy.mjs`, () => ({
+    vi.mock(`../../../../src/commands/deploy/deploy.js`, () => ({
       deploy: vi.fn(() => console.log(`yay it was mocked!`)),
     }))
 

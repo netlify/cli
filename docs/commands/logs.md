@@ -66,13 +66,15 @@ netlify logs:function
 **Flags**
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
+- `level` (*string*) - Log levels to stream. Choices are: trace, debug, info, warn, error, fatal
 - `debug` (*boolean*) - Print debugging information
 
 **Examples**
 
 ```bash
-netlify logs:function my-function
 netlify logs:function
+netlify logs:function my-function
+netlify logs:function my-function -l info warn
 ```
 
 ---
