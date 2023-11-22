@@ -1,12 +1,13 @@
 import process from 'process'
 
-import { OptionValues } from 'commander'
+import { OptionValues, Option } from 'commander'
 
 import { getBlobsContext } from '../../lib/blobs/blobs.js'
 import { promptEditorHelper } from '../../lib/edge-functions/editor-helper.js'
 import { startFunctionsServer } from '../../lib/functions/server.js'
 import { printBanner } from '../../utils/banner.js'
 import {
+  BANG,
   chalk,
   log,
   NETLIFYDEV,
@@ -246,7 +247,6 @@ export const createDevCommand = (program: BaseCommand) => {
         'Specify a deploy context or branch for environment variables (contexts: "production", "deploy-preview", "branch-deploy", "dev")',
         normalizeContext,
       )
-      // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
       .option('-p ,--port <port>', 'port of netlify dev', (value) => Number.parseInt(value))
       .addOption(
         new Option('--targetPort <port>', 'Old, prefer --target-port. Port of target app server')
@@ -254,7 +254,6 @@ export const createDevCommand = (program: BaseCommand) => {
           .hideHelp(true),
       )
       .addOption(new Option('--no-open', 'disables the automatic opening of a browser window'))
-      // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
       .option('--target-port <port>', 'port of target app server', (value) => Number.parseInt(value))
       .option('--framework <name>', 'framework to use. Defaults to #auto which automatically detects a framework')
       .option('-d ,--dir <path>', 'dir with static files')
@@ -270,7 +269,6 @@ export const createDevCommand = (program: BaseCommand) => {
           .argParser((value) => Number.parseInt(value))
           .hideHelp(true),
       )
-      // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
       .option('--functions-port <port>', 'port of functions server', (value) => Number.parseInt(value))
       .addOption(
         new Option(
