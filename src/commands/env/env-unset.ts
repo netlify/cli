@@ -1,50 +1,8 @@
- 
+import { OptionValues } from 'commander'
+
 import { chalk, error, log, logJson } from '../../utils/command-helpers.js'
-import { AVAILABLE_CONTEXTS, normalizeContext, translateFromEnvelopeToMongo } from '../../utils/env/index.js'
-
-/**
- * The env:unset command
- * @param {string} key Environment variable key
- * @param {import('commander').OptionValues} options
- * @param {import('../base-command.js').default} command
- * @returns {Promise<boolean>}
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'key' implicitly has an 'any' type.
-const envUnset = async (key, options, command) => {
-  const { context } = options
-  const { api, cachedConfig, site } = command.netlify
-  const siteId = site.id
-
-  if (!siteId) {
-    log('No site id found, please run inside a site folder or `netlify link`')
-    return false
-  }
-
-  const { siteInfo } = cachedConfig
-
-  let finalEnv
-  if (siteInfo.use_envelope) {
-    finalEnv = await unsetInEnvelope({ api, context, siteInfo, key })
-  } else if (context) {
-    error(
-      `To specify a context, please run ${chalk.yellow(
-        'netlify open:admin',
-      )} to open the Netlify UI and opt in to the new environment variables experience from Site settings`,
-    )
-    return false
-  } else {
-    finalEnv = await unsetInMongo({ api, siteInfo, key })
-  }
-
-  // Return new environment variables of site if using json flag
-  if (options.json) {
-    logJson(finalEnv)
-    return false
-  }
-
-  const contextType = AVAILABLE_CONTEXTS.includes(context || 'all') ? 'context' : 'branch'
-  log(`Unset environment variable ${chalk.yellow(key)} in the ${chalk.magenta(context || 'all')} ${contextType}`)
-}
+import { AVAILABLE_CONTEXTS, translateFromEnvelopeToMongo } from '../../utils/env/index.js'
+import BaseCommand from '../base-command.js'
 
 /**
  * Deletes a given key from the env of a site record
@@ -134,31 +92,38 @@ const unsetInEnvelope = async ({ api, context, key, siteInfo }) => {
   return env
 }
 
-/**
- * Creates the `netlify env:unset` command
- * @param {import('../base-command.js').default} program
- * @returns
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'program' implicitly has an 'any' type.
-export const createEnvUnsetCommand = (program) =>
-  program
-    .command('env:unset')
-    .aliases(['env:delete', 'env:remove'])
-    .argument('<key>', 'Environment variable key')
-    .option(
-      '-c, --context <context...>',
-      'Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev") (default: all contexts)',
-      // spread over an array for variadic options
-      // @ts-expect-error TS(7006) FIXME: Parameter 'context' implicitly has an 'any' type.
-      (context, previous = []) => [...previous, normalizeContext(context)],
+export const envUnset = async (key: string, options: OptionValues, command: BaseCommand) => {
+  const { context } = options
+  const { api, cachedConfig, site } = command.netlify
+  const siteId = site.id
+
+  if (!siteId) {
+    log('No site id found, please run inside a site folder or `netlify link`')
+    return false
+  }
+
+  const { siteInfo } = cachedConfig
+
+  let finalEnv
+  if (siteInfo.use_envelope) {
+    finalEnv = await unsetInEnvelope({ api, context, siteInfo, key })
+  } else if (context) {
+    error(
+      `To specify a context, please run ${chalk.yellow(
+        'netlify open:admin',
+      )} to open the Netlify UI and opt in to the new environment variables experience from Site settings`,
     )
-    .addExamples([
-      'netlify env:unset VAR_NAME # unset in all contexts',
-      'netlify env:unset VAR_NAME --context production',
-      'netlify env:unset VAR_NAME --context production deploy-preview',
-    ])
-    .description('Unset an environment variable which removes it from the UI')
-    // @ts-expect-error TS(7006) FIXME: Parameter 'key' implicitly has an 'any' type.
-    .action(async (key, options, command) => {
-      await envUnset(key, options, command)
-    })
+    return false
+  } else {
+    finalEnv = await unsetInMongo({ api, siteInfo, key })
+  }
+
+  // Return new environment variables of site if using json flag
+  if (options.json) {
+    logJson(finalEnv)
+    return false
+  }
+
+  const contextType = AVAILABLE_CONTEXTS.includes(context || 'all') ? 'context' : 'branch'
+  log(`Unset environment variable ${chalk.yellow(key)} in the ${chalk.magenta(context || 'all')} ${contextType}`)
+}

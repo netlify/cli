@@ -1,21 +1,12 @@
-import { Argument, Option, OptionValues } from 'commander'
+import { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 
 import { chalk, log } from '../../utils/command-helpers.js'
 import { getWebSocket } from '../../utils/websockets/index.js'
 import type BaseCommand from '../base-command.js'
 
-// Source: Source: https://docs.aws.amazon.com/lambda/latest/dg/monitoring-cloudwatchlogs.html#monitoring-cloudwatchlogs-advanced
-export const LOG_LEVELS = {
-  TRACE: 'TRACE',
-  DEBUG: 'DEBUG',
-  INFO: 'INFO',
-  WARN: 'WARN',
-  ERROR: 'ERROR',
-  FATAL: 'FATAL',
-}
-const LOG_LEVELS_LIST = Object.values(LOG_LEVELS).map((level) => level.toLowerCase())
-const CLI_LOG_LEVEL_CHOICES_STRING = LOG_LEVELS_LIST.map((level) => ` ${level}`)
+import { CLI_LOG_LEVEL_CHOICES_STRING, LOG_LEVELS, LOG_LEVELS_LIST } from './log-levels.js'
+
 
 function getLog(logData: { level: string; message: string }) {
   let logString = ''
@@ -37,7 +28,7 @@ function getLog(logData: { level: string; message: string }) {
   return `${logString} ${logData.message}`
 }
 
-const logsFunction = async (functionName: string | undefined, options: OptionValues, command: BaseCommand) => {
+export const logsFunction = async (functionName: string | undefined, options: OptionValues, command: BaseCommand) => {
   const client = command.netlify.api
   const { site } = command.netlify
   const { id: siteId } = site
@@ -106,19 +97,3 @@ const logsFunction = async (functionName: string | undefined, options: OptionVal
     log(err)
   })
 }
-
-export const createLogsFunctionCommand = (program: BaseCommand) =>
-  program
-    .command('logs:function')
-    .alias('logs:functions')
-    .addOption(
-      new Option('-l, --level <levels...>', `Log levels to stream. Choices are:${CLI_LOG_LEVEL_CHOICES_STRING}`),
-    )
-    .addArgument(new Argument('[functionName]', 'Name of the function to stream logs for'))
-    .addExamples([
-      'netlify logs:function',
-      'netlify logs:function my-function',
-      'netlify logs:function my-function -l info warn',
-    ])
-    .description('(Beta) Stream netlify function logs to the console')
-    .action(logsFunction)

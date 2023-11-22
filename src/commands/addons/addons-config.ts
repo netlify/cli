@@ -1,3 +1,4 @@
+import { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 import isEmpty from 'lodash/isEmpty.js'
 
@@ -9,6 +10,7 @@ import { renderConfigValues } from '../../utils/addons/render.js'
 import { missingConfigValues, requiredConfigValues, updateConfigValues } from '../../utils/addons/validation.js'
 import { chalk, error, log } from '../../utils/command-helpers.js'
 import { parseRawFlags } from '../../utils/parse-raw-flags.js'
+import BaseCommand from '../base-command.js'
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'addonName' implicitly has an 'any... Remove this comment to see the full error message
 const update = async function ({ addonName, api, currentConfig, instanceId, newConfig, siteId }) {
@@ -38,15 +40,7 @@ const update = async function ({ addonName, api, currentConfig, instanceId, newC
   }
 }
 
-/**
- * The addons:config command
- * @param {string} addonName
- * @param {import('commander').OptionValues} options
- * @param {import('../base-command.js').default} command
- * @returns {Promise<boolean>}
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'addonName' implicitly has an 'any' type... Remove this comment to see the full error message
-const addonsConfig = async (addonName, options, command) => {
+export const addonsConfig = async (addonName: string, options: OptionValues, command: BaseCommand) => {
   const { addon, manifest, siteData } = await prepareAddonCommand({
     command,
     addonName,
@@ -164,22 +158,3 @@ const addonsConfig = async (addonName, options, command) => {
     })
   }
 }
-
-/**
- * Creates the `netlify addons:config` command
- * @param {import('../base-command.js').default} program
- * @returns
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'program' implicitly has an 'any' type.
-export const createAddonsConfigCommand = (program) =>
-  program
-    .command('addons:config', { hidden: true })
-    .alias('addon:config')
-    .argument('<name>', 'Add-on namespace')
-    .description('Configure add-on settings')
-    // allow for any flags. Handy for variadic configuration options
-    .allowUnknownOption(true)
-    // @ts-expect-error TS(7006) FIXME: Parameter 'addonName' implicitly has an 'any' type... Remove this comment to see the full error message
-    .action(async (addonName, options, command) => {
-      await addonsConfig(addonName, options, command)
-    })

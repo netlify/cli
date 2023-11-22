@@ -1,6 +1,8 @@
- 
+import { OptionValues } from 'commander'
+
 import { chalk, error as logError, log } from '../../utils/command-helpers.js'
 import { translateFromEnvelopeToMongo, translateFromMongoToEnvelope } from '../../utils/env/index.js'
+import BaseCommand from '../base-command.js'
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'api' implicitly has an 'any' type.
 const safeGetSite = async (api, siteId) => {
@@ -11,64 +13,75 @@ const safeGetSite = async (api, siteId) => {
     return { error }
   }
 }
-
 /**
- * The env:clone command
- * @param {string} siteIdA Site (From)
- * @param {string} siteIdB Site (To)
- * @param {import('commander').OptionValues} options
- * @param {import('../base-command.js').default} command
+ * Copies the env from a site configured with Envelope to a site not configured with Envelope
  * @returns {Promise<boolean>}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
-const envClone = async (options, command) => {
-  const { api, site } = command.netlify
+// @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
+const envelopeToMongo = async ({ api, siteFrom, siteTo }) => {
+  const envelopeVariables = await api.getEnvVars({ accountId: siteFrom.account_slug, siteId: siteFrom.id })
+  const envFrom = translateFromEnvelopeToMongo(envelopeVariables)
 
-  if (!site.id && !options.from) {
-    log(
-      'Please include the source site Id as the `--from` option, or run `netlify link` to link this folder to a Netlify site',
-    )
+  if (Object.keys(envFrom).length === 0) {
+    log(`${chalk.green(siteFrom.name)} has no environment variables, nothing to clone`)
     return false
   }
 
-  const siteId = {
-    from: options.from || site.id,
-    to: options.to,
+  const envTo = siteTo.build_settings.env || {}
+
+  // Merge from site A to site B
+  const mergedEnv = {
+    ...envTo,
+    ...envFrom,
   }
 
-  const [{ data: siteFrom, error: errorFrom }, { data: siteTo, error: errorTo }] = await Promise.all([
-    safeGetSite(api, siteId.from),
-    safeGetSite(api, siteId.to),
+  // Apply environment variable updates
+  await api.updateSite({
+    siteId: siteTo.id,
+    body: {
+      build_settings: {
+        env: mergedEnv,
+      },
+    },
+  })
+
+  return true
+}
+
+/**
+ * Copies the env from a site configured with Envelope to a different site configured with Envelope
+ * @returns {Promise<boolean>}
+ */
+// @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
+const envelopeToEnvelope = async ({ api, siteFrom, siteTo }) => {
+  const [envelopeFrom, envelopeTo] = await Promise.all([
+    api.getEnvVars({ accountId: siteFrom.account_slug, siteId: siteFrom.id }),
+    api.getEnvVars({ accountId: siteTo.account_slug, siteId: siteTo.id }),
   ])
 
-  if (errorFrom) {
-    logError(`Can't find site with id ${chalk.bold(siteId.from)}. Please make sure the site exists.`)
+  // @ts-expect-error TS(7031) FIXME: Binding element 'key' implicitly has an 'any' type... Remove this comment to see the full error message
+  const keysFrom = envelopeFrom.map(({ key }) => key)
+
+  if (keysFrom.length === 0) {
+    log(`${chalk.green(siteFrom.name)} has no environment variables, nothing to clone`)
     return false
   }
 
-  if (errorTo) {
-    logError(`Can't find site with id ${chalk.bold(siteId.to)}. Please make sure the site exists.`)
-    return false
-  }
+  const accountId = siteTo.account_slug
+  const siteId = siteTo.id
+  // @ts-expect-error TS(7031) FIXME: Binding element 'key' implicitly has an 'any' type... Remove this comment to see the full error message
+  const envVarsToDelete = envelopeTo.filter(({ key }) => keysFrom.includes(key))
+  // delete marked env vars in parallel
+  // @ts-expect-error TS(7031) FIXME: Binding element 'key' implicitly has an 'any' type... Remove this comment to see the full error message
+  await Promise.all(envVarsToDelete.map(({ key }) => api.deleteEnvVar({ accountId, siteId, key })))
 
-  // determine if siteFrom and/or siteTo is on Envelope
-  let method
-  if (!siteFrom.use_envelope && !siteTo.use_envelope) {
-    method = mongoToMongo
-  } else if (!siteFrom.use_envelope && siteTo.use_envelope) {
-    method = mongoToEnvelope
-  } else if (siteFrom.use_envelope && !siteTo.use_envelope) {
-    method = envelopeToMongo
-  } else {
-    method = envelopeToEnvelope
+  // hit create endpoint
+  try {
+    await api.createEnvVars({ accountId, siteId, body: envelopeFrom })
+  } catch (error) {
+    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+    throw error.json ? error.json.msg : error
   }
-  const success = await method({ api, siteFrom, siteTo })
-
-  if (!success) {
-    return false
-  }
-
-  log(`Successfully cloned environment variables from ${chalk.green(siteFrom.name)} to ${chalk.green(siteTo.name)}`)
 
   return true
 }
@@ -149,91 +162,54 @@ const mongoToEnvelope = async ({ api, siteFrom, siteTo }) => {
   return true
 }
 
-/**
- * Copies the env from a site configured with Envelope to a site not configured with Envelope
- * @returns {Promise<boolean>}
- */
-// @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-const envelopeToMongo = async ({ api, siteFrom, siteTo }) => {
-  const envelopeVariables = await api.getEnvVars({ accountId: siteFrom.account_slug, siteId: siteFrom.id })
-  const envFrom = translateFromEnvelopeToMongo(envelopeVariables)
+export const envClone = async (options: OptionValues, command: BaseCommand) => {
+  const { api, site } = command.netlify
 
-  if (Object.keys(envFrom).length === 0) {
-    log(`${chalk.green(siteFrom.name)} has no environment variables, nothing to clone`)
+  if (!site.id && !options.from) {
+    log(
+      'Please include the source site Id as the `--from` option, or run `netlify link` to link this folder to a Netlify site',
+    )
     return false
   }
 
-  const envTo = siteTo.build_settings.env || {}
-
-  // Merge from site A to site B
-  const mergedEnv = {
-    ...envTo,
-    ...envFrom,
+  const siteId = {
+    from: options.from || site.id,
+    to: options.to,
   }
 
-  // Apply environment variable updates
-  await api.updateSite({
-    siteId: siteTo.id,
-    body: {
-      build_settings: {
-        env: mergedEnv,
-      },
-    },
-  })
-
-  return true
-}
-
-/**
- * Copies the env from a site configured with Envelope to a different site configured with Envelope
- * @returns {Promise<boolean>}
- */
-// @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-const envelopeToEnvelope = async ({ api, siteFrom, siteTo }) => {
-  const [envelopeFrom, envelopeTo] = await Promise.all([
-    api.getEnvVars({ accountId: siteFrom.account_slug, siteId: siteFrom.id }),
-    api.getEnvVars({ accountId: siteTo.account_slug, siteId: siteTo.id }),
+  const [{ data: siteFrom, error: errorFrom }, { data: siteTo, error: errorTo }] = await Promise.all([
+    safeGetSite(api, siteId.from),
+    safeGetSite(api, siteId.to),
   ])
 
-  // @ts-expect-error TS(7031) FIXME: Binding element 'key' implicitly has an 'any' type... Remove this comment to see the full error message
-  const keysFrom = envelopeFrom.map(({ key }) => key)
-
-  if (keysFrom.length === 0) {
-    log(`${chalk.green(siteFrom.name)} has no environment variables, nothing to clone`)
+  if (errorFrom) {
+    logError(`Can't find site with id ${chalk.bold(siteId.from)}. Please make sure the site exists.`)
     return false
   }
 
-  const accountId = siteTo.account_slug
-  const siteId = siteTo.id
-  // @ts-expect-error TS(7031) FIXME: Binding element 'key' implicitly has an 'any' type... Remove this comment to see the full error message
-  const envVarsToDelete = envelopeTo.filter(({ key }) => keysFrom.includes(key))
-  // delete marked env vars in parallel
-  // @ts-expect-error TS(7031) FIXME: Binding element 'key' implicitly has an 'any' type... Remove this comment to see the full error message
-  await Promise.all(envVarsToDelete.map(({ key }) => api.deleteEnvVar({ accountId, siteId, key })))
-
-  // hit create endpoint
-  try {
-    await api.createEnvVars({ accountId, siteId, body: envelopeFrom })
-  } catch (error) {
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    throw error.json ? error.json.msg : error
+  if (errorTo) {
+    logError(`Can't find site with id ${chalk.bold(siteId.to)}. Please make sure the site exists.`)
+    return false
   }
+
+  // determine if siteFrom and/or siteTo is on Envelope
+  let method
+  if (!siteFrom.use_envelope && !siteTo.use_envelope) {
+    method = mongoToMongo
+  } else if (!siteFrom.use_envelope && siteTo.use_envelope) {
+    method = mongoToEnvelope
+  } else if (siteFrom.use_envelope && !siteTo.use_envelope) {
+    method = envelopeToMongo
+  } else {
+    method = envelopeToEnvelope
+  }
+  const success = await method({ api, siteFrom, siteTo })
+
+  if (!success) {
+    return false
+  }
+
+  log(`Successfully cloned environment variables from ${chalk.green(siteFrom.name)} to ${chalk.green(siteTo.name)}`)
 
   return true
 }
-
-/**
- * Creates the `netlify env:clone` command
- * @param {import('../base-command.js').default} program
- * @returns
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'program' implicitly has an 'any' type.
-export const createEnvCloneCommand = (program) =>
-  program
-    .command('env:clone')
-    .alias('env:migrate')
-    .option('-f, --from <from>', 'Site ID (From)')
-    .requiredOption('-t, --to <to>', 'Site ID (To)')
-    .description(`Clone environment variables from one site to another`)
-    .addExamples(['netlify env:clone --to <to-site-id>', 'netlify env:clone --to <to-site-id> --from <from-site-id>'])
-    .action(envClone)

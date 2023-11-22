@@ -1,15 +1,11 @@
+import { OptionValues } from 'commander'
 import execa from 'execa'
 
 import { getDotEnvVariables, injectEnvVariables } from '../../utils/dev.js'
 import { getEnvelopeEnv, normalizeContext } from '../../utils/env/index.js'
+import BaseCommand from '../base-command.js'
 
-/**
- * The dev:exec command
- * @param {import('commander').OptionValues} options
- * @param {import('../base-command.js').default} command
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'cmd' implicitly has an 'any' type.
-const devExec = async (cmd, options, command) => {
+export const devExec = async (cmd: string, options: OptionValues, command: BaseCommand) => {
   const { api, cachedConfig, config, site, siteInfo } = command.netlify
 
   let { env } = cachedConfig
@@ -25,13 +21,7 @@ const devExec = async (cmd, options, command) => {
   })
 }
 
-/**
- * Creates the `netlify dev:exec` command
- * @param {import('../base-command.js').default} program
- * @returns
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'program' implicitly has an 'any' type.
-export const createDevExecCommand = (program) =>
+export const createDevExecCommand = (program: BaseCommand) =>
   program
     .command('dev:exec')
     .argument('<...cmd>', `the command that should be executed`)

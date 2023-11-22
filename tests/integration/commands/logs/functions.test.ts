@@ -1,9 +1,10 @@
 import { Mock, afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 
 import BaseCommand from '../../../../src/commands/base-command.js'
-import { LOG_LEVELS, createLogsFunctionCommand } from '../../../../src/commands/logs/functions.js'
-import { getWebSocket } from '../../../../src/utils/websockets/index.js'
+import { createLogsFunctionCommand } from '../../../../src/commands/logs/index.js'
+import { LOG_LEVELS } from '../../../../src/commands/logs/log-levels.js'
 import { log } from '../../../../src/utils/command-helpers.js'
+import { getWebSocket } from '../../../../src/utils/websockets/index.js'
 import { startMockApi } from '../../utils/mock-api-vitest.ts'
 import { getEnvironmentVariables } from '../../utils/mock-api.js'
 

@@ -1,16 +1,11 @@
 import AsciiTable from 'ascii-table'
+import { OptionValues } from 'commander'
 
 import { prepareAddonCommand } from '../../utils/addons/prepare.js'
 import { log, logJson } from '../../utils/command-helpers.js'
+import BaseCommand from '../base-command.js'
 
-/**
- * The addons:list command
- * @param {import('commander').OptionValues} options
- * @param {import('../base-command.js').default} command
- * @returns {Promise<boolean>}
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
-const addonsList = async (options, command) => {
+export const addonsList = async (options: OptionValues, command: BaseCommand) => {
   // @ts-expect-error TS(2345) FIXME: Argument of type '{ command: any; }' is not assign... Remove this comment to see the full error message
   const { addons, siteData } = await prepareAddonCommand({ command })
   // Return json response for piping commands
@@ -45,20 +40,3 @@ const addonsList = async (options, command) => {
   // Log da addons
   log(table.toString())
 }
-
-/**
- * Creates the `netlify addons:list` command
- * @param {import('../base-command.js').default} program
- * @returns
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'program' implicitly has an 'any' type.
-export const createAddonsListCommand = (program) =>
-  program
-    .command('addons:list', { hidden: true })
-    .alias('addon:list')
-    .description(`List currently installed add-ons for site`)
-    .option('--json', 'Output add-on data as JSON')
-    // @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
-    .action(async (options, command) => {
-      await addonsList(options, command)
-    })

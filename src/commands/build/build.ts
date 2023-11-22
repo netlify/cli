@@ -1,9 +1,10 @@
-import process from 'process'
+import { OptionValues } from 'commander'
 
 import { getBuildOptions, runBuild } from '../../lib/build.js'
 import { detectFrameworkSettings } from '../../utils/build-info.js'
 import { error, exit, getToken } from '../../utils/command-helpers.js'
-import { getEnvelopeEnv, normalizeContext } from '../../utils/env/index.js'
+import { getEnvelopeEnv } from '../../utils/env/index.js'
+import BaseCommand from '../base-command.js'
 
 /**
  * @param {import('../../lib/build.js').BuildConfig} options
@@ -32,13 +33,7 @@ const injectEnv = async function (command, { api, buildOptions, context, siteInf
   }
 }
 
-/**
- * The build command
- * @param {import('commander').OptionValues} options
- * @param {import('../base-command.js').default} command
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
-const build = async (options, command) => {
+export const build = async (options: OptionValues, command: BaseCommand) => {
   const { cachedConfig, siteInfo } = command.netlify
   command.setAnalyticsPayload({ dry: options.dry })
   // Retrieve Netlify Build options
@@ -52,12 +47,12 @@ const build = async (options, command) => {
     cachedConfig.config.build.commandOrigin = 'heuristics'
   }
 
-  // @ts-expect-error TS(2345) FIXME: Argument of type '{ cachedConfig: any; packagePath... Remove this comment to see the full error message
   const buildOptions = await getBuildOptions({
     cachedConfig,
     packagePath: command.workspacePackage,
     currentDir: command.workingDir,
     token,
+    // @ts-expect-error TS(2740)
     options,
   })
 
@@ -72,24 +67,3 @@ const build = async (options, command) => {
   const { exitCode } = await runBuild(buildOptions)
   exit(exitCode)
 }
-
-/**
- * Creates the `netlify build` command
- * @param {import('../base-command.js').default} program
- * @returns
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'program' implicitly has an 'any' type.
-export const createBuildCommand = (program) =>
-  program
-    .command('build')
-    .description('Build on your local machine')
-    .option(
-      '--context <context>',
-      'Specify a build context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev")',
-      normalizeContext,
-      process.env.CONTEXT || 'production',
-    )
-    .option('--dry', 'Dry run: show instructions without running them', false)
-    .option('-o, --offline', 'disables any features that require network access', false)
-    .addExamples(['netlify build'])
-    .action(build)

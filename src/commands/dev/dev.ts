@@ -1,6 +1,6 @@
 import process from 'process'
 
-import { Option } from 'commander'
+import { OptionValues, Option } from 'commander'
 
 import { getBlobsContext } from '../../lib/blobs/blobs.js'
 import { promptEditorHelper } from '../../lib/edge-functions/editor-helper.js'
@@ -26,6 +26,7 @@ import { generateInspectSettings, startProxyServer } from '../../utils/proxy-ser
 import { getProxyUrl } from '../../utils/proxy.js'
 import { runDevTimeline } from '../../utils/run-build.js'
 import { getGeoCountryArgParser } from '../../utils/validation.js'
+import BaseCommand from '../base-command.js'
 
 import { createDevExecCommand } from './dev-exec.js'
 
@@ -68,11 +69,7 @@ const handleLiveTunnel = async ({ api, options, settings, site, state }) => {
   }
 }
 
-/**
- * @param {string} args
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
-const validateShortFlagArgs = (args) => {
+const validateShortFlagArgs = (args: string) => {
   if (args.startsWith('=')) {
     throw new Error(
       `Short flag options like -e or -E don't support the '=' sign
@@ -88,13 +85,7 @@ const validateShortFlagArgs = (args) => {
   return args
 }
 
-/**
- * The dev command
- * @param {import('commander').OptionValues} options
- * @param {import('../base-command.js').default} command
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
-const dev = async (options, command) => {
+export const dev = async (options: OptionValues, command: BaseCommand) => {
   log(`${NETLIFYDEV}`)
   const { api, cachedConfig, config, repositoryRoot, site, siteInfo, state } = command.netlify
   config.dev = { ...config.dev }
@@ -239,13 +230,8 @@ const dev = async (options, command) => {
   printBanner({ url })
 }
 
-/**
- * Creates the `netlify dev` command
- * @param {import('../base-command.js').default} program
- * @returns
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'program' implicitly has an 'any' type.
-export const createDevCommand = (program) => {
+
+export const createDevCommand = (program: BaseCommand) => {
   createDevExecCommand(program)
 
   return (
@@ -261,7 +247,6 @@ export const createDevCommand = (program) => {
         'Specify a deploy context or branch for environment variables (contexts: "production", "deploy-preview", "branch-deploy", "dev")',
         normalizeContext,
       )
-      // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
       .option('-p ,--port <port>', 'port of netlify dev', (value) => Number.parseInt(value))
       .addOption(
         new Option('--targetPort <port>', 'Old, prefer --target-port. Port of target app server')
@@ -269,7 +254,6 @@ export const createDevCommand = (program) => {
           .hideHelp(true),
       )
       .addOption(new Option('--no-open', 'disables the automatic opening of a browser window'))
-      // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
       .option('--target-port <port>', 'port of target app server', (value) => Number.parseInt(value))
       .option('--framework <name>', 'framework to use. Defaults to #auto which automatically detects a framework')
       .option('-d ,--dir <path>', 'dir with static files')
@@ -285,7 +269,6 @@ export const createDevCommand = (program) => {
           .argParser((value) => Number.parseInt(value))
           .hideHelp(true),
       )
-      // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
       .option('--functions-port <port>', 'port of functions server', (value) => Number.parseInt(value))
       .addOption(
         new Option(

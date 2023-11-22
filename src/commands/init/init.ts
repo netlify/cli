@@ -1,4 +1,4 @@
-import { Option } from 'commander'
+import { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 import isEmpty from 'lodash/isEmpty.js'
 
@@ -7,8 +7,9 @@ import getRepoData from '../../utils/get-repo-data.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import { configureRepo } from '../../utils/init/config.js'
 import { track } from '../../utils/telemetry/index.js'
-import { link } from '../link/index.js'
-import { sitesCreate } from '../sites/index.js'
+import BaseCommand from '../base-command.js'
+import { link } from '../link/link.js'
+import { sitesCreate } from '../sites/sites-create.js'
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'siteInfo' implicitly has an 'any'... Remove this comment to see the full error message
 const persistState = ({ siteInfo, state }) => {
@@ -180,13 +181,7 @@ const logExistingRepoSetupAndExit = ({ repoUrl, siteName }) => {
   exit()
 }
 
-/**
- * The init command
- * @param {import('commander').OptionValues} options
- * @param {import('../base-command.js').default} command
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
-export const init = async (options, command) => {
+export const init = async (options: OptionValues, command: BaseCommand) => {
   command.setAnalyticsPayload({ manual: options.manual, force: options.force })
 
   const { repositoryRoot, state } = command.netlify
@@ -227,26 +222,3 @@ export const init = async (options, command) => {
 
   return siteInfo
 }
-
-/**
- * Creates the `netlify init` command
- * @param {import('../base-command.js').default} program
- * @returns
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'program' implicitly has an 'any' type.
-export const createInitCommand = (program) =>
-  program
-    .command('init')
-    .description(
-      'Configure continuous deployment for a new or existing site. To create a new site without continuous deployment, use `netlify sites:create`',
-    )
-    .option('-m, --manual', 'Manually configure a git remote for CI')
-    .option('--force', 'Reinitialize CI hooks if the linked site is already configured to use CI')
-    .addOption(
-      new Option(
-        '--gitRemoteName <name>',
-        'Old, prefer --git-remote-name. Name of Git remote to use. e.g. "origin"',
-      ).hideHelp(true),
-    )
-    .option('--git-remote-name <name>', 'Name of Git remote to use. e.g. "origin"')
-    .action(init)
