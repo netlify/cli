@@ -2,7 +2,7 @@ import { OptionValues } from 'commander'
 import execa from 'execa'
 
 import { getDotEnvVariables, injectEnvVariables } from '../../utils/dev.js'
-import { getEnvelopeEnv } from '../../utils/env/index.js'
+import { getEnvelopeEnv, normalizeContext } from '../../utils/env/index.js'
 import BaseCommand from '../base-command.js'
 
 export const devExec = async (cmd: string, options: OptionValues, command: BaseCommand) => {
@@ -20,3 +20,20 @@ export const devExec = async (cmd: string, options: OptionValues, command: BaseC
     stdio: 'inherit',
   })
 }
+
+export const createDevExecCommand = (program: BaseCommand) =>
+  program
+    .command('dev:exec')
+    .argument('<...cmd>', `the command that should be executed`)
+    .option(
+      '--context <context>',
+      'Specify a deploy context or branch for environment variables (contexts: "production", "deploy-preview", "branch-deploy", "dev")',
+      normalizeContext,
+      'dev',
+    )
+    .description(
+      'Exec command\nRuns a command within the netlify dev environment, e.g. with env variables from any installed addons',
+    )
+    .allowExcessArguments(true)
+    .addExamples(['netlify dev:exec npm run bootstrap'])
+    .action(devExec)
