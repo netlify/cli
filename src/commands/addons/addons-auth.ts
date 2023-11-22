@@ -1,4 +1,3 @@
- 
 import { ADDON_VALIDATION, prepareAddonCommand } from '../../utils/addons/prepare.js'
 import { exit, log } from '../../utils/command-helpers.js'
 import openBrowser from '../../utils/open-browser.js'

@@ -1,4 +1,3 @@
- 
 import { createLmInfoCommand } from './lm-info.js'
 import { createLmInstallCommand } from './lm-install.js'
 import { createLmSetupCommand } from './lm-setup.js'

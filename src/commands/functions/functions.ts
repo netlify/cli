@@ -1,4 +1,3 @@
- 
 import { chalk } from '../../utils/command-helpers.js'
 
 import { createFunctionsBuildCommand } from './functions-build.js'

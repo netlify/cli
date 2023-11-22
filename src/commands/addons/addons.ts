@@ -1,4 +1,3 @@
- 
 import { createAddonsAuthCommand } from './addons-auth.js'
 import { createAddonsConfigCommand } from './addons-config.js'
 import { createAddonsCreateCommand } from './addons-create.js'

@@ -1,4 +1,3 @@
- 
 import { chalk, error, exit, log, warn } from '../command-helpers.js'
 
 export const ADDON_VALIDATION = {

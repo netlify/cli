@@ -1,4 +1,3 @@
- 
 import { exit, log, NETLIFYDEVERR } from './command-helpers.js'
 import { startProxy } from './proxy.js'
 

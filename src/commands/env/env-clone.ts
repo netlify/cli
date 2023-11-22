@@ -1,4 +1,3 @@
- 
 import { chalk, error as logError, log } from '../../utils/command-helpers.js'
 import { translateFromEnvelopeToMongo, translateFromMongoToEnvelope } from '../../utils/env/index.js'
 

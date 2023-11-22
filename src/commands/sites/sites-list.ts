@@ -1,4 +1,3 @@
- 
 import { listSites } from '../../lib/api.js'
 import { startSpinner, stopSpinner } from '../../lib/spinner.js'
 import { chalk, log, logJson } from '../../utils/command-helpers.js'

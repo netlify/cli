@@ -1,6 +1,6 @@
-import { Context } from "https://edge.netlify.com";
+import { Context } from 'https://edge.netlify.com'
 
-export default async (request: Request, context: Context) => {
+export default async (request: Request, context: Context) =>
   // Here's what's available on context.geo
 
   // context: {
@@ -17,8 +17,7 @@ export default async (request: Request, context: Context) => {
   //   }
   // }
 
-  return Response.json({
+  Response.json({
     geo: context.geo,
-    header: request.headers.get("x-nf-geo"),
-  });
-};
+    header: request.headers.get('x-nf-geo'),
+  })

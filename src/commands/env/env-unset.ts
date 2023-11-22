@@ -1,4 +1,3 @@
- 
 import { chalk, error, log, logJson } from '../../utils/command-helpers.js'
 import { AVAILABLE_CONTEXTS, normalizeContext, translateFromEnvelopeToMongo } from '../../utils/env/index.js'
 
