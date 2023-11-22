@@ -1,10 +1,9 @@
+import { http, HttpResponse } from 'msw'
 import { Mock, afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 
-import BaseCommand from '../../../../src/commands/base-command.js'
-import { createLogsBuildCommand } from '../../../../src/commands/logs/build.js'
 import { getWebSocket } from '../../../../src/utils/websockets/index.js'
-import { startMockApi } from '../../utils/mock-api-vitest.js'
-import { getEnvironmentVariables } from '../../utils/mock-api.js'
+import { addMockedFiles } from '../../../fs.js'
+import { server } from '../../../server.js'
 
 vi.mock('../../../../src/utils/websockets/index.js', () => ({
   getWebSocket: vi.fn(),
@@ -18,48 +17,41 @@ const siteInfo = {
   build_settings: { repo_url: 'https://github.com/owner/repo' },
 }
 
-const routes = [
-  {
-    path: 'accounts',
-    response: [{ slug: 'test-account' }],
-  },
-  {
-    path: 'sites',
-    response: [],
-  },
-  { path: 'sites/site_id', response: siteInfo },
-  { path: 'sites/site_id/service-instances', response: [] },
-  {
-    path: 'user',
-    response: { name: 'test user', slug: 'test-user', email: 'user@test.com' },
-  },
-  {
-    path: 'sites/site_id/deploys',
-    response: [
-      {
-        state: 'building',
-        context: 'production',
-        id: 'deploy-id',
-      },
-    ],
-  },
-]
-
 describe('logs:deploy command', () => {
-  let program: BaseCommand
-
   afterEach(() => {
     vi.clearAllMocks()
   })
 
   beforeEach(() => {
-    program = new BaseCommand('netlify')
+    server.use(
+      http.get('https://api.netlify.com/api/v1/accounts', () => HttpResponse.json([{ slug: 'test-account' }])),
+      http.get('https://api.netlify.com/api/v1/sites', () => HttpResponse.json([])),
+      http.get('https://api.netlify.com/api/v1/sites/:site_id', () => HttpResponse.json(siteInfo)),
+      http.get('https://api.netlify.com/api/v1/sites/:site_id/service-instances', () => HttpResponse.json([])),
+      http.get('https://api.netlify.com/api/v1/user', () =>
+        HttpResponse.json({ name: 'test user', slug: 'test-user', email: 'user@test.com' }),
+      ),
+      http.get('https://api.netlify.com/api/v1/sites/:site_id/deploys', () =>
+        HttpResponse.json([
+          {
+            state: 'building',
+            context: 'production',
+            id: 'deploy-id',
+          },
+        ]),
+      ),
+    )
 
-    createLogsBuildCommand(program)
+    addMockedFiles({
+      '.netlify': {
+        'state.json': JSON.stringify({
+          siteId: 'site_id',
+        }),
+      },
+    })
   })
 
-  test('should setup the deploy stream correctly', async ({}) => {
-    const { apiUrl } = await startMockApi({ routes })
+  test('should setup the deploy stream correctly', async ({ callCli }) => {
     const spyWebsocket = getWebSocket as unknown as Mock<any, any>
     const spyOn = vi.fn()
     const spySend = vi.fn()
@@ -68,17 +60,13 @@ describe('logs:deploy command', () => {
       send: spySend,
     })
 
-    const env = getEnvironmentVariables({ apiUrl })
-    Object.assign(process.env, env)
-
-    await program.parseAsync(['', '', 'logs:deploy'])
+    await callCli(['logs:deploy'])
 
     expect(spyWebsocket).toHaveBeenCalledOnce()
     expect(spyOn).toHaveBeenCalledTimes(3)
   })
 
-  test('should send the correct payload to the websocket', async ({}) => {
-    const { apiUrl } = await startMockApi({ routes })
+  test('should send the correct payload to the websocket', async ({ callCli }) => {
     const spyWebsocket = getWebSocket as unknown as Mock<any, any>
     const spyOn = vi.fn()
     const spySend = vi.fn()
@@ -87,10 +75,7 @@ describe('logs:deploy command', () => {
       send: spySend,
     })
 
-    const env = getEnvironmentVariables({ apiUrl })
-    Object.assign(process.env, env)
-
-    await program.parseAsync(['', '', 'logs:deploy'])
+    await callCli(['logs:deploy'])
 
     const setupCall = spyOn.mock.calls.find((args) => args[0] === 'open')
     expect(setupCall).toBeDefined()
@@ -105,6 +90,6 @@ describe('logs:deploy command', () => {
 
     expect(body.deploy_id).toEqual('deploy-id')
     expect(body.site_id).toEqual('site_id')
-    expect(body.access_token).toEqual(env.NETLIFY_AUTH_TOKEN)
+    expect(body.access_token).toEqual('test-token')
   })
 })
