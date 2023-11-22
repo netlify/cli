@@ -301,10 +301,10 @@ describe.concurrent('functions:create command', () => {
         const tomlContent = await readFile(toml, 'utf-8')
         expect(tomlContent.trim()).toMatchInlineSnapshot(`
           "[[edge_functions]]
-          function = \\"abtest\\"
+          function = \\"hello\\"
           path = \\"/test\\""
         `)
-        expect(existsSync(join(pkgBase, 'netlify/edge-functions/abtest/abtest.ts'))).toBe(true)
+        expect(existsSync(join(pkgBase, 'netlify/edge-functions/hello/hello.ts'))).toBe(true)
       })
       // we need to wait till file watchers are loaded
       // await pause(500)
