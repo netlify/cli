@@ -79,7 +79,6 @@
   },
   "dependencies": {
     "@bugsnag/js": "7.20.2",
-    "@clack/core": "^0.3.3",
     "@clack/prompts": "^0.7.0",
     "@fastify/static": "6.10.2",
     "@netlify/blobs": "6.3.0",
@@ -206,7 +205,7 @@
     "@vitest/coverage-v8": "1.0.0-beta.4",
     "c8": "7.14.0",
     "eslint-plugin-sort-destructure-keys": "1.5.0",
-    "eslint-plugin-workspace": "file:./tools/lint-rules.js",
+    "eslint-plugin-workspace": "file:./tools/lint-rules",
     "fast-glob": "3.3.1",
     "form-data": "4.0.0",
     "fs-extra": "11.1.1",
