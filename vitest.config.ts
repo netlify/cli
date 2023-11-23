@@ -8,9 +8,10 @@ export default defineConfig({
     setupFiles: 'tests/setup.ts',
     testTimeout: 60_000,
     hookTimeout: 60_000,
-    deps: {
-      external: ['**/fixtures/**', '**/node_modules/**'],
-      interopDefault: false,
+    server: {
+      deps: {
+        external: ['**/fixtures/**', '**/node_modules/**'],
+      },
     },
     snapshotFormat: {
       escapeString: true,

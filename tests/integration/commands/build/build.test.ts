@@ -41,11 +41,11 @@ describe('command/build', () => {
     })
   })
 
-  test('should print output for a successful command', async ({ callCli }) => {
-    addMockedFiles({
-      'netlify.toml': `[build]
-        command = "echo 'hello world'"
-        `,
+  test('should print output for a successful command', async ({ builder, callCli }) => {
+    builder.setConfig({
+      build: {
+        command: 'echo "hello world"',
+      },
     })
 
     const { exitCode, stdout } = await callCli(['build'])
@@ -53,25 +53,34 @@ describe('command/build', () => {
     expect(exitCode).toBe(0)
   })
 
-  test('should use build command from UI', async ({ callCli }) => {
-    addMockedFiles({
-      '.netlify': {
-        'state.json': JSON.stringify({
-          siteId: 'site_id_with_command',
-        }),
+  test('should execute build plugins', async ({ builder, callCli }) => {
+    builder.setConfig({
+      build: {
+        command: 'echo "build build build"',
       },
     })
+    builder.addPlugin('basic')
+
+    const { exitCode, stdout } = await callCli(['build'])
+    expect(stdout).toContain('hello world')
+    expect(stdout).toContain('build build build')
+    expect(exitCode).toBe(0)
+  })
+
+  test('should use build command from UI', async ({ builder, callCli }) => {
+    builder.setSiteId('site_id_with_command')
+
     const { exitCode, stdout } = await callCli(['build'])
 
     expect(stdout).toContain('uiCommand')
     expect(exitCode).toBe(0)
   })
 
-  test('should print output for a failed command', async ({ callCli }) => {
-    addMockedFiles({
-      'netlify.toml': `[build]
-            command = "doesNotExist"
-            `,
+  test('should print output for a failed command', async ({ builder, callCli }) => {
+    builder.setConfig({
+      build: {
+        command: 'doesNotExist',
+      },
     })
 
     const { exitCode, stdout } = await callCli(['build'])
@@ -80,11 +89,11 @@ describe('command/build', () => {
     expect(exitCode).toBe(2)
   })
 
-  test('should run in dry mode when the --dry flag is set', async ({ callCli }) => {
-    addMockedFiles({
-      'netlify.toml': `[build]
-                command = "echo testCommand"
-                `,
+  test('should run in dry mode when the --dry flag is set', async ({ builder, callCli }) => {
+    builder.setConfig({
+      build: {
+        command: 'echo testCommand',
+      },
     })
 
     const { exitCode, stdout } = await callCli(['build', '--dry'])
@@ -93,13 +102,16 @@ describe('command/build', () => {
     expect(exitCode).toBe(0)
   })
 
-  test('should run the production context when context is not defined', async ({ callCli }) => {
-    addMockedFiles({
-      'netlify.toml': `[build]
-                    command = "echo testCommand"
-                    [context.production]
-                    command = "echo testProduction"
-                    `,
+  test('should run the production context when context is not defined', async ({ builder, callCli }) => {
+    builder.setConfig({
+      build: {
+        command: 'echo testCommand',
+      },
+      context: {
+        production: {
+          command: 'echo testProduction',
+        },
+      },
     })
 
     const { exitCode, stdout } = await callCli(['build', '--offline'])
@@ -107,13 +119,19 @@ describe('command/build', () => {
     expect(exitCode).toBe(0)
   })
 
-  test('should run the staging context command when the --context option is set to staging', async ({ callCli }) => {
-    addMockedFiles({
-      'netlify.toml': `[build]
-                    command = "echo testCommand"
-                    [context.staging]
-                    command = "echo testStaging"
-                    `,
+  test('should run the staging context command when the --context option is set to staging', async ({
+    builder,
+    callCli,
+  }) => {
+    builder.setConfig({
+      build: {
+        command: 'echo testCommand',
+      },
+      context: {
+        staging: {
+          command: 'echo testStaging',
+        },
+      },
     })
 
     const { exitCode, stdout } = await callCli(['build', '--offline', '--context=staging'])
@@ -121,13 +139,16 @@ describe('command/build', () => {
     expect(exitCode).toBe(0)
   })
 
-  test('should run the staging context command when the context env variable is set', async ({ callCli }) => {
-    addMockedFiles({
-      'netlify.toml': `[build]
-                    command = "echo testCommand"
-                    [context.staging]
-                    command = "echo testStaging"
-                    `,
+  test('should run the staging context command when the context env variable is set', async ({ builder, callCli }) => {
+    builder.setConfig({
+      build: {
+        command: 'echo testCommand',
+      },
+      context: {
+        staging: {
+          command: 'echo testStaging',
+        },
+      },
     })
 
     // eslint-disable-next-line n/prefer-global/process
@@ -139,11 +160,11 @@ describe('command/build', () => {
     expect(exitCode).toBe(0)
   })
 
-  test('should print debug information when the --debug flag is set', async ({ callCli }) => {
-    addMockedFiles({
-      'netlify.toml': `[build]
-                    command = "echo testCommand"
-                    `,
+  test('should print debug information when the --debug flag is set', async ({ builder, callCli }) => {
+    builder.setConfig({
+      build: {
+        command: 'echo testCommand',
+      },
     })
 
     const { exitCode, stdout } = await callCli(['build', '--debug'])
@@ -151,10 +172,12 @@ describe('command/build', () => {
     expect(exitCode).toBe(0)
   })
 
-  test('should use root directory netlify.toml when runs in subdirectory', async ({ callCli }) => {
-    addMockedFiles({
-      '../netlify.toml': `[build]
-        command = "echo testCommand"`,
+  test('should use root directory netlify.toml when runs in subdirectory', async ({ builder, callCli }) => {
+    builder.setConfigPath('../netlify.toml')
+    builder.setConfig({
+      build: {
+        command: 'echo testCommand',
+      },
     })
 
     const { exitCode, stdout } = await callCli(['build'])
@@ -162,10 +185,11 @@ describe('command/build', () => {
     expect(exitCode).toBe(0)
   })
 
-  test('should error when using invalid netlify.toml', async ({ callCli }) => {
-    addMockedFiles({
-      'netlify.toml': `[build]
-            command = false`,
+  test('should error when using invalid netlify.toml', async ({ builder, callCli }) => {
+    builder.setConfig({
+      build: {
+        command: false as any,
+      },
     })
 
     const { exitCode, stderr } = await callCli(['build'])
@@ -174,12 +198,8 @@ describe('command/build', () => {
     expect(exitCode).toBe(1)
   })
 
-  test('should error when a site id is missing', async ({ callCli }) => {
-    addMockedFiles({
-      '.netlify': {
-        'state.json': JSON.stringify({}),
-      },
-    })
+  test('should error when a site id is missing', async ({ builder, callCli }) => {
+    builder.setSiteId('')
 
     const { exitCode, stderr } = await callCli(['build'])
 
@@ -187,13 +207,13 @@ describe('command/build', () => {
     expect(exitCode).toBe(1)
   })
 
-  test('should not require a linked site when offline flag is set', async ({ callCli }) => {
-    addMockedFiles({
-      '.netlify': {
-        'state.json': JSON.stringify({}),
+  test('should not require a linked site when offline flag is set', async ({ builder, callCli }) => {
+    builder.setSiteId('')
+
+    builder.setConfig({
+      build: {
+        command: 'echo testCommand',
       },
-      'netlify.toml': `[build]
-      command = "echo testCommand"`,
     })
     const { exitCode, stdout } = await callCli(['build', '--offline'])
 
@@ -202,20 +222,21 @@ describe('command/build', () => {
     expect(exitCode).toBe(0)
   })
 
-  test('should not send network requests when offline flag is set', async ({ callCli }) => {
+  test('should not send network requests when offline flag is set', async ({ builder, callCli }) => {
     const requests: any[] = []
     server.events.on('request:start', (req) => requests.push(req))
 
-    addMockedFiles({
-      'netlify.toml': `[build]
-        command = "echo testCommand"`,
+    builder.setConfig({
+      build: {
+        command: 'echo testCommand',
+      },
     })
 
     const { exitCode, stdout } = await callCli(['build', '--offline'])
+    server.events.removeAllListeners('request:start')
+
     expect(stdout).toContain('testCommand')
     expect(exitCode).toBe(0)
     expect(requests.length).toBe(0)
-
-    server.events.removeAllListeners('request:start')
   })
 })
