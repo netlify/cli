@@ -1,4 +1,4 @@
-import { note, confirm, select, text, intro, log as clackLog, outro }  from '@clack/prompts'
+import { note, confirm, select, text, intro, log as clackLog, outro } from '@clack/prompts'
 import { OptionValues } from 'commander'
 import pick from 'lodash/pick.js'
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'pars... Remove this comment to see the full error message
@@ -53,12 +53,13 @@ const getTemplateName = async ({ ghToken, options, repository }) => {
   const templates = await fetchTemplates(ghToken)
 
   const templateName = await select({
-    message: 'Choose one of our starter templates. Netlify will create a new repo for this template in your GitHub account.',
+    message:
+      'Choose one of our starter templates. Netlify will create a new repo for this template in your GitHub account.',
     maxItems: 5,
     options: templates.map((template) => ({
       value: template.slug,
       label: template.name,
-    }))
+    })),
   })
 
   return templateName
@@ -75,7 +76,7 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
   const { globalConfig } = command.netlify
   const ghToken = await getGitHubToken({ globalConfig })
 
-  intro(`${chalk.bgBlack.cyan('Create a site from a starter template')}`);
+  intro(`${chalk.bgBlack.cyan('Create a site from a starter template')}`)
 
   const templateName = await getTemplateName({ ghToken, options, repository })
   const { exists, isTemplate } = await validateTemplate({ templateName, ghToken })
@@ -100,7 +101,6 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
   let { accountSlug } = options
 
   if (!accountSlug) {
-
     const accountSlugInput = await select({
       message: 'Team:',
       maxItems: 5,
@@ -108,7 +108,7 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
       options: accounts.map((account) => ({
         value: account.slug,
         label: account.name,
-      }))
+      })),
     })
 
     accountSlug = accountSlugInput
@@ -125,10 +125,10 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
       message: 'Site name (leave blank for a random name; you can change it later):',
       validate: (input) => {
         // @ts-expect-error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
-          if (!/^[a-zA-Z\d-]+$/.test(input || undefined)) {
-            return 'Only alphanumeric characters and hyphens are allowed'
-          }
-        },
+        if (!/^[a-zA-Z\d-]+$/.test(input || undefined)) {
+          return 'Only alphanumeric characters and hyphens are allowed'
+        }
+      },
     })
 
     try {
@@ -195,15 +195,21 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
   // @ts-expect-error Property 'ssl_url' does not exist on type 'never'.
   const siteUrl = site.ssl_url || site.url
 
-  note(render({
-    // @ts-expect-error TS2339: Property 'admin_url' does not exist on type 'never'.
-    'Admin URL': site.admin_url,
-    URL: siteUrl,
-    // @ts-expect-error TS2339: Property 'id' does not exist on type 'never'.
-    'Site ID': site.id,
-    // @ts-expect-error TS2339: Property 'build_settings' does not exist on type 'never'.
-    'Repo URL': site.build_settings.repo_url,
-  }, {keysColor: 'cyan'}), 'Site Created')
+  note(
+    render(
+      {
+        // @ts-expect-error TS2339: Property 'admin_url' does not exist on type 'never'.
+        'Admin URL': site.admin_url,
+        URL: siteUrl,
+        // @ts-expect-error TS2339: Property 'id' does not exist on type 'never'.
+        'Site ID': site.id,
+        // @ts-expect-error TS2339: Property 'build_settings' does not exist on type 'never'.
+        'Repo URL': site.build_settings.repo_url,
+      },
+      { keysColor: 'cyan' },
+    ),
+    'Site Created',
+  )
 
   track('sites_createdFromTemplate', {
     // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
