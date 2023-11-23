@@ -5,12 +5,12 @@ import { join } from 'path'
 import execa from 'execa'
 import { describe, expect, test } from 'vitest'
 
-import { fileExistsAsync } from '../../../../src/lib/fs.mjs'
-import { cliPath } from '../../utils/cli-path.mjs'
+import { fileExistsAsync } from '../../../../src/lib/fs.js'
+import { cliPath } from '../../utils/cli-path.js'
 import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture'
-import { CONFIRM, DOWN, answerWithValue, handleQuestions } from '../../utils/handle-questions.mjs'
-import { getCLIOptions, withMockApi } from '../../utils/mock-api.mjs'
-import { withSiteBuilder } from '../../utils/site-builder.mjs'
+import { CONFIRM, DOWN, answerWithValue, handleQuestions } from '../../utils/handle-questions.js'
+import { getCLIOptions, withMockApi } from '../../utils/mock-api.js'
+import { withSiteBuilder } from '../../utils/site-builder.js'
 
 describe.concurrent('functions:create command', () => {
   const siteInfo = {

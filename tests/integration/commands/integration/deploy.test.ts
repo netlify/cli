@@ -2,11 +2,12 @@ import process from 'process'
 
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 
-import BaseCommand from '../../../../src/commands/base-command.mjs'
-import { deploy as siteDeploy } from '../../../../src/commands/deploy/deploy.mjs'
-import { areScopesEqual, createDeployCommand } from '../../../../src/commands/integration/deploy.mjs'
-import { getEnvironmentVariables, withMockApi } from '../../utils/mock-api.mjs'
-import { withSiteBuilder } from '../../utils/site-builder.mjs'
+import BaseCommand from '../../../../src/commands/base-command.js'
+import { deploy as siteDeploy } from '../../../../src/commands/deploy/deploy.js'
+import { areScopesEqual } from '../../../../src/commands/integration/deploy.js'
+import { createIntegrationDeployCommand } from '../../../../src/commands/integration/index.js'
+import { getEnvironmentVariables, withMockApi } from '../../utils/mock-api.js'
+import { withSiteBuilder } from '../../utils/site-builder.js'
 
 describe('integration:deploy areScopesEqual', () => {
   test('it returns false when scopes are not equal', () => {
@@ -28,7 +29,7 @@ describe(`integration:deploy`, () => {
     vi.resetAllMocks()
   })
   test('deploys an integration', async () => {
-    vi.mock(`../../../../src/commands/deploy/deploy.mjs`, () => ({
+    vi.mock(`../../../../src/commands/deploy/deploy.js`, () => ({
       deploy: vi.fn(() => console.log(`yay it was mocked!`)),
     }))
 
@@ -63,9 +64,10 @@ describe(`integration:deploy`, () => {
     ]
 
     await withSiteBuilder('my-integration', async (builder) => {
-      builder.withContentFiles([{
-        path: 'integration.yaml',
-        content: `config:
+      builder.withContentFiles([
+        {
+          path: 'integration.yaml',
+          content: `config:
   name: integrationName
   description: an integration'
   slug: 987645-integration
@@ -73,8 +75,9 @@ describe(`integration:deploy`, () => {
     site:
         - read
   integrationLevel: team-and-site
-      `
-      }])
+      `,
+        },
+      ])
       await builder.buildAsync()
 
       vi.spyOn(process, 'cwd').mockReturnValue(builder.directory)
@@ -86,7 +89,7 @@ describe(`integration:deploy`, () => {
         Object.assign(process.env, envVars)
         const program = new BaseCommand('netlify')
 
-        createDeployCommand(program)
+        createIntegrationDeployCommand(program)
         const simulatedArgv = ['', '', 'integration:deploy']
 
         try {
@@ -98,7 +101,5 @@ describe(`integration:deploy`, () => {
         expect(siteDeploy).toBeCalledTimes(1)
       })
     })
-
-
   })
 })

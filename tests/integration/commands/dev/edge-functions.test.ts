@@ -4,8 +4,8 @@ import execa from 'execa'
 import { describe, expect, expectTypeOf, test } from 'vitest'
 
 import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
-import got from '../../utils/got.mjs'
-import { pause } from '../../utils/pause.mjs'
+import got from '../../utils/got.js'
+import { pause } from '../../utils/pause.js'
 
 // Skipping tests on Windows because of an issue with the Deno CLI throwing IO
 // errors when running in the CI.
@@ -66,6 +66,21 @@ describe.skipIf(isWindows)('edge functions', () => {
 
     test<FixtureTestContext>('should expose URL parameters', async ({ devServer }) => {
       const response = await got(`http://localhost:${devServer.port}/categories/foo/products/bar`, {
+        throwHttpErrors: false,
+        retry: { limit: 0 },
+      })
+
+      const { params } = JSON.parse(response.body)
+      expect(params).toEqual({
+        category: 'foo',
+        product: 'bar',
+      })
+    })
+
+    test<FixtureTestContext>('should expose URL parameters to edge functions with `cache: "manual"`', async ({
+      devServer,
+    }) => {
+      const response = await got(`http://localhost:${devServer.port}/categories-after-cache/foo/products/bar`, {
         throwHttpErrors: false,
         retry: { limit: 0 },
       })
@@ -155,7 +170,6 @@ describe.skipIf(isWindows)('edge functions', () => {
         expect(res.statusCode).toBe(200)
         expect(JSON.parse(res.body)).toEqual({
           data: 'hello world',
-          fresh: false,
           metadata: { name: 'Netlify', features: { blobs: true, functions: true } },
         })
       })

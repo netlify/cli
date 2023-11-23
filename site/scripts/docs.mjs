@@ -1,4 +1,4 @@
-// @ts-check
+
 import { basename } from 'path'
 import { env } from 'process'
 import { fileURLToPath } from 'url'
@@ -6,12 +6,12 @@ import { fileURLToPath } from 'url'
 import markdownMagic from 'markdown-magic'
 import stripAnsi from 'strip-ansi'
 
-import { normalizeBackslash } from '../../src/lib/path.mjs'
+import { normalizeBackslash } from '../../src/lib/path.js'
 
 import { generateCommandData } from './generate-command-data.mjs'
 
 const rootDir = normalizeBackslash(fileURLToPath(new URL('../..', import.meta.url)))
-const markdownFiles = [`${rootDir}/README.md`, `${rootDir}/docs/**/**.md`]
+const markdownFiles = [`${rootDir}/docs/**/**.md`]
 
 env.DOCS_GEN = 'TRUE'
 
@@ -83,8 +83,7 @@ const commandExamples = function (examples) {
 
 /* Start - Docs Templating logic */
 const commandListTitle = function (command) {
-  const url = `/docs/commands/${command}.md`
-  // const url  = (context === 'README') ? `/docs/${command}.md` : `/${command}`
+  const url = `/commands/${command}`
   return `### [${command}](${url})${newLine}`
 }
 
@@ -101,8 +100,7 @@ const commandListSubCommandDisplay = function (commands) {
   table += '|:--------------------------- |:-----|\n'
   commands.forEach((cmd) => {
     const [commandBase] = cmd.name.split(':')
-    const baseUrl = `/docs/commands/${commandBase}.md`
-    // const baseUrl = (context === 'README') ? `/docs/${commandBase}.md` : `/${commandBase}`
+    const baseUrl = `/commands/${commandBase}`
     const slug = cmd.name.replace(/:/g, '')
     table += `| [\`${cmd.name}\`](${baseUrl}#${slug}) | ${cmd.description.split('\n')[0]}  |\n`
   })

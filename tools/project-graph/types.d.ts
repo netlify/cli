@@ -1,6 +1,6 @@
-import type { Node } from 'typescript';
+import type { Node } from 'typescript'
 
-import type { DependencyGraph } from './dependency-graph.mjs';
+import type { DependencyGraph } from './dependency-graph.js'
 
 export type Dependency = {
   fileName: string

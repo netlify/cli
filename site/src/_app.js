@@ -39,6 +39,7 @@ const navOrder = [
   'commands',
   'addons',
   'api',
+  'blobs',
   'build',
   'completion',
   'deploy',
@@ -51,25 +52,21 @@ const navOrder = [
   'lm',
   'login',
   'logout',
+  'logs',
   'open',
+  'recipes',
   'serve',
   'sites',
   'status',
   'switch',
   'unlink',
   'watch',
-  'netlify-dev',
-  'functions-dev',
-  'vscode',
 ]
 
 const pageNames = {
   index: 'CLI Reference',
   'getting-started': 'Getting Started',
   addons: 'addons (deprecated)',
-  'netlify-dev': 'Netlify Dev',
-  'functions-dev': 'Functions Development',
-  vscode: 'Run and debug with VSCode',
   lm: 'lm (deprecated)',
 }
 

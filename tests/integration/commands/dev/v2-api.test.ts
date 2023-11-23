@@ -5,7 +5,7 @@ import { gte } from 'semver'
 import { describe, expect, test } from 'vitest'
 
 import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
-import got from '../../utils/got.mjs'
+import got from '../../utils/got.js'
 
 const siteInfo = {
   account_id: 'mock-account-id',
@@ -152,6 +152,12 @@ describe.runIf(gte(version, '18.13.0'))('v2 api', () => {
       expect(await response.text()).toBe(`Catchall Path`)
     })
 
+    test<FixtureTestContext>('functions can also run on /favicon.ico', async ({ devServer }) => {
+      const response = await fetch(`http://localhost:${devServer.port}/favicon.ico`)
+      expect(response.status).toBe(200)
+      expect(await response.text()).toBe('custom-generated favicon')
+    })
+
     test<FixtureTestContext>('returns 404 when using the default function URL to access a function with custom routes', async ({
       devServer,
     }) => {
@@ -172,7 +178,8 @@ describe.runIf(gte(version, '18.13.0'))('v2 api', () => {
         const url = `http://localhost:${devServer.port}/v2-to-legacy-without-force`
         const response = await fetch(url)
         expect(response.status).toBe(200)
-        expect(await response.text()).toBe('/v2-to-legacy-without-force from origin')
+        const text = await (await response.text()).trim()
+        expect(text).toBe('/v2-to-legacy-without-force from origin')
       })
 
       test<FixtureTestContext>('rewrite to custom URL format with `force: true`', async ({ devServer }) => {
@@ -186,7 +193,8 @@ describe.runIf(gte(version, '18.13.0'))('v2 api', () => {
         const url = `http://localhost:${devServer.port}/v2-to-custom-without-force`
         const response = await fetch(url)
         expect(response.status).toBe(200)
-        expect(await response.text()).toBe('/v2-to-custom-without-force from origin')
+        const text = await (await response.text()).trim()
+        expect(text).toBe('/v2-to-custom-without-force from origin')
       })
     })
 

@@ -15,6 +15,8 @@ module.exports = {
       },
     },
   },
+  // .js files in this folder are compiled from TS
+  ignorePatterns: ['src/**/*.js'],
   rules: {
     'workspace/no-process-cwd': 'error',
     // Those rules from @netlify/eslint-config-node are currently disabled
@@ -87,7 +89,7 @@ module.exports = {
       },
     },
     {
-      files: ['src/**/*.mjs', 'bin/**/*.mjs'],
+      files: ['bin/**/*.js'],
       parserOptions: {
         ecmaVersion: '2020',
         sourceType: 'module',
@@ -104,7 +106,7 @@ module.exports = {
           {
             name: 'chalk',
             message:
-              'Please use the safe chalk import that handles colors for json output. `import { chalk } from "src/utils/command-helpers.mjs"`',
+              'Please use the safe chalk import that handles colors for json output. `import { chalk } from "src/utils/command-helpers.js"`',
           },
         ],
       },
