@@ -18,7 +18,7 @@ import { createApiCommand } from './api/index.js'
 import BaseCommand from './base-command.js'
 import { createBlobsCommand } from './blobs/blobs.js'
 import { createBuildCommand } from './build/index.js'
-import {createClackCoreCommand, createClackPromptsCommand} from './clack/index.js'
+// import {createClackCoreCommand, createClackPromptsCommand} from './clack/index.js'
 import { createCompletionCommand } from './completion/index.js'
 import { createDeployCommand } from './deploy/index.js'
 import { createDevCommand } from './dev/index.js'
@@ -213,8 +213,6 @@ export const createMainCommand = () => {
   createSwitchCommand(program)
   createUnlinkCommand(program)
   createWatchCommand(program)
-  createClackPromptsCommand(program)
-  createClackCoreCommand(program)
   createLogsCommand(program)
 
   program

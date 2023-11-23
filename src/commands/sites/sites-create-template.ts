@@ -15,10 +15,14 @@ import { createRepo, getTemplatesFromGitHub, validateTemplate } from '../../util
 import { track } from '../../utils/telemetry/index.js'
 import BaseCommand from '../base-command.js'
 
-import { getSiteNameInput } from './sites-create.js'
+interface Template {
+  name: string
+  sourceCodeUrl: string
+  slug: string
+}
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'token' implicitly has an 'any' type.
-export const fetchTemplates = async (token) => {
+export const fetchTemplates = async (token: string): Template[] => {
   const templatesFromGithubOrg = await getTemplatesFromGitHub(token)
 
   return (
@@ -100,6 +104,7 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
     const accountSlugInput = await select({
       message: 'Team:',
       maxItems: 5,
+      // @ts-expect-error TS(7006) FIXME: Parameter 'account' implicitly has an 'any' type.
       options: accounts.map((account) => ({
         value: account.slug,
         label: account.name,
@@ -119,6 +124,7 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
     const inputName = await text({
       message: 'Site name (leave blank for a random name; you can change it later):',
       validate: (input) => {
+        // @ts-expect-error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
           if (!/^[a-zA-Z\d-]+$/.test(input || undefined)) {
             return 'Only alphanumeric characters and hyphens are allowed'
           }
@@ -126,12 +132,13 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
     })
 
     try {
+      // @ts-expect-error TS2339: Property 'trim' does not exist on type 'string | symbol'.
       const siteName = inputName.trim()
 
       // Create new repo from template
       repoResp = await createRepo(templateName, ghToken, siteName || templateName)
 
-      if (repoResp.errors) {
+      if (repoResp.errors || !repoResp) {
         if (repoResp.errors[0].includes('Name already exists on this account')) {
           warn(
             `Oh no! We found already a repository with this name. It seems you have already created a template with the name ${templateName}. Please try to run the command again and provide a different name.`,
@@ -172,13 +179,29 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
     }
   }
 
+  if (!repoResp) {
+    throw new Error(
+      `Oops! Seems like something went wrong trying to create the repository. You can try to re-run this command again or open an issue in our repository: https://github.com/netlify/cli/issues`,
+    )
+  }
+  if (!site) {
+    throw new Error(
+      `Oops! Seems like something went wrong trying to add a site. You can try to re-run this command again or open an issue in our repository: https://github.com/netlify/cli/issues`,
+    )
+  }
+
   await inputSiteName(nameFlag)
+
+  // @ts-expect-error Property 'ssl_url' does not exist on type 'never'.
   const siteUrl = site.ssl_url || site.url
 
   note(render({
+    // @ts-expect-error TS2339: Property 'admin_url' does not exist on type 'never'.
     'Admin URL': site.admin_url,
     URL: siteUrl,
+    // @ts-expect-error TS2339: Property 'id' does not exist on type 'never'.
     'Site ID': site.id,
+    // @ts-expect-error TS2339: Property 'build_settings' does not exist on type 'never'.
     'Repo URL': site.build_settings.repo_url,
   }, {keysColor: 'cyan'}), 'Site Created')
 
@@ -196,8 +219,10 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
   })
 
   if (cloneConfirm) {
+    // @ts-expect-error TS(7005) FIXME: Variable 'execa' implicitly has an 'any' type.
     await execa('git', ['clone', repoResp.clone_url, `${repoResp.name}`])
     const outputStep = options.withCi ? clackLog.step : outro
+    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     outputStep(`🚀 Repository cloned successfully. You can find it under the ${chalk.magenta(repoResp.name)} folder`)
   }
 
