@@ -1,9 +1,9 @@
-import ansiEscapes from 'ansi-escapes'
 import AsciiTable from 'ascii-table'
 import { isCI } from 'ci-info'
 import { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 import logUpdate from 'log-update'
+import {erase} from 'sisteransi'
 
 import { chalk, error, log, logJson } from '../../utils/command-helpers.js'
 import { AVAILABLE_CONTEXTS, getEnvelopeEnv, getHumanReadableScopes } from '../../utils/env/index.js'
@@ -114,7 +114,7 @@ export const envList = async (options: OptionValues, command: BaseCommand) => {
 
   if (showValues) {
     // since inquirer adds a prompt, we need to account for it when printing the table again
-    log(ansiEscapes.eraseLines(3))
+    log(erase.lines(3))
     logUpdate(getTable({ environment, hideValues: false, scopesColumn: isUsingEnvelope }))
     log(`${chalk.cyan('?')} Show values? ${chalk.cyan('Yes')}`)
   }

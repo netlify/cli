@@ -11,39 +11,39 @@ import {
 	TextPrompt
 } from '@clack/core';
 import isUnicodeSupported from 'is-unicode-supported';
-import { cursor, erase } from 'sisteransi';
+import { cursor as ansiCursor, erase } from 'sisteransi';
 
 import { chalk } from '../command-helpers.js'
 
 export { isCancel } from '@clack/core';
 
 const unicode = isUnicodeSupported();
-const s = (c: string, fallback: string) => (unicode ? c : fallback);
-const S_STEP_ACTIVE = s('◆', '*');
-const S_STEP_CANCEL = s('■', 'x');
-const S_STEP_ERROR = s('▲', 'x');
-const S_STEP_SUBMIT = s('◇', 'o');
+const symbolCharacter = (defaultCharacter: string, fallbackCharacter: string) => (unicode ? defaultCharacter : fallbackCharacter);
+const S_STEP_ACTIVE = symbolCharacter('◆', '*');
+const S_STEP_CANCEL = symbolCharacter('■', 'x');
+const S_STEP_ERROR = symbolCharacter('▲', 'x');
+const S_STEP_SUBMIT = symbolCharacter('◇', 'o');
 
-const S_BAR_START = s('┌', 'T');
-const S_BAR = s('│', '|');
-const S_BAR_END = s('└', '—');
+const S_BAR_START = symbolCharacter('┌', 'T');
+const S_BAR = symbolCharacter('│', '|');
+const S_BAR_END = symbolCharacter('└', '—');
 
-const S_RADIO_ACTIVE = s('●', '>');
-const S_RADIO_INACTIVE = s('○', ' ');
-const S_CHECKBOX_ACTIVE = s('◻', '[•]');
-const S_CHECKBOX_SELECTED = s('◼', '[+]');
-const S_CHECKBOX_INACTIVE = s('◻', '[ ]');
-const S_PASSWORD_MASK = s('▪', '•');
+const S_RADIO_ACTIVE = symbolCharacter('●', '>');
+const S_RADIO_INACTIVE = symbolCharacter('○', ' ');
+const S_CHECKBOX_ACTIVE = symbolCharacter('◻', '[•]');
+const S_CHECKBOX_SELECTED = symbolCharacter('◼', '[+]');
+const S_CHECKBOX_INACTIVE = symbolCharacter('◻', '[ ]');
+const S_PASSWORD_MASK = symbolCharacter('▪', '•');
 
-const S_BAR_H = s('─', '-');
-const S_CORNER_TOP_RIGHT = s('╮', '+');
-const S_CONNECT_LEFT = s('├', '+');
-const S_CORNER_BOTTOM_RIGHT = s('╯', '+');
+const S_BAR_H = symbolCharacter('─', '-');
+const S_CORNER_TOP_RIGHT = symbolCharacter('╮', '+');
+const S_CONNECT_LEFT = symbolCharacter('├', '+');
+const S_CORNER_BOTTOM_RIGHT = symbolCharacter('╯', '+');
 
-const S_INFO = s('●', '•');
-const S_SUCCESS = s('◆', '*');
-const S_WARN = s('▲', '!');
-const S_ERROR = s('■', 'x');
+const S_INFO = symbolCharacter('●', '•');
+const S_SUCCESS = symbolCharacter('◆', '*');
+const S_WARN = symbolCharacter('▲', '!');
+const S_ERROR = symbolCharacter('■', 'x');
 
 const symbol = (state: State) => {
 	switch (state) {
@@ -56,6 +56,8 @@ const symbol = (state: State) => {
 			return chalk.yellow(S_STEP_ERROR);
 		case 'submit':
 			return chalk.green(S_STEP_SUBMIT);
+    default:
+      return chalk.cyan(S_STEP_ACTIVE);
 	}
 };
 
@@ -85,12 +87,12 @@ const limitOptions = <TOption>(params: LimitOptionsParams<TOption>): string[] =>
 
 	return options
 		.slice(slidingWindowLocation, slidingWindowLocation + maxItems)
-		.map((option, i, arr) => {
-			const isTopLimit = i === 0 && shouldRenderTopEllipsis;
-			const isBottomLimit = i === arr.length - 1 && shouldRenderBottomEllipsis;
+		.map((option, id, arr) => {
+			const isTopLimit = id === 0 && shouldRenderTopEllipsis;
+			const isBottomLimit = id === arr.length - 1 && shouldRenderBottomEllipsis;
 			return isTopLimit || isBottomLimit
 				? chalk.dim('...')
-				: style(option, i + slidingWindowLocation === cursor);
+				: style(option, id + slidingWindowLocation === cursor);
 		});
 };
 
@@ -111,7 +113,7 @@ export const text = (opts: TextOptions) => new TextPrompt({
 			const placeholder = opts.placeholder
 				? chalk.inverse(opts.placeholder[0]) + chalk.dim(opts.placeholder.slice(1))
 				: chalk.inverse(chalk.hidden('_'));
-			const value = !this.value ? placeholder : this.valueWithCursor;
+			const value = this.value ? this.valueWithCursor : placeholder;
 
 			switch (this.state) {
 				case 'error':
@@ -128,7 +130,7 @@ export const text = (opts: TextOptions) => new TextPrompt({
 					return `${title}${chalk.cyan(S_BAR)}  ${value}\n${chalk.cyan(S_BAR_END)}\n`;
 			}
 		},
-	}).prompt() as Promise<string | symbol>;
+	}).prompt() as Promise<string>;
 
 export interface PasswordOptions {
 	message: string;
@@ -158,7 +160,7 @@ export const password = (opts: PasswordOptions) => new PasswordPrompt({
 					return `${title}${chalk.cyan(S_BAR)}  ${value}\n${chalk.cyan(S_BAR_END)}\n`;
 			}
 		},
-	}).prompt() as Promise<string | symbol>;
+	}).prompt() as Promise<string>;
 
 export interface ConfirmOptions {
 	message: string;
@@ -190,14 +192,14 @@ export const confirm = (opts: ConfirmOptions) => {
 							? `${chalk.green(S_RADIO_ACTIVE)} ${active}`
 							: `${chalk.dim(S_RADIO_INACTIVE)} ${chalk.dim(active)}`
 					} ${chalk.dim('/')} ${
-						!this.value
-							? `${chalk.green(S_RADIO_ACTIVE)} ${inactive}`
-							: `${chalk.dim(S_RADIO_INACTIVE)} ${chalk.dim(inactive)}`
+						this.value
+              ? `${chalk.dim(S_RADIO_INACTIVE)} ${chalk.dim(inactive)}`
+							: `${chalk.green(S_RADIO_ACTIVE)} ${inactive}`
 					}\n${chalk.cyan(S_BAR_END)}\n`;
 				}
 			}
 		},
-	}).prompt() as Promise<boolean | symbol>;
+	}).prompt() as Promise<boolean>;
 };
 
 type Primitive = Readonly<string | boolean | number>;
@@ -254,7 +256,7 @@ export const select = <Value>(opts: SelectOptions<Value>) => {
 				}
 			}
 		},
-	}).prompt() as Promise<Value | symbol>;
+	}).prompt() as Promise<Value>;
 };
 
 export const selectKey = <Value extends string>(opts: SelectOptions<Value>) => {
@@ -391,16 +393,16 @@ export const multiselect = <Value>(opts: MultiSelectOptions<Value>) => {
 						.join('\n');
 					return (
 						`${title +
-						chalk.yellow(S_BAR) 
-						}  ${ 
+						chalk.yellow(S_BAR)
+						}  ${
 						limitOptions({
 							options: this.options,
 							cursor: this.cursor,
 							maxItems: opts.maxItems,
 							style: styleOption,
-						}).join(`\n${chalk.yellow(S_BAR)}  `) 
-						}\n${ 
-						footer 
+						}).join(`\n${chalk.yellow(S_BAR)}  `)
+						}\n${
+						footer
 						}\n`
 					);
 				}
@@ -678,7 +680,7 @@ export const spinner = () => {
 		loop = setInterval(() => {
 			const frame = chalk.magenta(frames[frameIndex]);
 			const loadingDots = '.'.repeat(Math.floor(dotsTimer)).slice(0, 3);
-			process.stdout.write(cursor.move(-999, 0));
+			process.stdout.write(ansiCursor.move(-999, 0));
 			process.stdout.write(erase.down(1));
 			process.stdout.write(`${frame}  ${_message}${loadingDots}`);
 			frameIndex = frameIndex + 1 < frames.length ? frameIndex + 1 : 0;
@@ -696,7 +698,7 @@ export const spinner = () => {
 				: (code === 1
 				? chalk.red(S_STEP_CANCEL)
 				: chalk.red(S_STEP_ERROR));
-		process.stdout.write(cursor.move(-999, 0));
+		process.stdout.write(ansiCursor.move(-999, 0));
 		process.stdout.write(erase.down(1));
 		process.stdout.write(`${step}  ${_message}\n`);
 		clearHooks();
