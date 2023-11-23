@@ -1,9 +1,11 @@
+import { OptionValues } from 'commander'
 import pWaitFor from 'p-wait-for'
 import prettyjson from 'prettyjson'
 
 import { startSpinner, stopSpinner } from '../../lib/spinner.js'
 import { chalk, error, log } from '../../utils/command-helpers.js'
-import { init } from '../init/index.js'
+import BaseCommand from '../base-command.js'
+import { init } from '../init/init.js'
 
 // 1 second
 const INIT_WAIT = 1e3
@@ -54,13 +56,7 @@ const waitForBuildFinish = async function (api, siteId, spinner) {
   return firstPass
 }
 
-/**
- * The watch command
- * @param {import('commander').OptionValues} options
- * @param {import('../base-command.js').default} command
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
-const watch = async (options, command) => {
+export const watch = async (options: OptionValues, command: BaseCommand) => {
   await command.authenticate()
   const client = command.netlify.api
   let siteId = command.netlify.site.id
@@ -122,16 +118,3 @@ const watch = async (options, command) => {
     error(error_)
   }
 }
-
-/**
- * Creates the `netlify watch` command
- * @param {import('../base-command.js').default} program
- * @returns
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'program' implicitly has an 'any' type.
-export const createWatchCommand = (program) =>
-  program
-    .command('watch')
-    .description('Watch for site deploy to finish')
-    .addExamples([`netlify watch`, `git push && netlify watch`])
-    .action(watch)

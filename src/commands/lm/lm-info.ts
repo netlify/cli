@@ -10,7 +10,7 @@ import {
 /**
  * The lm:info command
  */
-const lmInfo = async () => {
+export const lmInfo = async () => {
   const steps = [
     checkGitVersionStep,
     checkGitLFSVersionStep,
@@ -30,12 +30,3 @@ const lmInfo = async () => {
     // an error is already reported when a task fails
   }
 }
-
-/**
- * Creates the `netlify lm:info` command
- * @param {import('../base-command.js').default} program
- * @returns
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'program' implicitly has an 'any' type.
-export const createLmInfoCommand = (program) =>
-  program.command('lm:info', { hidden: true }).description('Show large media requirements information.').action(lmInfo)

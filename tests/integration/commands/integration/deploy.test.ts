@@ -4,7 +4,8 @@ import { beforeEach, describe, expect, test, vi } from 'vitest'
 
 import BaseCommand from '../../../../src/commands/base-command.js'
 import { deploy as siteDeploy } from '../../../../src/commands/deploy/deploy.js'
-import { areScopesEqual, createDeployCommand } from '../../../../src/commands/integration/deploy.js'
+import { areScopesEqual } from '../../../../src/commands/integration/deploy.js'
+import { createIntegrationDeployCommand } from '../../../../src/commands/integration/index.js'
 import { getEnvironmentVariables, withMockApi } from '../../utils/mock-api.js'
 import { withSiteBuilder } from '../../utils/site-builder.js'
 
@@ -88,7 +89,7 @@ describe(`integration:deploy`, () => {
         Object.assign(process.env, envVars)
         const program = new BaseCommand('netlify')
 
-        createDeployCommand(program)
+        createIntegrationDeployCommand(program)
         const simulatedArgv = ['', '', 'integration:deploy']
 
         try {

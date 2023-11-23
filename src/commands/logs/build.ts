@@ -32,7 +32,7 @@ export function getName({ deploy, userId }: { deploy: any; userId: string }) {
   return `(${deploy.id.slice(0, 7)}) ${normalisedName}`
 }
 
-const logsBuild = async (options: OptionValues, command: BaseCommand) => {
+export const logsBuild = async (options: OptionValues, command: BaseCommand) => {
   await command.authenticate()
   const client = command.netlify.api
   const { site } = command.netlify
@@ -83,10 +83,3 @@ const logsBuild = async (options: OptionValues, command: BaseCommand) => {
     log('---')
   })
 }
-
-export const createLogsBuildCommand = (program: BaseCommand) =>
-  program
-    .command('logs:deploy')
-    .alias('logs:build')
-    .description('(Beta) Stream the logs of deploys currently being built to the console')
-    .action(logsBuild)

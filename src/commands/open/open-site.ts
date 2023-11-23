@@ -1,14 +1,10 @@
-import { exit, log } from '../../utils/command-helpers.js'
-import requiresSiteInfo from '../../utils/hooks/requires-site-info.js'
-import openBrowser from '../../utils/open-browser.js'
+import { OptionValues } from 'commander'
 
-/**
- * The open:site command
- * @param {import('commander').OptionValues} options
- * @param {import('../base-command.js').default} command
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
-export const openSite = async (options, command) => {
+import { exit, log } from '../../utils/command-helpers.js'
+import openBrowser from '../../utils/open-browser.js'
+import BaseCommand from '../base-command.js'
+
+export const openSite = async (options: OptionValues, command: BaseCommand) => {
   const { siteInfo } = command.netlify
 
   await command.authenticate()
@@ -21,17 +17,3 @@ export const openSite = async (options, command) => {
   await openBrowser({ url })
   exit()
 }
-
-/**
- * Creates the `netlify open:site` command
- * @param {import('../base-command.js').default} program
- * @returns
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'program' implicitly has an 'any' type.
-export const createOpenSiteCommand = (program) =>
-  program
-    .command('open:site')
-    .description('Opens current site url in browser')
-    .addExamples(['netlify open:site'])
-    .hook('preAction', requiresSiteInfo)
-    .action(openSite)

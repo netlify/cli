@@ -1,3 +1,4 @@
+import { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 import pick from 'lodash/pick.js'
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'pars... Remove this comment to see the full error message
@@ -12,6 +13,7 @@ import { getGitHubToken } from '../../utils/init/config-github.js'
 import { configureRepo } from '../../utils/init/config.js'
 import { createRepo, getTemplatesFromGitHub, validateTemplate } from '../../utils/sites/utils.js'
 import { track } from '../../utils/telemetry/index.js'
+import BaseCommand from '../base-command.js'
 
 import { getSiteNameInput } from './sites-create.js'
 
@@ -67,14 +69,7 @@ const getTemplateName = async ({ ghToken, options, repository }) => {
 // @ts-expect-error TS(7031) FIXME: Binding element 'options' implicitly has an 'any' ... Remove this comment to see the full error message
 const getGitHubLink = ({ options, templateName }) => options.url || `https://github.com/${templateName}`
 
-/**
- * The sites:create-template command
- * @param repository {string}
- * @param {import('commander').OptionValues} options
- * @param {import('../base-command.js').default} command
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'repository' implicitly has an 'any' typ... Remove this comment to see the full error message
-const sitesCreateTemplate = async (repository, options, command) => {
+export const sitesCreateTemplate = async (repository: string, options: OptionValues, command: BaseCommand) => {
   const { api } = command.netlify
 
   await command.authenticate()
@@ -258,29 +253,3 @@ const sitesCreateTemplate = async (repository, options, command) => {
 
   return site
 }
-
-/**
- * Creates the `netlify sites:create-template` command
- * @param {import('../base-command.js').default} program
- * @returns
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'program' implicitly has an 'any' type.
-export const createSitesFromTemplateCommand = (program) =>
-  program
-    .command('sites:create-template')
-    .description(
-      `(Beta) Create a site from a starter template
-Create a site from a starter template.`,
-    )
-    .option('-n, --name [name]', 'name of site')
-    .option('-u, --url [url]', 'template url')
-    .option('-a, --account-slug [slug]', 'account slug to create the site under')
-    .option('-c, --with-ci', 'initialize CI hooks during site creation')
-    .argument('[repository]', 'repository to use as starter template')
-    .addHelpText('after', `(Beta) Create a site from starter template.`)
-    .addExamples([
-      'netlify sites:create-template',
-      'netlify sites:create-template nextjs-blog-theme',
-      'netlify sites:create-template my-github-profile/my-template',
-    ])
-    .action(sitesCreateTemplate)

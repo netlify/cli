@@ -1,20 +1,17 @@
 import { join } from 'path'
 
+import { OptionValues } from 'commander'
+
 import { startFunctionsServer } from '../../lib/functions/server.js'
 import { printBanner } from '../../utils/banner.js'
 import { acquirePort, getDotEnvVariables, getSiteInformation, injectEnvVariables } from '../../utils/dev.js'
 import { getFunctionsDir } from '../../utils/functions/index.js'
 import { getProxyUrl } from '../../utils/proxy.js'
+import BaseCommand from '../base-command.js'
 
 const DEFAULT_PORT = 9999
 
-/**
- * The functions:serve command
- * @param {import('commander').OptionValues} options
- * @param {import('../base-command.js').default} command
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
-const functionsServe = async (options, command) => {
+export const functionsServe = async (options: OptionValues, command: BaseCommand) => {
   const { api, config, site, siteInfo, state } = command.netlify
 
   const functionsDir = getFunctionsDir({ options, config }, join('netlify', 'functions'))
@@ -61,21 +58,3 @@ const functionsServe = async (options, command) => {
   const url = getProxyUrl({ port: functionsPort })
   printBanner({ url })
 }
-
-/**
- * Creates the `netlify functions:serve` command
- * @param {import('../base-command.js').default} program
- * @returns
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'program' implicitly has an 'any' type.
-export const createFunctionsServeCommand = (program) =>
-  program
-    .command('functions:serve')
-    .alias('function:serve')
-    .description('Serve functions locally')
-    .option('-f, --functions <dir>', 'Specify a functions directory to serve')
-    // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
-    .option('-p, --port <port>', 'Specify a port for the functions server', (value) => Number.parseInt(value))
-    .option('-o, --offline', 'disables any features that require network access')
-    .addHelpText('after', 'Helpful for debugging functions.')
-    .action(functionsServe)

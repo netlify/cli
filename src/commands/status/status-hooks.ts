@@ -1,15 +1,10 @@
+import { OptionValues } from 'commander'
 import prettyjson from 'prettyjson'
 
 import { log } from '../../utils/command-helpers.js'
-import requiresSiteInfo from '../../utils/hooks/requires-site-info.js'
+import BaseCommand from '../base-command.js'
 
-/**
- * The status:hooks command
- * @param {import('commander').OptionValues} options
- * @param {import('../base-command.js').default} command
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
-const statusHooks = async (options, command) => {
+export const statusHooks = async (options: OptionValues, command: BaseCommand) => {
   const { api, siteInfo } = command.netlify
 
   await command.authenticate()
@@ -38,16 +33,3 @@ Site Hook Status │
 ─────────────────┘`)
   log(prettyjson.render(data))
 }
-
-/**
- * Creates the `netlify status:hooks` command
- * @param {import('../base-command.js').default} program
- * @returns
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'program' implicitly has an 'any' type.
-export const createStatusHooksCommand = (program) =>
-  program
-    .command('status:hooks')
-    .description('Print hook information of the linked site')
-    .hook('preAction', requiresSiteInfo)
-    .action(statusHooks)

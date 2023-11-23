@@ -1,17 +1,13 @@
 import { mkdir } from 'fs/promises'
 
 import { zipFunctions } from '@netlify/zip-it-and-ship-it'
+import { OptionValues } from 'commander'
 
 import { NETLIFYDEVERR, NETLIFYDEVLOG, exit, log } from '../../utils/command-helpers.js'
 import { getFunctionsDir } from '../../utils/functions/index.js'
+import BaseCommand from '../base-command.js'
 
-/**
- * The functions:build command
- * @param {import('commander').OptionValues} options
- * @param {import('../base-command.js').default} command
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
-const functionsBuild = async (options, command) => {
+export const functionsBuild = async (options: OptionValues, command: BaseCommand) => {
   const { config } = command.netlify
 
   const src = options.src || config.build.functionsSource
@@ -43,18 +39,3 @@ const functionsBuild = async (options, command) => {
   zipFunctions(src, dst, { skipGo: true })
   log(`${NETLIFYDEVLOG} Functions built to `, dst)
 }
-
-/**
- * Creates the `netlify functions:build` command
- * @param {import('../base-command.js').default} program
- * @returns
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'program' implicitly has an 'any' type.
-export const createFunctionsBuildCommand = (program) =>
-  program
-    .command('functions:build')
-    .alias('function:build')
-    .description('Build functions locally')
-    .option('-f, --functions <directory>', 'Specify a functions directory to build to')
-    .option('-s, --src <directory>', 'Specify the source directory for the functions')
-    .action(functionsBuild)
