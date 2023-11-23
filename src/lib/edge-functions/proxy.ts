@@ -2,7 +2,6 @@ import { Buffer } from 'buffer'
 import { rm } from 'fs/promises'
 import { join, resolve } from 'path'
 
-// eslint-disable-next-line import/no-namespace
 import * as bundler from '@netlify/edge-bundler'
 import getAvailablePort from 'get-port'
 

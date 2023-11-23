@@ -3,7 +3,6 @@ import os from 'os'
 import process from 'process'
 import { format, inspect } from 'util'
 
-// eslint-disable-next-line no-restricted-imports
 import { Chalk } from 'chalk'
 import chokidar from 'chokidar'
 import decache from 'decache'
@@ -229,7 +228,7 @@ export const exit = (code = 0) => {
 // @ts-expect-error TS(7006) FIXME: Parameter 'config' implicitly has an 'any' type.
 export const normalizeConfig = (config) => {
   // Unused var here is in order to omit 'publish' from build config
-  // eslint-disable-next-line no-unused-vars
+
   const { publish, publishOrigin, ...build } = config.build
 
   return publishOrigin === 'default' ? { ...config, build } : config

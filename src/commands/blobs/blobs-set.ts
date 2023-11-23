@@ -11,7 +11,6 @@ interface Options extends OptionValues {
   input?: string
 }
 
-
 export const blobsSet = async (
   storeName: string,
   key: string,

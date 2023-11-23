@@ -1,4 +1,3 @@
-/* eslint-disable import/no-namespace */
 import * as go from './go/index.js'
 import * as js from './js/index.js'
 import * as rust from './rust/index.js'

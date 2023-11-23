@@ -5,18 +5,13 @@ import { render } from 'prettyjson'
 import { afterAll, beforeEach, describe, expect, test, vi } from 'vitest'
 
 import BaseCommand from '../../../../src/commands/base-command.js'
-import {
-  fetchTemplates,
-} from '../../../../src/commands/sites/sites-create-template.js'
-import { createSitesCreateCommand ,
-  createSitesFromTemplateCommand
-} from '../../../../src/commands/sites/sites.js'
+import { fetchTemplates } from '../../../../src/commands/sites/sites-create-template.js'
+import { createSitesCreateCommand, createSitesFromTemplateCommand } from '../../../../src/commands/sites/sites.js'
 import { getGitHubToken } from '../../../../src/utils/init/config-github.js'
 import { createRepo, getTemplatesFromGitHub } from '../../../../src/utils/sites/utils.js'
 import { getEnvironmentVariables, withMockApi } from '../../utils/mock-api.js'
 
 vi.mock('../../../../src/utils/command-helpers.js', async () => ({
-  // @ts-expect-error No types yet for command-helpers
   ...(await vi.importActual('../../../../src/utils/command-helpers.js')),
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   log: () => {},

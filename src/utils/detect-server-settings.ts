@@ -62,7 +62,6 @@ const readHttpsSettings = async (options) => {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'devConfig' implicitly has an 'any' type... Remove this comment to see the full error message
 function validateProperty(devConfig, property, type) {
-  // eslint-disable-next-line valid-typeof
   if (devConfig[property] && typeof devConfig[property] !== type) {
     const formattedProperty = formatProperty(property)
     throw new TypeError(

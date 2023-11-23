@@ -1,7 +1,6 @@
 import { mkdir, readFile, stat, writeFile } from 'fs/promises'
 import { dirname, relative } from 'path'
 
-// eslint-disable-next-line import/no-namespace
 import * as JSONC from 'comment-json'
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'unix... Remove this comment to see the full error message
 import unixify from 'unixify'

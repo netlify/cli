@@ -7,7 +7,6 @@ import type BaseCommand from '../base-command.js'
 
 import { CLI_LOG_LEVEL_CHOICES_STRING, LOG_LEVELS, LOG_LEVELS_LIST } from './log-levels.js'
 
-
 function getLog(logData: { level: string; message: string }) {
   let logString = ''
   switch (logData.level) {

@@ -64,9 +64,10 @@ describe(`integration:deploy`, () => {
     ]
 
     await withSiteBuilder('my-integration', async (builder) => {
-      builder.withContentFiles([{
-        path: 'integration.yaml',
-        content: `config:
+      builder.withContentFiles([
+        {
+          path: 'integration.yaml',
+          content: `config:
   name: integrationName
   description: an integration'
   slug: 987645-integration
@@ -74,8 +75,9 @@ describe(`integration:deploy`, () => {
     site:
         - read
   integrationLevel: team-and-site
-      `
-      }])
+      `,
+        },
+      ])
       await builder.buildAsync()
 
       vi.spyOn(process, 'cwd').mockReturnValue(builder.directory)
@@ -99,7 +101,5 @@ describe(`integration:deploy`, () => {
         expect(siteDeploy).toBeCalledTimes(1)
       })
     })
-
-
   })
 })
