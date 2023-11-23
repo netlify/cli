@@ -16,5 +16,5 @@
     "typeRoots": ["node_modules/@types", "types"]
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["node_modules", "src/functions-templates"]
+  "exclude": ["node_modules", "src/functions-templates", "tests/plugins"]
 }
