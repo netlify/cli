@@ -79,6 +79,7 @@
   },
   "dependencies": {
     "@bugsnag/js": "7.20.2",
+    "@clack/core": "^0.3.3",
     "@fastify/static": "6.10.2",
     "@netlify/blobs": "6.3.1",
     "@netlify/build": "29.31.0",
@@ -139,6 +140,7 @@
     "ipx": "2.0.1",
     "is-docker": "3.0.0",
     "is-stream": "3.0.0",
+    "is-unicode-supported": "^2.0.0",
     "is-wsl": "2.2.0",
     "isexe": "2.0.0",
     "js-yaml": "4.1.0",
