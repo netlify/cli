@@ -199,7 +199,7 @@ export const confirm = (opts: ConfirmOptions) => {
 				}
 			}
 		},
-	}).prompt() as Promise<boolean>;
+	}).prompt() as Promise<boolean | symbol>;
 };
 
 type Primitive = Readonly<string | boolean | number>;
