@@ -126,6 +126,10 @@ export class EdgeFunctionsRegistry {
         throw new Error('Build error')
       }
 
+      if (this.functions.length === 0) {
+        return { warnings }
+      }
+
       this.buildError = null
 
       // We use one index to loop over both internal and user function, because we know that this.#functions has internalFunctions first.
