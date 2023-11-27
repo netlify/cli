@@ -460,7 +460,10 @@ export class FunctionsRegistry {
       // @ts-expect-error TS(2339) FIXME: Property 'manifest' does not exist on type 'Functi... Remove this comment to see the full error message
       const manifestEntry = (this.manifest?.functions || []).find((manifestFunc) => manifestFunc.name === func.name)
 
-      func.buildData = manifestEntry?.buildData || {}
+      func.buildData = {
+        ...manifestEntry?.buildData,
+        routes: manifestEntry.routes,
+      }
 
       // When we look at an unzipped function, we don't know whether it uses
       // the legacy entry file format (i.e. `[function name].js`) or the new
