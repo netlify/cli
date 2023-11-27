@@ -24,6 +24,8 @@ const getNextRun = function (schedule) {
 }
 
 export default class NetlifyFunction {
+  public readonly name: string
+  public readonly mainFile: string
   constructor({
     // @ts-expect-error TS(7031) FIXME: Binding element 'blobsContext' implicitly has an '... Remove this comment to see the full error message
     blobsContext,
@@ -58,9 +60,7 @@ export default class NetlifyFunction {
     this.directory = directory
     // @ts-expect-error TS(2339) FIXME: Property 'errorExit' does not exist on type 'Netli... Remove this comment to see the full error message
     this.errorExit = errorExit
-    // @ts-expect-error TS(2339) FIXME: Property 'mainFile' does not exist on type 'Netlif... Remove this comment to see the full error message
     this.mainFile = mainFile
-    // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'NetlifyFun... Remove this comment to see the full error message
     this.name = name
     // @ts-expect-error TS(2339) FIXME: Property 'displayName' does not exist on type 'Net... Remove this comment to see the full error message
     this.displayName = displayName ?? name
@@ -126,7 +126,6 @@ export default class NetlifyFunction {
 
   hasValidName() {
     // same as https://github.com/netlify/bitballoon/blob/fbd7881e6c8e8c48e7a0145da4ee26090c794108/app/models/deploy.rb#L482
-    // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'NetlifyFun... Remove this comment to see the full error message
     // eslint-disable-next-line unicorn/better-regex
     return /^[A-Za-z0-9_-]+$/.test(this.name)
   }
@@ -330,7 +329,6 @@ export default class NetlifyFunction {
     const port = this.settings.port || this.settings.functionsPort
     // @ts-expect-error TS(2339) FIXME: Property 'settings' does not exist on type 'Netlif... Remove this comment to see the full error message
     const protocol = this.settings.https ? 'https' : 'http'
-    // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'NetlifyFun... Remove this comment to see the full error message
     const url = new URL(`/.netlify/functions/${this.name}`, `${protocol}://localhost:${port}`)
 
     return url.href

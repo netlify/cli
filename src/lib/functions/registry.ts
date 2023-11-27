@@ -32,6 +32,8 @@ const ZIP_EXTENSION = '.zip'
  */
 
 export class FunctionsRegistry {
+  private functions = new Map<string, NetlifyFunction>()
+
   constructor({
     // @ts-expect-error TS(7031) FIXME: Binding element 'blobsContext' implicitly has an '... Remove this comment to see the full error message
     blobsContext,
@@ -94,14 +96,6 @@ export class FunctionsRegistry {
      */
     // @ts-expect-error TS(2339) FIXME: Property 'directoryWatchers' does not exist on typ... Remove this comment to see the full error message
     this.directoryWatchers = new Map()
-
-    /**
-     * The functions held by the registry
-     *
-     * @type {Map<string, NetlifyFunction>}
-     */
-    // @ts-expect-error TS(2339) FIXME: Property 'functions' does not exist on type 'Funct... Remove this comment to see the full error message
-    this.functions = new Map()
 
     /**
      * File watchers for function files. Maps function names to objects built
@@ -274,12 +268,8 @@ export class FunctionsRegistry {
 
   /**
    * Returns a function by name.
-   *
-   * @param {string} name
    */
-  // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-  get(name) {
-    // @ts-expect-error TS(2339) FIXME: Property 'functions' does not exist on type 'Funct... Remove this comment to see the full error message
+  get(name: string) {
     return this.functions.get(name)
   }
 
@@ -289,12 +279,8 @@ export class FunctionsRegistry {
    * matches the default functions URL (i.e. can only be for a function) but no
    * function with the given name exists, returns an object with the function
    * and the route set to `null`. Otherwise, `undefined` is returned,
-   *
-   * @param {string} urlPath
-   * @param {string} method
    */
-  // @ts-expect-error TS(7006) FIXME: Parameter 'url' implicitly has an 'any' type.
-  async getFunctionForURLPath(urlPath, method) {
+  async getFunctionForURLPath(urlPath: string, method: string) {
     // We're constructing a URL object just so that we can extract the path from
     // the incoming URL. It doesn't really matter that we don't have the actual
     // local URL with the correct port.
@@ -326,7 +312,6 @@ export class FunctionsRegistry {
       return { func, route: null }
     }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'functions' does not exist on type 'Funct... Remove this comment to see the full error message
     for (const func of this.functions.values()) {
       const route = await func.matchURLPath(url.pathname, method)
 
@@ -479,7 +464,6 @@ export class FunctionsRegistry {
       this.buildFunctionAndWatchFiles(func, !isReload)
     }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'functions' does not exist on type 'Funct... Remove this comment to see the full error message
     this.functions.set(name, func)
   }
 
@@ -527,7 +511,6 @@ export class FunctionsRegistry {
 
     // Before registering any functions, we look for any functions that were on
     // the previous list but are missing from the new one. We unregister them.
-    // @ts-expect-error TS(2339) FIXME: Property 'functions' does not exist on type 'Funct... Remove this comment to see the full error message
     const deletedFunctions = [...this.functions.values()].filter((oldFunc) => {
       const isFound = functions.some(
         (newFunc) => newFunc.name === oldFunc.name && newFunc.mainFile === oldFunc.mainFile,
@@ -553,7 +536,6 @@ export class FunctionsRegistry {
         }
 
         // If this function has already been registered, we skip it.
-        // @ts-expect-error TS(2339) FIXME: Property 'functions' does not exist on type 'Funct... Remove this comment to see the full error message
         if (this.functions.has(name)) {
           return
         }
@@ -589,7 +571,6 @@ export class FunctionsRegistry {
         return func
       }),
     )
-    // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'NetlifyFun... Remove this comment to see the full error message
     const addedFunctionNames = new Set(addedFunctions.filter(Boolean).map((func) => func?.name))
 
     deletedFunctions.forEach((func) => {
@@ -636,14 +617,10 @@ export class FunctionsRegistry {
 
   /**
    * Removes a function from the registry and closes its file watchers.
-   *
-   * @param {NetlifyFunction} func
    */
-  // @ts-expect-error TS(7006) FIXME: Parameter 'func' implicitly has an 'any' type.
-  async unregisterFunction(func) {
+  async unregisterFunction(func: NetlifyFunction) {
     const { name } = func
 
-    // @ts-expect-error TS(2339) FIXME: Property 'functions' does not exist on type 'Funct... Remove this comment to see the full error message
     this.functions.delete(name)
 
     // @ts-expect-error TS(2339) FIXME: Property 'functionWatchers' does not exist on type... Remove this comment to see the full error message
