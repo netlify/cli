@@ -595,7 +595,7 @@ export const cancel = (message = '') => {
 };
 
 export const intro = (title = '') => {
-	process.stdout.write(`${chalk.gray(S_BAR_START)}  ${title}\n`);
+	process.stdout.write(`${chalk.gray(S_BAR_START)} ${chalk.bgCyan(chalk.black(` ◈ Netlify  ${title} ◈ `))} \n`);
 };
 
 export const outro = (message = '') => {

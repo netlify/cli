@@ -6,6 +6,7 @@ import { chalk, exit, log } from '../../utils/command-helpers.js'
 import getRepoData from '../../utils/get-repo-data.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import { configureRepo } from '../../utils/init/config.js'
+import { intro } from '../../utils/styles/index.js'
 import { track } from '../../utils/telemetry/index.js'
 import BaseCommand from '../base-command.js'
 import { link } from '../link/link.js'
@@ -183,6 +184,9 @@ const logExistingRepoSetupAndExit = ({ repoUrl, siteName }) => {
 
 export const init = async (options: OptionValues, command: BaseCommand) => {
   command.setAnalyticsPayload({ manual: options.manual, force: options.force })
+
+  intro('init')
+  intro('agin')
 
   const { repositoryRoot, state } = command.netlify
   let { siteInfo } = command.netlify
