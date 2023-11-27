@@ -292,9 +292,10 @@ export class FunctionsRegistry {
    *
    * @param {string} url
    * @param {string} method
+   * @param {() => Promise<boolean>} hasStaticFile
    */
   // @ts-expect-error TS(7006) FIXME: Parameter 'url' implicitly has an 'any' type.
-  async getFunctionForURLPath(url, method) {
+  async getFunctionForURLPath(url, method, hasStaticFile) {
     // We're constructing a URL object just so that we can extract the path from
     // the incoming URL. It doesn't really matter that we don't have the actual
     // local URL with the correct port.
@@ -328,7 +329,7 @@ export class FunctionsRegistry {
 
     // @ts-expect-error TS(2339) FIXME: Property 'functions' does not exist on type 'Funct... Remove this comment to see the full error message
     for (const func of this.functions.values()) {
-      const route = await func.matchURLPath(urlPath, method)
+      const route = await func.matchURLPath(urlPath, method, hasStaticFile)
 
       if (route) {
         return { func, route }

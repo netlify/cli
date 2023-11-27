@@ -369,8 +369,10 @@ const serveRedirect = async function ({
       return proxy.web(req, res, { target: options.functionsServer })
     }
 
-    const matchingFunction = functionsRegistry && (await functionsRegistry.getFunctionForURLPath(destURL, req.method))
     const destStaticFile = await getStatic(dest.pathname, options.publicFolder)
+    const matchingFunction =
+      functionsRegistry &&
+      (await functionsRegistry.getFunctionForURLPath(destURL, req.method, () => Boolean(destStaticFile)))
     let statusValue
     if (
       match.force ||
@@ -693,11 +695,12 @@ const onRequest = async (
     return proxy.web(req, res, { target: edgeFunctionsProxyURL })
   }
 
-  const functionMatch = functionsRegistry && (await functionsRegistry.getFunctionForURLPath(req.url, req.method))
-  const serveStaticInstead =
-    functionMatch?.route?.prefer_static &&
-    (await getStatic(decodeURIComponent(reqToURL(req, req.url).pathname), settings.dist))
-  if (functionMatch && !serveStaticInstead) {
+  const functionMatch =
+    functionsRegistry &&
+    (await functionsRegistry.getFunctionForURLPath(req.url, req.method, () =>
+      getStatic(decodeURIComponent(reqToURL(req, req.url).pathname), settings.dist),
+    ))
+  if (functionMatch) {
     // Setting an internal header with the function name so that we don't
     // have to match the URL again in the functions server.
     /** @type {Record<string, string>} */

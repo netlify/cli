@@ -286,10 +286,11 @@ export default class NetlifyFunction {
    * Matches all routes agains the incoming request. If a match is found, then the matched route is returned.
    * @param {string} rawPath
    * @param {string} method
+   * @param {() => Promise<boolean>} hasStaticFile
    * @returns matched route
    */
   // @ts-expect-error TS(7006) FIXME: Parameter 'rawPath' implicitly has an 'any' type.
-  async matchURLPath(rawPath, method) {
+  async matchURLPath(rawPath, method, hasStaticFile) {
     // @ts-expect-error TS(2339) FIXME: Property 'buildQueue' does not exist on type 'Netl... Remove this comment to see the full error message
     await this.buildQueue
 
@@ -298,7 +299,7 @@ export default class NetlifyFunction {
     // @ts-expect-error TS(2339) FIXME: Property 'buildData' does not exist on type 'Netli... Remove this comment to see the full error message
     const { routes = [] } = this.buildData
     // @ts-expect-error TS(7031) FIXME: Binding element 'expression' implicitly has an 'an... Remove this comment to see the full error message
-    return routes.find(({ expression, literal, methods }) => {
+    const route = routes.find(({ expression, literal, methods }) => {
       if (methods.length !== 0 && !methods.includes(method)) {
         return false
       }
@@ -315,6 +316,16 @@ export default class NetlifyFunction {
 
       return false
     })
+
+    if (!route) {
+      return
+    }
+
+    if (route.prefer_static && (await hasStaticFile())) {
+      return
+    }
+
+    return route
   }
 
   get runtimeAPIVersion() {

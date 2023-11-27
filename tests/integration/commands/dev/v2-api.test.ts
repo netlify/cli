@@ -141,7 +141,7 @@ describe.runIf(gte(version, '18.13.0'))('v2 api', () => {
       const url = `http://localhost:${devServer.port}/products/static`
       const response = await fetch(url)
       expect(response.status).toBe(200)
-      expect(await response.text()).toBe(`this is a static page`)
+      expect(await response.text()).toBe(`this is a static page\n`)
     })
 
     test<FixtureTestContext>('should serve the custom path ath the / route as specified in the in source config', async ({
