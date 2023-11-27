@@ -404,7 +404,9 @@ export class EdgeFunctionsRegistry {
    */
   private processGraph(graph: ModuleGraph | undefined) {
     if (!graph) {
-      warn('Could not process edge functions dependency graph. Live reload will not be available.')
+      if (this.functions.length !== 0) {
+        warn('Could not process edge functions dependency graph. Live reload will not be available.')
+      }
 
       return
     }
