@@ -77,7 +77,7 @@ export class FunctionsRegistry {
     settings,
     // @ts-expect-error TS(7031) FIXME: Binding element 'timeouts' implicitly has an 'any'... Remove this comment to see the full error message
     timeouts,
-  }: { projecRoot: string; debug?: boolean; isConnected?: boolean; blobsContext: BlobsContext } & object) {
+  }: { projectRoot: string; debug?: boolean; isConnected?: boolean; blobsContext: BlobsContext } & object) {
     // @ts-expect-error TS(2339) FIXME: Property 'capabilities' does not exist on type 'Fu... Remove this comment to see the full error message
     this.capabilities = capabilities
     // @ts-expect-error TS(2339) FIXME: Property 'config' does not exist on type 'Function... Remove this comment to see the full error message
