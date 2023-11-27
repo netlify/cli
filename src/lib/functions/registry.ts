@@ -32,7 +32,16 @@ const ZIP_EXTENSION = '.zip'
  */
 
 export class FunctionsRegistry {
+  /**
+   * The functions held by the registry
+   */
   private functions = new Map<string, NetlifyFunction>()
+
+  /**
+   * File watchers for function files. Maps function names to objects built
+   * by the `watchDebounced` utility.
+   */
+  private functionWatchers = new Map<string, Awaited<ReturnType<typeof watchDebounced>>>()
 
   constructor({
     // @ts-expect-error TS(7031) FIXME: Binding element 'blobsContext' implicitly has an '... Remove this comment to see the full error message
@@ -96,15 +105,6 @@ export class FunctionsRegistry {
      */
     // @ts-expect-error TS(2339) FIXME: Property 'directoryWatchers' does not exist on typ... Remove this comment to see the full error message
     this.directoryWatchers = new Map()
-
-    /**
-     * File watchers for function files. Maps function names to objects built
-     * by the `watchDebounced` utility.
-     *
-     * @type {Map<string, Awaited<ReturnType<watchDebounced>>>}
-     */
-    // @ts-expect-error TS(2339) FIXME: Property 'functionWatchers' does not exist on type... Remove this comment to see the full error message
-    this.functionWatchers = new Map()
 
     /**
      * Keeps track of whether we've checked whether `TYPES_PACKAGE` is
@@ -232,7 +232,6 @@ export class FunctionsRegistry {
       return
     }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'functionWatchers' does not exist on type... Remove this comment to see the full error message
     const watcher = this.functionWatchers.get(func.name)
 
     // If there is already a watcher for this function, we need to unwatch any
@@ -261,7 +260,6 @@ export class FunctionsRegistry {
         },
       })
 
-      // @ts-expect-error TS(2339) FIXME: Property 'functionWatchers' does not exist on type... Remove this comment to see the full error message
       this.functionWatchers.set(func.name, newWatcher)
     }
   }
