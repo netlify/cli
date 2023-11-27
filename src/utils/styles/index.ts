@@ -222,7 +222,7 @@ export const select = <Value>(opts: SelectOptions<Value>) => {
 		const label = option.label ?? String(option.value);
 		switch (state) {
 			case 'selected':
-				return `${chalk.dim(label)}`;
+				return `  ${label}`;
 			case 'active':
 				return `${chalk.green(S_RADIO_ACTIVE)} ${label} ${
 					option.hint ? chalk.dim(`(${option.hint})`) : ''
@@ -238,7 +238,7 @@ export const select = <Value>(opts: SelectOptions<Value>) => {
 		options: opts.options,
 		initialValue: opts.initialValue,
 		render() {
-			const title = `${chalk.gray(S_BAR)}\n${symbol(this.state)}  ${opts.message}\n`;
+			const title = `${chalk.gray(S_BAR)}\n${symbol(this.state)}  ${chalk.bold(opts.message)}\n`;
 
 			switch (this.state) {
 				case 'submit':

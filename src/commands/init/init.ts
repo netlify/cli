@@ -6,7 +6,7 @@ import { chalk, exit, log } from '../../utils/command-helpers.js'
 import getRepoData from '../../utils/get-repo-data.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import { configureRepo } from '../../utils/init/config.js'
-import { intro } from '../../utils/styles/index.js'
+import { intro, log as ClackLog, confirm, select } from '../../utils/styles/index.js'
 import { track } from '../../utils/telemetry/index.js'
 import BaseCommand from '../base-command.js'
 import { link } from '../link/link.js'
@@ -27,6 +27,7 @@ const getRepoUrl = (siteInfo) => siteInfo?.build_settings?.repo_url
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'siteInfo' implicitly has an 'any'... Remove this comment to see the full error message
 const logExistingAndExit = ({ siteInfo }) => {
+
   log()
   log(`This site has been initialized`)
   log()
@@ -104,18 +105,13 @@ const logGitSetupInstructionsAndExit = () => {
  */
 // @ts-expect-error TS(7031) FIXME: Binding element 'command' implicitly has an 'any' ... Remove this comment to see the full error message
 const handleNoGitRemoteAndExit = async ({ command, error, state }) => {
-  log()
-  log(`${chalk.yellow('No git remote was found, would you like to set one up?')}`)
-  log(`
-It is recommended that you initialize a site that has a remote repository in GitHub.
+  ClackLog.warn('No git remote was found, would you like to set one up?')
+  ClackLog.message(`It is recommended that you initialize a site that has a remote repository in GitHub.
+  This will allow for Netlify Continuous deployment to build branch & PR previews.\n
+  For more details on Netlify CI checkout the docs: http://bit.ly/2N0Jhy5`)
 
-This will allow for Netlify Continuous deployment to build branch & PR previews.
-
-For more details on Netlify CI checkout the docs: http://bit.ly/2N0Jhy5
-`)
   if (error === "Couldn't find origin url") {
-    log(`Unable to find a remote origin URL. Please add a git remote.
-
+    ClackLog.warn(`Unable to find a remote origin URL. Please add a git remote.\n
 git remote add origin https://github.com/YourUserName/RepoName.git
 `)
   }
@@ -123,18 +119,12 @@ git remote add origin https://github.com/YourUserName/RepoName.git
   const NEW_SITE_NO_GIT = 'Yes, create and deploy site manually'
   const NO_ABORT = 'No, I will connect this directory with GitHub first'
 
-  const { noGitRemoteChoice } = await inquirer.prompt([
-    {
-      type: 'list',
-      name: 'noGitRemoteChoice',
-      message: 'Do you want to create a Netlify site without a git repository?',
-      choices: [NEW_SITE_NO_GIT, NO_ABORT],
-    },
-  ])
+  const noGitRemoteChoice = await select({ message: 'Do you want to create a Netlify site without a git repository?',
+options: [{value: true, label: NEW_SITE_NO_GIT}, {value: false, label: NO_ABORT}]})
 
-  if (noGitRemoteChoice === NEW_SITE_NO_GIT) {
+  if (noGitRemoteChoice) {
     await createNewSiteAndExit({ state, command })
-  } else if (noGitRemoteChoice === NO_ABORT) {
+  } else {
     logGitSetupInstructionsAndExit()
   }
 }
@@ -186,7 +176,6 @@ export const init = async (options: OptionValues, command: BaseCommand) => {
   command.setAnalyticsPayload({ manual: options.manual, force: options.force })
 
   intro('init')
-  intro('agin')
 
   const { repositoryRoot, state } = command.netlify
   let { siteInfo } = command.netlify
