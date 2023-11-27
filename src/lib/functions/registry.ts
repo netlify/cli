@@ -290,11 +290,15 @@ export class FunctionsRegistry {
    * function with the given name exists, returns an object with the function
    * and the route set to `null`. Otherwise, `undefined` is returned,
    *
-   * @param {string} urlPath
+   * @param {string} url
    * @param {string} method
    */
-  // @ts-expect-error TS(7006) FIXME: Parameter 'urlPath' implicitly has an 'any' type.
-  async getFunctionForURLPath(urlPath, method) {
+  // @ts-expect-error TS(7006) FIXME: Parameter 'url' implicitly has an 'any' type.
+  async getFunctionForURLPath(url, method) {
+    // We're constructing a URL object just so that we can extract the path from
+    // the incoming URL. It doesn't really matter that we don't have the actual
+    // local URL with the correct port.)
+    const urlPath = new URL(`http://localhost${url}`).pathname
     const defaultURLMatch = urlPath.match(DEFAULT_FUNCTION_URL_EXPRESSION)
 
     if (defaultURLMatch) {
