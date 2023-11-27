@@ -694,8 +694,10 @@ const onRequest = async (
   }
 
   const functionMatch = functionsRegistry && (await functionsRegistry.getFunctionForURLPath(req.url, req.method))
-
-  if (functionMatch) {
+  const serveStaticInstead =
+    functionMatch?.route?.prefer_static &&
+    (await getStatic(decodeURIComponent(reqToURL(req, req.url).pathname), settings.dist))
+  if (functionMatch && !serveStaticInstead) {
     // Setting an internal header with the function name so that we don't
     // have to match the URL again in the functions server.
     /** @type {Record<string, string>} */

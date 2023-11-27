@@ -137,6 +137,13 @@ describe.runIf(gte(version, '18.13.0'))('v2 api', () => {
       expect(await response.text()).toBe(`With expression path: {"sku":"netlify"}`)
     })
 
+    test<FixtureTestContext>('supports preferStatic', async ({ devServer }) => {
+      const url = `http://localhost:${devServer.port}/products/static`
+      const response = await fetch(url)
+      expect(response.status).toBe(200)
+      expect(await response.text()).toBe(`this is a static page`)
+    })
+
     test<FixtureTestContext>('should serve the custom path ath the / route as specified in the in source config', async ({
       devServer,
     }) => {
