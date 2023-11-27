@@ -129,6 +129,7 @@ module.exports = {
         '@typescript-eslint/no-shadow': 'error',
         'no-use-before-define': 'off',
         '@typescript-eslint/no-use-before-define': 'error',
+        '@typescript-eslint/no-non-null-assertion': 'off',
       },
     },
     {

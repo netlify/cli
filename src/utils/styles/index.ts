@@ -1,3 +1,5 @@
+import process from 'process'
+
 import {
 	block,
 	ConfirmPrompt,
@@ -260,7 +262,7 @@ export const select = <Value>(opts: SelectOptions<Value>) => {
 };
 
 export const selectKey = <Value extends string>(opts: SelectOptions<Value>) => {
-	const opt = (
+	const renderOption = (
 		option: Option<Value>,
 		state: 'inactive' | 'active' | 'selected' | 'cancelled' = 'inactive'
 	) => {
@@ -287,17 +289,17 @@ export const selectKey = <Value extends string>(opts: SelectOptions<Value>) => {
 
 			switch (this.state) {
 				case 'submit':
-					return `${title}${chalk.gray(S_BAR)}  ${opt(
+					return `${title}${chalk.gray(S_BAR)}  ${renderOption(
 						this.options.find((opt) => opt.value === this.value)!,
 						'selected'
 					)}`;
 				case 'cancel':
-					return `${title}${chalk.gray(S_BAR)}  ${opt(this.options[0], 'cancelled')}\n${chalk.gray(
+					return `${title}${chalk.gray(S_BAR)}  ${renderOption(this.options[0], 'cancelled')}\n${chalk.gray(
 						S_BAR
 					)}`;
 				default: {
 					return `${title}${chalk.cyan(S_BAR)}  ${this.options
-						.map((option, i) => opt(option, i === this.cursor ? 'active' : 'inactive'))
+						.map((option, id) => renderOption(option, id === this.cursor ? 'active' : 'inactive'))
 						.join(`\n${chalk.cyan(S_BAR)}  `)}\n${chalk.cyan(S_BAR_END)}\n`;
 				}
 			}
@@ -314,7 +316,7 @@ export interface MultiSelectOptions<Value> {
 	cursorAt?: Value;
 }
 export const multiselect = <Value>(opts: MultiSelectOptions<Value>) => {
-	const opt = (
+	const renderOption = (
 		option: Option<Value>,
 		state: 'inactive' | 'active' | 'selected' | 'active-selected' | 'submitted' | 'cancelled'
 	) => {
@@ -358,12 +360,12 @@ export const multiselect = <Value>(opts: MultiSelectOptions<Value>) => {
 			const styleOption = (option: Option<Value>, active: boolean) => {
 				const selected = this.value.includes(option.value);
 				if (active && selected) {
-					return opt(option, 'active-selected');
+					return renderOption(option, 'active-selected');
 				}
 				if (selected) {
-					return opt(option, 'selected');
+					return renderOption(option, 'selected');
 				}
-				return opt(option, active ? 'active' : 'inactive');
+				return renderOption(option, active ? 'active' : 'inactive');
 			};
 
 			switch (this.state) {
@@ -371,14 +373,14 @@ export const multiselect = <Value>(opts: MultiSelectOptions<Value>) => {
 					return `${title}${chalk.gray(S_BAR)}  ${
 						this.options
 							.filter(({ value }) => this.value.includes(value))
-							.map((option) => opt(option, 'submitted'))
+							.map((option) => renderOption(option, 'submitted'))
 							.join(chalk.dim(', ')) || chalk.dim('none')
 					}`;
 				}
 				case 'cancel': {
 					const label = this.options
 						.filter(({ value }) => this.value.includes(value))
-						.map((option) => opt(option, 'cancelled'))
+						.map((option) => renderOption(option, 'cancelled'))
 						.join(chalk.dim(', '));
 					return `${title}${chalk.gray(S_BAR)}  ${
 						label.trim() ? `${label}\n${chalk.gray(S_BAR)}` : ''
@@ -387,8 +389,8 @@ export const multiselect = <Value>(opts: MultiSelectOptions<Value>) => {
 				case 'error': {
 					const footer = this.error
 						.split('\n')
-						.map((ln, i) =>
-							i === 0 ? `${chalk.yellow(S_BAR_END)}  ${chalk.yellow(ln)}` : `   ${ln}`
+						.map((ln, id) =>
+							id === 0 ? `${chalk.yellow(S_BAR_END)}  ${chalk.yellow(ln)}` : `   ${ln}`
 						)
 						.join('\n');
 					return (
@@ -427,7 +429,7 @@ export interface GroupMultiSelectOptions<Value> {
 	cursorAt?: Value;
 }
 export const groupMultiselect = <Value>(opts: GroupMultiSelectOptions<Value>) => {
-	const opt = (
+	const renderOption = (
 		option: Option<Value>,
 		state:
 			| 'inactive'
@@ -490,13 +492,13 @@ export const groupMultiselect = <Value>(opts: GroupMultiSelectOptions<Value>) =>
 				case 'submit': {
 					return `${title}${chalk.gray(S_BAR)}  ${this.options
 						.filter(({ value }) => this.value.includes(value))
-						.map((option) => opt(option, 'submitted'))
+						.map((option) => renderOption(option, 'submitted'))
 						.join(chalk.dim(', '))}`;
 				}
 				case 'cancel': {
 					const label = this.options
 						.filter(({ value }) => this.value.includes(value))
-						.map((option) => opt(option, 'cancelled'))
+						.map((option) => renderOption(option, 'cancelled'))
 						.join(chalk.dim(', '));
 					return `${title}${chalk.gray(S_BAR)}  ${
 						label.trim() ? `${label}\n${chalk.gray(S_BAR)}` : ''
@@ -505,54 +507,54 @@ export const groupMultiselect = <Value>(opts: GroupMultiSelectOptions<Value>) =>
 				case 'error': {
 					const footer = this.error
 						.split('\n')
-						.map((ln, i) =>
-							i === 0 ? `${chalk.yellow(S_BAR_END)}  ${chalk.yellow(ln)}` : `   ${ln}`
+						.map((ln, id) =>
+							id === 0 ? `${chalk.yellow(S_BAR_END)}  ${chalk.yellow(ln)}` : `   ${ln}`
 						)
 						.join('\n');
 					return `${title}${chalk.yellow(S_BAR)}  ${this.options
-						.map((option, i, options) => {
+						.map((option, id, options) => {
 							const selected =
 								this.value.includes(option.value) ||
 								(option.group === true && this.isGroupSelected(`${option.value}`));
-							const active = i === this.cursor;
+							const active = id === this.cursor;
 							const groupActive =
 								!active &&
 								typeof option.group === 'string' &&
 								this.options[this.cursor].value === option.group;
 							if (groupActive) {
-								return opt(option, selected ? 'group-active-selected' : 'group-active', options);
+								return renderOption(option, selected ? 'group-active-selected' : 'group-active', options);
 							}
 							if (active && selected) {
-								return opt(option, 'active-selected', options);
+								return renderOption(option, 'active-selected', options);
 							}
 							if (selected) {
-								return opt(option, 'selected', options);
+								return renderOption(option, 'selected', options);
 							}
-							return opt(option, active ? 'active' : 'inactive', options);
+							return renderOption(option, active ? 'active' : 'inactive', options);
 						})
 						.join(`\n${chalk.yellow(S_BAR)}  `)}\n${footer}\n`;
 				}
 				default: {
 					return `${title}${chalk.cyan(S_BAR)}  ${this.options
-						.map((option, i, options) => {
+						.map((option, id, options) => {
 							const selected =
 								this.value.includes(option.value) ||
 								(option.group === true && this.isGroupSelected(`${option.value}`));
-							const active = i === this.cursor;
+							const active = id === this.cursor;
 							const groupActive =
 								!active &&
 								typeof option.group === 'string' &&
 								this.options[this.cursor].value === option.group;
 							if (groupActive) {
-								return opt(option, selected ? 'group-active-selected' : 'group-active', options);
+								return renderOption(option, selected ? 'group-active-selected' : 'group-active', options);
 							}
 							if (active && selected) {
-								return opt(option, 'active-selected', options);
+								return renderOption(option, 'active-selected', options);
 							}
 							if (selected) {
-								return opt(option, 'selected', options);
+								return renderOption(option, 'selected', options);
 							}
-							return opt(option, active ? 'active' : 'inactive', options);
+							return renderOption(option, active ? 'active' : 'inactive', options);
 						})
 						.join(`\n${chalk.cyan(S_BAR)}  `)}\n${chalk.cyan(S_BAR_END)}\n`;
 				}
@@ -762,8 +764,8 @@ export const group = async <T>(
 
 	for (const name of promptNames) {
 		const prompt = prompts[name as keyof T];
-		const result = await prompt({ results })?.catch((e) => {
-			throw e;
+		const result = await prompt({ results })?.catch((error) => {
+			throw error;
 		});
 
 		// Pass the results to the onCancel function
@@ -800,13 +802,13 @@ export type Task = {
 /**
  * Define a group of tasks to be executed
  */
-export const tasks = async (tasks: Task[]) => {
-	for (const task of tasks) {
+export const tasks = async (tasksToComplete: Task[]) => {
+	for (const task of tasksToComplete) {
 		if (task.enabled === false) continue;
 
-		const s = spinner();
-		s.start(task.title);
-		const result = await task.task(s.message);
-		s.stop(result || task.title);
+		const spin = spinner();
+		spin.start(task.title);
+		const result = await task.task(spin.message);
+		spin.stop(result || task.title);
 	}
 };
