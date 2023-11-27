@@ -57,7 +57,7 @@ const symbol = (state: State) => {
 		case 'error':
 			return chalk.yellow(S_STEP_ERROR);
 		case 'submit':
-			return chalk.green(S_STEP_SUBMIT);
+			return chalk.cyan(S_STEP_SUBMIT);
     default:
       return chalk.cyan(S_STEP_ACTIVE);
 	}
@@ -584,7 +584,7 @@ export const note = (message = '', title = '') => {
 		)
 		.join('\n');
 	process.stdout.write(
-		`${chalk.gray(S_BAR)}\n${chalk.green(S_STEP_SUBMIT)}  ${chalk.reset(title)} ${chalk.gray(
+		`${chalk.gray(S_BAR)}\n${chalk.cyan(S_STEP_SUBMIT)}  ${chalk.reset(title)} ${chalk.gray(
 			S_BAR_H.repeat(Math.max(len - titleLen - 1, 1)) + S_CORNER_TOP_RIGHT
 		)}\n${msg}\n${chalk.gray(S_CONNECT_LEFT + S_BAR_H.repeat(len + 2) + S_CORNER_BOTTOM_RIGHT)}\n`
 	);
@@ -618,10 +618,10 @@ export const log = {
 		log.message(message, { symbol: chalk.blue(S_INFO) });
 	},
 	success: (message: string) => {
-		log.message(message, { symbol: chalk.green(S_SUCCESS) });
+		log.message(message, { symbol: chalk.cyan(S_SUCCESS) });
 	},
 	step: (message: string) => {
-		log.message(message, { symbol: chalk.green(S_STEP_SUBMIT) });
+		log.message(message, { symbol: chalk.cyan(S_STEP_SUBMIT) });
 	},
 	warn: (message: string) => {
 		log.message(message, { symbol: chalk.yellow(S_WARN) });
@@ -696,7 +696,7 @@ export const spinner = () => {
 		clearInterval(loop);
 		const step =
 			code === 0
-				? chalk.green(S_STEP_SUBMIT)
+				? chalk.cyan(S_STEP_SUBMIT)
 				: (code === 1
 				? chalk.red(S_STEP_CANCEL)
 				: chalk.red(S_STEP_ERROR));
