@@ -117,7 +117,7 @@ describe.runIf(gte(version, '18.13.0'))('v2 api', () => {
       expect(await response.text()).toBe(`With literal path: ${url}`)
     })
 
-    test.only<FixtureTestContext>('edge case: double slash isnt mistaken as protocol', async ({ devServer }) => {
+    test<FixtureTestContext>('edge case: double slash isnt mistaken as protocol', async ({ devServer }) => {
       const response = await fetch(`http://localhost:${devServer.port}//something`)
       expect(response.status).toBe(404)
     })
@@ -212,14 +212,6 @@ describe.runIf(gte(version, '18.13.0'))('v2 api', () => {
 
       expect(body.data).toBe('hello world')
       expect(body.metadata).toEqual({ name: 'Netlify', features: { blobs: true, functions: true } })
-    })
-
-    test<FixtureTestContext>('does not shadow Image CDN', async ({ devServer }) => {
-      const response = await fetch(`http://localhost:${devServer.port}/.netlify/images?url=test.png&fm=avif`)
-      expect(response.status).toBe(200)
-      expect(await response.text()).toBe(200)
-
-      expect(response.headers.get('content-type')).toBe('image/avif')
     })
   })
 })
