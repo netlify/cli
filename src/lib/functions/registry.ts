@@ -71,7 +71,6 @@ export class FunctionsRegistry {
     logLambdaCompat,
     // @ts-expect-error TS(7031) FIXME: Binding element 'manifest' implicitly has an 'any'... Remove this comment to see the full error message
     manifest,
-    // @ts-expect-error TS(7031) FIXME: Binding element 'projectRoot' implicitly has an 'a... Remove this comment to see the full error message
     projectRoot,
     // @ts-expect-error TS(7031) FIXME: Binding element 'settings' implicitly has an 'any'... Remove this comment to see the full error message
     settings,
