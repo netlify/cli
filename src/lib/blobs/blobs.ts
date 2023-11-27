@@ -8,7 +8,7 @@ import { getPathInProject } from '../settings.js'
 
 let hasPrintedLocalBlobsNotice = false
 
-interface BlobsContext {
+export interface BlobsContext {
   deployID: string
   edgeURL: string
   siteID: string
