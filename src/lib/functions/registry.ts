@@ -290,16 +290,16 @@ export class FunctionsRegistry {
    * function with the given name exists, returns an object with the function
    * and the route set to `null`. Otherwise, `undefined` is returned,
    *
-   * @param {string} url
+   * @param {string} urlPath
    * @param {string} method
    */
   // @ts-expect-error TS(7006) FIXME: Parameter 'url' implicitly has an 'any' type.
-  async getFunctionForURLPath(url, method) {
+  async getFunctionForURLPath(urlPath, method) {
     // We're constructing a URL object just so that we can extract the path from
     // the incoming URL. It doesn't really matter that we don't have the actual
     // local URL with the correct port.)
-    const urlPath = new URL(`http://localhost${url}`).pathname
-    const defaultURLMatch = urlPath.match(DEFAULT_FUNCTION_URL_EXPRESSION)
+    const url = new URL(`http://localhost${urlPath}`)
+    const defaultURLMatch = url.pathname.match(DEFAULT_FUNCTION_URL_EXPRESSION)
 
     if (defaultURLMatch) {
       const func = this.get(defaultURLMatch[2])
@@ -316,7 +316,7 @@ export class FunctionsRegistry {
 
         warn(
           `Function ${chalk.yellow(func.name)} cannot be invoked on ${chalk.underline(
-            urlPath,
+            url.pathname,
           )}, because the function has the following URL paths defined: ${paths}`,
         )
 
@@ -328,7 +328,7 @@ export class FunctionsRegistry {
 
     // @ts-expect-error TS(2339) FIXME: Property 'functions' does not exist on type 'Funct... Remove this comment to see the full error message
     for (const func of this.functions.values()) {
-      const route = await func.matchURLPath(urlPath, method)
+      const route = await func.matchURLPath(url.pathname, method)
 
       if (route) {
         return { func, route }
