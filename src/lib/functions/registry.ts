@@ -297,7 +297,7 @@ export class FunctionsRegistry {
   async getFunctionForURLPath(url, method) {
     // We're constructing a URL object just so that we can extract the path from
     // the incoming URL. It doesn't really matter that we don't have the actual
-    // local URL with the correct port.)
+    // local URL with the correct port.
     const urlPath = new URL(`http://localhost${url}`).pathname
     const defaultURLMatch = urlPath.match(DEFAULT_FUNCTION_URL_EXPRESSION)
 
