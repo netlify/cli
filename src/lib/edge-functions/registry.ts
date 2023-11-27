@@ -126,10 +126,6 @@ export class EdgeFunctionsRegistry {
         throw new Error('Build error')
       }
 
-      if (this.functions.length === 0) {
-        return { warnings }
-      }
-
       this.buildError = null
 
       // We use one index to loop over both internal and user function, because we know that this.#functions has internalFunctions first.
@@ -408,7 +404,9 @@ export class EdgeFunctionsRegistry {
    */
   private processGraph(graph: ModuleGraph | undefined) {
     if (!graph) {
-      warn('Could not process edge functions dependency graph. Live reload will not be available.')
+      if (this.functions.length !== 0) {
+        warn('Could not process edge functions dependency graph. Live reload will not be available.')
+      }
 
       return
     }
