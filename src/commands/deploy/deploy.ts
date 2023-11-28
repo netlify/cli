@@ -37,6 +37,8 @@ import openBrowser from '../../utils/open-browser.js'
 import BaseCommand from '../base-command.js'
 import { link } from '../link/link.js'
 import { sitesCreate } from '../sites/sites-create.js'
+import { checkOptions, injectEnv } from '../build/build.js'
+import { NetlifyAPI } from 'netlify'
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
 const triggerDeploy = async ({ api, options, siteData, siteId }) => {
@@ -467,24 +469,35 @@ const runDeploy = async ({
   }
 }
 
-/**
- *
- * @param {object} config
- * @param {*} config.cachedConfig
- * @param {string} [config.packagePath]
- * @param {*} config.deployHandler
- * @param {string} config.currentDir
- * @param {import('commander').OptionValues} config.options The options of the command
- * @returns
- */
-// @ts-expect-error TS(7031) FIXME: Binding element 'cachedConfig' implicitly has an '... Remove this comment to see the full error message
-const handleBuild = async ({ cachedConfig, currentDir, deployHandler, options, packagePath }) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type $FIXME = any
+
+const handleBuild = async ({
+  api,
+  cachedConfig,
+  currentDir,
+  deployHandler,
+  options,
+  packagePath,
+  siteInfo,
+}: {
+  api: NetlifyAPI
+  packagePath: string
+  deployHandler?: $FIXME
+  options: OptionValues
+  currentDir: string
+  cachedConfig: $FIXME
+  siteInfo: $FIXME
+}) => {
   if (!options.build) {
     return {}
   }
-  // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
   const [token] = await getToken()
-  const resolvedOptions = await getBuildOptions({
+  if (!token) {
+    throw new Error('Could not find the auth token. Please run netlify login.')
+  }
+
+  const buildOptions = getBuildOptions({
     cachedConfig,
     packagePath,
     token,
@@ -492,7 +505,13 @@ const handleBuild = async ({ cachedConfig, currentDir, deployHandler, options, p
     currentDir,
     deployHandler,
   })
-  const { configMutations, exitCode, newConfig } = await runBuild(resolvedOptions)
+
+  if (!options.offline) {
+    checkOptions(buildOptions)
+    await injectEnv({ api, buildOptions, context: options.context, siteInfo })
+  }
+
+  const { configMutations, exitCode, newConfig } = await runBuild(buildOptions)
   if (exitCode !== 0) {
     exit(exitCode)
   }
@@ -767,6 +786,8 @@ export const deploy = async (options: OptionValues, command: BaseCommand) => {
 
   if (options.build) {
     await handleBuild({
+      api: command.netlify.api,
+      siteInfo: command.netlify.siteInfo,
       packagePath: command.workspacePackage,
       cachedConfig: command.netlify.cachedConfig,
       currentDir: command.workingDir,
