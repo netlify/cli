@@ -213,5 +213,11 @@ describe.runIf(gte(version, '18.13.0'))('v2 api', () => {
       expect(body.data).toBe('hello world')
       expect(body.metadata).toEqual({ name: 'Netlify', features: { blobs: true, functions: true } })
     })
+
+    test<FixtureTestContext>('does not shadow Image CDN', async ({ devServer }) => {
+      const response = await fetch(`http://localhost:${devServer.port}/.netlify/images?url=test.png&fm=avif`)
+      expect(response.status).toBe(200)
+      expect(response.headers.get('content-type')).toBe('image/avif')
+    })
   })
 })
