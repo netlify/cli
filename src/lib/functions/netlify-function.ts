@@ -22,6 +22,9 @@ const getNextRun = function (schedule: string) {
   return cron.next().toDate()
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type $FIXME = any
+
 export default class NetlifyFunction {
   public readonly name: string
   public readonly mainFile: string
@@ -38,10 +41,8 @@ export default class NetlifyFunction {
   // name.
   private readonly isBackground: boolean
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private buildQueue?: Promise<any>
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private buildData?: any
+  private buildQueue?: Promise<$FIXME>
+  private buildData?: $FIXME
   private buildError: unknown | null = null
 
   // List of the function's source files. This starts out as an empty set
