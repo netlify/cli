@@ -2,6 +2,7 @@ import path from 'path'
 import process from 'process'
 import { fileURLToPath } from 'url'
 
+import execa from 'execa'
 import fetch from 'node-fetch'
 import { afterAll, beforeAll, describe, test } from 'vitest'
 
@@ -815,6 +816,62 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
 
       const response = await fetch(`${deployUrl}/.netlify/functions/bundled-function-1`).then((res) => res.text())
       t.expect(response).toEqual('Bundled at deployment')
+    })
+  })
+
+  test('should upload blobs when saved into .netlify directory', async (t) => {
+    await withSiteBuilder('site-with-blobs', async (builder) => {
+      await builder
+        .withNetlifyToml({
+          config: {
+            build: { publish: 'dist', functions: 'functions' },
+          },
+        })
+        .withContentFile({
+          path: 'dist/.netlify/blobs/deploy/hello',
+          content: 'hello from the blob',
+        })
+        .withContentFile({
+          path: 'package.json',
+          content: `{
+            "dependencies": {
+              "@netlify/blobs": "^6.3.0",
+              "@netlify/functions": "^2.4.0"
+            }
+          }`,
+        })
+        .withContentFile({
+          path: 'functions/read-blob.ts',
+          content: `
+  import { getDeployStore } from "@netlify/blobs"
+  import { Config, Context } from "@netlify/functions"
+  
+  export default async (req: Request, context: Context) => {
+    const store = getDeployStore()
+    const blob = await store.get('hello')
+  
+    return new Response(blob)
+  }
+  
+  export const config: Config = {
+    path: "/read-blob"
+  }       
+          `,
+        })
+        .buildAsync()
+
+      await execa.command('npm install', { cwd: builder.directory })
+      const { deploy_url: deployUrl } = await callCli(
+        ['deploy', '--json'],
+        {
+          cwd: builder.directory,
+          env: { NETLIFY_SITE_ID: context.siteId },
+        },
+        true,
+      )
+
+      const response = await fetch(`${deployUrl}/read-blob`).then((res) => res.text())
+      t.expect(response).toEqual('hello from the blob')
     })
   })
 })
