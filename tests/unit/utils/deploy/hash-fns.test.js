@@ -3,7 +3,7 @@ import { expect, test } from 'vitest'
 
 import { DEFAULT_CONCURRENT_HASH } from '../../../../src/utils/deploy/constants.js'
 import hashFns from '../../../../src/utils/deploy/hash-fns.js'
-import { withSiteBuilder } from '../../../integration/utils/site-builder.js'
+import { withSiteBuilder } from '../../../integration/utils/site-builder.ts'
 
 test('Hashes files in a folder', async () => {
   await withSiteBuilder('site-with-functions', async (builder) => {

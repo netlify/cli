@@ -5,7 +5,7 @@ import { describe, test } from 'vitest'
 
 import { cliPath } from '../../utils/cli-path.js'
 import { withMockApi } from '../../utils/mock-api.js'
-import { withSiteBuilder } from '../../utils/site-builder.js'
+import { withSiteBuilder } from '../../utils/site-builder.ts'
 
 const defaultEnvs = {
   NETLIFY_AUTH_TOKEN: 'fake-token',

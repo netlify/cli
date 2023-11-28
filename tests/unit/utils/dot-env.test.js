@@ -3,7 +3,7 @@ import process from 'process'
 import { expect, test } from 'vitest'
 
 import { tryLoadDotEnvFiles } from '../../../src/utils/dot-env.js'
-import { withSiteBuilder } from '../../integration/utils/site-builder.js'
+import { withSiteBuilder } from '../../integration/utils/site-builder.ts'
 
 test('should return an empty array for a site with no .env file', async () => {
   await withSiteBuilder('site-without-env-file', async (builder) => {

@@ -10,9 +10,9 @@ import nodeFetch from 'node-fetch'
 import { describe, test } from 'vitest'
 
 import { curl } from '../../utils/curl.js'
-import { withDevServer } from '../../utils/dev-server.js'
+import { withDevServer } from '../../utils/dev-server.ts'
 import { withMockApi } from '../../utils/mock-api.js'
-import { withSiteBuilder } from '../../utils/site-builder.js'
+import { withSiteBuilder } from '../../utils/site-builder.ts'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 

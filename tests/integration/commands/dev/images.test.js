@@ -5,8 +5,8 @@ import path from 'path'
 import fetch from 'node-fetch'
 import { describe, test } from 'vitest'
 
-import { withDevServer } from '../../utils/dev-server.js'
-import { withSiteBuilder } from '../../utils/site-builder.js'
+import { withDevServer } from '../../utils/dev-server.ts'
+import { withSiteBuilder } from '../../utils/site-builder.ts'
 
 describe.concurrent('commands/dev/images', () => {
   test(`should support remote image transformations`, async (t) => {
