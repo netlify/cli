@@ -67,6 +67,13 @@ describe.concurrent('commands/dev/images', () => {
           path: 'index.html',
         })
         .withContentFile({
+          content: `
+          export default () => new Response("SSR-Rendered Page")
+          export const config = { path: "/*", preferStatic: true }
+          `,
+          path: '/.netlify/functions-internal/ssr.mjs',
+        })
+        .withContentFile({
           // eslint-disable-next-line no-undef
           content: fs.readFileSync(path.join(__dirname, `/../../__fixtures__/images/test.jpg`)),
           path: '/images/test.jpg',
