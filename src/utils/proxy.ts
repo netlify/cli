@@ -689,6 +689,10 @@ const onRequest = async (
     ? null
     : await createStreamPromise(req, BYTES_LIMIT)
 
+  if (isImageRequest(req)) {
+    return imageProxy(req, res)
+  }
+
   const edgeFunctionsProxyURL = await edgeFunctionsProxy(req, res)
 
   if (edgeFunctionsProxyURL !== undefined) {
@@ -760,10 +764,6 @@ const onRequest = async (
     (ct.endsWith('/x-www-form-urlencoded') || ct === 'multipart/form-data')
   ) {
     return proxy.web(req, res, { target: functionsServer })
-  }
-
-  if (isImageRequest(req)) {
-    return imageProxy(req, res)
   }
 
   proxy.web(req, res, options)
