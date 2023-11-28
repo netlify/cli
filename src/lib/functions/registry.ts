@@ -17,6 +17,7 @@ import {
   watchDebounced,
 } from '../../utils/command-helpers.js'
 import { INTERNAL_FUNCTIONS_FOLDER, SERVE_FUNCTIONS_FOLDER } from '../../utils/functions/functions.js'
+import type { BlobsContext } from '../blobs/blobs.js'
 import { BACKGROUND_FUNCTIONS_WARNING } from '../log.js'
 import { getPathInProject } from '../settings.js'
 
@@ -32,8 +33,33 @@ const ZIP_EXTENSION = '.zip'
  */
 
 export class FunctionsRegistry {
+  /**
+   * The functions held by the registry
+   */
+  private functions = new Map<string, NetlifyFunction>()
+
+  /**
+   * File watchers for function files. Maps function names to objects built
+   * by the `watchDebounced` utility.
+   */
+  private functionWatchers = new Map<string, Awaited<ReturnType<typeof watchDebounced>>>()
+
+  /**
+   * Keeps track of whether we've checked whether `TYPES_PACKAGE` is
+   * installed.
+   */
+  private hasCheckedTypesPackage = false
+
+  /**
+   * Context object for Netlify Blobs
+   */
+  private blobsContext: BlobsContext
+
+  private projectRoot: string
+  private isConnected: boolean
+  private debug: boolean
+
   constructor({
-    // @ts-expect-error TS(7031) FIXME: Binding element 'blobsContext' implicitly has an '... Remove this comment to see the full error message
     blobsContext,
     // @ts-expect-error TS(7031) FIXME: Binding element 'capabilities' implicitly has an '... Remove this comment to see the full error message
     capabilities,
@@ -45,34 +71,23 @@ export class FunctionsRegistry {
     logLambdaCompat,
     // @ts-expect-error TS(7031) FIXME: Binding element 'manifest' implicitly has an 'any'... Remove this comment to see the full error message
     manifest,
-    // @ts-expect-error TS(7031) FIXME: Binding element 'projectRoot' implicitly has an 'a... Remove this comment to see the full error message
     projectRoot,
     // @ts-expect-error TS(7031) FIXME: Binding element 'settings' implicitly has an 'any'... Remove this comment to see the full error message
     settings,
     // @ts-expect-error TS(7031) FIXME: Binding element 'timeouts' implicitly has an 'any'... Remove this comment to see the full error message
     timeouts,
-  }) {
+  }: { projectRoot: string; debug?: boolean; isConnected?: boolean; blobsContext: BlobsContext } & object) {
     // @ts-expect-error TS(2339) FIXME: Property 'capabilities' does not exist on type 'Fu... Remove this comment to see the full error message
     this.capabilities = capabilities
     // @ts-expect-error TS(2339) FIXME: Property 'config' does not exist on type 'Function... Remove this comment to see the full error message
     this.config = config
-    // @ts-expect-error TS(2339) FIXME: Property 'debug' does not exist on type 'Functions... Remove this comment to see the full error message
     this.debug = debug
-    // @ts-expect-error TS(2339) FIXME: Property 'isConnected' does not exist on type 'Fun... Remove this comment to see the full error message
     this.isConnected = isConnected
-    // @ts-expect-error TS(2339) FIXME: Property 'projectRoot' does not exist on type 'Fun... Remove this comment to see the full error message
     this.projectRoot = projectRoot
     // @ts-expect-error TS(2339) FIXME: Property 'timeouts' does not exist on type 'Functi... Remove this comment to see the full error message
     this.timeouts = timeouts
     // @ts-expect-error TS(2339) FIXME: Property 'settings' does not exist on type 'Functi... Remove this comment to see the full error message
     this.settings = settings
-
-    /**
-     * Context object for Netlify Blobs
-     *
-     * @type {import("../blobs/blobs.js").BlobsContext}
-     */
-    // @ts-expect-error TS(2339) FIXME: Property 'blobsContext' does not exist on type 'Fu... Remove this comment to see the full error message
     this.blobsContext = blobsContext
 
     /**
@@ -96,30 +111,6 @@ export class FunctionsRegistry {
     this.directoryWatchers = new Map()
 
     /**
-     * The functions held by the registry
-     *
-     * @type {Map<string, NetlifyFunction>}
-     */
-    // @ts-expect-error TS(2339) FIXME: Property 'functions' does not exist on type 'Funct... Remove this comment to see the full error message
-    this.functions = new Map()
-
-    /**
-     * File watchers for function files. Maps function names to objects built
-     * by the `watchDebounced` utility.
-     *
-     * @type {Map<string, Awaited<ReturnType<watchDebounced>>>}
-     */
-    // @ts-expect-error TS(2339) FIXME: Property 'functionWatchers' does not exist on type... Remove this comment to see the full error message
-    this.functionWatchers = new Map()
-
-    /**
-     * Keeps track of whether we've checked whether `TYPES_PACKAGE` is
-     * installed.
-     */
-    // @ts-expect-error TS(2339) FIXME: Property 'hasCheckedTypesPackage' does not exist o... Remove this comment to see the full error message
-    this.hasCheckedTypesPackage = false
-
-    /**
      * Whether to log V1 functions as using the "Lambda compatibility mode"
      *
      * @type {boolean}
@@ -138,19 +129,15 @@ export class FunctionsRegistry {
   }
 
   checkTypesPackage() {
-    // @ts-expect-error TS(2339) FIXME: Property 'hasCheckedTypesPackage' does not exist o... Remove this comment to see the full error message
     if (this.hasCheckedTypesPackage) {
       return
     }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'hasCheckedTypesPackage' does not exist o... Remove this comment to see the full error message
     this.hasCheckedTypesPackage = true
 
-    // @ts-expect-error TS(2339) FIXME: Property 'projectRoot' does not exist on type 'Fun... Remove this comment to see the full error message
     const require = createRequire(this.projectRoot)
 
     try {
-      // @ts-expect-error TS(2339) FIXME: Property 'projectRoot' does not exist on type 'Fun... Remove this comment to see the full error message
       require.resolve(TYPES_PACKAGE, { paths: [this.projectRoot] })
     } catch (error) {
       // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
@@ -165,11 +152,8 @@ export class FunctionsRegistry {
    * Runs before `scan` and calls any `onDirectoryScan` hooks defined by the
    * runtime before the directory is read. This gives runtime the opportunity
    * to run additional logic when a directory is scanned.
-   *
-   * @param {string} directory
    */
-  // @ts-expect-error TS(7006) FIXME: Parameter 'directory' implicitly has an 'any' type... Remove this comment to see the full error message
-  static async prepareDirectoryScan(directory) {
+  static async prepareDirectoryScan(directory: string) {
     await mkdir(directory, { recursive: true })
 
     // We give runtimes the opportunity to react to a directory scan and run
@@ -191,13 +175,8 @@ export class FunctionsRegistry {
   /**
    * Builds a function and sets up the appropriate file watchers so that any
    * changes will trigger another build.
-   *
-   * @param {NetlifyFunction} func
-   * @param {boolean} [firstLoad ]
-   * @returns
    */
-  // @ts-expect-error TS(7006) FIXME: Parameter 'func' implicitly has an 'any' type.
-  async buildFunctionAndWatchFiles(func, firstLoad = false) {
+  async buildFunctionAndWatchFiles(func: NetlifyFunction, firstLoad = false) {
     if (!firstLoad) {
       FunctionsRegistry.logEvent('reloading', { func })
     }
@@ -238,18 +217,15 @@ export class FunctionsRegistry {
       return
     }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'functionWatchers' does not exist on type... Remove this comment to see the full error message
     const watcher = this.functionWatchers.get(func.name)
 
     // If there is already a watcher for this function, we need to unwatch any
     // files that have been removed and watch any files that have been added.
     if (watcher) {
-      // @ts-expect-error TS(7006) FIXME: Parameter 'path' implicitly has an 'any' type.
       srcFilesDiff.deleted.forEach((path) => {
         watcher.unwatch(path)
       })
 
-      // @ts-expect-error TS(7006) FIXME: Parameter 'path' implicitly has an 'any' type.
       srcFilesDiff.added.forEach((path) => {
         watcher.add(path)
       })
@@ -267,19 +243,14 @@ export class FunctionsRegistry {
         },
       })
 
-      // @ts-expect-error TS(2339) FIXME: Property 'functionWatchers' does not exist on type... Remove this comment to see the full error message
       this.functionWatchers.set(func.name, newWatcher)
     }
   }
 
   /**
    * Returns a function by name.
-   *
-   * @param {string} name
    */
-  // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-  get(name) {
-    // @ts-expect-error TS(2339) FIXME: Property 'functions' does not exist on type 'Funct... Remove this comment to see the full error message
+  get(name: string) {
     return this.functions.get(name)
   }
 
@@ -289,17 +260,13 @@ export class FunctionsRegistry {
    * matches the default functions URL (i.e. can only be for a function) but no
    * function with the given name exists, returns an object with the function
    * and the route set to `null`. Otherwise, `undefined` is returned,
-   *
-   * @param {string} url
-   * @param {string} method
    */
-  // @ts-expect-error TS(7006) FIXME: Parameter 'url' implicitly has an 'any' type.
-  async getFunctionForURLPath(url, method) {
+  async getFunctionForURLPath(urlPath: string, method: string) {
     // We're constructing a URL object just so that we can extract the path from
     // the incoming URL. It doesn't really matter that we don't have the actual
     // local URL with the correct port.
-    const urlPath = new URL(url, 'http://localhost').pathname
-    const defaultURLMatch = urlPath.match(DEFAULT_FUNCTION_URL_EXPRESSION)
+    const url = new URL(`http://localhost${urlPath}`)
+    const defaultURLMatch = url.pathname.match(DEFAULT_FUNCTION_URL_EXPRESSION)
 
     if (defaultURLMatch) {
       const func = this.get(defaultURLMatch[2])
@@ -316,7 +283,7 @@ export class FunctionsRegistry {
 
         warn(
           `Function ${chalk.yellow(func.name)} cannot be invoked on ${chalk.underline(
-            urlPath,
+            url.pathname,
           )}, because the function has the following URL paths defined: ${paths}`,
         )
 
@@ -326,9 +293,8 @@ export class FunctionsRegistry {
       return { func, route: null }
     }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'functions' does not exist on type 'Funct... Remove this comment to see the full error message
     for (const func of this.functions.values()) {
-      const route = await func.matchURLPath(urlPath, method)
+      const route = await func.matchURLPath(url.pathname, method)
 
       if (route) {
         return { func, route }
@@ -450,7 +416,6 @@ export class FunctionsRegistry {
     if (extname(func.mainFile) === ZIP_EXTENSION) {
       const unzippedDirectory = await this.unzipFunction(func)
 
-      // @ts-expect-error TS(2339) FIXME: Property 'debug' does not exist on type 'Functions... Remove this comment to see the full error message
       if (this.debug) {
         FunctionsRegistry.logEvent('extracted', { func })
       }
@@ -482,7 +447,6 @@ export class FunctionsRegistry {
       this.buildFunctionAndWatchFiles(func, !isReload)
     }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'functions' does not exist on type 'Funct... Remove this comment to see the full error message
     this.functions.set(name, func)
   }
 
@@ -530,7 +494,6 @@ export class FunctionsRegistry {
 
     // Before registering any functions, we look for any functions that were on
     // the previous list but are missing from the new one. We unregister them.
-    // @ts-expect-error TS(2339) FIXME: Property 'functions' does not exist on type 'Funct... Remove this comment to see the full error message
     const deletedFunctions = [...this.functions.values()].filter((oldFunc) => {
       const isFound = functions.some(
         (newFunc) => newFunc.name === oldFunc.name && newFunc.mainFile === oldFunc.mainFile,
@@ -556,13 +519,11 @@ export class FunctionsRegistry {
         }
 
         // If this function has already been registered, we skip it.
-        // @ts-expect-error TS(2339) FIXME: Property 'functions' does not exist on type 'Funct... Remove this comment to see the full error message
         if (this.functions.has(name)) {
           return
         }
 
         const func = new NetlifyFunction({
-          // @ts-expect-error TS(2339) FIXME: Property 'blobsContext' does not exist on type 'Fu... Remove this comment to see the full error message
           blobsContext: this.blobsContext,
           // @ts-expect-error TS(2339) FIXME: Property 'config' does not exist on type 'Function... Remove this comment to see the full error message
           config: this.config,
@@ -571,7 +532,6 @@ export class FunctionsRegistry {
           mainFile,
           name,
           displayName,
-          // @ts-expect-error TS(2339) FIXME: Property 'projectRoot' does not exist on type 'Fun... Remove this comment to see the full error message
           projectRoot: this.projectRoot,
           runtime,
           // @ts-expect-error TS(2339) FIXME: Property 'timeouts' does not exist on type 'Functi... Remove this comment to see the full error message
@@ -592,7 +552,6 @@ export class FunctionsRegistry {
         return func
       }),
     )
-    // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'NetlifyFun... Remove this comment to see the full error message
     const addedFunctionNames = new Set(addedFunctions.filter(Boolean).map((func) => func?.name))
 
     deletedFunctions.forEach((func) => {
@@ -613,11 +572,8 @@ export class FunctionsRegistry {
    * Creates a watcher that looks at files being added or removed from a
    * functions directory. It doesn't care about files being changed, because
    * those will be handled by each functions' watcher.
-   *
-   * @param {string} directory
    */
-  // @ts-expect-error TS(7006) FIXME: Parameter 'directory' implicitly has an 'any' type... Remove this comment to see the full error message
-  async setupDirectoryWatcher(directory) {
+  async setupDirectoryWatcher(directory: string) {
     // @ts-expect-error TS(2339) FIXME: Property 'directoryWatchers' does not exist on typ... Remove this comment to see the full error message
     if (this.directoryWatchers.has(directory)) {
       return
@@ -639,36 +595,26 @@ export class FunctionsRegistry {
 
   /**
    * Removes a function from the registry and closes its file watchers.
-   *
-   * @param {NetlifyFunction} func
    */
-  // @ts-expect-error TS(7006) FIXME: Parameter 'func' implicitly has an 'any' type.
-  async unregisterFunction(func) {
+  async unregisterFunction(func: NetlifyFunction) {
     const { name } = func
 
-    // @ts-expect-error TS(2339) FIXME: Property 'functions' does not exist on type 'Funct... Remove this comment to see the full error message
     this.functions.delete(name)
 
-    // @ts-expect-error TS(2339) FIXME: Property 'functionWatchers' does not exist on type... Remove this comment to see the full error message
     const watcher = this.functionWatchers.get(name)
 
     if (watcher) {
       await watcher.close()
     }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'functionWatchers' does not exist on type... Remove this comment to see the full error message
     this.functionWatchers.delete(name)
   }
 
   /**
    * Takes a zipped function and extracts its contents to an internal directory.
-   *
-   * @param {NetlifyFunction} func
    */
-  // @ts-expect-error TS(7006) FIXME: Parameter 'func' implicitly has an 'any' type.
-  async unzipFunction(func) {
+  async unzipFunction(func: NetlifyFunction) {
     const targetDirectory = resolve(
-      // @ts-expect-error TS(2339) FIXME: Property 'projectRoot' does not exist on type 'Fun... Remove this comment to see the full error message
       this.projectRoot,
       getPathInProject([SERVE_FUNCTIONS_FOLDER, '.unzipped', func.name]),
     )
