@@ -2,6 +2,7 @@ import fs from 'fs'
 import process from 'process'
 
 import build from '@netlify/build'
+import type { OptionValues } from 'commander'
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'toml... Remove this comment to see the full error message
 import tomlify from 'tomlify-j0.4'
 
@@ -9,6 +10,20 @@ import { isFeatureFlagEnabled } from '../utils/feature-flags.js'
 
 import { getBootstrapURL } from './edge-functions/bootstrap.js'
 import { featureFlags as edgeFunctionsFeatureFlags } from './edge-functions/consts.js'
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type $FIXME = any
+
+interface EventHandler {
+  handler: $FIXME
+  description: string
+}
+
+const getFeatureFlagsFromSiteInfo = (siteInfo: $FIXME): Record<string, any> => ({
+  ...siteInfo.feature_flags,
+  // see https://github.com/netlify/pod-dev-foundations/issues/581#issuecomment-1731022753
+  zisi_golang_use_al2: isFeatureFlagEnabled('cli_golang_use_al2', siteInfo),
+})
 
 /**
  * The buildConfig + a missing cachedConfig
@@ -19,32 +34,22 @@ import { featureFlags as edgeFunctionsFeatureFlags } from './edge-functions/cons
 // We have already resolved the configuration using `@netlify/config`
 // This is stored as `netlify.cachedConfig` and can be passed to
 // `@netlify/build --cachedConfig`.
-/**
- *
- * @param {object} config
- * @param {*} config.cachedConfig
- * @param {string} [config.packagePath]
- * @param {string} config.currentDir
- * @param {string} config.token
- * @param {import('commander').OptionValues} config.options
- * @param {*} config.deployHandler
- * @returns {BuildConfig}
- */
 export const getBuildOptions = ({
-  // @ts-expect-error TS(7031) FIXME: Binding element 'cachedConfig' implicitly has an '... Remove this comment to see the full error message
   cachedConfig,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'currentDir' implicitly has an 'an... Remove this comment to see the full error message
   currentDir,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'deployHandler' implicitly has an ... Remove this comment to see the full error message
   deployHandler,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'context' implicitly has an 'any' ... Remove this comment to see the full error message
   options: { context, cwd, debug, dry, json, offline, silent },
-  // @ts-expect-error TS(7031) FIXME: Binding element 'packagePath' implicitly has an 'a... Remove this comment to see the full error message
   packagePath,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'token' implicitly has an 'any' ty... Remove this comment to see the full error message
   token,
+}: {
+  options: OptionValues
+  cachedConfig: $FIXME
+  currentDir: string
+  deployHandler?: $FIXME
+  packagePath: string
+  token: string
 }) => {
-  const eventHandlers = {
+  const eventHandlers: { onEnd: EventHandler; onPostBuild?: EventHandler } = {
     onEnd: {
       // @ts-expect-error TS(7031) FIXME: Binding element 'netlifyConfig' implicitly has an ... Remove this comment to see the full error message
       handler: ({ netlifyConfig }) => {
@@ -62,7 +67,6 @@ export const getBuildOptions = ({
   }
 
   if (deployHandler) {
-    // @ts-expect-error TS(2339) FIXME: Property 'onPostBuild' does not exist on type '{ o... Remove this comment to see the full error message
     eventHandlers.onPostBuild = {
       handler: deployHandler,
       description: 'Deploy Site',
@@ -90,27 +94,10 @@ export const getBuildOptions = ({
     },
     eventHandlers,
     edgeFunctionsBootstrapURL: getBootstrapURL(),
-  }
+  } as const
 }
 
-/**
- * @param {*} siteInfo
- * @returns {Record<string, any>}
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'siteInfo' implicitly has an 'any' type.
-const getFeatureFlagsFromSiteInfo = (siteInfo) => ({
-  ...siteInfo.feature_flags,
-  // see https://github.com/netlify/pod-dev-foundations/issues/581#issuecomment-1731022753
-  zisi_golang_use_al2: isFeatureFlagEnabled('cli_golang_use_al2', siteInfo),
-})
-
-/**
- * run the build command
- * @param {BuildConfig} options
- * @returns
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
-export const runBuild = async (options) => {
+export const runBuild = async (options: ReturnType<typeof getBuildOptions>) => {
   // If netlify NETLIFY_API_URL is set we need to pass this information to @netlify/build
   // TODO don't use testOpts, but add real properties to do this.
   if (process.env.NETLIFY_API_URL) {
@@ -119,6 +106,7 @@ export const runBuild = async (options) => {
       scheme: apiUrl.protocol.slice(0, -1),
       host: apiUrl.host,
     }
+    // @ts-expect-error TS(2554) FIXME
     options = { ...options, testOpts }
   }
 

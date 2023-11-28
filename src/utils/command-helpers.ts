@@ -5,9 +5,11 @@ import { format, inspect } from 'util'
 
 import { Chalk } from 'chalk'
 import chokidar from 'chokidar'
+import type { Option } from 'commander'
 import decache from 'decache'
 import WSL from 'is-wsl'
 import debounce from 'lodash/debounce.js'
+import type { NetlifyAPI } from 'netlify'
 import terminalLink from 'terminal-link'
 
 import { clearSpinner, startSpinner } from '../lib/spinner.js'
@@ -66,33 +68,19 @@ export const BANG = process.platform === 'win32' ? '»' : '›'
 
 /**
  * Sorts two options so that the base flags are at the bottom of the list
- * @param {import('commander').Option} optionA
- * @param {import('commander').Option} optionB
- * @returns {number}
- * @example
- * options.sort(sortOptions)
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'optionA' implicitly has an 'any' type.
-export const sortOptions = (optionA, optionB) => {
+export const sortOptions = (optionA: Option, optionB: Option) => {
   // base flags should be always at the bottom
-  if (BASE_FLAGS.has(optionA.long) || BASE_FLAGS.has(optionB.long)) {
+  if (BASE_FLAGS.has(optionA.long!) || BASE_FLAGS.has(optionB.long!)) {
     return -1
   }
-  return optionA.long.localeCompare(optionB.long)
+  return optionA.long!.localeCompare(optionB.long!)
 }
 
 // Poll Token timeout 5 Minutes
 const TOKEN_TIMEOUT = 3e5
 
-/**
- *
- * @param {object} config
- * @param {import('netlify').NetlifyAPI} config.api
- * @param {object} config.ticket
- * @returns
- */
-// @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-export const pollForToken = async ({ api, ticket }) => {
+export const pollForToken = async ({ api, ticket }: { api: NetlifyAPI; ticket: object }) => {
   const spinner = startSpinner({ text: 'Waiting for authorization...' })
   try {
     const accessToken = await api.getAccessToken(ticket, { timeout: TOKEN_TIMEOUT })
@@ -121,11 +109,11 @@ export const pollForToken = async ({ api, ticket }) => {
 
 /**
  * Get a netlify token
- * @param {string} [tokenFromOptions] optional token from the provided --auth options
- * @returns {Promise<[null|string, 'flag' | 'env' |'config' |'not found']>}
+ * @param tokenFromOptions optional token from the provided --auth options
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'tokenFromOptions' implicitly has an 'an... Remove this comment to see the full error message
-export const getToken = async (tokenFromOptions) => {
+export const getToken = async (
+  tokenFromOptions?: string,
+): Promise<[null | string, 'flag' | 'env' | 'config' | 'not found']> => {
   // 1. First honor command flag --auth
   if (tokenFromOptions) {
     return [tokenFromOptions, 'flag']
