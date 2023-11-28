@@ -425,14 +425,17 @@ export class FunctionsRegistry {
       // @ts-expect-error TS(2339) FIXME: Property 'manifest' does not exist on type 'Functi... Remove this comment to see the full error message
       const manifestEntry = (this.manifest?.functions || []).find((manifestFunc) => manifestFunc.name === func.name)
 
-      func.buildData = manifestEntry?.buildData || {}
+      func.buildData = {
+        ...manifestEntry?.buildData,
+        routes: manifestEntry.routes,
+      }
 
       // When we look at an unzipped function, we don't know whether it uses
-      // the legacy entry file format (i.e. `[function name].js`) or the new
-      // one (i.e. `___netlify-entry-point.js`). Let's look for the new one
+      // the legacy entry file format (i.e. `[function name].mjs`) or the new
+      // one (i.e. `___netlify-entry-point.mjs`). Let's look for the new one
       // and use it if it exists, otherwise use the old one.
       try {
-        const v2EntryPointPath = join(unzippedDirectory, '___netlify-entry-point.js')
+        const v2EntryPointPath = join(unzippedDirectory, '___netlify-entry-point.mjs')
 
         await stat(v2EntryPointPath)
 
