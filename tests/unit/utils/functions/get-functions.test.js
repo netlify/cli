@@ -3,7 +3,7 @@ import path from 'path'
 import { describe, expect, test } from 'vitest'
 
 import { getFunctions } from '../../../../src/utils/functions/get-functions.js'
-import { withSiteBuilder } from '../../../integration/utils/site-builder.js'
+import { withSiteBuilder } from '../../../integration/utils/site-builder.ts'
 
 describe('getFunctions', () => {
   test('should return empty object when an empty string is provided', async () => {

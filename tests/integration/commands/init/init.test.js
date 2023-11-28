@@ -8,7 +8,7 @@ import { describe, test } from 'vitest'
 import { cliPath } from '../../utils/cli-path.js'
 import { CONFIRM, DOWN, answerWithValue, handleQuestions } from '../../utils/handle-questions.js'
 import { withMockApi } from '../../utils/mock-api.js'
-import { withSiteBuilder } from '../../utils/site-builder.js'
+import { withSiteBuilder } from '../../utils/site-builder.ts'
 
 const defaultFunctionsDirectory = 'netlify/functions'
 

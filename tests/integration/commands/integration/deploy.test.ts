@@ -7,7 +7,7 @@ import { deploy as siteDeploy } from '../../../../src/commands/deploy/deploy.js'
 import { areScopesEqual } from '../../../../src/commands/integration/deploy.js'
 import { createIntegrationDeployCommand } from '../../../../src/commands/integration/index.js'
 import { getEnvironmentVariables, withMockApi } from '../../utils/mock-api.js'
-import { withSiteBuilder } from '../../utils/site-builder.js'
+import { withSiteBuilder } from '../../utils/site-builder.ts'
 
 describe('integration:deploy areScopesEqual', () => {
   test('it returns false when scopes are not equal', () => {

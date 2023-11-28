@@ -7,7 +7,7 @@ import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 import { createRewriter, getWatchers } from '../../src/utils/rules-proxy.js'
 
 import got from './utils/got.js'
-import { createSiteBuilder, SiteBuilder } from './utils/site-builder.js'
+import { createSiteBuilder, SiteBuilder } from './utils/site-builder.ts'
 
 describe('rules-proxy', () => {
   let server: http.Server

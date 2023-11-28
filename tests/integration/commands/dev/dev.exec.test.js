@@ -3,7 +3,7 @@ import process from 'process'
 import { test } from 'vitest'
 
 import { callCli } from '../../utils/call-cli.js'
-import { withSiteBuilder } from '../../utils/site-builder.js'
+import { withSiteBuilder } from '../../utils/site-builder.ts'
 
 test('should pass .env variables to exec command', async (t) => {
   await withSiteBuilder('site-env-file', async (builder) => {

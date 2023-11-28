@@ -6,7 +6,7 @@ import { describe, expect, test } from 'vitest'
 import { isFileAsync } from '../../../../src/lib/fs.js'
 import { callCli } from '../../utils/call-cli.js'
 import { getCLIOptions, withMockApi } from '../../utils/mock-api.js'
-import { withSiteBuilder } from '../../utils/site-builder.js'
+import { withSiteBuilder } from '../../utils/site-builder.ts'
 
 describe('link command', () => {
   test('should create gitignore in repository root when is root', async () => {

@@ -7,7 +7,7 @@ import { callCli } from '../../utils/call-cli.js'
 import { cliPath } from '../../utils/cli-path.js'
 import { CONFIRM, answerWithValue, handleQuestions } from '../../utils/handle-questions.js'
 import { getCLIOptions, withMockApi } from '../../utils/mock-api.js'
-import { withSiteBuilder } from '../../utils/site-builder.js'
+import { withSiteBuilder } from '../../utils/site-builder.ts'
 import { normalize } from '../../utils/snapshots.js'
 
 const siteInfo = {

@@ -8,7 +8,7 @@ import { describe, test } from 'vitest'
 import { callCli } from '../../utils/call-cli.js'
 import { cliPath } from '../../utils/cli-path.js'
 import { CONFIRM, NO, answerWithValue, handleQuestions } from '../../utils/handle-questions.js'
-import { withSiteBuilder } from '../../utils/site-builder.js'
+import { withSiteBuilder } from '../../utils/site-builder.ts'
 import { normalize } from '../../utils/snapshots.js'
 
 describe.concurrent('commands/recipes', () => {

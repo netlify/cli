@@ -7,11 +7,11 @@ import jwt from 'jsonwebtoken'
 import fetch from 'node-fetch'
 import { describe, test } from 'vitest'
 
-import { withDevServer } from '../../utils/dev-server.js'
+import { withDevServer } from '../../utils/dev-server.ts'
 import got from '../../utils/got.js'
 import { withMockApi } from '../../utils/mock-api.js'
 import { pause } from '../../utils/pause.js'
-import { withSiteBuilder } from '../../utils/site-builder.js'
+import { withSiteBuilder } from '../../utils/site-builder.ts'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
