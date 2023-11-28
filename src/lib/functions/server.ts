@@ -327,6 +327,7 @@ export const startFunctionsServer = async (options) => {
 
   const functionsRegistry = new FunctionsRegistry({
     blobsContext,
+    // @ts-expect-error TS(7031) FIXME
     capabilities,
     config,
     debug,
