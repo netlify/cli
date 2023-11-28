@@ -206,7 +206,11 @@ export const createHandler = function (options) {
       const { error, result } = await func.invoke(event, clientContext)
 
       // check for existence of metadata if this is a builder function
-      if (/^\/.netlify\/(builders)/.test(request.path) && (!result.metadata || !result.metadata.builder_function)) {
+      if (
+        /^\/.netlify\/(builders)/.test(request.path) &&
+        result &&
+        (!result.metadata || !result.metadata.builder_function)
+      ) {
         response.status(400).send({
           message:
             'Function is not an on-demand builder. See https://ntl.fyi/create-builder for how to convert a function to a builder.',
