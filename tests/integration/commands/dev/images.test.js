@@ -34,7 +34,7 @@ describe.concurrent('commands/dev/images', () => {
           path: 'index.html',
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const res = await fetch(
@@ -79,7 +79,7 @@ describe.concurrent('commands/dev/images', () => {
           path: '/images/test.jpg',
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const res = await fetch(
