@@ -6,8 +6,8 @@ import fetch from 'node-fetch'
 import { gte } from 'semver'
 import { describe, test } from 'vitest'
 
-import { withDevServer } from '../../utils/dev-server.js'
-import { withSiteBuilder } from '../../utils/site-builder.js'
+import { withDevServer } from '../../utils/dev-server.ts'
+import { withSiteBuilder } from '../../utils/site-builder.ts'
 
 describe.concurrent('commands/dev/config', () => {
   test('should use [build.environment] and not [context.production.environment]', async (t) => {

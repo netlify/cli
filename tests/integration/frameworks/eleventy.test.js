@@ -6,7 +6,7 @@ import fetch from 'node-fetch'
 import { afterAll, beforeAll, describe, test } from 'vitest'
 
 import { clientIP, originalIP } from '../../lib/local-ip.js'
-import { startDevServer } from '../utils/dev-server.js'
+import { startDevServer } from '../utils/dev-server.ts'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 

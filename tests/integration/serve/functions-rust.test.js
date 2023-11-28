@@ -1,10 +1,10 @@
 import fetch from 'node-fetch'
 import { test } from 'vitest'
 
-import { tryAndLogOutput, withDevServer } from '../utils/dev-server.js'
+import { tryAndLogOutput, withDevServer } from '../utils/dev-server.ts'
 import { createMock as createExecaMock } from '../utils/mock-execa.js'
 import { pause } from '../utils/pause.js'
-import { withSiteBuilder } from '../utils/site-builder.js'
+import { withSiteBuilder } from '../utils/site-builder.ts'
 
 const WAIT_WRITE = 1000
 

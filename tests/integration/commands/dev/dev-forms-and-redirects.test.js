@@ -7,8 +7,8 @@ import getPort from 'get-port'
 import fetch from 'node-fetch'
 import { describe, test } from 'vitest'
 
-import { withDevServer } from '../../utils/dev-server.js'
-import { withSiteBuilder } from '../../utils/site-builder.js'
+import { withDevServer } from '../../utils/dev-server.ts'
+import { withSiteBuilder } from '../../utils/site-builder.ts'
 
 describe.concurrent('commands/dev-forms-and-redirects', () => {
   test('should return 404 when redirecting to a non existing function', async (t) => {
