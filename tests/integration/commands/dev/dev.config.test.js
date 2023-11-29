@@ -142,6 +142,17 @@ describe.concurrent('commands/dev/config', () => {
     })
   })
 
+  test('should provide CLI version in env var', async (t) => {
+    await withSiteBuilder('site-with-netlify-version-env-var', async (builder) => {
+      await builder.withNetlifyToml({ config: { dev: { command: `node -e console.log(process.env)` } } }).build()
+
+      await withDevServer({ cwd: builder.directory }, async (server) => {
+        await server.close()
+        t.expect(server.output).toContain('NETLIFY_CLI_VERSION')
+      })
+    })
+  })
+
   test('should set value of the CONTEXT env variable', async (t) => {
     await withSiteBuilder('site-with-context-override', async (builder) => {
       builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withFunction({
