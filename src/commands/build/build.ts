@@ -7,7 +7,6 @@ import { error, exit, getToken } from '../../utils/command-helpers.js'
 import { getEnvelopeEnv } from '../../utils/env/index.js'
 import BaseCommand from '../base-command.js'
 
-
 /**
  * @param {import('../../lib/build.js').BuildConfig} options
  */
