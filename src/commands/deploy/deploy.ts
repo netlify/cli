@@ -345,14 +345,20 @@ const deployProgressCb = function () {
   }
 }
 
-const uploadDeployBlobs = async (
-  { deployId, options, silent, siteId }: { deployId: string; options: OptionValues; silent: boolean; siteId: string },
-  command: BaseCommand,
-) => {
-  // eslint-disable-next-line n/prefer-global/process, unicorn/prefer-set-has
-  const argv = process.argv.slice(2)
-  const quiet = silent || argv.includes('--json') || argv.includes('--silent')
-  const statusCb = quiet ? () => {} : deployProgressCb()
+const uploadDeployBlobs = async ({
+  cachedConfig,
+  deployId,
+  options,
+  silent,
+  siteId,
+}: {
+  cachedConfig: any
+  deployId: string
+  options: OptionValues
+  silent: boolean
+  siteId: string
+}) => {
+  const statusCb = silent ? () => {} : deployProgressCb()
 
   statusCb({
     type: 'blobs-uploading',
@@ -364,8 +370,8 @@ const uploadDeployBlobs = async (
 
   const { success } = await runCoreSteps(['blobs_upload'], {
     ...options,
-    quiet,
-    cachedConfig: command.netlify.cachedConfig,
+    quiet: silent,
+    cachedConfig,
     deployId,
     siteId,
     token,
@@ -466,7 +472,7 @@ const runDeploy = async ({
     })
 
     config.headers = headers
-    uploadDeployBlobs({ deployId, siteId, silent, options }, command)
+    uploadDeployBlobs({ deployId, siteId, silent, options, cachedConfig: command.netlify.cachedConfig })
 
     results = await deploySite(api, siteId, deployFolder, {
       config,

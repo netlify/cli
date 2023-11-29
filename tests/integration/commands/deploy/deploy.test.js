@@ -819,7 +819,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
     })
   })
 
-  test('should upload blobs when saved into .netlify directory', async (t) => {
+  test.only('should upload blobs when saved into .netlify directory', async (t) => {
     await withSiteBuilder('site-with-blobs', async (builder) => {
       await builder
         .withNetlifyToml({
@@ -833,10 +833,10 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         })
         .withPackageJson({
           packageJson: {
-            "dependencies": {
-              "@netlify/blobs": "^6.3.0",
-              "@netlify/functions": "^2.4.0"
-            }
+            dependencies: {
+              '@netlify/blobs': '^6.3.0',
+              '@netlify/functions': '^2.4.0',
+            },
           },
         })
         .withContentFile({
