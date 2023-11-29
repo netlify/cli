@@ -38,6 +38,9 @@ import openBrowser from '../utils/open-browser.js'
 import StateConfig from '../utils/state-config.js'
 import { identify, reportError, track } from '../utils/telemetry/index.js'
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type $FIXME = any
+
 // load the autocomplete plugin
 inquirer.registerPrompt('autocomplete', inquirerAutocompletePrompt)
 /** Netlify CLI client id. Lives in bot@netlify.com */
@@ -229,7 +232,7 @@ export default class BaseCommand extends Command {
       }
       debug(`${name}:preAction`)('start')
       this.analytics = { startTime: process.hrtime.bigint() }
-      await this.init(actionCommand)
+      await this.init(actionCommand as BaseCommand)
       debug(`${name}:preAction`)('end')
     })
   }
@@ -521,8 +524,7 @@ export default class BaseCommand extends Command {
    * @param {BaseCommand} actionCommand The command of the action that is run (`this.` gets the parent command)
    * @private
    */
-  // @ts-expect-error TS(7006) FIXME: Parameter 'actionCommand' implicitly has an 'any' ... Remove this comment to see the full error message
-  async init(actionCommand) {
+  async init<C extends BaseCommand>(actionCommand: C) {
     debug(`${actionCommand.name()}:init`)('start')
     const flags = actionCommand.opts()
     // here we actually want to use the process.cwd as we are setting the workingDir
@@ -689,21 +691,19 @@ export default class BaseCommand extends Command {
 
   /**
    * Find and resolve the Netlify configuration
-   * @param {object} config
-   * @param {string} config.cwd
-   * @param {string|null=} config.token
-   * @param {*} config.state
-   * @param {boolean=} config.offline
-   * @param {string=} config.configFilePath An optional path to the netlify configuration file e.g. netlify.toml
-   * @param {string=} config.packagePath
-   * @param {string=} config.repositoryRoot
-   * @param {string=} config.host
-   * @param {string=} config.pathPrefix
-   * @param {string=} config.scheme
-   * @returns {ReturnType<typeof resolveConfig>}
    */
-  // @ts-expect-error TS(7023) FIXME: 'getConfig' implicitly has return type 'any' becau... Remove this comment to see the full error message
-  async getConfig(config) {
+  async getConfig(config: {
+    cwd: string
+    token: string | null
+    state: $FIXME
+    offline?: boolean
+    configFilePath?: string
+    packagePath?: string
+    repositoryRoot?: string
+    host?: string
+    pathPrefix?: string
+    scheme?: string
+  }): Promise<ReturnType<typeof resolveConfig>> {
     // the flags that are passed to the command like `--debug` or `--offline`
     const flags = this.opts()
 
