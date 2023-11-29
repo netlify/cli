@@ -6,6 +6,7 @@ import { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 import isEmpty from 'lodash/isEmpty.js'
 import isObject from 'lodash/isObject.js'
+import type { NetlifyAPI } from 'netlify'
 import { parseAllHeaders } from 'netlify-headers-parser'
 import { parseAllRedirects } from 'netlify-redirect-parser'
 import prettyjson from 'prettyjson'
@@ -35,10 +36,9 @@ import { getEnvelopeEnv } from '../../utils/env/index.js'
 import { getFunctionsManifestPath, getInternalFunctionsDir } from '../../utils/functions/index.js'
 import openBrowser from '../../utils/open-browser.js'
 import BaseCommand from '../base-command.js'
+import { checkOptions, injectEnv } from '../build/build.js'
 import { link } from '../link/link.js'
 import { sitesCreate } from '../sites/sites-create.js'
-import { checkOptions, injectEnv } from '../build/build.js'
-import { NetlifyAPI } from 'netlify'
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
 const triggerDeploy = async ({ api, options, siteData, siteId }) => {
@@ -430,7 +430,7 @@ const runDeploy = async ({
       fnDir: functionDirectories,
       functionsConfig,
       // @ts-expect-error TS(2322) FIXME: Type '(event: any) => void' is not assignable to t... Remove this comment to see the full error message
-      statusCb: silent ? () => {} : deployProgressCb(),
+      statusCb: silent ? undefined : deployProgressCb(),
       deployTimeout,
       syncFileLimit: SYNC_FILE_LIMIT,
       // pass an existing deployId to update
@@ -529,9 +529,9 @@ const bundleEdgeFunctions = async (options, command) => {
   // eslint-disable-next-line n/prefer-global/process, unicorn/prefer-set-has
   const argv = process.argv.slice(2)
   const statusCb =
-    options.silent || argv.includes('--json') || argv.includes('--silent') ? () => {} : deployProgressCb()
+    options.silent || argv.includes('--json') || argv.includes('--silent') ? undefined : deployProgressCb()
 
-  statusCb({
+  statusCb?.({
     type: 'edge-functions-bundling',
     msg: 'Bundling edge functions...\n',
     phase: 'start',
@@ -546,7 +546,7 @@ const bundleEdgeFunctions = async (options, command) => {
   })
 
   if (!success) {
-    statusCb({
+    statusCb?.({
       type: 'edge-functions-bundling',
       msg: 'Deploy aborted due to error while bundling edge functions',
       phase: 'error',
@@ -555,7 +555,7 @@ const bundleEdgeFunctions = async (options, command) => {
     exit(severityCode)
   }
 
-  statusCb({
+  statusCb?.({
     type: 'edge-functions-bundling',
     msg: 'Finished bundling edge functions',
     phase: 'stop',

@@ -396,15 +396,14 @@ export const getConfiguration = (workingDir) => {
 export const deploy = async (options: OptionValues, command: BaseCommand) => {
   const { api, cachedConfig, site, siteInfo } = command.netlify
   const { id: siteId } = site
-  // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
   const [token] = await getToken()
+  if (!token) throw new Error('Could not find auth token. Please run netlify login.')
   const workingDir = resolve(command.workingDir)
-  const buildOptions = await getBuildOptions({
+  const buildOptions = getBuildOptions({
     cachedConfig,
     packagePath: command.workspacePackage,
     currentDir: command.workingDir,
     token,
-    // @ts-expect-error TS(2740)
     options,
   })
 

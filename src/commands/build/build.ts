@@ -1,11 +1,12 @@
 import { OptionValues } from 'commander'
+import type { NetlifyAPI } from 'netlify'
 
 import { getBuildOptions, runBuild } from '../../lib/build.js'
 import { detectFrameworkSettings } from '../../utils/build-info.js'
 import { error, exit, getToken } from '../../utils/command-helpers.js'
 import { getEnvelopeEnv } from '../../utils/env/index.js'
 import BaseCommand from '../base-command.js'
-import { NetlifyAPI } from 'netlify'
+
 
 /**
  * @param {import('../../lib/build.js').BuildConfig} options

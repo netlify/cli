@@ -18,7 +18,6 @@ const msg = function (location) {
 }
 
 export const login = async (options: OptionValues, command: BaseCommand) => {
-  // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
   const [accessToken, location] = await getToken()
 
   command.setAnalyticsPayload({ new: options.new })
