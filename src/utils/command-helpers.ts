@@ -50,7 +50,8 @@ const arch = os.arch() === 'ia32' ? 'x86' : os.arch()
 
 const { name, version } = await getPackageJson()
 
-export const USER_AGENT = `${name}/${version} ${platform}-${arch} node-${process.version}`
+export const netlifyCliVersion = version
+export const USER_AGENT = `${name}/${netlifyCliVersion} ${platform}-${arch} node-${process.version}`
 
 /** A list of base command flags that needs to be sorted down on documentation and on help pages */
 const BASE_FLAGS = new Set(['--debug', '--httpProxy', '--httpProxyCertificateFilename'])

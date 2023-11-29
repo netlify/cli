@@ -26,6 +26,7 @@ import {
   exit,
   getToken,
   log,
+  netlifyCliVersion,
   normalizeConfig,
   padLeft,
   pollForToken,
@@ -608,7 +609,8 @@ export default class BaseCommand extends Command {
       token,
       ...apiUrlOpts,
     })
-    const { buildDir, config, configPath, repositoryRoot, siteInfo } = cachedConfig
+    const { buildDir, config, configPath, env, repositoryRoot, siteInfo } = cachedConfig
+    env.NETLIFY_CLI_VERSION = { sources: ['internal'], value: netlifyCliVersion }
     const normalizedConfig = normalizeConfig(config)
     const agent = await getAgent({
       httpProxy: flags.httpProxy,
@@ -694,7 +696,7 @@ export default class BaseCommand extends Command {
    */
   async getConfig(config: {
     cwd: string
-    token: string | null
+    token?: string | null
     state: $FIXME
     offline?: boolean
     configFilePath?: string
