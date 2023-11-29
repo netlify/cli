@@ -831,14 +831,13 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
           path: 'dist/.netlify/blobs/deploy/hello',
           content: 'hello from the blob',
         })
-        .withContentFile({
-          path: 'package.json',
-          content: `{
+        .withPackageJson({
+          packageJson: {
             "dependencies": {
               "@netlify/blobs": "^6.3.0",
               "@netlify/functions": "^2.4.0"
             }
-          }`,
+          },
         })
         .withContentFile({
           path: 'functions/read-blob.ts',
