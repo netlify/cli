@@ -378,7 +378,7 @@ const uploadDeployBlobs = async (
       phase: 'error',
     })
 
-    throw new Error('Error while uploading blobs to deploy store')
+    error('Error while uploading blobs to deploy store')
   }
 
   statusCb({
