@@ -56,6 +56,13 @@ const logExistingAndExit = ({ siteInfo }) => {
 const createNewSiteAndExit = async ({ command, state }) => {
   const siteInfo = await sitesCreate({}, command)
 
+  if (!siteInfo) {
+    log.error('Unable to create site')
+    outro()
+    exit()
+  }
+
+  // @ts-expect-error TS18048: 'siteInfo' is possibly 'undefined'.
   log.success(`"${siteInfo.name}" site was created\n
   To deploy to this site. Run your site build and then ${chalk.cyanBright.bold('netlify deploy')}`)
 
