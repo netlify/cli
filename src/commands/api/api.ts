@@ -3,22 +3,27 @@ import { OptionValues } from 'commander'
 import { methods } from 'netlify'
 
 import { chalk, error, exit, log, logJson } from '../../utils/command-helpers.js'
+import { log as ClackLog, intro, outro } from '../../utils/styles/index.js'
 import BaseCommand from '../base-command.js'
 
 export const apiCommand = async (apiMethod: string, options: OptionValues, command: BaseCommand) => {
   const { api } = command.netlify
 
   if (options.list) {
+    intro('api')
+
     const table = new AsciiTable(`Netlify API Methods`)
     table.setHeading('API Method', 'Docs Link')
     methods.forEach((method) => {
       const { operationId } = method
       table.addRow(operationId, `https://open-api.netlify.com/#operation/${operationId}`)
     })
+
     log(table.toString())
-    log()
-    log('Above is a list of available API methods')
-    log(`To run a method use "${chalk.cyanBright('netlify api methodName')}"`)
+    ClackLog.message(`Above is a list of available API methods
+    To run a method use "${chalk.cyanBright('netlify api methodName')}"`)
+
+    outro()
     exit()
   }
 
