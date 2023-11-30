@@ -61,7 +61,7 @@ describe.skipIf(isWindows)('edge functions', () => {
       expect(params).toEqual({})
       expectTypeOf(requestId).toBeString()
       expect(server).toEqual({ region: 'local' })
-      expect(site).toEqual({ id: 'foo', name: 'site-name', url: `http://127.0.0.1:${devServer.port}` })
+      expect(site).toEqual({ id: 'foo', name: 'site-name', url: `http://localhost:${devServer.port}` })
     })
 
     test<FixtureTestContext>('should expose URL parameters', async ({ devServer }) => {
@@ -146,7 +146,7 @@ describe.skipIf(isWindows)('edge functions', () => {
 
       expect(body.SITE_ID).toBe('foo')
       expect(body.SITE_NAME).toBe('site-name')
-      expect(body.URL).toBe(`http://127.0.0.1:${devServer.port}`)
+      expect(body.URL).toBe(`http://localhost:${devServer.port}`)
     })
   })
 

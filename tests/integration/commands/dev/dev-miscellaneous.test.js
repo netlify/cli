@@ -386,7 +386,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
             t.expect(response.status).toBe(200)
             t.expect(JSON.parse(await response.text())).toStrictEqual({
               deploy: { id: '0' },
-              site: { id: 'site_id', name: 'site-name', url: 'site-url' },
+              site: { id: 'site_id', name: 'site-name', url: server.url },
             })
           },
         )
