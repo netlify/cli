@@ -50,10 +50,18 @@ export const handleProxyRequest = (req, proxyReq) => {
   })
 }
 
-export const createSiteInfoHeader = (siteInfo = {}) => {
-  // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type '{}'.
+// TODO: This should be replaced with a proper type for the entire API response
+// for the site endpoint.
+// See https://github.com/netlify/build/pull/5308.
+interface SiteInfo {
+  id: string
+  name: string
+  url: string
+}
+
+export const createSiteInfoHeader = (siteInfo: SiteInfo, localURL: string) => {
   const { id, name, url } = siteInfo
-  const site = { id, name, url }
+  const site = { id, name, url: localURL ?? url }
   const siteString = JSON.stringify(site)
   return Buffer.from(siteString).toString('base64')
 }
@@ -137,7 +145,8 @@ export const initializeProxy = async ({
   const buildFeatureFlags = {
     edge_functions_npm_modules: true,
   }
-  const runtimeFeatureFlags = ['edge_functions_bootstrap_failure_mode']
+  const runtimeFeatureFlags = ['edge_functions_bootstrap_failure_mode', 'edge_functions_bootstrap_populate_environment']
+  const localURL = `http://${LOCAL_HOST}:${mainPort}`
 
   // Initializes the server, bootstrapping the Deno CLI and downloading it from
   // the network if needed. We don't want to wait for that to be completed, or
@@ -176,7 +185,7 @@ export const initializeProxy = async ({
     // Setting header with geolocation and site info.
     req.headers[headers.Geo] = Buffer.from(JSON.stringify(geoLocation)).toString('base64')
     req.headers[headers.DeployID] = '0'
-    req.headers[headers.Site] = createSiteInfoHeader(siteInfo)
+    req.headers[headers.Site] = createSiteInfoHeader(siteInfo, localURL)
     req.headers[headers.Account] = createAccountInfoHeader({ id: accountId })
 
     if (blobsContext?.edgeURL && blobsContext?.token) {
@@ -187,7 +196,7 @@ export const initializeProxy = async ({
 
     await registry.initialize()
 
-    const url = new URL(req.url, `http://${LOCAL_HOST}:${mainPort}`)
+    const url = new URL(req.url, localURL)
     const { functionNames, invocationMetadata } = registry.matchURLPath(url.pathname, req.method)
 
     if (functionNames.length === 0) {

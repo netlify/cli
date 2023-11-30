@@ -61,7 +61,7 @@ describe.skipIf(isWindows)('edge functions', () => {
       expect(params).toEqual({})
       expectTypeOf(requestId).toBeString()
       expect(server).toEqual({ region: 'local' })
-      expect(site).toEqual({ id: 'foo', name: 'site-name' })
+      expect(site).toEqual({ id: 'foo', name: 'site-name', url: `http://127.0.0.1:${devServer.port}` })
     })
 
     test<FixtureTestContext>('should expose URL parameters', async ({ devServer }) => {
@@ -134,6 +134,19 @@ describe.skipIf(isWindows)('edge functions', () => {
       })
 
       expect(res2.body).toContain('<p>An unhandled error in the function code triggered the following message:</p>')
+    })
+
+    test<FixtureTestContext>('should set the `URL`, `SITE_ID`, and `SITE_NAME` environment variables', async ({
+      devServer,
+    }) => {
+      const body = (await got(`http://localhost:${devServer.port}/echo-env`, {
+        throwHttpErrors: false,
+        retry: { limit: 0 },
+      }).json()) as Record<string, string>
+
+      expect(body.SITE_ID).toBe('foo')
+      expect(body.SITE_NAME).toBe('site-name')
+      expect(body.URL).toBe(`http://127.0.0.1:${devServer.port}`)
     })
   })
 
