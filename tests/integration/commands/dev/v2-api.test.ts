@@ -142,6 +142,13 @@ describe.runIf(gte(version, '18.13.0'))('v2 api', () => {
       expect(await response.text()).toBe(`With expression path: {"sku":"netlify"}`)
     })
 
+    test<FixtureTestContext>('supports preferStatic', async ({ devServer }) => {
+      const url = `http://localhost:${devServer.port}/products/static`
+      const response = await fetch(url)
+      expect(response.status).toBe(200)
+      expect(await response.text()).toBe(`this is a static page\n`)
+    })
+
     test<FixtureTestContext>('should serve the custom path ath the / route as specified in the in source config', async ({
       devServer,
     }) => {
@@ -183,8 +190,8 @@ describe.runIf(gte(version, '18.13.0'))('v2 api', () => {
         const url = `http://localhost:${devServer.port}/v2-to-legacy-without-force`
         const response = await fetch(url)
         expect(response.status).toBe(200)
-        const text = await (await response.text()).trim()
-        expect(text).toBe('/v2-to-legacy-without-force from origin')
+        const text = await response.text()
+        expect(text.trim()).toBe('/v2-to-legacy-without-force from origin')
       })
 
       test<FixtureTestContext>('rewrite to custom URL format with `force: true`', async ({ devServer }) => {
@@ -198,8 +205,8 @@ describe.runIf(gte(version, '18.13.0'))('v2 api', () => {
         const url = `http://localhost:${devServer.port}/v2-to-custom-without-force`
         const response = await fetch(url)
         expect(response.status).toBe(200)
-        const text = await (await response.text()).trim()
-        expect(text).toBe('/v2-to-custom-without-force from origin')
+        const text = await response.text()
+        expect(text.trim()).toBe('/v2-to-custom-without-force from origin')
       })
     })
 

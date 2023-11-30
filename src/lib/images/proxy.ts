@@ -148,7 +148,7 @@ export const initializeProxy = async function ({
     if (!sourceImagePath.startsWith('http://') && !sourceImagePath.startsWith('https://')) {
       // Construct the full URL for relative paths to request from development server
       const sourceImagePathWithLeadingSlash = sourceImagePath.startsWith('/') ? sourceImagePath : `/${sourceImagePath}`
-      const fullImageUrl = `${devServerUrl}/${encodeURIComponent(sourceImagePathWithLeadingSlash)}`
+      const fullImageUrl = `${devServerUrl}${encodeURIComponent(sourceImagePathWithLeadingSlash)}`
       console.log(`fullImageUrl: ${fullImageUrl}`)
       req.url = `/${modifiers}/${fullImageUrl}`
     } else {

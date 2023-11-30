@@ -261,7 +261,7 @@ export class FunctionsRegistry {
    * function with the given name exists, returns an object with the function
    * and the route set to `null`. Otherwise, `undefined` is returned,
    */
-  async getFunctionForURLPath(urlPath: string, method: string) {
+  async getFunctionForURLPath(urlPath: string, method: string, hasStaticFile: () => Promise<boolean>) {
     // We're constructing a URL object just so that we can extract the path from
     // the incoming URL. It doesn't really matter that we don't have the actual
     // local URL with the correct port.
@@ -294,7 +294,7 @@ export class FunctionsRegistry {
     }
 
     for (const func of this.functions.values()) {
-      const route = await func.matchURLPath(url.pathname, method)
+      const route = await func.matchURLPath(url.pathname, method, hasStaticFile)
 
       if (route) {
         return { func, route }

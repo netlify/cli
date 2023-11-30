@@ -4,10 +4,10 @@ import { fileURLToPath } from 'url'
 import fetch from 'node-fetch'
 import { describe, test } from 'vitest'
 
-import { tryAndLogOutput, withDevServer } from '../../utils/dev-server.js'
+import { tryAndLogOutput, withDevServer } from '../../utils/dev-server.ts'
 import got from '../../utils/got.js'
 import { pause } from '../../utils/pause.js'
-import { withSiteBuilder } from '../../utils/site-builder.js'
+import { withSiteBuilder } from '../../utils/site-builder.ts'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
