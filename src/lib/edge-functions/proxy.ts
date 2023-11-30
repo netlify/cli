@@ -146,6 +146,7 @@ export const initializeProxy = async ({
     edge_functions_npm_modules: true,
   }
   const runtimeFeatureFlags = ['edge_functions_bootstrap_failure_mode', 'edge_functions_bootstrap_populate_environment']
+  const protocol = settings.https ? 'https' : 'http'
 
   // Initializes the server, bootstrapping the Deno CLI and downloading it from
   // the network if needed. We don't want to wait for that to be completed, or
@@ -184,7 +185,7 @@ export const initializeProxy = async ({
     // Setting header with geolocation and site info.
     req.headers[headers.Geo] = Buffer.from(JSON.stringify(geoLocation)).toString('base64')
     req.headers[headers.DeployID] = '0'
-    req.headers[headers.Site] = createSiteInfoHeader(siteInfo, `http://localhost:${mainPort}`)
+    req.headers[headers.Site] = createSiteInfoHeader(siteInfo, `${protocol}://localhost:${mainPort}`)
     req.headers[headers.Account] = createAccountInfoHeader({ id: accountId })
 
     if (blobsContext?.edgeURL && blobsContext?.token) {
@@ -204,7 +205,7 @@ export const initializeProxy = async ({
 
     req[headersSymbol] = {
       [headers.FeatureFlags]: getFeatureFlagsHeader(runtimeFeatureFlags),
-      [headers.ForwardedProtocol]: settings.https ? 'https:' : 'http:',
+      [headers.ForwardedProtocol]: `${protocol}:`,
       [headers.Functions]: functionNames.join(','),
       [headers.InvocationMetadata]: getInvocationMetadataHeader(invocationMetadata),
       [headers.IP]: LOCAL_HOST,
