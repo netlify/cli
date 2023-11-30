@@ -1110,7 +1110,10 @@ describe.concurrent('commands/dev-miscellaneous', () => {
               t.expect(bucketKeys.includes('DENO_DEPLOYMENT_ID')).toBe(false)
               t.expect(bucketKeys.includes('NODE_ENV')).toBe(false)
               t.expect(bucketKeys.includes('DEPLOY_URL')).toBe(false)
-              t.expect(bucketKeys.includes('URL')).toBe(false)
+
+              t.expect(bucketKeys.includes('URL')).toBe(true)
+              t.expect(bucketKeys.includes('SITE_ID')).toBe(true)
+              t.expect(bucketKeys.includes('SITE_NAME')).toBe(true)
             })
           },
         )
