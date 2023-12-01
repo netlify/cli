@@ -819,7 +819,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
     })
   })
 
-  test.only('should upload blobs when saved into .netlify directory', async (t) => {
+  test('should upload blobs when saved into .netlify directory', async (t) => {
     await withSiteBuilder('site-with-blobs', async (builder) => {
       await builder
         .withNetlifyToml({
