@@ -1,3 +1,5 @@
+import { rm } from 'node:fs/promises'
+
 import waitPort from 'wait-port'
 
 import { startSpinner, stopSpinner } from '../lib/spinner.js'
@@ -37,6 +39,10 @@ export const startFrameworkServer = async function ({ cwd, settings }) {
   const spinner = startSpinner({
     text: `Waiting for framework port ${settings.frameworkPort}. This can be configured using the 'targetPort' property in the netlify.toml`,
   })
+
+  if (settings.clearDist) {
+    await rm(settings.dist, { recursive: true, force: true })
+  }
 
   runCommand(settings.command, { env: settings.env, spinner, cwd })
 

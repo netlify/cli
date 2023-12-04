@@ -238,28 +238,39 @@ const handleCustomFramework = ({ devConfig, workingDir }) => {
  * @param {string} config.workingDir
  * @param {Partial<import('./types.js').BaseServerSettings>=} config.frameworkSettings
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'devConfig' implicitly has an 'any... Remove this comment to see the full error message
-const mergeSettings = async ({ devConfig, frameworkSettings = {}, workingDir }) => {
-  // @ts-expect-error TS(2339) FIXME: Property 'command' does not exist on type '{}'.
+const mergeSettings = async ({
+  devConfig,
+  frameworkSettings = {},
+  workingDir,
+}: {
+  devConfig: { command?: string; publish?: string; targetPort?: number; base?: string }
+  workingDir: string
+  frameworkSettings?: {
+    baseDirectory?: string
+    command?: string
+    dist?: string
+    env?: Record<string, string>
+    framework?: string
+    frameworkPort?: number
+    pollingStrategies?: string[]
+  }
+}) => {
   const command = devConfig.command || frameworkSettings.command
-  // @ts-expect-error TS(2339) FIXME: Property 'frameworkPort' does not exist on type '{... Remove this comment to see the full error message
   const frameworkPort = devConfig.targetPort || frameworkSettings.frameworkPort
-  // if the framework doesn't start a server, we use a static one
   const useStaticServer = !(command && frameworkPort)
+
+  // workaround for https://github.com/unjs/nitro/issues/1970
+  const clearDist = frameworkSettings.framework?.includes('Nuxt')
   return {
-    // @ts-expect-error TS(2339) FIXME: Property 'baseDirectory' does not exist on type '{... Remove this comment to see the full error message
     baseDirectory: devConfig.base || frameworkSettings.baseDirectory,
     command,
     frameworkPort: useStaticServer ? await getStaticServerPort({ devConfig }) : frameworkPort,
-    // @ts-expect-error TS(2339) FIXME: Property 'dist' does not exist on type '{}'.
     dist: devConfig.publish || frameworkSettings.dist || getDefaultDist(workingDir),
-    // @ts-expect-error TS(2339) FIXME: Property 'framework' does not exist on type '{}'.
     framework: frameworkSettings.framework,
-    // @ts-expect-error TS(2339) FIXME: Property 'env' does not exist on type '{}'.
     env: frameworkSettings.env,
-    // @ts-expect-error TS(2339) FIXME: Property 'pollingStrategies' does not exist on typ... Remove this comment to see the full error message
     pollingStrategies: frameworkSettings.pollingStrategies || [],
     useStaticServer,
+    clearDist,
   }
 }
 
