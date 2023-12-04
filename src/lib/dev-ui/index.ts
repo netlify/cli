@@ -11,6 +11,7 @@ import { UIContext } from './context.js'
 import { handleCreateFunction } from './endpoints/create-function.js'
 import { handleHandshake } from './endpoints/handshake.js'
 import { handleStatus } from './endpoints/status.js'
+import { getFunctions } from './endpoints/get-functions.js'
 
 const DEV_UI_PATH_PREFIX = '/.netlify/dev'
 
@@ -41,6 +42,7 @@ export const initializeProxy = async ({ api, config, projectDir, site, siteInfo,
   })
 
   devUI.post('/', handleHandshake)
+  devUI.get('/functions', getFunctions)
   devUI.post('/create-function', handleCreateFunction.bind(null, context))
   devUI.get('/status', handleStatus.bind(null, context))
 
