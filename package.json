@@ -200,7 +200,7 @@
     "@types/prettyjson": "0.0.30",
     "@types/semver": "7.5.0",
     "@types/uuid": "9.0.7",
-    "@types/ws": "8.5.9",
+    "@types/ws": "8.5.10",
     "@vitest/coverage-v8": "1.0.0-beta.4",
     "c8": "7.14.0",
     "eslint-plugin-sort-destructure-keys": "1.5.0",
