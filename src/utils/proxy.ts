@@ -8,7 +8,6 @@ import path from 'path'
 import util from 'util'
 import zlib from 'zlib'
 
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'cont... Remove this comment to see the full error message
 import contentType from 'content-type'
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'cook... Remove this comment to see the full error message
 import cookie from 'cookie'
@@ -23,6 +22,7 @@ import { locatePath } from 'locate-path'
 import pFilter from 'p-filter'
 import toReadableStream from 'to-readable-stream'
 
+import { DevUIProxy, isDevUIRequest, initializeProxy as initializeDevUIProxy } from '../lib/dev-ui/index.js'
 import {
   handleProxyRequest,
   initializeProxy as initializeEdgeFunctionsProxy,
@@ -36,9 +36,12 @@ import renderErrorTemplate from '../lib/render-error-template.js'
 import { NETLIFYDEVLOG, NETLIFYDEVWARN, log, chalk } from './command-helpers.js'
 import createStreamPromise from './create-stream-promise.js'
 import { headersForPath, parseHeaders, NFFunctionName, NFRequestID, NFFunctionRoute } from './headers.js'
+import { IncomingRequest } from './incoming-request.js'
 import { generateRequestID } from './request-id.js'
 import { createRewriter, onChanges } from './rules-proxy.js'
 import { signRedirect } from './sign-redirect.js'
+
+const BYTES_LIMIT = 30
 
 const gunzip = util.promisify(zlib.gunzip)
 const brotliDecompress = util.promisify(zlib.brotliDecompress)
@@ -657,10 +660,17 @@ const initializeProxy = async function ({ configPath, distDir, env, host, imageP
   return handlers
 }
 
+// TODO: Move properties from the object below into this interface as we type
+// them.
+interface OnRequestOptions {
+  devUIProxy: DevUIProxy
+}
+
 const onRequest = async (
   {
     // @ts-expect-error TS(7031) FIXME: Binding element 'addonsUrls' implicitly has an 'an... Remove this comment to see the full error message
     addonsUrls,
+    devUIProxy,
     // @ts-expect-error TS(7031) FIXME: Binding element 'edgeFunctionsProxy' implicitly ha... Remove this comment to see the full error message
     edgeFunctionsProxy,
     // @ts-expect-error TS(7031) FIXME: Binding element 'env' implicitly has an 'any' type... Remove this comment to see the full error message
@@ -679,16 +689,23 @@ const onRequest = async (
     settings,
     // @ts-expect-error TS(7031) FIXME: Binding element 'siteInfo' implicitly has an 'any'... Remove this comment to see the full error message
     siteInfo,
-  },
-  // @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
-  req,
+  }: OnRequestOptions,
+  req: IncomingRequest,
   // @ts-expect-error TS(7006) FIXME: Parameter 'res' implicitly has an 'any' type.
   res,
 ) => {
-  req.originalBody = ['GET', 'OPTIONS', 'HEAD'].includes(req.method)
+  if (isDevUIRequest(req)) {
+    return devUIProxy(req, res)
+  }
+
+  // Reads the request body and exposes it as a buffer. Note that the location
+  // of this call matters, because from this point forward you can no longer
+  // read `req` as a stream, as it's already been consumed.
+  req.originalBody = ['GET', 'OPTIONS', 'HEAD'].includes(req.method ?? '')
     ? null
     : await createStreamPromise(req, BYTES_LIMIT)
 
+  // @ts-expect-error Req has wrong type
   if (isImageRequest(req)) {
     return imageProxy(req, res)
   }
@@ -844,6 +861,7 @@ export const startProxy = async function ({
     config,
     settings,
   })
+  const devUIProxy = initializeDevUIProxy({ config, projectDir })
   const proxy = await initializeProxy({
     env,
     host: settings.frameworkHost,
@@ -875,10 +893,14 @@ export const startProxy = async function ({
     imageProxy,
     siteInfo,
     env,
+    devUIProxy,
   })
   const primaryServer = settings.https
-    ? https.createServer({ cert: settings.https.cert, key: settings.https.key }, onRequestWithOptions)
-    : http.createServer(onRequestWithOptions)
+    ? https.createServer(
+        { cert: settings.https.cert, key: settings.https.key, IncomingMessage: IncomingRequest },
+        onRequestWithOptions,
+      )
+    : http.createServer({ IncomingMessage: IncomingRequest }, onRequestWithOptions)
   // @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
   const onUpgrade = function onUpgrade(req, socket, head) {
     proxy.ws(req, socket, head)
@@ -894,7 +916,7 @@ export const startProxy = async function ({
   // This lets us run the Deno server on HTTP and avoid the complications of
   // Deno talking to Node on HTTPS with potentially untrusted certificates.
   if (secondaryServerPort) {
-    const secondaryServer = http.createServer(onRequestWithOptions)
+    const secondaryServer = http.createServer({ IncomingMessage: IncomingRequest }, onRequestWithOptions)
 
     secondaryServer.on('upgrade', onUpgrade)
     secondaryServer.listen({ port: secondaryServerPort })
@@ -906,5 +928,3 @@ export const startProxy = async function ({
 
   return getProxyUrl(settings)
 }
-
-const BYTES_LIMIT = 30
