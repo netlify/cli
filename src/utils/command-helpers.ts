@@ -124,8 +124,9 @@ export const pollForToken = async ({ api, ticket }) => {
  * @param {string} [tokenFromOptions] optional token from the provided --auth options
  * @returns {Promise<[null|string, 'flag' | 'env' |'config' |'not found']>}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'tokenFromOptions' implicitly has an 'an... Remove this comment to see the full error message
-export const getToken = async (tokenFromOptions) => {
+export const getToken = async (
+  tokenFromOptions?: string,
+): Promise<[null | string, 'flag' | 'env' | 'config' | 'not found']> => {
   // 1. First honor command flag --auth
   if (tokenFromOptions) {
     return [tokenFromOptions, 'flag']

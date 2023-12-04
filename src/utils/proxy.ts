@@ -801,6 +801,8 @@ export const startProxy = async function ({
   accountId,
   // @ts-expect-error TS(7031) FIXME: Binding element 'addonsUrls' implicitly has an 'an... Remove this comment to see the full error message
   addonsUrls,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'an... Remove this comment to see the full error message
+  api,
   // @ts-expect-error TS(7031) FIXME: Binding element 'blobsContext' implicitly has an '... Remove this comment to see the full error message
   blobsContext,
   // @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'any' t... Remove this comment to see the full error message
@@ -830,8 +832,10 @@ export const startProxy = async function ({
   // @ts-expect-error TS(7031) FIXME: Binding element 'settings' implicitly has an 'any'... Remove this comment to see the full error message
   settings,
   // @ts-expect-error TS(7031) FIXME: Binding element 'siteInfo' implicitly has an 'any'... Remove this comment to see the full error message
+  site,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'siteInfo' implicitly has an 'any' ty... Remove this comment to see the full error message
   siteInfo,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'state' implicitly has an 'any' ty... Remove this comment to see the full error message
+  // @ts-expect-error TS(7031) FIXME: Binding element 'state' implicitly has an 'an... Remove this comment to see the full error message
   state,
 }) {
   const secondaryServerPort = settings.https ? await getAvailablePort() : null
@@ -861,7 +865,7 @@ export const startProxy = async function ({
     config,
     settings,
   })
-  const devUIProxy = initializeDevUIProxy({ config, projectDir })
+  const devUIProxy = await initializeDevUIProxy({ config, projectDir, api, state, siteInfo, site })
   const proxy = await initializeProxy({
     env,
     host: settings.frameworkHost,

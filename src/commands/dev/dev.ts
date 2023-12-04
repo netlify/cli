@@ -203,6 +203,7 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
 
   await startProxyServer({
     addonsUrls,
+    api,
     blobsContext,
     config,
     configPath: configPathOverride,
