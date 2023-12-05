@@ -6,6 +6,7 @@ import * as bundler from '@netlify/edge-bundler'
 import getAvailablePort from 'get-port'
 
 import { NETLIFYDEVERR, chalk, error as printError } from '../../utils/command-helpers.js'
+import { SiteInfo } from '../../utils/site-info.js'
 import { getGeoLocation } from '../geo-location.js'
 import { getPathInProject } from '../settings.js'
 import { startSpinner, stopSpinner } from '../spinner.js'
@@ -48,15 +49,6 @@ export const handleProxyRequest = (req, proxyReq) => {
   Object.entries(req[headersSymbol]).forEach(([header, value]) => {
     proxyReq.setHeader(header, value)
   })
-}
-
-// TODO: This should be replaced with a proper type for the entire API response
-// for the site endpoint.
-// See https://github.com/netlify/build/pull/5308.
-interface SiteInfo {
-  id: string
-  name: string
-  url: string
 }
 
 export const createSiteInfoHeader = (siteInfo: SiteInfo, localURL: string) => {

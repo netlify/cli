@@ -1,5 +1,6 @@
 import { NetlifyConfig } from '@netlify/build'
 
+import { SiteInfo } from '../../utils/site-info.js'
 import StateConfig from '../../utils/state-config.js'
 
 interface Config extends NetlifyConfig {
@@ -11,7 +12,7 @@ export interface UIContext {
   projectDir: string
   api: any
   state: StateConfig
-  siteInfo: any
+  siteInfo: SiteInfo
   globalConfig: Awaited<ReturnType<typeof import('../../utils/get-global-config.js')['default']>>
   site: any
 }

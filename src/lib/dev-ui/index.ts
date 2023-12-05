@@ -5,13 +5,14 @@ import express, { Express } from 'express'
 import { NetlifyAPI } from 'netlify'
 
 import getGlobalConfig from '../../utils/get-global-config.js'
+import { SiteInfo } from '../../utils/site-info.js'
 import StateConfig from '../../utils/state-config.js'
 
 import { UIContext } from './context.js'
 import { handleCreateFunction } from './endpoints/create-function.js'
+import { getFunctions } from './endpoints/get-functions.js'
 import { handleHandshake } from './endpoints/handshake.js'
 import { handleStatus } from './endpoints/status.js'
-import { getFunctions } from './endpoints/get-functions.js'
 
 const DEV_UI_PATH_PREFIX = '/.netlify/dev'
 
@@ -24,7 +25,7 @@ interface InitializeProxyOptions {
   projectDir: string
   api: NetlifyAPI
   state: StateConfig
-  siteInfo: any
+  siteInfo: SiteInfo
   site: any
 }
 
