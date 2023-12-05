@@ -300,7 +300,7 @@ export const watchDebounced = async (
 // @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
 export const getTerminalLink = (text, url) => terminalLink(text, url, { fallback: () => `${text} (${url})` })
 
-export const isNodeError = (err: unknown): err is NodeJS.ErrnoException => error instanceof Error
+export const isNodeError = (err: unknown): err is NodeJS.ErrnoException => err instanceof Error
 
 export const nonNullable = <T>(value: T): value is NonNullable<T> => value !== null && value !== undefined
 
