@@ -6,6 +6,7 @@ import { Request as ExpressRequest, Response as ExpressResponse } from 'express'
 import multiparty from 'multiparty'
 
 import { chalk, isNodeError, log, NETLIFYDEVLOG } from '../../../utils/command-helpers.js'
+import { launchEditor } from '../../../utils/launch-editor.js'
 import { parseForm } from '../../../utils/parse-form.js'
 import { UIContext } from '../context.js'
 
@@ -45,8 +46,9 @@ export const handleCreateFunction = async (context: UIContext, req: ExpressReque
 
   try {
     const { fields, files } = await parseForm(req, form)
-    const fileName = fields?.path[0]
+    const fileName = fields?.path?.[0]
     const notes = fields?.notes ?? []
+    const shouldLaunchEditor = fields?.launchEditor?.[0] === 'true'
 
     if (!fileName) {
       throw new Error("Missing 'path' field")
@@ -63,16 +65,22 @@ export const handleCreateFunction = async (context: UIContext, req: ExpressReque
     await fs.mkdir(basePath, { recursive: true })
 
     const fullPath = await getAvailableFilename(path.parse(path.join(basePath, fileName)))
+    const baseName = path.basename(fullPath)
 
     await fs.rename(file.path, fullPath)
 
-    const message = [`${NETLIFYDEVLOG} Created function ${chalk.yellow(path.basename(fullPath))} in the UI`]
+    const message = [`${NETLIFYDEVLOG} Created function ${chalk.yellow(baseName)} in the UI`]
 
     notes.forEach((note) => {
       message.push(`  - ${note}`)
     })
 
     log(message.join('\n'))
+
+    if (shouldLaunchEditor) {
+      log(`${NETLIFYDEVLOG} Opening ${baseName} in editor...`)
+      launchEditor(fullPath)
+    }
 
     res.status(202).end()
   } catch (error: unknown) {
