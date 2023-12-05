@@ -1,6 +1,7 @@
 import { Request as ExpressRequest, Response as ExpressResponse } from 'express'
 
 import getPackageJson from '../../../utils/get-package-json.js'
+import { UIContext } from '../context.js'
 
 const { name, version } = await getPackageJson()
 
@@ -12,6 +13,12 @@ const FEATURES = [
   },
 ]
 
-export const handleHandshake = (_: ExpressRequest, res: ExpressResponse) => {
-  res.json({ name, version, features: FEATURES })
+export const handleHandshake = (context: UIContext, _: ExpressRequest, res: ExpressResponse) => {
+  res.json({
+    name,
+    version,
+    features: FEATURES,
+    siteId: context.site?.id,
+    userId: context.globalConfig.get('userId'),
+  })
 }
