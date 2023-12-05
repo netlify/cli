@@ -28,13 +28,15 @@ export const handleCreateFunction = async (context: UIContext, req: ExpressReque
     }
 
     const basePath = context.config.functionsDirectory ?? path.join(context.projectDir, 'netlify/functions')
+
+    await fs.mkdir(basePath, { recursive: true })
+
     const fullPath = path.join(basePath, fileName)
 
     await fs.rename(file.path, fullPath)
 
     res.status(202).end()
   } catch (error: unknown) {
-    console.error(error)
     const message = isNodeError(error) ? error.message : ''
 
     res.status(500).send(`Could not parse request: ${message}`)
