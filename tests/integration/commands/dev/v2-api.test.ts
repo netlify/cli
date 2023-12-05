@@ -5,7 +5,6 @@ import { gte } from 'semver'
 import { describe, expect, test } from 'vitest'
 
 import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
-import got from '../../utils/got.js'
 
 const siteInfo = {
   account_id: 'mock-account-id',
@@ -29,13 +28,10 @@ const setup = async ({ fixture }) => {
 describe.runIf(gte(version, '18.13.0')).concurrent('v2 api', () => {
   setupFixtureTests('dev-server-with-v2-functions', { devServer: true, mockApi: { routes }, setup }, () => {
     test<FixtureTestContext>('should successfully be able to run v2 functions', async ({ devServer }) => {
-      const response = await got(`http://localhost:${devServer.port}/.netlify/functions/ping`, {
-        throwHttpErrors: false,
-        retry: { limit: 0 },
-      })
+      const response = await fetch(`http://localhost:${devServer.port}/.netlify/functions/ping`)
 
-      expect(response.statusCode).toBe(200)
-      expect(response.body).toBe('pong')
+      expect(response.status).toBe(200)
+      expect(await response.text()).toBe('pong')
     })
 
     test<FixtureTestContext>('supports streamed responses', async ({ devServer }) => {
