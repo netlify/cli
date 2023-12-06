@@ -19,6 +19,7 @@ export const handleHandshake = (context: UIContext, _: ExpressRequest, res: Expr
     version,
     features: FEATURES,
     siteId: context.site?.id,
+    siteName: context.siteInfo?.name,
     userId: context.globalConfig.get('userId'),
   })
 }
