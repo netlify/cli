@@ -345,6 +345,55 @@ const deployProgressCb = function () {
   }
 }
 
+const uploadDeployBlobs = async ({
+  cachedConfig,
+  deployId,
+  options,
+  silent,
+  siteId,
+}: {
+  cachedConfig: any
+  deployId: string
+  options: OptionValues
+  silent: boolean
+  siteId: string
+}) => {
+  const statusCb = silent ? () => {} : deployProgressCb()
+
+  statusCb({
+    type: 'blobs-uploading',
+    msg: 'Uploading blobs to deploy store...\n',
+    phase: 'start',
+  })
+
+  const [token] = await getToken(false)
+
+  const { success } = await runCoreSteps(['blobs_upload'], {
+    ...options,
+    quiet: silent,
+    cachedConfig,
+    deployId,
+    siteId,
+    token,
+  })
+
+  if (!success) {
+    statusCb({
+      type: 'blobs-uploading',
+      msg: 'Deploy aborted due to error while uploading blobs to deploy store',
+      phase: 'error',
+    })
+
+    error('Error while uploading blobs to deploy store')
+  }
+
+  statusCb({
+    type: 'blobs-uploading',
+    msg: 'Finished uploading blobs to deploy store',
+    phase: 'stop',
+  })
+}
+
 const runDeploy = async ({
   // @ts-expect-error TS(7031) FIXME: Binding element 'alias' implicitly has an 'any' ty... Remove this comment to see the full error message
   alias,
@@ -364,6 +413,8 @@ const runDeploy = async ({
   functionsConfig,
   // @ts-expect-error TS(7031) FIXME: Binding element 'functionsFolder' implicitly has a... Remove this comment to see the full error message
   functionsFolder,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'options' implicitly has an 'a... Remove this comment to see the full error message
+  options,
   // @ts-expect-error TS(7031) FIXME: Binding element 'packagePath' implicitly has an 'a... Remove this comment to see the full error message
   packagePath,
   // @ts-expect-error TS(7031) FIXME: Binding element 'silent' implicitly has an 'any' t... Remove this comment to see the full error message
@@ -421,6 +472,7 @@ const runDeploy = async ({
     })
 
     config.headers = headers
+    uploadDeployBlobs({ deployId, siteId, silent, options, cachedConfig: command.netlify.cachedConfig })
 
     results = await deploySite(api, siteId, deployFolder, {
       config,
@@ -690,6 +742,7 @@ const prepAndRunDeploy = async ({
     functionsConfig,
     // pass undefined functionsFolder if doesn't exist
     functionsFolder: functionsFolderStat && functionsFolder,
+    options,
     packagePath: command.workspacePackage,
     silent: options.json || options.silent,
     site,
