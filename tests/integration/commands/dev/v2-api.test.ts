@@ -57,6 +57,11 @@ describe.runIf(gte(version, '18.13.0'))('v2 api', () => {
       expect(thirdChunk.done).toBeTruthy()
     })
 
+    test.only<FixtureTestContext>('supports streamed responses with content-length', async ({ devServer }) => {
+      const response = await fetch(`http://localhost:${devServer.port}/.netlify/functions/stream-with-contentlength`)
+      expect(response.status).toBe(200)
+    })
+
     test<FixtureTestContext>('receives context', async ({ devServer }) => {
       const response = await fetch(`http://localhost:${devServer.port}/.netlify/functions/context`, {
         headers: {
