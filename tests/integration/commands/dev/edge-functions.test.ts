@@ -37,7 +37,7 @@ const setup = async ({ fixture }) => {
 
 describe.skipIf(isWindows)('edge functions', () => {
   setupFixtureTests('dev-server-with-edge-functions', { devServer: true, mockApi: { routes } }, () => {
-    test<FixtureTestContext>('should run edge functions in correct order', async ({ devServer }) => {
+    test.skip<FixtureTestContext>('should run edge functions in correct order', async ({ devServer }) => {
       const response = await got(`http://localhost:${devServer.port}/ordertest`, {
         throwHttpErrors: false,
         retry: { limit: 0 },

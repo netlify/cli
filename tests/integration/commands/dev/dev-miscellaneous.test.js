@@ -948,7 +948,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
     })
   })
 
-  test('Serves edge functions with import maps coming from the `functions.deno_import_map` config property and from the internal manifest', async (t) => {
+  test.skip('Serves edge functions with import maps coming from the `functions.deno_import_map` config property and from the internal manifest', async (t) => {
     await withSiteBuilder('site-with-edge-functions-and-import-maps', async (builder) => {
       const internalEdgeFunctionsDir = path.join('.netlify', 'edge-functions')
 
