@@ -40,6 +40,33 @@ const getAvailableFilename = async (originalPath: path.ParsedPath, suffix = 0): 
   }
 }
 
+interface FunctionType {
+  basePath: string
+  name: string
+}
+
+const getFunctionType = (context: UIContext, typeField?: string[]): FunctionType => {
+  const [typeFieldValue = 'serverless'] = typeField ?? []
+
+  switch (typeFieldValue) {
+    case 'edge':
+      return {
+        // @ts-expect-error TODO: add type for `build.edge_functions`
+        basePath: context.config.build.edge_functions ?? path.join(context.projectDir, 'netlify/edge-functions'),
+        name: 'edge function',
+      }
+
+    case 'serverless':
+      return {
+        basePath: context.config.functionsDirectory ?? path.join(context.projectDir, 'netlify/functions'),
+        name: 'function',
+      }
+
+    default:
+      throw new Error(`${typeFieldValue} is not a supported function type`)
+  }
+}
+
 export const handleCreateFunction = async (context: UIContext, req: ExpressRequest, res: ExpressResponse) => {
   const contentType = parseContentType(req)
   const form = new multiparty.Form({ encoding: contentType.parameters.charset ?? 'utf8' })
@@ -60,16 +87,16 @@ export const handleCreateFunction = async (context: UIContext, req: ExpressReque
       throw new Error("Missing 'function' file")
     }
 
-    const basePath = context.config.functionsDirectory ?? path.join(context.projectDir, 'netlify/functions')
+    const type = getFunctionType(context, fields.type)
 
-    await fs.mkdir(basePath, { recursive: true })
+    await fs.mkdir(type.basePath, { recursive: true })
 
-    const fullPath = await getAvailableFilename(path.parse(path.join(basePath, fileName)))
+    const fullPath = await getAvailableFilename(path.parse(path.join(type.basePath, fileName)))
     const baseName = path.basename(fullPath)
 
     await fs.rename(file.path, fullPath)
 
-    const message = [`${NETLIFYDEVLOG} Created function ${chalk.yellow(baseName)} in the UI`]
+    const message = [`${NETLIFYDEVLOG} Created ${type.name} ${chalk.yellow(baseName)} in the UI`]
 
     notes.forEach((note) => {
       message.push(`  - ${note}`)
