@@ -865,7 +865,7 @@ export const startProxy = async function ({
     config,
     settings,
   })
-  const devUIProxy = await initializeDevUIProxy({ config, projectDir, api, state, siteInfo, site })
+  const devUIProxy = await initializeDevUIProxy({ config, projectDir, api, state, siteInfo, site, functionsRegistry })
   const proxy = await initializeProxy({
     env,
     host: settings.frameworkHost,
