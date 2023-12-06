@@ -2,11 +2,13 @@ import type http from 'http'
 
 import { NetlifyConfig } from '@netlify/build'
 import express, { Express } from 'express'
+import { Request as ExpressRequest, Response as ExpressResponse } from 'express'
 import { NetlifyAPI } from 'netlify'
 
 import getGlobalConfig from '../../utils/get-global-config.js'
 import { SiteInfo } from '../../utils/site-info.js'
 import StateConfig from '../../utils/state-config.js'
+import { launchEditor } from '../../utils/launch-editor.js'
 import { FunctionsRegistry } from '../functions/registry.js'
 
 import { UIContext } from './context.js'
@@ -45,6 +47,7 @@ export const initializeProxy = async ({
   const globalConfig = await getGlobalConfig()
   const context: UIContext = { config, projectDir, api, state, siteInfo, globalConfig, site, functionsRegistry }
 
+  devUI.use(express.json())
   app.use(DEV_UI_PATH_PREFIX, (req, res, next) => {
     // TODO: Scope this down to `app.netlify.com`.
     res.set('Access-Control-Allow-Origin', '*')
@@ -56,6 +59,10 @@ export const initializeProxy = async ({
   devUI.get('/functions', getFunctions)
   devUI.post('/create-function', handleCreateFunction.bind(null, context))
   devUI.get('/list-functions', listFunctions.bind(null, context))
+  devUI.post('/open-editor', async (req: ExpressRequest, res: ExpressResponse) => {
+    launchEditor(req.body.filePath)
+    res.status(200).send('')
+  })
 
   return app
 }

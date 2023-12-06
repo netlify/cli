@@ -12,7 +12,8 @@ export const listFunctions = async (context: UIContext, _: ExpressRequest, res: 
       return {
         name: func.name,
         displayName: func.displayName,
-        mainFile: func.mainFile.replace((func as any).projectRoot, ''),
+        mainFileRelative: func.mainFile.replace((func as any).projectRoot, ''),
+        mainFilePath: func.mainFile,
         routes: (func as any).buildData.routes,
         // @ts-expect-error
         config: func.config,
