@@ -824,8 +824,12 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
       await builder
         .withNetlifyToml({
           config: {
-            build: { functions: 'functions' },
+            build: { functions: 'functions', publish: 'dist' },
           },
+        })
+        .withContentFile({
+          path: 'dist/index.html',
+          content: '<a href="/read-blob">get blob</a>',
         })
         .withContentFile({
           path: '.netlify/blobs/deploy/hello',
@@ -843,18 +847,18 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
           path: 'functions/read-blob.ts',
           content: `
   import { getDeployStore } from "@netlify/blobs"
-  import { Config, Context } from "@netlify/functions"
-  
-  export default async (req: Request, context: Context) => {
+  import { Config } from "@netlify/functions"
+
+  export default async () => {
     const store = getDeployStore()
     const blob = await store.get('hello')
-  
+
     return new Response(blob)
   }
-  
+
   export const config: Config = {
     path: "/read-blob"
-  }       
+  }
           `,
         })
         .build()
