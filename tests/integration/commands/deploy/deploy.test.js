@@ -828,7 +828,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
           },
         })
         .withContentFile({
-          path: 'dist/.netlify/blobs/deploy/hello',
+          path: '.netlify/blobs/deploy/hello',
           content: 'hello from the blob',
         })
         .withPackageJson({
