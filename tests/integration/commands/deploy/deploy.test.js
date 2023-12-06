@@ -824,7 +824,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
       await builder
         .withNetlifyToml({
           config: {
-            build: { publish: 'dist', functions: 'functions' },
+            build: { functions: 'functions' },
           },
         })
         .withContentFile({
@@ -857,7 +857,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
   }       
           `,
         })
-        .buildAsync()
+        .build()
 
       await execa.command('npm install', { cwd: builder.directory })
       const { deploy_url: deployUrl } = await callCli(
