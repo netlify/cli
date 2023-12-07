@@ -1,5 +1,6 @@
 import { join } from 'path'
 import { fileURLToPath } from 'url'
+import { readFile } from 'fs/promises'
 
 import type { Declaration, EdgeFunction, FunctionConfig, Manifest, ModuleGraph } from '@netlify/edge-bundler'
 
@@ -487,10 +488,33 @@ export class EdgeFunctionsRegistry {
     return join(this.projectDir, getPathInProject([INTERNAL_EDGE_FUNCTIONS_FOLDER]))
   }
 
+  private async readDeployConfig() {
+    const manifestPath = join(this.internalDirectory, 'manifest.json')
+    try {
+      const contents = await readFile(manifestPath, 'utf8')
+      const manifest = JSON.parse(contents)
+      return manifest
+    } catch {}
+  }
+
+  private async scanForDeployConfig() {
+    const deployConfig = await this.readDeployConfig()
+    if (!deployConfig) {
+      return
+    }
+
+    if (deployConfig.version !== 1) {
+      throw new Error('Unsupported manifest format')
+    }
+
+    this.declarationsFromDeployConfig = deployConfig.functions
+  }
+
   private async scanForFunctions() {
     const [internalFunctions, userFunctions] = await Promise.all([
       this.bundler.find([this.internalDirectory]),
       this.bundler.find(this.directories),
+      this.scanForDeployConfig(),
     ])
     const functions = [...internalFunctions, ...userFunctions]
     const newFunctions = functions.filter((func) => {

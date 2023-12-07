@@ -1,4 +1,6 @@
 import process from 'process'
+import { rename } from 'fs/promises'
+import { join } from 'path'
 
 import execa from 'execa'
 import { describe, expect, expectTypeOf, test } from 'vitest'
@@ -31,13 +33,17 @@ const routes = [
   },
 ]
 
-const setup = async ({ fixture }) => {
+const setup = async ({ fixture }: FixtureTestContext) => {
   await execa('npm', ['install'], { cwd: fixture.directory })
 }
 
+const recreateEdgeFunctions = async ({ fixture }: FixtureTestContext) => {
+  await rename(join(fixture.directory, ".netlify",'_edge-functions'), join(fixture.directory, ".netlify",'edge-functions'))
+}
+
 describe.skipIf(isWindows)('edge functions', () => {
-  setupFixtureTests('dev-server-with-edge-functions', { devServer: true, mockApi: { routes } }, () => {
-    test.skip<FixtureTestContext>('should run edge functions in correct order', async ({ devServer }) => {
+  setupFixtureTests('dev-server-with-edge-functions', { devServer: true, mockApi: { routes }, setupAfterDev: recreateEdgeFunctions }, () => {
+    test<FixtureTestContext>('should run edge functions in correct order', async ({ devServer }) => {
       const response = await got(`http://localhost:${devServer.port}/ordertest`, {
         throwHttpErrors: false,
         retry: { limit: 0 },
