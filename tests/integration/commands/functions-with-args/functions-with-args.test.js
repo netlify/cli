@@ -494,7 +494,7 @@ exports.handler = async () => ({
     })
   })
 
-  test.skip('Serves functions from the internal functions directory', async (t) => {
+  test('Serves functions from the internal functions directory', async (t) => {
     await withSiteBuilder('function-internal', async (builder) => {
       const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
@@ -506,17 +506,22 @@ exports.handler = async () => ({
             ...bundlerConfig,
           },
         })
-        .withFunction({
-          path: 'hello.js',
-          pathPrefix: '.netlify/functions-internal',
-          handler: async () => ({
-            statusCode: 200,
-            body: 'Internal',
-          }),
-        })
-        .buildAsync()
+        .build()
 
       await withDevServer({ cwd: builder.directory, args }, async ({ outputBuffer, port, waitForLogMatching }) => {
+        await builder
+          .withFunction({
+            path: 'hello.js',
+            pathPrefix: '.netlify/functions-internal',
+            handler: async () => ({
+              statusCode: 200,
+              body: 'Internal',
+            }),
+          })
+          .build()
+
+        await pause(WAIT_WRITE)
+
         await tryAndLogOutput(async () => {
           t.expect(await fetch(`http://localhost:${port}/.netlify/functions/hello`).then((res) => res.text())).toEqual(
             'Internal',

@@ -58,7 +58,5 @@ export const getInternalFunctionsDir = async ({ base, ensureExists, packagePath 
     await fs.mkdir(path, { recursive: true })
   }
 
-  const isDirectory = await isDirectoryAsync(path)
-
-  return isDirectory ? path : null
+  return path
 }
