@@ -44,14 +44,16 @@ export const getFunctionsServePath = ({ base, packagePath = '' }) => {
 
 /**
  * Retrieves the internal functions directory and creates it if ensureExists is provided
- * @param {object} config
- * @param {string} config.base
- * @param {boolean=} config.ensureExists
- * @param {string} config.packagePath
- * @returns
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'base' implicitly has an 'any' typ... Remove this comment to see the full error message
-export const getInternalFunctionsDir = async ({ base, ensureExists, packagePath = '' }) => {
+export const getInternalFunctionsDir = async ({
+  base,
+  ensureExists,
+  packagePath = '',
+}: {
+  base: string
+  ensureExists?: boolean
+  packagePath?: string
+}) => {
   const path = resolve(base, packagePath, getPathInProject([INTERNAL_FUNCTIONS_FOLDER]))
 
   if (ensureExists) {

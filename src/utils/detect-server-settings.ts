@@ -8,7 +8,6 @@ import getPort from 'get-port'
 import { detectFrameworkSettings } from './build-info.js'
 import { NETLIFYDEVWARN, chalk, log } from './command-helpers.js'
 import { acquirePort } from './dev.js'
-import { getInternalFunctionsDir } from './functions/functions.js'
 import { getPluginsToAutoInstall } from './init/utils.js'
 
 /** @param {string} str */
@@ -342,9 +341,6 @@ const detectServerSettings = async (devConfig, flags, command) => {
   })
   // @ts-expect-error TS(2339) FIXME: Property 'functions' does not exist on type '{}'.
   const functionsDir = devConfig.functions || settings.functions
-  // @ts-expect-error TS(2345) FIXME: Argument of type '{ base: any; }' is not assignabl... Remove this comment to see the full error message
-  const internalFunctionsDir = await getInternalFunctionsDir({ base: command.workingDir })
-  const shouldStartFunctionsServer = Boolean(functionsDir || internalFunctionsDir)
 
   return {
     ...settings,
@@ -352,7 +348,7 @@ const detectServerSettings = async (devConfig, flags, command) => {
     jwtSecret: devConfig.jwtSecret || 'secret',
     jwtRolePath: devConfig.jwtRolePath || 'app_metadata.authorization.roles',
     functions: functionsDir,
-    ...(shouldStartFunctionsServer && { functionsPort: await getPort({ port: devConfig.functionsPort || 0 }) }),
+    functionsPort: await getPort({ port: devConfig.functionsPort || 0 }),
     ...(devConfig.https && { https: await readHttpsSettings(devConfig.https) }),
   }
 }
