@@ -469,7 +469,9 @@ export class FunctionsRegistry {
    * care of registering and unregistering functions as they come and go.
    */
   async scan(relativeDirs: (string | undefined)[]) {
-    const directories = relativeDirs.filter((dir): dir is string => Boolean(dir)).map((dir) => (isAbsolute(dir) ? dir : join(this.projectRoot, dir)))
+    const directories = relativeDirs
+      .filter((dir): dir is string => Boolean(dir))
+      .map((dir) => (isAbsolute(dir) ? dir : join(this.projectRoot, dir)))
 
     // check after filtering to filter out [undefined] for example
     if (directories.length === 0) {

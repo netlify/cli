@@ -38,123 +38,130 @@ const setup = async ({ fixture }: FixtureTestContext) => {
 }
 
 const recreateEdgeFunctions = async ({ fixture }: FixtureTestContext) => {
-  await rename(join(fixture.directory, ".netlify",'_edge-functions'), join(fixture.directory, ".netlify",'edge-functions'))
+  await rename(
+    join(fixture.directory, '.netlify', '_edge-functions'),
+    join(fixture.directory, '.netlify', 'edge-functions'),
+  )
 }
 
 describe.skipIf(isWindows)('edge functions', () => {
-  setupFixtureTests('dev-server-with-edge-functions', { devServer: true, mockApi: { routes }, setupAfterDev: recreateEdgeFunctions }, () => {
-    test<FixtureTestContext>('should run edge functions in correct order', async ({ devServer }) => {
-      const response = await got(`http://localhost:${devServer.port}/ordertest`, {
-        throwHttpErrors: false,
-        retry: { limit: 0 },
+  setupFixtureTests(
+    'dev-server-with-edge-functions',
+    { devServer: true, mockApi: { routes }, setupAfterDev: recreateEdgeFunctions },
+    () => {
+      test<FixtureTestContext>('should run edge functions in correct order', async ({ devServer }) => {
+        const response = await got(`http://localhost:${devServer.port}/ordertest`, {
+          throwHttpErrors: false,
+          retry: { limit: 0 },
+        })
+
+        expect(response.statusCode).toBe(200)
+        expect(response.body).toMatchSnapshot()
       })
 
-      expect(response.statusCode).toBe(200)
-      expect(response.body).toMatchSnapshot()
-    })
+      test<FixtureTestContext>('should provide context properties', async ({ devServer }) => {
+        const response = await got(`http://localhost:${devServer.port}/context`, {
+          throwHttpErrors: false,
+          retry: { limit: 0 },
+        })
 
-    test<FixtureTestContext>('should provide context properties', async ({ devServer }) => {
-      const response = await got(`http://localhost:${devServer.port}/context`, {
-        throwHttpErrors: false,
-        retry: { limit: 0 },
+        const { deploy, geo, ip, params, requestId, server, site } = JSON.parse(response.body)
+        expect(geo.city).toEqual('Mock City')
+        expect(geo.country.code).toEqual('DE')
+        expect(deploy).toEqual({ id: '0' })
+        expectTypeOf(ip).toBeString()
+        expect(params).toEqual({})
+        expectTypeOf(requestId).toBeString()
+        expect(server).toEqual({ region: 'local' })
+        expect(site).toEqual({ id: 'foo', name: 'site-name', url: `http://localhost:${devServer.port}` })
       })
 
-      const { deploy, geo, ip, params, requestId, server, site } = JSON.parse(response.body)
-      expect(geo.city).toEqual('Mock City')
-      expect(geo.country.code).toEqual('DE')
-      expect(deploy).toEqual({ id: '0' })
-      expectTypeOf(ip).toBeString()
-      expect(params).toEqual({})
-      expectTypeOf(requestId).toBeString()
-      expect(server).toEqual({ region: 'local' })
-      expect(site).toEqual({ id: 'foo', name: 'site-name', url: `http://localhost:${devServer.port}` })
-    })
+      test<FixtureTestContext>('should expose URL parameters', async ({ devServer }) => {
+        const response = await got(`http://localhost:${devServer.port}/categories/foo/products/bar`, {
+          throwHttpErrors: false,
+          retry: { limit: 0 },
+        })
 
-    test<FixtureTestContext>('should expose URL parameters', async ({ devServer }) => {
-      const response = await got(`http://localhost:${devServer.port}/categories/foo/products/bar`, {
-        throwHttpErrors: false,
-        retry: { limit: 0 },
+        const { params } = JSON.parse(response.body)
+        expect(params).toEqual({
+          category: 'foo',
+          product: 'bar',
+        })
       })
 
-      const { params } = JSON.parse(response.body)
-      expect(params).toEqual({
-        category: 'foo',
-        product: 'bar',
-      })
-    })
+      test<FixtureTestContext>('should expose URL parameters to edge functions with `cache: "manual"`', async ({
+        devServer,
+      }) => {
+        const response = await got(`http://localhost:${devServer.port}/categories-after-cache/foo/products/bar`, {
+          throwHttpErrors: false,
+          retry: { limit: 0 },
+        })
 
-    test<FixtureTestContext>('should expose URL parameters to edge functions with `cache: "manual"`', async ({
-      devServer,
-    }) => {
-      const response = await got(`http://localhost:${devServer.port}/categories-after-cache/foo/products/bar`, {
-        throwHttpErrors: false,
-        retry: { limit: 0 },
-      })
-
-      const { params } = JSON.parse(response.body)
-      expect(params).toEqual({
-        category: 'foo',
-        product: 'bar',
-      })
-    })
-
-    test<FixtureTestContext>('should respect config.methods field', async ({ devServer }) => {
-      const responseGet = await got(`http://localhost:${devServer.port}/products/really-bad-product`, {
-        method: 'GET',
-        throwHttpErrors: false,
-        retry: { limit: 0 },
+        const { params } = JSON.parse(response.body)
+        expect(params).toEqual({
+          category: 'foo',
+          product: 'bar',
+        })
       })
 
-      expect(responseGet.statusCode).toBe(404)
+      test<FixtureTestContext>('should respect config.methods field', async ({ devServer }) => {
+        const responseGet = await got(`http://localhost:${devServer.port}/products/really-bad-product`, {
+          method: 'GET',
+          throwHttpErrors: false,
+          retry: { limit: 0 },
+        })
 
-      const responseDelete = await got(`http://localhost:${devServer.port}/products/really-bad-product`, {
-        method: 'DELETE',
-        throwHttpErrors: false,
-        retry: { limit: 0 },
+        expect(responseGet.statusCode).toBe(404)
+
+        const responseDelete = await got(`http://localhost:${devServer.port}/products/really-bad-product`, {
+          method: 'DELETE',
+          throwHttpErrors: false,
+          retry: { limit: 0 },
+        })
+
+        expect(responseDelete.body).toEqual('Deleted item successfully: really-bad-product')
       })
 
-      expect(responseDelete.body).toEqual('Deleted item successfully: really-bad-product')
-    })
+      test<FixtureTestContext>('should show an error page when an edge function has an uncaught exception', async ({
+        devServer,
+      }) => {
+        // Request #1: Plain text
+        const res1 = await got(`http://localhost:${devServer.port}/uncaught-exception`, {
+          method: 'GET',
+          throwHttpErrors: false,
+          retry: { limit: 0 },
+        })
 
-    test<FixtureTestContext>('should show an error page when an edge function has an uncaught exception', async ({
-      devServer,
-    }) => {
-      // Request #1: Plain text
-      const res1 = await got(`http://localhost:${devServer.port}/uncaught-exception`, {
-        method: 'GET',
-        throwHttpErrors: false,
-        retry: { limit: 0 },
+        expect(res1.statusCode).toBe(500)
+        expect(res1.body).toContain('ReferenceError: thisWillThrow is not defined')
+
+        // Request #2: HTML
+        const res2 = await got(`http://localhost:${devServer.port}/uncaught-exception`, {
+          method: 'GET',
+          headers: {
+            Accept: 'text/html',
+          },
+          throwHttpErrors: false,
+          retry: { limit: 0 },
+        })
+
+        expect(res2.body).toContain('<p>An unhandled error in the function code triggered the following message:</p>')
       })
 
-      expect(res1.statusCode).toBe(500)
-      expect(res1.body).toContain('ReferenceError: thisWillThrow is not defined')
+      test<FixtureTestContext>('should set the `URL`, `SITE_ID`, and `SITE_NAME` environment variables', async ({
+        devServer,
+      }) => {
+        const body = (await got(`http://localhost:${devServer.port}/echo-env`, {
+          throwHttpErrors: false,
+          retry: { limit: 0 },
+        }).json()) as Record<string, string>
 
-      // Request #2: HTML
-      const res2 = await got(`http://localhost:${devServer.port}/uncaught-exception`, {
-        method: 'GET',
-        headers: {
-          Accept: 'text/html',
-        },
-        throwHttpErrors: false,
-        retry: { limit: 0 },
+        expect(body.SITE_ID).toBe('foo')
+        expect(body.SITE_NAME).toBe('site-name')
+        expect(body.URL).toBe(`http://localhost:${devServer.port}`)
       })
-
-      expect(res2.body).toContain('<p>An unhandled error in the function code triggered the following message:</p>')
-    })
-
-    test<FixtureTestContext>('should set the `URL`, `SITE_ID`, and `SITE_NAME` environment variables', async ({
-      devServer,
-    }) => {
-      const body = (await got(`http://localhost:${devServer.port}/echo-env`, {
-        throwHttpErrors: false,
-        retry: { limit: 0 },
-      }).json()) as Record<string, string>
-
-      expect(body.SITE_ID).toBe('foo')
-      expect(body.SITE_NAME).toBe('site-name')
-      expect(body.URL).toBe(`http://localhost:${devServer.port}`)
-    })
-  })
+    },
+  )
 
   setupFixtureTests('dev-server-with-edge-functions', { devServer: true, mockApi: { routes } }, () => {
     test<FixtureTestContext>('should not remove other edge functions on change', async ({ devServer, fixture }) => {
