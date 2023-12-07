@@ -60,6 +60,7 @@ export class EdgeFunctionsRegistry {
   private runIsolate: RunIsolate
   private servePath: string
   private userFunctions: EdgeFunction[] = []
+  private projectDir: string
 
   constructor({
     bundler,
@@ -81,6 +82,7 @@ export class EdgeFunctionsRegistry {
     this.getUpdatedConfig = getUpdatedConfig
     this.runIsolate = runIsolate
     this.servePath = servePath
+    this.projectDir = projectDir
 
     this.declarationsFromDeployConfig = internalFunctions
     this.declarationsFromTOML = EdgeFunctionsRegistry.getDeclarationsFromTOML(config)
@@ -95,7 +97,7 @@ export class EdgeFunctionsRegistry {
 
     this.initialScan = this.doInitialScan()
 
-    this.setupWatchers(projectDir)
+    this.setupWatchers()
   }
 
   private async doInitialScan() {
@@ -508,7 +510,7 @@ export class EdgeFunctionsRegistry {
     return { all: functions, new: newFunctions, deleted: deletedFunctions }
   }
 
-  private async setupWatchers(projectDir: string) {
+  private async setupWatchers() {
     if (!this.configPath) {
       return
     }
@@ -529,18 +531,18 @@ export class EdgeFunctionsRegistry {
     // directories, they might be importing files that are located in
     // parent directories. So we watch the entire project directory for
     // changes.
-    await this.setupWatcherForDirectory(projectDir)
+    await this.setupWatcherForDirectory()
   }
 
-  private async setupWatcherForDirectory(directory: string) {
+  private async setupWatcherForDirectory() {
     const ignored = [`${this.servePath}/**`]
-    const watcher = await watchDebounced(directory, {
+    const watcher = await watchDebounced(this.projectDir, {
       ignored,
       onAdd: () => this.checkForAddedOrDeletedFunctions(),
       onChange: (paths) => this.handleFileChange(paths),
       onUnlink: () => this.checkForAddedOrDeletedFunctions(),
     })
 
-    this.directoryWatchers.set(directory, watcher)
+    this.directoryWatchers.set(this.projectDir, watcher)
   }
 }

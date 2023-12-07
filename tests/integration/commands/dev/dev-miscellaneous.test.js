@@ -895,7 +895,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
     })
   })
 
-  test.skip('should respect in-source configuration from internal edge functions', async (t) => {
+  test.only('should respect in-source configuration from internal edge functions', async (t) => {
     await withSiteBuilder('site-with-internal-edge-functions', async (builder) => {
       const publicDir = 'public'
       await builder
@@ -906,16 +906,20 @@ describe.concurrent('commands/dev-miscellaneous', () => {
             },
           },
         })
-        .withEdgeFunction({
-          config: { path: '/internal-1' },
-          handler: () => new Response('Hello from an internal function'),
-          internal: true,
-          name: 'internal',
-        })
-
-      await builder.buildAsync()
+        .build()
 
       await withDevServer({ cwd: builder.directory }, async ({ port, waitForLogMatching }) => {
+        // internal functions are cleared on startup,
+        // so we create them after the dev server is up and running
+        await builder
+          .withEdgeFunction({
+            config: { path: '/internal-1' },
+            handler: () => new Response('Hello from an internal function'),
+            internal: true,
+            name: 'internal',
+          })
+          .build()
+
         const res1 = await fetch(`http://localhost:${port}/internal-1`)
 
         t.expect(res1.status).toBe(200)
