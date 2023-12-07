@@ -15,6 +15,7 @@ import { DIST_IMPORT_MAP_PATH, EDGE_FUNCTIONS_SERVE_FOLDER } from './consts.js'
 import { headers, getFeatureFlagsHeader, getInvocationMetadataHeader } from './headers.js'
 import { getInternalFunctions } from './internal.js'
 import { EdgeFunctionsRegistry } from './registry.js'
+import { IncomingMessage } from 'http'
 
 const headersSymbol = Symbol('Edge Functions Headers')
 
@@ -166,8 +167,7 @@ export const initializeProxy = async ({
     projectDir,
     repositoryRoot,
   })
-  // @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
-  return async (req) => {
+  return async (req: IncomingMessage & { [headersSymbol]: Record<string, string> }) => {
     if (req.headers[headers.Passthrough] !== undefined) {
       return
     }
@@ -193,8 +193,8 @@ export const initializeProxy = async ({
 
     await registry.initialize()
 
-    const url = new URL(req.url, `http://${LOCAL_HOST}:${mainPort}`)
-    const { functionNames, invocationMetadata } = registry.matchURLPath(url.pathname, req.method)
+    const url = new URL(req.url!, `http://${LOCAL_HOST}:${mainPort}`)
+    const { functionNames, invocationMetadata } = registry.matchURLPath(url.pathname, req.method!)
 
     if (functionNames.length === 0) {
       return
