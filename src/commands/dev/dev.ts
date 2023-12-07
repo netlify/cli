@@ -229,6 +229,10 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
   }
 
   printBanner({ url })
+
+  if (siteInfo.admin_url) {
+    log(`${NETLIFYDEVLOG} ${chalk.cyanBright('Dev UI')} available at ${siteInfo.admin_url}/dev?port=${settings.port}\n`)
+  }
 }
 
 export const createDevCommand = (program: BaseCommand) => {

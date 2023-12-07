@@ -2,8 +2,7 @@ import boxen from 'boxen'
 
 import { chalk, log, NETLIFYDEVLOG } from './command-helpers.js'
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'url' implicitly has an 'any' type... Remove this comment to see the full error message
-export const printBanner = ({ url }) => {
+export const printBanner = ({ url }: { url: string }) => {
   const banner = chalk.bold(`${NETLIFYDEVLOG} Server now ready on ${url}`)
 
   log(
