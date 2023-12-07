@@ -895,7 +895,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
     })
   })
 
-  test.only('should respect in-source configuration from internal edge functions', async (t) => {
+  test('should respect in-source configuration from internal edge functions', async (t) => {
     await withSiteBuilder('site-with-internal-edge-functions', async (builder) => {
       const publicDir = 'public'
       await builder

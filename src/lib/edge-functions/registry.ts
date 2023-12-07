@@ -1,3 +1,4 @@
+import { join } from 'path'
 import { fileURLToPath } from 'url'
 
 import type { Declaration, EdgeFunction, FunctionConfig, Manifest, ModuleGraph } from '@netlify/edge-bundler'
@@ -13,6 +14,9 @@ import {
   watchDebounced,
   isNodeError,
 } from '../../utils/command-helpers.js'
+import { getPathInProject } from '../settings.js'
+
+import { INTERNAL_EDGE_FUNCTIONS_FOLDER } from './consts.js'
 
 //  TODO: Replace with a proper type for the entire config object.
 interface Config {
@@ -33,7 +37,6 @@ interface EdgeFunctionsRegistryOptions {
   directories: string[]
   env: Record<string, { sources: string[]; value: string }>
   getUpdatedConfig: () => Promise<Config>
-  internalDirectories: string[]
   internalFunctions: Declaration[]
   projectDir: string
   runIsolate: RunIsolate
@@ -53,7 +56,6 @@ export class EdgeFunctionsRegistry {
   private functionPaths = new Map<string, string>()
   private getUpdatedConfig: () => Promise<Config>
   private initialScan: Promise<void>
-  private internalDirectories: string[]
   private internalFunctions: EdgeFunction[] = []
   private manifest: Manifest | null = null
   private routes: Route[] = []
@@ -69,7 +71,6 @@ export class EdgeFunctionsRegistry {
     directories,
     env,
     getUpdatedConfig,
-    internalDirectories,
     internalFunctions,
     projectDir,
     runIsolate,
@@ -78,7 +79,6 @@ export class EdgeFunctionsRegistry {
     this.bundler = bundler
     this.configPath = configPath
     this.directories = directories
-    this.internalDirectories = internalDirectories
     this.getUpdatedConfig = getUpdatedConfig
     this.runIsolate = runIsolate
     this.servePath = servePath
@@ -483,9 +483,13 @@ export class EdgeFunctionsRegistry {
     return { functionsConfig, graph, npmSpecifiersWithExtraneousFiles, success }
   }
 
+  private get internalDirectory() {
+    return join(this.projectDir, getPathInProject([INTERNAL_EDGE_FUNCTIONS_FOLDER]))
+  }
+
   private async scanForFunctions() {
     const [internalFunctions, userFunctions] = await Promise.all([
-      this.bundler.find(this.internalDirectories),
+      this.bundler.find([this.internalDirectory]),
       this.bundler.find(this.directories),
     ])
     const functions = [...internalFunctions, ...userFunctions]

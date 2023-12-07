@@ -161,17 +161,14 @@ export const initializeProxy = async ({
     getUpdatedConfig,
     importMaps: [importMap].filter(Boolean),
     inspectSettings,
-    internalDirectory: internalFunctionsPath,
     internalFunctions,
     port: isolatePort,
     projectDir,
     repositoryRoot,
   })
-  const hasEdgeFunctions = userFunctionsPath !== undefined || internalFunctionsPath
-
   // @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
   return async (req) => {
-    if (req.headers[headers.Passthrough] !== undefined || !hasEdgeFunctions) {
+    if (req.headers[headers.Passthrough] !== undefined) {
       return
     }
 
@@ -244,8 +241,6 @@ const prepareServer = async ({
   importMaps,
   // @ts-expect-error TS(7031) FIXME: Binding element 'inspectSettings' implicitly has a... Remove this comment to see the full error message
   inspectSettings,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'internalDirectory' implicitly has... Remove this comment to see the full error message
-  internalDirectory,
   // @ts-expect-error TS(7031) FIXME: Binding element 'internalFunctions' implicitly has... Remove this comment to see the full error message
   internalFunctions,
   // @ts-expect-error TS(7031) FIXME: Binding element 'port' implicitly has an 'any' typ... Remove this comment to see the full error message
@@ -291,7 +286,6 @@ const prepareServer = async ({
       directories: [directory].filter(Boolean),
       env: configEnv,
       getUpdatedConfig,
-      internalDirectories: [internalDirectory].filter(Boolean),
       internalFunctions,
       projectDir,
       runIsolate,
