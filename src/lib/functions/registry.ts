@@ -467,20 +467,15 @@ export class FunctionsRegistry {
    * Takes a list of directories and scans for functions. It keeps tracks of
    * any functions in those directories that we've previously seen, and takes
    * care of registering and unregistering functions as they come and go.
-   *
-   * @param {string[]} relativeDirs
    */
-  // @ts-expect-error TS(7006) FIXME: Parameter 'relativeDirs' implicitly has an 'any' t... Remove this comment to see the full error message
-  async scan(relativeDirs) {
-    // @ts-expect-error TS(7006) FIXME: Parameter 'dir' implicitly has an 'any' type.
-    const directories = relativeDirs.filter(Boolean).map((dir) => (isAbsolute(dir) ? dir : join(this.projectRoot, dir)))
+  async scan(relativeDirs: (string | undefined)[]) {
+    const directories = relativeDirs.filter((dir): dir is string => Boolean(dir)).map((dir) => (isAbsolute(dir) ? dir : join(this.projectRoot, dir)))
 
     // check after filtering to filter out [undefined] for example
     if (directories.length === 0) {
       return
     }
 
-    // @ts-expect-error TS(7006) FIXME: Parameter 'path' implicitly has an 'any' type.
     await Promise.all(directories.map((path) => FunctionsRegistry.prepareDirectoryScan(path)))
 
     const functions = await this.listFunctions(directories, {
@@ -527,7 +522,6 @@ export class FunctionsRegistry {
           blobsContext: this.blobsContext,
           // @ts-expect-error TS(2339) FIXME: Property 'config' does not exist on type 'Function... Remove this comment to see the full error message
           config: this.config,
-          // @ts-expect-error TS(7006) FIXME: Parameter 'directory' implicitly has an 'any' type... Remove this comment to see the full error message
           directory: directories.find((directory) => mainFile.startsWith(directory)),
           mainFile,
           name,
@@ -564,7 +558,6 @@ export class FunctionsRegistry {
       FunctionsRegistry.logEvent('removed', { func })
     })
 
-    // @ts-expect-error TS(7006) FIXME: Parameter 'path' implicitly has an 'any' type.
     await Promise.all(directories.map((path) => this.setupDirectoryWatcher(path)))
   }
 
