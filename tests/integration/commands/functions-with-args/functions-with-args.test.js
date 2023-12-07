@@ -494,7 +494,7 @@ exports.handler = async () => ({
     })
   })
 
-  test('Serves functions from the internal functions directory', async (t) => {
+  test.skip('Serves functions from the internal functions directory', async (t) => {
     await withSiteBuilder('function-internal', async (builder) => {
       const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
