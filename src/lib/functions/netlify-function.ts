@@ -121,7 +121,7 @@ export default class NetlifyFunction {
     }
 
     if (extension === '.js') {
-      return '.js'
+      return '.mjs'
     }
   }
 
