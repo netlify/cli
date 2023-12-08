@@ -495,7 +495,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
           export default async () => new Response("Internal V2 API")
           export const config = { path: "/internal-v2-func" }
           `,
-          path: '.netlify/functions-internal/func-4.js',
+          path: '.netlify/functions-internal/func-4.mjs',
         })
         .buildAsync()
 
