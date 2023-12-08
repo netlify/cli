@@ -109,7 +109,7 @@ export const handleCreateFunction = async (context: UIContext, req: ExpressReque
       launchEditor(fullPath)
     }
 
-    res.status(202).end()
+    res.status(202).json({ filename: fullPath })
   } catch (error: unknown) {
     const message = isNodeError(error) ? error.message : ''
 

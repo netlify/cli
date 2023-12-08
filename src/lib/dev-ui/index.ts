@@ -1,14 +1,13 @@
 import type http from 'http'
 
 import { NetlifyConfig } from '@netlify/build'
-import express, { Express } from 'express'
-import { Request as ExpressRequest, Response as ExpressResponse } from 'express'
+import express, { Express, Request as ExpressRequest, Response as ExpressResponse } from 'express'
 import { NetlifyAPI } from 'netlify'
 
 import getGlobalConfig from '../../utils/get-global-config.js'
+import { launchEditor } from '../../utils/launch-editor.js'
 import { SiteInfo } from '../../utils/site-info.js'
 import StateConfig from '../../utils/state-config.js'
-import { launchEditor } from '../../utils/launch-editor.js'
 import { FunctionsRegistry } from '../functions/registry.js'
 
 import { UIContext } from './context.js'
@@ -36,11 +35,11 @@ interface InitializeProxyOptions {
 export const initializeProxy = async ({
   api,
   config,
+  functionsRegistry,
   projectDir,
   site,
   siteInfo,
   state,
-  functionsRegistry,
 }: InitializeProxyOptions) => {
   const app = express()
   const devUI = express()
