@@ -1,6 +1,6 @@
+import { readFile } from 'fs/promises'
 import { join } from 'path'
 import { fileURLToPath } from 'url'
-import { readFile } from 'fs/promises'
 
 import type { Declaration, EdgeFunction, FunctionConfig, Manifest, ModuleGraph } from '@netlify/edge-bundler'
 
@@ -38,7 +38,6 @@ interface EdgeFunctionsRegistryOptions {
   directories: string[]
   env: Record<string, { sources: string[]; value: string }>
   getUpdatedConfig: () => Promise<Config>
-  internalFunctions: Declaration[]
   projectDir: string
   runIsolate: RunIsolate
   servePath: string
@@ -51,7 +50,7 @@ export class EdgeFunctionsRegistry {
   private configPath: string
   public importMapFromDeployConfig?: string
   private importMapFromTOML?: string
-  private declarationsFromDeployConfig: Declaration[]
+  private declarationsFromDeployConfig: Declaration[] = []
   private declarationsFromTOML: Declaration[]
   private dependencyPaths = new Map<string, string[]>()
   private directories: string[]
@@ -76,7 +75,6 @@ export class EdgeFunctionsRegistry {
     env,
     getUpdatedConfig,
     importMapFromTOML,
-    internalFunctions,
     projectDir,
     runIsolate,
     servePath,
@@ -90,7 +88,6 @@ export class EdgeFunctionsRegistry {
     this.projectDir = projectDir
 
     this.importMapFromTOML = importMapFromTOML
-    this.declarationsFromDeployConfig = internalFunctions
     this.declarationsFromTOML = EdgeFunctionsRegistry.getDeclarationsFromTOML(config)
     this.env = EdgeFunctionsRegistry.getEnvironmentVariables(env)
 

@@ -1,5 +1,6 @@
 import { Buffer } from 'buffer'
 import { rm } from 'fs/promises'
+import type { IncomingMessage } from 'http'
 import { join, resolve } from 'path'
 
 import * as bundler from '@netlify/edge-bundler'
@@ -13,9 +14,7 @@ import { startSpinner, stopSpinner } from '../spinner.js'
 import { getBootstrapURL } from './bootstrap.js'
 import { DIST_IMPORT_MAP_PATH, EDGE_FUNCTIONS_SERVE_FOLDER } from './consts.js'
 import { headers, getFeatureFlagsHeader, getInvocationMetadataHeader } from './headers.js'
-import { getInternalFunctions } from './internal.js'
 import { EdgeFunctionsRegistry } from './registry.js'
-import { IncomingMessage } from 'http'
 
 const headersSymbol = Symbol('Edge Functions Headers')
 
@@ -135,12 +134,6 @@ export const initializeProxy = async ({
   // @ts-expect-error TS(7031) FIXME: Binding element 'state' implicitly has an 'any' ty... Remove this comment to see the full error message
   state,
 }) => {
-  const {
-    functions: internalFunctions,
-    // @ts-expect-error TS(2339) FIXME: Property 'importMap' does not exist on type '{ fun... Remove this comment to see the full error message
-    importMap,
-    path: internalFunctionsPath,
-  } = await getInternalFunctions(projectDir)
   const userFunctionsPath = config.build.edge_functions
   const isolatePort = await getAvailablePort()
   const buildFeatureFlags = {
@@ -161,7 +154,6 @@ export const initializeProxy = async ({
     featureFlags: buildFeatureFlags,
     getUpdatedConfig,
     inspectSettings,
-    internalFunctions,
     port: isolatePort,
     projectDir,
     repositoryRoot,
@@ -238,8 +230,6 @@ const prepareServer = async ({
   getUpdatedConfig,
   // @ts-expect-error TS(7031) FIXME: Binding element 'inspectSettings' implicitly has a... Remove this comment to see the full error message
   inspectSettings,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'internalFunctions' implicitly has... Remove this comment to see the full error message
-  internalFunctions,
   // @ts-expect-error TS(7031) FIXME: Binding element 'port' implicitly has an 'any' typ... Remove this comment to see the full error message
   port,
   // @ts-expect-error TS(7031) FIXME: Binding element 'projectDir' implicitly has an 'an... Remove this comment to see the full error message
@@ -279,7 +269,6 @@ const prepareServer = async ({
       directories: [directory].filter(Boolean),
       env: configEnv,
       getUpdatedConfig,
-      internalFunctions,
       importMapFromTOML: config.functions['*'].deno_import_map,
       projectDir,
       runIsolate,
