@@ -615,7 +615,7 @@ exports.handler = async () => ({
     })
   })
 
-  test('Serves functions with a `.js` extension', async (t) => {
+  test('Serves functions with a `.mjs` extension', async (t) => {
     await withSiteBuilder('function-mjs', async (builder) => {
       const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
@@ -628,7 +628,7 @@ exports.handler = async () => ({
           },
         })
         .withContentFile({
-          path: 'functions/hello.js',
+          path: 'functions/hello.mjs',
           content: `
   const handler = async () => {
     return {
