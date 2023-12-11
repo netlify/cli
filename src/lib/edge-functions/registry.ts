@@ -480,7 +480,7 @@ export class EdgeFunctionsRegistry {
       this.env,
       {
         getFunctionsConfig: true,
-        importMapPaths: [this.importMapFromTOML, this.importMapFromDeployConfig].filter(nonNullable)
+        importMapPaths: [this.importMapFromTOML, this.importMapFromDeployConfig].filter(nonNullable),
       },
     )
 
