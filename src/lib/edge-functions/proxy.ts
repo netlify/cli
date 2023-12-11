@@ -160,7 +160,6 @@ export const initializeProxy = async ({
     env: configEnv,
     featureFlags: buildFeatureFlags,
     getUpdatedConfig,
-    importMaps: [importMap].filter(Boolean),
     inspectSettings,
     internalFunctions,
     port: isolatePort,
@@ -237,8 +236,6 @@ const prepareServer = async ({
   featureFlags,
   // @ts-expect-error TS(7031) FIXME: Binding element 'getUpdatedConfig' implicitly has ... Remove this comment to see the full error message
   getUpdatedConfig,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'importMaps' implicitly has an 'an... Remove this comment to see the full error message
-  importMaps,
   // @ts-expect-error TS(7031) FIXME: Binding element 'inspectSettings' implicitly has a... Remove this comment to see the full error message
   inspectSettings,
   // @ts-expect-error TS(7031) FIXME: Binding element 'internalFunctions' implicitly has... Remove this comment to see the full error message
@@ -250,9 +247,6 @@ const prepareServer = async ({
   // @ts-expect-error TS(7031) FIXME: Binding element 'repositoryRoot' implicitly has an... Remove this comment to see the full error message
   repositoryRoot,
 }) => {
-  // Merging internal with user-defined import maps.
-  const importMapPaths = [...importMaps, config.functions['*'].deno_import_map]
-
   try {
     const distImportMapPath = getPathInProject([DIST_IMPORT_MAP_PATH])
     const servePath = resolve(projectDir, getPathInProject([EDGE_FUNCTIONS_SERVE_FOLDER]))
@@ -272,7 +266,6 @@ const prepareServer = async ({
         )}. The file does not seem to have a function as the default export.`,
       formatImportError: (name) =>
         `${NETLIFYDEVERR} ${chalk.red('Failed')} to run Edge Function ${chalk.yellow(name)}:`,
-      importMapPaths,
       inspectSettings,
       port,
       rootPath: repositoryRoot,
@@ -287,6 +280,7 @@ const prepareServer = async ({
       env: configEnv,
       getUpdatedConfig,
       internalFunctions,
+      importMapFromTOML: config.functions['*'].deno_import_map,
       projectDir,
       runIsolate,
       servePath,

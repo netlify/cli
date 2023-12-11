@@ -42,12 +42,15 @@ interface EdgeFunctionsRegistryOptions {
   projectDir: string
   runIsolate: RunIsolate
   servePath: string
+  importMapFromTOML?: string
 }
 
 export class EdgeFunctionsRegistry {
   private buildError: Error | null = null
   private bundler: typeof import('@netlify/edge-bundler')
   private configPath: string
+  public importMapFromDeployConfig?: string
+  private importMapFromTOML?: string
   private declarationsFromDeployConfig: Declaration[]
   private declarationsFromTOML: Declaration[]
   private dependencyPaths = new Map<string, string[]>()
@@ -72,6 +75,7 @@ export class EdgeFunctionsRegistry {
     directories,
     env,
     getUpdatedConfig,
+    importMapFromTOML,
     internalFunctions,
     projectDir,
     runIsolate,
@@ -85,6 +89,7 @@ export class EdgeFunctionsRegistry {
     this.servePath = servePath
     this.projectDir = projectDir
 
+    this.importMapFromTOML = importMapFromTOML
     this.declarationsFromDeployConfig = internalFunctions
     this.declarationsFromTOML = EdgeFunctionsRegistry.getDeclarationsFromTOML(config)
     this.env = EdgeFunctionsRegistry.getEnvironmentVariables(env)
@@ -478,6 +483,7 @@ export class EdgeFunctionsRegistry {
       this.env,
       {
         getFunctionsConfig: true,
+        importMapPaths: [this.importMapFromTOML, this.importMapFromDeployConfig].filter(nonNullable)
       },
     )
 
@@ -508,6 +514,7 @@ export class EdgeFunctionsRegistry {
     }
 
     this.declarationsFromDeployConfig = deployConfig.functions
+    this.importMapFromDeployConfig = join(this.internalDirectory, deployConfig.import_map)
   }
 
   private async scanForFunctions() {

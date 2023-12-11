@@ -952,7 +952,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
     })
   })
 
-  test.skip('Serves edge functions with import maps coming from the `functions.deno_import_map` config property and from the internal manifest', async (t) => {
+  test('Serves edge functions with import maps coming from the `functions.deno_import_map` config property and from the internal manifest', async (t) => {
     await withSiteBuilder('site-with-edge-functions-and-import-maps', async (builder) => {
       const internalEdgeFunctionsDir = path.join('.netlify', 'edge-functions')
 
@@ -972,11 +972,6 @@ describe.concurrent('commands/dev-miscellaneous', () => {
           handler: `import { greet } from "greeter"; export default async () => new Response(greet("Netlify"))`,
           name: 'greet',
         })
-        .withEdgeFunction({
-          handler: `import { yell } from "yeller"; export default async () => new Response(yell("Netlify"))`,
-          name: 'yell',
-          internal: true,
-        })
         // User-defined import map
         .withContentFiles([
           {
@@ -989,29 +984,36 @@ describe.concurrent('commands/dev-miscellaneous', () => {
             path: 'import_map.json',
           },
         ])
-        // Internal import map
-        .withContentFiles([
-          {
-            content: 'export const yell = (name: string) => name.toUpperCase()',
-            path: path.join(internalEdgeFunctionsDir, 'util', 'yeller.ts'),
-          },
-          {
-            content: JSON.stringify({
-              functions: [{ function: 'yell', path: '/yell' }],
-              import_map: 'import_map.json',
-              version: 1,
-            }),
-            path: path.join(internalEdgeFunctionsDir, 'manifest.json'),
-          },
-          {
-            content: JSON.stringify({ imports: { yeller: './util/yeller.ts' } }),
-            path: path.join(internalEdgeFunctionsDir, 'import_map.json'),
-          },
-        ])
-
-      await builder.buildAsync()
+        .build()
 
       await withDevServer({ cwd: builder.directory }, async ({ port }) => {
+        await builder
+          .withEdgeFunction({
+            handler: `import { yell } from "yeller"; export default async () => new Response(yell("Netlify"))`,
+            name: 'yell',
+            internal: true,
+          })
+          // Internal import map
+          .withContentFiles([
+            {
+              content: 'export const yell = (name: string) => name.toUpperCase()',
+              path: path.join(internalEdgeFunctionsDir, 'util', 'yeller.ts'),
+            },
+            {
+              content: JSON.stringify({
+                functions: [{ function: 'yell', path: '/yell' }],
+                import_map: 'import_map.json',
+                version: 1,
+              }),
+              path: path.join(internalEdgeFunctionsDir, 'manifest.json'),
+            },
+            {
+              content: JSON.stringify({ imports: { yeller: './util/yeller.ts' } }),
+              path: path.join(internalEdgeFunctionsDir, 'import_map.json'),
+            },
+          ])
+          .build()
+
         const [res1, res2] = await Promise.all([
           fetch(`http://localhost:${port}/greet`),
           fetch(`http://localhost:${port}/yell`),
