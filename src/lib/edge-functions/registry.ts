@@ -511,7 +511,9 @@ export class EdgeFunctionsRegistry {
     }
 
     this.declarationsFromDeployConfig = deployConfig.functions
-    this.importMapFromDeployConfig = join(this.internalDirectory, deployConfig.import_map)
+    this.importMapFromDeployConfig = deployConfig.import_map
+      ? join(this.internalDirectory, deployConfig.import_map)
+      : undefined
   }
 
   private async scanForFunctions() {
