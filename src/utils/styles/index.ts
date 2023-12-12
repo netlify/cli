@@ -16,6 +16,7 @@ import isUnicodeSupported from 'is-unicode-supported';
 import { cursor as ansiCursor, erase } from 'sisteransi';
 
 import { chalk } from '../command-helpers.js'
+import { reportError } from '../telemetry/report-error.js';
 
 export { isCancel } from '@clack/core';
 
@@ -599,20 +600,26 @@ export const intro = (title = '') => {
 };
 
 export const outro = (message = '') => {
-	process.stdout.write(`${chalk.gray(S_BAR)}\n${chalk.gray(S_BAR_END)}  ${message}\n\n`);
+  if (message) {
+    process.stdout.write(`${chalk.gray(S_BAR)}\n${chalk.gray(S_BAR_END)}  ${message}\n`);
+  }
+  else {
+    process.stdout.write(`${chalk.gray(S_BAR_END)}\n`);
+  }
 };
 
 export type LogMessageOptions = {
 	symbol?: string;
+  writeStream?: NodeJS.WriteStream;
 };
 export const log = {
-	message: (message = '', { symbol = chalk.gray(S_BAR) }: LogMessageOptions = {}) => {
+	message: (message = '', { symbol = chalk.gray(S_BAR), writeStream = process.stdout }: LogMessageOptions = {}) => {
 		const parts = [`${chalk.gray(S_BAR)}`];
 		if (message) {
 			const [firstLine, ...lines] = message.split('\n');
 			parts.push(`${symbol}  ${firstLine}`, ...lines.map((ln) => `${chalk.gray(S_BAR)}  ${ln}`));
 		}
-		process.stdout.write(`${parts.join('\n')}\n`);
+		writeStream.write(`${parts.join('\n')}\n`);
 	},
 	info: (message: string) => {
 		log.message(message, { symbol: chalk.blue(S_INFO) });
@@ -630,8 +637,25 @@ export const log = {
 	warning: (message: string) => {
 		log.warn(message);
 	},
-	error: (message: string) => {
-		log.message(message, { symbol: chalk.red(S_ERROR) });
+	error: (message: Error | string = '', options: { exit?: boolean } = {}) => {
+    const err =
+    message instanceof Error
+      ? message
+      : // eslint-disable-next-line unicorn/no-nested-ternary
+      typeof message === 'string'
+      ? new Error(message)
+      : { message, stack: undefined, name: 'Error' }
+
+  if (options.exit === false) {
+    if (process.env.DEBUG) {
+      log.message(`Warning: ${err.stack?.split('\n')}\n`, { symbol: chalk.red(S_ERROR), writeStream: process.stderr })
+    } else {
+      log.message(`${chalk.red(`${err.name}:`)} ${err.message}\n`, { symbol: chalk.red(S_ERROR), writeStream: process.stderr })
+    }
+  } else {
+    reportError(err, { severity: 'error' })
+    throw err
+  }
 	},
 };
 

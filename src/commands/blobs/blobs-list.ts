@@ -3,6 +3,7 @@ import AsciiTable from 'ascii-table'
 import { OptionValues } from 'commander'
 
 import { chalk, error as printError, log, logJson } from '../../utils/command-helpers.js'
+import { intro, outro, log as ClackLog } from '../../utils/styles/index.js'
 import BaseCommand from '../base-command.js'
 
 interface Options extends OptionValues {
@@ -32,6 +33,8 @@ export const blobsList = async (storeName: string, options: Options, command: Ba
       return
     }
 
+    intro('blobs:list')
+
     const table = new AsciiTable(`Netlify Blobs (${storeName})`)
 
     table.setHeading('Key', 'ETag')
@@ -45,7 +48,10 @@ export const blobsList = async (storeName: string, options: Options, command: Ba
     })
 
     log(table.toString())
+
+    outro()
+
   } catch {
-    return printError(`Could not list blobs from store ${chalk.yellow(storeName)}`)
+    return ClackLog.error(`Could not list blobs from store ${chalk.yellow(storeName)}`)
   }
 }
