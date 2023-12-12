@@ -29,6 +29,7 @@ import { getGeoCountryArgParser } from '../../utils/validation.js'
 import BaseCommand from '../base-command.js'
 
 import { createDevExecCommand } from './dev-exec.js'
+import { type DevConfig } from './types.js'
 
 /**
  *
@@ -90,7 +91,6 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
   const { api, cachedConfig, config, repositoryRoot, site, siteInfo, state } = command.netlify
   config.dev = { ...config.dev }
   config.build = { ...config.build }
-  /** @type {import('./types.js').DevConfig} */
   const devConfig = {
     framework: '#auto',
     autoLaunch: Boolean(options.open),
@@ -99,7 +99,7 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
     ...(config.build.base && { base: config.build.base }),
     ...config.dev,
     ...options,
-  }
+  } as DevConfig
 
   let { env } = cachedConfig
 
