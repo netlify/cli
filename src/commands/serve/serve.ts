@@ -25,12 +25,12 @@ import { generateInspectSettings, startProxyServer } from '../../utils/proxy-ser
 import { runBuildTimeline } from '../../utils/run-build.js'
 import type { ServerSettings } from '../../utils/types.js'
 import BaseCommand from '../base-command.js'
+import { type DevConfig } from '../dev/types.js'
 
 export const serve = async (options: OptionValues, command: BaseCommand) => {
   const { api, cachedConfig, config, repositoryRoot, site, siteInfo, state } = command.netlify
   config.dev = { ...config.dev }
   config.build = { ...config.build }
-  /** @type {import('../dev/types').DevConfig} */
   const devConfig = {
     ...(config.functionsDirectory && { functions: config.functionsDirectory }),
     ...(config.build.publish && { publish: config.build.publish }),
@@ -40,7 +40,7 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
     // Override the `framework` value so that we start a static server and not
     // the framework's development server.
     framework: '#static',
-  }
+  } as DevConfig
 
   let { env } = cachedConfig
 
