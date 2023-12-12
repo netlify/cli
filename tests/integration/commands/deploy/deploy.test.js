@@ -495,7 +495,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
           export default async () => new Response("Internal V2 API")
           export const config = { path: "/internal-v2-func" }
           `,
-          path: '.netlify/functions-internal/func-4.js',
+          path: '.netlify/functions-internal/func-4.mjs',
         })
         .buildAsync()
 
@@ -824,11 +824,15 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
       await builder
         .withNetlifyToml({
           config: {
-            build: { publish: 'dist', functions: 'functions' },
+            build: { functions: 'functions', publish: 'dist' },
           },
         })
         .withContentFile({
-          path: 'dist/.netlify/blobs/deploy/hello',
+          path: 'dist/index.html',
+          content: '<a href="/read-blob">get blob</a>',
+        })
+        .withContentFile({
+          path: '.netlify/blobs/deploy/hello',
           content: 'hello from the blob',
         })
         .withPackageJson({
@@ -843,21 +847,21 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
           path: 'functions/read-blob.ts',
           content: `
   import { getDeployStore } from "@netlify/blobs"
-  import { Config, Context } from "@netlify/functions"
-  
-  export default async (req: Request, context: Context) => {
+  import { Config } from "@netlify/functions"
+
+  export default async () => {
     const store = getDeployStore()
     const blob = await store.get('hello')
-  
+
     return new Response(blob)
   }
-  
+
   export const config: Config = {
     path: "/read-blob"
-  }       
+  }
           `,
         })
-        .buildAsync()
+        .build()
 
       await execa.command('npm install', { cwd: builder.directory })
       const { deploy_url: deployUrl } = await callCli(
