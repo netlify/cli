@@ -211,7 +211,6 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
       } catch (error_) {
         // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         if (error_.status === 404) {
-          // @ts-expect-error TS(2345) FIXME: Argument of type 'Error' is not assignable to para... Remove this comment to see the full error message
           error(new Error(`Site ID '${siteId}' not found`))
         } else {
           // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
@@ -225,7 +224,6 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
   }
 
   if (!site) {
-    // @ts-expect-error TS(2345) FIXME: Argument of type 'Error' is not assignable to para... Remove this comment to see the full error message
     error(new Error(`No site found`))
   }
 
@@ -285,7 +283,6 @@ export const link = async (options: OptionValues, command: BaseCommand) => {
     } catch (error_) {
       // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
       if (error_.status === 404) {
-        // @ts-expect-error TS(2345) FIXME: Argument of type 'Error' is not assignable to para... Remove this comment to see the full error message
         error(new Error(`Site id ${options.id} not found`))
       } else {
         // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
@@ -315,7 +312,6 @@ export const link = async (options: OptionValues, command: BaseCommand) => {
     } catch (error_) {
       // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
       if (error_.status === 404) {
-        // @ts-expect-error TS(2345) FIXME: Argument of type 'Error' is not assignable to para... Remove this comment to see the full error message
         error(new Error(`${options.name} not found`))
       } else {
         // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
@@ -324,7 +320,6 @@ export const link = async (options: OptionValues, command: BaseCommand) => {
     }
 
     if (results.length === 0) {
-      // @ts-expect-error TS(2345) FIXME: Argument of type 'Error' is not assignable to para... Remove this comment to see the full error message
       error(new Error(`No sites found named ${options.name}`))
     }
     const [firstSiteData] = results
