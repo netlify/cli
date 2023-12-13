@@ -146,7 +146,11 @@ describe.concurrent('commands/dev/config', () => {
     await withSiteBuilder('site-with-netlify-version-env-var', async (builder) => {
       await builder
         .withNetlifyToml({
-          config: { dev: { command: `node -e console.log(process.env); setTimeout(undefined, 100)` } },
+          config: {
+            dev: {
+              command: `node -e console.log(process.env); setTimeout(() => "we need this to keep the dev server running", 100)`,
+            },
+          },
         })
         .build()
 
