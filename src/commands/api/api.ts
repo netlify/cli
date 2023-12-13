@@ -3,7 +3,7 @@ import { OptionValues } from 'commander'
 import { methods } from 'netlify'
 
 import { chalk, error, exit, log, logJson } from '../../utils/command-helpers.js'
-import { log as ClackLog, intro, outro } from '../../utils/styles/index.js'
+import { log as NetlifyLog, intro, outro } from '../../utils/styles/index.js'
 import BaseCommand from '../base-command.js'
 
 export const apiCommand = async (apiMethod: string, options: OptionValues, command: BaseCommand) => {
@@ -20,7 +20,7 @@ export const apiCommand = async (apiMethod: string, options: OptionValues, comma
     })
 
     log(table.toString())
-    ClackLog.message(`Above is a list of available API methods
+    NetlifyLog.message(`Above is a list of available API methods
     To run a method use "${chalk.cyanBright('netlify api methodName')}"`)
 
     outro()
