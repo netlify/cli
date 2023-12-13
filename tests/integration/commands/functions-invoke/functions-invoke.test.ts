@@ -1,4 +1,4 @@
-import got from 'got'
+import fetch from 'node-fetch'
 import { describe, expect, test } from 'vitest'
 
 import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
@@ -39,26 +39,25 @@ describe('functions:invoke command', () => {
     )
 
     test.concurrent<FixtureTestContext>('should serve helpful tips and tricks', async ({ devServer, fixture }) => {
-      const plainTextResponse = await got(`http://localhost:${devServer.port}/.netlify/functions/scheduled-isc-body`, {
-        throwHttpErrors: false,
-        retry: { limit: 0 },
-      })
+      const textResponse = await fetch(`http://localhost:${devServer.port}/.netlify/functions/scheduled-isc-body`, {})
+
+      const bodyPlainTextResponse = await textResponse.text()
 
       const youReturnedBodyRegex = /.*Your function returned `body`. Is this an accident\?.*/
-      expect(plainTextResponse.body).toMatch(youReturnedBodyRegex)
-      expect(plainTextResponse.body).toMatch(/.*You performed an HTTP request.*/)
-      expect(plainTextResponse.statusCode).toBe(200)
+      expect(bodyPlainTextResponse).toMatch(youReturnedBodyRegex)
+      expect(bodyPlainTextResponse).toMatch(/.*You performed an HTTP request.*/)
+      expect(textResponse.status).toBe(200)
 
-      const htmlResponse = await got(`http://localhost:${devServer.port}/.netlify/functions/scheduled-isc-body`, {
-        throwHttpErrors: false,
-        retry: { limit: 0 },
+      const htmlResponse = await fetch(`http://localhost:${devServer.port}/.netlify/functions/scheduled-isc-body`, {
         headers: {
           accept: 'text/html',
         },
       })
 
-      expect(htmlResponse.body).toMatch(/.*<link.*/)
-      expect(htmlResponse.statusCode).toBe(200)
+      const BodyHtmlResponse = await htmlResponse.text()
+
+      expect(BodyHtmlResponse).toMatch(/.*<link.*/)
+      expect(htmlResponse.status).toBe(200)
 
       const stdout = await fixture.callCli([
         'functions:invoke',
