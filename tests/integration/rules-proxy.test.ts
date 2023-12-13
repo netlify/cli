@@ -6,7 +6,7 @@ import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 
 import { createRewriter, getWatchers } from '../../src/utils/rules-proxy.js'
 
-import got from './utils/got.js'
+import fetch from 'node-fetch'
 import { createSiteBuilder, SiteBuilder } from './utils/site-builder.ts'
 
 describe('rules-proxy', () => {
@@ -48,7 +48,9 @@ describe('rules-proxy', () => {
   })
 
   test('should apply re-write rule based on _redirects file', async () => {
-    const response = await got(`http://localhost:${(server?.address() as net.AddressInfo).port}/something`).json()
+    const response = await fetch(`http://localhost:${(server?.address() as net.AddressInfo).port}/something`).then(
+      (res) => res.json(),
+    )
 
     expect(response.from).toBe('/something')
     expect(response.to).toBe('/ping')
