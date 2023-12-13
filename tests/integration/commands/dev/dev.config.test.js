@@ -144,7 +144,11 @@ describe.concurrent('commands/dev/config', () => {
 
   test('should provide CLI version in env var', async (t) => {
     await withSiteBuilder('site-with-netlify-version-env-var', async (builder) => {
-      await builder.withNetlifyToml({ config: { dev: { command: `node -e console.log(process.env)` } } }).build()
+      await builder
+        .withNetlifyToml({
+          config: { dev: { command: `node -e console.log(process.env); setTimeout(undefined, 100)` } },
+        })
+        .build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         await server.close()
