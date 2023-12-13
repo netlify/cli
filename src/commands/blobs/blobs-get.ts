@@ -4,7 +4,8 @@ import { resolve } from 'path'
 import { getStore } from '@netlify/blobs'
 import { OptionValues } from 'commander'
 
-import { chalk, error as printError } from '../../utils/command-helpers.js'
+import { chalk } from '../../utils/command-helpers.js'
+import { NetlifyLog } from '../../utils/styles/index.js'
 import BaseCommand from '../base-command.js'
 
 interface Options extends OptionValues {
@@ -26,11 +27,11 @@ export const blobsGet = async (storeName: string, key: string, options: Options,
   try {
     blob = await store.get(key)
   } catch {
-    return printError(`Could not retrieve blob ${chalk.yellow(key)} from store ${chalk.yellow(storeName)}`)
+    return NetlifyLog.error(`Could not retrieve blob ${chalk.yellow(key)} from store ${chalk.yellow(storeName)}`)
   }
 
   if (blob === null) {
-    return printError(`Blob ${chalk.yellow(key)} does not exist in store ${chalk.yellow(storeName)}`)
+    return NetlifyLog.error(`Blob ${chalk.yellow(key)} does not exist in store ${chalk.yellow(storeName)}`)
   }
 
   if (output) {
