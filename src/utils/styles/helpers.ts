@@ -2,6 +2,8 @@ import { State} from '@clack/core'
 
 import { chalk } from '../command-helpers.js'
 
+import { symbols } from './constants.js'
+
 export const coloredSymbol = (state: State) => {
 	switch (state) {
 		case 'initial':

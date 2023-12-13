@@ -3,7 +3,7 @@ import { OptionValues } from 'commander'
 import { methods } from 'netlify'
 
 import { chalk, error, exit, log, logJson } from '../../utils/command-helpers.js'
-import { log as NetlifyLog, intro, outro } from '../../utils/styles/index.js'
+import { NetlifyLog, intro, outro } from '../../utils/styles/index.js'
 import BaseCommand from '../base-command.js'
 
 export const apiCommand = async (apiMethod: string, options: OptionValues, command: BaseCommand) => {

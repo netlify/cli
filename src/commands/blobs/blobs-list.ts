@@ -3,7 +3,7 @@ import AsciiTable from 'ascii-table'
 import { OptionValues } from 'commander'
 
 import { chalk, log, logJson } from '../../utils/command-helpers.js'
-import { intro, outro, log as NetlifyLog } from '../../utils/styles/index.js'
+import { intro, outro, NetlifyLog } from '../../utils/styles/index.js'
 import BaseCommand from '../base-command.js'
 
 interface Options extends OptionValues {

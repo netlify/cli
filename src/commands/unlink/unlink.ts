@@ -1,7 +1,7 @@
 import { OptionValues } from 'commander'
 
 import { exit } from '../../utils/command-helpers.js'
-import { log, intro, outro } from '../../utils/styles/index.js'
+import { NetlifyLog, intro, outro } from '../../utils/styles/index.js'
 import { track } from '../../utils/telemetry/index.js'
 import BaseCommand from '../base-command.js'
 
@@ -12,7 +12,7 @@ export const unlink = async (options: OptionValues, command: BaseCommand) => {
   intro('unlink')
 
   if (!siteId) {
-    log.step(`Folder is not linked to a Netlify site. Run 'netlify link' to link it`)
+    NetlifyLog.step(`Folder is not linked to a Netlify site. Run 'netlify link' to link it`)
     outro()
     return exit()
   }
@@ -26,9 +26,9 @@ export const unlink = async (options: OptionValues, command: BaseCommand) => {
   })
 
   if (site) {
-    log.success(`Unlinked ${site.configPath} from ${siteData ? siteData.name : siteId}`)
+    NetlifyLog.success(`Unlinked ${site.configPath} from ${siteData ? siteData.name : siteId}`)
   } else {
-    log.success(`Unlinked site`)
+    NetlifyLog.success(`Unlinked site`)
   }
 
   outro()

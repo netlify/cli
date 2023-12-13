@@ -5,7 +5,7 @@ import { chalk, exit } from '../../utils/command-helpers.js'
 import getRepoData from '../../utils/get-repo-data.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import { configureRepo } from '../../utils/init/config.js'
-import { intro, log, select, outro } from '../../utils/styles/index.js'
+import { intro, NetlifyLog, select, outro } from '../../utils/styles/index.js'
 import { track } from '../../utils/telemetry/index.js'
 import BaseCommand from '../base-command.js'
 import { link } from '../link/link.js'
@@ -27,7 +27,7 @@ const getRepoUrl = (siteInfo) => siteInfo?.build_settings?.repo_url
 // @ts-expect-error TS(7031) FIXME: Binding element 'siteInfo' implicitly has an 'any'... Remove this comment to see the full error message
 const logExistingAndExit = ({ siteInfo }) => {
 
-  log.success(`This site has been initialized
+  NetlifyLog.success(`This site has been initialized
 
   Site Name:  ${chalk.cyan(siteInfo.name)}
   Site Url:   ${chalk.cyan(siteInfo.ssl_url || siteInfo.url)}
@@ -57,13 +57,13 @@ const createNewSiteAndExit = async ({ command, state }) => {
   const siteInfo = await sitesCreate({}, command)
 
   if (!siteInfo) {
-    log.error('Unable to create site')
+    NetlifyLog.error('Unable to create site')
     outro()
     exit()
   }
 
   // @ts-expect-error TS18048: 'siteInfo' is possibly 'undefined'.
-  log.success(`"${siteInfo.name}" site was created\n
+  NetlifyLog.success(`"${siteInfo.name}" site was created\n
   To deploy to this site. Run your site build and then ${chalk.cyanBright.bold('netlify deploy')}`)
 
   persistState({ state, siteInfo })
@@ -73,8 +73,8 @@ const createNewSiteAndExit = async ({ command, state }) => {
 }
 
 const logGitSetupInstructionsAndExit = () => {
-  log.step('To initialize a new git repo follow the steps below.')
-  log.message(`1. Initialize a new repo:
+  NetlifyLog.step('To initialize a new git repo follow the steps below.')
+  NetlifyLog.message(`1. Initialize a new repo:
 
   ${chalk.cyanBright.bold('git init')}
 
@@ -114,13 +114,13 @@ const logGitSetupInstructionsAndExit = () => {
  */
 // @ts-expect-error TS(7031) FIXME: Binding element 'command' implicitly has an 'any' ... Remove this comment to see the full error message
 const handleNoGitRemoteAndExit = async ({ command, error, state }) => {
-  log.warn('No git remote was found, would you like to set one up?')
-  log.message(`It is recommended that you initialize a site that has a remote repository in GitHub.
+  NetlifyLog.warn('No git remote was found, would you like to set one up?')
+  NetlifyLog.message(`It is recommended that you initialize a site that has a remote repository in GitHub.
   This will allow for Netlify Continuous deployment to build branch & PR previews.\n
   For more details on Netlify CI checkout the docs: http://bit.ly/2N0Jhy5`)
 
   if (error === "Couldn't find origin url") {
-    log.warn(`Unable to find a remote origin URL. Please add a git remote.\n
+    NetlifyLog.warn(`Unable to find a remote origin URL. Please add a git remote.\n
 git remote add origin https://github.com/YourUserName/RepoName.git
 `)
   }
@@ -168,7 +168,7 @@ const createOrLinkSiteToRepo = async (command) => {
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'repoUrl' implicitly has an 'any' ... Remove this comment to see the full error message
 const logExistingRepoSetupAndExit = ({ repoUrl, siteName }) => {
-  log.success(chalk.bold(`Success
+  NetlifyLog.success(chalk.bold(`Success
 
   This site "${siteName}" is configured to automatically deploy via ${repoUrl}`))
   // TODO add support for changing GitHub repo in site:config command

@@ -535,7 +535,7 @@ export type LogMessageOptions = {
 	symbol?: string;
   writeStream?: NodeJS.WriteStream;
 };
-export const log = {
+export const NetlifyLog = {
 	message: (message = '', { symbol = chalk.gray(symbols.BAR), writeStream = process.stdout }: LogMessageOptions = {}) => {
 		const parts = [`${chalk.gray(symbols.BAR)}`];
 		if (message) {
@@ -545,20 +545,20 @@ export const log = {
 		writeStream.write(`${parts.join('\n')}\n`);
 	},
 	info: (message: string) => {
-		log.message(message, { symbol: chalk.blue(symbols.INFO) });
+		NetlifyLog.message(message, { symbol: chalk.blue(symbols.INFO) });
 	},
 	success: (message: string) => {
-		log.message(message, { symbol: chalk.cyan(symbols.SUCCESS) });
+		NetlifyLog.message(message, { symbol: chalk.cyan(symbols.SUCCESS) });
 	},
 	step: (message: string) => {
-		log.message(message, { symbol: chalk.cyan(symbols.STEP_SUBMIT) });
+		NetlifyLog.message(message, { symbol: chalk.cyan(symbols.STEP_SUBMIT) });
 	},
 	warn: (message: string) => {
-		log.message(message, { symbol: chalk.yellow(symbols.WARN) });
+		NetlifyLog.message(message, { symbol: chalk.yellow(symbols.WARN) });
 	},
 	/** alias for `log.warn()`. */
 	warning: (message: string) => {
-		log.warn(message);
+		NetlifyLog.warn(message);
 	},
 	error: (message: Error | string = '', options: { exit?: boolean } = {}) => {
     const err =
@@ -571,9 +571,9 @@ export const log = {
 
   if (options.exit === false) {
     if (process.env.DEBUG) {
-      log.message(`Warning: ${err.stack?.split('\n')}\n`, { symbol: chalk.red(symbols.ERROR), writeStream: process.stderr })
+      NetlifyLog.message(`Warning: ${err.stack?.split('\n')}\n`, { symbol: chalk.red(symbols.ERROR), writeStream: process.stderr })
     } else {
-      log.message(`${chalk.red(`${err.name}:`)} ${err.message}\n`, { symbol: chalk.red(symbols.ERROR), writeStream: process.stderr })
+      NetlifyLog.message(`${chalk.red(`${err.name}:`)} ${err.message}\n`, { symbol: chalk.red(symbols.ERROR), writeStream: process.stderr })
     }
   } else {
     reportError(err, { severity: 'error' })
