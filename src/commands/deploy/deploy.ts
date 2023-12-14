@@ -493,7 +493,6 @@ const runDeploy = async ({
       siteRoot: site.root,
     })
   } catch (error_) {
-    console.error(error_)
     if (deployId) {
       await cancelDeploy({ api, deployId })
     }
