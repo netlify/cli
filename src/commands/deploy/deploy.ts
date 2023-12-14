@@ -445,7 +445,7 @@ const runDeploy = async ({
     results = await api.createSiteDeploy({ siteId, title, body: { draft, branch: alias } })
     deployId = results.id
 
-    const internalFunctionsFolder = await getInternalFunctionsDir({ base: site.root, packagePath })
+    const internalFunctionsFolder = await getInternalFunctionsDir({ base: site.root, packagePath, ensureExists: true })
 
     // The order of the directories matter: zip-it-and-ship-it will prioritize
     // functions from the rightmost directories. In this case, we want user
@@ -493,6 +493,7 @@ const runDeploy = async ({
       siteRoot: site.root,
     })
   } catch (error_) {
+    console.error(error_)
     if (deployId) {
       await cancelDeploy({ api, deployId })
     }
