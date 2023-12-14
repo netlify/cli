@@ -377,19 +377,14 @@ export class FunctionsRegistry {
 
   /**
    * Adds a function to the registry
-   *
-   * @param {string} name
-   * @param {NetlifyFunction} funcBeforeHook
-   * @param {boolean} [isReload]
-   * @returns
    */
-  // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-  async registerFunction(name, funcBeforeHook, isReload = false) {
+  async registerFunction(name: string, funcBeforeHook: NetlifyFunction, isReload = false) {
     const { runtime } = funcBeforeHook
 
     // The `onRegister` hook allows runtimes to modify the function before it's
     // registered, or to prevent it from being registered altogether if the
     // hook returns `null`.
+    // @ts-expect-error FIXME
     const func = typeof runtime.onRegister === 'function' ? runtime.onRegister(funcBeforeHook) : funcBeforeHook
 
     if (func === null) {
@@ -480,6 +475,8 @@ export class FunctionsRegistry {
       // @ts-expect-error TS(2339) FIXME: Property 'config' does not exist on type 'Function... Remove this comment to see the full error message
       config: this.config.functions,
     })
+
+    console.log({ functions })
 
     // Before registering any functions, we look for any functions that were on
     // the previous list but are missing from the new one. We unregister them.

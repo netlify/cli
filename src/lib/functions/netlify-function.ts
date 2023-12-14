@@ -30,6 +30,7 @@ export default class NetlifyFunction {
   public readonly mainFile: string
   public readonly displayName: string
   public readonly schedule?: string
+  public readonly runtime: string
 
   private readonly directory: string
   private readonly projectRoot: string
@@ -81,7 +82,6 @@ export default class NetlifyFunction {
     this.name = name
     this.displayName = displayName ?? name
     this.projectRoot = projectRoot
-    // @ts-expect-error TS(2339) FIXME: Property 'runtime' does not exist on type 'Netlify... Remove this comment to see the full error message
     this.runtime = runtime
     this.timeoutBackground = timeoutBackground
     this.timeoutSynchronous = timeoutSynchronous
