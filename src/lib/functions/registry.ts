@@ -497,7 +497,8 @@ export class FunctionsRegistry {
     const deletedFunctions = [...this.functions.values()].filter((oldFunc) => {
       const isFound = functions.some(
         (newFunc) =>
-          ignoredFunctions.has(newFunc.name) || (newFunc.name === oldFunc.name && newFunc.mainFile === oldFunc.mainFile),
+          ignoredFunctions.has(newFunc.name) ||
+          (newFunc.name === oldFunc.name && newFunc.mainFile === oldFunc.mainFile),
       )
 
       return !isFound
