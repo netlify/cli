@@ -569,17 +569,20 @@ exports.handler = async () => ({
             body: 'User',
           }),
         })
-        .withFunction({
-          path: 'hello.js',
-          pathPrefix: '.netlify/functions-internal',
-          handler: async () => ({
-            statusCode: 200,
-            body: 'Internal',
-          }),
-        })
-        .buildAsync()
+        .build()
 
       await withDevServer({ cwd: builder.directory, args }, async ({ outputBuffer, port, waitForLogMatching }) => {
+        await builder
+          .withFunction({
+            path: 'hello.js',
+            pathPrefix: '.netlify/functions-internal',
+            handler: async () => ({
+              statusCode: 200,
+              body: 'Internal',
+            }),
+          })
+          .build()
+
         await tryAndLogOutput(async () => {
           t.expect(await fetch(`http://localhost:${port}/.netlify/functions/hello`).then((res) => res.text())).toEqual(
             'User',

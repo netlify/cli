@@ -3,7 +3,7 @@ import { createRequire } from 'module'
 import { basename, extname, isAbsolute, join, resolve } from 'path'
 import { env } from 'process'
 
-import { listFunctions } from '@netlify/zip-it-and-ship-it'
+import { ListedFunction, listFunctions } from '@netlify/zip-it-and-ship-it'
 import extractZip from 'extract-zip'
 
 import {
@@ -27,6 +27,9 @@ import runtimes from './runtimes/index.js'
 export const DEFAULT_FUNCTION_URL_EXPRESSION = /^\/.netlify\/(functions|builders)\/([^/]+).*/
 const TYPES_PACKAGE = '@netlify/functions'
 const ZIP_EXTENSION = '.zip'
+
+const isInternalFunction = (func: ListedFunction | NetlifyFunction) =>
+  func.mainFile.includes(getPathInProject([INTERNAL_FUNCTIONS_FOLDER]))
 
 /**
  * @typedef {"buildError" | "extracted" | "loaded" | "missing-types-package" | "reloaded" | "reloading" | "removed"} FunctionEvent
@@ -476,13 +479,25 @@ export class FunctionsRegistry {
       config: this.config.functions,
     })
 
-    console.log({ functions })
+    // user-defined functions take precedence over internal functions,
+    // so we want to ignore any internal functions where there's a user-defined one with the same name
+    const ignoredFunctions = new Set(
+      functions
+        .filter(
+          (func) =>
+            isInternalFunction(func) &&
+            this.functions.has(func.name) &&
+            !isInternalFunction(this.functions.get(func.name)!),
+        )
+        .map((func) => func.name),
+    )
 
     // Before registering any functions, we look for any functions that were on
     // the previous list but are missing from the new one. We unregister them.
     const deletedFunctions = [...this.functions.values()].filter((oldFunc) => {
       const isFound = functions.some(
-        (newFunc) => newFunc.name === oldFunc.name && newFunc.mainFile === oldFunc.mainFile,
+        (newFunc) =>
+          ignoredFunctions.has(newFunc.name) || (newFunc.name === oldFunc.name && newFunc.mainFile === oldFunc.mainFile),
       )
 
       return !isFound
@@ -496,6 +511,10 @@ export class FunctionsRegistry {
       // where the last ones precede the previous ones. This is why
       // we reverse the array so we get the right functions precedence in the CLI.
       functions.reverse().map(async ({ displayName, mainFile, name, runtime: runtimeName }) => {
+        if (ignoredFunctions.has(name)) {
+          return
+        }
+
         const runtime = runtimes[runtimeName]
 
         // If there is no matching runtime, it means this function is not yet
