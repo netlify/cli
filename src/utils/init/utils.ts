@@ -1,9 +1,12 @@
 import { writeFile } from 'fs/promises'
 import path from 'path'
 
+import { NetlifyConfig } from '@netlify/build'
+import { Settings } from '@netlify/build-info'
 import cleanDeep from 'clean-deep'
 import inquirer from 'inquirer'
 
+import BaseCommand from '../../commands/base-command.js'
 import { fileExistsAsync } from '../../lib/fs.js'
 import { normalizeBackslash } from '../../lib/path.js'
 import { detectBuildSettings } from '../build-info.js'
@@ -11,39 +14,44 @@ import { chalk, error as failAndExit, log, warn } from '../command-helpers.js'
 
 import { getRecommendPlugins, getUIPlugins } from './plugins.js'
 
-// these plugins represent runtimes that are
-// expected to be "automatically" installed. Even though
-// they can be installed on package/toml, we always
-// want them installed in the site settings. When installed
-// there our build will automatically install the latest without
-// user management of the versioning.
-const pluginsToAlwaysInstall = new Set(['@netlify/plugin-nextjs'])
+const formatTitle = (title: string) => chalk.cyan(title)
 
 /**
  * Retrieve a list of plugins to auto install
+ * @param pluginsToAlwaysInstall these plugins represent runtimes that are
+ * expected to be "automatically" installed. Even though
+ * they can be installed on package/toml, we always
+ * want them installed in the site settings. When installed
+ * there our build will automatically install the latest without
+ * user management of the versioning.
+ * @param pluginsInstalled
+ * @param pluginsRecommended
+ * @returns
  */
-export const getPluginsToAutoInstall = (pluginsInstalled: string[] = [], pluginsRecommended: string[] = []) =>
-  pluginsRecommended.reduce(
+export const getPluginsToAutoInstall = (
+  command: BaseCommand,
+  pluginsInstalled: string[] = [],
+  pluginsRecommended: string[] = [],
+) => {
+  const nextRuntime = '@netlify/plugin-nextjs'
+  const pluginsToAlwaysInstall = new Set([nextRuntime])
+  return pluginsRecommended.reduce(
     (acc, plugin) =>
       pluginsInstalled.includes(plugin) && !pluginsToAlwaysInstall.has(plugin) ? acc : [...acc, plugin],
     [] as string[],
   )
-
+}
 /**
- *
- * @param {Partial<import('@netlify/build-info').Settings>} settings
- * @param {*} config
- * @param {import('../../commands/base-command.js').default} command
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'settings' implicitly has an 'any' type.
-const normalizeSettings = (settings, config, command) => {
-  const plugins = getPluginsToAutoInstall(settings.plugins_from_config_file, settings.plugins_recommended)
+const normalizeSettings = (settings: Settings, config: NetlifyConfig, command: BaseCommand) => {
+  const plugins = getPluginsToAutoInstall(command, settings.plugins_from_config_file, settings.plugins_recommended)
   const recommendedPlugins = getRecommendPlugins(plugins, config)
 
   return {
     defaultBaseDir: settings.baseDirectory ?? command.project.relativeBaseDirectory ?? '',
     defaultBuildCmd: config.build.command || settings.buildCommand,
     defaultBuildDir: settings.dist,
+    // @ts-expect-error types need to be fixed on @netlify/build
     defaultFunctionsDir: config.build.functions || 'netlify/functions',
     recommendedPlugins,
   }
@@ -102,7 +110,7 @@ export const getBuildSettings = async ({ command, config }) => {
     await normalizeSettings(setting, config, command)
 
   if (recommendedPlugins.length !== 0 && setting.framework?.name) {
-    log(`Configuring ${formatTitle(setting.framework?.name)} runtime...`)
+    log(`Configuring ${formatTitle(setting.framework.name)} runtime...`)
     log()
   }
 
@@ -205,12 +213,6 @@ export const formatErrorMessage = ({ error, message }) => {
   const errorMessage = error.json ? `${error.message} - ${JSON.stringify(error.json)}` : error.message
   return `${message} with error: ${chalk.red(errorMessage)}`
 }
-
-/**
- * @param {string} title
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'title' implicitly has an 'any' type.
-const formatTitle = (title) => chalk.cyan(title)
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
 export const createDeployKey = async ({ api }) => {

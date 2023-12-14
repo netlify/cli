@@ -3,11 +3,11 @@ import { EOL } from 'os'
 import { dirname, relative, resolve } from 'path'
 
 import { Project, Settings, getFramework, getSettings } from '@netlify/build-info'
-import { OptionValues } from 'commander'
+import type { OptionValues } from 'commander'
 import getPort from 'get-port'
 
 import BaseCommand from '../commands/base-command.js'
-import { DevConfig } from '../commands/dev/types.js'
+import { type DevConfig } from '../commands/dev/types.js'
 
 import { detectFrameworkSettings } from './build-info.js'
 import { NETLIFYDEVWARN, chalk, log } from './command-helpers.js'
@@ -152,7 +152,7 @@ const handleStaticServer = async ({
 /**
  * Retrieves the settings from a framework
  */
-const getSettingsFromDetectedSettings = (settings: Settings): BaseServerSettings | undefined => {
+const getSettingsFromDetectedSettings = (command: BaseCommand, settings?: Settings) => {
   if (!settings) {
     return
   }
@@ -164,7 +164,7 @@ const getSettingsFromDetectedSettings = (settings: Settings): BaseServerSettings
     framework: settings.framework.name,
     env: settings.env,
     pollingStrategies: settings.pollingStrategies,
-    plugins: getPluginsToAutoInstall(settings.plugins_from_config_file, settings.plugins_recommended),
+    plugins: getPluginsToAutoInstall(command, settings.plugins_from_config_file, settings.plugins_recommended),
   }
 }
 
@@ -227,28 +227,23 @@ const mergeSettings = async ({
 /**
  * Handles a forced framework and retrieves the settings for it
  */
-const handleForcedFramework = async ({
-  devConfig,
-  project,
-  workingDir,
-  workspacePackage,
-}: {
+const handleForcedFramework = async (options: {
+  command: BaseCommand
   devConfig: DevConfig
   project: Project
   workingDir: string
   workspacePackage?: string
 }): Promise<BaseServerSettings> => {
   // this throws if `devConfig.framework` is not a supported framework
-  const framework = await getFramework(devConfig.framework, project)
-  const settings = await getSettings(framework, project, workspacePackage || '')
-  const frameworkSettings = getSettingsFromDetectedSettings(settings)
-  return mergeSettings({ devConfig, workingDir, frameworkSettings })
+  const framework = await getFramework(options.devConfig.framework, options.project)
+  const settings = await getSettings(framework, options.project, options.workspacePackage || '')
+  const frameworkSettings = getSettingsFromDetectedSettings(options.command, settings)
+  return mergeSettings({ devConfig: options.devConfig, workingDir: options.workingDir, frameworkSettings })
 }
 
 /**
  * Get the server settings based on the flags and the devConfig
  */
-
 const detectServerSettings = async (
   devConfig: DevConfig,
   flags: OptionValues,
@@ -267,7 +262,7 @@ const detectServerSettings = async (
 
     const runDetection = !hasCommandAndTargetPort(devConfig)
     const frameworkSettings = runDetection
-      ? getSettingsFromDetectedSettings(await detectFrameworkSettings(command, 'dev'))
+      ? getSettingsFromDetectedSettings(command, await detectFrameworkSettings(command, 'dev'))
       : undefined
     if (frameworkSettings === undefined && runDetection) {
       log(`${NETLIFYDEVWARN} No app server detected. Using simple static server`)
@@ -288,6 +283,7 @@ const detectServerSettings = async (
     validateFrameworkConfig({ devConfig })
     // this is when the user explicitly configures a framework, e.g. `framework = "gatsby"`
     settings = await handleForcedFramework({
+      command,
       devConfig,
       project: command.project,
       workingDir: command.workingDir,
