@@ -200,7 +200,6 @@ export class FunctionsRegistry {
           : `refer to https://ntl.fyi/functions-runtime`
         const warning = `The function is using the legacy CommonJS format. To start using ES modules, ${action}.`
 
-        // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'never'.
         FunctionsRegistry.logEvent(event, { func, warnings: [warning] })
       } else {
         FunctionsRegistry.logEvent(event, { func })
@@ -304,15 +303,11 @@ export class FunctionsRegistry {
 
   /**
    * Logs an event associated with functions.
-   *
-   * @param {FunctionEvent} event
-   * @param {object} data
-   * @param {NetlifyFunction} [data.func]
-   * @param {string[]} [data.warnings]
-   * @returns
    */
-  // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
-  static logEvent(event, { func, warnings = [] }) {
+  static logEvent(
+    event: 'buildError' | 'extracted' | 'loaded' | 'missing-types-package' | 'reloaded' | 'reloading' | 'removed',
+    { func, warnings = [] }: { func: NetlifyFunction; warnings?: string[] },
+  ) {
     let warningsText = ''
 
     if (warnings.length !== 0) {
@@ -322,6 +317,7 @@ export class FunctionsRegistry {
     if (event === 'buildError') {
       log(
         `${NETLIFYDEVERR} ${chalk.red('Failed to load')} function ${chalk.yellow(func?.displayName)}: ${
+          // @ts-expect-error buildError is unknown
           func?.buildError?.message
         }`,
       )

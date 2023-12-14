@@ -43,7 +43,7 @@ export default class NetlifyFunction {
 
   private buildQueue?: Promise<$FIXME>
   private buildData?: $FIXME
-  private buildError: unknown | null = null
+  public buildError: unknown | null = null
 
   // List of the function's source files. This starts out as an empty set
   // and will get populated on every build.
