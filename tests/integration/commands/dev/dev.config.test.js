@@ -148,7 +148,7 @@ describe.concurrent('commands/dev/config', () => {
         .withNetlifyToml({
           config: {
             dev: {
-              command: `node -e console.log(process.env); setTimeout(() => "we need this to keep the dev server running", 100)`,
+              command: `node -e console.log(process.env); setInterval(() => "we need this to keep the dev server running", 100)`,
             },
           },
         })
