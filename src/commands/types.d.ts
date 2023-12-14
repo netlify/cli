@@ -7,7 +7,7 @@ import StateConfig from '../utils/state-config.js'
 type $TSFixMe = any;
 
 export type NetlifySite = {
-  root?: string
+  root: string
   configPath?: string
   siteId?: string
   get id(): string | undefined
