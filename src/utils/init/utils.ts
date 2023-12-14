@@ -21,16 +21,12 @@ const pluginsToAlwaysInstall = new Set(['@netlify/plugin-nextjs'])
 
 /**
  * Retrieve a list of plugins to auto install
- * @param {string[]=} pluginsInstalled
- * @param {string[]=} pluginsRecommended
- * @returns
  */
-export const getPluginsToAutoInstall = (pluginsInstalled = [], pluginsRecommended = []) =>
+export const getPluginsToAutoInstall = (pluginsInstalled: string[] = [], pluginsRecommended: string[] = []) =>
   pluginsRecommended.reduce(
     (acc, plugin) =>
       pluginsInstalled.includes(plugin) && !pluginsToAlwaysInstall.has(plugin) ? acc : [...acc, plugin],
-
-    /** @type {string[]} */ [],
+    [] as string[],
   )
 
 /**
