@@ -439,9 +439,9 @@ export const handler = async function () {
     })
   })
 
-  test(`should not redirect POST request to functions server when it doesn't exists`, async (t) => {
+  test(`always redirects POST requests to functions server`, async (t) => {
     await withSiteBuilder('site-with-post-request', async (builder) => {
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         // an error is expected since we're sending a POST request to a static server
@@ -454,8 +454,8 @@ export const handler = async function () {
           body: 'some=thing',
         })
 
-        t.expect(error.status).toBe(405)
-        t.expect(await error.text()).toEqual('Method Not Allowed')
+        t.expect(error.status).toBe(404)
+        t.expect(await error.text()).toEqual('Function not found...')
       })
     })
   })
