@@ -40,7 +40,9 @@ export type ServerSettings = BaseServerSettings & {
   jwtSecret: string
   /** default 'app_metadata.authorization.roles' */
   jwtRolePath: string
-  /** The port where the functions are running on */
+  /** The port where the dev server is running on */
   port: number
+  /** The port where the functions are running on */
+  functionsPort: number
   https?: { key: string; cert: string; keyFilePath: string; certFilePath: string }
 }

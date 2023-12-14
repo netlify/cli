@@ -3,12 +3,17 @@ import { EOL } from 'os'
 import { dirname, relative, resolve } from 'path'
 
 import { getFramework, getSettings } from '@netlify/build-info'
+import { OptionValues } from 'commander'
 import getPort from 'get-port'
+
+import BaseCommand from '../commands/base-command.js'
+import { DevConfig } from '../commands/dev/types.js'
 
 import { detectFrameworkSettings } from './build-info.js'
 import { NETLIFYDEVWARN, chalk, log } from './command-helpers.js'
 import { acquirePort } from './dev.js'
 import { getPluginsToAutoInstall } from './init/utils.js'
+import { ServerSettings } from './types.js'
 
 /** @param {string} str */
 // @ts-expect-error TS(7006) FIXME: Parameter 'str' implicitly has an 'any' type.
@@ -282,14 +287,9 @@ const handleForcedFramework = async ({ devConfig, project, workingDir, workspace
 
 /**
  * Get the server settings based on the flags and the devConfig
- * @param {import('../commands/dev/types.js').DevConfig} devConfig
- * @param {import('commander').OptionValues} flags
- * @param {import('../commands/base-command.js').default} command
- * @returns {Promise<import('./types.js').ServerSettings>}
  */
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'devConfig' implicitly has an 'any' type... Remove this comment to see the full error message
-const detectServerSettings = async (devConfig, flags, command) => {
+const detectServerSettings = async (devConfig: DevConfig, flags: OptionValues, command: BaseCommand): Promise<ServerSettings> => {
   validateProperty(devConfig, 'framework', 'string')
 
   /** @type {Partial<import('./types.js').BaseServerSettings>} */
