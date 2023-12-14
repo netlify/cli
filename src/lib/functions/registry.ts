@@ -449,13 +449,9 @@ export class FunctionsRegistry {
   /**
    * A proxy to zip-it-and-ship-it's `listFunctions` method. It exists just so
    * that we can mock it in tests.
-   * @param  {Parameters<listFunctions>} args
-   * @returns
    */
-  // @ts-expect-error TS(7019) FIXME: Rest parameter 'args' implicitly has an 'any[]' ty... Remove this comment to see the full error message
   // eslint-disable-next-line class-methods-use-this
-  async listFunctions(...args) {
-    // @ts-expect-error TS(2556) FIXME: A spread argument must either have a tuple type or... Remove this comment to see the full error message
+  async listFunctions(...args: Parameters<typeof listFunctions>) {
     return await listFunctions(...args)
   }
 
