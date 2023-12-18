@@ -5,7 +5,6 @@ import fetch from 'node-fetch'
 import { describe, test } from 'vitest'
 
 import { tryAndLogOutput, withDevServer } from '../../utils/dev-server.ts'
-import got from '../../utils/got.js'
 import { pause } from '../../utils/pause.js'
 import { withSiteBuilder } from '../../utils/site-builder.ts'
 
@@ -15,18 +14,6 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const testMatrix = [{ args: [] }, { args: ['esbuild'] }]
 
 const WAIT_WRITE = 3000
-
-// TODO: Remove function and got
-const gotCatch404 = async (url, options) => {
-  try {
-    return await got(url, options)
-  } catch (error) {
-    if (error.response && error.response.statusCode === 404) {
-      return error.response
-    }
-    throw error
-  }
-}
 
 describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args }) => {
   test('Updates a JavaScript function when its main file is modified', async (t) => {
@@ -304,9 +291,9 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
 
       await withDevServer({ cwd: builder.directory, args }, async ({ outputBuffer, port, waitForLogMatching }) => {
         await tryAndLogOutput(async () => {
-          const unauthenticatedResponse = await gotCatch404(`http://localhost:${port}/.netlify/functions/hello`)
+          const unauthenticatedResponse = await fetch(`http://localhost:${port}/.netlify/functions/hello`)
 
-          t.expect(unauthenticatedResponse.statusCode).toBe(404)
+          t.expect(unauthenticatedResponse.status).toBe(404)
         }, outputBuffer)
 
         await pause(WAIT_WRITE)
@@ -323,7 +310,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
 
         await waitForLogMatching('Loaded function hello')
 
-        const response = await got(`http://localhost:${port}/.netlify/functions/hello`).text()
+        const response = await fetch(`http://localhost:${port}/.netlify/functions/hello`).then((res) => res.text())
 
         t.expect(response).toEqual('Hello')
       })
@@ -354,9 +341,9 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
 
       await withDevServer({ cwd: builder.directory, args }, async ({ outputBuffer, port, waitForLogMatching }) => {
         await tryAndLogOutput(async () => {
-          const unauthenticatedResponse = await gotCatch404(`http://localhost:${port}/.netlify/functions/hello`)
+          const unauthenticatedResponse = await fetch(`http://localhost:${port}/.netlify/functions/hello`)
 
-          t.expect(unauthenticatedResponse.statusCode).toBe(404)
+          t.expect(unauthenticatedResponse.status).toBe(404)
         }, outputBuffer)
 
         await pause(WAIT_WRITE)
@@ -389,7 +376,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
 
         await waitForLogMatching('Loaded function hello')
 
-        const response = await got(`http://localhost:${port}/.netlify/functions/hello`).text()
+        const response = await fetch(`http://localhost:${port}/.netlify/functions/hello`).then((res) => res.text())
 
         t.expect(response).toEqual('Modern Web Development on the Jamstack')
       })
@@ -434,9 +421,9 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
 
         await waitForLogMatching('Removed function hello')
 
-        const { statusCode } = await gotCatch404(`http://localhost:${port}/.netlify/functions/hello`)
+        const { status } = await fetch(`http://localhost:${port}/.netlify/functions/hello`)
 
-        t.expect(statusCode).toBe(404)
+        t.expect(status).toBe(404)
       })
     })
   })
