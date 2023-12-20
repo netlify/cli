@@ -7,6 +7,7 @@ import cleanDeep from 'clean-deep'
 import inquirer from 'inquirer'
 
 import BaseCommand from '../../commands/base-command.js'
+import { $TSFixMe } from '../../commands/types.js'
 import { fileExistsAsync } from '../../lib/fs.js'
 import { normalizeBackslash } from '../../lib/path.js'
 import { detectBuildSettings } from '../build-info.js'
@@ -41,9 +42,8 @@ export const getPluginsToAutoInstall = (
     [] as string[],
   )
 }
-/**
- */
-const normalizeSettings = (settings: Settings, config: NetlifyConfig, command: BaseCommand) => {
+
+const normalizeSettings = (settings: Partial<Settings>, config: NetlifyConfig, command: BaseCommand) => {
   const plugins = getPluginsToAutoInstall(command, settings.plugins_from_config_file, settings.plugins_recommended)
   const recommendedPlugins = getRecommendPlugins(plugins, config)
 
@@ -94,18 +94,11 @@ const getPromptInputs = ({ defaultBaseDir, defaultBuildCmd, defaultBuildDir }) =
   return inputs.filter(Boolean)
 }
 
-/**
- * @param {object} param0
- * @param {*} param0.config
- * @param {import('../../commands/base-command.js').default} param0.command
- */
-// @ts-expect-error TS(7031) FIXME: Binding element 'command' implicitly has an 'any' ... Remove this comment to see the full error message
-export const getBuildSettings = async ({ command, config }) => {
+export const getBuildSettings = async ({ command, config }: { command: BaseCommand; config: $TSFixMe }) => {
   const settings = await detectBuildSettings(command)
   // TODO: add prompt for asking to choose the build command
-  /** @type {Partial<import('@netlify/build-info').Settings>} */
   // eslint-disable-next-line unicorn/explicit-length-check
-  const setting = settings.length > 0 ? settings[0] : {}
+  const setting: Partial<Settings> = settings.length > 0 ? settings[0] : {}
   const { defaultBaseDir, defaultBuildCmd, defaultBuildDir, defaultFunctionsDir, recommendedPlugins } =
     await normalizeSettings(setting, config, command)
 
