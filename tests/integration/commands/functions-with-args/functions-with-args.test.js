@@ -8,6 +8,7 @@ import { tryAndLogOutput, withDevServer } from '../../utils/dev-server.ts'
 import { pause } from '../../utils/pause.js'
 import { withSiteBuilder } from '../../utils/site-builder.ts'
 
+// eslint-disable-next-line no-underscore-dangle
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const testMatrix = [{ args: [] }, { args: ['esbuild'] }]
