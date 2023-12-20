@@ -1,3 +1,5 @@
+import { rm } from 'node:fs/promises'
+
 import waitPort from 'wait-port'
 
 import { startSpinner, stopSpinner } from '../lib/spinner.js'
@@ -5,24 +7,25 @@ import { startSpinner, stopSpinner } from '../lib/spinner.js'
 import { error, exit, log, NETLIFYDEVERR, NETLIFYDEVLOG } from './command-helpers.js'
 import { runCommand } from './shell.js'
 import { startStaticServer } from './static-server.js'
+import { ServerSettings } from './types.js'
 
 // 10 minutes
 const FRAMEWORK_PORT_TIMEOUT = 6e5
 
-/**
- * @typedef StartReturnObject
- * @property {4 | 6 | undefined=} ipVersion The version the open port was found on
- */
+interface StartReturnObject {
+  ipVersion?: 4 | 6
+}
 
 /**
  * Start a static server if the `useStaticServer` is provided or a framework specific server
- * @param {object} config
- * @param {import('./types.js').ServerSettings} config.settings
- * @param {string} config.cwd
- * @returns {Promise<StartReturnObject>}
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'cwd' implicitly has an 'any' type... Remove this comment to see the full error message
-export const startFrameworkServer = async function ({ cwd, settings }) {
+export const startFrameworkServer = async function ({
+  cwd,
+  settings,
+}: {
+  cwd: string
+  settings: ServerSettings
+}): Promise<StartReturnObject> {
   if (settings.useStaticServer) {
     if (settings.command) {
       runCommand(settings.command, { env: settings.env, cwd })
@@ -38,12 +41,17 @@ export const startFrameworkServer = async function ({ cwd, settings }) {
     text: `Waiting for framework port ${settings.frameworkPort}. This can be configured using the 'targetPort' property in the netlify.toml`,
   })
 
+  if (settings.clearPublishDirectory && settings.dist) {
+    await rm(settings.dist, { recursive: true, force: true })
+  }
+
   runCommand(settings.command, { env: settings.env, spinner, cwd })
 
   let port
   try {
     port = await waitPort({
-      port: settings.frameworkPort,
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      port: settings.frameworkPort!,
       host: 'localhost',
       output: 'silent',
       timeout: FRAMEWORK_PORT_TIMEOUT,

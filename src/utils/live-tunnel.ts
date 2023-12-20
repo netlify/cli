@@ -9,7 +9,6 @@ import { fetchLatestVersion, shouldFetchLatestVersion } from '../lib/exec-fetche
 import { getPathInHome } from '../lib/settings.js'
 
 import { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log } from './command-helpers.js'
-// @ts-expect-error TS(7034) FIXME: Variable 'execa' implicitly has type 'any' in some... Remove this comment to see the full error message
 import execa from './execa.js'
 
 const PACKAGE_NAME = 'live-tunnel-client'
@@ -62,7 +61,6 @@ const connectTunnel = function ({ localPort, netlifyApiToken, session }) {
     log(execPath, args)
   }
 
-  // @ts-expect-error TS(7005) FIXME: Variable 'execa' implicitly has an 'any' type.
   const ps = execa(execPath, args, { stdio: 'inherit' })
   // @ts-expect-error TS(7006) FIXME: Parameter 'code' implicitly has an 'any' type.
   ps.on('close', (code) => process.exit(code))

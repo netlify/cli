@@ -4,7 +4,6 @@ import { fileURLToPath } from 'url'
 
 import { isCI } from 'ci-info'
 
-// @ts-expect-error TS(7034) FIXME: Variable 'execa' implicitly has type 'any' in some... Remove this comment to see the full error message
 import execa from '../execa.js'
 import getGlobalConfig from '../get-global-config.js'
 
@@ -13,28 +12,21 @@ import isValidEventName from './validation.js'
 
 const dirPath = dirname(fileURLToPath(import.meta.url))
 
-/**
- * @param {'track' | 'identify'} type
- * @param {object} payload
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'type' implicitly has an 'any' type.
-function send(type, payload) {
+function send(type: 'track' | 'identify', payload: object) {
   const requestFile = join(dirPath, 'request.js')
   const options = JSON.stringify({
     data: payload,
     type,
   })
 
-  const args = /** @type {const} */ [process.execPath, [requestFile, options]]
+  const args = [process.execPath, [requestFile, options]] as const
   if (process.env.NETLIFY_TEST_TELEMETRY_WAIT === 'true') {
-    // @ts-expect-error TS(7005) FIXME: Variable 'execa' implicitly has an 'any' type.
     return execa(...args, {
       stdio: 'inherit',
     })
   }
 
   // spawn detached child process to handle send
-  // @ts-expect-error TS(7005) FIXME: Variable 'execa' implicitly has an 'any' type.
   execa(...args, {
     detached: true,
     stdio: 'ignore',
@@ -55,11 +47,11 @@ const eventConfig = {
 
 /**
  * Tracks a custom event with the provided payload
- * @param {string} eventName
- * @param {{status?: string, duration?: number, [key: string]: unknown}} [payload]
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'eventName' implicitly has an 'any' type... Remove this comment to see the full error message
-export async function track(eventName, payload = {}) {
+export async function track(
+  eventName: string,
+  payload: { status?: string; duration?: number; [key: string]: unknown } = {},
+) {
   if (isCI) {
     return
   }
@@ -83,7 +75,6 @@ export async function track(eventName, payload = {}) {
     return false
   }
 
-  // @ts-expect-error TS(2339) FIXME: Property 'duration' does not exist on type '{}'.
   const { duration, status, ...properties } = payload
   const defaultData = {
     event: eventName,
@@ -97,15 +88,7 @@ export async function track(eventName, payload = {}) {
   return send('track', defaultData)
 }
 
-/**
- * @param {object} payload
- * @param {string} payload.name
- * @param {string} payload.email
- * @param {string} payload.userId
- * @returns
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'payload' implicitly has an 'any' type.
-export async function identify(payload) {
+export async function identify(payload: { name: string; email: string; userId: string }) {
   if (isCI) {
     return
   }

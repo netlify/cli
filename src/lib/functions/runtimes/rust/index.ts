@@ -5,7 +5,6 @@ import { platform } from 'process'
 import { findUp } from 'find-up'
 import toml from 'toml'
 
-// @ts-expect-error TS(7034) FIXME: Variable 'execa' implicitly has type 'any' in some... Remove this comment to see the full error message
 import execa from '../../../../utils/execa.js'
 import { SERVE_FUNCTIONS_FOLDER } from '../../../../utils/functions/functions.js'
 import { getPathInProject } from '../../../settings.js'
@@ -24,7 +23,6 @@ const build = async ({ func }) => {
   const binaryName = `${crateName}${isWindows ? '.exe' : ''}`
   const binaryPath = join(targetDirectory, 'debug', binaryName)
 
-  // @ts-expect-error TS(7005) FIXME: Variable 'execa' implicitly has an 'any' type.
   await execa('cargo', ['build', '--target-dir', targetDirectory], {
     cwd: functionDirectory,
   })
