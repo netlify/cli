@@ -3,7 +3,6 @@ import { resolve } from 'path'
 
 import { program } from 'commander'
 
-// @ts-expect-error TS(7034) FIXME: Variable 'execa' implicitly has type 'any' in some... Remove this comment to see the full error message
 import execa from '../../../../../utils/execa.js'
 import { fileExistsAsync } from '../../../../fs.js'
 import { memoizedBuild } from '../../../memoized-build.js'
@@ -36,7 +35,6 @@ export const detectNetlifyLambda = async function ({ packageJson } = {}) {
       const srcFiles = [resolve(functionDirectories[0])]
 
       const yarnExists = await fileExistsAsync('yarn.lock')
-      // @ts-expect-error TS(7005) FIXME: Variable 'execa' implicitly has an 'any' type.
       const buildCommand = () => execa(yarnExists ? 'yarn' : 'npm', ['run', key])
 
       return {

@@ -1,11 +1,9 @@
 import semver from 'semver'
 
-// @ts-expect-error TS(7034) FIXME: Variable 'execa' implicitly has type 'any' in some... Remove this comment to see the full error message
 import execa from '../execa.js'
 
 export const checkLFSFilters = async function () {
   try {
-    // @ts-expect-error TS(7005) FIXME: Variable 'execa' implicitly has an 'any' type.
     const { stdout } = await execa('git', ['config', '--get-regexp', 'filter.lfs'])
     return stdout.length !== 0
   } catch {
@@ -15,7 +13,6 @@ export const checkLFSFilters = async function () {
 
 const getHelperVersion = async function () {
   try {
-    // @ts-expect-error TS(7005) FIXME: Variable 'execa' implicitly has an 'any' type.
     const { stdout } = await execa('git-credential-netlify', ['version'])
     return stdout
   } catch {
@@ -36,7 +33,6 @@ export const checkHelperVersion = async function () {
 
 export const checkGitVersion = async function () {
   try {
-    // @ts-expect-error TS(7005) FIXME: Variable 'execa' implicitly has an 'any' type.
     const { stdout } = await execa('git', ['--version'])
     return stdout.split(' ').pop()
   } catch {
@@ -46,7 +42,6 @@ export const checkGitVersion = async function () {
 
 const getLFSVersion = async function () {
   try {
-    // @ts-expect-error TS(7005) FIXME: Variable 'execa' implicitly has an 'any' type.
     const { stdout } = await execa('git-lfs', ['version'])
     return stdout
   } catch {
