@@ -199,6 +199,7 @@ const getSettingsFromDetectedSettings = (command: BaseCommand, settings?: Settin
     env: settings.env,
     pollingStrategies: settings.pollingStrategies,
     plugins: getPluginsToAutoInstall(command, settings.plugins_from_config_file, settings.plugins_recommended),
+    clearPublishDirectory: settings.clearPublishDirectory,
   }
 }
 
@@ -251,18 +252,17 @@ const mergeSettings = async ({
     baseDirectory?: string
     command?: string
     dist?: string
-    env?: Record<string, string>
+    env?: Record<string, string | undefined>
     framework?: string
     frameworkPort?: number
     pollingStrategies?: string[]
+    clearPublishDirectory?: boolean
   }
 }) => {
   const command = devConfig.command || frameworkSettings.command
   const frameworkPort = devConfig.targetPort || frameworkSettings.frameworkPort
   const useStaticServer = !(command && frameworkPort)
 
-  // workaround for https://github.com/unjs/nitro/issues/1970
-  const clearDist = frameworkSettings.framework?.includes('Nuxt')
   return {
     baseDirectory: devConfig.base || frameworkSettings.baseDirectory,
     command,
@@ -272,7 +272,7 @@ const mergeSettings = async ({
     env: frameworkSettings.env,
     pollingStrategies: frameworkSettings.pollingStrategies || [],
     useStaticServer,
-    clearDist,
+    clearPublishDirectory: frameworkSettings.clearPublishDirectory,
   }
 }
 
