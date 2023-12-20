@@ -6,7 +6,6 @@ import parseGitHubUrl from 'parse-github-url'
 import { render } from 'prettyjson'
 
 import { chalk, error, getTerminalLink, log, logJson, warn } from '../../utils/command-helpers.js'
-// @ts-expect-error TS(7034) FIXME: Variable 'execa' implicitly has type 'any' in some... Remove this comment to see the full error message
 import execa from '../../utils/execa.js'
 import getRepoData from '../../utils/get-repo-data.js'
 import { getGitHubToken } from '../../utils/init/config-github.js'
@@ -117,7 +116,7 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
 
   const { name: nameFlag } = options
   let site
-  let repoResp
+  let repoResp: Awaited<ReturnType<typeof createRepo>>
 
   // Allow the user to reenter site name if selected one isn't available
   // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
@@ -207,9 +206,7 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
   })
   if (cloneConfirm) {
     log()
-    // @ts-expect-error TS(7005) FIXME: Variable 'execa' implicitly has an 'any' type.
     await execa('git', ['clone', repoResp.clone_url, `${repoResp.name}`])
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     log(`🚀 Repository cloned successfully. You can find it under the ${chalk.magenta(repoResp.name)} folder`)
   }
 
