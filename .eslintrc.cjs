@@ -23,7 +23,6 @@ module.exports = {
     // TODO: remove, so those rules are enabled
     complexity: 0,
     'no-inline-comments': 'off',
-    'no-underscore-dangle': 'off',
     'func-style': 'off',
     'max-depth': 0,
     'max-lines': 0,
