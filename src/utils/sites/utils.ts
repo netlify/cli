@@ -45,8 +45,7 @@ export const validateTemplate = async ({ ghToken, templateName }) => {
   return { exists: true, isTemplate: data.is_template }
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'templateName' implicitly has an 'any' t... Remove this comment to see the full error message
-export const createRepo = async (templateName, ghToken, siteName) => {
+export const createRepo = async (templateName: string, ghToken: string, siteName: string) => {
   const resp = await fetch(`https://api.github.com/repos/${templateName}/generate`, {
     method: 'POST',
     headers: {
