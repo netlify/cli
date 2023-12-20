@@ -1,5 +1,5 @@
+import { note, confirm, select, text, intro, log as clackLog, outro } from '@clack/prompts'
 import { OptionValues } from 'commander'
-import inquirer from 'inquirer'
 import pick from 'lodash/pick.js'
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'pars... Remove this comment to see the full error message
 import parseGitHubUrl from 'parse-github-url'
@@ -15,10 +15,14 @@ import { createRepo, getTemplatesFromGitHub, validateTemplate } from '../../util
 import { track } from '../../utils/telemetry/index.js'
 import BaseCommand from '../base-command.js'
 
-import { getSiteNameInput } from './sites-create.js'
+interface Template {
+  name: string
+  sourceCodeUrl: string
+  slug: string
+}
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'token' implicitly has an 'any' type.
-export const fetchTemplates = async (token) => {
+export const fetchTemplates = async (token: string): Template[] => {
   const templatesFromGithubOrg = await getTemplatesFromGitHub(token)
 
   return (
@@ -48,20 +52,15 @@ const getTemplateName = async ({ ghToken, options, repository }) => {
 
   const templates = await fetchTemplates(ghToken)
 
-  log(`Choose one of our starter templates. Netlify will create a new repo for this template in your GitHub account.`)
-
-  const { templateName } = await inquirer.prompt([
-    {
-      type: 'list',
-      name: 'templateName',
-      message: 'Template:',
-      // @ts-expect-error TS(7006) FIXME: Parameter 'template' implicitly has an 'any' type.
-      choices: templates.map((template) => ({
-        value: template.slug,
-        name: template.name,
-      })),
-    },
-  ])
+  const templateName = await select({
+    message:
+      'Choose one of our starter templates. Netlify will create a new repo for this template in your GitHub account.',
+    maxItems: 5,
+    options: templates.map((template) => ({
+      value: template.slug,
+      label: template.name,
+    })),
+  })
 
   return templateName
 }
@@ -76,6 +75,8 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
 
   const { globalConfig } = command.netlify
   const ghToken = await getGitHubToken({ globalConfig })
+
+  intro(`${chalk.bgBlack.cyan('Create a site from a starter template')}`)
 
   const templateName = await getTemplateName({ ghToken, options, repository })
   const { exists, isTemplate } = await validateTemplate({ templateName, ghToken })
@@ -100,18 +101,16 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
   let { accountSlug } = options
 
   if (!accountSlug) {
-    const { accountSlug: accountSlugInput } = await inquirer.prompt([
-      {
-        type: 'list',
-        name: 'accountSlug',
-        message: 'Team:',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'account' implicitly has an 'any' type.
-        choices: accounts.map((account) => ({
-          value: account.slug,
-          name: account.name,
-        })),
-      },
-    ])
+    const accountSlugInput = await select({
+      message: 'Team:',
+      maxItems: 5,
+      // @ts-expect-error TS(7006) FIXME: Parameter 'account' implicitly has an 'any' type.
+      options: accounts.map((account) => ({
+        value: account.slug,
+        label: account.name,
+      })),
+    })
+
     accountSlug = accountSlugInput
   }
 
@@ -122,15 +121,24 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
   // Allow the user to reenter site name if selected one isn't available
   // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
   const inputSiteName = async (name) => {
-    const { name: inputName } = await getSiteNameInput(name)
+    const inputName = await text({
+      message: 'Site name (leave blank for a random name; you can change it later):',
+      validate: (input) => {
+        // @ts-expect-error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+        if (!/^[a-zA-Z\d-]+$/.test(input || undefined)) {
+          return 'Only alphanumeric characters and hyphens are allowed'
+        }
+      },
+    })
 
     try {
+      // @ts-expect-error TS2339: Property 'trim' does not exist on type 'string | symbol'.
       const siteName = inputName.trim()
 
       // Create new repo from template
       repoResp = await createRepo(templateName, ghToken, siteName || templateName)
 
-      if (repoResp.errors) {
+      if (repoResp.errors || !repoResp) {
         if (repoResp.errors[0].includes('Name already exists on this account')) {
           warn(
             `Oh no! We found already a repository with this name. It seems you have already created a template with the name ${templateName}. Please try to run the command again and provide a different name.`,
@@ -171,24 +179,36 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
     }
   }
 
+  if (!repoResp) {
+    throw new Error(
+      `Oops! Seems like something went wrong trying to create the repository. You can try to re-run this command again or open an issue in our repository: https://github.com/netlify/cli/issues`,
+    )
+  }
+  if (!site) {
+    throw new Error(
+      `Oops! Seems like something went wrong trying to add a site. You can try to re-run this command again or open an issue in our repository: https://github.com/netlify/cli/issues`,
+    )
+  }
+
   await inputSiteName(nameFlag)
 
-  log()
-  log(chalk.greenBright.bold.underline(`Site Created`))
-  log()
-
-  // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
+  // @ts-expect-error Property 'ssl_url' does not exist on type 'never'.
   const siteUrl = site.ssl_url || site.url
-  log(
-    render({
-      // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-      'Admin URL': site.admin_url,
-      URL: siteUrl,
-      // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-      'Site ID': site.id,
-      // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-      'Repo URL': site.build_settings.repo_url,
-    }),
+
+  note(
+    render(
+      {
+        // @ts-expect-error TS2339: Property 'admin_url' does not exist on type 'never'.
+        'Admin URL': site.admin_url,
+        URL: siteUrl,
+        // @ts-expect-error TS2339: Property 'id' does not exist on type 'never'.
+        'Site ID': site.id,
+        // @ts-expect-error TS2339: Property 'build_settings' does not exist on type 'never'.
+        'Repo URL': site.build_settings.repo_url,
+      },
+      { keysColor: 'cyan' },
+    ),
+    'Site Created',
   )
 
   track('sites_createdFromTemplate', {
@@ -199,18 +219,17 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
     siteUrl,
   })
 
-  const { cloneConfirm } = await inquirer.prompt({
-    type: 'confirm',
-    name: 'cloneConfirm',
-    message: `Do you want to clone the repository?`,
-    default: true,
+  const cloneConfirm = await confirm({
+    message: 'Do you want to clone the repository?',
+    initialValue: true,
   })
+
   if (cloneConfirm) {
-    log()
     // @ts-expect-error TS(7005) FIXME: Variable 'execa' implicitly has an 'any' type.
     await execa('git', ['clone', repoResp.clone_url, `${repoResp.name}`])
+    const outputStep = options.withCi ? clackLog.step : outro
     // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-    log(`🚀 Repository cloned successfully. You can find it under the ${chalk.magenta(repoResp.name)} folder`)
+    outputStep(`🚀 Repository cloned successfully. You can find it under the ${chalk.magenta(repoResp.name)} folder`)
   }
 
   if (options.withCi) {
