@@ -2,14 +2,19 @@ import { readFile } from 'fs/promises'
 import { EOL } from 'os'
 import { dirname, relative, resolve } from 'path'
 
-import { getFramework, getSettings } from '@netlify/build-info'
+import { Project, Settings, getFramework, getSettings } from '@netlify/build-info'
+import type { OptionValues } from 'commander'
 import getPort from 'get-port'
+
+import BaseCommand from '../commands/base-command.js'
+import { type DevConfig } from '../commands/dev/types.js'
 
 import { detectFrameworkSettings } from './build-info.js'
 import { NETLIFYDEVWARN, chalk, log } from './command-helpers.js'
 import { acquirePort } from './dev.js'
 import { getInternalFunctionsDir } from './functions/functions.js'
 import { getPluginsToAutoInstall } from './init/utils.js'
+import { BaseServerSettings, ServerSettings } from './types.js'
 
 /** @param {string} str */
 // @ts-expect-error TS(7006) FIXME: Parameter 'str' implicitly has an 'any' type.
@@ -180,11 +185,8 @@ const handleStaticServer = async ({ devConfig, flags, workingDir }) => {
 
 /**
  * Retrieves the settings from a framework
- * @param {import('@netlify/build-info').Settings} [settings]
- * @returns {import('./types.js').BaseServerSettings | undefined}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'settings' implicitly has an 'any' type.
-const getSettingsFromDetectedSettings = (settings) => {
+const getSettingsFromDetectedSettings = (command: BaseCommand, settings?: Settings) => {
   if (!settings) {
     return
   }
@@ -196,7 +198,7 @@ const getSettingsFromDetectedSettings = (settings) => {
     framework: settings.framework.name,
     env: settings.env,
     pollingStrategies: settings.pollingStrategies,
-    plugins: getPluginsToAutoInstall(settings.plugins_from_config_file, settings.plugins_recommended),
+    plugins: getPluginsToAutoInstall(command, settings.plugins_from_config_file, settings.plugins_recommended),
   }
 }
 
@@ -276,32 +278,29 @@ const mergeSettings = async ({
 
 /**
  * Handles a forced framework and retrieves the settings for it
- * @param {object} config
- * @param {import('../commands/dev/types.js').DevConfig} config.devConfig
- * @param {import('@netlify/build-info').Project} config.project
- * @param {string} config.workingDir
- * @param {string=} config.workspacePackage
- * @returns {Promise<import('./types.js').BaseServerSettings>}
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'devConfig' implicitly has an 'any... Remove this comment to see the full error message
-const handleForcedFramework = async ({ devConfig, project, workingDir, workspacePackage }) => {
+const handleForcedFramework = async (options: {
+  command: BaseCommand
+  devConfig: DevConfig
+  project: Project
+  workingDir: string
+  workspacePackage?: string
+}): Promise<BaseServerSettings> => {
   // this throws if `devConfig.framework` is not a supported framework
-  const framework = await getFramework(devConfig.framework, project)
-  const settings = await getSettings(framework, project, workspacePackage || '')
-  const frameworkSettings = getSettingsFromDetectedSettings(settings)
-  return mergeSettings({ devConfig, workingDir, frameworkSettings })
+  const framework = await getFramework(options.devConfig.framework, options.project)
+  const settings = await getSettings(framework, options.project, options.workspacePackage || '')
+  const frameworkSettings = getSettingsFromDetectedSettings(options.command, settings)
+  return mergeSettings({ devConfig: options.devConfig, workingDir: options.workingDir, frameworkSettings })
 }
 
 /**
  * Get the server settings based on the flags and the devConfig
- * @param {import('../commands/dev/types.js').DevConfig} devConfig
- * @param {import('commander').OptionValues} flags
- * @param {import('../commands/base-command.js').default} command
- * @returns {Promise<import('./types.js').ServerSettings>}
  */
-
-// @ts-expect-error TS(7006) FIXME: Parameter 'devConfig' implicitly has an 'any' type... Remove this comment to see the full error message
-const detectServerSettings = async (devConfig, flags, command) => {
+const detectServerSettings = async (
+  devConfig: DevConfig,
+  flags: OptionValues,
+  command: BaseCommand,
+): Promise<ServerSettings> => {
   validateProperty(devConfig, 'framework', 'string')
 
   /** @type {Partial<import('./types.js').BaseServerSettings>} */
@@ -315,7 +314,7 @@ const detectServerSettings = async (devConfig, flags, command) => {
 
     const runDetection = !hasCommandAndTargetPort(devConfig)
     const frameworkSettings = runDetection
-      ? getSettingsFromDetectedSettings(await detectFrameworkSettings(command, 'dev'))
+      ? getSettingsFromDetectedSettings(command, await detectFrameworkSettings(command, 'dev'))
       : undefined
     if (frameworkSettings === undefined && runDetection) {
       log(`${NETLIFYDEVWARN} No app server detected. Using simple static server`)
@@ -336,6 +335,7 @@ const detectServerSettings = async (devConfig, flags, command) => {
     validateFrameworkConfig({ devConfig })
     // this is when the user explicitly configures a framework, e.g. `framework = "gatsby"`
     settings = await handleForcedFramework({
+      command,
       devConfig,
       project: command.project,
       workingDir: command.workingDir,

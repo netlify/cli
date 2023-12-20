@@ -1,7 +1,7 @@
 import { readFile } from 'fs/promises'
 import { resolve } from 'path'
 
-import minimist from 'minimist'
+import { program } from 'commander'
 
 // @ts-expect-error TS(7034) FIXME: Variable 'execa' implicitly has type 'any' in some... Remove this comment to see the full error message
 import execa from '../../../../../utils/execa.js'
@@ -20,14 +20,18 @@ export const detectNetlifyLambda = async function ({ packageJson } = {}) {
 
   for (const [key, script] of matchingScripts) {
     // E.g. ["netlify-lambda", "build", "functions/folder"]
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    const match = minimist(script.split(' '), {
-      // these are all valid options for netlify-lambda
-      boolean: ['s', 'static'],
-      string: ['c', 'config', 'p', 'port', 'b', 'babelrc', 't', 'timeout'],
-    })
+    // these are all valid options for netlify-lambda
+    program
+      .option('-s, --static')
+      .option('-c, --config [file]')
+      .option('-p, --port [number]')
+      .option('-b, --babelrc [file]')
+      .option('-t, --timeout [delay]')
+
+    program.parse((script as string).split(' ') ?? [])
+
     // We are not interested in 'netlify-lambda' and 'build' commands
-    const functionDirectories = match._.slice(2)
+    const functionDirectories = program.args.filter((arg) => !['netlify-lambda', 'build'].includes(arg))
     if (functionDirectories.length === 1) {
       const srcFiles = [resolve(functionDirectories[0])]
 
