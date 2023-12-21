@@ -1,4 +1,5 @@
 import path from 'path'
+import process from 'process'
 
 import execa from 'execa'
 import { describe, test } from 'vitest'
@@ -294,7 +295,16 @@ describe.concurrent('command/build', () => {
   test('should have version in NETLIFY_CLI_VERSION variable', async (t) => {
     await withSiteBuilder('NETLIFY_CLI_VERSION-env', async (builder) => {
       await builder
-        .withNetlifyToml({ config: { build: { command: 'echo NETLIFY_CLI_VERSION=$NETLIFY_CLI_VERSION' } } })
+        .withNetlifyToml({
+          config: {
+            build: {
+              command:
+                process.platform === 'win32'
+                  ? 'echo NETLIFY_CLI_VERSION=%NETLIFY_CLI_VERSION%'
+                  : 'echo NETLIFY_CLI_VERSION=$NETLIFY_CLI_VERSION',
+            },
+          },
+        })
         .build()
 
       await runBuildCommand(t, builder.directory, {
