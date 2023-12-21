@@ -80,7 +80,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
   })
 
   test('Should not use the ZISI function bundler if not using esbuild', async (t) => {
-    await withSiteBuilder('site-with-esm-function', async (builder) => {
+    await withSiteBuilder('site-with-esm-function-and-no-esbuild', async (builder) => {
       builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withContentFile({
         path: path.join('functions', 'esm-function', 'esm-function.js'),
         content: `
@@ -104,7 +104,7 @@ export async function handler(event, context) {
   })
 
   test('Should use the ZISI function bundler and serve ESM functions if using esbuild', async (t) => {
-    await withSiteBuilder('site-with-esm-function', async (builder) => {
+    await withSiteBuilder('site-with-esm-function-and-esbuild', async (builder) => {
       builder
         .withNetlifyToml({ config: { functions: { directory: 'functions', node_bundler: 'esbuild' } } })
         .withContentFile({
@@ -129,7 +129,7 @@ export async function handler(event, context) {
   })
 
   test('Should use the ZISI function bundler and serve TypeScript functions if using esbuild', async (t) => {
-    await withSiteBuilder('site-with-ts-function', async (builder) => {
+    await withSiteBuilder('site-with-ts-function-and-esbuild', async (builder) => {
       builder
         .withNetlifyToml({ config: { functions: { directory: 'functions', node_bundler: 'esbuild' } } })
         .withContentFile({
@@ -159,7 +159,7 @@ export const handler = async function () {
   })
 
   test('Should use the ZISI function bundler and serve TypeScript functions if not using esbuild', async (t) => {
-    await withSiteBuilder('site-with-ts-function', async (builder) => {
+    await withSiteBuilder('site-with-ts-function-and-no-esbuild', async (builder) => {
       builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withContentFile({
         path: path.join('functions', 'ts-function', 'ts-function.ts'),
         content: `
