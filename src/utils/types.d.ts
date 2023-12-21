@@ -33,6 +33,7 @@ export type BaseServerSettings = {
   env?: NodeJS.ProcessEnv
   pollingStrategies?: string[]
   plugins?: string[]
+  clearPublishDirectory?: boolean
 }
 
 export type ServerSettings = BaseServerSettings & {
@@ -45,4 +46,5 @@ export type ServerSettings = BaseServerSettings & {
   /** The port where the functions are running on */
   functionsPort: number
   https?: { key: string; cert: string; keyFilePath: string; certFilePath: string }
+  clearPublishDirectory?: boolean
 }

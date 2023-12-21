@@ -82,6 +82,11 @@ const getDuration = (startTime: bigint) => {
  * If the filter flag does not match a workspace package or is not defined then it will prompt with an autocomplete to select a package
  */
 async function selectWorkspace(project: Project, filter?: string): Promise<string> {
+  // don't show prompt for workspace selection if there is only one package
+  if (project.workspace?.packages && project.workspace.packages.length === 1) {
+    return project.workspace.packages[0].path
+  }
+
   const selected = project.workspace?.packages.find((pkg) => {
     if (
       project.relativeBaseDirectory &&

@@ -165,6 +165,7 @@ const getSettingsFromDetectedSettings = (command: BaseCommand, settings?: Settin
     env: settings.env,
     pollingStrategies: settings.pollingStrategies,
     plugins: getPluginsToAutoInstall(command, settings.plugins_from_config_file, settings.plugins_recommended),
+    clearPublishDirectory: settings.clearPublishDirectory,
   }
 }
 
@@ -210,8 +211,8 @@ const mergeSettings = async ({
 }) => {
   const command = devConfig.command || frameworkSettings.command
   const frameworkPort = devConfig.targetPort || frameworkSettings.frameworkPort
-  // if the framework doesn't start a server, we use a static one
   const useStaticServer = !(command && frameworkPort)
+
   return {
     baseDirectory: devConfig.base || frameworkSettings.baseDirectory,
     command,
@@ -221,6 +222,7 @@ const mergeSettings = async ({
     env: frameworkSettings.env,
     pollingStrategies: frameworkSettings.pollingStrategies || [],
     useStaticServer,
+    clearPublishDirectory: frameworkSettings.clearPublishDirectory,
   }
 }
 

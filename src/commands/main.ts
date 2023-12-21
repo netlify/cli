@@ -7,7 +7,6 @@ import { closest } from 'fastest-levenshtein'
 import inquirer from 'inquirer'
 
 import { BANG, chalk, error, exit, log, NETLIFY_CYAN, USER_AGENT, warn } from '../utils/command-helpers.js'
-// @ts-expect-error TS(7034) FIXME: Variable 'execa' implicitly has type 'any' in some... Remove this comment to see the full error message
 import execa from '../utils/execa.js'
 import getGlobalConfig from '../utils/get-global-config.js'
 import getPackageJson from '../utils/get-package-json.js'
@@ -177,7 +176,6 @@ const mainCommand = async function (options, command) {
     error(`Run ${NETLIFY_CYAN(`${command.name()} help`)} for a list of available commands.`)
   }
 
-  // @ts-expect-error TS(7005) FIXME: Variable 'execa' implicitly has an 'any' type.
   await execa(process.argv[0], [process.argv[1], suggestion], { stdio: 'inherit' })
 }
 

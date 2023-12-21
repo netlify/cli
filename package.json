@@ -150,7 +150,6 @@
     "lodash": "4.17.21",
     "log-symbols": "5.1.0",
     "log-update": "5.0.1",
-    "minimist": "1.2.8",
     "multiparty": "4.2.3",
     "netlify": "13.1.11",
     "netlify-headers-parser": "7.1.2",
