@@ -145,18 +145,34 @@ describe.concurrent('commands/dev/config', () => {
   test('should provide CLI version in env var', async (t) => {
     await withSiteBuilder('site-with-netlify-version-env-var', async (builder) => {
       await builder
+        .withContentFile({
+          content: `
+          import http from "http";
+
+          http.createServer((req, res) => {
+            res.write(JSON.stringify({
+              NETLIFY_CLI_VERSION: process.env.NETLIFY_CLI_VERSION,
+            }))
+            res.end()
+          }).listen(1234);
+          `,
+          path: 'devserver.mjs',
+        })
         .withNetlifyToml({
           config: {
             dev: {
-              command: `node -e console.log(process.env); setInterval(() => "we need this to keep the dev server running", 100)`,
+              framework: '#custom',
+              command: 'node devserver.mjs',
+              targetPort: 1234,
             },
           },
         })
         .build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
-        await server.close()
-        t.expect(server.output).toContain('NETLIFY_CLI_VERSION')
+        const resp = await fetch(server.url)
+        const { NETLIFY_CLI_VERSION } = await resp.json()
+        t.expect(NETLIFY_CLI_VERSION).toMatch(/\d+\.\d+\.\d+/)
       })
     })
   })
