@@ -11,16 +11,7 @@
     "/bin",
     "/npm-shrinkwrap.json",
     "/scripts/postinstall.js",
-    "/src/**/*.js",
-    "/src/**/types.d.ts",
-    "/src/**/*.sh",
-    "/src/**/*.ps1",
-    "/src/functions-templates/**",
-    "/src/lib/templates/**",
-    "!/src/**/node_modules/**",
-    "!/src/**/*.test.js",
-    "!/src/**/*.ts",
-    "!/src/**/*.d.ts.map"
+    "/dist"
   ],
   "homepage": "https://github.com/netlify/cli",
   "keywords": [
