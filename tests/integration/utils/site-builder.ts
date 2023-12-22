@@ -3,11 +3,13 @@ import os from 'os'
 import path from 'path'
 import process from 'process'
 
+import slugify from '@sindresorhus/slugify'
 import execa from 'execa'
 import serializeJS from 'serialize-javascript'
 import tempDirectory from 'temp-dir'
 import tomlify from 'tomlify-j0.4'
 import { v4 as uuidv4 } from 'uuid'
+import type { TaskContext } from 'vitest'
 
 const ensureDir = (file) => mkdir(file, { recursive: true })
 
@@ -293,11 +295,13 @@ export const createSiteBuilder = ({ siteName }: { siteName: string }) => {
 }
 
 export const withSiteBuilder = async <T>(
-  siteName: string,
+  siteNameOrTaskContext: string | TaskContext,
   testHandler: (builder: SiteBuilder) => Promise<T>,
 ): Promise<T> => {
   let builder: SiteBuilder | undefined
   try {
+    const siteName =
+      typeof siteNameOrTaskContext === 'string' ? siteNameOrTaskContext : slugify(siteNameOrTaskContext.task.name)
     builder = createSiteBuilder({ siteName })
     return await testHandler(builder)
   } finally {

@@ -11,17 +11,17 @@ describe('getFunctions', () => {
     expect(funcs).toEqual([])
   })
 
-  test('should return an empty object for a directory with no js files', async () => {
-    await withSiteBuilder('site-without-functions', async (builder) => {
-      await builder.buildAsync()
+  test('should return an empty object for a directory with no js files', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      await builder.build()
 
       const funcs = await getFunctions(builder.directory)
       expect(funcs).toEqual([])
     })
   })
 
-  test('should return object with function details for a directory with js files', async () => {
-    await withSiteBuilder('site-without-functions', async (builder) => {
+  test('should return object with function details for a directory with js files', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
       builder.withFunction({
         path: 'index.js',
         handler: '',
