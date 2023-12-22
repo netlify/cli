@@ -90,7 +90,7 @@ describe.concurrent('commands/init', () => {
       },
     ]
 
-    await withSiteBuilder('new-site', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       await builder.withGit().buildAsync()
 
       await withMockApi(routes, async ({ apiUrl }) => {
@@ -187,7 +187,7 @@ describe.concurrent('commands/init', () => {
       },
     ]
 
-    await withSiteBuilder('new-site', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       await builder.withGit().buildAsync()
 
       await withMockApi(routes, async ({ apiUrl }) => {
@@ -288,7 +288,7 @@ describe.concurrent('commands/init', () => {
       },
     ]
 
-    await withSiteBuilder('new-site', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       await builder
         .withGit()
         .withPackageJson({ packageJson: { dependencies: { next: '^10.0.0' } } })
@@ -391,7 +391,7 @@ describe.concurrent('commands/init', () => {
       },
     ]
 
-    await withSiteBuilder('new-site', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       await builder
         .withGit()
         .withPackageJson({ packageJson: { dependencies: { next: '^10.0.0' } } })
@@ -413,7 +413,7 @@ describe.concurrent('commands/init', () => {
     })
   })
 
-  test('netlify init existing Next.js site with existing plugins', async () => {
+  test('netlify init existing Next.js site with existing plugins', async (t) => {
     const [command, publish] = ['custom-build-command', 'custom-publish', 'custom-functions']
     const initQuestions = [
       {
@@ -480,7 +480,7 @@ describe.concurrent('commands/init', () => {
       },
     ]
 
-    await withSiteBuilder('new-site', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       await builder
         .withGit()
         .withPackageJson({ packageJson: { dependencies: { next: '^10.0.0' } } })
@@ -583,7 +583,7 @@ describe.concurrent('commands/init', () => {
       },
     ]
 
-    await withSiteBuilder('new-site', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       await builder
         .withGit()
         .withContentFile({
