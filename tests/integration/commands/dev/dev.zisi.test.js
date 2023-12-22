@@ -98,7 +98,7 @@ export async function handler(event, context) {
       await t
         .expect(() =>
           withDevServer({ cwd: builder.directory, args }, async (server) =>
-            nodeFetch(`${server.url}/.netlify/functions/esm-function`).text(),
+            nodeFetch(`${server.url}/.netlify/functions/esm-function`).then((res) => res.text()),
           ),
         )
         .rejects.toThrow()
