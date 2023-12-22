@@ -26,7 +26,7 @@ describe('getFunctions', () => {
         path: 'index.js',
         handler: '',
       })
-      await builder.buildAsync()
+      await builder.build()
 
       const functions = path.join(builder.directory, 'functions')
       const funcs = await getFunctions(functions)
@@ -54,7 +54,7 @@ describe('getFunctions', () => {
           path: 'bar-background/bar-background.js',
           handler: '',
         })
-      await builder.buildAsync()
+      await builder.build()
 
       const functions = path.join(builder.directory, 'functions')
       const funcs = await getFunctions(functions)
