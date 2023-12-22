@@ -9,9 +9,9 @@ import { getCLIOptions, withMockApi } from '../../utils/mock-api.js'
 import { withSiteBuilder } from '../../utils/site-builder.ts'
 
 describe('link command', () => {
-  test('should create gitignore in repository root when is root', async () => {
-    await withSiteBuilder('repo', async (builder) => {
-      await builder.withGit().buildAsync()
+  test('should create gitignore in repository root when is root', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      await builder.withGit().build()
 
       await withMockApi(
         [],
@@ -27,10 +27,10 @@ describe('link command', () => {
 
   test.skipIf(process.platform === 'win32')(
     'should create gitignore in repository root when cwd is subdirectory',
-    async () => {
-      await withSiteBuilder('monorepo', async (builder) => {
+    async (t) => {
+      await withSiteBuilder(t, async (builder) => {
         const projectPath = join('projects', 'project1')
-        await builder.withGit().withNetlifyToml({ config: {}, pathPrefix: projectPath }).buildAsync()
+        await builder.withGit().withNetlifyToml({ config: {}, pathPrefix: projectPath }).build()
 
         await withMockApi(
           [],
