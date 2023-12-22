@@ -294,10 +294,21 @@ export const createSiteBuilder = ({ siteName }: { siteName: string }) => {
   return new SiteBuilder(directory).ensureDirectoryExists(directory)
 }
 
-export const withSiteBuilder = async <T>(
+/**
+ * @deprecated use the task-based signature instead
+ */
+export function withSiteBuilder<T>(siteName: string, testHandler: (builder: SiteBuilder) => Promise<T>): Promise<T>
+/**
+ * @param taskContext used to infer directory name from test name
+ */
+export function withSiteBuilder<T>(
+  taskContext: TaskContext,
+  testHandler: (builder: SiteBuilder) => Promise<T>,
+): Promise<T>
+export async function withSiteBuilder<T>(
   siteNameOrTaskContext: string | TaskContext,
   testHandler: (builder: SiteBuilder) => Promise<T>,
-): Promise<T> => {
+): Promise<T> {
   let builder: SiteBuilder | undefined
   try {
     const siteName =
