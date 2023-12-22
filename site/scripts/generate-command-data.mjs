@@ -1,6 +1,5 @@
- 
-import { createMainCommand } from '../../src/commands/index.js'
-import { sortOptions } from '../../src/utils/command-helpers.js'
+import { createMainCommand } from '../../dist/commands/index.js'
+import { sortOptions } from '../../dist/utils/command-helpers.js'
 
 const program = createMainCommand()
 
