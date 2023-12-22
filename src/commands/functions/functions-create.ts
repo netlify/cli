@@ -21,7 +21,6 @@ import { fileExistsAsync } from '../../lib/fs.js'
 import { getAddons, getCurrentAddon, getSiteData } from '../../utils/addons/prepare.js'
 import { NETLIFYDEVERR, NETLIFYDEVLOG, NETLIFYDEVWARN, chalk, error, log } from '../../utils/command-helpers.js'
 import { getDotEnvVariables, injectEnvVariables } from '../../utils/dev.js'
-// @ts-expect-error TS(7034) FIXME: Variable 'execa' implicitly has type 'any' in some... Remove this comment to see the full error message
 import execa from '../../utils/execa.js'
 import { readRepoURL, validateRepoURL } from '../../utils/read-repo-url.js'
 import BaseCommand from '../base-command.js'
@@ -441,7 +440,6 @@ const installDeps = async ({ functionPackageJson, functionPath, functionsDir }) 
   // of keeping that file in the function directory and running `npm install`
   // from there.
   if (!sitePackageJson) {
-    // @ts-expect-error TS(7005) FIXME: Variable 'execa' implicitly has an 'any' type.
     await execa('npm', ['i', ...npmInstallFlags], { cwd: functionPath })
 
     return
@@ -453,12 +451,10 @@ const installDeps = async ({ functionPackageJson, functionPath, functionsDir }) 
   const npmInstallPath = path.dirname(sitePackageJson)
 
   if (dependencies.length !== 0) {
-    // @ts-expect-error TS(7005) FIXME: Variable 'execa' implicitly has an 'any' type.
     await execa('npm', ['i', ...dependencies, '--save', ...npmInstallFlags], { cwd: npmInstallPath })
   }
 
   if (devDependencies.length !== 0) {
-    // @ts-expect-error TS(7005) FIXME: Variable 'execa' implicitly has an 'any' type.
     await execa('npm', ['i', ...devDependencies, '--save-dev', ...npmInstallFlags], { cwd: npmInstallPath })
   }
 

@@ -43,4 +43,5 @@ export type ServerSettings = BaseServerSettings & {
   /** The port where the functions are running on */
   port: number
   https?: { key: string; cert: string; keyFilePath: string; certFilePath: string }
+  clearPublishDirectory?: boolean
 }

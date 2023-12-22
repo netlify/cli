@@ -5,7 +5,6 @@ import { fileURLToPath } from 'url'
 
 import { isCI } from 'ci-info'
 
-// @ts-expect-error TS(7034) FIXME: Variable 'execa' implicitly has type 'any' in some... Remove this comment to see the full error message
 import execa from '../execa.js'
 import getGlobalConfig from '../get-global-config.js'
 
@@ -55,7 +54,6 @@ export const reportError = async function (error, config = {}) {
 
   // spawn detached child process to handle send and wait for the http request to finish
   // otherwise it can get canceled
-  // @ts-expect-error TS(7005) FIXME: Variable 'execa' implicitly has an 'any' type.
   await execa(process.execPath, [join(dirPath, 'request.js'), options], {
     detached: true,
     stdio: 'ignore',

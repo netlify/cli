@@ -3,7 +3,6 @@ import { stdout } from 'process'
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module '@net... Remove this comment to see the full error message
 import { getBinaryPath as getFunctionsProxyPath } from '@netlify/local-functions-proxy'
 
-// @ts-expect-error TS(7034) FIXME: Variable 'execa' implicitly has type 'any' in some... Remove this comment to see the full error message
 import execa from '../../utils/execa.js'
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'binaryPath' implicitly has an 'an... Remove this comment to see the full error message
@@ -39,10 +38,9 @@ export const runFunctionsProxy = ({ binaryPath, context, directory, event, name,
     '--timeout',
     `${timeout}s`,
   ]
-  // @ts-expect-error TS(7005) FIXME: Variable 'execa' implicitly has an 'any' type.
   const proxyProcess = execa(functionsProxyPath, parameters)
 
-  proxyProcess.stderr.pipe(stdout)
+  proxyProcess.stderr?.pipe(stdout)
 
   return proxyProcess
 }
