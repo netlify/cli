@@ -10,7 +10,8 @@
   "files": [
     "/bin",
     "/npm-shrinkwrap.json",
-    "/scripts/postinstall.js",
+    "/scripts",
+    "/functions-templates",
     "/dist"
   ],
   "homepage": "https://github.com/netlify/cli",

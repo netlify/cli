@@ -1,7 +1,7 @@
 import { expect, describe, test } from 'vitest'
 
-import { buildHelpResponse } from '../../../../src/lib/functions/scheduled.js'
-import { CLOCKWORK_USERAGENT } from '../../../../src/utils/functions/constants.js'
+import { buildHelpResponse } from '../../../../dist/lib/functions/scheduled.js'
+import { CLOCKWORK_USERAGENT } from '../../../../dist/utils/functions/constants.js'
 
 const withAccept = (accept) =>
   buildHelpResponse({

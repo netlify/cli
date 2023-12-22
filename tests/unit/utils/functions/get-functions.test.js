@@ -2,7 +2,7 @@ import path from 'path'
 
 import { describe, expect, test } from 'vitest'
 
-import { getFunctions } from '../../../../src/utils/functions/get-functions.js'
+import { getFunctions } from '../../../../dist/utils/functions/get-functions.js'
 import { withSiteBuilder } from '../../../integration/utils/site-builder.ts'
 
 describe('getFunctions', () => {

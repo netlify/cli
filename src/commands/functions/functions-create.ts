@@ -29,12 +29,12 @@ const copyTemplateDir = promisify(copyTemplateDirOriginal)
 
 const require = createRequire(import.meta.url)
 
-const templatesDir = path.resolve(dirname(fileURLToPath(import.meta.url)), '../../functions-templates')
+const templatesDir = path.resolve(dirname(fileURLToPath(import.meta.url)), '../../../functions-templates')
 
 const showRustTemplates = process.env.NETLIFY_EXPERIMENTAL_BUILD_RUST_SOURCE === 'true'
 
 /**
- * Ensure that there's a sub-directory in `src/functions-templates` named after
+ * Ensure that there's a sub-directory in `/functions-templates` named after
  * each `value` property in this list.
  */
 const languages = [
