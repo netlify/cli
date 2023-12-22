@@ -49,7 +49,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
             body: JSON.stringify(event),
           }),
         })
-        .buildAsync()
+        .build()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const [fromFunction, queryPassthrough, queryInRedirect, withParamMatching, functionWithSplat] =
@@ -93,7 +93,7 @@ export async function handler(event, context) {
     `,
       })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await t.expect(() =>
         withDevServer({ cwd: builder.directory, args }, async (server) =>
@@ -119,7 +119,7 @@ export async function handler(event, context) {
     `,
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const response = await nodeFetch(`${server.url}/.netlify/functions/esm-function`).then((res) => res.text())
@@ -149,7 +149,7 @@ export const handler = async function () {
     `,
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const response = await nodeFetch(`${server.url}/.netlify/functions/ts-function`).then((res) => res.text())
@@ -177,7 +177,7 @@ export const handler = async function () {
     `,
       })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const response = await nodeFetch(`${server.url}/.netlify/functions/ts-function`).then((res) => res.text())
@@ -242,7 +242,7 @@ export const handler = async function () {
           },
           name: 'hello',
         })
-        .buildAsync()
+        .build()
 
       await Promise.all([
         copyFile(`${__dirname}/../../../../localhost.crt`, `${builder.directory}/localhost.crt`),
@@ -301,7 +301,7 @@ export const handler = async function () {
             }
           },
         })
-        .buildAsync()
+        .build()
 
       const siteInfo = {
         account_slug: 'test-account',
@@ -353,7 +353,7 @@ export const handler = async function () {
           path: 'hello.js',
           handler: async () => ({ statusCode: 200, body: 'Hello' }),
         })
-        .buildAsync()
+        .build()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         await curl(`${server.url}/.netlify/functions/hello`, [
@@ -383,7 +383,7 @@ export const handler = async function () {
             redirects: [{ from: '/*', to: '/index.html', status: 200 }],
           },
         })
-        .buildAsync()
+        .build()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const response = await nodeFetch(`${server.url}/${encodeURIComponent('范.txt')}`)
@@ -406,7 +406,7 @@ export const handler = async function () {
             metadata: { builder_function: true },
           }),
         })
-        .buildAsync()
+        .build()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const response = await nodeFetch(`${server.url}/.netlify/functions/custom-headers`)
@@ -427,7 +427,7 @@ export const handler = async function () {
       await builder
         .withContentFile({ path: 'static/special[test].txt', content: `special` })
         .withRedirectsFile({ redirects: [{ from: '/_next/static/*', to: '/static/:splat', status: 200 }] })
-        .buildAsync()
+        .build()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const [response1, response2] = await Promise.all([
