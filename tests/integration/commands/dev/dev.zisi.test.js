@@ -95,11 +95,13 @@ export async function handler(event, context) {
 
       await builder.build()
 
-      await t.expect(() =>
-        withDevServer({ cwd: builder.directory, args }, async (server) =>
-          nodeFetch(`${server.url}/.netlify/functions/esm-function`).text(),
-        ),
-      ).rejects.toThrow()
+      await t
+        .expect(() =>
+          withDevServer({ cwd: builder.directory, args }, async (server) =>
+            nodeFetch(`${server.url}/.netlify/functions/esm-function`).text(),
+          ),
+        )
+        .rejects.toThrow()
     })
   })
 
