@@ -70,8 +70,6 @@ jobs:
       - name: Prepare tests
         run: npm run test:init
         if: '${{ !steps.release-check.outputs.IS_RELEASE }}'
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
       - name: Tests
         uses: nick-fields/retry@v2
         if: '${{ !steps.release-check.outputs.IS_RELEASE }}'
