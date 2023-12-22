@@ -95,13 +95,10 @@ export async function handler(event, context) {
 
       await builder.build()
 
-      await t
-        .expect(() =>
-          withDevServer({ cwd: builder.directory, args }, async (server) =>
-            nodeFetch(`${server.url}/.netlify/functions/esm-function`).then((res) => res.text()),
-          ),
-        )
-        .rejects.toThrow()
+      await withDevServer({ cwd: builder.directory, args }, async (server) => {
+        const resp = await nodeFetch(`${server.url}/.netlify/functions/esm-function`)
+        t.expect(await resp.text()).toContain(`SyntaxError: Unexpected token 'export'`)
+      })
     })
   })
 
