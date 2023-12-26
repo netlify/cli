@@ -19,8 +19,8 @@ describe.concurrent('commands/recipes', () => {
   })
 
   test('Generates a new VS Code settings file if one does not exist', async (t) => {
-    await withSiteBuilder('repo', async (builder) => {
-      await builder.buildAsync()
+    await withSiteBuilder(t, async (builder) => {
+      await builder.build()
 
       const childProcess = execa(cliPath, ['recipes', 'vscode'], {
         cwd: builder.directory,
@@ -45,13 +45,13 @@ describe.concurrent('commands/recipes', () => {
   })
 
   test('Updates an existing VS Code settings file', async (t) => {
-    await withSiteBuilder('repo', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       await builder
         .withContentFile({
           path: '.vscode/settings.json',
           content: JSON.stringify({ 'deno.enablePaths': ['/some/path'], someSetting: 'value' }),
         })
-        .buildAsync()
+        .build()
 
       const childProcess = execa(cliPath, ['recipes', 'vscode'], {
         cwd: builder.directory,
@@ -77,8 +77,8 @@ describe.concurrent('commands/recipes', () => {
   })
 
   test('Does not generate a new VS Code settings file if the user does not confirm the prompt', async (t) => {
-    await withSiteBuilder('repo', async (builder) => {
-      await builder.buildAsync()
+    await withSiteBuilder(t, async (builder) => {
+      await builder.build()
 
       const childProcess = execa(cliPath, ['recipes', 'vscode'], {
         cwd: builder.directory,
@@ -100,7 +100,7 @@ describe.concurrent('commands/recipes', () => {
   })
 
   test('Handles JSON with comments', async (t) => {
-    await withSiteBuilder('repo', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       const comment = '// sets value for someSetting'
       await builder
         .withContentFile({
@@ -110,7 +110,7 @@ describe.concurrent('commands/recipes', () => {
           "someSetting":"value" ${comment}
         }`,
         })
-        .buildAsync()
+        .build()
 
       const childProcess = execa(cliPath, ['recipes', 'vscode'], {
         cwd: builder.directory,
