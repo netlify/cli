@@ -23,6 +23,8 @@ type EdgeFunctionEvent = 'buildError' | 'loaded' | 'reloaded' | 'reloading' | 'r
 type Route = Omit<Manifest['routes'][0], 'pattern'> & { pattern: RegExp }
 type RunIsolate = Awaited<ReturnType<typeof import('@netlify/edge-bundler').serve>>
 
+type ModuleJson = ModuleGraph['modules'][number]
+
 const featureFlags = { edge_functions_correct_order: true }
 
 interface EdgeFunctionsRegistryOptions {
@@ -38,6 +40,40 @@ interface EdgeFunctionsRegistryOptions {
   projectDir: string
   runIsolate: RunIsolate
   servePath: string
+}
+
+/**
+ * Helper method which, given a edge bundler graph module and an index of modules by path, traverses its dependency tree
+ * and returns an array of all of ist local dependencies
+ */
+function traverseLocalDependencies(
+  { dependencies = [] }: ModuleJson,
+  modulesByPath: Map<string, ModuleJson>,
+): string[] {
+  return dependencies
+    .map((dependency) => {
+      // We're interested in tracking local dependencies, so we only look at
+      // specifiers with the `file:` protocol.
+      if (
+        dependency.code === undefined ||
+        typeof dependency.code.specifier !== 'string' ||
+        !dependency.code.specifier.startsWith('file://')
+      ) {
+        return []
+      }
+      const { specifier: dependencyURL } = dependency.code
+      const dependencyPath = fileURLToPath(dependencyURL)
+      const dependencyModule = modulesByPath.get(dependencyPath)
+
+      // No module indexed for this dependency
+      if (dependencyModule === undefined) {
+        return [dependencyPath]
+      }
+
+      // Keep traversing the child dependencies and return the current dependency path
+      return [...traverseLocalDependencies(dependencyModule, modulesByPath), dependencyPath]
+    })
+    .reduce((acc, deps) => [...acc, ...deps], [])
 }
 
 export class EdgeFunctionsRegistry {
@@ -420,36 +456,44 @@ export class EdgeFunctionsRegistry {
     // Mapping file URLs to names of functions that use them as dependencies.
     const dependencyPaths = new Map<string, string[]>()
 
+    // Map modules by path, acting as an helper index
+    const modulesByPath = new Map<string, ModuleJson>()
+
+    // Map function modules, acting as an helper index
+    const functionModules = new Map<string, ModuleJson>()
+
     const { modules } = graph
 
-    modules.forEach(({ dependencies = [], specifier }) => {
+    modules.forEach((module) => {
+      // We're interested in tracking local dependencies, so we only look at
+      // specifiers with the `file:` protocol.
+      const { specifier } = module
       if (!specifier.startsWith('file://')) {
         return
       }
 
+      // Populate the module index
       const path = fileURLToPath(specifier)
+      modulesByPath.set(path, module)
+
+      // Populate the function modules index
       const functionMatch = functionPaths.get(path)
-
-      if (!functionMatch) {
-        return
+      if (functionMatch) {
+        functionModules.set(path, module)
       }
+    })
 
-      dependencies.forEach((dependency) => {
-        // We're interested in tracking local dependencies, so we only look at
-        // specifiers with the `file:` protocol.
-        if (
-          dependency.code === undefined ||
-          typeof dependency.code.specifier !== 'string' ||
-          !dependency.code.specifier.startsWith('file://')
-        ) {
-          return
-        }
-
-        const { specifier: dependencyURL } = dependency.code
-        const dependencyPath = fileURLToPath(dependencyURL)
+    // We start from our functions and we traverse through their dependency tree
+    functionModules.forEach((functionModule) => {
+      const { specifier } = functionModule
+      const traversedPaths = traverseLocalDependencies(functionModule, modulesByPath)
+      const path = fileURLToPath(specifier)
+      const functionName = functionPaths.get(path)
+      if (!functionName) return
+      // With the paths for the local dependencies we build the dependency path map
+      traversedPaths.forEach((dependencyPath) => {
         const functions = dependencyPaths.get(dependencyPath) || []
-
-        dependencyPaths.set(dependencyPath, [...functions, functionMatch])
+        dependencyPaths.set(dependencyPath, [...functions, functionName])
       })
     })
 
