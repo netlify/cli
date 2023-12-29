@@ -34,21 +34,35 @@ const buildClientContext = function (headers) {
   const parts = headers.authorization.split(' ')
   if (parts.length !== 2 || parts[0] !== 'Bearer') return
 
+  const identity = {
+    url: 'https://netlify-dev-locally-emulated-identity.netlify.com/.netlify/identity',
+    token:
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzb3VyY2UiOiJuZXRsaWZ5IGRldiIsInRlc3REYXRhIjoiTkVUTElGWV9ERVZfTE9DQUxMWV9FTVVMQVRFRF9JREVOVElUWSJ9.2eSDqUOZAOBsx39FHFePjYj12k0LrxldvGnlvDu3GMI',
+    // you can decode this with https://jwt.io/
+    // just says
+    // {
+    //   "source": "netlify dev",
+    //   "testData": "NETLIFY_DEV_LOCALLY_EMULATED_IDENTITY"
+    // }
+  }
+
+  // This data is available on both the context root and under custom.netlify for retro-compatibility.
+  // In the future it will only be available in custom.netlify.
+  // @ts-expect-error
+  const user = jwtDecode(parts[1])
+
+  const netlifyContext = JSON.stringify({
+    identity: identity,
+    user: user,
+  })
+
   try {
     return {
-      identity: {
-        url: 'https://netlify-dev-locally-emulated-identity.netlify.com/.netlify/identity',
-        token:
-          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzb3VyY2UiOiJuZXRsaWZ5IGRldiIsInRlc3REYXRhIjoiTkVUTElGWV9ERVZfTE9DQUxMWV9FTVVMQVRFRF9JREVOVElUWSJ9.2eSDqUOZAOBsx39FHFePjYj12k0LrxldvGnlvDu3GMI',
-        // you can decode this with https://jwt.io/
-        // just says
-        // {
-        //   "source": "netlify dev",
-        //   "testData": "NETLIFY_DEV_LOCALLY_EMULATED_IDENTITY"
-        // }
+      identity: identity,
+      user: user,
+      custom: {
+        netlify: Buffer.from(netlifyContext).toString('base64'),
       },
-      // @ts-expect-error
-      user: jwtDecode(parts[1]),
     }
   } catch {
     // Ignore errors - bearer token is not a JWT, probably not intended for us
