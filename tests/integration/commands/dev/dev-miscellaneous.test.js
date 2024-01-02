@@ -1,3 +1,4 @@
+import { Buffer } from 'buffer'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
@@ -147,6 +148,35 @@ describe.concurrent('commands/dev-miscellaneous', () => {
         const context = JSON.parse(output.match(/__CLIENT_CONTEXT__START__(.*)__CLIENT_CONTEXT__END__/)[1])
         t.expect(Object.keys(context.clientContext)).toEqual([])
         t.expect(context.identity).toBe(null)
+      })
+    })
+  })
+
+  test('function clientContext.custom.netlify should be set', async (t) => {
+    await withSiteBuilder('site-with-function', async (builder) => {
+      await builder
+        .withNetlifyToml({ config: { functions: { directory: 'functions' } } })
+        .withFunction({
+          path: 'hello.js',
+          handler: async (_, context) => ({
+            statusCode: 200,
+            body: JSON.stringify(context),
+          }),
+        })
+        .buildAsync()
+
+      await withDevServer({ cwd: builder.directory }, async (server) => {
+        const response = await fetch(`${server.url}/.netlify/functions/hello`, {
+          headers: {
+            Authorization:
+              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzb3VyY2UiOiJuZXRsaWZ5IGRldiIsInRlc3REYXRhIjoiTkVUTElGWV9ERVZfTE9DQUxMWV9FTVVMQVRFRF9JREVOVElUWSJ9.2eSDqUOZAOBsx39FHFePjYj12k0LrxldvGnlvDu3GMI',
+          },
+        }).then((res) => res.json())
+
+        const netlifyContext = Buffer.from(response.clientContext.custom.netlify, 'base64').toString()
+        t.expect(JSON.parse(netlifyContext).identity.url).toEqual(
+          'https://netlify-dev-locally-emulated-identity.netlify.com/.netlify/identity',
+        )
       })
     })
   })
