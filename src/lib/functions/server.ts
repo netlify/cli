@@ -293,9 +293,8 @@ export const startFunctionsServer = async (options) => {
     siteUrl,
     timeouts,
   } = options
-  // @ts-expect-error TS(2345) FIXME: Argument of type '{ base: any; }' is not assignabl... Remove this comment to see the full error message
   const internalFunctionsDir = await getInternalFunctionsDir({ base: site.root })
-  const functionsDirectories = []
+  const functionsDirectories: string[] = []
   let manifest
 
   // If the `loadDistFunctions` parameter is sent, the functions server will

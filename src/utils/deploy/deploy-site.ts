@@ -62,9 +62,18 @@ export const deploySite = async (
     tmpDir = temporaryDirectory(),
     // @ts-expect-error TS(2525) FIXME: Initializer provides no value for this binding ele... Remove this comment to see the full error message
     workingDir,
+  }: {
+    concurrentHash?: number
+    concurrentUpload?: number
+    deployTimeout?: number
+    draft?: boolean
+    maxRetry?: number
+    statusCb?: (status: { type: string; msg: string; phase: string }) => void
+    syncFileLimit?: number
+    tmpDir?: string
+    fnDir?: string[]
   } = {},
 ) => {
-  // @ts-expect-error TS(2554) FIXME: Expected 0 arguments, but got 1.
   statusCb({
     type: 'hashing',
     msg: `Hashing files...`,
@@ -115,7 +124,6 @@ export const deploySite = async (
     edgeFunctionsCount > 0 && 'edge functions',
   ])
 
-  // @ts-expect-error TS(2554) FIXME: Expected 0 arguments, but got 1.
   statusCb({
     type: 'hashing',
     msg: `Finished hashing ${stats}`,
@@ -141,7 +149,6 @@ instead of manual deployment.
 For more information, visit https://ntl.fyi/cli-native-modules.`)
   }
 
-  // @ts-expect-error TS(2554) FIXME: Expected 0 arguments, but got 1.
   statusCb({
     type: 'create-deploy',
     msg: 'CDN diffing files...',
@@ -168,7 +175,6 @@ For more information, visit https://ntl.fyi/cli-native-modules.`)
 
   const { required: requiredFiles, required_functions: requiredFns } = deploy
 
-  // @ts-expect-error TS(2554) FIXME: Expected 0 arguments, but got 1.
   statusCb({
     type: 'create-deploy',
     msg: `CDN requesting ${requiredFiles.length} files${
@@ -183,7 +189,6 @@ For more information, visit https://ntl.fyi/cli-native-modules.`)
 
   await uploadFiles(api, deployId, uploadList, { concurrentUpload, statusCb, maxRetry })
 
-  // @ts-expect-error TS(2554) FIXME: Expected 0 arguments, but got 1.
   statusCb({
     type: 'wait-for-deploy',
     msg: 'Waiting for deploy to go live...',
@@ -191,7 +196,6 @@ For more information, visit https://ntl.fyi/cli-native-modules.`)
   })
   deploy = await waitForDeploy(api, deployId, siteId, deployTimeout)
 
-  // @ts-expect-error TS(2554) FIXME: Expected 0 arguments, but got 1.
   statusCb({
     type: 'wait-for-deploy',
     msg: draft ? 'Draft deploy is live!' : 'Deploy is live!',
