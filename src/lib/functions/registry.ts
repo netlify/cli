@@ -320,7 +320,6 @@ export class FunctionsRegistry {
     if (event === 'buildError') {
       log(
         `${NETLIFYDEVERR} ${chalk.red('Failed to load')} function ${chalk.yellow(func?.displayName)}: ${
-          // @ts-expect-error buildError is unknown
           func?.buildError?.message
         }`,
       )
