@@ -1,5 +1,6 @@
 import { Buffer } from 'buffer'
 import { rm } from 'fs/promises'
+import type { IncomingMessage } from 'http'
 import { join, resolve } from 'path'
 
 import * as bundler from '@netlify/edge-bundler'
@@ -13,7 +14,6 @@ import { startSpinner, stopSpinner } from '../spinner.js'
 import { getBootstrapURL } from './bootstrap.js'
 import { DIST_IMPORT_MAP_PATH, EDGE_FUNCTIONS_SERVE_FOLDER } from './consts.js'
 import { headers, getFeatureFlagsHeader, getInvocationMetadataHeader } from './headers.js'
-import { getInternalFunctions } from './internal.js'
 import { EdgeFunctionsRegistry } from './registry.js'
 
 const headersSymbol = Symbol('Edge Functions Headers')
@@ -134,12 +134,6 @@ export const initializeProxy = async ({
   // @ts-expect-error TS(7031) FIXME: Binding element 'state' implicitly has an 'any' ty... Remove this comment to see the full error message
   state,
 }) => {
-  const {
-    functions: internalFunctions,
-    // @ts-expect-error TS(2339) FIXME: Property 'importMap' does not exist on type '{ fun... Remove this comment to see the full error message
-    importMap,
-    path: internalFunctionsPath,
-  } = await getInternalFunctions(projectDir)
   const userFunctionsPath = config.build.edge_functions
   const isolatePort = await getAvailablePort()
   const buildFeatureFlags = {
@@ -159,19 +153,13 @@ export const initializeProxy = async ({
     env: configEnv,
     featureFlags: buildFeatureFlags,
     getUpdatedConfig,
-    importMaps: [importMap].filter(Boolean),
     inspectSettings,
-    internalDirectory: internalFunctionsPath,
-    internalFunctions,
     port: isolatePort,
     projectDir,
     repositoryRoot,
   })
-  const hasEdgeFunctions = userFunctionsPath !== undefined || internalFunctionsPath
-
-  // @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
-  return async (req) => {
-    if (req.headers[headers.Passthrough] !== undefined || !hasEdgeFunctions) {
+  return async (req: IncomingMessage & { [headersSymbol]: Record<string, string> }) => {
+    if (req.headers[headers.Passthrough] !== undefined) {
       return
     }
 
@@ -196,8 +184,8 @@ export const initializeProxy = async ({
 
     await registry.initialize()
 
-    const url = new URL(req.url, `http://${LOCAL_HOST}:${mainPort}`)
-    const { functionNames, invocationMetadata } = registry.matchURLPath(url.pathname, req.method)
+    const url = new URL(req.url!, `http://${LOCAL_HOST}:${mainPort}`)
+    const { functionNames, invocationMetadata } = registry.matchURLPath(url.pathname, req.method!)
 
     if (functionNames.length === 0) {
       return
@@ -240,14 +228,8 @@ const prepareServer = async ({
   featureFlags,
   // @ts-expect-error TS(7031) FIXME: Binding element 'getUpdatedConfig' implicitly has ... Remove this comment to see the full error message
   getUpdatedConfig,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'importMaps' implicitly has an 'an... Remove this comment to see the full error message
-  importMaps,
   // @ts-expect-error TS(7031) FIXME: Binding element 'inspectSettings' implicitly has a... Remove this comment to see the full error message
   inspectSettings,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'internalDirectory' implicitly has... Remove this comment to see the full error message
-  internalDirectory,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'internalFunctions' implicitly has... Remove this comment to see the full error message
-  internalFunctions,
   // @ts-expect-error TS(7031) FIXME: Binding element 'port' implicitly has an 'any' typ... Remove this comment to see the full error message
   port,
   // @ts-expect-error TS(7031) FIXME: Binding element 'projectDir' implicitly has an 'an... Remove this comment to see the full error message
@@ -255,9 +237,6 @@ const prepareServer = async ({
   // @ts-expect-error TS(7031) FIXME: Binding element 'repositoryRoot' implicitly has an... Remove this comment to see the full error message
   repositoryRoot,
 }) => {
-  // Merging internal with user-defined import maps.
-  const importMapPaths = [...importMaps, config.functions['*'].deno_import_map]
-
   try {
     const distImportMapPath = getPathInProject([DIST_IMPORT_MAP_PATH])
     const servePath = resolve(projectDir, getPathInProject([EDGE_FUNCTIONS_SERVE_FOLDER]))
@@ -277,7 +256,6 @@ const prepareServer = async ({
         )}. The file does not seem to have a function as the default export.`,
       formatImportError: (name) =>
         `${NETLIFYDEVERR} ${chalk.red('Failed')} to run Edge Function ${chalk.yellow(name)}:`,
-      importMapPaths,
       inspectSettings,
       port,
       rootPath: repositoryRoot,
@@ -291,8 +269,7 @@ const prepareServer = async ({
       directories: [directory].filter(Boolean),
       env: configEnv,
       getUpdatedConfig,
-      internalDirectories: [internalDirectory].filter(Boolean),
-      internalFunctions,
+      importMapFromTOML: config.functions['*'].deno_import_map,
       projectDir,
       runIsolate,
       servePath,
