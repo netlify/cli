@@ -61,6 +61,10 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
     siteInfo,
   })
 
+  if (!site.root) {
+    throw new Error('Site root not found')
+  }
+
   // Ensure the internal functions directory exists so that the functions
   // server and registry are initialized, and any functions created by
   // Netlify Build are loaded.
