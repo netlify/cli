@@ -22,7 +22,7 @@ export const getExecaOptions = ({ cwd, env }) => {
   }
 }
 
-interface DevServer {
+export interface DevServer {
   url: string
   host: string
   port: number
