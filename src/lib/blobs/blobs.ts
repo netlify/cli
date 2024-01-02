@@ -28,7 +28,7 @@ const printLocalBlobsNotice = () => {
 }
 
 const startBlobsServer = async (debug: boolean, projectRoot: string, token: string) => {
-  const directory = path.resolve(projectRoot, getPathInProject(['blobs-serves']))
+  const directory = path.resolve(projectRoot, getPathInProject(['blobs-serve']))
   const server = new BlobsServer({
     debug,
     directory,
