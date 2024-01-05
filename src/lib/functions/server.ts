@@ -265,7 +265,6 @@ const getFunctionsServer = (options) => {
 /**
  *
  * @param {object} options
- * @param {import("../blobs/blobs.js").BlobsContext} options.blobsContext
  * @param {import('../../commands/base-command.js').default} options.command
  * @param {*} options.capabilities
  * @param {*} options.config
@@ -280,19 +279,8 @@ const getFunctionsServer = (options) => {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
 export const startFunctionsServer = async (options) => {
-  const {
-    blobsContext,
-    capabilities,
-    command,
-    config,
-    debug,
-    loadDistFunctions,
-    settings,
-    site,
-    siteInfo,
-    siteUrl,
-    timeouts,
-  } = options
+  const { capabilities, command, config, debug, loadDistFunctions, settings, site, siteInfo, siteUrl, timeouts } =
+    options
   const internalFunctionsDir = await getInternalFunctionsDir({ base: site.root })
   const functionsDirectories: string[] = []
   let manifest
@@ -339,7 +327,6 @@ export const startFunctionsServer = async (options) => {
   }
 
   const functionsRegistry = new FunctionsRegistry({
-    blobsContext,
     // @ts-expect-error TS(7031) FIXME
     capabilities,
     config,

@@ -5,6 +5,8 @@ import { Worker } from 'worker_threads'
 
 import lambdaLocal from 'lambda-local'
 
+import { BLOBS_CONTEXT_VARIABLE } from '../../../blobs/blobs.js'
+
 import detectNetlifyLambdaBuilder from './builders/netlify-lambda.js'
 import detectZisiBuilder, { parseFunctionForMetadata } from './builders/zisi.js'
 import { SECONDS_TO_MILLISECONDS } from './constants.js'
@@ -104,6 +106,13 @@ export const invokeFunctionDirectly = async ({ context, event, func, timeout }) 
   const lambdaPath = func.buildData?.buildPath ?? func.mainFile
   const result = await lambdaLocal.execute({
     clientContext: JSON.stringify(context),
+    environment: {
+      // We've set the Blobs context on the parent process, which means it will
+      // be available to the Lambda. This would be inconsistent with production
+      // where only V2 functions get the context injected. To fix it, unset the
+      // context variable before invoking the function.
+      [BLOBS_CONTEXT_VARIABLE]: undefined,
+    },
     event,
     lambdaPath,
     timeoutMs: timeout * SECONDS_TO_MILLISECONDS,

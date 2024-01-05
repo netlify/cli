@@ -17,7 +17,6 @@ import {
   watchDebounced,
 } from '../../utils/command-helpers.js'
 import { INTERNAL_FUNCTIONS_FOLDER, SERVE_FUNCTIONS_FOLDER } from '../../utils/functions/functions.js'
-import type { BlobsContext } from '../blobs/blobs.js'
 import { BACKGROUND_FUNCTIONS_WARNING } from '../log.js'
 import { getPathInProject } from '../settings.js'
 
@@ -53,17 +52,11 @@ export class FunctionsRegistry {
    */
   private hasCheckedTypesPackage = false
 
-  /**
-   * Context object for Netlify Blobs
-   */
-  private blobsContext: BlobsContext
-
   private projectRoot: string
   private isConnected: boolean
   private debug: boolean
 
   constructor({
-    blobsContext,
     // @ts-expect-error TS(7031) FIXME: Binding element 'capabilities' implicitly has an '... Remove this comment to see the full error message
     capabilities,
     // @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'any' t... Remove this comment to see the full error message
@@ -79,7 +72,7 @@ export class FunctionsRegistry {
     settings,
     // @ts-expect-error TS(7031) FIXME: Binding element 'timeouts' implicitly has an 'any'... Remove this comment to see the full error message
     timeouts,
-  }: { projectRoot: string; debug?: boolean; isConnected?: boolean; blobsContext: BlobsContext } & object) {
+  }: { projectRoot: string; debug?: boolean; isConnected?: boolean } & object) {
     // @ts-expect-error TS(2339) FIXME: Property 'capabilities' does not exist on type 'Fu... Remove this comment to see the full error message
     this.capabilities = capabilities
     // @ts-expect-error TS(2339) FIXME: Property 'config' does not exist on type 'Function... Remove this comment to see the full error message
@@ -91,7 +84,6 @@ export class FunctionsRegistry {
     this.timeouts = timeouts
     // @ts-expect-error TS(2339) FIXME: Property 'settings' does not exist on type 'Functi... Remove this comment to see the full error message
     this.settings = settings
-    this.blobsContext = blobsContext
 
     /**
      * An object to be shared among all functions in the registry. It can be
@@ -529,7 +521,6 @@ export class FunctionsRegistry {
         }
 
         const func = new NetlifyFunction({
-          blobsContext: this.blobsContext,
           // @ts-expect-error TS(2339) FIXME: Property 'config' does not exist on type 'Function... Remove this comment to see the full error message
           config: this.config,
           directory: directories.find((directory) => mainFile.startsWith(directory)),

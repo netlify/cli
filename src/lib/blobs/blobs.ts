@@ -1,3 +1,4 @@
+import { Buffer } from 'buffer'
 import path from 'path'
 
 import { BlobsServer } from '@netlify/blobs'
@@ -7,6 +8,8 @@ import { log, NETLIFYDEVLOG } from '../../utils/command-helpers.js'
 import { getPathInProject } from '../settings.js'
 
 let hasPrintedLocalBlobsNotice = false
+
+export const BLOBS_CONTEXT_VARIABLE = 'NETLIFY_BLOBS_CONTEXT'
 
 export interface BlobsContext {
   deployID: string
@@ -62,5 +65,5 @@ export const getBlobsContext = async ({ debug, projectRoot, siteID }: GetBlobsCo
     token,
   }
 
-  return context
+  return Buffer.from(JSON.stringify(context)).toString('base64')
 }
