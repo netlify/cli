@@ -1,3 +1,4 @@
+import { Buffer } from 'buffer'
 import { basename, extname } from 'path'
 import { version as nodeVersion } from 'process'
 
@@ -6,6 +7,7 @@ import semver from 'semver'
 
 import { error as errorExit } from '../../utils/command-helpers.js'
 import { BACKGROUND } from '../../utils/functions/get-functions.js'
+import type { BlobsContext } from '../blobs/blobs.js'
 
 const TYPESCRIPT_EXTENSIONS = new Set(['.cts', '.mts', '.ts'])
 const V2_MIN_NODE_VERSION = '18.14.0'
@@ -32,6 +34,7 @@ export default class NetlifyFunction {
 
   private readonly directory: string
   private readonly projectRoot: string
+  private readonly blobsContext: BlobsContext
   private readonly timeoutBackground: number
   private readonly timeoutSynchronous: number
 
@@ -48,6 +51,8 @@ export default class NetlifyFunction {
   private readonly srcFiles = new Set<string>()
 
   constructor({
+    // @ts-expect-error TS(7031) FIXME: Binding element 'blobsContext' implicitly has an '... Remove this comment to see the full error message
+    blobsContext,
     // @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'any' t... Remove this comment to see the full error message
     config,
     // @ts-expect-error TS(7031) FIXME: Binding element 'directory' implicitly has an 'any... Remove this comment to see the full error message
@@ -69,6 +74,7 @@ export default class NetlifyFunction {
     // @ts-expect-error TS(7031) FIXME: Binding element 'timeoutSynchronous' implicitly ha... Remove this comment to see the full error message
     timeoutSynchronous,
   }) {
+    this.blobsContext = blobsContext
     // @ts-expect-error TS(2339) FIXME: Property 'config' does not exist on type 'NetlifyF... Remove this comment to see the full error message
     this.config = config
     this.directory = directory
@@ -229,6 +235,16 @@ export default class NetlifyFunction {
 
     const timeout = this.isBackground ? this.timeoutBackground : this.timeoutSynchronous
     const environment = {}
+
+    if (this.blobsContext) {
+      const payload = JSON.stringify({
+        url: this.blobsContext.edgeURL,
+        token: this.blobsContext.token,
+      })
+
+      // @ts-expect-error TS(2339) FIXME: Property 'blobs' does not exist on type '{}'.
+      event.blobs = Buffer.from(payload).toString('base64')
+    }
 
     try {
       // @ts-expect-error TS(2339) FIXME: Property 'runtime' does not exist on type 'Netlify... Remove this comment to see the full error message

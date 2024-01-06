@@ -2,7 +2,7 @@ import process from 'process'
 
 import { OptionValues } from 'commander'
 
-import { BLOBS_CONTEXT_VARIABLE, getBlobsContext } from '../../lib/blobs/blobs.js'
+import { BLOBS_CONTEXT_VARIABLE, encodeBlobsContext, getBlobsContext } from '../../lib/blobs/blobs.js'
 import { promptEditorHelper } from '../../lib/edge-functions/editor-helper.js'
 import { startFunctionsServer } from '../../lib/functions/server.js'
 import { printBanner } from '../../utils/banner.js'
@@ -100,7 +100,7 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
     siteID: site.id ?? 'unknown-site-id',
   })
 
-  process.env[BLOBS_CONTEXT_VARIABLE] = blobsContext
+  process.env[BLOBS_CONTEXT_VARIABLE] = encodeBlobsContext(blobsContext)
 
   const functionsRegistry = await startFunctionsServer({
     api,

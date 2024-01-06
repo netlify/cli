@@ -2,7 +2,7 @@ import process from 'process'
 
 import { OptionValues, Option } from 'commander'
 
-import { BLOBS_CONTEXT_VARIABLE, getBlobsContext } from '../../lib/blobs/blobs.js'
+import { BLOBS_CONTEXT_VARIABLE, encodeBlobsContext, getBlobsContext } from '../../lib/blobs/blobs.js'
 import { promptEditorHelper } from '../../lib/edge-functions/editor-helper.js'
 import { startFunctionsServer } from '../../lib/functions/server.js'
 import { printBanner } from '../../utils/banner.js'
@@ -111,7 +111,7 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
     siteID: site.id ?? 'unknown-site-id',
   })
 
-  env[BLOBS_CONTEXT_VARIABLE] = { sources: ['internal'], value: blobsContext }
+  env[BLOBS_CONTEXT_VARIABLE] = { sources: ['internal'], value: encodeBlobsContext(blobsContext) }
 
   if (!options.offline && siteInfo.use_envelope) {
     env = await getEnvelopeEnv({ api, context: options.context, env, siteInfo })

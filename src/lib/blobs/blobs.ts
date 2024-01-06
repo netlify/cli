@@ -65,5 +65,11 @@ export const getBlobsContext = async ({ debug, projectRoot, siteID }: GetBlobsCo
     token,
   }
 
-  return Buffer.from(JSON.stringify(context)).toString('base64')
+  return context
 }
+
+/**
+ * Returns a Base-64, JSON-encoded representation of the Blobs context. This is
+ * the format that the `@netlify/blobs` package expects to find the context in.
+ */
+export const encodeBlobsContext = (context: BlobsContext) => Buffer.from(JSON.stringify(context)).toString('base64')
