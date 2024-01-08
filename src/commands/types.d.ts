@@ -24,6 +24,8 @@ type PatchedConfig = NetlifyTOML & {
   }
 }
 
+export type EnvironmentVariables = Record<string, { sources: string[], value: string; scopes?: string[] }>
+
 /**
  * The netlify object inside each command with the state
  */
@@ -39,7 +41,7 @@ export type NetlifyOptions = {
   site: NetlifySite
   siteInfo: $TSFixMe
   config: PatchedConfig
-  cachedConfig: Record<string, $TSFixMe>
+  cachedConfig: Record<string, $TSFixMe> & { env: EnvironmentVariables }
   globalConfig: $TSFixMe
   state: StateConfig
 }

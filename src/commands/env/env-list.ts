@@ -8,14 +8,22 @@ import logUpdate from 'log-update'
 import { chalk, error, log, logJson } from '../../utils/command-helpers.js'
 import { AVAILABLE_CONTEXTS, getEnvelopeEnv, getHumanReadableScopes } from '../../utils/env/index.js'
 import BaseCommand from '../base-command.js'
+import { EnvironmentVariables } from '../types.js'
 
 const MASK_LENGTH = 50
 const MASK = '*'.repeat(MASK_LENGTH)
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'environment' implicitly has an 'a... Remove this comment to see the full error message
-const getTable = ({ environment, hideValues, scopesColumn }) => {
+const getTable = ({
+  environment,
+  hideValues,
+  scopesColumn,
+}: {
+  environment: EnvironmentVariables
+  hideValues: boolean
+  scopesColumn: boolean
+}) => {
   const table = new AsciiTable(`Environment variables`)
-  const headings = ['Key', 'Value', scopesColumn && 'Scope'].filter(Boolean)
+  const headings = ['Key', 'Value', scopesColumn && 'Scope'].filter(Boolean) as string[]
   table.setHeading(...headings)
   table.addRowMatrix(
     Object.entries(environment).map(([key, variable]) =>
@@ -23,10 +31,8 @@ const getTable = ({ environment, hideValues, scopesColumn }) => {
         // Key
         key,
         // Value
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         hideValues ? MASK : variable.value || ' ',
         // Scope
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         scopesColumn && getHumanReadableScopes(variable.scopes),
       ].filter(Boolean),
     ),
@@ -62,7 +68,6 @@ export const envList = async (options: OptionValues, command: BaseCommand) => {
   // filter out general sources
   environment = Object.fromEntries(
     Object.entries(environment).filter(
-      // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
       ([, variable]) => variable.sources[0] !== 'general' && variable.sources[0] !== 'internal',
     ),
   )
@@ -70,7 +75,6 @@ export const envList = async (options: OptionValues, command: BaseCommand) => {
   // Return json response for piping commands
   if (options.json) {
     const envDictionary = Object.fromEntries(
-      // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
       Object.entries(environment).map(([key, variable]) => [key, variable.value]),
     )
     logJson(envDictionary)
@@ -79,7 +83,6 @@ export const envList = async (options: OptionValues, command: BaseCommand) => {
 
   if (options.plain) {
     const plaintext = Object.entries(environment)
-      // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
       .map(([key, variable]) => `${key}=${variable.value}`)
       .join('\n')
     log(plaintext)
