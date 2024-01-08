@@ -551,6 +551,12 @@ export class EdgeFunctionsRegistry {
   }
 
   private async setupWatchers(projectDir: string) {
+    // While functions are guaranteed to be inside one of the configured
+    // directories, they might be importing files that are located in
+    // parent directories. So we watch the entire project directory for
+    // changes.
+    await this.setupWatcherForDirectory(projectDir)
+
     if (!this.configPath) {
       return
     }
@@ -566,12 +572,6 @@ export class EdgeFunctionsRegistry {
         await this.checkForAddedOrDeletedFunctions()
       },
     })
-
-    // While functions are guaranteed to be inside one of the configured
-    // directories, they might be importing files that are located in
-    // parent directories. So we watch the entire project directory for
-    // changes.
-    await this.setupWatcherForDirectory(projectDir)
   }
 
   private async setupWatcherForDirectory(directory: string) {
