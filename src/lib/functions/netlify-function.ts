@@ -30,6 +30,7 @@ export default class NetlifyFunction {
   public readonly mainFile: string
   public readonly displayName: string
   public readonly schedule?: string
+  public readonly runtime: string
 
   private readonly directory: string
   private readonly projectRoot: string
@@ -43,7 +44,7 @@ export default class NetlifyFunction {
 
   private buildQueue?: Promise<$FIXME>
   private buildData?: $FIXME
-  private buildError: unknown | null = null
+  public buildError: Error | null = null
 
   // List of the function's source files. This starts out as an empty set
   // and will get populated on every build.
@@ -81,7 +82,6 @@ export default class NetlifyFunction {
     this.name = name
     this.displayName = displayName ?? name
     this.projectRoot = projectRoot
-    // @ts-expect-error TS(2339) FIXME: Property 'runtime' does not exist on type 'Netlify... Remove this comment to see the full error message
     this.runtime = runtime
     this.timeoutBackground = timeoutBackground
     this.timeoutSynchronous = timeoutSynchronous
@@ -199,7 +199,9 @@ export default class NetlifyFunction {
 
       return { includedFiles, srcFilesDiff }
     } catch (error) {
-      this.buildError = error
+      if (error instanceof Error) {
+        this.buildError = error
+      }
 
       return { error }
     }
@@ -228,7 +230,6 @@ export default class NetlifyFunction {
     await this.buildQueue
 
     if (this.buildError) {
-      // @ts-expect-error TS(2339) FIXME: Property 'buildError' does not exist on type 'Netl... Remove this comment to see the full error message
       return { result: null, error: { errorMessage: this.buildError.message } }
     }
 

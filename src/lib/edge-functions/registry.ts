@@ -1,3 +1,5 @@
+import { readFile } from 'fs/promises'
+import { join } from 'path'
 import { fileURLToPath } from 'url'
 
 import type { Declaration, EdgeFunction, FunctionConfig, Manifest, ModuleGraph } from '@netlify/edge-bundler'
@@ -13,6 +15,9 @@ import {
   watchDebounced,
   isNodeError,
 } from '../../utils/command-helpers.js'
+import { getPathInProject } from '../settings.js'
+
+import { INTERNAL_EDGE_FUNCTIONS_FOLDER } from './consts.js'
 
 //  TODO: Replace with a proper type for the entire config object.
 interface Config {
@@ -33,18 +38,19 @@ interface EdgeFunctionsRegistryOptions {
   directories: string[]
   env: Record<string, { sources: string[]; value: string }>
   getUpdatedConfig: () => Promise<Config>
-  internalDirectories: string[]
-  internalFunctions: Declaration[]
   projectDir: string
   runIsolate: RunIsolate
   servePath: string
+  importMapFromTOML?: string
 }
 
 export class EdgeFunctionsRegistry {
   private buildError: Error | null = null
   private bundler: typeof import('@netlify/edge-bundler')
   private configPath: string
-  private declarationsFromDeployConfig: Declaration[]
+  public importMapFromDeployConfig?: string
+  private importMapFromTOML?: string
+  private declarationsFromDeployConfig: Declaration[] = []
   private declarationsFromTOML: Declaration[]
   private dependencyPaths = new Map<string, string[]>()
   private directories: string[]
@@ -53,13 +59,13 @@ export class EdgeFunctionsRegistry {
   private functionPaths = new Map<string, string>()
   private getUpdatedConfig: () => Promise<Config>
   private initialScan: Promise<void>
-  private internalDirectories: string[]
   private internalFunctions: EdgeFunction[] = []
   private manifest: Manifest | null = null
   private routes: Route[] = []
   private runIsolate: RunIsolate
   private servePath: string
   private userFunctions: EdgeFunction[] = []
+  private projectDir: string
 
   constructor({
     bundler,
@@ -68,8 +74,7 @@ export class EdgeFunctionsRegistry {
     directories,
     env,
     getUpdatedConfig,
-    internalDirectories,
-    internalFunctions,
+    importMapFromTOML,
     projectDir,
     runIsolate,
     servePath,
@@ -77,12 +82,12 @@ export class EdgeFunctionsRegistry {
     this.bundler = bundler
     this.configPath = configPath
     this.directories = directories
-    this.internalDirectories = internalDirectories
     this.getUpdatedConfig = getUpdatedConfig
     this.runIsolate = runIsolate
     this.servePath = servePath
+    this.projectDir = projectDir
 
-    this.declarationsFromDeployConfig = internalFunctions
+    this.importMapFromTOML = importMapFromTOML
     this.declarationsFromTOML = EdgeFunctionsRegistry.getDeclarationsFromTOML(config)
     this.env = EdgeFunctionsRegistry.getEnvironmentVariables(env)
 
@@ -95,7 +100,7 @@ export class EdgeFunctionsRegistry {
 
     this.initialScan = this.doInitialScan()
 
-    this.setupWatchers(projectDir)
+    this.setupWatchers()
   }
 
   private async doInitialScan() {
@@ -475,16 +480,47 @@ export class EdgeFunctionsRegistry {
       this.env,
       {
         getFunctionsConfig: true,
+        importMapPaths: [this.importMapFromTOML, this.importMapFromDeployConfig].filter(nonNullable),
       },
     )
 
     return { functionsConfig, graph, npmSpecifiersWithExtraneousFiles, success }
   }
 
+  private get internalDirectory() {
+    return join(this.projectDir, getPathInProject([INTERNAL_EDGE_FUNCTIONS_FOLDER]))
+  }
+
+  private async readDeployConfig() {
+    const manifestPath = join(this.internalDirectory, 'manifest.json')
+    try {
+      const contents = await readFile(manifestPath, 'utf8')
+      const manifest = JSON.parse(contents)
+      return manifest
+    } catch {}
+  }
+
+  private async scanForDeployConfig() {
+    const deployConfig = await this.readDeployConfig()
+    if (!deployConfig) {
+      return
+    }
+
+    if (deployConfig.version !== 1) {
+      throw new Error('Unsupported manifest format')
+    }
+
+    this.declarationsFromDeployConfig = deployConfig.functions
+    this.importMapFromDeployConfig = deployConfig.import_map
+      ? join(this.internalDirectory, deployConfig.import_map)
+      : undefined
+  }
+
   private async scanForFunctions() {
     const [internalFunctions, userFunctions] = await Promise.all([
-      this.bundler.find(this.internalDirectories),
+      this.bundler.find([this.internalDirectory]),
       this.bundler.find(this.directories),
+      this.scanForDeployConfig(),
     ])
     const functions = [...internalFunctions, ...userFunctions]
     const newFunctions = functions.filter((func) => {
@@ -508,7 +544,7 @@ export class EdgeFunctionsRegistry {
     return { all: functions, new: newFunctions, deleted: deletedFunctions }
   }
 
-  private async setupWatchers(projectDir: string) {
+  private async setupWatchers() {
     if (!this.configPath) {
       return
     }
@@ -529,18 +565,18 @@ export class EdgeFunctionsRegistry {
     // directories, they might be importing files that are located in
     // parent directories. So we watch the entire project directory for
     // changes.
-    await this.setupWatcherForDirectory(projectDir)
+    await this.setupWatcherForDirectory()
   }
 
-  private async setupWatcherForDirectory(directory: string) {
+  private async setupWatcherForDirectory() {
     const ignored = [`${this.servePath}/**`]
-    const watcher = await watchDebounced(directory, {
+    const watcher = await watchDebounced(this.projectDir, {
       ignored,
       onAdd: () => this.checkForAddedOrDeletedFunctions(),
       onChange: (paths) => this.handleFileChange(paths),
       onUnlink: () => this.checkForAddedOrDeletedFunctions(),
     })
 
-    this.directoryWatchers.set(directory, watcher)
+    this.directoryWatchers.set(this.projectDir, watcher)
   }
 }
