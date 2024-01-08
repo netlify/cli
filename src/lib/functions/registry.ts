@@ -3,7 +3,7 @@ import { createRequire } from 'module'
 import { basename, extname, isAbsolute, join, resolve } from 'path'
 import { env } from 'process'
 
-import { listFunctions } from '@netlify/zip-it-and-ship-it'
+import { ListedFunction, listFunctions } from '@netlify/zip-it-and-ship-it'
 import extractZip from 'extract-zip'
 
 import {
@@ -27,6 +27,9 @@ import runtimes from './runtimes/index.js'
 export const DEFAULT_FUNCTION_URL_EXPRESSION = /^\/.netlify\/(functions|builders)\/([^/]+).*/
 const TYPES_PACKAGE = '@netlify/functions'
 const ZIP_EXTENSION = '.zip'
+
+const isInternalFunction = (func: ListedFunction | NetlifyFunction) =>
+  func.mainFile.includes(getPathInProject([INTERNAL_FUNCTIONS_FOLDER]))
 
 /**
  * @typedef {"buildError" | "extracted" | "loaded" | "missing-types-package" | "reloaded" | "reloading" | "removed"} FunctionEvent
@@ -200,7 +203,6 @@ export class FunctionsRegistry {
           : `refer to https://ntl.fyi/functions-runtime`
         const warning = `The function is using the legacy CommonJS format. To start using ES modules, ${action}.`
 
-        // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'never'.
         FunctionsRegistry.logEvent(event, { func, warnings: [warning] })
       } else {
         FunctionsRegistry.logEvent(event, { func })
@@ -304,15 +306,11 @@ export class FunctionsRegistry {
 
   /**
    * Logs an event associated with functions.
-   *
-   * @param {FunctionEvent} event
-   * @param {object} data
-   * @param {NetlifyFunction} [data.func]
-   * @param {string[]} [data.warnings]
-   * @returns
    */
-  // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
-  static logEvent(event, { func, warnings = [] }) {
+  static logEvent(
+    event: 'buildError' | 'extracted' | 'loaded' | 'missing-types-package' | 'reloaded' | 'reloading' | 'removed',
+    { func, warnings = [] }: { func: NetlifyFunction; warnings?: string[] },
+  ) {
     let warningsText = ''
 
     if (warnings.length !== 0) {
@@ -381,19 +379,14 @@ export class FunctionsRegistry {
 
   /**
    * Adds a function to the registry
-   *
-   * @param {string} name
-   * @param {NetlifyFunction} funcBeforeHook
-   * @param {boolean} [isReload]
-   * @returns
    */
-  // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-  async registerFunction(name, funcBeforeHook, isReload = false) {
+  async registerFunction(name: string, funcBeforeHook: NetlifyFunction, isReload = false) {
     const { runtime } = funcBeforeHook
 
     // The `onRegister` hook allows runtimes to modify the function before it's
     // registered, or to prevent it from being registered altogether if the
     // hook returns `null`.
+    // @ts-expect-error FIXME
     const func = typeof runtime.onRegister === 'function' ? runtime.onRegister(funcBeforeHook) : funcBeforeHook
 
     if (func === null) {
@@ -453,13 +446,9 @@ export class FunctionsRegistry {
   /**
    * A proxy to zip-it-and-ship-it's `listFunctions` method. It exists just so
    * that we can mock it in tests.
-   * @param  {Parameters<listFunctions>} args
-   * @returns
    */
-  // @ts-expect-error TS(7019) FIXME: Rest parameter 'args' implicitly has an 'any[]' ty... Remove this comment to see the full error message
   // eslint-disable-next-line class-methods-use-this
-  async listFunctions(...args) {
-    // @ts-expect-error TS(2556) FIXME: A spread argument must either have a tuple type or... Remove this comment to see the full error message
+  async listFunctions(...args: Parameters<typeof listFunctions>) {
     return await listFunctions(...args)
   }
 
@@ -467,20 +456,17 @@ export class FunctionsRegistry {
    * Takes a list of directories and scans for functions. It keeps tracks of
    * any functions in those directories that we've previously seen, and takes
    * care of registering and unregistering functions as they come and go.
-   *
-   * @param {string[]} relativeDirs
    */
-  // @ts-expect-error TS(7006) FIXME: Parameter 'relativeDirs' implicitly has an 'any' t... Remove this comment to see the full error message
-  async scan(relativeDirs) {
-    // @ts-expect-error TS(7006) FIXME: Parameter 'dir' implicitly has an 'any' type.
-    const directories = relativeDirs.filter(Boolean).map((dir) => (isAbsolute(dir) ? dir : join(this.projectRoot, dir)))
+  async scan(relativeDirs: (string | undefined)[]) {
+    const directories = relativeDirs
+      .filter((dir): dir is string => Boolean(dir))
+      .map((dir) => (isAbsolute(dir) ? dir : join(this.projectRoot, dir)))
 
     // check after filtering to filter out [undefined] for example
     if (directories.length === 0) {
       return
     }
 
-    // @ts-expect-error TS(7006) FIXME: Parameter 'path' implicitly has an 'any' type.
     await Promise.all(directories.map((path) => FunctionsRegistry.prepareDirectoryScan(path)))
 
     const functions = await this.listFunctions(directories, {
@@ -492,11 +478,26 @@ export class FunctionsRegistry {
       config: this.config.functions,
     })
 
+    // user-defined functions take precedence over internal functions,
+    // so we want to ignore any internal functions where there's a user-defined one with the same name
+    const ignoredFunctions = new Set(
+      functions
+        .filter(
+          (func) =>
+            isInternalFunction(func) &&
+            this.functions.has(func.name) &&
+            !isInternalFunction(this.functions.get(func.name)!),
+        )
+        .map((func) => func.name),
+    )
+
     // Before registering any functions, we look for any functions that were on
     // the previous list but are missing from the new one. We unregister them.
     const deletedFunctions = [...this.functions.values()].filter((oldFunc) => {
       const isFound = functions.some(
-        (newFunc) => newFunc.name === oldFunc.name && newFunc.mainFile === oldFunc.mainFile,
+        (newFunc) =>
+          ignoredFunctions.has(newFunc.name) ||
+          (newFunc.name === oldFunc.name && newFunc.mainFile === oldFunc.mainFile),
       )
 
       return !isFound
@@ -510,6 +511,10 @@ export class FunctionsRegistry {
       // where the last ones precede the previous ones. This is why
       // we reverse the array so we get the right functions precedence in the CLI.
       functions.reverse().map(async ({ displayName, mainFile, name, runtime: runtimeName }) => {
+        if (ignoredFunctions.has(name)) {
+          return
+        }
+
         const runtime = runtimes[runtimeName]
 
         // If there is no matching runtime, it means this function is not yet
@@ -527,7 +532,6 @@ export class FunctionsRegistry {
           blobsContext: this.blobsContext,
           // @ts-expect-error TS(2339) FIXME: Property 'config' does not exist on type 'Function... Remove this comment to see the full error message
           config: this.config,
-          // @ts-expect-error TS(7006) FIXME: Parameter 'directory' implicitly has an 'any' type... Remove this comment to see the full error message
           directory: directories.find((directory) => mainFile.startsWith(directory)),
           mainFile,
           name,
@@ -564,7 +568,6 @@ export class FunctionsRegistry {
       FunctionsRegistry.logEvent('removed', { func })
     })
 
-    // @ts-expect-error TS(7006) FIXME: Parameter 'path' implicitly has an 'any' type.
     await Promise.all(directories.map((path) => this.setupDirectoryWatcher(path)))
   }
 

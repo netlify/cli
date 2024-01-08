@@ -12,25 +12,16 @@ import { type DevConfig } from '../commands/dev/types.js'
 import { detectFrameworkSettings } from './build-info.js'
 import { NETLIFYDEVWARN, chalk, log } from './command-helpers.js'
 import { acquirePort } from './dev.js'
-import { getInternalFunctionsDir } from './functions/functions.js'
 import { getPluginsToAutoInstall } from './init/utils.js'
 import { BaseServerSettings, ServerSettings } from './types.js'
 
-/** @param {string} str */
-// @ts-expect-error TS(7006) FIXME: Parameter 'str' implicitly has an 'any' type.
-const formatProperty = (str) => chalk.magenta(`'${str}'`)
-/** @param {string} str */
-// @ts-expect-error TS(7006) FIXME: Parameter 'str' implicitly has an 'any' type.
-const formatValue = (str) => chalk.green(`'${str}'`)
+const formatProperty = (str: string) => chalk.magenta(`'${str}'`)
+const formatValue = (str: string) => chalk.green(`'${str}'`)
 
-/**
- * @param {object} options
- * @param {string} options.keyFile
- * @param {string} options.certFile
- * @returns {Promise<{ key: string, cert: string, keyFilePath: string, certFilePath: string }>}
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
-const readHttpsSettings = async (options) => {
+const readHttpsSettings = async (options: {
+  keyFile: string
+  certFile: string
+}): Promise<{ key: string; cert: string; keyFilePath: string; certFilePath: string }> => {
   if (typeof options !== 'object' || !options.keyFile || !options.certFile) {
     throw new TypeError(
       `https options should be an object with ${formatProperty('keyFile')} and ${formatProperty(
@@ -61,12 +52,8 @@ const readHttpsSettings = async (options) => {
 
 /**
  * Validates a property inside the devConfig to be of a given type
- * @param {import('../commands/dev/types.js').DevConfig} devConfig The devConfig
- * @param {keyof import('../commands/dev/types.js').DevConfig} property The property to validate
- * @param {'string' | 'number'} type The type it should have
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'devConfig' implicitly has an 'any' type... Remove this comment to see the full error message
-function validateProperty(devConfig, property, type) {
+function validateProperty(devConfig: DevConfig, property: keyof DevConfig, type: 'string' | 'number') {
   if (devConfig[property] && typeof devConfig[property] !== type) {
     const formattedProperty = formatProperty(property)
     throw new TypeError(
@@ -75,13 +62,7 @@ function validateProperty(devConfig, property, type) {
   }
 }
 
-/**
- *
- * @param {object} config
- * @param {import('../commands/dev/types.js').DevConfig} config.devConfig
- */
-// @ts-expect-error TS(7031) FIXME: Binding element 'devConfig' implicitly has an 'any... Remove this comment to see the full error message
-const validateFrameworkConfig = ({ devConfig }) => {
+const validateFrameworkConfig = ({ devConfig }: { devConfig: DevConfig }) => {
   validateProperty(devConfig, 'command', 'string')
   validateProperty(devConfig, 'port', 'number')
   validateProperty(devConfig, 'targetPort', 'number')
@@ -95,13 +76,7 @@ const validateFrameworkConfig = ({ devConfig }) => {
   }
 }
 
-/**
- * @param {object} config
- * @param {import('../commands/dev/types.js').DevConfig} config.devConfig
- * @param {number=} config.detectedPort
- */
-// @ts-expect-error TS(7031) FIXME: Binding element 'detectedPort' implicitly has an '... Remove this comment to see the full error message
-const validateConfiguredPort = ({ detectedPort, devConfig }) => {
+const validateConfiguredPort = ({ detectedPort, devConfig }: { detectedPort?: number; devConfig: DevConfig }) => {
   if (devConfig.port && devConfig.port === detectedPort) {
     const formattedPort = formatProperty('port')
     throw new Error(
@@ -115,23 +90,15 @@ const DEFAULT_STATIC_PORT = 3999
 
 /**
  * Logs a message that it was unable to determine the dist directory and falls back to the workingDir
- * @param {string} workingDir
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'workingDir' implicitly has an 'any' typ... Remove this comment to see the full error message
-const getDefaultDist = (workingDir) => {
+const getDefaultDist = (workingDir: string) => {
   log(`${NETLIFYDEVWARN} Unable to determine public folder to serve files from. Using current working directory`)
   log(`${NETLIFYDEVWARN} Setup a netlify.toml file with a [dev] section to specify your dev server settings.`)
   log(`${NETLIFYDEVWARN} See docs at: https://cli.netlify.com/netlify-dev#project-detection`)
   return workingDir
 }
 
-/**
- * @param {object} config
- * @param {import('../commands/dev/types.js').DevConfig} config.devConfig
- * @returns {Promise<number>}
- */
-// @ts-expect-error TS(7031) FIXME: Binding element 'devConfig' implicitly has an 'any... Remove this comment to see the full error message
-const getStaticServerPort = async ({ devConfig }) => {
+const getStaticServerPort = async ({ devConfig }: { devConfig: DevConfig }): Promise<number> => {
   const port = await acquirePort({
     configuredPort: devConfig.staticServerPort,
     defaultPort: DEFAULT_STATIC_PORT,
@@ -141,16 +108,15 @@ const getStaticServerPort = async ({ devConfig }) => {
   return port
 }
 
-/**
- *
- * @param {object} config
- * @param {import('../commands/dev/types.js').DevConfig} config.devConfig
- * @param {import('commander').OptionValues} config.flags
- * @param {string} config.workingDir
- * @returns {Promise<Omit<import('./types.js').BaseServerSettings, 'command'> & {command?: string}>}
- */
-// @ts-expect-error TS(7031) FIXME: Binding element 'devConfig' implicitly has an 'any... Remove this comment to see the full error message
-const handleStaticServer = async ({ devConfig, flags, workingDir }) => {
+const handleStaticServer = async ({
+  devConfig,
+  flags,
+  workingDir,
+}: {
+  devConfig: DevConfig
+  flags: OptionValues
+  workingDir: string
+}): Promise<Omit<BaseServerSettings, 'command'> & { command?: string }> => {
   validateProperty(devConfig, 'staticServerPort', 'number')
 
   if (flags.dir) {
@@ -203,21 +169,18 @@ const getSettingsFromDetectedSettings = (command: BaseCommand, settings?: Settin
   }
 }
 
-/**
- * @param {import('../commands/dev/types.js').DevConfig} devConfig
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'devConfig' implicitly has an 'any' type... Remove this comment to see the full error message
-const hasCommandAndTargetPort = (devConfig) => devConfig.command && devConfig.targetPort
+const hasCommandAndTargetPort = (devConfig: DevConfig) => devConfig.command && devConfig.targetPort
 
 /**
  * Creates settings for the custom framework
- * @param {object} config
- * @param {import('../commands/dev/types.js').DevConfig} config.devConfig
- * @param {string} config.workingDir
- * @returns {import('./types.js').BaseServerSettings}
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'devConfig' implicitly has an 'any... Remove this comment to see the full error message
-const handleCustomFramework = ({ devConfig, workingDir }) => {
+const handleCustomFramework = ({
+  devConfig,
+  workingDir,
+}: {
+  devConfig: DevConfig
+  workingDir: string
+}): BaseServerSettings => {
   if (!hasCommandAndTargetPort(devConfig)) {
     throw new Error(
       `${formatProperty('command')} and ${formatProperty('targetPort')} properties are required when ${formatProperty(
@@ -236,28 +199,15 @@ const handleCustomFramework = ({ devConfig, workingDir }) => {
 
 /**
  * Merges the framework settings with the devConfig
- * @param {object} config
- * @param {import('../commands/dev/types.js').DevConfig} config.devConfig
- * @param {string} config.workingDir
- * @param {Partial<import('./types.js').BaseServerSettings>=} config.frameworkSettings
  */
 const mergeSettings = async ({
   devConfig,
   frameworkSettings = {},
   workingDir,
 }: {
-  devConfig: { command?: string; publish?: string; targetPort?: number; base?: string }
+  devConfig: DevConfig
+  frameworkSettings?: BaseServerSettings
   workingDir: string
-  frameworkSettings?: {
-    baseDirectory?: string
-    command?: string
-    dist?: string
-    env?: Record<string, string | undefined>
-    framework?: string
-    frameworkPort?: number
-    pollingStrategies?: string[]
-    clearPublishDirectory?: boolean
-  }
 }) => {
   const command = devConfig.command || frameworkSettings.command
   const frameworkPort = devConfig.targetPort || frameworkSettings.frameworkPort
@@ -353,9 +303,6 @@ const detectServerSettings = async (
   })
   // @ts-expect-error TS(2339) FIXME: Property 'functions' does not exist on type '{}'.
   const functionsDir = devConfig.functions || settings.functions
-  // @ts-expect-error TS(2345) FIXME: Argument of type '{ base: any; }' is not assignabl... Remove this comment to see the full error message
-  const internalFunctionsDir = await getInternalFunctionsDir({ base: command.workingDir })
-  const shouldStartFunctionsServer = Boolean(functionsDir || internalFunctionsDir)
 
   return {
     ...settings,
@@ -363,7 +310,7 @@ const detectServerSettings = async (
     jwtSecret: devConfig.jwtSecret || 'secret',
     jwtRolePath: devConfig.jwtRolePath || 'app_metadata.authorization.roles',
     functions: functionsDir,
-    ...(shouldStartFunctionsServer && { functionsPort: await getPort({ port: devConfig.functionsPort || 0 }) }),
+    functionsPort: await getPort({ port: devConfig.functionsPort || 0 }),
     ...(devConfig.https && { https: await readHttpsSettings(devConfig.https) }),
   }
 }
@@ -371,12 +318,9 @@ const detectServerSettings = async (
 /**
  * Returns a copy of the provided config with any plugins provided by the
  * server settings
- * @param {*} config
- * @param {Partial<import('./types.js').ServerSettings>} settings
- * @returns {*} Modified config
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'config' implicitly has an 'any' type.
-export const getConfigWithPlugins = (config, settings) => {
+export const getConfigWithPlugins = (config, settings: ServerSettings) => {
   if (!settings.plugins) {
     return config
   }
@@ -389,7 +333,6 @@ export const getConfigWithPlugins = (config, settings) => {
   // @ts-expect-error TS(7006) FIXME: Parameter 'plugin' implicitly has an 'any' type.
   const existingPluginNames = new Set(existingPlugins.map((plugin) => plugin.package))
   const newPlugins = settings.plugins
-    // @ts-expect-error TS(7006) FIXME: Parameter 'pluginName' implicitly has an 'any' typ... Remove this comment to see the full error message
     .map((pluginName) => {
       if (existingPluginNames.has(pluginName)) {
         return
