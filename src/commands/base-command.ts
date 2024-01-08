@@ -26,7 +26,7 @@ import {
   exit,
   getToken,
   log,
-  netlifyCliVersion,
+  version,
   normalizeConfig,
   padLeft,
   pollForToken,
@@ -548,7 +548,7 @@ export default class BaseCommand extends Command {
       ...apiUrlOpts,
     })
     const { buildDir, config, configPath, env, repositoryRoot, siteInfo } = cachedConfig
-    env.NETLIFY_CLI_VERSION = { sources: ['internal'], value: netlifyCliVersion }
+    env.NETLIFY_CLI_VERSION = { sources: ['internal'], value: version }
     const normalizedConfig = normalizeConfig(config)
     const agent = await getAgent({
       httpProxy: flags.httpProxy,
