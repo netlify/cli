@@ -24,7 +24,10 @@ type PatchedConfig = NetlifyTOML & {
   }
 }
 
-export type EnvironmentVariables = Record<string, { sources: string[], value: string; scopes?: string[] }>
+type EnvironmentVariableScope = 'builds' | 'functions' | 'runtime' | 'post_processing'
+type EnvironmentVariableSource = 'account' | 'addons' | 'configFile' | 'general' |  'internal' | 'ui'
+
+export type EnvironmentVariables = Record<string, { sources: EnvironmentVariableSource[], value: string; scopes?: EnvironmentVariableScope[] }>
 
 /**
  * The netlify object inside each command with the state
