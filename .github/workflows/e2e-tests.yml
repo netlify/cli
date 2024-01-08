@@ -61,7 +61,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   e2e-linux-based-os:
-    name: E2E Linux-based OS tests
+    name: E2E
     runs-on: ${{ matrix.os }}
     timeout-minutes: 10
     env:
