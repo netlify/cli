@@ -1,4 +1,4 @@
-// Handlers are meant to be async outside tests
+import { Buffer } from 'buffer'
 import { version } from 'process'
 
 import FormData from 'form-data'
@@ -142,7 +142,7 @@ describe.concurrent('commands/dev/config', () => {
     })
   })
 
-  test('should provide CLI version in env var', async (t) => {
+  test('should provide environment variables to framework server', async (t) => {
     await withSiteBuilder('site-with-netlify-version-env-var', async (builder) => {
       await builder
         .withContentFile({
@@ -151,6 +151,7 @@ describe.concurrent('commands/dev/config', () => {
 
           http.createServer((req, res) => {
             res.write(JSON.stringify({
+              NETLIFY_BLOBS_CONTEXT: process.env.NETLIFY_BLOBS_CONTEXT,
               NETLIFY_CLI_VERSION: process.env.NETLIFY_CLI_VERSION,
             }))
             res.end()
@@ -171,7 +172,17 @@ describe.concurrent('commands/dev/config', () => {
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const resp = await fetch(server.url)
-        const { NETLIFY_CLI_VERSION } = await resp.json()
+        const { NETLIFY_BLOBS_CONTEXT, NETLIFY_CLI_VERSION } = await resp.json()
+
+        t.expect(NETLIFY_BLOBS_CONTEXT).toBeTypeOf('string')
+
+        const { deployID, edgeURL, siteID, token } = JSON.parse(Buffer.from(NETLIFY_BLOBS_CONTEXT, 'base64').toString())
+
+        t.expect(deployID).toBe('0')
+        t.expect(edgeURL.startsWith('http://localhost:')).toBeTruthy()
+        t.expect(siteID).toBeTypeOf('string')
+        t.expect(token).toBeTypeOf('string')
+
         t.expect(NETLIFY_CLI_VERSION).toMatch(/\d+\.\d+\.\d+/)
       })
     })
