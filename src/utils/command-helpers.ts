@@ -48,10 +48,10 @@ export const padLeft = (str, count, filler = ' ') => str.padStart(str.length + c
 const platform = WSL ? 'wsl' : os.platform()
 const arch = os.arch() === 'ia32' ? 'x86' : os.arch()
 
-const { name, version } = await getPackageJson()
+const { name, version: packageVersion } = await getPackageJson()
 
-export const netlifyCliVersion = version
-export const USER_AGENT = `${name}/${netlifyCliVersion} ${platform}-${arch} node-${process.version}`
+export const version = packageVersion
+export const USER_AGENT = `${name}/${version} ${platform}-${arch} node-${process.version}`
 
 /** A list of base command flags that needs to be sorted down on documentation and on help pages */
 const BASE_FLAGS = new Set(['--debug', '--httpProxy', '--httpProxyCertificateFilename'])
