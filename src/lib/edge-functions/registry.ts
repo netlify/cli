@@ -454,15 +454,12 @@ export class EdgeFunctionsRegistry {
     // Mapping file URLs to names of functions that use them as dependencies.
     const dependencyPaths = new Map<string, string[]>()
 
-    // Map modules by path, acting as an helper index
+    // Mapping file URLs to modules. Used by the traversal function.
     const modulesByPath = new Map<string, ModuleJson>()
 
-    // Map function modules, acting as an helper index
-    const functionModules = new Map<string, ModuleJson>()
-
-    const { modules } = graph
-
-    modules.forEach((module) => {
+    // a set of edge function modules that we'll use to start traversing the dependency tree from
+    const functionModules = new Set<{ functionName: string, module: ModuleJson }>()
+    graph.modules.forEach((module) => {
       // We're interested in tracking local dependencies, so we only look at
       // specifiers with the `file:` protocol.
       const { specifier } = module
@@ -470,24 +467,18 @@ export class EdgeFunctionsRegistry {
         return
       }
 
-      // Populate the module index
       const path = fileURLToPath(specifier)
       modulesByPath.set(path, module)
 
-      // Populate the function modules index
-      const functionMatch = functionPaths.get(path)
-      if (functionMatch) {
-        functionModules.set(path, module)
+      const functionName = functionPaths.get(path)
+      if (functionName) {
+        functionModules.add({ functionName, module })
       }
     })
 
     // We start from our functions and we traverse through their dependency tree
-    functionModules.forEach((functionModule) => {
-      const { specifier } = functionModule
-      const traversedPaths = traverseLocalDependencies(functionModule, modulesByPath)
-      const path = fileURLToPath(specifier)
-      const functionName = functionPaths.get(path)
-      if (!functionName) return
+    functionModules.forEach(({ functionName, module }) => {
+      const traversedPaths = traverseLocalDependencies(module, modulesByPath)
       // With the paths for the local dependencies we build the dependency path map
       traversedPaths.forEach((dependencyPath) => {
         const functions = dependencyPaths.get(dependencyPath) || []
