@@ -50,30 +50,28 @@ function traverseLocalDependencies(
   { dependencies = [] }: ModuleJson,
   modulesByPath: Map<string, ModuleJson>,
 ): string[] {
-  return dependencies
-    .map((dependency) => {
-      // We're interested in tracking local dependencies, so we only look at
-      // specifiers with the `file:` protocol.
-      if (
-        dependency.code === undefined ||
-        typeof dependency.code.specifier !== 'string' ||
-        !dependency.code.specifier.startsWith('file://')
-      ) {
-        return []
-      }
-      const { specifier: dependencyURL } = dependency.code
-      const dependencyPath = fileURLToPath(dependencyURL)
-      const dependencyModule = modulesByPath.get(dependencyPath)
+  return dependencies.flatMap((dependency) => {
+    // We're interested in tracking local dependencies, so we only look at
+    // specifiers with the `file:` protocol.
+    if (
+      dependency.code === undefined ||
+      typeof dependency.code.specifier !== 'string' ||
+      !dependency.code.specifier.startsWith('file://')
+    ) {
+      return []
+    }
+    const { specifier: dependencyURL } = dependency.code
+    const dependencyPath = fileURLToPath(dependencyURL)
+    const dependencyModule = modulesByPath.get(dependencyPath)
 
-      // No module indexed for this dependency
-      if (dependencyModule === undefined) {
-        return [dependencyPath]
-      }
+    // No module indexed for this dependency
+    if (dependencyModule === undefined) {
+      return [dependencyPath]
+    }
 
-      // Keep traversing the child dependencies and return the current dependency path
-      return [...traverseLocalDependencies(dependencyModule, modulesByPath), dependencyPath]
-    })
-    .reduce((acc, deps) => [...acc, ...deps], [])
+    // Keep traversing the child dependencies and return the current dependency path
+    return [...traverseLocalDependencies(dependencyModule, modulesByPath), dependencyPath]
+  })
 }
 
 export class EdgeFunctionsRegistry {
