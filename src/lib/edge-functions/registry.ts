@@ -130,12 +130,6 @@ export class EdgeFunctionsRegistry {
     this.declarationsFromTOML = EdgeFunctionsRegistry.getDeclarationsFromTOML(config)
     this.env = EdgeFunctionsRegistry.getEnvironmentVariables(env)
 
-    this.buildError = null
-    this.directoryWatchers = new Map()
-    this.functionPaths = new Map()
-    this.userFunctions = []
-    this.internalFunctions = []
-
     this.initialScan = this.doInitialScan()
 
     this.setupWatchers(projectDir)
