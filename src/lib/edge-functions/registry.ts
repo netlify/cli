@@ -102,7 +102,7 @@ export class EdgeFunctionsRegistry {
   // names. This allows us to match modules against functions in O(1) time as
   // opposed to O(n).
   private functionPaths = new Map<string, string>()
-  
+
   private getUpdatedConfig: () => Promise<Config>
   private initialScan: Promise<void>
   private manifest: Manifest | null = null
