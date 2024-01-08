@@ -88,16 +88,22 @@ export class EdgeFunctionsRegistry {
   private directories: string[]
   private directoryWatchers = new Map<string, import('chokidar').FSWatcher>()
   private env: Record<string, string>
+
+  private userFunctions: EdgeFunction[] = []
+  private internalFunctions: EdgeFunction[] = []
+
+  // a Map from `this.functions` that maps function paths to function
+  // names. This allows us to match modules against functions in O(1) time as
+  // opposed to O(n).
   private functionPaths = new Map<string, string>()
+  
   private getUpdatedConfig: () => Promise<Config>
   private initialScan: Promise<void>
   private internalDirectories: string[]
-  private internalFunctions: EdgeFunction[] = []
   private manifest: Manifest | null = null
   private routes: Route[] = []
   private runIsolate: RunIsolate
   private servePath: string
-  private userFunctions: EdgeFunction[] = []
 
   constructor({
     bundler,
@@ -448,12 +454,6 @@ export class EdgeFunctionsRegistry {
       return
     }
 
-    // Creating a Map from `this.functions` that maps function paths to function
-    // names. This allows us to match modules against functions in O(1) time as
-    // opposed to O(n).
-    // eslint-disable-next-line unicorn/prefer-spread
-    this.functionPaths = new Map(Array.from(this.functions, (func) => [func.path, func.name]))
-
     this.dependencyPaths = new MultiMap<string, string>()
 
     // Mapping file URLs to modules. Used by the traversal function.
@@ -534,6 +534,9 @@ export class EdgeFunctionsRegistry {
 
     this.internalFunctions = internalFunctions
     this.userFunctions = userFunctions
+
+    // eslint-disable-next-line unicorn/prefer-spread
+    this.functionPaths = new Map(Array.from(this.functions, (func) => [func.path, func.name]))
 
     return { all: functions, new: newFunctions, deleted: deletedFunctions }
   }
