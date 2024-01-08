@@ -5,6 +5,7 @@ import FormData from 'form-data'
 import fetch from 'node-fetch'
 import { gte } from 'semver'
 import { describe, test } from 'vitest'
+import getPort from 'get-port'
 
 import { withDevServer } from '../../utils/dev-server.ts'
 import { withSiteBuilder } from '../../utils/site-builder.ts'
@@ -144,6 +145,8 @@ describe.concurrent('commands/dev/config', () => {
 
   test('should provide CLI version in env var', async (t) => {
     await withSiteBuilder('site-with-netlify-version-env-var', async (builder) => {
+      const port = await getPort()
+
       await builder
         .withContentFile({
           content: `
@@ -154,7 +157,7 @@ describe.concurrent('commands/dev/config', () => {
               NETLIFY_CLI_VERSION: process.env.NETLIFY_CLI_VERSION,
             }))
             res.end()
-          }).listen(1234);
+          }).listen(${port});
           `,
           path: 'devserver.mjs',
         })
@@ -163,7 +166,7 @@ describe.concurrent('commands/dev/config', () => {
             dev: {
               framework: '#custom',
               command: 'node devserver.mjs',
-              targetPort: 1234,
+              targetPort: port,
             },
           },
         })
