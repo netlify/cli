@@ -81,7 +81,10 @@ export class EdgeFunctionsRegistry {
   private configPath: string
   private declarationsFromDeployConfig: Declaration[]
   private declarationsFromTOML: Declaration[]
+
+  // Mapping file URLs to names of functions that use them as dependencies.
   private dependencyPaths = new MultiMap<string, string>()
+
   private directories: string[]
   private directoryWatchers = new Map<string, import('chokidar').FSWatcher>()
   private env: Record<string, string>
@@ -449,10 +452,9 @@ export class EdgeFunctionsRegistry {
     // names. This allows us to match modules against functions in O(1) time as
     // opposed to O(n).
     // eslint-disable-next-line unicorn/prefer-spread
-    const functionPaths = new Map(Array.from(this.functions, (func) => [func.path, func.name]))
+    this.functionPaths = new Map(Array.from(this.functions, (func) => [func.path, func.name]))
 
-    // Mapping file URLs to names of functions that use them as dependencies.
-    const dependencyPaths = new MultiMap<string, string>()
+    this.dependencyPaths = new MultiMap<string, string>()
 
     // Mapping file URLs to modules. Used by the traversal function.
     const modulesByPath = new Map<string, ModuleJson>()
@@ -470,7 +472,7 @@ export class EdgeFunctionsRegistry {
       const path = fileURLToPath(specifier)
       modulesByPath.set(path, module)
 
-      const functionName = functionPaths.get(path)
+      const functionName = this.functionPaths.get(path)
       if (functionName) {
         functionModules.add({ functionName, module })
       }
@@ -480,12 +482,9 @@ export class EdgeFunctionsRegistry {
     functionModules.forEach(({ functionName, module }) => {
       const traversedPaths = traverseLocalDependencies(module, modulesByPath)
       traversedPaths.forEach((dependencyPath) => {
-        dependencyPaths.add(dependencyPath, functionName)
+        this.dependencyPaths.add(dependencyPath, functionName)
       })
     })
-
-    this.dependencyPaths = dependencyPaths
-    this.functionPaths = functionPaths
   }
 
   /**
