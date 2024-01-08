@@ -61,8 +61,10 @@ export const envList = async (options: OptionValues, command: BaseCommand) => {
 
   // filter out general sources
   environment = Object.fromEntries(
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    Object.entries(environment).filter(([, variable]) => variable.sources[0] !== 'general'),
+    Object.entries(environment).filter(
+      // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+      ([, variable]) => variable.sources[0] !== 'general' && variable.sources[0] !== 'internal',
+    ),
   )
 
   // Return json response for piping commands

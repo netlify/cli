@@ -142,6 +142,41 @@ describe.concurrent('commands/dev/config', () => {
     })
   })
 
+  test('should provide CLI version in env var', async (t) => {
+    await withSiteBuilder('site-with-netlify-version-env-var', async (builder) => {
+      await builder
+        .withContentFile({
+          content: `
+          import http from "http";
+
+          http.createServer((req, res) => {
+            res.write(JSON.stringify({
+              NETLIFY_CLI_VERSION: process.env.NETLIFY_CLI_VERSION,
+            }))
+            res.end()
+          }).listen(1234);
+          `,
+          path: 'devserver.mjs',
+        })
+        .withNetlifyToml({
+          config: {
+            dev: {
+              framework: '#custom',
+              command: 'node devserver.mjs',
+              targetPort: 1234,
+            },
+          },
+        })
+        .build()
+
+      await withDevServer({ cwd: builder.directory }, async (server) => {
+        const resp = await fetch(server.url)
+        const { NETLIFY_CLI_VERSION } = await resp.json()
+        t.expect(NETLIFY_CLI_VERSION).toMatch(/\d+\.\d+\.\d+/)
+      })
+    })
+  })
+
   test('should set value of the CONTEXT env variable', async (t) => {
     await withSiteBuilder('site-with-context-override', async (builder) => {
       builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withFunction({
