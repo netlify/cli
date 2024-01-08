@@ -13,6 +13,7 @@ import {
   watchDebounced,
   isNodeError,
 } from '../../utils/command-helpers.js'
+import { MultiMap } from '../../utils/multimap.js'
 
 //  TODO: Replace with a proper type for the entire config object.
 interface Config {
@@ -80,7 +81,7 @@ export class EdgeFunctionsRegistry {
   private configPath: string
   private declarationsFromDeployConfig: Declaration[]
   private declarationsFromTOML: Declaration[]
-  private dependencyPaths = new Map<string, string[]>()
+  private dependencyPaths = new MultiMap<string, string>()
   private directories: string[]
   private directoryWatchers = new Map<string, import('chokidar').FSWatcher>()
   private env: Record<string, string>
@@ -122,7 +123,6 @@ export class EdgeFunctionsRegistry {
 
     this.buildError = null
     this.directoryWatchers = new Map()
-    this.dependencyPaths = new Map()
     this.functionPaths = new Map()
     this.userFunctions = []
     this.internalFunctions = []
@@ -452,13 +452,13 @@ export class EdgeFunctionsRegistry {
     const functionPaths = new Map(Array.from(this.functions, (func) => [func.path, func.name]))
 
     // Mapping file URLs to names of functions that use them as dependencies.
-    const dependencyPaths = new Map<string, string[]>()
+    const dependencyPaths = new MultiMap<string, string>()
 
     // Mapping file URLs to modules. Used by the traversal function.
     const modulesByPath = new Map<string, ModuleJson>()
 
     // a set of edge function modules that we'll use to start traversing the dependency tree from
-    const functionModules = new Set<{ functionName: string, module: ModuleJson }>()
+    const functionModules = new Set<{ functionName: string; module: ModuleJson }>()
     graph.modules.forEach((module) => {
       // We're interested in tracking local dependencies, so we only look at
       // specifiers with the `file:` protocol.
@@ -479,10 +479,8 @@ export class EdgeFunctionsRegistry {
     // We start from our functions and we traverse through their dependency tree
     functionModules.forEach(({ functionName, module }) => {
       const traversedPaths = traverseLocalDependencies(module, modulesByPath)
-      // With the paths for the local dependencies we build the dependency path map
       traversedPaths.forEach((dependencyPath) => {
-        const functions = dependencyPaths.get(dependencyPath) || []
-        dependencyPaths.set(dependencyPath, [...functions, functionName])
+        dependencyPaths.add(dependencyPath, functionName)
       })
     })
 
