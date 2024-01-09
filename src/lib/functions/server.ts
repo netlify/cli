@@ -353,7 +353,7 @@ export const startFunctionsServer = async (options: {
 
   await functionsRegistry.scan(functionsDirectories)
 
-  const server = getFunctionsServer(Object.assign(options, { functionsRegistry }))
+  const server = getFunctionsServer({ ...options, functionsRegistry })
 
   await startWebServer({ server, settings, debug })
 
