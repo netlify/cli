@@ -7,6 +7,8 @@ import express from 'express'
 import expressLogging from 'express-logging'
 import jwtDecode from 'jwt-decode'
 
+import type BaseCommand from '../../commands/base-command.js'
+import type { $TSFixMe } from '../../commands/types.js'
 import { NETLIFYDEVERR, NETLIFYDEVLOG, error as errorExit, log } from '../../utils/command-helpers.js'
 import { isFeatureFlagEnabled } from '../../utils/feature-flags.js'
 import {
@@ -16,6 +18,7 @@ import {
   getInternalFunctionsDir,
 } from '../../utils/functions/index.js'
 import { NFFunctionName, NFFunctionRoute } from '../../utils/headers.js'
+import type { BlobsContext } from '../blobs/blobs.js'
 import { headers as efHeaders } from '../edge-functions/headers.js'
 import { getGeoLocation } from '../geo-location.js'
 
@@ -262,24 +265,19 @@ const getFunctionsServer = (options) => {
   return app
 }
 
-/**
- *
- * @param {object} options
- * @param {import("../blobs/blobs.js").BlobsContext} options.blobsContext
- * @param {import('../../commands/base-command.js').default} options.command
- * @param {*} options.capabilities
- * @param {*} options.config
- * @param {boolean} options.debug
- * @param {*} options.loadDistFunctions
- * @param {*} options.settings
- * @param {*} options.site
- * @param {*} options.siteInfo
- * @param {string} options.siteUrl
- * @param {*} options.timeouts
- * @returns {Promise<import('./registry.js').FunctionsRegistry | undefined>}
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
-export const startFunctionsServer = async (options) => {
+export const startFunctionsServer = async (options: {
+  blobsContext: BlobsContext
+  command: BaseCommand
+  config: $TSFixMe
+  capabilities: $TSFixMe
+  debug: boolean
+  loadDistFunctions: $TSFixMe
+  settings: $TSFixMe
+  site: $TSFixMe
+  siteInfo: $TSFixMe
+  siteUrl: string
+  timeouts: $TSFixMe
+}): Promise<FunctionsRegistry | undefined> => {
   const {
     blobsContext,
     capabilities,
@@ -362,24 +360,23 @@ export const startFunctionsServer = async (options) => {
   return functionsRegistry
 }
 
-/**
- *
- * @param {object} config
- * @param {boolean} config.debug
- * @param {ReturnType<Awaited<typeof getFunctionsServer>>} config.server
- * @param {*} config.settings
- */
-// @ts-expect-error TS(7031) FIXME: Binding element 'debug' implicitly has an 'any' ty... Remove this comment to see the full error message
-const startWebServer = async ({ debug, server, settings }) => {
-  await new Promise((/** @type {(resolve: void) => void} */ resolve) => {
+const startWebServer = async ({
+  debug,
+  server,
+  settings,
+}: {
+  debug: boolean
+  server: ReturnType<Awaited<typeof getFunctionsServer>>
+  settings: $TSFixMe
+}) => {
+  await new Promise<void>((resolve) => {
     // @ts-expect-error TS(7006) FIXME: Parameter 'err' implicitly has an 'any' type.
-    server.listen(settings.functionsPort, (/** @type {unknown} */ err) => {
+    server.listen(settings.functionsPort, (err) => {
       if (err) {
         errorExit(`${NETLIFYDEVERR} Unable to start functions server: ${err}`)
       } else if (debug) {
         log(`${NETLIFYDEVLOG} Functions server is listening on ${settings.functionsPort}`)
       }
-      // @ts-expect-error TS(2794) FIXME: Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
       resolve()
     })
   })
