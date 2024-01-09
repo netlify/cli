@@ -2,7 +2,7 @@ import { Buffer } from 'buffer'
 import { promises as fs } from 'fs'
 import path from 'path'
 
-import express from 'express'
+import express, { type RequestHandler } from 'express'
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'expr... Remove this comment to see the full error message
 import expressLogging from 'express-logging'
 import jwtDecode from 'jwt-decode'
@@ -80,11 +80,9 @@ const hasBody = (req) =>
   // we expect a string or a buffer, because we use the two bodyParsers(text, raw) from express
   (typeof req.body === 'string' || Buffer.isBuffer(req.body))
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
-export const createHandler = function (options) {
+export const createHandler = function (options: GetFunctionsServerOptions): RequestHandler {
   const { functionsRegistry } = options
 
-  // @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
   return async function handler(request, response) {
     // If these headers are set, it means we've already matched a function and we
     // can just grab its name directly. We delete the header from the request
@@ -102,7 +100,7 @@ export const createHandler = function (options) {
       functionName = cleanPath.split('/').find(Boolean)
     }
 
-    const func = functionsRegistry.get(functionName)
+    const func = functionsRegistry.get(functionName ?? '')
 
     if (func === undefined) {
       response.statusCode = 404
@@ -123,16 +121,14 @@ export const createHandler = function (options) {
     }
 
     let remoteAddress = request.header('x-forwarded-for') || request.connection.remoteAddress || ''
-    remoteAddress = remoteAddress
-      .split(remoteAddress.includes('.') ? ':' : ',')
-      .pop()
-      .trim()
+    remoteAddress =
+      remoteAddress
+        .split(remoteAddress.includes('.') ? ':' : ',')
+        .pop()
+        ?.trim() ?? ''
 
-    let requestPath = request.path
-    if (request.header('x-netlify-original-pathname')) {
-      requestPath = request.header('x-netlify-original-pathname')
-      delete request.headers['x-netlify-original-pathname']
-    }
+    const requestPath = request.header('x-netlify-original-pathname') ?? request.path
+    delete request.headers['x-netlify-original-pathname']
 
     let requestQuery = request.query
     if (request.header('x-netlify-original-search')) {
@@ -153,7 +149,7 @@ export const createHandler = function (options) {
       {},
     )
 
-    const geoLocation = await getGeoLocation({ ...options, mode: options.geo })
+    const geoLocation = await getGeoLocation({ ...options, mode: options.geolocationMode })
 
     const headers = Object.entries({
       ...request.headers,
@@ -163,7 +159,7 @@ export const createHandler = function (options) {
       'x-nf-site-id': [options?.siteInfo?.id ?? 'unlinked'],
       [efHeaders.Geo]: Buffer.from(JSON.stringify(geoLocation)).toString('base64'),
     }).reduce((prev, [key, value]) => ({ ...prev, [key]: Array.isArray(value) ? value : [value] }), {})
-    const rawQuery = new URLSearchParams(requestQuery).toString()
+    const rawQuery = new URLSearchParams(requestQuery as Record<string, string>).toString()
     const protocol = options.config?.dev?.https ? 'https' : 'http'
     const url = new URL(requestPath, `${protocol}://${request.get('host') || 'localhost'}`)
     url.search = rawQuery
@@ -242,6 +238,13 @@ interface GetFunctionsServerOptions {
   functionsPrefix?: string
   functionsRegistry: FunctionsRegistry
   siteUrl: string
+  siteInfo?: $TSFixMe
+  accountId: string
+  geoCountry: string
+  offline: boolean
+  state: $TSFixMe
+  config: $TSFixMe
+  geolocationMode: 'cache' | 'update' | 'mock'
 }
 
 const getFunctionsServer = (options: GetFunctionsServerOptions) => {

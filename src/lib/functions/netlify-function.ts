@@ -40,7 +40,7 @@ export default class NetlifyFunction {
 
   // Determines whether this is a background function based on the function
   // name.
-  private readonly isBackground: boolean
+  public readonly isBackground: boolean
 
   private buildQueue?: Promise<$FIXME>
   private buildData?: $FIXME
