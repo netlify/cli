@@ -237,8 +237,14 @@ export const createHandler = function (options) {
   }
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
-const getFunctionsServer = (options) => {
+interface GetFunctionsServerOptions {
+  buildersPrefix?: string
+  functionsPrefix?: string
+  functionsRegistry: FunctionsRegistry
+  siteUrl: string
+}
+
+const getFunctionsServer = (options: GetFunctionsServerOptions) => {
   const { buildersPrefix = '', functionsPrefix = '', functionsRegistry, siteUrl } = options
   const app = express()
   const functionHandler = createHandler(options)
@@ -275,9 +281,8 @@ export const startFunctionsServer = async (options: {
   settings: $TSFixMe
   site: $TSFixMe
   siteInfo: $TSFixMe
-  siteUrl: string
   timeouts: $TSFixMe
-}): Promise<FunctionsRegistry | undefined> => {
+} & GetFunctionsServerOptions): Promise<FunctionsRegistry | undefined> => {
   const {
     blobsContext,
     capabilities,
