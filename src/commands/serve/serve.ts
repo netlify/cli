@@ -101,7 +101,6 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
   })
 
   const functionsRegistry = await startFunctionsServer({
-    api,
     blobsContext,
     command,
     config,
