@@ -154,7 +154,7 @@ describe.concurrent('functions:serve command', () => {
     })
   })
 
-  test.only('should serve V2 functions', async (t) => {
+  test('should serve V2 functions', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       await builder
         .withContentFile({
