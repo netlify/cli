@@ -53,8 +53,6 @@ export const functionsServe = async (options: OptionValues, command: BaseCommand
     siteUrl,
     capabilities,
     timeouts,
-    functionsPrefix: '/.netlify/functions/',
-    buildersPrefix: '/.netlify/builders/',
     geolocationMode: options.geo,
     geoCountry: options.country,
     offline: options.offline,

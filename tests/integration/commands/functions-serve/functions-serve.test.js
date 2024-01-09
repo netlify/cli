@@ -157,7 +157,6 @@ describe.concurrent('functions:serve command', () => {
   test.only('should serve V2 functions', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       await builder
-        .withNetlifyToml({ config: { functions: { directory: 'functions' } } })
         .withContentFile({
           path: 'netlify/functions/ping.js',
           content: `

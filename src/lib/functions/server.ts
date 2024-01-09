@@ -92,12 +92,17 @@ export const createHandler = function (options: GetFunctionsServerOptions): Requ
     const functionRoute = request.header(NFFunctionRoute)
     delete request.headers[NFFunctionRoute]
 
-    // If we didn't match a function with a custom route, let's try to match
-    // using the fixed URL format.
+    // If there's still no function found, we check the functionsRegistry again.
+    // This is needed for the functions:serve command, where the dev server that normally does the matching doesnt run.
+    // It also matches the default URL (.netlify/functions/builders)
     if (!functionName) {
-      const cleanPath = request.path.replace(/^\/.netlify\/(functions|builders)/, '')
-
-      functionName = cleanPath.split('/').find(Boolean)
+      const match = await functionsRegistry.getFunctionForURLPath(request.url, request.method,
+        // we're pretending there's no static file at the same URL.
+        // This is wrong, but in local dev we already did the matching
+        // in a downstream server where we had access to the file system, so this never hits.
+        () => Promise.resolve(false),
+      )
+      functionName = match?.func?.name
     }
 
     const func = functionsRegistry.get(functionName ?? '')
@@ -234,8 +239,6 @@ export const createHandler = function (options: GetFunctionsServerOptions): Requ
 }
 
 interface GetFunctionsServerOptions {
-  buildersPrefix?: string
-  functionsPrefix?: string
   functionsRegistry: FunctionsRegistry
   siteUrl: string
   siteInfo?: $TSFixMe
@@ -248,7 +251,7 @@ interface GetFunctionsServerOptions {
 }
 
 const getFunctionsServer = (options: GetFunctionsServerOptions) => {
-  const { buildersPrefix = '', functionsPrefix = '', functionsRegistry, siteUrl } = options
+  const { functionsRegistry, siteUrl } = options
   const app = express()
   const functionHandler = createHandler(options)
 
@@ -268,8 +271,7 @@ const getFunctionsServer = (options: GetFunctionsServerOptions) => {
     }),
   )
 
-  app.all(`${functionsPrefix}*`, functionHandler)
-  app.all(`${buildersPrefix}*`, functionHandler)
+  app.all('*', functionHandler)
 
   return app
 }
