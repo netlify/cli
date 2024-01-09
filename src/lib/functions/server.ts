@@ -271,18 +271,20 @@ const getFunctionsServer = (options: GetFunctionsServerOptions) => {
   return app
 }
 
-export const startFunctionsServer = async (options: {
-  blobsContext: BlobsContext
-  command: BaseCommand
-  config: $TSFixMe
-  capabilities: $TSFixMe
-  debug: boolean
-  loadDistFunctions: $TSFixMe
-  settings: $TSFixMe
-  site: $TSFixMe
-  siteInfo: $TSFixMe
-  timeouts: $TSFixMe
-} & GetFunctionsServerOptions): Promise<FunctionsRegistry | undefined> => {
+export const startFunctionsServer = async (
+  options: {
+    blobsContext: BlobsContext
+    command: BaseCommand
+    config: $TSFixMe
+    capabilities: $TSFixMe
+    debug: boolean
+    loadDistFunctions?: boolean
+    settings: $TSFixMe
+    site: $TSFixMe
+    siteInfo: $TSFixMe
+    timeouts: $TSFixMe
+  } & Omit<GetFunctionsServerOptions, 'functionsRegistry'>,
+): Promise<FunctionsRegistry | undefined> => {
   const {
     blobsContext,
     capabilities,

@@ -2,6 +2,7 @@ import { join } from 'path'
 
 import { OptionValues } from 'commander'
 
+import { getBlobsContext } from '../../lib/blobs/blobs.js'
 import { startFunctionsServer } from '../../lib/functions/server.js'
 import { printBanner } from '../../utils/banner.js'
 import { acquirePort, getDotEnvVariables, getSiteInformation, injectEnvVariables } from '../../utils/dev.js'
@@ -12,7 +13,7 @@ import BaseCommand from '../base-command.js'
 const DEFAULT_PORT = 9999
 
 export const functionsServe = async (options: OptionValues, command: BaseCommand) => {
-  const { api, config, site, siteInfo, state } = command.netlify
+  const { api, config, site, siteInfo } = command.netlify
 
   const functionsDir = getFunctionsDir({ options, config }, join('netlify', 'functions'))
   let { env } = command.netlify.cachedConfig
@@ -22,7 +23,7 @@ export const functionsServe = async (options: OptionValues, command: BaseCommand
   env = await getDotEnvVariables({ devConfig: { ...config.dev }, env, site })
   injectEnvVariables(env)
 
-  const { accountId, capabilities, siteUrl, timeouts } = await getSiteInformation({
+  const { capabilities, siteUrl, timeouts } = await getSiteInformation({
     offline: options.offline,
     api,
     site,
@@ -35,11 +36,17 @@ export const functionsServe = async (options: OptionValues, command: BaseCommand
     errorMessage: 'Could not acquire configured functions port',
   })
 
+  const blobsContext = await getBlobsContext({
+    debug: options.debug,
+    projectRoot: command.workingDir,
+    siteID: site.id ?? 'unknown-site-id',
+  })
+
   await startFunctionsServer({
+    blobsContext,
     config,
     debug: options.debug,
     command,
-    api,
     settings: { functions: functionsDir, functionsPort },
     site,
     siteInfo,
@@ -48,11 +55,6 @@ export const functionsServe = async (options: OptionValues, command: BaseCommand
     timeouts,
     functionsPrefix: '/.netlify/functions/',
     buildersPrefix: '/.netlify/builders/',
-    geolocationMode: options.geo,
-    geoCountry: options.country,
-    offline: options.offline,
-    state,
-    accountId,
   })
 
   const url = getProxyUrl({ port: functionsPort })
