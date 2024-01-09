@@ -8,6 +8,7 @@ import { getPathInProject } from '../lib/settings.js'
 import { error } from './command-helpers.js'
 import { startFrameworkServer } from './framework-server.js'
 import { INTERNAL_FUNCTIONS_FOLDER } from './functions/index.js'
+import { getFeatureFlagsFromSiteInfo } from './feature-flags.js'
 
 const netlifyBuildPromise = import('@netlify/build')
 
@@ -71,6 +72,7 @@ export const runNetlifyBuild = async ({ command, env = {}, options, settings, ti
     mode: 'cli',
     telemetry: false,
     buffer: false,
+    featureFlags: getFeatureFlagsFromSiteInfo(cachedConfig.siteInfo),
     offline: options.offline,
     packagePath: command.workspacePackage,
     cwd: cachedConfig.buildDir,
