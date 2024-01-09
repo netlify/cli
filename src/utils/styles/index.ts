@@ -133,8 +133,8 @@ export const confirm = (opts: ConfirmOptions) => {
 type Primitive = Readonly<string | boolean | number>
 
 type Option<Value> = Value extends Primitive
-  ? { value: Value; label?: string; hint?: string }
-  : { value: Value; label: string; hint?: string }
+  ? { value: Value; label?: string; hint?: string; group?: string | true }
+  : { value: Value; label: string; hint?: string; group?: string | true }
 
 export interface SelectOptions<Value> {
   message: string
@@ -184,6 +184,7 @@ export const select = <Value>(opts: SelectOptions<Value>) => {
   }).prompt() as Promise<Value>
 }
 
+// allows for the use of a) b) c) etc. options.
 export const selectKey = <Value extends string>(opts: SelectOptions<Value>) => {
   const renderOption = (
     option: Option<Value>,
@@ -211,13 +212,12 @@ export const selectKey = <Value extends string>(opts: SelectOptions<Value>) => {
     initialValue: opts.initialValue,
     render() {
       const title = `${chalk.gray(symbols.BAR)}\n${coloredSymbol(this.state)}  ${opts.message}\n`
+      const selectedOption = this.options.find((opt: { value: string }) => opt.value === this.value)
+      if (!selectedOption) return
 
       switch (this.state) {
         case 'submit': {
-          return `${title}${chalk.gray(symbols.BAR)}  ${renderOption(
-            this.options.find((opt) => opt.value === this.value)!,
-            'selected',
-          )}`
+          return `${title}${chalk.gray(symbols.BAR)}  ${renderOption(selectedOption, 'selected')}`
         }
         case 'cancel':
           return `${title}${chalk.gray(symbols.BAR)}  ${renderOption(this.options[0], 'cancelled')}\n${chalk.gray(
@@ -357,9 +357,9 @@ export const groupMultiselect = <Value>(opts: GroupMultiSelectOptions<Value>) =>
     options: Option<Value>[] = [],
   ) => {
     const label = option.label ?? String(option.value)
-    const isItem = typeof (option as any).group === 'string'
+    const isItem = typeof option.group === 'string'
     const next = isItem && (options[options.indexOf(option) + 1] ?? { group: true })
-    const isLast = isItem && (next as any).group === true
+    const isLast = isItem && next && next.group === true
     const prefix = isItem ? `${isLast ? symbols.BAR_END : symbols.BAR} ` : ''
 
     if (state === 'active') {
