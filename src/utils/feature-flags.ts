@@ -13,3 +13,14 @@
 // @ts-expect-error TS(7006) FIXME: Parameter 'flagName' implicitly has an 'any' type.
 export const isFeatureFlagEnabled = (flagName: string, siteInfo): boolean =>
   Boolean(siteInfo.feature_flags && siteInfo.feature_flags[flagName] !== false)
+
+/**
+ * Retrieves all Feature flags from the siteInfo
+ */
+export const getFeatureFlagsFromSiteInfo = (siteInfo: {
+  feature_flags?: Record<string, boolean | string | number>
+}): Record<string, boolean | string | number> => ({
+  ...(siteInfo.feature_flags || {}),
+  // see https://github.com/netlify/pod-dev-foundations/issues/581#issuecomment-1731022753
+  zisi_golang_use_al2: isFeatureFlagEnabled('cli_golang_use_al2', siteInfo),
+})
