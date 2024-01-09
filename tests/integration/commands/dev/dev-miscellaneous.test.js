@@ -719,7 +719,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
   })
 
   test(`catches invalid function names`, async (t) => {
-    await withSiteBuilder('site-with-functions', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       const functionsPort = 6667
       await builder
         .withNetlifyToml({ config: { functions: { directory: 'functions' }, dev: { functionsPort } } })
@@ -733,7 +733,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
         .buildAsync()
 
       await withDevServer({ cwd: builder.directory }, async ({ port, url }) => {
-        const response = await fetch(`${url.replace(port, functionsPort)}/exclamat!on`, {
+        const response = await fetch(`${url.replace(port, functionsPort)}/.netlify/functions/exclamat!on`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
