@@ -13,7 +13,6 @@ import { capitalize } from '../string.js'
 
 import type { FunctionsRegistry } from './registry.js'
 
-
 // @ts-expect-error TS(7031) FIXME: Binding element 'functionsRegistry' implicitly has... Remove this comment to see the full error message
 const getFormHandler = function ({ functionsRegistry }) {
   const handlers = ['submission-created', `submission-created${BACKGROUND}`]

@@ -96,7 +96,9 @@ export const createHandler = function (options: GetFunctionsServerOptions): Requ
     // This is needed for the functions:serve command, where the dev server that normally does the matching doesnt run.
     // It also matches the default URL (.netlify/functions/builders)
     if (!functionName) {
-      const match = await functionsRegistry.getFunctionForURLPath(request.url, request.method,
+      const match = await functionsRegistry.getFunctionForURLPath(
+        request.url,
+        request.method,
         // we're pretending there's no static file at the same URL.
         // This is wrong, but in local dev we already did the matching
         // in a downstream server where we had access to the file system, so this never hits.

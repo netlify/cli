@@ -162,7 +162,7 @@ describe.concurrent('functions:serve command', () => {
           content: `
           export default () => new Response("ping")
           export const config = { path: "/ping" }
-          `
+          `,
         })
         .build()
 
