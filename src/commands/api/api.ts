@@ -11,7 +11,6 @@ export const apiCommand = async (apiMethod: string, options: OptionValues, comma
   const { api } = command.netlify
 
   if (options.list) {
-    intro('api')
     const table = new AsciiTable(`Netlify API Methods`)
     table.setHeading('API Method', 'Docs Link')
     methods.forEach((method) => {
