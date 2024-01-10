@@ -566,7 +566,6 @@ export const NetlifyLog = {
         NetlifyLog.message(`${chalk.red(`${err.name}:`)} ${err.message}\n`, {
           symbol: chalk.red(symbols.ERROR),
           writeStream: process.stderr,
-          error: true,
         })
       }
     } else {
@@ -576,8 +575,8 @@ export const NetlifyLog = {
         writeStream: process.stderr,
         error: true,
       })
+      process.exit(1)
     }
-    process.exit(1)
   },
 }
 
