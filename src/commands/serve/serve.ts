@@ -1,3 +1,4 @@
+import { Buffer } from 'node:buffer'
 import process from 'process'
 
 import { OptionValues } from 'commander'
@@ -88,16 +89,18 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
     `${NETLIFYDEVWARN} Changes will not be hot-reloaded, so if you need to rebuild your site you must exit and run 'netlify serve' again`,
   )
 
-  const { configPath: configPathOverride } = await runBuildTimeline({
-    command,
-    settings,
-    options,
-  })
-
   const blobsContext = await getBlobsContext({
     debug: options.debug,
     projectRoot: command.workingDir,
     siteID: site.id ?? 'unknown-site-id',
+  })
+
+  process.env.NETLIFY_BLOBS_CONTEXT = Buffer.from(JSON.stringify(blobsContext)).toString('base64')
+
+  const { configPath: configPathOverride } = await runBuildTimeline({
+    command,
+    settings,
+    options,
   })
 
   const functionsRegistry = await startFunctionsServer({
