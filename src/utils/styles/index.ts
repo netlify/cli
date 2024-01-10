@@ -516,17 +516,18 @@ export const outro = (message = '') => {
 
 export type LogMessageOptions = {
   symbol?: string
+  error?: boolean
   writeStream?: NodeJS.WriteStream
 }
 export const NetlifyLog = {
   message: (
     message = '',
-    { symbol = chalk.gray(symbols.BAR), writeStream = process.stdout }: LogMessageOptions = {},
+    { error = false, symbol = chalk.gray(symbols.BAR), writeStream = process.stdout }: LogMessageOptions = {},
   ) => {
     const parts = [`${chalk.gray(symbols.BAR)}`]
     if (message) {
       const [firstLine, ...lines] = message.split('\n')
-      parts.push(`${symbol}  ${firstLine}`, ...lines.map((ln) => `${chalk.gray(symbols.BAR)}  ${ln}`))
+      parts.push(`${symbol}  ${firstLine}`, ...lines.map((ln) => (error ? ln : `${chalk.gray(symbols.BAR)}  ${ln}`)))
     }
     writeStream.write(`${parts.join('\n')}\n`)
   },
@@ -565,12 +566,18 @@ export const NetlifyLog = {
         NetlifyLog.message(`${chalk.red(`${err.name}:`)} ${err.message}\n`, {
           symbol: chalk.red(symbols.ERROR),
           writeStream: process.stderr,
+          error: true,
         })
       }
     } else {
       reportError(err, { severity: 'error' })
-      throw err
+      NetlifyLog.message(`${chalk.red(`${err.name}:`)} ${err.message}\n`, {
+        symbol: chalk.red(symbols.ERROR),
+        writeStream: process.stderr,
+        error: true,
+      })
     }
+    process.exit(1)
   },
 }
 
