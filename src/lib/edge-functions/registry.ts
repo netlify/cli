@@ -15,6 +15,7 @@ import {
   watchDebounced,
   isNodeError,
 } from '../../utils/command-helpers.js'
+import { MultiMap } from '../../utils/multimap.js'
 import { getPathInProject } from '../settings.js'
 
 import { INTERNAL_EDGE_FUNCTIONS_FOLDER } from './consts.js'
@@ -27,6 +28,8 @@ interface Config {
 type EdgeFunctionEvent = 'buildError' | 'loaded' | 'reloaded' | 'reloading' | 'removed'
 type Route = Omit<Manifest['routes'][0], 'pattern'> & { pattern: RegExp }
 type RunIsolate = Awaited<ReturnType<typeof import('@netlify/edge-bundler').serve>>
+
+type ModuleJson = ModuleGraph['modules'][number]
 
 const featureFlags = { edge_functions_correct_order: true }
 
@@ -44,6 +47,38 @@ interface EdgeFunctionsRegistryOptions {
   importMapFromTOML?: string
 }
 
+/**
+ * Helper method which, given a edge bundler graph module and an index of modules by path, traverses its dependency tree
+ * and returns an array of all of ist local dependencies
+ */
+function traverseLocalDependencies(
+  { dependencies = [] }: ModuleJson,
+  modulesByPath: Map<string, ModuleJson>,
+): string[] {
+  return dependencies.flatMap((dependency) => {
+    // We're interested in tracking local dependencies, so we only look at
+    // specifiers with the `file:` protocol.
+    if (
+      dependency.code === undefined ||
+      typeof dependency.code.specifier !== 'string' ||
+      !dependency.code.specifier.startsWith('file://')
+    ) {
+      return []
+    }
+    const { specifier: dependencyURL } = dependency.code
+    const dependencyPath = fileURLToPath(dependencyURL)
+    const dependencyModule = modulesByPath.get(dependencyPath)
+
+    // No module indexed for this dependency
+    if (dependencyModule === undefined) {
+      return [dependencyPath]
+    }
+
+    // Keep traversing the child dependencies and return the current dependency path
+    return [...traverseLocalDependencies(dependencyModule, modulesByPath), dependencyPath]
+  })
+}
+
 export class EdgeFunctionsRegistry {
   private buildError: Error | null = null
   private bundler: typeof import('@netlify/edge-bundler')
@@ -52,19 +87,28 @@ export class EdgeFunctionsRegistry {
   private importMapFromTOML?: string
   private declarationsFromDeployConfig: Declaration[] = []
   private declarationsFromTOML: Declaration[]
-  private dependencyPaths = new Map<string, string[]>()
+
+  // Mapping file URLs to names of functions that use them as dependencies.
+  private dependencyPaths = new MultiMap<string, string>()
+
   private directories: string[]
   private directoryWatchers = new Map<string, import('chokidar').FSWatcher>()
   private env: Record<string, string>
+
+  private userFunctions: EdgeFunction[] = []
+  private internalFunctions: EdgeFunction[] = []
+
+  // a Map from `this.functions` that maps function paths to function
+  // names. This allows us to match modules against functions in O(1) time as
+  // opposed to O(n).
   private functionPaths = new Map<string, string>()
+
   private getUpdatedConfig: () => Promise<Config>
   private initialScan: Promise<void>
-  private internalFunctions: EdgeFunction[] = []
   private manifest: Manifest | null = null
   private routes: Route[] = []
   private runIsolate: RunIsolate
   private servePath: string
-  private userFunctions: EdgeFunction[] = []
   private projectDir: string
 
   constructor({
@@ -90,13 +134,6 @@ export class EdgeFunctionsRegistry {
     this.importMapFromTOML = importMapFromTOML
     this.declarationsFromTOML = EdgeFunctionsRegistry.getDeclarationsFromTOML(config)
     this.env = EdgeFunctionsRegistry.getEnvironmentVariables(env)
-
-    this.buildError = null
-    this.directoryWatchers = new Map()
-    this.dependencyPaths = new Map()
-    this.functionPaths = new Map()
-    this.userFunctions = []
-    this.internalFunctions = []
 
     this.initialScan = this.doInitialScan()
 
@@ -416,50 +453,37 @@ export class EdgeFunctionsRegistry {
       return
     }
 
-    // Creating a Map from `this.functions` that maps function paths to function
-    // names. This allows us to match modules against functions in O(1) time as
-    // opposed to O(n).
-    // eslint-disable-next-line unicorn/prefer-spread
-    const functionPaths = new Map(Array.from(this.functions, (func) => [func.path, func.name]))
+    this.dependencyPaths = new MultiMap<string, string>()
 
-    // Mapping file URLs to names of functions that use them as dependencies.
-    const dependencyPaths = new Map<string, string[]>()
+    // Mapping file URLs to modules. Used by the traversal function.
+    const modulesByPath = new Map<string, ModuleJson>()
 
-    const { modules } = graph
-
-    modules.forEach(({ dependencies = [], specifier }) => {
+    // a set of edge function modules that we'll use to start traversing the dependency tree from
+    const functionModules = new Set<{ functionName: string; module: ModuleJson }>()
+    graph.modules.forEach((module) => {
+      // We're interested in tracking local dependencies, so we only look at
+      // specifiers with the `file:` protocol.
+      const { specifier } = module
       if (!specifier.startsWith('file://')) {
         return
       }
 
       const path = fileURLToPath(specifier)
-      const functionMatch = functionPaths.get(path)
+      modulesByPath.set(path, module)
 
-      if (!functionMatch) {
-        return
+      const functionName = this.functionPaths.get(path)
+      if (functionName) {
+        functionModules.add({ functionName, module })
       }
-
-      dependencies.forEach((dependency) => {
-        // We're interested in tracking local dependencies, so we only look at
-        // specifiers with the `file:` protocol.
-        if (
-          dependency.code === undefined ||
-          typeof dependency.code.specifier !== 'string' ||
-          !dependency.code.specifier.startsWith('file://')
-        ) {
-          return
-        }
-
-        const { specifier: dependencyURL } = dependency.code
-        const dependencyPath = fileURLToPath(dependencyURL)
-        const functions = dependencyPaths.get(dependencyPath) || []
-
-        dependencyPaths.set(dependencyPath, [...functions, functionMatch])
-      })
     })
 
-    this.dependencyPaths = dependencyPaths
-    this.functionPaths = functionPaths
+    // We start from our functions and we traverse through their dependency tree
+    functionModules.forEach(({ functionName, module }) => {
+      const traversedPaths = traverseLocalDependencies(module, modulesByPath)
+      traversedPaths.forEach((dependencyPath) => {
+        this.dependencyPaths.add(dependencyPath, functionName)
+      })
+    })
   }
 
   /**
@@ -541,10 +565,19 @@ export class EdgeFunctionsRegistry {
     this.internalFunctions = internalFunctions
     this.userFunctions = userFunctions
 
+    // eslint-disable-next-line unicorn/prefer-spread
+    this.functionPaths = new Map(Array.from(this.functions, (func) => [func.path, func.name]))
+
     return { all: functions, new: newFunctions, deleted: deletedFunctions }
   }
 
   private async setupWatchers() {
+    // While functions are guaranteed to be inside one of the configured
+    // directories, they might be importing files that are located in
+    // parent directories. So we watch the entire project directory for
+    // changes.
+    await this.setupWatcherForDirectory()
+
     if (!this.configPath) {
       return
     }
@@ -560,12 +593,6 @@ export class EdgeFunctionsRegistry {
         await this.checkForAddedOrDeletedFunctions()
       },
     })
-
-    // While functions are guaranteed to be inside one of the configured
-    // directories, they might be importing files that are located in
-    // parent directories. So we watch the entire project directory for
-    // changes.
-    await this.setupWatcherForDirectory()
   }
 
   private async setupWatcherForDirectory() {

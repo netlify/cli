@@ -172,6 +172,10 @@ describe.concurrent('commands/dev-miscellaneous', () => {
           },
         }).then((res) => res.json())
 
+        t.expect(response.clientContext.identity.url).toEqual(
+          'https://netlify-dev-locally-emulated-identity.netlify.com/.netlify/identity',
+        )
+
         const netlifyContext = Buffer.from(response.clientContext.custom.netlify, 'base64').toString()
         t.expect(JSON.parse(netlifyContext).identity.url).toEqual(
           'https://netlify-dev-locally-emulated-identity.netlify.com/.netlify/identity',

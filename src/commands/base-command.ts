@@ -26,6 +26,7 @@ import {
   exit,
   getToken,
   log,
+  version,
   normalizeConfig,
   padLeft,
   pollForToken,
@@ -546,7 +547,8 @@ export default class BaseCommand extends Command {
       token,
       ...apiUrlOpts,
     })
-    const { buildDir, config, configPath, repositoryRoot, siteInfo } = cachedConfig
+    const { buildDir, config, configPath, env, repositoryRoot, siteInfo } = cachedConfig
+    env.NETLIFY_CLI_VERSION = { sources: ['internal'], value: version }
     const normalizedConfig = normalizeConfig(config)
     const agent = await getAgent({
       httpProxy: flags.httpProxy,
