@@ -158,7 +158,7 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
   const blobsContext = await getBlobsContext({
     debug: options.debug,
     projectRoot: command.workingDir,
-    siteID: site.id ?? 'unknown-site-id',
+    siteID: site.id ?? 'unlinked',
   })
 
   const functionsRegistry = await startFunctionsServer({

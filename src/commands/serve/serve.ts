@@ -92,7 +92,7 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
   const blobsContext = await getBlobsContext({
     debug: options.debug,
     projectRoot: command.workingDir,
-    siteID: site.id ?? 'unknown-site-id',
+    siteID: site.id ?? 'unlinked',
   })
 
   process.env.NETLIFY_BLOBS_CONTEXT = Buffer.from(JSON.stringify(blobsContext)).toString('base64')

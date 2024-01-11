@@ -56,7 +56,7 @@ const cleanInternalDirectory = async (basePath) => {
  * @returns
  */
 // @ts-expect-error TS(7031) FIXME: Binding element 'command' implicitly has an 'any' ... Remove this comment to see the full error message
-export const runNetlifyBuild = async ({ blobsAPIURL, command, env = {}, options, settings, timeline = 'build' }) => {
+export const runNetlifyBuild = async ({ command, env = {}, options, settings, timeline = 'build' }) => {
   const { cachedConfig, site } = command.netlify
 
   const { default: buildSite, startDev } = await netlifyBuildPromise
@@ -79,7 +79,6 @@ export const runNetlifyBuild = async ({ blobsAPIURL, command, env = {}, options,
     quiet: options.quiet,
     saveConfig: options.saveConfig,
     edgeFunctionsBootstrapURL: getBootstrapURL(),
-    blobsAPIURL,
   }
 
   const devCommand = async (settingsOverrides = {}) => {
