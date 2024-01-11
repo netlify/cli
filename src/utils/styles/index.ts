@@ -17,6 +17,7 @@ import { cursor as ansiCursor, erase } from 'sisteransi'
 import { chalk } from '../command-helpers.js'
 import { reportError } from '../telemetry/report-error.js'
 
+import { GRAY_BAR } from './chalk.js'
 import { symbols } from './constants.js'
 import { ansiRegex, coloredSymbol, jsonOnlyCheck, limitOptions } from './helpers.js'
 
@@ -36,7 +37,7 @@ export const text = (opts: TextOptions) =>
     defaultValue: opts.defaultValue,
     initialValue: opts.initialValue,
     render() {
-      const title = `${chalk.gray(symbols.BAR)}\n${coloredSymbol(this.state)}  ${opts.message}\n`
+      const title = `${GRAY_BAR}\n${coloredSymbol(this.state)}  ${opts.message}\n`
       const placeholder = opts.placeholder
         ? chalk.inverse(opts.placeholder[0]) + chalk.dim(opts.placeholder.slice(1))
         : chalk.inverse(chalk.hidden('_'))
@@ -48,10 +49,10 @@ export const text = (opts: TextOptions) =>
             symbols.BAR_END,
           )}  ${chalk.yellow(this.error)}\n`
         case 'submit':
-          return `${title}${chalk.gray(symbols.BAR)}  ${chalk.dim(this.value || opts.placeholder)}`
+          return `${title}${GRAY_BAR}  ${chalk.dim(this.value || opts.placeholder)}`
         case 'cancel':
-          return `${title}${chalk.gray(symbols.BAR)}  ${chalk.strikethrough(chalk.dim(this.value ?? ''))}${
-            this.value?.trim() ? `\n${chalk.gray(symbols.BAR)}` : ''
+          return `${title}${GRAY_BAR}  ${chalk.strikethrough(chalk.dim(this.value ?? ''))}${
+            this.value?.trim() ? `\n${GRAY_BAR}` : ''
           }`
         default:
           return `${title}${chalk.cyan(symbols.BAR)}  ${value}\n${chalk.cyan(symbols.BAR_END)}\n`
@@ -69,7 +70,7 @@ export const password = (opts: PasswordOptions) =>
     validate: opts.validate,
     mask: opts.mask ?? symbols.PASSWORD_MASK,
     render() {
-      const title = `${chalk.gray(symbols.BAR)}\n${coloredSymbol(this.state)}  ${opts.message}\n`
+      const title = `${GRAY_BAR}\n${coloredSymbol(this.state)}  ${opts.message}\n`
       const value = this.valueWithCursor
       const { masked } = this
 
@@ -79,11 +80,9 @@ export const password = (opts: PasswordOptions) =>
             symbols.BAR_END,
           )}  ${chalk.yellow(this.error)}\n`
         case 'submit':
-          return `${title}${chalk.gray(symbols.BAR)}  ${chalk.dim(masked)}`
+          return `${title}${GRAY_BAR}  ${chalk.dim(masked)}`
         case 'cancel':
-          return `${title}${chalk.gray(symbols.BAR)}  ${chalk.strikethrough(chalk.dim(masked ?? ''))}${
-            masked ? `\n${chalk.gray(symbols.BAR)}` : ''
-          }`
+          return `${title}${GRAY_BAR}  ${chalk.strikethrough(chalk.dim(masked ?? ''))}${masked ? `\n${GRAY_BAR}` : ''}`
         default:
           return `${title}${chalk.cyan(symbols.BAR)}  ${value}\n${chalk.cyan(symbols.BAR_END)}\n`
       }
@@ -104,16 +103,14 @@ export const confirm = (opts: ConfirmOptions) => {
     inactive,
     initialValue: opts.initialValue ?? true,
     render() {
-      const title = `${chalk.gray(symbols.BAR)}\n${coloredSymbol(this.state)}  ${opts.message}\n`
+      const title = `${GRAY_BAR}\n${coloredSymbol(this.state)}  ${opts.message}\n`
       const value = this.value ? active : inactive
 
       switch (this.state) {
         case 'submit':
-          return `${title}${chalk.gray(symbols.BAR)}  ${chalk.dim(value)}`
+          return `${title}${GRAY_BAR}  ${chalk.dim(value)}`
         case 'cancel':
-          return `${title}${chalk.gray(symbols.BAR)}  ${chalk.strikethrough(chalk.dim(value))}\n${chalk.gray(
-            symbols.BAR,
-          )}`
+          return `${title}${GRAY_BAR}  ${chalk.strikethrough(chalk.dim(value))}\n${chalk.gray(symbols.BAR)}`
         default: {
           return `${title}${chalk.cyan(symbols.BAR)}  ${
             this.value
@@ -162,15 +159,13 @@ export const select = <Value>(opts: SelectOptions<Value>) => {
     options: opts.options,
     initialValue: opts.initialValue,
     render() {
-      const title = `${chalk.gray(symbols.BAR)}\n${coloredSymbol(this.state)}  ${chalk.bold(opts.message)}\n`
+      const title = `${GRAY_BAR}\n${coloredSymbol(this.state)}  ${chalk.bold(opts.message)}\n`
 
       switch (this.state) {
         case 'submit':
-          return `${title}${chalk.gray(symbols.BAR)}  ${opt(this.options[this.cursor], 'selected')}`
+          return `${title}${GRAY_BAR}  ${opt(this.options[this.cursor], 'selected')}`
         case 'cancel':
-          return `${title}${chalk.gray(symbols.BAR)}  ${opt(this.options[this.cursor], 'cancelled')}\n${chalk.gray(
-            symbols.BAR,
-          )}`
+          return `${title}${GRAY_BAR}  ${opt(this.options[this.cursor], 'cancelled')}\n${chalk.gray(symbols.BAR)}`
         default: {
           return `${title}${chalk.cyan(symbols.BAR)}  ${limitOptions({
             cursor: this.cursor,
@@ -211,18 +206,16 @@ export const selectKey = <Value extends string>(opts: SelectOptions<Value>) => {
     options: opts.options,
     initialValue: opts.initialValue,
     render() {
-      const title = `${chalk.gray(symbols.BAR)}\n${coloredSymbol(this.state)}  ${opts.message}\n`
+      const title = `${GRAY_BAR}\n${coloredSymbol(this.state)}  ${opts.message}\n`
       const selectedOption = this.options.find((opt: { value: string }) => opt.value === this.value)
       if (!selectedOption) return
 
       switch (this.state) {
         case 'submit': {
-          return `${title}${chalk.gray(symbols.BAR)}  ${renderOption(selectedOption, 'selected')}`
+          return `${title}${GRAY_BAR}  ${renderOption(selectedOption, 'selected')}`
         }
         case 'cancel':
-          return `${title}${chalk.gray(symbols.BAR)}  ${renderOption(this.options[0], 'cancelled')}\n${chalk.gray(
-            symbols.BAR,
-          )}`
+          return `${title}${GRAY_BAR}  ${renderOption(this.options[0], 'cancelled')}\n${chalk.gray(symbols.BAR)}`
         default: {
           return `${title}${chalk.cyan(symbols.BAR)}  ${this.options
             .map((option, id) => renderOption(option, id === this.cursor ? 'active' : 'inactive'))
@@ -292,11 +285,11 @@ export const multiselect = <Value>(opts: MultiSelectOptions<Value>) => {
         )}`
     },
     render() {
-      const title = `${chalk.gray(symbols.BAR)}\n${coloredSymbol(this.state)}  ${opts.message}\n`
+      const title = `${GRAY_BAR}\n${coloredSymbol(this.state)}  ${opts.message}\n`
 
       switch (this.state) {
         case 'submit': {
-          return `${title}${chalk.gray(symbols.BAR)}  ${
+          return `${title}${GRAY_BAR}  ${
             this.options
               .filter(({ value }) => this.value.includes(value))
               .map((option) => renderOption(option, 'submitted'))
@@ -308,7 +301,7 @@ export const multiselect = <Value>(opts: MultiSelectOptions<Value>) => {
             .filter(({ value }) => this.value.includes(value))
             .map((option) => renderOption(option, 'cancelled'))
             .join(chalk.dim(', '))
-          return `${title}${chalk.gray(symbols.BAR)}  ${label.trim() ? `${label}\n${chalk.gray(symbols.BAR)}` : ''}`
+          return `${title}${GRAY_BAR}  ${label.trim() ? `${label}\n${GRAY_BAR}` : ''}`
         }
         case 'error': {
           const footer = this.error
@@ -406,11 +399,11 @@ export const groupMultiselect = <Value>(opts: GroupMultiSelectOptions<Value>) =>
         )}`
     },
     render() {
-      const title = `${chalk.gray(symbols.BAR)}\n${coloredSymbol(this.state)}  ${opts.message}\n`
+      const title = `${GRAY_BAR}\n${coloredSymbol(this.state)}  ${opts.message}\n`
 
       switch (this.state) {
         case 'submit': {
-          return `${title}${chalk.gray(symbols.BAR)}  ${this.options
+          return `${title}${GRAY_BAR}  ${this.options
             .filter(({ value }) => this.value.includes(value))
             .map((option) => renderOption(option, 'submitted'))
             .join(chalk.dim(', '))}`
@@ -420,7 +413,7 @@ export const groupMultiselect = <Value>(opts: GroupMultiSelectOptions<Value>) =>
             .filter(({ value }) => this.value.includes(value))
             .map((option) => renderOption(option, 'cancelled'))
             .join(chalk.dim(', '))
-          return `${title}${chalk.gray(symbols.BAR)}  ${label.trim() ? `${label}\n${chalk.gray(symbols.BAR)}` : ''}`
+          return `${title}${GRAY_BAR}  ${label.trim() ? `${label}\n${GRAY_BAR}` : ''}`
         }
         case 'error': {
           const footer = this.error
@@ -486,13 +479,10 @@ export const note = (message = '', title = '') => {
       titleLen,
     ) + 2
   const msg = lines
-    .map(
-      (ln) =>
-        `${chalk.gray(symbols.BAR)}  ${chalk.dim(ln)}${' '.repeat(len - strip(ln).length)}${chalk.gray(symbols.BAR)}`,
-    )
+    .map((ln) => `${GRAY_BAR}  ${chalk.dim(ln)}${' '.repeat(len - strip(ln).length)}${GRAY_BAR}`)
     .join('\n')
   process.stdout.write(
-    `${chalk.gray(symbols.BAR)}\n${chalk.cyan(symbols.STEP_SUBMIT)}  ${chalk.reset(title)} ${chalk.gray(
+    `${GRAY_BAR}\n${chalk.cyan(symbols.STEP_SUBMIT)}  ${chalk.reset(title)} ${chalk.gray(
       symbols.BAR_H.repeat(Math.max(len - titleLen - 1, 1)) + symbols.CORNER_TOP_RIGHT,
     )}\n${msg}\n${chalk.gray(symbols.CONNECT_LEFT + symbols.BAR_H.repeat(len + 2) + symbols.CORNER_BOTTOM_RIGHT)}\n`,
   )
@@ -508,7 +498,7 @@ export const intro = jsonOnlyCheck((title = '') => {
 
 export const outro = jsonOnlyCheck((message = '') => {
   if (message) {
-    process.stdout.write(`${chalk.gray(symbols.BAR)}\n${chalk.gray(symbols.BAR_END)}  ${message}\n`)
+    process.stdout.write(`${GRAY_BAR}\n${chalk.gray(symbols.BAR_END)}  ${message}\n`)
   } else {
     process.stdout.write(`${chalk.gray(symbols.BAR_END)}\n`)
   }
@@ -521,17 +511,11 @@ export type LogMessageOptions = {
 }
 export const NetlifyLog = {
   message: jsonOnlyCheck(
-    (
-      message = '',
-      { error = false, symbol = chalk.gray(symbols.BAR), writeStream = process.stdout }: LogMessageOptions = {},
-    ) => {
-      const parts = [`${chalk.gray(symbols.BAR)}`]
+    (message = '', { error = false, symbol = GRAY_BAR, writeStream = process.stdout }: LogMessageOptions = {}) => {
+      const parts = [`${GRAY_BAR}`]
       if (message) {
         const [firstLine, ...lines] = message.split('\n')
-        parts.push(
-          `${symbol}  ${firstLine}`,
-          ...lines.map((ln: any) => (error ? ln : `${chalk.gray(symbols.BAR)}  ${ln}`)),
-        )
+        parts.push(`${symbol}  ${firstLine}`, ...lines.map((ln: string) => (error ? ln : `${GRAY_BAR}  ${ln}`)))
       }
       writeStream.write(`${parts.join('\n')}\n`)
     },
@@ -626,7 +610,7 @@ export const spinner = () => {
     isSpinnerActive = true
     unblock = block()
     _message = msg.replace(/\.+$/, '')
-    process.stdout.write(`${chalk.gray(symbols.BAR)}\n`)
+    process.stdout.write(`${GRAY_BAR}\n`)
     let frameIndex = 0
     let dotsTimer = 0
     registerHooks()

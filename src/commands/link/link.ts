@@ -6,6 +6,7 @@ import { listSites } from '../../lib/api.js'
 import { chalk, error, exit, log } from '../../utils/command-helpers.js'
 import getRepoData from '../../utils/get-repo-data.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
+import { NetlifyLog, intro, outro, select, spinner } from '../../utils/styles/index.js'
 import { track } from '../../utils/telemetry/index.js'
 import BaseCommand from '../base-command.js'
 
@@ -16,48 +17,46 @@ import BaseCommand from '../base-command.js'
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'command' implicitly has an 'any' type.
 const linkPrompt = async (command, options) => {
+  intro('link')
   const { api, state } = command.netlify
 
   const SITE_NAME_PROMPT = 'Search by full or partial site name'
   const SITE_LIST_PROMPT = 'Choose from a list of your recently updated sites'
   const SITE_ID_PROMPT = 'Enter a site ID'
-
   let GIT_REMOTE_PROMPT = 'Use the current git remote origin URL'
   let site
   // Get git remote data if exists
   const repoData = await getRepoData({ workingDir: command.workingDir, remoteName: options.gitRemoteName })
 
-  let linkChoices = [SITE_NAME_PROMPT, SITE_LIST_PROMPT, SITE_ID_PROMPT]
+  let linkOptions = [{ value: SITE_NAME_PROMPT }, { value: SITE_LIST_PROMPT }, { value: SITE_ID_PROMPT }]
 
   if (!repoData.error) {
     // Add git GIT_REMOTE_PROMPT if in a repo
     GIT_REMOTE_PROMPT = `Use current git remote origin (${repoData.httpsUrl})`
-    linkChoices = [GIT_REMOTE_PROMPT, ...linkChoices]
+    linkOptions = [{ value: GIT_REMOTE_PROMPT }, ...linkOptions]
   }
 
-  log()
-  log(`${chalk.cyanBright('netlify link')} will connect this folder to a site on Netlify`)
-  log()
-  const { linkType } = await inquirer.prompt([
-    {
-      type: 'list',
-      name: 'linkType',
-      message: 'How do you want to link this folder to a site?',
-      choices: linkChoices,
-    },
-  ])
+  NetlifyLog.message(`${chalk.cyanBright('netlify link')} will connect this folder to a site on Netlify`)
+
+  const linkType = await select({
+    message: 'How do you want to link this folder to a site?',
+    options: linkOptions,
+  })
 
   let kind
   switch (linkType) {
     case GIT_REMOTE_PROMPT: {
       kind = 'gitRemote'
-      log()
-      log(`Looking for sites connected to '${repoData.httpsUrl}'...`)
-      log()
+      const loading = spinner()
+      loading.start(`Looking for sites connected to '${repoData.httpsUrl}'. (this can take a bit)`)
       const sites = await listSites({ api, options: { filter: 'all' } })
 
       if (sites.length === 0) {
-        error(`You don't have any sites yet. Run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
+        loading.stop(
+          `You don't have any sites yet. Run ${chalk.cyanBright('netlify sites:create')} to create a site.`,
+          1,
+        )
+        exit()
       }
 
       const matchingSites = sites.filter(
@@ -67,14 +66,15 @@ const linkPrompt = async (command, options) => {
 
       // If no remote matches. Throw error
       if (matchingSites.length === 0) {
-        log(chalk.redBright.bold.underline(`No Matching Site Found`))
-        log()
-        log(`No site found with the remote ${repoData.httpsUrl}.
+        NetlifyLog.warn(chalk.bold(`No Matching Site Found`))
+
+        NetlifyLog.message(`We couldn't find a site with the remote ${repoData.httpsUrl}.
 
 Double check you are in the correct working directory and a remote origin repo is configured.
 
 Run ${chalk.cyanBright('git remote -v')} to see a list of your git remotes.`)
 
+        outro()
         exit()
       }
 
@@ -84,7 +84,7 @@ Run ${chalk.cyanBright('git remote -v')} to see a list of your git remotes.`)
         site = firstSite
       } else if (matchingSites.length > 1) {
         // Matches multiple sites. Users must choose which to link.
-        log(`Found ${matchingSites.length} matching sites!`)
+        NetlifyLog.success(`Found ${matchingSites.length} matching sites!`)
 
         // Prompt which options
         const { selectedSite } = await inquirer.prompt([
