@@ -1,8 +1,12 @@
+import process from 'process'
+
 import { State } from '@clack/core'
 
-import { chalk } from '../command-helpers.js'
+import { chalk, isDefaultJson } from '../command-helpers.js'
 
 import { symbols } from './constants.js'
+
+const argv = new Set(process.argv.slice(2))
 
 export const coloredSymbol = (state: State) => {
   switch (state) {
@@ -60,3 +64,12 @@ export const ansiRegex = () => {
 
   return new RegExp(pattern, 'g')
 }
+
+export const jsonOnlyCheck =
+  (originalFunction: (...args: any[]) => unknown) =>
+  (...args: unknown[]) => {
+    if (argv.has('--json') || argv.has('--silent') || isDefaultJson()) {
+      return
+    }
+    return originalFunction(...args)
+  }
