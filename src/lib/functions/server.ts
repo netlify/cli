@@ -46,17 +46,17 @@ const buildClientContext = function (headers) {
     // }
   }
 
-  // This data is available on both the context root and under custom.netlify for retro-compatibility.
-  // In the future it will only be available in custom.netlify.
-  // @ts-expect-error
-  const user = jwtDecode(parts[1])
-
-  const netlifyContext = JSON.stringify({
-    identity: identity,
-    user: user,
-  })
-
   try {
+    // This data is available on both the context root and under custom.netlify for retro-compatibility.
+    // In the future it will only be available in custom.netlify.
+    // @ts-expect-error
+    const user = jwtDecode(parts[1])
+
+    const netlifyContext = JSON.stringify({
+      identity: identity,
+      user: user,
+    })
+
     return {
       identity: identity,
       user: user,
