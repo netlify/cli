@@ -17,7 +17,7 @@ import {
   normalizeConfig,
 } from '../../utils/command-helpers.js'
 import detectServerSettings, { getConfigWithPlugins } from '../../utils/detect-server-settings.js'
-import { getDotEnvVariables, getSiteInformation, injectEnvVariables } from '../../utils/dev.js'
+import { getDotEnvVariables, getSiteInformation, injectEnvVariables, UNLINKED_SITE_MOCK_ID } from '../../utils/dev.js'
 import { getEnvelopeEnv } from '../../utils/env/index.js'
 import { getInternalFunctionsDir } from '../../utils/functions/functions.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
@@ -92,7 +92,7 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
   const blobsContext = await getBlobsContext({
     debug: options.debug,
     projectRoot: command.workingDir,
-    siteID: site.id ?? 'unlinked',
+    siteID: site.id ?? UNLINKED_SITE_MOCK_ID,
   })
 
   process.env.NETLIFY_BLOBS_CONTEXT = Buffer.from(JSON.stringify(blobsContext)).toString('base64')
