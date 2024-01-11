@@ -148,7 +148,7 @@ export const getToken = async (tokenFromOptions) => {
 
 // 'api' command uses JSON output by default
 // 'functions:invoke' need to return the data from the function as is
-const isDefaultJson = () => argv[0] === 'functions:invoke' || (argv[0] === 'api' && !argv.includes('--list'))
+export const isDefaultJson = () => argv[0] === 'functions:invoke' || (argv[0] === 'api' && !argv.includes('--list'))
 
 /**
  * logs a json message

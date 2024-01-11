@@ -14,7 +14,7 @@ const BASE_36 = 36
 const RANDOM_SITE_LENGTH = 8
 
 const listAccounts = async function () {
-  return JSON.parse(await callCli(['api', 'listAccountsForUser']))
+  return JSON.parse(await callCli(['api', 'listAccountsForUser', '--json']))
 }
 
 export const createLiveTestSite = async function (siteName) {
