@@ -111,6 +111,7 @@ export const invokeFunctionDirectly = async ({ context, event, func, timeout }) 
       // be available to the Lambda. This would be inconsistent with production
       // where only V2 functions get the context injected. To fix it, unset the
       // context variable before invoking the function.
+      // This has the side-effect of also removing the variable from `process.env`.
       [BLOBS_CONTEXT_VARIABLE]: undefined,
     },
     event,
