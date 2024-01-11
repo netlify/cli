@@ -3,7 +3,7 @@ import process from 'process'
 
 import { OptionValues } from 'commander'
 
-import { getBlobsContext } from '../../lib/blobs/blobs.js'
+import { BLOBS_CONTEXT_VARIABLE, encodeBlobsContext, getBlobsContext } from '../../lib/blobs/blobs.js'
 import { promptEditorHelper } from '../../lib/edge-functions/editor-helper.js'
 import { startFunctionsServer } from '../../lib/functions/server.js'
 import { printBanner } from '../../utils/banner.js'
@@ -95,7 +95,7 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
     siteID: site.id ?? UNLINKED_SITE_MOCK_ID,
   })
 
-  process.env.NETLIFY_BLOBS_CONTEXT = Buffer.from(JSON.stringify(blobsContext)).toString('base64')
+  process.env[BLOBS_CONTEXT_VARIABLE] = encodeBlobsContext(blobsContext)
 
   const { configPath: configPathOverride } = await runBuildTimeline({
     command,
