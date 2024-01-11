@@ -2,7 +2,7 @@ import process from 'process'
 
 import { OptionValues, Option } from 'commander'
 
-import { getBlobsContext } from '../../lib/blobs/blobs.js'
+import { BLOBS_CONTEXT_VARIABLE, encodeBlobsContext, getBlobsContext } from '../../lib/blobs/blobs.js'
 import { promptEditorHelper } from '../../lib/edge-functions/editor-helper.js'
 import { startFunctionsServer } from '../../lib/functions/server.js'
 import { printBanner } from '../../utils/banner.js'
@@ -105,6 +105,14 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
 
   env.NETLIFY_DEV = { sources: ['internal'], value: 'true' }
 
+  const blobsContext = await getBlobsContext({
+    debug: options.debug,
+    projectRoot: command.workingDir,
+    siteID: site.id ?? 'unknown-site-id',
+  })
+
+  env[BLOBS_CONTEXT_VARIABLE] = { sources: ['internal'], value: encodeBlobsContext(blobsContext) }
+
   if (!options.offline && siteInfo.use_envelope) {
     env = await getEnvelopeEnv({ api, context: options.context, env, siteInfo })
     log(`${NETLIFYDEVLOG} Injecting environment variable values for ${chalk.yellow('all scopes')}`)
@@ -153,12 +161,6 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
       URL: url,
       DEPLOY_URL: url,
     },
-  })
-
-  const blobsContext = await getBlobsContext({
-    debug: options.debug,
-    projectRoot: command.workingDir,
-    siteID: site.id ?? 'unknown-site-id',
   })
 
   const functionsRegistry = await startFunctionsServer({
