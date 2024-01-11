@@ -3,11 +3,13 @@ import { rename } from 'fs/promises'
 import { join } from 'path'
 
 import execa from 'execa'
+import fetch from 'node-fetch'
 import { describe, expect, expectTypeOf, test } from 'vitest'
 
+import { withDevServer } from '../../utils/dev-server.js'
 import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
-import fetch from 'node-fetch'
 import { pause } from '../../utils/pause.js'
+import { withSiteBuilder } from '../../utils/site-builder.js'
 
 // Skipping tests on Windows because of an issue with the Deno CLI throwing IO
 // errors when running in the CI.
@@ -161,6 +163,47 @@ describe.skipIf(isWindows)('edge functions', () => {
       await devServer.waitForLogMatching('Loaded edge function new')
 
       expect(devServer.output).not.toContain('Removed edge function')
+    })
+  })
+
+  test('should reload on change to transitive dependency', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      await builder
+        .withContentFile({
+          path: 'parent.js',
+          content: "export { foo } from './child.js'",
+        })
+        .withContentFile({
+          path: 'child.js',
+          content: "export const foo = 'foo'",
+        })
+        .withContentFile({
+          path: 'netlify/edge-functions/func.js',
+          content: `
+          import { foo } from '../../parent.js'
+          export default async () => new Response(foo)
+          export const config = { path: '/' }
+          `,
+        })
+        .build()
+
+      await withDevServer({ cwd: builder.directory }, async (server) => {
+        const response = await fetch(server.url, {}).then((res) => res.text())
+        t.expect(response).toEqual('foo')
+
+        // update file
+        await builder
+          .withContentFile({
+            path: 'child.js',
+            content: "export const foo = 'bar'",
+          })
+          .build()
+
+        await pause(500)
+
+        const response2 = await fetch(server.url, {}).then((res) => res.text())
+        t.expect(response2).toEqual('bar')
+      })
     })
   })
 
