@@ -1,7 +1,8 @@
-// Handlers are meant to be async outside tests
+import { Buffer } from 'buffer'
 import { version } from 'process'
 
 import FormData from 'form-data'
+import getPort from 'get-port'
 import fetch from 'node-fetch'
 import { gte } from 'semver'
 import { describe, test } from 'vitest'
@@ -11,7 +12,7 @@ import { withSiteBuilder } from '../../utils/site-builder.ts'
 
 describe.concurrent('commands/dev/config', () => {
   test('should use [build.environment] and not [context.production.environment]', async (t) => {
-    await withSiteBuilder('site-with-build-environment', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder
         .withNetlifyToml({
           config: {
@@ -29,7 +30,7 @@ describe.concurrent('commands/dev/config', () => {
           }),
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const response = await fetch(`${server.url}/.netlify/functions/env`).then((res) => res.text())
@@ -39,7 +40,7 @@ describe.concurrent('commands/dev/config', () => {
   })
 
   test('should use [context.production.environment] when --context=production', async (t) => {
-    await withSiteBuilder('site-with-build-environment', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder
         .withNetlifyToml({
           config: {
@@ -54,7 +55,7 @@ describe.concurrent('commands/dev/config', () => {
           handler: async () => ({ statusCode: 200, body: `${process.env.TEST_PRODUCTION_ENVIRONMENT}` }),
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory, context: 'production' }, async (server) => {
         const response = await fetch(`${server.url}/.netlify/functions/env`).then((res) => res.text())
@@ -64,7 +65,7 @@ describe.concurrent('commands/dev/config', () => {
   })
 
   test('should override .env.development with process env', async (t) => {
-    await withSiteBuilder('site-with-override', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder
         .withNetlifyToml({ config: { functions: { directory: 'functions' } } })
         .withEnvFile({ path: '.env.development', env: { TEST: 'FROM_DEV_FILE' } })
@@ -74,7 +75,7 @@ describe.concurrent('commands/dev/config', () => {
           handler: async () => ({ statusCode: 200, body: `${process.env.TEST}` }),
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory, env: { TEST: 'FROM_PROCESS_ENV' } }, async (server) => {
         const response = await fetch(`${server.url}/.netlify/functions/env`).then((res) => res.text())
@@ -84,7 +85,7 @@ describe.concurrent('commands/dev/config', () => {
   })
 
   test('should override [build.environment] with process env', async (t) => {
-    await withSiteBuilder('site-with-build-environment-override', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder
         .withNetlifyToml({
           config: { build: { environment: { TEST: 'FROM_CONFIG_FILE' } }, functions: { directory: 'functions' } },
@@ -95,7 +96,7 @@ describe.concurrent('commands/dev/config', () => {
           handler: async () => ({ statusCode: 200, body: `${process.env.TEST}` }),
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory, env: { TEST: 'FROM_PROCESS_ENV' } }, async (server) => {
         const response = await fetch(`${server.url}/.netlify/functions/env`).then((res) => res.text())
@@ -105,7 +106,7 @@ describe.concurrent('commands/dev/config', () => {
   })
 
   test('should replicate Lambda behaviour for synchronous return values', async (t) => {
-    await withSiteBuilder('site-replicate-aws-sync-behaviour', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withFunction({
         path: 'env.js',
         handler: () => ({
@@ -113,7 +114,7 @@ describe.concurrent('commands/dev/config', () => {
         }),
       })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const response = await fetch(`${server.url}/.netlify/functions/env`)
@@ -126,14 +127,14 @@ describe.concurrent('commands/dev/config', () => {
   })
 
   test('should override value of the NETLIFY_DEV env variable', async (t) => {
-    await withSiteBuilder('site-with-netlify-dev-override', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withFunction({
         path: 'env.js',
         // eslint-disable-next-line n/prefer-global/process
         handler: async () => ({ statusCode: 200, body: `${process.env.NETLIFY_DEV}` }),
       })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory, env: { NETLIFY_DEV: 'FROM_PROCESS_ENV' } }, async (server) => {
         const response = await fetch(`${server.url}/.netlify/functions/env`).then((res) => res.text())
@@ -142,15 +143,63 @@ describe.concurrent('commands/dev/config', () => {
     })
   })
 
+  test('should provide environment variables to framework server', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      const port = await getPort()
+
+      await builder
+        .withContentFile({
+          content: `
+          import http from "http";
+
+          http.createServer((req, res) => {
+            res.write(JSON.stringify({
+              NETLIFY_BLOBS_CONTEXT: process.env.NETLIFY_BLOBS_CONTEXT,
+              NETLIFY_CLI_VERSION: process.env.NETLIFY_CLI_VERSION,
+            }))
+            res.end()
+          }).listen(${port});
+          `,
+          path: 'devserver.mjs',
+        })
+        .withNetlifyToml({
+          config: {
+            dev: {
+              framework: '#custom',
+              command: 'node devserver.mjs',
+              targetPort: port,
+            },
+          },
+        })
+        .build()
+
+      await withDevServer({ cwd: builder.directory }, async (server) => {
+        const resp = await fetch(server.url)
+        const { NETLIFY_BLOBS_CONTEXT, NETLIFY_CLI_VERSION } = await resp.json()
+
+        t.expect(NETLIFY_BLOBS_CONTEXT).toBeTypeOf('string')
+
+        const { deployID, edgeURL, siteID, token } = JSON.parse(Buffer.from(NETLIFY_BLOBS_CONTEXT, 'base64').toString())
+
+        t.expect(deployID).toBe('0')
+        t.expect(edgeURL.startsWith('http://localhost:')).toBeTruthy()
+        t.expect(siteID).toBeTypeOf('string')
+        t.expect(token).toBeTypeOf('string')
+
+        t.expect(NETLIFY_CLI_VERSION).toMatch(/\d+\.\d+\.\d+/)
+      })
+    })
+  })
+
   test('should set value of the CONTEXT env variable', async (t) => {
-    await withSiteBuilder('site-with-context-override', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withFunction({
         path: 'env.js',
         // eslint-disable-next-line n/prefer-global/process
         handler: async () => ({ statusCode: 200, body: `${process.env.CONTEXT}` }),
       })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const response = await fetch(`${server.url}/.netlify/functions/env`).then((res) => res.text())
@@ -160,14 +209,14 @@ describe.concurrent('commands/dev/config', () => {
   })
 
   test('should set value of the CONTEXT env variable to the --context flag', async (t) => {
-    await withSiteBuilder('site-with-context-override', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withFunction({
         path: 'env.js',
         // eslint-disable-next-line n/prefer-global/process
         handler: async () => ({ statusCode: 200, body: `${process.env.CONTEXT}` }),
       })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory, context: 'deploy-preview' }, async (server) => {
         const response = await fetch(`${server.url}/.netlify/functions/env`).then((res) => res.text())
@@ -177,7 +226,7 @@ describe.concurrent('commands/dev/config', () => {
   })
 
   test('should redirect using a wildcard when set in netlify.toml', async (t) => {
-    await withSiteBuilder('site-with-redirect-function', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder
         .withNetlifyToml({
           config: {
@@ -193,7 +242,7 @@ describe.concurrent('commands/dev/config', () => {
           }),
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const response = await fetch(`${server.url}/api/ping`).then((res) => res.text())
@@ -203,7 +252,7 @@ describe.concurrent('commands/dev/config', () => {
   })
 
   test('should pass undefined body to functions event for GET requests when redirecting', async (t) => {
-    await withSiteBuilder('site-with-get-echo-function', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder
         .withNetlifyToml({
           config: {
@@ -219,7 +268,7 @@ describe.concurrent('commands/dev/config', () => {
           }),
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const response = await fetch(`${server.url}/api/echo?ding=dong`).then((res) => res.json())
@@ -234,7 +283,7 @@ describe.concurrent('commands/dev/config', () => {
   })
 
   test('should pass body to functions event for POST requests when redirecting', async (t) => {
-    await withSiteBuilder('site-with-post-echo-function', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder
         .withNetlifyToml({
           config: {
@@ -250,7 +299,7 @@ describe.concurrent('commands/dev/config', () => {
           }),
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const response = await fetch(`${server.url}/api/echo?ding=dong`, {
@@ -274,7 +323,7 @@ describe.concurrent('commands/dev/config', () => {
   })
 
   test('should pass body to functions event for POST requests with passthrough edge function', async (t) => {
-    await withSiteBuilder('site-with-post-echo-function', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder
         .withNetlifyToml({
           config: {
@@ -300,7 +349,7 @@ describe.concurrent('commands/dev/config', () => {
           }),
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const response = await fetch(`${server.url}/api/echo?ding=dong`, {
@@ -324,7 +373,7 @@ describe.concurrent('commands/dev/config', () => {
   })
 
   test('should return an empty body for a function with no body when redirecting', async (t) => {
-    await withSiteBuilder('site-with-no-body-function', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder
         .withNetlifyToml({
           config: {
@@ -339,7 +388,7 @@ describe.concurrent('commands/dev/config', () => {
           }),
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const response = await fetch(`${server.url}/api/echo?ding=dong`, {
@@ -357,7 +406,7 @@ describe.concurrent('commands/dev/config', () => {
   })
 
   test('should handle multipart form data when redirecting', async (t) => {
-    await withSiteBuilder('site-with-multi-part-function', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder
         .withNetlifyToml({
           config: {
@@ -373,7 +422,7 @@ describe.concurrent('commands/dev/config', () => {
           }),
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const form = new FormData()
@@ -400,7 +449,7 @@ describe.concurrent('commands/dev/config', () => {
   })
 
   test.runIf(gte(version, '18.14.0'))('should support functions with streaming responses', async (t) => {
-    await withSiteBuilder('site-with-streaming-function', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder
         .withPackageJson({ packageJson: { dependencies: { '@netlify/functions': 'latest' } } })
         .withCommand({ command: ['npm', 'install'] })
@@ -448,7 +497,7 @@ describe.concurrent('commands/dev/config', () => {
           path: 'netlify/functions/streamer.js',
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const chunks = []
