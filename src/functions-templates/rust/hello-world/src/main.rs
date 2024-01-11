@@ -7,7 +7,7 @@ use simple_logger::SimpleLogger;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    SimpleLogger::new().with_level(LevelFilter::Info).init().unwrap();
+    SimpleLogger::new().with_utc_timestamps().with_level(LevelFilter::Info).init().unwrap();
 
     let func = handler_fn(my_handler);
     lambda_runtime::run(func).await?;

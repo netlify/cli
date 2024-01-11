@@ -345,6 +345,55 @@ const deployProgressCb = function () {
   }
 }
 
+const uploadDeployBlobs = async ({
+  cachedConfig,
+  deployId,
+  options,
+  silent,
+  siteId,
+}: {
+  cachedConfig: any
+  deployId: string
+  options: OptionValues
+  silent: boolean
+  siteId: string
+}) => {
+  const statusCb = silent ? () => {} : deployProgressCb()
+
+  statusCb({
+    type: 'blobs-uploading',
+    msg: 'Uploading blobs to deploy store...\n',
+    phase: 'start',
+  })
+
+  const [token] = await getToken(false)
+
+  const { success } = await runCoreSteps(['blobs_upload'], {
+    ...options,
+    quiet: silent,
+    cachedConfig,
+    deployId,
+    siteId,
+    token,
+  })
+
+  if (!success) {
+    statusCb({
+      type: 'blobs-uploading',
+      msg: 'Deploy aborted due to error while uploading blobs to deploy store',
+      phase: 'error',
+    })
+
+    error('Error while uploading blobs to deploy store')
+  }
+
+  statusCb({
+    type: 'blobs-uploading',
+    msg: 'Finished uploading blobs to deploy store',
+    phase: 'stop',
+  })
+}
+
 const runDeploy = async ({
   // @ts-expect-error TS(7031) FIXME: Binding element 'alias' implicitly has an 'any' ty... Remove this comment to see the full error message
   alias,
@@ -362,8 +411,9 @@ const runDeploy = async ({
   deployToProduction,
   // @ts-expect-error TS(7031) FIXME: Binding element 'functionsConfig' implicitly has a... Remove this comment to see the full error message
   functionsConfig,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'functionsFolder' implicitly has a... Remove this comment to see the full error message
   functionsFolder,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'options' implicitly has an 'a... Remove this comment to see the full error message
+  options,
   // @ts-expect-error TS(7031) FIXME: Binding element 'packagePath' implicitly has an 'a... Remove this comment to see the full error message
   packagePath,
   // @ts-expect-error TS(7031) FIXME: Binding element 'silent' implicitly has an 'any' t... Remove this comment to see the full error message
@@ -378,6 +428,8 @@ const runDeploy = async ({
   skipFunctionsCache,
   // @ts-expect-error TS(7031) FIXME: Binding element 'title' implicitly has an 'any' ty... Remove this comment to see the full error message
   title,
+}: {
+  functionsFolder?: string
 }) => {
   let results
   let deployId
@@ -393,13 +445,14 @@ const runDeploy = async ({
     results = await api.createSiteDeploy({ siteId, title, body: { draft, branch: alias } })
     deployId = results.id
 
-    // @ts-expect-error TS(2345) FIXME: Argument of type '{ base: any; packagePath: any; }... Remove this comment to see the full error message
-    const internalFunctionsFolder = await getInternalFunctionsDir({ base: site.root, packagePath })
+    const internalFunctionsFolder = await getInternalFunctionsDir({ base: site.root, packagePath, ensureExists: true })
 
     // The order of the directories matter: zip-it-and-ship-it will prioritize
     // functions from the rightmost directories. In this case, we want user
     // functions to take precedence over internal functions.
-    const functionDirectories = [internalFunctionsFolder, functionsFolder].filter(Boolean)
+    const functionDirectories = [internalFunctionsFolder, functionsFolder].filter((folder): folder is string =>
+      Boolean(folder),
+    )
     const manifestPath = skipFunctionsCache ? null : await getFunctionsManifestPath({ base: site.root, packagePath })
 
     const redirectsPath = `${deployFolder}/_redirects`
@@ -421,13 +474,13 @@ const runDeploy = async ({
     })
 
     config.headers = headers
+    uploadDeployBlobs({ deployId, siteId, silent, options, cachedConfig: command.netlify.cachedConfig })
 
     results = await deploySite(api, siteId, deployFolder, {
+      // @ts-expect-error FIXME
       config,
-      // @ts-expect-error TS(2322) FIXME: Type 'any[]' is not assignable to type 'never[]'.
       fnDir: functionDirectories,
       functionsConfig,
-      // @ts-expect-error TS(2322) FIXME: Type '(event: any) => void' is not assignable to t... Remove this comment to see the full error message
       statusCb: silent ? () => {} : deployProgressCb(),
       deployTimeout,
       syncFileLimit: SYNC_FILE_LIMIT,
@@ -680,6 +733,7 @@ const prepAndRunDeploy = async ({
   })
 
   const results = await runDeploy({
+    // @ts-expect-error FIXME
     alias,
     api,
     command,
@@ -690,6 +744,7 @@ const prepAndRunDeploy = async ({
     functionsConfig,
     // pass undefined functionsFolder if doesn't exist
     functionsFolder: functionsFolderStat && functionsFolder,
+    options,
     packagePath: command.workspacePackage,
     silent: options.json || options.silent,
     site,

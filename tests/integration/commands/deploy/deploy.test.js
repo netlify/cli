@@ -2,6 +2,7 @@ import path from 'path'
 import process from 'process'
 import { fileURLToPath } from 'url'
 
+import execa from 'execa'
 import fetch from 'node-fetch'
 import { afterAll, beforeAll, describe, test } from 'vitest'
 
@@ -9,6 +10,7 @@ import { callCli } from '../../utils/call-cli.js'
 import { createLiveTestSite, generateSiteName } from '../../utils/create-live-test-site.js'
 import { withSiteBuilder } from '../../utils/site-builder.ts'
 
+// eslint-disable-next-line no-underscore-dangle
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const SITE_NAME = generateSiteName('netlify-test-deploy-')
@@ -494,7 +496,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
           export default async () => new Response("Internal V2 API")
           export const config = { path: "/internal-v2-func" }
           `,
-          path: '.netlify/functions-internal/func-4.js',
+          path: '.netlify/functions-internal/func-4.mjs',
         })
         .buildAsync()
 
@@ -815,6 +817,65 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
 
       const response = await fetch(`${deployUrl}/.netlify/functions/bundled-function-1`).then((res) => res.text())
       t.expect(response).toEqual('Bundled at deployment')
+    })
+  })
+
+  test('should upload blobs when saved into .netlify directory', async (t) => {
+    await withSiteBuilder('site-with-blobs', async (builder) => {
+      await builder
+        .withNetlifyToml({
+          config: {
+            build: { functions: 'functions', publish: 'dist' },
+          },
+        })
+        .withContentFile({
+          path: 'dist/index.html',
+          content: '<a href="/read-blob">get blob</a>',
+        })
+        .withContentFile({
+          path: '.netlify/blobs/deploy/hello',
+          content: 'hello from the blob',
+        })
+        .withPackageJson({
+          packageJson: {
+            dependencies: {
+              '@netlify/blobs': '^6.3.0',
+              '@netlify/functions': '^2.4.0',
+            },
+          },
+        })
+        .withContentFile({
+          path: 'functions/read-blob.ts',
+          content: `
+  import { getDeployStore } from "@netlify/blobs"
+  import { Config } from "@netlify/functions"
+
+  export default async () => {
+    const store = getDeployStore()
+    const blob = await store.get('hello')
+
+    return new Response(blob)
+  }
+
+  export const config: Config = {
+    path: "/read-blob"
+  }
+          `,
+        })
+        .build()
+
+      await execa.command('npm install', { cwd: builder.directory })
+      const { deploy_url: deployUrl } = await callCli(
+        ['deploy', '--json'],
+        {
+          cwd: builder.directory,
+          env: { NETLIFY_SITE_ID: context.siteId },
+        },
+        true,
+      )
+
+      const response = await fetch(`${deployUrl}/read-blob`).then((res) => res.text())
+      t.expect(response).toEqual('hello from the blob')
     })
   })
 })

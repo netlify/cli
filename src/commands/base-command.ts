@@ -26,6 +26,7 @@ import {
   exit,
   getToken,
   log,
+  version,
   normalizeConfig,
   padLeft,
   pollForToken,
@@ -37,6 +38,13 @@ import { getSiteByName } from '../utils/get-site.js'
 import openBrowser from '../utils/open-browser.js'
 import StateConfig from '../utils/state-config.js'
 import { identify, reportError, track } from '../utils/telemetry/index.js'
+
+import { type NetlifyOptions } from './types.js'
+
+type Analytics = {
+  startTime: bigint
+  payload?: Record<string, unknown>
+}
 
 // load the autocomplete plugin
 inquirer.registerPrompt('autocomplete', inquirerAutocompletePrompt)
@@ -61,21 +69,11 @@ const HELP_SEPARATOR_WIDTH = 5
  */
 const COMMANDS_WITHOUT_WORKSPACE_OPTIONS = new Set(['api', 'recipes', 'completion', 'status', 'switch', 'login', 'lm'])
 
-/**
- * Formats a help list correctly with the correct indent
- * @param {string[]} textArray
- * @returns
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'textArray' implicitly has an 'any' type... Remove this comment to see the full error message
-const formatHelpList = (textArray) => textArray.join('\n').replace(/^/gm, ' '.repeat(HELP_INDENT_WIDTH))
+/** Formats a help list correctly with the correct indent */
+const formatHelpList = (textArray: string[]) => textArray.join('\n').replace(/^/gm, ' '.repeat(HELP_INDENT_WIDTH))
 
-/**
- * Get the duration between a start time and the current time
- * @param {bigint} startTime
- * @returns
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'startTime' implicitly has an 'any' type... Remove this comment to see the full error message
-const getDuration = function (startTime) {
+/** Get the duration between a start time and the current time */
+const getDuration = (startTime: bigint) => {
   const durationNs = process.hrtime.bigint() - startTime
   return Math.round(Number(durationNs / BigInt(NANO_SECS_TO_MSECS)))
 }
@@ -83,13 +81,13 @@ const getDuration = function (startTime) {
 /**
  * Retrieves a workspace package based of the filter flag that is provided.
  * If the filter flag does not match a workspace package or is not defined then it will prompt with an autocomplete to select a package
- * @param {Project} project
- * @param {string=} filter
- * @returns {Promise<string>}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'project' implicitly has an 'any' type.
-async function selectWorkspace(project, filter) {
-  // @ts-expect-error TS(7006) FIXME: Parameter 'pkg' implicitly has an 'any' type.
+async function selectWorkspace(project: Project, filter?: string): Promise<string> {
+  // don't show prompt for workspace selection if there is only one package
+  if (project.workspace?.packages && project.workspace.packages.length === 1) {
+    return project.workspace.packages[0].path
+  }
+
   const selected = project.workspace?.packages.find((pkg) => {
     if (
       project.relativeBaseDirectory &&
@@ -113,9 +111,7 @@ async function selectWorkspace(project, filter) {
       // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
       source: (/** @type {string} */ _, input = '') =>
         (project.workspace?.packages || [])
-          // @ts-expect-error TS(7006) FIXME: Parameter 'pkg' implicitly has an 'any' type.
           .filter((pkg) => pkg.path.includes(input))
-          // @ts-expect-error TS(7006) FIXME: Parameter 'pkg' implicitly has an 'any' type.
           .map((pkg) => ({
             name: `${pkg.name ? `${chalk.bold(pkg.name)}  ` : ''}${pkg.path}  ${chalk.dim(
               `--filter ${pkg.name || pkg.path}`,
@@ -138,19 +134,12 @@ async function getRepositoryRoot(cwd?: string): Promise<string | undefined> {
 
 /** Base command class that provides tracking and config initialization */
 export default class BaseCommand extends Command {
-  /**
-   * The netlify object inside each command with the state
-   * @type {import('./types.js').NetlifyOptions}
-   */
-  // @ts-expect-error TS(7008) FIXME: Member 'netlify' implicitly has an 'any' type.
-  netlify
-
-  /** @type {{ startTime: bigint, payload?: any}} */
-  analytics = { startTime: process.hrtime.bigint() }
-
-  /** @type {Project} */
-  // @ts-expect-error TS(7008) FIXME: Member 'project' implicitly has an 'any' type.
-  project
+  /** The netlify object inside each command with the state */
+  // @ts-expect-error This will be set for each command, TypeScript is just not able to infer it
+  netlify: NetlifyOptions
+  analytics: Analytics = { startTime: process.hrtime.bigint() }
+  // @ts-expect-error This will be set for each command, TypeScript is just not able to infer it
+  project: Project
 
   /**
    * The working directory that is used for reading the `netlify.toml` file and storing the state.
@@ -164,25 +153,16 @@ export default class BaseCommand extends Command {
   /**
    * The workspace root if inside a mono repository.
    * Must not be the repository root!
-   * @type {string|undefined}
    */
-  // @ts-expect-error TS(7008) FIXME: Member 'jsWorkspaceRoot' implicitly has an 'any' t... Remove this comment to see the full error message
-  jsWorkspaceRoot
-  /**
-   * The current workspace package we should execute the commands in
-   * @type {string|undefined}
-   */
-  // @ts-expect-error TS(7008) FIXME: Member 'workspacePackage' implicitly has an 'any' ... Remove this comment to see the full error message
-  workspacePackage
+  jsWorkspaceRoot?: string
+  /** The current workspace package we should execute the commands in  */
+  workspacePackage?: string
 
   /**
    * IMPORTANT this function will be called for each command!
    * Don't do anything expensive in there.
-   * @param {string} name The command name
-   * @returns
    */
-  // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-  createCommand(name) {
+  createCommand(name: string): BaseCommand {
     const base = new BaseCommand(name)
       // If  --silent or --json flag passed disable logger
       .addOption(new Option('--json', 'Output return values as JSON').hideHelp(true))
@@ -229,38 +209,28 @@ export default class BaseCommand extends Command {
       }
       debug(`${name}:preAction`)('start')
       this.analytics = { startTime: process.hrtime.bigint() }
-      await this.init(actionCommand)
+      await this.init(actionCommand as BaseCommand)
       debug(`${name}:preAction`)('end')
     })
   }
 
-  /** @private */
-  noBaseOptions = false
-
+  #noBaseOptions = false
   /** don't show help options on command overview (mostly used on top commands like `addons` where options only apply on children) */
   noHelpOptions() {
-    this.noBaseOptions = true
+    this.#noBaseOptions = true
     return this
   }
 
-  /** @type {string[]} The examples list for the command (used inside doc generation and help page) */
-  examples = []
-
-  /**
-   * Set examples for the command
-   * @param {string[]} examples
-   */
-  // @ts-expect-error TS(7006) FIXME: Parameter 'examples' implicitly has an 'any' type.
-  addExamples(examples) {
+  /** The examples list for the command (used inside doc generation and help page) */
+  examples: string[] = []
+  /** Set examples for the command  */
+  addExamples(examples: string[]) {
     this.examples = examples
     return this
   }
 
-  /**
-   * Overrides the help output of commander with custom styling
-   * @returns {import('commander').Help}
-   */
-  createHelp() {
+  /** Overrides the help output of commander with custom styling */
+  createHelp(): Help {
     const help = super.createHelp()
 
     help.commandUsage = (command) => {
@@ -294,13 +264,8 @@ export default class BaseCommand extends Command {
     help.longestSubcommandTermLength = (command: BaseCommand): number =>
       getCommands(command).reduce((max, cmd) => Math.max(max, cmd.name().length), 0)
 
-    /**
-     * override the longestOptionTermLength to react on hide options flag
-     * @param {BaseCommand} command
-     * @param {import('commander').Help} helper
-     * @returns {number}
-     */
-    help.longestOptionTermLength = (command, helper) =>
+    /** override the longestOptionTermLength to react on hide options flag */
+    help.longestOptionTermLength = (command: BaseCommand, helper: Help): number =>
       // @ts-expect-error TS(2551) FIXME: Property 'noBaseOptions' does not exist on type 'C... Remove this comment to see the full error message
       (command.noBaseOptions === false &&
         helper.visibleOptions(command).reduce((max, option) => Math.max(max, helper.optionTerm(option).length), 0)) ||
@@ -310,15 +275,8 @@ export default class BaseCommand extends Command {
       const parentCommand = this.name() === 'netlify' ? command : command.parent
       const termWidth = helper.padWidth(command, helper)
       const helpWidth = helper.helpWidth || FALLBACK_HELP_CMD_WIDTH
-      /**
-       * formats a term correctly
-       * @param {string} term
-       * @param {string} [description]
-       * @param {boolean} [isCommand]
-       * @returns {string}
-       */
-      // @ts-expect-error TS(7006) FIXME: Parameter 'term' implicitly has an 'any' type.
-      const formatItem = (term, description, isCommand = false) => {
+      // formats a term correctly
+      const formatItem = (term: string, description?: string, isCommand = false): string => {
         const bang = isCommand ? `${HELP_$} ` : ''
 
         if (description) {
@@ -330,25 +288,20 @@ export default class BaseCommand extends Command {
         return `${bang}${term}`
       }
 
-      /** @type {string[]} */
-      // @ts-expect-error TS(7034) FIXME: Variable 'output' implicitly has type 'any[]' in s... Remove this comment to see the full error message
-      let output = []
+      let output: string[] = []
 
       // Description
       const [topDescription, ...commandDescription] = (helper.commandDescription(command) || '').split('\n')
       if (topDescription.length !== 0) {
-        // @ts-expect-error TS(7005) FIXME: Variable 'output' implicitly has an 'any[]' type.
         output = [...output, topDescription, '']
       }
 
       // on the parent help command the version should be displayed
       if (this.name() === 'netlify') {
-        // @ts-expect-error TS(7005) FIXME: Variable 'output' implicitly has an 'any[]' type.
         output = [...output, chalk.bold('VERSION'), formatHelpList([formatItem(USER_AGENT)]), '']
       }
 
       // Usage
-      // @ts-expect-error TS(7005) FIXME: Variable 'output' implicitly has an 'any[]' type.
       output = [...output, chalk.bold('USAGE'), helper.commandUsage(command), '']
 
       // Arguments
@@ -359,7 +312,7 @@ export default class BaseCommand extends Command {
         output = [...output, chalk.bold('ARGUMENTS'), formatHelpList(argumentList), '']
       }
 
-      if (command.noBaseOptions === false) {
+      if (command.#noBaseOptions === false) {
         // Options
         const optionList = helper
           .visibleOptions(command)
@@ -405,14 +358,9 @@ export default class BaseCommand extends Command {
     return help
   }
 
-  /**
-   * Will be called on the end of an action to track the metrics
-   * @param {*} [error_]
-   */
-  // @ts-expect-error TS(7006) FIXME: Parameter 'error_' implicitly has an 'any' type.
-  async onEnd(error_) {
-    // @ts-expect-error TS(2339) FIXME: Property 'payload' does not exist on type '{ start... Remove this comment to see the full error message
-    const { payload, startTime } = this.analytics
+  /** Will be called on the end of an action to track the metrics */
+  async onEnd(error_?: unknown) {
+    const { payload = {}, startTime } = this.analytics
     const duration = getDuration(startTime)
     const status = error_ === undefined ? 'success' : 'error'
 
@@ -430,7 +378,6 @@ export default class BaseCommand extends Command {
     } catch {}
 
     if (error_ !== undefined) {
-      // @ts-expect-error TS(2345) FIXME: Argument of type 'string | Error' is not assignabl... Remove this comment to see the full error message
       error(error_ instanceof Error ? error_ : format(error_), { exit: false })
       exit(1)
     }
@@ -504,25 +451,18 @@ export default class BaseCommand extends Command {
     return accessToken
   }
 
-  /**
-   * Adds some data to the analytics payload
-   * @param {Record<string, unknown>} payload
-   */
-  // @ts-expect-error TS(7006) FIXME: Parameter 'payload' implicitly has an 'any' type.
-  setAnalyticsPayload(payload) {
-    // @ts-expect-error TS(2339) FIXME: Property 'payload' does not exist on type '{ start... Remove this comment to see the full error message
-    const newPayload = { ...this.analytics.payload, ...payload }
-    // @ts-expect-error TS(2322) FIXME: Type '{ payload: any; startTime: bigint; }' is not... Remove this comment to see the full error message
-    this.analytics = { ...this.analytics, payload: newPayload }
+  /** Adds some data to the analytics payload */
+  setAnalyticsPayload(payload: Record<string, unknown>) {
+    this.analytics = {
+      ...this.analytics,
+      payload: { ...this.analytics.payload, ...payload },
+    }
   }
 
   /**
    * Initializes the options and parses the configuration needs to be called on start of a command function
-   * @param {BaseCommand} actionCommand The command of the action that is run (`this.` gets the parent command)
-   * @private
    */
-  // @ts-expect-error TS(7006) FIXME: Parameter 'actionCommand' implicitly has an 'any' ... Remove this comment to see the full error message
-  async init(actionCommand) {
+  private async init(actionCommand: BaseCommand) {
     debug(`${actionCommand.name()}:init`)('start')
     const flags = actionCommand.opts()
     // here we actually want to use the process.cwd as we are setting the workingDir
@@ -551,8 +491,7 @@ export default class BaseCommand extends Command {
         })
       })
     const frameworks = await this.project.detectFrameworks()
-    /** @type { string|undefined} */
-    let packageConfig = flags.config ? resolve(flags.config) : undefined
+    let packageConfig: string | undefined = flags.config ? resolve(flags.config) : undefined
     // check if we have detected multiple projects inside which one we have to perform our operations.
     // only ask to select one if on the workspace root
     if (
@@ -577,17 +516,19 @@ export default class BaseCommand extends Command {
     const state = new StateConfig(this.workingDir)
     const [token] = await getToken(flags.auth)
 
-    const apiUrlOpts = {
+    const apiUrlOpts: {
+      userAgent: string
+      scheme?: string
+      host?: string
+      pathPrefix?: string
+    } = {
       userAgent: USER_AGENT,
     }
 
     if (process.env.NETLIFY_API_URL) {
       const apiUrl = new URL(process.env.NETLIFY_API_URL)
-      // @ts-expect-error TS(2339) FIXME: Property 'scheme' does not exist on type '{ userAg... Remove this comment to see the full error message
       apiUrlOpts.scheme = apiUrl.protocol.slice(0, -1)
-      // @ts-expect-error TS(2339) FIXME: Property 'host' does not exist on type '{ userAgen... Remove this comment to see the full error message
       apiUrlOpts.host = apiUrl.host
-      // @ts-expect-error TS(2339) FIXME: Property 'pathPrefix' does not exist on type '{ us... Remove this comment to see the full error message
       apiUrlOpts.pathPrefix =
         process.env.NETLIFY_API_URL === `${apiUrl.protocol}//${apiUrl.host}` ? '/api/v1' : apiUrl.pathname
     }
@@ -606,14 +547,16 @@ export default class BaseCommand extends Command {
       token,
       ...apiUrlOpts,
     })
-    const { buildDir, config, configPath, repositoryRoot, siteInfo } = cachedConfig
+    const { buildDir, config, configPath, env, repositoryRoot, siteInfo } = cachedConfig
+    env.NETLIFY_CLI_VERSION = { sources: ['internal'], value: version }
     const normalizedConfig = normalizeConfig(config)
     const agent = await getAgent({
       httpProxy: flags.httpProxy,
       certificateFile: flags.httpProxyCertificateFilename,
     })
     const apiOpts = { ...apiUrlOpts, agent }
-    const api = new NetlifyAPI(token || '', apiOpts)
+    // TODO: remove typecast once we have proper types for the API
+    const api = new NetlifyAPI(token || '', apiOpts) as NetlifyOptions['api']
 
     // If a user passes a site name as an option instead of a site ID to options.site, the siteInfo object
     // will only have the property siteInfo.id. Checking for one of the other properties ensures that we can do
@@ -631,7 +574,6 @@ export default class BaseCommand extends Command {
     // ==================================================
     // Perform analytics reporting
     // ==================================================
-    // @ts-expect-error TS(7006) FIXME: Parameter 'framework' implicitly has an 'any' type... Remove this comment to see the full error message
     const frameworkIDs = frameworks?.map((framework) => framework.id)
     if (frameworkIDs?.length !== 0) {
       this.setAnalyticsPayload({ frameworks: frameworkIDs })
@@ -639,7 +581,6 @@ export default class BaseCommand extends Command {
     this.setAnalyticsPayload({
       monorepo: Boolean(this.project.workspace),
       packageManager: this.project.packageManager?.name,
-      // @ts-expect-error TS(7031) FIXME: Binding element 'id' implicitly has an 'any' type.
       buildSystem: this.project.buildSystems.map(({ id }) => id),
     })
 
@@ -687,23 +628,21 @@ export default class BaseCommand extends Command {
     debug(`${this.name()}:init`)('end')
   }
 
-  /**
-   * Find and resolve the Netlify configuration
-   * @param {object} config
-   * @param {string} config.cwd
-   * @param {string|null=} config.token
-   * @param {*} config.state
-   * @param {boolean=} config.offline
-   * @param {string=} config.configFilePath An optional path to the netlify configuration file e.g. netlify.toml
-   * @param {string=} config.packagePath
-   * @param {string=} config.repositoryRoot
-   * @param {string=} config.host
-   * @param {string=} config.pathPrefix
-   * @param {string=} config.scheme
-   * @returns {ReturnType<typeof resolveConfig>}
-   */
-  // @ts-expect-error TS(7023) FIXME: 'getConfig' implicitly has return type 'any' becau... Remove this comment to see the full error message
-  async getConfig(config) {
+  /** Find and resolve the Netlify configuration */
+  async getConfig(config: {
+    cwd: string
+    token?: string | null
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    state?: any
+    offline?: boolean
+    /** An optional path to the netlify configuration file e.g. netlify.toml */
+    configFilePath?: string
+    packagePath?: string
+    repositoryRoot?: string
+    host?: string
+    pathPrefix?: string
+    scheme?: string
+  }): ReturnType<typeof resolveConfig> {
     // the flags that are passed to the command like `--debug` or `--offline`
     const flags = this.opts()
 
@@ -754,10 +693,15 @@ export default class BaseCommand extends Command {
    * Returns the context that should be used in case one hasn't been explicitly
    * set. The default context is `dev` most of the time, but some commands may
    * wish to override that.
-   *
-   * @returns {'production' | 'dev'}
    */
-  getDefaultContext() {
+  getDefaultContext(): 'production' | 'dev' {
     return this.name() === 'serve' ? 'production' : 'dev'
+  }
+
+  /**
+   * Retrieve feature flags for this site
+   */
+  getFeatureFlag<T = null | boolean | string>(flagName: string): T {
+    return this.netlify.siteInfo.feature_flags?.[flagName] || null
   }
 }

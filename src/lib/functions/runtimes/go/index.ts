@@ -3,7 +3,6 @@ import { platform } from 'process'
 
 import { temporaryFile } from 'tempy'
 
-// @ts-expect-error TS(7034) FIXME: Variable 'execa' implicitly has type 'any' in some... Remove this comment to see the full error message
 import execa from '../../../../utils/execa.js'
 import { runFunctionsProxy } from '../../local-proxy.js'
 
@@ -14,7 +13,6 @@ export const name = 'go'
 // @ts-expect-error TS(7031) FIXME: Binding element 'binaryPath' implicitly has an 'an... Remove this comment to see the full error message
 const build = async ({ binaryPath, functionDirectory }) => {
   try {
-    // @ts-expect-error TS(7005) FIXME: Variable 'execa' implicitly has an 'any' type.
     await execa('go', ['build', '-o', binaryPath], { cwd: functionDirectory })
 
     return { binaryPath, srcFiles: [functionDirectory] }
@@ -34,7 +32,6 @@ const build = async ({ binaryPath, functionDirectory }) => {
 // @ts-expect-error TS(7031) FIXME: Binding element 'cwd' implicitly has an 'any' type... Remove this comment to see the full error message
 const checkGoInstallation = async ({ cwd }) => {
   try {
-    // @ts-expect-error TS(7005) FIXME: Variable 'execa' implicitly has an 'any' type.
     await execa('go', ['version'], { cwd })
 
     return true

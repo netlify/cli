@@ -175,7 +175,7 @@ export default async function handler({ config, directory, errorExit, func, meta
     featureFlags.zisi_pure_esm_mjs = true
   } else {
     // We must use esbuild for certain file extensions.
-    const mustTranspile = ['.js', '.ts', '.mts', '.cts'].includes(path.extname(func.mainFile))
+    const mustTranspile = ['.mjs', '.ts', '.mts', '.cts'].includes(path.extname(func.mainFile))
     const mustUseEsbuild = hasTypeModule || mustTranspile
 
     if (mustUseEsbuild && !functionsConfig['*'].nodeBundler) {

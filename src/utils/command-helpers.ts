@@ -48,8 +48,9 @@ export const padLeft = (str, count, filler = ' ') => str.padStart(str.length + c
 const platform = WSL ? 'wsl' : os.platform()
 const arch = os.arch() === 'ia32' ? 'x86' : os.arch()
 
-const { name, version } = await getPackageJson()
+const { name, version: packageVersion } = await getPackageJson()
 
+export const version = packageVersion
 export const USER_AGENT = `${name}/${version} ${platform}-${arch} node-${process.version}`
 
 /** A list of base command flags that needs to be sorted down on documentation and on help pages */
@@ -184,23 +185,16 @@ export const warn = (message = '') => {
   log(` ${bang}   Warning: ${message}`)
 }
 
-/**
- * throws an error or log it
- * @param {unknown} message
- * @param {object} [options]
- * @param {boolean} [options.exit]
- */
-export const error = (message = '', options = {}) => {
+/** Throws an error or logs it */
+export const error = (message: Error | string = '', options: { exit?: boolean } = {}) => {
   const err =
-    // @ts-expect-error TS(2358) FIXME: The left-hand side of an 'instanceof' expression m... Remove this comment to see the full error message
     message instanceof Error
       ? message
       : // eslint-disable-next-line unicorn/no-nested-ternary
       typeof message === 'string'
       ? new Error(message)
-      : /** @type {Error} */ { message, stack: undefined, name: 'Error' }
+      : { message, stack: undefined, name: 'Error' }
 
-  // @ts-expect-error TS(2339) FIXME: Property 'exit' does not exist on type '{}'.
   if (options.exit === false) {
     const bang = chalk.red(BANG)
     if (process.env.DEBUG) {
