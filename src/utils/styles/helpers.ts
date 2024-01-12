@@ -65,11 +65,4 @@ export const ansiRegex = () => {
   return new RegExp(pattern, 'g')
 }
 
-export const jsonOnlyCheck =
-  (originalFunction: (...args: any[]) => unknown) =>
-  (...args: unknown[]) => {
-    if (argv.has('--json') || argv.has('--silent') || isDefaultJson()) {
-      return
-    }
-    return originalFunction(...args)
-  }
+export const jsonOnly = () => argv.has('--json') || argv.has('--silent') || isDefaultJson()

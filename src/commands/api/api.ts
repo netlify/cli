@@ -2,7 +2,7 @@ import AsciiTable from 'ascii-table'
 import { OptionValues } from 'commander'
 import { methods } from 'netlify'
 
-import { chalk, exit, logJson } from '../../utils/command-helpers.js'
+import { chalk, logJson } from '../../utils/command-helpers.js'
 import { NetlifyLog, intro, outro, spinner } from '../../utils/styles/index.js'
 import BaseCommand from '../base-command.js'
 
@@ -19,10 +19,12 @@ export const apiCommand = async (apiMethod: string, options: OptionValues, comma
     })
     NetlifyLog.message(table.toString())
 
-    outro(
-      `Above is a list of available API methods. To run a method use "${chalk.cyanBright('netlify api methodName')}"`,
-    )
-    exit()
+    outro({
+      message: `Above is a list of available API methods. To run a method use "${chalk.cyanBright(
+        'netlify api methodName',
+      )}"`,
+      exit: true,
+    })
   }
 
   if (!apiMethod) {

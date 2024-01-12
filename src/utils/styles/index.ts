@@ -19,7 +19,7 @@ import { reportError } from '../telemetry/report-error.js'
 
 import { GRAY_BAR } from './chalk.js'
 import { symbols } from './constants.js'
-import { ansiRegex, coloredSymbol, jsonOnlyCheck, limitOptions } from './helpers.js'
+import { ansiRegex, coloredSymbol, jsonOnly, limitOptions } from './helpers.js'
 
 const unicode = isUnicodeSupported()
 
@@ -492,17 +492,27 @@ export const cancel = (message = '') => {
   process.stdout.write(`${chalk.gray(symbols.BAR_END)}  ${chalk.red(message)}\n\n`)
 }
 
-export const intro = jsonOnlyCheck((title = '') => {
+export const intro = (title = '') => {
+  if (jsonOnly()) return
   process.stdout.write(`${chalk.gray(symbols.BAR_START)} ${chalk.bgCyan(chalk.black(` ◈ netlify  ${title} ◈ `))} \n`)
-})
+}
 
-export const outro = jsonOnlyCheck((message = '') => {
+type OutroOptions = {
+  message?: string
+  exit?: boolean
+  code?: number
+}
+
+export const outro = ({ code = 0, exit, message }: OutroOptions) => {
+  if (jsonOnly()) return
+
   if (message) {
-    process.stdout.write(`${GRAY_BAR}\n${chalk.gray(symbols.BAR_END)}  ${message}\n`)
+    process.stdout.write(`${GRAY_BAR}\n${chalk.gray(symbols.BAR_END)}  ${message}\n\n`)
   } else {
-    process.stdout.write(`${chalk.gray(symbols.BAR_END)}\n`)
+    process.stdout.write(`${chalk.gray(symbols.BAR_END)}\n\n`)
   }
-})
+  if (exit) process.exit(code)
+}
 
 export type LogMessageOptions = {
   symbol?: string
@@ -510,39 +520,44 @@ export type LogMessageOptions = {
   writeStream?: NodeJS.WriteStream
 }
 export const NetlifyLog = {
-  message: jsonOnlyCheck(
-    (
-      message = '',
-      { error = false, symbol = chalk.gray(symbols.BAR), writeStream = process.stdout }: LogMessageOptions = {},
-    ) => {
-      const parts = [`${chalk.gray(symbols.BAR)}`]
-      if (message) {
-        const [firstLine, ...lines] = message.split('\n')
-        parts.push(
-          `${symbol}  ${firstLine}`,
-          ...lines.map((ln: any) => (error ? ln : `${chalk.gray(symbols.BAR)}  ${ln}`)),
-        )
-      }
-      writeStream.write(`${parts.join('\n')}\n`)
-    },
-  ),
-  info: jsonOnlyCheck((message: string) => {
+  message: (
+    message = '',
+    { error = false, symbol = GRAY_BAR, writeStream = process.stdout }: LogMessageOptions = {},
+  ) => {
+    if (jsonOnly()) return
+
+    const parts = [`${GRAY_BAR}`]
+    if (message) {
+      const [firstLine, ...lines] = message.split('\n')
+      parts.push(`${symbol}  ${firstLine}`, ...lines.map((ln: string) => (error ? ln : `${GRAY_BAR}  ${ln}`)))
+    }
+    writeStream.write(`${parts.join('\n')}\n`)
+  },
+  info: (message: string) => {
+    if (jsonOnly()) return
     NetlifyLog.message(message, { symbol: chalk.blue(symbols.INFO) })
-  }),
-  success: jsonOnlyCheck((message: string) => {
+  },
+  success: (message: string) => {
+    if (jsonOnly()) return
     NetlifyLog.message(message, { symbol: chalk.cyan(symbols.SUCCESS) })
-  }),
-  step: jsonOnlyCheck((message: string) => {
+  },
+  step: (message: string) => {
+    if (jsonOnly()) return
     NetlifyLog.message(message, { symbol: chalk.cyan(symbols.STEP_SUBMIT) })
-  }),
-  warn: jsonOnlyCheck((message: string) => {
+  },
+  warn: (message: string) => {
+    if (jsonOnly()) return
+
     NetlifyLog.message(message, { symbol: chalk.yellow(symbols.WARN) })
-  }),
+  },
   /** alias for `log.warn()`. */
-  warning: jsonOnlyCheck((message: string) => {
+  warning: (message: string) => {
+    if (jsonOnly()) return
     NetlifyLog.warn(message)
-  }),
-  error: jsonOnlyCheck((message: Error | string = '', options: { exit?: boolean } = {}) => {
+  },
+  error: (message: Error | string | unknown = '', options: { exit?: boolean } = {}) => {
+    if (jsonOnly()) return
+
     const err =
       message instanceof Error
         ? message
@@ -572,7 +587,7 @@ export const NetlifyLog = {
       })
       process.exit(1)
     }
-  }),
+  },
 }
 
 export const spinner = () => {
@@ -611,7 +626,9 @@ export const spinner = () => {
     process.removeListener('exit', handleExit)
   }
 
-  const start = jsonOnlyCheck((msg = ''): void => {
+  const start = (msg = ''): void => {
+    if (jsonOnly()) return
+
     isSpinnerActive = true
     unblock = block()
     _message = msg.replace(/\.+$/, '')
@@ -628,9 +645,11 @@ export const spinner = () => {
       frameIndex = frameIndex + 1 < frames.length ? frameIndex + 1 : 0
       dotsTimer = dotsTimer < frames.length ? dotsTimer + 0.125 : 0
     }, delay)
-  })
+  }
 
-  const stop = jsonOnlyCheck((msg = '', code = 0): void => {
+  const stop = (msg = '', code = 0): void => {
+    if (jsonOnly()) return
+
     _message = msg ?? _message
     isSpinnerActive = false
     clearInterval(loop)
@@ -641,11 +660,13 @@ export const spinner = () => {
     process.stdout.write(`${step}  ${_message}\n`)
     clearHooks()
     unblock()
-  })
+  }
 
-  const message = jsonOnlyCheck((msg = ''): void => {
+  const message = (msg = ''): void => {
+    if (jsonOnly()) return
+
     _message = msg ?? _message
-  })
+  }
 
   return {
     start,

@@ -22,9 +22,9 @@ export const unlink = async (options: OptionValues, command: BaseCommand) => {
   })
 
   if (site) {
-    NetlifyLog.success(`Unlinked ${site.configPath} from ${siteData ? siteData.name : siteId}`)
+    NetlifyLog.success(`Unlinked from ${siteData ? siteData.name : siteId}`)
   } else {
     NetlifyLog.success('Unlinked site')
   }
-  outro()
+  outro({ exit: true })
 }

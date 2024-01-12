@@ -34,7 +34,8 @@ export const basicCommand = () => {
 ```
 
 You don't need to call `outro` if your command throws an error, as `NetlifyLog.error()` automatically creates a clear
-visual end for your command already.
+visual end for your command already. It's possible to also exit the process by calling outro with an object:
+`outro({ exit: true })` and you can pass a message to it with `outro({ message: 'Your message' })`.
 
 ## Other content
 
