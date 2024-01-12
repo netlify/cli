@@ -179,8 +179,7 @@ const pickTemplate = async function ({ language: languageFromFlag }, funcType) {
   if (language === undefined) {
     const langs =
       funcType === 'edge'
-        ?
-          languages.filter((lang) => lang.value === 'javascript' || lang.value === 'typescript')
+        ? languages.filter((lang) => lang.value === 'javascript' || lang.value === 'typescript')
         : languages.filter(Boolean)
 
     const { language: languageFromPrompt } = await inquirer.prompt({
@@ -561,10 +560,12 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
 
     log()
     log(chalk.greenBright(`Function created!`))
-    
+
     if (lang == 'rust') {
       log(
-        chalk.green(`Please note that Rust functions require setting the NETLIFY_EXPERIMENTAL_BUILD_RUST_SOURCE environment variable to 'true' on your site.`)
+        chalk.green(
+          `Please note that Rust functions require setting the NETLIFY_EXPERIMENTAL_BUILD_RUST_SOURCE environment variable to 'true' on your site.`,
+        ),
       )
     }
   }
