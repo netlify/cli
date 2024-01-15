@@ -13,7 +13,6 @@ export const openSite = async (options: OptionValues, command: BaseCommand) => {
   log(`Opening "${siteInfo.name}" site url:`)
   log(`> ${url}`)
 
-  // @ts-expect-error TS(2345) FIXME: Argument of type '{ url: any; }' is not assignable... Remove this comment to see the full error message
   await openBrowser({ url })
   exit()
 }

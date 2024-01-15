@@ -10,10 +10,9 @@ import WSL from 'is-wsl'
 import debounce from 'lodash/debounce.js'
 import terminalLink from 'terminal-link'
 
-import { clearSpinner, startSpinner } from '../lib/spinner.js'
-
 import getGlobalConfig from './get-global-config.js'
 import getPackageJson from './get-package-json.js'
+import { NetlifyLog, spinner } from './styles/index.js'
 import { reportError } from './telemetry/report-error.js'
 
 /** The parsed process argv without the binary only arguments and flags */
@@ -94,17 +93,18 @@ const TOKEN_TIMEOUT = 3e5
  */
 // @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
 export const pollForToken = async ({ api, ticket }) => {
-  const spinner = startSpinner({ text: 'Waiting for authorization...' })
+  const loading = spinner()
+  loading.start('Waiting for authorization...')
   try {
     const accessToken = await api.getAccessToken(ticket, { timeout: TOKEN_TIMEOUT })
     if (!accessToken) {
-      error('Could not retrieve access token')
+      NetlifyLog.error('Could not retrieve access token')
     }
+    loading.stop('Retrieved access token')
     return accessToken
-  } catch (error_) {
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    if (error_.name === 'TimeoutError') {
-      error(
+  } catch (error_: unknown) {
+    if ((error_ as Error).name === 'TimeoutError') {
+      NetlifyLog.error(
         `Timed out waiting for authorization. If you do not have a ${chalk.bold.greenBright(
           'Netlify',
         )} account, please create one at ${chalk.magenta(
@@ -112,21 +112,12 @@ export const pollForToken = async ({ api, ticket }) => {
         )}, then run ${chalk.cyanBright('netlify login')} again.`,
       )
     } else {
-      // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
-      error(error_)
+      NetlifyLog.error(error_)
     }
-  } finally {
-    clearSpinner({ spinner })
   }
 }
 
-/**
- * Get a netlify token
- * @param {string} [tokenFromOptions] optional token from the provided --auth options
- * @returns {Promise<[null|string, 'flag' | 'env' |'config' |'not found']>}
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'tokenFromOptions' implicitly has an 'an... Remove this comment to see the full error message
-export const getToken = async (tokenFromOptions) => {
+export const getToken = async (tokenFromOptions?: string) => {
   // 1. First honor command flag --auth
   if (tokenFromOptions) {
     return [tokenFromOptions, 'flag']
