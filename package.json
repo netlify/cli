@@ -193,7 +193,7 @@
     "@babel/preset-react": "7.22.5",
     "@netlify/eslint-config-node": "7.0.0",
     "@netlify/functions": "2.4.1",
-    "@sindresorhus/slugify": "^2.2.1",
+    "@sindresorhus/slugify": "2.2.1",
     "@types/fs-extra": "11.0.4",
     "@types/inquirer": "9.0.7",
     "@types/node": "20.9.0",
