@@ -1,6 +1,6 @@
 import { appendFile, copyFile, readFile, rm, writeFile } from 'fs/promises'
 import os from 'os'
-import { join, sep } from 'path'
+import path, { join, sep } from 'path'
 import process from 'process'
 import { fileURLToPath } from 'url'
 
