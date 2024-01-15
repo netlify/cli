@@ -1,17 +1,17 @@
 import { OptionValues } from 'commander'
 
-import { exit, getToken, log } from '../../utils/command-helpers.js'
+import { getToken } from '../../utils/command-helpers.js'
+import { NetlifyLog, intro, outro } from '../../utils/styles/index.js'
 import { track } from '../../utils/telemetry/index.js'
 import BaseCommand from '../base-command.js'
 
 export const logout = async (options: OptionValues, command: BaseCommand) => {
+  intro('logout')
   const [accessToken, location] = await getToken()
 
   if (!accessToken) {
-    log(`Already logged out`)
-    log()
-    log('To login run "netlify login"')
-    exit()
+    NetlifyLog.info(`You are already logged out`)
+    outro({ message: 'To login run "netlify login"', exit: true })
   }
 
   await track('user_logout')
@@ -20,12 +20,10 @@ export const logout = async (options: OptionValues, command: BaseCommand) => {
   command.netlify.globalConfig.set('userId', null)
 
   if (location === 'env') {
-    log('The "process.env.NETLIFY_AUTH_TOKEN" is still set in your terminal session')
-    log()
-    log('To logout completely, unset the environment variable')
-    log()
-    exit()
+    NetlifyLog.warn('The "process.env.NETLIFY_AUTH_TOKEN" is still set in your terminal session')
+    outro({ message: 'To logout completely, unset the environment variable', exit: true })
   }
 
-  log(`Logging you out of Netlify. Come back soon!`)
+  NetlifyLog.success('Logged you out of Netlify.')
+  outro({ message: 'Come back soon!' })
 }
