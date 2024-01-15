@@ -366,7 +366,7 @@ const uploadDeployBlobs = async ({
     phase: 'start',
   })
 
-  const [token] = await getToken(false)
+  const [token] = await getToken()
 
   const { success } = await runCoreSteps(['blobs_upload'], {
     ...options,
@@ -535,7 +535,6 @@ const handleBuild = async ({ cachedConfig, currentDir, deployHandler, options, p
   if (!options.build) {
     return {}
   }
-  // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
   const [token] = await getToken()
   const resolvedOptions = await getBuildOptions({
     cachedConfig,
@@ -869,7 +868,7 @@ export const deploy = async (options: OptionValues, command: BaseCommand) => {
   if (options.open) {
     // @ts-expect-error TS(2339) FIXME: Property 'siteUrl' does not exist on type '{}'.
     const urlToOpen = deployToProduction ? results.siteUrl : results.deployUrl
-    // @ts-expect-error TS(2345) FIXME: Argument of type '{ url: any; }' is not assignable... Remove this comment to see the full error message
+
     await openBrowser({ url: urlToOpen })
     exit()
   }
