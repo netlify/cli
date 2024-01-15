@@ -46,17 +46,17 @@ const buildClientContext = function (headers) {
     // }
   }
 
-  // This data is available on both the context root and under custom.netlify for retro-compatibility.
-  // In the future it will only be available in custom.netlify.
-  // @ts-expect-error
-  const user = jwtDecode(parts[1])
-
-  const netlifyContext = JSON.stringify({
-    identity: identity,
-    user: user,
-  })
-
   try {
+    // This data is available on both the context root and under custom.netlify for retro-compatibility.
+    // In the future it will only be available in custom.netlify.
+    // @ts-expect-error
+    const user = jwtDecode(parts[1])
+
+    const netlifyContext = JSON.stringify({
+      identity: identity,
+      user: user,
+    })
+
     return {
       identity: identity,
       user: user,
@@ -157,7 +157,7 @@ export const createHandler = function (options) {
       'client-ip': [remoteAddress],
       'x-nf-client-connection-ip': [remoteAddress],
       'x-nf-account-id': [options.accountId],
-      'x-nf-site-id': [options?.siteInfo?.id] ?? 'unlinked',
+      'x-nf-site-id': [options?.siteInfo?.id ?? 'unlinked'],
       [efHeaders.Geo]: Buffer.from(JSON.stringify(geoLocation)).toString('base64'),
     }).reduce((prev, [key, value]) => ({ ...prev, [key]: Array.isArray(value) ? value : [value] }), {})
     const rawQuery = new URLSearchParams(requestQuery).toString()
@@ -293,9 +293,8 @@ export const startFunctionsServer = async (options) => {
     siteUrl,
     timeouts,
   } = options
-  // @ts-expect-error TS(2345) FIXME: Argument of type '{ base: any; }' is not assignabl... Remove this comment to see the full error message
   const internalFunctionsDir = await getInternalFunctionsDir({ base: site.root })
-  const functionsDirectories = []
+  const functionsDirectories: string[] = []
   let manifest
 
   // If the `loadDistFunctions` parameter is sent, the functions server will

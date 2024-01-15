@@ -2,7 +2,7 @@ import process from 'process'
 
 import { OptionValues } from 'commander'
 
-import { getBlobsContext } from '../../lib/blobs/blobs.js'
+import { BLOBS_CONTEXT_VARIABLE, encodeBlobsContext, getBlobsContext } from '../../lib/blobs/blobs.js'
 import { promptEditorHelper } from '../../lib/edge-functions/editor-helper.js'
 import { startFunctionsServer } from '../../lib/functions/server.js'
 import { printBanner } from '../../utils/banner.js'
@@ -61,6 +61,10 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
     siteInfo,
   })
 
+  if (!site.root) {
+    throw new Error('Site root not found')
+  }
+
   // Ensure the internal functions directory exists so that the functions
   // server and registry are initialized, and any functions created by
   // Netlify Build are loaded.
@@ -95,6 +99,8 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
     projectRoot: command.workingDir,
     siteID: site.id ?? 'unknown-site-id',
   })
+
+  process.env[BLOBS_CONTEXT_VARIABLE] = encodeBlobsContext(blobsContext)
 
   const functionsRegistry = await startFunctionsServer({
     api,

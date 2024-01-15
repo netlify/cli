@@ -3,7 +3,7 @@ import { tmpdir } from 'os'
 import { join } from 'path'
 
 import express from 'express'
-import got from 'got'
+import fetch from 'node-fetch'
 import { afterAll, beforeAll, describe, expect, test, vi } from 'vitest'
 
 import { FunctionsRegistry } from '../../../../dist/lib/functions/registry.js'
@@ -52,27 +52,27 @@ describe('createHandler', () => {
   )
 
   test('should get the url as the `rawUrl` inside the function', async () => {
-    const response = await got.get(new URL('/hello', serverAddress))
+    const response = await fetch(new URL('/hello', serverAddress))
 
-    expect(response.statusCode).toBe(200)
-    expect(response.body).toMatch(/^http:\/\/localhost:\d+?\/hello$/)
+    expect(response.status).toBe(200)
+    expect(await response.text()).toMatch(/^http:\/\/localhost:\d+?\/hello$/)
   })
 
   test('should get the original url as the `rawUrl` when the header was provided by the proxy', async () => {
-    const response = await got.get(new URL('/hello', serverAddress), {
+    const response = await fetch(new URL('/hello', serverAddress), {
       headers: { 'x-netlify-original-pathname': '/orig' },
     })
 
-    expect(response.statusCode).toBe(200)
-    expect(response.body).toMatch(/^http:\/\/localhost:\d+?\/orig$/)
+    expect(response.status).toBe(200)
+    expect(await response.text()).toMatch(/^http:\/\/localhost:\d+?\/orig$/)
   })
 
   test('should check if query params are passed to the `rawUrl` when redirected', async () => {
-    const response = await got.get(new URL('/hello?jam=stack', serverAddress), {
+    const response = await fetch(new URL('/hello?jam=stack', serverAddress), {
       headers: { 'x-netlify-original-pathname': '/orig' },
     })
 
-    expect(response.statusCode).toBe(200)
-    expect(response.body).toMatch(/^http:\/\/localhost:\d+?\/orig\?jam=stack$/)
+    expect(response.status).toBe(200)
+    expect(await response.text()).toMatch(/^http:\/\/localhost:\d+?\/orig\?jam=stack$/)
   })
 })

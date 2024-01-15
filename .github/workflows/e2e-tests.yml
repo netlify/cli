@@ -10,19 +10,62 @@ on:
     - cron: '0 1 * * *' # At 01:00 daily
 
 jobs:
-  e2e:
-    name: E2E
+  e2e-windows:
+    name: E2E Windows tests
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
     env:
       DEBUG: true
     strategy:
       matrix:
-        # TODO: E2E tests started failing on Windows. We should investigate the
-        # root cause and add Windows back to the OS matrix:
-        # https://github.com/netlify/cli/pull/6039
-        #
-        # os: [ubuntu-latest, macOS-latest, windows-latest]
+        os: [windows-latest]
+        node-version: ['18.14.0', '*']
+      fail-fast: false
+
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+          check-latest: true
+      - name: Cache verdaccio storage
+        uses: actions/cache@v3
+        with:
+          path: ./.verdaccio-storage
+          key: verdaccio-e2e-cli-${{ hashFiles('./package-lock.json') }}
+      - name: Install dependencies
+        run: npm ci --no-audit
+      - run: npm run e2e
+      - name: Notify Slack
+        uses: 8398a7/action-slack@v3
+        if: ${{ github.event_name == 'schedule' && failure() }}
+        with:
+          status: custom
+          fields: workflow
+          custom_payload: |
+            {
+              attachments: [{
+                title: 'E2E Test Failed! (${{ matrix.os }},node-${{ matrix.node-version }}',
+                color: 'danger',
+                text: `${process.env.AS_WORKFLOW}\n\nEither something broke or a test is flaky.\n\nConsider doing something about it :fire_engine:`,
+              }]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  e2e-linux-based-os:
+    name: E2E
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    env:
+      DEBUG: true
+    strategy:
+      matrix:
         os: [ubuntu-latest, macOS-latest]
         node-version: ['18.14.0', '*']
       fail-fast: false
@@ -45,8 +88,6 @@ jobs:
           key: verdaccio-e2e-cli-${{ hashFiles('./package-lock.json') }}
       - name: Install dependencies
         run: npm ci --no-audit
-      - name: Install pnpm
-        run: npm install -g pnpm
       - run: npm run e2e
       - name: Notify Slack
         uses: 8398a7/action-slack@v3

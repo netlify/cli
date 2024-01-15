@@ -5,7 +5,7 @@ import build from '@netlify/build'
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'toml... Remove this comment to see the full error message
 import tomlify from 'tomlify-j0.4'
 
-import { isFeatureFlagEnabled } from '../utils/feature-flags.js'
+import { getFeatureFlagsFromSiteInfo } from '../utils/feature-flags.js'
 
 import { getBootstrapURL } from './edge-functions/bootstrap.js'
 import { featureFlags as edgeFunctionsFeatureFlags } from './edge-functions/consts.js'
@@ -92,17 +92,6 @@ export const getBuildOptions = ({
     edgeFunctionsBootstrapURL: getBootstrapURL(),
   }
 }
-
-/**
- * @param {*} siteInfo
- * @returns {Record<string, any>}
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'siteInfo' implicitly has an 'any' type.
-const getFeatureFlagsFromSiteInfo = (siteInfo) => ({
-  ...siteInfo.feature_flags,
-  // see https://github.com/netlify/pod-dev-foundations/issues/581#issuecomment-1731022753
-  zisi_golang_use_al2: isFeatureFlagEnabled('cli_golang_use_al2', siteInfo),
-})
 
 /**
  * run the build command
