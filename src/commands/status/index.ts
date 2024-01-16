@@ -8,9 +8,9 @@ export const createStatusCommand = (program: BaseCommand) => {
     .command('status:hooks')
     .description('Print hook information of the linked site')
     .hook('preAction', requiresSiteInfo)
-    .action(async (options: OptionValues, command: BaseCommand) => {
+    .action(async (_, command: BaseCommand) => {
       const { statusHooks } = await import('./status-hooks.js')
-      await statusHooks(options, command)
+      await statusHooks(command)
     })
 
   return program

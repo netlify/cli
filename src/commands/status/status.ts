@@ -4,24 +4,22 @@ import prettyjson from 'prettyjson'
 
 import { chalk, error, exit, getToken, log, logJson, warn } from '../../utils/command-helpers.js'
 import BaseCommand from '../base-command.js'
+import { NetlifyLog, intro, outro } from '../../utils/styles/index.js'
 
 export const status = async (options: OptionValues, command: BaseCommand) => {
+  intro('status')
   const { api, globalConfig, site, siteInfo } = command.netlify
   const current = globalConfig.get('userId')
   const [accessToken] = await getToken()
 
   if (!accessToken) {
-    log(`Not logged in. Please log in to see site status.`)
-    log()
-    log('Login with "netlify login" command')
-    exit()
+    NetlifyLog.error(`Not logged in. Please log in to see site status.`)
+    NetlifyLog.error()
+    NetlifyLog.error('Login with "netlify login" command')
   }
 
   const siteId = site.id
-
-  log(`──────────────────────┐
- Current Netlify User │
-──────────────────────┘`)
+  NetlifyLog.step('Current Netlify User')
 
   let accounts
   let user
@@ -32,7 +30,9 @@ export const status = async (options: OptionValues, command: BaseCommand) => {
   } catch (error_) {
     // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
     if (error_.status === 401) {
-      error('Your session has expired. Please try to re-authenticate by running `netlify logout` and `netlify login`.')
+      NetlifyLog.error(
+        'Your session has expired. Please try to re-authenticate by running `netlify logout` and `netlify login`.',
+      )
     }
   }
 
@@ -56,35 +56,35 @@ export const status = async (options: OptionValues, command: BaseCommand) => {
   // @ts-expect-error
   const cleanAccountData = clean(accountData)
 
-  log(prettyjson.render(cleanAccountData))
+  NetlifyLog.message(prettyjson.render(cleanAccountData))
 
   if (!siteId) {
-    warn('Did you run `netlify link` yet?')
-    error(`You don't appear to be in a folder that is linked to a site`)
+    NetlifyLog.warn('Did you run `netlify link` yet?')
+    NetlifyLog.error(`You don't appear to be in a folder that is linked to a site`)
   }
 
   if (!siteInfo) {
-    error(`No site info found for site ${siteId}`)
+    NetlifyLog.error(`No site info found for site ${siteId}`)
   }
 
   // Json only logs out if --json flag is passed
   if (options.json) {
-    logJson({
-      account: cleanAccountData,
-      siteData: {
-        'site-name': `${siteInfo.name}`,
-        'config-path': site.configPath,
-        'admin-url': siteInfo.admin_url,
-        'site-url': siteInfo.ssl_url || siteInfo.url,
-        'site-id': siteInfo.id,
-      },
-    })
+    NetlifyLog.message(
+      prettyjson.render({
+        account: cleanAccountData,
+        siteData: {
+          'site-name': `${siteInfo.name}`,
+          'config-path': site.configPath,
+          'admin-url': siteInfo.admin_url,
+          'site-url': siteInfo.ssl_url || siteInfo.url,
+          'site-id': siteInfo.id,
+        },
+      }),
+    )
   }
 
-  log(`────────────────────┐
- Netlify Site Info  │
-────────────────────┘`)
-  log(
+  NetlifyLog.step('Netlify Site Info')
+  NetlifyLog.message(
     prettyjson.render({
       'Current site': `${siteInfo.name}`,
       'Netlify TOML': site.configPath,
@@ -93,5 +93,6 @@ export const status = async (options: OptionValues, command: BaseCommand) => {
       'Site Id': chalk.yellowBright(siteInfo.id),
     }),
   )
-  log()
+  NetlifyLog.message()
+  outro({ exit: true })
 }

@@ -1,10 +1,11 @@
 import { OptionValues } from 'commander'
 import prettyjson from 'prettyjson'
 
-import { log } from '../../utils/command-helpers.js'
+import { logJson } from '../../utils/command-helpers.js'
 import BaseCommand from '../base-command.js'
+import { NetlifyLog } from '../../utils/styles/index.js'
 
-export const statusHooks = async (options: OptionValues, command: BaseCommand) => {
+export const statusHooks = async (command: BaseCommand) => {
   const { api, siteInfo } = command.netlify
 
   await command.authenticate()
@@ -28,8 +29,7 @@ export const statusHooks = async (options: OptionValues, command: BaseCommand) =
       data.hooks[hook.id].repo_url = siteInfo.build_settings.repo_url
     }
   })
-  log(`─────────────────┐
-Site Hook Status │
-─────────────────┘`)
-  log(prettyjson.render(data))
+  NetlifyLog.step('Site Hook Status')
+
+  logJson(prettyjson.render(data))
 }
