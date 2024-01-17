@@ -104,3 +104,26 @@ export const basicCommand = async () => {
   outro()
 }
 ```
+
+## Asking for user input
+
+There are several helpers available for asking the user for input. They are all available in the
+`'./utils/styles/index.js'` file.
+
+### select
+
+The `select` method allows you to ask the user to select an option from a list of options. You can pass a list of
+options to the `select` method and it will return the selected option.
+
+```js
+import { select } from '../../utils/styles/index.js'
+
+const result = await select({
+  message: 'Select an option',
+  maxItems: 7,
+  options: list.map((thing) => ({
+    label: thing.name,
+    value: thing.id,
+  })),
+})
+```

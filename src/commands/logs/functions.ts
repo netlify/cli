@@ -100,7 +100,6 @@ export const logsFunction = async (functionName: string | undefined, options: Op
   })
 
   process.on('SIGINT', () => {
-    outro({ message: 'Closing connection' })
-    process.exit()
+    outro({ message: 'Closing connection', exit: true })
   })
 }

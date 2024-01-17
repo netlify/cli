@@ -528,15 +528,21 @@ export type LogMessageOptions = {
   symbol?: string
   error?: boolean
   writeStream?: NodeJS.WriteStream
+  noSpacing?: boolean
 }
 export const NetlifyLog = {
   message: (
     message = '',
-    { error = false, symbol = chalk.gray(symbols.BAR), writeStream = process.stdout }: LogMessageOptions = {},
+    {
+      error = false,
+      noSpacing,
+      symbol = chalk.gray(symbols.BAR),
+      writeStream = process.stdout,
+    }: LogMessageOptions = {},
   ) => {
     if (jsonOnly()) return
 
-    const parts = [`${chalk.gray(symbols.BAR)}`]
+    const parts = noSpacing ? [] : [`${chalk.gray(symbols.BAR)}`]
     if (message) {
       const [firstLine, ...lines] = message.split('\n')
       parts.push(
