@@ -2,9 +2,10 @@ import clean from 'clean-deep'
 import { OptionValues } from 'commander'
 import prettyjson from 'prettyjson'
 
-import { chalk, error, exit, getToken, log, logJson, warn } from '../../utils/command-helpers.js'
+import { chalk, getToken, logJson } from '../../utils/command-helpers.js'
 import BaseCommand from '../base-command.js'
 import { NetlifyLog, intro, outro } from '../../utils/styles/index.js'
+import { exit } from 'process'
 
 export const status = async (options: OptionValues, command: BaseCommand) => {
   intro('status')
@@ -13,9 +14,9 @@ export const status = async (options: OptionValues, command: BaseCommand) => {
   const [accessToken] = await getToken()
 
   if (!accessToken) {
-    NetlifyLog.error(`Not logged in. Please log in to see site status.`)
-    NetlifyLog.error()
-    NetlifyLog.error('Login with "netlify login" command')
+    NetlifyLog.error(`Not logged in. Please log in to see site status.`, { exit: false })
+    NetlifyLog.info('Login with "netlify login" command')
+    outro({ exit: true })
   }
 
   const siteId = site.id
@@ -91,6 +92,5 @@ export const status = async (options: OptionValues, command: BaseCommand) => {
       'Site Id': chalk.yellowBright(siteInfo.id),
     }),
   )
-  NetlifyLog.message()
   outro({ exit: true })
 }
