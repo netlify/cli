@@ -69,18 +69,16 @@ export const status = async (options: OptionValues, command: BaseCommand) => {
 
   // Json only logs out if --json flag is passed
   if (options.json) {
-    NetlifyLog.message(
-      prettyjson.render({
-        account: cleanAccountData,
-        siteData: {
-          'site-name': `${siteInfo.name}`,
-          'config-path': site.configPath,
-          'admin-url': siteInfo.admin_url,
-          'site-url': siteInfo.ssl_url || siteInfo.url,
-          'site-id': siteInfo.id,
-        },
-      }),
-    )
+    logJson({
+      account: cleanAccountData,
+      siteData: {
+        'site-name': `${siteInfo.name}`,
+        'config-path': site.configPath,
+        'admin-url': siteInfo.admin_url,
+        'site-url': siteInfo.ssl_url || siteInfo.url,
+        'site-id': siteInfo.id,
+      },
+    })
   }
 
   NetlifyLog.step('Netlify Site Info')
