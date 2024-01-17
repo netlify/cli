@@ -1,7 +1,7 @@
 import { OptionValues } from 'commander'
 
-import { exit, log } from '../../utils/command-helpers.js'
 import openBrowser from '../../utils/open-browser.js'
+import { NetlifyLog, outro } from '../../utils/styles/index.js'
 import BaseCommand from '../base-command.js'
 
 export const openSite = async (options: OptionValues, command: BaseCommand) => {
@@ -10,9 +10,9 @@ export const openSite = async (options: OptionValues, command: BaseCommand) => {
   await command.authenticate()
 
   const url = siteInfo.ssl_url || siteInfo.url
-  log(`Opening "${siteInfo.name}" site url:`)
-  log(`> ${url}`)
+  NetlifyLog.info(`Opening "${siteInfo.name}" site url:`)
+  NetlifyLog.info(`> ${url}`)
 
   await openBrowser({ url })
-  exit()
+  outro({ exit: true })
 }
