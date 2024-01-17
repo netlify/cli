@@ -31,8 +31,6 @@ const require = createRequire(import.meta.url)
 
 const templatesDir = path.resolve(dirname(fileURLToPath(import.meta.url)), '../../functions-templates')
 
-const showRustTemplates = process.env.NETLIFY_EXPERIMENTAL_BUILD_RUST_SOURCE === 'true'
-
 /**
  * Ensure that there's a sub-directory in `src/functions-templates` named after
  * each `value` property in this list.
@@ -41,7 +39,7 @@ const languages = [
   { name: 'JavaScript', value: 'javascript' },
   { name: 'TypeScript', value: 'typescript' },
   { name: 'Go', value: 'go' },
-  showRustTemplates && { name: 'Rust', value: 'rust' },
+  { name: 'Rust', value: 'rust' },
 ]
 
 /**
@@ -181,12 +179,10 @@ const pickTemplate = async function ({ language: languageFromFlag }, funcType) {
   if (language === undefined) {
     const langs =
       funcType === 'edge'
-        ? // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'false | {... Remove this comment to see the full error message
-          languages.filter((lang) => lang.value === 'javascript' || lang.value === 'typescript')
+        ? languages.filter((lang) => lang.value === 'javascript' || lang.value === 'typescript')
         : languages.filter(Boolean)
 
     const { language: languageFromPrompt } = await inquirer.prompt({
-      // @ts-expect-error
       choices: langs,
       message: 'Select the language of your function',
       name: 'language',
@@ -239,7 +235,7 @@ const DEFAULT_PRIORITY = 999
 const selectTypeOfFunc = async () => {
   const functionTypes = [
     { name: 'Edge function (Deno)', value: 'edge' },
-    { name: 'Serverless function (Node/Go)', value: 'serverless' },
+    { name: 'Serverless function (Node/Go/Rust)', value: 'serverless' },
   ]
 
   const { functionType } = await inquirer.prompt([
@@ -561,6 +557,17 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
 
     await installAddons(command, addons, path.resolve(functionPath))
     await handleOnComplete({ command, onComplete })
+
+    log()
+    log(chalk.greenBright(`Function created!`))
+
+    if (lang == 'rust') {
+      log(
+        chalk.green(
+          `Please note that Rust functions require setting the NETLIFY_EXPERIMENTAL_BUILD_RUST_SOURCE environment variable to 'true' on your site.`,
+        ),
+      )
+    }
   }
 }
 
