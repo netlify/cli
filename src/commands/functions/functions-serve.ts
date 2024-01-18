@@ -5,7 +5,13 @@ import { OptionValues } from 'commander'
 import { getBlobsContext } from '../../lib/blobs/blobs.js'
 import { startFunctionsServer } from '../../lib/functions/server.js'
 import { printBanner } from '../../utils/banner.js'
-import { UNLINKED_SITE_MOCK_ID, acquirePort, getDotEnvVariables, getSiteInformation, injectEnvVariables } from '../../utils/dev.js'
+import {
+  UNLINKED_SITE_MOCK_ID,
+  acquirePort,
+  getDotEnvVariables,
+  getSiteInformation,
+  injectEnvVariables,
+} from '../../utils/dev.js'
 import { getFunctionsDir } from '../../utils/functions/index.js'
 import { getProxyUrl } from '../../utils/proxy.js'
 import BaseCommand from '../base-command.js'
