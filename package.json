@@ -74,7 +74,7 @@
     "@fastify/static": "6.10.2",
     "@netlify/blobs": "6.4.2",
     "@netlify/build": "29.32.0",
-    "@netlify/build-info": "7.11.4",
+    "@netlify/build-info": "7.11.5",
     "@netlify/config": "20.10.1",
     "@netlify/edge-bundler": "11.0.0",
     "@netlify/local-functions-proxy": "1.1.1",
