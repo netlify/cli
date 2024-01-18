@@ -60,7 +60,7 @@ const workerURL = new URL('worker.js', import.meta.url)
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'context' implicitly has an 'any' ... Remove this comment to see the full error message
 export const invokeFunction = async ({ context, environment, event, func, timeout }) => {
-  if (func.buildData.runtimeAPIVersion !== 2) {
+  if (func.buildData?.runtimeAPIVersion !== 2) {
     return await invokeFunctionDirectly({ context, event, func, timeout })
   }
 
