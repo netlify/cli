@@ -67,7 +67,7 @@ module.exports = {
     },
     // Example functions
     {
-      files: ['src/functions-templates/**/*.js'],
+      files: ['functions-templates/**/*.js'],
       rules: {
         'require-await': 0,
         'import/no-unresolved': 0,
@@ -114,6 +114,7 @@ module.exports = {
       files: ['tests/**/*'],
       rules: {
         'require-await': 'off',
+        'import/no-deprecated': 'off',
       },
     },
     {

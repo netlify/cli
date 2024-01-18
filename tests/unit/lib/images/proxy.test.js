@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
 
-import { parseAllDomains, transformImageParams } from '../../../../src/lib/images/proxy.js'
+import { parseAllDomains, transformImageParams } from '../../../../dist/lib/images/proxy.js'
 
 test('should parse all domains correctly', () => {
   const config = {

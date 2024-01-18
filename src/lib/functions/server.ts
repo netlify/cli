@@ -28,6 +28,7 @@ import { FunctionsRegistry } from './registry.js'
 import { handleScheduledFunction } from './scheduled.js'
 import { handleSynchronousFunction } from './synchronous.js'
 import { shouldBase64Encode } from './utils.js'
+import { UNLINKED_SITE_MOCK_ID } from '../../utils/dev.js'
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'headers' implicitly has an 'any' type.
 const buildClientContext = function (headers) {
@@ -163,7 +164,7 @@ export const createHandler = function (options: GetFunctionsServerOptions): Requ
       'client-ip': [remoteAddress],
       'x-nf-client-connection-ip': [remoteAddress],
       'x-nf-account-id': [options.accountId],
-      'x-nf-site-id': [options?.siteInfo?.id ?? 'unlinked'],
+      'x-nf-site-id': [options?.siteInfo?.id ?? UNLINKED_SITE_MOCK_ID],
       [efHeaders.Geo]: Buffer.from(JSON.stringify(geoLocation)).toString('base64'),
     }).reduce((prev, [key, value]) => ({ ...prev, [key]: Array.isArray(value) ? value : [value] }), {})
     const rawQuery = new URLSearchParams(requestQuery as Record<string, string>).toString()

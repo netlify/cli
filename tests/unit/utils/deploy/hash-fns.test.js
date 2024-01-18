@@ -1,8 +1,8 @@
 import { temporaryDirectory } from 'tempy'
 import { expect, test } from 'vitest'
 
-import { DEFAULT_CONCURRENT_HASH } from '../../../../src/utils/deploy/constants.js'
-import hashFns from '../../../../src/utils/deploy/hash-fns.js'
+import { DEFAULT_CONCURRENT_HASH } from '../../../../dist/utils/deploy/constants.js'
+import hashFns from '../../../../dist/utils/deploy/hash-fns.js'
 import { withSiteBuilder } from '../../../integration/utils/site-builder.ts'
 
 test('Hashes files in a folder', async () => {

@@ -6,12 +6,12 @@ import express from 'express'
 import fetch from 'node-fetch'
 import { afterAll, beforeAll, describe, expect, test, vi } from 'vitest'
 
-import { FunctionsRegistry } from '../../../../src/lib/functions/registry.js'
-import { createHandler } from '../../../../src/lib/functions/server.js'
-import StateConfig from '../../../../src/utils/state-config.js'
+import { FunctionsRegistry } from '../../../../dist/lib/functions/registry.js'
+import { createHandler } from '../../../../dist/lib/functions/server.js'
+import StateConfig from '../../../../dist/utils/state-config.js'
 
-vi.mock('../../../../src/utils/command-helpers.js', async () => ({
-  ...(await vi.importActual('../../../../src/utils/command-helpers.js')),
+vi.mock('../../../../dist/utils/command-helpers.js', async () => ({
+  ...(await vi.importActual('../../../../dist/utils/command-helpers.js')),
   log: () => {},
 }))
 
