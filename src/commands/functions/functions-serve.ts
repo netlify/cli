@@ -5,7 +5,7 @@ import { OptionValues } from 'commander'
 import { getBlobsContext } from '../../lib/blobs/blobs.js'
 import { startFunctionsServer } from '../../lib/functions/server.js'
 import { printBanner } from '../../utils/banner.js'
-import { acquirePort, getDotEnvVariables, getSiteInformation, injectEnvVariables } from '../../utils/dev.js'
+import { UNLINKED_SITE_MOCK_ID, acquirePort, getDotEnvVariables, getSiteInformation, injectEnvVariables } from '../../utils/dev.js'
 import { getFunctionsDir } from '../../utils/functions/index.js'
 import { getProxyUrl } from '../../utils/proxy.js'
 import BaseCommand from '../base-command.js'
@@ -39,7 +39,7 @@ export const functionsServe = async (options: OptionValues, command: BaseCommand
   const blobsContext = await getBlobsContext({
     debug: options.debug,
     projectRoot: command.workingDir,
-    siteID: site.id ?? 'unknown-site-id',
+    siteID: site.id ?? UNLINKED_SITE_MOCK_ID,
   })
 
   await startFunctionsServer({
