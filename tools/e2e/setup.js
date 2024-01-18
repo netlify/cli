@@ -9,7 +9,7 @@ import getPort from 'get-port'
 import pTimeout from 'p-timeout'
 import { runServer } from 'verdaccio'
 
-import { fileExistsAsync } from '../../src/lib/fs.js'
+import { fileExistsAsync } from '../../dist/lib/fs.js'
 
 const dir = dirname(fileURLToPath(import.meta.url))
 const rootDir = normalize(join(dir, '../..'))
