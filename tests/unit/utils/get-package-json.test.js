@@ -17,7 +17,7 @@ describe('getPackageJson', () => {
     vi.clearAllMocks()
     // Reevaluate modules when imported in order to avoid issues with singleton pattern in getPackageJson
     vi.resetModules()
-    const newImport = await import('../../../src/utils/get-package-json.js')
+    const newImport = await import('../../../dist/utils/get-package-json.js')
     getPackageJson = newImport.default
   })
 

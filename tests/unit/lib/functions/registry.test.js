@@ -4,8 +4,8 @@ import { join } from 'path'
 
 import { describe, expect, test, vi } from 'vitest'
 
-import { FunctionsRegistry } from '../../../../src/lib/functions/registry.js'
-import { watchDebounced } from '../../../../src/utils/command-helpers.js'
+import { FunctionsRegistry } from '../../../../dist/lib/functions/registry.js'
+import { watchDebounced } from '../../../../dist/utils/command-helpers.js'
 
 const duplicateFunctions = [
   {
@@ -35,8 +35,8 @@ const duplicateFunctions = [
   },
 ]
 
-vi.mock('../../../../src/utils/command-helpers.js', async () => {
-  const helpers = await vi.importActual('../../../../src/utils/command-helpers.js')
+vi.mock('../../../../dist/utils/command-helpers.js', async () => {
+  const helpers = await vi.importActual('../../../../dist/utils/command-helpers.js')
 
   return {
     ...helpers,

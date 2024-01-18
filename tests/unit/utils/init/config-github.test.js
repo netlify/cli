@@ -1,15 +1,15 @@
 import { Octokit } from '@octokit/rest'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 
-import { getGitHubToken } from '../../../../src/utils/init/config-github.js'
+import { getGitHubToken } from '../../../../dist/utils/init/config-github.js'
 
-vi.mock('../../../../src/utils/command-helpers.js', async () => ({
-  ...(await vi.importActual('../../../../src/utils/command-helpers.js')),
+vi.mock('../../../../dist/utils/command-helpers.js', async () => ({
+  ...(await vi.importActual('../../../../dist/utils/command-helpers.js')),
   log: () => {},
 }))
 
 // stub the await ghauth() call for a new token
-vi.mock('../../../../src/utils/gh-auth.js', () => ({
+vi.mock('../../../../dist/utils/gh-auth.js', () => ({
   getGitHubToken: () =>
     Promise.resolve({
       provider: 'github',
