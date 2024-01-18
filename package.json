@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "17.14.1",
+  "version": "17.15.0",
   "author": "Netlify Inc.",
   "type": "module",
   "engines": {
@@ -76,7 +76,7 @@
     "@netlify/build": "29.32.0",
     "@netlify/build-info": "7.11.5",
     "@netlify/config": "20.10.1",
-    "@netlify/edge-bundler": "11.0.0",
+    "@netlify/edge-bundler": "11.2.0",
     "@netlify/local-functions-proxy": "1.1.1",
     "@netlify/zip-it-and-ship-it": "9.28.2",
     "@octokit/rest": "19.0.13",
@@ -193,7 +193,7 @@
     "@types/semver": "7.5.0",
     "@types/uuid": "9.0.7",
     "@types/ws": "8.5.10",
-    "@vitest/coverage-v8": "1.0.0-beta.4",
+    "@vitest/coverage-v8": "1.2.1",
     "c8": "7.14.0",
     "eslint-plugin-sort-destructure-keys": "1.5.0",
     "eslint-plugin-workspace": "file:./tools/lint-rules",
@@ -215,7 +215,7 @@
     "tree-kill": "1.2.2",
     "typescript": "5.1.6",
     "verdaccio": "5.26.2",
-    "vitest": "1.0.0-beta.4"
+    "vitest": "1.2.1"
   },
   "ava": {
     "files": [

@@ -7,6 +7,7 @@ import * as bundler from '@netlify/edge-bundler'
 import getAvailablePort from 'get-port'
 
 import { NETLIFYDEVERR, chalk, error as printError } from '../../utils/command-helpers.js'
+import { getFeatureFlagsFromSiteInfo } from '../../utils/feature-flags.js'
 import { getGeoLocation } from '../geo-location.js'
 import { getPathInProject } from '../settings.js'
 import { startSpinner, stopSpinner } from '../spinner.js'
@@ -136,11 +137,9 @@ export const initializeProxy = async ({
 }) => {
   const userFunctionsPath = config.build.edge_functions
   const isolatePort = await getAvailablePort()
-  const buildFeatureFlags = {
-    edge_functions_npm_modules: true,
-  }
   const runtimeFeatureFlags = ['edge_functions_bootstrap_failure_mode', 'edge_functions_bootstrap_populate_environment']
   const protocol = settings.https ? 'https' : 'http'
+  const buildFeatureFlags = { ...getFeatureFlagsFromSiteInfo(siteInfo), edge_functions_npm_modules: true }
 
   // Initializes the server, bootstrapping the Deno CLI and downloading it from
   // the network if needed. We don't want to wait for that to be completed, or
@@ -268,6 +267,7 @@ const prepareServer = async ({
       debug,
       directories: [directory].filter(Boolean),
       env: configEnv,
+      featureFlags,
       getUpdatedConfig,
       importMapFromTOML: config.functions['*'].deno_import_map,
       projectDir,
