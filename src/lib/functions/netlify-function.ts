@@ -40,7 +40,7 @@ export default class NetlifyFunction {
 
   // Determines whether this is a background function based on the function
   // name.
-  private readonly isBackground: boolean
+  public readonly isBackground: boolean
 
   private buildQueue?: Promise<$FIXME>
   private buildData?: $FIXME
@@ -270,7 +270,7 @@ export default class NetlifyFunction {
 
     let path = rawPath !== '/' && rawPath.endsWith('/') ? rawPath.slice(0, -1) : rawPath
     path = path.toLowerCase()
-    const { routes = [] } = this.buildData
+    const { routes = [] } = this.buildData ?? {}
     // @ts-expect-error TS(7031) FIXME: Binding element 'expression' implicitly has an 'an... Remove this comment to see the full error message
     const route = routes.find(({ expression, literal, methods }) => {
       if (methods.length !== 0 && !methods.includes(method)) {

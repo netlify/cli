@@ -52,14 +52,14 @@ describe('createHandler', () => {
   )
 
   test('should get the url as the `rawUrl` inside the function', async () => {
-    const response = await fetch(new URL('/hello', serverAddress))
+    const response = await fetch(new URL('/.netlify/functions/hello', serverAddress))
 
     expect(response.status).toBe(200)
-    expect(await response.text()).toMatch(/^http:\/\/localhost:\d+?\/hello$/)
+    expect(await response.text()).toMatch(/^http:\/\/localhost:\d+?\/.netlify\/functions\/hello$/)
   })
 
   test('should get the original url as the `rawUrl` when the header was provided by the proxy', async () => {
-    const response = await fetch(new URL('/hello', serverAddress), {
+    const response = await fetch(new URL('/.netlify/functions/hello', serverAddress), {
       headers: { 'x-netlify-original-pathname': '/orig' },
     })
 
@@ -68,7 +68,7 @@ describe('createHandler', () => {
   })
 
   test('should check if query params are passed to the `rawUrl` when redirected', async () => {
-    const response = await fetch(new URL('/hello?jam=stack', serverAddress), {
+    const response = await fetch(new URL('/.netlify/functions/hello?jam=stack', serverAddress), {
       headers: { 'x-netlify-original-pathname': '/orig' },
     })
 
