@@ -15,6 +15,7 @@ import {
   watchDebounced,
   isNodeError,
 } from '../../utils/command-helpers.js'
+import type { FeatureFlags } from '../../utils/feature-flags.js'
 import { MultiMap } from '../../utils/multimap.js'
 import { getPathInProject } from '../settings.js'
 
@@ -31,8 +32,6 @@ type RunIsolate = Awaited<ReturnType<typeof import('@netlify/edge-bundler').serv
 
 type ModuleJson = ModuleGraph['modules'][number]
 
-const featureFlags = { edge_functions_correct_order: true }
-
 interface EdgeFunctionsRegistryOptions {
   bundler: typeof import('@netlify/edge-bundler')
   config: Config
@@ -40,6 +39,7 @@ interface EdgeFunctionsRegistryOptions {
   debug: boolean
   directories: string[]
   env: Record<string, { sources: string[]; value: string }>
+  featureFlags: FeatureFlags
   getUpdatedConfig: () => Promise<Config>
   projectDir: string
   runIsolate: RunIsolate
@@ -80,10 +80,11 @@ function traverseLocalDependencies(
 }
 
 export class EdgeFunctionsRegistry {
+  public importMapFromDeployConfig?: string
+
   private buildError: Error | null = null
   private bundler: typeof import('@netlify/edge-bundler')
   private configPath: string
-  public importMapFromDeployConfig?: string
   private importMapFromTOML?: string
   private declarationsFromDeployConfig: Declaration[] = []
   private declarationsFromTOML: Declaration[]
@@ -94,6 +95,7 @@ export class EdgeFunctionsRegistry {
   private directories: string[]
   private directoryWatchers = new Map<string, import('chokidar').FSWatcher>()
   private env: Record<string, string>
+  private featureFlags: FeatureFlags
 
   private userFunctions: EdgeFunction[] = []
   private internalFunctions: EdgeFunction[] = []
@@ -117,6 +119,7 @@ export class EdgeFunctionsRegistry {
     configPath,
     directories,
     env,
+    featureFlags,
     getUpdatedConfig,
     importMapFromTOML,
     projectDir,
@@ -126,6 +129,7 @@ export class EdgeFunctionsRegistry {
     this.bundler = bundler
     this.configPath = configPath
     this.directories = directories
+    this.featureFlags = featureFlags
     this.getUpdatedConfig = getUpdatedConfig
     this.runIsolate = runIsolate
     this.servePath = servePath
@@ -240,14 +244,14 @@ export class EdgeFunctionsRegistry {
       userFunctionConfigs,
       internalFunctionConfigs,
       this.declarationsFromDeployConfig,
-      featureFlags,
+      this.featureFlags,
     )
     const { declarationsWithoutFunction, manifest, unroutedFunctions } = this.bundler.generateManifest({
       declarations,
       userFunctionConfig: userFunctionConfigs,
       internalFunctionConfig: internalFunctionConfigs,
       functions: this.functions,
-      featureFlags,
+      featureFlags: this.featureFlags,
     })
     const routes = [...manifest.routes, ...manifest.post_cache_routes].map((route) => ({
       ...route,
