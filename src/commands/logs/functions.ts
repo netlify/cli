@@ -1,14 +1,12 @@
-import process from 'process'
-
 import { OptionValues } from 'commander'
+import inquirer from 'inquirer'
 
-import { chalk } from '../../utils/command-helpers.js'
-import { NetlifyLog, intro, outro, select } from '../../utils/styles/index.js'
+import { chalk, log } from '../../utils/command-helpers.js'
 import { getWebSocket } from '../../utils/websockets/index.js'
 import type BaseCommand from '../base-command.js'
 
 import { CLI_LOG_LEVEL_CHOICES_STRING, LOG_LEVELS, LOG_LEVELS_LIST } from './log-levels.js'
-
+import { NetlifyLog, intro, outro, select } from '../../utils/styles/index.js'
 function getLog(logData: { level: string; message: string }) {
   let logString = ''
   switch (logData.level) {
@@ -25,7 +23,6 @@ function getLog(logData: { level: string; message: string }) {
       logString += logData.level
       break
   }
-
   return `${logString} ${logData.message}`
 }
 
@@ -44,12 +41,12 @@ export const logsFunction = async (functionName: string | undefined, options: Op
   const { functions = [] } = await client.searchSiteFunctions({ siteId })
 
   if (functions.length === 0) {
-    NetlifyLog.error(`No functions found for the site`)
+    NetlifyLog.error(`No functions found for the site`, { exit: true })
   }
 
   let selectedFunction
   if (functionName) {
-    selectedFunction = functions.find((fn: { n: string }) => fn.n === functionName)
+    selectedFunction = functions.find((fn: any) => fn.n === functionName)
   } else {
     const result = await select({
       message: 'Select a function',
@@ -66,11 +63,8 @@ export const logsFunction = async (functionName: string | undefined, options: Op
     NetlifyLog.error(`Could not find function ${functionName}`)
     return
   }
-
   const { a: accountId, oid: functionId } = selectedFunction
-
   const ws = getWebSocket('wss://socketeer.services.netlify.com/function/logs')
-
   ws.on('open', () => {
     ws.send(
       JSON.stringify({
@@ -81,7 +75,6 @@ export const logsFunction = async (functionName: string | undefined, options: Op
       }),
     )
   })
-
   ws.on('message', (data: string) => {
     const logData = JSON.parse(data)
     if (!levelsToPrint.includes(logData.level.toLowerCase())) {
