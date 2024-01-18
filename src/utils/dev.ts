@@ -232,3 +232,5 @@ export const processOnExit = (fn) => {
     process.on(signal, fn)
   })
 }
+
+export const UNLINKED_SITE_MOCK_ID = 'unlinked'
