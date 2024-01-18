@@ -93,7 +93,7 @@ export const createHandler = function (options: GetFunctionsServerOptions): Requ
     delete request.headers[NFFunctionRoute]
 
     // If there's still no function found, we check the functionsRegistry again.
-    // This is needed for the functions:serve command, where the dev server that normally does the matching doesnt run.
+    // This is needed for the functions:serve command, where the dev server that normally does the matching doesn't run.
     // It also matches the default URL (.netlify/functions/builders)
     if (!functionName) {
       const match = await functionsRegistry.getFunctionForURLPath(
