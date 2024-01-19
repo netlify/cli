@@ -155,6 +155,7 @@ describe.concurrent('functions:serve command', () => {
   })
 
   test('should serve V2 functions', async (t) => {
+    const port = await getPort()
     await withSiteBuilder(t, async (builder) => {
       await builder
         .withContentFile({
@@ -166,8 +167,8 @@ describe.concurrent('functions:serve command', () => {
         })
         .build()
 
-      await withFunctionsServer({ builder }, async () => {
-        const response = await fetch(`http://localhost:9999/ping`)
+      await withFunctionsServer({ builder, args: ['--port', port], port }, async () => {
+        const response = await fetch(`http://localhost:${port}/ping`)
         t.expect(await response.text()).toEqual('ping')
       })
     })
