@@ -3,29 +3,37 @@ import { Mock, afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import BaseCommand from '../../../../src/commands/base-command.js'
 import { createLogsFunctionCommand } from '../../../../src/commands/logs/index.js'
 import { LOG_LEVELS } from '../../../../src/commands/logs/log-levels.js'
-import { log } from '../../../../src/utils/command-helpers.js'
 import { getWebSocket } from '../../../../src/utils/websockets/index.js'
 import { startMockApi } from '../../utils/mock-api-vitest.ts'
 import { getEnvironmentVariables } from '../../utils/mock-api.js'
 
+let mockMessageLogCalls = 0
 vi.mock('../../../../src/utils/websockets/index.js', () => ({
   getWebSocket: vi.fn(),
 }))
 
-vi.mock('../../../../src/utils/command-helpers.js', async () => {
-  const actual = await vi.importActual('../../../../src/utils/command-helpers.js')
+vi.mock('../../../../src/utils/styles/index.js', async () => {
+  const actual = await vi.importActual('../../../../src/utils/styles/index.js')
+  const actualNetlifyLog = actual.NetlifyLog
   return {
     ...actual,
-    log: vi.fn(),
+    NetlifyLog: {
+      // @ts-expect-error - spread types may only be created from object types
+      ...actualNetlifyLog,
+      // We were unable to use spys here and referencing top level variables with vitest will not work
+      // if we want the mockMessageLog variable to be vi.fn so we have settled for this
+      message: () => mockMessageLogCalls++,
+    },
   }
 })
 
-vi.mock('inquirer', () => ({
-  default: {
-    prompt: vi.fn().mockResolvedValue({ result: 'cool-function' }),
-    registerPrompt: vi.fn(),
-  },
-}))
+vi.mock('@clack/core', async () => {
+  const actual = await vi.importActual('@clack/core')
+  return {
+    ...actual,
+    SelectPrompt: vi.fn().mockReturnValue({ prompt: vi.fn().mockResolvedValue('cool-function') }),
+  }
+})
 
 const siteInfo = {
   admin_url: 'https://app.netlify.com/sites/site-name/overview',
@@ -72,6 +80,7 @@ describe('logs:function command', () => {
   })
 
   beforeEach(() => {
+    mockMessageLogCalls = 0
     program = new BaseCommand('netlify')
 
     createLogsFunctionCommand(program)
@@ -137,7 +146,6 @@ describe('logs:function command', () => {
       on: spyOn,
       send: spySend,
     })
-    const spyLog = log as unknown as Mock<any, any>
 
     const env = getEnvironmentVariables({ apiUrl })
     Object.assign(process.env, env)
@@ -157,7 +165,7 @@ describe('logs:function command', () => {
     messageCallbackFunc(JSON.stringify(mockInfoData))
     messageCallbackFunc(JSON.stringify(mockWarnData))
 
-    expect(spyLog).toHaveBeenCalledTimes(1)
+    expect(mockMessageLogCalls).toBe(1)
   })
 
   test('should print all the log levels', async ({}) => {
@@ -169,8 +177,6 @@ describe('logs:function command', () => {
       on: spyOn,
       send: spySend,
     })
-    const spyLog = log as unknown as Mock<any, any>
-
     const env = getEnvironmentVariables({ apiUrl })
     Object.assign(process.env, env)
 
@@ -189,6 +195,6 @@ describe('logs:function command', () => {
     messageCallbackFunc(JSON.stringify(mockInfoData))
     messageCallbackFunc(JSON.stringify(mockWarnData))
 
-    expect(spyLog).toHaveBeenCalledTimes(2)
+    expect(mockMessageLogCalls).toBe(2)
   })
 })

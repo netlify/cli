@@ -1,11 +1,20 @@
-import type { OptionValues } from 'commander'
-import inquirer from 'inquirer'
+import process from 'process'
 
-import { log, chalk } from '../../utils/command-helpers.js'
+import type { OptionValues } from 'commander'
+
+import { chalk } from '../../utils/command-helpers.js'
+import { NetlifyLog, intro, outro, select } from '../../utils/styles/index.js'
 import { getWebSocket } from '../../utils/websockets/index.js'
 import type BaseCommand from '../base-command.js'
 
-export function getName({ deploy, userId }: { deploy: any; userId: string }) {
+type Deploy = {
+  id: string
+  user_id?: string
+  context?: string
+  review_id: string
+}
+
+export function getName({ deploy, userId }: { deploy: Deploy; userId: string }) {
   let normalisedName = ''
   const isUserDeploy = deploy.user_id === userId
 
@@ -16,7 +25,7 @@ export function getName({ deploy, userId }: { deploy: any; userId: string }) {
     case 'deploy-preview': {
       // Deploys via the CLI can have the `deploy-preview` context
       // but no review id because they don't come from a PR.
-      //
+
       const id = deploy.review_id
       normalisedName = id ? `Deploy Preview #${id}` : 'Deploy Preview'
       break
@@ -33,6 +42,7 @@ export function getName({ deploy, userId }: { deploy: any; userId: string }) {
 }
 
 export const logsBuild = async (options: OptionValues, command: BaseCommand) => {
+  intro('logs:deploy')
   await command.authenticate()
   const client = command.netlify.api
   const { site } = command.netlify
@@ -42,23 +52,22 @@ export const logsBuild = async (options: OptionValues, command: BaseCommand) => 
   const deploys = await client.listSiteDeploys({ siteId, state: 'building' })
 
   if (deploys.length === 0) {
-    log('No active builds')
-    return
+    NetlifyLog.info('No active builds')
+    outro({ exit: true })
   }
 
   let [deploy] = deploys
   if (deploys.length > 1) {
-    const { result } = await inquirer.prompt({
-      name: 'result',
-      type: 'list',
+    const result = await select({
       message: `Select a deploy\n\n${chalk.yellow('*')} indicates a deploy created by you`,
-      choices: deploys.map((dep: any) => ({
-        name: getName({ deploy: dep, userId }),
+      maxItems: 7,
+      options: deploys.map((dep: Deploy) => ({
+        label: getName({ deploy: dep, userId }),
         value: dep.id,
       })),
     })
 
-    deploy = deploys.find((dep: any) => dep.id === result)
+    deploy = deploys.find((dep: Deploy) => dep.id === result)
   }
 
   const { id } = deploy
@@ -71,7 +80,7 @@ export const logsBuild = async (options: OptionValues, command: BaseCommand) => 
 
   ws.on('message', (data: string) => {
     const { message, section, type } = JSON.parse(data)
-    log(message)
+    NetlifyLog.message(message, { noSpacing: true })
 
     if (type === 'report' && section === 'building') {
       // end of build
@@ -80,6 +89,10 @@ export const logsBuild = async (options: OptionValues, command: BaseCommand) => 
   })
 
   ws.on('close', () => {
-    log('---')
+    outro({ message: 'Closing connection', exit: true })
+  })
+
+  process.on('SIGINT', () => {
+    outro({ message: 'Closing connection', exit: true })
   })
 }
