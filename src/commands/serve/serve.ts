@@ -1,3 +1,4 @@
+import { Buffer } from 'node:buffer'
 import process from 'process'
 
 import { OptionValues } from 'commander'
@@ -16,7 +17,7 @@ import {
   normalizeConfig,
 } from '../../utils/command-helpers.js'
 import detectServerSettings, { getConfigWithPlugins } from '../../utils/detect-server-settings.js'
-import { getDotEnvVariables, getSiteInformation, injectEnvVariables } from '../../utils/dev.js'
+import { getDotEnvVariables, getSiteInformation, injectEnvVariables, UNLINKED_SITE_MOCK_ID } from '../../utils/dev.js'
 import { getEnvelopeEnv } from '../../utils/env/index.js'
 import { getInternalFunctionsDir } from '../../utils/functions/functions.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
@@ -88,22 +89,21 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
     `${NETLIFYDEVWARN} Changes will not be hot-reloaded, so if you need to rebuild your site you must exit and run 'netlify serve' again`,
   )
 
+  const blobsContext = await getBlobsContext({
+    debug: options.debug,
+    projectRoot: command.workingDir,
+    siteID: site.id ?? UNLINKED_SITE_MOCK_ID,
+  })
+
+  process.env[BLOBS_CONTEXT_VARIABLE] = encodeBlobsContext(blobsContext)
+
   const { configPath: configPathOverride } = await runBuildTimeline({
     command,
     settings,
     options,
   })
 
-  const blobsContext = await getBlobsContext({
-    debug: options.debug,
-    projectRoot: command.workingDir,
-    siteID: site.id ?? 'unknown-site-id',
-  })
-
-  process.env[BLOBS_CONTEXT_VARIABLE] = encodeBlobsContext(blobsContext)
-
   const functionsRegistry = await startFunctionsServer({
-    api,
     blobsContext,
     command,
     config,

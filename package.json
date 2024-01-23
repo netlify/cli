@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "17.13.2",
+  "version": "17.15.2",
   "author": "Netlify Inc.",
   "type": "module",
   "engines": {
@@ -10,17 +10,9 @@
   "files": [
     "/bin",
     "/npm-shrinkwrap.json",
-    "/scripts/postinstall.js",
-    "/src/**/*.js",
-    "/src/**/types.d.ts",
-    "/src/**/*.sh",
-    "/src/**/*.ps1",
-    "/src/functions-templates/**",
-    "/src/lib/templates/**",
-    "!/src/**/node_modules/**",
-    "!/src/**/*.test.js",
-    "!/src/**/*.ts",
-    "!/src/**/*.d.ts.map"
+    "/scripts",
+    "/functions-templates",
+    "/dist"
   ],
   "homepage": "https://github.com/netlify/cli",
   "keywords": [
@@ -80,13 +72,13 @@
   "dependencies": {
     "@bugsnag/js": "7.20.2",
     "@fastify/static": "6.10.2",
-    "@netlify/blobs": "6.4.1",
-    "@netlify/build": "29.32.0",
-    "@netlify/build-info": "7.11.4",
-    "@netlify/config": "20.10.1",
-    "@netlify/edge-bundler": "11.0.0",
+    "@netlify/blobs": "6.4.2",
+    "@netlify/build": "29.32.4",
+    "@netlify/build-info": "7.11.5",
+    "@netlify/config": "20.10.2",
+    "@netlify/edge-bundler": "11.2.2",
     "@netlify/local-functions-proxy": "1.1.1",
-    "@netlify/zip-it-and-ship-it": "9.28.2",
+    "@netlify/zip-it-and-ship-it": "9.28.3",
     "@octokit/rest": "19.0.13",
     "ansi-escapes": "6.2.0",
     "ansi-styles": "6.2.1",
@@ -151,7 +143,7 @@
     "log-symbols": "5.1.0",
     "log-update": "5.0.1",
     "multiparty": "4.2.3",
-    "netlify": "13.1.12",
+    "netlify": "13.1.13",
     "netlify-headers-parser": "7.1.3",
     "netlify-redirect-parser": "14.2.1",
     "netlify-redirector": "0.5.0",
@@ -193,7 +185,7 @@
     "@babel/preset-react": "7.22.5",
     "@netlify/eslint-config-node": "7.0.0",
     "@netlify/functions": "2.4.1",
-    "@sindresorhus/slugify": "^2.2.1",
+    "@sindresorhus/slugify": "2.2.1",
     "@types/fs-extra": "11.0.4",
     "@types/inquirer": "9.0.7",
     "@types/node": "20.9.0",
@@ -201,7 +193,7 @@
     "@types/semver": "7.5.0",
     "@types/uuid": "9.0.7",
     "@types/ws": "8.5.10",
-    "@vitest/coverage-v8": "1.0.0-beta.4",
+    "@vitest/coverage-v8": "1.2.1",
     "c8": "7.14.0",
     "eslint-plugin-sort-destructure-keys": "1.5.0",
     "eslint-plugin-workspace": "file:./tools/lint-rules",
@@ -222,7 +214,7 @@
     "tree-kill": "1.2.2",
     "typescript": "5.1.6",
     "verdaccio": "5.26.2",
-    "vitest": "1.0.0-beta.4"
+    "vitest": "1.2.1"
   },
   "ava": {
     "files": [

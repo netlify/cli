@@ -3,8 +3,8 @@ import fs from 'fs'
 import { Argument } from 'commander'
 import { describe, expect, test, vi } from 'vitest'
 
-import BaseCommand from '../../../../src/commands/base-command.js'
-import generateAutocompletion from '../../../../src/lib/completion/generate-autocompletion.js'
+import BaseCommand from '../../../../dist/commands/base-command.js'
+import generateAutocompletion from '../../../../dist/lib/completion/generate-autocompletion.js'
 
 const createTestCommand = async () => {
   const program = new BaseCommand('chef')
