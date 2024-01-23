@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 
-import { isFeatureFlagEnabled } from '../../../src/utils/feature-flags.js'
+import { isFeatureFlagEnabled } from '../../../dist/utils/feature-flags.js'
 
 describe('isFeatureFlagEnabled', () => {
   test('should return true if feature flag is not present', async () => {

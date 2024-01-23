@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 
-import { normalizeConfig } from '../../../src/utils/command-helpers.js'
+import { normalizeConfig } from '../../../dist/utils/command-helpers.js'
 
 describe('normalizeConfig', () => {
   test('should remove publish and publishOrigin property if publishOrigin is "default"', () => {

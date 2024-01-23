@@ -1,7 +1,7 @@
 import nock from 'nock'
 import { describe, expect, test } from 'vitest'
 
-import { getGeoLocation, mockLocation } from '../../../src/lib/geo-location.js'
+import { getGeoLocation, mockLocation } from '../../../dist/lib/geo-location.js'
 
 describe('getGeoLocation', () => {
   test('returns geolocation data from the API if `mode: "cache"`', async () => {

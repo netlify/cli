@@ -1,10 +1,10 @@
 import { v4 as generateUUID } from 'uuid'
 import { afterAll, expect, test, vi } from 'vitest'
 
-import uploadFiles from '../../../../src/utils/deploy/upload-files.js'
+import uploadFiles from '../../../../dist/utils/deploy/upload-files.js'
 
-vi.mock('../../../../src/utils/deploy/constants.js', async () => {
-  const actual = await vi.importActual('../../../../src/utils/deploy/constants.js')
+vi.mock('../../../../dist/utils/deploy/constants.js', async () => {
+  const actual = await vi.importActual('../../../../dist/utils/deploy/constants.js')
 
   // Reduce the delay, so these tests do not wait for 10 seconds
   return { ...actual, UPLOAD_INITIAL_DELAY: 100, UPLOAD_MAX_DELAY: 200 }

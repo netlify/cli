@@ -277,7 +277,7 @@ export class FunctionsRegistry {
         return { func: null, route: null }
       }
 
-      const { routes = [] } = await func.getBuildData()
+      const { routes = [] } = (await func.getBuildData()) ?? {}
 
       if (routes.length !== 0) {
         // @ts-expect-error TS(7006) FIXME: Parameter 'route' implicitly has an 'any' type.
