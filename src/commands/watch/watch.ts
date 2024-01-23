@@ -6,6 +6,7 @@ import { startSpinner, stopSpinner } from '../../lib/spinner.js'
 import { chalk, error, log } from '../../utils/command-helpers.js'
 import BaseCommand from '../base-command.js'
 import { init } from '../init/init.js'
+import { NetlifyLog } from '../../utils/styles/index.js'
 
 // 1 second
 const INIT_WAIT = 1e3
@@ -104,9 +105,8 @@ export const watch = async (options: OptionValues, command: BaseCommand) => {
     const siteData = await client.getSite({ siteId })
 
     const message = chalk.cyanBright.bold.underline(noActiveBuilds ? 'Last build' : 'Deploy complete')
-    log()
-    log(message)
-    log(
+    NetlifyLog.message(message)
+    NetlifyLog.info(
       prettyjson.render({
         URL: siteData.ssl_url || siteData.url,
         Admin: siteData.admin_url,
@@ -114,7 +114,6 @@ export const watch = async (options: OptionValues, command: BaseCommand) => {
     )
     console.timeEnd('Deploy time')
   } catch (error_) {
-    // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
-    error(error_)
+    NetlifyLog.error(error)
   }
 }
