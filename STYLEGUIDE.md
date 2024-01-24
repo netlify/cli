@@ -34,6 +34,8 @@ export const basicCommand = (options) => {
 }
 ```
 
+Doing this ensures the CLI groups the messages together correctly and ensures two `intro` messages are not shown.
+
 ## Finishing your command
 
 Each command should end by using the `outro` method to create a clear visual end for your command. You can import it
@@ -75,8 +77,7 @@ export const basicCommand = (options) => {
 }
 ```
 
-Doing this ensures the CLI groups the messages and does
-
+Doing this ensures the CLI groups the messages together correctly and ensures two `outro` messages are not shown.
 
 ## Other content
 
