@@ -18,6 +18,22 @@ export const basicCommand = () => {
 
 Pass the name of the command to the `intro` method.
 
+### Child commands
+
+As some of our commands call other CLI commands, we will sometimes want to conditionally call `intro` depending on
+whether or not the command is a child command. To do this, we use add a property to the `OptionValues` object called
+`isChildCommand`. This property is should be set to `true` when the command is a child command. This means that we can
+conditionally call `intro` like this:
+
+```js
+import { intro } from '../../utils/styles/index.js'
+
+export const basicCommand = (options: OptionValues) => {
+  !options.isChildCommand && intro('basic command')
+  // do stuff
+}
+```
+
 ## Finishing your command
 
 Each command should end by using the `outro` method to create a clear visual end for your command. You can import it
@@ -29,13 +45,38 @@ import { intro, outro } from '../../utils/styles/index.js'
 export const basicCommand = () => {
   intro('basic command')
   // do stuff
-  outro()
+  outro({ message: 'Your message', exit: true })
 }
 ```
 
 You don't need to call `outro` if your command throws an error, as `NetlifyLog.error()` automatically creates a clear
-visual end for your command already. It's possible to also exit the process by calling outro with an object:
-`outro({ exit: true })` and you can pass a message to it with `outro({ message: 'Your message' })`.
+visual end for your command already. Outro must be called with an object:
+`outro({ exit: true })` and you can pass a message to it with `outro({ exit: true, message: 'Your message' })`.
+
+### Child commands
+
+As some of our commands call other CLI commands, we will sometimes we want to conditionally call `outro` depending
+on whether or not the command is a child command. To do this, we use add a property to the `OptionValues` object
+called `isChildCommand`. This property should be set to `true` when the command is a child command. This means that we can
+conditionally call `outro` like this:
+
+```js
+import { intro, outro } from '../../utils/styles/index.js'
+
+export const basicCommand = (options: OptionValues) => {
+  !options.isChildCommand && intro('basic command')
+  // do stuff
+  if (!options.isChildCommand) {
+    outro({ message: 'Your message', exit: true })
+  }
+  else {
+    NetlifyLog.success('Your message')
+  }
+}
+```
+
+Doing this ensures the CLI groups the messages and does
+
 
 ## Other content
 
