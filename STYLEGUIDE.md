@@ -66,11 +66,11 @@ import { intro, outro } from '../../utils/styles/index.js'
 export const basicCommand = (options) => {
   !options.isChildCommand && intro('basic command')
   // do stuff
-  if (!options.isChildCommand) {
-    outro({ message: 'Your message', exit: true })
+  if (options.isChildCommand) {
+    NetlifyLog.success('Your message')
   }
   else {
-    NetlifyLog.success('Your message')
+    outro({ message: 'Your message', exit: true })
   }
 }
 ```
