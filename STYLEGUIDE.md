@@ -25,7 +25,7 @@ whether or not the command is a child command. To do this, we use add a property
 `isChildCommand`. This property is should be set to `true` when the command is a child command. This means that we can
 conditionally call `intro` like this:
 
-```js
+```ts
 import { intro } from '../../utils/styles/index.js'
 
 export const basicCommand = (options: OptionValues) => {
@@ -60,7 +60,7 @@ on whether or not the command is a child command. To do this, we use add a prope
 called `isChildCommand`. This property should be set to `true` when the command is a child command. This means that we can
 conditionally call `outro` like this:
 
-```js
+```ts
 import { intro, outro } from '../../utils/styles/index.js'
 
 export const basicCommand = (options: OptionValues) => {
