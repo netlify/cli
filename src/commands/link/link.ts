@@ -60,9 +60,9 @@ const linkPrompt = async (command: BaseCommand, options: OptionValues) => {
         NetlifyLog.warn(chalk.bold(`No matching Site Found`))
 
         NetlifyLog.message(`We couldn't find a site with the remote ${repoData.httpsUrl}.
-            
+
             Double check you are in the correct working directory and a remote origin repository is configured.
-            
+
             Run ${chalk.cyanBright('git remote -v')} to see a list of your git remotes.`)
 
         outro({ exit: true })
@@ -226,14 +226,20 @@ const linkPrompt = async (command: BaseCommand, options: OptionValues) => {
   NetlifyLog.message(`Admin URL: ${chalk.magentaBright(site.admin_url)}`)
   NetlifyLog.message(`Site URL:  ${chalk.cyanBright(site.ssl_url || site.url)}`)
 
-  outro({ message: `You can now run other \`netlify\` cli commands in this directory` })
+  if (options.isChildCommand) {
+    NetlifyLog.info(`You can now run other \`netlify\` cli commands in this directory`)
 
-  return site
+    return site
+  } else {
+    outro({ message: `You can now run other \`netlify\` cli commands in this directory` })
+
+    return site
+  }
 }
 
 export const link = async (options: OptionValues, command: BaseCommand) => {
   await command.authenticate()
-  intro('link')
+  !options.isChildCommand && intro('link')
   const {
     api,
     repositoryRoot,

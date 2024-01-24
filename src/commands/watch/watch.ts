@@ -3,10 +3,10 @@ import pWaitFor from 'p-wait-for'
 import prettyjson from 'prettyjson'
 
 import { startSpinner, stopSpinner } from '../../lib/spinner.js'
-import { chalk, error, log } from '../../utils/command-helpers.js'
+import { chalk } from '../../utils/command-helpers.js'
 import BaseCommand from '../base-command.js'
 import { init } from '../init/init.js'
-import { NetlifyLog } from '../../utils/styles/index.js'
+import { NetlifyLog, intro, outro } from '../../utils/styles/index.js'
 
 // 1 second
 const INIT_WAIT = 1e3
@@ -58,18 +58,20 @@ const waitForBuildFinish = async function (api, siteId, spinner) {
 }
 
 export const watch = async (options: OptionValues, command: BaseCommand) => {
+  intro('watch')
   await command.authenticate()
   const client = command.netlify.api
   let siteId = command.netlify.site.id
 
   if (!siteId) {
     // TODO: build init command
-    const siteData = await init({}, command)
+    const siteData = await init({ isChildCommand: true }, command)
     siteId = siteData.id
   }
 
+  const startTime = Date.now()
+
   // wait for 1 sec for everything to kickoff
-  console.time('Deploy time')
   await new Promise((resolve) => {
     // @ts-expect-error TS(2794) FIXME: Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
     setTimeout(() => resolve(), INIT_WAIT)
@@ -112,8 +114,15 @@ export const watch = async (options: OptionValues, command: BaseCommand) => {
         Admin: siteData.admin_url,
       }),
     )
-    console.timeEnd('Deploy time')
-  } catch (error_) {
-    NetlifyLog.error(error)
+    const endTime = Date.now()
+    const totalTime = endTime - startTime
+    // this produces a number like 3281 which is 3.281 seconds
+    const totalTimeSeconds = totalTime / 1000
+
+    outro({ exit: true, message: `Deploy time: ${totalTimeSeconds}s` })
+  } catch (error) {
+    NetlifyLog.error(error, { exit: true })
   }
+
+  outro({ exit: true })
 }

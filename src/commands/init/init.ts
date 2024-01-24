@@ -1,8 +1,7 @@
 import { OptionValues } from 'commander'
-import inquirer from 'inquirer'
 import isEmpty from 'lodash/isEmpty.js'
 
-import { chalk, exit, log } from '../../utils/command-helpers.js'
+import { chalk } from '../../utils/command-helpers.js'
 import getRepoData from '../../utils/get-repo-data.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import { configureRepo } from '../../utils/init/config.js'
@@ -10,7 +9,7 @@ import { track } from '../../utils/telemetry/index.js'
 import BaseCommand from '../base-command.js'
 import { link } from '../link/link.js'
 import { sitesCreate } from '../sites/sites-create.js'
-import { NetlifyLog, SelectOptions, outro, select } from '../../utils/styles/index.js'
+import { NetlifyLog, SelectOptions, intro, outro, select } from '../../utils/styles/index.js'
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'siteInfo' implicitly has an 'any'... Remove this comment to see the full error message
 const persistState = ({ siteInfo, state }) => {
@@ -40,7 +39,7 @@ const logExistingAndExit = ({ siteInfo }) => {
   NetlifyLog.info(`1. Run ${chalk.cyanBright.bold('netlify unlink')}`)
   NetlifyLog.info(`2. Then run ${chalk.cyanBright.bold('netlify init')} again`)
 
-  outro({ exit: true })
+  outro({ exit: true, message: 'Site already initialized' })
 }
 
 /**
@@ -147,10 +146,9 @@ git remote add origin https://github.com/YourUserName/RepoName.git
  * Creates a new site or links an existing one to the repository
  * @param {import('../base-command.js').default} command
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'command' implicitly has an 'any' type.
-const createOrLinkSiteToRepo = async (command) => {
-  const NEW_SITE = '+  Create & configure a new site'
-  const EXISTING_SITE = '⇄  Connect this directory to an existing Netlify site'
+const createOrLinkSiteToRepo = async (command: BaseCommand, isChildCommand = false) => {
+  const NEW_SITE = 'Create & configure a new site'
+  const EXISTING_SITE = 'Connect this directory to an existing Netlify site'
 
   const initializeSelectOptions: SelectOptions<string> = {
     options: [
@@ -173,23 +171,16 @@ const createOrLinkSiteToRepo = async (command) => {
       type: 'new site',
     })
     // run site:create command
-    return await sitesCreate({}, command)
+    return await sitesCreate({ isChildCommand }, command)
   }
   if (initChoice === EXISTING_SITE) {
     // run link command
-    return await link({}, command)
+    return await link({ isChildCommand }, command)
   }
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'repoUrl' implicitly has an 'any' ... Remove this comment to see the full error message
-const logExistingRepoSetupAndExit = ({ repoUrl, siteName }) => {
-  NetlifyLog.message(chalk.underline.bold(`Success`))
-  NetlifyLog.info(`This site "${siteName}" is configured to automatically deploy via ${repoUrl}`)
-  // TODO add support for changing GitHub repo in site:config command
-  outro({ exit: true })
-}
-
 export const init = async (options: OptionValues, command: BaseCommand) => {
+  !options.isChildCommand && intro('init')
   command.setAnalyticsPayload({ manual: options.manual, force: options.force })
 
   const { repositoryRoot, state } = command.netlify
@@ -213,15 +204,21 @@ export const init = async (options: OptionValues, command: BaseCommand) => {
   }
 
   if (isEmpty(siteInfo)) {
-    siteInfo = await createOrLinkSiteToRepo(command)
+    siteInfo = await createOrLinkSiteToRepo(command, options.isChildCommand)
   }
-
-  log()
 
   // Check for existing CI setup
   const remoteBuildRepo = getRepoUrl(siteInfo)
   if (remoteBuildRepo && !options.force) {
-    logExistingRepoSetupAndExit({ siteName: siteInfo.name, repoUrl: remoteBuildRepo })
+    if (!options.isChildCommand) {
+      outro({
+        exit: true,
+        message: `This site "${siteInfo.name}" is configured to automatically deploy via ${remoteBuildRepo}`,
+      })
+    } else {
+      NetlifyLog.message(`This site "${siteInfo.name}" is configured to automatically deploy via ${remoteBuildRepo}`)
+      return siteInfo
+    }
   }
 
   persistState({ state, siteInfo })
