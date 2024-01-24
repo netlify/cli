@@ -25,10 +25,10 @@ whether or not the command is a child command. To do this, we use add a property
 `isChildCommand`. This property is should be set to `true` when the command is a child command. This means that we can
 conditionally call `intro` like this:
 
-```ts
+```js
 import { intro } from '../../utils/styles/index.js'
 
-export const basicCommand = (options: OptionValues) => {
+export const basicCommand = (options) => {
   !options.isChildCommand && intro('basic command')
   // do stuff
 }
@@ -60,10 +60,10 @@ on whether or not the command is a child command. To do this, we use add a prope
 called `isChildCommand`. This property should be set to `true` when the command is a child command. This means that we can
 conditionally call `outro` like this:
 
-```ts
+```js
 import { intro, outro } from '../../utils/styles/index.js'
 
-export const basicCommand = (options: OptionValues) => {
+export const basicCommand = (options) => {
   !options.isChildCommand && intro('basic command')
   // do stuff
   if (!options.isChildCommand) {
