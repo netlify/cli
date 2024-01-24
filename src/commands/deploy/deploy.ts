@@ -349,12 +349,14 @@ const uploadDeployBlobs = async ({
   cachedConfig,
   deployId,
   options,
+  packagePath,
   silent,
   siteId,
 }: {
   cachedConfig: any
   deployId: string
   options: OptionValues
+  packagePath?: string
   silent: boolean
   siteId: string
 }) => {
@@ -372,6 +374,7 @@ const uploadDeployBlobs = async ({
     ...options,
     quiet: silent,
     cachedConfig,
+    packagePath,
     deployId,
     siteId,
     token,
@@ -474,7 +477,14 @@ const runDeploy = async ({
     })
 
     config.headers = headers
-    uploadDeployBlobs({ deployId, siteId, silent, options, cachedConfig: command.netlify.cachedConfig })
+    await uploadDeployBlobs({
+      deployId,
+      siteId,
+      silent,
+      options,
+      cachedConfig: command.netlify.cachedConfig,
+      packagePath: command.workspacePackage,
+    })
 
     results = await deploySite(api, siteId, deployFolder, {
       // @ts-expect-error FIXME
@@ -555,11 +565,10 @@ const handleBuild = async ({ cachedConfig, currentDir, deployHandler, options, p
 /**
  *
  * @param {*} options Bundling options
- * @param {import('..//base-command.js').default} command
  * @returns
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
-const bundleEdgeFunctions = async (options, command) => {
+const bundleEdgeFunctions = async (options, command: BaseCommand) => {
   // eslint-disable-next-line n/prefer-global/process, unicorn/prefer-set-has
   const argv = process.argv.slice(2)
   const statusCb =
