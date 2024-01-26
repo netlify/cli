@@ -147,6 +147,7 @@ git remote add origin https://github.com/YourUserName/RepoName.git
  * @param {import('../base-command.js').default} command
  */
 const createOrLinkSiteToRepo = async (command: BaseCommand, isChildCommand = false) => {
+  console.log('createOrLinkSiteToRepo')
   const NEW_SITE = 'Create & configure a new site'
   const EXISTING_SITE = 'Connect this directory to an existing Netlify site'
 
@@ -165,6 +166,7 @@ const createOrLinkSiteToRepo = async (command: BaseCommand, isChildCommand = fal
   }
   const initChoice = await select(initializeSelectOptions)
 
+  console.log('initChoice', initChoice)
   // create site or search for one
   if (initChoice === NEW_SITE) {
     await track('sites_initStarted', {
@@ -180,6 +182,7 @@ const createOrLinkSiteToRepo = async (command: BaseCommand, isChildCommand = fal
 }
 
 export const init = async (options: OptionValues, command: BaseCommand) => {
+  console.log('init')
   !options.isChildCommand && intro('init')
   command.setAnalyticsPayload({ manual: options.manual, force: options.force })
 
@@ -223,6 +226,7 @@ export const init = async (options: OptionValues, command: BaseCommand) => {
 
   persistState({ state, siteInfo })
 
+  console.log('configureRepo')
   await configureRepo({ command, siteId: siteInfo.id, repoData, manual: options.manual })
 
   return siteInfo
