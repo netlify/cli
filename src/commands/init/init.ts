@@ -35,7 +35,7 @@ const logExistingAndExit = ({ siteInfo }) => {
   NetlifyLog.info(`Site Id:    ${chalk.cyan(siteInfo.id)}`)
   NetlifyLog.info(`Admin URL:  ${chalk.cyan(siteInfo.admin_url)}`)
   NetlifyLog.info('')
-  NetlifyLog.info(`To disconnect this directory and create a new site (or link to another siteId)`)
+  NetlifyLog.info(`To disconnect this directory and create a new site (or link to another site)`)
   NetlifyLog.info(`1. Run ${chalk.cyanBright.bold('netlify unlink')}`)
   NetlifyLog.info(`2. Then run ${chalk.cyanBright.bold('netlify init')} again`)
 
