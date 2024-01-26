@@ -57,7 +57,7 @@ visual end for your command already. Outro must be called with an object:
 
 ### Child commands
 
-As some of our commands call other CLI commands, we will sometimes we want to conditionally call `outro` depending
+As some of our commands call other CLI commands, we will sometimes want to conditionally call `outro` depending
 on whether or not the command is a child command. To do this, we use add a property to the `OptionValues` object
 called `isChildCommand`. This property should be set to `true` when the command is a child command. This means that we can
 conditionally call `outro` like this:
