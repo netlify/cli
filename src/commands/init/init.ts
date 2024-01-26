@@ -146,7 +146,7 @@ git remote add origin https://github.com/YourUserName/RepoName.git
  * Creates a new site or links an existing one to the repository
  * @param {import('../base-command.js').default} command
  */
-const createOrLinkSiteToRepo = async (command: BaseCommand, isChildCommand = false) => {
+const createOrLinkSiteToRepo = async (command: BaseCommand) => {
   const NEW_SITE = 'Create & configure a new site'
   const EXISTING_SITE = 'Connect this directory to an existing Netlify site'
 
@@ -171,11 +171,11 @@ const createOrLinkSiteToRepo = async (command: BaseCommand, isChildCommand = fal
       type: 'new site',
     })
     // run site:create command
-    return await sitesCreate({ isChildCommand }, command)
+    return await sitesCreate({ isChildCommand: true }, command)
   }
   if (initChoice === EXISTING_SITE) {
     // run link command
-    return await link({ isChildCommand }, command)
+    return await link({ isChildCommand: true }, command)
   }
 }
 
@@ -204,7 +204,7 @@ export const init = async (options: OptionValues, command: BaseCommand) => {
   }
 
   if (isEmpty(siteInfo)) {
-    siteInfo = await createOrLinkSiteToRepo(command, options.isChildCommand)
+    siteInfo = await createOrLinkSiteToRepo(command)
   }
 
   // Check for existing CI setup
