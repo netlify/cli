@@ -118,7 +118,7 @@ describe.concurrent('commands/init', () => {
         question: 'Create & configure a new site',
         answer: CONFIRM,
       },
-      { question: 'Team: (Use arrow keys)', answer: CONFIRM },
+      { question: 'Team:', answer: CONFIRM },
       {
         question: 'Site name (leave blank for a random name; you can change it later)',
         answer: answerWithValue('test-site-name'),
@@ -214,7 +214,7 @@ describe.concurrent('commands/init', () => {
         question: 'Create & configure a new site',
         answer: CONFIRM,
       },
-      { question: 'Team: (Use arrow keys)', answer: CONFIRM },
+      { question: 'Team:', answer: CONFIRM },
       {
         question: 'Site name (leave blank for a random name; you can change it later)',
         answer: answerWithValue('test-site-name'),
@@ -317,7 +317,7 @@ describe.concurrent('commands/init', () => {
         question: 'Create & configure a new site',
         answer: CONFIRM,
       },
-      { question: 'Team: (Use arrow keys)', answer: CONFIRM },
+      { question: 'Team:', answer: CONFIRM },
       {
         question: 'Site name (leave blank for a random name; you can change it later)',
         answer: answerWithValue('test-site-name'),
@@ -509,7 +509,7 @@ describe.concurrent('commands/init', () => {
         question: 'Create & configure a new site',
         answer: CONFIRM,
       },
-      { question: 'Team: (Use arrow keys)', answer: CONFIRM },
+      { question: 'Team:', answer: CONFIRM },
       {
         question: 'Site name (leave blank for a random name; you can change it later)',
         answer: answerWithValue('test-site-name'),
