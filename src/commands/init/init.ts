@@ -1,8 +1,7 @@
 import { OptionValues } from 'commander'
-import inquirer from 'inquirer'
 import isEmpty from 'lodash/isEmpty.js'
 
-import { chalk, exit, log } from '../../utils/command-helpers.js'
+import { chalk } from '../../utils/command-helpers.js'
 import getRepoData from '../../utils/get-repo-data.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import { configureRepo } from '../../utils/init/config.js'
@@ -10,6 +9,7 @@ import { track } from '../../utils/telemetry/index.js'
 import BaseCommand from '../base-command.js'
 import { link } from '../link/link.js'
 import { sitesCreate } from '../sites/sites-create.js'
+import { NetlifyLog, SelectOptions, intro, outro, select } from '../../utils/styles/index.js'
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'siteInfo' implicitly has an 'any'... Remove this comment to see the full error message
 const persistState = ({ siteInfo, state }) => {
@@ -26,19 +26,20 @@ const getRepoUrl = (siteInfo) => siteInfo?.build_settings?.repo_url
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'siteInfo' implicitly has an 'any'... Remove this comment to see the full error message
 const logExistingAndExit = ({ siteInfo }) => {
-  log()
-  log(`This site has been initialized`)
-  log()
-  log(`Site Name:  ${chalk.cyan(siteInfo.name)}`)
-  log(`Site Url:   ${chalk.cyan(siteInfo.ssl_url || siteInfo.url)}`)
-  log(`Site Repo:  ${chalk.cyan(getRepoUrl({ siteInfo }))}`)
-  log(`Site Id:    ${chalk.cyan(siteInfo.id)}`)
-  log(`Admin URL:  ${chalk.cyan(siteInfo.admin_url)}`)
-  log()
-  log(`To disconnect this directory and create a new site (or link to another siteId)`)
-  log(`1. Run ${chalk.cyanBright.bold('netlify unlink')}`)
-  log(`2. Then run ${chalk.cyanBright.bold('netlify init')} again`)
-  exit()
+  NetlifyLog.info('')
+  NetlifyLog.message(`This site has been initialized`)
+  NetlifyLog.info('')
+  NetlifyLog.info(`Site Name:  ${chalk.cyan(siteInfo.name)}`)
+  NetlifyLog.info(`Site Url:   ${chalk.cyan(siteInfo.ssl_url || siteInfo.url)}`)
+  NetlifyLog.info(`Site Repo:  ${chalk.cyan(getRepoUrl({ siteInfo }))}`)
+  NetlifyLog.info(`Site Id:    ${chalk.cyan(siteInfo.id)}`)
+  NetlifyLog.info(`Admin URL:  ${chalk.cyan(siteInfo.admin_url)}`)
+  NetlifyLog.info('')
+  NetlifyLog.info(`To disconnect this directory and create a new site (or link to another site)`)
+  NetlifyLog.info(`1. Run ${chalk.cyanBright.bold('netlify unlink')}`)
+  NetlifyLog.info(`2. Then run ${chalk.cyanBright.bold('netlify init')} again`)
+
+  outro({ exit: true, message: 'Site already initialized' })
 }
 
 /**
@@ -52,18 +53,16 @@ const createNewSiteAndExit = async ({ command, state }) => {
   const siteInfo = await sitesCreate({}, command)
 
   // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-  log(`"${siteInfo.name}" site was created`)
-  log()
-  log(`To deploy to this site. Run your site build and then ${chalk.cyanBright.bold('netlify deploy')}`)
+  NetlifyLog.message(`"${siteInfo.name}" site was created`)
+  NetlifyLog.info(`To deploy to this site. Run your site build and then ${chalk.cyanBright.bold('netlify deploy')}`)
 
   persistState({ state, siteInfo })
 
-  exit()
+  outro({ exit: true })
 }
 
 const logGitSetupInstructionsAndExit = () => {
-  log()
-  log(`${chalk.bold('To initialize a new git repo follow the steps below.')}
+  NetlifyLog.info(`${chalk.bold('To initialize a new git repo follow the steps below.')}
 
 1. Initialize a new repo:
 
@@ -91,7 +90,7 @@ const logGitSetupInstructionsAndExit = () => {
 
    ${chalk.cyanBright.bold('netlify init')}
 `)
-  exit()
+  outro({ exit: true })
 }
 
 /**
@@ -103,9 +102,8 @@ const logGitSetupInstructionsAndExit = () => {
  */
 // @ts-expect-error TS(7031) FIXME: Binding element 'command' implicitly has an 'any' ... Remove this comment to see the full error message
 const handleNoGitRemoteAndExit = async ({ command, error, state }) => {
-  log()
-  log(`${chalk.yellow('No git remote was found, would you like to set one up?')}`)
-  log(`
+  NetlifyLog.warning(`${chalk.yellow('No git remote was found, would you like to set one up?')}`)
+  NetlifyLog.info(`
 It is recommended that you initialize a site that has a remote repository in GitHub.
 
 This will allow for Netlify Continuous deployment to build branch & PR previews.
@@ -113,7 +111,7 @@ This will allow for Netlify Continuous deployment to build branch & PR previews.
 For more details on Netlify CI checkout the docs: http://bit.ly/2N0Jhy5
 `)
   if (error === "Couldn't find origin url") {
-    log(`Unable to find a remote origin URL. Please add a git remote.
+    NetlifyLog.error(`Unable to find a remote origin URL. Please add a git remote.
 
 git remote add origin https://github.com/YourUserName/RepoName.git
 `)
@@ -122,14 +120,20 @@ git remote add origin https://github.com/YourUserName/RepoName.git
   const NEW_SITE_NO_GIT = 'Yes, create and deploy site manually'
   const NO_ABORT = 'No, I will connect this directory with GitHub first'
 
-  const { noGitRemoteChoice } = await inquirer.prompt([
-    {
-      type: 'list',
-      name: 'noGitRemoteChoice',
-      message: 'Do you want to create a Netlify site without a git repository?',
-      choices: [NEW_SITE_NO_GIT, NO_ABORT],
-    },
-  ])
+  const noGitRemoteSelectOptions: SelectOptions<string> = {
+    options: [
+      {
+        label: NEW_SITE_NO_GIT,
+        value: NEW_SITE_NO_GIT,
+      },
+      {
+        label: NO_ABORT,
+        value: NO_ABORT,
+      },
+    ],
+    message: 'Do you want to create a Netlify site without a git repository?',
+  }
+  const noGitRemoteChoice = await select(noGitRemoteSelectOptions)
 
   if (noGitRemoteChoice === NEW_SITE_NO_GIT) {
     await createNewSiteAndExit({ state, command })
@@ -142,21 +146,24 @@ git remote add origin https://github.com/YourUserName/RepoName.git
  * Creates a new site or links an existing one to the repository
  * @param {import('../base-command.js').default} command
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'command' implicitly has an 'any' type.
-const createOrLinkSiteToRepo = async (command) => {
-  const NEW_SITE = '+  Create & configure a new site'
-  const EXISTING_SITE = '⇄  Connect this directory to an existing Netlify site'
+const createOrLinkSiteToRepo = async (command: BaseCommand) => {
+  const NEW_SITE = 'Create & configure a new site'
+  const EXISTING_SITE = 'Connect this directory to an existing Netlify site'
 
-  const initializeOpts = [EXISTING_SITE, NEW_SITE]
-
-  const { initChoice } = await inquirer.prompt([
-    {
-      type: 'list',
-      name: 'initChoice',
-      message: 'What would you like to do?',
-      choices: initializeOpts,
-    },
-  ])
+  const initializeSelectOptions: SelectOptions<string> = {
+    options: [
+      {
+        label: NEW_SITE,
+        value: NEW_SITE,
+      },
+      {
+        label: EXISTING_SITE,
+        value: EXISTING_SITE,
+      },
+    ],
+    message: 'What would you like to do?',
+  }
+  const initChoice = await select(initializeSelectOptions)
 
   // create site or search for one
   if (initChoice === NEW_SITE) {
@@ -164,24 +171,16 @@ const createOrLinkSiteToRepo = async (command) => {
       type: 'new site',
     })
     // run site:create command
-    return await sitesCreate({}, command)
+    return await sitesCreate({ isChildCommand: true }, command)
   }
   if (initChoice === EXISTING_SITE) {
     // run link command
-    return await link({}, command)
+    return await link({ isChildCommand: true }, command)
   }
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'repoUrl' implicitly has an 'any' ... Remove this comment to see the full error message
-const logExistingRepoSetupAndExit = ({ repoUrl, siteName }) => {
-  log()
-  log(chalk.underline.bold(`Success`))
-  log(`This site "${siteName}" is configured to automatically deploy via ${repoUrl}`)
-  // TODO add support for changing GitHub repo in site:config command
-  exit()
-}
-
 export const init = async (options: OptionValues, command: BaseCommand) => {
+  !options.isChildCommand && intro('init')
   command.setAnalyticsPayload({ manual: options.manual, force: options.force })
 
   const { repositoryRoot, state } = command.netlify
@@ -208,12 +207,18 @@ export const init = async (options: OptionValues, command: BaseCommand) => {
     siteInfo = await createOrLinkSiteToRepo(command)
   }
 
-  log()
-
   // Check for existing CI setup
   const remoteBuildRepo = getRepoUrl(siteInfo)
   if (remoteBuildRepo && !options.force) {
-    logExistingRepoSetupAndExit({ siteName: siteInfo.name, repoUrl: remoteBuildRepo })
+    if (!options.isChildCommand) {
+      outro({
+        exit: true,
+        message: `This site "${siteInfo.name}" is configured to automatically deploy via ${remoteBuildRepo}`,
+      })
+    } else {
+      NetlifyLog.message(`This site "${siteInfo.name}" is configured to automatically deploy via ${remoteBuildRepo}`)
+      return siteInfo
+    }
   }
 
   persistState({ state, siteInfo })

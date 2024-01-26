@@ -43,11 +43,11 @@ const linkPrompt = async (command: BaseCommand, options: OptionValues) => {
       loading.start(`Looking for sites connected to '${repoData.httpsUrl}' (this can take a bit).`)
       const sites = await listSites({ api, options: { filter: 'all' } })
       if (sites.length === 0) {
-        loading.stop(
-          `You don't have any sites yet. Run ${chalk.cyanBright('netlify sites:create')} to create a site.`,
-          1,
-        )
-        outro({ exit: true })
+        loading.stop(undefined, 1)
+        outro({
+          exit: true,
+          message: `You don't have any sites yet. Run ${chalk.cyanBright('netlify sites:create')} to create a site.`,
+        })
       }
 
       const matchingSites = sites.filter(
@@ -58,14 +58,14 @@ const linkPrompt = async (command: BaseCommand, options: OptionValues) => {
       // If no remote matches. Throw error
       if (matchingSites.length === 0) {
         NetlifyLog.warn(chalk.bold(`No matching Site Found`))
+        outro({
+          exit: true,
+          message: `We couldn't find a site with the remote ${repoData.httpsUrl}.
 
-        NetlifyLog.message(`We couldn't find a site with the remote ${repoData.httpsUrl}.
-            
             Double check you are in the correct working directory and a remote origin repository is configured.
-            
-            Run ${chalk.cyanBright('git remote -v')} to see a list of your git remotes.`)
 
-        outro({ exit: true })
+            Run ${chalk.cyanBright('git remote -v')} to see a list of your git remotes.`,
+        })
       }
 
       // Matches a single site hooray!
@@ -226,14 +226,20 @@ const linkPrompt = async (command: BaseCommand, options: OptionValues) => {
   NetlifyLog.message(`Admin URL: ${chalk.magentaBright(site.admin_url)}`)
   NetlifyLog.message(`Site URL:  ${chalk.cyanBright(site.ssl_url || site.url)}`)
 
-  outro({ message: `You can now run other \`netlify\` cli commands in this directory` })
+  if (options.isChildCommand) {
+    NetlifyLog.info(`You can now run other \`netlify\` cli commands in this directory`)
 
-  return site
+    return site
+  } else {
+    outro({ message: `You can now run other \`netlify\` cli commands in this directory` })
+
+    return site
+  }
 }
 
 export const link = async (options: OptionValues, command: BaseCommand) => {
   await command.authenticate()
-  intro('link')
+  !options.isChildCommand && intro('link')
   const {
     api,
     repositoryRoot,
@@ -251,6 +257,7 @@ export const link = async (options: OptionValues, command: BaseCommand) => {
   if (siteId && isEmpty(siteData)) {
     NetlifyLog.error(`"${siteId}" was not found in your Netlify account.`)
     outro({
+      exit: true,
       message: `Please double check your site ID and which account you are logged into via \`netlify status\`.`,
     })
   }
@@ -259,7 +266,7 @@ export const link = async (options: OptionValues, command: BaseCommand) => {
     // If already linked to site. exit and prompt for unlink
     NetlifyLog.info(`Site already linked to "${siteData.name}"`)
     NetlifyLog.message(`Admin URL: ${siteData.admin_url}`)
-    outro({ message: `To unlink this site, run: ${chalk.cyanBright('netlify unlink')}` })
+    !options.isChildCommand && outro({ message: `To unlink this site, run: ${chalk.cyanBright('netlify unlink')}` })
   } else if (options.id) {
     try {
       siteData = await api.getSite({ site_id: options.id })
@@ -275,7 +282,7 @@ export const link = async (options: OptionValues, command: BaseCommand) => {
     state.set('siteId', siteData.id)
     NetlifyLog.success(`Linked to ${siteData.name}`)
     NetlifyLog.message(`Admin URL: ${siteData.admin_url}`)
-    outro({ message: `To unlink this site, run: ${chalk.cyanBright('netlify unlink')}` })
+    !options.isChildCommand && outro({ message: `To unlink this site, run: ${chalk.cyanBright('netlify unlink')}` })
 
     await track('sites_linked', {
       siteId: siteData.id,
@@ -307,7 +314,7 @@ export const link = async (options: OptionValues, command: BaseCommand) => {
     state.set('siteId', firstSiteData.id)
     NetlifyLog.success(`Linked to ${firstSiteData.name}`)
     NetlifyLog.message(`Admin URL: ${firstSiteData.admin_url}`)
-    outro({ message: `To unlink this site, run: ${chalk.cyanBright('netlify unlink')}` })
+    !options.isChildCommand && outro({ message: `To unlink this site, run: ${chalk.cyanBright('netlify unlink')}` })
 
     await track('sites_linked', {
       siteId: (firstSiteData && firstSiteData.id) || siteId,

@@ -28,7 +28,7 @@ describe.concurrent('commands/init', () => {
     const initQuestions = [
       {
         question: 'Create & configure a new site',
-        answer: CONFIRM,
+        answer: answerWithValue(DOWN),
       },
       {
         question: 'How do you want to link this folder to a site',
@@ -116,9 +116,9 @@ describe.concurrent('commands/init', () => {
     const initQuestions = [
       {
         question: 'Create & configure a new site',
-        answer: answerWithValue(DOWN),
+        answer: CONFIRM,
       },
-      { question: 'Team: (Use arrow keys)', answer: CONFIRM },
+      { question: 'Team:', answer: CONFIRM },
       {
         question: 'Site name (leave blank for a random name; you can change it later)',
         answer: answerWithValue('test-site-name'),
@@ -212,9 +212,9 @@ describe.concurrent('commands/init', () => {
     const initQuestions = [
       {
         question: 'Create & configure a new site',
-        answer: answerWithValue(DOWN),
+        answer: CONFIRM,
       },
-      { question: 'Team: (Use arrow keys)', answer: CONFIRM },
+      { question: 'Team:', answer: CONFIRM },
       {
         question: 'Site name (leave blank for a random name; you can change it later)',
         answer: answerWithValue('test-site-name'),
@@ -315,9 +315,9 @@ describe.concurrent('commands/init', () => {
     const initQuestions = [
       {
         question: 'Create & configure a new site',
-        answer: answerWithValue(DOWN),
+        answer: CONFIRM,
       },
-      { question: 'Team: (Use arrow keys)', answer: CONFIRM },
+      { question: 'Team:', answer: CONFIRM },
       {
         question: 'Site name (leave blank for a random name; you can change it later)',
         answer: answerWithValue('test-site-name'),
@@ -418,7 +418,7 @@ describe.concurrent('commands/init', () => {
     const initQuestions = [
       {
         question: 'Create & configure a new site',
-        answer: CONFIRM,
+        answer: answerWithValue(DOWN),
       },
       {
         question: 'How do you want to link this folder to a site',
@@ -507,9 +507,9 @@ describe.concurrent('commands/init', () => {
     const initQuestions = [
       {
         question: 'Create & configure a new site',
-        answer: answerWithValue(DOWN),
+        answer: CONFIRM,
       },
-      { question: 'Team: (Use arrow keys)', answer: CONFIRM },
+      { question: 'Team:', answer: CONFIRM },
       {
         question: 'Site name (leave blank for a random name; you can change it later)',
         answer: answerWithValue('test-site-name'),

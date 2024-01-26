@@ -9,26 +9,26 @@ import { configureRepo } from '../../utils/init/config.js'
 import { track } from '../../utils/telemetry/index.js'
 import BaseCommand from '../base-command.js'
 import { link } from '../link/link.js'
+import { NetlifyLog, SelectOptions, intro, outro, select, text } from '../../utils/styles/index.js'
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
 export const getSiteNameInput = async (name) => {
   if (!name) {
-    const { name: nameInput } = await inquirer.prompt([
-      {
-        type: 'input',
-        name: 'name',
-        message: 'Site name (leave blank for a random name; you can change it later):',
-        validate: (input) =>
-          /^[a-zA-Z\d-]+$/.test(input || undefined) || 'Only alphanumeric characters and hyphens are allowed',
+    name = await text({
+      message: 'Site name (leave blank for a random name; you can change it later):',
+      validate: (input) => {
+        const regex = /^[a-zA-Z\d-]+$/
+        const valid = regex.test(input)
+        if (!valid) return 'Only alphanumeric characters and hyphens are allowed'
       },
-    ])
-    name = nameInput || ''
+    })
   }
 
   return { name }
 }
 
 export const sitesCreate = async (options: OptionValues, command: BaseCommand) => {
+  !options.isChildCommand && intro('sites:create')
   const { api } = command.netlify
 
   await command.authenticate()
@@ -37,19 +37,16 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand) =
 
   let { accountSlug } = options
   if (!accountSlug) {
-    const { accountSlug: accountSlugInput } = await inquirer.prompt([
-      {
-        type: 'list',
-        name: 'accountSlug',
-        message: 'Team:',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'account' implicitly has an 'any' type.
-        choices: accounts.map((account) => ({
-          value: account.slug,
-          name: account.name,
-        })),
-      },
-    ])
-    accountSlug = accountSlugInput
+    const accountSelectOptions: SelectOptions<string> = {
+      // @ts-expect-error TS(7006) FIXME: Parameter 'account' implicitly has an 'any' type.
+      options: accounts.map((account) => ({
+        value: account.slug,
+        label: account.name,
+      })),
+      message: 'Team:',
+    }
+
+    accountSlug = await select(accountSelectOptions)
   }
 
   let site
@@ -72,24 +69,21 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand) =
     } catch (error_) {
       // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
       if (error_.status === 422) {
-        warn(`${siteName}.netlify.app already exists. Please try a different slug.`)
+        NetlifyLog.warn(`${siteName}.netlify.app already exists. Please try a different slug.`)
         // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
         await inputSiteName()
       } else {
         // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        error(`createSiteInTeam error: ${error_.status}: ${error_.message}`)
+        NetlifyLog.error(`createSiteInTeam error: ${error_.status}: ${error_.message}`)
+        outro({ exit: true, message: 'Error creating site' })
       }
     }
   }
   await inputSiteName(options.name)
 
-  log()
-  log(chalk.greenBright.bold.underline(`Site Created`))
-  log()
-
   // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
   const siteUrl = site.ssl_url || site.url
-  log(
+  NetlifyLog.info(
     prettyjson.render({
       // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
       'Admin URL': site.admin_url,
@@ -108,7 +102,7 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand) =
   })
 
   if (options.withCi) {
-    log('Configuring CI')
+    NetlifyLog.info('Configuring CI')
     // @ts-expect-error TS(2345) FIXME: Argument of type '{ workingDir: any; }' is not ass... Remove this comment to see the full error message
     const repoData = await getRepoData({ workingDir: command.workingDir })
     // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
@@ -116,40 +110,42 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand) =
   }
 
   if (options.json) {
-    logJson(
-      pick(site, [
-        'id',
-        'state',
-        'plan',
-        'name',
-        'custom_domain',
-        'domain_aliases',
-        'url',
-        'ssl_url',
-        'admin_url',
-        'screenshot_url',
-        'created_at',
-        'updated_at',
-        'user_id',
-        'ssl',
-        'force_ssl',
-        'managed_dns',
-        'deploy_url',
-        'account_name',
-        'account_slug',
-        'git_provider',
-        'deploy_hook',
-        'capabilities',
-        'id_domain',
-      ]),
+    NetlifyLog.info(
+      prettyjson.render(
+        pick(site, [
+          'id',
+          'state',
+          'plan',
+          'name',
+          'custom_domain',
+          'domain_aliases',
+          'url',
+          'ssl_url',
+          'admin_url',
+          'screenshot_url',
+          'created_at',
+          'updated_at',
+          'user_id',
+          'ssl',
+          'force_ssl',
+          'managed_dns',
+          'deploy_url',
+          'account_name',
+          'account_slug',
+          'git_provider',
+          'deploy_hook',
+          'capabilities',
+          'id_domain',
+        ]),
+      ),
     )
   }
 
   if (!options.disableLinking) {
-    log()
     // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-    await link({ id: site.id }, command)
+    await link({ id: site.id, isChildCommand: true }, command)
   }
 
+  !options.isChildCommand && outro({ exit: true, message: `Site Created` })
   return site
 }

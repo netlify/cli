@@ -21,10 +21,5 @@ export const unlink = async (options: OptionValues, command: BaseCommand) => {
     siteId: siteData.id || siteId,
   })
 
-  if (site) {
-    NetlifyLog.success(`Unlinked from ${siteData ? siteData.name : siteId}`)
-  } else {
-    NetlifyLog.success('Unlinked site')
-  }
-  outro({ exit: true })
+  outro({ exit: true, message: site ? `Unlinked from ${siteData ? siteData.name : siteId}` : 'Unlinked site' })
 }

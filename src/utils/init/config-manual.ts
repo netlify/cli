@@ -3,6 +3,7 @@ import inquirer from 'inquirer'
 import { exit, log } from '../command-helpers.js'
 
 import { createDeployKey, getBuildSettings, saveNetlifyToml, setupSite } from './utils.js'
+import { outro } from '../styles/index.js'
 
 /**
  * Prompts for granting the netlify ssh public key access to your repo
@@ -122,7 +123,7 @@ export default async function configManual({ command, repoData, siteId }) {
   })
   const deployHookAdded = await addDeployHook(updatedSite.deploy_hook)
   if (!deployHookAdded) {
-    exit()
+    outro({ exit: true })
   }
 }
 
