@@ -22,7 +22,7 @@ Pass the name of the command to the `intro` method.
 
 As some of our commands call other CLI commands, we will sometimes want to conditionally call `intro` depending on
 whether or not the command is a child command. To do this, we use add a property to the `OptionValues` object called
-`isChildCommand`. This property is should be set to `true` when the command is a child command. This means that we can
+`isChildCommand`. This property should be set to `true` when the command is a child command. This means that we can
 conditionally call `intro` like this:
 
 ```js
