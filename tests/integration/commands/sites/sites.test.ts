@@ -58,6 +58,14 @@ vi.mock('prettyjson', async () => {
 
 vi.spyOn(inquirer, 'prompt').mockImplementation(() => Promise.resolve({ accountSlug: 'test-account' }))
 
+vi.mock('../../../../src/utils/styles/index.js', async () => {
+  const actual = await vi.importActual('../../../../src/utils/styles/index.js')
+  return {
+    ...actual,
+    text: vi.fn().mockImplementation(async () => 'site-name'),
+  }
+})
+
 const siteInfo = {
   admin_url: 'https://app.netlify.com/sites/site-name/overview',
   ssl_url: 'https://site-name.netlify.app/',
