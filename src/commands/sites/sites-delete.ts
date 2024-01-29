@@ -55,7 +55,7 @@ export const sitesDelete = async (siteId: string, options: OptionValues, command
   /* Verify the user wants to delete the site */
   if (noForce) {
     NetlifyLog.warn(`You are about to permanently delete "${chalk.bold(siteData.name)}"`)
-    NetlifyLog.message(`Verify this siteID "${siteId}" supplied is correct and proceed.`)
+    NetlifyLog.message(`Verify this siteId "${siteId}" supplied is correct and proceed.`)
     NetlifyLog.info('To skip this prompt, pass a --force flag to the delete command')
     NetlifyLog.warn(`${chalk.bold('Be careful here. There is no undo!')}`)
 
