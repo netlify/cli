@@ -1,23 +1,24 @@
 import { OptionValues } from 'commander'
 
+import prettyjson from 'prettyjson'
 import { listSites } from '../../lib/api.js'
 import { startSpinner, stopSpinner } from '../../lib/spinner.js'
-import { chalk, log, logJson } from '../../utils/command-helpers.js'
+import { chalk } from '../../utils/command-helpers.js'
 import BaseCommand from '../base-command.js'
+import { NetlifyLog, intro, outro, spinner } from '../../utils/styles/index.js'
 
 export const sitesList = async (options: OptionValues, command: BaseCommand) => {
+  !options.isChildCommand && intro('sites:list')
   const { api } = command.netlify
-  /** @type {import('ora').Ora} */
-  let spinner
+  const loading = spinner()
   if (!options.json) {
-    spinner = startSpinner({ text: 'Loading your sites' })
+    loading.start('Loading your sites')
   }
   await command.authenticate()
 
   const sites = await listSites({ api, options: { filter: 'all' } })
   if (!options.json) {
-    // @ts-expect-error TS(2345) FIXME: Argument of type '{ spinner: Ora | undefined; }' i... Remove this comment to see the full error message
-    stopSpinner({ spinner })
+    loading.stop()
   }
 
   if (sites && sites.length !== 0) {
@@ -47,29 +48,22 @@ export const sitesList = async (options: OptionValues, command: BaseCommand) => 
         }
         return site
       })
-      logJson(redactedSites)
+      NetlifyLog.info(prettyjson.render(redactedSites))
       return false
     }
 
-    log(`
-────────────────────────────┐
- Current Netlify Sites    │
-────────────────────────────┘
-
-Count: ${logSites.length}
-`)
-
     // @ts-expect-error TS(7006) FIXME: Parameter 'logSite' implicitly has an 'any' type.
     logSites.forEach((logSite) => {
-      log(`${chalk.greenBright(logSite.name)} - ${logSite.id}`)
-      log(`  ${chalk.whiteBright.bold('url:')}  ${chalk.yellowBright(logSite.ssl_url)}`)
+      NetlifyLog.info(`${chalk.greenBright(logSite.name)} - ${logSite.id}`)
+      NetlifyLog.info(`  ${chalk.whiteBright.bold('url:')}  ${chalk.yellowBright(logSite.ssl_url)}`)
       if (logSite.repo_url) {
-        log(`  ${chalk.whiteBright.bold('repo:')} ${chalk.white(logSite.repo_url)}`)
+        NetlifyLog.info(`  ${chalk.whiteBright.bold('repo:')} ${chalk.white(logSite.repo_url)}`)
       }
       if (logSite.account_name) {
-        log(`  ${chalk.whiteBright.bold('account:')} ${chalk.white(logSite.account_name)}`)
+        NetlifyLog.info(`  ${chalk.whiteBright.bold('account:')} ${chalk.white(logSite.account_name)}`)
       }
-      log(`─────────────────────────────────────────────────`)
     })
   }
+
+  !options.isChildCommand && outro({ exit: true, message: `Site count: ${sites.length}` })
 }

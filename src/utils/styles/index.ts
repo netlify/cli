@@ -96,10 +96,10 @@ export interface ConfirmOptions {
   inactive?: string
   initialValue?: boolean
 }
-export const confirm = (opts: ConfirmOptions) => {
+export const confirm = async (opts: ConfirmOptions) => {
   const active = opts.active ?? 'Yes'
   const inactive = opts.inactive ?? 'No'
-  return new ConfirmPrompt({
+  const confirmPrompt = new ConfirmPrompt({
     active,
     inactive,
     initialValue: opts.initialValue ?? true,
@@ -128,6 +128,14 @@ export const confirm = (opts: ConfirmOptions) => {
       }
     },
   }).prompt() as Promise<boolean | symbol>
+
+  const result = await confirmPrompt
+
+  if (isCancel(result)) {
+    return false
+  }
+
+  return result
 }
 
 type Primitive = Readonly<string | boolean | number>
@@ -581,9 +589,9 @@ export const NetlifyLog = {
       message instanceof Error
         ? message
         : // eslint-disable-next-line unicorn/no-nested-ternary
-        typeof message === 'string'
-        ? new Error(message)
-        : { message, stack: undefined, name: 'Error' }
+          typeof message === 'string'
+          ? new Error(message)
+          : { message, stack: undefined, name: 'Error' }
 
     if (options.exit === false) {
       if (process.env.DEBUG) {

@@ -1,10 +1,31 @@
 import { OptionValues } from 'commander'
-import inquirer from 'inquirer'
 
-import { chalk, error, exit, log } from '../../utils/command-helpers.js'
+import { chalk } from '../../utils/command-helpers.js'
 import BaseCommand from '../base-command.js'
+import { NetlifyLog, confirm, intro, outro } from '../../utils/styles/index.js'
+
+const deleteSite = async (siteId: string, command: BaseCommand) => {
+  const { api } = command.netlify
+
+  NetlifyLog.message(`Deleting site "${siteId}"...`)
+
+  try {
+    await api.deleteSite({ site_id: siteId })
+  } catch (error_) {
+    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+    if (error_.status === 404) {
+      NetlifyLog.error(`No site with id ${siteId} found. Please verify the siteId & try again.`)
+      outro({ exit: true, message: 'Error deleting site' })
+    } else {
+      // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+      NetlifyLog.error(`Delete Site error: ${error_.status}: ${error_.message}`)
+      outro({ exit: true, message: 'Error deleting site' })
+    }
+  }
+}
 
 export const sitesDelete = async (siteId: string, options: OptionValues, command: BaseCommand) => {
+  !options.isChildCommand && intro('sites:delete')
   command.setAnalyticsPayload({ force: options.force })
 
   const { api, site } = command.netlify
@@ -19,68 +40,56 @@ export const sitesDelete = async (siteId: string, options: OptionValues, command
   } catch (error_) {
     // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
     if (error_.status === 404) {
-      error(`No site with id ${siteId} found. Please verify the siteId & try again.`)
+      NetlifyLog.error(`No site with id ${siteId} found. Please verify the siteId & try again.`)
+      outro({ exit: true, message: 'Error deleting site' })
     }
   }
 
   if (!siteData) {
-    error(`Unable to process site`)
+    NetlifyLog.error(`Unable to process site`)
+    outro({ exit: true, message: 'Error deleting site' })
   }
 
   const noForce = options.force !== true
 
   /* Verify the user wants to delete the site */
   if (noForce) {
-    log(`${chalk.redBright('Warning')}: You are about to permanently delete "${chalk.bold(siteData.name)}"`)
-    log(`         Verify this siteID "${siteId}" supplied is correct and proceed.`)
-    log('         To skip this prompt, pass a --force flag to the delete command')
-    log()
-    log(`${chalk.bold('Be careful here. There is no undo!')}`)
-    log()
-    const { wantsToDelete } = await inquirer.prompt({
-      type: 'confirm',
-      name: 'wantsToDelete',
+    NetlifyLog.warn(`You are about to permanently delete "${chalk.bold(siteData.name)}"`)
+    NetlifyLog.message(`Verify this siteID "${siteId}" supplied is correct and proceed.`)
+    NetlifyLog.info('To skip this prompt, pass a --force flag to the delete command')
+    NetlifyLog.warn(`${chalk.bold('Be careful here. There is no undo!')}`)
+
+    const wantsToDelete = await confirm({
       message: `WARNING: Are you sure you want to delete the "${siteData.name}" site?`,
-      default: false,
+      initialValue: false,
     })
-    log()
-    if (!wantsToDelete) {
-      exit()
+
+    if (wantsToDelete) {
+      await deleteSite(siteId, command)
+      !options.isChildCommand && outro({ exit: true, message: `Site "${siteId}" successfully deleted!` })
     }
+
+    outro({ exit: true, message: 'Site not deleted' })
   }
 
   /* Validation logic if siteId passed in does not match current site ID */
   if (noForce && cwdSiteId && cwdSiteId !== siteId) {
-    log(`${chalk.redBright('Warning')}: The siteId supplied does not match the current working directory siteId`)
-    log()
-    log(`Supplied:       "${siteId}"`)
-    log(`Current Site:   "${cwdSiteId}"`)
-    log()
-    log(`Verify this siteID "${siteId}" supplied is correct and proceed.`)
-    log('To skip this prompt, pass a --force flag to the delete command')
-    const { wantsToDelete } = await inquirer.prompt({
-      type: 'confirm',
-      name: 'wantsToDelete',
+    NetlifyLog.warn('The siteId supplied does not match the current working directory siteId')
+    NetlifyLog.info(`Supplied:       "${siteId}"`)
+    NetlifyLog.info(`Current Site:   "${cwdSiteId}"`)
+    NetlifyLog.message(`Verify this siteID "${siteId}" supplied is correct and proceed.`)
+    NetlifyLog.info('To skip this prompt, pass a --force flag to the delete command')
+
+    const wantsToDelete = await confirm({
       message: `Verify & Proceed with deletion of site "${siteId}"?`,
-      default: false,
+      initialValue: false,
     })
-    if (!wantsToDelete) {
-      exit()
-    }
-  }
 
-  log(`Deleting site "${siteId}"...`)
-
-  try {
-    await api.deleteSite({ site_id: siteId })
-  } catch (error_) {
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    if (error_.status === 404) {
-      error(`No site with id ${siteId} found. Please verify the siteId & try again.`)
-    } else {
-      // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-      error(`Delete Site error: ${error_.status}: ${error_.message}`)
+    if (wantsToDelete) {
+      await deleteSite(siteId, command)
+      !options.isChildCommand && outro({ exit: true, message: `Site "${siteId}" successfully deleted!` })
     }
+
+    !options.isChildCommand && outro({ exit: true, message: 'Site not deleted' })
   }
-  log(`Site "${siteId}" successfully deleted!`)
 }
