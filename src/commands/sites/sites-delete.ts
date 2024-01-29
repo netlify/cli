@@ -77,7 +77,7 @@ export const sitesDelete = async (siteId: string, options: OptionValues, command
     NetlifyLog.warn('The siteId supplied does not match the current working directory siteId')
     NetlifyLog.info(`Supplied:       "${siteId}"`)
     NetlifyLog.info(`Current Site:   "${cwdSiteId}"`)
-    NetlifyLog.message(`Verify this siteID "${siteId}" supplied is correct and proceed.`)
+    NetlifyLog.message(`Verify this siteId "${siteId}" supplied is correct and proceed.`)
     NetlifyLog.info('To skip this prompt, pass a --force flag to the delete command')
 
     const wantsToDelete = await confirm({
