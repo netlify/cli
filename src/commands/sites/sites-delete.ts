@@ -11,9 +11,9 @@ const deleteSite = async (siteId: string, command: BaseCommand) => {
 
   try {
     await api.deleteSite({ site_id: siteId })
-  } catch (error_) {
+  } catch (error) {
     // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    if (error_.status === 404) {
+    if (error.status === 404) {
       NetlifyLog.error(`No site with id ${siteId} found. Please verify the siteId & try again.`)
       outro({ exit: true, message: 'Error deleting site' })
     } else {
