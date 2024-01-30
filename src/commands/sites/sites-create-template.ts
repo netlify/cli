@@ -75,10 +75,9 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
     const githubLink = getGitHubLink({ options, templateName })
     outro({
       exit: true,
-      message: `Could not find template ${chalk.bold(templateName)}. Please verify it exists and you can ${getTerminalLink(
-        'access to it on GitHub',
-        githubLink,
-      )}`,
+      message: `Could not find template ${chalk.bold(
+        templateName,
+      )}. Please verify it exists and you can ${getTerminalLink('access to it on GitHub', githubLink)}`,
     })
     return
   }
