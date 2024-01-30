@@ -50,15 +50,17 @@ const logExistingAndExit = ({ siteInfo }) => {
  */
 // @ts-expect-error TS(7031) FIXME: Binding element 'command' implicitly has an 'any' ... Remove this comment to see the full error message
 const createNewSiteAndExit = async ({ command, state }) => {
-  const siteInfo = await sitesCreate({}, command)
+  const siteInfo = await sitesCreate({ isChildCommand: true }, command)
 
   // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
   NetlifyLog.message(`"${siteInfo.name}" site was created`)
-  NetlifyLog.info(`To deploy to this site. Run your site build and then ${chalk.cyanBright.bold('netlify deploy')}`)
 
   persistState({ state, siteInfo })
 
-  outro({ exit: true })
+  outro({
+    exit: true,
+    message: `To deploy to this site. Run your site build and then ${chalk.cyanBright.bold('netlify deploy')}`,
+  })
 }
 
 const logGitSetupInstructionsAndExit = () => {
