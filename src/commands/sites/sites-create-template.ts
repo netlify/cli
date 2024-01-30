@@ -15,22 +15,18 @@ import { track } from '../../utils/telemetry/index.js'
 import BaseCommand from '../base-command.js'
 
 import { getSiteNameInput } from './sites-create.js'
+import { NetlifyLog, SelectOptions, intro, outro, select } from '../../utils/styles/index.js'
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'token' implicitly has an 'any' type.
-export const fetchTemplates = async (token) => {
+export const fetchTemplates = async (token: string) => {
   const templatesFromGithubOrg = await getTemplatesFromGitHub(token)
 
-  return (
-    templatesFromGithubOrg
-      // @ts-expect-error TS(7006) FIXME: Parameter 'repo' implicitly has an 'any' type.
-      .filter((repo) => !repo.archived && !repo.disabled)
-      // @ts-expect-error TS(7006) FIXME: Parameter 'template' implicitly has an 'any' type.
-      .map((template) => ({
-        name: template.name,
-        sourceCodeUrl: template.html_url,
-        slug: template.full_name,
-      }))
-  )
+  return templatesFromGithubOrg
+    .filter((repo) => !repo.archived && !repo.disabled)
+    .map((template) => ({
+      name: template.name,
+      sourceCodeUrl: template.html_url,
+      slug: template.full_name,
+    }))
 }
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'ghToken' implicitly has an 'any' ... Remove this comment to see the full error message
@@ -47,20 +43,16 @@ const getTemplateName = async ({ ghToken, options, repository }) => {
 
   const templates = await fetchTemplates(ghToken)
 
-  log(`Choose one of our starter templates. Netlify will create a new repo for this template in your GitHub account.`)
+  const templateOptions: SelectOptions<string> = {
+    message:
+      'Choose one of our starter templates. Netlify will create a new repo for this template in your GitHub account.',
+    options: templates.map((template) => ({
+      value: template.slug,
+      label: template.name,
+    })),
+  }
 
-  const { templateName } = await inquirer.prompt([
-    {
-      type: 'list',
-      name: 'templateName',
-      message: 'Template:',
-      // @ts-expect-error TS(7006) FIXME: Parameter 'template' implicitly has an 'any' type.
-      choices: templates.map((template) => ({
-        value: template.slug,
-        name: template.name,
-      })),
-    },
-  ])
+  const templateName = await select(templateOptions)
 
   return templateName
 }
@@ -69,6 +61,8 @@ const getTemplateName = async ({ ghToken, options, repository }) => {
 const getGitHubLink = ({ options, templateName }) => options.url || `https://github.com/${templateName}`
 
 export const sitesCreateTemplate = async (repository: string, options: OptionValues, command: BaseCommand) => {
+  !options.isChildCommand && intro('sites:create-template')
+
   const { api } = command.netlify
 
   await command.authenticate()
@@ -80,38 +74,38 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
   const { exists, isTemplate } = await validateTemplate({ templateName, ghToken })
   if (!exists) {
     const githubLink = getGitHubLink({ options, templateName })
-    error(
-      `Could not find template ${chalk.bold(templateName)}. Please verify it exists and you can ${getTerminalLink(
+    outro({
+      exit: true,
+      message: `Could not find template ${chalk.bold(templateName)}. Please verify it exists and you can ${getTerminalLink(
         'access to it on GitHub',
         githubLink,
       )}`,
-    )
+    })
     return
   }
   if (!isTemplate) {
     const githubLink = getGitHubLink({ options, templateName })
-    error(`${getTerminalLink(chalk.bold(templateName), githubLink)} is not a valid GitHub template`)
+    outro({
+      exit: true,
+      message: `${getTerminalLink(chalk.bold(templateName), githubLink)} is not a valid GitHub template`,
+    })
     return
   }
 
   const accounts = await api.listAccountsForUser()
 
   let { accountSlug } = options
-
   if (!accountSlug) {
-    const { accountSlug: accountSlugInput } = await inquirer.prompt([
-      {
-        type: 'list',
-        name: 'accountSlug',
-        message: 'Team:',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'account' implicitly has an 'any' type.
-        choices: accounts.map((account) => ({
-          value: account.slug,
-          name: account.name,
-        })),
-      },
-    ])
-    accountSlug = accountSlugInput
+    const accountSelectOptions: SelectOptions<string> = {
+      // @ts-expect-error TS(7006) FIXME: Parameter 'account' implicitly has an 'any' type.
+      options: accounts.map((account) => ({
+        value: account.slug,
+        label: account.name,
+      })),
+      message: 'Team:',
+    }
+
+    accountSlug = await select(accountSelectOptions)
   }
 
   const { name: nameFlag } = options

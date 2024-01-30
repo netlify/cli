@@ -4,6 +4,7 @@ import { chalk, error as failAndExit, log } from '../command-helpers.js'
 import { getGitHubToken as ghauth } from '../gh-auth.js'
 
 import { createDeployKey, formatErrorMessage, getBuildSettings, saveNetlifyToml, setupSite } from './utils.js'
+import { NetlifyLog } from '../styles/index.js'
 
 /**
  * @typedef Token
@@ -40,8 +41,8 @@ export const getGitHubToken = async ({ globalConfig }) => {
         return githubToken.token
       }
     } catch {
-      log(chalk.yellow('Token is expired or invalid!'))
-      log('Generating a new Github token...')
+      NetlifyLog.warn(chalk.yellow('Token is expired or invalid!'))
+      NetlifyLog.info('Generating a new Github token...')
     }
   }
 

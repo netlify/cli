@@ -1,8 +1,15 @@
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'node... Remove this comment to see the full error message
 import fetch from 'node-fetch'
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'token' implicitly has an 'any' type.
-export const getTemplatesFromGitHub = async (token) => {
+type Template = {
+  name: string
+  html_url: string
+  full_name: string
+  archived: boolean
+  disabled: boolean
+}
+
+export const getTemplatesFromGitHub = async (token: string) => {
   const getPublicGitHubReposFromOrg = new URL(`https://api.github.com/orgs/netlify-templates/repos`)
   // GitHub returns 30 by default and we want to avoid our limit
   // due to our archived repositories at any given time
@@ -19,7 +26,7 @@ export const getTemplatesFromGitHub = async (token) => {
       Authorization: `token ${token}`,
     },
   })
-  const allTemplates = await templates.json()
+  const allTemplates = (await templates.json()) as Template[]
 
   return allTemplates
 }
