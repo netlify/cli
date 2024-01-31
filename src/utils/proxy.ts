@@ -875,6 +875,7 @@ export const startProxy = async function ({
   })
 
   const rewriter = await createRewriter({
+    config,
     distDir: settings.dist,
     projectDir,
     jwtSecret: settings.jwtSecret,
