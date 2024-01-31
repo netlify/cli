@@ -423,16 +423,24 @@ const reqToURL = function (req, pathname) {
 
 const MILLISEC_TO_SEC = 1e3
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'configPath' implicitly has an 'an... Remove this comment to see the full error message
 const initializeProxy = async function ({
+  // @ts-expect-error TS(7031) FIXME: Binding element 'configPath' implicitly has an 'any... Remove this comment to see the full error message
   configPath,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'distDir' implicitly has an 'any... Remove this comment to see the full error message
   distDir,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'env' implicitly has an 'any... Remove this comment to see the full error message
   env,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'host' implicitly has an 'any... Remove this comment to see the full error message
   host,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'imageProxy' implicitly has an 'any... Remove this comment to see the full error message
   imageProxy,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'port' implicitly has an 'any... Remove this comment to see the full error message
   port,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'projectDir' implicitly has an 'any... Remove this comment to see the full error message
   projectDir,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'siteInfo' implicitly has an 'any... Remove this comment to see the full error message
   siteInfo,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'any... Remove this comment to see the full error message
   config,
 }) {
   const proxy = httpProxy.createProxyServer({
