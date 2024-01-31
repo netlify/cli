@@ -424,7 +424,17 @@ const reqToURL = function (req, pathname) {
 const MILLISEC_TO_SEC = 1e3
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'configPath' implicitly has an 'an... Remove this comment to see the full error message
-const initializeProxy = async function ({ configPath, distDir, env, host, imageProxy, port, projectDir, siteInfo, config }) {
+const initializeProxy = async function ({
+  configPath,
+  distDir,
+  env,
+  host,
+  imageProxy,
+  port,
+  projectDir,
+  siteInfo,
+  config,
+}) {
   const proxy = httpProxy.createProxyServer({
     selfHandleResponse: true,
     target: {
