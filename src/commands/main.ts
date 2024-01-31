@@ -37,6 +37,7 @@ import { createStatusCommand } from './status/index.js'
 import { createSwitchCommand } from './switch/index.js'
 import { createUnlinkCommand } from './unlink/index.js'
 import { createWatchCommand } from './watch/index.js'
+import { NetlifyLog } from '../utils/styles/index.js'
 
 const SUGGESTION_TIMEOUT = 1e4
 
@@ -178,6 +179,23 @@ const mainCommand = async function (options, command) {
 
   await execa(process.argv[0], [process.argv[1], suggestion], { stdio: 'inherit' })
 }
+const combineConsoleMessages = (message: any, optionalParams: any[]) => {
+  if (optionalParams?.length) {
+    return `${message} ${optionalParams.join(' ')}`
+  }
+  return message
+}
+
+const transportLogsToNetlifyLog = () => {
+  console.log = (message: any, optionalParams: any[]) =>
+    NetlifyLog.info(combineConsoleMessages(message, optionalParams))
+  console.warn = (message: any[], optionalParams: any[]) =>
+    NetlifyLog.warn(combineConsoleMessages(message, optionalParams))
+  console.error = (message: any[], optionalParams: any[]) =>
+    NetlifyLog.error(combineConsoleMessages(message, optionalParams))
+  console.info = (message: any[], optionalParams: any[]) =>
+    NetlifyLog.info(combineConsoleMessages(message, optionalParams))
+}
 
 /**
  * Creates the `netlify-cli` command
@@ -185,6 +203,11 @@ const mainCommand = async function (options, command) {
  * @returns {import('./base-command.js').default}
  */
 export const createMainCommand = () => {
+  // This below transport of logging has been added to ensure that
+  // logs are displated using the NetlifyLog style as some packages
+  // we use are using console.log to display logs
+  // transportLogsToNetlifyLog()
+
   const program = new BaseCommand('netlify')
   // register all the commands
   createAddonsCommand(program)

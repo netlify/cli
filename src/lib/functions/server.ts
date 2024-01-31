@@ -25,6 +25,7 @@ import { FunctionsRegistry } from './registry.js'
 import { handleScheduledFunction } from './scheduled.js'
 import { handleSynchronousFunction } from './synchronous.js'
 import { shouldBase64Encode } from './utils.js'
+import { NetlifyLog } from '../../utils/styles/index.js'
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'headers' implicitly has an 'any' type.
 const buildClientContext = function (headers) {
@@ -375,9 +376,9 @@ const startWebServer = async ({ debug, server, settings }) => {
     // @ts-expect-error TS(7006) FIXME: Parameter 'err' implicitly has an 'any' type.
     server.listen(settings.functionsPort, (/** @type {unknown} */ err) => {
       if (err) {
-        errorExit(`${NETLIFYDEVERR} Unable to start functions server: ${err}`)
+        NetlifyLog.error(`${NETLIFYDEVERR} Unable to start functions server: ${err}`, { exit: true })
       } else if (debug) {
-        log(`${NETLIFYDEVLOG} Functions server is listening on ${settings.functionsPort}`)
+        NetlifyLog.info(`${NETLIFYDEVLOG} Functions server is listening on ${settings.functionsPort}`)
       }
       // @ts-expect-error TS(2794) FIXME: Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
       resolve()
