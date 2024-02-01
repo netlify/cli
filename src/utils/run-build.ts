@@ -115,7 +115,6 @@ export const runNetlifyBuild = async ({ command, env = {}, options, settings, ti
     // Run Netlify Build using the main entry point.
     // @ts-expect-error TS(2345) FIXME: Argument of type '{ outputConfigPath: string; save... Remove this comment to see the full error message
     const { netlifyConfig, success } = await buildSite(buildSiteOptions)
-
     if (!success) {
       NetlifyLog.error('Could not start local server due to a build error', { exit: true })
 

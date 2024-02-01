@@ -70,18 +70,6 @@ export const runCommand = (command, options = {}) => {
     cwd,
   })
 
-  // @ts-expect-error TS(7006) FIXME: Parameter 'writeStream' implicitly has an 'any' ty... Remove this comment to see the full error message
-  const pipeDataWithSpinner = (writeStream, chunk, isError) => {
-    writeStream.write(chunk, () => {
-      // check if chunk is empty first, or white spaces only
-      if (!chunk || !chunk.toString().trim()) {
-        return
-      }
-
-      isError ? NetlifyLog.error(chunk.toString()) : NetlifyLog.message(chunk.toString())
-    })
-  }
-
   const customWritableStream = new stream.Writable({
     write: function (chunk, encoding, next) {
       NetlifyLog.message(stripAnsiCc.string(chunk.toString()))
