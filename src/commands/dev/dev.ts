@@ -220,11 +220,8 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
     await openBrowser({ url, silentBrowserNoneError: true })
   }
 
-  if (settings.useStaticServer) {
-    outro({ message: chalk.bold(`🧑‍💻 Server now ready on ${chalk.cyan(url)}`) })
-  } else {
-    NetlifyLog.success(`🧑‍💻 Server now ready on ${chalk.cyan(url)}`)
-  }
+  // This is a long running process, so we don't want to exit with an outro()
+  NetlifyLog.success(`🧑‍💻 Server now ready on ${chalk.cyan(url)}`)
 }
 
 export const createDevCommand = (program: BaseCommand) => {
