@@ -52,6 +52,7 @@ const cleanupBeforeExit = async ({ exitCode }) => {
  * @param {string} [options.cwd]
  * @returns {execa.ExecaChildProcess<string>}
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'command' implicitly has an 'any' type.
 export const runCommand = (command, options = {}) => {
   // @ts-expect-error TS(2339) FIXME: Property 'cwd' does not exist on type '{}'.
   const { cwd, env = {} } = options
@@ -122,6 +123,7 @@ export const runCommand = (command, options = {}) => {
  * @param {*} config.error
  * @returns
  */
+// @ts-expect-error TS(7031) FIXME: Binding element 'command' implicitly has an 'any' ... Remove this comment to see the full error message
 const isNonExistingCommandError = ({ command, error: commandError }) => {
   // `ENOENT` is only returned for non Windows systems
   // See https://github.com/sindresorhus/execa/pull/447
