@@ -1,6 +1,7 @@
 import process from 'process'
 
 import execa from 'execa'
+// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'stri... Remove this comment to see the full error message
 import stripAnsiCc from 'strip-ansi-control-characters'
 
 import { chalk } from './command-helpers.js'
@@ -11,6 +12,7 @@ import stream from 'stream'
 /**
  * @type {(() => Promise<void>)[]} - array of functions to run before the process exits
  */
+// @ts-expect-error TS(7034) FIXME: Variable 'cleanupWork' implicitly has type 'any[]'... Remove this comment to see the full error message
 const cleanupWork = []
 
 let cleanupStarted = false
@@ -18,6 +20,7 @@ let cleanupStarted = false
 /**
  * @param {() => Promise<void>} job
  */
+// @ts-expect-error TS(7006) FIXME: Parameter 'job' implicitly has an 'any' type.
 export const addCleanupJob = (job) => {
   cleanupWork.push(job)
 }
@@ -26,6 +29,7 @@ export const addCleanupJob = (job) => {
  * @param {object} input
  * @param {number=} input.exitCode The exit code to return when exiting the process after cleanup
  */
+// @ts-expect-error TS(7031) FIXME: Binding element 'exitCode' implicitly has an 'any'... Remove this comment to see the full error message
 const cleanupBeforeExit = async ({ exitCode }) => {
   // If cleanup has started, then wherever started it will be responsible for exiting
   if (!cleanupStarted) {
