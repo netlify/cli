@@ -423,8 +423,26 @@ const reqToURL = function (req, pathname) {
 
 const MILLISEC_TO_SEC = 1e3
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'configPath' implicitly has an 'an... Remove this comment to see the full error message
-const initializeProxy = async function ({ configPath, distDir, env, host, imageProxy, port, projectDir, siteInfo }) {
+const initializeProxy = async function ({
+  // @ts-expect-error TS(7031) FIXME: Binding element 'configPath' implicitly has an 'any... Remove this comment to see the full error message
+  configPath,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'distDir' implicitly has an 'any... Remove this comment to see the full error message
+  distDir,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'env' implicitly has an 'any... Remove this comment to see the full error message
+  env,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'host' implicitly has an 'any... Remove this comment to see the full error message
+  host,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'imageProxy' implicitly has an 'any... Remove this comment to see the full error message
+  imageProxy,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'port' implicitly has an 'any... Remove this comment to see the full error message
+  port,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'projectDir' implicitly has an 'any... Remove this comment to see the full error message
+  projectDir,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'siteInfo' implicitly has an 'any... Remove this comment to see the full error message
+  siteInfo,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'any... Remove this comment to see the full error message
+  config,
+}) {
   const proxy = httpProxy.createProxyServer({
     selfHandleResponse: true,
     target: {
@@ -434,7 +452,7 @@ const initializeProxy = async function ({ configPath, distDir, env, host, imageP
   })
   const headersFiles = [...new Set([path.resolve(projectDir, '_headers'), path.resolve(distDir, '_headers')])]
 
-  let headers = await parseHeaders({ headersFiles, configPath })
+  let headers = await parseHeaders({ headersFiles, configPath, config })
 
   const watchedHeadersFiles = configPath === undefined ? headersFiles : [...headersFiles, configPath]
   onChanges(watchedHeadersFiles, async () => {
@@ -443,7 +461,7 @@ const initializeProxy = async function ({ configPath, distDir, env, host, imageP
       `${NETLIFYDEVLOG} Reloading headers files from`,
       existingHeadersFiles.map((headerFile) => path.relative(projectDir, headerFile)),
     )
-    headers = await parseHeaders({ headersFiles, configPath })
+    headers = await parseHeaders({ headersFiles, configPath, config })
   })
 
   // @ts-expect-error TS(2339) FIXME: Property 'before' does not exist on type 'Server'.
@@ -853,9 +871,11 @@ export const startProxy = async function ({
     configPath,
     siteInfo,
     imageProxy,
+    config,
   })
 
   const rewriter = await createRewriter({
+    config,
     distDir: settings.dist,
     projectDir,
     jwtSecret: settings.jwtSecret,
