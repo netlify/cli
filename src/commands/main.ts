@@ -180,7 +180,7 @@ const mainCommand = async function (options, command) {
   await execa(process.argv[0], [process.argv[1], suggestion], { stdio: 'inherit' })
 }
 const combineConsoleMessages = (message?: any, optionalParams?: any[]) => {
-  if (optionalParams?.length) {
+  if (Array.isArray(optionalParams) && optionalParams?.length) {
     return `${message} ${optionalParams.join(' ')}`
   }
 
