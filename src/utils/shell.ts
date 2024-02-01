@@ -1,7 +1,6 @@
 import process from 'process'
 
 import execa from 'execa'
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'stri... Remove this comment to see the full error message
 import stripAnsiCc from 'strip-ansi-control-characters'
 
 import { chalk } from './command-helpers.js'
@@ -12,7 +11,6 @@ import stream from 'stream'
 /**
  * @type {(() => Promise<void>)[]} - array of functions to run before the process exits
  */
-// @ts-expect-error TS(7034) FIXME: Variable 'cleanupWork' implicitly has type 'any[]'... Remove this comment to see the full error message
 const cleanupWork = []
 
 let cleanupStarted = false
@@ -20,7 +18,6 @@ let cleanupStarted = false
 /**
  * @param {() => Promise<void>} job
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'job' implicitly has an 'any' type.
 export const addCleanupJob = (job) => {
   cleanupWork.push(job)
 }
@@ -29,7 +26,6 @@ export const addCleanupJob = (job) => {
  * @param {object} input
  * @param {number=} input.exitCode The exit code to return when exiting the process after cleanup
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'exitCode' implicitly has an 'any'... Remove this comment to see the full error message
 const cleanupBeforeExit = async ({ exitCode }) => {
   // If cleanup has started, then wherever started it will be responsible for exiting
   if (!cleanupStarted) {
@@ -52,7 +48,6 @@ const cleanupBeforeExit = async ({ exitCode }) => {
  * @param {string} [options.cwd]
  * @returns {execa.ExecaChildProcess<string>}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'command' implicitly has an 'any' type.
 export const runCommand = (command, options = {}) => {
   // @ts-expect-error TS(2339) FIXME: Property 'cwd' does not exist on type '{}'.
   const { cwd, env = {} } = options
@@ -71,29 +66,20 @@ export const runCommand = (command, options = {}) => {
   })
 
   const customWritableStream = new stream.Writable({
-    write: function (chunk, encoding, next) {
+    write: function (chunk, _, next) {
       NetlifyLog.message(stripAnsiCc.string(chunk.toString()))
       next()
     },
   })
 
   commandProcess.stdout?.on('data', (chunk) => {
-    // Handle normal output
     customWritableStream.write(chunk)
   })
 
   commandProcess.stdout?.on('error', (err) => {
-    // Handle errors
     NetlifyLog.error(err.message)
   })
 
-  // commandProcess.stdout?.pipe(customWritableStream).on('error', pipeDataWithSpinner.bind(null, process.stdout))
-  //
-  // // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-  // commandProcess.stdout.pipe(stripAnsiCc.stream()).on('data', pipeDataWithSpinner.bind(null, process.stdout))
-  // // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-  // commandProcess.stderr.pipe(stripAnsiCc.stream()).on('error', pipeDataWithSpinner.bind(null, process.stderr))
-  //
   commandProcess.stdin && process.stdin?.pipe(commandProcess.stdin)
 
   // we can't try->await->catch since we don't want to block on the framework server which
@@ -132,7 +118,6 @@ export const runCommand = (command, options = {}) => {
  * @param {*} config.error
  * @returns
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'command' implicitly has an 'any' ... Remove this comment to see the full error message
 const isNonExistingCommandError = ({ command, error: commandError }) => {
   // `ENOENT` is only returned for non Windows systems
   // See https://github.com/sindresorhus/execa/pull/447
