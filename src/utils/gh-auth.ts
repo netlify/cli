@@ -56,7 +56,7 @@ export const authWithNetlify = async () => {
       res.end(
         `${
           "<html><head><script>if(history.replaceState){history.replaceState({},'','/')}</script><style>html{font-family:system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';line-height:1.5;background:rgb(18 24 31)}body{overflow:hidden;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;width:100vw;}h3{margin:0}p{margin: 1rem 0 0.5rem}.card{position:relative;display:flex;flex-direction:column;width:75%;max-width:364px;padding:24px;background:white;color:rgb(18 24 31);border-radius:8px;box-shadow:rgb(18 24 31 / 60%) 0px 1px 10px 0px, rgb(18 24 31 / 40%) 0px 2px 4px 0px;}</style></head>" +
-          "<body><div class=card><h3>Logged In</h3><p>You're now logged into Netlify CLI with your "
+          "<body><div class=card><h3>Logged In</h3><p>You’re now logged into Netlify CLI with your "
         }${parameters.get('provider')} credentials. Please close this window.</p></div>`,
       )
       server.close()
