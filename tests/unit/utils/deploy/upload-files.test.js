@@ -49,3 +49,36 @@ test('Adds a retry count to function upload requests', async () => {
   expect(uploadDeployFunction).toHaveBeenNthCalledWith(2, expect.objectContaining({ xNfRetryCount: 1 }))
   expect(uploadDeployFunction).toHaveBeenNthCalledWith(3, expect.objectContaining({ xNfRetryCount: 2 }))
 })
+
+test('Does not retry on 400 response from function upload requests', async () => {
+  const uploadDeployFunction = vi.fn()
+  const mockError = new Error('Uh-oh')
+
+  mockError.status = 400
+
+  uploadDeployFunction.mockRejectedValue(mockError)
+
+  const mockApi = {
+    uploadDeployFunction,
+  }
+  const deployId = generateUUID()
+  const files = [
+    {
+      assetType: 'function',
+      filepath: '/some/path/func1.zip',
+      normalizedPath: 'func1.zip',
+      runtime: 'js',
+    },
+  ]
+  const options = {
+    concurrentUpload: 1,
+    maxRetry: 3,
+    statusCb: vi.fn(),
+  }
+
+  try {
+    await uploadFiles(mockApi, deployId, files, options)
+  } catch {}
+
+  expect(uploadDeployFunction).toHaveBeenCalledTimes(1)
+})

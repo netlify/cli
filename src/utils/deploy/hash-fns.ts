@@ -126,7 +126,7 @@ const hashFns = async (
   })
   const fileObjs = functionZips.map(
     // @ts-expect-error TS(7031) FIXME: Binding element 'buildData' implicitly has an 'any... Remove this comment to see the full error message
-    ({ buildData, displayName, generator, invocationMode, path: functionPath, runtime, runtimeVersion }) => ({
+    ({ buildData, displayName, generator, invocationMode, path: functionPath, priority, runtime, runtimeVersion }) => ({
       filepath: functionPath,
       root: tmpDir,
       relname: path.relative(tmpDir, functionPath),
@@ -140,6 +140,7 @@ const hashFns = async (
       generator,
       invocationMode,
       buildData,
+      priority,
     }),
   )
   const fnConfig = functionZips
@@ -154,6 +155,7 @@ const hashFns = async (
           generator: curr.generator,
           routes: curr.routes,
           build_data: curr.buildData,
+          priority: curr.priority,
         },
       }),
       {},
