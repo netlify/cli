@@ -55,7 +55,7 @@ export const authWithNetlify = async () => {
       deferredResolve(Object.fromEntries(parameters))
       res.end(
         `${
-          "<html><head><script>if(history.replaceState){history.replaceState({},'','/')}</script><style>html{font-family:sans-serif;background:#0e1e25}body{overflow:hidden;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;width:100vw;}h3{margin:0}.card{position:relative;display:flex;flex-direction:column;width:75%;max-width:364px;padding:24px;background:white;color:rgb(14,30,37);border-radius:8px;box-shadow:0 2px 4px 0 rgba(14,30,37,.16);}</style></head>" +
+          "<html><head><script>if(history.replaceState){history.replaceState({},'','/')}</script><style>html{font-family:sans-serif;background:rgb(18 24 31)}body{overflow:hidden;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;width:100vw;}h3{margin:0}.card{position:relative;display:flex;flex-direction:column;width:75%;max-width:364px;padding:24px;background:white;color:rgb(18 24 31);border-radius:8px;box-shadow:0 2px 4px 0 rgb(18 24 31 / 16%);}</style></head>" +
           "<body><div class=card><h3>Logged In</h3><p>You're now logged into Netlify CLI with your "
         }${parameters.get('provider')} credentials. Please close this window.</p></div>`,
       )
