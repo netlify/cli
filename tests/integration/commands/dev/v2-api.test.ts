@@ -103,7 +103,7 @@ describe.runIf(gte(version, '18.13.0')).concurrent('v2 api', () => {
 
       expect(response.status).toBe(500)
       expect(response.headers.get('content-type')).toBe('text/html')
-      expect(await response.text()).toContain('<html>')
+      expect(await response.text()).toContain('<html lang="en">')
     })
 
     test<FixtureTestContext>('supports custom URLs using a literal path', async ({ devServer }) => {
