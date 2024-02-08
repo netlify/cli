@@ -72,7 +72,7 @@
   "dependencies": {
     "@bugsnag/js": "7.20.2",
     "@fastify/static": "6.10.2",
-    "@netlify/blobs": "6.4.2",
+    "@netlify/blobs": "6.5.0",
     "@netlify/build": "29.33.6",
     "@netlify/build-info": "7.12.0",
     "@netlify/config": "20.11.0",
