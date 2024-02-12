@@ -1,6 +1,7 @@
 import { Buffer } from 'buffer'
 import { promises as fs } from 'fs'
 import path from 'path'
+import { parse as parseURL } from 'url'
 
 import express, { type RequestHandler } from 'express'
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'expr... Remove this comment to see the full error message
@@ -167,7 +168,7 @@ export const createHandler = function (options: GetFunctionsServerOptions): Requ
       'x-nf-site-id': [options?.siteInfo?.id ?? UNLINKED_SITE_MOCK_ID],
       [efHeaders.Geo]: Buffer.from(JSON.stringify(geoLocation)).toString('base64'),
     }).reduce((prev, [key, value]) => ({ ...prev, [key]: Array.isArray(value) ? value : [value] }), {})
-    const rawQuery = new URLSearchParams(requestQuery as Record<string, string>).toString()
+    const rawQuery = new URL(request.originalUrl, 'http://example.com').search
     const protocol = options.config?.dev?.https ? 'https' : 'http'
     const url = new URL(requestPath, `${protocol}://${request.get('host') || 'localhost'}`)
     url.search = rawQuery
