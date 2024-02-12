@@ -227,8 +227,8 @@ describe.skipIf(isWindows)('edge functions', () => {
         .build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
-        const funcResponse = await fetch(new URL("/func?1,2,3", server.url))
-        const efResponse = await fetch(new URL("/ef?1,2,3", server.url))
+        const funcResponse = await fetch(new URL('/func?1,2,3', server.url), {})
+        const efResponse = await fetch(new URL('/ef?1,2,3', server.url), {})
         t.expect(await funcResponse.text()).toEqual('?1,2,3')
         t.expect(await efResponse.text()).toEqual('?1,2,3')
       })
