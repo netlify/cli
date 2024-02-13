@@ -29,6 +29,7 @@ import {
   isEdgeFunctionsRequest,
 } from '../lib/edge-functions/proxy.js'
 import { fileExistsAsync, isFileAsync } from '../lib/fs.js'
+import { getFormHandler } from '../lib/functions/form-submissions-handler.js'
 import { DEFAULT_FUNCTION_URL_EXPRESSION } from '../lib/functions/registry.js'
 import { initializeProxy as initializeImageProxy, isImageRequest } from '../lib/images/proxy.js'
 import renderErrorTemplate from '../lib/render-error-template.js'
@@ -774,8 +775,12 @@ const onRequest = async (
   // @ts-expect-error TS(7031) FIXME: Binding element 'statusCode' implicitly has an 'an... Remove this comment to see the full error message
   req[shouldGenerateETag] = ({ statusCode }) => statusCode >= 200 && statusCode < 300
 
+  const hasFormSubmissionHandler: boolean =
+    functionsRegistry && getFormHandler({ functionsRegistry, logWarning: false })
+
   const ct = req.headers['content-type'] ? contentType.parse(req).type : ''
   if (
+    hasFormSubmissionHandler &&
     functionsServer &&
     req.method === 'POST' &&
     !isInternal(req.url) &&
