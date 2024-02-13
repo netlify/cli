@@ -439,7 +439,7 @@ export const handler = async function () {
     })
   })
 
-  test(`always redirects POST requests to functions server`, async (t) => {
+  test(`should not redirect POST request to functions server when it doesn't exists`, async (t) => {
     await withSiteBuilder(t, async (builder) => {
       await builder.build()
 
@@ -454,8 +454,8 @@ export const handler = async function () {
           body: 'some=thing',
         })
 
-        t.expect(error.status).toBe(404)
-        t.expect(await error.text()).toEqual('Function not found...')
+        t.expect(error.status).toBe(405)
+        t.expect(await error.text()).toEqual('Method Not Allowed')
       })
     })
   })
