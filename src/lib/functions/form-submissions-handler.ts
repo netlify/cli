@@ -11,22 +11,31 @@ import { warn } from '../../utils/command-helpers.js'
 import { BACKGROUND } from '../../utils/functions/index.js'
 import { capitalize } from '../string.js'
 
+import type NetlifyFunction from './netlify-function.js'
 import type { FunctionsRegistry } from './registry.js'
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'functionsRegistry' implicitly has... Remove this comment to see the full error message
-const getFormHandler = function ({ functionsRegistry }) {
+export const getFormHandler = function ({
+  functionsRegistry,
+  logWarning = true,
+}: {
+  functionsRegistry: FunctionsRegistry
+  logWarning?: boolean
+}) {
   const handlers = ['submission-created', `submission-created${BACKGROUND}`]
     .map((name) => functionsRegistry.get(name))
-    .filter(Boolean)
+    .filter((func): func is NetlifyFunction => Boolean(func))
     .map(({ name }) => name)
 
   if (handlers.length === 0) {
-    warn(`Missing form submission function handler`)
+    logWarning && warn(`Missing form submission function handler`)
     return
   }
 
   if (handlers.length === 2) {
-    warn(`Detected both '${handlers[0]}' and '${handlers[1]}' form submission functions handlers, using ${handlers[0]}`)
+    logWarning &&
+      warn(
+        `Detected both '${handlers[0]}' and '${handlers[1]}' form submission functions handlers, using ${handlers[0]}`,
+      )
   }
 
   return handlers[0]

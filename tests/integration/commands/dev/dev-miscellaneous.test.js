@@ -1278,4 +1278,44 @@ describe.concurrent('commands/dev-miscellaneous', () => {
       })
     })
   })
+
+  test('should send form-data POST requests to framework server if no function matches', async (t) => {
+    const externalServerPort = await getAvailablePort()
+    const externalServerPath = path.join(__dirname, '../../utils', 'external-server-cli.js')
+    const command = `node ${externalServerPath} ${externalServerPort}`
+
+    await withSiteBuilder(t, async (builder) => {
+      await builder
+        .withNetlifyToml({
+          config: {
+            dev: {
+              command,
+              targetPort: externalServerPort,
+              framework: '#custom',
+            },
+          },
+        })
+        .build()
+
+      await withDevServer(
+        {
+          cwd: builder.directory,
+        },
+        async ({ port }) => {
+          const form = new FormData()
+          form.set('foo', 'bar')
+          const response = await fetch(`http://localhost:${port}/request-to-framework`, {
+            method: 'POST',
+            body: form,
+            headers: {
+              'content-type': 'application/x-www-form-urlencoded;charset=UTF-8',
+            },
+          })
+          t.expect(await response.json(), 'response comes from framework').toMatchObject({
+            url: '/request-to-framework',
+          })
+        },
+      )
+    })
+  })
 })
