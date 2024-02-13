@@ -167,7 +167,7 @@ export const createHandler = function (options: GetFunctionsServerOptions): Requ
       'x-nf-site-id': [options?.siteInfo?.id ?? UNLINKED_SITE_MOCK_ID],
       [efHeaders.Geo]: Buffer.from(JSON.stringify(geoLocation)).toString('base64'),
     }).reduce((prev, [key, value]) => ({ ...prev, [key]: Array.isArray(value) ? value : [value] }), {})
-    const rawQuery = new URL(request.originalUrl, 'http://example.com').search
+    const rawQuery = new URL(request.originalUrl, 'http://example.com').search.slice(1)
     const protocol = options.config?.dev?.https ? 'https' : 'http'
     const url = new URL(requestPath, `${protocol}://${request.get('host') || 'localhost'}`)
     url.search = rawQuery
