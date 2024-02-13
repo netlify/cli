@@ -21,7 +21,7 @@ const testMatrix = [{ args: [] }]
 
 describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args }) => {
   test('should handle query params in redirects', async (t) => {
-    await withSiteBuilder('site-with-query-redirects', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       await builder
         .withContentFile({
           path: 'public/index.html',
@@ -80,7 +80,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
   })
 
   test('Should not use the ZISI function bundler if not using esbuild', async (t) => {
-    await withSiteBuilder('site-with-esm-function-and-no-esbuild', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withContentFile({
         path: path.join('functions', 'esm-function', 'esm-function.js'),
         content: `
@@ -103,7 +103,7 @@ export async function handler(event, context) {
   })
 
   test('Should use the ZISI function bundler and serve ESM functions if using esbuild', async (t) => {
-    await withSiteBuilder('site-with-esm-function-and-esbuild', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder
         .withNetlifyToml({ config: { functions: { directory: 'functions', node_bundler: 'esbuild' } } })
         .withContentFile({
@@ -128,7 +128,7 @@ export async function handler(event, context) {
   })
 
   test('Should use the ZISI function bundler and serve TypeScript functions if using esbuild', async (t) => {
-    await withSiteBuilder('site-with-ts-function-and-esbuild', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder
         .withNetlifyToml({ config: { functions: { directory: 'functions', node_bundler: 'esbuild' } } })
         .withContentFile({
@@ -158,7 +158,7 @@ export const handler = async function () {
   })
 
   test('Should use the ZISI function bundler and serve TypeScript functions if not using esbuild', async (t) => {
-    await withSiteBuilder('site-with-ts-function-and-no-esbuild', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withContentFile({
         path: path.join('functions', 'ts-function', 'ts-function.ts'),
         content: `
@@ -186,7 +186,7 @@ export const handler = async function () {
   })
 
   test(`should start https server when https dev block is configured`, async (t) => {
-    await withSiteBuilder('sites-with-https-certificate', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       await builder
         .withNetlifyToml({
           config: {
@@ -279,7 +279,7 @@ export const handler = async function () {
   })
 
   test(`should use custom functions timeouts`, async (t) => {
-    await withSiteBuilder('site-with-custom-functions-timeout', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       await builder
         .withNetlifyToml({
           config: {
@@ -340,8 +340,8 @@ export const handler = async function () {
   })
 
   // we need curl to reproduce this issue
-  test.skipIf(os.platform() === 'win32')(`don't hang on 'Expect: 100-continue' header`, async () => {
-    await withSiteBuilder('site-with-expect-header', async (builder) => {
+  test.skipIf(os.platform() === 'win32')(`don't hang on 'Expect: 100-continue' header`, async (t) => {
+    await withSiteBuilder(t, async (builder) => {
       await builder
         .withNetlifyToml({
           config: {
@@ -370,7 +370,7 @@ export const handler = async function () {
   })
 
   test(`serves non ascii static files correctly`, async (t) => {
-    await withSiteBuilder('site-with-non-ascii-files', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       await builder
         .withContentFile({
           path: 'public/范.txt',
@@ -392,7 +392,7 @@ export const handler = async function () {
   })
 
   test(`returns headers set by function`, async (t) => {
-    await withSiteBuilder('site-with-function-with-custom-headers', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       await builder
         .withFunction({
           pathPrefix: 'netlify/functions',
@@ -422,7 +422,7 @@ export const handler = async function () {
   })
 
   test('should match redirect when path is URL encoded', async (t) => {
-    await withSiteBuilder('site-with-encoded-redirect', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       await builder
         .withContentFile({ path: 'static/special[test].txt', content: `special` })
         .withRedirectsFile({ redirects: [{ from: '/_next/static/*', to: '/static/:splat', status: 200 }] })
@@ -440,7 +440,7 @@ export const handler = async function () {
   })
 
   test(`always redirects POST requests to functions server`, async (t) => {
-    await withSiteBuilder('site-with-post-request', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       await builder.build()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
