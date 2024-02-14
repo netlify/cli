@@ -239,6 +239,7 @@ export default class NetlifyFunction {
     if (this.blobsContext) {
       const payload = JSON.stringify({
         url: this.blobsContext.edgeURL,
+        url_uncached: this.blobsContext.edgeURL,
         token: this.blobsContext.token,
       })
 
