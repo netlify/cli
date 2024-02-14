@@ -177,7 +177,7 @@ export const initializeProxy = async ({
 
     if (blobsContext?.edgeURL && blobsContext?.token) {
       req.headers[headers.BlobsInfo] = Buffer.from(
-        JSON.stringify({ url: blobsContext.edgeURL, token: blobsContext.token }),
+        JSON.stringify({ url: blobsContext.edgeURL, url_uncached: blobsContext.edgeURL, token: blobsContext.token }),
       ).toString('base64')
     }
 
