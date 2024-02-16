@@ -31,33 +31,29 @@ interface IpxParams {
 }
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'config' implicitly has an 'any' type.
-export const parseAllDomains = function (config): { errors: ErrorObject[]; remoteDomains: string[] } {
-  const remoteDomains = [] as string[]
+export const parseAllRemoteImages = function (config): { errors: ErrorObject[]; remotePatterns: RegExp[] } {
+  const remotePatterns = [] as RegExp[]
   const errors = [] as ErrorObject[]
-  const domains = config?.images?.remote_images
+  const remoteImages = config?.images?.remote_images
 
-  if (!domains) {
-    return { errors, remoteDomains }
+  if (!remoteImages) {
+    return { errors, remotePatterns }
   }
 
-  for (const patternString of domains) {
+  for (const patternString of remoteImages) {
     try {
-      const url = new URL(patternString)
-      if (url.hostname) {
-        remoteDomains.push(url.hostname)
-      } else {
-        errors.push({ message: `The URL '${patternString}' does not have a valid hostname.` })
-      }
+      const urlRegex = new RegExp(patternString)
+      remotePatterns.push(urlRegex)
     } catch (error) {
       if (error instanceof Error) {
-        errors.push({ message: `Invalid URL '${patternString}': ${error.message}` })
+        errors.push({ message: `Invalid URL pattern '${patternString}': ${error.message}` })
       } else {
-        errors.push({ message: `Invalid URL '${patternString}': An unknown error occurred` })
+        errors.push({ message: `Invalid URL pattern '${patternString}': An unknown error occurred` })
       }
     }
   }
 
-  return { errors, remoteDomains }
+  return { errors, remotePatterns }
 }
 
 interface ErrorObject {
@@ -68,25 +64,25 @@ const getErrorMessage = function ({ message }: { message: string }): string {
   return message
 }
 
-export const handleImageDomainsErrors = async function (errors: ErrorObject[]) {
+export const handleRemoteImagesErrors = async function (errors: ErrorObject[]) {
   if (errors.length === 0) {
     return
   }
 
   const errorMessage = await errors.map(getErrorMessage).join('\n\n')
-  log(NETLIFYDEVERR, `Image domains syntax errors:\n${errorMessage}`)
+  log(NETLIFYDEVERR, `Remote images syntax errors:\n${errorMessage}`)
 }
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'any' t... Remove this comment to see the full error message
-export const parseRemoteImageDomains = async function ({ config }) {
+export const parseRemoteImages = async function ({ config }) {
   if (!config) {
     return []
   }
 
-  const { errors, remoteDomains } = await parseAllDomains(config)
-  await handleImageDomainsErrors(errors)
+  const { errors, remotePatterns } = await parseAllRemoteImages(config)
+  await handleRemoteImagesErrors(errors)
 
-  return remoteDomains
+  return remotePatterns
 }
 
 export const isImageRequest = function (req: Request): boolean {
@@ -130,12 +126,14 @@ export const initializeProxy = async function ({
   config: NetlifyConfig
   settings: ServerSettings
 }) {
-  const remoteDomains = await parseRemoteImageDomains({ config })
+  const remoteImages = await parseRemoteImages({ config })
   const devServerUrl = getProxyUrl(settings)
 
   const ipx = createIPX({
     storage: ipxFSStorage({ dir: config?.build?.publish ?? './public' }),
-    httpStorage: ipxHttpStorage({ domains: [...remoteDomains, devServerUrl] }),
+    httpStorage: ipxHttpStorage({
+      allowAllDomains: true,
+    }),
   })
 
   const handler = createIPXNodeServer(ipx)
@@ -152,7 +150,12 @@ export const initializeProxy = async function ({
       console.log(`fullImageUrl: ${fullImageUrl}`)
       req.url = `/${modifiers}/${fullImageUrl}`
     } else {
-      // If the image is remote, we can just pass the URL as is
+      // If the image is remote, we first check if it's allowed by any of patterns
+      if (!remoteImages.some((remoteImage) => remoteImage.test(sourceImagePath))) {
+        res.status(403).send('Not allowed Remote Image URL.')
+        return
+      }
+      // Construct the full URL for remote paths
       req.url = `/${modifiers}/${encodeURIComponent(sourceImagePath)}`
     }
 
