@@ -139,6 +139,8 @@ export const initializeProxy = async function ({
   const handler = createIPXNodeServer(ipx)
   const app = express()
 
+  let lastTimeRemoteImagesConfigurationDetailsMessageWasLogged = 0
+
   app.use(IMAGE_URL_PATTERN, async (req, res) => {
     const { url, ...query } = req.query
     const sourceImagePath = url as string
@@ -152,7 +154,27 @@ export const initializeProxy = async function ({
     } else {
       // If the image is remote, we first check if it's allowed by any of patterns
       if (!remoteImages.some((remoteImage) => remoteImage.test(sourceImagePath))) {
-        res.status(403).send('Not allowed Remote Image URL.')
+        const remoteImageNotAllowedLogMessage = `Remote image "${sourceImagePath}" source for Image CDN is not allowed.`
+
+        // Contextual information about the remote image configuration is throttled
+        // to avoid spamming the console as it's quite verbose
+        // Each not allowed remote image will still be logged, just without configuration details
+        if (Date.now() - lastTimeRemoteImagesConfigurationDetailsMessageWasLogged > 1000 * 30) {
+          console.error(
+            `${remoteImageNotAllowedLogMessage}\n\n${
+              remoteImages.length === 0
+                ? 'Currently no remote images are allowed.'
+                : `Currently allowed remote images configuration details:\n${remoteImages
+                    .map((pattern) => ` - ${pattern}`)
+                    .join('\n')}`
+            }\n\nSee https://docs.netlify.com/image-cdn/overview/#remote-path how to configure allowed remote images.`,
+          )
+          lastTimeRemoteImagesConfigurationDetailsMessageWasLogged = Date.now()
+        } else {
+          console.error(remoteImageNotAllowedLogMessage)
+        }
+
+        res.status(400).end()
         return
       }
       // Construct the full URL for remote paths
