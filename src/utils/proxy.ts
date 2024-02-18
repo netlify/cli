@@ -799,7 +799,7 @@ const onRequest = async (
 // @ts-expect-error TS(7006) FIXME: Parameter 'settings' implicitly has an 'any' type.
 export const getProxyUrl = function (settings) {
   const scheme = settings.https ? 'https' : 'http'
-  return `${scheme}://localhost:${settings.port}`
+  return `${scheme}://${settings.host || 'localhost'}:${settings.port}`
 }
 
 export const startProxy = async function ({

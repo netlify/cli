@@ -306,6 +306,7 @@ const detectServerSettings = async (
 
   return {
     ...settings,
+    host: devConfig.host,
     port: acquiredPort,
     jwtSecret: devConfig.jwtSecret || 'secret',
     jwtRolePath: devConfig.jwtRolePath || 'app_metadata.authorization.roles',

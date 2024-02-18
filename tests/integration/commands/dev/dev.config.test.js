@@ -525,4 +525,42 @@ describe.concurrent('commands/dev/config', () => {
       })
     })
   })
+
+  test('should use custom host', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      builder
+        .withNetlifyToml({
+          config: {
+            functions: { directory: 'functions' },
+            redirects: [{ from: '/api/*', to: '/.netlify/functions/:splat', status: 200 }],
+          },
+        })
+        .withFunction({
+          path: 'echo.js',
+          handler: async (event) => ({
+            statusCode: 200,
+            body: JSON.stringify(event),
+          }),
+        })
+
+      await builder.build()
+
+      await withDevServer({ cwd: builder.directory, host: '0.0.0.0' }, async (server) => {
+        t.expect(server.host).toBe('0.0.0.0')
+        const response1 = await fetch(`${server.url}`).then((res) => res.text())
+        t.expect(response1).toEqual('404 Not Found')
+
+        const response2 = await fetch(`${server.url}/api/echo?ding=dong`, {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/x-www-form-urlencoded',
+          },
+          body: 'some=thing',
+        }).then((res) => res.json())
+
+        t.expect(response2.body).toEqual('some=thing')
+        t.expect(response2.headers.host).toEqual(`${server.host}:${server.port}`)
+      })
+    })
+  })
 })

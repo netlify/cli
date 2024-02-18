@@ -12,6 +12,7 @@ export type DevConfig = NonNullable<NetlifyTOML['dev']> & {
   publish?: string
   /** Port to serve the functions */
   port: number
+  host?: string
   live: boolean
   /** The base directory from the [build] section of the configuration file */
   base?: string

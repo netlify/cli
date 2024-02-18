@@ -47,6 +47,7 @@ interface DevServerOptions {
   offline?: boolean
   prompt?: $FIXME[]
   serve?: boolean
+  host?: string
 }
 
 const startServer = async ({
@@ -56,14 +57,15 @@ const startServer = async ({
   debug = false,
   env = {},
   expectFailure = false,
+  host,
   offline = true,
   prompt,
   serve = false,
 }: DevServerOptions): Promise<DevServer | { timeout: boolean; output: string }> => {
   const port = await getPort()
   const staticPort = await getPort()
-  const host = 'localhost'
-  const url = `http://${host}:${port}`
+  const usedHost = host || 'localhost'
+  const url = `http://${usedHost}:${port}`
 
   console.log(`Starting dev server on port: ${port} in directory ${path.basename(cwd)}`)
 
@@ -111,7 +113,7 @@ const startServer = async ({
         setImmediate(() =>
           resolve({
             url,
-            host,
+            host: usedHost,
             port,
             errorBuffer,
             outputBuffer,

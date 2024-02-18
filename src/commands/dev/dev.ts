@@ -136,7 +136,6 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
   let settings
   try {
     settings = await detectServerSettings(devConfig, options, command)
-
     cachedConfig.config = getConfigWithPlugins(cachedConfig.config, settings)
   } catch (error_) {
     if (error_ && typeof error_ === 'object' && 'message' in error_) {
@@ -251,6 +250,7 @@ export const createDevCommand = (program: BaseCommand) => {
       normalizeContext,
     )
     .option('-p ,--port <port>', 'port of netlify dev', (value) => Number.parseInt(value))
+    .option('--host <host>', 'host of netlify dev')
     .addOption(
       new Option('--targetPort <port>', 'Old, prefer --target-port. Port of target app server')
         .argParser((value) => Number.parseInt(value))
