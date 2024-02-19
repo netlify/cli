@@ -22,7 +22,7 @@ test('should report invalid remote images', () => {
   const { errors, remotePatterns } = parseAllRemoteImages(config)
   expect(errors).toEqual([
     {
-      message: "Invalid URL pattern '*': Invalid regular expression: /*/: Nothing to repeat",
+      message: 'Invalid regular expression: /*/: Nothing to repeat',
     },
   ])
   expect(remotePatterns).toEqual([])
