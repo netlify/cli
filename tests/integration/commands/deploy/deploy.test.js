@@ -23,7 +23,8 @@ const validateContent = async ({ content, path, siteUrl, t }) => {
     t.expect(response.status).toBe(404)
     return
   }
-  t.expect(body).toEqual(content)
+  t.expect(response.status, `status should be 200. request id: ${response.headers.get('x-nf-request-id')}`).toBe(200)
+  t.expect(body, `body should be as expected. request id: ${response.headers.get('x-nf-request-id')}`).toEqual(content)
 }
 
 const validateDeploy = async ({ content, contentMessage, deploy, siteName, t }) => {
