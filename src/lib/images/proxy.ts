@@ -164,7 +164,7 @@ export const initializeProxy = async function ({
                 : `Currently allowed remote images configuration details:\n${remoteImages
                     .map((pattern) => ` - ${pattern}`)
                     .join('\n')}`
-            }\n\Refer to https://docs.netlify.com/image-cdn/overview/#remote-path for information about how to configure allowed remote images.`,
+            }\n\nRefer to https://ntl.fyi/remote-images for information about how to configure allowed remote images.`,
           )
           lastTimeRemoteImagesConfigurationDetailsMessageWasLogged = Date.now()
         } else {
