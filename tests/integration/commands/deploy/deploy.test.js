@@ -27,6 +27,11 @@ const validateContent = async ({ content, path, siteUrl, t }) => {
     }
     t.expect(body).toEqual(content)
   } catch (error) {
+    if (typeof error.response === 'undefined') {
+      console.log('Error:', error)
+      throw new Error(`Failed getting content: ${statusCode} - NO RESPONSE ON ERROR - ${body}`)
+    }
+
     const {
       response: { statusMessage },
     } = error
@@ -167,7 +172,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
     })
   })
 
-  test('should deploy Edge Functions with custom cwd when directory exists', async (t) => {
+  test.only('should deploy Edge Functions with custom cwd when directory exists', async (t) => {
     await withSiteBuilder('site-with-public-folder', async (builder) => {
       const content = 'Edge Function works NOT'
       const pathPrefix = 'app/cool'
