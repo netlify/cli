@@ -157,7 +157,7 @@ export const initializeProxy = async function ({
         // to avoid spamming the console as it's quite verbose
         // Each not allowed remote image will still be logged, just without configuration details
         if (Date.now() - lastTimeRemoteImagesConfigurationDetailsMessageWasLogged > 1000 * 30) {
-          console.error(
+          log(
             `${remoteImageNotAllowedLogMessage}\n\n${
               remoteImages.length === 0
                 ? 'Currently no remote images are allowed.'
@@ -168,7 +168,7 @@ export const initializeProxy = async function ({
           )
           lastTimeRemoteImagesConfigurationDetailsMessageWasLogged = Date.now()
         } else {
-          console.error(remoteImageNotAllowedLogMessage)
+          log(remoteImageNotAllowedLogMessage)
         }
 
         res.status(400).end()
