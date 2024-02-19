@@ -45,11 +45,9 @@ export const parseAllRemoteImages = function (config): { errors: ErrorObject[]; 
       const urlRegex = new RegExp(patternString)
       remotePatterns.push(urlRegex)
     } catch (error) {
-      if (error instanceof Error) {
-        errors.push({ message: `Invalid URL pattern '${patternString}': ${error.message}` })
-      } else {
-        errors.push({ message: `Invalid URL pattern '${patternString}': An unknown error occurred` })
-      }
+      const message = error instanceof Error ? error.message : 'An unknown error occurred'
+
+      errors.push({ message })
     }
   }
 
