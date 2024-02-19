@@ -8,6 +8,7 @@ import { afterAll, beforeAll, describe, test } from 'vitest'
 
 import { callCli } from '../../utils/call-cli.js'
 import { createLiveTestSite, generateSiteName } from '../../utils/create-live-test-site.js'
+import { pause } from '../../utils/pause.js'
 import { withSiteBuilder } from '../../utils/site-builder.ts'
 
 // eslint-disable-next-line no-underscore-dangle
@@ -19,20 +20,12 @@ const SITE_NAME = generateSiteName('netlify-test-deploy-')
 const validateContent = async ({ content, path, siteUrl, t }) => {
   const response = await fetch(`${siteUrl}${path}`)
   const body = await response.text()
-  const statusCode = response.status
-  try {
-    if (content === undefined) {
-      t.expect(response.status).toBe(404)
-      return
-    }
-    t.expect(body).toEqual(content)
-  } catch (error) {
-    const {
-      response: { statusMessage },
-    } = error
-
-    throw new Error(`Failed getting content: ${statusCode} - ${statusMessage} - ${body}`)
+  if (content === undefined) {
+    t.expect(response.status).toBe(404)
+    return
   }
+  t.expect(response.status, `status should be 200. request id: ${response.headers.get('x-nf-request-id')}`).toBe(200)
+  t.expect(body, `body should be as expected. request id: ${response.headers.get('x-nf-request-id')}`).toEqual(content)
 }
 
 const validateDeploy = async ({ content, contentMessage, deploy, siteName, t }) => {
@@ -61,14 +54,14 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
   })
 
   test('should deploy site when dir flag is passed', async (t) => {
-    await withSiteBuilder('site-with-public-folder', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       const content = '<h1>⊂◉‿◉つ</h1>'
       builder.withContentFile({
         path: 'public/index.html',
         content,
       })
 
-      await builder.buildAsync()
+      await builder.build()
 
       const deploy = await callCli(['deploy', '--json', '--dir', 'public'], {
         cwd: builder.directory,
@@ -80,7 +73,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
   })
 
   test('should deploy site by name', async (t) => {
-    await withSiteBuilder('site-with-public-folder', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       const content = '<h1>⊂◉‿◉つ</h1>'
       builder
         .withContentFile({
@@ -93,7 +86,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
           },
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       const deploy = await callCli(['deploy', '--json', '--site', SITE_NAME], {
         cwd: builder.directory,
@@ -104,7 +97,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
   })
 
   test('should deploy site when publish directory set in netlify.toml', async (t) => {
-    await withSiteBuilder('site-with-public-folder', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       const content = '<h1>⊂◉‿◉つ</h1>'
       builder
         .withContentFile({
@@ -117,7 +110,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
           },
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       const deploy = await callCli(['deploy', '--json'], {
         cwd: builder.directory,
@@ -129,7 +122,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
   })
 
   test('should deploy Edge Functions when directory exists', async (t) => {
-    await withSiteBuilder('site-with-public-folder', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       const content = 'Edge Function works NOT'
       builder
         .withContentFile({
@@ -147,7 +140,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
           name: 'edge',
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       const options = {
         cwd: builder.directory,
@@ -156,6 +149,9 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
 
       await callCli(['build'], options)
       const deploy = await callCli(['deploy', '--json'], options).then((output) => JSON.parse(output))
+
+      // give edge functions manifest a couple ticks to propagate
+      await pause(500)
 
       await validateDeploy({
         deploy,
@@ -168,7 +164,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
   })
 
   test('should deploy Edge Functions with custom cwd when directory exists', async (t) => {
-    await withSiteBuilder('site-with-public-folder', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       const content = 'Edge Function works NOT'
       const pathPrefix = 'app/cool'
       builder
@@ -189,7 +185,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
           pathPrefix,
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       const options = {
         cwd: builder.directory,
@@ -200,6 +196,9 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
       const deploy = await callCli(['deploy', '--json', '--cwd', pathPrefix], options).then((output) =>
         JSON.parse(output),
       )
+
+      // give edge functions manifest a couple ticks to propagate
+      await pause(500)
 
       await validateDeploy({
         deploy,
@@ -212,7 +211,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
   })
 
   test('should run build command before deploy when build flag is passed', async (t) => {
-    await withSiteBuilder('site-with-public-folder', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       const content = '<h1>⊂◉‿◉つ</h1>'
       builder
         .withContentFile({
@@ -225,7 +224,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
           },
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       const output = await callCli(['deploy', '--build'], {
         cwd: builder.directory,
@@ -236,8 +235,8 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
     })
   })
 
-  test('should return valid json when both --build and --json are passed', async () => {
-    await withSiteBuilder('site-with-public-folder', async (builder) => {
+  test('should return valid json when both --build and --json are passed', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
       const content = '<h1>⊂◉‿◉つ</h1>'
       builder
         .withContentFile({
@@ -250,7 +249,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
           },
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       const output = await callCli(['deploy', '--build', '--json'], {
         cwd: builder.directory,
@@ -262,7 +261,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
   })
 
   test('should deploy hidden public folder but ignore hidden/__MACOSX files', async (t) => {
-    await withSiteBuilder('site-with-a-dedicated-publish-folder', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder
         .withContentFiles([
           {
@@ -288,7 +287,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
           },
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       const deploy = await callCli(['deploy', '--json'], {
         cwd: builder.directory,
@@ -318,7 +317,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
   })
 
   test('should filter node_modules from root directory', async (t) => {
-    await withSiteBuilder('site-with-a-project-directory', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder
         .withContentFiles([
           {
@@ -336,7 +335,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
           },
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       const deploy = await callCli(['deploy', '--json'], {
         cwd: builder.directory,
@@ -354,7 +353,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
   })
 
   test('should not filter node_modules from publish directory', async (t) => {
-    await withSiteBuilder('site-with-a-project-directory', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder
         .withContentFiles([
           {
@@ -372,7 +371,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
           },
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       const deploy = await callCli(['deploy', '--json'], {
         cwd: builder.directory,
@@ -390,8 +389,8 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
   })
 
   test('should exit with error when deploying an empty directory', async (t) => {
-    await withSiteBuilder('site-with-an-empty-directory', async (builder) => {
-      await builder.buildAsync()
+    await withSiteBuilder(t, async (builder) => {
+      await builder.build()
 
       try {
         await callCli(['deploy', '--dir', '.'], {
@@ -405,7 +404,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
   })
 
   test('should refresh configuration when --build is passed', async (t) => {
-    await withSiteBuilder('site-with-public-folder', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       await builder
         .withContentFile({
           path: 'public/index.html',
@@ -436,7 +435,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
             },
           },
         })
-        .buildAsync()
+        .build()
 
       const { deploy_url: deployUrl } = await callCli(
         ['deploy', '--build', '--json'],
@@ -454,7 +453,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
   })
 
   test('should deploy functions from internal functions directory', async (t) => {
-    await withSiteBuilder('site-with-internal-functions', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       await builder
         .withNetlifyToml({
           config: {
@@ -498,7 +497,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
           `,
           path: '.netlify/functions-internal/func-4.mjs',
         })
-        .buildAsync()
+        .build()
 
       const { deploy_url: deployUrl } = await callCli(
         ['deploy', '--build', '--json'],
@@ -526,7 +525,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
   })
 
   test('should deploy functions from internal functions directory when setting `base` to a sub-directory', async (t) => {
-    await withSiteBuilder('site-with-internal-functions-sub-directory', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       await builder
         .withNetlifyToml({
           config: {
@@ -542,7 +541,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
             body: 'Internal',
           }),
         })
-        .buildAsync()
+        .build()
 
       const { deploy_url: deployUrl } = await callCli(
         ['deploy', '--build', '--json'],
@@ -559,7 +558,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
   })
 
   test('should handle redirects mutated by plugins', async (t) => {
-    await withSiteBuilder('site-with-public-folder', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       const content = '<h1>⊂◉‿◉つ</h1>'
       await builder
         .withContentFile({
@@ -600,7 +599,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
             },
           },
         })
-        .buildAsync()
+        .build()
 
       const deploy = await callCli(
         ['deploy', '--json', '--build'],
@@ -648,7 +647,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
       runtime: 'js',
     }
 
-    await withSiteBuilder('site-with-functions-manifest-1', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       await builder
         .withNetlifyToml({
           config: {
@@ -684,7 +683,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
             body: 'Bundled at deployment',
           }),
         })
-        .buildAsync()
+        .build()
 
       const { deploy_url: deployUrl } = await callCli(
         ['deploy', '--json'],
@@ -707,7 +706,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
       runtime: 'js',
     }
 
-    await withSiteBuilder('site-with-functions-manifest-2', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       await builder
         .withNetlifyToml({
           config: {
@@ -743,7 +742,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
             body: 'Bundled at deployment',
           }),
         })
-        .buildAsync()
+        .build()
 
       const { deploy_url: deployUrl } = await callCli(
         ['deploy', '--json', '--skip-functions-cache'],
@@ -768,7 +767,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
       runtime: 'js',
     }
 
-    await withSiteBuilder('site-with-functions-manifest-3', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       await builder
         .withNetlifyToml({
           config: {
@@ -804,7 +803,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
             body: 'Bundled at deployment',
           }),
         })
-        .buildAsync()
+        .build()
 
       const { deploy_url: deployUrl } = await callCli(
         ['deploy', '--json'],
@@ -821,7 +820,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
   })
 
   test('should upload blobs when saved into .netlify directory', async (t) => {
-    await withSiteBuilder('site-with-blobs', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       await builder
         .withNetlifyToml({
           config: {
