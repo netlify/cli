@@ -8,6 +8,7 @@ import { afterAll, beforeAll, describe, test } from 'vitest'
 
 import { callCli } from '../../utils/call-cli.js'
 import { createLiveTestSite, generateSiteName } from '../../utils/create-live-test-site.js'
+import { pause } from '../../utils/pause.js'
 import { withSiteBuilder } from '../../utils/site-builder.ts'
 
 // eslint-disable-next-line no-underscore-dangle
@@ -149,6 +150,9 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
       await callCli(['build'], options)
       const deploy = await callCli(['deploy', '--json'], options).then((output) => JSON.parse(output))
 
+      // give edge functions manifest a couple ticks to propagate
+      await pause(500)
+
       await validateDeploy({
         deploy,
         siteName: SITE_NAME,
@@ -192,6 +196,9 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
       const deploy = await callCli(['deploy', '--json', '--cwd', pathPrefix], options).then((output) =>
         JSON.parse(output),
       )
+
+      // give edge functions manifest a couple ticks to propagate
+      await pause(500)
 
       await validateDeploy({
         deploy,
