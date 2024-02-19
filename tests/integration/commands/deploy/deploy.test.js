@@ -19,20 +19,11 @@ const SITE_NAME = generateSiteName('netlify-test-deploy-')
 const validateContent = async ({ content, path, siteUrl, t }) => {
   const response = await fetch(`${siteUrl}${path}`)
   const body = await response.text()
-  const statusCode = response.status
-  try {
-    if (content === undefined) {
-      t.expect(response.status).toBe(404)
-      return
-    }
-    t.expect(body).toEqual(content)
-  } catch (error) {
-    const {
-      response: { statusMessage },
-    } = error
-
-    throw new Error(`Failed getting content: ${statusCode} - ${statusMessage} - ${body}`)
+  if (content === undefined) {
+    t.expect(response.status).toBe(404)
+    return
   }
+  t.expect(body).toEqual(content)
 }
 
 const validateDeploy = async ({ content, contentMessage, deploy, siteName, t }) => {
