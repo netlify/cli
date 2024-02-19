@@ -149,7 +149,6 @@ export const initializeProxy = async function ({
       // Construct the full URL for relative paths to request from development server
       const sourceImagePathWithLeadingSlash = sourceImagePath.startsWith('/') ? sourceImagePath : `/${sourceImagePath}`
       const fullImageUrl = `${devServerUrl}${encodeURIComponent(sourceImagePathWithLeadingSlash)}`
-      console.log(`fullImageUrl: ${fullImageUrl}`)
       req.url = `/${modifiers}/${fullImageUrl}`
     } else {
       // If the image is remote, we first check if it's allowed by any of patterns
