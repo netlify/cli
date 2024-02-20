@@ -100,9 +100,15 @@ const retryUpload = (uploadFn, maxRetry) =>
       } catch (error) {
         lastError = error
 
+        // We don't need to retry for 400 or 422 errors
+        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+        if (error.status === 400 || error.status === 422) {
+          return reject(error)
+        }
+
         // observed errors: 408, 401 (4** swallowed), 502
         // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        if (error.status >= 400 || error.name === 'FetchError') {
+        if (error.status > 400 || error.name === 'FetchError') {
           fibonacciBackoff.backoff()
           return
         }

@@ -420,7 +420,7 @@ export class FunctionsRegistry {
 
       func.buildData = {
         ...manifestEntry?.buildData,
-        routes: manifestEntry.routes,
+        routes: manifestEntry?.routes,
       }
 
       // When we look at an unzipped function, we don't know whether it uses

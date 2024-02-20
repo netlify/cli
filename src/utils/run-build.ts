@@ -148,13 +148,13 @@ export const runNetlifyBuild = async ({ command, env = {}, options, settings, ti
   }
 
   // Run Netlify Build using the `startDev` entry point.
-  const { error: startDevError, success } = await startDev(devCommand, startDevOptions)
+  const { configMutations, error: startDevError, success } = await startDev(devCommand, startDevOptions)
 
   if (!success && startDevError) {
     error(`Could not start local development server\n\n${startDevError.message}\n\n${startDevError.stack}`)
   }
 
-  return {}
+  return { configMutations }
 }
 
 /**
