@@ -6,7 +6,7 @@ description: Manage objects in Netlify Blobs
 # `blobs`
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
-Manage objects in Netlify Blobs
+(Beta) Manage objects in Netlify Blobs
 
 **Usage**
 
@@ -21,10 +21,10 @@ netlify blobs
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`blobs:delete`](/commands/blobs#blobsdelete) | Deletes an object with a given key, if it exists, from a Netlify Blobs store  |
-| [`blobs:get`](/commands/blobs#blobsget) | Reads an object with a given key from a Netlify Blobs store and, if it exists, prints the content to the terminal or saves it to a file  |
-| [`blobs:list`](/commands/blobs#blobslist) | Lists objects in a Netlify Blobs store  |
-| [`blobs:set`](/commands/blobs#blobsset) | Writes to a Netlify Blobs store an object with the data provided in the command or the contents of a file defined by the 'input' parameter  |
+| [`blobs:delete`](/commands/blobs#blobsdelete) | (Beta) Deletes an object with a given key, if it exists, from a Netlify Blobs store  |
+| [`blobs:get`](/commands/blobs#blobsget) | (Beta) Reads an object with a given key from a Netlify Blobs store and, if it exists, prints the content to the terminal or saves it to a file  |
+| [`blobs:list`](/commands/blobs#blobslist) | (Beta) Lists objects in a Netlify Blobs store  |
+| [`blobs:set`](/commands/blobs#blobsset) | (Beta) Writes to a Netlify Blobs store an object with the data provided in the command or the contents of a file defined by the 'input' parameter  |
 
 
 **Examples**
@@ -41,7 +41,7 @@ netlify blobs:list my-store --json
 ---
 ## `blobs:delete`
 
-Deletes an object with a given key, if it exists, from a Netlify Blobs store
+(Beta) Deletes an object with a given key, if it exists, from a Netlify Blobs store
 
 **Usage**
 
@@ -62,7 +62,7 @@ netlify blobs:delete
 ---
 ## `blobs:get`
 
-Reads an object with a given key from a Netlify Blobs store and, if it exists, prints the content to the terminal or saves it to a file
+(Beta) Reads an object with a given key from a Netlify Blobs store and, if it exists, prints the content to the terminal or saves it to a file
 
 **Usage**
 
@@ -84,7 +84,7 @@ netlify blobs:get
 ---
 ## `blobs:list`
 
-Lists objects in a Netlify Blobs store
+(Beta) Lists objects in a Netlify Blobs store
 
 **Usage**
 
@@ -107,7 +107,7 @@ netlify blobs:list
 ---
 ## `blobs:set`
 
-Writes to a Netlify Blobs store an object with the data provided in the command or the contents of a file defined by the 'input' parameter
+(Beta) Writes to a Netlify Blobs store an object with the data provided in the command or the contents of a file defined by the 'input' parameter
 
 **Usage**
 

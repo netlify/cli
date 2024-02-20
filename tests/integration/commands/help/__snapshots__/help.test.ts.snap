@@ -9,7 +9,7 @@ USAGE
 
 COMMANDS
   $ api           Run any Netlify API method
-  $ blobs         Manage objects in Netlify Blobs
+  $ blobs         (Beta) Manage objects in Netlify Blobs
   $ build         Build on your local machine
   $ completion    Generate shell completion script
   $ deploy        Create a new deploy from the contents of a folder
