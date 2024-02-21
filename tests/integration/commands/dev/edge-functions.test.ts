@@ -207,6 +207,34 @@ describe.skipIf(isWindows)('edge functions', () => {
     })
   })
 
+  test('functions and edge functions should receive url-encoded search params in the same way', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      await builder
+        .withContentFile({
+          path: 'netlify/functions/func.js',
+          content: `
+          export default async (req) => new Response(new URL(req.url).search)
+          export const config = { path: '/func' }
+          `,
+        })
+        .withContentFile({
+          path: 'netlify/edge-functions/func.js',
+          content: `
+          export default async (req) => new Response(new URL(req.url).search)
+          export const config = { path: '/ef' }
+          `,
+        })
+        .build()
+
+      await withDevServer({ cwd: builder.directory }, async (server) => {
+        const funcResponse = await fetch(new URL('/func?1,2,3', server.url), {})
+        const efResponse = await fetch(new URL('/ef?1,2,3', server.url), {})
+        t.expect(await funcResponse.text()).toEqual('?1,2,3')
+        t.expect(await efResponse.text()).toEqual('?1,2,3')
+      })
+    })
+  })
+
   setupFixtureTests(
     'dev-server-with-edge-functions-and-npm-modules',
     { devServer: true, mockApi: { routes }, setup },
