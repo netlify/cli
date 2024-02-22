@@ -69,6 +69,13 @@ export const detectFrameworkSettings = async (
     return settings[0]
   }
 
+  if (type === 'build' && command.netlify.config?.build?.command?.length) {
+    return {
+      ...settings[0],
+      buildCommand: command.netlify.config.build.command,
+    }
+  }
+
   if (settings.length > 1) {
     // multiple matching detectors, make the user choose
     const scriptInquirerOptions = formatSettingsArrForInquirer(settings, type)
