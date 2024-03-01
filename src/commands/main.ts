@@ -179,9 +179,24 @@ const mainCommand = async function (options, command) {
 
   await execa(process.argv[0], [process.argv[1], suggestion], { stdio: 'inherit' })
 }
+
 const combineConsoleMessages = (message?: any, optionalParams?: any[]) => {
-  if (Array.isArray(optionalParams) && optionalParams?.length) {
-    return `${message} ${optionalParams.join(' ')}`
+  if (!message) return ''
+
+  if (optionalParams && optionalParams.length > 0) {
+    // Replace all %s, %d, %i, %f, %o with the next optional param
+    let formattedMessage = message.replace(/%[sdifo]/g, (match: string) => {
+      if (optionalParams.length > 0) {
+        const nextParam = optionalParams.shift()
+        return typeof nextParam !== 'undefined' ? String(nextParam) : match
+      }
+      return match
+    })
+    // Append remaining optional params if any
+    if (optionalParams.length > 0) {
+      formattedMessage += ' ' + optionalParams.join(' ')
+    }
+    return formattedMessage
   }
 
   if (typeof message === 'number' || typeof message === 'boolean') {
@@ -192,13 +207,13 @@ const combineConsoleMessages = (message?: any, optionalParams?: any[]) => {
 }
 
 const transportLogsToNetlifyLog = () => {
-  console.log = (message?: any, optionalParams?: any[]) =>
+  console.log = (message?: any, ...optionalParams: any[]) =>
     message && NetlifyLog.info(combineConsoleMessages(message, optionalParams))
-  console.warn = (message?: any, optionalParams?: any[]) =>
+  console.warn = (message?: any, ...optionalParams: any[]) =>
     message && NetlifyLog.warn(combineConsoleMessages(message, optionalParams))
-  console.error = (message?: any, optionalParams?: any[]) =>
+  console.error = (message?: any, ...optionalParams: any[]) =>
     message && NetlifyLog.error(combineConsoleMessages(message, optionalParams))
-  console.info = (message?: any, optionalParams?: any[]) =>
+  console.info = (message?: any, ...optionalParams: any[]) =>
     message && NetlifyLog.info(combineConsoleMessages(message, optionalParams))
 }
 /**
