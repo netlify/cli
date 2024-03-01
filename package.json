@@ -128,7 +128,7 @@
     "https-proxy-agent": "5.0.1",
     "inquirer": "6.5.2",
     "inquirer-autocomplete-prompt": "1.4.0",
-    "ipx": "2.0.1",
+    "ipx": "2.1.0",
     "is-docker": "3.0.0",
     "is-stream": "3.0.0",
     "is-wsl": "2.2.0",
