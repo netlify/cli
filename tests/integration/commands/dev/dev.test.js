@@ -70,8 +70,6 @@ describe.concurrent('command/dev', () => {
 
       await builder.buildAsync()
 
-      console.log('builder.directory', builder.directory)
-
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const response = await fetch(`${server.url}/test-404`)
         t.expect(response.headers.get('etag')).toBeTruthy()
