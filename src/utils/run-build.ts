@@ -145,7 +145,6 @@ export const runNetlifyBuild = async ({ command, env = {}, options, settings, ti
     env,
   }
 
-  // TODO: Currently, @netlify/build logs out its own messages, which breaks the clack styling.
   // Run Netlify Build using the `startDev` entry point.
   const { error: startDevError, success } = await startDev(devCommand, startDevOptions)
 
