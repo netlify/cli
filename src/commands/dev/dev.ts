@@ -138,7 +138,9 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
     settings = await detectServerSettings(devConfig, options, command)
 
     if (process.env.NETLIFY_INCLUDE_DEV_SERVER_PLUGIN) {
-      log(`${NETLIFYDEVLOG} Including dev server plugin`)
+      if (options.debug) {
+        log(`${NETLIFYDEVLOG} Including dev server plugin`)
+      }
       settings.plugins = [...(settings.plugins || []), '@netlify/plugin-dev-server']
     }
 
