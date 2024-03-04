@@ -589,9 +589,9 @@ export const NetlifyLog = {
       message instanceof Error
         ? message
         : // eslint-disable-next-line unicorn/no-nested-ternary
-          typeof message === 'string'
-          ? new Error(message)
-          : { message, stack: undefined, name: 'Error' }
+        typeof message === 'string'
+        ? new Error(message)
+        : { message, stack: undefined, name: 'Error' }
 
     if (options.exit === false) {
       if (process.env.DEBUG) {
