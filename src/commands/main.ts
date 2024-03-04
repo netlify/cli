@@ -203,10 +203,20 @@ const combineConsoleMessages = (message?: any, optionalParams?: any[]) => {
     return message.toString()
   }
 
+  // if message is an object, array or function, we need to use util.inspect
+  if (typeof message === 'object' || typeof message === 'function') {
+    return message.toString()
+  }
+
   return message
 }
 
 const transportLogsToNetlifyLog = () => {
+  // Some tests failed when child processes invoked console.log and the test would
+  // assert that the output from the terminal contained the expected output.
+  if (process.env.VITEST) {
+    return
+  }
   console.log = (message?: any, ...optionalParams: any[]) =>
     message && NetlifyLog.info(combineConsoleMessages(message, optionalParams))
   console.warn = (message?: any, ...optionalParams: any[]) =>
