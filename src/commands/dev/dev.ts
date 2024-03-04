@@ -137,6 +137,11 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
   try {
     settings = await detectServerSettings(devConfig, options, command)
 
+    if (process.env.NETLIFY_INCLUDE_DEV_SERVER_PLUGIN) {
+      log(`${NETLIFYDEVLOG} Including dev server plugin`)
+      settings.plugins = [...(settings.plugins || []), '@netlify/plugin-dev-server']
+    }
+
     cachedConfig.config = getConfigWithPlugins(cachedConfig.config, settings)
   } catch (error_) {
     if (error_ && typeof error_ === 'object' && 'message' in error_) {
