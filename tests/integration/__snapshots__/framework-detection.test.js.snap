@@ -68,6 +68,19 @@ Waiting for framework port 3000. This can be configured using the 'targetPort' p
 [?25h"
 `;
 
+exports[`frameworks/framework-detection > should log the command if using static server and \`command\` is configured 1`] = `
+"┌  ◈ netlify  dev ◈  
+│
+●  Using simple static server because '--dir' flag was specified
+│
+●  Running static server from \\"site-with-index-file/public\\"
+│
+●  Setting up local development server
+│
+│  hello
+│"
+`;
+
 exports[`frameworks/framework-detection > should not run framework detection if command and targetPort are configured 1`] = `
 "┌  ◈ netlify  dev ◈  
 │

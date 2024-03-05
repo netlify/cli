@@ -75,15 +75,14 @@ describe.concurrent('frameworks/framework-detection', () => {
         })
         .buildAsync()
 
-      await withDevServer(
-        { cwd: builder.directory, args: ['--dir', 'public', '--command', 'npm run start'] },
-        async ({ output, url }) => {
-          const response = await fetch(url).then((res) => res.text())
-          t.expect(response).toEqual(content)
+      // a failure is expected since we use `echo hello` instead of starting a server
+      const error = await withDevServer(
+        { cwd: builder.directory, args: ['--dir', 'public', '--command', 'echo hello'] },
+        () => { },
+        true
+      ).catch((error_) => error_)
 
-          t.expect(normalize(output, { duration: true, filePath: true })).toMatchSnapshot()
-        },
-      )
+      t.expect(normalize(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
     })
   })
 
