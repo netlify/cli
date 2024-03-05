@@ -45,7 +45,7 @@
     "markdown-magic": "2.6.1",
     "npm-run-all2": "5.0.0",
     "sane": "5.0.1",
-    "strip-ansi": "7.0.1"
+    "strip-ansi": "7.1.0"
   },
   "overrides": {
     "react": "$react",
