@@ -78,7 +78,7 @@ describe.concurrent('frameworks/framework-detection', () => {
       // a failure is expected since we use `echo hello` instead of starting a server
       const error = await withDevServer(
         { cwd: builder.directory, args: ['--dir', 'public', '--command', 'echo hello'] },
-        () => { },
+        () => {},
         true,
       ).catch((error_) => error_)
 
@@ -114,7 +114,7 @@ describe.concurrent('frameworks/framework-detection', () => {
       // a failure is expected since we use `echo hello` instead of starting a server
       const error = await withDevServer(
         { cwd: builder.directory, args: ['--command', 'echo hello', '--target-port', '3000'] },
-        () => { },
+        () => {},
         true,
       ).catch((error_) => error_)
 
@@ -127,7 +127,7 @@ describe.concurrent('frameworks/framework-detection', () => {
       await builder.withNetlifyToml({ config: { dev: { framework: 'create-react-app' } } }).buildAsync()
 
       // a failure is expected since this is not a true create-react-app project
-      const error = await withDevServer({ cwd: builder.directory }, () => { }, true).catch((error_) => error_)
+      const error = await withDevServer({ cwd: builder.directory }, () => {}, true).catch((error_) => error_)
       t.expect(normalize(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
     })
   })
@@ -136,7 +136,7 @@ describe.concurrent('frameworks/framework-detection', () => {
     await withSiteBuilder('site-with-unknown-framework', async (builder) => {
       await builder.withNetlifyToml({ config: { dev: { framework: 'to-infinity-and-beyond-js' } } }).buildAsync()
 
-      const error = await withDevServer({ cwd: builder.directory }, () => { }, true).catch((error_) => error_)
+      const error = await withDevServer({ cwd: builder.directory }, () => {}, true).catch((error_) => error_)
       t.expect(normalize(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
     })
   })
@@ -150,7 +150,7 @@ describe.concurrent('frameworks/framework-detection', () => {
         .buildAsync()
 
       // a failure is expected since this is not a true create-react-app project
-      const error = await withDevServer({ cwd: builder.directory }, () => { }, true).catch((error_) => error_)
+      const error = await withDevServer({ cwd: builder.directory }, () => {}, true).catch((error_) => error_)
       t.expect(normalize(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
     })
   })
@@ -161,7 +161,7 @@ describe.concurrent('frameworks/framework-detection', () => {
 
       const error = await withDevServer(
         { cwd: builder.directory, args: ['--target-port', '3000'] },
-        () => { },
+        () => {},
         true,
       ).catch((error_) => error_)
       t.expect(normalize(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
@@ -174,7 +174,7 @@ describe.concurrent('frameworks/framework-detection', () => {
 
       const error = await withDevServer(
         { cwd: builder.directory, args: ['--command', 'echo hello'] },
-        () => { },
+        () => {},
         true,
       ).catch((error_) => error_)
       t.expect(normalize(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
@@ -187,7 +187,7 @@ describe.concurrent('frameworks/framework-detection', () => {
 
       const error = await withDevServer(
         { cwd: builder.directory, args: ['--command', 'echo hello', '--target-port', '3000'] },
-        () => { },
+        () => {},
         true,
       ).catch((error_) => error_)
       t.expect(normalize(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
@@ -210,7 +210,7 @@ describe.concurrent('frameworks/framework-detection', () => {
             '#custom',
           ],
         },
-        () => { },
+        () => {},
         true,
       ).catch((error_) => error_)
 
@@ -255,7 +255,7 @@ describe.concurrent('frameworks/framework-detection', () => {
       // a failure is expected since the command exits early
       const error = await withDevServer(
         { cwd: builder.directory, args: ['--command', 'echo hello', '--target-port', '3000'] },
-        () => { },
+        () => {},
         true,
       ).catch((error_) => error_)
 
@@ -296,7 +296,7 @@ describe.concurrent('frameworks/framework-detection', () => {
         .buildAsync()
 
       // a failure is expected since this is not a true Gatsby project
-      const error = await withDevServer({ cwd: builder.directory }, () => { }, true).catch((error_) => error_)
+      const error = await withDevServer({ cwd: builder.directory }, () => {}, true).catch((error_) => error_)
       t.expect(normalize(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
     })
   })
