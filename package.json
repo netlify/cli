@@ -189,7 +189,7 @@
     "@types/fs-extra": "11.0.4",
     "@types/inquirer": "9.0.7",
     "@types/node": "20.9.0",
-    "@types/prettyjson": "0.0.30",
+    "@types/prettyjson": "0.0.33",
     "@types/semver": "7.5.0",
     "@types/uuid": "9.0.7",
     "@types/ws": "8.5.10",
