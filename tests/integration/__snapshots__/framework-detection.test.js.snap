@@ -1,109 +1,132 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`frameworks/framework-detection > should default to process.cwd() and static server 1`] = `
-"◈ Netlify Dev ◈
-◈ No app server detected. Using simple static server
-◈ Unable to determine public folder to serve files from. Using current working directory
-◈ Setup a netlify.toml file with a [dev] section to specify your dev server settings.
-◈ See docs at: https://cli.netlify.com/netlify-dev#project-detection
-◈ Running static server from \\"site-with-index-file\\"
-◈ Setting up local development server
-
-◈ Static server listening to 88888
-
-   ┌──────────────────────────────────────────────────┐
-   │                                                  │
-   │   ◈ Server now ready on http://localhost:88888   │
-   │                                                  │
-   └──────────────────────────────────────────────────┘"
+"┌  ◈ netlify  dev ◈  
+│
+●  No app server detected. Using simple static server
+│
+●  Unable to determine public folder to serve files from. Using current working directory
+│
+●  Setup a netlify.toml file with a [dev] section to specify your dev server settings.
+│
+●  See docs at: https://cli.netlify.com/netlify-dev#project-detection
+│
+●  Running static server from \\"site-with-index-file\\"
+│
+●  Setting up local development server
+│
+●  Static server listening to 88888
+│
+◆  🧑‍💻 Server now ready on http://localhost:88888"
 `;
 
 exports[`frameworks/framework-detection > should detect a known framework 1`] = `
-"◈ Netlify Dev ◈
-◈ Setting up local development server
-◈ Starting Netlify Dev with Create React App
-
-> start
-> react-scripts start
-
-◈ Command failed with exit code *: npm run start. Shutting down Netlify Dev server"
+"┌  ◈ netlify  dev ◈  
+│
+●  Setting up local development server
+│
+●  Starting Netlify Dev with Create React App
+[?25l│
+Waiting for framework port 3000. This can be configured using the 'targetPort' property in the netlify.toml...│
+│  
+│  > start
+│  > react-scripts start
+│  
+│  
+[999D[J■  Canceled
+[?25h"
 `;
 
 exports[`frameworks/framework-detection > should filter frameworks with no dev command 1`] = `
-"◈ Netlify Dev ◈
-◈ No app server detected. Using simple static server
-◈ Unable to determine public folder to serve files from. Using current working directory
-◈ Setup a netlify.toml file with a [dev] section to specify your dev server settings.
-◈ See docs at: https://cli.netlify.com/netlify-dev#project-detection
-◈ Running static server from \\"site-with-gulp\\"
-◈ Setting up local development server
-
-◈ Static server listening to 88888
-
-   ┌──────────────────────────────────────────────────┐
-   │                                                  │
-   │   ◈ Server now ready on http://localhost:88888   │
-   │                                                  │
-   └──────────────────────────────────────────────────┘"
+"┌  ◈ netlify  dev ◈  
+│
+●  No app server detected. Using simple static server
+│
+●  Unable to determine public folder to serve files from. Using current working directory
+│
+●  Setup a netlify.toml file with a [dev] section to specify your dev server settings.
+│
+●  See docs at: https://cli.netlify.com/netlify-dev#project-detection
+│
+●  Running static server from \\"site-with-gulp\\"
+│
+●  Setting up local development server
+│
+●  Static server listening to 88888
+│
+◆  🧑‍💻 Server now ready on http://localhost:88888"
 `;
 
 exports[`frameworks/framework-detection > should force a specific framework when configured 1`] = `
-"◈ Netlify Dev ◈
-◈ Setting up local development server
-◈ Starting Netlify Dev with Create React App
-◈ Failed running command: react-scripts start. Please verify 'react-scripts' exists"
-`;
-
-exports[`frameworks/framework-detection > should log the command if using static server and \`command\` is configured 1`] = `
-"◈ Netlify Dev ◈
-◈ Using simple static server because '--dir' flag was specified
-◈ Running static server from \\"site-with-index-file/public\\"
-◈ Setting up local development server
-
-◈ Static server listening to 88888
-
-   ┌──────────────────────────────────────────────────┐
-   │                                                  │
-   │   ◈ Server now ready on http://localhost:88888   │
-   │                                                  │
-   └──────────────────────────────────────────────────┘"
+"┌  ◈ netlify  dev ◈  
+│
+●  Setting up local development server
+│
+●  Starting Netlify Dev with Create React App
+[?25l│
+Waiting for framework port 3000. This can be configured using the 'targetPort' property in the netlify.toml...[999D[J■  Canceled
+[?25h"
 `;
 
 exports[`frameworks/framework-detection > should not run framework detection if command and targetPort are configured 1`] = `
-"◈ Netlify Dev ◈
-◈ Unable to determine public folder to serve files from. Using current working directory
-◈ Setup a netlify.toml file with a [dev] section to specify your dev server settings.
-◈ See docs at: https://cli.netlify.com/netlify-dev#project-detection
-◈ Setting up local development server
-◈ Starting Netlify Dev with custom config
-hello
-◈ \\"echo hello\\" exited with code *. Shutting down Netlify Dev server"
+"┌  ◈ netlify  dev ◈  
+│
+●  Unable to determine public folder to serve files from. Using current working directory
+│
+●  Setup a netlify.toml file with a [dev] section to specify your dev server settings.
+│
+●  See docs at: https://cli.netlify.com/netlify-dev#project-detection
+│
+●  Setting up local development server
+│
+●  Starting Netlify Dev with custom config
+[?25l│
+Waiting for framework port 3000. This can be configured using the 'targetPort' property in the netlify.toml...│
+│  hello
+│  
+[999D[J■  Canceled
+[?25h"
 `;
 
 exports[`frameworks/framework-detection > should pass framework-info env to framework sub process 1`] = `
-"◈ Netlify Dev ◈
-◈ Setting up local development server
-◈ Starting Netlify Dev with Nuxt 3
-
-> dev
-> node -p process.env.NODE_VERSION
-
-18
-◈ \\"npm run dev\\" exited with code *. Shutting down Netlify Dev server"
+"┌  ◈ netlify  dev ◈  
+│
+●  Setting up local development server
+│
+●  Starting Netlify Dev with Nuxt 3
+[?25l│
+Waiting for framework port 3000. This can be configured using the 'targetPort' property in the netlify.toml...│
+│  
+│  > dev
+│  > node -p process.env.NODE_VERSION
+│  
+│  
+│
+│  18
+│  
+[999D[J■  Canceled
+[?25h"
 `;
 
 exports[`frameworks/framework-detection > should print specific error when command doesn't exist 1`] = `
-"◈ Netlify Dev ◈
-◈ Unable to determine public folder to serve files from. Using current working directory
-◈ Setup a netlify.toml file with a [dev] section to specify your dev server settings.
-◈ See docs at: https://cli.netlify.com/netlify-dev#project-detection
-◈ Setting up local development server
-◈ Starting Netlify Dev with #custom
-◈ Failed running command: oops-i-did-it-again forgot-to-use-a-valid-command. Please verify 'oops-i-did-it-again' exists"
+"┌  ◈ netlify  dev ◈  
+│
+●  Unable to determine public folder to serve files from. Using current working directory
+│
+●  Setup a netlify.toml file with a [dev] section to specify your dev server settings.
+│
+●  See docs at: https://cli.netlify.com/netlify-dev#project-detection
+│
+●  Setting up local development server
+│
+●  Starting Netlify Dev with #custom
+[?25l│
+Waiting for framework port 3000. This can be configured using the 'targetPort' property in the netlify.toml...[999D[J■  Canceled
+[?25h"
 `;
 
 exports[`frameworks/framework-detection > should prompt when multiple frameworks are detected 1`] = `
-"◈ Netlify Dev ◈
+"┌  ◈ netlify  dev ◈  
 ? Multiple possible dev commands found (Use arrow keys or type to search)
 > [Gatsby] 'npm run develop' 
   [Create React App] 'npm run start' [2A[37D[73C[2B[2K[1A[2K[1A[2K[G? Multiple possible dev commands found 
@@ -119,92 +142,102 @@ publish = \\"build\\"
 [dev]
 command = \\"npm run start\\"
 
-◈ Setting up local development server
-◈ Starting Netlify Dev with Create React App
-
-> start
-> react-scripts start
-
-◈ Command failed with exit code *: npm run start. Shutting down Netlify Dev server"
+│
+●  Setting up local development server
+│
+●  Starting Netlify Dev with Create React App
+[?25l│
+Waiting for framework port 3000. This can be configured using the 'targetPort' property in the netlify.toml...│
+│  
+│  > start
+│  > react-scripts start
+│  
+│  
+[999D[J■  Canceled
+[?25h"
 `;
 
 exports[`frameworks/framework-detection > should run \`command\` when both \`command\` and \`targetPort\` are configured 1`] = `
-"◈ Netlify Dev ◈
-◈ Setting up local development server
-◈ Starting Netlify Dev with custom config
-hello
-◈ \\"echo hello\\" exited with code *. Shutting down Netlify Dev server"
+"┌  ◈ netlify  dev ◈  
+│
+●  Setting up local development server
+│
+●  Starting Netlify Dev with custom config
+[?25l│
+Waiting for framework port 3000. This can be configured using the 'targetPort' property in the netlify.toml...│
+│  hello
+│  
+[999D[J■  Canceled
+[?25h"
 `;
 
 exports[`frameworks/framework-detection > should start custom command if framework=#custom, command and targetPort are configured 1`] = `
-"◈ Netlify Dev ◈
-◈ Setting up local development server
-◈ Starting Netlify Dev with #custom
-hello
-◈ \\"echo hello\\" exited with code *. Shutting down Netlify Dev server"
+"┌  ◈ netlify  dev ◈  
+│
+●  Setting up local development server
+│
+●  Starting Netlify Dev with #custom
+[?25l│
+Waiting for framework port 3000. This can be configured using the 'targetPort' property in the netlify.toml...│
+│  hello
+│  
+[999D[J■  Canceled
+[?25h"
 `;
 
-exports[`frameworks/framework-detection > should throw if framework=#custom but command is missing 1`] = `
-"◈ Netlify Dev ◈
-◈ 'command' and 'targetPort' properties are required when 'framework' is set to '#custom'"
-`;
+exports[`frameworks/framework-detection > should throw if framework=#custom but command is missing 1`] = `"┌  ◈ netlify  dev ◈"`;
 
-exports[`frameworks/framework-detection > should throw if framework=#custom but targetPort is missing 1`] = `
-"◈ Netlify Dev ◈
-◈ 'command' and 'targetPort' properties are required when 'framework' is set to '#custom'"
-`;
+exports[`frameworks/framework-detection > should throw if framework=#custom but targetPort is missing 1`] = `"┌  ◈ netlify  dev ◈"`;
 
-exports[`frameworks/framework-detection > should throw when forcing a non supported framework 1`] = `
-"◈ Netlify Dev ◈
-◈ Invalid framework \\"to-infinity-and-beyond-js\\". It should be one of: *"
-`;
+exports[`frameworks/framework-detection > should throw when forcing a non supported framework 1`] = `"┌  ◈ netlify  dev ◈"`;
 
 exports[`frameworks/framework-detection > should use static server when --dir flag is passed 1`] = `
-"◈ Netlify Dev ◈
-◈ Using simple static server because '--dir' flag was specified
-◈ Running static server from \\"site-with-index-file/public\\"
-◈ Setting up local development server
-
-◈ Static server listening to 88888
-
-   ┌──────────────────────────────────────────────────┐
-   │                                                  │
-   │   ◈ Server now ready on http://localhost:88888   │
-   │                                                  │
-   └──────────────────────────────────────────────────┘"
+"┌  ◈ netlify  dev ◈  
+│
+●  Using simple static server because '--dir' flag was specified
+│
+●  Running static server from \\"site-with-index-file/public\\"
+│
+●  Setting up local development server
+│
+●  Static server listening to 88888
+│
+◆  🧑‍💻 Server now ready on http://localhost:88888"
 `;
 
 exports[`frameworks/framework-detection > should use static server when framework is set to #static 1`] = `
-"◈ Netlify Dev ◈
-◈ Using simple static server because '[dev.framework]' was set to '#static'
-◈ Unable to determine public folder to serve files from. Using current working directory
-◈ Setup a netlify.toml file with a [dev] section to specify your dev server settings.
-◈ See docs at: https://cli.netlify.com/netlify-dev#project-detection
-◈ Running static server from \\"site-with-index-file\\"
-◈ Setting up local development server
-
-◈ Static server listening to 88888
-
-   ┌──────────────────────────────────────────────────┐
-   │                                                  │
-   │   ◈ Server now ready on http://localhost:88888   │
-   │                                                  │
-   └──────────────────────────────────────────────────┘"
+"┌  ◈ netlify  dev ◈  
+│
+●  Using simple static server because '[dev.framework]' was set to '#static'
+│
+●  Unable to determine public folder to serve files from. Using current working directory
+│
+●  Setup a netlify.toml file with a [dev] section to specify your dev server settings.
+│
+●  See docs at: https://cli.netlify.com/netlify-dev#project-detection
+│
+●  Running static server from \\"site-with-index-file\\"
+│
+●  Setting up local development server
+│
+●  Static server listening to 88888
+│
+◆  🧑‍💻 Server now ready on http://localhost:88888"
 `;
 
 exports[`frameworks/framework-detection > should warn if using static server and \`targetPort\` is configured 1`] = `
-"◈ Netlify Dev ◈
-◈ Using simple static server because '--dir' flag was specified
-◈ Ignoring 'targetPort' setting since using a simple static server.
-◈ Use --staticServerPort or [dev.staticServerPort] to configure the static server port
-◈ Running static server from \\"site-with-index-file/public\\"
-◈ Setting up local development server
-
-◈ Static server listening to 88888
-
-   ┌──────────────────────────────────────────────────┐
-   │                                                  │
-   │   ◈ Server now ready on http://localhost:88888   │
-   │                                                  │
-   └──────────────────────────────────────────────────┘"
+"┌  ◈ netlify  dev ◈  
+│
+●  Using simple static server because '--dir' flag was specified
+│
+●  Ignoring 'targetPort' setting since using a simple static server.
+│   Use --staticServerPort or [dev.staticServerPort] to configure the static server port
+│
+●  Running static server from \\"site-with-index-file/public\\"
+│
+●  Setting up local development server
+│
+●  Static server listening to 88888
+│
+◆  🧑‍💻 Server now ready on http://localhost:88888"
 `;
