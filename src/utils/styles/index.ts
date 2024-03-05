@@ -50,8 +50,9 @@ export const text = (opts: TextOptions) =>
         case 'submit':
           return `${title}${chalk.gray(symbols.BAR)}  ${chalk.dim(this.value || opts.placeholder)}`
         case 'cancel':
-          return `${title}${chalk.gray(symbols.BAR)}  ${chalk.strikethrough(chalk.dim(this.value ?? ''))}${this.value?.trim() ? `\n${chalk.gray(symbols.BAR)}` : ''
-            }`
+          return `${title}${chalk.gray(symbols.BAR)}  ${chalk.strikethrough(chalk.dim(this.value ?? ''))}${
+            this.value?.trim() ? `\n${chalk.gray(symbols.BAR)}` : ''
+          }`
         default:
           return `${title}${chalk.cyan(symbols.BAR)}  ${value}\n${chalk.cyan(symbols.BAR_END)}\n`
       }
@@ -80,8 +81,9 @@ export const password = (opts: PasswordOptions) =>
         case 'submit':
           return `${title}${chalk.gray(symbols.BAR)}  ${chalk.dim(masked)}`
         case 'cancel':
-          return `${title}${chalk.gray(symbols.BAR)}  ${chalk.strikethrough(chalk.dim(masked ?? ''))}${masked ? `\n${chalk.gray(symbols.BAR)}` : ''
-            }`
+          return `${title}${chalk.gray(symbols.BAR)}  ${chalk.strikethrough(chalk.dim(masked ?? ''))}${
+            masked ? `\n${chalk.gray(symbols.BAR)}` : ''
+          }`
         default:
           return `${title}${chalk.cyan(symbols.BAR)}  ${value}\n${chalk.cyan(symbols.BAR_END)}\n`
       }
@@ -113,13 +115,15 @@ export const confirm = async (opts: ConfirmOptions) => {
             symbols.BAR,
           )}`
         default: {
-          return `${title}${chalk.cyan(symbols.BAR)}  ${this.value
-            ? `${chalk.green(symbols.RADIO_ACTIVE)} ${active}`
-            : `${chalk.dim(symbols.RADIO_INACTIVE)} ${chalk.dim(active)}`
-            } ${chalk.dim('/')} ${this.value
+          return `${title}${chalk.cyan(symbols.BAR)}  ${
+            this.value
+              ? `${chalk.green(symbols.RADIO_ACTIVE)} ${active}`
+              : `${chalk.dim(symbols.RADIO_INACTIVE)} ${chalk.dim(active)}`
+          } ${chalk.dim('/')} ${
+            this.value
               ? `${chalk.dim(symbols.RADIO_INACTIVE)} ${chalk.dim(inactive)}`
               : `${chalk.green(symbols.RADIO_ACTIVE)} ${inactive}`
-            }\n${chalk.cyan(symbols.BAR_END)}\n`
+          }\n${chalk.cyan(symbols.BAR_END)}\n`
         }
       }
     },
@@ -202,11 +206,13 @@ export const selectKey = <Value extends string>(opts: SelectOptions<Value>) => {
       return `${chalk.strikethrough(chalk.dim(label))}`
     }
     if (state === 'active') {
-      return `${chalk.bgCyan(chalk.gray(` ${option.value} `))} ${label} ${option.hint ? chalk.dim(`(${option.hint})`) : ''
-        }`
-    }
-    return `${chalk.gray(chalk.bgWhite(chalk.inverse(` ${option.value} `)))} ${label} ${option.hint ? chalk.dim(`(${option.hint})`) : ''
+      return `${chalk.bgCyan(chalk.gray(` ${option.value} `))} ${label} ${
+        option.hint ? chalk.dim(`(${option.hint})`) : ''
       }`
+    }
+    return `${chalk.gray(chalk.bgWhite(chalk.inverse(` ${option.value} `)))} ${label} ${
+      option.hint ? chalk.dim(`(${option.hint})`) : ''
+    }`
   }
 
   return new SelectKeyPrompt({
@@ -298,11 +304,12 @@ export const multiselect = <Value>(opts: MultiSelectOptions<Value>) => {
 
       switch (this.state) {
         case 'submit': {
-          return `${title}${chalk.gray(symbols.BAR)}  ${this.options
-            .filter(({ value }) => this.value.includes(value))
-            .map((option) => renderOption(option, 'submitted'))
-            .join(chalk.dim(', ')) || chalk.dim('none')
-            }`
+          return `${title}${chalk.gray(symbols.BAR)}  ${
+            this.options
+              .filter(({ value }) => this.value.includes(value))
+              .map((option) => renderOption(option, 'submitted'))
+              .join(chalk.dim(', ')) || chalk.dim('none')
+          }`
         }
         case 'cancel': {
           const label = this.options
@@ -364,8 +371,9 @@ export const groupMultiselect = <Value>(opts: GroupMultiSelectOptions<Value>) =>
     const prefix = isItem ? `${isLast ? symbols.BAR_END : symbols.BAR} ` : ''
 
     if (state === 'active') {
-      return `${chalk.dim(prefix)}${chalk.cyan(symbols.CHECKBOX_ACTIVE)} ${label} ${option.hint ? chalk.dim(`(${option.hint})`) : ''
-        }`
+      return `${chalk.dim(prefix)}${chalk.cyan(symbols.CHECKBOX_ACTIVE)} ${label} ${
+        option.hint ? chalk.dim(`(${option.hint})`) : ''
+      }`
     }
     if (state === 'group-active') {
       return `${prefix}${chalk.cyan(symbols.CHECKBOX_ACTIVE)} ${chalk.dim(label)}`
@@ -380,8 +388,9 @@ export const groupMultiselect = <Value>(opts: GroupMultiSelectOptions<Value>) =>
       return `${chalk.strikethrough(chalk.dim(label))}`
     }
     if (state === 'active-selected') {
-      return `${chalk.dim(prefix)}${chalk.green(symbols.CHECKBOX_SELECTED)} ${label} ${option.hint ? chalk.dim(`(${option.hint})`) : ''
-        }`
+      return `${chalk.dim(prefix)}${chalk.green(symbols.CHECKBOX_SELECTED)} ${label} ${
+        option.hint ? chalk.dim(`(${option.hint})`) : ''
+      }`
     }
     if (state === 'submitted') {
       return `${chalk.dim(label)}`
@@ -580,7 +589,7 @@ export const NetlifyLog = {
       message instanceof Error
         ? message
         : // eslint-disable-next-line unicorn/no-nested-ternary
-        typeof message === 'string'
+          typeof message === 'string'
           ? new Error(message)
           : { message, stack: undefined, name: 'Error' }
 
@@ -661,15 +670,17 @@ export const spinner = () => {
       return
     }
 
-    loop = process.env.VITEST ? undefined : setInterval(() => {
-      const frame = chalk.magenta(frames[frameIndex])
-      const loadingDots = '.'.repeat(Math.floor(dotsTimer)).slice(0, 3)
-      process.stdout.write(ansiCursor.move(-999, 0))
-      process.stdout.write(erase.down(1))
-      process.stdout.write(`${frame}  ${_message}${loadingDots}`)
-      frameIndex = frameIndex + 1 < frames.length ? frameIndex + 1 : 0
-      dotsTimer = dotsTimer < frames.length ? dotsTimer + 0.125 : 0
-    }, delay)
+    loop = process.env.VITEST
+      ? undefined
+      : setInterval(() => {
+          const frame = chalk.magenta(frames[frameIndex])
+          const loadingDots = '.'.repeat(Math.floor(dotsTimer)).slice(0, 3)
+          process.stdout.write(ansiCursor.move(-999, 0))
+          process.stdout.write(erase.down(1))
+          process.stdout.write(`${frame}  ${_message}${loadingDots}`)
+          frameIndex = frameIndex + 1 < frames.length ? frameIndex + 1 : 0
+          dotsTimer = dotsTimer < frames.length ? dotsTimer + 0.125 : 0
+        }, delay)
   }
 
   const stop = (msg = '', code = 0): void => {

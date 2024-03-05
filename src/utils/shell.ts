@@ -71,7 +71,7 @@ export const runCommand = (command, options = {}) => {
   })
 
   const customWritableStream = new stream.Writable({
-    write: function(chunk, _, next) {
+    write: function (chunk, _, next) {
       NetlifyLog.message(stripAnsiCc.string(chunk.toString()))
       next()
     },
@@ -102,7 +102,7 @@ export const runCommand = (command, options = {}) => {
       } else {
         const errorMessage = result.failed
           ? // @ts-expect-error TS(2339) FIXME: Property 'shortMessage' does not exist on type 'Ex... Remove this comment to see the full error message
-          `${result.shortMessage}`
+            `${result.shortMessage}`
           : `"${command}" exited with code ${result.exitCode}`
 
         NetlifyLog.error(`${errorMessage}. Shutting down Netlify Dev server`)
