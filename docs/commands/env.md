@@ -21,12 +21,12 @@ netlify env
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`env:clone`](/docs/commands/env.md#envclone) | Clone environment variables from one site to another  |
-| [`env:get`](/docs/commands/env.md#envget) | Get resolved value of specified environment variable (includes netlify.toml)  |
-| [`env:import`](/docs/commands/env.md#envimport) | Import and set environment variables from .env file  |
-| [`env:list`](/docs/commands/env.md#envlist) | Lists resolved environment variables for site (includes netlify.toml)  |
-| [`env:set`](/docs/commands/env.md#envset) | Set value of environment variable  |
-| [`env:unset`](/docs/commands/env.md#envunset) | Unset an environment variable which removes it from the UI  |
+| [`env:clone`](/commands/env#envclone) | Clone environment variables from one site to another  |
+| [`env:get`](/commands/env#envget) | Get resolved value of specified environment variable (includes netlify.toml)  |
+| [`env:import`](/commands/env#envimport) | Import and set environment variables from .env file  |
+| [`env:list`](/commands/env#envlist) | Lists resolved environment variables for site (includes netlify.toml)  |
+| [`env:set`](/commands/env#envset) | Set value of environment variable  |
+| [`env:unset`](/commands/env#envunset) | Unset an environment variable which removes it from the UI  |
 
 
 **Examples**

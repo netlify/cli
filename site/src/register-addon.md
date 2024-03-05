@@ -7,6 +7,8 @@ hidePagination: true
 
 # Netlify addons
 
+> ⚠️ The addons command is [deprecated](https://docs.netlify.com/platform/release-phases/#deprecated) and will become unavailable in a future update.
+
 A Netlify addon is a way for Netlify users to extend their sites.
 
 For example a user can provision additional functionality on their site by running:

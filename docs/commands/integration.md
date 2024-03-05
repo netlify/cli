@@ -21,7 +21,7 @@ netlify integration
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`integration:deploy`](/docs/commands/integration.md#integrationdeploy) | Register, build, and deploy a private integration on Netlify  |
+| [`integration:deploy`](/commands/integration#integrationdeploy) | Register, build, and deploy a private integration on Netlify  |
 
 
 ---

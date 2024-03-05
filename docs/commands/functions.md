@@ -22,11 +22,11 @@ netlify functions
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`functions:build`](/docs/commands/functions.md#functionsbuild) | Build functions locally  |
-| [`functions:create`](/docs/commands/functions.md#functionscreate) | Create a new function locally  |
-| [`functions:invoke`](/docs/commands/functions.md#functionsinvoke) | Trigger a function while in netlify dev with simulated data, good for testing function calls including Netlify's Event Triggered Functions  |
-| [`functions:list`](/docs/commands/functions.md#functionslist) | List functions that exist locally  |
-| [`functions:serve`](/docs/commands/functions.md#functionsserve) | (Beta) Serve functions locally  |
+| [`functions:build`](/commands/functions#functionsbuild) | Build functions locally  |
+| [`functions:create`](/commands/functions#functionscreate) | Create a new function locally  |
+| [`functions:invoke`](/commands/functions#functionsinvoke) | Trigger a function while in netlify dev with simulated data, good for testing function calls including Netlify's Event Triggered Functions  |
+| [`functions:list`](/commands/functions#functionslist) | List functions that exist locally  |
+| [`functions:serve`](/commands/functions#functionsserve) | Serve functions locally  |
 
 
 **Examples**
@@ -149,7 +149,7 @@ netlify functions:list
 ---
 ## `functions:serve`
 
-(Beta) Serve functions locally
+Serve functions locally
 
 **Usage**
 

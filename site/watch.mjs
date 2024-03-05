@@ -4,8 +4,8 @@ import { join } from 'path'
 
 import sane from 'sane'
 
-import { docs } from './config.mjs'
-import { ensureFilePathAsync } from './fs.mjs'
+import { docs } from './config.js'
+import { ensureFilePathAsync } from './fs.js'
 
 const watcher = sane(docs.srcPath, { glob: ['**/*.md'] })
 

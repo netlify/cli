@@ -15,13 +15,14 @@ module.exports = {
       },
     },
   },
+  // .js files in this folder are compiled from TS
+  ignorePatterns: ['src/**/*.js'],
   rules: {
     'workspace/no-process-cwd': 'error',
     // Those rules from @netlify/eslint-config-node are currently disabled
     // TODO: remove, so those rules are enabled
     complexity: 0,
     'no-inline-comments': 'off',
-    'no-underscore-dangle': 'off',
     'func-style': 'off',
     'max-depth': 0,
     'max-lines': 0,
@@ -66,7 +67,7 @@ module.exports = {
     },
     // Example functions
     {
-      files: ['src/functions-templates/**/*.js'],
+      files: ['functions-templates/**/*.js'],
       rules: {
         'require-await': 0,
         'import/no-unresolved': 0,
@@ -87,7 +88,7 @@ module.exports = {
       },
     },
     {
-      files: ['src/**/*.mjs', 'bin/**/*.mjs'],
+      files: ['bin/**/*.js'],
       parserOptions: {
         ecmaVersion: '2020',
         sourceType: 'module',
@@ -104,7 +105,7 @@ module.exports = {
           {
             name: 'chalk',
             message:
-              'Please use the safe chalk import that handles colors for json output. `import { chalk } from "src/utils/command-helpers.mjs"`',
+              'Please use the safe chalk import that handles colors for json output. `import { chalk } from "src/utils/command-helpers.js"`',
           },
         ],
       },
@@ -113,6 +114,7 @@ module.exports = {
       files: ['tests/**/*'],
       rules: {
         'require-await': 'off',
+        'import/no-deprecated': 'off',
       },
     },
     {

@@ -7,10 +7,10 @@ import { expect, test } from 'vitest'
 
 import { name, version } from '../../package.json'
 
-import { callCli } from './utils/call-cli.mjs'
-import { cliPath } from './utils/cli-path.mjs'
+import { callCli } from './utils/call-cli.js'
+import { cliPath } from './utils/cli-path.js'
 import { MockApiTestContext, withMockApi } from './utils/mock-api-vitest.js'
-import { withSiteBuilder } from './utils/site-builder.mjs'
+import { withSiteBuilder } from './utils/site-builder.ts'
 
 const getCLIOptions = (apiUrl): Options => ({
   env: {

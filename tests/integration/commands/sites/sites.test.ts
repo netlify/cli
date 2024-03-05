@@ -4,29 +4,25 @@ import inquirer from 'inquirer'
 import { render } from 'prettyjson'
 import { afterAll, beforeEach, describe, expect, test, vi } from 'vitest'
 
-import BaseCommand from '../../../../src/commands/base-command.mjs'
-import {
-  createSitesFromTemplateCommand,
-  fetchTemplates,
-} from '../../../../src/commands/sites/sites-create-template.mjs'
-import { createSitesCreateCommand } from '../../../../src/commands/sites/sites-create.mjs'
-import { getGitHubToken } from '../../../../src/utils/init/config-github.mjs'
-import { createRepo, getTemplatesFromGitHub } from '../../../../src/utils/sites/utils.mjs'
-import { getEnvironmentVariables, withMockApi } from '../../utils/mock-api.mjs'
+import BaseCommand from '../../../../src/commands/base-command.js'
+import { fetchTemplates } from '../../../../src/commands/sites/sites-create-template.js'
+import { createSitesCreateCommand, createSitesFromTemplateCommand } from '../../../../src/commands/sites/sites.js'
+import { getGitHubToken } from '../../../../src/utils/init/config-github.js'
+import { createRepo, getTemplatesFromGitHub } from '../../../../src/utils/sites/utils.js'
+import { getEnvironmentVariables, withMockApi } from '../../utils/mock-api.js'
 
-vi.mock('../../../../src/utils/command-helpers.mjs', async () => ({
-  // @ts-expect-error No types yet for command-helpers
-  ...(await vi.importActual('../../../../src/utils/command-helpers.mjs')),
+vi.mock('../../../../src/utils/command-helpers.js', async () => ({
+  ...(await vi.importActual('../../../../src/utils/command-helpers.js')),
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   log: () => {},
 }))
 
 // mock the getGithubToken method with a fake token
-vi.mock('../../../../src/utils/init/config-github.mjs', () => ({
+vi.mock('../../../../src/utils/init/config-github.js', () => ({
   getGitHubToken: vi.fn().mockImplementation(() => 'my-token'),
 }))
 
-vi.mock('../../../../src/utils/sites/utils.mjs', () => ({
+vi.mock('../../../../src/utils/sites/utils.js', () => ({
   getTemplatesFromGitHub: vi.fn().mockImplementation(() => [
     {
       name: 'next-starter',

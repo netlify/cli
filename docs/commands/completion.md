@@ -21,7 +21,7 @@ netlify completion
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`completion:install`](/docs/commands/completion.md#completioninstall) | Generates completion script for your preferred shell  |
+| [`completion:install`](/commands/completion#completioninstall) | Generates completion script for your preferred shell  |
 
 
 **Examples**

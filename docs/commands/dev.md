@@ -37,7 +37,7 @@ netlify dev
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`dev:exec`](/docs/commands/dev.md#devexec) | Exec command  |
+| [`dev:exec`](/commands/dev#devexec) | Exec command  |
 
 
 **Examples**
