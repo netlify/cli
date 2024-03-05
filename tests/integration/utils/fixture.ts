@@ -4,12 +4,12 @@ import { fileURLToPath } from 'url'
 import type { NodeOptions } from 'execa'
 import { copy } from 'fs-extra'
 import { temporaryDirectory } from 'tempy'
-import { afterAll, beforeAll, beforeEach, describe } from 'vitest'
+import { afterAll, afterEach, beforeAll, beforeEach, describe } from 'vitest'
 
-import callCli from './call-cli.cjs'
-import { startDevServer } from './dev-server.cjs'
+import { callCli } from './call-cli.js'
+import { DevServer, startDevServer } from './dev-server.ts'
 import { MockApi, Route, getCLIOptions, startMockApi } from './mock-api-vitest.js'
-import { SiteBuilder } from './site-builder.cjs'
+import { SiteBuilder } from './site-builder.ts'
 
 const FIXTURES_DIRECTORY = fileURLToPath(new URL('../__fixtures__/', import.meta.url))
 const HOOK_TIMEOUT = 30_000
@@ -20,19 +20,23 @@ interface MockApiOptions {
 
 export interface FixtureTestContext {
   fixture: Fixture
-  devServer?: any
+  devServer?: DevServer
   mockApi?: MockApi
 }
 
 type LifecycleHook = (context: FixtureTestContext) => Promise<void> | void
 
 export interface FixtureOptions {
-  devServer?: boolean
+  devServer?: boolean | { serve?: boolean }
   mockApi?: MockApiOptions
   /**
    * Executed after fixture setup, but before tests run
    */
   setup?: LifecycleHook
+  /**
+   * Executed after fixture setup, after dev is started, but before tests run
+   */
+  setupAfterDev?: LifecycleHook
   /**
    * Executed before fixture is cleaned up
    */
@@ -144,10 +148,23 @@ export async function setupFixtureTests(
       if (options.mockApi) mockApi = await startMockApi(options.mockApi)
       fixture = await Fixture.create(fixturePath, { apiUrl: mockApi?.apiUrl })
 
-      if (options.devServer)
-        devServer = await startDevServer({ cwd: fixture.directory, args: ['--offline', '--country', 'DE'] })
+      await options.setup?.({ fixture, mockApi })
 
-      await options.setup?.({ devServer, fixture, mockApi })
+      if (options.devServer) {
+        devServer = await startDevServer({
+          serve: typeof options.devServer === 'object' && options.devServer.serve,
+          cwd: fixture.directory,
+          offline: !mockApi,
+          args: ['--country', 'DE'],
+          env: {
+            NETLIFY_API_URL: mockApi?.apiUrl,
+            NETLIFY_SITE_ID: 'foo',
+            NETLIFY_AUTH_TOKEN: 'fake-token',
+          },
+        })
+
+        await options.setupAfterDev?.({ fixture, mockApi, devServer })
+      }
     }, HOOK_TIMEOUT)
 
     beforeEach<FixtureTestContext>((context) => {
@@ -156,6 +173,12 @@ export async function setupFixtureTests(
       if (mockApi) {
         mockApi.clearRequests()
         context.mockApi = mockApi
+      }
+    })
+
+    afterEach<FixtureTestContext>((context) => {
+      if (devServer && context.task.result?.state === 'fail') {
+        console.log(devServer.output)
       }
     })
 

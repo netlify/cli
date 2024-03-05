@@ -15,7 +15,7 @@ export enum HTTPMethod {
 }
 
 export interface Route {
-  method?: HTTPMethod
+  method?: HTTPMethod | 'all'
   path: string
   response?: any
   requestBody?: any
@@ -40,7 +40,7 @@ export interface MockApiTestContext {
   requests: any[]
 }
 
-// Replace mock-api.cjs with this once everything migrated
+// Replace mock-api.js with this once everything migrated
 
 const addRequest = (requests, request) => {
   requests.push({
@@ -73,6 +73,13 @@ export const startMockApi = ({ routes, silent }: MockApiOptions): Promise<MockAp
       }
       addRequest(requests, req)
       res.status(status)
+
+      if (typeof response === 'function') {
+        response(req, res)
+
+        return
+      }
+
       if (status === 404) {
         response.message = 'Not found'
       }

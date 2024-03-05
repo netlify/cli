@@ -6,8 +6,10 @@ title: Netlify CLI lm command
 
 ## About
 
-<!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
+> ⚠️ The Large Media feature was deprecated on September 1st, 2023 and will become unavailable in a future update. [Learn more and discover alternative solutions](https://answers.netlify.com/t/large-media-feature-deprecated-but-not-removed/100804)
+
 Handle Netlify Large Media operations
+
 The lm command will help you manage large media for a site
 
 **Usage**
@@ -89,5 +91,4 @@ netlify lm:setup
 - `debug` (*boolean*) - Print debugging information
 
 ---
-
 <!-- AUTO-GENERATED-CONTENT:END -->

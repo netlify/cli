@@ -1,19 +1,16 @@
 import { describe, expect, test } from 'vitest'
 
 import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
-import got from '../../utils/got.cjs'
+import fetch from 'node-fetch'
 
 describe('redirects', () => {
   setupFixtureTests('dev-server-with-functions', { devServer: true }, () => {
     test<FixtureTestContext>('should send original query params to functions', async ({ devServer }) => {
-      const response = await got(`http://localhost:${devServer.port}/with-params?param2=world&other=1`, {
-        throwHttpErrors: false,
-        retry: { limit: 0 },
-      })
+      const response = await fetch(`http://localhost:${devServer.port}/with-params?param2=world&other=1`, {})
 
-      expect(response.statusCode).toBe(200)
+      expect(response.status).toBe(200)
 
-      const result = JSON.parse(response.body)
+      const result = await response.json()
       expect(result.queryStringParameters).not.toHaveProperty('param1')
       expect(result.queryStringParameters).toHaveProperty('param2', 'world')
       expect(result.queryStringParameters).toHaveProperty('other', '1')
@@ -22,14 +19,11 @@ describe('redirects', () => {
     test<FixtureTestContext>('should send original query params to functions when using duplicate parameters', async ({
       devServer,
     }) => {
-      const response = await got(`http://localhost:${devServer.port}/api/echo?param=hello&param=world`, {
-        throwHttpErrors: false,
-        retry: { limit: 0 },
-      })
+      const response = await fetch(`http://localhost:${devServer.port}/api/echo?param=hello&param=world`, {})
 
-      expect(response.statusCode).toBe(200)
+      expect(response.status).toBe(200)
 
-      const result = JSON.parse(response.body)
+      const result = await response.json()
       expect(result.queryStringParameters).toHaveProperty('param', 'hello, world')
       expect(result.multiValueQueryStringParameters).toHaveProperty('param', ['hello', 'world'])
     })

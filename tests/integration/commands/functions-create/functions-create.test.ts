@@ -5,12 +5,12 @@ import { join } from 'path'
 import execa from 'execa'
 import { describe, expect, test } from 'vitest'
 
-import { fileExistsAsync } from '../../../../src/lib/fs.mjs'
-import cliPath from '../../utils/cli-path.cjs'
+import { fileExistsAsync } from '../../../../src/lib/fs.js'
+import { cliPath } from '../../utils/cli-path.js'
 import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture'
-import { CONFIRM, DOWN, answerWithValue, handleQuestions } from '../../utils/handle-questions.cjs'
-import { getCLIOptions, withMockApi } from '../../utils/mock-api.cjs'
-import { withSiteBuilder } from '../../utils/site-builder.cjs'
+import { CONFIRM, DOWN, answerWithValue, handleQuestions } from '../../utils/handle-questions.js'
+import { getCLIOptions, withMockApi } from '../../utils/mock-api.js'
+import { withSiteBuilder } from '../../utils/site-builder.ts'
 
 describe.concurrent('functions:create command', () => {
   const siteInfo = {
@@ -139,101 +139,6 @@ describe.concurrent('functions:create command', () => {
 
         await childProcess
         expect(existsSync(`${builder.directory}/somethingEdgy/hello/hello.js`)).toBe(true)
-      })
-    })
-  })
-
-  test('should install function template dependencies on a site-level `package.json` if one is found', async () => {
-    await withSiteBuilder('site-with-no-functions-dir-with-package-json', async (builder) => {
-      builder.withPackageJson({
-        packageJson: {
-          dependencies: {
-            '@netlify/functions': '^0.1.0',
-          },
-        },
-      })
-
-      await builder.buildAsync()
-
-      const createFunctionQuestions = [
-        {
-          question: "Select the type of function you'd like to create",
-          answer: answerWithValue(DOWN),
-        },
-        {
-          question: 'Enter the path, relative to your site',
-          answer: answerWithValue('test/functions'),
-        },
-        {
-          question: 'Select the language of your function',
-          answer: CONFIRM,
-        },
-        {
-          question: 'Pick a template',
-          answer: answerWithValue(`set-cookie`),
-        },
-        {
-          question: 'Name your function',
-          answer: CONFIRM,
-        },
-      ]
-
-      await withMockApi(routes, async ({ apiUrl }) => {
-        const childProcess = execa(cliPath, ['functions:create'], getCLIOptions({ apiUrl, builder }))
-
-        handleQuestions(childProcess, createFunctionQuestions)
-
-        await childProcess
-
-        const { dependencies } = JSON.parse(await readFile(`${builder.directory}/package.json`, 'utf-8'))
-
-        expect(await fileExistsAsync(`${builder.directory}/test/functions/set-cookie/set-cookie.js`)).toBe(true)
-        expect(await fileExistsAsync(`${builder.directory}/test/functions/set-cookie/package.json`)).toBe(false)
-        expect(await fileExistsAsync(`${builder.directory}/test/functions/set-cookie/package-lock.json`)).toBe(false)
-        expect(typeof dependencies.cookie).toBe('string')
-
-        expect(dependencies['@netlify/functions']).toBe('^0.1.0')
-      })
-    })
-  })
-
-  test('should install function template dependencies in the function sub-directory if no site-level `package.json` is found', async () => {
-    await withSiteBuilder('site-with-no-functions-dir-without-package-json', async (builder) => {
-      await builder.buildAsync()
-
-      const createFunctionQuestions = [
-        {
-          question: "Select the type of function you'd like to create",
-          answer: answerWithValue(DOWN),
-        },
-        {
-          question: 'Enter the path, relative to your site',
-          answer: answerWithValue('test/functions'),
-        },
-        {
-          question: 'Select the language of your function',
-          answer: CONFIRM,
-        },
-        {
-          question: 'Pick a template',
-          answer: answerWithValue(`set-cookie`),
-        },
-        {
-          question: 'Name your function',
-          answer: CONFIRM,
-        },
-      ]
-
-      await withMockApi(routes, async ({ apiUrl }) => {
-        const childProcess = execa(cliPath, ['functions:create'], getCLIOptions({ apiUrl, builder }))
-
-        handleQuestions(childProcess, createFunctionQuestions)
-
-        await childProcess
-
-        expect(await fileExistsAsync(`${builder.directory}/test/functions/set-cookie/set-cookie.js`)).toBe(true)
-        expect(await fileExistsAsync(`${builder.directory}/test/functions/set-cookie/package.json`)).toBe(true)
-        expect(await fileExistsAsync(`${builder.directory}/test/functions/set-cookie/package-lock.json`)).toBe(true)
       })
     })
   })

@@ -6,7 +6,7 @@ description: Shell completion script for netlify CLI
 # `completion`
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
-(Beta) Generate shell completion script
+Generate shell completion script
 Run this command to see instructions for your shell.
 
 **Usage**
@@ -21,7 +21,7 @@ netlify completion
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`completion:install`](/docs/commands/completion.md#completioninstall) | Generates completion script for your preferred shell  |
+| [`completion:install`](/commands/completion#completioninstall) | Generates completion script for your preferred shell  |
 
 
 **Examples**
