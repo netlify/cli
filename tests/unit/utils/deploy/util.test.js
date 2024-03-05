@@ -2,7 +2,7 @@ import { join } from 'path'
 
 import { describe, expect, test } from 'vitest'
 
-import { normalizePath } from '../../../../src/utils/deploy/util.js'
+import { normalizePath } from '../../../../dist/utils/deploy/util.js'
 
 describe('normalizePath', () => {
   test('normalizes relative file paths', () => {

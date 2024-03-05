@@ -3,9 +3,9 @@ import fetch from 'node-fetch'
 import { describe, test } from 'vitest'
 
 import { cliPath } from './utils/cli-path.js'
-import { getExecaOptions, withDevServer } from './utils/dev-server.js'
+import { getExecaOptions, withDevServer } from './utils/dev-server.ts'
 import { DOWN, answerWithValue, handleQuestions } from './utils/handle-questions.js'
-import { withSiteBuilder } from './utils/site-builder.js'
+import { withSiteBuilder } from './utils/site-builder.ts'
 import { normalize } from './utils/snapshots.js'
 
 const content = 'Hello World!'

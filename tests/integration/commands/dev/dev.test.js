@@ -6,10 +6,10 @@ import jwt from 'jsonwebtoken'
 import fetch from 'node-fetch'
 import { describe, test } from 'vitest'
 
-import { withDevServer } from '../../utils/dev-server.js'
+import { withDevServer } from '../../utils/dev-server.ts'
 import { startExternalServer } from '../../utils/external-server.js'
 import { withMockApi } from '../../utils/mock-api.js'
-import { withSiteBuilder } from '../../utils/site-builder.js'
+import { withSiteBuilder } from '../../utils/site-builder.ts'
 
 describe.concurrent('command/dev', () => {
   test('should return 404.html if exists for non existing routes', async (t) => {

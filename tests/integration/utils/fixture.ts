@@ -7,9 +7,9 @@ import { temporaryDirectory } from 'tempy'
 import { afterAll, afterEach, beforeAll, beforeEach, describe } from 'vitest'
 
 import { callCli } from './call-cli.js'
-import { startDevServer } from './dev-server.js'
+import { DevServer, startDevServer } from './dev-server.ts'
 import { MockApi, Route, getCLIOptions, startMockApi } from './mock-api-vitest.js'
-import { SiteBuilder } from './site-builder.js'
+import { SiteBuilder } from './site-builder.ts'
 
 const FIXTURES_DIRECTORY = fileURLToPath(new URL('../__fixtures__/', import.meta.url))
 const HOOK_TIMEOUT = 30_000
@@ -20,7 +20,7 @@ interface MockApiOptions {
 
 export interface FixtureTestContext {
   fixture: Fixture
-  devServer?: any
+  devServer?: DevServer
   mockApi?: MockApi
 }
 
@@ -33,6 +33,10 @@ export interface FixtureOptions {
    * Executed after fixture setup, but before tests run
    */
   setup?: LifecycleHook
+  /**
+   * Executed after fixture setup, after dev is started, but before tests run
+   */
+  setupAfterDev?: LifecycleHook
   /**
    * Executed before fixture is cleaned up
    */
@@ -158,6 +162,8 @@ export async function setupFixtureTests(
             NETLIFY_AUTH_TOKEN: 'fake-token',
           },
         })
+
+        await options.setupAfterDev?.({ fixture, mockApi, devServer })
       }
     }, HOOK_TIMEOUT)
 

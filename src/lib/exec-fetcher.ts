@@ -6,7 +6,6 @@ import { fetchLatest, fetchVersion, newerVersion, updateAvailable } from 'gh-rel
 import isExe from 'isexe'
 
 import { NETLIFYDEVWARN, error, getTerminalLink, log } from '../utils/command-helpers.js'
-// @ts-expect-error TS(7034) FIXME: Variable 'execa' implicitly has type 'any' in some... Remove this comment to see the full error message
 import execa from '../utils/execa.js'
 
 const isWindows = () => process.platform === 'win32'
@@ -58,7 +57,6 @@ export const shouldFetchLatestVersion = async ({
     return true
   }
 
-  // @ts-expect-error TS(7005) FIXME: Variable 'execa' implicitly has an 'any' type.
   const { stdout } = await execa(execPath, execArgs)
 
   if (!stdout) {

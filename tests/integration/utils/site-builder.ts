@@ -3,23 +3,24 @@ import os from 'os'
 import path from 'path'
 import process from 'process'
 
+import slugify from '@sindresorhus/slugify'
 import execa from 'execa'
 import serializeJS from 'serialize-javascript'
 import tempDirectory from 'temp-dir'
 import tomlify from 'tomlify-j0.4'
 import { v4 as uuidv4 } from 'uuid'
+import type { TaskContext } from 'vitest'
 
 const ensureDir = (file) => mkdir(file, { recursive: true })
 
+type Task = () => Promise<unknown>
+
 export class SiteBuilder {
-  directory
-  tasks = []
+  tasks: Task[] = []
 
-  constructor(directory) {
-    this.directory = directory
-  }
+  constructor(public readonly directory: string) {}
 
-  ensureDirectoryExists(directory) {
+  ensureDirectoryExists(directory: string) {
     this.tasks.push(async () => ensureDir(directory))
 
     return this
@@ -49,7 +50,7 @@ export class SiteBuilder {
     return this
   }
 
-  withStateFile({ siteId = '' }) {
+  withStateFile({ siteId = '' }: { siteId?: string }) {
     const dest = path.join(this.directory, '.netlify', 'state.json')
     this.tasks.push(async () => {
       const content = `{ "siteId" : "${siteId}" }`
@@ -59,7 +60,7 @@ export class SiteBuilder {
     return this
   }
 
-  withPackageJson({ packageJson, pathPrefix = '' }) {
+  withPackageJson({ packageJson, pathPrefix = '' }: { packageJson: any; pathPrefix?: string }) {
     const dest = path.join(this.directory, pathPrefix, 'package.json')
     this.tasks.push(async () => {
       const content = JSON.stringify(packageJson, null, 2)
@@ -70,7 +71,17 @@ export class SiteBuilder {
     return this
   }
 
-  withFunction({ esm = false, handler, path: filePath, pathPrefix = 'functions' }) {
+  withFunction({
+    esm = false,
+    handler,
+    path: filePath,
+    pathPrefix = 'functions',
+  }: {
+    esm?: boolean
+    handler: any
+    path: string
+    pathPrefix?: string
+  }) {
     const dest = path.join(this.directory, pathPrefix, filePath)
     this.tasks.push(async () => {
       await ensureDir(path.dirname(dest))
@@ -81,12 +92,19 @@ export class SiteBuilder {
     return this
   }
 
-  /**
-   *
-   * @param {{config?:any, handler:any, internal?:boolean, name?:string, pathPrefix?:string}} param0
-   * @returns
-   */
-  withEdgeFunction({ config, handler, internal = false, name = 'function', pathPrefix = '' }) {
+  withEdgeFunction({
+    config,
+    handler,
+    internal = false,
+    name = 'function',
+    pathPrefix = '',
+  }: {
+    config?: any
+    handler: string | Function
+    internal?: boolean
+    name?: string
+    pathPrefix?: string
+  }) {
     const edgeFunctionsDirectory = internal ? '.netlify/edge-functions' : 'netlify/edge-functions'
     const dest = path.join(this.directory, pathPrefix, edgeFunctionsDirectory, `${name}.js`)
     this.tasks.push(async () => {
@@ -103,7 +121,7 @@ export class SiteBuilder {
     return this
   }
 
-  withRedirectsFile({ pathPrefix = '', redirects = [] }) {
+  withRedirectsFile({ pathPrefix = '', redirects = [] }: { pathPrefix?: string; redirects?: any[] }) {
     const dest = path.join(this.directory, pathPrefix, '_redirects')
     this.tasks.push(async () => {
       const content = redirects
@@ -116,7 +134,13 @@ export class SiteBuilder {
     return this
   }
 
-  withHeadersFile({ headers = [], pathPrefix = '' }) {
+  withHeadersFile({
+    headers = [],
+    pathPrefix = '',
+  }: {
+    headers?: { headers: string[]; path: string }[]
+    pathPrefix?: string
+  }) {
     const dest = path.join(this.directory, pathPrefix, '_headers')
     this.tasks.push(async () => {
       const content = headers
@@ -132,7 +156,7 @@ export class SiteBuilder {
     return this
   }
 
-  withContentFile({ content, path: filePath }) {
+  withContentFile({ content, path: filePath }: { content: string; path: string }) {
     const dest = path.join(this.directory, filePath)
     this.tasks.push(async () => {
       await ensureDir(path.dirname(dest))
@@ -142,7 +166,7 @@ export class SiteBuilder {
     return this
   }
 
-  withCopiedFile({ path: filePath, src }) {
+  withCopiedFile({ path: filePath, src }: { path: string; src: string }) {
     const dest = path.join(this.directory, filePath)
     this.tasks.push(async () => {
       await ensureDir(path.dirname(dest))
@@ -152,7 +176,7 @@ export class SiteBuilder {
     return this
   }
 
-  withContentFiles(files) {
+  withContentFiles(files: { content: string; path: string }[]) {
     files.forEach((file) => {
       this.withContentFile(file)
     })
@@ -160,7 +184,15 @@ export class SiteBuilder {
     return this
   }
 
-  withEnvFile({ env = {}, path: filePath = '.env', pathPrefix = '' }) {
+  withEnvFile({
+    env = {},
+    path: filePath = '.env',
+    pathPrefix = '',
+  }: {
+    env?: any
+    path?: string
+    pathPrefix?: string
+  }) {
     const dest = path.join(this.directory, pathPrefix, filePath)
     this.tasks.push(async () => {
       await ensureDir(path.dirname(dest))
@@ -174,7 +206,7 @@ export class SiteBuilder {
     return this
   }
 
-  withGit({ repoUrl = 'git@github.com:owner/repo.git' } = {}) {
+  withGit({ repoUrl = 'git@github.com:owner/repo.git' }: { repoUrl?: string } = {}) {
     this.tasks.push(async () => {
       await execa('git', ['init', '--initial-branch', 'main'], { cwd: this.directory })
       await execa('git', ['remote', 'add', 'origin', repoUrl], { cwd: this.directory })
@@ -183,7 +215,7 @@ export class SiteBuilder {
     return this
   }
 
-  withoutFile({ path: filePath }) {
+  withoutFile({ path: filePath }: { path: string }) {
     const dest = path.join(this.directory, filePath)
     this.tasks.push(async () => {
       await unlink(dest)
@@ -192,7 +224,7 @@ export class SiteBuilder {
     return this
   }
 
-  withBuildPlugin({ name, pathPrefix = 'plugins', plugin }) {
+  withBuildPlugin({ name, pathPrefix = 'plugins', plugin }: { name: string; pathPrefix?: string; plugin: any }) {
     const dest = path.join(this.directory, pathPrefix, `${name}.js`)
     this.tasks.push(async () => {
       await ensureDir(path.dirname(dest))
@@ -205,7 +237,7 @@ export class SiteBuilder {
     return this
   }
 
-  withCommand({ command }) {
+  withCommand({ command }: { command: string[] }) {
     this.tasks.push(async () => {
       const [mainCommand, ...args] = command
 
@@ -250,7 +282,7 @@ export class SiteBuilder {
   }
 }
 
-export const createSiteBuilder = ({ siteName }) => {
+export const createSiteBuilder = ({ siteName }: { siteName: string }) => {
   const directory = path.join(
     tempDirectory,
     `netlify-cli-tests-${process.version}`,
@@ -262,9 +294,25 @@ export const createSiteBuilder = ({ siteName }) => {
   return new SiteBuilder(directory).ensureDirectoryExists(directory)
 }
 
-export const withSiteBuilder = async (siteName, testHandler) => {
-  let builder
+/**
+ * @deprecated use the task-based signature instead
+ */
+export function withSiteBuilder<T>(siteName: string, testHandler: (builder: SiteBuilder) => Promise<T>): Promise<T>
+/**
+ * @param taskContext used to infer directory name from test name
+ */
+export function withSiteBuilder<T>(
+  taskContext: TaskContext,
+  testHandler: (builder: SiteBuilder) => Promise<T>,
+): Promise<T>
+export async function withSiteBuilder<T>(
+  siteNameOrTaskContext: string | TaskContext,
+  testHandler: (builder: SiteBuilder) => Promise<T>,
+): Promise<T> {
+  let builder: SiteBuilder | undefined
   try {
+    const siteName =
+      typeof siteNameOrTaskContext === 'string' ? siteNameOrTaskContext : slugify(siteNameOrTaskContext.task.name)
     builder = createSiteBuilder({ siteName })
     return await testHandler(builder)
   } finally {

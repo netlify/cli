@@ -1,16 +1,18 @@
+import { Settings } from '@netlify/build-info'
 import fuzzy from 'fuzzy'
 import inquirer from 'inquirer'
+
+import BaseCommand from '../commands/base-command.js'
 
 import { chalk, log } from './command-helpers.js'
 
 /**
  * Filters the inquirer settings based on the input
- * @param {ReturnType<typeof formatSettingsArrForInquirer>} scriptInquirerOptions
- * @param {string} input
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'scriptInquirerOptions' implicitly has a... Remove this comment to see the full error message
-const filterSettings = function (scriptInquirerOptions, input) {
-  // @ts-expect-error TS(7006) FIXME: Parameter 'scriptInquirerOption' implicitly has an... Remove this comment to see the full error message
+const filterSettings = function (
+  scriptInquirerOptions: ReturnType<typeof formatSettingsArrForInquirer>,
+  input: string,
+) {
   const filterOptions = scriptInquirerOptions.map((scriptInquirerOption) => scriptInquirerOption.name)
   // TODO: remove once https://github.com/sindresorhus/eslint-plugin-unicorn/issues/1394 is fixed
   // eslint-disable-next-line unicorn/no-array-method-this-argument
@@ -18,19 +20,13 @@ const filterSettings = function (scriptInquirerOptions, input) {
   const filteredSettingNames = new Set(
     filteredSettings.map((filteredSetting) => (input ? filteredSetting.string : filteredSetting)),
   )
-  // @ts-expect-error TS(7006) FIXME: Parameter 't' implicitly has an 'any' type.
   return scriptInquirerOptions.filter((t) => filteredSettingNames.has(t.name))
 }
 
-/** @typedef {import('@netlify/build-info').Settings} Settings */
-
 /**
- * @param {Settings[]} settings
- * @param {'dev' | 'build'} type The type of command (dev or build)
+ * Formats the settings to present it as an array for the inquirer input so that it can choose one
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'settings' implicitly has an 'any' type.
-const formatSettingsArrForInquirer = function (settings, type = 'dev') {
-  // @ts-expect-error TS(7006) FIXME: Parameter 'setting' implicitly has an 'any' type.
+const formatSettingsArrForInquirer = function (settings: Settings[], type = 'dev') {
   return settings.map((setting) => {
     const cmd = type === 'dev' ? setting.devCommand : setting.buildCommand
     return {
@@ -42,31 +38,53 @@ const formatSettingsArrForInquirer = function (settings, type = 'dev') {
 }
 
 /**
- * Uses @netlify/build-info to detect the dev settings and port based on the framework
- * and the build system that is used.
- * @param {import('../commands/base-command.js').default} command
- * @param {'dev' | 'build'} type The type of command (dev or build)
- * @returns {Promise<Settings | undefined>}
+ * Detects and filters the build setting for a project and a command
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'command' implicitly has an 'any' type.
-export const detectFrameworkSettings = async (command, type = 'dev') => {
+export async function detectBuildSettings(command: BaseCommand): Promise<Settings[]> {
+  const { project, workspacePackage } = command
+  const buildSettings = await project.getBuildSettings(project.workspace ? workspacePackage : '')
+  return buildSettings
+    .filter((setting) => {
+      if (project.workspace && project.relativeBaseDirectory && setting.packagePath) {
+        return project.relativeBaseDirectory.startsWith(setting.packagePath)
+      }
+      return true
+    })
+    .filter((setting) => setting.devCommand)
+}
+
+/**
+ * Uses `@netlify/build-info` to detect the dev settings and port based on the framework
+ * and the build system that is used.
+ * @param command The base command
+ * @param type The type of command (dev or build)
+ */
+export const detectFrameworkSettings = async (
+  command: BaseCommand,
+  type: 'dev' | 'build' = 'dev',
+): Promise<Settings | undefined> => {
   const { relConfigFilePath } = command.netlify
   const settings = await detectBuildSettings(command)
   if (settings.length === 1) {
     return settings[0]
   }
 
+  if (type === 'build' && command.netlify.config?.build?.command?.length) {
+    return {
+      ...settings[0],
+      buildCommand: command.netlify.config.build.command,
+    }
+  }
+
   if (settings.length > 1) {
-    /** multiple matching detectors, make the user choose */
+    // multiple matching detectors, make the user choose
     const scriptInquirerOptions = formatSettingsArrForInquirer(settings, type)
-    /** @type {{chosenSettings: Settings}} */
-    const { chosenSettings } = await inquirer.prompt({
+    const { chosenSettings } = await inquirer.prompt<{ chosenSettings: Settings }>({
       name: 'chosenSettings',
       message: `Multiple possible ${type} commands found`,
-      // @ts-expect-error TS(2769) FIXME: No overload matches this call.
+      // @ts-expect-error is not known by the types as it uses the autocomplete plugin
       type: 'autocomplete',
-      // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
-      source(/** @type {string} */ _, input = '') {
+      source(_: string, input = '') {
         if (!input) return scriptInquirerOptions
         // only show filtered results
         return filterSettings(scriptInquirerOptions, input)
@@ -85,27 +103,4 @@ command = "${chosenSettings.devCommand}"
 `)
     return chosenSettings
   }
-}
-
-/**
- * Detects and filters the build setting for a project and a command
- * @param {import('../commands/base-command.js').default} command
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'command' implicitly has an 'any' type.
-export const detectBuildSettings = async (command) => {
-  const { project, workspacePackage } = command
-  const buildSettings = await project.getBuildSettings(project.workspace ? workspacePackage : '')
-  return (
-    buildSettings
-      // @ts-expect-error TS(7006) FIXME: Parameter 'setting' implicitly has an 'any' type.
-      .filter((setting) => {
-        if (project.workspace && project.relativeBaseDirectory && setting.packagePath) {
-          return project.relativeBaseDirectory.startsWith(setting.packagePath)
-        }
-
-        return true
-      })
-      // @ts-expect-error TS(7006) FIXME: Parameter 'setting' implicitly has an 'any' type.
-      .filter((setting) => setting.devCommand)
-  )
 }

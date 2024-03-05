@@ -23,7 +23,6 @@ module.exports = {
     // TODO: remove, so those rules are enabled
     complexity: 0,
     'no-inline-comments': 'off',
-    'no-underscore-dangle': 'off',
     'func-style': 'off',
     'max-depth': 0,
     'max-lines': 0,
@@ -68,7 +67,7 @@ module.exports = {
     },
     // Example functions
     {
-      files: ['src/functions-templates/**/*.js'],
+      files: ['functions-templates/**/*.js'],
       rules: {
         'require-await': 0,
         'import/no-unresolved': 0,
@@ -115,6 +114,7 @@ module.exports = {
       files: ['tests/**/*'],
       rules: {
         'require-await': 'off',
+        'import/no-deprecated': 'off',
       },
     },
     {

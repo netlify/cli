@@ -1,11 +1,12 @@
 import path from 'path'
+import process from 'process'
 
 import execa from 'execa'
 import { describe, test } from 'vitest'
 
 import { cliPath } from '../../utils/cli-path.js'
 import { withMockApi } from '../../utils/mock-api.js'
-import { withSiteBuilder } from '../../utils/site-builder.js'
+import { withSiteBuilder } from '../../utils/site-builder.ts'
 
 const defaultEnvs = {
   NETLIFY_AUTH_TOKEN: 'fake-token',
@@ -38,7 +39,11 @@ const runBuildCommand = async function (
     outputs = [outputs]
   }
   outputs.forEach((output) => {
-    t.expect(all.includes(output), `Output of build command does not include '${output}'`).toBe(true)
+    if (output instanceof RegExp) {
+      t.expect(all).toMatch(output)
+    } else {
+      t.expect(all.includes(output), `Output of build command does not include '${output}'`).toBe(true)
+    }
   })
   t.expect(exitCode).toBe(expectedExitCode)
 }
@@ -67,7 +72,7 @@ routesWithCommand.splice(0, 1, { path: 'sites/site_id', response: siteInfoWithCo
 
 describe.concurrent('command/build', () => {
   test('should use build command from UI', async (t) => {
-    await withSiteBuilder('success-site', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder.withNetlifyToml({ config: {} }).withStateFile({ siteId: siteInfo.id })
 
       await builder.buildAsync()
@@ -78,7 +83,7 @@ describe.concurrent('command/build', () => {
   })
 
   test('should use build command from UI with build plugin', async (t) => {
-    await withSiteBuilder('success-site', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder
         .withNetlifyToml({
           config: {
@@ -113,7 +118,7 @@ describe.concurrent('command/build', () => {
   })
 
   test('should print output for a successful command', async (t) => {
-    await withSiteBuilder('success-site', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder
         .withNetlifyToml({ config: { build: { command: 'echo testCommand' } } })
         .withStateFile({ siteId: siteInfo.id })
@@ -127,7 +132,7 @@ describe.concurrent('command/build', () => {
   })
 
   test('should print output for a failed command', async (t) => {
-    await withSiteBuilder('failure-site', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder.withNetlifyToml({ config: { build: { command: 'doesNotExist' } } }).withStateFile({ siteId: siteInfo.id })
 
       await builder.buildAsync()
@@ -139,7 +144,7 @@ describe.concurrent('command/build', () => {
   })
 
   test('should run in dry mode when the --dry flag is set', async (t) => {
-    await withSiteBuilder('success-site', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder
         .withNetlifyToml({ config: { build: { command: 'echo testCommand' } } })
         .withStateFile({ siteId: siteInfo.id })
@@ -153,7 +158,7 @@ describe.concurrent('command/build', () => {
   })
 
   test('should run the production context when context is not defined', async (t) => {
-    await withSiteBuilder('context-site', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder.withNetlifyToml({
         config: {
           build: { command: 'echo testCommand' },
@@ -168,7 +173,7 @@ describe.concurrent('command/build', () => {
   })
 
   test('should run the staging context command when the --context option is set to staging', async (t) => {
-    await withSiteBuilder('context-site', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder.withNetlifyToml({
         config: {
           build: { command: 'echo testCommand' },
@@ -183,7 +188,7 @@ describe.concurrent('command/build', () => {
   })
 
   test('should run the staging context command when the context env variable is set', async (t) => {
-    await withSiteBuilder('context-site', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder.withNetlifyToml({
         config: {
           build: { command: 'echo testCommand' },
@@ -202,7 +207,7 @@ describe.concurrent('command/build', () => {
   })
 
   test('should print debug information when the --debug flag is set', async (t) => {
-    await withSiteBuilder('success-site', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder
         .withNetlifyToml({ config: { build: { command: 'echo testCommand' } } })
         .withStateFile({ siteId: siteInfo.id })
@@ -216,7 +221,7 @@ describe.concurrent('command/build', () => {
   })
 
   test('should use root directory netlify.toml when runs in subdirectory', async (t) => {
-    await withSiteBuilder('subdir-site', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder
         .withNetlifyToml({ config: { build: { command: 'echo testCommand' } } })
         .withStateFile({ siteId: siteInfo.id })
@@ -231,7 +236,7 @@ describe.concurrent('command/build', () => {
   })
 
   test('should error when using invalid netlify.toml', async (t) => {
-    await withSiteBuilder('wrong-config-site', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder.withNetlifyToml({ config: { build: { command: false } } })
 
       await builder.buildAsync()
@@ -243,7 +248,7 @@ describe.concurrent('command/build', () => {
   })
 
   test('should error when a site id is missing', async (t) => {
-    await withSiteBuilder('no-site-id-site', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder.withNetlifyToml({ config: { build: { command: 'echo testCommand' } } })
 
       await builder.buildAsync()
@@ -260,7 +265,7 @@ describe.concurrent('command/build', () => {
   })
 
   test('should not require a linked site when offline flag is set', async (t) => {
-    await withSiteBuilder('success-site', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       await builder.withNetlifyToml({ config: { build: { command: 'echo testCommand' } } }).buildAsync()
 
       await runBuildCommand(t, builder.directory, {
@@ -272,7 +277,7 @@ describe.concurrent('command/build', () => {
   })
 
   test('should not send network requests when offline flag is set', async (t) => {
-    await withSiteBuilder('success-site', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       await builder.withNetlifyToml({ config: { build: { command: 'echo testCommand' } } }).buildAsync()
 
       await withMockApi(routes, async ({ apiUrl, requests }) => {
@@ -283,6 +288,28 @@ describe.concurrent('command/build', () => {
         })
 
         t.expect(requests.length).toBe(0)
+      })
+    })
+  })
+
+  test('should have version in NETLIFY_CLI_VERSION variable', async (t) => {
+    await withSiteBuilder('NETLIFY_CLI_VERSION-env', async (builder) => {
+      await builder
+        .withNetlifyToml({
+          config: {
+            build: {
+              command:
+                process.platform === 'win32'
+                  ? 'echo NETLIFY_CLI_VERSION=%NETLIFY_CLI_VERSION%'
+                  : 'echo NETLIFY_CLI_VERSION=$NETLIFY_CLI_VERSION',
+            },
+          },
+        })
+        .build()
+
+      await runBuildCommand(t, builder.directory, {
+        output: /NETLIFY_CLI_VERSION=\d+\.\d+.\d+/,
+        flags: ['--offline'],
       })
     })
   })

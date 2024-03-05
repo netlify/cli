@@ -2,7 +2,6 @@ import { OptionValues } from 'commander'
 import { Listr } from 'listr2'
 
 import { error } from '../../utils/command-helpers.js'
-// @ts-expect-error TS(7034) FIXME: Variable 'execa' implicitly has type 'any' in some... Remove this comment to see the full error message
 import execa from '../../utils/execa.js'
 import { installPlatform } from '../../utils/lm/install.js'
 import { checkHelperVersion } from '../../utils/lm/requirements.js'
@@ -53,7 +52,6 @@ const configureLFSURL = async function (siteId, api) {
   const siteInfo = await api.getSite({ siteId })
   const url = `https://${siteInfo.id_domain}/.netlify/large-media`
 
-  // @ts-expect-error TS(7005) FIXME: Variable 'execa' implicitly has an 'any' type.
   return execa('git', ['config', '-f', '.lfsconfig', 'lfs.url', url])
 }
 

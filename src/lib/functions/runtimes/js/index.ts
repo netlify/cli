@@ -5,6 +5,8 @@ import { Worker } from 'worker_threads'
 
 import lambdaLocal from 'lambda-local'
 
+import { BLOBS_CONTEXT_VARIABLE } from '../../../blobs/blobs.js'
+
 import detectNetlifyLambdaBuilder from './builders/netlify-lambda.js'
 import detectZisiBuilder, { parseFunctionForMetadata } from './builders/zisi.js'
 import { SECONDS_TO_MILLISECONDS } from './constants.js'
@@ -58,7 +60,7 @@ const workerURL = new URL('worker.js', import.meta.url)
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'context' implicitly has an 'any' ... Remove this comment to see the full error message
 export const invokeFunction = async ({ context, environment, event, func, timeout }) => {
-  if (func.buildData.runtimeAPIVersion !== 2) {
+  if (func.buildData?.runtimeAPIVersion !== 2) {
     return await invokeFunctionDirectly({ context, event, func, timeout })
   }
 
@@ -104,6 +106,14 @@ export const invokeFunctionDirectly = async ({ context, event, func, timeout }) 
   const lambdaPath = func.buildData?.buildPath ?? func.mainFile
   const result = await lambdaLocal.execute({
     clientContext: JSON.stringify(context),
+    environment: {
+      // We've set the Blobs context on the parent process, which means it will
+      // be available to the Lambda. This would be inconsistent with production
+      // where only V2 functions get the context injected. To fix it, unset the
+      // context variable before invoking the function.
+      // This has the side-effect of also removing the variable from `process.env`.
+      [BLOBS_CONTEXT_VARIABLE]: undefined,
+    },
     event,
     lambdaPath,
     timeoutMs: timeout * SECONDS_TO_MILLISECONDS,

@@ -22,6 +22,33 @@ export const getExecaOptions = ({ cwd, env }) => {
   }
 }
 
+export interface DevServer {
+  url: string
+  host: string
+  port: number
+  errorBuffer: any[]
+  outputBuffer: any[]
+  waitForLogMatching(match: string): Promise<void>
+  output: string
+  error: string
+  close(): Promise<void>
+  promptHistory: any[]
+}
+
+type $FIXME = any
+
+interface DevServerOptions {
+  args?: string[]
+  context?: string
+  cwd: string
+  debug?: boolean
+  env?: Record<string, string>
+  expectFailure?: boolean
+  offline?: boolean
+  prompt?: $FIXME[]
+  serve?: boolean
+}
+
 const startServer = async ({
   args = [],
   context = 'dev',
@@ -32,7 +59,7 @@ const startServer = async ({
   offline = true,
   prompt,
   serve = false,
-}) => {
+}: DevServerOptions): Promise<DevServer | { timeout: boolean; output: string }> => {
   const port = await getPort()
   const staticPort = await getPort()
   const host = 'localhost'
@@ -57,11 +84,12 @@ const startServer = async ({
     baseArgs.push('--context', context)
   }
 
+  // @ts-expect-error FIXME
   const ps = execa(cliPath, [...baseArgs, ...args], getExecaOptions({ cwd, env }))
 
   if (process.env.DEBUG_TESTS) {
-    ps.stderr.pipe(process.stderr)
-    ps.stdout.pipe(process.stdout)
+    ps.stderr!.pipe(process.stderr)
+    ps.stdout!.pipe(process.stdout)
   }
 
   const promptHistory = []
@@ -70,14 +98,14 @@ const startServer = async ({
     handleQuestions(ps, prompt, promptHistory)
   }
 
-  const outputBuffer = []
-  const errorBuffer = []
-  const serverPromise = new Promise((resolve, reject) => {
+  const outputBuffer: any[] = []
+  const errorBuffer: any[] = []
+  const serverPromise = new Promise<DevServer>((resolve, reject) => {
     let selfKilled = false
-    ps.stderr.on('data', (data) => {
+    ps.stderr!.on('data', (data) => {
       errorBuffer.push(data)
     })
-    ps.stdout.on('data', (data) => {
+    ps.stdout!.on('data', (data) => {
       outputBuffer.push(data)
       if (!expectFailure && data.includes('Server now ready on')) {
         setImmediate(() =>
@@ -87,16 +115,16 @@ const startServer = async ({
             port,
             errorBuffer,
             outputBuffer,
-            waitForLogMatching(match) {
+            waitForLogMatching(match: string) {
               // eslint-disable-next-line promise/param-names
-              return new Promise((resolveWait) => {
-                const listener = (stdoutData) => {
+              return new Promise<void>((resolveWait) => {
+                const listener = (stdoutData: string) => {
                   if (stdoutData.includes(match)) {
                     ps.removeListener('data', listener)
                     resolveWait()
                   }
                 }
-                ps.stdout.on('data', listener)
+                ps.stdout!.on('data', listener)
               })
             },
             get output() {
@@ -123,16 +151,18 @@ const startServer = async ({
   return await pTimeout(serverPromise, SERVER_START_TIMEOUT, () => ({ timeout: true, output: outputBuffer.join('') }))
 }
 
-export const startDevServer = async (options, expectFailure) => {
+export const startDevServer = async (options: DevServerOptions, expectFailure: boolean): Promise<DevServer> => {
   const maxAttempts = 5
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       // do not use destruction, as we use getters which otherwise would be evaluated here
       const devServer = await startServer({ ...options, expectFailure })
+      // @ts-expect-error FIXME
       if (devServer.timeout) {
         throw new Error(`Timed out starting dev server.\nServer Output:\n${devServer.output}`)
       }
+      // @ts-expect-error FIXME
       return devServer
     } catch (error) {
       if (attempt === maxAttempts || expectFailure) {
@@ -141,13 +171,19 @@ export const startDevServer = async (options, expectFailure) => {
       console.warn('Retrying startDevServer', error)
     }
   }
+
+  throw new Error('this code should be unreachable')
 }
 
 // 240 seconds
 const SERVER_START_TIMEOUT = 24e4
 
-export const withDevServer = async (options, testHandler, expectFailure = false) => {
-  let server
+export const withDevServer = async <T>(
+  options: DevServerOptions,
+  testHandler: (server: DevServer) => Promise<T>,
+  expectFailure = false,
+): Promise<T> => {
+  let server: DevServer | undefined = undefined
   try {
     server = await startDevServer(options, expectFailure)
     return await testHandler(server)

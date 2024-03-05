@@ -1,8 +1,9 @@
+import { Buffer } from 'node:buffer'
 import process from 'process'
 
 import { OptionValues } from 'commander'
 
-import { getBlobsContext } from '../../lib/blobs/blobs.js'
+import { BLOBS_CONTEXT_VARIABLE, encodeBlobsContext, getBlobsContext } from '../../lib/blobs/blobs.js'
 import { promptEditorHelper } from '../../lib/edge-functions/editor-helper.js'
 import { startFunctionsServer } from '../../lib/functions/server.js'
 import { printBanner } from '../../utils/banner.js'
@@ -16,7 +17,7 @@ import {
   normalizeConfig,
 } from '../../utils/command-helpers.js'
 import detectServerSettings, { getConfigWithPlugins } from '../../utils/detect-server-settings.js'
-import { getDotEnvVariables, getSiteInformation, injectEnvVariables } from '../../utils/dev.js'
+import { getDotEnvVariables, getSiteInformation, injectEnvVariables, UNLINKED_SITE_MOCK_ID } from '../../utils/dev.js'
 import { getEnvelopeEnv } from '../../utils/env/index.js'
 import { getInternalFunctionsDir } from '../../utils/functions/functions.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
@@ -25,12 +26,12 @@ import { generateInspectSettings, startProxyServer } from '../../utils/proxy-ser
 import { runBuildTimeline } from '../../utils/run-build.js'
 import type { ServerSettings } from '../../utils/types.js'
 import BaseCommand from '../base-command.js'
+import { type DevConfig } from '../dev/types.js'
 
 export const serve = async (options: OptionValues, command: BaseCommand) => {
   const { api, cachedConfig, config, repositoryRoot, site, siteInfo, state } = command.netlify
   config.dev = { ...config.dev }
   config.build = { ...config.build }
-  /** @type {import('../dev/types').DevConfig} */
   const devConfig = {
     ...(config.functionsDirectory && { functions: config.functionsDirectory }),
     ...(config.build.publish && { publish: config.build.publish }),
@@ -40,7 +41,7 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
     // Override the `framework` value so that we start a static server and not
     // the framework's development server.
     framework: '#static',
-  }
+  } as DevConfig
 
   let { env } = cachedConfig
 
@@ -60,6 +61,10 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
     site,
     siteInfo,
   })
+
+  if (!site.root) {
+    throw new Error('Site root not found')
+  }
 
   // Ensure the internal functions directory exists so that the functions
   // server and registry are initialized, and any functions created by
@@ -84,20 +89,21 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
     `${NETLIFYDEVWARN} Changes will not be hot-reloaded, so if you need to rebuild your site you must exit and run 'netlify serve' again`,
   )
 
+  const blobsContext = await getBlobsContext({
+    debug: options.debug,
+    projectRoot: command.workingDir,
+    siteID: site.id ?? UNLINKED_SITE_MOCK_ID,
+  })
+
+  process.env[BLOBS_CONTEXT_VARIABLE] = encodeBlobsContext(blobsContext)
+
   const { configPath: configPathOverride } = await runBuildTimeline({
     command,
     settings,
     options,
   })
 
-  const blobsContext = await getBlobsContext({
-    debug: options.debug,
-    projectRoot: command.workingDir,
-    siteID: site.id ?? 'unknown-site-id',
-  })
-
   const functionsRegistry = await startFunctionsServer({
-    api,
     blobsContext,
     command,
     config,

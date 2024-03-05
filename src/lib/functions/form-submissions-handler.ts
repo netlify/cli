@@ -2,6 +2,7 @@ import { Readable } from 'stream'
 
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'cont... Remove this comment to see the full error message
 import { parse as parseContentType } from 'content-type'
+import type { RequestHandler } from 'express'
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'mult... Remove this comment to see the full error message
 import multiparty from 'multiparty'
 import getRawBody from 'raw-body'
@@ -10,33 +11,48 @@ import { warn } from '../../utils/command-helpers.js'
 import { BACKGROUND } from '../../utils/functions/index.js'
 import { capitalize } from '../string.js'
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'functionsRegistry' implicitly has... Remove this comment to see the full error message
-const getFormHandler = function ({ functionsRegistry }) {
+import type NetlifyFunction from './netlify-function.js'
+import type { FunctionsRegistry } from './registry.js'
+
+export const getFormHandler = function ({
+  functionsRegistry,
+  logWarning = true,
+}: {
+  functionsRegistry: FunctionsRegistry
+  logWarning?: boolean
+}) {
   const handlers = ['submission-created', `submission-created${BACKGROUND}`]
     .map((name) => functionsRegistry.get(name))
-    .filter(Boolean)
+    .filter((func): func is NetlifyFunction => Boolean(func))
     .map(({ name }) => name)
 
   if (handlers.length === 0) {
-    warn(`Missing form submission function handler`)
+    logWarning && warn(`Missing form submission function handler`)
     return
   }
 
   if (handlers.length === 2) {
-    warn(`Detected both '${handlers[0]}' and '${handlers[1]}' form submission functions handlers, using ${handlers[0]}`)
+    logWarning &&
+      warn(
+        `Detected both '${handlers[0]}' and '${handlers[1]}' form submission functions handlers, using ${handlers[0]}`,
+      )
   }
 
   return handlers[0]
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'functionsRegistry' implicitly has... Remove this comment to see the full error message
-export const createFormSubmissionHandler = function ({ functionsRegistry, siteUrl }) {
-  // @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
+export const createFormSubmissionHandler = function ({
+  functionsRegistry,
+  siteUrl,
+}: {
+  functionsRegistry: FunctionsRegistry
+  siteUrl: string
+}): RequestHandler {
   return async function formSubmissionHandler(req, res, next) {
     if (
       req.url.startsWith('/.netlify/') ||
       req.method !== 'POST' ||
-      (await functionsRegistry.getFunctionForURLPath(req.url, req.method))
+      (await functionsRegistry.getFunctionForURLPath(req.url, req.method, () => Promise.resolve(false)))
     )
       return next()
 
@@ -159,7 +175,7 @@ export const createFormSubmissionHandler = function ({ functionsRegistry, siteUr
     req.body = data
     req.headers = {
       ...req.headers,
-      'content-length': data.length,
+      'content-length': String(data.length),
       'content-type': 'application/json',
       'x-netlify-original-pathname': originalUrl.pathname,
       'x-netlify-original-search': originalUrl.search,

@@ -5,7 +5,6 @@ import { gte } from 'semver'
 import { describe, expect, test } from 'vitest'
 
 import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
-import got from '../../utils/got.js'
 
 const siteInfo = {
   account_id: 'mock-account-id',
@@ -26,16 +25,13 @@ const setup = async ({ fixture }) => {
   await execa('npm', ['install'], { cwd: fixture.directory })
 }
 
-describe.runIf(gte(version, '18.13.0'))('v2 api', () => {
+describe.runIf(gte(version, '18.13.0')).concurrent('v2 api', () => {
   setupFixtureTests('dev-server-with-v2-functions', { devServer: true, mockApi: { routes }, setup }, () => {
     test<FixtureTestContext>('should successfully be able to run v2 functions', async ({ devServer }) => {
-      const response = await got(`http://localhost:${devServer.port}/.netlify/functions/ping`, {
-        throwHttpErrors: false,
-        retry: { limit: 0 },
-      })
+      const response = await fetch(`http://localhost:${devServer.port}/.netlify/functions/ping`)
 
-      expect(response.statusCode).toBe(200)
-      expect(response.body).toBe('pong')
+      expect(response.status).toBe(200)
+      expect(await response.text()).toBe('pong')
     })
 
     test<FixtureTestContext>('supports streamed responses', async ({ devServer }) => {
@@ -117,6 +113,11 @@ describe.runIf(gte(version, '18.13.0'))('v2 api', () => {
       expect(await response.text()).toBe(`With literal path: ${url}`)
     })
 
+    test<FixtureTestContext>("edge case: double slash isn't mistaken as protocol", async ({ devServer }) => {
+      const response = await fetch(`http://localhost:${devServer.port}//something`)
+      expect(response.status).toBe(404)
+    })
+
     test<FixtureTestContext>('doesnt run form logic on paths matching function', async ({ devServer }) => {
       const url = `http://localhost:${devServer.port}/products`
       await fetch(url, { method: 'POST' })
@@ -135,6 +136,13 @@ describe.runIf(gte(version, '18.13.0'))('v2 api', () => {
       const response = await fetch(url)
       expect(response.status).toBe(200)
       expect(await response.text()).toBe(`With expression path: {"sku":"netlify"}`)
+    })
+
+    test<FixtureTestContext>('supports preferStatic', async ({ devServer }) => {
+      const url = `http://localhost:${devServer.port}/products/static`
+      const response = await fetch(url)
+      expect(response.status).toBe(200)
+      expect(await response.text()).toBe(`this is a static page\n`)
     })
 
     test<FixtureTestContext>('should serve the custom path ath the / route as specified in the in source config', async ({
@@ -178,8 +186,8 @@ describe.runIf(gte(version, '18.13.0'))('v2 api', () => {
         const url = `http://localhost:${devServer.port}/v2-to-legacy-without-force`
         const response = await fetch(url)
         expect(response.status).toBe(200)
-        const text = await (await response.text()).trim()
-        expect(text).toBe('/v2-to-legacy-without-force from origin')
+        const text = await response.text()
+        expect(text.trim()).toBe('/v2-to-legacy-without-force from origin')
       })
 
       test<FixtureTestContext>('rewrite to custom URL format with `force: true`', async ({ devServer }) => {
@@ -193,8 +201,8 @@ describe.runIf(gte(version, '18.13.0'))('v2 api', () => {
         const url = `http://localhost:${devServer.port}/v2-to-custom-without-force`
         const response = await fetch(url)
         expect(response.status).toBe(200)
-        const text = await (await response.text()).trim()
-        expect(text).toBe('/v2-to-custom-without-force from origin')
+        const text = await response.text()
+        expect(text.trim()).toBe('/v2-to-custom-without-force from origin')
       })
     })
 
@@ -207,6 +215,12 @@ describe.runIf(gte(version, '18.13.0'))('v2 api', () => {
 
       expect(body.data).toBe('hello world')
       expect(body.metadata).toEqual({ name: 'Netlify', features: { blobs: true, functions: true } })
+    })
+
+    test<FixtureTestContext>('does not shadow Image CDN', async ({ devServer }) => {
+      const response = await fetch(`http://localhost:${devServer.port}/.netlify/images?url=test.png&fm=avif`)
+      expect(response.status).toBe(200)
+      expect(response.headers.get('content-type')).toBe('image/avif')
     })
   })
 })

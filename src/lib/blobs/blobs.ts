@@ -1,3 +1,4 @@
+import { Buffer } from 'buffer'
 import path from 'path'
 
 import { BlobsServer } from '@netlify/blobs'
@@ -8,7 +9,9 @@ import { getPathInProject } from '../settings.js'
 
 let hasPrintedLocalBlobsNotice = false
 
-interface BlobsContext {
+export const BLOBS_CONTEXT_VARIABLE = 'NETLIFY_BLOBS_CONTEXT'
+
+export interface BlobsContext {
   deployID: string
   edgeURL: string
   siteID: string
@@ -28,7 +31,7 @@ const printLocalBlobsNotice = () => {
 }
 
 const startBlobsServer = async (debug: boolean, projectRoot: string, token: string) => {
-  const directory = path.resolve(projectRoot, getPathInProject(['blobs-serves']))
+  const directory = path.resolve(projectRoot, getPathInProject(['blobs-serve']))
   const server = new BlobsServer({
     debug,
     directory,
@@ -64,3 +67,9 @@ export const getBlobsContext = async ({ debug, projectRoot, siteID }: GetBlobsCo
 
   return context
 }
+
+/**
+ * Returns a Base-64, JSON-encoded representation of the Blobs context. This is
+ * the format that the `@netlify/blobs` package expects to find the context in.
+ */
+export const encodeBlobsContext = (context: BlobsContext) => Buffer.from(JSON.stringify(context)).toString('base64')

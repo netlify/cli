@@ -2,4 +2,5 @@ export default async (req, context) => new Response(`With expression path: ${JSO
 
 export const config = {
   path: '/products/:sku',
+  preferStatic: true,
 }

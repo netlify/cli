@@ -2,7 +2,7 @@ import { Buffer } from 'buffer'
 
 import { describe, expect, test } from 'vitest'
 
-import { createSiteInfoHeader } from '../../../../src/lib/edge-functions/proxy.js'
+import { createSiteInfoHeader } from '../../../../dist/lib/edge-functions/proxy.js'
 
 describe('createSiteInfoHeader', () => {
   test('builds a base64 string', () => {

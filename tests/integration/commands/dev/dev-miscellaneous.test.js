@@ -1,3 +1,4 @@
+import { Buffer } from 'buffer'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
@@ -7,12 +8,13 @@ import jwt from 'jsonwebtoken'
 import fetch from 'node-fetch'
 import { describe, test } from 'vitest'
 
-import { withDevServer } from '../../utils/dev-server.js'
+import { withDevServer } from '../../utils/dev-server.ts'
 import got from '../../utils/got.js'
 import { withMockApi } from '../../utils/mock-api.js'
 import { pause } from '../../utils/pause.js'
-import { withSiteBuilder } from '../../utils/site-builder.js'
+import { withSiteBuilder } from '../../utils/site-builder.ts'
 
+// eslint-disable-next-line no-underscore-dangle
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const JWT_EXPIRY = 1_893_456_000
@@ -75,7 +77,7 @@ const validateRoleBasedRedirectsSite = async ({ builder, jwtRolePath, jwtSecret,
 
 describe.concurrent('commands/dev-miscellaneous', () => {
   test('should follow redirect for fully qualified rule', async (t) => {
-    await withSiteBuilder('site-with-fully-qualified-redirect-rule', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       const publicDir = 'public'
       builder
         .withNetlifyToml({
@@ -97,7 +99,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
           redirects: [{ from: `http://localhost/hello-world`, to: `/local-hello`, status: 200 }],
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const response = await fetch(`${server.url}/hello-world`)
@@ -109,7 +111,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
   })
 
   test('should return 202 ok and empty response for background function', async (t) => {
-    await withSiteBuilder('site-with-background-function', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withFunction({
         path: 'hello-background.js',
         handler: () => {
@@ -117,7 +119,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
         },
       })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const response = await fetch(`${server.url}/.netlify/functions/hello-background`)
@@ -128,7 +130,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
   })
 
   test('background function clientContext,identity should be null', async (t) => {
-    await withSiteBuilder('site-with-background-function', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       await builder
         .withNetlifyToml({ config: { functions: { directory: 'functions' } } })
         .withFunction({
@@ -137,7 +139,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
             console.log(`__CLIENT_CONTEXT__START__${JSON.stringify(context)}__CLIENT_CONTEXT__END__`)
           },
         })
-        .buildAsync()
+        .build()
 
       await withDevServer({ cwd: builder.directory }, async ({ outputBuffer, url }) => {
         await fetch(`${url}/.netlify/functions/hello-background`)
@@ -150,16 +152,49 @@ describe.concurrent('commands/dev-miscellaneous', () => {
     })
   })
 
+  test('function clientContext.custom.netlify should be set', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      await builder
+        .withNetlifyToml({ config: { functions: { directory: 'functions' } } })
+        .withFunction({
+          path: 'hello.js',
+          handler: async (_, context) => ({
+            statusCode: 200,
+            body: JSON.stringify(context),
+          }),
+        })
+        .build()
+
+      await withDevServer({ cwd: builder.directory }, async (server) => {
+        const response = await fetch(`${server.url}/.netlify/functions/hello`, {
+          headers: {
+            Authorization:
+              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzb3VyY2UiOiJuZXRsaWZ5IGRldiIsInRlc3REYXRhIjoiTkVUTElGWV9ERVZfTE9DQUxMWV9FTVVMQVRFRF9JREVOVElUWSJ9.2eSDqUOZAOBsx39FHFePjYj12k0LrxldvGnlvDu3GMI',
+          },
+        }).then((res) => res.json())
+
+        t.expect(response.clientContext.identity.url).toEqual(
+          'https://netlify-dev-locally-emulated-identity.netlify.com/.netlify/identity',
+        )
+
+        const netlifyContext = Buffer.from(response.clientContext.custom.netlify, 'base64').toString()
+        t.expect(JSON.parse(netlifyContext).identity.url).toEqual(
+          'https://netlify-dev-locally-emulated-identity.netlify.com/.netlify/identity',
+        )
+      })
+    })
+  })
+
   test('should enforce role based redirects with default secret and role path', async (t) => {
-    await withSiteBuilder('site-with-default-role-based-redirects', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       setupRoleBasedRedirectsSite(builder)
-      await builder.buildAsync()
+      await builder.build()
       await validateRoleBasedRedirectsSite({ builder, t })
     })
   })
 
   test('should enforce role based redirects with custom secret and role path', async (t) => {
-    await withSiteBuilder('site-with-custom-role-based-redirects', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       const jwtSecret = 'custom'
       const jwtRolePath = 'roles'
       setupRoleBasedRedirectsSite(builder).withNetlifyToml({
@@ -170,13 +205,13 @@ describe.concurrent('commands/dev-miscellaneous', () => {
           },
         },
       })
-      await builder.buildAsync()
+      await builder.build()
       await validateRoleBasedRedirectsSite({ builder, t, jwtSecret, jwtRolePath })
     })
   })
 
   test('Serves an Edge Function that terminates a response', async (t) => {
-    await withSiteBuilder('site-with-edge-function-that-terminates-response', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       const publicDir = 'public'
       builder
         .withNetlifyToml({
@@ -204,7 +239,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
           name: 'hello',
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const response = await fetch(`${server.url}/edge-function`)
@@ -218,7 +253,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
   })
 
   test('Serves an Edge Function with a rewrite', async (t) => {
-    await withSiteBuilder('site-with-edge-function-that-rewrites', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       const publicDir = 'public'
       builder
         .withNetlifyToml({
@@ -267,7 +302,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
           name: 'hello',
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const [response1, response2] = await Promise.all([
@@ -285,7 +320,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
   })
 
   test('Serves an Edge Function with caching', async (t) => {
-    await withSiteBuilder('site-with-edge-function-with-caching', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       const publicDir = 'public'
       builder
         .withNetlifyToml({
@@ -314,7 +349,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
           name: 'hello',
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const response = await fetch(`${server.url}/edge-function`)
@@ -326,7 +361,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
   })
 
   test('Serves an Edge Function that includes context with site and deploy information', async (t) => {
-    await withSiteBuilder('site-with-edge-function-printing-site-deploy-info', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       const publicDir = 'public'
       builder
         .withNetlifyToml({
@@ -351,7 +386,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
           name: 'siteContext',
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       const siteInfo = {
         account_slug: 'test-account',
@@ -386,7 +421,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
             t.expect(response.status).toBe(200)
             t.expect(JSON.parse(await response.text())).toStrictEqual({
               deploy: { id: '0' },
-              site: { id: 'site_id', name: 'site-name', url: 'site-url' },
+              site: { id: 'site_id', name: 'site-name', url: server.url },
             })
           },
         )
@@ -395,7 +430,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
   })
 
   test('Serves an Edge Function that transforms the response', async (t) => {
-    await withSiteBuilder('site-with-edge-function-that-transforms-response', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       const publicDir = 'public'
       builder
         .withNetlifyToml({
@@ -428,7 +463,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
           name: 'yell',
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const response = await fetch(`${server.url}/hello`)
@@ -440,7 +475,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
   })
 
   test('Serves an Edge Function that streams the response', async (t) => {
-    await withSiteBuilder('site-with-edge-function-that-streams-response', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       const publicDir = 'public'
       builder
         .withNetlifyToml({
@@ -482,7 +517,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
           name: 'stream',
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         let numberOfChunks = 0
@@ -504,7 +539,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
   })
 
   test('When an edge function fails, serves a fallback defined by its `on_error` mode', async (t) => {
-    await withSiteBuilder('site-with-edge-function-that-fails', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       const publicDir = 'public'
       builder
         .withNetlifyToml({
@@ -548,7 +583,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
           name: 'hello-2',
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const [response1, response2] = await Promise.all([
@@ -565,7 +600,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
   })
 
   test('When an edge function throws uncaught exception, the dev server continues working', async (t) => {
-    await withSiteBuilder('site-with-edge-function-uncaught-exception', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder
         .withNetlifyToml({
           config: {
@@ -583,7 +618,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
           name: 'hello-1',
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const response = await fetch(`${server.url}/hello`, {
@@ -598,7 +633,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
   })
 
   test('redirect with country cookie', async (t) => {
-    await withSiteBuilder('site-with-country-cookie', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder
         .withContentFiles([
           {
@@ -614,7 +649,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
           redirects: [{ from: `/`, to: `/index-es.html`, status: '200!', condition: 'Country=ES' }],
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const response = await fetch(`${server.url}/`, {
@@ -629,7 +664,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
   })
 
   test('redirect with country flag', async (t) => {
-    await withSiteBuilder('site-with-country-flag', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder
         .withContentFiles([
           {
@@ -645,7 +680,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
           redirects: [{ from: `/`, to: `/index-es.html`, status: '200!', condition: 'Country=ES' }],
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       // NOTE: default fallback for country is 'US' if no flag is provided
       await withDevServer({ cwd: builder.directory }, async (server) => {
@@ -663,11 +698,11 @@ describe.concurrent('commands/dev-miscellaneous', () => {
   })
 
   test(`doesn't hang when sending a application/json POST request to function server`, async (t) => {
-    await withSiteBuilder('site-with-functions', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       const functionsPort = 6666
       await builder
         .withNetlifyToml({ config: { functions: { directory: 'functions' }, dev: { functionsPort } } })
-        .buildAsync()
+        .build()
 
       await withDevServer({ cwd: builder.directory }, async ({ port, url }) => {
         const response = await fetch(`${url.replace(port, functionsPort)}/test`, {
@@ -684,7 +719,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
   })
 
   test(`catches invalid function names`, async (t) => {
-    await withSiteBuilder('site-with-functions', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       const functionsPort = 6667
       await builder
         .withNetlifyToml({ config: { functions: { directory: 'functions' }, dev: { functionsPort } } })
@@ -695,10 +730,10 @@ describe.concurrent('commands/dev-miscellaneous', () => {
             body: JSON.stringify(event),
           }),
         })
-        .buildAsync()
+        .build()
 
       await withDevServer({ cwd: builder.directory }, async ({ port, url }) => {
-        const response = await fetch(`${url.replace(port, functionsPort)}/exclamat!on`, {
+        const response = await fetch(`${url.replace(port, functionsPort)}/.netlify/functions/exclamat!on`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -714,9 +749,9 @@ describe.concurrent('commands/dev-miscellaneous', () => {
   })
 
   test('should detect content changes in edge functions', async (t) => {
-    await withSiteBuilder('site-with-edge-functions', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       const publicDir = 'public'
-      await builder
+      builder
         .withNetlifyToml({
           config: {
             build: {
@@ -736,7 +771,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
           name: 'hello',
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async ({ port }) => {
         const helloWorldMessage = await got(`http://localhost:${port}/hello`).then((res) => res.body)
@@ -746,7 +781,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
             handler: () => new Response('Hello builder'),
             name: 'hello',
           })
-          .buildAsync()
+          .build()
 
         const DETECT_FILE_CHANGE_DELAY = 500
         await pause(DETECT_FILE_CHANGE_DELAY)
@@ -760,7 +795,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
   })
 
   test('should detect deleted edge functions', async (t) => {
-    await withSiteBuilder('site-with-edge-functions', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       const publicDir = 'public'
       builder
         .withNetlifyToml({
@@ -782,7 +817,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
           name: 'auth',
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async ({ port }) => {
         const authResponseMessage = await fetch(`http://localhost:${port}/auth`).then((response) => response.text())
@@ -791,7 +826,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
           .withoutFile({
             path: 'netlify/edge-functions/auth.js',
           })
-          .buildAsync()
+          .build()
 
         const DETECT_FILE_CHANGE_DELAY = 500
         await pause(DETECT_FILE_CHANGE_DELAY)
@@ -805,9 +840,9 @@ describe.concurrent('commands/dev-miscellaneous', () => {
   })
 
   test('should respect in-source configuration from edge functions', async (t) => {
-    await withSiteBuilder('site-with-edge-functions', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       const publicDir = 'public'
-      await builder
+      builder
         .withNetlifyToml({
           config: {
             build: {
@@ -822,7 +857,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
           name: 'hello',
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async ({ port, waitForLogMatching }) => {
         const res1 = await fetch(`http://localhost:${port}/hello-1`)
@@ -840,7 +875,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
             handler: () => new Response('Hello world'),
             name: 'hello',
           })
-          .buildAsync()
+          .build()
 
         await waitForLogMatching('Reloaded edge function')
 
@@ -862,9 +897,9 @@ describe.concurrent('commands/dev-miscellaneous', () => {
   })
 
   test('should respect excluded paths', async (t) => {
-    await withSiteBuilder('site-with-excluded-path', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       const publicDir = 'public'
-      await builder
+      builder
         .withNetlifyToml({
           config: {
             build: {
@@ -879,7 +914,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
           name: 'hello',
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async ({ port }) => {
         const [res1, res2] = await Promise.all([
@@ -896,7 +931,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
   })
 
   test('should respect in-source configuration from internal edge functions', async (t) => {
-    await withSiteBuilder('site-with-internal-edge-functions', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       const publicDir = 'public'
       await builder
         .withNetlifyToml({
@@ -906,16 +941,20 @@ describe.concurrent('commands/dev-miscellaneous', () => {
             },
           },
         })
-        .withEdgeFunction({
-          config: { path: '/internal-1' },
-          handler: () => new Response('Hello from an internal function'),
-          internal: true,
-          name: 'internal',
-        })
-
-      await builder.buildAsync()
+        .build()
 
       await withDevServer({ cwd: builder.directory }, async ({ port, waitForLogMatching }) => {
+        // internal functions are cleared on startup,
+        // so we create them after the dev server is up and running
+        await builder
+          .withEdgeFunction({
+            config: { path: '/internal-1' },
+            handler: () => new Response('Hello from an internal function'),
+            internal: true,
+            name: 'internal',
+          })
+          .build()
+
         const res1 = await fetch(`http://localhost:${port}/internal-1`)
 
         t.expect(res1.status).toBe(200)
@@ -932,7 +971,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
             internal: true,
             name: 'internal',
           })
-          .buildAsync()
+          .build()
 
         await waitForLogMatching('Reloaded edge function')
 
@@ -949,7 +988,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
   })
 
   test('Serves edge functions with import maps coming from the `functions.deno_import_map` config property and from the internal manifest', async (t) => {
-    await withSiteBuilder('site-with-edge-functions-and-import-maps', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       const internalEdgeFunctionsDir = path.join('.netlify', 'edge-functions')
 
       await builder
@@ -968,11 +1007,6 @@ describe.concurrent('commands/dev-miscellaneous', () => {
           handler: `import { greet } from "greeter"; export default async () => new Response(greet("Netlify"))`,
           name: 'greet',
         })
-        .withEdgeFunction({
-          handler: `import { yell } from "yeller"; export default async () => new Response(yell("Netlify"))`,
-          name: 'yell',
-          internal: true,
-        })
         // User-defined import map
         .withContentFiles([
           {
@@ -985,29 +1019,36 @@ describe.concurrent('commands/dev-miscellaneous', () => {
             path: 'import_map.json',
           },
         ])
-        // Internal import map
-        .withContentFiles([
-          {
-            content: 'export const yell = (name: string) => name.toUpperCase()',
-            path: path.join(internalEdgeFunctionsDir, 'util', 'yeller.ts'),
-          },
-          {
-            content: JSON.stringify({
-              functions: [{ function: 'yell', path: '/yell' }],
-              import_map: 'import_map.json',
-              version: 1,
-            }),
-            path: path.join(internalEdgeFunctionsDir, 'manifest.json'),
-          },
-          {
-            content: JSON.stringify({ imports: { yeller: './util/yeller.ts' } }),
-            path: path.join(internalEdgeFunctionsDir, 'import_map.json'),
-          },
-        ])
-
-      await builder.buildAsync()
+        .build()
 
       await withDevServer({ cwd: builder.directory }, async ({ port }) => {
+        await builder
+          .withEdgeFunction({
+            handler: `import { yell } from "yeller"; export default async () => new Response(yell("Netlify"))`,
+            name: 'yell',
+            internal: true,
+          })
+          // Internal import map
+          .withContentFiles([
+            {
+              content: 'export const yell = (name: string) => name.toUpperCase()',
+              path: path.join(internalEdgeFunctionsDir, 'util', 'yeller.ts'),
+            },
+            {
+              content: JSON.stringify({
+                functions: [{ function: 'yell', path: '/yell' }],
+                import_map: 'import_map.json',
+                version: 1,
+              }),
+              path: path.join(internalEdgeFunctionsDir, 'manifest.json'),
+            },
+            {
+              content: JSON.stringify({ imports: { yeller: './util/yeller.ts' } }),
+              path: path.join(internalEdgeFunctionsDir, 'import_map.json'),
+            },
+          ])
+          .build()
+
         const [res1, res2] = await Promise.all([
           fetch(`http://localhost:${port}/greet`),
           fetch(`http://localhost:${port}/yell`),
@@ -1041,7 +1082,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
         response: [{ slug: siteInfo.account_slug }],
       },
     ]
-    await withSiteBuilder('site-with-edge-functions-and-env', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       const publicDir = 'public'
       builder
         .withNetlifyToml({
@@ -1074,7 +1115,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
           path: '.env',
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withMockApi(routes, async ({ apiUrl }) => {
         await withDevServer(
@@ -1110,7 +1151,10 @@ describe.concurrent('commands/dev-miscellaneous', () => {
               t.expect(bucketKeys.includes('DENO_DEPLOYMENT_ID')).toBe(false)
               t.expect(bucketKeys.includes('NODE_ENV')).toBe(false)
               t.expect(bucketKeys.includes('DEPLOY_URL')).toBe(false)
-              t.expect(bucketKeys.includes('URL')).toBe(false)
+
+              t.expect(bucketKeys.includes('URL')).toBe(true)
+              t.expect(bucketKeys.includes('SITE_ID')).toBe(true)
+              t.expect(bucketKeys.includes('SITE_NAME')).toBe(true)
             })
           },
         )
@@ -1123,7 +1167,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
     const externalServerPath = path.join(__dirname, '../../utils', 'external-server-cli.js')
     const command = `node ${externalServerPath} ${externalServerPort}`
 
-    await withSiteBuilder('site-with-legacy-env-vars', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       const publicDir = 'public'
 
       await builder
@@ -1196,7 +1240,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
     const externalServerPath = path.join(__dirname, '../../utils', 'external-server-cli.js')
     const command = `node ${externalServerPath} ${externalServerPort}`
 
-    await withSiteBuilder('site-with-env-vars', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       const publicDir = 'public'
 
       await builder
@@ -1213,7 +1257,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
             },
           },
         })
-        .buildAsync()
+        .build()
 
       await withMockApi(routes, async ({ apiUrl }) => {
         await withDevServer(
@@ -1232,6 +1276,46 @@ describe.concurrent('commands/dev-miscellaneous', () => {
           },
         )
       })
+    })
+  })
+
+  test('should send form-data POST requests to framework server if no function matches', async (t) => {
+    const externalServerPort = await getAvailablePort()
+    const externalServerPath = path.join(__dirname, '../../utils', 'external-server-cli.js')
+    const command = `node ${externalServerPath} ${externalServerPort}`
+
+    await withSiteBuilder(t, async (builder) => {
+      await builder
+        .withNetlifyToml({
+          config: {
+            dev: {
+              command,
+              targetPort: externalServerPort,
+              framework: '#custom',
+            },
+          },
+        })
+        .build()
+
+      await withDevServer(
+        {
+          cwd: builder.directory,
+        },
+        async ({ port }) => {
+          const form = new FormData()
+          form.set('foo', 'bar')
+          const response = await fetch(`http://localhost:${port}/request-to-framework`, {
+            method: 'POST',
+            body: form,
+            headers: {
+              'content-type': 'application/x-www-form-urlencoded;charset=UTF-8',
+            },
+          })
+          t.expect(await response.json(), 'response comes from framework').toMatchObject({
+            url: '/request-to-framework',
+          })
+        },
+      )
     })
   })
 })

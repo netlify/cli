@@ -6,7 +6,7 @@ import waitPort from 'wait-port'
 
 import { cliPath } from '../../utils/cli-path.js'
 import { killProcess } from '../../utils/process.js'
-import { withSiteBuilder } from '../../utils/site-builder.js'
+import { withSiteBuilder } from '../../utils/site-builder.ts'
 
 const DEFAULT_PORT = 9999
 const SERVE_TIMEOUT = 180_000
@@ -150,6 +150,26 @@ describe.concurrent('functions:serve command', () => {
         })
         const jsonResponse = await response.json()
         t.expect(jsonResponse.isBase64Encoded).toBe(false)
+      })
+    })
+  })
+
+  test('should serve V2 functions', async (t) => {
+    const port = await getPort()
+    await withSiteBuilder(t, async (builder) => {
+      await builder
+        .withContentFile({
+          path: 'netlify/functions/ping.js',
+          content: `
+          export default () => new Response("ping")
+          export const config = { path: "/ping" }
+          `,
+        })
+        .build()
+
+      await withFunctionsServer({ builder, args: ['--port', port], port }, async () => {
+        const response = await fetch(`http://localhost:${port}/ping`)
+        t.expect(await response.text()).toEqual('ping')
       })
     })
   })

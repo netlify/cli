@@ -2,7 +2,7 @@ import { describe, test } from 'vitest'
 
 import { callCli } from '../../utils/call-cli.js'
 import { getCLIOptions, withMockApi } from '../../utils/mock-api.js'
-import { withSiteBuilder } from '../../utils/site-builder.js'
+import { withSiteBuilder } from '../../utils/site-builder.ts'
 
 const siteInfo = {
   account_slug: 'test-account',
@@ -19,7 +19,7 @@ const routes = [
 ]
 describe.concurrent('command-addons', () => {
   test('netlify addons:list', async (t) => {
-    await withSiteBuilder('site-with-addons', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       await builder.buildAsync()
 
       await withMockApi(routes, async ({ apiUrl }) => {
@@ -30,7 +30,7 @@ describe.concurrent('command-addons', () => {
   })
 
   test('netlify addons:list --json', async (t) => {
-    await withSiteBuilder('site-with-addons', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       await builder.buildAsync()
 
       await withMockApi(routes, async ({ apiUrl }) => {
@@ -43,7 +43,7 @@ describe.concurrent('command-addons', () => {
   })
 
   test('netlify addons:create demo', async (t) => {
-    await withSiteBuilder('site-with-addons', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       await builder.buildAsync()
 
       const createRoutes = [
@@ -68,7 +68,7 @@ describe.concurrent('command-addons', () => {
   })
 
   test('After creation netlify addons:list --json', async (t) => {
-    await withSiteBuilder('site-with-addons', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       await builder.buildAsync()
 
       const withExistingAddon = [
@@ -94,7 +94,7 @@ describe.concurrent('command-addons', () => {
   })
 
   test('netlify addons:config demo', async (t) => {
-    await withSiteBuilder('site-with-addons', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       await builder.buildAsync()
 
       const configRoutes = [
@@ -128,7 +128,7 @@ describe.concurrent('command-addons', () => {
   })
 
   test('netlify addon:delete demo', async (t) => {
-    await withSiteBuilder('site-with-addons', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       await builder.buildAsync()
 
       const deleteRoutes = [
