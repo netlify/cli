@@ -79,7 +79,7 @@ describe.concurrent('frameworks/framework-detection', () => {
       const error = await withDevServer(
         { cwd: builder.directory, args: ['--dir', 'public', '--command', 'echo hello'] },
         () => { },
-        true
+        true,
       ).catch((error_) => error_)
 
       t.expect(normalize(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
@@ -301,18 +301,22 @@ describe.concurrent('frameworks/framework-detection', () => {
     })
   })
 
-  test('should start static service for frameworks without port, forced framework', async (t) => {
+  test('should start static service for frameworks without port, forced framework', async () => {
     await withSiteBuilder('site-with-remix', async (builder) => {
       await builder.withNetlifyToml({ config: { dev: { framework: 'remix' } } }).buildAsync()
 
       // a failure is expected since this is not a true remix project
-      await withDevServer({ cwd: builder.directory }, (server) => {
-        server.waitForLogMatching("Failed running command: remix watch. Please verify 'remix' exists")
-      }, true).catch((error_) => error_)
+      await withDevServer(
+        { cwd: builder.directory },
+        (server) => {
+          server.waitForLogMatching("Failed running command: remix watch. Please verify 'remix' exists")
+        },
+        true,
+      ).catch((error_) => error_)
     })
   })
 
-  test('should start static service for frameworks without port, detected framework', async (t) => {
+  test('should start static service for frameworks without port, detected framework', async () => {
     await withSiteBuilder('site-with-remix', async (builder) => {
       await builder
         .withPackageJson({
@@ -325,7 +329,13 @@ describe.concurrent('frameworks/framework-detection', () => {
         .buildAsync()
 
       // a failure is expected since this is not a true remix project
-      await withDevServer({ cwd: builder.directory }, (server) => { server.waitForLogMatching("Failed running command: remix watch. Please verify 'remix' exists") }, true).catch((error_) => error_)
+      await withDevServer(
+        { cwd: builder.directory },
+        (server) => {
+          server.waitForLogMatching("Failed running command: remix watch. Please verify 'remix' exists")
+        },
+        true,
+      ).catch((error_) => error_)
     })
   })
 
