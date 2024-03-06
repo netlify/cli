@@ -139,9 +139,9 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
 
     if (process.env.NETLIFY_INCLUDE_DEV_SERVER_PLUGIN) {
       if (options.debug) {
-        log(`${NETLIFYDEVLOG} Including dev server plugin`)
+        log(`${NETLIFYDEVLOG} Including dev server plugin: ${process.env.NETLIFY_INCLUDE_DEV_SERVER_PLUGIN}`)
       }
-      settings.plugins = [...(settings.plugins || []), '@netlify/plugin-dev-server']
+      settings.plugins = [...(settings.plugins || []), process.env.NETLIFY_INCLUDE_DEV_SERVER_PLUGIN]
     }
 
     cachedConfig.config = getConfigWithPlugins(cachedConfig.config, settings)
