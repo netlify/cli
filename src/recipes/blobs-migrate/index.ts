@@ -45,9 +45,8 @@ export const run = async ({ args, command }: Options) => {
   }
 
   const { stores } = await listStores(clientOptions)
-  const storeExists = stores.some((existingStore) => existingStore === storeName)
 
-  if (storeExists) {
+  if (stores.includes(storeName)) {
     const { confirmExistingStore } = await inquirer.prompt({
       type: 'confirm',
       name: 'confirmExistingStore',
@@ -98,7 +97,11 @@ export const run = async ({ args, command }: Options) => {
     return error(`Failed to migrate some blobs. Try running the command again.`)
   }
 
-  log(`All done! Store '${storeName}' has been migrated.`)
+  try {
+    await pMap(blobs, (blob) => oldStore.delete(blob.key), { concurrency: BLOB_OPS_CONCURRENCY })
+  } catch {
+    return error('Failed to remove legacy store after migration. Try running the command again.')
+  }
 
-  await pMap(blobs, (blob) => oldStore.delete(blob.key), { concurrency: BLOB_OPS_CONCURRENCY })
+  log(`Store '${storeName}' has been migrated successfully.`)
 }
