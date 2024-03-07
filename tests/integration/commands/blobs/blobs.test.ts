@@ -48,7 +48,7 @@ describe('blobs:* commands', () => {
 
     routes.push({
       method: 'all',
-      path: 'blobs/site_id/*',
+      path: 'blobs/*',
       response: (req, res) => {
         blobsProxy.web(req, res, { target: `http://localhost:${address.port}` })
       },
