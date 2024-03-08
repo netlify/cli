@@ -1,20 +1,26 @@
 import { exit, log, NETLIFYDEVERR } from './command-helpers.js'
 import { startProxy } from './proxy.js'
 
+type InspectSettings = {
+  enabled: boolean
+  pause: boolean
+  address: string | undefined
+}
 /**
  * @typedef {Object} InspectSettings
  * @property {boolean} enabled - Inspect enabled
  * @property {boolean} pause - Pause on breakpoints
  * @property {string|undefined} address - Host/port override (optional)
  */
-
 /**
  * @param {boolean|string} edgeInspect
  * @param {boolean|string} edgeInspectBrk
  * @returns {InspectSettings}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'edgeInspect' implicitly has an 'any' ty... Remove this comment to see the full error message
-export const generateInspectSettings = (edgeInspect, edgeInspectBrk) => {
+export const generateInspectSettings = (
+  edgeInspect: boolean | string,
+  edgeInspectBrk: boolean | string,
+): InspectSettings => {
   const enabled = Boolean(edgeInspect) || Boolean(edgeInspectBrk)
   const pause = Boolean(edgeInspectBrk)
   const getAddress = () => {
@@ -25,7 +31,6 @@ export const generateInspectSettings = (edgeInspect, edgeInspectBrk) => {
       return typeof edgeInspectBrk === 'string' ? edgeInspectBrk : undefined
     }
   }
-
   return {
     enabled,
     pause,
