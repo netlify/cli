@@ -12,28 +12,26 @@ setupFixtureTests('plugin-changing-publish-dir', { devServer: { serve: true } },
 })
 
 test('ntl serve should upload file-based blobs', async (t) => {
-  await withSiteBuilder(
-    t,
-    async (builder) => {
-      await builder
-        .withNetlifyToml({
-          config: {
-            plugins: [{ package: './plugins/deployblobs' }],
+  await withSiteBuilder(t, async (builder) => {
+    await builder
+      .withNetlifyToml({
+        config: {
+          plugins: [{ package: './plugins/deployblobs' }],
+        },
+      })
+      .withBuildPlugin({
+        name: 'deployblobs',
+        plugin: {
+          async onBuild() {
+            const { mkdir, writeFile } = require('node:fs/promises')
+            await mkdir('.netlify/blobs/deploy', { recursive: true })
+            await writeFile('.netlify/blobs/deploy/foo.txt', 'foo')
           },
-        })
-        .withBuildPlugin({
-          name: 'deployblobs',
-          plugin: {
-            async onBuild() {
-              const { mkdir, writeFile } = require('node:fs/promises')
-              await mkdir('.netlify/blobs/deploy', { recursive: true })
-              await writeFile('.netlify/blobs/deploy/foo.txt', 'foo')
-            },
-          },
-        })
-        .withContentFile({
-          path: 'netlify/functions/index.ts',
-          content: `
+        },
+      })
+      .withContentFile({
+        path: 'netlify/functions/index.ts',
+        content: `
         import { getDeployStore } from "@netlify/blobs";
 
         export default async (request: Request) => {
@@ -43,23 +41,21 @@ test('ntl serve should upload file-based blobs', async (t) => {
         };
         export const config = { path: "/*" };
         `,
-        })
-        .withContentFile({
-          path: 'package.json',
-          content: JSON.stringify({
-            dependencies: {
-              '@netlify/blobs': '*',
-            },
-          }),
-        })
-        .withCommand({ command: ['npm', 'install'] })
-        .build()
-
-      await withDevServer({ cwd: builder.directory, serve: true }, async ({ url }) => {
-        const response = await fetch(new URL('/foo.txt', url)).then((res) => res.text())
-        t.expect(response).toEqual('foo')
       })
-    },
-    { timout: 10000 },
-  )
+      .withContentFile({
+        path: 'package.json',
+        content: JSON.stringify({
+          dependencies: {
+            '@netlify/blobs': '*',
+          },
+        }),
+      })
+      .withCommand({ command: ['npm', 'install'] })
+      .build()
+
+    await withDevServer({ cwd: builder.directory, serve: true }, async ({ url }) => {
+      const response = await fetch(new URL('/foo.txt', url)).then((res) => res.text())
+      t.expect(response).toEqual('foo')
+    })
+  })
 })
