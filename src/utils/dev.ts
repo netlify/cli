@@ -66,8 +66,10 @@ const getAddons = async ({ api, site }) => {
     const addons = await api.listServiceInstancesForSite({ siteId: site.id })
     return addons
   } catch (error_) {
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    error(`Failed retrieving addons for site ${chalk.yellow(site.id)}: ${error_.message}. ${ERROR_CALL_TO_ACTION}`)
+    NetlifyLog.error(
+      // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+      `Failed retrieving addons for site ${chalk.yellow(site.id)}: ${error_.message}. ${ERROR_CALL_TO_ACTION}`,
+    )
   }
 }
 
