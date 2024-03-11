@@ -42,6 +42,7 @@ module.exports = {
     'unicorn/consistent-destructuring': 0,
     // TODO: harmonize with filename snake_case in other Netlify Dev projects
     'unicorn/filename-case': [2, { case: 'kebabCase' }],
+    'max-params': 'off',
   },
   overrides: [
     ...overrides,
