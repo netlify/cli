@@ -66,7 +66,7 @@ export const runNetlifyBuild = async ({ command, env = {}, options, settings, ti
     configPath: cachedConfig.configPath,
     siteId: cachedConfig.siteInfo.id,
     token: cachedConfig.token,
-    host: apiOpts.host,
+    apiHost: apiOpts.host,
     dry: options.dry,
     debug: options.debug,
     context: options.context,
