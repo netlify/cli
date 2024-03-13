@@ -32,6 +32,7 @@ export const getPathInHome = (paths) => {
 /**
  * get a path inside the project folder
  * @param {string[]} paths
+ * @deprecated This does not work in monorepos use Basecommand.getPathInProject instead
  * @returns {string}
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'paths' implicitly has an 'any' type.
