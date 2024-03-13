@@ -91,17 +91,7 @@ const getFunctionZips = async ({
 const hashFns = async (
   command: BaseCommand,
   directories: string[],
-  {
-    assetType = 'function',
-    concurrentHash,
-    functionsConfig,
-    hashAlgorithm = 'sha256',
-    manifestPath,
-    rootDir,
-    skipFunctionsCache,
-    statusCb,
-    tmpDir,
-  }: {
+  config: {
     /** @default 'function' */
     assetType?: string
     concurrentHash?: number
@@ -115,6 +105,17 @@ const hashFns = async (
     tmpDir: $TSFixMe
   },
 ) => {
+  const {
+    assetType = 'function',
+    concurrentHash,
+    functionsConfig,
+    hashAlgorithm = 'sha256',
+    manifestPath,
+    rootDir,
+    skipFunctionsCache,
+    statusCb,
+    tmpDir,
+  } = config || {}
   // Early out if no functions directories are configured.
   if (directories.length === 0) {
     return { functions: {}, functionsWithNativeModules: [], shaMap: {} }
