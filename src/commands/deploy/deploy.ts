@@ -119,7 +119,9 @@ const validateDeployFolder = async (deployFolder: string) => {
   } catch (error_) {
     if (error_ && typeof error_ === 'object' && 'code' in error_) {
       if (error_.code === 'ENOENT') {
-        return error(`The deploy directory "${deployFolder}" has not been found. Did you forget to run 'netlify build'?`)
+        return error(
+          `The deploy directory "${deployFolder}" has not been found. Did you forget to run 'netlify build'?`,
+        )
       }
 
       // Improve the message of permission errors
@@ -361,7 +363,6 @@ const uploadDeployBlobs = async ({
   silent: boolean
   siteId: string
 }) => {
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
   const statusCb = silent ? () => {} : deployProgressCb()
 
   statusCb({
@@ -493,7 +494,7 @@ const runDeploy = async ({
       config,
       fnDir: functionDirectories,
       functionsConfig,
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
+
       statusCb: silent ? () => {} : deployProgressCb(),
       deployTimeout,
       syncFileLimit: SYNC_FILE_LIMIT,
@@ -575,7 +576,6 @@ const bundleEdgeFunctions = async (options, command: BaseCommand) => {
   // eslint-disable-next-line n/prefer-global/process, unicorn/prefer-set-has
   const argv = process.argv.slice(2)
   const statusCb =
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
     options.silent || argv.includes('--json') || argv.includes('--silent') ? () => {} : deployProgressCb()
 
   statusCb({
