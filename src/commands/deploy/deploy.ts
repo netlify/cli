@@ -119,7 +119,7 @@ const validateDeployFolder = async (deployFolder: string) => {
   } catch (error_) {
     if (error_ && typeof error_ === 'object' && 'code' in error_) {
       if (error_.code === 'ENOENT') {
-        return error(`No such directory ${deployFolder}! Did you forget to run a build?`)
+        return error(`The deploy directory "${deployFolder}" has not been found. Did you forget to run 'netlify build'?`)
       }
 
       // Improve the message of permission errors
