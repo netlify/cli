@@ -31,6 +31,7 @@ export type BaseServerSettings = {
   /** The framework name ('Create React App') */
   framework?: string
   env?: NodeJS.ProcessEnv
+  devEnv?: NodeJS.ProcessEnv
   pollingStrategies?: string[]
   plugins?: string[]
   clearPublishDirectory?: boolean

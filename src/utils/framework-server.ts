@@ -45,7 +45,14 @@ export const startFrameworkServer = async function ({
     await rm(settings.dist, { recursive: true, force: true })
   }
 
-  runCommand(settings.command, { env: settings.env, spinner, cwd })
+  runCommand(settings.command, {
+    env: {
+      ...settings.env,
+      ...settings.devEnv,
+    },
+    spinner,
+    cwd,
+  })
 
   let port
   try {
