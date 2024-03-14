@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url'
 
 import type { Declaration, EdgeFunction, FunctionConfig, Manifest, ModuleGraph } from '@netlify/edge-bundler'
 
+import BaseCommand from '../../commands/base-command.js'
 import {
   NETLIFYDEVERR,
   NETLIFYDEVLOG,
@@ -17,12 +18,11 @@ import {
 } from '../../utils/command-helpers.js'
 import type { FeatureFlags } from '../../utils/feature-flags.js'
 import { MultiMap } from '../../utils/multimap.js'
-import { getPathInProject } from '../settings.js'
 
 import { INTERNAL_EDGE_FUNCTIONS_FOLDER } from './consts.js'
 
 //  TODO: Replace with a proper type for the entire config object.
-interface Config {
+export interface Config {
   edge_functions?: Declaration[]
   [key: string]: unknown
 }
@@ -33,6 +33,7 @@ type RunIsolate = Awaited<ReturnType<typeof import('@netlify/edge-bundler').serv
 type ModuleJson = ModuleGraph['modules'][number]
 
 interface EdgeFunctionsRegistryOptions {
+  command: BaseCommand
   bundler: typeof import('@netlify/edge-bundler')
   config: Config
   configPath: string
@@ -112,9 +113,11 @@ export class EdgeFunctionsRegistry {
   private runIsolate: RunIsolate
   private servePath: string
   private projectDir: string
+  private command: BaseCommand
 
   constructor({
     bundler,
+    command,
     config,
     configPath,
     directories,
@@ -126,6 +129,7 @@ export class EdgeFunctionsRegistry {
     runIsolate,
     servePath,
   }: EdgeFunctionsRegistryOptions) {
+    this.command = command
     this.bundler = bundler
     this.configPath = configPath
     this.directories = directories
@@ -516,7 +520,7 @@ export class EdgeFunctionsRegistry {
   }
 
   private get internalDirectory() {
-    return join(this.projectDir, getPathInProject([INTERNAL_EDGE_FUNCTIONS_FOLDER]))
+    return join(this.projectDir, this.command.getPathInProject(INTERNAL_EDGE_FUNCTIONS_FOLDER))
   }
 
   private async readDeployConfig() {

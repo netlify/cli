@@ -141,6 +141,7 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
   // @ts-expect-error TS(2345) FIXME: Argument of type '{ addonsUrls: { [k: string]: any... Remove this comment to see the full error message
   const url = await startProxyServer({
     addonsUrls,
+    command,
     config,
     configPath: configPathOverride,
     debug: options.debug,

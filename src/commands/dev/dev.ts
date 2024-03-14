@@ -1,8 +1,8 @@
 import process from 'process'
 
-import { OptionValues, Option } from 'commander'
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module '@net... Remove this comment to see the full error message
 import { applyMutations } from '@netlify/config'
+import { OptionValues, Option } from 'commander'
 
 import { BLOBS_CONTEXT_VARIABLE, encodeBlobsContext, getBlobsContext } from '../../lib/blobs/blobs.js'
 import { promptEditorHelper } from '../../lib/edge-functions/editor-helper.js'
@@ -137,6 +137,13 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
   try {
     settings = await detectServerSettings(devConfig, options, command)
 
+    if (process.env.NETLIFY_INCLUDE_DEV_SERVER_PLUGIN) {
+      if (options.debug) {
+        log(`${NETLIFYDEVLOG} Including dev server plugin: ${process.env.NETLIFY_INCLUDE_DEV_SERVER_PLUGIN}`)
+      }
+      settings.plugins = [...(settings.plugins || []), process.env.NETLIFY_INCLUDE_DEV_SERVER_PLUGIN]
+    }
+
     cachedConfig.config = getConfigWithPlugins(cachedConfig.config, settings)
   } catch (error_) {
     if (error_ && typeof error_ === 'object' && 'message' in error_) {
@@ -209,6 +216,7 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
   await startProxyServer({
     addonsUrls,
     blobsContext,
+    command,
     config: mutatedConfig,
     configPath: configPathOverride,
     debug: options.debug,
