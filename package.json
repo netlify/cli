@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "17.19.2",
+  "version": "17.19.3",
   "author": "Netlify Inc.",
   "type": "module",
   "engines": {
@@ -160,7 +160,7 @@
     "prettyjson": "1.2.5",
     "pump": "3.0.0",
     "raw-body": "2.5.2",
-    "read-pkg-up": "9.1.0",
+    "read-package-up": "11.0.0",
     "semver": "7.5.4",
     "source-map-support": "0.5.21",
     "strip-ansi-control-characters": "2.0.0",

@@ -6,16 +6,18 @@ import { join, resolve } from 'path'
 import * as bundler from '@netlify/edge-bundler'
 import getAvailablePort from 'get-port'
 
+import BaseCommand from '../../commands/base-command.js'
+import { $TSFixMe } from '../../commands/types.js'
 import { NETLIFYDEVERR, chalk, error as printError } from '../../utils/command-helpers.js'
-import { getFeatureFlagsFromSiteInfo } from '../../utils/feature-flags.js'
+import { FeatureFlags, getFeatureFlagsFromSiteInfo } from '../../utils/feature-flags.js'
+import { BlobsContext } from '../blobs/blobs.js'
 import { getGeoLocation } from '../geo-location.js'
-import { getPathInProject } from '../settings.js'
 import { startSpinner, stopSpinner } from '../spinner.js'
 
 import { getBootstrapURL } from './bootstrap.js'
 import { DIST_IMPORT_MAP_PATH, EDGE_FUNCTIONS_SERVE_FOLDER } from './consts.js'
-import { headers, getFeatureFlagsHeader, getInvocationMetadataHeader } from './headers.js'
-import { EdgeFunctionsRegistry } from './registry.js'
+import { getFeatureFlagsHeader, getInvocationMetadataHeader, headers } from './headers.js'
+import { EdgeFunctionsRegistry, type Config } from './registry.js'
 
 const headersSymbol = Symbol('Edge Functions Headers')
 
@@ -75,65 +77,46 @@ export const createAccountInfoHeader = (accountInfo = {}) => {
   return Buffer.from(accountString).toString('base64')
 }
 
-/**
- *
- * @param {object} config
- * @param {*} config.accountId
- * @param {import("../blobs/blobs.js").BlobsContext} config.blobsContext
- * @param {*} config.config
- * @param {*} config.configPath
- * @param {*} config.debug
- * @param {*} config.env
- * @param {*} config.geoCountry
- * @param {*} config.geolocationMode
- * @param {*} config.getUpdatedConfig
- * @param {*} config.inspectSettings
- * @param {*} config.mainPort
- * @param {boolean=} config.offline
- * @param {*} config.passthroughPort
- * @param {*} config.projectDir
- * @param {*} config.settings
- * @param {*} config.siteInfo
- * @param {*} config.state
- * @returns
- */
 export const initializeProxy = async ({
-  // @ts-expect-error TS(7031) FIXME: Binding element 'accountId' implicitly has an 'any... Remove this comment to see the full error message
   accountId,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'blobsContext' implicitly has an '... Remove this comment to see the full error message
   blobsContext,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'any' t... Remove this comment to see the full error message
+  command,
   config,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'configPath' implicitly has an 'an... Remove this comment to see the full error message
   configPath,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'debug' implicitly has an 'any' ty... Remove this comment to see the full error message
   debug,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'configEnv' implicitly has an 'any... Remove this comment to see the full error message
   env: configEnv,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'geoCountry' implicitly has an 'an... Remove this comment to see the full error message
   geoCountry,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'geolocationMode' implicitly has a... Remove this comment to see the full error message
   geolocationMode,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'getUpdatedConfig' implicitly has ... Remove this comment to see the full error message
   getUpdatedConfig,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'inspectSettings' implicitly has a... Remove this comment to see the full error message
   inspectSettings,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'mainPort' implicitly has an 'any'... Remove this comment to see the full error message
   mainPort,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'offline' implicitly has an 'any' ... Remove this comment to see the full error message
   offline,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'passthroughPort' implicitly has a... Remove this comment to see the full error message
   passthroughPort,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'projectDir' implicitly has an 'an... Remove this comment to see the full error message
   projectDir,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'repositoryRoot' implicitly has an... Remove this comment to see the full error message
   repositoryRoot,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'settings' implicitly has an 'any'... Remove this comment to see the full error message
   settings,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'siteInfo' implicitly has an 'any'... Remove this comment to see the full error message
   siteInfo,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'state' implicitly has an 'any' ty... Remove this comment to see the full error message
   state,
+}: {
+  accountId: string
+  blobsContext: BlobsContext
+  command: BaseCommand
+  config: $TSFixMe
+  configPath: string
+  debug: boolean
+  env: $TSFixMe
+  offline: $TSFixMe
+  geoCountry: $TSFixMe
+  geolocationMode: $TSFixMe
+  getUpdatedConfig: $TSFixMe
+  inspectSettings: $TSFixMe
+  mainPort: $TSFixMe
+  passthroughPort: $TSFixMe
+  projectDir: string
+  repositoryRoot?: string
+  settings: $TSFixMe
+  siteInfo: $TSFixMe
+  state: $TSFixMe
 }) => {
   const userFunctionsPath = config.build.edge_functions
   const isolatePort = await getAvailablePort()
@@ -145,6 +128,7 @@ export const initializeProxy = async ({
   // the network if needed. We don't want to wait for that to be completed, or
   // the command will be left hanging.
   const server = prepareServer({
+    command,
     config,
     configPath,
     debug,
@@ -213,32 +197,35 @@ export const initializeProxy = async ({
 export const isEdgeFunctionsRequest = (req) => req[headersSymbol] !== undefined
 
 const prepareServer = async ({
-  // @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'any' t... Remove this comment to see the full error message
+  command,
   config,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'configPath' implicitly has an 'an... Remove this comment to see the full error message
   configPath,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'debug' implicitly has an 'any' ty... Remove this comment to see the full error message
   debug,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'directory' implicitly has an 'any... Remove this comment to see the full error message
   directory,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'configEnv' implicitly has an 'any... Remove this comment to see the full error message
   env: configEnv,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'featureFlags' implicitly has an '... Remove this comment to see the full error message
   featureFlags,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'getUpdatedConfig' implicitly has ... Remove this comment to see the full error message
   getUpdatedConfig,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'inspectSettings' implicitly has a... Remove this comment to see the full error message
   inspectSettings,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'port' implicitly has an 'any' typ... Remove this comment to see the full error message
   port,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'projectDir' implicitly has an 'an... Remove this comment to see the full error message
   projectDir,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'repositoryRoot' implicitly has an... Remove this comment to see the full error message
   repositoryRoot,
+}: {
+  command: BaseCommand
+  config: $TSFixMe
+  configPath: string
+  debug: boolean
+  directory?: string
+  env: Record<string, { sources: string[]; value: string }>
+  featureFlags: FeatureFlags
+  getUpdatedConfig: () => Promise<Config>
+  inspectSettings: Parameters<typeof bundler.serve>[0]['inspectSettings']
+  port: number
+  projectDir: string
+  repositoryRoot?: string
 }) => {
   try {
-    const distImportMapPath = getPathInProject([DIST_IMPORT_MAP_PATH])
-    const servePath = resolve(projectDir, getPathInProject([EDGE_FUNCTIONS_SERVE_FOLDER]))
+    const distImportMapPath = command.getPathInProject(DIST_IMPORT_MAP_PATH)
+    const servePath = resolve(projectDir, command.getPathInProject(EDGE_FUNCTIONS_SERVE_FOLDER))
 
     await rm(servePath, { force: true, recursive: true })
 
@@ -261,11 +248,12 @@ const prepareServer = async ({
       servePath,
     })
     const registry = new EdgeFunctionsRegistry({
+      command,
       bundler,
       config,
       configPath,
       debug,
-      directories: [directory].filter(Boolean),
+      directories: [directory].filter(Boolean) as string[],
       env: configEnv,
       featureFlags,
       getUpdatedConfig,

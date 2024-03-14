@@ -426,23 +426,23 @@ const MILLISEC_TO_SEC = 1e3
 
 const initializeProxy = async function ({
   // @ts-expect-error TS(7031) FIXME: Binding element 'configPath' implicitly has an 'any... Remove this comment to see the full error message
-  configPath,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'distDir' implicitly has an 'any... Remove this comment to see the full error message
-  distDir,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'env' implicitly has an 'any... Remove this comment to see the full error message
-  env,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'host' implicitly has an 'any... Remove this comment to see the full error message
-  host,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'imageProxy' implicitly has an 'any... Remove this comment to see the full error message
-  imageProxy,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'port' implicitly has an 'any... Remove this comment to see the full error message
-  port,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'projectDir' implicitly has an 'any... Remove this comment to see the full error message
-  projectDir,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'siteInfo' implicitly has an 'any... Remove this comment to see the full error message
-  siteInfo,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'any... Remove this comment to see the full error message
   config,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'distDir' implicitly has an 'any... Remove this comment to see the full error message
+  configPath,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'env' implicitly has an 'any... Remove this comment to see the full error message
+  distDir,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'host' implicitly has an 'any... Remove this comment to see the full error message
+  env,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'imageProxy' implicitly has an 'any... Remove this comment to see the full error message
+  host,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'port' implicitly has an 'any... Remove this comment to see the full error message
+  imageProxy,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'projectDir' implicitly has an 'any... Remove this comment to see the full error message
+  port,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'siteInfo' implicitly has an 'any... Remove this comment to see the full error message
+  projectDir,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'any... Remove this comment to see the full error message
+  siteInfo,
 }) {
   const proxy = httpProxy.createProxyServer({
     selfHandleResponse: true,
@@ -809,6 +809,8 @@ export const startProxy = async function ({
   addonsUrls,
   // @ts-expect-error TS(7031) FIXME: Binding element 'blobsContext' implicitly has an '... Remove this comment to see the full error message
   blobsContext,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'accountId' implicitly has an 'any... Remove this comment to see the full error message
+  command,
   // @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'any' t... Remove this comment to see the full error message
   config,
   // @ts-expect-error TS(7031) FIXME: Binding element 'configPath' implicitly has an 'an... Remove this comment to see the full error message
@@ -843,6 +845,7 @@ export const startProxy = async function ({
   const secondaryServerPort = settings.https ? await getAvailablePort() : null
   const functionsServer = settings.functionsPort ? `http://127.0.0.1:${settings.functionsPort}` : null
   const edgeFunctionsProxy = await initializeEdgeFunctionsProxy({
+    command,
     blobsContext,
     config,
     configPath,

@@ -69,6 +69,8 @@ export const startProxyServer = async ({
   addonsUrls,
   // @ts-expect-error TS(7031) FIXME: Binding element 'blobsContext' implicitly has an '... Remove this comment to see the full error message
   blobsContext,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'accountId' implicitly has an 'any... Remove this comment to see the full error message
+  command,
   // @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'any' t... Remove this comment to see the full error message
   config,
   // @ts-expect-error TS(7031) FIXME: Binding element 'configPath' implicitly has an 'an... Remove this comment to see the full error message
@@ -105,6 +107,7 @@ export const startProxyServer = async ({
   const url = await startProxy({
     addonsUrls,
     blobsContext,
+    command,
     config,
     configPath: configPath || site.configPath,
     debug,
