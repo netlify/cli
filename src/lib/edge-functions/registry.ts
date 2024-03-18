@@ -18,6 +18,7 @@ import {
 } from '../../utils/command-helpers.js'
 import type { FeatureFlags } from '../../utils/feature-flags.js'
 import { MultiMap } from '../../utils/multimap.js'
+import { getPathInProject } from '../settings.js'
 
 import { INTERNAL_EDGE_FUNCTIONS_FOLDER } from './consts.js'
 
@@ -26,6 +27,8 @@ export interface Config {
   edge_functions?: Declaration[]
   [key: string]: unknown
 }
+
+type DependencyCache = Record<string, string[]>
 type EdgeFunctionEvent = 'buildError' | 'loaded' | 'reloaded' | 'reloading' | 'removed'
 type Route = Omit<Manifest['routes'][0], 'pattern'> & { pattern: RegExp }
 type RunIsolate = Awaited<ReturnType<typeof import('@netlify/edge-bundler').serve>>
@@ -49,13 +52,21 @@ interface EdgeFunctionsRegistryOptions {
 }
 
 /**
- * Helper method which, given a edge bundler graph module and an index of modules by path, traverses its dependency tree
- * and returns an array of all of ist local dependencies
+ * Given an Edge Bundler module graph and an index of modules by path,
+ * traverses its dependency tree and returns an array of all of its
+ * local dependencies.
  */
 function traverseLocalDependencies(
-  { dependencies = [] }: ModuleJson,
+  { dependencies = [], specifier }: ModuleJson,
   modulesByPath: Map<string, ModuleJson>,
+  cache: DependencyCache,
 ): string[] {
+  // If we've already traversed this specifier, return the cached list of
+  // dependencies.
+  if (cache[specifier] !== undefined) {
+    return cache[specifier]
+  }
+
   return dependencies.flatMap((dependency) => {
     // We're interested in tracking local dependencies, so we only look at
     // specifiers with the `file:` protocol.
@@ -66,17 +77,20 @@ function traverseLocalDependencies(
     ) {
       return []
     }
+
     const { specifier: dependencyURL } = dependency.code
     const dependencyPath = fileURLToPath(dependencyURL)
     const dependencyModule = modulesByPath.get(dependencyPath)
 
-    // No module indexed for this dependency
+    // No module indexed for this dependency.
     if (dependencyModule === undefined) {
       return [dependencyPath]
     }
 
-    // Keep traversing the child dependencies and return the current dependency path
-    return [...traverseLocalDependencies(dependencyModule, modulesByPath), dependencyPath]
+    // Keep traversing the child dependencies and return the current dependency path.
+    cache[specifier] = [...traverseLocalDependencies(dependencyModule, modulesByPath, cache), dependencyPath]
+
+    return cache[specifier]
   })
 }
 
@@ -485,9 +499,11 @@ export class EdgeFunctionsRegistry {
       }
     })
 
+    const dependencyCache: DependencyCache = {}
+
     // We start from our functions and we traverse through their dependency tree
     functionModules.forEach(({ functionName, module }) => {
-      const traversedPaths = traverseLocalDependencies(module, modulesByPath)
+      const traversedPaths = traverseLocalDependencies(module, modulesByPath, dependencyCache)
       traversedPaths.forEach((dependencyPath) => {
         this.dependencyPaths.add(dependencyPath, functionName)
       })
@@ -520,7 +536,7 @@ export class EdgeFunctionsRegistry {
   }
 
   private get internalDirectory() {
-    return join(this.projectDir, this.command.getPathInProject(INTERNAL_EDGE_FUNCTIONS_FOLDER))
+    return join(this.projectDir, getPathInProject([INTERNAL_EDGE_FUNCTIONS_FOLDER]))
   }
 
   private async readDeployConfig() {

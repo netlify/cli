@@ -12,6 +12,7 @@ import { NETLIFYDEVERR, chalk, error as printError } from '../../utils/command-h
 import { FeatureFlags, getFeatureFlagsFromSiteInfo } from '../../utils/feature-flags.js'
 import { BlobsContext } from '../blobs/blobs.js'
 import { getGeoLocation } from '../geo-location.js'
+import { getPathInProject } from '../settings.js'
 import { startSpinner, stopSpinner } from '../spinner.js'
 
 import { getBootstrapURL } from './bootstrap.js'
@@ -224,7 +225,7 @@ const prepareServer = async ({
   repositoryRoot?: string
 }) => {
   try {
-    const distImportMapPath = command.getPathInProject(DIST_IMPORT_MAP_PATH)
+    const distImportMapPath = getPathInProject([DIST_IMPORT_MAP_PATH])
     const servePath = resolve(projectDir, command.getPathInProject(EDGE_FUNCTIONS_SERVE_FOLDER))
 
     await rm(servePath, { force: true, recursive: true })
