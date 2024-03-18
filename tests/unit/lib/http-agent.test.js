@@ -4,7 +4,7 @@ import ProxyServer from 'http-proxy'
 import HttpsProxyAgent from 'https-proxy-agent'
 import { describe, expect, test } from 'vitest'
 
-import { tryGetAgent } from '../../../src/lib/http-agent.js'
+import { tryGetAgent } from '../../../dist/lib/http-agent.js'
 
 describe('tryGetAgent', () => {
   test(`should return an empty object when there is no httpProxy`, async () => {

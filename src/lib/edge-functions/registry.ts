@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url'
 
 import type { Declaration, EdgeFunction, FunctionConfig, Manifest, ModuleGraph } from '@netlify/edge-bundler'
 
+import BaseCommand from '../../commands/base-command.js'
 import {
   NETLIFYDEVERR,
   NETLIFYDEVLOG,
@@ -15,6 +16,7 @@ import {
   watchDebounced,
   isNodeError,
 } from '../../utils/command-helpers.js'
+import type { FeatureFlags } from '../../utils/feature-flags.js'
 import { MultiMap } from '../../utils/multimap.js'
 import { getPathInProject } from '../settings.js'
 
@@ -22,25 +24,27 @@ import { INTERNAL_EDGE_FUNCTIONS_FOLDER } from './consts.js'
 import { NetlifyLog } from '../../utils/styles/index.js'
 
 //  TODO: Replace with a proper type for the entire config object.
-interface Config {
+export interface Config {
   edge_functions?: Declaration[]
   [key: string]: unknown
 }
+
+type DependencyCache = Record<string, string[]>
 type EdgeFunctionEvent = 'buildError' | 'loaded' | 'reloaded' | 'reloading' | 'removed'
 type Route = Omit<Manifest['routes'][0], 'pattern'> & { pattern: RegExp }
 type RunIsolate = Awaited<ReturnType<typeof import('@netlify/edge-bundler').serve>>
 
 type ModuleJson = ModuleGraph['modules'][number]
 
-const featureFlags = { edge_functions_correct_order: true }
-
 interface EdgeFunctionsRegistryOptions {
+  command: BaseCommand
   bundler: typeof import('@netlify/edge-bundler')
   config: Config
   configPath: string
   debug: boolean
   directories: string[]
   env: Record<string, { sources: string[]; value: string }>
+  featureFlags: FeatureFlags
   getUpdatedConfig: () => Promise<Config>
   projectDir: string
   runIsolate: RunIsolate
@@ -49,13 +53,21 @@ interface EdgeFunctionsRegistryOptions {
 }
 
 /**
- * Helper method which, given a edge bundler graph module and an index of modules by path, traverses its dependency tree
- * and returns an array of all of ist local dependencies
+ * Given an Edge Bundler module graph and an index of modules by path,
+ * traverses its dependency tree and returns an array of all of its
+ * local dependencies.
  */
 function traverseLocalDependencies(
-  { dependencies = [] }: ModuleJson,
+  { dependencies = [], specifier }: ModuleJson,
   modulesByPath: Map<string, ModuleJson>,
+  cache: DependencyCache,
 ): string[] {
+  // If we've already traversed this specifier, return the cached list of
+  // dependencies.
+  if (cache[specifier] !== undefined) {
+    return cache[specifier]
+  }
+
   return dependencies.flatMap((dependency) => {
     // We're interested in tracking local dependencies, so we only look at
     // specifiers with the `file:` protocol.
@@ -66,25 +78,29 @@ function traverseLocalDependencies(
     ) {
       return []
     }
+
     const { specifier: dependencyURL } = dependency.code
     const dependencyPath = fileURLToPath(dependencyURL)
     const dependencyModule = modulesByPath.get(dependencyPath)
 
-    // No module indexed for this dependency
+    // No module indexed for this dependency.
     if (dependencyModule === undefined) {
       return [dependencyPath]
     }
 
-    // Keep traversing the child dependencies and return the current dependency path
-    return [...traverseLocalDependencies(dependencyModule, modulesByPath), dependencyPath]
+    // Keep traversing the child dependencies and return the current dependency path.
+    cache[specifier] = [...traverseLocalDependencies(dependencyModule, modulesByPath, cache), dependencyPath]
+
+    return cache[specifier]
   })
 }
 
 export class EdgeFunctionsRegistry {
+  public importMapFromDeployConfig?: string
+
   private buildError: Error | null = null
   private bundler: typeof import('@netlify/edge-bundler')
   private configPath: string
-  public importMapFromDeployConfig?: string
   private importMapFromTOML?: string
   private declarationsFromDeployConfig: Declaration[] = []
   private declarationsFromTOML: Declaration[]
@@ -95,6 +111,7 @@ export class EdgeFunctionsRegistry {
   private directories: string[]
   private directoryWatchers = new Map<string, import('chokidar').FSWatcher>()
   private env: Record<string, string>
+  private featureFlags: FeatureFlags
 
   private userFunctions: EdgeFunction[] = []
   private internalFunctions: EdgeFunction[] = []
@@ -111,22 +128,27 @@ export class EdgeFunctionsRegistry {
   private runIsolate: RunIsolate
   private servePath: string
   private projectDir: string
+  private command: BaseCommand
 
   constructor({
     bundler,
+    command,
     config,
     configPath,
     directories,
     env,
+    featureFlags,
     getUpdatedConfig,
     importMapFromTOML,
     projectDir,
     runIsolate,
     servePath,
   }: EdgeFunctionsRegistryOptions) {
+    this.command = command
     this.bundler = bundler
     this.configPath = configPath
     this.directories = directories
+    this.featureFlags = featureFlags
     this.getUpdatedConfig = getUpdatedConfig
     this.runIsolate = runIsolate
     this.servePath = servePath
@@ -241,14 +263,14 @@ export class EdgeFunctionsRegistry {
       userFunctionConfigs,
       internalFunctionConfigs,
       this.declarationsFromDeployConfig,
-      featureFlags,
+      this.featureFlags,
     )
     const { declarationsWithoutFunction, manifest, unroutedFunctions } = this.bundler.generateManifest({
       declarations,
       userFunctionConfig: userFunctionConfigs,
       internalFunctionConfig: internalFunctionConfigs,
       functions: this.functions,
-      featureFlags,
+      featureFlags: this.featureFlags,
     })
     const routes = [...manifest.routes, ...manifest.post_cache_routes].map((route) => ({
       ...route,
@@ -478,9 +500,11 @@ export class EdgeFunctionsRegistry {
       }
     })
 
+    const dependencyCache: DependencyCache = {}
+
     // We start from our functions and we traverse through their dependency tree
     functionModules.forEach(({ functionName, module }) => {
-      const traversedPaths = traverseLocalDependencies(module, modulesByPath)
+      const traversedPaths = traverseLocalDependencies(module, modulesByPath, dependencyCache)
       traversedPaths.forEach((dependencyPath) => {
         this.dependencyPaths.add(dependencyPath, functionName)
       })

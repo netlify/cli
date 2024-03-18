@@ -42,6 +42,9 @@ module.exports = {
     'unicorn/consistent-destructuring': 0,
     // TODO: harmonize with filename snake_case in other Netlify Dev projects
     'unicorn/filename-case': [2, { case: 'kebabCase' }],
+    'max-params': 'off',
+    'no-empty-function': 'off',
+    '@typescript-eslint/no-empty-function': 'off',
   },
   overrides: [
     ...overrides,
@@ -67,7 +70,7 @@ module.exports = {
     },
     // Example functions
     {
-      files: ['src/functions-templates/**/*.js'],
+      files: ['functions-templates/**/*.js'],
       rules: {
         'require-await': 0,
         'import/no-unresolved': 0,
@@ -114,6 +117,7 @@ module.exports = {
       files: ['tests/**/*'],
       rules: {
         'require-await': 'off',
+        'import/no-deprecated': 'off',
       },
     },
     {
@@ -135,6 +139,7 @@ module.exports = {
       rules: {
         '@typescript-eslint/no-non-null-assertion': 'off',
         '@typescript-eslint/no-explicit-any': 'off',
+        '@typescript-eslint/no-empty-function': 'off',
       },
     },
   ],

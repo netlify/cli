@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
 
-import NetlifyFunction from '../../../../src/lib/functions/netlify-function.js'
+import NetlifyFunction from '../../../../dist/lib/functions/netlify-function.js'
 
 test('should return the correct function url for a NetlifyFunction object', () => {
   const port = 7331

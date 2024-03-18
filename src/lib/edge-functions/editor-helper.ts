@@ -35,5 +35,5 @@ export const promptEditorHelper = async ({ config, repositoryRoot, state }) => {
     return
   }
 
-  await runRecipe({ config, recipeName: 'vscode', repositoryRoot })
+  await runRecipe({ args: [], config, recipeName: 'vscode', repositoryRoot })
 }

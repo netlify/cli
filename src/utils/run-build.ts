@@ -57,7 +57,7 @@ const cleanInternalDirectory = async (basePath) => {
  */
 // @ts-expect-error TS(7031) FIXME: Binding element 'command' implicitly has an 'any' ... Remove this comment to see the full error message
 export const runNetlifyBuild = async ({ command, env = {}, options, settings, timeline = 'build' }) => {
-  const { cachedConfig, site } = command.netlify
+  const { apiOpts, cachedConfig, site } = command.netlify
 
   const { default: buildSite, startDev } = await netlifyBuildPromise
 
@@ -66,6 +66,7 @@ export const runNetlifyBuild = async ({ command, env = {}, options, settings, ti
     configPath: cachedConfig.configPath,
     siteId: cachedConfig.siteInfo.id,
     token: cachedConfig.token,
+    apiHost: apiOpts.host,
     dry: options.dry,
     debug: options.debug,
     context: options.context,
@@ -146,7 +147,7 @@ export const runNetlifyBuild = async ({ command, env = {}, options, settings, ti
   }
 
   // Run Netlify Build using the `startDev` entry point.
-  const { error: startDevError, success } = await startDev(devCommand, startDevOptions)
+  const { configMutations, error: startDevError, success } = await startDev(devCommand, startDevOptions)
 
   if (!success && startDevError) {
     NetlifyLog.error(`Could not start local development server\n\n${startDevError.message}\n\n${startDevError.stack}`, {
@@ -154,7 +155,7 @@ export const runNetlifyBuild = async ({ command, env = {}, options, settings, ti
     })
   }
 
-  return {}
+  return { configMutations }
 }
 
 /**

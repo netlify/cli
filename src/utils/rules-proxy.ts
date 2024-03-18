@@ -41,6 +41,8 @@ export const getLanguage = function (headers) {
 }
 
 export const createRewriter = async function ({
+  // @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'an... Remove this comment to see the full error message
+  config,
   // @ts-expect-error TS(7031) FIXME: Binding element 'configPath' implicitly has an 'an... Remove this comment to see the full error message
   configPath,
   // @ts-expect-error TS(7031) FIXME: Binding element 'distDir' implicitly has an 'any' ... Remove this comment to see the full error message
@@ -57,16 +59,16 @@ export const createRewriter = async function ({
   // @ts-expect-error TS(7034) FIXME: Variable 'matcher' implicitly has type 'any' in so... Remove this comment to see the full error message
   let matcher = null
   const redirectsFiles = [...new Set([path.resolve(distDir, '_redirects'), path.resolve(projectDir, '_redirects')])]
-  let redirects = await parseRedirects({ redirectsFiles, configPath })
+  let redirects = await parseRedirects({ config, redirectsFiles, configPath })
 
   const watchedRedirectFiles = configPath === undefined ? redirectsFiles : [...redirectsFiles, configPath]
   onChanges(watchedRedirectFiles, async () => {
     const existingRedirectsFiles = await pFilter(watchedRedirectFiles, fileExistsAsync)
-    const message = `${NETLIFYDEVLOG} Reloading redirect rules from ${existingRedirectsFiles.map((redirectFile) => {
-      return path.relative(projectDir, redirectFile)
-    })}`
+    const message = `${NETLIFYDEVLOG} Reloading redirect rules from ${existingRedirectsFiles.map((redirectFile) =>
+      path.relative(projectDir, redirectFile),
+    )}`
     NetlifyLog.info(message)
-    redirects = await parseRedirects({ redirectsFiles, configPath })
+    redirects = await parseRedirects({ config, redirectsFiles, configPath })
     matcher = null
   })
 

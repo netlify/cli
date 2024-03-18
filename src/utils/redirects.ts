@@ -5,12 +5,12 @@ import { NETLIFYDEVERR, log } from './command-helpers.js'
 // Parse, normalize and validate all redirects from `_redirects` files
 // and `netlify.toml`
 // @ts-expect-error TS(7031) FIXME: Binding element 'configPath' implicitly has an 'an... Remove this comment to see the full error message
-export const parseRedirects = async function ({ configPath, redirectsFiles }) {
-  // @ts-expect-error TS(2345) FIXME: Argument of type '{ redirectsFiles: any; netlifyCo... Remove this comment to see the full error message
+export const parseRedirects = async function ({ config, configPath, redirectsFiles }) {
   const { errors, redirects } = await parseAllRedirects({
     redirectsFiles,
     netlifyConfigPath: configPath,
     minimal: false,
+    configRedirects: config?.redirects || [],
   })
   handleRedirectParsingErrors(errors)
   // @ts-expect-error TS(2345) FIXME: Argument of type '({ conditions: { country, langua... Remove this comment to see the full error message

@@ -13,7 +13,6 @@ import { getEnvironmentVariables, withMockApi } from '../../utils/mock-api.js'
 
 vi.mock('../../../../src/utils/command-helpers.js', async () => ({
   ...(await vi.importActual('../../../../src/utils/command-helpers.js')),
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
   log: () => {},
 }))
 

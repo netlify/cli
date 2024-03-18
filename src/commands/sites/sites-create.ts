@@ -144,6 +144,6 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand) =
     await link({ id: site.id, isChildCommand: true }, command)
   }
 
-  !options.isChildCommand && outro({ exit: true, message: `Site Created` })
+  !options.isChildCommand && outro({ message: `Site Created` })
   return site
 }

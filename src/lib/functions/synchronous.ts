@@ -151,7 +151,7 @@ const handleErr = async (err, request, response) => {
 
   if (acceptsHtml) {
     response.setHeader('Content-Type', 'text/html')
-    response.end(await renderErrorTemplate(errorString, './templates/function-error.html', 'function'))
+    response.end(await renderErrorTemplate(errorString, '../../src/lib/templates/function-error.html', 'function'))
   } else {
     response.end(errorString)
   }
