@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 
-import { aggressiveJSONParse, parseRawFlags } from '../../../src/utils/parse-raw-flags.js'
+import { aggressiveJSONParse, parseRawFlags } from '../../../dist/utils/parse-raw-flags.js'
 
 describe('parse-raw-flags', () => {
   test('JSONTruthy works with various inputs', () => {

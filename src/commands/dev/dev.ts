@@ -1,5 +1,7 @@
 import process from 'process'
 
+// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module '@net... Remove this comment to see the full error message
+import { applyMutations } from '@netlify/config'
 import { OptionValues, Option } from 'commander'
 
 import { BLOBS_CONTEXT_VARIABLE, encodeBlobsContext, getBlobsContext } from '../../lib/blobs/blobs.js'
@@ -17,7 +19,7 @@ import {
   normalizeConfig,
 } from '../../utils/command-helpers.js'
 import detectServerSettings, { getConfigWithPlugins } from '../../utils/detect-server-settings.js'
-import { getDotEnvVariables, getSiteInformation, injectEnvVariables } from '../../utils/dev.js'
+import { getDotEnvVariables, getSiteInformation, injectEnvVariables, UNLINKED_SITE_MOCK_ID } from '../../utils/dev.js'
 import { getEnvelopeEnv, normalizeContext } from '../../utils/env/index.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import { getLiveTunnelSlug, startLiveTunnel } from '../../utils/live-tunnel.js'
@@ -108,7 +110,7 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
   const blobsContext = await getBlobsContext({
     debug: options.debug,
     projectRoot: command.workingDir,
-    siteID: site.id ?? 'unknown-site-id',
+    siteID: site.id ?? UNLINKED_SITE_MOCK_ID,
   })
 
   env[BLOBS_CONTEXT_VARIABLE] = { sources: ['internal'], value: encodeBlobsContext(blobsContext) }
@@ -135,6 +137,13 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
   try {
     settings = await detectServerSettings(devConfig, options, command)
 
+    if (process.env.NETLIFY_INCLUDE_DEV_SERVER_PLUGIN) {
+      if (options.debug) {
+        log(`${NETLIFYDEVLOG} Including dev server plugin: ${process.env.NETLIFY_INCLUDE_DEV_SERVER_PLUGIN}`)
+      }
+      settings.plugins = [...(settings.plugins || []), process.env.NETLIFY_INCLUDE_DEV_SERVER_PLUGIN]
+    }
+
     cachedConfig.config = getConfigWithPlugins(cachedConfig.config, settings)
   } catch (error_) {
     if (error_ && typeof error_ === 'object' && 'message' in error_) {
@@ -153,7 +162,7 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
 
   log(`${NETLIFYDEVWARN} Setting up local development server`)
 
-  const { configPath: configPathOverride } = await runDevTimeline({
+  const { configMutations, configPath: configPathOverride } = await runDevTimeline({
     command,
     options,
     settings,
@@ -163,11 +172,12 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
     },
   })
 
+  const mutatedConfig = applyMutations(config, configMutations)
+
   const functionsRegistry = await startFunctionsServer({
-    api,
     blobsContext,
     command,
-    config,
+    config: mutatedConfig,
     debug: options.debug,
     settings,
     site,
@@ -206,7 +216,8 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
   await startProxyServer({
     addonsUrls,
     blobsContext,
-    config,
+    command,
+    config: mutatedConfig,
     configPath: configPathOverride,
     debug: options.debug,
     projectDir: command.workingDir,

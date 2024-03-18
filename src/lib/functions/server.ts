@@ -2,11 +2,13 @@ import { Buffer } from 'buffer'
 import { promises as fs } from 'fs'
 import path from 'path'
 
-import express from 'express'
+import express, { type RequestHandler } from 'express'
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'expr... Remove this comment to see the full error message
 import expressLogging from 'express-logging'
 import jwtDecode from 'jwt-decode'
 
+import type BaseCommand from '../../commands/base-command.js'
+import type { $TSFixMe } from '../../commands/types.js'
 import { NETLIFYDEVERR, NETLIFYDEVLOG, error as errorExit, log } from '../../utils/command-helpers.js'
 import { isFeatureFlagEnabled } from '../../utils/feature-flags.js'
 import {
@@ -16,6 +18,7 @@ import {
   getInternalFunctionsDir,
 } from '../../utils/functions/index.js'
 import { NFFunctionName, NFFunctionRoute } from '../../utils/headers.js'
+import type { BlobsContext } from '../blobs/blobs.js'
 import { headers as efHeaders } from '../edge-functions/headers.js'
 import { getGeoLocation } from '../geo-location.js'
 
@@ -25,6 +28,7 @@ import { FunctionsRegistry } from './registry.js'
 import { handleScheduledFunction } from './scheduled.js'
 import { handleSynchronousFunction } from './synchronous.js'
 import { shouldBase64Encode } from './utils.js'
+import { UNLINKED_SITE_MOCK_ID } from '../../utils/dev.js'
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'headers' implicitly has an 'any' type.
 const buildClientContext = function (headers) {
@@ -77,11 +81,9 @@ const hasBody = (req) =>
   // we expect a string or a buffer, because we use the two bodyParsers(text, raw) from express
   (typeof req.body === 'string' || Buffer.isBuffer(req.body))
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
-export const createHandler = function (options) {
+export const createHandler = function (options: GetFunctionsServerOptions): RequestHandler {
   const { functionsRegistry } = options
 
-  // @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
   return async function handler(request, response) {
     // If these headers are set, it means we've already matched a function and we
     // can just grab its name directly. We delete the header from the request
@@ -91,15 +93,22 @@ export const createHandler = function (options) {
     const functionRoute = request.header(NFFunctionRoute)
     delete request.headers[NFFunctionRoute]
 
-    // If we didn't match a function with a custom route, let's try to match
-    // using the fixed URL format.
+    // If there's still no function found, we check the functionsRegistry again.
+    // This is needed for the functions:serve command, where the dev server that normally does the matching doesn't run.
+    // It also matches the default URL (.netlify/functions/builders)
     if (!functionName) {
-      const cleanPath = request.path.replace(/^\/.netlify\/(functions|builders)/, '')
-
-      functionName = cleanPath.split('/').find(Boolean)
+      const match = await functionsRegistry.getFunctionForURLPath(
+        request.url,
+        request.method,
+        // we're pretending there's no static file at the same URL.
+        // This is wrong, but in local dev we already did the matching
+        // in a downstream server where we had access to the file system, so this never hits.
+        () => Promise.resolve(false),
+      )
+      functionName = match?.func?.name
     }
 
-    const func = functionsRegistry.get(functionName)
+    const func = functionsRegistry.get(functionName ?? '')
 
     if (func === undefined) {
       response.statusCode = 404
@@ -120,16 +129,14 @@ export const createHandler = function (options) {
     }
 
     let remoteAddress = request.header('x-forwarded-for') || request.connection.remoteAddress || ''
-    remoteAddress = remoteAddress
-      .split(remoteAddress.includes('.') ? ':' : ',')
-      .pop()
-      .trim()
+    remoteAddress =
+      remoteAddress
+        .split(remoteAddress.includes('.') ? ':' : ',')
+        .pop()
+        ?.trim() ?? ''
 
-    let requestPath = request.path
-    if (request.header('x-netlify-original-pathname')) {
-      requestPath = request.header('x-netlify-original-pathname')
-      delete request.headers['x-netlify-original-pathname']
-    }
+    const requestPath = request.header('x-netlify-original-pathname') ?? request.path
+    delete request.headers['x-netlify-original-pathname']
 
     let requestQuery = request.query
     if (request.header('x-netlify-original-search')) {
@@ -150,17 +157,17 @@ export const createHandler = function (options) {
       {},
     )
 
-    const geoLocation = await getGeoLocation({ ...options, mode: options.geo })
+    const geoLocation = await getGeoLocation({ ...options, mode: options.geolocationMode })
 
     const headers = Object.entries({
       ...request.headers,
       'client-ip': [remoteAddress],
       'x-nf-client-connection-ip': [remoteAddress],
       'x-nf-account-id': [options.accountId],
-      'x-nf-site-id': [options?.siteInfo?.id ?? 'unlinked'],
+      'x-nf-site-id': [options?.siteInfo?.id ?? UNLINKED_SITE_MOCK_ID],
       [efHeaders.Geo]: Buffer.from(JSON.stringify(geoLocation)).toString('base64'),
     }).reduce((prev, [key, value]) => ({ ...prev, [key]: Array.isArray(value) ? value : [value] }), {})
-    const rawQuery = new URLSearchParams(requestQuery).toString()
+    const rawQuery = new URL(request.originalUrl, 'http://example.com').search.slice(1)
     const protocol = options.config?.dev?.https ? 'https' : 'http'
     const url = new URL(requestPath, `${protocol}://${request.get('host') || 'localhost'}`)
     url.search = rawQuery
@@ -194,6 +201,12 @@ export const createHandler = function (options) {
 
       handleBackgroundFunctionResult(functionName, error)
     } else if (await func.isScheduled()) {
+      // In production, scheduled functions always receive POST requests, so we
+      // have to emulate that here, even if a user has triggered a GET request
+      // as part of their tests. If we don't do this, we'll hit problems when
+      // we send the invocation body in a request that can't have a body.
+      event.httpMethod = 'POST'
+
       const { error, result } = await func.invoke(
         {
           ...event,
@@ -212,9 +225,18 @@ export const createHandler = function (options) {
 
       handleScheduledFunction({
         error,
-        result,
         request,
         response,
+
+        // When we handle the result of invoking a scheduled function, we'll warn
+        // people in case their function returned a body or headers, since those
+        // will have no practical effect in production. However, in v2 functions
+        // we don't currently have a good way of asserting whether the body we're
+        // seeing has been actually produced by user code or by the bootstrap, so
+        // we risk printing that warn unnecessarily, which causes more harm than
+        // good. Until we find a way of making this detection better, ignore the
+        // invocation result entirely for v2 functions.
+        result: func.runtimeAPIVersion === 1 ? result : {},
       })
     } else {
       const { error, result } = await func.invoke(event, clientContext)
@@ -234,9 +256,20 @@ export const createHandler = function (options) {
   }
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
-const getFunctionsServer = (options) => {
-  const { buildersPrefix = '', functionsPrefix = '', functionsRegistry, siteUrl } = options
+interface GetFunctionsServerOptions {
+  functionsRegistry: FunctionsRegistry
+  siteUrl: string
+  siteInfo?: $TSFixMe
+  accountId: string
+  geoCountry: string
+  offline: boolean
+  state: $TSFixMe
+  config: $TSFixMe
+  geolocationMode: 'cache' | 'update' | 'mock'
+}
+
+const getFunctionsServer = (options: GetFunctionsServerOptions) => {
+  const { functionsRegistry, siteUrl } = options
   const app = express()
   const functionHandler = createHandler(options)
 
@@ -256,30 +289,25 @@ const getFunctionsServer = (options) => {
     }),
   )
 
-  app.all(`${functionsPrefix}*`, functionHandler)
-  app.all(`${buildersPrefix}*`, functionHandler)
+  app.all('*', functionHandler)
 
   return app
 }
 
-/**
- *
- * @param {object} options
- * @param {import("../blobs/blobs.js").BlobsContext} options.blobsContext
- * @param {import('../../commands/base-command.js').default} options.command
- * @param {*} options.capabilities
- * @param {*} options.config
- * @param {boolean} options.debug
- * @param {*} options.loadDistFunctions
- * @param {*} options.settings
- * @param {*} options.site
- * @param {*} options.siteInfo
- * @param {string} options.siteUrl
- * @param {*} options.timeouts
- * @returns {Promise<import('./registry.js').FunctionsRegistry | undefined>}
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
-export const startFunctionsServer = async (options) => {
+export const startFunctionsServer = async (
+  options: {
+    blobsContext: BlobsContext
+    command: BaseCommand
+    config: $TSFixMe
+    capabilities: $TSFixMe
+    debug: boolean
+    loadDistFunctions?: boolean
+    settings: $TSFixMe
+    site: $TSFixMe
+    siteInfo: $TSFixMe
+    timeouts: $TSFixMe
+  } & Omit<GetFunctionsServerOptions, 'functionsRegistry'>,
+): Promise<FunctionsRegistry | undefined> => {
   const {
     blobsContext,
     capabilities,
@@ -355,31 +383,30 @@ export const startFunctionsServer = async (options) => {
 
   await functionsRegistry.scan(functionsDirectories)
 
-  const server = getFunctionsServer(Object.assign(options, { functionsRegistry }))
+  const server = getFunctionsServer({ ...options, functionsRegistry })
 
   await startWebServer({ server, settings, debug })
 
   return functionsRegistry
 }
 
-/**
- *
- * @param {object} config
- * @param {boolean} config.debug
- * @param {ReturnType<Awaited<typeof getFunctionsServer>>} config.server
- * @param {*} config.settings
- */
-// @ts-expect-error TS(7031) FIXME: Binding element 'debug' implicitly has an 'any' ty... Remove this comment to see the full error message
-const startWebServer = async ({ debug, server, settings }) => {
-  await new Promise((/** @type {(resolve: void) => void} */ resolve) => {
+const startWebServer = async ({
+  debug,
+  server,
+  settings,
+}: {
+  debug: boolean
+  server: ReturnType<Awaited<typeof getFunctionsServer>>
+  settings: $TSFixMe
+}) => {
+  await new Promise<void>((resolve) => {
     // @ts-expect-error TS(7006) FIXME: Parameter 'err' implicitly has an 'any' type.
-    server.listen(settings.functionsPort, (/** @type {unknown} */ err) => {
+    server.listen(settings.functionsPort, (err) => {
       if (err) {
         errorExit(`${NETLIFYDEVERR} Unable to start functions server: ${err}`)
       } else if (debug) {
         log(`${NETLIFYDEVLOG} Functions server is listening on ${settings.functionsPort}`)
       }
-      // @ts-expect-error TS(2794) FIXME: Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
       resolve()
     })
   })

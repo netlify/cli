@@ -387,7 +387,20 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
         throw new Error("I should not run");
       },
 
-      onPreDev: () => {
+      onPreDev: ({netlifyConfig}) => {
+        netlifyConfig.headers.push({
+          for: '/*',
+          values: {
+            'x-test': 'value'
+          }
+        });
+
+        netlifyConfig.redirects.push({
+          from: '/baz/*',
+          to: 'http://localhost:${userServerPort}/:splat',
+          status: 200,
+        });
+
         const server = http.createServer((_, res) => res.end("Hello world"));
 
         server.listen(${userServerPort}, "localhost", () => {
@@ -418,12 +431,15 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
       await builder.buildAsync()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
-        const [response1, response2] = await Promise.all([
-          fetch(`${server.url}/foo`).then((res) => res.text()),
-          fetch(`http://localhost:${userServerPort}`).then((res) => res.text()),
+        const [response1, response2, response3] = await Promise.all([
+          fetch(`${server.url}/foo`),
+          fetch(`http://localhost:${userServerPort}`),
+          fetch(`${server.url}/baz/path`),
         ])
-        t.expect(response1).toEqual('<html><h1>foo')
-        t.expect(response2).toEqual('Hello world')
+        t.expect(await response1.text()).toEqual('<html><h1>foo')
+        t.expect(response1.headers.get('x-test')).toEqual('value')
+        t.expect(await response2.text()).toEqual('Hello world')
+        t.expect(await response3.text()).toEqual('Hello world')
       })
     })
   })

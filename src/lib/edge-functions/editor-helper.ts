@@ -40,5 +40,5 @@ export const promptEditorHelper = async ({ NETLIFYDEVLOG, chalk, config, log, re
     return
   }
 
-  await runRecipe({ config, recipeName: 'vscode', repositoryRoot })
+  await runRecipe({ args: [], config, recipeName: 'vscode', repositoryRoot })
 }

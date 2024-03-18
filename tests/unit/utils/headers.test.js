@@ -2,11 +2,11 @@ import { resolve } from 'path'
 
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 
-import { headersForPath, parseHeaders } from '../../../src/utils/headers.js'
+import { headersForPath, parseHeaders } from '../../../dist/utils/headers.js'
 import { createSiteBuilder } from '../../integration/utils/site-builder.ts'
 
-vi.mock('../../../src/utils/command-helpers.js', async () => ({
-  ...(await vi.importActual('../../../src/utils/command-helpers.js')),
+vi.mock('../../../dist/utils/command-helpers.js', async () => ({
+  ...(await vi.importActual('../../../dist/utils/command-helpers.js')),
   log: () => {},
 }))
 

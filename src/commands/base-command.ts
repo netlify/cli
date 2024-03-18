@@ -498,6 +498,12 @@ export default class BaseCommand extends Command {
       this.workingDir = join(this.project.jsWorkspaceRoot, this.workspacePackage)
     }
 
+    if (this.project.workspace?.packages.length && !this.project.workspace.isRoot) {
+      // set the package path even though we are not in the workspace root
+      // as the build command will set the process working directory to the workspace root
+      this.workspacePackage = this.project.relativeBaseDirectory
+    }
+
     this.jsWorkspaceRoot = this.project.jsWorkspaceRoot
     // detect if a toml exists in this package.
     const tomlFile = join(this.workingDir, 'netlify.toml')
@@ -682,6 +688,13 @@ export default class BaseCommand extends Command {
       const message = isUserError ? error_.message : error_.stack
       error(message, { exit: true })
     }
+  }
+
+  /**
+   * get a path inside the `.netlify` project folder resolving with the workspace package
+   */
+  getPathInProject(...paths: string[]): string {
+    return join(this.workspacePackage || '', '.netlify', ...paths)
   }
 
   /**
