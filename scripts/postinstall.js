@@ -4,7 +4,6 @@ import chalk from 'chalk'
 
 import { createMainCommand } from '../dist/commands/index.js'
 import { generateAutocompletion } from '../dist/lib/completion/index.js'
-
 import { NetlifyLog, intro, outro } from '../src/utils/styles/index.js'
 
 const id = (message) => message
