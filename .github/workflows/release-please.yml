@@ -9,7 +9,7 @@ jobs:
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
     steps:
-      - uses: navikt/github-app-token-generator@a3831f44404199df32d8f39f7c0ad9bb8fa18b1c
+      - uses: navikt/github-app-token-generator@a8ae52448279d468cfbca5cd899f2457f0b1f643
         id: get-token
         with:
           private-key: ${{ secrets.TOKENS_PRIVATE_KEY }}
