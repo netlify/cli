@@ -228,12 +228,6 @@ const prepareServer = async ({
     const distImportMapPath = getPathInProject([DIST_IMPORT_MAP_PATH])
     const servePath = resolve(projectDir, command.getPathInProject(EDGE_FUNCTIONS_SERVE_FOLDER))
 
-    console.log({
-      distImportMapPath,
-      servePath,
-      projectDir,
-      repositoryRoot,
-    })
     await rm(servePath, { force: true, recursive: true })
 
     const runIsolate = await bundler.serve({
