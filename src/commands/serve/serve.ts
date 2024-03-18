@@ -1,4 +1,3 @@
-import { Buffer } from 'node:buffer'
 import process from 'process'
 
 import { OptionValues } from 'commander'
@@ -8,16 +7,16 @@ import { promptEditorHelper } from '../../lib/edge-functions/editor-helper.js'
 import { startFunctionsServer } from '../../lib/functions/server.js'
 import { printBanner } from '../../utils/banner.js'
 import {
-  chalk,
-  exit,
-  log,
   NETLIFYDEVERR,
   NETLIFYDEVLOG,
   NETLIFYDEVWARN,
+  chalk,
+  exit,
+  log,
   normalizeConfig,
 } from '../../utils/command-helpers.js'
 import detectServerSettings, { getConfigWithPlugins } from '../../utils/detect-server-settings.js'
-import { getDotEnvVariables, getSiteInformation, injectEnvVariables, UNLINKED_SITE_MOCK_ID } from '../../utils/dev.js'
+import { UNLINKED_SITE_MOCK_ID, getDotEnvVariables, getSiteInformation, injectEnvVariables } from '../../utils/dev.js'
 import { getEnvelopeEnv } from '../../utils/env/index.js'
 import { getInternalFunctionsDir } from '../../utils/functions/functions.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
@@ -69,7 +68,11 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
   // Ensure the internal functions directory exists so that the functions
   // server and registry are initialized, and any functions created by
   // Netlify Build are loaded.
-  await getInternalFunctionsDir({ base: site.root, ensureExists: true })
+  await getInternalFunctionsDir({
+    base: site.root,
+    ensureExists: true,
+    packagePath: command.workspacePackage,
+  })
 
   let settings: ServerSettings
   try {
