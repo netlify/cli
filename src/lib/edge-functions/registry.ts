@@ -18,6 +18,7 @@ import {
 } from '../../utils/command-helpers.js'
 import type { FeatureFlags } from '../../utils/feature-flags.js'
 import { MultiMap } from '../../utils/multimap.js'
+import { getPathInProject } from '../settings.js'
 
 import { INTERNAL_EDGE_FUNCTIONS_FOLDER } from './consts.js'
 
@@ -535,7 +536,7 @@ export class EdgeFunctionsRegistry {
   }
 
   private get internalDirectory() {
-    return join(this.projectDir, this.command.getPathInProject(INTERNAL_EDGE_FUNCTIONS_FOLDER))
+    return join(this.projectDir, getPathInProject([INTERNAL_EDGE_FUNCTIONS_FOLDER]))
   }
 
   private async readDeployConfig() {
