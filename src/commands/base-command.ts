@@ -696,7 +696,7 @@ export default class BaseCommand extends Command {
   }
 
   /**
-   * get a path inside the `.netlify` project folder
+   * get a path inside the `.netlify` project folder resolving with the workspace package
    */
   getPathInProject(...paths: string[]): string {
     return join(this.workspacePackage || '', '.netlify', ...paths)

@@ -46,13 +46,7 @@ const brotliDecompress = util.promisify(zlib.brotliDecompress)
 const deflate = util.promisify(zlib.deflate)
 const shouldGenerateETag = Symbol('Internal: response should generate ETag')
 
-/**
- * @param {Buffer} body
- * @param {string | undefined} contentEncoding
- * @returns {Promise<Buffer>}
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'body' implicitly has an 'any' type.
-const decompressResponseBody = async function (body, contentEncoding = '') {
+const decompressResponseBody = async function (body: Buffer, contentEncoding = ''): Promise<Buffer> {
   switch (contentEncoding) {
     case 'gzip':
       return await gunzip(body)
@@ -82,40 +76,21 @@ const formatEdgeFunctionError = (errorBuffer, acceptsHtml) => {
   })
 }
 
-/**
- * @param {string} url
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'url' implicitly has an 'any' type.
-function isInternal(url) {
+function isInternal(url: string) {
   return url.startsWith('/.netlify/')
 }
 
-/**
- * @param {boolean|number|undefined} functionsPort
- * @param {string} url
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'functionsPort' implicitly has an 'any' ... Remove this comment to see the full error message
-function isFunction(functionsPort, url) {
+function isFunction(functionsPort: boolean | number | undefined, url: string) {
   return functionsPort && url.match(DEFAULT_FUNCTION_URL_EXPRESSION)
 }
 
-/**
- * @param {Record<string, string>} addonsUrls
- * @param {http.IncomingMessage} req
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'addonsUrls' implicitly has an 'any' typ... Remove this comment to see the full error message
-function getAddonUrl(addonsUrls, req) {
+function getAddonUrl(addonsUrls: Record<string, string>, req: http.IncomingMessage) {
   const matches = req.url?.match(/^\/.netlify\/([^/]+)(\/.*)/)
   const addonUrl = matches && addonsUrls[matches[1]]
   return addonUrl ? `${addonUrl}${matches[2]}` : null
 }
 
-/**
- * @param {string} pathname
- * @param {string} publicFolder
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'pathname' implicitly has an 'any' type.
-const getStatic = async function (pathname, publicFolder) {
+const getStatic = async function (pathname: string, publicFolder: string) {
   const alternatives = [pathname, ...alternativePathsFor(pathname)].map((filePath) =>
     path.resolve(publicFolder, filePath.slice(1)),
   )
