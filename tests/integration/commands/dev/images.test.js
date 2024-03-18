@@ -15,7 +15,7 @@ describe.concurrent('commands/dev/images', () => {
         .withNetlifyToml({
           config: {
             images: {
-              remote_images: ['https://images.unsplash.com/*'],
+              remote_images: ['^https://(?!\\.)[^\\/]*.unsplash.com/photo-[0-9a-f]+-[0-9a-f]+$'],
             },
           },
         })

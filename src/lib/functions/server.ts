@@ -201,6 +201,12 @@ export const createHandler = function (options: GetFunctionsServerOptions): Requ
 
       handleBackgroundFunctionResult(functionName, error)
     } else if (await func.isScheduled()) {
+      // In production, scheduled functions always receive POST requests, so we
+      // have to emulate that here, even if a user has triggered a GET request
+      // as part of their tests. If we don't do this, we'll hit problems when
+      // we send the invocation body in a request that can't have a body.
+      event.httpMethod = 'POST'
+
       const { error, result } = await func.invoke(
         {
           ...event,
@@ -219,9 +225,18 @@ export const createHandler = function (options: GetFunctionsServerOptions): Requ
 
       handleScheduledFunction({
         error,
-        result,
         request,
         response,
+
+        // When we handle the result of invoking a scheduled function, we'll warn
+        // people in case their function returned a body or headers, since those
+        // will have no practical effect in production. However, in v2 functions
+        // we don't currently have a good way of asserting whether the body we're
+        // seeing has been actually produced by user code or by the bootstrap, so
+        // we risk printing that warn unnecessarily, which causes more harm than
+        // good. Until we find a way of making this detection better, ignore the
+        // invocation result entirely for v2 functions.
+        result: func.runtimeAPIVersion === 1 ? result : {},
       })
     } else {
       const { error, result } = await func.invoke(event, clientContext)

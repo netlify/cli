@@ -1,7 +1,7 @@
 import { Buffer } from 'buffer'
 import path from 'path'
 
-import { BlobsServer } from '@netlify/blobs'
+import { BlobsServer } from '@netlify/blobs/server'
 import { v4 as uuidv4 } from 'uuid'
 
 import { log, NETLIFYDEVLOG } from '../../utils/command-helpers.js'

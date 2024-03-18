@@ -16,7 +16,7 @@ const blobs = (_options: OptionValues, command: BaseCommand) => {
 export const createBlobsCommand = (program: BaseCommand) => {
   program
     .command('blobs:delete')
-    .description(`(Beta) Deletes an object with a given key, if it exists, from a Netlify Blobs store`)
+    .description(`Deletes an object with a given key, if it exists, from a Netlify Blobs store`)
     .argument('<store>', 'Name of the store')
     .argument('<key>', 'Object key')
     .alias('blob:delete')
@@ -29,7 +29,7 @@ export const createBlobsCommand = (program: BaseCommand) => {
   program
     .command('blobs:get')
     .description(
-      `(Beta) Reads an object with a given key from a Netlify Blobs store and, if it exists, prints the content to the terminal or saves it to a file`,
+      `Reads an object with a given key from a Netlify Blobs store and, if it exists, prints the content to the terminal or saves it to a file`,
     )
     .argument('<store>', 'Name of the store')
     .argument('<key>', 'Object key')
@@ -43,7 +43,7 @@ export const createBlobsCommand = (program: BaseCommand) => {
 
   program
     .command('blobs:list')
-    .description(`(Beta) Lists objects in a Netlify Blobs store`)
+    .description(`Lists objects in a Netlify Blobs store`)
     .argument('<store>', 'Name of the store')
     .option(
       '-d, --directories',
@@ -64,7 +64,7 @@ export const createBlobsCommand = (program: BaseCommand) => {
   program
     .command('blobs:set')
     .description(
-      `(Beta) Writes to a Netlify Blobs store an object with the data provided in the command or the contents of a file defined by the 'input' parameter`,
+      `Writes to a Netlify Blobs store an object with the data provided in the command or the contents of a file defined by the 'input' parameter`,
     )
     .argument('<store>', 'Name of the store')
     .argument('<key>', 'Object key')
@@ -83,7 +83,7 @@ export const createBlobsCommand = (program: BaseCommand) => {
   return program
     .command('blobs')
     .alias('blob')
-    .description(`(Beta) Manage objects in Netlify Blobs`)
+    .description(`Manage objects in Netlify Blobs`)
     .addExamples([
       'netlify blobs:get my-store my-key',
       'netlify blobs:set my-store my-key This will go in a blob',

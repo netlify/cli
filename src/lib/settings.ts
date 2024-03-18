@@ -9,33 +9,15 @@ const NETLIFY_HOME = '.netlify'
 /**
  * Deprecated method to get netlify's home config - ~/.netlify/...
  * @deprecated
- * @param {string[]} paths
- * @returns {string}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'paths' implicitly has an 'any' type.
-export const getLegacyPathInHome = (paths) => {
-  const pathInHome = path.join(os.homedir(), NETLIFY_HOME, ...paths)
-  return pathInHome
-}
+export const getLegacyPathInHome = (paths: string[]) => path.join(os.homedir(), NETLIFY_HOME, ...paths)
 
 /**
  * get a global path on the os base path
- * @param {string[]} paths
- * @returns {string}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'paths' implicitly has an 'any' type.
-export const getPathInHome = (paths) => {
-  const pathInHome = path.join(OSBasedPaths.config, ...paths)
-  return pathInHome
-}
+export const getPathInHome = (paths: string[]) => path.join(OSBasedPaths.config, ...paths)
 
 /**
- * get a path inside the project folder
- * @param {string[]} paths
- * @returns {string}
+ * get a path inside the project folder "NOT WORKSPACE AWARE"
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'paths' implicitly has an 'any' type.
-export const getPathInProject = (paths) => {
-  const pathInProject = path.join(NETLIFY_HOME, ...paths)
-  return pathInProject
-}
+export const getPathInProject = (paths: string[]) => path.join(NETLIFY_HOME, ...paths)

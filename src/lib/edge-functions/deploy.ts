@@ -12,7 +12,7 @@ const distPath = getPathInProject([EDGE_FUNCTIONS_FOLDER])
  * @param {*} file
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'workingDir' implicitly has an 'any' typ... Remove this comment to see the full error message
-export const deployFileNormalizer = (workingDir, file) => {
+export const deployFileNormalizer = (workingDir: string, file) => {
   const absoluteDistPath = join(workingDir, distPath)
   const isEdgeFunction = file.root === absoluteDistPath
   const normalizedPath = isEdgeFunction ? `${PUBLIC_URL_PATH}/${file.normalizedPath}` : file.normalizedPath
@@ -23,11 +23,7 @@ export const deployFileNormalizer = (workingDir, file) => {
   }
 }
 
-/**
- * @param {string} workingDir
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'workingDir' implicitly has an 'any' typ... Remove this comment to see the full error message
-export const getDistPathIfExists = async (workingDir) => {
+export const getDistPathIfExists = async (workingDir: string) => {
   try {
     const absoluteDistPath = join(workingDir, distPath)
     const stats = await stat(absoluteDistPath)
@@ -42,5 +38,4 @@ export const getDistPathIfExists = async (workingDir) => {
   }
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'filePath' implicitly has an 'any' type.
-export const isEdgeFunctionFile = (filePath) => filePath.startsWith(`${PUBLIC_URL_PATH}/`)
+export const isEdgeFunctionFile = (filePath: string) => filePath.startsWith(`${PUBLIC_URL_PATH}/`)

@@ -46,13 +46,7 @@ const brotliDecompress = util.promisify(zlib.brotliDecompress)
 const deflate = util.promisify(zlib.deflate)
 const shouldGenerateETag = Symbol('Internal: response should generate ETag')
 
-/**
- * @param {Buffer} body
- * @param {string | undefined} contentEncoding
- * @returns {Promise<Buffer>}
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'body' implicitly has an 'any' type.
-const decompressResponseBody = async function (body, contentEncoding = '') {
+const decompressResponseBody = async function (body: Buffer, contentEncoding = ''): Promise<Buffer> {
   switch (contentEncoding) {
     case 'gzip':
       return await gunzip(body)
@@ -82,40 +76,21 @@ const formatEdgeFunctionError = (errorBuffer, acceptsHtml) => {
   })
 }
 
-/**
- * @param {string} url
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'url' implicitly has an 'any' type.
-function isInternal(url) {
+function isInternal(url: string) {
   return url.startsWith('/.netlify/')
 }
 
-/**
- * @param {boolean|number|undefined} functionsPort
- * @param {string} url
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'functionsPort' implicitly has an 'any' ... Remove this comment to see the full error message
-function isFunction(functionsPort, url) {
+function isFunction(functionsPort: boolean | number | undefined, url: string) {
   return functionsPort && url.match(DEFAULT_FUNCTION_URL_EXPRESSION)
 }
 
-/**
- * @param {Record<string, string>} addonsUrls
- * @param {http.IncomingMessage} req
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'addonsUrls' implicitly has an 'any' typ... Remove this comment to see the full error message
-function getAddonUrl(addonsUrls, req) {
+function getAddonUrl(addonsUrls: Record<string, string>, req: http.IncomingMessage) {
   const matches = req.url?.match(/^\/.netlify\/([^/]+)(\/.*)/)
   const addonUrl = matches && addonsUrls[matches[1]]
   return addonUrl ? `${addonUrl}${matches[2]}` : null
 }
 
-/**
- * @param {string} pathname
- * @param {string} publicFolder
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'pathname' implicitly has an 'any' type.
-const getStatic = async function (pathname, publicFolder) {
+const getStatic = async function (pathname: string, publicFolder: string) {
   const alternatives = [pathname, ...alternativePathsFor(pathname)].map((filePath) =>
     path.resolve(publicFolder, filePath.slice(1)),
   )
@@ -426,23 +401,23 @@ const MILLISEC_TO_SEC = 1e3
 
 const initializeProxy = async function ({
   // @ts-expect-error TS(7031) FIXME: Binding element 'configPath' implicitly has an 'any... Remove this comment to see the full error message
-  configPath,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'distDir' implicitly has an 'any... Remove this comment to see the full error message
-  distDir,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'env' implicitly has an 'any... Remove this comment to see the full error message
-  env,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'host' implicitly has an 'any... Remove this comment to see the full error message
-  host,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'imageProxy' implicitly has an 'any... Remove this comment to see the full error message
-  imageProxy,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'port' implicitly has an 'any... Remove this comment to see the full error message
-  port,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'projectDir' implicitly has an 'any... Remove this comment to see the full error message
-  projectDir,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'siteInfo' implicitly has an 'any... Remove this comment to see the full error message
-  siteInfo,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'any... Remove this comment to see the full error message
   config,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'distDir' implicitly has an 'any... Remove this comment to see the full error message
+  configPath,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'env' implicitly has an 'any... Remove this comment to see the full error message
+  distDir,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'host' implicitly has an 'any... Remove this comment to see the full error message
+  env,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'imageProxy' implicitly has an 'any... Remove this comment to see the full error message
+  host,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'port' implicitly has an 'any... Remove this comment to see the full error message
+  imageProxy,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'projectDir' implicitly has an 'any... Remove this comment to see the full error message
+  port,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'siteInfo' implicitly has an 'any... Remove this comment to see the full error message
+  projectDir,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'any... Remove this comment to see the full error message
+  siteInfo,
 }) {
   const proxy = httpProxy.createProxyServer({
     selfHandleResponse: true,
@@ -809,6 +784,8 @@ export const startProxy = async function ({
   addonsUrls,
   // @ts-expect-error TS(7031) FIXME: Binding element 'blobsContext' implicitly has an '... Remove this comment to see the full error message
   blobsContext,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'accountId' implicitly has an 'any... Remove this comment to see the full error message
+  command,
   // @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'any' t... Remove this comment to see the full error message
   config,
   // @ts-expect-error TS(7031) FIXME: Binding element 'configPath' implicitly has an 'an... Remove this comment to see the full error message
@@ -843,6 +820,7 @@ export const startProxy = async function ({
   const secondaryServerPort = settings.https ? await getAvailablePort() : null
   const functionsServer = settings.functionsPort ? `http://127.0.0.1:${settings.functionsPort}` : null
   const edgeFunctionsProxy = await initializeEdgeFunctionsProxy({
+    command,
     blobsContext,
     config,
     configPath,

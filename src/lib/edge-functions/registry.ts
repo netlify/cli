@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url'
 
 import type { Declaration, EdgeFunction, FunctionConfig, Manifest, ModuleGraph } from '@netlify/edge-bundler'
 
+import BaseCommand from '../../commands/base-command.js'
 import {
   NETLIFYDEVERR,
   NETLIFYDEVLOG,
@@ -22,10 +23,12 @@ import { getPathInProject } from '../settings.js'
 import { INTERNAL_EDGE_FUNCTIONS_FOLDER } from './consts.js'
 
 //  TODO: Replace with a proper type for the entire config object.
-interface Config {
+export interface Config {
   edge_functions?: Declaration[]
   [key: string]: unknown
 }
+
+type DependencyCache = Record<string, string[]>
 type EdgeFunctionEvent = 'buildError' | 'loaded' | 'reloaded' | 'reloading' | 'removed'
 type Route = Omit<Manifest['routes'][0], 'pattern'> & { pattern: RegExp }
 type RunIsolate = Awaited<ReturnType<typeof import('@netlify/edge-bundler').serve>>
@@ -33,6 +36,7 @@ type RunIsolate = Awaited<ReturnType<typeof import('@netlify/edge-bundler').serv
 type ModuleJson = ModuleGraph['modules'][number]
 
 interface EdgeFunctionsRegistryOptions {
+  command: BaseCommand
   bundler: typeof import('@netlify/edge-bundler')
   config: Config
   configPath: string
@@ -48,13 +52,21 @@ interface EdgeFunctionsRegistryOptions {
 }
 
 /**
- * Helper method which, given a edge bundler graph module and an index of modules by path, traverses its dependency tree
- * and returns an array of all of ist local dependencies
+ * Given an Edge Bundler module graph and an index of modules by path,
+ * traverses its dependency tree and returns an array of all of its
+ * local dependencies.
  */
 function traverseLocalDependencies(
-  { dependencies = [] }: ModuleJson,
+  { dependencies = [], specifier }: ModuleJson,
   modulesByPath: Map<string, ModuleJson>,
+  cache: DependencyCache,
 ): string[] {
+  // If we've already traversed this specifier, return the cached list of
+  // dependencies.
+  if (cache[specifier] !== undefined) {
+    return cache[specifier]
+  }
+
   return dependencies.flatMap((dependency) => {
     // We're interested in tracking local dependencies, so we only look at
     // specifiers with the `file:` protocol.
@@ -65,17 +77,20 @@ function traverseLocalDependencies(
     ) {
       return []
     }
+
     const { specifier: dependencyURL } = dependency.code
     const dependencyPath = fileURLToPath(dependencyURL)
     const dependencyModule = modulesByPath.get(dependencyPath)
 
-    // No module indexed for this dependency
+    // No module indexed for this dependency.
     if (dependencyModule === undefined) {
       return [dependencyPath]
     }
 
-    // Keep traversing the child dependencies and return the current dependency path
-    return [...traverseLocalDependencies(dependencyModule, modulesByPath), dependencyPath]
+    // Keep traversing the child dependencies and return the current dependency path.
+    cache[specifier] = [...traverseLocalDependencies(dependencyModule, modulesByPath, cache), dependencyPath]
+
+    return cache[specifier]
   })
 }
 
@@ -112,9 +127,11 @@ export class EdgeFunctionsRegistry {
   private runIsolate: RunIsolate
   private servePath: string
   private projectDir: string
+  private command: BaseCommand
 
   constructor({
     bundler,
+    command,
     config,
     configPath,
     directories,
@@ -126,6 +143,7 @@ export class EdgeFunctionsRegistry {
     runIsolate,
     servePath,
   }: EdgeFunctionsRegistryOptions) {
+    this.command = command
     this.bundler = bundler
     this.configPath = configPath
     this.directories = directories
@@ -481,9 +499,11 @@ export class EdgeFunctionsRegistry {
       }
     })
 
+    const dependencyCache: DependencyCache = {}
+
     // We start from our functions and we traverse through their dependency tree
     functionModules.forEach(({ functionName, module }) => {
-      const traversedPaths = traverseLocalDependencies(module, modulesByPath)
+      const traversedPaths = traverseLocalDependencies(module, modulesByPath, dependencyCache)
       traversedPaths.forEach((dependencyPath) => {
         this.dependencyPaths.add(dependencyPath, functionName)
       })
