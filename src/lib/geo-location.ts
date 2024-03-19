@@ -1,4 +1,3 @@
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'node... Remove this comment to see the full error message
 import fetch from 'node-fetch'
 
 const API_URL = 'https://netlifind.netlify.app'
@@ -23,7 +22,6 @@ const REQUEST_TIMEOUT = 1e4
  * @property {number} latitude
  * @property {string} timezone
  */
-
 export const mockLocation = {
   city: 'San Francisco',
   country: { code: 'US', name: 'United States' },
