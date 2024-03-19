@@ -23,6 +23,7 @@ import { getPathInProject } from '../settings.js'
 
 import NetlifyFunction from './netlify-function.js'
 import runtimes from './runtimes/index.js'
+import { NetlifyLog } from '../../utils/styles/index.js'
 
 export const DEFAULT_FUNCTION_URL_EXPRESSION = /^\/.netlify\/(functions|builders)\/([^/]+).*/
 const TYPES_PACKAGE = '@netlify/functions'
@@ -318,7 +319,7 @@ export class FunctionsRegistry {
     }
 
     if (event === 'buildError') {
-      log(
+      NetlifyLog.info(
         `${NETLIFYDEVERR} ${chalk.red('Failed to load')} function ${chalk.yellow(func?.displayName)}: ${
           func?.buildError?.message
         }`,
@@ -326,7 +327,7 @@ export class FunctionsRegistry {
     }
 
     if (event === 'extracted') {
-      log(
+      NetlifyLog.info(
         `${NETLIFYDEVLOG} ${chalk.green('Extracted')} function ${chalk.yellow(func?.displayName)} from ${
           func?.mainFile
         }.`,
@@ -344,13 +345,13 @@ export class FunctionsRegistry {
           ? ` in ${getTerminalLink('Lambda compatibility mode', 'https://ntl.fyi/lambda-compat')}`
           : ''
 
-      log(`${icon} ${color('Loaded')} function ${chalk.yellow(func?.displayName)}${mode}${warningsText}`)
+      NetlifyLog.info(`${icon} ${color('Loaded')} function ${chalk.yellow(func?.displayName)}${mode}${warningsText}`)
 
       return
     }
 
     if (event === 'missing-types-package') {
-      log(
+      NetlifyLog.info(
         `${NETLIFYDEVWARN} For a better experience with TypeScript functions, consider installing the ${chalk.underline(
           TYPES_PACKAGE,
         )} package. Refer to https://ntl-fyi/function-types for more information.`,
@@ -361,19 +362,19 @@ export class FunctionsRegistry {
       const icon = warningsText ? NETLIFYDEVWARN : NETLIFYDEVLOG
       const color = warningsText ? chalk.yellow : chalk.green
 
-      log(`${icon} ${color('Reloaded')} function ${chalk.yellow(func?.displayName)}${warningsText}`)
+      NetlifyLog.info(`${icon} ${color('Reloaded')} function ${chalk.yellow(func?.displayName)}${warningsText}`)
 
       return
     }
 
     if (event === 'reloading') {
-      log(`${NETLIFYDEVLOG} ${chalk.magenta('Reloading')} function ${chalk.yellow(func?.displayName)}...`)
+      NetlifyLog.info(`${NETLIFYDEVLOG} ${chalk.magenta('Reloading')} function ${chalk.yellow(func?.displayName)}...`)
 
       return
     }
 
     if (event === 'removed') {
-      log(`${NETLIFYDEVLOG} ${chalk.magenta('Removed')} function ${chalk.yellow(func?.displayName)}`)
+      NetlifyLog.info(`${NETLIFYDEVLOG} ${chalk.magenta('Removed')} function ${chalk.yellow(func?.displayName)}`)
     }
   }
 

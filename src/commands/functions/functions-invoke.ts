@@ -10,6 +10,7 @@ import fetch from 'node-fetch'
 import { NETLIFYDEVWARN, chalk, error, exit } from '../../utils/command-helpers.js'
 import { BACKGROUND, CLOCKWORK_USERAGENT, getFunctions } from '../../utils/functions/index.js'
 import BaseCommand from '../base-command.js'
+import { NetlifyLog } from '../../utils/styles/index.js'
 
 const require = createRequire(import.meta.url)
 
@@ -146,6 +147,7 @@ const getFunctionToTrigger = function (options, argumentName) {
 }
 
 export const functionsInvoke = async (nameArgument: string, options: OptionValues, command: BaseCommand) => {
+  NetlifyLog.message('Invoking function')
   const { config, relConfigFilePath } = command.netlify
 
   const functionsDir = options.functions || (config.dev && config.dev.functions) || config.functionsDirectory

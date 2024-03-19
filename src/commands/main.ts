@@ -37,6 +37,7 @@ import { createStatusCommand } from './status/index.js'
 import { createSwitchCommand } from './switch/index.js'
 import { createUnlinkCommand } from './unlink/index.js'
 import { createWatchCommand } from './watch/index.js'
+import { NetlifyLog } from '../utils/styles/index.js'
 
 const SUGGESTION_TIMEOUT = 1e4
 
@@ -179,12 +180,63 @@ const mainCommand = async function (options, command) {
   await execa(process.argv[0], [process.argv[1], suggestion], { stdio: 'inherit' })
 }
 
+const combineConsoleMessages = (message?: any, optionalParams?: any[]) => {
+  if (!message) return ''
+
+  if (optionalParams && optionalParams.length > 0) {
+    // Replace all %s, %d, %i, %f, %o with the next optional param
+    let formattedMessage = message.replace(/%[sdifo]/g, (match: string) => {
+      if (optionalParams.length > 0) {
+        const nextParam = optionalParams.shift()
+        return typeof nextParam !== 'undefined' ? String(nextParam) : match
+      }
+      return match
+    })
+    // Append remaining optional params if any
+    if (optionalParams.length > 0) {
+      formattedMessage += ' ' + optionalParams.join(' ')
+    }
+    return formattedMessage
+  }
+
+  if (typeof message === 'number' || typeof message === 'boolean') {
+    return message.toString()
+  }
+
+  // if message is an object, array or function, we need to use util.inspect
+  if (typeof message === 'object' || typeof message === 'function') {
+    return message.toString()
+  }
+
+  return message
+}
+
+const transportLogsToNetlifyLog = () => {
+  // Some tests failed when child processes invoked console.log and the test would
+  // assert that the output from the terminal contained the expected output.
+  if (process.env.VITEST) {
+    return
+  }
+  console.log = (message?: any, ...optionalParams: any[]) =>
+    message && NetlifyLog.info(combineConsoleMessages(message, optionalParams))
+  console.warn = (message?: any, ...optionalParams: any[]) =>
+    message && NetlifyLog.warn(combineConsoleMessages(message, optionalParams))
+  console.error = (message?: any, ...optionalParams: any[]) =>
+    message && NetlifyLog.error(combineConsoleMessages(message, optionalParams))
+  console.info = (message?: any, ...optionalParams: any[]) =>
+    message && NetlifyLog.info(combineConsoleMessages(message, optionalParams))
+}
 /**
  * Creates the `netlify-cli` command
  * Promise is needed as the envinfo is a promise
  * @returns {import('./base-command.js').default}
  */
 export const createMainCommand = () => {
+  // This below transport of logging has been added to ensure that
+  // logs are displated using the NetlifyLog style as some packages
+  // we use are using console.log to display logs
+  transportLogsToNetlifyLog()
+
   const program = new BaseCommand('netlify')
   // register all the commands
   createAddonsCommand(program)

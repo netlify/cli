@@ -21,6 +21,7 @@ import { MultiMap } from '../../utils/multimap.js'
 import { getPathInProject } from '../settings.js'
 
 import { INTERNAL_EDGE_FUNCTIONS_FOLDER } from './consts.js'
+import { NetlifyLog } from '../../utils/styles/index.js'
 
 //  TODO: Replace with a proper type for the entire config object.
 export interface Config {
@@ -385,7 +386,7 @@ export class EdgeFunctionsRegistry {
       warnings.length === 0 ? '' : ` with warnings:\n${warnings.map((warning) => `  - ${warning}`).join('\n')}`
 
     if (event === 'buildError') {
-      log(`${NETLIFYDEVERR} ${chalk.red('Failed to load')} ${subject}: ${buildError}`)
+      NetlifyLog.error(`${NETLIFYDEVERR} ${chalk.red('Failed to load')} ${subject}: ${buildError}`, { exit: true })
 
       return
     }
@@ -394,7 +395,7 @@ export class EdgeFunctionsRegistry {
       const icon = warningsText ? NETLIFYDEVWARN : NETLIFYDEVLOG
       const color = warningsText ? chalk.yellow : chalk.green
 
-      log(`${icon} ${color('Loaded')} ${subject}${warningsText}`)
+      NetlifyLog.info(`${icon} ${color('Loaded')} ${subject}${warningsText}`)
 
       return
     }
@@ -403,19 +404,19 @@ export class EdgeFunctionsRegistry {
       const icon = warningsText ? NETLIFYDEVWARN : NETLIFYDEVLOG
       const color = warningsText ? chalk.yellow : chalk.green
 
-      log(`${icon} ${color('Reloaded')} ${subject}${warningsText}`)
+      NetlifyLog.info(`${icon} ${color('Reloaded')} ${subject}${warningsText}`)
 
       return
     }
 
     if (event === 'reloading') {
-      log(`${NETLIFYDEVLOG} ${chalk.magenta('Reloading')} ${subject}...`)
+      NetlifyLog.info(`${NETLIFYDEVLOG} ${chalk.magenta('Reloading')} ${subject}...`)
 
       return
     }
 
     if (event === 'removed') {
-      log(`${NETLIFYDEVLOG} ${chalk.magenta('Removed')} ${subject}`)
+      NetlifyLog.info(`${NETLIFYDEVLOG} ${chalk.magenta('Removed')} ${subject}`)
     }
   }
 

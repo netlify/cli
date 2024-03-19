@@ -622,7 +622,7 @@ export const spinner = () => {
   const delay = unicode ? 80 : 120
 
   let unblock: () => void
-  let loop: NodeJS.Timeout
+  let loop: NodeJS.Timeout | undefined
   let isSpinnerActive = false
   let _message = ''
 
@@ -663,15 +663,24 @@ export const spinner = () => {
     let frameIndex = 0
     let dotsTimer = 0
     registerHooks()
-    loop = setInterval(() => {
-      const frame = chalk.magenta(frames[frameIndex])
-      const loadingDots = '.'.repeat(Math.floor(dotsTimer)).slice(0, 3)
-      process.stdout.write(ansiCursor.move(-999, 0))
-      process.stdout.write(erase.down(1))
-      process.stdout.write(`${frame}  ${_message}${loadingDots}`)
-      frameIndex = frameIndex + 1 < frames.length ? frameIndex + 1 : 0
-      dotsTimer = dotsTimer < frames.length ? dotsTimer + 0.125 : 0
-    }, delay)
+
+    // This ensures snapshot tests do not fail because a spinner is in a different position
+    if (process.env.VITEST) {
+      process.stdout.write(`${_message}...`)
+      return
+    }
+
+    loop = process.env.VITEST
+      ? undefined
+      : setInterval(() => {
+          const frame = chalk.magenta(frames[frameIndex])
+          const loadingDots = '.'.repeat(Math.floor(dotsTimer)).slice(0, 3)
+          process.stdout.write(ansiCursor.move(-999, 0))
+          process.stdout.write(erase.down(1))
+          process.stdout.write(`${frame}  ${_message}${loadingDots}`)
+          frameIndex = frameIndex + 1 < frames.length ? frameIndex + 1 : 0
+          dotsTimer = dotsTimer < frames.length ? dotsTimer + 0.125 : 0
+        }, delay)
   }
 
   const stop = (msg = '', code = 0): void => {
@@ -679,7 +688,7 @@ export const spinner = () => {
 
     _message = msg ?? _message
     isSpinnerActive = false
-    clearInterval(loop)
+    loop && clearInterval(loop)
     const cancelOrError = code === 1 ? chalk.red(symbols.STEP_CANCEL) : chalk.red(symbols.STEP_ERROR)
     const step = code === 0 ? chalk.cyan(symbols.STEP_SUBMIT) : cancelOrError
     process.stdout.write(ansiCursor.move(-999, 0))

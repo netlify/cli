@@ -2,12 +2,10 @@ import { rm } from 'node:fs/promises'
 
 import waitPort from 'wait-port'
 
-import { startSpinner, stopSpinner } from '../lib/spinner.js'
-
-import { error, exit, log, NETLIFYDEVERR, NETLIFYDEVLOG } from './command-helpers.js'
 import { runCommand } from './shell.js'
 import { startStaticServer } from './static-server.js'
 import { ServerSettings } from './types.js'
+import { NetlifyLog, spinner } from './styles/index.js'
 
 // 10 minutes
 const FRAMEWORK_PORT_TIMEOUT = 6e5
@@ -35,11 +33,12 @@ export const startFrameworkServer = async function ({
     return {}
   }
 
-  log(`${NETLIFYDEVLOG} Starting Netlify Dev with ${settings.framework || 'custom config'}`)
+  NetlifyLog.info(`Starting Netlify Dev with ${settings.framework || 'custom config'}`)
 
-  const spinner = startSpinner({
-    text: `Waiting for framework port ${settings.frameworkPort}. This can be configured using the 'targetPort' property in the netlify.toml`,
-  })
+  const loading = spinner()
+  loading.start(
+    `Waiting for framework port ${settings.frameworkPort}. This can be configured using the 'targetPort' property in the netlify.toml`,
+  )
 
   if (settings.clearPublishDirectory && settings.dist) {
     await rm(settings.dist, { recursive: true, force: true })
@@ -62,16 +61,10 @@ export const startFrameworkServer = async function ({
       throw new Error(`Timed out waiting for port '${settings.frameworkPort}' to be open`)
     }
 
-    // @ts-expect-error TS(2345) FIXME: Argument of type '{ error: boolean; spinner: Ora; ... Remove this comment to see the full error message
-    stopSpinner({ error: false, spinner })
+    loading.stop()
   } catch (error_) {
-    // @ts-expect-error TS(2345) FIXME: Argument of type '{ error: boolean; spinner: Ora; ... Remove this comment to see the full error message
-    stopSpinner({ error: true, spinner })
-    log(NETLIFYDEVERR, `Netlify Dev could not start or connect to localhost:${settings.frameworkPort}.`)
-    log(NETLIFYDEVERR, `Please make sure your framework server is running on port ${settings.frameworkPort}`)
-    // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
-    error(error_)
-    exit(1)
+    NetlifyLog.error(`Netlify Dev could not start or connect to localhost:${settings.frameworkPort}.`)
+    loading.stop('Please make sure your framework server is running on port ${settings.frameworkPort}', 1)
   }
 
   return { ipVersion: port?.ipVersion }

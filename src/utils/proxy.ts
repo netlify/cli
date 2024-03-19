@@ -40,6 +40,7 @@ import { headersForPath, parseHeaders, NFFunctionName, NFRequestID, NFFunctionRo
 import { generateRequestID } from './request-id.js'
 import { createRewriter, onChanges } from './rules-proxy.js'
 import { signRedirect } from './sign-redirect.js'
+import { NetlifyLog } from './styles/index.js'
 
 const gunzip = util.promisify(zlib.gunzip)
 const brotliDecompress = util.promisify(zlib.brotliDecompress)
@@ -433,10 +434,10 @@ const initializeProxy = async function ({
   const watchedHeadersFiles = configPath === undefined ? headersFiles : [...headersFiles, configPath]
   onChanges(watchedHeadersFiles, async () => {
     const existingHeadersFiles = await pFilter(watchedHeadersFiles, fileExistsAsync)
-    console.log(
-      `${NETLIFYDEVLOG} Reloading headers files from`,
-      existingHeadersFiles.map((headerFile) => path.relative(projectDir, headerFile)),
-    )
+    const message = `${NETLIFYDEVLOG} Reloading headers files from ${existingHeadersFiles.map((headerFile) =>
+      path.relative(projectDir, headerFile),
+    )}`
+    NetlifyLog.info(message)
     headers = await parseHeaders({ headersFiles, configPath, config })
   })
 

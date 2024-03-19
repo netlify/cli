@@ -11,6 +11,7 @@ import { fileExistsAsync } from '../lib/fs.js'
 
 import { NETLIFYDEVLOG } from './command-helpers.js'
 import { parseRedirects } from './redirects.js'
+import { NetlifyLog } from './styles/index.js'
 
 // @ts-expect-error TS(7034) FIXME: Variable 'watchers' implicitly has type 'any[]' in... Remove this comment to see the full error message
 const watchers = []
@@ -63,10 +64,10 @@ export const createRewriter = async function ({
   const watchedRedirectFiles = configPath === undefined ? redirectsFiles : [...redirectsFiles, configPath]
   onChanges(watchedRedirectFiles, async () => {
     const existingRedirectsFiles = await pFilter(watchedRedirectFiles, fileExistsAsync)
-    console.log(
-      `${NETLIFYDEVLOG} Reloading redirect rules from`,
-      existingRedirectsFiles.map((redirectFile) => path.relative(projectDir, redirectFile)),
-    )
+    const message = `${NETLIFYDEVLOG} Reloading redirect rules from ${existingRedirectsFiles.map((redirectFile) =>
+      path.relative(projectDir, redirectFile),
+    )}`
+    NetlifyLog.info(message)
     redirects = await parseRedirects({ config, redirectsFiles, configPath })
     matcher = null
   })

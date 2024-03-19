@@ -28,6 +28,7 @@ import { FunctionsRegistry } from './registry.js'
 import { handleScheduledFunction } from './scheduled.js'
 import { handleSynchronousFunction } from './synchronous.js'
 import { shouldBase64Encode } from './utils.js'
+import { NetlifyLog } from '../../utils/styles/index.js'
 import { UNLINKED_SITE_MOCK_ID } from '../../utils/dev.js'
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'headers' implicitly has an 'any' type.
@@ -403,9 +404,9 @@ const startWebServer = async ({
     // @ts-expect-error TS(7006) FIXME: Parameter 'err' implicitly has an 'any' type.
     server.listen(settings.functionsPort, (err) => {
       if (err) {
-        errorExit(`${NETLIFYDEVERR} Unable to start functions server: ${err}`)
+        NetlifyLog.error(`${NETLIFYDEVERR} Unable to start functions server: ${err}`, { exit: true })
       } else if (debug) {
-        log(`${NETLIFYDEVLOG} Functions server is listening on ${settings.functionsPort}`)
+        NetlifyLog.info(`${NETLIFYDEVLOG} Functions server is listening on ${settings.functionsPort}`)
       }
       resolve()
     })
