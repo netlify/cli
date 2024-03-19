@@ -134,6 +134,8 @@ const proxyToExternalUrl = function ({
     target: dest.origin,
     changeOrigin: true,
     pathRewrite: () => destURL,
+    // hide debug logging
+    logLevel: 'info',
     ...(Buffer.isBuffer(req.originalBody) && { buffer: toReadableStream(req.originalBody) }),
   })
   // @ts-expect-error TS(2345) FIXME: Argument of type 'Request' is not assignable to parameter of type 'Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
