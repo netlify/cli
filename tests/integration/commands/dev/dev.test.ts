@@ -1,8 +1,9 @@
 // Handlers are meant to be async outside tests
-import fs from 'fs/promises'
-import { join } from 'path'
+import fs from 'node:fs/promises'
+import { type AddressInfo } from 'node:net'
+import { join } from 'node:path'
 
-import jwt from 'jsonwebtoken'
+import jwt, { type JwtPayload } from 'jsonwebtoken'
 import fetch from 'node-fetch'
 import { describe, test } from 'vitest'
 
@@ -13,13 +14,13 @@ import { withSiteBuilder } from '../../utils/site-builder.ts'
 
 describe.concurrent('command/dev', () => {
   test('should return 404.html if exists for non existing routes', async (t) => {
-    await withSiteBuilder('site-with-shadowing-404', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder.withContentFile({
         path: '404.html',
         content: '<h1>404 - Page not found</h1>',
       })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const response = await fetch(`${server.url}/non-existent`)
@@ -30,7 +31,7 @@ describe.concurrent('command/dev', () => {
   })
 
   test('should return 404.html from publish folder if exists for non existing routes', async (t) => {
-    await withSiteBuilder('site-with-shadowing-404-in-publish-folder', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder
         .withContentFile({
           path: 'public/404.html',
@@ -44,7 +45,7 @@ describe.concurrent('command/dev', () => {
           },
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const response = await fetch(`${server.url}/non-existent`)
@@ -56,7 +57,7 @@ describe.concurrent('command/dev', () => {
   })
 
   test('should return 404 for redirect', async (t) => {
-    await withSiteBuilder('site-with-shadowing-404-redirect', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder
         .withContentFile({
           path: 'foo.html',
@@ -68,7 +69,7 @@ describe.concurrent('command/dev', () => {
           },
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const response = await fetch(`${server.url}/test-404`)
@@ -80,7 +81,7 @@ describe.concurrent('command/dev', () => {
   })
 
   test('should ignore 404 redirect for existing file', async (t) => {
-    await withSiteBuilder('site-with-shadowing-404-redirect-existing', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder
         .withContentFile({
           path: 'foo.html',
@@ -96,7 +97,7 @@ describe.concurrent('command/dev', () => {
           },
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const response = await fetch(`${server.url}/test-404`)
@@ -108,7 +109,7 @@ describe.concurrent('command/dev', () => {
   })
 
   test('should follow 404 redirect even with existing file when force=true', async (t) => {
-    await withSiteBuilder('site-with-shadowing-404-redirect-force', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder
         .withContentFile({
           path: 'foo.html',
@@ -124,7 +125,7 @@ describe.concurrent('command/dev', () => {
           },
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const response = await fetch(`${server.url}/test-404`)
@@ -136,7 +137,7 @@ describe.concurrent('command/dev', () => {
   })
 
   test('should source redirects file from publish directory', async (t) => {
-    await withSiteBuilder('site-redirects-file-inside-publish', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder
         .withContentFile({
           path: 'public/index.html',
@@ -152,7 +153,7 @@ describe.concurrent('command/dev', () => {
           },
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const response = await fetch(`${server.url}/test`)
@@ -164,14 +165,14 @@ describe.concurrent('command/dev', () => {
   })
 
   test('should rewrite requests to an external server', async (t) => {
-    await withSiteBuilder('site-redirects-file-to-external', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       const externalServer = startExternalServer()
-      const { port } = externalServer.address()
+      const { port } = externalServer.address() as AddressInfo
       builder.withRedirectsFile({
         redirects: [{ from: '/api/*', to: `http://localhost:${port}/:splat`, status: 200 }],
       })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const getResponse = await fetch(`${server.url}/api/ping`)
@@ -198,10 +199,10 @@ describe.concurrent('command/dev', () => {
   })
 
   test('should sign external redirects with the `x-nf-sign` header when a `signed` value is set', async (t) => {
-    await withSiteBuilder('site-redirects-file-to-external', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       const mockSigningSecret = 'iamverysecret'
       const externalServer = startExternalServer()
-      const { port } = externalServer.address()
+      const { port } = externalServer.address() as AddressInfo
       const siteInfo = {
         account_slug: 'test-account',
         id: 'site_id',
@@ -231,7 +232,7 @@ describe.concurrent('command/dev', () => {
             ],
           },
         })
-        .buildAsync()
+        .build()
 
       await withMockApi(routes, async ({ apiUrl }) => {
         await withDevServer(
@@ -257,9 +258,9 @@ describe.concurrent('command/dev', () => {
               }).then((res) => res.json()),
             ])
 
-            ;[(getResponse, postResponse)].forEach((response) => {
+            ;[getResponse, postResponse].forEach((response) => {
               const signature = response.headers['x-nf-sign']
-              const payload = jwt.verify(signature, mockSigningSecret)
+              const payload = jwt.verify(signature, mockSigningSecret) as JwtPayload
 
               t.expect(payload.deploy_context).toEqual('dev')
               t.expect(payload.netlify_id).toEqual(siteInfo.id)
@@ -277,14 +278,14 @@ describe.concurrent('command/dev', () => {
   })
 
   test('should follow 301 redirect to an external server', async (t) => {
-    await withSiteBuilder('site-redirects-file-to-external-301', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       const externalServer = startExternalServer()
-      const { port } = externalServer.address()
+      const { port } = externalServer.address() as AddressInfo
       builder.withRedirectsFile({
         redirects: [{ from: '/api/*', to: `http://localhost:${port}/:splat`, status: 301 }],
       })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const [response1, response2] = await Promise.all([
@@ -303,7 +304,7 @@ describe.concurrent('command/dev', () => {
   })
 
   test('should rewrite POST request if content-type is missing and not crash dev server', async (t) => {
-    await withSiteBuilder('site-with-post-no-content-type', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder.withNetlifyToml({
         config: {
           functions: { directory: 'functions' },
@@ -311,7 +312,7 @@ describe.concurrent('command/dev', () => {
         },
       })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const response = await fetch(`${server.url}/api/echo`, {
@@ -327,7 +328,7 @@ describe.concurrent('command/dev', () => {
   })
 
   test('should return .html file when file and folder have the same name', async (t) => {
-    await withSiteBuilder('site-with-same-name-for-file-and-folder', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder
         .withContentFile({
           path: 'foo.html',
@@ -338,7 +339,7 @@ describe.concurrent('command/dev', () => {
           content: '<html><h1>file in folder',
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const response = await fetch(`${server.url}/foo`)
@@ -350,7 +351,7 @@ describe.concurrent('command/dev', () => {
   })
 
   test('should not shadow an existing file that has unsafe URL characters', async (t) => {
-    await withSiteBuilder('site-with-unsafe-url-file-names', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder
         .withContentFile({
           path: 'public/index.html',
@@ -371,7 +372,7 @@ describe.concurrent('command/dev', () => {
           },
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const [spaces, brackets] = await Promise.all([
@@ -386,7 +387,7 @@ describe.concurrent('command/dev', () => {
   })
 
   test('should generate an ETag for static assets', async (t) => {
-    await withSiteBuilder('site-with-static-assets', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder
         .withContentFile({
           path: 'public/index.html',
@@ -399,7 +400,7 @@ describe.concurrent('command/dev', () => {
           },
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const res1 = await fetch(`${server.url}`)
@@ -411,7 +412,7 @@ describe.concurrent('command/dev', () => {
 
         const res2 = await fetch(`${server.url}`, {
           headers: {
-            'if-none-match': etag,
+            'if-none-match': etag!,
           },
         })
 
@@ -432,7 +433,7 @@ describe.concurrent('command/dev', () => {
   })
 
   test('should add `.netlify` to an existing `.gitignore` file', async (t) => {
-    await withSiteBuilder('site-with-gitignore', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       const existingGitIgnore = ['.vscode/', 'node_modules/', '!node_modules/cool_module']
 
       await builder
@@ -444,7 +445,7 @@ describe.concurrent('command/dev', () => {
           path: 'index.html',
           content: '<html><h1>Hi',
         })
-        .buildAsync()
+        .build()
 
       await withDevServer({ cwd: builder.directory }, async () => {
         const gitignore = await fs.readFile(join(builder.directory, '.gitignore'), 'utf8')
@@ -456,13 +457,13 @@ describe.concurrent('command/dev', () => {
   })
 
   test('should create a `.gitignore` file with `.netlify`', async (t) => {
-    await withSiteBuilder('site-with-no-gitignore', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       await builder
         .withContentFile({
           path: 'index.html',
           content: '<html><h1>Hi',
         })
-        .buildAsync()
+        .build()
 
       await withDevServer({ cwd: builder.directory }, async () => {
         const gitignore = await fs.readFile(join(builder.directory, '.gitignore'), 'utf8')
