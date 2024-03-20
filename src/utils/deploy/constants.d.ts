@@ -1,0 +1,10 @@
+export declare const DEFAULT_DEPLOY_TIMEOUT = 1200000;
+export declare const DEFAULT_CONCURRENT_HASH = 100;
+export declare const DEFAULT_CONCURRENT_UPLOAD = 5;
+export declare const DEFAULT_SYNC_LIMIT = 100;
+export declare const DEFAULT_MAX_RETRY = 5;
+export declare const UPLOAD_RANDOM_FACTOR = 0.5;
+export declare const UPLOAD_INITIAL_DELAY = 5000;
+export declare const UPLOAD_MAX_DELAY = 90000;
+export declare const DEPLOY_POLL = 1000;
+//# sourceMappingURL=constants.d.ts.map

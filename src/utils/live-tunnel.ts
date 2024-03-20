@@ -10,6 +10,7 @@ import { getPathInHome } from '../lib/settings.js'
 
 import { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log } from './command-helpers.js'
 import execa from './execa.js'
+import { NetlifyLog } from './styles/index.js'
 
 const PACKAGE_NAME = 'live-tunnel-client'
 const EXEC_NAME = PACKAGE_NAME
@@ -25,12 +26,12 @@ const createTunnel = async function ({ netlifyApiToken, siteId, slug }) {
   await installTunnelClient()
 
   if (!siteId) {
-    console.error(
+    NetlifyLog.error(
       `${NETLIFYDEVERR} Error: no siteId defined, did you forget to run ${chalk.yellow(
         'netlify init',
       )} or ${chalk.yellow('netlify link')}?`,
+      { exit: true },
     )
-    process.exit(1)
   }
 
   const url = `https://api.netlify.com/api/v1/live_sessions?site_id=${siteId}&slug=${slug}`

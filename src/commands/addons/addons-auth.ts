@@ -22,7 +22,7 @@ export const addonsAuth = async (addonName: string, options: OptionValues, comma
   log()
   log(addon.auth_url)
   log()
-  // @ts-expect-error TS(2345) FIXME: Argument of type '{ url: any; }' is not assignable... Remove this comment to see the full error message
+
   await openBrowser({ url: addon.auth_url })
   exit()
 }

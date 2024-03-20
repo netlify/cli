@@ -4,26 +4,22 @@ import process from 'process'
 import open from 'better-opn'
 import isDockerContainer from 'is-docker'
 
-import { chalk, log } from './command-helpers.js'
+import { chalk } from './command-helpers.js'
+import { NetlifyLog } from './styles/index.js'
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'message' implicitly has an 'any' ... Remove this comment to see the full error message
-const unableToOpenBrowserMessage = function ({ message, url }) {
-  log('---------------------------')
-  log(chalk.redBright(`Error: Unable to open browser automatically: ${message}`))
-  log(chalk.cyan('Please open your browser and open the URL below:'))
-  log(chalk.bold(url))
-  log('---------------------------')
+const unableToOpenBrowserMessage = function ({ message, url }: { message: string; url: string }) {
+  NetlifyLog.error(chalk.redBright(`Error: Unable to open browser automatically: ${message}`), { exit: false })
+  NetlifyLog.message(chalk.cyan('Please open your browser and open the URL below:'))
+  NetlifyLog.message(chalk.bold(url))
 }
 
-/**
- * Opens a browser and logs a message if it is not possible
- * @param {object} config
- * @param {string} config.url The url to open
- * @param {boolean} [config.silentBrowserNoneError]
- * @returns {Promise<void>}
- */
-// @ts-expect-error TS(7031) FIXME: Binding element 'silentBrowserNoneError' implicitl... Remove this comment to see the full error message
-const openBrowser = async function ({ silentBrowserNoneError, url }) {
+const openBrowser = async function ({
+  silentBrowserNoneError,
+  url,
+}: {
+  silentBrowserNoneError?: boolean
+  url: string
+}) {
   if (isDockerContainer()) {
     unableToOpenBrowserMessage({ url, message: 'Running inside a docker container' })
     return

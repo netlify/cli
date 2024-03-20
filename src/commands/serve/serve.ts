@@ -51,7 +51,7 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
 
   env = await getDotEnvVariables({ devConfig, env, site })
   injectEnvVariables(env)
-  await promptEditorHelper({ chalk, config, log, NETLIFYDEVLOG, repositoryRoot, state })
+  await promptEditorHelper({ config, repositoryRoot, state })
 
   const { accountId, addonsUrls, capabilities, siteUrl, timeouts } = await getSiteInformation({
     // inherited from base command --offline

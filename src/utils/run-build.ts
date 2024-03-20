@@ -5,10 +5,10 @@ import { getBootstrapURL } from '../lib/edge-functions/bootstrap.js'
 import { INTERNAL_EDGE_FUNCTIONS_FOLDER } from '../lib/edge-functions/consts.js'
 import { getPathInProject } from '../lib/settings.js'
 
-import { error } from './command-helpers.js'
 import { startFrameworkServer } from './framework-server.js'
 import { INTERNAL_FUNCTIONS_FOLDER } from './functions/index.js'
 import { getFeatureFlagsFromSiteInfo } from './feature-flags.js'
+import { NetlifyLog } from './styles/index.js'
 
 const netlifyBuildPromise = import('@netlify/build')
 
@@ -104,7 +104,6 @@ export const runNetlifyBuild = async ({ command, env = {}, options, settings, ti
     // Start by cleaning the internal directory, as it may have artifacts left
     // by previous builds.
     await cleanInternalDirectory(site.root)
-
     // Copy `netlify.toml` into the internal directory. This will be the new
     // location of the config file for the duration of the command.
     const tempConfigPath = await copyConfig(cachedConfig.configPath, command.workingDir)
@@ -117,9 +116,8 @@ export const runNetlifyBuild = async ({ command, env = {}, options, settings, ti
     // Run Netlify Build using the main entry point.
     // @ts-expect-error TS(2345) FIXME: Argument of type '{ outputConfigPath: string; save... Remove this comment to see the full error message
     const { netlifyConfig, success } = await buildSite(buildSiteOptions)
-
     if (!success) {
-      error('Could not start local server due to a build error')
+      NetlifyLog.error('Could not start local server due to a build error', { exit: true })
 
       return {}
     }
@@ -152,7 +150,9 @@ export const runNetlifyBuild = async ({ command, env = {}, options, settings, ti
   const { configMutations, error: startDevError, success } = await startDev(devCommand, startDevOptions)
 
   if (!success && startDevError) {
-    error(`Could not start local development server\n\n${startDevError.message}\n\n${startDevError.stack}`)
+    NetlifyLog.error(`Could not start local development server\n\n${startDevError.message}\n\n${startDevError.stack}`, {
+      exit: true,
+    })
   }
 
   return { configMutations }

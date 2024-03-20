@@ -7,17 +7,7 @@ import { OptionValues, Option } from 'commander'
 import { BLOBS_CONTEXT_VARIABLE, encodeBlobsContext, getBlobsContext } from '../../lib/blobs/blobs.js'
 import { promptEditorHelper } from '../../lib/edge-functions/editor-helper.js'
 import { startFunctionsServer } from '../../lib/functions/server.js'
-import { printBanner } from '../../utils/banner.js'
-import {
-  BANG,
-  chalk,
-  log,
-  NETLIFYDEV,
-  NETLIFYDEVERR,
-  NETLIFYDEVLOG,
-  NETLIFYDEVWARN,
-  normalizeConfig,
-} from '../../utils/command-helpers.js'
+import { BANG, chalk, normalizeConfig } from '../../utils/command-helpers.js'
 import detectServerSettings, { getConfigWithPlugins } from '../../utils/detect-server-settings.js'
 import { getDotEnvVariables, getSiteInformation, injectEnvVariables, UNLINKED_SITE_MOCK_ID } from '../../utils/dev.js'
 import { getEnvelopeEnv, normalizeContext } from '../../utils/env/index.js'
@@ -32,6 +22,7 @@ import BaseCommand from '../base-command.js'
 
 import { createDevExecCommand } from './dev-exec.js'
 import { type DevConfig } from './types.js'
+import { NetlifyLog, intro, outro } from '../../utils/styles/index.js'
 
 /**
  *
@@ -51,13 +42,13 @@ const handleLiveTunnel = async ({ api, options, settings, site, state }) => {
     const customSlug = typeof live === 'string' && live.length !== 0 ? live : undefined
     const slug = getLiveTunnelSlug(state, customSlug)
 
-    let message = `${NETLIFYDEVWARN} Creating live URL with ID ${chalk.yellow(slug)}`
+    let message = `Creating live URL with ID ${chalk.yellow(slug)}`
 
     if (!customSlug) {
       message += ` (to generate a custom URL, use ${chalk.magenta('--live=<subdomain>')})`
     }
 
-    log(message)
+    NetlifyLog.message(message)
 
     const sessionUrl = await startLiveTunnel({
       siteId: site.id,
@@ -89,7 +80,7 @@ const validateShortFlagArgs = (args: string) => {
 }
 
 export const dev = async (options: OptionValues, command: BaseCommand) => {
-  log(`${NETLIFYDEV}`)
+  !options.isChildCommand && intro('dev')
   const { api, cachedConfig, config, repositoryRoot, site, siteInfo, state } = command.netlify
   config.dev = { ...config.dev }
   config.build = { ...config.build }
@@ -117,12 +108,12 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
 
   if (!options.offline && siteInfo.use_envelope) {
     env = await getEnvelopeEnv({ api, context: options.context, env, siteInfo })
-    log(`${NETLIFYDEVLOG} Injecting environment variable values for ${chalk.yellow('all scopes')}`)
+    NetlifyLog.info(`Injecting environment variable values for ${chalk.yellow('all scopes')}`)
   }
 
   env = await getDotEnvVariables({ devConfig, env, site })
   injectEnvVariables(env)
-  await promptEditorHelper({ chalk, config, log, NETLIFYDEVLOG, repositoryRoot, state })
+  await promptEditorHelper({ config, repositoryRoot, state })
 
   const { accountId, addonsUrls, capabilities, siteUrl, timeouts } = await getSiteInformation({
     // inherited from base command --offline
@@ -139,7 +130,7 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
 
     if (process.env.NETLIFY_INCLUDE_DEV_SERVER_PLUGIN) {
       if (options.debug) {
-        log(`${NETLIFYDEVLOG} Including dev server plugin: ${process.env.NETLIFY_INCLUDE_DEV_SERVER_PLUGIN}`)
+        NetlifyLog.info(`Including dev server plugin: ${process.env.NETLIFY_INCLUDE_DEV_SERVER_PLUGIN}`)
       }
       settings.plugins = [...(settings.plugins || []), process.env.NETLIFY_INCLUDE_DEV_SERVER_PLUGIN]
     }
@@ -147,7 +138,7 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
     cachedConfig.config = getConfigWithPlugins(cachedConfig.config, settings)
   } catch (error_) {
     if (error_ && typeof error_ === 'object' && 'message' in error_) {
-      log(NETLIFYDEVERR, error_.message)
+      NetlifyLog.error(error_.message)
     }
     process.exit(1)
   }
@@ -160,7 +151,7 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
   process.env.URL = url
   process.env.DEPLOY_URL = url
 
-  log(`${NETLIFYDEVWARN} Setting up local development server`)
+  NetlifyLog.info('Setting up local development server')
 
   const { configMutations, configPath: configPathOverride } = await runDevTimeline({
     command,
@@ -240,7 +231,8 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
     await openBrowser({ url, silentBrowserNoneError: true })
   }
 
-  printBanner({ url })
+  // This is a long running process, so we don't want to exit with an outro()
+  NetlifyLog.success(`🧑‍💻 Server now ready on ${chalk.cyan(url)}`)
 }
 
 export const createDevCommand = (program: BaseCommand) => {

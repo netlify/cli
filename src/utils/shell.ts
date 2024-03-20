@@ -4,8 +4,10 @@ import execa from 'execa'
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'stri... Remove this comment to see the full error message
 import stripAnsiCc from 'strip-ansi-control-characters'
 
-import { chalk, log, NETLIFYDEVERR, NETLIFYDEVWARN } from './command-helpers.js'
+import { chalk } from './command-helpers.js'
 import { processOnExit } from './dev.js'
+import { NetlifyLog, spinner } from './styles/index.js'
+import stream from 'stream'
 
 /**
  * @type {(() => Promise<void>)[]} - array of functions to run before the process exits
@@ -53,7 +55,7 @@ const cleanupBeforeExit = async ({ exitCode }) => {
 // @ts-expect-error TS(7006) FIXME: Parameter 'command' implicitly has an 'any' type.
 export const runCommand = (command, options = {}) => {
   // @ts-expect-error TS(2339) FIXME: Property 'cwd' does not exist on type '{}'.
-  const { cwd, env = {}, spinner = null } = options
+  const { cwd, env = {} } = options
   const commandProcess = execa.command(command, {
     preferLocal: true,
     // we use reject=false to avoid rejecting synchronously when the command doesn't exist
@@ -68,28 +70,22 @@ export const runCommand = (command, options = {}) => {
     cwd,
   })
 
-  // This ensures that an active spinner stays at the bottom of the commandline
-  // even though the actual framework command might be outputting stuff
-  // @ts-expect-error TS(7006) FIXME: Parameter 'writeStream' implicitly has an 'any' ty... Remove this comment to see the full error message
-  const pipeDataWithSpinner = (writeStream, chunk) => {
-    if (spinner && spinner.isSpinning) {
-      spinner.clear()
-      spinner.isSilent = true
-    }
-    writeStream.write(chunk, () => {
-      if (spinner && spinner.isSpinning) {
-        spinner.isSilent = false
-        spinner.render()
-      }
-    })
-  }
+  const customWritableStream = new stream.Writable({
+    write: function (chunk, _, next) {
+      NetlifyLog.message(stripAnsiCc.string(chunk.toString()))
+      next()
+    },
+  })
 
-  // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-  commandProcess.stdout.pipe(stripAnsiCc.stream()).on('data', pipeDataWithSpinner.bind(null, process.stdout))
-  // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-  commandProcess.stderr.pipe(stripAnsiCc.stream()).on('data', pipeDataWithSpinner.bind(null, process.stderr))
-  // @ts-expect-error TS(2345) FIXME: Argument of type 'Writable | null' is not assignab... Remove this comment to see the full error message
-  process.stdin.pipe(commandProcess.stdin)
+  commandProcess.stdout?.on('data', (chunk) => {
+    customWritableStream.write(chunk)
+  })
+
+  commandProcess.stdout?.on('error', (err) => {
+    NetlifyLog.error(err.message)
+  })
+
+  commandProcess.stdin && process.stdin?.pipe(commandProcess.stdin)
 
   // we can't try->await->catch since we don't want to block on the framework server which
   // is a long running process
@@ -100,18 +96,16 @@ export const runCommand = (command, options = {}) => {
       const result = await commandProcess
       const [commandWithoutArgs] = command.split(' ')
       if (result.failed && isNonExistingCommandError({ command: commandWithoutArgs, error: result })) {
-        log(
-          `${NETLIFYDEVERR} Failed running command: ${command}. Please verify ${chalk.magenta(
-            `'${commandWithoutArgs}'`,
-          )} exists`,
+        NetlifyLog.error(
+          `Failed running command: ${command}. Please verify ${chalk.magenta(`'${commandWithoutArgs}'`)} exists`,
         )
       } else {
         const errorMessage = result.failed
           ? // @ts-expect-error TS(2339) FIXME: Property 'shortMessage' does not exist on type 'Ex... Remove this comment to see the full error message
-            `${NETLIFYDEVERR} ${result.shortMessage}`
-          : `${NETLIFYDEVWARN} "${command}" exited with code ${result.exitCode}`
+            `${result.shortMessage}`
+          : `"${command}" exited with code ${result.exitCode}`
 
-        log(`${errorMessage}. Shutting down Netlify Dev server`)
+        NetlifyLog.error(`${errorMessage}. Shutting down Netlify Dev server`)
       }
 
       return await cleanupBeforeExit({ exitCode: 1 })

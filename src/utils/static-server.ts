@@ -2,8 +2,7 @@ import path from 'path'
 
 import fastifyStatic from '@fastify/static'
 import Fastify from 'fastify'
-
-import { log, NETLIFYDEVLOG } from './command-helpers.js'
+import { NetlifyLog } from './styles/index.js'
 
 /**
  * @param {object} config
@@ -35,5 +34,5 @@ export const startStaticServer = async ({ settings }) => {
   })
 
   await server.listen({ port: settings.frameworkPort })
-  log(`\n${NETLIFYDEVLOG} Static server listening to`, settings.frameworkPort)
+  NetlifyLog.info(`Static server listening to ${settings.frameworkPort}`)
 }

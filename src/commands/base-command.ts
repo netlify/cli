@@ -37,6 +37,7 @@ import getGlobalConfig from '../utils/get-global-config.js'
 import { getSiteByName } from '../utils/get-site.js'
 import openBrowser from '../utils/open-browser.js'
 import StateConfig from '../utils/state-config.js'
+import { NetlifyLog, outro } from '../utils/styles/index.js'
 import { identify, reportError, track } from '../utils/telemetry/index.js'
 
 import { type NetlifyOptions } from './types.js'
@@ -393,7 +394,7 @@ export default class BaseCommand extends Command {
 
   async expensivelyAuthenticate() {
     const webUI = process.env.NETLIFY_WEB_UI || 'https://app.netlify.com'
-    log(`Logging into your Netlify account...`)
+    NetlifyLog.step('Logging into your Netlify account...')
 
     // Create ticket for auth
     const ticket = await this.netlify.api.createTicket({
@@ -403,8 +404,7 @@ export default class BaseCommand extends Command {
     // Open browser for authentication
     const authLink = `${webUI}/authorize?response_type=ticket&ticket=${ticket.id}`
 
-    log(`Opening ${authLink}`)
-    // @ts-expect-error TS(2345) FIXME: Argument of type '{ url: string; }' is not assigna... Remove this comment to see the full error message
+    NetlifyLog.step(`Opening ${authLink}`)
     await openBrowser({ url: authLink })
 
     const accessToken = await pollForToken({
@@ -440,14 +440,9 @@ export default class BaseCommand extends Command {
       email,
     })
 
-    // Log success
-    log()
-    log(`${chalk.greenBright('You are now logged into your Netlify account!')}`)
-    log()
-    log(`Run ${chalk.cyanBright('netlify status')} for account details`)
-    log()
-    log(`To see all available commands run: ${chalk.cyanBright('netlify help')}`)
-    log()
+    NetlifyLog.success(`${chalk.greenBright('You are now logged into your Netlify account!')}`)
+    NetlifyLog.info(`Run ${chalk.cyanBright('netlify status')} for account details`)
+    outro({ message: `To see all available commands run: ${chalk.cyanBright('netlify help')}` })
     return accessToken
   }
 

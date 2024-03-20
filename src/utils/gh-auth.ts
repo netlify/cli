@@ -81,7 +81,6 @@ export const authWithNetlify = async () => {
   })
   const url = `${webUI}/cli?${urlParams.toString()}`
 
-  // @ts-expect-error TS(2345) FIXME: Argument of type '{ url: string; }' is not assigna... Remove this comment to see the full error message
   await openBrowser({ url })
 
   return deferredPromise

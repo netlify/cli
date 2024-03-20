@@ -5,8 +5,9 @@ import isEmpty from 'lodash/isEmpty.js'
 
 import { supportsBackgroundFunctions } from '../lib/account.js'
 
-import { NETLIFYDEVLOG, chalk, error, log, warn } from './command-helpers.js'
+import { chalk } from './command-helpers.js'
 import { loadDotEnvFiles } from './dot-env.js'
+import { NetlifyLog } from './styles/index.js'
 
 // Possible sources of environment variables. For the purpose of printing log messages only. Order does not matter.
 const ENV_VAR_SOURCES = {
@@ -42,7 +43,9 @@ const ERROR_CALL_TO_ACTION =
 // @ts-expect-error TS(7031) FIXME: Binding element 'site' implicitly has an 'any' typ... Remove this comment to see the full error message
 const validateSiteInfo = ({ site, siteInfo }) => {
   if (isEmpty(siteInfo)) {
-    error(`Failed retrieving site information for site ${chalk.yellow(site.id)}. ${ERROR_CALL_TO_ACTION}`)
+    NetlifyLog.error(`Failed retrieving site information for site ${chalk.yellow(site.id)}. ${ERROR_CALL_TO_ACTION}`, {
+      exit: true,
+    })
   }
 }
 
@@ -53,7 +56,7 @@ const getAccounts = async ({ api }) => {
     return accounts
   } catch (error_) {
     // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    error(`Failed retrieving user account: ${error_.message}. ${ERROR_CALL_TO_ACTION}`)
+    NetlifyLog.error(`Failed retrieving user account: ${error_.message}. ${ERROR_CALL_TO_ACTION}`, { exit: true })
   }
 }
 
@@ -63,8 +66,10 @@ const getAddons = async ({ api, site }) => {
     const addons = await api.listServiceInstancesForSite({ siteId: site.id })
     return addons
   } catch (error_) {
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    error(`Failed retrieving addons for site ${chalk.yellow(site.id)}: ${error_.message}. ${ERROR_CALL_TO_ACTION}`)
+    NetlifyLog.error(
+      // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+      `Failed retrieving addons for site ${chalk.yellow(site.id)}: ${error_.message}. ${ERROR_CALL_TO_ACTION}`,
+    )
   }
 }
 
@@ -84,7 +89,7 @@ const getSiteAccount = ({ accounts, siteInfo }) => {
   // @ts-expect-error TS(7006) FIXME: Parameter 'account' implicitly has an 'any' type.
   const siteAccount = accounts.find((account) => account.slug === siteInfo.account_slug)
   if (!siteAccount) {
-    warn(`Could not find account for site '${siteInfo.name}' with account slug '${siteInfo.account_slug}'`)
+    NetlifyLog.warn(`Could not find account for site '${siteInfo.name}' with account slug '${siteInfo.account_slug}'`)
     return {}
   }
   return siteAccount
@@ -195,19 +200,15 @@ export const injectEnvVariables = (env) => {
     overriddenSources.forEach((source) => {
       const sourceName = getEnvSourceName(source)
 
-      log(
-        chalk.dim(
-          `${NETLIFYDEVLOG} Ignored ${chalk.bold(sourceName)} env var: ${chalk.yellow(
-            key,
-          )} (defined in ${usedSourceName})`,
-        ),
+      NetlifyLog.info(
+        chalk.dim(`Ignored ${chalk.bold(sourceName)} env var: ${chalk.yellow(key)} (defined in ${usedSourceName})`),
       )
     })
 
     if (!existsInProcess || isInternal) {
       // Omitting `general` and `internal` env vars to reduce noise in the logs.
       if (usedSource !== 'general' && !isInternal) {
-        log(`${NETLIFYDEVLOG} Injected ${usedSourceName} env var: ${chalk.yellow(key)}`)
+        NetlifyLog.info(`Injected ${usedSourceName} env var: ${chalk.yellow(key)}`)
       }
 
       // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.

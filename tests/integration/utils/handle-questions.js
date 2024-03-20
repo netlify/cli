@@ -19,7 +19,6 @@ export const handleQuestions = (process, questions, prompts = []) => {
       prompts.push(index)
       buffer = ''
       const { answer } = questions[index]
-
       writeResponse(process, Array.isArray(answer) ? answer : [answer])
     }
   })
@@ -33,6 +32,6 @@ const writeResponse = (process, responses) => {
 
 export const answerWithValue = (value = '') => [value, CONFIRM].flat()
 
-export const CONFIRM = '\n'
+export const CONFIRM = '\r'
 export const DOWN = '\u001B[B'
 export const NO = 'n'

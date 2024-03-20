@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
-    branches: [main]
+    branches: [main, CP-101/design-system-clack-implementation]
 
 jobs:
   unit:

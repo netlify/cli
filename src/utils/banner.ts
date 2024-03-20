@@ -1,11 +1,12 @@
 import boxen from 'boxen'
 
-import { chalk, log, NETLIFYDEVLOG } from './command-helpers.js'
+import { chalk, NETLIFYDEVLOG } from './command-helpers.js'
+import { NetlifyLog } from './styles/index.js'
 
 export const printBanner = (options: { url: string }): void => {
   const banner = chalk.bold(`${NETLIFYDEVLOG} Server now ready on ${options.url}`)
 
-  log(
+  NetlifyLog.message(
     boxen(banner, {
       padding: 1,
       margin: 1,

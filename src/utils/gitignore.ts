@@ -6,7 +6,7 @@ import parseIgnore from 'parse-gitignore'
 
 import { fileExistsAsync } from '../lib/fs.js'
 
-import { log } from './command-helpers.js'
+import { NetlifyLog } from './styles/index.js'
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'dir' implicitly has an 'any' type.
 const hasGitIgnore = async function (dir) {
@@ -37,8 +37,7 @@ export const ensureNetlifyIgnore = async function (dir) {
   /* Not ignoring .netlify folder. Add to .gitignore */
   // @ts-expect-error TS(7006) FIXME: Parameter 'pattern' implicitly has an 'any' type.
   if (!ignorePatterns || !ignorePatterns.patterns.some((pattern) => /(^|\/|\\)\.netlify($|\/|\\)/.test(pattern))) {
-    log()
-    log('Adding local .netlify folder to .gitignore file...')
+    NetlifyLog.info('Adding local .netlify folder to .gitignore file...')
     const newContents = `${gitIgnoreContents}\n${ignoreContent}`
     await writeFile(gitIgnorePath, newContents, 'utf8')
   }
