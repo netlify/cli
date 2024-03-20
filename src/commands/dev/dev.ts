@@ -172,7 +172,7 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
     },
   })
 
-  const mutatedConfig = applyMutations(config, configMutations)
+  const mutatedConfig: typeof config = applyMutations(config, configMutations)
 
   const functionsRegistry = await startFunctionsServer({
     blobsContext,
