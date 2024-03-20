@@ -1,7 +1,7 @@
 // Handlers are meant to be async outside tests
 import fs from 'node:fs/promises'
 import { type AddressInfo } from 'node:net'
-import { join } from 'node:path'
+import path from 'node:path'
 
 import jwt, { type JwtPayload } from 'jsonwebtoken'
 import fetch from 'node-fetch'
@@ -10,7 +10,61 @@ import { describe, test } from 'vitest'
 import { withDevServer } from '../../utils/dev-server.ts'
 import { startExternalServer } from '../../utils/external-server.js'
 import { withMockApi } from '../../utils/mock-api.js'
-import { withSiteBuilder } from '../../utils/site-builder.ts'
+import { type SiteBuilder, withSiteBuilder } from '../../utils/site-builder.ts'
+
+type BlobFixture = {
+  key: string
+  content: string
+  metadata?: { [key: string]: unknown } | null | undefined
+}
+
+const withServeBlobsFunction = (builder: SiteBuilder): SiteBuilder =>
+  builder
+    .withContentFile({
+      path: 'netlify/functions/index.ts',
+      content: `
+      import { getDeployStore } from "@netlify/blobs";
+
+      export default async (request: Request) => {
+        const store = getDeployStore();
+        const blob = await store.getWithMetadata(new URL(request.url).pathname.slice(1));
+        return new Response(blob != null ? JSON.stringify(blob) : null, { status: blob == null ? 404 : 200 });
+      };
+
+      export const config = { path: "/*" };
+      `,
+    })
+    .withContentFile({
+      path: 'package.json',
+      content: JSON.stringify({
+        dependencies: {
+          '@netlify/blobs': '*',
+        },
+      }),
+    })
+    .withCommand({ command: ['npm', 'install'] })
+
+const withBlobs = (builder: SiteBuilder, fixtures: BlobFixture[]): SiteBuilder => {
+  for (const { content, key, metadata } of fixtures) {
+    builder.withContentFile({
+      content,
+      path: path.join('.netlify/blobs/deploy', key),
+    })
+
+    if (metadata != null) {
+      // Write a separate `<blob_path>/$<blob_name>.json` file
+      const pathSegments = key.split(path.sep).slice(0, -1)
+      const name = `$${key.split(path.sep).at(-1)}.json`
+      const metadataKey = path.join(...pathSegments, name)
+
+      builder.withContentFile({
+        content: JSON.stringify(metadata),
+        path: path.join('.netlify/blobs/deploy', metadataKey),
+      })
+    }
+  }
+  return builder
+}
 
 describe.concurrent('command/dev', () => {
   test('should return 404.html if exists for non existing routes', async (t) => {
@@ -448,7 +502,7 @@ describe.concurrent('command/dev', () => {
         .build()
 
       await withDevServer({ cwd: builder.directory }, async () => {
-        const gitignore = await fs.readFile(join(builder.directory, '.gitignore'), 'utf8')
+        const gitignore = await fs.readFile(path.join(builder.directory, '.gitignore'), 'utf8')
         const entries = gitignore.split('\n')
 
         t.expect(entries.includes('.netlify')).toBe(true)
@@ -466,10 +520,119 @@ describe.concurrent('command/dev', () => {
         .build()
 
       await withDevServer({ cwd: builder.directory }, async () => {
-        const gitignore = await fs.readFile(join(builder.directory, '.gitignore'), 'utf8')
+        const gitignore = await fs.readFile(path.join(builder.directory, '.gitignore'), 'utf8')
         const entries = gitignore.split('\n')
 
         t.expect(entries.includes('.netlify')).toBe(true)
+      })
+    })
+  })
+
+  describe.concurrent('blobs', () => {
+    describe.concurrent('on startup', () => {
+      test('seeds the blob server with files written to `.netlify/blobs/deploy` by the user', async (t) => {
+        await withSiteBuilder(t, async (builder) => {
+          const blobFixtures = [
+            { key: 'test.txt', content: 'I am the first test blob', metadata: null },
+            { key: 'test2.txt', content: 'I am the second test blob', metadata: null },
+            { key: 'subdir/test3.txt', content: 'I am the third (nested) test blob', metadata: null },
+            {
+              key: 'subdir/deeper/test4.txt',
+              content: 'I am the fourth (more deeply nested) test blob',
+              metadata: null,
+            },
+          ]
+          withBlobs(builder, blobFixtures)
+          withServeBlobsFunction(builder)
+
+          await builder.build()
+
+          await withDevServer({ cwd: builder.directory }, async (server) => {
+            t.expect.hasAssertions()
+            t.expect.assertions(blobFixtures.length * 2)
+            for (const { content, key } of blobFixtures) {
+              const res = await fetch(new URL(`/${key}`, server.url))
+              t.expect(res.status).toBe(200)
+
+              const body = await res.json()
+              t.expect(body).toHaveProperty('data', content)
+            }
+          })
+        })
+      })
+
+      test('reads metadata files and attaches their contents to their corresponding blob', async (t) => {
+        await withSiteBuilder(t, async (builder) => {
+          const blobFixtures = [{ key: 'test.txt', content: 'I am the first test blob', metadata: { type: 'my-junk' } }]
+          withBlobs(builder, blobFixtures)
+          withServeBlobsFunction(builder)
+
+          await builder.build()
+
+          await withDevServer({ cwd: builder.directory }, async (server) => {
+            t.expect.hasAssertions()
+            t.expect.assertions(blobFixtures.length * 2)
+            for (const { key, metadata } of blobFixtures) {
+              const res = await fetch(new URL(`/${key}`, server.url))
+              t.expect(res.status).toBe(200)
+
+              const body = await res.json()
+              t.expect(body).toHaveProperty('metadata', metadata)
+            }
+          })
+        })
+      })
+
+      test('does not write metadata files to the blob server', async (t) => {
+        await withSiteBuilder(t, async (builder) => {
+          builder.withContentFile({
+            content: '{"type":"metadata_only"}',
+            path: '.netlify/blobs/deploy/$test.txt.json',
+          })
+
+          await builder.build()
+
+          await withDevServer({ cwd: builder.directory }, async (server) => {
+            const res = await fetch(new URL('/$test.txt.json', server.url))
+            t.expect(res.status).toBe(404)
+          })
+        })
+      })
+
+      test('seeds the blob server with files written to `.netlify/blobs/deploy` by the onDev stage', async (t) => {
+        t.expect.hasAssertions()
+
+        await withSiteBuilder(t, async (builder) => {
+          withServeBlobsFunction(builder)
+          builder
+            .withBuildPlugin({
+              name: 'deploy-blobs',
+              plugin: {
+                async onDev() {
+                  // eslint-disable-next-line @typescript-eslint/no-shadow, @typescript-eslint/no-var-requires, n/global-require
+                  const fs = require('node:fs/promises')
+
+                  await fs.mkdir('.netlify/blobs/deploy', { recursive: true })
+                  await fs.writeFile(`.netlify/blobs/deploy/test.txt`, 'I am the first test blob')
+                },
+              },
+            })
+            .withNetlifyToml({
+              config: {
+                plugins: [{ package: './plugins/deploy-blobs' }],
+              },
+            })
+
+          await builder.build()
+
+          await withDevServer({ cwd: builder.directory, debug: true }, async (server) => {
+            const res = await fetch(new URL(`/test.txt`, server.url))
+            t.expect(res.status).toBe(200)
+
+            const body = await res.json()
+            t.expect(body).toEqual({ data: 'I am the first test blob', metadata: {} })
+          })
+        })
       })
     })
   })

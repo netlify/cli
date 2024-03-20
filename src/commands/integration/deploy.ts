@@ -191,7 +191,6 @@ export async function registerIntegration(workingDir, siteId, accountId, localIn
   log(chalk.yellow('Your integration.yaml file has been updated. Please commit and push these changes.'))
 }
 
-
 export async function updateIntegration(
   // @ts-expect-error TS(7006) FIXME: Parameter 'workingDir' implicitly has an 'any' typ... Remove this comment to see the full error message
   workingDir,
