@@ -134,7 +134,7 @@
     "is-wsl": "2.2.0",
     "isexe": "2.0.0",
     "js-yaml": "4.1.0",
-    "jsonwebtoken": "9.0.1",
+    "jsonwebtoken": "9.0.2",
     "jwt-decode": "3.1.2",
     "lambda-local": "2.1.2",
     "listr2": "7.0.2",
