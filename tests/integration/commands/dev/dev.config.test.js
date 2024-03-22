@@ -179,10 +179,13 @@ describe.concurrent('commands/dev/config', () => {
 
         t.expect(NETLIFY_BLOBS_CONTEXT).toBeTypeOf('string')
 
-        const { deployID, edgeURL, siteID, token } = JSON.parse(Buffer.from(NETLIFY_BLOBS_CONTEXT, 'base64').toString())
+        const { deployID, edgeURL, siteID, token, uncachedEdgeURL } = JSON.parse(
+          Buffer.from(NETLIFY_BLOBS_CONTEXT, 'base64').toString(),
+        )
 
         t.expect(deployID).toBe('0')
         t.expect(edgeURL.startsWith('http://localhost:')).toBeTruthy()
+        t.expect(uncachedEdgeURL.startsWith('http://localhost:')).toBeTruthy()
         t.expect(siteID).toBeTypeOf('string')
         t.expect(token).toBeTypeOf('string')
 

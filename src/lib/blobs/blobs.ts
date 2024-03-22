@@ -16,6 +16,7 @@ export interface BlobsContext {
   edgeURL: string
   siteID: string
   token: string
+  uncachedEdgeURL: string
 }
 
 const printLocalBlobsNotice = () => {
@@ -58,11 +59,13 @@ interface GetBlobsContextOptions {
 export const getBlobsContext = async ({ debug, projectRoot, siteID }: GetBlobsContextOptions) => {
   const token = uuidv4()
   const { port } = await startBlobsServer(debug, projectRoot, token)
+  const url = `http://localhost:${port}`
   const context: BlobsContext = {
     deployID: '0',
-    edgeURL: `http://localhost:${port}`,
+    edgeURL: url,
     siteID,
     token,
+    uncachedEdgeURL: url,
   }
 
   return context
