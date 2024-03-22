@@ -94,7 +94,7 @@ const DEFAULT_STATIC_PORT = 3999
 const getDefaultDist = (workingDir: string) => {
   log(`${NETLIFYDEVWARN} Unable to determine public folder to serve files from. Using current working directory`)
   log(`${NETLIFYDEVWARN} Setup a netlify.toml file with a [dev] section to specify your dev server settings.`)
-  log(`${NETLIFYDEVWARN} See docs at: https://cli.netlify.com/netlify-dev#project-detection`)
+  log(`${NETLIFYDEVWARN} See docs at: https://docs.netlify.com/cli/local-development/#project-detection`)
   return workingDir
 }
 
