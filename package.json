@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "17.19.5",
+  "version": "17.21.0",
   "author": "Netlify Inc.",
   "type": "module",
   "engines": {
@@ -108,7 +108,7 @@
     "envinfo": "7.8.1",
     "etag": "1.8.1",
     "execa": "5.1.1",
-    "express": "4.18.2",
+    "express": "4.19.1",
     "express-logging": "1.1.1",
     "extract-zip": "2.0.1",
     "fastest-levenshtein": "1.0.16",
@@ -135,7 +135,7 @@
     "is-wsl": "2.2.0",
     "isexe": "2.0.0",
     "js-yaml": "4.1.0",
-    "jsonwebtoken": "9.0.1",
+    "jsonwebtoken": "9.0.2",
     "jwt-decode": "3.1.2",
     "lambda-local": "2.1.2",
     "listr2": "7.0.2",
@@ -183,7 +183,7 @@
     "zod": "3.22.4"
   },
   "devDependencies": {
-    "@babel/preset-react": "7.22.5",
+    "@babel/preset-react": "7.24.1",
     "@netlify/eslint-config-node": "7.0.0",
     "@netlify/functions": "2.4.1",
     "@sindresorhus/slugify": "2.2.1",
@@ -200,7 +200,7 @@
     "eslint-plugin-workspace": "file:./tools/lint-rules",
     "fast-glob": "3.3.2",
     "form-data": "4.0.0",
-    "fs-extra": "11.1.1",
+    "fs-extra": "11.2.0",
     "got": "11.8.6",
     "graphviz": "0.0.9",
     "husky": "8.0.3",

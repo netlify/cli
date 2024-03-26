@@ -1,3 +1,5 @@
+import { IncomingMessage } from 'http'
+
 import { NetlifyConfig } from '@netlify/build'
 import express from 'express'
 import { createIPX, ipxFSStorage, ipxHttpStorage, createIPXNodeServer } from 'ipx'
@@ -83,8 +85,8 @@ export const parseRemoteImages = async function ({ config }) {
   return remotePatterns
 }
 
-export const isImageRequest = function (req: Request): boolean {
-  return req.url.startsWith(IMAGE_URL_PATTERN)
+export const isImageRequest = function (req: IncomingMessage): boolean {
+  return req.url?.startsWith(IMAGE_URL_PATTERN) ?? false
 }
 
 export const transformImageParams = function (query: QueryParams): string {

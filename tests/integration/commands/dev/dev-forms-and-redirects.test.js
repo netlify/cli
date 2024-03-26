@@ -399,6 +399,9 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
           from: '/baz/*',
           to: 'http://localhost:${userServerPort}/:splat',
           status: 200,
+          headers: {
+            "X-NF-Hidden-Proxy": "true",
+          },
         });
 
         const server = http.createServer((_, res) => res.end("Hello world"));
@@ -440,6 +443,9 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
         t.expect(response1.headers.get('x-test')).toEqual('value')
         t.expect(await response2.text()).toEqual('Hello world')
         t.expect(await response3.text()).toEqual('Hello world')
+
+        t.expect(server.output).not.toContain(`Proxying to http://localhost:${userServerPort}/path`)
+        t.expect(server.output).not.toContain(`[HPM] Proxy created: /  -> http://localhost:${userServerPort}`)
       })
     })
   })
