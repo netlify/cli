@@ -98,6 +98,7 @@ export const runNetlifyBuild = async ({
       settings: {
         ...settings,
         ...settingsOverrides,
+        ...(options.skipWaitPort ? { skipWaitPort: true } : {}),
       },
       cwd,
     })

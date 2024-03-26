@@ -47,21 +47,24 @@ export const startFrameworkServer = async function ({
 
   runCommand(settings.command, { env: settings.env, spinner, cwd })
 
-  let port
+  let port: { open: boolean; ipVersion?: 4 | 6 } | undefined
   try {
-    port = await waitPort({
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      port: settings.frameworkPort!,
-      host: 'localhost',
-      output: 'silent',
-      timeout: FRAMEWORK_PORT_TIMEOUT,
-      ...(settings.pollingStrategies?.includes('HTTP') && { protocol: 'http' }),
-    })
+    if (settings.skipWaitPort) {
+      port = { open: true, ipVersion: 6 }
+    } else {
+      port = await waitPort({
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        port: settings.frameworkPort!,
+        host: 'localhost',
+        output: 'silent',
+        timeout: FRAMEWORK_PORT_TIMEOUT,
+        ...(settings.pollingStrategies?.includes('HTTP') && { protocol: 'http' }),
+      })
 
-    if (!port.open) {
-      throw new Error(`Timed out waiting for port '${settings.frameworkPort}' to be open`)
+      if (!port.open) {
+        throw new Error(`Timed out waiting for port '${settings.frameworkPort}' to be open`)
+      }
     }
-
     // @ts-expect-error TS(2345) FIXME: Argument of type '{ error: boolean; spinner: Ora; ... Remove this comment to see the full error message
     stopSpinner({ error: false, spinner })
   } catch (error_) {

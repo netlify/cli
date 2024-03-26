@@ -264,6 +264,7 @@ export const createDevCommand = (program: BaseCommand) => {
         .argParser((value) => Number.parseInt(value))
         .hideHelp(true),
     )
+    .option('--skip-wait-port', 'disables waiting for target port to become available')
     .addOption(new Option('--no-open', 'disables the automatic opening of a browser window'))
     .option('--target-port <port>', 'port of target app server', (value) => Number.parseInt(value))
     .option('--framework <name>', 'framework to use. Defaults to #auto which automatically detects a framework')
