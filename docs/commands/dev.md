@@ -32,7 +32,6 @@ netlify dev
 - `no-open` (*boolean*) - disables the automatic opening of a browser window
 - `offline` (*boolean*) - disables any features that require network access
 - `port` (*string*) - port of netlify dev
-- `skip-wait-port` (*boolean*) - disables waiting for target port to become available
 - `target-port` (*string*) - port of target app server
 - `debug` (*boolean*) - Print debugging information
 
