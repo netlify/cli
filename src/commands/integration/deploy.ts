@@ -6,7 +6,6 @@ import { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'js-y... Remove this comment to see the full error message
 import yaml from 'js-yaml'
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'node... Remove this comment to see the full error message
 import fetch from 'node-fetch'
 import { z } from 'zod'
 
@@ -119,7 +118,6 @@ function verifyRequiredFieldsAreInConfig(name, description, scopes, integrationL
 }
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'workingDir' implicitly has an 'any' typ... Remove this comment to see the full error message
-// eslint-disable-next-line max-params
 export async function registerIntegration(workingDir, siteId, accountId, localIntegrationConfig, token) {
   const { description, integrationLevel, name, scopes, slug } = localIntegrationConfig
   log(chalk.yellow(`An integration associated with the site ID ${siteId} is not registered.`))
@@ -165,7 +163,6 @@ export async function registerIntegration(workingDir, siteId, accountId, localIn
       scopes: formatScopesForRemote(scopes),
       integrationLevel,
     }),
-    // @ts-expect-error TS(7006) FIXME: Parameter 'res' implicitly has an 'any' type.
   }).then(async (res) => {
     const response = await res.json()
     return { body: response, statusCode: res.status }
@@ -194,7 +191,6 @@ export async function registerIntegration(workingDir, siteId, accountId, localIn
   log(chalk.yellow('Your integration.yaml file has been updated. Please commit and push these changes.'))
 }
 
-// eslint-disable-next-line max-params
 export async function updateIntegration(
   // @ts-expect-error TS(7006) FIXME: Parameter 'workingDir' implicitly has an 'any' typ... Remove this comment to see the full error message
   workingDir,
@@ -290,7 +286,6 @@ export async function updateIntegration(
             integrationLevel,
           }),
         },
-        // @ts-expect-error TS(7006) FIXME: Parameter 'res' implicitly has an 'any' type.
       ).then(async (res) => {
         const response = await res.json()
         return { updateResponse: response, statusCode: res.status }
@@ -428,7 +423,6 @@ export const deploy = async (options: OptionValues, command: BaseCommand) => {
         'netlify-token': token,
       },
     },
-    // @ts-expect-error TS(7006) FIXME: Parameter 'res' implicitly has an 'any' type.
   ).then(async (res) => {
     const body = await res.json()
     return { body, statusCode: res.status }
