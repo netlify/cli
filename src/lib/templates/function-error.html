@@ -1,30 +1,28 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
-    <title>Invocation Failed</title>
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta charset="utf-8" />
+    <title>Invocation failed</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style>
       :root {
-        --colorDefaultTextColor: #a3a9ac;
-        --colorDefaultTextColorCard: #2d3b41;
-        --colorBgApp: rgb(14, 30, 37);
-        --colorBgInverse: hsl(175, 48%, 98%);
-        --colorTextMuted: rgb(100, 110, 115);
-        --colorError: #d32254;
+        --colorDefaultTextColor: rgb(53 58 62);
+        --colorBgApp: rgb(18 24 31);
+        --colorTextMuted: rgb(84 90 97);
+        --colorError: rgb(214 39 64);
         --colorBgCard: #fff;
-        --colorShadow: #0e1e251f;
-        --colorErrorText: rgb(142, 11, 48);
-        --colorCardTitleCard: #2d3b41;
-        --colorStackText: #222;
-        --colorCodeText: #f5f5f5;
+        --colorErrorText: rgb(214 39 64);
+        --colorStackText: rgb(30 36 44);
+        --colorCodeText: rgb(246 246 247);
       }
 
       body {
         background-color: var(--colorBgApp);
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif,
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif,
           'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
         color: var(--colorDefaultTextColor);
         margin: 0;
+        line-height: 1.5;
       }
 
       main {
@@ -46,21 +44,21 @@
 
       section {
         width: 80%;
-        max-width: 800px;
-        margin: 40px auto;
+        max-width: 50rem;
+        margin: 2.5rem auto;
         position: relative;
-        padding: 24px;
+        padding: 1.5rem;
       }
 
       section.card {
-        border-radius: 8px;
+        border-radius: 0.5rem;
         background: var(--colorBgCard);
-        box-shadow: 0px 2px 4px rgba(14, 30, 37, 0.12);
-        border-top-width: 8px;
+        box-shadow: rgb(6 11 16 / 20%) 0px 16px 24px, rgb(6 11 16 / 30%) 0px 6px 30px, rgb(6 11 16 / 40%) 0px 8px 10px;
+        border-top-width: 0.5rem;
         border-top-style: solid;
         border-top-color: var(--colorError);
-        padding: 24px;
-        color: var(--colorDefaultTextColorCard);
+        padding: 1.5rem;
+        color: var(--colorDefaultTextColor);
       }
 
       .card h1 {
@@ -69,10 +67,10 @@
         margin-top: 0;
       }
       .card h1 svg {
-        margin-right: 16px;
+        margin-right: 1rem;
       }
       .card a {
-        color: var(--colorDefaultTextColorCard);
+        color: var(--colorDefaultTextColor);
       }
 
       p.error-message {
@@ -80,22 +78,16 @@
       }
 
       h1 {
-        margin-bottom: 24px;
+        margin-bottom: 1.5rem;
       }
 
       h2 {
-        font-size: 22px;
+        font-size: 1.375rem;
         margin: 0;
       }
 
-      .card h2,
-      .card h3,
-      .card h1 {
-        color: var(--colorCardTitleCard);
-      }
-
       h3 {
-        font-size: 18px;
+        font-size: 1.125rem;
         margin: 0;
         color: var(--colorCardTitleCard);
       }
@@ -104,9 +96,9 @@
         background-color: var(--colorCodeText);
         color: var(--colorStackText);
         overflow: scroll;
-        padding: 8px 12px;
-        border-radius: 8px;
-        font-size: 16px;
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.5rem;
+        font-size: 1rem;
       }
 
       .no-js pre {
@@ -117,9 +109,9 @@
         background-color: var(--colorCodeText);
         color: var(--colorStackText);
         overflow: scroll;
-        padding: 4px 8px;
-        border-radius: 8px;
-        font-size: 16px;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.5rem;
+        font-size: 1rem;
       }
 
       ul,
@@ -130,30 +122,30 @@
       }
 
       svg {
-        width: 40px;
-        height: 40px;
+        width: 2.5rem;
+        height: 2.5rem;
       }
 
       .sad path {
-        fill: #d32254;
+        fill: rgb(214 39 64);
       }
 
       .next-steps li {
-        margin: 16px 0;
+        margin: 1rem 0;
       }
 
       .connection-details {
         display: block;
-        margin-top: 32px;
+        margin-top: 2rem;
       }
 
       .error-message-details {
         font-family: monospace;
-        padding: 8px 12px;
+        padding: 0.5rem 0.75rem;
       }
 
       .stack-trace {
-        margin-top: 32px;
+        margin-top: 2rem;
       }
 
       .no-js .error-message-details,
@@ -194,7 +186,7 @@
                 fill-rule="evenodd"
                 clip-rule="evenodd"
                 d="M11 21.5C16.799 21.5 21.5 16.799 21.5 11C21.5 5.20101 16.799 0.5 11 0.5C5.20101 0.5 0.5 5.20101 0.5 11C0.5 16.799 5.20101 21.5 11 21.5ZM12.125 6.125C12.125 5.82663 12.0065 5.54048 11.7955 5.3295C11.5845 5.11853 11.2984 5 11 5C10.7016 5 10.4155 5.11853 10.2045 5.3295C9.99353 5.54048 9.875 5.82663 9.875 6.125V11.375C9.875 11.6734 9.99353 11.9595 10.2045 12.1705C10.4155 12.3815 10.7016 12.5 11 12.5C11.2984 12.5 11.5845 12.3815 11.7955 12.1705C12.0065 11.9595 12.125 11.6734 12.125 11.375V6.125ZM12.5 15.5C12.5 15.8978 12.342 16.2794 12.0607 16.5607C11.7794 16.842 11.3978 17 11 17C10.6022 17 10.2206 16.842 9.93934 16.5607C9.65804 16.2794 9.5 15.8978 9.5 15.5C9.5 15.1022 9.65804 14.7206 9.93934 14.4393C10.2206 14.158 10.6022 14 11 14C11.3978 14 11.7794 14.158 12.0607 14.4393C12.342 14.7206 12.5 15.1022 12.5 15.5Z"
-                fill="#900B31"
+                fill="rgb(214 39 64)"
               />
             </svg>
             This
