@@ -73,7 +73,7 @@
     "@bugsnag/js": "7.20.2",
     "@fastify/static": "6.10.2",
     "@netlify/blobs": "7.2.0",
-    "@netlify/build": "29.38.0",
+    "@netlify/build": "29.38.1",
     "@netlify/build-info": "7.13.2",
     "@netlify/config": "20.12.1",
     "@netlify/edge-bundler": "11.3.0",
