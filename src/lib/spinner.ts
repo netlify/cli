@@ -1,28 +1,18 @@
 import logSymbols from 'log-symbols'
-import ora from 'ora'
+import ora, { Ora } from 'ora'
 
 /**
  * Creates a spinner with the following text
- * @param {object} config
- * @param {string} config.text
- * @returns {ora.Ora}
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'text' implicitly has an 'any' typ... Remove this comment to see the full error message
-export const startSpinner = ({ text }) =>
+export const startSpinner = ({ text }: { text: string }) =>
   ora({
     text,
   }).start()
 
 /**
  * Stops the spinner with the following text
- * @param {object} config
- * @param {ora.Ora} config.spinner
- * @param {boolean} [config.error]
- * @param {string} [config.text]
- * @returns {void}
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'error' implicitly has an 'any' ty... Remove this comment to see the full error message
-export const stopSpinner = ({ error, spinner, text }) => {
+export const stopSpinner = ({ error, spinner, text }: { error: boolean, spinner: Ora, text?: string }) => {
   if (!spinner) {
     return
   }
@@ -36,12 +26,8 @@ export const stopSpinner = ({ error, spinner, text }) => {
 
 /**
  * Clears the spinner
- * @param {object} config
- * @param {ora.Ora} config.spinner
- * @returns {void}
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'spinner' implicitly has an 'any' ... Remove this comment to see the full error message
-export const clearSpinner = ({ spinner }) => {
+export const clearSpinner = ({ spinner }: { spinner: Ora }) => {
   if (spinner) {
     spinner.stop()
   }
