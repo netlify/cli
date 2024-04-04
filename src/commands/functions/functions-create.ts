@@ -13,7 +13,6 @@ import copyTemplateDirOriginal from 'copy-template-dir'
 import { findUp } from 'find-up'
 import fuzzy from 'fuzzy'
 import inquirer from 'inquirer'
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'node... Remove this comment to see the full error message
 import fetch from 'node-fetch'
 import ora from 'ora'
 
