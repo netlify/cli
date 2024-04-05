@@ -171,6 +171,7 @@ describe.skipIf(isWindows)('edge functions', () => {
 
         expect(response.status).toBe(200)
         expect(body).toEqual('origin\n')
+        expect(devServer?.output).toContain('Edge functions are disabled')
       })
     },
   )

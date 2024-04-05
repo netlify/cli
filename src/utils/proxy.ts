@@ -807,7 +807,9 @@ export const startProxy = async function ({
   const functionsServer = settings.functionsPort ? `http://127.0.0.1:${settings.functionsPort}` : null
 
   let edgeFunctionsProxy: EdgeFunctionsProxy | undefined
-  if (!disableEdgeFunctions) {
+  if (disableEdgeFunctions) {
+    log(NETLIFYDEVWARN, "Edge functions are disabled. Run without the --disable-edge-functions flag to enable them.")
+  } else {
     edgeFunctionsProxy = await initializeEdgeFunctionsProxy({
       command,
       blobsContext,
