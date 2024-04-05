@@ -789,6 +789,7 @@ export const startProxy = async function ({
   config,
   configPath,
   debug,
+  disableEdgeFunctions,
   env,
   functionsRegistry,
   geoCountry,
@@ -801,12 +802,12 @@ export const startProxy = async function ({
   settings,
   siteInfo,
   state,
-}: { command: BaseCommand; settings: ServerSettings } & Record<string, $TSFixMe>) {
+}: { command: BaseCommand; settings: ServerSettings; disableEdgeFunctions: boolean } & Record<string, $TSFixMe>) {
   const secondaryServerPort = settings.https ? await getAvailablePort() : null
   const functionsServer = settings.functionsPort ? `http://127.0.0.1:${settings.functionsPort}` : null
 
   let edgeFunctionsProxy: EdgeFunctionsProxy | undefined
-  if (true) {
+  if (!disableEdgeFunctions) {
     edgeFunctionsProxy = await initializeEdgeFunctionsProxy({
       command,
       blobsContext,

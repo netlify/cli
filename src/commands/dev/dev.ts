@@ -220,6 +220,7 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
     config: mutatedConfig,
     configPath: configPathOverride,
     debug: options.debug,
+    disableEdgeFunctions: options.disableEdgeFunctions,
     projectDir: command.workingDir,
     env,
     getUpdatedConfig,
@@ -271,6 +272,7 @@ export const createDevCommand = (program: BaseCommand) => {
     .option('-d ,--dir <path>', 'dir with static files')
     .option('-f ,--functions <folder>', 'specify a functions folder to serve')
     .option('-o ,--offline', 'disables any features that require network access')
+    .option('--disable-edge-functions', 'disables edge functions. use this if your environment doesnt support Deno')
     .option(
       '-l, --live [subdomain]',
       'start a public live session; optionally, supply a subdomain to generate a custom URL',

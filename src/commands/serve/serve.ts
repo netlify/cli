@@ -147,6 +147,7 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
     config,
     configPath: configPathOverride,
     debug: options.debug,
+    disableEdgeFunctions: options.disableEdgeFunctions,
     env,
     functionsRegistry,
     geolocationMode: options.geo,

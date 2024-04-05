@@ -19,6 +19,7 @@ export const createServeCommand = (program: BaseCommand) =>
     .option('-d ,--dir <path>', 'dir with static files')
     .option('-f ,--functions <folder>', 'specify a functions folder to serve')
     .option('-o ,--offline', 'disables any features that require network access')
+    .option('--disable-edge-functions', 'disables edge functions. use this if your environment doesnt support Deno')
     .addOption(
       new Option('--functionsPort <port>', 'Old, prefer --functions-port. Port of functions server')
         .argParser((value) => Number.parseInt(value))
