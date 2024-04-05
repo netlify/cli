@@ -233,7 +233,7 @@ const prepareServer = async ({
     const runIsolate = await bundler.serve({
       ...getDownloadUpdateFunctions(),
       basePath: projectDir,
-      bootstrapURL: getBootstrapURL(),
+      bootstrapURL: await getBootstrapURL(),
       debug,
       distImportMapPath: join(projectDir, distImportMapPath),
       featureFlags,

@@ -84,7 +84,7 @@ export const runNetlifyBuild = async ({
     cwd: cachedConfig.buildDir,
     quiet: options.quiet,
     saveConfig: options.saveConfig,
-    edgeFunctionsBootstrapURL: getBootstrapURL(),
+    edgeFunctionsBootstrapURL: await getBootstrapURL(),
   }
 
   const devCommand = async (settingsOverrides = {}) => {

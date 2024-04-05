@@ -589,7 +589,7 @@ const bundleEdgeFunctions = async (options, command: BaseCommand) => {
     packagePath: command.workspacePackage,
     buffer: true,
     featureFlags: edgeFunctionsFeatureFlags,
-    edgeFunctionsBootstrapURL: getBootstrapURL(),
+    edgeFunctionsBootstrapURL: await getBootstrapURL(),
   })
 
   if (!success) {
