@@ -56,7 +56,19 @@ describe.skipIf(isWindows)('edge functions', () => {
         const body = await response.text()
 
         expect(response.status).toBe(200)
-        expect(body).toMatchSnapshot()
+        expect(body.split('|')).toEqual([
+          'integration-manifestB',
+          'integration-manifestC',
+          'integration-manifestA',
+          'integration-iscA',
+          'integration-iscB',
+          'user-tomlB',
+          'user-tomlC',
+          'user-tomlA',
+          'user-iscA',
+          'user-iscB',
+          'origin',
+        ])
       })
 
       test<FixtureTestContext>('should provide context properties', async ({ devServer }) => {
