@@ -27,7 +27,7 @@ const LOCAL_HOST = '127.0.0.1'
 const getDownloadUpdateFunctions = () => {
   let spinner: ReturnType<typeof startSpinner>
 
-  const onAfterDownload = (error_: Error) => {
+  const onAfterDownload = (error_: unknown) => {
     stopSpinner({ error: Boolean(error_), spinner })
   }
 
