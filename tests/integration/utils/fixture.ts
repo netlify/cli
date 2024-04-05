@@ -27,7 +27,7 @@ export interface FixtureTestContext {
 type LifecycleHook = (context: FixtureTestContext) => Promise<void> | void
 
 export interface FixtureOptions {
-  devServer?: boolean | { serve?: boolean, args?: string[] }
+  devServer?: boolean | { serve?: boolean; args?: string[] }
   mockApi?: MockApiOptions
   /**
    * Executed after fixture setup, but before tests run
@@ -155,7 +155,7 @@ export async function setupFixtureTests(
         if (typeof options.devServer === 'object' && options.devServer.args) {
           args.push(...options.devServer.args)
         }
-        
+
         devServer = await startDevServer({
           serve: typeof options.devServer === 'object' && options.devServer.serve,
           cwd: fixture.directory,

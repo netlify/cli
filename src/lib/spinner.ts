@@ -12,7 +12,7 @@ export const startSpinner = ({ text }: { text: string }) =>
 /**
  * Stops the spinner with the following text
  */
-export const stopSpinner = ({ error, spinner, text }: { error: boolean, spinner: Ora, text?: string }) => {
+export const stopSpinner = ({ error, spinner, text }: { error: boolean; spinner: Ora; text?: string }) => {
   if (!spinner) {
     return
   }
