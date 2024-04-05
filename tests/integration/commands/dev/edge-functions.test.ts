@@ -147,6 +147,22 @@ describe.skipIf(isWindows)('edge functions', () => {
     },
   )
 
+  setupFixtureTests(
+    'dev-server-with-edge-functions',
+    { devServer: { args: ['--disable-edge-functions'] }, mockApi: { routes }, setupAfterDev: recreateEdgeFunctions },
+    () => {
+      test<FixtureTestContext>('skips edge functions when --disable-edge-functions is passed', async ({
+        devServer,
+      }) => {
+        const response = await fetch(`http://localhost:${devServer.port}/ordertest`)
+        const body = await response.text()
+
+        expect(response.status).toBe(200)
+        expect(body).toEqual('origin\n')
+      })
+    },
+  )
+
   setupFixtureTests('dev-server-with-edge-functions', { devServer: true, mockApi: { routes } }, () => {
     test<FixtureTestContext>('should not remove other edge functions on change', async ({ devServer, fixture }) => {
       // we need to wait till file watchers are loaded
