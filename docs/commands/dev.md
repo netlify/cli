@@ -21,6 +21,7 @@ netlify dev
 - `context` (*string*) - Specify a deploy context or branch for environment variables (contexts: "production", "deploy-preview", "branch-deploy", "dev")
 - `country` (*string*) - Two-letter country code (https://ntl.fyi/country-codes) to use as mock geolocation (enables --geo=mock automatically)
 - `dir` (*string*) - dir with static files
+- `disable-edge-functions` (*boolean*) - disables edge functions. use this if your environment doesnt support Deno
 - `edge-inspect` (*string*) - enable the V8 Inspector Protocol for Edge Functions, with an optional address in the host:port format
 - `edge-inspect-brk` (*string*) - enable the V8 Inspector Protocol for Edge Functions and pause execution on the first line of code, with an optional address in the host:port format
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
