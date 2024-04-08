@@ -136,8 +136,26 @@ const hashFns = async (
     tmpDir,
   })
   const fileObjs = functionZips.map(
-    // @ts-expect-error TS(7031) FIXME: Binding element 'buildData' implicitly has an 'any... Remove this comment to see the full error message
-    ({ buildData, displayName, generator, invocationMode, path: functionPath, priority, runtime, runtimeVersion }) => ({
+    ({
+      // @ts-expect-error TS(7031) FIXME: Binding element 'buildData' implicitly has an 'any... Remove this comment to see the full error message
+      buildData,
+      // @ts-expect-error TS(7031)
+      displayName,
+      // @ts-expect-error TS(7031)
+      generator,
+      // @ts-expect-error TS(7031)
+      invocationMode,
+      // @ts-expect-error TS(7031)
+      path: functionPath,
+      // @ts-expect-error TS(7031)
+      priority,
+      // @ts-expect-error TS(7031)
+      runtime,
+      // @ts-expect-error TS(7031)
+      runtimeVersion,
+      // @ts-expect-error TS(7031)
+      trafficRules,
+    }) => ({
       filepath: functionPath,
       root: tmpDir,
       relname: path.relative(tmpDir, functionPath),
@@ -152,11 +170,16 @@ const hashFns = async (
       invocationMode,
       buildData,
       priority,
+      trafficRules,
     }),
   )
   const fnConfig = functionZips
     // @ts-expect-error TS(7006) FIXME: Parameter 'func' implicitly has an 'any' type.
-    .filter((func) => Boolean(func.displayName || func.generator || func.routes || func.buildData))
+    .filter((func) =>
+      Boolean(
+        func.displayName || func.generator || func.routes || func.buildData || func.priority || func.trafficRules,
+      ),
+    )
     .reduce(
       // @ts-expect-error TS(7006) FIXME: Parameter 'funcs' implicitly has an 'any' type.
       (funcs, curr) => ({
@@ -167,6 +190,7 @@ const hashFns = async (
           routes: curr.routes,
           build_data: curr.buildData,
           priority: curr.priority,
+          traffic_rules: trafficRulesConfig(curr.trafficRules),
         },
       }),
       {},
@@ -193,6 +217,27 @@ const hashFns = async (
 
   await pump(functionStream, hasher, manifestCollector)
   return { functionSchedules, functions, functionsWithNativeModules, fnShaMap, fnConfig }
+}
+
+const trafficRulesConfig = (trafficRules: $TSFixMe) => {
+  if (!trafficRules) {
+    return
+  }
+
+  return {
+    action: {
+      type: trafficRules?.action?.type,
+      config: {
+        rate_limit_config: {
+          algorithm: trafficRules?.action?.config?.rateLimitConfig?.algorithm,
+          window_size: trafficRules?.action?.config?.rateLimitConfig?.windowSize,
+          window_limit: trafficRules?.action?.config?.rateLimitConfig?.windowLimit,
+        },
+        aggregate: trafficRules?.action?.config?.aggregate,
+        to: trafficRules?.action?.config?.to,
+      },
+    },
+  }
 }
 
 export default hashFns
