@@ -47,6 +47,7 @@ export const startProxyServer = async ({
   config,
   configPath,
   debug,
+  disableEdgeFunctions,
   env,
   functionsRegistry,
   geoCountry,
@@ -69,6 +70,7 @@ export const startProxyServer = async ({
   // An override for the Netlify config path
   configPath?: string
   debug: boolean
+  disableEdgeFunctions: boolean
   env: NetlifyOptions['cachedConfig']['env']
   inspectSettings: InspectSettings
   getUpdatedConfig: () => Promise<object>
@@ -90,6 +92,7 @@ export const startProxyServer = async ({
     config,
     configPath: configPath || site.configPath,
     debug,
+    disableEdgeFunctions,
     env,
     functionsRegistry,
     geolocationMode,

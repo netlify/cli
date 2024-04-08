@@ -27,7 +27,7 @@ export interface FixtureTestContext {
 type LifecycleHook = (context: FixtureTestContext) => Promise<void> | void
 
 export interface FixtureOptions {
-  devServer?: boolean | { serve?: boolean }
+  devServer?: boolean | { serve?: boolean; args?: string[] }
   mockApi?: MockApiOptions
   /**
    * Executed after fixture setup, but before tests run
@@ -151,11 +151,16 @@ export async function setupFixtureTests(
       await options.setup?.({ fixture, mockApi })
 
       if (options.devServer) {
+        const args = ['--country', 'DE']
+        if (typeof options.devServer === 'object' && options.devServer.args) {
+          args.push(...options.devServer.args)
+        }
+
         devServer = await startDevServer({
           serve: typeof options.devServer === 'object' && options.devServer.serve,
           cwd: fixture.directory,
           offline: !mockApi,
-          args: ['--country', 'DE'],
+          args,
           env: {
             NETLIFY_API_URL: mockApi?.apiUrl,
             NETLIFY_SITE_ID: 'foo',

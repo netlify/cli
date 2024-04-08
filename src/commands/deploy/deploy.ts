@@ -436,7 +436,15 @@ const runDeploy = async ({
 }: {
   functionsFolder?: string
   command: BaseCommand
-}) => {
+}): Promise<{
+  siteId: string
+  siteName: string
+  deployId: string
+  siteUrl: string
+  deployUrl: string
+  logsUrl: string
+  functionLogsUrl: string
+}> => {
   let results
   let deployId
 
@@ -831,7 +839,7 @@ export const deploy = async (options: OptionValues, command: BaseCommand) => {
   // @ts-expect-error TS(2339) FIXME: Property 'published_deploy' does not exist on type... Remove this comment to see the full error message
   const deployToProduction = options.prod || (options.prodIfUnlocked && !siteData.published_deploy.locked)
 
-  let results = {}
+  let results = {} as Awaited<ReturnType<typeof prepAndRunDeploy>>
 
   if (options.build) {
     await handleBuild({
@@ -853,7 +861,7 @@ export const deploy = async (options: OptionValues, command: BaseCommand) => {
           deployToProduction,
         })
 
-        return {}
+        return { newEnvChanges: { DEPLOY_ID: results.deployId, DEPLOY_URL: results.deployUrl } }
       },
     })
   } else {
@@ -880,7 +888,6 @@ export const deploy = async (options: OptionValues, command: BaseCommand) => {
   })
 
   if (options.open) {
-    // @ts-expect-error TS(2339) FIXME: Property 'siteUrl' does not exist on type '{}'.
     const urlToOpen = deployToProduction ? results.siteUrl : results.deployUrl
     // @ts-expect-error TS(2345) FIXME: Argument of type '{ url: any; }' is not assignable... Remove this comment to see the full error message
     await openBrowser({ url: urlToOpen })
