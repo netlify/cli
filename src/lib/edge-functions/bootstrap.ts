@@ -2,7 +2,7 @@ import { env } from 'process'
 
 import { getURL } from '@netlify/edge-functions/version'
 
-import { isNodeError, warn } from '../../utils/command-helpers.js'
+import { warn } from '../../utils/command-helpers.js'
 
 export const FALLBACK_BOOTSTRAP_URL = 'https://edge.netlify.com/bootstrap/index-combined.ts'
 
@@ -14,9 +14,7 @@ export const getBootstrapURL = async () => {
   try {
     return await getURL()
   } catch (error) {
-    if (isNodeError(error)) {
-      warn(error.message)
-    }
+    warn(`Could not load latest version of Edge Functions environment: ${(error as NodeJS.ErrnoException)?.message}`)
 
     // If there was an error getting the bootstrap URL from the module, let's
     // use the latest version of the bootstrap. This is not ideal, but better
