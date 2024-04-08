@@ -221,6 +221,18 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         .withNetlifyToml({
           config: {
             build: { publish: 'public' },
+            plugins: [{ package: './plugins/log-env' }],
+          },
+        })
+        .withBuildPlugin({
+          name: 'log-env',
+          plugin: {
+            async onSuccess() {
+              // eslint-disable-next-line n/global-require, no-undef
+              const { DEPLOY_ID, DEPLOY_URL } = require('process').env
+              console.log(`DEPLOY_ID: ${DEPLOY_ID}`)
+              console.log(`DEPLOY_URL: ${DEPLOY_URL}`)
+            },
           },
         })
 
@@ -232,6 +244,10 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
       })
 
       t.expect(output.includes('Netlify Build completed in')).toBe(true)
+      const [, deployId] = output.match(/DEPLOY_ID: (\w+)/)
+      const [, deployURL] = output.match(/DEPLOY_URL: (.+)/)
+      t.expect(deployId).not.toEqual('0')
+      t.expect(deployURL).toContain(`https://${deployId}--`)
     })
   })
 
