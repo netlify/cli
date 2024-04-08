@@ -161,9 +161,9 @@ describe.skipIf(isWindows)('edge functions', () => {
 
   setupFixtureTests(
     'dev-server-with-edge-functions',
-    { devServer: { args: ['--disable-edge-functions'] }, mockApi: { routes }, setupAfterDev: recreateEdgeFunctions },
+    { devServer: { args: ['--internal-disable-edge-functions'] }, mockApi: { routes }, setupAfterDev: recreateEdgeFunctions },
     () => {
-      test<FixtureTestContext>('skips edge functions when --disable-edge-functions is passed', async ({
+      test<FixtureTestContext>('skips edge functions when --internal-disable-edge-functions is passed', async ({
         devServer,
       }) => {
         const response = await fetch(`http://localhost:${devServer.port}/ordertest`)

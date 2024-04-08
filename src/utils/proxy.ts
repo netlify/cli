@@ -808,7 +808,7 @@ export const startProxy = async function ({
 
   let edgeFunctionsProxy: EdgeFunctionsProxy | undefined
   if (disableEdgeFunctions) {
-    log(NETLIFYDEVWARN, 'Edge functions are disabled. Run without the --disable-edge-functions flag to enable them.')
+    log(NETLIFYDEVWARN, 'Edge functions are disabled. Run without the --internal-disable-edge-functions flag to enable them.')
   } else {
     edgeFunctionsProxy = await initializeEdgeFunctionsProxy({
       command,
