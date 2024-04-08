@@ -19,7 +19,7 @@ netlify serve
 - `context` (*string*) - Specify a deploy context or branch for environment variables (contexts: "production", "deploy-preview", "branch-deploy", "dev")
 - `country` (*string*) - Two-letter country code (https://ntl.fyi/country-codes) to use as mock geolocation (enables --geo=mock automatically)
 - `dir` (*string*) - dir with static files
-- `disable-edge-functions` (*boolean*) - disables edge functions. use this if your environment doesnt support Deno
+- `disable-edge-functions` (*boolean*) - disables edge functions. use this if your environment doesn't support Deno
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `functions` (*string*) - specify a functions folder to serve
 - `functions-port` (*string*) - port of functions server
