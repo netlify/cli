@@ -25,15 +25,9 @@ const headersSymbol = Symbol('Edge Functions Headers')
 const LOCAL_HOST = '127.0.0.1'
 
 const getDownloadUpdateFunctions = () => {
-  // @ts-expect-error TS(7034) FIXME: Variable 'spinner' implicitly has type 'any' in so... Remove this comment to see the full error message
-  let spinner
+  let spinner: ReturnType<typeof startSpinner>
 
-  /**
-   * @param {Error=} error_
-   */
-  // @ts-expect-error TS(7006) FIXME: Parameter 'error_' implicitly has an 'any' type.
-  const onAfterDownload = (error_) => {
-    // @ts-expect-error TS(2345) FIXME: Argument of type '{ error: boolean; spinner: any; ... Remove this comment to see the full error message
+  const onAfterDownload = (error_: unknown) => {
     stopSpinner({ error: Boolean(error_), spinner })
   }
 
