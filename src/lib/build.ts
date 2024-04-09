@@ -30,7 +30,7 @@ import { featureFlags as edgeFunctionsFeatureFlags } from './edge-functions/cons
  * @param {*} config.deployHandler
  * @returns {BuildConfig}
  */
-export const getBuildOptions = ({
+export const getBuildOptions = async ({
   // @ts-expect-error TS(7031) FIXME: Binding element 'cachedConfig' implicitly has an '... Remove this comment to see the full error message
   cachedConfig,
   // @ts-expect-error TS(7031) FIXME: Binding element 'currentDir' implicitly has an 'an... Remove this comment to see the full error message
@@ -89,7 +89,7 @@ export const getBuildOptions = ({
       functionsBundlingManifest: true,
     },
     eventHandlers,
-    edgeFunctionsBootstrapURL: getBootstrapURL(),
+    edgeFunctionsBootstrapURL: await getBootstrapURL(),
   }
 }
 
