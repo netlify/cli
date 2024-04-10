@@ -4,7 +4,7 @@ import process from 'process'
 import { applyMutations } from '@netlify/config'
 import { OptionValues, Option } from 'commander'
 
-import { BLOBS_CONTEXT_VARIABLE, encodeBlobsContext, getBlobsContext } from '../../lib/blobs/blobs.js'
+import { BLOBS_CONTEXT_VARIABLE, encodeBlobsContext, getBlobsContextWithEdgeAccess } from '../../lib/blobs/blobs.js'
 import { promptEditorHelper } from '../../lib/edge-functions/editor-helper.js'
 import { startFunctionsServer } from '../../lib/functions/server.js'
 import { printBanner } from '../../utils/banner.js'
@@ -107,7 +107,7 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
 
   env.NETLIFY_DEV = { sources: ['internal'], value: 'true' }
 
-  const blobsContext = await getBlobsContext({
+  const blobsContext = await getBlobsContextWithEdgeAccess({
     debug: options.debug,
     projectRoot: command.workingDir,
     siteID: site.id ?? UNLINKED_SITE_MOCK_ID,

@@ -7,17 +7,26 @@ import { v4 as uuidv4 } from 'uuid'
 import { log, NETLIFYDEVLOG } from '../../utils/command-helpers.js'
 import { getPathInProject } from '../settings.js'
 
+interface BaseBlobsContext {
+  deployID: string
+  siteID: string
+  token: string
+}
+
+export interface BlobsContextWithAPIAccess extends BaseBlobsContext {
+  apiURL: string
+}
+
+export interface BlobsContextWithEdgeAccess extends BaseBlobsContext {
+  edgeURL: string
+  uncachedEdgeURL: string
+}
+
+export type BlobsContext = BlobsContextWithAPIAccess | BlobsContextWithEdgeAccess
+
 let hasPrintedLocalBlobsNotice = false
 
 export const BLOBS_CONTEXT_VARIABLE = 'NETLIFY_BLOBS_CONTEXT'
-
-export interface BlobsContext {
-  deployID: string
-  edgeURL: string
-  siteID: string
-  token: string
-  uncachedEdgeURL: string
-}
 
 const printLocalBlobsNotice = () => {
   if (hasPrintedLocalBlobsNotice) {
@@ -46,6 +55,18 @@ const startBlobsServer = async (debug: boolean, projectRoot: string, token: stri
   return { port }
 }
 
+/**
+ * Starts a local Blobs server on a random port and generates a random token
+ * for its authentication.
+ */
+const initializeBlobsServer = async (projectRoot: string, debug: boolean) => {
+  const token = uuidv4()
+  const { port } = await startBlobsServer(debug, projectRoot, token)
+  const url = `http://localhost:${port}`
+
+  return { url, token }
+}
+
 interface GetBlobsContextOptions {
   debug: boolean
   projectRoot: string
@@ -53,14 +74,28 @@ interface GetBlobsContextOptions {
 }
 
 /**
- * Starts a local Blobs server and returns a context object that lets functions
- * connect to it.
+ * Starts a local Blobs server and returns a context object that lets build
+ * plugins connect to it.
  */
-export const getBlobsContext = async ({ debug, projectRoot, siteID }: GetBlobsContextOptions) => {
-  const token = uuidv4()
-  const { port } = await startBlobsServer(debug, projectRoot, token)
-  const url = `http://localhost:${port}`
-  const context: BlobsContext = {
+export const getBlobsContextWithAPIAccess = async ({ debug, projectRoot, siteID }: GetBlobsContextOptions) => {
+  const { token, url } = await initializeBlobsServer(projectRoot, debug)
+  const context: BlobsContextWithAPIAccess = {
+    apiURL: url,
+    deployID: '0',
+    siteID,
+    token,
+  }
+
+  return context
+}
+
+/**
+ * Starts a local Blobs server and returns a context object that lets functions
+ * and edge functions connect to it.
+ */
+export const getBlobsContextWithEdgeAccess = async ({ debug, projectRoot, siteID }: GetBlobsContextOptions) => {
+  const { token, url } = await initializeBlobsServer(projectRoot, debug)
+  const context: BlobsContextWithEdgeAccess = {
     deployID: '0',
     edgeURL: url,
     siteID,

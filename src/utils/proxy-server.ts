@@ -1,6 +1,6 @@
 import BaseCommand from '../commands/base-command.js'
 import { $TSFixMe, NetlifyOptions } from '../commands/types.js'
-import { BlobsContext } from '../lib/blobs/blobs.js'
+import { BlobsContextWithEdgeAccess } from '../lib/blobs/blobs.js'
 import { FunctionsRegistry } from '../lib/functions/registry.js'
 
 import { exit, log, NETLIFYDEVERR } from './command-helpers.js'
@@ -64,7 +64,7 @@ export const startProxyServer = async ({
 }: {
   accountId: string
   addonsUrls: $TSFixMe
-  blobsContext?: BlobsContext
+  blobsContext?: BlobsContextWithEdgeAccess
   command: BaseCommand
   config: NetlifyOptions['config']
   // An override for the Netlify config path
