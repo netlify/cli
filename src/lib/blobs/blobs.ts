@@ -40,7 +40,12 @@ const printLocalBlobsNotice = () => {
   )
 }
 
-const startBlobsServer = async (debug: boolean, projectRoot: string, token: string) => {
+/**
+ * Starts a local Blobs server on a random port and generates a random token
+ * for its authentication.
+ */
+const initializeBlobsServer = async (projectRoot: string, debug: boolean) => {
+  const token = uuidv4()
   const directory = path.resolve(projectRoot, getPathInProject(['blobs-serve']))
   const server = new BlobsServer({
     debug,
@@ -51,17 +56,6 @@ const startBlobsServer = async (debug: boolean, projectRoot: string, token: stri
     token,
   })
   const { port } = await server.start()
-
-  return { port }
-}
-
-/**
- * Starts a local Blobs server on a random port and generates a random token
- * for its authentication.
- */
-const initializeBlobsServer = async (projectRoot: string, debug: boolean) => {
-  const token = uuidv4()
-  const { port } = await startBlobsServer(debug, projectRoot, token)
   const url = `http://localhost:${port}`
 
   return { url, token }
