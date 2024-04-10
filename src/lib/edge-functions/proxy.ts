@@ -10,7 +10,7 @@ import BaseCommand from '../../commands/base-command.js'
 import { $TSFixMe } from '../../commands/types.js'
 import { NETLIFYDEVERR, chalk, error as printError } from '../../utils/command-helpers.js'
 import { FeatureFlags, getFeatureFlagsFromSiteInfo } from '../../utils/feature-flags.js'
-import { BlobsContext } from '../blobs/blobs.js'
+import { BlobsContextWithEdgeAccess } from '../blobs/blobs.js'
 import { getGeoLocation } from '../geo-location.js'
 import { getPathInProject } from '../settings.js'
 import { startSpinner, stopSpinner } from '../spinner.js'
@@ -94,7 +94,7 @@ export const initializeProxy = async ({
   state,
 }: {
   accountId: string
-  blobsContext: BlobsContext
+  blobsContext: BlobsContextWithEdgeAccess
   command: BaseCommand
   config: $TSFixMe
   configPath: string
