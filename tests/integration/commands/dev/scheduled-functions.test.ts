@@ -7,7 +7,7 @@ import { pause } from '../../utils/pause.js'
 describe('scheduled functions', () => {
   setupFixtureTests('dev-server-with-functions', { devServer: true }, () => {
     test<FixtureTestContext>('should emulate next_run for scheduled functions', async ({ devServer }) => {
-      const response = await fetch(`http://localhost:${devServer.port}/.netlify/functions/scheduled-isc`, {})
+      const response = await fetch(`http://localhost:${devServer.port}/.netlify/functions/scheduled-v2`, {})
 
       expect(response.status).toBe(200)
     })

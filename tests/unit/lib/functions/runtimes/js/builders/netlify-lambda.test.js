@@ -1,6 +1,6 @@
 import { expect, test, vi } from 'vitest'
 
-import { detectNetlifyLambda } from '../../../../../../../src/lib/functions/runtimes/js/builders/netlify-lambda.js'
+import { detectNetlifyLambda } from '../../../../../../../dist/lib/functions/runtimes/js/builders/netlify-lambda.js'
 
 test(`should not find netlify-lambda from netlify-cli package.json`, async () => {
   expect(await detectNetlifyLambda()).toBe(false)

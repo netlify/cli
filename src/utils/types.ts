@@ -1,3 +1,8 @@
+import { Buffer } from 'buffer'
+import { IncomingMessage } from 'http'
+
+import { Match } from 'netlify-redirector'
+
 export type FrameworkNames = '#static' | '#auto' | '#custom' | string
 
 export type FrameworkInfo = {
@@ -33,6 +38,7 @@ export type BaseServerSettings = {
   env?: NodeJS.ProcessEnv
   pollingStrategies?: string[]
   plugins?: string[]
+  clearPublishDirectory?: boolean
 }
 
 export type ServerSettings = BaseServerSettings & {
@@ -40,8 +46,19 @@ export type ServerSettings = BaseServerSettings & {
   jwtSecret: string
   /** default 'app_metadata.authorization.roles' */
   jwtRolePath: string
-  /** The port where the functions are running on */
+  /** The port where the dev server is running on */
   port: number
+  /** The port where the functions are running on */
+  functionsPort: number
   https?: { key: string; cert: string; keyFilePath: string; certFilePath: string }
   clearPublishDirectory?: boolean
+  skipWaitPort?: boolean
 }
+
+export interface Request extends IncomingMessage {
+  originalBody?: Buffer | null
+  protocol?: string
+  hostname?: string
+}
+
+export type Rewriter = (req: Request) => Match | null

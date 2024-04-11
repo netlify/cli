@@ -1,3 +1,4 @@
+import { Stats } from 'fs'
 import { stat } from 'fs/promises'
 import { basename, resolve } from 'path'
 
@@ -37,6 +38,7 @@ import openBrowser from '../../utils/open-browser.js'
 import BaseCommand from '../base-command.js'
 import { link } from '../link/link.js'
 import { sitesCreate } from '../sites/sites-create.js'
+import { $TSFixMe } from '../types.js'
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
 const triggerDeploy = async ({ api, options, siteData, siteId }) => {
@@ -65,19 +67,21 @@ const triggerDeploy = async ({ api, options, siteData, siteId }) => {
   }
 }
 
-/**
- * Retrieves the folder containing the static files that need to be deployed
- * @param {object} config
- * @param {import('../base-command.js').default} config.command The process working directory
- * @param {object} config.config
- * @param {import('commander').OptionValues} config.options
- * @param {object} config.site
- * @param {object} config.siteData
- * @returns {Promise<string>}
- */
-// @ts-expect-error TS(7031) FIXME: Binding element 'command' implicitly has an 'any' ... Remove this comment to see the full error message
-const getDeployFolder = async ({ command, config, options, site, siteData }) => {
-  let deployFolder
+/** Retrieves the folder containing the static files that need to be deployed */
+const getDeployFolder = async ({
+  command,
+  config,
+  options,
+  site,
+  siteData,
+}: {
+  command: BaseCommand
+  config: $TSFixMe
+  options: OptionValues
+  site: $TSFixMe
+  siteData: $TSFixMe
+}): Promise<string> => {
+  let deployFolder: string | undefined
   // if the `--dir .` flag is provided we should resolve it to the working directory.
   // - in regular sites this is the `process.cwd`
   // - in mono repositories this will be the root of the jsWorkspace
@@ -102,31 +106,28 @@ const getDeployFolder = async ({ command, config, options, site, siteData }) => 
         filter: (input) => resolve(command.workingDir, input),
       },
     ])
-    deployFolder = promptPath
+    deployFolder = promptPath as string
   }
 
   return deployFolder
 }
 
-/**
- * @param {string} deployFolder
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'deployFolder' implicitly has an 'any' t... Remove this comment to see the full error message
-const validateDeployFolder = async (deployFolder) => {
-  /** @type {import('fs').Stats} */
-  let stats
+const validateDeployFolder = async (deployFolder: string) => {
+  let stats: Stats
   try {
     stats = await stat(deployFolder)
   } catch (error_) {
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    if (error_.code === 'ENOENT') {
-      return error(`No such directory ${deployFolder}! Did you forget to run a build?`)
-    }
+    if (error_ && typeof error_ === 'object' && 'code' in error_) {
+      if (error_.code === 'ENOENT') {
+        return error(
+          `The deploy directory "${deployFolder}" has not been found. Did you forget to run 'netlify build'?`,
+        )
+      }
 
-    // Improve the message of permission errors
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    if (error_.code === 'EACCES') {
-      return error('Permission error when trying to access deploy folder')
+      // Improve the message of permission errors
+      if (error_.code === 'EACCES') {
+        return error('Permission error when trying to access deploy folder')
+      }
     }
     throw error_
   }
@@ -137,19 +138,22 @@ const validateDeployFolder = async (deployFolder) => {
   return stats
 }
 
-/**
- * get the functions directory
- * @param {object} config
- * @param {object} config.config
- * @param {import('commander').OptionValues} config.options
- * @param {object} config.site
- * @param {object} config.siteData
- * @param {string} config.workingDir // The process working directory
- * @returns {string|undefined}
- */
-// @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'any' t... Remove this comment to see the full error message
-const getFunctionsFolder = ({ config, options, site, siteData, workingDir }) => {
-  let functionsFolder
+/** get the functions directory */
+const getFunctionsFolder = ({
+  config,
+  options,
+  site,
+  siteData,
+  workingDir,
+}: {
+  config: $TSFixMe
+  options: OptionValues
+  site: $TSFixMe
+  siteData: $TSFixMe
+  /** The process working directory where the build command is executed  */
+  workingDir: string
+}): string | undefined => {
+  let functionsFolder: string | undefined
   // Support "functions" and "Functions"
   const funcConfig = config.functionsDirectory
   if (options.functions) {
@@ -162,30 +166,24 @@ const getFunctionsFolder = ({ config, options, site, siteData, workingDir }) => 
   return functionsFolder
 }
 
-/**
- *
- * @param {string|undefined} functionsFolder
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'functionsFolder' implicitly has an 'any... Remove this comment to see the full error message
-const validateFunctionsFolder = async (functionsFolder) => {
-  /** @type {import('fs').Stats|undefined} */
-  let stats
+const validateFunctionsFolder = async (functionsFolder: string | undefined) => {
+  let stats: Stats | undefined
   if (functionsFolder) {
     // we used to hard error if functions folder is specified but doesn't exist
     // but this was too strict for onboarding. we can just log a warning.
     try {
       stats = await stat(functionsFolder)
     } catch (error_) {
-      // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-      if (error_.code === 'ENOENT') {
-        log(
-          `Functions folder "${functionsFolder}" specified but it doesn't exist! Will proceed without deploying functions`,
-        )
-      }
-      // Improve the message of permission errors
-      // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-      if (error_.code === 'EACCES') {
-        error('Permission error when trying to access functions folder')
+      if (error_ && typeof error_ === 'object' && 'code' in error_) {
+        if (error_.code === 'ENOENT') {
+          log(
+            `Functions folder "${functionsFolder}" specified but it doesn't exist! Will proceed without deploying functions`,
+          )
+        }
+        // Improve the message of permission errors
+        if (error_.code === 'EACCES') {
+          error('Permission error when trying to access functions folder')
+        }
       }
     }
   }
@@ -197,8 +195,13 @@ const validateFunctionsFolder = async (functionsFolder) => {
   return stats
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'deployFolder' implicitly has an '... Remove this comment to see the full error message
-const validateFolders = async ({ deployFolder, functionsFolder }) => {
+const validateFolders = async ({
+  deployFolder,
+  functionsFolder,
+}: {
+  deployFolder: string
+  functionsFolder?: string
+}) => {
   const deployFolderStat = await validateDeployFolder(deployFolder)
   const functionsFolderStat = await validateFunctionsFolder(functionsFolder)
   return { deployFolderStat, functionsFolderStat }
@@ -349,12 +352,14 @@ const uploadDeployBlobs = async ({
   cachedConfig,
   deployId,
   options,
+  packagePath,
   silent,
   siteId,
 }: {
-  cachedConfig: any
+  cachedConfig: $TSFixMe
   deployId: string
   options: OptionValues
+  packagePath?: string
   silent: boolean
   siteId: string
 }) => {
@@ -372,6 +377,7 @@ const uploadDeployBlobs = async ({
     ...options,
     quiet: silent,
     cachedConfig,
+    packagePath,
     deployId,
     siteId,
     token,
@@ -399,7 +405,6 @@ const runDeploy = async ({
   alias,
   // @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
   api,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'command' implicitly has an 'any' ... Remove this comment to see the full error message
   command,
   // @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'any' t... Remove this comment to see the full error message
   config,
@@ -411,7 +416,6 @@ const runDeploy = async ({
   deployToProduction,
   // @ts-expect-error TS(7031) FIXME: Binding element 'functionsConfig' implicitly has a... Remove this comment to see the full error message
   functionsConfig,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'functionsFolder' implicitly has a... Remove this comment to see the full error message
   functionsFolder,
   // @ts-expect-error TS(7031) FIXME: Binding element 'options' implicitly has an 'a... Remove this comment to see the full error message
   options,
@@ -429,7 +433,18 @@ const runDeploy = async ({
   skipFunctionsCache,
   // @ts-expect-error TS(7031) FIXME: Binding element 'title' implicitly has an 'any' ty... Remove this comment to see the full error message
   title,
-}) => {
+}: {
+  functionsFolder?: string
+  command: BaseCommand
+}): Promise<{
+  siteId: string
+  siteName: string
+  deployId: string
+  siteUrl: string
+  deployUrl: string
+  logsUrl: string
+  functionLogsUrl: string
+}> => {
   let results
   let deployId
 
@@ -444,13 +459,14 @@ const runDeploy = async ({
     results = await api.createSiteDeploy({ siteId, title, body: { draft, branch: alias } })
     deployId = results.id
 
-    // @ts-expect-error TS(2345) FIXME: Argument of type '{ base: any; packagePath: any; }... Remove this comment to see the full error message
-    const internalFunctionsFolder = await getInternalFunctionsDir({ base: site.root, packagePath })
+    const internalFunctionsFolder = await getInternalFunctionsDir({ base: site.root, packagePath, ensureExists: true })
 
     // The order of the directories matter: zip-it-and-ship-it will prioritize
     // functions from the rightmost directories. In this case, we want user
     // functions to take precedence over internal functions.
-    const functionDirectories = [internalFunctionsFolder, functionsFolder].filter(Boolean)
+    const functionDirectories = [internalFunctionsFolder, functionsFolder].filter((folder): folder is string =>
+      Boolean(folder),
+    )
     const manifestPath = skipFunctionsCache ? null : await getFunctionsManifestPath({ base: site.root, packagePath })
 
     const redirectsPath = `${deployFolder}/_redirects`
@@ -472,14 +488,21 @@ const runDeploy = async ({
     })
 
     config.headers = headers
-    uploadDeployBlobs({ deployId, siteId, silent, options, cachedConfig: command.netlify.cachedConfig })
+    await uploadDeployBlobs({
+      deployId,
+      siteId,
+      silent,
+      options,
+      cachedConfig: command.netlify.cachedConfig,
+      packagePath: command.workspacePackage,
+    })
 
-    results = await deploySite(api, siteId, deployFolder, {
+    results = await deploySite(command, api, siteId, deployFolder, {
+      // @ts-expect-error FIXME
       config,
-      // @ts-expect-error TS(2322) FIXME: Type 'any[]' is not assignable to type 'never[]'.
       fnDir: functionDirectories,
       functionsConfig,
-      // @ts-expect-error TS(2322) FIXME: Type '(event: any) => void' is not assignable to t... Remove this comment to see the full error message
+
       statusCb: silent ? () => {} : deployProgressCb(),
       deployTimeout,
       syncFileLimit: SYNC_FILE_LIMIT,
@@ -554,11 +577,10 @@ const handleBuild = async ({ cachedConfig, currentDir, deployHandler, options, p
 /**
  *
  * @param {*} options Bundling options
- * @param {import('..//base-command.js').default} command
  * @returns
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
-const bundleEdgeFunctions = async (options, command) => {
+const bundleEdgeFunctions = async (options, command: BaseCommand) => {
   // eslint-disable-next-line n/prefer-global/process, unicorn/prefer-set-has
   const argv = process.argv.slice(2)
   const statusCb =
@@ -575,7 +597,7 @@ const bundleEdgeFunctions = async (options, command) => {
     packagePath: command.workspacePackage,
     buffer: true,
     featureFlags: edgeFunctionsFeatureFlags,
-    edgeFunctionsBootstrapURL: getBootstrapURL(),
+    edgeFunctionsBootstrapURL: await getBootstrapURL(),
   })
 
   if (!success) {
@@ -732,6 +754,7 @@ const prepAndRunDeploy = async ({
   })
 
   const results = await runDeploy({
+    // @ts-expect-error FIXME
     alias,
     api,
     command,
@@ -816,7 +839,7 @@ export const deploy = async (options: OptionValues, command: BaseCommand) => {
   // @ts-expect-error TS(2339) FIXME: Property 'published_deploy' does not exist on type... Remove this comment to see the full error message
   const deployToProduction = options.prod || (options.prodIfUnlocked && !siteData.published_deploy.locked)
 
-  let results = {}
+  let results = {} as Awaited<ReturnType<typeof prepAndRunDeploy>>
 
   if (options.build) {
     await handleBuild({
@@ -838,7 +861,7 @@ export const deploy = async (options: OptionValues, command: BaseCommand) => {
           deployToProduction,
         })
 
-        return {}
+        return { newEnvChanges: { DEPLOY_ID: results.deployId, DEPLOY_URL: results.deployUrl } }
       },
     })
   } else {
@@ -865,7 +888,6 @@ export const deploy = async (options: OptionValues, command: BaseCommand) => {
   })
 
   if (options.open) {
-    // @ts-expect-error TS(2339) FIXME: Property 'siteUrl' does not exist on type '{}'.
     const urlToOpen = deployToProduction ? results.siteUrl : results.deployUrl
     // @ts-expect-error TS(2345) FIXME: Argument of type '{ url: any; }' is not assignable... Remove this comment to see the full error message
     await openBrowser({ url: urlToOpen })

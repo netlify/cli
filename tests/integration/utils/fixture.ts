@@ -7,7 +7,7 @@ import { temporaryDirectory } from 'tempy'
 import { afterAll, afterEach, beforeAll, beforeEach, describe } from 'vitest'
 
 import { callCli } from './call-cli.js'
-import { startDevServer } from './dev-server.ts'
+import { DevServer, startDevServer } from './dev-server.ts'
 import { MockApi, Route, getCLIOptions, startMockApi } from './mock-api-vitest.js'
 import { SiteBuilder } from './site-builder.ts'
 
@@ -20,19 +20,23 @@ interface MockApiOptions {
 
 export interface FixtureTestContext {
   fixture: Fixture
-  devServer?: any
+  devServer?: DevServer
   mockApi?: MockApi
 }
 
 type LifecycleHook = (context: FixtureTestContext) => Promise<void> | void
 
 export interface FixtureOptions {
-  devServer?: boolean | { serve?: boolean }
+  devServer?: boolean | { serve?: boolean; args?: string[] }
   mockApi?: MockApiOptions
   /**
    * Executed after fixture setup, but before tests run
    */
   setup?: LifecycleHook
+  /**
+   * Executed after fixture setup, after dev is started, but before tests run
+   */
+  setupAfterDev?: LifecycleHook
   /**
    * Executed before fixture is cleaned up
    */
@@ -147,17 +151,24 @@ export async function setupFixtureTests(
       await options.setup?.({ fixture, mockApi })
 
       if (options.devServer) {
+        const args = ['--country', 'DE']
+        if (typeof options.devServer === 'object' && options.devServer.args) {
+          args.push(...options.devServer.args)
+        }
+
         devServer = await startDevServer({
           serve: typeof options.devServer === 'object' && options.devServer.serve,
           cwd: fixture.directory,
           offline: !mockApi,
-          args: ['--country', 'DE'],
+          args,
           env: {
             NETLIFY_API_URL: mockApi?.apiUrl,
             NETLIFY_SITE_ID: 'foo',
             NETLIFY_AUTH_TOKEN: 'fake-token',
           },
         })
+
+        await options.setupAfterDev?.({ fixture, mockApi, devServer })
       }
     }, HOOK_TIMEOUT)
 

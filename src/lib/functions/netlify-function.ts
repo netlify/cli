@@ -7,7 +7,7 @@ import semver from 'semver'
 
 import { error as errorExit } from '../../utils/command-helpers.js'
 import { BACKGROUND } from '../../utils/functions/get-functions.js'
-import type { BlobsContext } from '../blobs/blobs.js'
+import type { BlobsContextWithEdgeAccess } from '../blobs/blobs.js'
 
 const TYPESCRIPT_EXTENSIONS = new Set(['.cts', '.mts', '.ts'])
 const V2_MIN_NODE_VERSION = '18.14.0'
@@ -30,20 +30,21 @@ export default class NetlifyFunction {
   public readonly mainFile: string
   public readonly displayName: string
   public readonly schedule?: string
+  public readonly runtime: string
 
   private readonly directory: string
   private readonly projectRoot: string
-  private readonly blobsContext: BlobsContext
+  private readonly blobsContext: BlobsContextWithEdgeAccess
   private readonly timeoutBackground: number
   private readonly timeoutSynchronous: number
 
   // Determines whether this is a background function based on the function
   // name.
-  private readonly isBackground: boolean
+  public readonly isBackground: boolean
 
   private buildQueue?: Promise<$FIXME>
   private buildData?: $FIXME
-  private buildError: unknown | null = null
+  public buildError: Error | null = null
 
   // List of the function's source files. This starts out as an empty set
   // and will get populated on every build.
@@ -81,7 +82,6 @@ export default class NetlifyFunction {
     this.name = name
     this.displayName = displayName ?? name
     this.projectRoot = projectRoot
-    // @ts-expect-error TS(2339) FIXME: Property 'runtime' does not exist on type 'Netlify... Remove this comment to see the full error message
     this.runtime = runtime
     this.timeoutBackground = timeoutBackground
     this.timeoutSynchronous = timeoutSynchronous
@@ -199,7 +199,9 @@ export default class NetlifyFunction {
 
       return { includedFiles, srcFilesDiff }
     } catch (error) {
-      this.buildError = error
+      if (error instanceof Error) {
+        this.buildError = error
+      }
 
       return { error }
     }
@@ -228,7 +230,6 @@ export default class NetlifyFunction {
     await this.buildQueue
 
     if (this.buildError) {
-      // @ts-expect-error TS(2339) FIXME: Property 'buildError' does not exist on type 'Netl... Remove this comment to see the full error message
       return { result: null, error: { errorMessage: this.buildError.message } }
     }
 
@@ -238,6 +239,7 @@ export default class NetlifyFunction {
     if (this.blobsContext) {
       const payload = JSON.stringify({
         url: this.blobsContext.edgeURL,
+        url_uncached: this.blobsContext.edgeURL,
         token: this.blobsContext.token,
       })
 
@@ -269,7 +271,7 @@ export default class NetlifyFunction {
 
     let path = rawPath !== '/' && rawPath.endsWith('/') ? rawPath.slice(0, -1) : rawPath
     path = path.toLowerCase()
-    const { routes = [] } = this.buildData
+    const { routes = [] } = this.buildData ?? {}
     // @ts-expect-error TS(7031) FIXME: Binding element 'expression' implicitly has an 'an... Remove this comment to see the full error message
     const route = routes.find(({ expression, literal, methods }) => {
       if (methods.length !== 0 && !methods.includes(method)) {

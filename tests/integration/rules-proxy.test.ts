@@ -21,6 +21,7 @@ describe('rules-proxy', () => {
     await builder.build()
 
     const rewriter = await createRewriter({
+      config: {},
       distDir: builder.directory,
       projectDir: builder.directory,
       jwtSecret: '',

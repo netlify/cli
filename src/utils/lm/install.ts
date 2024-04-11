@@ -1,6 +1,6 @@
 import { appendFile, copyFile, readFile, rm, writeFile } from 'fs/promises'
 import os from 'os'
-import path, { dirname } from 'path'
+import path, { join, sep } from 'path'
 import process from 'process'
 import { fileURLToPath } from 'url'
 
@@ -29,7 +29,18 @@ const SUPPORTED_PLATFORMS = {
   win32: 'Windows',
 }
 
-const dirPath = dirname(fileURLToPath(import.meta.url))
+const CONFIG_FILES = {
+  bash: '.bashrc',
+  zsh: '.zshrc',
+  fish: '.config/fish/config.fish',
+}
+
+/** The path to the scritps folder on the package root */
+const scriptsPath = fileURLToPath(new URL('../../../scripts', import.meta.url))
+const getHelperPath = () => getPathInHome(['helper'])
+const getBinPath = () => join(getHelperPath(), 'bin')
+const getGitConfigPath = () => join(getHelperPath(), 'git-config')
+const getLegacyBinPath = () => join(getLegacyPathInHome(['helper', 'bin']))
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'skipInstall' implicitly has an 'a... Remove this comment to see the full error message
 const getSetupStep = ({ skipInstall }) => {
@@ -131,7 +142,7 @@ const setupWindowsPath = async function () {
     return true
   }
 
-  const scriptPath = path.join(dirPath, 'scripts', 'path.ps1')
+  const scriptPath = join(scriptsPath, 'path.ps1')
   return await execa(
     'powershell',
     ['-ExecutionPolicy', 'unrestricted', '-windowstyle', 'hidden', '-File', scriptPath, getBinPath()],
@@ -160,14 +171,14 @@ Set the helper path in your environment PATH: ${getBinPath()}`
   }
 
   return await Promise.all([
-    await copyFile(`${dirPath}/scripts/${shell}.sh`, incFilePath),
+    await copyFile(join(scriptsPath, `${shell}.sh`), incFilePath),
     await writeConfig(configFile, getInitContent(incFilePath)),
   ])
 }
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
 const writeConfig = async function (name, initContent) {
-  const configPath = path.join(os.homedir(), name)
+  const configPath = join(os.homedir(), name)
   if (!(await fileExistsAsync(configPath))) {
     return
   }
@@ -239,35 +250,13 @@ const configureGitConfig = async function () {
   return writeConfig(GIT_CONFIG, getGitConfigContent(gitConfigPath))
 }
 
-const getHelperPath = function () {
-  return getPathInHome(['helper'])
-}
-
-const getBinPath = function () {
-  return path.join(getHelperPath(), 'bin')
-}
-
-const getGitConfigPath = function () {
-  return path.join(getHelperPath(), 'git-config')
-}
-
-const getLegacyBinPath = function () {
-  return path.join(getLegacyPathInHome(['helper', 'bin']))
-}
-
-const CONFIG_FILES = {
-  bash: '.bashrc',
-  zsh: '.zshrc',
-  fish: '.config/fish/config.fish',
-}
-
 export const getShellInfo = function () {
   const shellEnv = process.env.SHELL
   if (!shellEnv) {
     throw new Error('Unable to detect SHELL type, make sure the variable is defined in your environment')
   }
 
-  const shell = shellEnv.split(path.sep).pop()
+  const shell = shellEnv.split(sep).pop()
   return {
     shell,
     incFilePath: `${getHelperPath()}/path.${shell}.inc`,
@@ -295,9 +284,8 @@ export const uninstall = async function () {
   ])
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-const removeConfig = async function (name, toRemove) {
-  const configPath = path.join(os.homedir(), name)
+const removeConfig = async function (name: string, toRemove: string) {
+  const configPath = join(os.homedir(), name)
 
   if (!(await fileExistsAsync(configPath))) {
     return

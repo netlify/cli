@@ -1,13 +1,17 @@
 import { promises as fs } from 'fs'
 import path, { join } from 'path'
 
+import BaseCommand from '../commands/base-command.js'
+import { $TSFixMe } from '../commands/types.js'
 import { getBootstrapURL } from '../lib/edge-functions/bootstrap.js'
 import { INTERNAL_EDGE_FUNCTIONS_FOLDER } from '../lib/edge-functions/consts.js'
 import { getPathInProject } from '../lib/settings.js'
 
 import { error } from './command-helpers.js'
+import { getFeatureFlagsFromSiteInfo } from './feature-flags.js'
 import { startFrameworkServer } from './framework-server.js'
 import { INTERNAL_FUNCTIONS_FOLDER } from './functions/index.js'
+import { ServerSettings } from './types.js'
 
 const netlifyBuildPromise = import('@netlify/build')
 
@@ -44,19 +48,21 @@ const cleanInternalDirectory = async (basePath) => {
   await Promise.all(ops)
 }
 
-/**
- * @param {object} params
- * @param {import('../commands/base-command.js').default} params.command
- * @param {import('../commands/base-command.js').default} params.command
- * @param {*} params.options The flags of the command
- * @param {import('./types.js').ServerSettings} params.settings
- * @param {NodeJS.ProcessEnv} [params.env]
- * @param {'build' | 'dev'} [params.timeline]
- * @returns
- */
-// @ts-expect-error TS(7031) FIXME: Binding element 'command' implicitly has an 'any' ... Remove this comment to see the full error message
-export const runNetlifyBuild = async ({ command, env = {}, options, settings, timeline = 'build' }) => {
-  const { cachedConfig, site } = command.netlify
+export const runNetlifyBuild = async ({
+  command,
+  env = {},
+  options,
+  settings,
+  timeline = 'build',
+}: {
+  command: BaseCommand
+  // The flags of the command
+  options: $TSFixMe
+  settings: ServerSettings
+  env: NodeJS.ProcessEnv
+  timeline: 'build' | 'dev'
+}) => {
+  const { apiOpts, cachedConfig, site } = command.netlify
 
   const { default: buildSite, startDev } = await netlifyBuildPromise
 
@@ -65,18 +71,20 @@ export const runNetlifyBuild = async ({ command, env = {}, options, settings, ti
     configPath: cachedConfig.configPath,
     siteId: cachedConfig.siteInfo.id,
     token: cachedConfig.token,
+    apiHost: apiOpts.host,
     dry: options.dry,
     debug: options.debug,
     context: options.context,
     mode: 'cli',
     telemetry: false,
     buffer: false,
+    featureFlags: getFeatureFlagsFromSiteInfo(cachedConfig.siteInfo),
     offline: options.offline,
     packagePath: command.workspacePackage,
     cwd: cachedConfig.buildDir,
     quiet: options.quiet,
     saveConfig: options.saveConfig,
-    edgeFunctionsBootstrapURL: getBootstrapURL(),
+    edgeFunctionsBootstrapURL: await getBootstrapURL(),
   }
 
   const devCommand = async (settingsOverrides = {}) => {
@@ -90,6 +98,7 @@ export const runNetlifyBuild = async ({ command, env = {}, options, settings, ti
       settings: {
         ...settings,
         ...settingsOverrides,
+        ...(options.skipWaitPort ? { skipWaitPort: true } : {}),
       },
       cwd,
     })
@@ -146,23 +155,17 @@ export const runNetlifyBuild = async ({ command, env = {}, options, settings, ti
   }
 
   // Run Netlify Build using the `startDev` entry point.
-  const { error: startDevError, success } = await startDev(devCommand, startDevOptions)
+  const { configMutations, error: startDevError, success } = await startDev(devCommand, startDevOptions)
 
   if (!success && startDevError) {
     error(`Could not start local development server\n\n${startDevError.message}\n\n${startDevError.stack}`)
   }
 
-  return {}
+  return { configMutations }
 }
 
-/**
- * @param {Omit<Parameters<typeof runNetlifyBuild>[0], 'timeline'>} options
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
-export const runDevTimeline = (options) => runNetlifyBuild({ ...options, timeline: 'dev' })
+type RunTimelineOptions = Omit<Parameters<typeof runNetlifyBuild>[0], 'timeline'>
 
-/**
- * @param {Omit<Parameters<typeof runNetlifyBuild>[0], 'timeline'>} options
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
-export const runBuildTimeline = (options) => runNetlifyBuild({ ...options, timeline: 'build' })
+export const runDevTimeline = (options: RunTimelineOptions) => runNetlifyBuild({ ...options, timeline: 'dev' })
+
+export const runBuildTimeline = (options: RunTimelineOptions) => runNetlifyBuild({ ...options, timeline: 'build' })

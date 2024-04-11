@@ -8,7 +8,7 @@ import {
   normalizeContext,
   translateFromEnvelopeToMongo,
   translateFromMongoToEnvelope,
-} from '../../../../src/utils/env/index.js'
+} from '../../../../dist/utils/env/index.js'
 
 test('should find a value from a given context', () => {
   const values = [

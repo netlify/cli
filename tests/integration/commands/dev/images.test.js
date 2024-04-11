@@ -10,12 +10,12 @@ import { withSiteBuilder } from '../../utils/site-builder.ts'
 
 describe.concurrent('commands/dev/images', () => {
   test(`should support remote image transformations`, async (t) => {
-    await withSiteBuilder('site-with-image-transformations', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder
         .withNetlifyToml({
           config: {
             images: {
-              remote_images: ['https://images.unsplash.com/*'],
+              remote_images: ['^https://(?!\\.)[^\\/]*.unsplash.com/photo-[0-9a-f]+-[0-9a-f]+$'],
             },
           },
         })
@@ -50,7 +50,7 @@ describe.concurrent('commands/dev/images', () => {
   })
 
   test(`should support local image transformations for relative paths`, async (t) => {
-    await withSiteBuilder('site-with-image-transformations', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder
         .withContentFile({
           content: `

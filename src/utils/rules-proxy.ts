@@ -3,14 +3,15 @@ import path from 'path'
 import chokidar from 'chokidar'
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'cook... Remove this comment to see the full error message
 import cookie from 'cookie'
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'netl... Remove this comment to see the full error message
 import redirector from 'netlify-redirector'
+import type { Match, RedirectMatcher } from 'netlify-redirector'
 import pFilter from 'p-filter'
 
 import { fileExistsAsync } from '../lib/fs.js'
 
 import { NETLIFYDEVLOG } from './command-helpers.js'
 import { parseRedirects } from './redirects.js'
+import { Request, Rewriter } from './types.js'
 
 // @ts-expect-error TS(7034) FIXME: Variable 'watchers' implicitly has type 'any[]' in... Remove this comment to see the full error message
 const watchers = []
@@ -40,6 +41,8 @@ export const getLanguage = function (headers) {
 }
 
 export const createRewriter = async function ({
+  // @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'an... Remove this comment to see the full error message
+  config,
   // @ts-expect-error TS(7031) FIXME: Binding element 'configPath' implicitly has an 'an... Remove this comment to see the full error message
   configPath,
   // @ts-expect-error TS(7031) FIXME: Binding element 'distDir' implicitly has an 'any' ... Remove this comment to see the full error message
@@ -52,11 +55,10 @@ export const createRewriter = async function ({
   jwtSecret,
   // @ts-expect-error TS(7031) FIXME: Binding element 'projectDir' implicitly has an 'an... Remove this comment to see the full error message
   projectDir,
-}) {
-  // @ts-expect-error TS(7034) FIXME: Variable 'matcher' implicitly has type 'any' in so... Remove this comment to see the full error message
-  let matcher = null
+}): Promise<Rewriter> {
+  let matcher: RedirectMatcher | null = null
   const redirectsFiles = [...new Set([path.resolve(distDir, '_redirects'), path.resolve(projectDir, '_redirects')])]
-  let redirects = await parseRedirects({ redirectsFiles, configPath })
+  let redirects = await parseRedirects({ config, redirectsFiles, configPath })
 
   const watchedRedirectFiles = configPath === undefined ? redirectsFiles : [...redirectsFiles, configPath]
   onChanges(watchedRedirectFiles, async () => {
@@ -65,12 +67,11 @@ export const createRewriter = async function ({
       `${NETLIFYDEVLOG} Reloading redirect rules from`,
       existingRedirectsFiles.map((redirectFile) => path.relative(projectDir, redirectFile)),
     )
-    redirects = await parseRedirects({ redirectsFiles, configPath })
+    redirects = await parseRedirects({ config, redirectsFiles, configPath })
     matcher = null
   })
 
-  const getMatcher = async () => {
-    // @ts-expect-error TS(7005) FIXME: Variable 'matcher' implicitly has an 'any' type.
+  const getMatcher = async (): Promise<RedirectMatcher> => {
     if (matcher) return matcher
 
     if (redirects.length !== 0) {
@@ -87,16 +88,16 @@ export const createRewriter = async function ({
   }
 
   // @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
-  return async function rewriter(req) {
+  return async function rewriter(req: Request): Promise<Match | null> {
     const matcherFunc = await getMatcher()
     const reqUrl = new URL(
-      req.url,
+      req.url ?? '',
       `${req.protocol || (req.headers.scheme && `${req.headers.scheme}:`) || 'http:'}//${
         req.hostname || req.headers.host
       }`,
     )
     const cookieValues = cookie.parse(req.headers.cookie || '')
-    const headers = {
+    const headers: Record<string, string | string[]> = {
       'x-language': cookieValues.nf_lang || getLanguage(req.headers),
       'x-country': cookieValues.nf_country || geoCountry || 'us',
       ...req.headers,
@@ -110,10 +111,14 @@ export const createRewriter = async function ({
       query: reqUrl.search.slice(1),
       headers,
       cookieValues,
-      // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-      getHeader: (name) => headers[name.toLowerCase()] || '',
-      // @ts-expect-error TS(7006) FIXME: Parameter 'key' implicitly has an 'any' type.
-      getCookie: (key) => cookieValues[key] || '',
+      getHeader: (name: string) => {
+        const val = headers[name.toLowerCase()]
+        if (Array.isArray(val)) {
+          return val[0]
+        }
+        return val || ''
+      },
+      getCookie: (key: string) => cookieValues[key] || '',
     }
     const match = matcherFunc.match(matchReq)
     return match

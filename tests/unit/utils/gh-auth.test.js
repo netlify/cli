@@ -2,12 +2,12 @@ import { fibonacci } from 'backoff'
 import fetch from 'node-fetch'
 import { afterAll, describe, expect, test, vi } from 'vitest'
 
-import { authWithNetlify } from '../../../src/utils/gh-auth.js'
-import importedOpenBrowser from '../../../src/utils/open-browser.js'
+import { authWithNetlify } from '../../../dist/utils/gh-auth.js'
+import importedOpenBrowser from '../../../dist/utils/open-browser.js'
 
 const openBrowser = vi.mocked(importedOpenBrowser)
 
-vi.mock('../../../src/utils/open-browser.js', () => ({
+vi.mock('../../../dist/utils/open-browser.js', () => ({
   default: vi.fn(() => Promise.resolve()),
 }))
 

@@ -1,8 +1,9 @@
 import { temporaryDirectory } from 'tempy'
 import { expect, test } from 'vitest'
 
-import { DEFAULT_CONCURRENT_HASH } from '../../../../src/utils/deploy/constants.js'
-import hashFns from '../../../../src/utils/deploy/hash-fns.js'
+import BaseCommand from '../../../../dist/commands/base-command.js'
+import { DEFAULT_CONCURRENT_HASH } from '../../../../dist/utils/deploy/constants.js'
+import hashFns from '../../../../dist/utils/deploy/hash-fns.js'
 import { withSiteBuilder } from '../../../integration/utils/site-builder.ts'
 
 test('Hashes files in a folder', async () => {
@@ -20,7 +21,7 @@ test('Hashes files in a folder', async () => {
       .buildAsync()
 
     const expectedFunctions = ['hello', 'goodbye']
-    const { fnShaMap, functions } = await hashFns(`${builder.directory}/functions`, {
+    const { fnShaMap, functions } = await hashFns(new BaseCommand(), `${builder.directory}/functions`, {
       tmpDir: temporaryDirectory(),
       concurrentHash: DEFAULT_CONCURRENT_HASH,
       statusCb() {},

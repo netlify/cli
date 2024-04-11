@@ -2,9 +2,16 @@ import { join } from 'path'
 
 import { OptionValues } from 'commander'
 
+import { getBlobsContextWithEdgeAccess } from '../../lib/blobs/blobs.js'
 import { startFunctionsServer } from '../../lib/functions/server.js'
 import { printBanner } from '../../utils/banner.js'
-import { acquirePort, getDotEnvVariables, getSiteInformation, injectEnvVariables } from '../../utils/dev.js'
+import {
+  UNLINKED_SITE_MOCK_ID,
+  acquirePort,
+  getDotEnvVariables,
+  getSiteInformation,
+  injectEnvVariables,
+} from '../../utils/dev.js'
 import { getFunctionsDir } from '../../utils/functions/index.js'
 import { getProxyUrl } from '../../utils/proxy.js'
 import BaseCommand from '../base-command.js'
@@ -35,19 +42,23 @@ export const functionsServe = async (options: OptionValues, command: BaseCommand
     errorMessage: 'Could not acquire configured functions port',
   })
 
+  const blobsContext = await getBlobsContextWithEdgeAccess({
+    debug: options.debug,
+    projectRoot: command.workingDir,
+    siteID: site.id ?? UNLINKED_SITE_MOCK_ID,
+  })
+
   await startFunctionsServer({
+    blobsContext,
     config,
     debug: options.debug,
     command,
-    api,
     settings: { functions: functionsDir, functionsPort },
     site,
     siteInfo,
     siteUrl,
     capabilities,
     timeouts,
-    functionsPrefix: '/.netlify/functions/',
-    buildersPrefix: '/.netlify/builders/',
     geolocationMode: options.geo,
     geoCountry: options.country,
     offline: options.offline,

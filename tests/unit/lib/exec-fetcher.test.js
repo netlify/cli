@@ -3,7 +3,7 @@ import process from 'process'
 import { fetchLatest } from 'gh-release-fetch'
 import { afterAll, afterEach, beforeAll, expect, test, vi } from 'vitest'
 
-import { fetchLatestVersion, getArch, getExecName } from '../../../src/lib/exec-fetcher.js'
+import { fetchLatestVersion, getArch, getExecName } from '../../../dist/lib/exec-fetcher.js'
 
 vi.mock('gh-release-fetch', async () => {
   const actual = await vi.importActual('gh-release-fetch')
