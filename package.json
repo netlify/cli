@@ -197,7 +197,7 @@
     "@types/semver": "7.5.0",
     "@types/uuid": "9.0.7",
     "@types/ws": "8.5.10",
-    "@vitest/coverage-v8": "1.2.1",
+    "@vitest/coverage-v8": "1.5.0",
     "c8": "7.14.0",
     "eslint-plugin-sort-destructure-keys": "1.5.0",
     "eslint-plugin-workspace": "file:./tools/lint-rules",
@@ -219,7 +219,7 @@
     "tree-kill": "1.2.2",
     "typescript": "5.1.6",
     "verdaccio": "5.30.3",
-    "vitest": "1.2.1"
+    "vitest": "1.5.0"
   },
   "ava": {
     "files": [
