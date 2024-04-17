@@ -318,7 +318,7 @@ describe.concurrent('functions:create command', () => {
       // await devServer.waitForLogMatching('Loaded edge function new')
       // expect(devServer.output).not.toContain('Removed edge function')
     })
-    test<FixtureTestContext>('should create a new serverless function', async ({ fixture }) => {
+    test<FixtureTestContext>('should create a new javascript serverless function', async ({ fixture }) => {
       await withMockApi(routes, async ({ apiUrl }) => {
         const childProcess = execa(
           cliPath,
@@ -352,6 +352,42 @@ describe.concurrent('functions:create command', () => {
 
         await childProcess
         expect(existsSync(join(pkgBase, 'my-dir/functions/hello-world/hello-world.js'))).toBe(true)
+      })
+    })
+    test<FixtureTestContext>('should create a new typescript serverless function', async ({ fixture }) => {
+      await withMockApi(routes, async ({ apiUrl }) => {
+        const childProcess = execa(
+          cliPath,
+          ['functions:create', '--filter', 'website'],
+          getCLIOptions({ apiUrl, builder: fixture.builder }),
+        )
+        handleQuestions(childProcess, [
+          {
+            question: "Select the type of function you'd like to create",
+            answer: answerWithValue(DOWN),
+          },
+          {
+            question: 'Enter the path, relative to your site',
+            answer: answerWithValue('my-dir/functions'),
+          },
+          {
+            question: 'Select the language of your function',
+            answer: answerWithValue(DOWN),
+          },
+          {
+            question: 'Pick a template',
+            answer: answerWithValue(DOWN),
+          },
+          {
+            question: 'Name your function',
+            answer: CONFIRM,
+          },
+        ])
+
+        const pkgBase = join(fixture.directory, 'packages/website')
+
+        await childProcess
+        expect(existsSync(join(pkgBase, 'my-dir/functions/scheduled-function/scheduled-function.ts'))).toBe(true)
       })
     })
   })
