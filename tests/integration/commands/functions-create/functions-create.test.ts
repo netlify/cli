@@ -181,42 +181,46 @@ describe.concurrent('functions:create command', () => {
   })
 
   test('should only show function templates for the language specified via the --language flag, if one is present', async () => {
-    await withSiteBuilder('site-with-no-functions-dir', async (builder) => {
-      await builder.buildAsync()
+    const createWithLanguageTemplate = async (language, outputPath) =>
+      await withSiteBuilder('site-with-no-functions-dir', async (builder) => {
+        await builder.buildAsync()
 
-      const createFunctionQuestions = [
-        {
-          question: "Select the type of function you'd like to create",
-          answer: answerWithValue(DOWN),
-        },
-        {
-          question: 'Enter the path, relative to your site',
-          answer: answerWithValue('test/functions'),
-        },
-        {
-          question: 'Pick a template',
-          answer: CONFIRM,
-        },
-        {
-          question: 'Name your function',
-          answer: CONFIRM,
-        },
-      ]
+        const createFunctionQuestions = [
+          {
+            question: "Select the type of function you'd like to create",
+            answer: answerWithValue(DOWN),
+          },
+          {
+            question: 'Enter the path, relative to your site',
+            answer: answerWithValue('test/functions'),
+          },
+          {
+            question: 'Pick a template',
+            answer: CONFIRM,
+          },
+          {
+            question: 'Name your function',
+            answer: CONFIRM,
+          },
+        ]
 
-      await withMockApi(routes, async ({ apiUrl }) => {
-        const childProcess = execa(
-          cliPath,
-          ['functions:create', '--language', 'javascript'],
-          getCLIOptions({ apiUrl, builder }),
-        )
+        await withMockApi(routes, async ({ apiUrl }) => {
+          const childProcess = execa(
+            cliPath,
+            ['functions:create', '--language', language],
+            getCLIOptions({ apiUrl, builder }),
+          )
 
-        handleQuestions(childProcess, createFunctionQuestions)
+          handleQuestions(childProcess, createFunctionQuestions)
 
-        await childProcess
+          await childProcess
 
-        expect(await fileExistsAsync(`${builder.directory}/test/functions/hello-world/hello-world.js`)).toBe(true)
+          expect(await fileExistsAsync(`${builder.directory}/test/functions/${outputPath}`)).toBe(true)
+        })
       })
-    })
+
+    await createWithLanguageTemplate('javascript', 'hello-world/hello-world.js')
+    await createWithLanguageTemplate('typescript', 'hello-world/hello-world.ts')
   })
 
   test('throws an error when the --language flag contains an unsupported value', async () => {
@@ -318,7 +322,7 @@ describe.concurrent('functions:create command', () => {
       // await devServer.waitForLogMatching('Loaded edge function new')
       // expect(devServer.output).not.toContain('Removed edge function')
     })
-    test<FixtureTestContext>('should create a new javascript serverless function', async ({ fixture }) => {
+    test<FixtureTestContext>('should create a new serverless function', async ({ fixture }) => {
       await withMockApi(routes, async ({ apiUrl }) => {
         const childProcess = execa(
           cliPath,
@@ -352,42 +356,6 @@ describe.concurrent('functions:create command', () => {
 
         await childProcess
         expect(existsSync(join(pkgBase, 'my-dir/functions/hello-world/hello-world.js'))).toBe(true)
-      })
-    })
-    test<FixtureTestContext>('should create a new typescript serverless function', async ({ fixture }) => {
-      await withMockApi(routes, async ({ apiUrl }) => {
-        const childProcess = execa(
-          cliPath,
-          ['functions:create', '--filter', 'website'],
-          getCLIOptions({ apiUrl, builder: fixture.builder }),
-        )
-        handleQuestions(childProcess, [
-          {
-            question: "Select the type of function you'd like to create",
-            answer: answerWithValue(DOWN),
-          },
-          {
-            question: 'Enter the path, relative to your site',
-            answer: answerWithValue('my-dir/functions'),
-          },
-          {
-            question: 'Select the language of your function',
-            answer: answerWithValue(DOWN),
-          },
-          {
-            question: 'Pick a template',
-            answer: answerWithValue(DOWN),
-          },
-          {
-            question: 'Name your function',
-            answer: CONFIRM,
-          },
-        ])
-
-        const pkgBase = join(fixture.directory, 'packages/website')
-
-        await childProcess
-        expect(existsSync(join(pkgBase, 'my-dir/functions/scheduled-function/scheduled-function.ts'))).toBe(true)
       })
     })
   })
