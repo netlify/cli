@@ -90,6 +90,27 @@ const getFunctionZips = async ({
   })
 }
 
+const trafficRulesConfig = (trafficRules?: TrafficRules) => {
+  if (!trafficRules) {
+    return
+  }
+
+  return {
+    action: {
+      type: trafficRules?.action?.type,
+      config: {
+        rate_limit_config: {
+          algorithm: trafficRules?.action?.config?.rateLimitConfig?.algorithm,
+          window_size: trafficRules?.action?.config?.rateLimitConfig?.windowSize,
+          window_limit: trafficRules?.action?.config?.rateLimitConfig?.windowLimit,
+        },
+        aggregate: trafficRules?.action?.config?.aggregate,
+        to: trafficRules?.action?.config?.to,
+      },
+    },
+  }
+}
+
 const hashFns = async (
   command: BaseCommand,
   directories: string[],
@@ -208,25 +229,5 @@ const hashFns = async (
   return { functionSchedules, functions, functionsWithNativeModules, fnShaMap, fnConfig }
 }
 
-const trafficRulesConfig = (trafficRules?: TrafficRules) => {
-  if (!trafficRules) {
-    return
-  }
-
-  return {
-    action: {
-      type: trafficRules?.action?.type,
-      config: {
-        rate_limit_config: {
-          algorithm: trafficRules?.action?.config?.rateLimitConfig?.algorithm,
-          window_size: trafficRules?.action?.config?.rateLimitConfig?.windowSize,
-          window_limit: trafficRules?.action?.config?.rateLimitConfig?.windowLimit,
-        },
-        aggregate: trafficRules?.action?.config?.aggregate,
-        to: trafficRules?.action?.config?.to,
-      },
-    },
-  }
-}
 
 export default hashFns
