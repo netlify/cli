@@ -229,5 +229,4 @@ const hashFns = async (
   return { functionSchedules, functions, functionsWithNativeModules, fnShaMap, fnConfig }
 }
 
-
 export default hashFns
