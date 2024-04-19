@@ -3,6 +3,8 @@ import path from 'path'
 import { promisify } from 'util'
 
 import { zipFunctions } from '@netlify/zip-it-and-ship-it'
+import type { TrafficRules } from '@netlify/zip-it-and-ship-it/dist/manifest.js'
+import type { FunctionResult } from '@netlify/zip-it-and-ship-it/dist/utils/format_result.js'
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'from... Remove this comment to see the full error message
 import fromArray from 'from2-array'
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'pump... Remove this comment to see the full error message
@@ -37,7 +39,7 @@ const getFunctionZips = async ({
   skipFunctionsCache: $TSFixMe
   statusCb: $TSFixMe
   tmpDir: $TSFixMe
-}) => {
+}): Promise<(FunctionResult & { buildData?: unknown })[]> => {
   statusCb({
     type: 'functions-manifest',
     msg: 'Looking for a functions cache...',
@@ -137,23 +139,14 @@ const hashFns = async (
   })
   const fileObjs = functionZips.map(
     ({
-      // @ts-expect-error TS(7031) FIXME: Binding element 'buildData' implicitly has an 'any... Remove this comment to see the full error message
       buildData,
-      // @ts-expect-error TS(7031)
       displayName,
-      // @ts-expect-error TS(7031)
       generator,
-      // @ts-expect-error TS(7031)
       invocationMode,
-      // @ts-expect-error TS(7031)
       path: functionPath,
-      // @ts-expect-error TS(7031)
       priority,
-      // @ts-expect-error TS(7031)
       runtime,
-      // @ts-expect-error TS(7031)
       runtimeVersion,
-      // @ts-expect-error TS(7031)
       trafficRules,
     }) => ({
       filepath: functionPath,
@@ -174,14 +167,12 @@ const hashFns = async (
     }),
   )
   const fnConfig = functionZips
-    // @ts-expect-error TS(7006) FIXME: Parameter 'func' implicitly has an 'any' type.
     .filter((func) =>
       Boolean(
         func.displayName || func.generator || func.routes || func.buildData || func.priority || func.trafficRules,
       ),
     )
     .reduce(
-      // @ts-expect-error TS(7006) FIXME: Parameter 'funcs' implicitly has an 'any' type.
       (funcs, curr) => ({
         ...funcs,
         [curr.name]: {
@@ -196,11 +187,9 @@ const hashFns = async (
       {},
     )
   const functionSchedules = functionZips
-    // @ts-expect-error TS(7031) FIXME: Binding element 'name' implicitly has an 'any' typ... Remove this comment to see the full error message
     .map(({ name, schedule }) => schedule && { name, cron: schedule })
     .filter(Boolean)
   const functionsWithNativeModules = functionZips.filter(
-    // @ts-expect-error TS(7031) FIXME: Binding element 'nativeNodeModules' implicitly has... Remove this comment to see the full error message
     ({ nativeNodeModules }) => nativeNodeModules !== undefined && Object.keys(nativeNodeModules).length !== 0,
   )
 
@@ -219,7 +208,7 @@ const hashFns = async (
   return { functionSchedules, functions, functionsWithNativeModules, fnShaMap, fnConfig }
 }
 
-const trafficRulesConfig = (trafficRules: $TSFixMe) => {
+const trafficRulesConfig = (trafficRules?: TrafficRules) => {
   if (!trafficRules) {
     return
   }
