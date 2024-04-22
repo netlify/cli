@@ -210,7 +210,7 @@
     "ini": "2.0.0",
     "is-ci": "3.0.1",
     "mock-fs": "5.2.0",
-    "nock": "13.3.6",
+    "nock": "13.5.4",
     "p-timeout": "4.1.0",
     "serialize-javascript": "6.0.2",
     "sinon": "14.0.2",
