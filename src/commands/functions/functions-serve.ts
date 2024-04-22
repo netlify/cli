@@ -2,7 +2,7 @@ import { join } from 'path'
 
 import { OptionValues } from 'commander'
 
-import { getBlobsContext } from '../../lib/blobs/blobs.js'
+import { getBlobsContextWithEdgeAccess } from '../../lib/blobs/blobs.js'
 import { startFunctionsServer } from '../../lib/functions/server.js'
 import { printBanner } from '../../utils/banner.js'
 import {
@@ -42,7 +42,7 @@ export const functionsServe = async (options: OptionValues, command: BaseCommand
     errorMessage: 'Could not acquire configured functions port',
   })
 
-  const blobsContext = await getBlobsContext({
+  const blobsContext = await getBlobsContextWithEdgeAccess({
     debug: options.debug,
     projectRoot: command.workingDir,
     siteID: site.id ?? UNLINKED_SITE_MOCK_ID,

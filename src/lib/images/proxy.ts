@@ -1,3 +1,5 @@
+import { IncomingMessage } from 'http'
+
 import { NetlifyConfig } from '@netlify/build'
 import express from 'express'
 import { createIPX, ipxFSStorage, ipxHttpStorage, createIPXNodeServer } from 'ipx'
@@ -31,33 +33,27 @@ interface IpxParams {
 }
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'config' implicitly has an 'any' type.
-export const parseAllDomains = function (config): { errors: ErrorObject[]; remoteDomains: string[] } {
-  const remoteDomains = [] as string[]
+export const parseAllRemoteImages = function (config): { errors: ErrorObject[]; remotePatterns: RegExp[] } {
+  const remotePatterns = [] as RegExp[]
   const errors = [] as ErrorObject[]
-  const domains = config?.images?.remote_images
+  const remoteImages = config?.images?.remote_images
 
-  if (!domains) {
-    return { errors, remoteDomains }
+  if (!remoteImages) {
+    return { errors, remotePatterns }
   }
 
-  for (const patternString of domains) {
+  for (const patternString of remoteImages) {
     try {
-      const url = new URL(patternString)
-      if (url.hostname) {
-        remoteDomains.push(url.hostname)
-      } else {
-        errors.push({ message: `The URL '${patternString}' does not have a valid hostname.` })
-      }
+      const urlRegex = new RegExp(patternString)
+      remotePatterns.push(urlRegex)
     } catch (error) {
-      if (error instanceof Error) {
-        errors.push({ message: `Invalid URL '${patternString}': ${error.message}` })
-      } else {
-        errors.push({ message: `Invalid URL '${patternString}': An unknown error occurred` })
-      }
+      const message = error instanceof Error ? error.message : 'An unknown error occurred'
+
+      errors.push({ message })
     }
   }
 
-  return { errors, remoteDomains }
+  return { errors, remotePatterns }
 }
 
 interface ErrorObject {
@@ -68,29 +64,29 @@ const getErrorMessage = function ({ message }: { message: string }): string {
   return message
 }
 
-export const handleImageDomainsErrors = async function (errors: ErrorObject[]) {
+export const handleRemoteImagesErrors = async function (errors: ErrorObject[]) {
   if (errors.length === 0) {
     return
   }
 
   const errorMessage = await errors.map(getErrorMessage).join('\n\n')
-  log(NETLIFYDEVERR, `Image domains syntax errors:\n${errorMessage}`)
+  log(NETLIFYDEVERR, `Remote images syntax errors:\n${errorMessage}`)
 }
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'any' t... Remove this comment to see the full error message
-export const parseRemoteImageDomains = async function ({ config }) {
+export const parseRemoteImages = async function ({ config }) {
   if (!config) {
     return []
   }
 
-  const { errors, remoteDomains } = await parseAllDomains(config)
-  await handleImageDomainsErrors(errors)
+  const { errors, remotePatterns } = await parseAllRemoteImages(config)
+  await handleRemoteImagesErrors(errors)
 
-  return remoteDomains
+  return remotePatterns
 }
 
-export const isImageRequest = function (req: Request): boolean {
-  return req.url.startsWith(IMAGE_URL_PATTERN)
+export const isImageRequest = function (req: IncomingMessage): boolean {
+  return req.url?.startsWith(IMAGE_URL_PATTERN) ?? false
 }
 
 export const transformImageParams = function (query: QueryParams): string {
@@ -130,16 +126,20 @@ export const initializeProxy = async function ({
   config: NetlifyConfig
   settings: ServerSettings
 }) {
-  const remoteDomains = await parseRemoteImageDomains({ config })
+  const remoteImages = await parseRemoteImages({ config })
   const devServerUrl = getProxyUrl(settings)
 
   const ipx = createIPX({
     storage: ipxFSStorage({ dir: config?.build?.publish ?? './public' }),
-    httpStorage: ipxHttpStorage({ domains: [...remoteDomains, devServerUrl] }),
+    httpStorage: ipxHttpStorage({
+      allowAllDomains: true,
+    }),
   })
 
   const handler = createIPXNodeServer(ipx)
   const app = express()
+
+  let lastTimeRemoteImagesConfigurationDetailsMessageWasLogged = 0
 
   app.use(IMAGE_URL_PATTERN, async (req, res) => {
     const { url, ...query } = req.query
@@ -149,10 +149,34 @@ export const initializeProxy = async function ({
       // Construct the full URL for relative paths to request from development server
       const sourceImagePathWithLeadingSlash = sourceImagePath.startsWith('/') ? sourceImagePath : `/${sourceImagePath}`
       const fullImageUrl = `${devServerUrl}${encodeURIComponent(sourceImagePathWithLeadingSlash)}`
-      console.log(`fullImageUrl: ${fullImageUrl}`)
       req.url = `/${modifiers}/${fullImageUrl}`
     } else {
-      // If the image is remote, we can just pass the URL as is
+      // If the image is remote, we first check if it's allowed by any of patterns
+      if (!remoteImages.some((remoteImage) => remoteImage.test(sourceImagePath))) {
+        const remoteImageNotAllowedLogMessage = `Remote image "${sourceImagePath}" source for Image CDN is not allowed.`
+
+        // Contextual information about the remote image configuration is throttled
+        // to avoid spamming the console as it's quite verbose
+        // Each not allowed remote image will still be logged, just without configuration details
+        if (Date.now() - lastTimeRemoteImagesConfigurationDetailsMessageWasLogged > 1000 * 30) {
+          log(
+            `${remoteImageNotAllowedLogMessage}\n\n${
+              remoteImages.length === 0
+                ? 'Currently no remote images are allowed.'
+                : `Currently allowed remote images configuration details:\n${remoteImages
+                    .map((pattern) => ` - ${pattern}`)
+                    .join('\n')}`
+            }\n\nRefer to https://ntl.fyi/remote-images for information about how to configure allowed remote images.`,
+          )
+          lastTimeRemoteImagesConfigurationDetailsMessageWasLogged = Date.now()
+        } else {
+          log(remoteImageNotAllowedLogMessage)
+        }
+
+        res.status(400).end()
+        return
+      }
+      // Construct the full URL for remote paths
       req.url = `/${modifiers}/${encodeURIComponent(sourceImagePath)}`
     }
 

@@ -1,3 +1,0 @@
-// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
-
-exports[`edge functions > fixture: dev-server-with-edge-functions > should run edge functions in correct order 1`] = `"integration-manifestB|integration-manifestC|integration-manifestA|integration-iscA|integration-iscB|user-tomlB|user-tomlC|user-tomlA|user-iscA|user-iscB|origin"`;
