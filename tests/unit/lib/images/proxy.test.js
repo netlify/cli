@@ -1,16 +1,31 @@
 import { expect, test } from 'vitest'
 
-import { parseAllDomains, transformImageParams } from '../../../../src/lib/images/proxy.js'
+import { parseAllRemoteImages, transformImageParams } from '../../../../dist/lib/images/proxy.js'
 
-test('should parse all domains correctly', () => {
+test('should parse all remote images correctly', () => {
   const config = {
     images: {
       remote_images: ['https://example.com/*', 'https://test.com/*'],
     },
   }
-  const { errors, remoteDomains } = parseAllDomains(config)
+  const { errors, remotePatterns } = parseAllRemoteImages(config)
   expect(errors).toEqual([])
-  expect(remoteDomains).toEqual(['example.com', 'test.com'])
+  expect(remotePatterns).toEqual([/https:\/\/example.com\/*/, /https:\/\/test.com\/*/])
+})
+
+test('should report invalid remote images', () => {
+  const config = {
+    images: {
+      remote_images: ['*'],
+    },
+  }
+  const { errors, remotePatterns } = parseAllRemoteImages(config)
+  expect(errors).toEqual([
+    {
+      message: 'Invalid regular expression: /*/: Nothing to repeat',
+    },
+  ])
+  expect(remotePatterns).toEqual([])
 })
 
 test('should transform image params correctly - without fit or position', () => {

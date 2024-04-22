@@ -153,4 +153,24 @@ describe.concurrent('functions:serve command', () => {
       })
     })
   })
+
+  test('should serve V2 functions', async (t) => {
+    const port = await getPort()
+    await withSiteBuilder(t, async (builder) => {
+      await builder
+        .withContentFile({
+          path: 'netlify/functions/ping.js',
+          content: `
+          export default () => new Response("ping")
+          export const config = { path: "/ping" }
+          `,
+        })
+        .build()
+
+      await withFunctionsServer({ builder, args: ['--port', port], port }, async () => {
+        const response = await fetch(`http://localhost:${port}/ping`)
+        t.expect(await response.text()).toEqual('ping')
+      })
+    })
+  })
 })

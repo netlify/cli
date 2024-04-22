@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 
-import { supportsBackgroundFunctions } from '../../../src/lib/account.js'
+import { supportsBackgroundFunctions } from '../../../dist/lib/account.js'
 
 describe('supportsBackgroundFunctions', () => {
   test(`should return false if no account`, () => {

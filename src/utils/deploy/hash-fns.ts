@@ -8,7 +8,8 @@ import fromArray from 'from2-array'
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'pump... Remove this comment to see the full error message
 import pumpModule from 'pump'
 
-import { getPathInProject } from '../../lib/settings.js'
+import BaseCommand from '../../commands/base-command.js'
+import { $TSFixMe } from '../../commands/types.js'
 import { INTERNAL_FUNCTIONS_FOLDER } from '../functions/functions.js'
 
 import { hasherCtor, manifestCollectorCtor } from './hasher-segments.js'
@@ -19,20 +20,23 @@ const pump = promisify(pumpModule)
 const MANIFEST_FILE_TTL = 12e4
 
 const getFunctionZips = async ({
-  // @ts-expect-error TS(7031) FIXME: Binding element 'directories' implicitly has an 'a... Remove this comment to see the full error message
+  command,
   directories,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'functionsConfig' implicitly has a... Remove this comment to see the full error message
   functionsConfig,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'manifestPath' implicitly has an '... Remove this comment to see the full error message
   manifestPath,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'rootDir' implicitly has an 'any' ... Remove this comment to see the full error message
   rootDir,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'skipFunctionsCache' implicitly ha... Remove this comment to see the full error message
   skipFunctionsCache,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'statusCb' implicitly has an 'any'... Remove this comment to see the full error message
   statusCb,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'tmpDir' implicitly has an 'any' t... Remove this comment to see the full error message
   tmpDir,
+}: {
+  command: BaseCommand
+  directories: string[]
+  functionsConfig: $TSFixMe
+  manifestPath: $TSFixMe
+  rootDir: $TSFixMe
+  skipFunctionsCache: $TSFixMe
+  statusCb: $TSFixMe
+  tmpDir: $TSFixMe
 }) => {
   statusCb({
     type: 'functions-manifest',
@@ -79,33 +83,39 @@ const getFunctionZips = async ({
 
   return await zipFunctions(directories, tmpDir, {
     basePath: rootDir,
-    configFileDirectories: [getPathInProject([INTERNAL_FUNCTIONS_FOLDER])],
+    configFileDirectories: [command.getPathInProject(INTERNAL_FUNCTIONS_FOLDER)],
     config: functionsConfig,
   })
 }
 
 const hashFns = async (
-  // @ts-expect-error TS(7006) FIXME: Parameter 'directories' implicitly has an 'any' ty... Remove this comment to see the full error message
-  directories,
-  {
-    assetType = 'function',
-    // @ts-expect-error TS(7031) FIXME: Binding element 'concurrentHash' implicitly has an... Remove this comment to see the full error message
-    concurrentHash,
-    // @ts-expect-error TS(7031) FIXME: Binding element 'functionsConfig' implicitly has a... Remove this comment to see the full error message
-    functionsConfig,
-    hashAlgorithm = 'sha256',
-    // @ts-expect-error TS(7031) FIXME: Binding element 'manifestPath' implicitly has an '... Remove this comment to see the full error message
-    manifestPath,
-    // @ts-expect-error TS(7031) FIXME: Binding element 'rootDir' implicitly has an 'any' ... Remove this comment to see the full error message
-    rootDir,
-    // @ts-expect-error TS(7031) FIXME: Binding element 'skipFunctionsCache' implicitly ha... Remove this comment to see the full error message
-    skipFunctionsCache,
-    // @ts-expect-error TS(7031) FIXME: Binding element 'statusCb' implicitly has an 'any'... Remove this comment to see the full error message
-    statusCb,
-    // @ts-expect-error TS(7031) FIXME: Binding element 'tmpDir' implicitly has an 'any' t... Remove this comment to see the full error message
-    tmpDir,
+  command: BaseCommand,
+  directories: string[],
+  config: {
+    /** @default 'function' */
+    assetType?: string
+    concurrentHash?: number
+    functionsConfig: $TSFixMe
+    /** @default 'sha256' */
+    hashAlgorithm?: string
+    manifestPath: $TSFixMe
+    rootDir: $TSFixMe
+    skipFunctionsCache: $TSFixMe
+    statusCb: $TSFixMe
+    tmpDir: $TSFixMe
   },
 ) => {
+  const {
+    assetType = 'function',
+    concurrentHash,
+    functionsConfig,
+    hashAlgorithm = 'sha256',
+    manifestPath,
+    rootDir,
+    skipFunctionsCache,
+    statusCb,
+    tmpDir,
+  } = config || {}
   // Early out if no functions directories are configured.
   if (directories.length === 0) {
     return { functions: {}, functionsWithNativeModules: [], shaMap: {} }
@@ -116,6 +126,7 @@ const hashFns = async (
   }
 
   const functionZips = await getFunctionZips({
+    command,
     directories,
     functionsConfig,
     manifestPath,
@@ -126,7 +137,7 @@ const hashFns = async (
   })
   const fileObjs = functionZips.map(
     // @ts-expect-error TS(7031) FIXME: Binding element 'buildData' implicitly has an 'any... Remove this comment to see the full error message
-    ({ buildData, displayName, generator, invocationMode, path: functionPath, runtime, runtimeVersion }) => ({
+    ({ buildData, displayName, generator, invocationMode, path: functionPath, priority, runtime, runtimeVersion }) => ({
       filepath: functionPath,
       root: tmpDir,
       relname: path.relative(tmpDir, functionPath),
@@ -140,6 +151,7 @@ const hashFns = async (
       generator,
       invocationMode,
       buildData,
+      priority,
     }),
   )
   const fnConfig = functionZips
@@ -154,6 +166,7 @@ const hashFns = async (
           generator: curr.generator,
           routes: curr.routes,
           build_data: curr.buildData,
+          priority: curr.priority,
         },
       }),
       {},

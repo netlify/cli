@@ -1,6 +1,6 @@
 import { expect, describe, test } from 'vitest'
 
-import getAutocompletion from '../../../../src/lib/completion/get-autocompletion.js'
+import getAutocompletion from '../../../../dist/lib/completion/get-autocompletion.js'
 
 const cookingFixtures = {
   cook: {

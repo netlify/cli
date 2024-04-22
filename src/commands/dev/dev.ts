@@ -1,8 +1,10 @@
 import process from 'process'
 
+// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module '@net... Remove this comment to see the full error message
+import { applyMutations } from '@netlify/config'
 import { OptionValues, Option } from 'commander'
 
-import { BLOBS_CONTEXT_VARIABLE, encodeBlobsContext, getBlobsContext } from '../../lib/blobs/blobs.js'
+import { BLOBS_CONTEXT_VARIABLE, encodeBlobsContext, getBlobsContextWithEdgeAccess } from '../../lib/blobs/blobs.js'
 import { promptEditorHelper } from '../../lib/edge-functions/editor-helper.js'
 import { startFunctionsServer } from '../../lib/functions/server.js'
 import { printBanner } from '../../utils/banner.js'
@@ -17,7 +19,7 @@ import {
   normalizeConfig,
 } from '../../utils/command-helpers.js'
 import detectServerSettings, { getConfigWithPlugins } from '../../utils/detect-server-settings.js'
-import { getDotEnvVariables, getSiteInformation, injectEnvVariables } from '../../utils/dev.js'
+import { getDotEnvVariables, getSiteInformation, injectEnvVariables, UNLINKED_SITE_MOCK_ID } from '../../utils/dev.js'
 import { getEnvelopeEnv, normalizeContext } from '../../utils/env/index.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import { getLiveTunnelSlug, startLiveTunnel } from '../../utils/live-tunnel.js'
@@ -105,10 +107,10 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
 
   env.NETLIFY_DEV = { sources: ['internal'], value: 'true' }
 
-  const blobsContext = await getBlobsContext({
+  const blobsContext = await getBlobsContextWithEdgeAccess({
     debug: options.debug,
     projectRoot: command.workingDir,
-    siteID: site.id ?? 'unknown-site-id',
+    siteID: site.id ?? UNLINKED_SITE_MOCK_ID,
   })
 
   env[BLOBS_CONTEXT_VARIABLE] = { sources: ['internal'], value: encodeBlobsContext(blobsContext) }
@@ -135,6 +137,13 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
   try {
     settings = await detectServerSettings(devConfig, options, command)
 
+    if (process.env.NETLIFY_INCLUDE_DEV_SERVER_PLUGIN) {
+      if (options.debug) {
+        log(`${NETLIFYDEVLOG} Including dev server plugin: ${process.env.NETLIFY_INCLUDE_DEV_SERVER_PLUGIN}`)
+      }
+      settings.plugins = [...(settings.plugins || []), process.env.NETLIFY_INCLUDE_DEV_SERVER_PLUGIN]
+    }
+
     cachedConfig.config = getConfigWithPlugins(cachedConfig.config, settings)
   } catch (error_) {
     if (error_ && typeof error_ === 'object' && 'message' in error_) {
@@ -153,7 +162,7 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
 
   log(`${NETLIFYDEVWARN} Setting up local development server`)
 
-  const { configPath: configPathOverride } = await runDevTimeline({
+  const { configMutations, configPath: configPathOverride } = await runDevTimeline({
     command,
     options,
     settings,
@@ -163,11 +172,12 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
     },
   })
 
+  const mutatedConfig: typeof config = applyMutations(config, configMutations)
+
   const functionsRegistry = await startFunctionsServer({
-    api,
     blobsContext,
     command,
-    config,
+    config: mutatedConfig,
     debug: options.debug,
     settings,
     site,
@@ -206,9 +216,11 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
   await startProxyServer({
     addonsUrls,
     blobsContext,
-    config,
+    command,
+    config: mutatedConfig,
     configPath: configPathOverride,
     debug: options.debug,
+    disableEdgeFunctions: options.internalDisableEdgeFunctions,
     projectDir: command.workingDir,
     env,
     getUpdatedConfig,
@@ -253,12 +265,19 @@ export const createDevCommand = (program: BaseCommand) => {
         .argParser((value) => Number.parseInt(value))
         .hideHelp(true),
     )
+    .addOption(new Option('--skip-wait-port', 'disables waiting for target port to become available').hideHelp(true))
     .addOption(new Option('--no-open', 'disables the automatic opening of a browser window'))
     .option('--target-port <port>', 'port of target app server', (value) => Number.parseInt(value))
     .option('--framework <name>', 'framework to use. Defaults to #auto which automatically detects a framework')
     .option('-d ,--dir <path>', 'dir with static files')
     .option('-f ,--functions <folder>', 'specify a functions folder to serve')
     .option('-o ,--offline', 'disables any features that require network access')
+    .addOption(
+      new Option(
+        '--internal-disable-edge-functions',
+        "disables edge functions. use this if your environment doesn't support Deno. This option is internal and should not be used by end users.",
+      ).hideHelp(true),
+    )
     .option(
       '-l, --live [subdomain]',
       'start a public live session; optionally, supply a subdomain to generate a custom URL',

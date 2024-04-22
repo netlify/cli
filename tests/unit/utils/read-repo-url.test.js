@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 
-import { parseRepoURL } from '../../../src/utils/read-repo-url.js'
+import { parseRepoURL } from '../../../dist/utils/read-repo-url.js'
 
 describe('parseRepoURL', () => {
   test('should parse GitHub URL', () => {

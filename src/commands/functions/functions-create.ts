@@ -13,7 +13,6 @@ import copyTemplateDirOriginal from 'copy-template-dir'
 import { findUp } from 'find-up'
 import fuzzy from 'fuzzy'
 import inquirer from 'inquirer'
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'node... Remove this comment to see the full error message
 import fetch from 'node-fetch'
 import ora from 'ora'
 
@@ -29,19 +28,17 @@ const copyTemplateDir = promisify(copyTemplateDirOriginal)
 
 const require = createRequire(import.meta.url)
 
-const templatesDir = path.resolve(dirname(fileURLToPath(import.meta.url)), '../../functions-templates')
-
-const showRustTemplates = process.env.NETLIFY_EXPERIMENTAL_BUILD_RUST_SOURCE === 'true'
+const templatesDir = path.resolve(dirname(fileURLToPath(import.meta.url)), '../../../functions-templates')
 
 /**
- * Ensure that there's a sub-directory in `src/functions-templates` named after
+ * Ensure that there's a sub-directory in `/functions-templates` named after
  * each `value` property in this list.
  */
 const languages = [
   { name: 'JavaScript', value: 'javascript' },
   { name: 'TypeScript', value: 'typescript' },
   { name: 'Go', value: 'go' },
-  showRustTemplates && { name: 'Rust', value: 'rust' },
+  { name: 'Rust', value: 'rust' },
 ]
 
 /**
@@ -118,7 +115,7 @@ const formatRegistryArrayForInquirer = async function (lang, funcType) {
       .filter((folder) => Boolean(folder?.isDirectory()))
       .map(async ({ name }) => {
         try {
-          const templatePath = path.join(templatesDir, lang, name, '.netlify-function-template.js')
+          const templatePath = path.join(templatesDir, lang, name, '.netlify-function-template.mjs')
           // @ts-expect-error TS(7036) FIXME: Dynamic import's specifier must be of type 'string... Remove this comment to see the full error message
           const template = await import(pathToFileURL(templatePath))
           return template.default
@@ -181,12 +178,10 @@ const pickTemplate = async function ({ language: languageFromFlag }, funcType) {
   if (language === undefined) {
     const langs =
       funcType === 'edge'
-        ? // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'false | {... Remove this comment to see the full error message
-          languages.filter((lang) => lang.value === 'javascript' || lang.value === 'typescript')
+        ? languages.filter((lang) => lang.value === 'javascript' || lang.value === 'typescript')
         : languages.filter(Boolean)
 
     const { language: languageFromPrompt } = await inquirer.prompt({
-      // @ts-expect-error
       choices: langs,
       message: 'Select the language of your function',
       name: 'language',
@@ -239,7 +234,7 @@ const DEFAULT_PRIORITY = 999
 const selectTypeOfFunc = async () => {
   const functionTypes = [
     { name: 'Edge function (Deno)', value: 'edge' },
-    { name: 'Serverless function (Node/Go)', value: 'serverless' },
+    { name: 'Serverless function (Node/Go/Rust)', value: 'serverless' },
   ]
 
   const { functionType } = await inquirer.prompt([
@@ -398,7 +393,7 @@ const downloadFromURL = async function (command, options, argumentName, function
   })
 
   // read, execute, and delete function template file if exists
-  const fnTemplateFile = path.join(fnFolder, '.netlify-function-template.js')
+  const fnTemplateFile = path.join(fnFolder, '.netlify-function-template.mjs')
   if (await fileExistsAsync(fnTemplateFile)) {
     const {
       default: { addons = [], onComplete },
@@ -526,7 +521,7 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
 
     // These files will not be part of the log message because they'll likely
     // be removed before the command finishes.
-    const omittedFromOutput = new Set(['.netlify-function-template.js', 'package.json', 'package-lock.json'])
+    const omittedFromOutput = new Set(['.netlify-function-template.mjs', 'package.json', 'package-lock.json'])
     const createdFiles = await copyTemplateDir(pathToTemplate, functionPath, vars)
     // @ts-expect-error TS(7006) FIXME: Parameter 'filePath' implicitly has an 'any' type.
     createdFiles.forEach((filePath) => {
@@ -543,7 +538,7 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
     })
 
     // delete function template file that was copied over by copydir
-    await unlink(path.join(functionPath, '.netlify-function-template.js'))
+    await unlink(path.join(functionPath, '.netlify-function-template.mjs'))
 
     // npm install
     if (functionPackageJson !== undefined) {
@@ -561,6 +556,17 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
 
     await installAddons(command, addons, path.resolve(functionPath))
     await handleOnComplete({ command, onComplete })
+
+    log()
+    log(chalk.greenBright(`Function created!`))
+
+    if (lang == 'rust') {
+      log(
+        chalk.green(
+          `Please note that Rust functions require setting the NETLIFY_EXPERIMENTAL_BUILD_RUST_SOURCE environment variable to 'true' on your site.`,
+        ),
+      )
+    }
   }
 }
 

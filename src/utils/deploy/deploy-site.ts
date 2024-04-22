@@ -3,6 +3,8 @@ import { rm } from 'fs/promises'
 import cleanDeep from 'clean-deep'
 import { temporaryDirectory } from 'tempy'
 
+import BaseCommand from '../../commands/base-command.js'
+import { type $TSFixMe } from '../../commands/types.js'
 import { deployFileNormalizer, getDistPathIfExists, isEdgeFunctionFile } from '../../lib/edge-functions/deploy.js'
 import { warn } from '../command-helpers.js'
 
@@ -19,9 +21,16 @@ import hashFns from './hash-fns.js'
 import uploadFiles from './upload-files.js'
 import { getUploadList, waitForDeploy, waitForDiff } from './util.js'
 
+const buildStatsString = (possibleParts: Array<string | false | undefined>) => {
+  const parts = possibleParts.filter(Boolean)
+  const message = parts.slice(0, -1).join(', ')
+
+  return parts.length > 1 ? `${message} and ${parts[parts.length - 1]}` : message
+}
+
 export const deploySite = async (
-  // @ts-expect-error TS(7006) FIXME: Parameter 'api' implicitly has an 'any' type.
-  api,
+  command: BaseCommand,
+  api: $TSFixMe,
   // @ts-expect-error TS(7006) FIXME: Parameter 'siteId' implicitly has an 'any' type.
   siteId,
   // @ts-expect-error TS(7006) FIXME: Parameter 'dir' implicitly has an 'any' type.
@@ -50,8 +59,6 @@ export const deploySite = async (
     manifestPath,
     maxRetry = DEFAULT_MAX_RETRY,
     // @ts-expect-error TS(2525) FIXME: Initializer provides no value for this binding ele... Remove this comment to see the full error message
-    siteEnv,
-    // @ts-expect-error TS(2525) FIXME: Initializer provides no value for this binding ele... Remove this comment to see the full error message
     siteRoot,
     // @ts-expect-error TS(2525) FIXME: Initializer provides no value for this binding ele... Remove this comment to see the full error message
     skipFunctionsCache,
@@ -60,7 +67,6 @@ export const deploySite = async (
     },
     syncFileLimit = DEFAULT_SYNC_LIMIT,
     tmpDir = temporaryDirectory(),
-    // @ts-expect-error TS(2525) FIXME: Initializer provides no value for this binding ele... Remove this comment to see the full error message
     workingDir,
   }: {
     concurrentHash?: number
@@ -72,7 +78,8 @@ export const deploySite = async (
     syncFileLimit?: number
     tmpDir?: string
     fnDir?: string[]
-  } = {},
+    workingDir: string
+  },
 ) => {
   statusCb({
     type: 'hashing',
@@ -95,18 +102,15 @@ export const deploySite = async (
       normalizer: deployFileNormalizer.bind(null, workingDir),
       statusCb,
     }),
-    hashFns(fnDir, {
+    hashFns(command, fnDir, {
       functionsConfig,
       tmpDir,
       concurrentHash,
       hashAlgorithm,
       statusCb,
       assetType,
-      // @ts-expect-error TS(2345) FIXME: Argument of type '{ functionsConfig: any; tmpDir: ... Remove this comment to see the full error message
-      workingDir,
       manifestPath,
       skipFunctionsCache,
-      siteEnv,
       rootDir: siteRoot,
     }),
     hashConfig({ config }),
@@ -210,12 +214,4 @@ For more information, visit https://ntl.fyi/cli-native-modules.`)
     uploadList,
   }
   return deployManifest
-}
-
-// @ts-expect-error TS(7006) FIXME: Parameter 'possibleParts' implicitly has an 'any' ... Remove this comment to see the full error message
-const buildStatsString = (possibleParts) => {
-  const parts = possibleParts.filter(Boolean)
-  const message = parts.slice(0, -1).join(', ')
-
-  return parts.length > 1 ? `${message} and ${parts[parts.length - 1]}` : message
 }

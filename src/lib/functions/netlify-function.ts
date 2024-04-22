@@ -7,7 +7,7 @@ import semver from 'semver'
 
 import { error as errorExit } from '../../utils/command-helpers.js'
 import { BACKGROUND } from '../../utils/functions/get-functions.js'
-import type { BlobsContext } from '../blobs/blobs.js'
+import type { BlobsContextWithEdgeAccess } from '../blobs/blobs.js'
 
 const TYPESCRIPT_EXTENSIONS = new Set(['.cts', '.mts', '.ts'])
 const V2_MIN_NODE_VERSION = '18.14.0'
@@ -34,13 +34,13 @@ export default class NetlifyFunction {
 
   private readonly directory: string
   private readonly projectRoot: string
-  private readonly blobsContext: BlobsContext
+  private readonly blobsContext: BlobsContextWithEdgeAccess
   private readonly timeoutBackground: number
   private readonly timeoutSynchronous: number
 
   // Determines whether this is a background function based on the function
   // name.
-  private readonly isBackground: boolean
+  public readonly isBackground: boolean
 
   private buildQueue?: Promise<$FIXME>
   private buildData?: $FIXME
@@ -239,6 +239,7 @@ export default class NetlifyFunction {
     if (this.blobsContext) {
       const payload = JSON.stringify({
         url: this.blobsContext.edgeURL,
+        url_uncached: this.blobsContext.edgeURL,
         token: this.blobsContext.token,
       })
 
@@ -270,7 +271,7 @@ export default class NetlifyFunction {
 
     let path = rawPath !== '/' && rawPath.endsWith('/') ? rawPath.slice(0, -1) : rawPath
     path = path.toLowerCase()
-    const { routes = [] } = this.buildData
+    const { routes = [] } = this.buildData ?? {}
     // @ts-expect-error TS(7031) FIXME: Binding element 'expression' implicitly has an 'an... Remove this comment to see the full error message
     const route = routes.find(({ expression, literal, methods }) => {
       if (methods.length !== 0 && !methods.includes(method)) {

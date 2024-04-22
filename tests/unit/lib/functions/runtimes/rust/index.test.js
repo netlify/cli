@@ -1,9 +1,9 @@
 import { expect, test, vi } from 'vitest'
 
-import { runFunctionsProxy } from '../../../../../../src/lib/functions/local-proxy.js'
-import { invokeFunction } from '../../../../../../src/lib/functions/runtimes/rust/index.js'
+import { runFunctionsProxy } from '../../../../../../dist/lib/functions/local-proxy.js'
+import { invokeFunction } from '../../../../../../dist/lib/functions/runtimes/rust/index.js'
 
-vi.mock('../../../../../../src/lib/functions/local-proxy.js', () => ({ runFunctionsProxy: vi.fn() }))
+vi.mock('../../../../../../dist/lib/functions/local-proxy.js', () => ({ runFunctionsProxy: vi.fn() }))
 
 test.each([
   ['body', 'thebody'],

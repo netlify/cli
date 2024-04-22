@@ -56,7 +56,19 @@ describe.skipIf(isWindows)('edge functions', () => {
         const body = await response.text()
 
         expect(response.status).toBe(200)
-        expect(body).toMatchSnapshot()
+        expect(body.split('|')).toEqual([
+          'integration-manifestB',
+          'integration-manifestC',
+          'integration-manifestA',
+          'integration-iscA',
+          'integration-iscB',
+          'user-tomlB',
+          'user-tomlC',
+          'user-tomlA',
+          'user-iscA',
+          'user-iscB',
+          'origin',
+        ])
       })
 
       test<FixtureTestContext>('should provide context properties', async ({ devServer }) => {
@@ -147,6 +159,27 @@ describe.skipIf(isWindows)('edge functions', () => {
     },
   )
 
+  setupFixtureTests(
+    'dev-server-with-edge-functions',
+    {
+      devServer: { args: ['--internal-disable-edge-functions'] },
+      mockApi: { routes },
+      setupAfterDev: recreateEdgeFunctions,
+    },
+    () => {
+      test<FixtureTestContext>('skips edge functions when --internal-disable-edge-functions is passed', async ({
+        devServer,
+      }) => {
+        const response = await fetch(`http://localhost:${devServer.port}/ordertest`)
+        const body = await response.text()
+
+        expect(response.status).toBe(200)
+        expect(body).toEqual('origin\n')
+        expect(devServer?.output).toContain('Edge functions are disabled')
+      })
+    },
+  )
+
   setupFixtureTests('dev-server-with-edge-functions', { devServer: true, mockApi: { routes } }, () => {
     test<FixtureTestContext>('should not remove other edge functions on change', async ({ devServer, fixture }) => {
       // we need to wait till file watchers are loaded
@@ -203,6 +236,34 @@ describe.skipIf(isWindows)('edge functions', () => {
 
         const response2 = await fetch(server.url, {}).then((res) => res.text())
         t.expect(response2).toEqual('bar')
+      })
+    })
+  })
+
+  test('functions and edge functions should receive url-encoded search params in the same way', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      await builder
+        .withContentFile({
+          path: 'netlify/functions/func.js',
+          content: `
+          export default async (req) => new Response(new URL(req.url).search)
+          export const config = { path: '/func' }
+          `,
+        })
+        .withContentFile({
+          path: 'netlify/edge-functions/func.js',
+          content: `
+          export default async (req) => new Response(new URL(req.url).search)
+          export const config = { path: '/ef' }
+          `,
+        })
+        .build()
+
+      await withDevServer({ cwd: builder.directory }, async (server) => {
+        const funcResponse = await fetch(new URL('/func?1,2,3', server.url), {})
+        const efResponse = await fetch(new URL('/ef?1,2,3', server.url), {})
+        t.expect(await funcResponse.text()).toEqual('?1,2,3')
+        t.expect(await efResponse.text()).toEqual('?1,2,3')
       })
     })
   })

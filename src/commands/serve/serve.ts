@@ -2,21 +2,26 @@ import process from 'process'
 
 import { OptionValues } from 'commander'
 
-import { BLOBS_CONTEXT_VARIABLE, encodeBlobsContext, getBlobsContext } from '../../lib/blobs/blobs.js'
+import {
+  BLOBS_CONTEXT_VARIABLE,
+  encodeBlobsContext,
+  getBlobsContextWithAPIAccess,
+  getBlobsContextWithEdgeAccess,
+} from '../../lib/blobs/blobs.js'
 import { promptEditorHelper } from '../../lib/edge-functions/editor-helper.js'
 import { startFunctionsServer } from '../../lib/functions/server.js'
 import { printBanner } from '../../utils/banner.js'
 import {
-  chalk,
-  exit,
-  log,
   NETLIFYDEVERR,
   NETLIFYDEVLOG,
   NETLIFYDEVWARN,
+  chalk,
+  exit,
+  log,
   normalizeConfig,
 } from '../../utils/command-helpers.js'
 import detectServerSettings, { getConfigWithPlugins } from '../../utils/detect-server-settings.js'
-import { getDotEnvVariables, getSiteInformation, injectEnvVariables } from '../../utils/dev.js'
+import { UNLINKED_SITE_MOCK_ID, getDotEnvVariables, getSiteInformation, injectEnvVariables } from '../../utils/dev.js'
 import { getEnvelopeEnv } from '../../utils/env/index.js'
 import { getInternalFunctionsDir } from '../../utils/functions/functions.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
@@ -68,7 +73,11 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
   // Ensure the internal functions directory exists so that the functions
   // server and registry are initialized, and any functions created by
   // Netlify Build are loaded.
-  await getInternalFunctionsDir({ base: site.root, ensureExists: true })
+  await getInternalFunctionsDir({
+    base: site.root,
+    ensureExists: true,
+    packagePath: command.workspacePackage,
+  })
 
   let settings: ServerSettings
   try {
@@ -88,23 +97,31 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
     `${NETLIFYDEVWARN} Changes will not be hot-reloaded, so if you need to rebuild your site you must exit and run 'netlify serve' again`,
   )
 
+  const blobsOptions = {
+    debug: options.debug,
+    projectRoot: command.workingDir,
+    siteID: site.id ?? UNLINKED_SITE_MOCK_ID,
+  }
+
+  // We start by running a build, so we want a Blobs context with API access,
+  // which is what build plugins use.
+  process.env[BLOBS_CONTEXT_VARIABLE] = encodeBlobsContext(await getBlobsContextWithAPIAccess(blobsOptions))
+
   const { configPath: configPathOverride } = await runBuildTimeline({
     command,
     settings,
     options,
+    env: {},
   })
 
-  const blobsContext = await getBlobsContext({
-    debug: options.debug,
-    projectRoot: command.workingDir,
-    siteID: site.id ?? 'unknown-site-id',
-  })
+  // Now we generate a second Blobs context object, this time with edge access
+  // for runtime access (i.e. from functions and edge functions).
+  const runtimeBlobsContext = await getBlobsContextWithEdgeAccess(blobsOptions)
 
-  process.env[BLOBS_CONTEXT_VARIABLE] = encodeBlobsContext(blobsContext)
+  process.env[BLOBS_CONTEXT_VARIABLE] = encodeBlobsContext(runtimeBlobsContext)
 
   const functionsRegistry = await startFunctionsServer({
-    api,
-    blobsContext,
+    blobsContext: runtimeBlobsContext,
     command,
     config,
     debug: options.debug,
@@ -138,12 +155,14 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
   }
 
   const inspectSettings = generateInspectSettings(options.edgeInspect, options.edgeInspectBrk)
-  // @ts-expect-error TS(2345) FIXME: Argument of type '{ addonsUrls: { [k: string]: any... Remove this comment to see the full error message
   const url = await startProxyServer({
     addonsUrls,
+    blobsContext: runtimeBlobsContext,
+    command,
     config,
     configPath: configPathOverride,
     debug: options.debug,
+    disableEdgeFunctions: options.internalDisableEdgeFunctions,
     env,
     functionsRegistry,
     geolocationMode: options.geo,

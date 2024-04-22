@@ -17,7 +17,7 @@ const WAIT_WRITE = 3000
 
 describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args }) => {
   test('Updates a JavaScript function when its main file is modified', async (t) => {
-    await withSiteBuilder('js-function-update-main-file', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
       await builder
@@ -35,7 +35,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
             body: 'Hello',
           }),
         })
-        .buildAsync()
+        .build()
 
       await withDevServer({ cwd: builder.directory, args }, async ({ outputBuffer, port, waitForLogMatching }) => {
         await tryAndLogOutput(
@@ -56,7 +56,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
               body: 'Goodbye',
             }),
           })
-          .buildAsync()
+          .build()
 
         await waitForLogMatching('Reloaded function hello')
 
@@ -68,7 +68,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
   })
 
   test('Updates a TypeScript function when its main file is modified', async (t) => {
-    await withSiteBuilder('ts-function-update-main-file', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
       await builder
@@ -102,7 +102,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
   export { handler }
             `,
         })
-        .buildAsync()
+        .build()
 
       await withDevServer({ cwd: builder.directory, args }, async ({ outputBuffer, port, waitForLogMatching }) => {
         await tryAndLogOutput(
@@ -139,7 +139,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
   export { handler }
             `,
           })
-          .buildAsync()
+          .build()
 
         await waitForLogMatching('Reloaded function hello')
 
@@ -151,7 +151,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
   })
 
   test('Updates a JavaScript function when a supporting file is modified', async (t) => {
-    await withSiteBuilder('js-function-update-supporting-file', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       const functionsConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
       await builder
@@ -168,7 +168,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
             content: `const { bark } = require('./lib/util'); exports.handler = async () => ({ statusCode: 200, body: bark() })`,
           },
         ])
-        .buildAsync()
+        .build()
 
       await withDevServer({ cwd: builder.directory, args }, async ({ outputBuffer, port, waitForLogMatching }) => {
         await tryAndLogOutput(async () => {
@@ -181,7 +181,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
 
         await builder
           .withContentFile({ path: 'functions/lib/util.js', content: `exports.bark = () => 'WOOF WOOF!'` })
-          .buildAsync()
+          .build()
 
         // eslint-disable-next-line unicorn/prefer-ternary
         if (args.includes('esbuild')) {
@@ -199,7 +199,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
   })
 
   test('Updates a TypeScript function when a supporting file is modified', async (t) => {
-    await withSiteBuilder('ts-function-update-supporting-file', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       const functionsConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
       await builder
@@ -244,7 +244,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
             `,
           },
         ])
-        .buildAsync()
+        .build()
 
       await withDevServer({ cwd: builder.directory, args }, async ({ outputBuffer, port, waitForLogMatching }) => {
         await tryAndLogOutput(async () => {
@@ -264,7 +264,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
   export { title }
   `,
           })
-          .buildAsync()
+          .build()
 
         await waitForLogMatching('Reloaded function hello')
 
@@ -276,7 +276,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
   })
 
   test('Adds a new JavaScript function when a function file is created', async (t) => {
-    await withSiteBuilder('js-function-create-function-file', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
       await builder
@@ -287,7 +287,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
             ...bundlerConfig,
           },
         })
-        .buildAsync()
+        .build()
 
       await withDevServer({ cwd: builder.directory, args }, async ({ outputBuffer, port, waitForLogMatching }) => {
         await tryAndLogOutput(async () => {
@@ -306,7 +306,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
               body: 'Hello',
             }),
           })
-          .buildAsync()
+          .build()
 
         await waitForLogMatching('Loaded function hello')
 
@@ -318,7 +318,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
   })
 
   test('Adds a new TypeScript function when a function file is created', async (t) => {
-    await withSiteBuilder('ts-function-create-function-file', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
       await builder
@@ -337,7 +337,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
             ...bundlerConfig,
           },
         })
-        .buildAsync()
+        .build()
 
       await withDevServer({ cwd: builder.directory, args }, async ({ outputBuffer, port, waitForLogMatching }) => {
         await tryAndLogOutput(async () => {
@@ -372,7 +372,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
   export { handler }
           `,
           })
-          .buildAsync()
+          .build()
 
         await waitForLogMatching('Loaded function hello')
 
@@ -384,7 +384,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
   })
 
   test('Removes a function when a function file is deleted', async (t) => {
-    await withSiteBuilder('function-remove-function-file', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
       await builder
@@ -402,7 +402,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
             body: 'Hello',
           }),
         })
-        .buildAsync()
+        .build()
 
       await withDevServer({ cwd: builder.directory, args }, async ({ outputBuffer, port, waitForLogMatching }) => {
         await tryAndLogOutput(async () => {
@@ -417,7 +417,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
           .withoutFile({
             path: 'functions/hello.js',
           })
-          .buildAsync()
+          .build()
 
         await waitForLogMatching('Removed function hello')
 
@@ -429,7 +429,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
   })
 
   test(`should pick up new function files even through debounce`, async (t) => {
-    await withSiteBuilder('function-file-updates', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       await builder
         .withNetlifyToml({
           config: {
@@ -453,7 +453,7 @@ exports.handler = async () => ({
   body: response
 })`,
         })
-        .buildAsync()
+        .build()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
         const resp = await fetch(`${server.url}/.netlify/functions/hello`)
@@ -464,14 +464,14 @@ exports.handler = async () => ({
             path: '/functions/hello/dist/index.d.ts',
             content: `export default "bar"`,
           })
-          .buildAsync()
+          .build()
 
         await builder
           .withContentFile({
             path: '/functions/hello/dist/index.js',
             content: `module.exports = "bar"`,
           })
-          .buildAsync()
+          .build()
 
         const DEBOUNCE_WAIT = 150
         await pause(DEBOUNCE_WAIT)
@@ -483,7 +483,7 @@ exports.handler = async () => ({
   })
 
   test('Serves functions from the internal functions directory', async (t) => {
-    await withSiteBuilder('function-internal', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
       await builder
@@ -527,7 +527,7 @@ exports.handler = async () => ({
               body: 'Internal updated',
             }),
           })
-          .buildAsync()
+          .build()
 
         await waitForLogMatching('Reloaded function hello')
 
@@ -539,7 +539,7 @@ exports.handler = async () => ({
   })
 
   test('User functions take precedence over internal functions', async (t) => {
-    await withSiteBuilder('function-internal-priority', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
       await builder
@@ -595,7 +595,7 @@ exports.handler = async () => ({
               body: 'Internal updated',
             }),
           })
-          .buildAsync()
+          .build()
 
         await waitForLogMatching('Reloaded function hello')
 
@@ -607,7 +607,7 @@ exports.handler = async () => ({
   })
 
   test('Serves functions with a `.mjs` extension', async (t) => {
-    await withSiteBuilder('function-mjs', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
       await builder
@@ -631,7 +631,7 @@ exports.handler = async () => ({
   export { handler }
             `,
         })
-        .buildAsync()
+        .build()
 
       await withDevServer({ cwd: builder.directory, args }, async ({ outputBuffer, port }) => {
         await tryAndLogOutput(async () => {
@@ -644,7 +644,7 @@ exports.handler = async () => ({
   })
 
   test('Serves functions inside a "type=module" package', async (t) => {
-    await withSiteBuilder('function-type-module', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
       await builder
@@ -668,7 +668,7 @@ exports.handler = async () => ({
           }),
           esm: true,
         })
-        .buildAsync()
+        .build()
 
       await withDevServer({ cwd: builder.directory, args }, async ({ outputBuffer, port }) => {
         await tryAndLogOutput(async () => {
@@ -681,7 +681,7 @@ exports.handler = async () => ({
   })
 
   test('Resembles base64 encoding of production', async (t) => {
-    await withSiteBuilder('function-base64-encoding', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       const bundlerConfig = args.includes('esbuild') ? { node_bundler: 'esbuild' } : {}
 
       await builder
@@ -699,7 +699,7 @@ exports.handler = async () => ({
             body: event.isBase64Encoded ? 'base64' : 'plain',
           }),
         })
-        .buildAsync()
+        .build()
 
       await withDevServer({ cwd: builder.directory, args }, async ({ outputBuffer, port }) => {
         await tryAndLogOutput(async () => {
@@ -718,7 +718,7 @@ exports.handler = async () => ({
 
 describe.concurrent('serving functions', () => {
   test('Serves functions that dynamically load files included in the `functions.included_files` config property', async (t) => {
-    await withSiteBuilder('function-with-included-files', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       await builder
         .withContentFiles([
           {
@@ -750,7 +750,7 @@ describe.concurrent('serving functions', () => {
             functions: { directory: 'functions', included_files: ['files/*'], node_bundler: 'esbuild' },
           },
         })
-        .buildAsync()
+        .build()
 
       await withDevServer({ cwd: builder.directory }, async ({ outputBuffer, port }) => {
         await tryAndLogOutput(async () => {
@@ -766,7 +766,7 @@ describe.concurrent('serving functions', () => {
   })
 
   test('Uses sourcemaps to show correct paths and locations in stack trace', async (t) => {
-    await withSiteBuilder('function-with-sourcemaps', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       await builder
         .withFunction({
           path: 'hello.js',
@@ -780,7 +780,7 @@ describe.concurrent('serving functions', () => {
             functions: { directory: 'functions', node_bundler: 'esbuild' },
           },
         })
-        .buildAsync()
+        .build()
 
       await withDevServer({ cwd: builder.directory }, async ({ port }) => {
         const responseWithTrace = await fetch(`http://localhost:${port}/.netlify/functions/hello`).then((res) =>
@@ -793,7 +793,7 @@ describe.concurrent('serving functions', () => {
   })
 
   test('Populates the `event` argument', async (t) => {
-    await withSiteBuilder('function-event', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       await builder
         .withFunction({
           path: 'hello.js',
@@ -808,7 +808,7 @@ describe.concurrent('serving functions', () => {
             functions: { directory: 'functions' },
           },
         })
-        .buildAsync()
+        .build()
 
       await withDevServer({ cwd: builder.directory }, async ({ outputBuffer, port }) => {
         await tryAndLogOutput(async () => {
@@ -831,7 +831,7 @@ describe.concurrent('serving functions', () => {
   })
 
   test('Throws an error when the function returns invalid `body`', async (t) => {
-    await withSiteBuilder('function-invalid-body', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       await builder
         .withFunction({
           path: 'hello.js',
@@ -846,7 +846,7 @@ describe.concurrent('serving functions', () => {
             functions: { directory: 'functions' },
           },
         })
-        .buildAsync()
+        .build()
 
       await withDevServer({ cwd: builder.directory }, async ({ outputBuffer, port }) => {
         await tryAndLogOutput(async () => {
@@ -862,7 +862,7 @@ describe.concurrent('serving functions', () => {
   })
 
   test('Throws an error when the function returns invalid `statusCode`', async (t) => {
-    await withSiteBuilder('function-invalid-statuscode', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       await builder
         .withFunction({
           path: 'hello.js',
@@ -877,7 +877,7 @@ describe.concurrent('serving functions', () => {
             functions: { directory: 'functions' },
           },
         })
-        .buildAsync()
+        .build()
 
       await withDevServer({ cwd: builder.directory }, async ({ outputBuffer, port }) => {
         await tryAndLogOutput(async () => {
@@ -893,7 +893,7 @@ describe.concurrent('serving functions', () => {
   })
 
   test('Ensures watcher watches included files', async (t) => {
-    await withSiteBuilder('function-with-included-files-watch', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       await builder
         .withContentFiles([
           {
@@ -929,7 +929,7 @@ describe.concurrent('serving functions', () => {
             },
           },
         })
-        .buildAsync()
+        .build()
 
       await withDevServer({ cwd: builder.directory }, async ({ outputBuffer, port }) => {
         await tryAndLogOutput(async () => {
@@ -952,7 +952,7 @@ describe.concurrent('serving functions', () => {
               content: `{"data": "four"}`,
             },
           ])
-          .buildAsync()
+          .build()
 
         // wait for the watcher to rebuild the function
         const delay = 1000

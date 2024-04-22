@@ -5,7 +5,7 @@ exports[`frameworks/framework-detection > should default to process.cwd() and st
 ◈ No app server detected. Using simple static server
 ◈ Unable to determine public folder to serve files from. Using current working directory
 ◈ Setup a netlify.toml file with a [dev] section to specify your dev server settings.
-◈ See docs at: https://cli.netlify.com/netlify-dev#project-detection
+◈ See docs at: https://docs.netlify.com/cli/local-development/#project-detection
 ◈ Running static server from \\"site-with-index-file\\"
 ◈ Setting up local development server
 
@@ -34,7 +34,7 @@ exports[`frameworks/framework-detection > should filter frameworks with no dev c
 ◈ No app server detected. Using simple static server
 ◈ Unable to determine public folder to serve files from. Using current working directory
 ◈ Setup a netlify.toml file with a [dev] section to specify your dev server settings.
-◈ See docs at: https://cli.netlify.com/netlify-dev#project-detection
+◈ See docs at: https://docs.netlify.com/cli/local-development/#project-detection
 ◈ Running static server from \\"site-with-gulp\\"
 ◈ Setting up local development server
 
@@ -73,7 +73,7 @@ exports[`frameworks/framework-detection > should not run framework detection if 
 "◈ Netlify Dev ◈
 ◈ Unable to determine public folder to serve files from. Using current working directory
 ◈ Setup a netlify.toml file with a [dev] section to specify your dev server settings.
-◈ See docs at: https://cli.netlify.com/netlify-dev#project-detection
+◈ See docs at: https://docs.netlify.com/cli/local-development/#project-detection
 ◈ Setting up local development server
 ◈ Starting Netlify Dev with custom config
 hello
@@ -96,7 +96,7 @@ exports[`frameworks/framework-detection > should print specific error when comma
 "◈ Netlify Dev ◈
 ◈ Unable to determine public folder to serve files from. Using current working directory
 ◈ Setup a netlify.toml file with a [dev] section to specify your dev server settings.
-◈ See docs at: https://cli.netlify.com/netlify-dev#project-detection
+◈ See docs at: https://docs.netlify.com/cli/local-development/#project-detection
 ◈ Setting up local development server
 ◈ Starting Netlify Dev with #custom
 ◈ Failed running command: oops-i-did-it-again forgot-to-use-a-valid-command. Please verify 'oops-i-did-it-again' exists"
@@ -179,7 +179,7 @@ exports[`frameworks/framework-detection > should use static server when framewor
 ◈ Using simple static server because '[dev.framework]' was set to '#static'
 ◈ Unable to determine public folder to serve files from. Using current working directory
 ◈ Setup a netlify.toml file with a [dev] section to specify your dev server settings.
-◈ See docs at: https://cli.netlify.com/netlify-dev#project-detection
+◈ See docs at: https://docs.netlify.com/cli/local-development/#project-detection
 ◈ Running static server from \\"site-with-index-file\\"
 ◈ Setting up local development server
 
