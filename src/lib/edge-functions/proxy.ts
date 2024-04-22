@@ -10,7 +10,7 @@ import BaseCommand from '../../commands/base-command.js'
 import { $TSFixMe } from '../../commands/types.js'
 import { NETLIFYDEVERR, chalk, error as printError } from '../../utils/command-helpers.js'
 import { FeatureFlags, getFeatureFlagsFromSiteInfo } from '../../utils/feature-flags.js'
-import { BlobsContext } from '../blobs/blobs.js'
+import { BlobsContextWithEdgeAccess } from '../blobs/blobs.js'
 import { getGeoLocation } from '../geo-location.js'
 import { getPathInProject } from '../settings.js'
 import { startSpinner, stopSpinner } from '../spinner.js'
@@ -25,15 +25,9 @@ const headersSymbol = Symbol('Edge Functions Headers')
 const LOCAL_HOST = '127.0.0.1'
 
 const getDownloadUpdateFunctions = () => {
-  // @ts-expect-error TS(7034) FIXME: Variable 'spinner' implicitly has type 'any' in so... Remove this comment to see the full error message
-  let spinner
+  let spinner: ReturnType<typeof startSpinner>
 
-  /**
-   * @param {Error=} error_
-   */
-  // @ts-expect-error TS(7006) FIXME: Parameter 'error_' implicitly has an 'any' type.
-  const onAfterDownload = (error_) => {
-    // @ts-expect-error TS(2345) FIXME: Argument of type '{ error: boolean; spinner: any; ... Remove this comment to see the full error message
+  const onAfterDownload = (error_: unknown) => {
     stopSpinner({ error: Boolean(error_), spinner })
   }
 
@@ -100,7 +94,7 @@ export const initializeProxy = async ({
   state,
 }: {
   accountId: string
-  blobsContext: BlobsContext
+  blobsContext: BlobsContextWithEdgeAccess
   command: BaseCommand
   config: $TSFixMe
   configPath: string
@@ -233,7 +227,7 @@ const prepareServer = async ({
     const runIsolate = await bundler.serve({
       ...getDownloadUpdateFunctions(),
       basePath: projectDir,
-      bootstrapURL: getBootstrapURL(),
+      bootstrapURL: await getBootstrapURL(),
       debug,
       distImportMapPath: join(projectDir, distImportMapPath),
       featureFlags,

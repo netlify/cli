@@ -4,7 +4,7 @@ import process from 'process'
 import { applyMutations } from '@netlify/config'
 import { OptionValues, Option } from 'commander'
 
-import { BLOBS_CONTEXT_VARIABLE, encodeBlobsContext, getBlobsContext } from '../../lib/blobs/blobs.js'
+import { BLOBS_CONTEXT_VARIABLE, encodeBlobsContext, getBlobsContextWithEdgeAccess } from '../../lib/blobs/blobs.js'
 import { promptEditorHelper } from '../../lib/edge-functions/editor-helper.js'
 import { startFunctionsServer } from '../../lib/functions/server.js'
 import { printBanner } from '../../utils/banner.js'
@@ -107,7 +107,7 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
 
   env.NETLIFY_DEV = { sources: ['internal'], value: 'true' }
 
-  const blobsContext = await getBlobsContext({
+  const blobsContext = await getBlobsContextWithEdgeAccess({
     debug: options.debug,
     projectRoot: command.workingDir,
     siteID: site.id ?? UNLINKED_SITE_MOCK_ID,
@@ -220,6 +220,7 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
     config: mutatedConfig,
     configPath: configPathOverride,
     debug: options.debug,
+    disableEdgeFunctions: options.internalDisableEdgeFunctions,
     projectDir: command.workingDir,
     env,
     getUpdatedConfig,
@@ -271,6 +272,12 @@ export const createDevCommand = (program: BaseCommand) => {
     .option('-d ,--dir <path>', 'dir with static files')
     .option('-f ,--functions <folder>', 'specify a functions folder to serve')
     .option('-o ,--offline', 'disables any features that require network access')
+    .addOption(
+      new Option(
+        '--internal-disable-edge-functions',
+        "disables edge functions. use this if your environment doesn't support Deno. This option is internal and should not be used by end users.",
+      ).hideHelp(true),
+    )
     .option(
       '-l, --live [subdomain]',
       'start a public live session; optionally, supply a subdomain to generate a custom URL',

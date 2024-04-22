@@ -680,7 +680,10 @@ const onRequest = async (
     rewriter,
     settings,
     siteInfo,
-  }: { rewriter: Rewriter; settings: ServerSettings } & Record<string, $TSFixMe>,
+  }: { rewriter: Rewriter; settings: ServerSettings; edgeFunctionsProxy?: EdgeFunctionsProxy } & Record<
+    string,
+    $TSFixMe
+  >,
   req: Request,
   res: ServerResponse,
 ) => {
@@ -691,7 +694,7 @@ const onRequest = async (
     return imageProxy(req, res)
   }
 
-  const edgeFunctionsProxyURL = await edgeFunctionsProxy(req, res)
+  const edgeFunctionsProxyURL = await edgeFunctionsProxy?.(req as any)
 
   if (edgeFunctionsProxyURL !== undefined) {
     return proxy.web(req, res, { target: edgeFunctionsProxyURL })
@@ -776,6 +779,8 @@ export const getProxyUrl = function (settings: Pick<ServerSettings, 'https' | 'p
   return `${scheme}://localhost:${settings.port}`
 }
 
+type EdgeFunctionsProxy = Awaited<ReturnType<typeof initializeEdgeFunctionsProxy>>
+
 export const startProxy = async function ({
   accountId,
   addonsUrls,
@@ -784,6 +789,7 @@ export const startProxy = async function ({
   config,
   configPath,
   debug,
+  disableEdgeFunctions,
   env,
   functionsRegistry,
   geoCountry,
@@ -796,30 +802,39 @@ export const startProxy = async function ({
   settings,
   siteInfo,
   state,
-}: { command: BaseCommand; settings: ServerSettings } & Record<string, $TSFixMe>) {
+}: { command: BaseCommand; settings: ServerSettings; disableEdgeFunctions: boolean } & Record<string, $TSFixMe>) {
   const secondaryServerPort = settings.https ? await getAvailablePort() : null
   const functionsServer = settings.functionsPort ? `http://127.0.0.1:${settings.functionsPort}` : null
-  const edgeFunctionsProxy = await initializeEdgeFunctionsProxy({
-    command,
-    blobsContext,
-    config,
-    configPath,
-    debug,
-    env,
-    geolocationMode,
-    geoCountry,
-    getUpdatedConfig,
-    inspectSettings,
-    mainPort: settings.port,
-    offline,
-    passthroughPort: secondaryServerPort || settings.port,
-    settings,
-    projectDir,
-    repositoryRoot,
-    siteInfo,
-    accountId,
-    state,
-  })
+
+  let edgeFunctionsProxy: EdgeFunctionsProxy | undefined
+  if (disableEdgeFunctions) {
+    log(
+      NETLIFYDEVWARN,
+      'Edge functions are disabled. Run without the --internal-disable-edge-functions flag to enable them.',
+    )
+  } else {
+    edgeFunctionsProxy = await initializeEdgeFunctionsProxy({
+      command,
+      blobsContext,
+      config,
+      configPath,
+      debug,
+      env,
+      geolocationMode,
+      geoCountry,
+      getUpdatedConfig,
+      inspectSettings,
+      mainPort: settings.port,
+      offline,
+      passthroughPort: secondaryServerPort || settings.port,
+      settings,
+      projectDir,
+      repositoryRoot,
+      siteInfo,
+      accountId,
+      state,
+    })
+  }
 
   const imageProxy = await initializeImageProxy({
     config,

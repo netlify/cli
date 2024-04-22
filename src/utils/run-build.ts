@@ -84,7 +84,7 @@ export const runNetlifyBuild = async ({
     cwd: cachedConfig.buildDir,
     quiet: options.quiet,
     saveConfig: options.saveConfig,
-    edgeFunctionsBootstrapURL: getBootstrapURL(),
+    edgeFunctionsBootstrapURL: await getBootstrapURL(),
   }
 
   const devCommand = async (settingsOverrides = {}) => {
@@ -164,11 +164,8 @@ export const runNetlifyBuild = async ({
   return { configMutations }
 }
 
-export const runDevTimeline = (options: Omit<Parameters<typeof runNetlifyBuild>[0], 'timeline'>) =>
-  runNetlifyBuild({ ...options, timeline: 'dev' })
+type RunTimelineOptions = Omit<Parameters<typeof runNetlifyBuild>[0], 'timeline'>
 
-/**
- * @param {Omit<Parameters<typeof runNetlifyBuild>[0], 'timeline'>} options
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
-export const runBuildTimeline = (options) => runNetlifyBuild({ ...options, timeline: 'build' })
+export const runDevTimeline = (options: RunTimelineOptions) => runNetlifyBuild({ ...options, timeline: 'dev' })
+
+export const runBuildTimeline = (options: RunTimelineOptions) => runNetlifyBuild({ ...options, timeline: 'build' })

@@ -65,10 +65,8 @@ export const startFrameworkServer = async function ({
         throw new Error(`Timed out waiting for port '${settings.frameworkPort}' to be open`)
       }
     }
-    // @ts-expect-error TS(2345) FIXME: Argument of type '{ error: boolean; spinner: Ora; ... Remove this comment to see the full error message
     stopSpinner({ error: false, spinner })
   } catch (error_) {
-    // @ts-expect-error TS(2345) FIXME: Argument of type '{ error: boolean; spinner: Ora; ... Remove this comment to see the full error message
     stopSpinner({ error: true, spinner })
     log(NETLIFYDEVERR, `Netlify Dev could not start or connect to localhost:${settings.frameworkPort}.`)
     log(NETLIFYDEVERR, `Please make sure your framework server is running on port ${settings.frameworkPort}`)

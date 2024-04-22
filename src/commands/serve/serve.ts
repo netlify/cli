@@ -2,7 +2,12 @@ import process from 'process'
 
 import { OptionValues } from 'commander'
 
-import { BLOBS_CONTEXT_VARIABLE, encodeBlobsContext, getBlobsContext } from '../../lib/blobs/blobs.js'
+import {
+  BLOBS_CONTEXT_VARIABLE,
+  encodeBlobsContext,
+  getBlobsContextWithAPIAccess,
+  getBlobsContextWithEdgeAccess,
+} from '../../lib/blobs/blobs.js'
 import { promptEditorHelper } from '../../lib/edge-functions/editor-helper.js'
 import { startFunctionsServer } from '../../lib/functions/server.js'
 import { printBanner } from '../../utils/banner.js'
@@ -92,22 +97,31 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
     `${NETLIFYDEVWARN} Changes will not be hot-reloaded, so if you need to rebuild your site you must exit and run 'netlify serve' again`,
   )
 
-  const blobsContext = await getBlobsContext({
+  const blobsOptions = {
     debug: options.debug,
     projectRoot: command.workingDir,
     siteID: site.id ?? UNLINKED_SITE_MOCK_ID,
-  })
+  }
 
-  process.env[BLOBS_CONTEXT_VARIABLE] = encodeBlobsContext(blobsContext)
+  // We start by running a build, so we want a Blobs context with API access,
+  // which is what build plugins use.
+  process.env[BLOBS_CONTEXT_VARIABLE] = encodeBlobsContext(await getBlobsContextWithAPIAccess(blobsOptions))
 
   const { configPath: configPathOverride } = await runBuildTimeline({
     command,
     settings,
     options,
+    env: {},
   })
 
+  // Now we generate a second Blobs context object, this time with edge access
+  // for runtime access (i.e. from functions and edge functions).
+  const runtimeBlobsContext = await getBlobsContextWithEdgeAccess(blobsOptions)
+
+  process.env[BLOBS_CONTEXT_VARIABLE] = encodeBlobsContext(runtimeBlobsContext)
+
   const functionsRegistry = await startFunctionsServer({
-    blobsContext,
+    blobsContext: runtimeBlobsContext,
     command,
     config,
     debug: options.debug,
@@ -143,10 +157,12 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
   const inspectSettings = generateInspectSettings(options.edgeInspect, options.edgeInspectBrk)
   const url = await startProxyServer({
     addonsUrls,
+    blobsContext: runtimeBlobsContext,
     command,
     config,
     configPath: configPathOverride,
     debug: options.debug,
+    disableEdgeFunctions: options.internalDisableEdgeFunctions,
     env,
     functionsRegistry,
     geolocationMode: options.geo,
