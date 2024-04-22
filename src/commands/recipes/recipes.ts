@@ -11,11 +11,18 @@ import { getRecipe, listRecipes } from './common.js'
 
 const SUGGESTION_TIMEOUT = 1e4
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'any' t... Remove this comment to see the full error message
-export const runRecipe = async ({ config, recipeName, repositoryRoot }) => {
+interface RunRecipeOptions {
+  args: string[]
+  command?: BaseCommand
+  config: unknown
+  recipeName: string
+  repositoryRoot: string
+}
+
+export const runRecipe = async ({ args, command, config, recipeName, repositoryRoot }: RunRecipeOptions) => {
   const recipe = await getRecipe(recipeName)
 
-  return recipe.run({ config, repositoryRoot })
+  return recipe.run({ args, command, config, repositoryRoot })
 }
 
 export const recipesCommand = async (recipeName: string, options: OptionValues, command: BaseCommand): Promise<any> => {
@@ -26,8 +33,10 @@ export const recipesCommand = async (recipeName: string, options: OptionValues, 
     return command.help()
   }
 
+  const args = command.args.slice(1)
+
   try {
-    return await runRecipe({ config, recipeName: sanitizedRecipeName, repositoryRoot })
+    return await runRecipe({ args, command, config, recipeName: sanitizedRecipeName, repositoryRoot })
   } catch (error) {
     if (
       // The ESM loader throws this instead of MODULE_NOT_FOUND

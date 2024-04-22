@@ -1,13 +1,14 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`commands/recipes > Shows a list of all the available recipes 1`] = `
-".----------------------------------------------------------------------------------.
-|                          Usage: netlify recipes <name>                           |
-|----------------------------------------------------------------------------------|
-|  Name  |                               Description                               |
-|--------|-------------------------------------------------------------------------|
-| vscode | Create VS Code settings for an optimal experience with Netlify projects |
-'----------------------------------------------------------------------------------'"
+".-----------------------------------------------------------------------------------------.
+|                              Usage: netlify recipes <name>                              |
+|-----------------------------------------------------------------------------------------|
+|     Name      |                               Description                               |
+|---------------|-------------------------------------------------------------------------|
+| blobs-migrate | Migrate legacy Netlify Blobs stores                                     |
+| vscode        | Create VS Code settings for an optimal experience with Netlify projects |
+'-----------------------------------------------------------------------------------------'"
 `;
 
 exports[`commands/recipes > Suggests closest matching recipe on typo 1`] = `

@@ -56,7 +56,19 @@ describe.skipIf(isWindows)('edge functions', () => {
         const body = await response.text()
 
         expect(response.status).toBe(200)
-        expect(body).toMatchSnapshot()
+        expect(body.split('|')).toEqual([
+          'integration-manifestB',
+          'integration-manifestC',
+          'integration-manifestA',
+          'integration-iscA',
+          'integration-iscB',
+          'user-tomlB',
+          'user-tomlC',
+          'user-tomlA',
+          'user-iscA',
+          'user-iscB',
+          'origin',
+        ])
       })
 
       test<FixtureTestContext>('should provide context properties', async ({ devServer }) => {
@@ -143,6 +155,27 @@ describe.skipIf(isWindows)('edge functions', () => {
         expect(body.SITE_ID).toBe('foo')
         expect(body.SITE_NAME).toBe('site-name')
         expect(body.URL).toBe(`http://localhost:${devServer.port}`)
+      })
+    },
+  )
+
+  setupFixtureTests(
+    'dev-server-with-edge-functions',
+    {
+      devServer: { args: ['--internal-disable-edge-functions'] },
+      mockApi: { routes },
+      setupAfterDev: recreateEdgeFunctions,
+    },
+    () => {
+      test<FixtureTestContext>('skips edge functions when --internal-disable-edge-functions is passed', async ({
+        devServer,
+      }) => {
+        const response = await fetch(`http://localhost:${devServer.port}/ordertest`)
+        const body = await response.text()
+
+        expect(response.status).toBe(200)
+        expect(body).toEqual('origin\n')
+        expect(devServer?.output).toContain('Edge functions are disabled')
       })
     },
   )

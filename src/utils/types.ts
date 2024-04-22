@@ -1,3 +1,8 @@
+import { Buffer } from 'buffer'
+import { IncomingMessage } from 'http'
+
+import { Match } from 'netlify-redirector'
+
 export type FrameworkNames = '#static' | '#auto' | '#custom' | string
 
 export type FrameworkInfo = {
@@ -47,4 +52,13 @@ export type ServerSettings = BaseServerSettings & {
   functionsPort: number
   https?: { key: string; cert: string; keyFilePath: string; certFilePath: string }
   clearPublishDirectory?: boolean
+  skipWaitPort?: boolean
 }
+
+export interface Request extends IncomingMessage {
+  originalBody?: Buffer | null
+  protocol?: string
+  hostname?: string
+}
+
+export type Rewriter = (req: Request) => Match | null

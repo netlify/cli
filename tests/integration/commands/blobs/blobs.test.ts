@@ -2,10 +2,10 @@ import { readFile, rm } from 'fs/promises'
 import { join } from 'path'
 import { env } from 'process'
 
-import { BlobsServer, ListResultBlob } from '@netlify/blobs'
+import { ListResultBlob } from '@netlify/blobs'
+import { BlobsServer } from '@netlify/blobs/server'
 import httpProxy from 'http-proxy'
 import { temporaryDirectory } from 'tempy'
-import { v4 as uuidv4 } from 'uuid'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 
 import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
@@ -38,19 +38,17 @@ describe('blobs:* commands', () => {
   ]
 
   beforeAll(async () => {
-    const token = uuidv4()
-
     server = new BlobsServer({
       debug: true,
       directory,
-      token,
+      token: 'fake-token',
     })
 
     const address = await server.start()
 
     routes.push({
       method: 'all',
-      path: 'sites/site_id/blobs*',
+      path: 'blobs/*',
       response: (req, res) => {
         blobsProxy.web(req, res, { target: `http://localhost:${address.port}` })
       },

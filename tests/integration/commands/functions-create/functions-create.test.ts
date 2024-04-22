@@ -181,42 +181,46 @@ describe.concurrent('functions:create command', () => {
   })
 
   test('should only show function templates for the language specified via the --language flag, if one is present', async () => {
-    await withSiteBuilder('site-with-no-functions-dir', async (builder) => {
-      await builder.buildAsync()
+    const createWithLanguageTemplate = async (language, outputPath) =>
+      await withSiteBuilder('site-with-no-functions-dir', async (builder) => {
+        await builder.buildAsync()
 
-      const createFunctionQuestions = [
-        {
-          question: "Select the type of function you'd like to create",
-          answer: answerWithValue(DOWN),
-        },
-        {
-          question: 'Enter the path, relative to your site',
-          answer: answerWithValue('test/functions'),
-        },
-        {
-          question: 'Pick a template',
-          answer: CONFIRM,
-        },
-        {
-          question: 'Name your function',
-          answer: CONFIRM,
-        },
-      ]
+        const createFunctionQuestions = [
+          {
+            question: "Select the type of function you'd like to create",
+            answer: answerWithValue(DOWN),
+          },
+          {
+            question: 'Enter the path, relative to your site',
+            answer: answerWithValue('test/functions'),
+          },
+          {
+            question: 'Pick a template',
+            answer: CONFIRM,
+          },
+          {
+            question: 'Name your function',
+            answer: CONFIRM,
+          },
+        ]
 
-      await withMockApi(routes, async ({ apiUrl }) => {
-        const childProcess = execa(
-          cliPath,
-          ['functions:create', '--language', 'javascript'],
-          getCLIOptions({ apiUrl, builder }),
-        )
+        await withMockApi(routes, async ({ apiUrl }) => {
+          const childProcess = execa(
+            cliPath,
+            ['functions:create', '--language', language],
+            getCLIOptions({ apiUrl, builder }),
+          )
 
-        handleQuestions(childProcess, createFunctionQuestions)
+          handleQuestions(childProcess, createFunctionQuestions)
 
-        await childProcess
+          await childProcess
 
-        expect(await fileExistsAsync(`${builder.directory}/test/functions/hello-world/hello-world.js`)).toBe(true)
+          expect(await fileExistsAsync(`${builder.directory}/test/functions/${outputPath}`)).toBe(true)
+        })
       })
-    })
+
+    await createWithLanguageTemplate('javascript', 'hello-world/hello-world.js')
+    await createWithLanguageTemplate('typescript', 'hello-world/hello-world.ts')
   })
 
   test('throws an error when the --language flag contains an unsupported value', async () => {
