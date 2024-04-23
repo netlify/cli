@@ -696,6 +696,13 @@ export default class BaseCommand extends Command {
   }
 
   /**
+   * get a path inside the `.netlify` project folder resolving with the workspace package
+   */
+  getPathInProject(...paths: string[]): string {
+    return join(this.workspacePackage || '', '.netlify', ...paths)
+  }
+
+  /**
    * Returns the context that should be used in case one hasn't been explicitly
    * set. The default context is `dev` most of the time, but some commands may
    * wish to override that.

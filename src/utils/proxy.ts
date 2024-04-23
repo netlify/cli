@@ -1,10 +1,11 @@
 import { Buffer } from 'buffer'
 import { once } from 'events'
 import { readFile } from 'fs/promises'
-import http from 'http'
+import http, { ServerResponse } from 'http'
 import https from 'https'
 import { isIPv6 } from 'net'
 import path from 'path'
+import { Duplex } from 'stream'
 import util from 'util'
 import zlib from 'zlib'
 
@@ -20,9 +21,12 @@ import httpProxy from 'http-proxy'
 import { createProxyMiddleware } from 'http-proxy-middleware'
 import jwtDecode from 'jwt-decode'
 import { locatePath } from 'locate-path'
+import { Match } from 'netlify-redirector'
 import pFilter from 'p-filter'
 import toReadableStream from 'to-readable-stream'
 
+import { BaseCommand } from '../commands/index.js'
+import { $TSFixMe } from '../commands/types.js'
 import {
   handleProxyRequest,
   initializeProxy as initializeEdgeFunctionsProxy,
@@ -40,19 +44,14 @@ import { headersForPath, parseHeaders, NFFunctionName, NFRequestID, NFFunctionRo
 import { generateRequestID } from './request-id.js'
 import { createRewriter, onChanges } from './rules-proxy.js'
 import { signRedirect } from './sign-redirect.js'
+import { Rewriter, Request, ServerSettings } from './types.js'
 
 const gunzip = util.promisify(zlib.gunzip)
 const brotliDecompress = util.promisify(zlib.brotliDecompress)
 const deflate = util.promisify(zlib.deflate)
 const shouldGenerateETag = Symbol('Internal: response should generate ETag')
 
-/**
- * @param {Buffer} body
- * @param {string | undefined} contentEncoding
- * @returns {Promise<Buffer>}
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'body' implicitly has an 'any' type.
-const decompressResponseBody = async function (body, contentEncoding = '') {
+const decompressResponseBody = async function (body: Buffer, contentEncoding = ''): Promise<Buffer> {
   switch (contentEncoding) {
     case 'gzip':
       return await gunzip(body)
@@ -82,40 +81,21 @@ const formatEdgeFunctionError = (errorBuffer, acceptsHtml) => {
   })
 }
 
-/**
- * @param {string} url
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'url' implicitly has an 'any' type.
-function isInternal(url) {
-  return url.startsWith('/.netlify/')
+function isInternal(url?: string): boolean {
+  return url?.startsWith('/.netlify/') ?? false
 }
 
-/**
- * @param {boolean|number|undefined} functionsPort
- * @param {string} url
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'functionsPort' implicitly has an 'any' ... Remove this comment to see the full error message
-function isFunction(functionsPort, url) {
+function isFunction(functionsPort: boolean | number | undefined, url: string) {
   return functionsPort && url.match(DEFAULT_FUNCTION_URL_EXPRESSION)
 }
 
-/**
- * @param {Record<string, string>} addonsUrls
- * @param {http.IncomingMessage} req
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'addonsUrls' implicitly has an 'any' typ... Remove this comment to see the full error message
-function getAddonUrl(addonsUrls, req) {
+function getAddonUrl(addonsUrls: Record<string, string>, req: http.IncomingMessage) {
   const matches = req.url?.match(/^\/.netlify\/([^/]+)(\/.*)/)
   const addonUrl = matches && addonsUrls[matches[1]]
   return addonUrl ? `${addonUrl}${matches[2]}` : null
 }
 
-/**
- * @param {string} pathname
- * @param {string} publicFolder
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'pathname' implicitly has an 'any' type.
-const getStatic = async function (pathname, publicFolder) {
+const getStatic = async function (pathname: string, publicFolder: string) {
   const alternatives = [pathname, ...alternativePathsFor(pathname)].map((filePath) =>
     path.resolve(publicFolder, filePath.slice(1)),
   )
@@ -138,15 +118,26 @@ const stripOrigin = function ({ hash, pathname, search }) {
   return `${pathname}${search}${hash}`
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'dest' implicitly has an 'any' typ... Remove this comment to see the full error message
-const proxyToExternalUrl = function ({ dest, destURL, req, res }) {
-  console.log(`${NETLIFYDEVLOG} Proxying to ${dest}`)
+const proxyToExternalUrl = function ({
+  dest,
+  destURL,
+  req,
+  res,
+}: {
+  dest: URL
+  destURL: string
+  req: Request
+  res: ServerResponse
+}) {
   const handler = createProxyMiddleware({
     target: dest.origin,
     changeOrigin: true,
     pathRewrite: () => destURL,
+    // hide logging
+    logLevel: 'warn',
     ...(Buffer.isBuffer(req.originalBody) && { buffer: toReadableStream(req.originalBody) }),
   })
+  // @ts-expect-error TS(2345) FIXME: Argument of type 'Request' is not assignable to parameter of type 'Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
   return handler(req, res, () => {})
 }
 
@@ -201,29 +192,28 @@ const alternativePathsFor = function (url) {
 }
 
 const serveRedirect = async function ({
-  // @ts-expect-error TS(7031) FIXME: Binding element 'env' implicitly has an 'any' type... Remove this comment to see the full error message
   env,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'functionsRegistry' implicitly has... Remove this comment to see the full error message
   functionsRegistry,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'imageProxy' implicitly has an 'an... Remove this comment to see the full error message
   imageProxy,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'match' implicitly has an 'any' ty... Remove this comment to see the full error message
   match,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'options' implicitly has an 'any' ... Remove this comment to see the full error message
   options,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'proxy' implicitly has an 'any' ty... Remove this comment to see the full error message
   proxy,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'req' implicitly has an 'any' type... Remove this comment to see the full error message
   req,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'res' implicitly has an 'any' type... Remove this comment to see the full error message
   res,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'siteInfo' implicitly has an 'any'... Remove this comment to see the full error message
   siteInfo,
-}) {
+}: {
+  match: Match | null
+} & Record<string, $TSFixMe>) {
   if (!match) return proxy.web(req, res, options)
 
   options = options || req.proxyOptions || {}
   options.match = null
+
+  if (match.force404) {
+    res.writeHead(404)
+    res.end(await render404(options.publicFolder))
+    return
+  }
 
   if (match.proxyHeaders && Object.keys(match.proxyHeaders).length >= 0) {
     Object.entries(match.proxyHeaders).forEach(([key, value]) => {
@@ -262,7 +252,6 @@ const serveRedirect = async function ({
   if (match.exceptions && match.exceptions.JWT) {
     // Some values of JWT can start with :, so, make sure to normalize them
     const expectedRoles = new Set(
-      // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
       match.exceptions.JWT.split(',').map((value) => (value.startsWith(':') ? value.slice(1) : value)),
     )
 
@@ -315,11 +304,6 @@ const serveRedirect = async function ({
       return proxy.web(req, res, { ...options, staticFile })
     }
   }
-  if (match.force404) {
-    res.writeHead(404)
-    res.end(await render404(options.publicFolder))
-    return
-  }
 
   if (match.force || !staticFile || !options.framework || req.method === 'POST') {
     // construct destination URL from redirect rule match
@@ -345,6 +329,14 @@ const serveRedirect = async function ({
         // This is a redirect, so we set the complete external URL as destination
         destURL = `${dest}`
       } else {
+        const isHiddenProxy =
+          match.proxyHeaders &&
+          Object.entries(match.proxyHeaders).some(
+            ([key, val]) => key.toLowerCase() === 'x-nf-hidden-proxy' && val === 'true',
+          )
+        if (!isHiddenProxy) {
+          console.log(`${NETLIFYDEVLOG} Proxying to ${dest}`)
+        }
         return proxyToExternalUrl({ req, res, dest, destURL })
       }
     }
@@ -426,23 +418,23 @@ const MILLISEC_TO_SEC = 1e3
 
 const initializeProxy = async function ({
   // @ts-expect-error TS(7031) FIXME: Binding element 'configPath' implicitly has an 'any... Remove this comment to see the full error message
-  configPath,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'distDir' implicitly has an 'any... Remove this comment to see the full error message
-  distDir,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'env' implicitly has an 'any... Remove this comment to see the full error message
-  env,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'host' implicitly has an 'any... Remove this comment to see the full error message
-  host,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'imageProxy' implicitly has an 'any... Remove this comment to see the full error message
-  imageProxy,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'port' implicitly has an 'any... Remove this comment to see the full error message
-  port,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'projectDir' implicitly has an 'any... Remove this comment to see the full error message
-  projectDir,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'siteInfo' implicitly has an 'any... Remove this comment to see the full error message
-  siteInfo,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'any... Remove this comment to see the full error message
   config,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'distDir' implicitly has an 'any... Remove this comment to see the full error message
+  configPath,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'env' implicitly has an 'any... Remove this comment to see the full error message
+  distDir,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'host' implicitly has an 'any... Remove this comment to see the full error message
+  env,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'imageProxy' implicitly has an 'any... Remove this comment to see the full error message
+  host,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'port' implicitly has an 'any... Remove this comment to see the full error message
+  imageProxy,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'projectDir' implicitly has an 'any... Remove this comment to see the full error message
+  port,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'siteInfo' implicitly has an 'any... Remove this comment to see the full error message
+  projectDir,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'any... Remove this comment to see the full error message
+  siteInfo,
 }) {
   const proxy = httpProxy.createProxyServer({
     selfHandleResponse: true,
@@ -678,41 +670,31 @@ const initializeProxy = async function ({
 
 const onRequest = async (
   {
-    // @ts-expect-error TS(7031) FIXME: Binding element 'addonsUrls' implicitly has an 'an... Remove this comment to see the full error message
     addonsUrls,
-    // @ts-expect-error TS(7031) FIXME: Binding element 'edgeFunctionsProxy' implicitly ha... Remove this comment to see the full error message
     edgeFunctionsProxy,
-    // @ts-expect-error TS(7031) FIXME: Binding element 'env' implicitly has an 'any' type... Remove this comment to see the full error message
     env,
-    // @ts-expect-error TS(7031) FIXME: Binding element 'functionsRegistry' implicitly has... Remove this comment to see the full error message
     functionsRegistry,
-    // @ts-expect-error TS(7031) FIXME: Binding element 'functionsServer' implicitly has a... Remove this comment to see the full error message
     functionsServer,
-    // @ts-expect-error TS(7031) FIXME: Binding element 'imageProxy' implicitly has an 'an... Remove this comment to see the full error message
     imageProxy,
-    // @ts-expect-error TS(7031) FIXME: Binding element 'proxy' implicitly has an 'any' ty... Remove this comment to see the full error message
     proxy,
-    // @ts-expect-error TS(7031) FIXME: Binding element 'rewriter' implicitly has an 'any'... Remove this comment to see the full error message
     rewriter,
-    // @ts-expect-error TS(7031) FIXME: Binding element 'settings' implicitly has an 'any'... Remove this comment to see the full error message
     settings,
-    // @ts-expect-error TS(7031) FIXME: Binding element 'siteInfo' implicitly has an 'any'... Remove this comment to see the full error message
     siteInfo,
-  },
-  // @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
-  req,
-  // @ts-expect-error TS(7006) FIXME: Parameter 'res' implicitly has an 'any' type.
-  res,
+  }: { rewriter: Rewriter; settings: ServerSettings; edgeFunctionsProxy?: EdgeFunctionsProxy } & Record<
+    string,
+    $TSFixMe
+  >,
+  req: Request,
+  res: ServerResponse,
 ) => {
-  req.originalBody = ['GET', 'OPTIONS', 'HEAD'].includes(req.method)
-    ? null
-    : await createStreamPromise(req, BYTES_LIMIT)
+  req.originalBody =
+    req.method && ['GET', 'OPTIONS', 'HEAD'].includes(req.method) ? null : await createStreamPromise(req, BYTES_LIMIT)
 
   if (isImageRequest(req)) {
     return imageProxy(req, res)
   }
 
-  const edgeFunctionsProxyURL = await edgeFunctionsProxy(req, res)
+  const edgeFunctionsProxyURL = await edgeFunctionsProxy?.(req as any)
 
   if (edgeFunctionsProxyURL !== undefined) {
     return proxy.web(req, res, { target: edgeFunctionsProxyURL })
@@ -721,7 +703,7 @@ const onRequest = async (
   const functionMatch =
     functionsRegistry &&
     (await functionsRegistry.getFunctionForURLPath(req.url, req.method, () =>
-      getStatic(decodeURIComponent(reqToURL(req, req.url).pathname), settings.dist),
+      getStatic(decodeURIComponent(reqToURL(req, req.url).pathname), settings.dist ?? ''),
     ))
   if (functionMatch) {
     // Setting an internal header with the function name so that we don't
@@ -751,9 +733,9 @@ const onRequest = async (
   const options = {
     match,
     addonsUrls,
-    target: `http://${isIPv6(settings.frameworkHost) ? `[${settings.frameworkHost}]` : settings.frameworkHost}:${
-      settings.frameworkPort
-    }`,
+    target: `http://${
+      settings.frameworkHost && isIPv6(settings.frameworkHost) ? `[${settings.frameworkHost}]` : settings.frameworkHost
+    }:${settings.frameworkPort}`,
     publicFolder: settings.dist,
     functionsServer,
     functionsPort: settings.functionsPort,
@@ -792,76 +774,67 @@ const onRequest = async (
   proxy.web(req, res, options)
 }
 
-/**
- * @param {Pick<import('./types.js').ServerSettings, "https" | "port">} settings
- * @returns
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'settings' implicitly has an 'any' type.
-export const getProxyUrl = function (settings) {
+export const getProxyUrl = function (settings: Pick<ServerSettings, 'https' | 'port'>) {
   const scheme = settings.https ? 'https' : 'http'
   return `${scheme}://localhost:${settings.port}`
 }
 
+type EdgeFunctionsProxy = Awaited<ReturnType<typeof initializeEdgeFunctionsProxy>>
+
 export const startProxy = async function ({
-  // @ts-expect-error TS(7031) FIXME: Binding element 'accountId' implicitly has an 'any... Remove this comment to see the full error message
   accountId,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'addonsUrls' implicitly has an 'an... Remove this comment to see the full error message
   addonsUrls,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'blobsContext' implicitly has an '... Remove this comment to see the full error message
   blobsContext,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'any' t... Remove this comment to see the full error message
+  command,
   config,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'configPath' implicitly has an 'an... Remove this comment to see the full error message
   configPath,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'debug' implicitly has an 'any' ty... Remove this comment to see the full error message
   debug,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'env' implicitly has an 'any' type... Remove this comment to see the full error message
+  disableEdgeFunctions,
   env,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'functionsRegistry' implicitly has... Remove this comment to see the full error message
   functionsRegistry,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'geoCountry' implicitly has an 'an... Remove this comment to see the full error message
   geoCountry,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'geolocationMode' implicitly has a... Remove this comment to see the full error message
   geolocationMode,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'getUpdatedConfig' implicitly has ... Remove this comment to see the full error message
   getUpdatedConfig,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'inspectSettings' implicitly has a... Remove this comment to see the full error message
   inspectSettings,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'offline' implicitly has an 'any' ... Remove this comment to see the full error message
   offline,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'projectDir' implicitly has an 'an... Remove this comment to see the full error message
   projectDir,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'repositoryRoot' implicitly has an... Remove this comment to see the full error message
   repositoryRoot,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'settings' implicitly has an 'any'... Remove this comment to see the full error message
   settings,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'siteInfo' implicitly has an 'any'... Remove this comment to see the full error message
   siteInfo,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'state' implicitly has an 'any' ty... Remove this comment to see the full error message
   state,
-}) {
+}: { command: BaseCommand; settings: ServerSettings; disableEdgeFunctions: boolean } & Record<string, $TSFixMe>) {
   const secondaryServerPort = settings.https ? await getAvailablePort() : null
   const functionsServer = settings.functionsPort ? `http://127.0.0.1:${settings.functionsPort}` : null
-  const edgeFunctionsProxy = await initializeEdgeFunctionsProxy({
-    blobsContext,
-    config,
-    configPath,
-    debug,
-    env,
-    geolocationMode,
-    geoCountry,
-    getUpdatedConfig,
-    inspectSettings,
-    mainPort: settings.port,
-    offline,
-    passthroughPort: secondaryServerPort || settings.port,
-    settings,
-    projectDir,
-    repositoryRoot,
-    siteInfo,
-    accountId,
-    state,
-  })
+
+  let edgeFunctionsProxy: EdgeFunctionsProxy | undefined
+  if (disableEdgeFunctions) {
+    log(
+      NETLIFYDEVWARN,
+      'Edge functions are disabled. Run without the --internal-disable-edge-functions flag to enable them.',
+    )
+  } else {
+    edgeFunctionsProxy = await initializeEdgeFunctionsProxy({
+      command,
+      blobsContext,
+      config,
+      configPath,
+      debug,
+      env,
+      geolocationMode,
+      geoCountry,
+      getUpdatedConfig,
+      inspectSettings,
+      mainPort: settings.port,
+      offline,
+      passthroughPort: secondaryServerPort || settings.port,
+      settings,
+      projectDir,
+      repositoryRoot,
+      siteInfo,
+      accountId,
+      state,
+    })
+  }
 
   const imageProxy = await initializeImageProxy({
     config,
@@ -904,8 +877,7 @@ export const startProxy = async function ({
   const primaryServer = settings.https
     ? https.createServer({ cert: settings.https.cert, key: settings.https.key }, onRequestWithOptions)
     : http.createServer(onRequestWithOptions)
-  // @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
-  const onUpgrade = function onUpgrade(req, socket, head) {
+  const onUpgrade = function onUpgrade(req: http.IncomingMessage, socket: Duplex, head: Buffer) {
     proxy.ws(req, socket, head)
   }
 

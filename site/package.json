@@ -28,7 +28,7 @@
     "@compositor/x0": "6.0.7",
     "@rebass/markdown": "1.0.0",
     "@rebass/mdx": "1.0.0",
-    "algoliasearch": "4.20.0",
+    "algoliasearch": "4.23.3",
     "lodash.sortby": "4.7.0",
     "prop-types": "15.8.1",
     "react": "16.14.0",
@@ -43,9 +43,9 @@
   },
   "devDependencies": {
     "markdown-magic": "2.6.1",
-    "npm-run-all2": "5.0.0",
+    "npm-run-all2": "5.0.2",
     "sane": "5.0.1",
-    "strip-ansi": "7.0.1"
+    "strip-ansi": "7.1.0"
   },
   "overrides": {
     "react": "$react",

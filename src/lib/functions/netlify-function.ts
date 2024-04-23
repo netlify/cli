@@ -7,7 +7,7 @@ import semver from 'semver'
 
 import { error as errorExit } from '../../utils/command-helpers.js'
 import { BACKGROUND } from '../../utils/functions/get-functions.js'
-import type { BlobsContext } from '../blobs/blobs.js'
+import type { BlobsContextWithEdgeAccess } from '../blobs/blobs.js'
 
 const TYPESCRIPT_EXTENSIONS = new Set(['.cts', '.mts', '.ts'])
 const V2_MIN_NODE_VERSION = '18.14.0'
@@ -34,7 +34,7 @@ export default class NetlifyFunction {
 
   private readonly directory: string
   private readonly projectRoot: string
-  private readonly blobsContext: BlobsContext
+  private readonly blobsContext: BlobsContextWithEdgeAccess
   private readonly timeoutBackground: number
   private readonly timeoutSynchronous: number
 
