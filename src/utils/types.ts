@@ -52,6 +52,7 @@ export type ServerSettings = BaseServerSettings & {
   functionsPort: number
   https?: { key: string; cert: string; keyFilePath: string; certFilePath: string }
   clearPublishDirectory?: boolean
+  skipWaitPort?: boolean
 }
 
 export interface Request extends IncomingMessage {

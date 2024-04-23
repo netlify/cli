@@ -1,6 +1,6 @@
 import BaseCommand from '../commands/base-command.js'
 import { $TSFixMe, NetlifyOptions } from '../commands/types.js'
-import { BlobsContext } from '../lib/blobs/blobs.js'
+import { BlobsContextWithEdgeAccess } from '../lib/blobs/blobs.js'
 import { FunctionsRegistry } from '../lib/functions/registry.js'
 
 import { exit, log, NETLIFYDEVERR } from './command-helpers.js'
@@ -47,6 +47,7 @@ export const startProxyServer = async ({
   config,
   configPath,
   debug,
+  disableEdgeFunctions,
   env,
   functionsRegistry,
   geoCountry,
@@ -63,12 +64,13 @@ export const startProxyServer = async ({
 }: {
   accountId: string
   addonsUrls: $TSFixMe
-  blobsContext?: BlobsContext
+  blobsContext?: BlobsContextWithEdgeAccess
   command: BaseCommand
   config: NetlifyOptions['config']
   // An override for the Netlify config path
   configPath?: string
   debug: boolean
+  disableEdgeFunctions: boolean
   env: NetlifyOptions['cachedConfig']['env']
   inspectSettings: InspectSettings
   getUpdatedConfig: () => Promise<object>
@@ -90,6 +92,7 @@ export const startProxyServer = async ({
     config,
     configPath: configPath || site.configPath,
     debug,
+    disableEdgeFunctions,
     env,
     functionsRegistry,
     geolocationMode,

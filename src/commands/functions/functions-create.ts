@@ -13,7 +13,6 @@ import copyTemplateDirOriginal from 'copy-template-dir'
 import { findUp } from 'find-up'
 import fuzzy from 'fuzzy'
 import inquirer from 'inquirer'
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'node... Remove this comment to see the full error message
 import fetch from 'node-fetch'
 import ora from 'ora'
 
@@ -116,7 +115,7 @@ const formatRegistryArrayForInquirer = async function (lang, funcType) {
       .filter((folder) => Boolean(folder?.isDirectory()))
       .map(async ({ name }) => {
         try {
-          const templatePath = path.join(templatesDir, lang, name, '.netlify-function-template.js')
+          const templatePath = path.join(templatesDir, lang, name, '.netlify-function-template.mjs')
           // @ts-expect-error TS(7036) FIXME: Dynamic import's specifier must be of type 'string... Remove this comment to see the full error message
           const template = await import(pathToFileURL(templatePath))
           return template.default
@@ -394,7 +393,7 @@ const downloadFromURL = async function (command, options, argumentName, function
   })
 
   // read, execute, and delete function template file if exists
-  const fnTemplateFile = path.join(fnFolder, '.netlify-function-template.js')
+  const fnTemplateFile = path.join(fnFolder, '.netlify-function-template.mjs')
   if (await fileExistsAsync(fnTemplateFile)) {
     const {
       default: { addons = [], onComplete },
@@ -522,7 +521,7 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
 
     // These files will not be part of the log message because they'll likely
     // be removed before the command finishes.
-    const omittedFromOutput = new Set(['.netlify-function-template.js', 'package.json', 'package-lock.json'])
+    const omittedFromOutput = new Set(['.netlify-function-template.mjs', 'package.json', 'package-lock.json'])
     const createdFiles = await copyTemplateDir(pathToTemplate, functionPath, vars)
     // @ts-expect-error TS(7006) FIXME: Parameter 'filePath' implicitly has an 'any' type.
     createdFiles.forEach((filePath) => {
@@ -539,7 +538,7 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
     })
 
     // delete function template file that was copied over by copydir
-    await unlink(path.join(functionPath, '.netlify-function-template.js'))
+    await unlink(path.join(functionPath, '.netlify-function-template.mjs'))
 
     // npm install
     if (functionPackageJson !== undefined) {
