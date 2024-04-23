@@ -127,7 +127,7 @@
     "hasha": "5.2.2",
     "http-proxy": "1.18.1",
     "http-proxy-middleware": "2.0.6",
-    "https-proxy-agent": "5.0.1",
+    "https-proxy-agent": "7.0.4",
     "inquirer": "6.5.2",
     "inquirer-autocomplete-prompt": "1.4.0",
     "ipx": "2.1.0",
