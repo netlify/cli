@@ -11,7 +11,7 @@ setupFixtureTests('plugin-changing-publish-dir', { devServer: { serve: true } },
   })
 })
 
-test('ntl serve should upload file-based blobs', async (t) => {
+test.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true')('ntl serve should upload file-based blobs', async (t) => {
   await withSiteBuilder(t, async (builder) => {
     await builder
       .withNetlifyToml({
