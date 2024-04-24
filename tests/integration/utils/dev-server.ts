@@ -11,7 +11,7 @@ import { killProcess } from './process.js'
 
 export const getExecaOptions = ({ cwd, env }) => {
   // Unused vars here are in order to omit LANg and LC_ALL from envs
-   
+
   const { LANG, LC_ALL, ...baseEnv } = process.env
 
   return {
