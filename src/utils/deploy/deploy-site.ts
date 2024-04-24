@@ -139,7 +139,6 @@ export const deploySite = async (
   }
 
   if (functionsWithNativeModules.length !== 0) {
-    // @ts-expect-error TS(7031) FIXME: Binding element 'name' implicitly has an 'any' typ... Remove this comment to see the full error message
     const functionsWithNativeModulesMessage = functionsWithNativeModules.map(({ name }) => `- ${name}`).join('\n')
     warn(`Modules with native dependencies\n
     ${functionsWithNativeModulesMessage}
