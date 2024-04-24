@@ -11,7 +11,7 @@ import { killProcess } from './process.js'
 
 export const getExecaOptions = ({ cwd, env }) => {
   // Unused vars here are in order to omit LANg and LC_ALL from envs
-  // eslint-disable-next-line no-unused-vars
+   
   const { LANG, LC_ALL, ...baseEnv } = process.env
 
   return {
@@ -48,6 +48,9 @@ interface DevServerOptions {
   prompt?: $FIXME[]
   serve?: boolean
 }
+
+// 240 seconds
+const SERVER_START_TIMEOUT = 24e4
 
 const startServer = async ({
   args = [],
@@ -148,7 +151,10 @@ const startServer = async ({
     ps.catch((error) => !selfKilled && reject(error))
   })
 
-  return await pTimeout(serverPromise, SERVER_START_TIMEOUT, () => ({ timeout: true, output: outputBuffer.join('') }))
+  return await pTimeout(serverPromise,
+    { milliseconds: SERVER_START_TIMEOUT,
+      fallback: () => ({ timeout: true, output: outputBuffer.join('') })
+    })
 }
 
 export const startDevServer = async (options: DevServerOptions, expectFailure: boolean): Promise<DevServer> => {
@@ -175,15 +181,14 @@ export const startDevServer = async (options: DevServerOptions, expectFailure: b
   throw new Error('this code should be unreachable')
 }
 
-// 240 seconds
-const SERVER_START_TIMEOUT = 24e4
+
 
 export const withDevServer = async <T>(
   options: DevServerOptions,
   testHandler: (server: DevServer) => Promise<T>,
   expectFailure = false,
 ): Promise<T> => {
-  let server: DevServer | undefined = undefined
+  let server: DevServer | undefined
   try {
     server = await startDevServer(options, expectFailure)
     return await testHandler(server)
