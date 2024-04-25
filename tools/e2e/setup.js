@@ -89,7 +89,10 @@ export const startRegistry = async () => {
   const startPort = Math.floor(Math.random() * END_PORT_RANGE) + START_PORT_RANGE
   const freePort = await getPort({ host: 'localhost', port: startPort })
 
-  return await pTimeout(runVerdaccio(config, freePort), VERDACCIO_TIMEOUT_MILLISECONDS, 'Starting Verdaccio timed out')
+  return await pTimeout(runVerdaccio(config, freePort), {
+    milliseconds: VERDACCIO_TIMEOUT_MILLISECONDS,
+    fallback: 'Starting Verdaccio timed out',
+  })
 }
 
 /**
