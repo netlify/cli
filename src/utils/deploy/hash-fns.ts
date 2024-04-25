@@ -3,6 +3,8 @@ import path from 'path'
 import { promisify } from 'util'
 
 import { zipFunctions } from '@netlify/zip-it-and-ship-it'
+import type { TrafficRules } from '@netlify/zip-it-and-ship-it/dist/manifest.js'
+import type { FunctionResult } from '@netlify/zip-it-and-ship-it/dist/utils/format_result.js'
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'from... Remove this comment to see the full error message
 import fromArray from 'from2-array'
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'pump... Remove this comment to see the full error message
@@ -37,7 +39,7 @@ const getFunctionZips = async ({
   skipFunctionsCache: $TSFixMe
   statusCb: $TSFixMe
   tmpDir: $TSFixMe
-}) => {
+}): Promise<(FunctionResult & { buildData?: unknown })[]> => {
   statusCb({
     type: 'functions-manifest',
     msg: 'Looking for a functions cache...',
@@ -88,6 +90,27 @@ const getFunctionZips = async ({
   })
 }
 
+const trafficRulesConfig = (trafficRules?: TrafficRules) => {
+  if (!trafficRules) {
+    return
+  }
+
+  return {
+    action: {
+      type: trafficRules?.action?.type,
+      config: {
+        rate_limit_config: {
+          algorithm: trafficRules?.action?.config?.rateLimitConfig?.algorithm,
+          window_size: trafficRules?.action?.config?.rateLimitConfig?.windowSize,
+          window_limit: trafficRules?.action?.config?.rateLimitConfig?.windowLimit,
+        },
+        aggregate: trafficRules?.action?.config?.aggregate,
+        to: trafficRules?.action?.config?.to,
+      },
+    },
+  }
+}
+
 const hashFns = async (
   command: BaseCommand,
   directories: string[],
@@ -136,8 +159,17 @@ const hashFns = async (
     tmpDir,
   })
   const fileObjs = functionZips.map(
-    // @ts-expect-error TS(7031) FIXME: Binding element 'buildData' implicitly has an 'any... Remove this comment to see the full error message
-    ({ buildData, displayName, generator, invocationMode, path: functionPath, priority, runtime, runtimeVersion }) => ({
+    ({
+      buildData,
+      displayName,
+      generator,
+      invocationMode,
+      path: functionPath,
+      priority,
+      runtime,
+      runtimeVersion,
+      trafficRules,
+    }) => ({
       filepath: functionPath,
       root: tmpDir,
       relname: path.relative(tmpDir, functionPath),
@@ -152,13 +184,16 @@ const hashFns = async (
       invocationMode,
       buildData,
       priority,
+      trafficRules,
     }),
   )
   const fnConfig = functionZips
-    // @ts-expect-error TS(7006) FIXME: Parameter 'func' implicitly has an 'any' type.
-    .filter((func) => Boolean(func.displayName || func.generator || func.routes || func.buildData))
+    .filter((func) =>
+      Boolean(
+        func.displayName || func.generator || func.routes || func.buildData || func.priority || func.trafficRules,
+      ),
+    )
     .reduce(
-      // @ts-expect-error TS(7006) FIXME: Parameter 'funcs' implicitly has an 'any' type.
       (funcs, curr) => ({
         ...funcs,
         [curr.name]: {
@@ -167,16 +202,15 @@ const hashFns = async (
           routes: curr.routes,
           build_data: curr.buildData,
           priority: curr.priority,
+          traffic_rules: trafficRulesConfig(curr.trafficRules),
         },
       }),
       {},
     )
   const functionSchedules = functionZips
-    // @ts-expect-error TS(7031) FIXME: Binding element 'name' implicitly has an 'any' typ... Remove this comment to see the full error message
     .map(({ name, schedule }) => schedule && { name, cron: schedule })
     .filter(Boolean)
   const functionsWithNativeModules = functionZips.filter(
-    // @ts-expect-error TS(7031) FIXME: Binding element 'nativeNodeModules' implicitly has... Remove this comment to see the full error message
     ({ nativeNodeModules }) => nativeNodeModules !== undefined && Object.keys(nativeNodeModules).length !== 0,
   )
 

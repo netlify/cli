@@ -509,7 +509,14 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         .withContentFile({
           content: `
           export default async () => new Response("Internal V2 API")
-          export const config = { path: "/internal-v2-func" }
+          export const config = {
+            path: "/internal-v2-func",
+            rateLimit: {
+              windowLimit: 60,
+              windowSize: 50,
+              aggregateBy: ["ip", "domain"],
+            }
+          }
           `,
           path: '.netlify/functions-internal/func-4.mjs',
         })
