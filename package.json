@@ -211,7 +211,7 @@
     "is-ci": "3.0.1",
     "mock-fs": "5.2.0",
     "nock": "13.5.4",
-    "p-timeout": "4.1.0",
+    "p-timeout": "6.1.2",
     "serialize-javascript": "6.0.2",
     "sinon": "14.0.2",
     "strip-ansi": "7.1.0",
