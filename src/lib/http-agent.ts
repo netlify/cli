@@ -1,6 +1,6 @@
 import { readFile } from 'fs/promises'
 
-import HttpsProxyAgent from 'https-proxy-agent'
+import { HttpsProxyAgent } from 'https-proxy-agent'
 import waitPort from 'wait-port'
 
 import { NETLIFYDEVERR, NETLIFYDEVWARN, exit, log } from '../utils/command-helpers.js'
