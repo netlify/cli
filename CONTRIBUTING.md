@@ -97,7 +97,7 @@ When debugging a project, it's super helpful to attach a debugger to the CLI. If
 2. Open a "JavaScript Debug Terminal" (e.g. by searching for it in the Command Palette (Shift-Cmd+P)). Every Node process that's opened in this terminal will have a debugger attached.
 3. Place a breakpoint somewhere in the CLI. You will have to place them in the compiled `.js` files as opposed to the `.ts` files.
 4. In your JavaScript Debug Terminal, navigate to the project you'd like to debug.
-5. Run `/path/to/netlify/cli/bin/run.js`. You should see the debugger connecting automatically.
+5. Run `/path/to/netlify/cli/bin/run.js`. The debugger should be connecting automatically.
 
 ### Architecture
 
