@@ -151,10 +151,10 @@ const startServer = async ({
     ps.catch((error) => !selfKilled && reject(error))
   })
 
-  return await pTimeout(serverPromise,
-    { milliseconds: SERVER_START_TIMEOUT,
-      fallback: () => ({ timeout: true, output: outputBuffer.join('') })
-    })
+  return await pTimeout(serverPromise, {
+    milliseconds: SERVER_START_TIMEOUT,
+    fallback: () => ({ timeout: true, output: outputBuffer.join('') }),
+  })
 }
 
 export const startDevServer = async (options: DevServerOptions, expectFailure: boolean): Promise<DevServer> => {
@@ -180,8 +180,6 @@ export const startDevServer = async (options: DevServerOptions, expectFailure: b
 
   throw new Error('this code should be unreachable')
 }
-
-
 
 export const withDevServer = async <T>(
   options: DevServerOptions,
