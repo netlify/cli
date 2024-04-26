@@ -930,6 +930,46 @@ describe.concurrent('commands/dev-miscellaneous', () => {
     })
   })
 
+  test('should respect excluded paths specified in TOML', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      const publicDir = 'public'
+      builder
+        .withNetlifyToml({
+          config: {
+            build: {
+              publish: publicDir,
+              edge_functions: 'netlify/edge-functions',
+            },
+            edge_functions: [
+              {
+                function: 'hello',
+                path: '/*',
+                excludedPath: '/static/*',
+              },
+            ],
+          },
+        })
+        .withEdgeFunction({
+          handler: () => new Response('Hello world'),
+          name: 'hello',
+        })
+
+      await builder.build()
+
+      await withDevServer({ cwd: builder.directory }, async ({ port }) => {
+        const [res1, res2] = await Promise.all([
+          fetch(`http://localhost:${port}/foo`),
+          fetch(`http://localhost:${port}/static/foo`),
+        ])
+
+        t.expect(res1.status).toBe(200)
+        t.expect(await res1.text()).toEqual('Hello world')
+
+        t.expect(res2.status).toBe(404)
+      })
+    })
+  })
+
   test('should respect in-source configuration from internal edge functions', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       const publicDir = 'public'
