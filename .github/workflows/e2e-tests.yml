@@ -24,7 +24,7 @@ jobs:
 
     steps:
       - name: Git checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Setup node
@@ -34,7 +34,7 @@ jobs:
           cache: npm
           check-latest: true
       - name: Cache verdaccio storage
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ./.verdaccio-storage
           key: verdaccio-e2e-cli-${{ hashFiles('./package-lock.json') }}
@@ -72,7 +72,7 @@ jobs:
 
     steps:
       - name: Git checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Setup node
@@ -82,7 +82,7 @@ jobs:
           cache: npm
           check-latest: true
       - name: Cache verdaccio storage
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ./.verdaccio-storage
           key: verdaccio-e2e-cli-${{ hashFiles('./package-lock.json') }}

@@ -39,7 +39,7 @@ jobs:
           REG ADD HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\TCPIP\Parameters /v TcpTimedWaitDelay /t REG_DWORD /d 30 /f
         if: "${{ matrix.os == 'windows-latest' && !steps.release-check.outputs.IS_RELEASE }}"
       - name: Git checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'

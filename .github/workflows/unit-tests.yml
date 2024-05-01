@@ -25,7 +25,7 @@ jobs:
           echo "IS_RELEASE=true" >> $env:GITHUB_OUTPUT
         if: "${{ startsWith(github.head_ref, 'release-') }}"
       - name: Git checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
