@@ -19,7 +19,9 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest]
-        node-version: ['18.14.0', '*']
+        node-version: ['18.14.0', '20']
+        # Temporary workaround due to https://github.com/nodejs/node/issues/52682
+        # node-version: ['18.14.0', '20', '22']
       fail-fast: false
 
     steps:
