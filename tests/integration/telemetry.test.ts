@@ -11,6 +11,9 @@ import { callCli } from './utils/call-cli.js'
 import { cliPath } from './utils/cli-path.js'
 import { MockApiTestContext, withMockApi } from './utils/mock-api-vitest.js'
 import { withSiteBuilder } from './utils/site-builder.ts'
+import { existsSync } from 'fs'
+
+const isPnpm = existsSync('pnpm-lock.yaml')
 
 const getCLIOptions = (apiUrl): Options => ({
   env: {
@@ -74,7 +77,7 @@ await withMockApi(routes, async () => {
       command: 'api',
       monorepo: false,
       nodejsVersion,
-      packageManager: 'npm',
+      packageManager: isPnpm ? 'pnpm' : 'npm',
     })
   })
 
@@ -93,7 +96,7 @@ await withMockApi(routes, async () => {
       command: 'dev:exec',
       monorepo: false,
       nodejsVersion,
-      packageManager: 'npm',
+      packageManager: isPnpm ? 'pnpm' : 'npm',
     })
   })
 
@@ -120,7 +123,7 @@ await withMockApi(routes, async () => {
         command: 'api',
         monorepo: false,
         nodejsVersion,
-        packageManager: 'npm',
+        packageManager: isPnpm ? 'pnpm' : 'npm',
       })
     })
   })
