@@ -44,7 +44,7 @@ jobs:
           fetch-depth: 0
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm
