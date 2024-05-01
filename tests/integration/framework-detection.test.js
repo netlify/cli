@@ -252,6 +252,33 @@ describe.concurrent('frameworks/framework-detection', () => {
     })
   })
 
+  test('should fail in CI when multiple frameworks are detected', async (t) => {
+    await withSiteBuilder('site-with-multiple-frameworks', async (builder) => {
+      await builder
+        .withPackageJson({
+          packageJson: {
+            dependencies: { 'react-scripts': '1.0.0', gatsby: '^3.0.0' },
+            scripts: { start: 'react-scripts start', develop: 'gatsby develop' },
+          },
+        })
+        .withContentFile({ path: 'gatsby-config.js', content: '' })
+        .buildAsync()
+
+      // a failure is expected since this is not a true framework project
+      const asyncErrorBlock = async () => {
+        const childProcess = execa(
+          cliPath,
+          ['dev', '--offline'],
+          getExecaOptions({ cwd: builder.directory, env: { CI: true } }),
+        )
+        await childProcess
+      }
+      const error = await asyncErrorBlock().catch((error_) => error_)
+      t.expect(normalize(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
+      t.expect(error.exitCode).toBe(1)
+    })
+  })
+
   test('should not run framework detection if command and targetPort are configured', async (t) => {
     await withSiteBuilder('site-with-hugo-config', async (builder) => {
       await builder.withContentFile({ path: 'config.toml', content: '' }).buildAsync()

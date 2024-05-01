@@ -1,3 +1,5 @@
+import { isCI } from 'ci-info'
+
 import { existsSync } from 'fs'
 import { join, relative, resolve } from 'path'
 import process from 'process'
@@ -102,6 +104,14 @@ async function selectWorkspace(project: Project, filter?: string): Promise<strin
   if (!selected) {
     log()
     log(chalk.cyan(`We've detected multiple sites inside your repository`))
+
+    if (isCI) {
+      throw new Error(
+        `Configure the site you want to work with and try again. Sites detected: ${(project.workspace?.packages || [])
+          .map((pkg) => pkg.name || pkg.path)
+          .join(', ')}.`,
+      )
+    }
 
     const { result } = await inquirer.prompt({
       name: 'result',

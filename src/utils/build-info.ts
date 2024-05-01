@@ -1,4 +1,5 @@
 import { Settings } from '@netlify/build-info'
+import { isCI } from 'ci-info'
 import fuzzy from 'fuzzy'
 import inquirer from 'inquirer'
 
@@ -77,6 +78,15 @@ export const detectFrameworkSettings = async (
   }
 
   if (settings.length > 1) {
+    if (isCI) {
+      log(`Multiple possible ${type} commands found`)
+      throw new Error(
+        `Update your settings to specify which to use. Detected commands for: ${settings
+          .map((setting) => setting.framework.name)
+          .join(', ')}.`,
+      )
+    }
+
     // multiple matching detectors, make the user choose
     const scriptInquirerOptions = formatSettingsArrForInquirer(settings, type)
     const { chosenSettings } = await inquirer.prompt<{ chosenSettings: Settings }>({
