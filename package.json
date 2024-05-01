@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "17.23.0",
+  "version": "17.23.1",
   "author": "Netlify Inc.",
   "type": "module",
   "engines": {
@@ -89,8 +89,8 @@
     "backoff": "2.5.0",
     "better-opn": "3.0.2",
     "boxen": "7.1.1",
-    "chalk": "5.2.0",
-    "chokidar": "3.5.3",
+    "chalk": "5.3.0",
+    "chokidar": "3.6.0",
     "ci-info": "3.8.0",
     "clean-deep": "3.4.0",
     "commander": "10.0.1",
@@ -119,7 +119,7 @@
     "folder-walker": "3.2.0",
     "from2-array": "0.0.4",
     "fuzzy": "0.1.3",
-    "get-port": "7.1.0",
+    "get-port": "5.1.1",
     "gh-release-fetch": "4.0.3",
     "git-repo-info": "2.1.1",
     "gitconfiglocal": "2.1.0",
