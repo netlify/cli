@@ -33,13 +33,17 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: npm
           check-latest: true
+      - name: Temporary update npm to v10.7.0
+        shell: bash
+        run: |
+          npm install -g npm@10.7.0
       - name: Cache verdaccio storage
         uses: actions/cache@v4
         with:
           path: ./.verdaccio-storage
           key: verdaccio-e2e-cli-${{ hashFiles('./package-lock.json') }}
       - name: Install dependencies
-        run: npm install
+        run: npm ci --no-audit
       - run: npm run e2e
       - name: Notify Slack
         uses: 8398a7/action-slack@v3
