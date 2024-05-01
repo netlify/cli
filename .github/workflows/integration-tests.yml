@@ -14,7 +14,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macOS-latest, windows-latest]
-        node-version: ['18.14.0', '*']
+        node-version: ['18.14.0', '22.x', '*']
         shard: ['1/4', '2/4', '3/4', '4/4']
 
         exclude:
@@ -41,12 +41,12 @@ jobs:
           REG ADD HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\TCPIP\Parameters /v TcpTimedWaitDelay /t REG_DWORD /d 30 /f
         if: "${{ matrix.os == 'windows-latest' && !steps.release-check.outputs.IS_RELEASE }}"
       - name: Git checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm
