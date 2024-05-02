@@ -493,8 +493,9 @@ export default class BaseCommand extends Command {
     const frameworks = await this.project.detectFrameworks()
     let packageConfig: string | undefined = flags.config ? resolve(flags.config) : undefined
     // check if we have detected multiple projects inside which one we have to perform our operations.
-    // only ask to select one if on the workspace root
+    // only ask to select one if on the workspace root and no --cwd was provided
     if (
+      !flags.cwd &&
       !COMMANDS_WITHOUT_WORKSPACE_OPTIONS.has(actionCommand.name()) &&
       this.project.workspace?.packages.length &&
       this.project.workspace.isRoot

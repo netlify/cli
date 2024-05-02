@@ -97,7 +97,7 @@ const mainCommand = async function (options, command) {
   if (options.telemetryDisable) {
     globalConfig.set('telemetryDisabled', true)
     console.log('Netlify telemetry has been disabled')
-    console.log('You can renable it anytime with the --telemetry-enable flag')
+    console.log('You can re-enable it anytime with the --telemetry-enable flag')
     exit()
   }
   if (options.telemetryEnable) {
