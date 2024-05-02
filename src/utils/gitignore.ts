@@ -1,22 +1,19 @@
 import { readFile, writeFile } from 'fs/promises'
 import path from 'path'
 
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'pars... Remove this comment to see the full error message
 import parseIgnore from 'parse-gitignore'
 
 import { fileExistsAsync } from '../lib/fs.js'
 
 import { log } from './command-helpers.js'
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'dir' implicitly has an 'any' type.
-const hasGitIgnore = async function (dir) {
+const hasGitIgnore = async function (dir: string) {
   const gitIgnorePath = path.join(dir, '.gitignore')
   const hasIgnore = await fileExistsAsync(gitIgnorePath)
   return hasIgnore
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'dir' implicitly has an 'any' type.
-export const ensureNetlifyIgnore = async function (dir) {
+export const ensureNetlifyIgnore = async function (dir: string) {
   const gitIgnorePath = path.join(dir, '.gitignore')
   const ignoreContent = '# Local Netlify folder\n.netlify\n'
 
@@ -35,7 +32,6 @@ export const ensureNetlifyIgnore = async function (dir) {
     // ignore
   }
   /* Not ignoring .netlify folder. Add to .gitignore */
-  // @ts-expect-error TS(7006) FIXME: Parameter 'pattern' implicitly has an 'any' type.
   if (!ignorePatterns || !ignorePatterns.patterns.some((pattern) => /(^|\/|\\)\.netlify($|\/|\\)/.test(pattern))) {
     log()
     log('Adding local .netlify folder to .gitignore file...')

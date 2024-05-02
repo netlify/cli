@@ -7,8 +7,9 @@ export const killProcess = async (ps) => {
   kill(ps.pid)
   await pTimeout(
     ps.catch(() => {}),
-    PROCESS_EXIT_TIMEOUT,
-    // don't reject on timeout
-    () => {},
+    {
+      milliseconds: PROCESS_EXIT_TIMEOUT,
+      fallback: () => {},
+    },
   )
 }
