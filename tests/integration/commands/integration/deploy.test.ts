@@ -74,7 +74,6 @@ describe(`integration:deploy`, () => {
   scopes:
     site:
         - read
-  integrationLevel: team-and-site
       `,
         },
       ])
