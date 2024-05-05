@@ -107,9 +107,11 @@ async function selectWorkspace(project: Project, filter?: string): Promise<strin
 
     if (isCI) {
       throw new Error(
-        `Configure the site you want to work with and try again. Sites detected: ${(project.workspace?.packages || [])
+        `Sites detected: ${(project.workspace?.packages || [])
           .map((pkg) => pkg.name || pkg.path)
-          .join(', ')}.`,
+          .join(
+            ', ',
+          )}. Configure the site you want to work with and try again. See docs at: https://docs.netlify.com/configure-builds/monorepos/#manual-configuration`,
       )
     }
 

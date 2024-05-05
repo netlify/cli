@@ -81,9 +81,11 @@ export const detectFrameworkSettings = async (
     if (isCI) {
       log(`Multiple possible ${type} commands found`)
       throw new Error(
-        `Update your settings to specify which to use. Detected commands for: ${settings
+        `Detected commands for: ${settings
           .map((setting) => setting.framework.name)
-          .join(', ')}.`,
+          .join(
+            ', ',
+          )}. Update your settings to specify which to use. See docs at: https://docs.netlify.com/configure-builds/file-based-configuration/#netlify-dev`,
       )
     }
 
