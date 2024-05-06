@@ -32,7 +32,7 @@ exports[`frameworks/framework-detection > should detect a known framework 1`] = 
 exports[`frameworks/framework-detection > should fail in CI when multiple frameworks are detected 1`] = `
 "◈ Netlify Dev ◈
 Multiple possible dev commands found
-◈ Detected commands for: Gatsby, Create React App. Update your settings to specify which to use. See docs at: https://docs.netlify.com/configure-builds/file-based-configuration/#netlify-dev"
+◈ Detected commands for: Gatsby, Create React App. Update your settings to specify which to use. Refer to https://ntl.fyi/dev-monorepo for more information."
 `;
 
 exports[`frameworks/framework-detection > should filter frameworks with no dev command 1`] = `
