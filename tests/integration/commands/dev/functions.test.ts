@@ -46,7 +46,7 @@ test('nodeModuleFormat: esm v1 functions should work', async (t) => {
 
     await withDevServer({ cwd: builder.directory, serve: true }, async (server) => {
       const response = await fetch(new URL('/.netlify/functions/server', server.url))
-      t.expect(await response.text()).toBe("This is an internal function.")
+      t.expect(await response.text()).toBe('This is an internal function.')
       t.expect(response.status).toBe(200)
     })
   })
