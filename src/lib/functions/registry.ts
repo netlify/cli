@@ -1,4 +1,4 @@
-import { mkdir, stat } from 'fs/promises'
+import { mkdir, readdir, stat } from 'fs/promises'
 import { createRequire } from 'module'
 import { basename, extname, isAbsolute, join, resolve } from 'path'
 import { env } from 'process'
@@ -434,7 +434,13 @@ export class FunctionsRegistry {
 
         func.mainFile = v2EntryPointPath
       } catch {
-        func.mainFile = join(unzippedDirectory, `${func.name}.js`)
+        const files = await readdir(unzippedDirectory)
+        func.mainFile = join(
+          unzippedDirectory,
+          files.find(
+            (file) => file === `${func.name}.mjs` || file === `${func.name}.js` || file === `${func.name}.cjs`,
+          ) ?? `${func.name}.js`,
+        )
       }
     } else {
       this.buildFunctionAndWatchFiles(func, !isReload)

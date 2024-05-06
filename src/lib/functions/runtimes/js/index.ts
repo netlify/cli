@@ -118,6 +118,7 @@ export const invokeFunctionDirectly = async ({ context, event, func, timeout }) 
     lambdaPath,
     timeoutMs: timeout * SECONDS_TO_MILLISECONDS,
     verboseLevel: 3,
+    esm: lambdaPath.endsWith('.mjs'),
   })
 
   return result
