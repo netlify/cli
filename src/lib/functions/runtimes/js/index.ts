@@ -6,10 +6,12 @@ import { Worker } from 'worker_threads'
 import lambdaLocal from 'lambda-local'
 
 import { BLOBS_CONTEXT_VARIABLE } from '../../../blobs/blobs.js'
+import type NetlifyFunction from '../../netlify-function.js'
 
 import detectNetlifyLambdaBuilder from './builders/netlify-lambda.js'
 import detectZisiBuilder, { parseFunctionForMetadata } from './builders/zisi.js'
 import { SECONDS_TO_MILLISECONDS } from './constants.js'
+import { $TSFixMe } from '../../../../commands/types.js'
 
 export const name = 'js'
 
@@ -99,11 +101,21 @@ export const invokeFunction = async ({ context, environment, event, func, timeou
   })
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'context' implicitly has an 'any' ... Remove this comment to see the full error message
-export const invokeFunctionDirectly = async ({ context, event, func, timeout }) => {
+export const invokeFunctionDirectly = async ({
+  context,
+  event,
+  func,
+  timeout,
+}: {
+  context: $TSFixMe
+  event: $TSFixMe
+  func: NetlifyFunction
+  timeout: number
+}) => {
   // If a function builder has defined a `buildPath` property, we use it.
   // Otherwise, we'll invoke the function's main file.
-  const lambdaPath = func.buildData?.buildPath ?? func.mainFile
+  const { buildPath } = await func.getBuildData()
+  const lambdaPath = buildPath ?? func.mainFile
   const result = await lambdaLocal.execute({
     clientContext: JSON.stringify(context),
     environment: {
