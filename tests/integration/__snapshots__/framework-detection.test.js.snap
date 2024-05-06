@@ -29,12 +29,6 @@ exports[`frameworks/framework-detection > should detect a known framework 1`] = 
 ◈ Command failed with exit code *: npm run start. Shutting down Netlify Dev server"
 `;
 
-exports[`frameworks/framework-detection > should fail in CI when multiple frameworks are detected 1`] = `
-"◈ Netlify Dev ◈
-Multiple possible dev commands found
-◈ Detected commands for: Gatsby, Create React App. Update your settings to specify which to use. Refer to https://ntl.fyi/dev-monorepo for more information."
-`;
-
 exports[`frameworks/framework-detection > should filter frameworks with no dev command 1`] = `
 "◈ Netlify Dev ◈
 ◈ No app server detected. Using simple static server

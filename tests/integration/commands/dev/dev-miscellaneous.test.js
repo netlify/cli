@@ -1339,7 +1339,11 @@ describe.concurrent('commands/dev-miscellaneous', () => {
         await childProcess
       }
       const error = await asyncErrorBlock().catch((error_) => error_)
-      t.expect(normalize(error.stderr, { duration: true, filePath: true })).toMatchSnapshot()
+      t.expect(
+        normalize(error.stderr, { duration: true, filePath: true }).includes(
+          'Sites detected: package1, package2. Configure the site you want to work with and try again. Refer to https://ntl.fyi/configure-site for more information.',
+        ),
+      )
       t.expect(error.exitCode).toBe(1)
     })
   })

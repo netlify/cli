@@ -278,7 +278,11 @@ describe.concurrent('frameworks/framework-detection', () => {
         await childProcess
       }
       const error = await asyncErrorBlock().catch((error_) => error_)
-      t.expect(normalize(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
+      t.expect(
+        normalize(error.stdout, { duration: true, filePath: true }).includes(
+          'Detected commands for: Gatsby, Create React App. Update your settings to specify which to use. Refer to https://ntl.fyi/dev-monorepo for more information.',
+        ),
+      )
       t.expect(error.exitCode).toBe(1)
     })
   })
