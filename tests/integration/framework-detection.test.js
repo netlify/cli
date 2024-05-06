@@ -236,7 +236,11 @@ describe.concurrent('frameworks/framework-detection', () => {
 
       // a failure is expected since this is not a true framework project
       const asyncErrorBlock = async () => {
-        const childProcess = execa(cliPath, ['dev', '--offline'], getExecaOptions({ cwd: builder.directory }))
+        const childProcess = execa(
+          cliPath,
+          ['dev', '--offline'],
+          getExecaOptions({ cwd: builder.directory, env: { CI: 'false' } }),
+        )
 
         handleQuestions(childProcess, [
           {
