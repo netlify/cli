@@ -111,7 +111,7 @@ async function selectWorkspace(project: Project, filter?: string): Promise<strin
           .map((pkg) => pkg.name || pkg.path)
           .join(
             ', ',
-          )}. Configure the site you want to work with and try again. See docs at: https://docs.netlify.com/configure-builds/monorepos/#manual-configuration`,
+          )}. Configure the site you want to work with and try again. Refer to https://ntl.fyi/configure-site for more information.`,
       )
     }
 
