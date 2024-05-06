@@ -193,7 +193,7 @@
     "@types/jsonwebtoken": "9.0.6",
     "@types/node": "20.9.0",
     "@types/node-fetch": "2.6.11",
-    "@types/parse-gitignore": "^1.0.2",
+    "@types/parse-gitignore": "1.0.2",
     "@types/prettyjson": "0.0.33",
     "@types/semver": "7.5.8",
     "@types/uuid": "9.0.8",
