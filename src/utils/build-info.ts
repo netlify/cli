@@ -85,7 +85,7 @@ export const detectFrameworkSettings = async (
           .map((setting) => setting.framework.name)
           .join(
             ', ',
-          )}. Update your settings to specify which to use. See docs at: https://docs.netlify.com/configure-builds/file-based-configuration/#netlify-dev`,
+          )}. Update your settings to specify which to use. Refer to https://ntl.fyi/dev-monorepo for more information.`,
       )
     }
 
