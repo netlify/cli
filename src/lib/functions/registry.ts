@@ -434,7 +434,7 @@ export class FunctionsRegistry {
 
         func.mainFile = v2EntryPointPath
       } catch {
-        func.mainFile = join(unzippedDirectory, `${func.name}${extname(manifestEntry.mainFile)}`)
+        func.mainFile = join(unzippedDirectory, basename(manifestEntry.mainFile))
       }
     } else {
       this.buildFunctionAndWatchFiles(func, !isReload)
