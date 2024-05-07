@@ -21,9 +21,10 @@ describe.concurrent('frameworks/framework-detection', () => {
         .build()
 
       await withDevServer({ cwd: builder.directory }, async ({ output, url }) => {
-        const response = await fetch(url).then((res) => res.text())
-        t.expect(response).toEqual(content)
+        const response = await fetch(url)
+        const responseContent = await response.text()
 
+        t.expect(responseContent).toEqual(content)
         t.expect(normalize(output, { duration: true, filePath: true })).toMatchSnapshot()
       })
     })
@@ -39,9 +40,10 @@ describe.concurrent('frameworks/framework-detection', () => {
         .build()
 
       await withDevServer({ cwd: builder.directory, args: ['--dir', 'public'] }, async ({ output, url }) => {
-        const response = await fetch(url).then((res) => res.text())
-        t.expect(response).toEqual(content)
+        const response = await fetch(url)
+        const responseContent = await response.text()
 
+        t.expect(responseContent).toEqual(content)
         t.expect(normalize(output, { duration: true, filePath: true })).toMatchSnapshot()
       })
     })
@@ -58,9 +60,10 @@ describe.concurrent('frameworks/framework-detection', () => {
         .build()
 
       await withDevServer({ cwd: builder.directory }, async ({ output, url }) => {
-        const response = await fetch(url).then((res) => res.text())
-        t.expect(response).toEqual(content)
+        const response = await fetch(url)
+        const responseContent = await response.text()
 
+        t.expect(responseContent).toEqual(content)
         t.expect(normalize(output, { duration: true, filePath: true })).toMatchSnapshot()
       })
     })
@@ -81,9 +84,10 @@ describe.concurrent('frameworks/framework-detection', () => {
       await withDevServer(
         { cwd: builder.directory, args: ['--dir', 'public', '--command', 'npm run start'] },
         async ({ output, url }) => {
-          const response = await fetch(url).then((res) => res.text())
-          t.expect(response).toEqual(content)
+          const response = await fetch(url)
+          const responseContent = await response.text()
 
+          t.expect(responseContent).toEqual(content)
           t.expect(normalize(output, { duration: true, filePath: true })).toMatchSnapshot()
         },
       )
@@ -102,9 +106,10 @@ describe.concurrent('frameworks/framework-detection', () => {
       await withDevServer(
         { cwd: builder.directory, args: ['--dir', 'public', '--target-port', '3000'] },
         async ({ output, url }) => {
-          const response = await fetch(url).then((res) => res.text())
-          t.expect(response).toEqual(content)
+          const response = await fetch(url)
+          const responseContent = await response.text()
 
+          t.expect(responseContent).toEqual(content)
           t.expect(normalize(output, { duration: true, filePath: true })).toMatchSnapshot()
         },
       )
@@ -315,9 +320,10 @@ describe.concurrent('frameworks/framework-detection', () => {
         .build()
 
       await withDevServer({ cwd: builder.directory }, async ({ output, url }) => {
-        const response = await fetch(url).then((res) => res.text())
-        t.expect(response).toEqual(content)
+        const response = await fetch(url)
+        const responseContent = await response.text()
 
+        t.expect(responseContent).toEqual(content)
         t.expect(normalize(output, { duration: true, filePath: true })).toMatchSnapshot()
       })
     })
@@ -410,8 +416,9 @@ describe.concurrent('frameworks/framework-detection', () => {
       await withDevServer(
         { cwd: builder.directory, context: null, debug: true, serve: true },
         async ({ output, url }) => {
-          const response = await fetch(`${url}/hello`).then((res) => res.json())
-          t.expect(response).toStrictEqual({ CONTEXT_CHECK: 'PRODUCTION' })
+          const response = await fetch(`${url}/hello`)
+          const responseJson = await response.json()
+          t.expect(responseJson).toStrictEqual({ CONTEXT_CHECK: 'PRODUCTION' })
 
           const normalizedText = normalize(output, { duration: true, filePath: true })
           t.expect(
