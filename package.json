@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "17.23.1",
+  "version": "17.23.2",
   "author": "Netlify Inc.",
   "type": "module",
   "engines": {
@@ -186,14 +186,14 @@
   "devDependencies": {
     "@babel/preset-react": "7.24.1",
     "@netlify/eslint-config-node": "7.0.0",
-    "@netlify/functions": "2.6.0",
+    "@netlify/functions": "2.6.3",
     "@sindresorhus/slugify": "2.2.1",
     "@types/fs-extra": "11.0.4",
     "@types/inquirer": "9.0.7",
     "@types/jsonwebtoken": "9.0.6",
     "@types/node": "20.9.0",
     "@types/node-fetch": "2.6.11",
-    "@types/parse-gitignore": "^1.0.2",
+    "@types/parse-gitignore": "1.0.2",
     "@types/prettyjson": "0.0.33",
     "@types/semver": "7.5.8",
     "@types/uuid": "9.0.8",
