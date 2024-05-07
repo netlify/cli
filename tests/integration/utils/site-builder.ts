@@ -273,13 +273,6 @@ export class SiteBuilder {
 
     return this
   }
-
-  /**
-   * @deprecated
-   */
-  async cleanupAsync() {
-    return this.cleanup()
-  }
 }
 
 export const createSiteBuilder = ({ siteName }: { siteName: string }) => {
