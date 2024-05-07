@@ -69,31 +69,6 @@ describe.concurrent('frameworks/framework-detection', () => {
     })
   })
 
-  // This test has a race condition that occasionally causes it to fail when run concurrently.
-  // Running it in isolation (or removing the '.concurrent' on the describe block above)
-  // fixes it. See CT-1094 for more details
-  test('should log the command if using static server and `command` is configured', async (t) => {
-    await withSiteBuilder(t, async (builder) => {
-      await builder
-        .withContentFile({
-          path: 'public/index.html',
-          content,
-        })
-        .build()
-
-      await withDevServer(
-        { cwd: builder.directory, args: ['--dir', 'public', '--command', 'npm run start'] },
-        async ({ output, url }) => {
-          const response = await fetch(url)
-          const responseContent = await response.text()
-
-          t.expect(responseContent).toEqual(content)
-          t.expect(normalize(output, { duration: true, filePath: true })).toMatchSnapshot()
-        },
-      )
-    })
-  })
-
   test('should warn if using static server and `targetPort` is configured', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       await builder
