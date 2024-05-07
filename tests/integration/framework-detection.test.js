@@ -18,7 +18,7 @@ describe.concurrent('frameworks/framework-detection', () => {
           path: 'index.html',
           content,
         })
-        .buildAsync()
+        .build()
 
       await withDevServer({ cwd: builder.directory }, async ({ output, url }) => {
         const response = await fetch(url).then((res) => res.text())
@@ -36,7 +36,7 @@ describe.concurrent('frameworks/framework-detection', () => {
           path: 'public/index.html',
           content,
         })
-        .buildAsync()
+        .build()
 
       await withDevServer({ cwd: builder.directory, args: ['--dir', 'public'] }, async ({ output, url }) => {
         const response = await fetch(url).then((res) => res.text())
@@ -55,7 +55,7 @@ describe.concurrent('frameworks/framework-detection', () => {
           content,
         })
         .withNetlifyToml({ config: { dev: { framework: '#static' } } })
-        .buildAsync()
+        .build()
 
       await withDevServer({ cwd: builder.directory }, async ({ output, url }) => {
         const response = await fetch(url).then((res) => res.text())
@@ -76,7 +76,7 @@ describe.concurrent('frameworks/framework-detection', () => {
           path: 'public/index.html',
           content,
         })
-        .buildAsync()
+        .build()
 
       await withDevServer(
         { cwd: builder.directory, args: ['--dir', 'public', '--command', 'npm run start'] },
@@ -97,7 +97,7 @@ describe.concurrent('frameworks/framework-detection', () => {
           path: 'public/index.html',
           content,
         })
-        .buildAsync()
+        .build()
 
       await withDevServer(
         { cwd: builder.directory, args: ['--dir', 'public', '--target-port', '3000'] },
@@ -113,7 +113,7 @@ describe.concurrent('frameworks/framework-detection', () => {
 
   test('should run `command` when both `command` and `targetPort` are configured', async (t) => {
     await withSiteBuilder('empty-site', async (builder) => {
-      await builder.withNetlifyToml({ config: { build: { publish: 'public' } } }).buildAsync()
+      await builder.withNetlifyToml({ config: { build: { publish: 'public' } } }).build()
 
       // a failure is expected since we use `echo hello` instead of starting a server
       const error = await withDevServer(
@@ -128,7 +128,7 @@ describe.concurrent('frameworks/framework-detection', () => {
 
   test('should force a specific framework when configured', async (t) => {
     await withSiteBuilder('site-with-mocked-cra', async (builder) => {
-      await builder.withNetlifyToml({ config: { dev: { framework: 'create-react-app' } } }).buildAsync()
+      await builder.withNetlifyToml({ config: { dev: { framework: 'create-react-app' } } }).build()
 
       // a failure is expected since this is not a true create-react-app project
       const error = await withDevServer({ cwd: builder.directory }, () => {}, true).catch((error_) => error_)
@@ -138,7 +138,7 @@ describe.concurrent('frameworks/framework-detection', () => {
 
   test('should throw when forcing a non supported framework', async (t) => {
     await withSiteBuilder('site-with-unknown-framework', async (builder) => {
-      await builder.withNetlifyToml({ config: { dev: { framework: 'to-infinity-and-beyond-js' } } }).buildAsync()
+      await builder.withNetlifyToml({ config: { dev: { framework: 'to-infinity-and-beyond-js' } } }).build()
 
       const error = await withDevServer({ cwd: builder.directory }, () => {}, true).catch((error_) => error_)
       t.expect(normalize(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
@@ -151,7 +151,7 @@ describe.concurrent('frameworks/framework-detection', () => {
         .withPackageJson({
           packageJson: { dependencies: { 'react-scripts': '1.0.0' }, scripts: { start: 'react-scripts start' } },
         })
-        .buildAsync()
+        .build()
 
       // a failure is expected since this is not a true create-react-app project
       const error = await withDevServer({ cwd: builder.directory }, () => {}, true).catch((error_) => error_)
@@ -161,7 +161,7 @@ describe.concurrent('frameworks/framework-detection', () => {
 
   test('should throw if framework=#custom but command is missing', async (t) => {
     await withSiteBuilder('site-with-framework-and-no-command', async (builder) => {
-      await builder.withNetlifyToml({ config: { dev: { framework: '#custom' } } }).buildAsync()
+      await builder.withNetlifyToml({ config: { dev: { framework: '#custom' } } }).build()
 
       const error = await withDevServer(
         { cwd: builder.directory, args: ['--target-port', '3000'] },
@@ -174,7 +174,7 @@ describe.concurrent('frameworks/framework-detection', () => {
 
   test('should throw if framework=#custom but targetPort is missing', async (t) => {
     await withSiteBuilder('site-with-framework-and-no-command', async (builder) => {
-      await builder.withNetlifyToml({ config: { dev: { framework: '#custom' } } }).buildAsync()
+      await builder.withNetlifyToml({ config: { dev: { framework: '#custom' } } }).build()
 
       const error = await withDevServer(
         { cwd: builder.directory, args: ['--command', 'echo hello'] },
@@ -187,7 +187,7 @@ describe.concurrent('frameworks/framework-detection', () => {
 
   test('should start custom command if framework=#custom, command and targetPort are configured', async (t) => {
     await withSiteBuilder('site-with-custom-framework', async (builder) => {
-      await builder.withNetlifyToml({ config: { dev: { framework: '#custom', publish: 'public' } } }).buildAsync()
+      await builder.withNetlifyToml({ config: { dev: { framework: '#custom', publish: 'public' } } }).build()
 
       const error = await withDevServer(
         { cwd: builder.directory, args: ['--command', 'echo hello', '--target-port', '3000'] },
@@ -200,7 +200,7 @@ describe.concurrent('frameworks/framework-detection', () => {
 
   test(`should print specific error when command doesn't exist`, async (t) => {
     await withSiteBuilder('site-with-custom-framework', async (builder) => {
-      await builder.buildAsync()
+      await builder.build()
 
       const error = await withDevServer(
         {
@@ -232,7 +232,7 @@ describe.concurrent('frameworks/framework-detection', () => {
           },
         })
         .withContentFile({ path: 'gatsby-config.js', content: '' })
-        .buildAsync()
+        .build()
 
       // a failure is expected since this is not a true framework project
       const asyncErrorBlock = async () => {
@@ -266,7 +266,7 @@ describe.concurrent('frameworks/framework-detection', () => {
           },
         })
         .withContentFile({ path: 'gatsby-config.js', content: '' })
-        .buildAsync()
+        .build()
 
       // a failure is expected since this is not a true framework project
       const asyncErrorBlock = async () => {
@@ -289,7 +289,7 @@ describe.concurrent('frameworks/framework-detection', () => {
 
   test('should not run framework detection if command and targetPort are configured', async (t) => {
     await withSiteBuilder('site-with-hugo-config', async (builder) => {
-      await builder.withContentFile({ path: 'config.toml', content: '' }).buildAsync()
+      await builder.withContentFile({ path: 'config.toml', content: '' }).build()
 
       // a failure is expected since the command exits early
       const error = await withDevServer(
@@ -312,7 +312,7 @@ describe.concurrent('frameworks/framework-detection', () => {
         .withPackageJson({
           packageJson: { dependencies: { gulp: '1.0.0' } },
         })
-        .buildAsync()
+        .build()
 
       await withDevServer({ cwd: builder.directory }, async ({ output, url }) => {
         const response = await fetch(url).then((res) => res.text())
@@ -332,7 +332,7 @@ describe.concurrent('frameworks/framework-detection', () => {
             scripts: { dev: 'node -p process.env.NODE_VERSION' },
           },
         })
-        .buildAsync()
+        .build()
 
       // a failure is expected since this is not a true Gatsby project
       const error = await withDevServer({ cwd: builder.directory }, () => {}, true).catch((error_) => error_)
@@ -342,7 +342,7 @@ describe.concurrent('frameworks/framework-detection', () => {
 
   test('should start static service for frameworks without port, forced framework', async (t) => {
     await withSiteBuilder('site-with-remix', async (builder) => {
-      await builder.withNetlifyToml({ config: { dev: { framework: 'remix' } } }).buildAsync()
+      await builder.withNetlifyToml({ config: { dev: { framework: 'remix' } } }).build()
 
       // a failure is expected since this is not a true remix project
       const error = await withDevServer({ cwd: builder.directory }, () => {}, true).catch((error_) => error_)
@@ -360,7 +360,7 @@ describe.concurrent('frameworks/framework-detection', () => {
           },
         })
         .withContentFile({ path: 'remix.config.js', content: '' })
-        .buildAsync()
+        .build()
 
       // a failure is expected since this is not a true remix project
       const error = await withDevServer({ cwd: builder.directory }, () => {}, true).catch((error_) => error_)
@@ -405,7 +405,7 @@ describe.concurrent('frameworks/framework-detection', () => {
             },
           },
         })
-        .buildAsync()
+        .build()
 
       await withDevServer(
         { cwd: builder.directory, context: null, debug: true, serve: true },
