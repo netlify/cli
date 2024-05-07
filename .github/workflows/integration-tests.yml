@@ -73,7 +73,7 @@ jobs:
         run: npm run test:init
         if: '${{ !steps.release-check.outputs.IS_RELEASE }}'
       - name: Tests
-        uses: nick-fields/retry@v2
+        uses: nick-fields/retry@v3
         if: '${{ !steps.release-check.outputs.IS_RELEASE }}'
         with:
           timeout_minutes: 15
