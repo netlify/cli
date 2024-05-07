@@ -11,13 +11,14 @@ import tomlify from 'tomlify-j0.4'
 import { v4 as uuidv4 } from 'uuid'
 import type { TaskContext } from 'vitest'
 
-const ensureDir = (file) => mkdir(file, { recursive: true })
+const ensureDir = (directory: string) => mkdir(directory, { recursive: true })
 
 type Task = () => Promise<unknown>
 
 export class SiteBuilder {
   tasks: Task[] = []
 
+  // eslint-disable-next-line no-useless-constructor
   constructor(public readonly directory: string) {}
 
   ensureDirectoryExists(directory: string) {
