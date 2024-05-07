@@ -3,16 +3,19 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 
 import { setProperty } from 'dot-prop'
+import execa from 'execa'
 import getAvailablePort from 'get-port'
 import jwt from 'jsonwebtoken'
 import fetch from 'node-fetch'
 import { describe, test } from 'vitest'
 
-import { withDevServer } from '../../utils/dev-server.ts'
+import { cliPath } from '../../utils/cli-path.js'
+import { getExecaOptions, withDevServer } from '../../utils/dev-server.ts'
 import got from '../../utils/got.js'
 import { withMockApi } from '../../utils/mock-api.js'
 import { pause } from '../../utils/pause.js'
 import { withSiteBuilder } from '../../utils/site-builder.ts'
+import { normalize } from '../../utils/snapshots.js'
 
 // eslint-disable-next-line no-underscore-dangle
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -1356,6 +1359,32 @@ describe.concurrent('commands/dev-miscellaneous', () => {
           })
         },
       )
+    })
+  })
+
+  test('should fail in CI with multiple projects', async (t) => {
+    await withSiteBuilder('site-with-multiple-packages', async (builder) => {
+      await builder
+        .withPackageJson({ packageJson: { name: 'main', workspaces: ['*'] } })
+        .withPackageJson({ packageJson: { name: 'package1' }, pathPrefix: 'package1' })
+        .withPackageJson({ packageJson: { name: 'package2' }, pathPrefix: 'package2' })
+        .buildAsync()
+
+      const asyncErrorBlock = async () => {
+        const childProcess = execa(
+          cliPath,
+          ['dev', '--offline'],
+          getExecaOptions({ cwd: builder.directory, env: { CI: true } }),
+        )
+        await childProcess
+      }
+      const error = await asyncErrorBlock().catch((error_) => error_)
+      t.expect(
+        normalize(error.stderr, { duration: true, filePath: true }).includes(
+          'Sites detected: package1, package2. Configure the site you want to work with and try again. Refer to https://ntl.fyi/configure-site for more information.',
+        ),
+      )
+      t.expect(error.exitCode).toBe(1)
     })
   })
 })
