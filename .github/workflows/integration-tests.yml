@@ -111,7 +111,7 @@ jobs:
           path: |
             /home/runner/.npm/_logs/**/*
 
-      - uses: codecov/codecov-action@v3
+      - uses: codecov/codecov-action@v4
         continue-on-error: true
         with:
           flags: ${{ steps.test-coverage-flags.outputs.os }},${{ steps.test-coverage-flags.outputs.node }}
