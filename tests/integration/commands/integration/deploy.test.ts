@@ -28,7 +28,7 @@ describe(`integration:deploy`, () => {
   beforeEach(() => {
     vi.resetAllMocks()
   })
-  test('deploys an integration', async () => {
+  test('deploys an integration', async (t) => {
     vi.mock(`../../../../src/commands/deploy/deploy.js`, () => ({
       deploy: vi.fn(() => console.log(`yay it was mocked!`)),
     }))
