@@ -36,7 +36,7 @@ describe.concurrent('functions:create command', () => {
   ]
 
   test('should create a new function directory when none is found', async () => {
-    await withSiteBuilder('site-with-no-functions-dir', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       await builder.buildAsync()
       await withMockApi(routes, async ({ apiUrl }) => {
         const childProcess = execa(cliPath, ['functions:create'], getCLIOptions({ apiUrl, builder }))
@@ -72,7 +72,7 @@ describe.concurrent('functions:create command', () => {
   })
 
   test('should create a new edge function directory when none is found', async () => {
-    await withSiteBuilder('site-with-no-functions-dir', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       await builder.buildAsync()
       await withMockApi(routes, async ({ apiUrl }) => {
         const childProcess = execa(cliPath, ['functions:create'], getCLIOptions({ apiUrl, builder }))
@@ -108,7 +108,7 @@ describe.concurrent('functions:create command', () => {
   })
 
   test('should use specified edge function directory when found', async () => {
-    await withSiteBuilder('site-with-custom-edge-functions-dir', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder.withNetlifyToml({ config: { build: { edge_functions: 'somethingEdgy' } } })
       await builder.buildAsync()
       await withMockApi(routes, async ({ apiUrl }) => {
@@ -144,7 +144,7 @@ describe.concurrent('functions:create command', () => {
   })
 
   test('should not create a new function directory when one is found', async () => {
-    await withSiteBuilder('site-with-functions-dir', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder.withNetlifyToml({ config: { build: { functions: 'functions' } } })
 
       await builder.buildAsync()
@@ -182,7 +182,7 @@ describe.concurrent('functions:create command', () => {
 
   test('should only show function templates for the language specified via the --language flag, if one is present', async () => {
     const createWithLanguageTemplate = async (language, outputPath) =>
-      await withSiteBuilder('site-with-no-functions-dir', async (builder) => {
+      await withSiteBuilder(t, async (builder) => {
         await builder.buildAsync()
 
         const createFunctionQuestions = [
@@ -224,7 +224,7 @@ describe.concurrent('functions:create command', () => {
   })
 
   test('throws an error when the --language flag contains an unsupported value', async () => {
-    await withSiteBuilder('site-with-no-functions-dir', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       await builder.buildAsync()
 
       const createFunctionQuestions = [

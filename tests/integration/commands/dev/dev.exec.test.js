@@ -6,7 +6,7 @@ import { callCli } from '../../utils/call-cli.js'
 import { withSiteBuilder } from '../../utils/site-builder.ts'
 
 test('should pass .env variables to exec command', async (t) => {
-  await withSiteBuilder('site-env-file', async (builder) => {
+  await withSiteBuilder(t, async (builder) => {
     builder.withEnvFile({ env: { MY_SUPER_SECRET: 'SECRET' } })
     await builder.buildAsync()
 

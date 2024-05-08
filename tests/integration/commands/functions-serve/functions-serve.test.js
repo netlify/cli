@@ -37,7 +37,7 @@ const withFunctionsServer = async ({ args = [], builder, port = DEFAULT_PORT }, 
 
 describe.concurrent('functions:serve command', () => {
   test('should serve functions on default port', async (t) => {
-    await withSiteBuilder('site-with-ping-function', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       await builder
         .withNetlifyToml({ config: { functions: { directory: 'functions' } } })
         .withFunction({
@@ -57,7 +57,7 @@ describe.concurrent('functions:serve command', () => {
   })
 
   test('should serve functions on custom port', async (t) => {
-    await withSiteBuilder('site-with-ping-function', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       await builder
         .withNetlifyToml({ config: { functions: { directory: 'functions' } } })
         .withFunction({
@@ -78,7 +78,7 @@ describe.concurrent('functions:serve command', () => {
   })
 
   test('should use settings from netlify.toml dev', async (t) => {
-    await withSiteBuilder('site-with-ping-function', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       const port = await getPort()
       await builder
         .withNetlifyToml({
@@ -102,7 +102,7 @@ describe.concurrent('functions:serve command', () => {
   })
 
   test('should inject env variables', async (t) => {
-    await withSiteBuilder('site-with-env-function', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       await builder
         .withNetlifyToml({
           config: {
@@ -129,7 +129,7 @@ describe.concurrent('functions:serve command', () => {
   })
 
   test('should handle content-types with charset', async (t) => {
-    await withSiteBuilder('site-with-env-function', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       await builder
         .withNetlifyToml({
           config: { functions: { directory: 'functions' } },

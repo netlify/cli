@@ -1323,7 +1323,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
   })
 
   test('should fail in CI with multiple projects', async (t) => {
-    await withSiteBuilder('site-with-multiple-packages', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       await builder
         .withPackageJson({ packageJson: { name: 'main', workspaces: ['*'] } })
         .withPackageJson({ packageJson: { name: 'package1' }, pathPrefix: 'package1' })

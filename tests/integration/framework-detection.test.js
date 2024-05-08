@@ -160,7 +160,7 @@ describe.concurrent('frameworks/framework-detection', () => {
   })
 
   test('should throw if framework=#custom but command is missing', async (t) => {
-    await withSiteBuilder('site-with-framework-and-no-command', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       await builder.withNetlifyToml({ config: { dev: { framework: '#custom' } } }).buildAsync()
 
       const error = await withDevServer(

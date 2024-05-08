@@ -9,7 +9,7 @@ import { withSiteBuilder } from '../utils/site-builder.ts'
 const WAIT_WRITE = 1000
 
 test('Updates a Rust function when a file is modified', async (t) => {
-  await withSiteBuilder('rust-function-update', async (builder) => {
+  await withSiteBuilder(t, async (builder) => {
     const originalBody = 'Netlify likes Rust'
     const updatedBody = 'Netlify *loves* Rust'
 

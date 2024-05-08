@@ -63,7 +63,7 @@ describe(`integration:deploy`, () => {
       },
     ]
 
-    await withSiteBuilder('my-integration', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder.withContentFiles([
         {
           path: 'integration.yaml',

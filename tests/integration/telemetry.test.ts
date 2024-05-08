@@ -100,7 +100,7 @@ await withMockApi(routes, async () => {
   })
 
   test('should add frameworks, buildSystem, and packageManager', async ({ apiUrl, requests }) => {
-    await withSiteBuilder('nextjs-site', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       await builder.withPackageJson({ packageJson: { dependencies: { next: '^12.13.0' } } }).buildAsync()
 
       await execa(cliPath, ['api', 'listSites'], {
