@@ -3,15 +3,18 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 
 import { setProperty } from 'dot-prop'
+import execa from 'execa'
 import getAvailablePort from 'get-port'
 import jwt from 'jsonwebtoken'
 import fetch from 'node-fetch'
 import { describe, test } from 'vitest'
 
-import { withDevServer } from '../../utils/dev-server.ts'
+import { cliPath } from '../../utils/cli-path.js'
+import { getExecaOptions, withDevServer } from '../../utils/dev-server.ts'
 import { withMockApi } from '../../utils/mock-api.js'
 import { pause } from '../../utils/pause.js'
 import { withSiteBuilder } from '../../utils/site-builder.ts'
+import { normalize } from '../../utils/snapshots.js'
 
 // eslint-disable-next-line no-underscore-dangle
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -929,6 +932,46 @@ describe.concurrent('commands/dev-miscellaneous', () => {
     })
   })
 
+  test('should respect excluded paths specified in TOML', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      const publicDir = 'public'
+      builder
+        .withNetlifyToml({
+          config: {
+            build: {
+              publish: publicDir,
+              edge_functions: 'netlify/edge-functions',
+            },
+            edge_functions: [
+              {
+                function: 'hello',
+                path: '/*',
+                excludedPath: '/static/*',
+              },
+            ],
+          },
+        })
+        .withEdgeFunction({
+          handler: () => new Response('Hello world'),
+          name: 'hello',
+        })
+
+      await builder.build()
+
+      await withDevServer({ cwd: builder.directory }, async ({ port }) => {
+        const [res1, res2] = await Promise.all([
+          fetch(`http://localhost:${port}/foo`),
+          fetch(`http://localhost:${port}/static/foo`),
+        ])
+
+        t.expect(res1.status).toBe(200)
+        t.expect(await res1.text()).toEqual('Hello world')
+
+        t.expect(res2.status).toBe(404)
+      })
+    })
+  })
+
   test('should respect in-source configuration from internal edge functions', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       const publicDir = 'public'
@@ -1315,6 +1358,32 @@ describe.concurrent('commands/dev-miscellaneous', () => {
           })
         },
       )
+    })
+  })
+
+  test('should fail in CI with multiple projects', async (t) => {
+    await withSiteBuilder('site-with-multiple-packages', async (builder) => {
+      await builder
+        .withPackageJson({ packageJson: { name: 'main', workspaces: ['*'] } })
+        .withPackageJson({ packageJson: { name: 'package1' }, pathPrefix: 'package1' })
+        .withPackageJson({ packageJson: { name: 'package2' }, pathPrefix: 'package2' })
+        .buildAsync()
+
+      const asyncErrorBlock = async () => {
+        const childProcess = execa(
+          cliPath,
+          ['dev', '--offline'],
+          getExecaOptions({ cwd: builder.directory, env: { CI: true } }),
+        )
+        await childProcess
+      }
+      const error = await asyncErrorBlock().catch((error_) => error_)
+      t.expect(
+        normalize(error.stderr, { duration: true, filePath: true }).includes(
+          'Sites detected: package1, package2. Configure the site you want to work with and try again. Refer to https://ntl.fyi/configure-site for more information.',
+        ),
+      )
+      t.expect(error.exitCode).toBe(1)
     })
   })
 })

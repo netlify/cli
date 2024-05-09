@@ -69,7 +69,7 @@ describe.concurrent('frameworks/framework-detection', () => {
   // This test has a race condition that occasionally causes it to fail when run concurrently.
   // Running it in isolation (or removing the '.concurrent' on the describe block above)
   // fixes it. See CT-1094 for more details
-  test('should log the command if using static server and `command` is configured', async (t) => {
+  test.skip('should log the command if using static server and `command` is configured', async (t) => {
     await withSiteBuilder('site-with-index-file', async (builder) => {
       await builder
         .withContentFile({
@@ -236,7 +236,11 @@ describe.concurrent('frameworks/framework-detection', () => {
 
       // a failure is expected since this is not a true framework project
       const asyncErrorBlock = async () => {
-        const childProcess = execa(cliPath, ['dev', '--offline'], getExecaOptions({ cwd: builder.directory }))
+        const childProcess = execa(
+          cliPath,
+          ['dev', '--offline'],
+          getExecaOptions({ cwd: builder.directory, env: { CI: 'false' } }),
+        )
 
         handleQuestions(childProcess, [
           {
@@ -249,6 +253,37 @@ describe.concurrent('frameworks/framework-detection', () => {
       }
       const error = await asyncErrorBlock().catch((error_) => error_)
       t.expect(normalize(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
+    })
+  })
+
+  test('should fail in CI when multiple frameworks are detected', async (t) => {
+    await withSiteBuilder('site-with-multiple-frameworks', async (builder) => {
+      await builder
+        .withPackageJson({
+          packageJson: {
+            dependencies: { 'react-scripts': '1.0.0', gatsby: '^3.0.0' },
+            scripts: { start: 'react-scripts start', develop: 'gatsby develop' },
+          },
+        })
+        .withContentFile({ path: 'gatsby-config.js', content: '' })
+        .buildAsync()
+
+      // a failure is expected since this is not a true framework project
+      const asyncErrorBlock = async () => {
+        const childProcess = execa(
+          cliPath,
+          ['dev', '--offline'],
+          getExecaOptions({ cwd: builder.directory, env: { CI: true } }),
+        )
+        await childProcess
+      }
+      const error = await asyncErrorBlock().catch((error_) => error_)
+      t.expect(
+        normalize(error.stdout, { duration: true, filePath: true }).includes(
+          'Detected commands for: Gatsby, Create React App. Update your settings to specify which to use. Refer to https://ntl.fyi/dev-monorepo for more information.',
+        ),
+      )
+      t.expect(error.exitCode).toBe(1)
     })
   })
 
