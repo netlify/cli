@@ -121,4 +121,5 @@ jobs:
         continue-on-error: true
         with:
           flags: ${{ steps.test-coverage-flags.outputs.os }},${{ steps.test-coverage-flags.outputs.node }}
+          token: ${{ secrets.CODECOV_TOKEN }}
         if: '${{ !steps.release-check.outputs.IS_RELEASE }}'
