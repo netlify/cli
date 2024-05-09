@@ -104,11 +104,16 @@ jobs:
           echo "node=node_${node/.*.*/}" >> $env:GITHUB_OUTPUT
         shell: bash
         if: '${{ !steps.release-check.outputs.IS_RELEASE }}'
+
+      - name: Sanitize shard for artefact name
+        id: sanitize-shard-name
+        run: echo "shard=$(echo '${{ matrix.shard }}' | tr '/' '-')" >> $GITHUB_OUTPUT
+
       - name: Store npm error artefacts
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: npm-logs
+          name: npm-logs--${{ matrix.os }}--${{ matrix.node-version }}--${{ steps.sanitize-shard-name.outputs.shard }}
           path: |
             /home/runner/.npm/_logs/**/*
 
