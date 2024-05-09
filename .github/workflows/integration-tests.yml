@@ -105,7 +105,7 @@ jobs:
         shell: bash
         if: '${{ !steps.release-check.outputs.IS_RELEASE }}'
       - name: Store npm error artefacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: npm-logs
