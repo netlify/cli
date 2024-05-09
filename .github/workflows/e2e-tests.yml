@@ -35,7 +35,7 @@ jobs:
           cache: npm
           check-latest: true
       - name: Cache verdaccio storage
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ./.verdaccio-storage
           key: verdaccio-e2e-cli-${{ hashFiles('./package-lock.json') }}
@@ -83,7 +83,7 @@ jobs:
           cache: npm
           check-latest: true
       - name: Cache verdaccio storage
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ./.verdaccio-storage
           key: verdaccio-e2e-cli-${{ hashFiles('./package-lock.json') }}
