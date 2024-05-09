@@ -23,6 +23,8 @@ jobs:
             node-version: '18.14.0'
           - os: windows-latest
             node-version: '18.14.0'
+          - os: windows-latest
+            node-version: '22'
       fail-fast: false
     steps:
       # Sets an output parameter if this is a release PR
