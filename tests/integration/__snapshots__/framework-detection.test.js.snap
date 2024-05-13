@@ -6,7 +6,7 @@ exports[`frameworks/framework-detection > should default to process.cwd() and st
 ◈ Unable to determine public folder to serve files from. Using current working directory
 ◈ Setup a netlify.toml file with a [dev] section to specify your dev server settings.
 ◈ See docs at: https://docs.netlify.com/cli/local-development/#project-detection
-◈ Running static server from \\"site-with-index-file\\"
+◈ Running static server from \\"should-default-to-process-cwd-and-static-server\\"
 ◈ Setting up local development server
 
 ◈ Static server listening to 88888
@@ -35,7 +35,7 @@ exports[`frameworks/framework-detection > should filter frameworks with no dev c
 ◈ Unable to determine public folder to serve files from. Using current working directory
 ◈ Setup a netlify.toml file with a [dev] section to specify your dev server settings.
 ◈ See docs at: https://docs.netlify.com/cli/local-development/#project-detection
-◈ Running static server from \\"site-with-gulp\\"
+◈ Running static server from \\"should-filter-frameworks-with-no-dev-command\\"
 ◈ Setting up local development server
 
 ◈ Static server listening to 88888
@@ -52,21 +52,6 @@ exports[`frameworks/framework-detection > should force a specific framework when
 ◈ Setting up local development server
 ◈ Starting Netlify Dev with Create React App
 ◈ Failed running command: react-scripts start. Please verify 'react-scripts' exists"
-`;
-
-exports[`frameworks/framework-detection > should log the command if using static server and \`command\` is configured 1`] = `
-"◈ Netlify Dev ◈
-◈ Using simple static server because '--dir' flag was specified
-◈ Running static server from \\"site-with-index-file/public\\"
-◈ Setting up local development server
-
-◈ Static server listening to 88888
-
-   ┌──────────────────────────────────────────────────┐
-   │                                                  │
-   │   ◈ Server now ready on http://localhost:88888   │
-   │                                                  │
-   └──────────────────────────────────────────────────┘"
 `;
 
 exports[`frameworks/framework-detection > should not run framework detection if command and targetPort are configured 1`] = `
@@ -162,7 +147,7 @@ exports[`frameworks/framework-detection > should throw when forcing a non suppor
 exports[`frameworks/framework-detection > should use static server when --dir flag is passed 1`] = `
 "◈ Netlify Dev ◈
 ◈ Using simple static server because '--dir' flag was specified
-◈ Running static server from \\"site-with-index-file/public\\"
+◈ Running static server from \\"should-use-static-server-when-dir-flag-is-passed/public\\"
 ◈ Setting up local development server
 
 ◈ Static server listening to 88888
@@ -180,7 +165,7 @@ exports[`frameworks/framework-detection > should use static server when framewor
 ◈ Unable to determine public folder to serve files from. Using current working directory
 ◈ Setup a netlify.toml file with a [dev] section to specify your dev server settings.
 ◈ See docs at: https://docs.netlify.com/cli/local-development/#project-detection
-◈ Running static server from \\"site-with-index-file\\"
+◈ Running static server from \\"should-use-static-server-when-framework-is-set-to-static\\"
 ◈ Setting up local development server
 
 ◈ Static server listening to 88888
@@ -197,7 +182,7 @@ exports[`frameworks/framework-detection > should warn if using static server and
 ◈ Using simple static server because '--dir' flag was specified
 ◈ Ignoring 'targetPort' setting since using a simple static server.
 ◈ Use --staticServerPort or [dev.staticServerPort] to configure the static server port
-◈ Running static server from \\"site-with-index-file/public\\"
+◈ Running static server from \\"should-warn-if-using-static-server-and-target-port-is-configured/public\\"
 ◈ Setting up local development server
 
 ◈ Static server listening to 88888

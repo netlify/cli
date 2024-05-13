@@ -19,24 +19,23 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest]
-        node-version: ['18.14.0', '20']
-        # Temporary workaround due to this https://github.com/nodejs/node/issues/52682
-        # node-version: ['18.14.0', '20', '22']
+        # Pinning 20.x version as a temporary workaround due to this https://github.com/nodejs/node/issues/52884
+        node-version: ['18.14.0', '20.12.2', '22']
       fail-fast: false
 
     steps:
       - name: Git checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Setup node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm
           check-latest: true
       - name: Cache verdaccio storage
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ./.verdaccio-storage
           key: verdaccio-e2e-cli-${{ hashFiles('./package-lock.json') }}
@@ -74,17 +73,17 @@ jobs:
 
     steps:
       - name: Git checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Setup node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm
           check-latest: true
       - name: Cache verdaccio storage
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ./.verdaccio-storage
           key: verdaccio-e2e-cli-${{ hashFiles('./package-lock.json') }}

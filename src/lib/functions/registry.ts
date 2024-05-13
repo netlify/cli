@@ -353,7 +353,7 @@ export class FunctionsRegistry {
       log(
         `${NETLIFYDEVWARN} For a better experience with TypeScript functions, consider installing the ${chalk.underline(
           TYPES_PACKAGE,
-        )} package. Refer to https://ntl-fyi/function-types for more information.`,
+        )} package. Refer to https://ntl.fyi/function-types for more information.`,
       )
     }
 

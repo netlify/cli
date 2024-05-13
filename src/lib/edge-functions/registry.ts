@@ -436,11 +436,15 @@ export class EdgeFunctionsRegistry {
         return
       }
 
-      const isExcluded = this.manifest?.function_config[route.function]?.excluded_patterns?.some((pattern) =>
+      const isExcludedForFunction = this.manifest?.function_config[route.function]?.excluded_patterns?.some((pattern) =>
         new RegExp(pattern).test(urlPath),
       )
+      if (isExcludedForFunction) {
+        return
+      }
 
-      if (isExcluded) {
+      const isExcludedForRoute = route.excluded_patterns.some((pattern) => new RegExp(pattern).test(urlPath))
+      if (isExcludedForRoute) {
         return
       }
 

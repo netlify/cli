@@ -216,8 +216,15 @@ export const injectEnvVariables = (env) => {
   }
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'configuredPort' implicitly has an... Remove this comment to see the full error message
-export const acquirePort = async ({ configuredPort, defaultPort, errorMessage }) => {
+export const acquirePort = async ({
+  configuredPort,
+  defaultPort,
+  errorMessage,
+}: {
+  configuredPort?: number
+  defaultPort: number
+  errorMessage: string
+}) => {
   const acquiredPort = await getPort({ port: configuredPort || defaultPort })
   if (configuredPort && acquiredPort !== configuredPort) {
     throw new Error(`${errorMessage}: '${configuredPort}'`)

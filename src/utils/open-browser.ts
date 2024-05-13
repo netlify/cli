@@ -6,8 +6,12 @@ import isDockerContainer from 'is-docker'
 
 import { chalk, log } from './command-helpers.js'
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'message' implicitly has an 'any' ... Remove this comment to see the full error message
-const unableToOpenBrowserMessage = function ({ message, url }) {
+type BrowserUnableMessage = {
+  message: string
+  url: string
+}
+
+const unableToOpenBrowserMessage = function ({ message, url }: BrowserUnableMessage) {
   log('---------------------------')
   log(chalk.redBright(`Error: Unable to open browser automatically: ${message}`))
   log(chalk.cyan('Please open your browser and open the URL below:'))
@@ -15,15 +19,12 @@ const unableToOpenBrowserMessage = function ({ message, url }) {
   log('---------------------------')
 }
 
-/**
- * Opens a browser and logs a message if it is not possible
- * @param {object} config
- * @param {string} config.url The url to open
- * @param {boolean} [config.silentBrowserNoneError]
- * @returns {Promise<void>}
- */
-// @ts-expect-error TS(7031) FIXME: Binding element 'silentBrowserNoneError' implicitl... Remove this comment to see the full error message
-const openBrowser = async function ({ silentBrowserNoneError, url }) {
+type OpenBrowsrProps = {
+  silentBrowserNoneError: boolean
+  url: string
+}
+
+const openBrowser = async function ({ silentBrowserNoneError, url }: OpenBrowsrProps) {
   if (isDockerContainer()) {
     unableToOpenBrowserMessage({ url, message: 'Running inside a docker container' })
     return
@@ -38,8 +39,9 @@ const openBrowser = async function ({ silentBrowserNoneError, url }) {
   try {
     await open(url)
   } catch (error) {
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    unableToOpenBrowserMessage({ url, message: error.message })
+    if (error instanceof Error) {
+      unableToOpenBrowserMessage({ url, message: error.message })
+    }
   }
 }
 

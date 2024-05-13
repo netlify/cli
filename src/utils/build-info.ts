@@ -76,6 +76,12 @@ export const detectFrameworkSettings = async (
       buildCommand: command.netlify.config.build.command,
     }
   }
+  if (type === 'dev' && command.netlify.config?.dev?.command?.length) {
+    return {
+      ...settings[0],
+      devCommand: command.netlify.config.dev.command,
+    }
+  }
 
   if (settings.length > 1) {
     if (isCI) {

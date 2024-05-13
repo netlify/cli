@@ -8,7 +8,7 @@ jobs:
   run-search:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: darrenjennings/algolia-docsearch-action@75b0f6d28d82eff3dd76f57a96a99490df11a250
         with:
           algolia_application_id: '4RTNPM1QF9'
