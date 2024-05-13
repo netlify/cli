@@ -163,7 +163,7 @@
     "pump": "3.0.0",
     "raw-body": "2.5.2",
     "read-package-up": "11.0.0",
-    "semver": "7.6.0",
+    "semver": "7.6.2",
     "source-map-support": "0.5.21",
     "strip-ansi-control-characters": "2.0.0",
     "tabtab": "3.0.2",
