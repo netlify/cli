@@ -1,10 +1,13 @@
-import path from 'path'
+import { readdir, readdirSync } from 'fs'
+import path, { join } from 'path'
 import process from 'process'
 
-import execa from 'execa'
-import { describe, test } from 'vitest'
+import execa, { command } from 'execa'
+import { describe, expect, test } from 'vitest'
 
 import { cliPath } from '../../utils/cli-path.js'
+import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.ts'
+import { CONFIRM, handleQuestions } from '../../utils/handle-questions.js'
 import { withMockApi } from '../../utils/mock-api.js'
 import { withSiteBuilder } from '../../utils/site-builder.ts'
 
@@ -13,13 +16,27 @@ const defaultEnvs = {
   FORCE_COLOR: '1',
 }
 
-// Runs `netlify build ...flags` then verify:
-//  - its exit code is `exitCode`
-//  - that its output contains `output`
+/**
+ * Runs `netlify build ...flags` then verify:
+ *  - its exit code is `exitCode`
+ *  - that its output contains `output`
+ */
 const runBuildCommand = async function (
   t,
   cwd,
-  { apiUrl, env = defaultEnvs, exitCode: expectedExitCode = 0, flags = [], output: outputs } = {},
+  {
+    apiUrl,
+    env = defaultEnvs,
+    exitCode: expectedExitCode = 0,
+    flags = [],
+    output: outputs,
+  }: {
+    apiUrl?: string
+    env?: Record<string, string>
+    exitCode?: number
+    flags?: string[]
+    output?: any
+  } = {},
 ) {
   const { all, exitCode } = await execa(cliPath, ['build', ...flags], {
     reject: false,
@@ -42,7 +59,7 @@ const runBuildCommand = async function (
     if (output instanceof RegExp) {
       t.expect(all).toMatch(output)
     } else {
-      t.expect(all.includes(output), `Output of build command does not include '${output}'`).toBe(true)
+      t.expect(all?.includes(output), `Output of build command does not include '${output}'`).toBe(true)
     }
   })
   t.expect(exitCode).toBe(expectedExitCode)
@@ -312,5 +329,41 @@ describe.concurrent('command/build', () => {
         flags: ['--offline'],
       })
     })
+  })
+})
+
+setupFixtureTests('monorepo', () => {
+  test<FixtureTestContext>('should set the PACKAGE_PATH constant when selecting a pkg', async ({ fixture }) => {
+    const childProcess = execa(cliPath, ['build', '--offline'], {
+      cwd: join(fixture.directory),
+    })
+
+    handleQuestions(childProcess, [
+      {
+        question: 'Select the site you want to work with',
+        answer: CONFIRM,
+      },
+    ])
+    const { stdout } = await childProcess
+    expect(stdout).toContain('@@ packagePath: packages/app-1')
+    expect(stdout).toContain(`@@ cwd: ${fixture.directory}`)
+  })
+
+  test<FixtureTestContext>('should set the PACKAGE_PATH constant when run from repo root', async ({ fixture }) => {
+    const { stdout } = await execa(cliPath, ['build', '--offline', '--filter', 'packages/app-1'], {
+      cwd: join(fixture.directory),
+    })
+    expect(stdout).toContain('@@ packagePath: packages/app-1')
+    expect(stdout).toContain(`@@ cwd: ${fixture.directory}`)
+  })
+
+  test<FixtureTestContext>('should set the PACKAGE_PATH constant when run not from the monorepo root', async ({
+    fixture,
+  }) => {
+    const { stdout } = await execa(cliPath, ['build', '--offline'], {
+      cwd: join(fixture.directory, 'packages/app-1'),
+    })
+    expect(stdout).toContain('@@ packagePath: packages/app-1')
+    expect(stdout).toContain(`@@ cwd: ${fixture.directory}`)
   })
 })
