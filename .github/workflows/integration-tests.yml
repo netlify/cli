@@ -14,7 +14,8 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macOS-latest, windows-latest]
-        node-version: ['18.14.0', '20', '22']
+        # Pinning 20.x version as a temporary workaround due to this https://github.com/nodejs/node/issues/52884
+        node-version: ['18.14.0', '20.12.2', '22']
         shard: ['1/4', '2/4', '3/4', '4/4']
 
         exclude:
@@ -41,12 +42,12 @@ jobs:
           REG ADD HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\TCPIP\Parameters /v TcpTimedWaitDelay /t REG_DWORD /d 30 /f
         if: "${{ matrix.os == 'windows-latest' && !steps.release-check.outputs.IS_RELEASE }}"
       - name: Git checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm
@@ -73,7 +74,7 @@ jobs:
         run: npm run test:init
         if: '${{ !steps.release-check.outputs.IS_RELEASE }}'
       - name: Tests
-        uses: nick-fields/retry@v2
+        uses: nick-fields/retry@v3
         if: '${{ !steps.release-check.outputs.IS_RELEASE }}'
         with:
           timeout_minutes: 15
@@ -111,7 +112,7 @@ jobs:
           path: |
             /home/runner/.npm/_logs/**/*
 
-      - uses: codecov/codecov-action@v3
+      - uses: codecov/codecov-action@v4
         continue-on-error: true
         with:
           flags: ${{ steps.test-coverage-flags.outputs.os }},${{ steps.test-coverage-flags.outputs.node }}
