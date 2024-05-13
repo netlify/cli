@@ -12,7 +12,7 @@ test('Hashes files in a folder', async (t) => {
         path: 'public/index.html',
         content: `Root page`,
       })
-      .buildAsync()
+      .build()
 
     const expectedFiles = ['netlify.toml', 'public/index.html']
     const { files, filesShaMap } = await hashFiles({

@@ -15,7 +15,7 @@ describe.concurrent('commands/responses.dev', () => {
         content: '<h1>⊂◉‿◉つ</h1>',
       })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const response = await fetch(server.url).then((res) => res.text())
@@ -35,7 +35,7 @@ describe.concurrent('commands/responses.dev', () => {
       const headerValue = 'SAMEORIGIN'
       builder.withHeadersFile({ headers: [{ path: '/*', headers: [`${headerName}: ${headerValue}`] }] })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const { headers } = await fetch(server.url)
@@ -55,7 +55,7 @@ describe.concurrent('commands/responses.dev', () => {
       const headerValue = 'SAMEORIGIN'
       builder.withHeadersFile({ headers: [{ path: '/*', headers: [`${headerName}: ${headerValue}`] }] })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const { headers } = await fetch(`${server.url}/foo`)
@@ -82,7 +82,7 @@ describe.concurrent('commands/responses.dev', () => {
         },
       })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const [response, builderResponse] = await Promise.all([
@@ -106,7 +106,7 @@ describe.concurrent('commands/responses.dev', () => {
         }),
       })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const [response, builderResponse] = await Promise.all([
@@ -135,7 +135,7 @@ describe.concurrent('commands/responses.dev', () => {
         }),
       })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const [response, builderResponse] = await Promise.all([
@@ -163,7 +163,7 @@ describe.concurrent('commands/responses.dev', () => {
           }),
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const [response, builderResponse] = await Promise.all([
@@ -189,7 +189,7 @@ describe.concurrent('commands/responses.dev', () => {
         }),
       })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory, env: { TEST: 'FROM_PROCESS_ENV' } }, async (server) => {
         const [response, builderResponse] = await Promise.all([
@@ -222,7 +222,7 @@ describe.concurrent('commands/responses.dev', () => {
           }),
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const [response, builderResponse] = await Promise.all([
@@ -254,7 +254,7 @@ describe.concurrent('commands/responses.dev', () => {
           }),
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const response = await fetch(`${server.url}/.netlify/functions/env`).then((res) => res.text())
@@ -287,7 +287,7 @@ describe.concurrent('commands/responses.dev', () => {
           }),
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const response = await fetch(`${server.url}/.netlify/functions/env`).then((res) => res.text())

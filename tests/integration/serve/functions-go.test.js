@@ -73,7 +73,7 @@ describe.concurrent('serve/functions-go', () => {
               content: `<mock main.go>`,
             },
           ])
-          .buildAsync()
+          .build()
 
         await withDevServer(
           {
@@ -92,7 +92,7 @@ describe.concurrent('serve/functions-go', () => {
 
             await builder
               .withContentFile({ path: 'functions/go-func/main.go', content: `<updated mock main.go>` })
-              .buildAsync()
+              .build()
 
             await waitForLogMatching('Reloaded function go-func')
 
@@ -161,7 +161,7 @@ describe.concurrent('serve/functions-go', () => {
               content: `<mock main.go>`,
             },
           ])
-          .buildAsync()
+          .build()
 
         await withDevServer(
           {

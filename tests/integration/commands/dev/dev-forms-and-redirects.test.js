@@ -20,7 +20,7 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
         },
       })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const response = await fetch(`${server.url}/api/none`, {
@@ -49,7 +49,7 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
           }),
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const [response1, response2] = await Promise.all([
@@ -83,7 +83,7 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
           }),
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const form = new FormData()
@@ -147,7 +147,7 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
             body: JSON.stringify(event),
           }),
         })
-        .buildAsync()
+        .build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const form = new FormData()
@@ -182,7 +182,7 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
           }),
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const response = await fetch(`${server.url}/?ding=dong`, {
@@ -215,7 +215,7 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
           },
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const response = await fetch(`${server.url}/foo?ping=pong`).then((res) => res.text())
@@ -241,7 +241,7 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
           },
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const response = await fetch(`${server.url}/foo?ping=pong`).then((res) => res.text())
@@ -267,7 +267,7 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
           },
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const [response, body] = await Promise.all([
@@ -298,7 +298,7 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
           },
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const response = await fetch(`${server.url}/foo.html`, { follow: 0 })
@@ -325,7 +325,7 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
           },
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const [response, body] = await Promise.all([
@@ -356,7 +356,7 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
           },
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const [response1, response2, response3] = await Promise.all([
@@ -431,7 +431,7 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
           content: '<html><h1>foo',
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const [response1, response2, response3] = await Promise.all([
@@ -488,7 +488,7 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
           content: '<html><h1>foo',
         })
 
-      await builder.buildAsync()
+      await builder.build()
 
       t.expect(() =>
         withDevServer(

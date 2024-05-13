@@ -18,7 +18,7 @@ test('Hashes files in a folder', async (t) => {
         path: 'goodbye.js',
         handler: async () => ({ statusCode: 200, body: 'Goodbye' }),
       })
-      .buildAsync()
+      .build()
 
     const expectedFunctions = ['hello', 'goodbye']
     const { fnShaMap, functions } = await hashFns(new BaseCommand(), `${builder.directory}/functions`, {

@@ -62,7 +62,7 @@ test('should parse redirect rules from netlify.toml', async (t) => {
       .withNetlifyToml({
         config: defaultConfig,
       })
-      .buildAsync()
+      .build()
 
     const redirects = await parseRedirects({ configPath: `${builder.directory}/netlify.toml` })
     const expected = [
@@ -130,7 +130,7 @@ test('should parse redirect rules from _redirects file', async (t) => {
       .withRedirectsFile({
         redirects: defaultRedirects,
       })
-      .buildAsync()
+      .build()
 
     const redirects = await parseRedirects({ redirectsFiles: [`${builder.directory}/_redirects`] })
     const expected = [
@@ -156,7 +156,7 @@ test('should parse redirect rules from _redirects file and netlify.toml', async 
       .withNetlifyToml({
         config: defaultConfig,
       })
-      .buildAsync()
+      .build()
 
     const redirects = await parseRedirects({
       redirectsFiles: [`${builder.directory}/_redirects`],

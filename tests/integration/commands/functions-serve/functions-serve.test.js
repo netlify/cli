@@ -47,7 +47,7 @@ describe.concurrent('functions:serve command', () => {
             body: 'ping',
           }),
         })
-        .buildAsync()
+        .build()
 
       await withFunctionsServer({ builder }, async () => {
         const response = await fetch(`http://localhost:9999/.netlify/functions/ping`)
@@ -67,7 +67,7 @@ describe.concurrent('functions:serve command', () => {
             body: 'ping',
           }),
         })
-        .buildAsync()
+        .build()
 
       const port = await getPort()
       await withFunctionsServer({ builder, args: ['--port', port], port }, async () => {
@@ -92,7 +92,7 @@ describe.concurrent('functions:serve command', () => {
             body: 'ping',
           }),
         })
-        .buildAsync()
+        .build()
 
       await withFunctionsServer({ builder, port }, async () => {
         const response = await fetch(`http://localhost:${port}/.netlify/functions/ping`)
@@ -118,7 +118,7 @@ describe.concurrent('functions:serve command', () => {
             body: `${process.env.MY_CONFIG}`,
           }),
         })
-        .buildAsync()
+        .build()
 
       const port = await getPort()
       await withFunctionsServer({ builder, args: ['--port', port], port }, async () => {
@@ -141,7 +141,7 @@ describe.concurrent('functions:serve command', () => {
             body: JSON.stringify(event),
           }),
         })
-        .buildAsync()
+        .build()
 
       const port = await getPort()
       await withFunctionsServer({ builder, args: ['--port', port], port }, async () => {

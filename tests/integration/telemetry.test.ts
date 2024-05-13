@@ -101,7 +101,7 @@ await withMockApi(routes, async () => {
 
   test<MockApiTestContext>('should add frameworks, buildSystem, and packageManager', async (t) => {
     await withSiteBuilder(t, async (builder) => {
-      await builder.withPackageJson({ packageJson: { dependencies: { next: '^12.13.0' } } }).buildAsync()
+      await builder.withPackageJson({ packageJson: { dependencies: { next: '^12.13.0' } } }).build()
 
       await execa(cliPath, ['api', 'listSites'], {
         cwd: builder.directory,

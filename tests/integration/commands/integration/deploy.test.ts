@@ -78,7 +78,7 @@ describe(`integration:deploy`, () => {
       `,
         },
       ])
-      await builder.buildAsync()
+      await builder.build()
 
       vi.spyOn(process, 'cwd').mockReturnValue(builder.directory)
 
