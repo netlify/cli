@@ -14,7 +14,8 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macOS-latest, windows-latest]
-        node-version: ['18.14.0', '20', '22']
+        # Pinning 20.x version as a temporary workaround due to this https://github.com/nodejs/node/issues/52884
+        node-version: ['18.14.0', '20.12.2', '22']
         shard: ['1/4', '2/4', '3/4', '4/4']
 
         exclude:
@@ -111,7 +112,7 @@ jobs:
           path: |
             /home/runner/.npm/_logs/**/*
 
-      - uses: codecov/codecov-action@v3
+      - uses: codecov/codecov-action@v4
         continue-on-error: true
         with:
           flags: ${{ steps.test-coverage-flags.outputs.os }},${{ steps.test-coverage-flags.outputs.node }}

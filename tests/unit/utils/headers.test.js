@@ -73,13 +73,13 @@ describe('_headers', () => {
 `,
       })
 
-    await builder.buildAsync()
+    await builder.build()
 
     context.builder = builder
   })
 
   afterEach(async (context) => {
-    await context.builder.cleanupAsync()
+    await context.builder.cleanup()
   })
 
   test('syntax validates as expected', async (context) => {

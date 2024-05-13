@@ -54,21 +54,6 @@ exports[`frameworks/framework-detection > should force a specific framework when
 ◈ Failed running command: react-scripts start. Please verify 'react-scripts' exists"
 `;
 
-exports[`frameworks/framework-detection > should log the command if using static server and \`command\` is configured 1`] = `
-"◈ Netlify Dev ◈
-◈ Using simple static server because '--dir' flag was specified
-◈ Running static server from \\"should-log-the-command-if-using-static-server-and-command-is-configured/public\\"
-◈ Setting up local development server
-
-◈ Static server listening to 88888
-
-   ┌──────────────────────────────────────────────────┐
-   │                                                  │
-   │   ◈ Server now ready on http://localhost:88888   │
-   │                                                  │
-   └──────────────────────────────────────────────────┘"
-`;
-
 exports[`frameworks/framework-detection > should not run framework detection if command and targetPort are configured 1`] = `
 "◈ Netlify Dev ◈
 ◈ Unable to determine public folder to serve files from. Using current working directory
