@@ -12,7 +12,7 @@ import { withSiteBuilder } from '../../utils/site-builder.ts'
 
 describe.concurrent('commands/dev-forms-and-redirects', () => {
   test('should return 404 when redirecting to a non existing function', async (t) => {
-    await withSiteBuilder('site-with-missing-function', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder.withNetlifyToml({
         config: {
           functions: { directory: 'functions' },
@@ -34,7 +34,7 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
   })
 
   test('should parse function query parameters using simple parsing', async (t) => {
-    await withSiteBuilder('site-with-multi-part-function', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder
         .withNetlifyToml({
           config: {
@@ -64,7 +64,7 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
   })
 
   test('should handle form submission', async (t) => {
-    await withSiteBuilder('site-with-form', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder
         .withContentFile({
           path: 'index.html',
@@ -129,7 +129,7 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
   })
 
   test('should handle form submission with a background function', async (t) => {
-    await withSiteBuilder('site-with-form-background-function', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       await builder
         .withContentFile({
           path: 'index.html',
@@ -163,7 +163,7 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
   })
 
   test('should not handle form submission when content type is `text/plain`', async (t) => {
-    await withSiteBuilder('site-with-form-text-plain', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder
         .withContentFile({
           path: 'index.html',
@@ -199,7 +199,7 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
   })
 
   test('should return existing local file even when rewrite matches when force=false', async (t) => {
-    await withSiteBuilder('site-with-shadowing-force-false', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder
         .withContentFile({
           path: 'foo.html',
@@ -225,7 +225,7 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
   })
 
   test('should return existing local file even when redirect matches when force=false', async (t) => {
-    await withSiteBuilder('site-with-shadowing-force-false', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder
         .withContentFile({
           path: 'foo.html',
@@ -251,7 +251,7 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
   })
 
   test('should ignore existing local file when redirect matches and force=true', async (t) => {
-    await withSiteBuilder('site-with-shadowing-force-true', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder
         .withContentFile({
           path: 'foo.html',
@@ -282,7 +282,7 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
   })
 
   test('should use existing file when rule contains file extension and force=false', async (t) => {
-    await withSiteBuilder('site-with-shadowing-file-extension-force-false', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder
         .withContentFile({
           path: 'foo.html',
@@ -309,7 +309,7 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
   })
 
   test('should redirect when rule contains file extension and force=true', async (t) => {
-    await withSiteBuilder('site-with-shadowing-file-extension-force-true', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder
         .withContentFile({
           path: 'foo.html',
@@ -340,7 +340,7 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
   })
 
   test('should redirect from sub directory to root directory', async (t) => {
-    await withSiteBuilder('site-with-shadowing-sub-to-root', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder
         .withContentFile({
           path: 'foo.html',
@@ -419,7 +419,7 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
     await fs.writeFile(path.join(pluginDirectory, 'manifest.yml'), pluginManifest)
     await fs.writeFile(path.join(pluginDirectory, 'index.js'), pluginSource)
 
-    await withSiteBuilder('site-with-custom-server-in-plugin', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder
         .withNetlifyToml({
           config: {
@@ -476,7 +476,7 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
     await fs.writeFile(path.join(pluginDirectory, 'manifest.yml'), pluginManifest)
     await fs.writeFile(path.join(pluginDirectory, 'index.js'), pluginSource)
 
-    await withSiteBuilder('site-with-custom-server-in-plugin', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder
         .withNetlifyToml({
           config: {

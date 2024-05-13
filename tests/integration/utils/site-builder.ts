@@ -289,25 +289,15 @@ export const createSiteBuilder = ({ siteName }: { siteName: string }) => {
 }
 
 /**
- * @deprecated use the task-based signature instead
- */
-export function withSiteBuilder<T>(siteName: string, testHandler: (builder: SiteBuilder) => Promise<T>): Promise<T>
-/**
  * @param taskContext used to infer directory name from test name
  */
-export function withSiteBuilder<T>(
-  taskContext: TaskContext,
-  testHandler: (builder: SiteBuilder) => Promise<T>,
-): Promise<T>
 export async function withSiteBuilder<T>(
-  siteNameOrTaskContext: string | TaskContext,
+  taskContext: TaskContext,
   testHandler: (builder: SiteBuilder) => Promise<T>,
 ): Promise<T> {
   let builder: SiteBuilder | undefined
   try {
-    const siteName =
-      typeof siteNameOrTaskContext === 'string' ? siteNameOrTaskContext : slugify(siteNameOrTaskContext.task.name)
-    builder = createSiteBuilder({ siteName })
+    builder = createSiteBuilder({ siteName: slugify(taskContext.task.name) })
     return await testHandler(builder)
   } finally {
     if (builder) await builder.cleanup()

@@ -99,16 +99,16 @@ await withMockApi(routes, async () => {
     })
   })
 
-  test('should add frameworks, buildSystem, and packageManager', async ({ apiUrl, requests }) => {
-    await withSiteBuilder('nextjs-site', async (builder) => {
+  test<MockApiTestContext>('should add frameworks, buildSystem, and packageManager', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
       await builder.withPackageJson({ packageJson: { dependencies: { next: '^12.13.0' } } }).buildAsync()
 
       await execa(cliPath, ['api', 'listSites'], {
         cwd: builder.directory,
-        ...getCLIOptions(apiUrl),
+        ...getCLIOptions(t.apiUrl),
       })
 
-      const request = requests.find(({ path }) => path === '/api/v1/track')
+      const request = t.requests.find(({ path }) => path === '/api/v1/track')
       expect(request).toBeDefined()
 
       expect(typeof request.body.anonymousId).toBe('string')

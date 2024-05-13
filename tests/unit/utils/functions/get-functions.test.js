@@ -43,8 +43,8 @@ describe('getFunctions', () => {
     })
   })
 
-  test('should mark background functions based on filenames', async () => {
-    await withSiteBuilder('site-without-functions', async (builder) => {
+  test('should mark background functions based on filenames', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
       builder
         .withFunction({
           path: 'foo-background.js',

@@ -293,7 +293,7 @@ describe.concurrent('command/build', () => {
   })
 
   test('should have version in NETLIFY_CLI_VERSION variable', async (t) => {
-    await withSiteBuilder('NETLIFY_CLI_VERSION-env', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       await builder
         .withNetlifyToml({
           config: {

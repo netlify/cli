@@ -9,7 +9,7 @@ import { withSiteBuilder } from '../../utils/site-builder.ts'
 
 describe.concurrent('commands/responses.dev', () => {
   test('should return index file when / is accessed', async (t) => {
-    await withSiteBuilder('site-with-index-file', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder.withContentFile({
         path: 'index.html',
         content: '<h1>⊂◉‿◉つ</h1>',
@@ -25,7 +25,7 @@ describe.concurrent('commands/responses.dev', () => {
   })
 
   test('should return user defined headers when / is accessed', async (t) => {
-    await withSiteBuilder('site-with-headers-on-root', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder.withContentFile({
         path: 'index.html',
         content: '<h1>⊂◉‿◉つ</h1>',
@@ -45,7 +45,7 @@ describe.concurrent('commands/responses.dev', () => {
   })
 
   test('should return user defined headers when non-root path is accessed', async (t) => {
-    await withSiteBuilder('site-with-headers-on-non-root', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder.withContentFile({
         path: 'foo/index.html',
         content: '<h1>⊂◉‿◉つ</h1>',
@@ -65,7 +65,7 @@ describe.concurrent('commands/responses.dev', () => {
   })
 
   test('should return response from a function with setTimeout', async (t) => {
-    await withSiteBuilder('site-with-set-timeout-function', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withFunction({
         path: 'timeout.js',
         handler: async () => {
@@ -97,7 +97,7 @@ describe.concurrent('commands/responses.dev', () => {
   })
 
   test('should fail when no metadata is set for builder function', async (t) => {
-    await withSiteBuilder('site-with-misconfigured-builder-function', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withFunction({
         path: 'builder.js',
         handler: async () => ({
@@ -125,7 +125,7 @@ describe.concurrent('commands/responses.dev', () => {
   })
 
   test('should serve function from a subdirectory', async (t) => {
-    await withSiteBuilder('site-with-from-subdirectory', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withFunction({
         path: path.join('echo', 'echo.js'),
         handler: async (event) => ({
@@ -149,7 +149,7 @@ describe.concurrent('commands/responses.dev', () => {
   })
 
   test('should pass .env.development vars to function', async (t) => {
-    await withSiteBuilder('site-with-env-development', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder
         .withNetlifyToml({ config: { functions: { directory: 'functions' } } })
         .withEnvFile({ path: '.env.development', env: { ENV_DEV_TEST: 'FROM_DEV_FILE' } })
@@ -178,7 +178,7 @@ describe.concurrent('commands/responses.dev', () => {
   })
 
   test('should pass process env vars to function', async (t) => {
-    await withSiteBuilder('site-with-process-env', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withFunction({
         path: 'env.js',
         handler: async () => ({
@@ -204,7 +204,7 @@ describe.concurrent('commands/responses.dev', () => {
   })
 
   test('should pass [build.environment] env vars to function', async (t) => {
-    await withSiteBuilder('site-with-build-environment', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder
         .withNetlifyToml({
           config: {
@@ -236,7 +236,7 @@ describe.concurrent('commands/responses.dev', () => {
   })
 
   test('[context.dev.environment] should override [build.environment]', async (t) => {
-    await withSiteBuilder('site-with-build-environment', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder
         .withNetlifyToml({
           config: {
@@ -264,7 +264,7 @@ describe.concurrent('commands/responses.dev', () => {
   })
 
   test('should inject env vars based on [dev].envFiles file order', async (t) => {
-    await withSiteBuilder('site-with-env-files', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder
         .withNetlifyToml({
           config: {
