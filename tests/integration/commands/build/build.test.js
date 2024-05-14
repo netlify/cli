@@ -75,7 +75,7 @@ describe.concurrent('command/build', () => {
     await withSiteBuilder(t, async (builder) => {
       builder.withNetlifyToml({ config: {} }).withStateFile({ siteId: siteInfo.id })
 
-      await builder.buildAsync()
+      await builder.build()
       await withMockApi(routesWithCommand, async ({ apiUrl }) => {
         await runBuildCommand(t, builder.directory, { apiUrl, output: 'uiCommand' })
       })
@@ -103,7 +103,7 @@ describe.concurrent('command/build', () => {
           },
         })
 
-      await builder.buildAsync()
+      await builder.build()
       await withMockApi(routesWithCommand, async ({ apiUrl }) => {
         await runBuildCommand(t, builder.directory, {
           apiUrl,
@@ -123,7 +123,7 @@ describe.concurrent('command/build', () => {
         .withNetlifyToml({ config: { build: { command: 'echo testCommand' } } })
         .withStateFile({ siteId: siteInfo.id })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withMockApi(routes, async ({ apiUrl }) => {
         await runBuildCommand(t, builder.directory, { apiUrl, output: 'testCommand' })
@@ -135,7 +135,7 @@ describe.concurrent('command/build', () => {
     await withSiteBuilder(t, async (builder) => {
       builder.withNetlifyToml({ config: { build: { command: 'doesNotExist' } } }).withStateFile({ siteId: siteInfo.id })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withMockApi(routes, async ({ apiUrl }) => {
         await runBuildCommand(t, builder.directory, { apiUrl, exitCode: 2, output: 'doesNotExist' })
@@ -149,7 +149,7 @@ describe.concurrent('command/build', () => {
         .withNetlifyToml({ config: { build: { command: 'echo testCommand' } } })
         .withStateFile({ siteId: siteInfo.id })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withMockApi(routes, async ({ apiUrl }) => {
         await runBuildCommand(t, builder.directory, { apiUrl, flags: ['--dry'], output: 'If this looks good to you' })
@@ -166,7 +166,7 @@ describe.concurrent('command/build', () => {
         },
       })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await runBuildCommand(t, builder.directory, { flags: ['--offline'], output: 'testProduction' })
     })
@@ -181,7 +181,7 @@ describe.concurrent('command/build', () => {
         },
       })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await runBuildCommand(t, builder.directory, { flags: ['--context=staging', '--offline'], output: 'testStaging' })
     })
@@ -196,7 +196,7 @@ describe.concurrent('command/build', () => {
         },
       })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await runBuildCommand(t, builder.directory, {
         flags: ['--offline'],
@@ -212,7 +212,7 @@ describe.concurrent('command/build', () => {
         .withNetlifyToml({ config: { build: { command: 'echo testCommand' } } })
         .withStateFile({ siteId: siteInfo.id })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withMockApi(routes, async ({ apiUrl }) => {
         await runBuildCommand(t, builder.directory, { apiUrl, flags: ['--debug'], output: 'Resolved config' })
@@ -227,7 +227,7 @@ describe.concurrent('command/build', () => {
         .withStateFile({ siteId: siteInfo.id })
         .withContentFile({ path: path.join('subdir', '.gitkeep'), content: '' })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withMockApi(routes, async ({ apiUrl }) => {
         await runBuildCommand(t, path.join(builder.directory, 'subdir'), { apiUrl, output: 'testCommand' })
@@ -239,7 +239,7 @@ describe.concurrent('command/build', () => {
     await withSiteBuilder(t, async (builder) => {
       builder.withNetlifyToml({ config: { build: { command: false } } })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withMockApi(routes, async ({ apiUrl }) => {
         await runBuildCommand(t, builder.directory, { apiUrl, exitCode: 1, output: 'Invalid syntax' })
@@ -251,7 +251,7 @@ describe.concurrent('command/build', () => {
     await withSiteBuilder(t, async (builder) => {
       builder.withNetlifyToml({ config: { build: { command: 'echo testCommand' } } })
 
-      await builder.buildAsync()
+      await builder.build()
 
       await withMockApi(routes, async ({ apiUrl }) => {
         await runBuildCommand(t, builder.directory, {
@@ -266,7 +266,7 @@ describe.concurrent('command/build', () => {
 
   test('should not require a linked site when offline flag is set', async (t) => {
     await withSiteBuilder(t, async (builder) => {
-      await builder.withNetlifyToml({ config: { build: { command: 'echo testCommand' } } }).buildAsync()
+      await builder.withNetlifyToml({ config: { build: { command: 'echo testCommand' } } }).build()
 
       await runBuildCommand(t, builder.directory, {
         output: 'testCommand',
@@ -278,7 +278,7 @@ describe.concurrent('command/build', () => {
 
   test('should not send network requests when offline flag is set', async (t) => {
     await withSiteBuilder(t, async (builder) => {
-      await builder.withNetlifyToml({ config: { build: { command: 'echo testCommand' } } }).buildAsync()
+      await builder.withNetlifyToml({ config: { build: { command: 'echo testCommand' } } }).build()
 
       await withMockApi(routes, async ({ apiUrl, requests }) => {
         await runBuildCommand(t, builder.directory, {

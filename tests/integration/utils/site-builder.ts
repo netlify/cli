@@ -258,13 +258,6 @@ export class SiteBuilder {
     return this
   }
 
-  /**
-   * @deprecated
-   */
-  async buildAsync() {
-    return this.build()
-  }
-
   async cleanup() {
     try {
       await rm(this.directory, { force: true, recursive: true })

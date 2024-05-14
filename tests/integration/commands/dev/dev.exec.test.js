@@ -8,7 +8,7 @@ import { withSiteBuilder } from '../../utils/site-builder.ts'
 test('should pass .env variables to exec command', async (t) => {
   await withSiteBuilder(t, async (builder) => {
     builder.withEnvFile({ env: { MY_SUPER_SECRET: 'SECRET' } })
-    await builder.buildAsync()
+    await builder.build()
 
     const cmd = process.platform === 'win32' ? 'set' : 'printenv'
     const output = await callCli(['dev:exec', cmd], {
