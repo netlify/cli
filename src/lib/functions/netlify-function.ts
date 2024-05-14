@@ -7,7 +7,7 @@ import semver from 'semver'
 
 import { error as errorExit } from '../../utils/command-helpers.js'
 import { BACKGROUND } from '../../utils/functions/get-functions.js'
-import type { BlobsContextWithEdgeAccess } from '../blobs/blobs.js'
+import { BlobsContextWithEdgeAccess, getBlobsEventProperty } from '../blobs/blobs.js'
 
 const TYPESCRIPT_EXTENSIONS = new Set(['.cts', '.mts', '.ts'])
 const V2_MIN_NODE_VERSION = '18.14.0'
@@ -237,11 +237,7 @@ export default class NetlifyFunction {
     const environment = {}
 
     if (this.blobsContext) {
-      const payload = JSON.stringify({
-        url: this.blobsContext.edgeURL,
-        url_uncached: this.blobsContext.edgeURL,
-        token: this.blobsContext.token,
-      })
+      const payload = JSON.stringify(getBlobsEventProperty(this.blobsContext))
 
       // @ts-expect-error TS(2339) FIXME: Property 'blobs' does not exist on type '{}'.
       event.blobs = Buffer.from(payload).toString('base64')
