@@ -17,6 +17,7 @@ export const envGet = async (name: string, options: OptionValues, command: BaseC
   const { siteInfo } = cachedConfig
   const env = await getEnvelopeEnv({ api, context, env: cachedConfig.env, key: name, scope, siteInfo })
 
+  // @ts-expect-error TS(7053) - Element implicitly has an 'any' type
   const { value } = env[name] || {}
 
   // Return json response for piping commands

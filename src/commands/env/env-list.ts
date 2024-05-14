@@ -56,6 +56,7 @@ export const envList = async (options: OptionValues, command: BaseCommand) => {
   // filter out general sources
   environment = Object.fromEntries(
     Object.entries(environment).filter(
+      // @ts-expect-error TS(18046) - 'variable' is of type 'unknown'
       ([, variable]) => variable.sources[0] !== 'general' && variable.sources[0] !== 'internal',
     ),
   )
@@ -63,6 +64,7 @@ export const envList = async (options: OptionValues, command: BaseCommand) => {
   // Return json response for piping commands
   if (options.json) {
     const envDictionary = Object.fromEntries(
+      // @ts-expect-error TS(18046) - 'variable' is of type 'unknown'
       Object.entries(environment).map(([key, variable]) => [key, variable.value]),
     )
     logJson(envDictionary)
@@ -71,6 +73,7 @@ export const envList = async (options: OptionValues, command: BaseCommand) => {
 
   if (options.plain) {
     const plaintext = Object.entries(environment)
+      // @ts-expect-error TS(18046) - 'variable' is of type 'unknown'
       .map(([key, variable]) => `${key}=${variable.value}`)
       .join('\n')
     log(plaintext)
