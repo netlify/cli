@@ -100,7 +100,7 @@
     "content-type": "1.0.5",
     "cookie": "0.6.0",
     "copy-template-dir": "1.4.0",
-    "cron-parser": "4.8.1",
+    "cron-parser": "4.9.0",
     "debug": "4.3.4",
     "decache": "4.6.2",
     "dot-prop": "7.2.0",
