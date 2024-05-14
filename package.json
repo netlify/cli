@@ -180,7 +180,7 @@
     "uuid": "9.0.1",
     "wait-port": "1.1.0",
     "write-file-atomic": "5.0.1",
-    "ws": "8.14.2",
+    "ws": "8.17.0",
     "zod": "3.22.4"
   },
   "devDependencies": {
