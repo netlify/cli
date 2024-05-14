@@ -13,7 +13,7 @@ import BaseCommand from '../base-command.js'
  * @returns {Promise<object>}
  */
 // @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-const importIntoEnvelope = async ({ api, importedEnv, options, siteInfo }) => {
+const importDotEnv = async ({ api, importedEnv, options, siteInfo }) => {
   // fetch env vars
   const accountId = siteInfo.account_slug
   const siteId = siteInfo.id
@@ -75,7 +75,7 @@ export const envImport = async (fileName: string, options: OptionValues, command
 
   const { siteInfo } = cachedConfig
 
-  const finalEnv = await importIntoEnvelope({ api, importedEnv, options, siteInfo })
+  const finalEnv = await importDotEnv({ api, importedEnv, options, siteInfo })
 
   // Return new environment variables of site if using json flag
   if (options.json) {
