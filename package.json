@@ -98,7 +98,7 @@
     "concordance": "5.0.4",
     "configstore": "6.0.0",
     "content-type": "1.0.5",
-    "cookie": "0.5.0",
+    "cookie": "0.6.0",
     "copy-template-dir": "1.4.0",
     "cron-parser": "4.8.1",
     "debug": "4.3.4",
