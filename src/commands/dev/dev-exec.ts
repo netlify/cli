@@ -9,10 +9,7 @@ export const devExec = async (cmd: string, options: OptionValues, command: BaseC
   const { api, cachedConfig, config, site, siteInfo } = command.netlify
 
   let { env } = cachedConfig
-  if (siteInfo.use_envelope) {
-    env = await getEnvelopeEnv({ api, context: options.context, env, siteInfo })
-  }
-
+  env = await getEnvelopeEnv({ api, context: options.context, env, siteInfo })
   env = await getDotEnvVariables({ devConfig: { ...config.dev }, env, site })
   injectEnvVariables(env)
 

@@ -1,6 +1,6 @@
 import { OptionValues } from 'commander'
 
-import { chalk, error, log, logJson } from '../../utils/command-helpers.js'
+import { chalk, log, logJson } from '../../utils/command-helpers.js'
 import { AVAILABLE_CONTEXTS, translateFromEnvelopeToMongo } from '../../utils/env/index.js'
 import BaseCommand from '../base-command.js'
 
@@ -104,19 +104,7 @@ export const envUnset = async (key: string, options: OptionValues, command: Base
 
   const { siteInfo } = cachedConfig
 
-  let finalEnv
-  if (siteInfo.use_envelope) {
-    finalEnv = await unsetInEnvelope({ api, context, siteInfo, key })
-  } else if (context) {
-    error(
-      `To specify a context, please run ${chalk.yellow(
-        'netlify open:admin',
-      )} to open the Netlify UI and opt in to the new environment variables experience from Site settings`,
-    )
-    return false
-  } else {
-    finalEnv = await unsetInMongo({ api, siteInfo, key })
-  }
+  const finalEnv = await unsetInEnvelope({ api, context, siteInfo, key })
 
   // Return new environment variables of site if using json flag
   if (options.json) {

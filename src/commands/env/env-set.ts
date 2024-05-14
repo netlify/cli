@@ -142,21 +142,9 @@ export const envSet = async (key: string, value: string, options: OptionValues, 
   }
 
   const { siteInfo } = cachedConfig
-  let finalEnv
 
   // Get current environment variables set in the UI
-  if (siteInfo.use_envelope) {
-    finalEnv = await setInEnvelope({ api, siteInfo, key, value, context, scope, secret })
-  } else if (context || scope) {
-    error(
-      `To specify a context or scope, please run ${chalk.yellow(
-        'netlify open:admin',
-      )} to open the Netlify UI and opt in to the new environment variables experience from Site settings`,
-    )
-    return false
-  } else {
-    finalEnv = await setInMongo({ api, siteInfo, key, value })
-  }
+  const finalEnv = await setInEnvelope({ api, siteInfo, key, value, context, scope, secret })
 
   if (!finalEnv) {
     return false

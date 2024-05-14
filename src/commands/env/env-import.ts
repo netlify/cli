@@ -101,8 +101,7 @@ export const envImport = async (fileName: string, options: OptionValues, command
 
   const { siteInfo } = cachedConfig
 
-  const importIntoService = siteInfo.use_envelope ? importIntoEnvelope : importIntoMongo
-  const finalEnv = await importIntoService({ api, importedEnv, options, siteInfo })
+  const finalEnv = await importIntoEnvelope({ api, importedEnv, options, siteInfo })
 
   // Return new environment variables of site if using json flag
   if (options.json) {

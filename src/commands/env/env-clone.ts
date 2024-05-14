@@ -192,18 +192,7 @@ export const envClone = async (options: OptionValues, command: BaseCommand) => {
     return false
   }
 
-  // determine if siteFrom and/or siteTo is on Envelope
-  let method
-  if (!siteFrom.use_envelope && !siteTo.use_envelope) {
-    method = mongoToMongo
-  } else if (!siteFrom.use_envelope && siteTo.use_envelope) {
-    method = mongoToEnvelope
-  } else if (siteFrom.use_envelope && !siteTo.use_envelope) {
-    method = envelopeToMongo
-  } else {
-    method = envelopeToEnvelope
-  }
-  const success = await method({ api, siteFrom, siteTo })
+  const success = await envelopeToEnvelope({ api, siteFrom, siteTo })
 
   if (!success) {
     return false
