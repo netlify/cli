@@ -18,7 +18,7 @@ const safeGetSite = async (api, siteId) => {
  * @returns {Promise<boolean>}
  */
 // @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-const envelopeToEnvelope = async ({ api, siteFrom, siteTo }) => {
+const cloneEnvVars = async ({ api, siteFrom, siteTo }): Promise<boolean> => {
   const [envelopeFrom, envelopeTo] = await Promise.all([
     api.getEnvVars({ accountId: siteFrom.account_slug, siteId: siteFrom.id }),
     api.getEnvVars({ accountId: siteTo.account_slug, siteId: siteTo.id }),
@@ -81,7 +81,7 @@ export const envClone = async (options: OptionValues, command: BaseCommand) => {
     return false
   }
 
-  const success = await envelopeToEnvelope({ api, siteFrom, siteTo })
+  const success = await cloneEnvVars({ api, siteFrom, siteTo })
 
   if (!success) {
     return false
