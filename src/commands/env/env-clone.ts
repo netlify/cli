@@ -1,7 +1,6 @@
 import { OptionValues } from 'commander'
 
-import { chalk, error as logError, log } from '../../utils/command-helpers.js'
-import { translateFromEnvelopeToMongo, translateFromMongoToEnvelope } from '../../utils/env/index.js'
+import { chalk, log, error as logError } from '../../utils/command-helpers.js'
 import BaseCommand from '../base-command.js'
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'api' implicitly has an 'any' type.
@@ -12,40 +11,6 @@ const safeGetSite = async (api, siteId) => {
   } catch (error) {
     return { error }
   }
-}
-/**
- * Copies the env from a site configured with Envelope to a site not configured with Envelope
- * @returns {Promise<boolean>}
- */
-// @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-const envelopeToMongo = async ({ api, siteFrom, siteTo }) => {
-  const envelopeVariables = await api.getEnvVars({ accountId: siteFrom.account_slug, siteId: siteFrom.id })
-  const envFrom = translateFromEnvelopeToMongo(envelopeVariables)
-
-  if (Object.keys(envFrom).length === 0) {
-    log(`${chalk.green(siteFrom.name)} has no environment variables, nothing to clone`)
-    return false
-  }
-
-  const envTo = siteTo.build_settings.env || {}
-
-  // Merge from site A to site B
-  const mergedEnv = {
-    ...envTo,
-    ...envFrom,
-  }
-
-  // Apply environment variable updates
-  await api.updateSite({
-    siteId: siteTo.id,
-    body: {
-      build_settings: {
-        env: mergedEnv,
-      },
-    },
-  })
-
-  return true
 }
 
 /**
@@ -78,82 +43,6 @@ const envelopeToEnvelope = async ({ api, siteFrom, siteTo }) => {
   // hit create endpoint
   try {
     await api.createEnvVars({ accountId, siteId, body: envelopeFrom })
-  } catch (error) {
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    throw error.json ? error.json.msg : error
-  }
-
-  return true
-}
-
-/**
- * Copies the env from a site not configured with Envelope to a different site not configured with Envelope
- * @returns {Promise<boolean>}
- */
-// @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-const mongoToMongo = async ({ api, siteFrom, siteTo }) => {
-  const [
-    {
-      build_settings: { env: envFrom = {} },
-    },
-    {
-      build_settings: { env: envTo = {} },
-    },
-  ] = [siteFrom, siteTo]
-
-  if (Object.keys(envFrom).length === 0) {
-    log(`${chalk.green(siteFrom.name)} has no environment variables, nothing to clone`)
-    return false
-  }
-
-  // Merge from site A to site B
-  const mergedEnv = {
-    ...envTo,
-    ...envFrom,
-  }
-
-  // Apply environment variable updates
-  await api.updateSite({
-    siteId: siteTo.id,
-    body: {
-      build_settings: {
-        env: mergedEnv,
-      },
-    },
-  })
-
-  return true
-}
-
-/**
- * Copies the env from a site not configured with Envelope to a site configured with Envelope
- * @returns {Promise<boolean>}
- */
-// @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-const mongoToEnvelope = async ({ api, siteFrom, siteTo }) => {
-  const envFrom = siteFrom.build_settings.env || {}
-  const keysFrom = Object.keys(envFrom)
-
-  if (Object.keys(envFrom).length === 0) {
-    log(`${chalk.green(siteFrom.name)} has no environment variables, nothing to clone`)
-    return false
-  }
-
-  const accountId = siteTo.account_slug
-  const siteId = siteTo.id
-
-  const envelopeTo = await api.getEnvVars({ accountId, siteId })
-
-  // @ts-expect-error TS(7031) FIXME: Binding element 'key' implicitly has an 'any' type... Remove this comment to see the full error message
-  const envVarsToDelete = envelopeTo.filter(({ key }) => keysFrom.includes(key))
-  // delete marked env vars in parallel
-  // @ts-expect-error TS(7031) FIXME: Binding element 'key' implicitly has an 'any' type... Remove this comment to see the full error message
-  await Promise.all(envVarsToDelete.map(({ key }) => api.deleteEnvVar({ accountId, siteId, key })))
-
-  // hit create endpoint
-  const body = translateFromMongoToEnvelope(envFrom)
-  try {
-    await api.createEnvVars({ accountId, siteId, body })
   } catch (error) {
     // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
     throw error.json ? error.json.msg : error

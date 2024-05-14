@@ -5,35 +5,6 @@ import { AVAILABLE_CONTEXTS, translateFromEnvelopeToMongo } from '../../utils/en
 import BaseCommand from '../base-command.js'
 
 /**
- * Deletes a given key from the env of a site record
- * @returns {Promise<object>}
- */
-// @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-const unsetInMongo = async ({ api, key, siteInfo }) => {
-  // Get current environment variables set in the UI
-  const {
-    build_settings: { env = {} },
-  } = siteInfo
-
-  const newEnv = env
-
-  // Delete environment variable from current variables
-  delete newEnv[key]
-
-  // Apply environment variable updates
-  await api.updateSite({
-    siteId: siteInfo.id,
-    body: {
-      build_settings: {
-        env: newEnv,
-      },
-    },
-  })
-
-  return newEnv
-}
-
-/**
  * Deletes a given key from the env of a site configured with Envelope
  * @returns {Promise<object>}
  */

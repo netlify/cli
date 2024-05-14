@@ -5,29 +5,6 @@ import { AVAILABLE_CONTEXTS, AVAILABLE_SCOPES, translateFromEnvelopeToMongo } fr
 import BaseCommand from '../base-command.js'
 
 /**
- * Updates the env for a site record with a new key/value pair
- * @returns {Promise<object>}
- */
-// @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-const setInMongo = async ({ api, key, siteInfo, value }) => {
-  const { env = {} } = siteInfo.build_settings
-  const newEnv = {
-    ...env,
-    [key]: value,
-  }
-  // Apply environment variable updates
-  await api.updateSite({
-    siteId: siteInfo.id,
-    body: {
-      build_settings: {
-        env: newEnv,
-      },
-    },
-  })
-  return newEnv
-}
-
-/**
  * Updates the env for a site configured with Envelope with a new key/value pair
  * @returns {Promise<object | boolean>}
  */

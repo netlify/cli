@@ -15,9 +15,7 @@ export const envGet = async (name: string, options: OptionValues, command: BaseC
   }
 
   const { siteInfo } = cachedConfig
-  let { env } = cachedConfig
-
-  env = await getEnvelopeEnv({ api, context, env, key: name, scope, siteInfo })
+  const env = await getEnvelopeEnv({ api, context, env: cachedConfig.env, key: name, scope, siteInfo })
 
   const { value } = env[name] || {}
 
