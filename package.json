@@ -70,7 +70,7 @@
     "prettier": "--ignore-path .eslintignore --loglevel=warn \"{src,tools,scripts,tests,.github}/**/*.{mjs,cjs,js,mts,md,yml,json,html,ts}\" \"*.{mjs,cjs,js,mts,yml,json,html,ts}\" \".*.{mjs,cjs,js,yml,json,html,ts}\" \"!CHANGELOG.md\" \"!**/*/package-lock.json\" \"!.github/**/*.md\""
   },
   "dependencies": {
-    "@bugsnag/js": "7.22.7",
+    "@bugsnag/js": "7.23.0",
     "@fastify/static": "6.12.0",
     "@netlify/blobs": "7.3.0",
     "@netlify/build": "29.41.4",
@@ -178,7 +178,7 @@
     "unixify": "1.0.0",
     "update-notifier": "6.0.2",
     "uuid": "9.0.1",
-    "wait-port": "1.0.4",
+    "wait-port": "1.1.0",
     "write-file-atomic": "5.0.1",
     "ws": "8.14.2",
     "zod": "3.22.4"
