@@ -1244,7 +1244,6 @@ describe.concurrent('commands/dev-miscellaneous', () => {
       },
       id: 'site_id',
       name: 'site-name',
-      use_envelope: true,
     }
     const existingVar = {
       key: 'EXISTING_VAR',
