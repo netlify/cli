@@ -10,6 +10,7 @@ import { getPathInProject } from '../settings.js'
 interface BaseBlobsContext {
   deployID: string
   siteID: string
+  primaryRegion?: string
   token: string
 }
 
@@ -27,6 +28,7 @@ export type BlobsContext = BlobsContextWithAPIAccess | BlobsContextWithEdgeAcces
 let hasPrintedLocalBlobsNotice = false
 
 export const BLOBS_CONTEXT_VARIABLE = 'NETLIFY_BLOBS_CONTEXT'
+const DEV_REGION = 'dev'
 
 const printLocalBlobsNotice = () => {
   if (hasPrintedLocalBlobsNotice) {
@@ -76,6 +78,7 @@ export const getBlobsContextWithAPIAccess = async ({ debug, projectRoot, siteID 
   const context: BlobsContextWithAPIAccess = {
     apiURL: url,
     deployID: '0',
+    primaryRegion: DEV_REGION,
     siteID,
     token,
   }
@@ -95,10 +98,22 @@ export const getBlobsContextWithEdgeAccess = async ({ debug, projectRoot, siteID
     siteID,
     token,
     uncachedEdgeURL: url,
+    primaryRegion: DEV_REGION,
   }
 
   return context
 }
+
+/**
+ * Returns the Blobs metadata that should be added to the Lambda event when
+ * invoking a serverless function.
+ */
+export const getBlobsEventProperty = (context: BlobsContextWithEdgeAccess) => ({
+  primary_region: context.primaryRegion,
+  url: context.edgeURL,
+  url_uncached: context.edgeURL,
+  token: context.token,
+})
 
 /**
  * Returns a Base-64, JSON-encoded representation of the Blobs context. This is
