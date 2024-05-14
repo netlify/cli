@@ -178,7 +178,7 @@
     "unixify": "1.0.0",
     "update-notifier": "6.0.2",
     "uuid": "9.0.1",
-    "wait-port": "1.0.4",
+    "wait-port": "1.1.0",
     "write-file-atomic": "5.0.1",
     "ws": "8.14.2",
     "zod": "3.22.4"
