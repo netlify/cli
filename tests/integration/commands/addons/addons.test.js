@@ -20,7 +20,7 @@ const routes = [
 describe.concurrent('command-addons', () => {
   test('netlify addons:list', async (t) => {
     await withSiteBuilder(t, async (builder) => {
-      await builder.buildAsync()
+      await builder.build()
 
       await withMockApi(routes, async ({ apiUrl }) => {
         const cliResponse = await callCli(['addons:list'], getCLIOptions({ builder, apiUrl }))
@@ -31,7 +31,7 @@ describe.concurrent('command-addons', () => {
 
   test('netlify addons:list --json', async (t) => {
     await withSiteBuilder(t, async (builder) => {
-      await builder.buildAsync()
+      await builder.build()
 
       await withMockApi(routes, async ({ apiUrl }) => {
         const cliResponse = await callCli(['addons:list', '--json'], getCLIOptions({ builder, apiUrl }))
@@ -44,7 +44,7 @@ describe.concurrent('command-addons', () => {
 
   test('netlify addons:create demo', async (t) => {
     await withSiteBuilder(t, async (builder) => {
-      await builder.buildAsync()
+      await builder.build()
 
       const createRoutes = [
         ...routes,
@@ -69,7 +69,7 @@ describe.concurrent('command-addons', () => {
 
   test('After creation netlify addons:list --json', async (t) => {
     await withSiteBuilder(t, async (builder) => {
-      await builder.buildAsync()
+      await builder.build()
 
       const withExistingAddon = [
         { path: 'sites/site_id', response: siteInfo },
@@ -95,7 +95,7 @@ describe.concurrent('command-addons', () => {
 
   test('netlify addons:config demo', async (t) => {
     await withSiteBuilder(t, async (builder) => {
-      await builder.buildAsync()
+      await builder.build()
 
       const configRoutes = [
         { path: 'sites/site_id', response: siteInfo },
@@ -129,7 +129,7 @@ describe.concurrent('command-addons', () => {
 
   test('netlify addon:delete demo', async (t) => {
     await withSiteBuilder(t, async (builder) => {
-      await builder.buildAsync()
+      await builder.build()
 
       const deleteRoutes = [
         { path: 'sites/site_id', response: siteInfo },

@@ -56,13 +56,13 @@ const BASE_REDIRECT = {
   params: {},
 }
 
-test('should parse redirect rules from netlify.toml', async () => {
-  await withSiteBuilder('site-with-redirects-in-netlify-toml', async (builder) => {
+test('should parse redirect rules from netlify.toml', async (t) => {
+  await withSiteBuilder(t, async (builder) => {
     await builder
       .withNetlifyToml({
         config: defaultConfig,
       })
-      .buildAsync()
+      .build()
 
     const redirects = await parseRedirects({ configPath: `${builder.directory}/netlify.toml` })
     const expected = [
@@ -124,13 +124,13 @@ test('should parse redirect rules from netlify.toml', async () => {
   })
 })
 
-test('should parse redirect rules from _redirects file', async () => {
-  await withSiteBuilder('site-with-redirects-file', async (builder) => {
+test('should parse redirect rules from _redirects file', async (t) => {
+  await withSiteBuilder(t, async (builder) => {
     await builder
       .withRedirectsFile({
         redirects: defaultRedirects,
       })
-      .buildAsync()
+      .build()
 
     const redirects = await parseRedirects({ redirectsFiles: [`${builder.directory}/_redirects`] })
     const expected = [
@@ -147,8 +147,8 @@ test('should parse redirect rules from _redirects file', async () => {
   })
 })
 
-test('should parse redirect rules from _redirects file and netlify.toml', async () => {
-  await withSiteBuilder('site-with-redirects-file-and-netlify-toml', async (builder) => {
+test('should parse redirect rules from _redirects file and netlify.toml', async (t) => {
+  await withSiteBuilder(t, async (builder) => {
     await builder
       .withRedirectsFile({
         redirects: defaultRedirects,
@@ -156,7 +156,7 @@ test('should parse redirect rules from _redirects file and netlify.toml', async 
       .withNetlifyToml({
         config: defaultConfig,
       })
-      .buildAsync()
+      .build()
 
     const redirects = await parseRedirects({
       redirectsFiles: [`${builder.directory}/_redirects`],

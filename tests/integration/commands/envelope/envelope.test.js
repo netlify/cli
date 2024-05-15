@@ -1,4 +1,4 @@
-import { test, describe } from 'vitest'
+import { describe, test } from 'vitest'
 
 import { callCli } from '../../utils/call-cli.js'
 import { getCLIOptions, withMockApi } from '../../utils/mock-api.js'
@@ -111,7 +111,7 @@ const routes = [
 describe.concurrent('command/envelope', () => {
   test('env:import should throw error if file not exists', async (t) => {
     await withSiteBuilder(t, async (builder) => {
-      await builder.buildAsync()
+      await builder.build()
 
       await withMockApi(routes, async ({ apiUrl }) => {
         t.expect(callCli(['env:import', '.env'], getCLIOptions({ builder, apiUrl }))).rejects.toThrow()
@@ -135,7 +135,7 @@ describe.concurrent('command/envelope', () => {
             NEW_VAR: 'from-dotenv',
           },
         })
-        .buildAsync()
+        .build()
 
       await withMockApi(routes, async ({ apiUrl }) => {
         const cliResponse = await callCli(['env:import', '--json', '.env'], getCLIOptions({ builder, apiUrl }), true)
@@ -160,7 +160,7 @@ describe.concurrent('command/envelope', () => {
             NEW_VAR: 'from-dotenv',
           },
         })
-        .buildAsync()
+        .build()
 
       await withMockApi(routes, async ({ apiUrl }) => {
         const cliResponse = await callCli(
@@ -220,7 +220,7 @@ describe.concurrent('command/envelope', () => {
     ]
 
     await withSiteBuilder(t, async (builder) => {
-      await builder.buildAsync()
+      await builder.build()
       await withMockApi(cloneRoutes, async ({ apiUrl, requests }) => {
         const cliResponse = await callCli(
           ['env:clone', '--from', 'site_id_a', '--to', 'site_id_b'],
@@ -292,7 +292,7 @@ describe.concurrent('command/envelope', () => {
     ]
 
     await withSiteBuilder(t, async (builder) => {
-      await builder.buildAsync()
+      await builder.build()
       await withMockApi(cloneRoutes, async ({ apiUrl, requests }) => {
         const cliResponse = await callCli(
           ['env:clone', '--from', 'site_id_a', '--to', 'site_id_b'],
@@ -354,7 +354,7 @@ describe.concurrent('command/envelope', () => {
     ]
 
     await withSiteBuilder(t, async (builder) => {
-      await builder.buildAsync()
+      await builder.build()
       await withMockApi(cloneRoutes, async ({ apiUrl, requests }) => {
         const cliResponse = await callCli(
           ['env:clone', '--from', 'site_id_a', '--to', 'site_id_b'],

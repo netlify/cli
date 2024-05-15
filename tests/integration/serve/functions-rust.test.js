@@ -9,7 +9,7 @@ import { withSiteBuilder } from '../utils/site-builder.ts'
 const WAIT_WRITE = 1000
 
 test('Updates a Rust function when a file is modified', async (t) => {
-  await withSiteBuilder('rust-function-update', async (builder) => {
+  await withSiteBuilder(t, async (builder) => {
     const originalBody = 'Netlify likes Rust'
     const updatedBody = 'Netlify *loves* Rust'
 
@@ -64,7 +64,7 @@ test('Updates a Rust function when a file is modified', async (t) => {
             content: `<mock main.rs>`,
           },
         ])
-        .buildAsync()
+        .build()
 
       await withDevServer(
         {
@@ -83,7 +83,7 @@ test('Updates a Rust function when a file is modified', async (t) => {
 
           await builder
             .withContentFile({ path: 'functions/rust-func/src/main.rs', content: `<updated mock main.rs>` })
-            .buildAsync()
+            .build()
 
           await waitForLogMatching('Reloaded function rust-func')
 

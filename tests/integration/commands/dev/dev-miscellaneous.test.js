@@ -1227,7 +1227,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
             },
           },
         })
-        .buildAsync()
+        .build()
 
       await withDevServer({ cwd: builder.directory }, async ({ port }) => {
         const response = await fetch(`http://localhost:${port}/`).then((res) => res.json())
@@ -1363,12 +1363,12 @@ describe.concurrent('commands/dev-miscellaneous', () => {
   })
 
   test('should fail in CI with multiple projects', async (t) => {
-    await withSiteBuilder('site-with-multiple-packages', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       await builder
         .withPackageJson({ packageJson: { name: 'main', workspaces: ['*'] } })
         .withPackageJson({ packageJson: { name: 'package1' }, pathPrefix: 'package1' })
         .withPackageJson({ packageJson: { name: 'package2' }, pathPrefix: 'package2' })
-        .buildAsync()
+        .build()
 
       const asyncErrorBlock = async () => {
         const childProcess = execa(

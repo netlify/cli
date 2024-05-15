@@ -27,7 +27,7 @@ const routes = [
 describe('commands/env', () => {
   test('env:get --json should return empty object if var not set', async (t) => {
     await withSiteBuilder(t, async (builder) => {
-      await builder.buildAsync()
+      await builder.build()
 
       await withMockApi(routes, async ({ apiUrl }) => {
         const cliResponse = await callCli(['env:get', '--json', 'SOME_VAR'], getCLIOptions({ builder, apiUrl }), true)
@@ -39,7 +39,7 @@ describe('commands/env', () => {
 
   test('env:get --context should log an error message', async (t) => {
     await withSiteBuilder(t, async (builder) => {
-      await builder.buildAsync()
+      await builder.build()
 
       await withMockApi(routes, async ({ apiUrl }) => {
         const { stderr: cliResponse } = await callCli(
@@ -54,7 +54,7 @@ describe('commands/env', () => {
 
   test('env:get --scope should log an error message', async (t) => {
     await withSiteBuilder(t, async (builder) => {
-      await builder.buildAsync()
+      await builder.build()
 
       await withMockApi(routes, async ({ apiUrl }) => {
         const { stderr: cliResponse } = await callCli(
@@ -69,7 +69,7 @@ describe('commands/env', () => {
 
   test('env:set --json should create and return new var', async (t) => {
     await withSiteBuilder(t, async (builder) => {
-      await builder.buildAsync()
+      await builder.build()
 
       const newBuildSettings = { env: { SOME_VAR1: 'FOO' } }
       const createRoutes = [
@@ -106,7 +106,7 @@ describe('commands/env', () => {
 
   test('env:set --json should update existing var', async (t) => {
     await withSiteBuilder(t, async (builder) => {
-      await builder.buildAsync()
+      await builder.build()
 
       const newBuildSettings = { env: { existing_env: 'new_value' } }
       const updateRoutes = [
@@ -143,7 +143,7 @@ describe('commands/env', () => {
 
   test('env:get --json should return value of existing var', async (t) => {
     await withSiteBuilder(t, async (builder) => {
-      await builder.buildAsync()
+      await builder.build()
 
       const getRoutes = [
         {
@@ -171,7 +171,7 @@ describe('commands/env', () => {
 
   test('env:import should throw error if file not exists', async (t) => {
     await withSiteBuilder(t, async (builder) => {
-      await builder.buildAsync()
+      await builder.build()
 
       await withMockApi(routes, async ({ apiUrl }) => {
         await t.expect(() => callCli(['env:import', '.env'], getCLIOptions({ builder, apiUrl }))).rejects.toThrow()
@@ -189,7 +189,7 @@ describe('commands/env', () => {
             new_env: 'new_value',
           },
         })
-        .buildAsync()
+        .build()
 
       const newBuildSettings = { env: { existing_env: 'new_value', new_env: 'new_value' } }
       const importRoutes = [
@@ -233,7 +233,7 @@ describe('commands/env', () => {
             },
           },
         })
-        .buildAsync()
+        .build()
 
       await withMockApi(routes, async ({ apiUrl }) => {
         const cliResponse = await callCli(
@@ -249,7 +249,7 @@ describe('commands/env', () => {
 
   test('env:list --json should return empty object if no vars set', async (t) => {
     await withSiteBuilder(t, async (builder) => {
-      await builder.buildAsync()
+      await builder.build()
 
       await withMockApi(routes, async ({ apiUrl }) => {
         const cliResponse = await callCli(['env:list', '--json'], getCLIOptions({ builder, apiUrl }), true)
@@ -261,7 +261,7 @@ describe('commands/env', () => {
 
   test('env:list --context should log an error message', async (t) => {
     await withSiteBuilder(t, async (builder) => {
-      await builder.buildAsync()
+      await builder.build()
 
       await withMockApi(routes, async ({ apiUrl }) => {
         const { stderr: cliResponse } = await callCli(
@@ -276,7 +276,7 @@ describe('commands/env', () => {
 
   test('env:list --scope should log an error message', async (t) => {
     await withSiteBuilder(t, async (builder) => {
-      await builder.buildAsync()
+      await builder.build()
 
       await withMockApi(routes, async ({ apiUrl }) => {
         const { stderr: cliResponse } = await callCli(
@@ -299,7 +299,7 @@ describe('commands/env', () => {
             },
           },
         })
-        .buildAsync()
+        .build()
 
       const getRoutes = [
         { path: 'sites/site_id', response: { ...siteInfo, build_settings: { env: { existing_env: 'from_ui' } } } },
@@ -320,7 +320,7 @@ describe('commands/env', () => {
 
   test('env:list should hide variables values and prompt to show', async (t) => {
     await withSiteBuilder(t, async (builder) => {
-      await builder.buildAsync()
+      await builder.build()
 
       const questions = [
         {
@@ -365,7 +365,7 @@ describe('commands/env', () => {
 
   test('env:list should hide variables values and show on confirm', async (t) => {
     await withSiteBuilder(t, async (builder) => {
-      await builder.buildAsync()
+      await builder.build()
 
       const questions = [
         {
@@ -410,7 +410,7 @@ describe('commands/env', () => {
 
   test('env:list should not prompt on CI', async (t) => {
     await withSiteBuilder(t, async (builder) => {
-      await builder.buildAsync()
+      await builder.build()
 
       const envListRoutes = [
         {
@@ -434,7 +434,7 @@ describe('commands/env', () => {
 
   test('env:set --json should be able to set var with empty value', async (t) => {
     await withSiteBuilder(t, async (builder) => {
-      await builder.buildAsync()
+      await builder.build()
 
       const newBuildSettings = { env: { empty: '' } }
       const updateRoutes = [
@@ -467,7 +467,7 @@ describe('commands/env', () => {
 
   test('env:unset --json should remove existing variable', async (t) => {
     await withSiteBuilder(t, async (builder) => {
-      await builder.buildAsync()
+      await builder.build()
 
       const newBuildSettings = { env: {} }
       const updateRoutes = [
@@ -511,7 +511,7 @@ describe('commands/env', () => {
             new_env: 'new_value',
           },
         })
-        .buildAsync()
+        .build()
 
       const newBuildSettings = { env: { new_env: 'new_value' } }
       const importRoutes = [
@@ -551,7 +551,7 @@ describe('commands/env', () => {
 
   test("env:clone should return without clone if there's no env in source site", async (t) => {
     await withSiteBuilder(t, async (builder) => {
-      await builder.buildAsync()
+      await builder.build()
       const createRoutes = [
         { path: 'sites/site_id', response: { ...siteInfo, build_settings: { env: {} } } },
         { path: 'sites/site_id_a', response: { ...siteInfo, build_settings: { env: {} } } },
@@ -566,7 +566,7 @@ describe('commands/env', () => {
 
   test("env:clone should print error if --to site doesn't exist", async (t) => {
     await withSiteBuilder(t, async (builder) => {
-      await builder.buildAsync()
+      await builder.build()
       const createRoutes = [{ path: 'sites/site_id', response: { ...siteInfo, build_settings: { env: {} } } }]
       await withMockApi(createRoutes, async ({ apiUrl }) => {
         const { stderr: cliResponse } = await callCli(
@@ -581,7 +581,7 @@ describe('commands/env', () => {
 
   test("env:clone should print error if --from site doesn't exist", async (t) => {
     await withSiteBuilder(t, async (builder) => {
-      await builder.buildAsync()
+      await builder.build()
       await withMockApi([], async ({ apiUrl }) => {
         const { stderr: cliResponse } = await callCli(
           ['env:clone', '--from', 'from-site', '--to', 'to-site'],
@@ -595,7 +595,7 @@ describe('commands/env', () => {
 
   test('env:clone should exit if the folder is not linked to a site, and --from is not provided', async (t) => {
     await withSiteBuilder(t, async (builder) => {
-      await builder.buildAsync()
+      await builder.build()
 
       const cliResponse = await callCli(['env:clone', '--to', 'site_id_a'], {
         cwd: builder.directory,
@@ -650,7 +650,7 @@ describe('commands/env', () => {
     ]
 
     await withSiteBuilder(t, async (builder) => {
-      await builder.buildAsync()
+      await builder.build()
       await withMockApi(cloneRoutes, async ({ apiUrl, requests }) => {
         const cliResponse = await callCli(['env:clone', '--to', 'site_id_a'], getCLIOptions({ apiUrl, builder }))
 
