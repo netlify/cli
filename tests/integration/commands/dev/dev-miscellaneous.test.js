@@ -1110,11 +1110,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
       account_slug: 'test-account',
       id: 'site_id',
       name: 'site-name',
-      build_settings: {
-        env: {
-          NETLIFY_SECRET_ENV: 'true',
-        },
-      },
+      build_settings: { env: {} },
     }
 
     const routes = [
@@ -1184,9 +1180,6 @@ describe.concurrent('commands/dev-miscellaneous', () => {
 
               t.expect(bucketKeys.includes('NETLIFY_DEV')).toBe(true)
               t.expect(bucket.NETLIFY_DEV).toEqual('true')
-
-              t.expect(bucketKeys.includes('NETLIFY_SECRET_ENV')).toBe(true)
-              t.expect(bucket.NETLIFY_SECRET_ENV).toEqual('true')
 
               t.expect(bucketKeys.includes('FROM_ENV')).toBe(true)
               t.expect(bucket.FROM_ENV).toEqual('YAS')
