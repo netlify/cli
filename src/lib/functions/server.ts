@@ -39,7 +39,7 @@ const buildClientContext = function (headers) {
   if (parts.length !== 2 || parts[0] !== 'Bearer') return
 
   const identity = {
-    url: 'https://netlify-dev-locally-emulated-identity.netlify.com/.netlify/identity',
+    url: 'https://netlify-dev-locally-emulated-identity.netlify.app/.netlify/identity',
     token:
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzb3VyY2UiOiJuZXRsaWZ5IGRldiIsInRlc3REYXRhIjoiTkVUTElGWV9ERVZfTE9DQUxMWV9FTVVMQVRFRF9JREVOVElUWSJ9.2eSDqUOZAOBsx39FHFePjYj12k0LrxldvGnlvDu3GMI',
     // you can decode this with https://jwt.io/
