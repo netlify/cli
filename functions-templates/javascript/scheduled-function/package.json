@@ -15,6 +15,6 @@
   "author": "Netlify",
   "license": "MIT",
   "dependencies": {
-    "@netlify/functions": "^2.6.3"
+    "@netlify/functions": "^2.7.0"
   }
 }
