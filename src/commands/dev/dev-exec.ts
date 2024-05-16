@@ -8,10 +8,10 @@ import BaseCommand from '../base-command.js'
 export const devExec = async (cmd: string, options: OptionValues, command: BaseCommand) => {
   const { api, cachedConfig, config, site, siteInfo } = command.netlify
 
-  let { env } = cachedConfig
-  env = await getEnvelopeEnv({ api, context: options.context, env, siteInfo })
-  env = await getDotEnvVariables({ devConfig: { ...config.dev }, env, site })
-  injectEnvVariables(env)
+  const withEnvelopeEnvVars = await getEnvelopeEnv({ api, context: options.context, env: cachedConfig.env, siteInfo })
+  const withDotEnvVars = await getDotEnvVariables({ devConfig: { ...config.dev }, env: withEnvelopeEnvVars, site })
+
+  injectEnvVariables(withDotEnvVars)
 
   await execa(cmd, command.args.slice(1), {
     stdio: 'inherit',
