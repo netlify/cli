@@ -142,7 +142,7 @@
     "listr2": "7.0.2",
     "locate-path": "7.2.0",
     "lodash": "4.17.21",
-    "log-symbols": "5.1.0",
+    "log-symbols": "6.0.0",
     "log-update": "5.0.1",
     "multiparty": "4.2.3",
     "netlify": "13.1.16",

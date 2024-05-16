@@ -7,7 +7,6 @@ const siteInfo = {
   },
   id: 'site_id',
   name: 'site-name',
-  use_envelope: true,
 }
 const existingVar = {
   key: 'EXISTING_VAR',
@@ -36,7 +35,7 @@ const otherVar = {
     },
   ],
 }
-const envelopeResponse = [existingVar, otherVar]
+const response = [existingVar, otherVar]
 const routes = [
   { path: 'sites/site_id', response: siteInfo },
   { path: 'sites/site_id/service-instances', response: [] },
@@ -58,7 +57,7 @@ const routes = [
   },
   {
     path: 'accounts/test-account/env',
-    response: envelopeResponse,
+    response,
   },
   {
     path: 'accounts/test-account/env',

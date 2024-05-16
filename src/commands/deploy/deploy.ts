@@ -19,15 +19,15 @@ import { normalizeFunctionsConfig } from '../../lib/functions/config.js'
 import { BACKGROUND_FUNCTIONS_WARNING } from '../../lib/log.js'
 import { startSpinner, stopSpinner } from '../../lib/spinner.js'
 import {
+  NETLIFYDEV,
+  NETLIFYDEVERR,
+  NETLIFYDEVLOG,
   chalk,
   error,
   exit,
   getToken,
   log,
   logJson,
-  NETLIFYDEV,
-  NETLIFYDEVERR,
-  NETLIFYDEVLOG,
   warn,
 } from '../../utils/command-helpers.js'
 import { DEFAULT_DEPLOY_TIMEOUT } from '../../utils/deploy/constants.js'
@@ -701,9 +701,8 @@ const prepAndRunDeploy = async ({
   workingDir,
 }) => {
   const alias = options.alias || options.branch
-  const isUsingEnvelope = siteData && siteData.use_envelope
   // if a context is passed besides dev, we need to pull env vars from that specific context
-  if (isUsingEnvelope && options.context && options.context !== 'dev') {
+  if (options.context && options.context !== 'dev') {
     command.netlify.cachedConfig.env = await getEnvelopeEnv({
       api,
       context: options.context,
@@ -736,16 +735,14 @@ const prepAndRunDeploy = async ({
     functionsFolder,
   })
 
-  const siteEnv = isUsingEnvelope
-    ? await getEnvelopeEnv({
-        api,
-        context: options.context,
-        env: command.netlify.cachedConfig.env,
-        raw: true,
-        scope: 'functions',
-        siteInfo: siteData,
-      })
-    : siteData?.build_settings?.env
+  const siteEnv = await getEnvelopeEnv({
+    api,
+    context: options.context,
+    env: command.netlify.cachedConfig.env,
+    raw: true,
+    scope: 'functions',
+    siteInfo: siteData,
+  })
 
   const functionsConfig = normalizeFunctionsConfig({
     functionsConfig: config.functions,
