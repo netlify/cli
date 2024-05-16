@@ -5,7 +5,7 @@ import { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 import logUpdate from 'log-update'
 
-import { chalk, error, log, logJson } from '../../utils/command-helpers.js'
+import { chalk, log, logJson } from '../../utils/command-helpers.js'
 import { AVAILABLE_CONTEXTS, getEnvelopeEnv, getHumanReadableScopes } from '../../utils/env/index.js'
 import BaseCommand from '../base-command.js'
 import { EnvironmentVariables } from '../types.js'
@@ -51,23 +51,12 @@ export const envList = async (options: OptionValues, command: BaseCommand) => {
   }
 
   const { env, siteInfo } = cachedConfig
-  const isUsingEnvelope = siteInfo.use_envelope
-  let environment = env
-
-  if (isUsingEnvelope) {
-    environment = await getEnvelopeEnv({ api, context, env, scope, siteInfo })
-  } else if (context !== 'dev' || scope !== 'any') {
-    error(
-      `To specify a context or scope, please run ${chalk.yellow(
-        'netlify open:admin',
-      )} to open the Netlify UI and opt in to the new environment variables experience from Site settings`,
-    )
-    return false
-  }
+  let environment = await getEnvelopeEnv({ api, context, env, scope, siteInfo })
 
   // filter out general sources
   environment = Object.fromEntries(
     Object.entries(environment).filter(
+      // @ts-expect-error TS(18046) - 'variable' is of type 'unknown'
       ([, variable]) => variable.sources[0] !== 'general' && variable.sources[0] !== 'internal',
     ),
   )
@@ -75,6 +64,7 @@ export const envList = async (options: OptionValues, command: BaseCommand) => {
   // Return json response for piping commands
   if (options.json) {
     const envDictionary = Object.fromEntries(
+      // @ts-expect-error TS(18046) - 'variable' is of type 'unknown'
       Object.entries(environment).map(([key, variable]) => [key, variable.value]),
     )
     logJson(envDictionary)
@@ -83,6 +73,7 @@ export const envList = async (options: OptionValues, command: BaseCommand) => {
 
   if (options.plain) {
     const plaintext = Object.entries(environment)
+      // @ts-expect-error TS(18046) - 'variable' is of type 'unknown'
       .map(([key, variable]) => `${key}=${variable.value}`)
       .join('\n')
     log(plaintext)
@@ -91,8 +82,8 @@ export const envList = async (options: OptionValues, command: BaseCommand) => {
 
   const forSite = `for site ${chalk.green(siteInfo.name)}`
   const contextType = AVAILABLE_CONTEXTS.includes(context) ? 'context' : 'branch'
-  const withContext = isUsingEnvelope ? `in the ${chalk.magenta(options.context)} ${contextType}` : ''
-  const withScope = isUsingEnvelope && scope !== 'any' ? `and ${chalk.yellow(options.scope)} scope` : ''
+  const withContext = `in the ${chalk.magenta(options.context)} ${contextType}`
+  const withScope = scope === 'any' ? '' : `and ${chalk.yellow(options.scope)} scope`
   if (Object.keys(environment).length === 0) {
     log(`No environment variables set ${forSite} ${withContext} ${withScope}`)
     return false
@@ -103,11 +94,11 @@ export const envList = async (options: OptionValues, command: BaseCommand) => {
   log(`${count} environment variable${count === 1 ? '' : 's'} ${forSite} ${withContext} ${withScope}`)
 
   if (isCI) {
-    log(getTable({ environment, hideValues: false, scopesColumn: isUsingEnvelope }))
+    log(getTable({ environment, hideValues: false, scopesColumn: true }))
     return false
   }
 
-  logUpdate(getTable({ environment, hideValues: true, scopesColumn: isUsingEnvelope }))
+  logUpdate(getTable({ environment, hideValues: true, scopesColumn: true }))
   const { showValues } = await inquirer.prompt([
     {
       type: 'confirm',
@@ -120,7 +111,7 @@ export const envList = async (options: OptionValues, command: BaseCommand) => {
   if (showValues) {
     // since inquirer adds a prompt, we need to account for it when printing the table again
     log(ansiEscapes.eraseLines(3))
-    logUpdate(getTable({ environment, hideValues: false, scopesColumn: isUsingEnvelope }))
+    logUpdate(getTable({ environment, hideValues: false, scopesColumn: true }))
     log(`${chalk.cyan('?')} Show values? ${chalk.cyan('Yes')}`)
   }
 }

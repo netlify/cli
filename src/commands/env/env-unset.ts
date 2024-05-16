@@ -1,37 +1,8 @@
 import { OptionValues } from 'commander'
 
-import { chalk, error, log, logJson } from '../../utils/command-helpers.js'
+import { chalk, log, logJson } from '../../utils/command-helpers.js'
 import { AVAILABLE_CONTEXTS, translateFromEnvelopeToMongo } from '../../utils/env/index.js'
 import BaseCommand from '../base-command.js'
-
-/**
- * Deletes a given key from the env of a site record
- * @returns {Promise<object>}
- */
-// @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-const unsetInMongo = async ({ api, key, siteInfo }) => {
-  // Get current environment variables set in the UI
-  const {
-    build_settings: { env = {} },
-  } = siteInfo
-
-  const newEnv = env
-
-  // Delete environment variable from current variables
-  delete newEnv[key]
-
-  // Apply environment variable updates
-  await api.updateSite({
-    siteId: siteInfo.id,
-    body: {
-      build_settings: {
-        env: newEnv,
-      },
-    },
-  })
-
-  return newEnv
-}
 
 /**
  * Deletes a given key from the env of a site configured with Envelope
@@ -104,19 +75,7 @@ export const envUnset = async (key: string, options: OptionValues, command: Base
 
   const { siteInfo } = cachedConfig
 
-  let finalEnv
-  if (siteInfo.use_envelope) {
-    finalEnv = await unsetInEnvelope({ api, context, siteInfo, key })
-  } else if (context) {
-    error(
-      `To specify a context, please run ${chalk.yellow(
-        'netlify open:admin',
-      )} to open the Netlify UI and opt in to the new environment variables experience from Site settings`,
-    )
-    return false
-  } else {
-    finalEnv = await unsetInMongo({ api, siteInfo, key })
-  }
+  const finalEnv = await unsetInEnvelope({ api, context, siteInfo, key })
 
   // Return new environment variables of site if using json flag
   if (options.json) {
