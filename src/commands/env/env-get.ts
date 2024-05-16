@@ -1,6 +1,6 @@
 import { OptionValues } from 'commander'
 
-import { chalk, error, log, logJson } from '../../utils/command-helpers.js'
+import { chalk, log, logJson } from '../../utils/command-helpers.js'
 import { AVAILABLE_CONTEXTS, getEnvelopeEnv } from '../../utils/env/index.js'
 import BaseCommand from '../base-command.js'
 
@@ -15,19 +15,9 @@ export const envGet = async (name: string, options: OptionValues, command: BaseC
   }
 
   const { siteInfo } = cachedConfig
-  let { env } = cachedConfig
+  const env = await getEnvelopeEnv({ api, context, env: cachedConfig.env, key: name, scope, siteInfo })
 
-  if (siteInfo.use_envelope) {
-    env = await getEnvelopeEnv({ api, context, env, key: name, scope, siteInfo })
-  } else if (context !== 'dev' || scope !== 'any') {
-    error(
-      `To specify a context or scope, please run ${chalk.yellow(
-        'netlify open:admin',
-      )} to open the Netlify UI and opt in to the new environment variables experience from Site settings`,
-    )
-    return false
-  }
-
+  // @ts-expect-error TS(7053) - Element implicitly has an 'any' type
   const { value } = env[name] || {}
 
   // Return json response for piping commands
