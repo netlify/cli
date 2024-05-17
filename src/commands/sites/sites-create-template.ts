@@ -21,6 +21,7 @@ export const fetchTemplates = async (token) => {
   const templatesFromGithubOrg = await getTemplatesFromGitHub(token)
 
   return (
+    // @ts-expect-error TS(18046) - 'templatesFromGithubOrg' if of type 'unknown'
     templatesFromGithubOrg
       // @ts-expect-error TS(7006) FIXME: Parameter 'repo' implicitly has an 'any' type.
       .filter((repo) => !repo.archived && !repo.disabled)
@@ -129,7 +130,9 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
       // Create new repo from template
       repoResp = await createRepo(templateName, ghToken, siteName || templateName)
 
+      // @ts-expect-error TS(18046) - 'repoResp' if of type 'unknown'
       if (repoResp.errors) {
+        // @ts-expect-error TS(18046) - 'repoResp' if of type 'unknown'
         if (repoResp.errors[0].includes('Name already exists on this account')) {
           warn(
             `Oh no! We found already a repository with this name. It seems you have already created a template with the name ${templateName}. Please try to run the command again and provide a different name.`,
@@ -138,6 +141,7 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
           await inputSiteName()
         } else {
           throw new Error(
+            // @ts-expect-error TS(18046) - 'repoResp' if of type 'unknown'
             `Oops! Seems like something went wrong trying to create the repository. We're getting the following error: '${repoResp.errors[0]}'. You can try to re-run this command again or open an issue in our repository: https://github.com/netlify/cli/issues`,
           )
         }
@@ -147,8 +151,11 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
           body: {
             repo: {
               provider: 'github',
+              // @ts-expect-error TS(18046) - 'repoResp' if of type 'unknown'
               repo: repoResp.full_name,
+              // @ts-expect-error TS(18046) - 'repoResp' if of type 'unknown'
               private: repoResp.private,
+              // @ts-expect-error TS(18046) - 'repoResp' if of type 'unknown'
               branch: repoResp.default_branch,
             },
             name: siteName,
@@ -206,7 +213,9 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
   })
   if (cloneConfirm) {
     log()
+    // @ts-expect-error TS(18046) - 'repoResp' if of type 'unknown'
     await execa('git', ['clone', repoResp.clone_url, `${repoResp.name}`])
+    // @ts-expect-error TS(18046) - 'repoResp' if of type 'unknown'
     log(`🚀 Repository cloned successfully. You can find it under the ${chalk.magenta(repoResp.name)} folder`)
   }
 

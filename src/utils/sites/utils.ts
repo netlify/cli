@@ -41,6 +41,7 @@ export const validateTemplate = async ({ ghToken, templateName }) => {
 
   const data = await response.json()
 
+  // @ts-expect-error TS(18046) - 'data' is of type 'unknown'
   return { exists: true, isTemplate: data.is_template }
 }
 
