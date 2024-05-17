@@ -132,7 +132,7 @@
     "inquirer-autocomplete-prompt": "1.4.0",
     "ipx": "2.1.0",
     "is-docker": "3.0.0",
-    "is-stream": "3.0.0",
+    "is-stream": "4.0.1",
     "is-wsl": "2.2.0",
     "isexe": "2.0.0",
     "js-yaml": "4.1.0",
