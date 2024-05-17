@@ -110,7 +110,7 @@ export const getGeoLocation = async ({ geoCountry, mode, offline, state }) => {
 const getGeoLocationFromAPI = async () => {
   const res = await fetch(API_URL, {
     method: 'GET',
-    timeout: REQUEST_TIMEOUT,
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT),
   })
   // @ts-expect-error TS(2339) - Property 'geo' does not exist on type 'unknown'
   const { geo } = await res.json()
