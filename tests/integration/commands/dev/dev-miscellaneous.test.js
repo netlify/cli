@@ -1,5 +1,6 @@
 import { Buffer } from 'buffer'
 import path from 'path'
+import { platform } from 'process'
 import { fileURLToPath } from 'url'
 
 import { setProperty } from 'dot-prop'
@@ -176,12 +177,12 @@ describe.concurrent('commands/dev-miscellaneous', () => {
         }).then((res) => res.json())
 
         t.expect(response.clientContext.identity.url).toEqual(
-          'https://netlify-dev-locally-emulated-identity.netlify.com/.netlify/identity',
+          'https://netlify-dev-locally-emulated-identity.netlify.app/.netlify/identity',
         )
 
         const netlifyContext = Buffer.from(response.clientContext.custom.netlify, 'base64').toString()
         t.expect(JSON.parse(netlifyContext).identity.url).toEqual(
-          'https://netlify-dev-locally-emulated-identity.netlify.com/.netlify/identity',
+          'https://netlify-dev-locally-emulated-identity.netlify.app/.netlify/identity',
         )
       })
     })
@@ -750,7 +751,8 @@ describe.concurrent('commands/dev-miscellaneous', () => {
     })
   })
 
-  test('should detect content changes in edge functions', async (t) => {
+  // on windows, fetch throws an error while files are refreshing instead of returning the old value
+  test.skipIf(platform === 'win32')('should detect content changes in edge functions', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       const publicDir = 'public'
       builder
@@ -1109,11 +1111,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
       account_slug: 'test-account',
       id: 'site_id',
       name: 'site-name',
-      build_settings: {
-        env: {
-          NETLIFY_SECRET_ENV: 'true',
-        },
-      },
+      build_settings: { env: {} },
     }
 
     const routes = [
@@ -1184,9 +1182,6 @@ describe.concurrent('commands/dev-miscellaneous', () => {
               t.expect(bucketKeys.includes('NETLIFY_DEV')).toBe(true)
               t.expect(bucket.NETLIFY_DEV).toEqual('true')
 
-              t.expect(bucketKeys.includes('NETLIFY_SECRET_ENV')).toBe(true)
-              t.expect(bucket.NETLIFY_SECRET_ENV).toEqual('true')
-
               t.expect(bucketKeys.includes('FROM_ENV')).toBe(true)
               t.expect(bucket.FROM_ENV).toEqual('YAS')
 
@@ -1226,7 +1221,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
             },
           },
         })
-        .buildAsync()
+        .build()
 
       await withDevServer({ cwd: builder.directory }, async ({ port }) => {
         const response = await fetch(`http://localhost:${port}/`).then((res) => res.json())
@@ -1243,7 +1238,6 @@ describe.concurrent('commands/dev-miscellaneous', () => {
       },
       id: 'site_id',
       name: 'site-name',
-      use_envelope: true,
     }
     const existingVar = {
       key: 'EXISTING_VAR',
@@ -1362,12 +1356,12 @@ describe.concurrent('commands/dev-miscellaneous', () => {
   })
 
   test('should fail in CI with multiple projects', async (t) => {
-    await withSiteBuilder('site-with-multiple-packages', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       await builder
         .withPackageJson({ packageJson: { name: 'main', workspaces: ['*'] } })
         .withPackageJson({ packageJson: { name: 'package1' }, pathPrefix: 'package1' })
         .withPackageJson({ packageJson: { name: 'package2' }, pathPrefix: 'package2' })
-        .buildAsync()
+        .build()
 
       const asyncErrorBlock = async () => {
         const childProcess = execa(

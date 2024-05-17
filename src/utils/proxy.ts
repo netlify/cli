@@ -19,7 +19,7 @@ import generateETag from 'etag'
 import getAvailablePort from 'get-port'
 import httpProxy from 'http-proxy'
 import { createProxyMiddleware } from 'http-proxy-middleware'
-import jwtDecode from 'jwt-decode'
+import { jwtDecode } from 'jwt-decode'
 import { locatePath } from 'locate-path'
 import { Match } from 'netlify-redirector'
 import pFilter from 'p-filter'
@@ -38,13 +38,13 @@ import { DEFAULT_FUNCTION_URL_EXPRESSION } from '../lib/functions/registry.js'
 import { initializeProxy as initializeImageProxy, isImageRequest } from '../lib/images/proxy.js'
 import renderErrorTemplate from '../lib/render-error-template.js'
 
-import { NETLIFYDEVLOG, NETLIFYDEVWARN, log, chalk } from './command-helpers.js'
+import { NETLIFYDEVLOG, NETLIFYDEVWARN, chalk, log } from './command-helpers.js'
 import createStreamPromise from './create-stream-promise.js'
-import { headersForPath, parseHeaders, NFFunctionName, NFRequestID, NFFunctionRoute } from './headers.js'
+import { NFFunctionName, NFFunctionRoute, NFRequestID, headersForPath, parseHeaders } from './headers.js'
 import { generateRequestID } from './request-id.js'
 import { createRewriter, onChanges } from './rules-proxy.js'
 import { signRedirect } from './sign-redirect.js'
-import { Rewriter, Request, ServerSettings } from './types.js'
+import { Request, Rewriter, ServerSettings } from './types.js'
 
 const gunzip = util.promisify(zlib.gunzip)
 const brotliDecompress = util.promisify(zlib.brotliDecompress)
@@ -264,7 +264,6 @@ const serveRedirect = async function ({
     if (token) {
       let jwtValue = {}
       try {
-        // @ts-expect-error TS(2349) This expression is not callable
         jwtValue = jwtDecode(token) || {}
       } catch (error) {
         // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.

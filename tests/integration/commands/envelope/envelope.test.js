@@ -1,4 +1,4 @@
-import { test, describe } from 'vitest'
+import { describe, test } from 'vitest'
 
 import { callCli } from '../../utils/call-cli.js'
 import { getCLIOptions, withMockApi } from '../../utils/mock-api.js'
@@ -12,7 +12,6 @@ const siteInfo = {
   },
   id: 'site_id',
   name: 'site-name',
-  use_envelope: true,
 }
 const existingVar = {
   key: 'EXISTING_VAR',
@@ -41,7 +40,7 @@ const otherVar = {
     },
   ],
 }
-const envelopeResponse = [existingVar, otherVar]
+const response = [existingVar, otherVar]
 const routes = [
   { path: 'sites/site_id', response: siteInfo },
   { path: 'sites/site_id/service-instances', response: [] },
@@ -59,7 +58,7 @@ const routes = [
   },
   {
     path: 'accounts/test-account/env',
-    response: envelopeResponse,
+    response,
   },
   {
     path: 'accounts/test-account/env',
@@ -111,7 +110,7 @@ const routes = [
 describe.concurrent('command/envelope', () => {
   test('env:import should throw error if file not exists', async (t) => {
     await withSiteBuilder(t, async (builder) => {
-      await builder.buildAsync()
+      await builder.build()
 
       await withMockApi(routes, async ({ apiUrl }) => {
         t.expect(callCli(['env:import', '.env'], getCLIOptions({ builder, apiUrl }))).rejects.toThrow()
@@ -135,7 +134,7 @@ describe.concurrent('command/envelope', () => {
             NEW_VAR: 'from-dotenv',
           },
         })
-        .buildAsync()
+        .build()
 
       await withMockApi(routes, async ({ apiUrl }) => {
         const cliResponse = await callCli(['env:import', '--json', '.env'], getCLIOptions({ builder, apiUrl }), true)
@@ -160,7 +159,7 @@ describe.concurrent('command/envelope', () => {
             NEW_VAR: 'from-dotenv',
           },
         })
-        .buildAsync()
+        .build()
 
       await withMockApi(routes, async ({ apiUrl }) => {
         const cliResponse = await callCli(
@@ -174,143 +173,7 @@ describe.concurrent('command/envelope', () => {
     })
   })
 
-  test('env:clone should return success message (mongo to envelope)', async (t) => {
-    const envFrom = {
-      CLONE_ME: 'clone_me',
-      EXISTING_VAR: 'from',
-    }
-
-    const siteInfoFrom = {
-      ...siteInfo,
-      id: 'site_id_a',
-      name: 'site-name-a',
-      build_settings: { env: envFrom },
-      use_envelope: false,
-    }
-
-    const siteInfoTo = {
-      ...siteInfo,
-      id: 'site_id_b',
-      name: 'site-name-b',
-    }
-
-    const cloneRoutes = [
-      { path: 'sites/site_id', response: siteInfo },
-      { path: 'sites/site_id_a', response: siteInfoFrom },
-      { path: 'sites/site_id_b', response: siteInfoTo },
-      { path: 'sites/site_id/service-instances', response: [] },
-      {
-        path: 'accounts',
-        response: [{ slug: siteInfo.account_slug }],
-      },
-      {
-        path: 'accounts/test-account/env',
-        response: envelopeResponse,
-      },
-      {
-        path: 'accounts/test-account/env',
-        method: 'POST',
-        response: {},
-      },
-      {
-        path: 'accounts/test-account/env/EXISTING_VAR',
-        method: 'DELETE',
-        response: {},
-      },
-    ]
-
-    await withSiteBuilder(t, async (builder) => {
-      await builder.buildAsync()
-      await withMockApi(cloneRoutes, async ({ apiUrl, requests }) => {
-        const cliResponse = await callCli(
-          ['env:clone', '--from', 'site_id_a', '--to', 'site_id_b'],
-          getCLIOptions({ apiUrl, builder }),
-        )
-
-        t.expect(normalize(cliResponse)).toMatchSnapshot()
-
-        const deleteRequest = requests.find((request) => request.method === 'DELETE')
-        t.expect(deleteRequest.path).toEqual('/api/v1/accounts/test-account/env/EXISTING_VAR')
-
-        const postRequest = requests.find(
-          (request) => request.method === 'POST' && request.path === '/api/v1/accounts/test-account/env',
-        )
-
-        t.expect(postRequest.body.length).toBe(2)
-        t.expect(postRequest.body[0].key).toEqual('CLONE_ME')
-        t.expect(postRequest.body[0].values[0].value).toEqual('clone_me')
-        t.expect(postRequest.body[1].key).toEqual('EXISTING_VAR')
-        t.expect(postRequest.body[1].values[0].value).toEqual('from')
-      })
-    })
-  })
-
-  test('env:clone should return success message (envelope to mongo)', async (t) => {
-    const siteInfoFrom = {
-      ...siteInfo,
-      id: 'site_id_a',
-      name: 'site-name-a',
-    }
-
-    const envTo = {
-      CLONE_ME: 'clone_me',
-      EXISTING_VAR: 'to',
-    }
-
-    const siteInfoTo = {
-      ...siteInfo,
-      id: 'site_id_b',
-      name: 'site-name-b',
-      build_settings: { env: envTo },
-      use_envelope: false,
-    }
-
-    const finalEnv = {
-      ...envTo,
-      EXISTING_VAR: 'envelope-dev-value',
-      OTHER_VAR: 'envelope-all-value',
-    }
-
-    const cloneRoutes = [
-      { path: 'sites/site_id', response: siteInfo },
-      { path: 'sites/site_id_a', response: siteInfoFrom },
-      { path: 'sites/site_id_b', response: siteInfoTo },
-      { path: 'sites/site_id/service-instances', response: [] },
-      {
-        path: 'accounts',
-        response: [{ slug: siteInfo.account_slug }],
-      },
-      {
-        path: 'accounts/test-account/env',
-        response: envelopeResponse,
-      },
-      {
-        path: 'sites/site_id_b',
-        method: 'PATCH',
-        response: {},
-      },
-    ]
-
-    await withSiteBuilder(t, async (builder) => {
-      await builder.buildAsync()
-      await withMockApi(cloneRoutes, async ({ apiUrl, requests }) => {
-        const cliResponse = await callCli(
-          ['env:clone', '--from', 'site_id_a', '--to', 'site_id_b'],
-          getCLIOptions({ apiUrl, builder }),
-        )
-
-        t.expect(normalize(cliResponse)).toMatchSnapshot()
-
-        const patchRequest = requests.find(
-          (request) => request.method === 'PATCH' && request.path === '/api/v1/sites/site_id_b',
-        )
-
-        t.expect(patchRequest.body).toStrictEqual({ build_settings: { env: finalEnv } })
-      })
-    })
-  })
-
-  test('env:clone should return success message (envelope to envelope)', async (t) => {
+  test('env:clone should return success message', async (t) => {
     const siteInfoFrom = {
       ...siteInfo,
       id: 'site_id_a',
@@ -334,7 +197,7 @@ describe.concurrent('command/envelope', () => {
       },
       {
         path: 'accounts/test-account/env',
-        response: envelopeResponse,
+        response,
       },
       {
         path: 'accounts/test-account/env',
@@ -354,7 +217,7 @@ describe.concurrent('command/envelope', () => {
     ]
 
     await withSiteBuilder(t, async (builder) => {
-      await builder.buildAsync()
+      await builder.build()
       await withMockApi(cloneRoutes, async ({ apiUrl, requests }) => {
         const cliResponse = await callCli(
           ['env:clone', '--from', 'site_id_a', '--to', 'site_id_b'],

@@ -4,15 +4,15 @@ import { DEFAULT_CONCURRENT_HASH } from '../../../../dist/utils/deploy/constants
 import hashFiles from '../../../../dist/utils/deploy/hash-files.js'
 import { withSiteBuilder } from '../../../integration/utils/site-builder.ts'
 
-test('Hashes files in a folder', async () => {
-  await withSiteBuilder('site-with-content', async (builder) => {
+test('Hashes files in a folder', async (t) => {
+  await withSiteBuilder(t, async (builder) => {
     await builder
       .withNetlifyToml({ config: { build: { publish: 'public' } } })
       .withContentFile({
         path: 'public/index.html',
         content: `Root page`,
       })
-      .buildAsync()
+      .build()
 
     const expectedFiles = ['netlify.toml', 'public/index.html']
     const { files, filesShaMap } = await hashFiles({

@@ -91,7 +91,7 @@ describe.concurrent('commands/init', () => {
     ]
 
     await withSiteBuilder(t, async (builder) => {
-      await builder.withGit().buildAsync()
+      await builder.withGit().build()
 
       await withMockApi(routes, async ({ apiUrl }) => {
         // --force is required since we return an existing site in the `sites` route
@@ -188,7 +188,7 @@ describe.concurrent('commands/init', () => {
     ]
 
     await withSiteBuilder(t, async (builder) => {
-      await builder.withGit().buildAsync()
+      await builder.withGit().build()
 
       await withMockApi(routes, async ({ apiUrl }) => {
         // --manual is used to avoid the config-github flow that uses GitHub API
@@ -292,7 +292,7 @@ describe.concurrent('commands/init', () => {
       await builder
         .withGit()
         .withPackageJson({ packageJson: { dependencies: { next: '^10.0.0' } } })
-        .buildAsync()
+        .build()
 
       await withMockApi(routes, async ({ apiUrl }) => {
         // --manual is used to avoid the config-github flow that uses GitHub API
@@ -395,7 +395,7 @@ describe.concurrent('commands/init', () => {
       await builder
         .withGit()
         .withPackageJson({ packageJson: { dependencies: { next: '^10.0.0' } } })
-        .buildAsync()
+        .build()
 
       await withMockApi(routes, async ({ apiUrl }) => {
         // --manual is used to avoid the config-github flow that uses GitHub API
@@ -484,7 +484,7 @@ describe.concurrent('commands/init', () => {
       await builder
         .withGit()
         .withPackageJson({ packageJson: { dependencies: { next: '^10.0.0' } } })
-        .buildAsync()
+        .build()
 
       await withMockApi(routes, async ({ apiUrl }) => {
         // --force is required since we return an existing site in the `sites` route
@@ -591,7 +591,7 @@ describe.concurrent('commands/init', () => {
           path: 'gatsby-config.js',
         })
         .withPackageJson({ packageJson: { dependencies: { gatsby: '4.11.0' } } })
-        .buildAsync()
+        .build()
 
       await withMockApi(routes, async ({ apiUrl }) => {
         // --manual is used to avoid the config-github flow that uses GitHub API

@@ -12,654 +12,470 @@ import { normalize } from '../../utils/snapshots.js'
 
 const siteInfo = {
   account_slug: 'test-account',
+  build_settings: { env: {} },
   id: 'site_id',
   name: 'site-name',
+}
+const existingVar = {
+  key: 'EXISTING_VAR',
+  scopes: ['builds', 'functions'],
+  values: [
+    {
+      id: '1234',
+      context: 'production',
+      value: 'prod-value',
+    },
+    {
+      id: '2345',
+      context: 'dev',
+      value: 'dev-value',
+    },
+  ],
+}
+const otherVar = {
+  key: 'OTHER_VAR',
+  scopes: ['builds', 'functions', 'runtime', 'post_processing'],
+  values: [
+    {
+      id: '3456',
+      context: 'all',
+      value: 'all-value',
+    },
+  ],
 }
 const routes = [
   { path: 'sites/site_id', response: siteInfo },
   { path: 'sites/site_id/service-instances', response: [] },
-  {
-    path: 'accounts',
-    response: [{ slug: siteInfo.account_slug }],
-  },
+  { path: 'accounts', response: [{ slug: siteInfo.account_slug }] },
 ]
 
 describe('commands/env', () => {
-  test('env:get --json should return empty object if var not set', async (t) => {
-    await withSiteBuilder(t, async (builder) => {
-      await builder.buildAsync()
+  describe('env:get', () => {
+    test('--json should return empty object if var not set', async (t) => {
+      await withSiteBuilder(t, async (builder) => {
+        await builder.build()
 
-      await withMockApi(routes, async ({ apiUrl }) => {
-        const cliResponse = await callCli(['env:get', '--json', 'SOME_VAR'], getCLIOptions({ builder, apiUrl }), true)
+        await withMockApi(routes, async ({ apiUrl }) => {
+          const cliResponse = await callCli(['env:get', '--json', 'SOME_VAR'], getCLIOptions({ builder, apiUrl }), true)
 
-        t.expect(cliResponse).toStrictEqual({})
-      })
-    })
-  })
-
-  test('env:get --context should log an error message', async (t) => {
-    await withSiteBuilder(t, async (builder) => {
-      await builder.buildAsync()
-
-      await withMockApi(routes, async ({ apiUrl }) => {
-        const { stderr: cliResponse } = await callCli(
-          ['env:get', 'SOME_VAR', '--context', 'production'],
-          getCLIOptions({ builder, apiUrl }),
-        ).catch((error) => error)
-
-        t.expect(cliResponse.includes(`opt in to the new environment variables experience`)).toBe(true)
-      })
-    })
-  })
-
-  test('env:get --scope should log an error message', async (t) => {
-    await withSiteBuilder(t, async (builder) => {
-      await builder.buildAsync()
-
-      await withMockApi(routes, async ({ apiUrl }) => {
-        const { stderr: cliResponse } = await callCli(
-          ['env:get', 'SOME_VAR', '--scope', 'functions'],
-          getCLIOptions({ builder, apiUrl }),
-        ).catch((error) => error)
-
-        t.expect(cliResponse.includes(`opt in to the new environment variables experience`)).toBe(true)
-      })
-    })
-  })
-
-  test('env:set --json should create and return new var', async (t) => {
-    await withSiteBuilder(t, async (builder) => {
-      await builder.buildAsync()
-
-      const newBuildSettings = { env: { SOME_VAR1: 'FOO' } }
-      const createRoutes = [
-        { path: 'sites/site_id', response: { ...siteInfo, build_settings: { env: {} } } },
-        { path: 'sites/site_id/service-instances', response: [] },
-        {
-          path: 'accounts',
-          response: [{ slug: siteInfo.account_slug }],
-        },
-        {
-          path: 'sites/site_id',
-          method: 'PATCH',
-          requestBody: {
-            build_settings: newBuildSettings,
-          },
-          response: {
-            ...siteInfo,
-            build_settings: newBuildSettings,
-          },
-        },
-      ]
-
-      await withMockApi(createRoutes, async ({ apiUrl }) => {
-        const cliResponse = await callCli(
-          ['env:set', '--json', 'SOME_VAR1', 'FOO'],
-          getCLIOptions({ builder, apiUrl }),
-          true,
-        )
-
-        t.expect(cliResponse).toStrictEqual(newBuildSettings.env)
-      })
-    })
-  })
-
-  test('env:set --json should update existing var', async (t) => {
-    await withSiteBuilder(t, async (builder) => {
-      await builder.buildAsync()
-
-      const newBuildSettings = { env: { existing_env: 'new_value' } }
-      const updateRoutes = [
-        { path: 'sites/site_id', response: { ...siteInfo, build_settings: { env: { existing_env: 'old_value' } } } },
-        { path: 'sites/site_id/service-instances', response: [] },
-        {
-          path: 'accounts',
-          response: [{ slug: siteInfo.account_slug }],
-        },
-        {
-          path: 'sites/site_id',
-          method: 'PATCH',
-          requestBody: {
-            build_settings: newBuildSettings,
-          },
-          response: {
-            ...siteInfo,
-            build_settings: newBuildSettings,
-          },
-        },
-      ]
-
-      await withMockApi(updateRoutes, async ({ apiUrl }) => {
-        const cliResponse = await callCli(
-          ['env:set', '--json', 'existing_env', 'new_value'],
-          getCLIOptions({ builder, apiUrl }),
-          true,
-        )
-
-        t.expect(cliResponse).toStrictEqual(newBuildSettings.env)
-      })
-    })
-  })
-
-  test('env:get --json should return value of existing var', async (t) => {
-    await withSiteBuilder(t, async (builder) => {
-      await builder.buildAsync()
-
-      const getRoutes = [
-        {
-          path: 'sites/site_id',
-          response: { ...siteInfo, build_settings: { env: { existing_env: 'existing_value' } } },
-        },
-        { path: 'sites/site_id/service-instances', response: [] },
-        {
-          path: 'accounts',
-          response: [{ slug: siteInfo.account_slug }],
-        },
-      ]
-
-      await withMockApi(getRoutes, async ({ apiUrl }) => {
-        const cliResponse = await callCli(
-          ['env:get', '--json', 'existing_env'],
-          getCLIOptions({ builder, apiUrl }),
-          true,
-        )
-
-        t.expect(cliResponse).toStrictEqual({ existing_env: 'existing_value' })
-      })
-    })
-  })
-
-  test('env:import should throw error if file not exists', async (t) => {
-    await withSiteBuilder(t, async (builder) => {
-      await builder.buildAsync()
-
-      await withMockApi(routes, async ({ apiUrl }) => {
-        await t.expect(() => callCli(['env:import', '.env'], getCLIOptions({ builder, apiUrl }))).rejects.toThrow()
-      })
-    })
-  })
-
-  test('env:import --json should import new vars and override existing vars', async (t) => {
-    await withSiteBuilder(t, async (builder) => {
-      await builder
-        .withEnvFile({
-          path: '.env',
-          env: {
-            existing_env: 'new_value',
-            new_env: 'new_value',
-          },
+          t.expect(cliResponse).toStrictEqual({})
         })
-        .buildAsync()
-
-      const newBuildSettings = { env: { existing_env: 'new_value', new_env: 'new_value' } }
-      const importRoutes = [
-        {
-          path: 'sites/site_id',
-          response: { ...siteInfo, build_settings: { env: { existing_env: 'existing_value' } } },
-        },
-        { path: 'sites/site_id/service-instances', response: [] },
-        {
-          path: 'accounts',
-          response: [{ slug: siteInfo.account_slug }],
-        },
-        {
-          path: 'sites/site_id',
-          method: 'PATCH',
-          requestBody: {
-            build_settings: newBuildSettings,
-          },
-          response: {
-            ...siteInfo,
-            build_settings: newBuildSettings,
-          },
-        },
-      ]
-
-      await withMockApi(importRoutes, async ({ apiUrl }) => {
-        const cliResponse = await callCli(['env:import', '--json', '.env'], getCLIOptions({ builder, apiUrl }), true)
-
-        t.expect(cliResponse).toStrictEqual(newBuildSettings.env)
       })
     })
-  })
 
-  test('env:get --json should return value of var from netlify.toml', async (t) => {
-    await withSiteBuilder(t, async (builder) => {
-      await builder
-        .withNetlifyToml({
-          config: {
-            build: {
-              environment: { from_toml_file: 'from_toml_file_value' },
+    test('--json should return value of existing var', async (t) => {
+      await withSiteBuilder(t, async (builder) => {
+        await builder.build()
+
+        const getRoutes = [...routes, { path: 'accounts/test-account/env/EXISTING_VAR', response: existingVar }]
+
+        await withMockApi(getRoutes, async ({ apiUrl }) => {
+          const cliResponse = await callCli(
+            ['env:get', '--json', 'EXISTING_VAR'],
+            getCLIOptions({ builder, apiUrl }),
+            true,
+          )
+
+          t.expect(cliResponse).toStrictEqual({ EXISTING_VAR: 'dev-value' })
+        })
+      })
+    })
+
+    test('--json should return value of var from netlify.toml', async (t) => {
+      await withSiteBuilder(t, async (builder) => {
+        await builder
+          .withNetlifyToml({
+            config: {
+              build: {
+                environment: { FROM_TOML: 'FROM_TOML' },
+              },
             },
-          },
+          })
+          .build()
+
+        await withMockApi(routes, async ({ apiUrl }) => {
+          const cliResponse = await callCli(
+            ['env:get', '--json', 'FROM_TOML'],
+            getCLIOptions({ builder, apiUrl }),
+            true,
+          )
+
+          t.expect(cliResponse).toStrictEqual({ FROM_TOML: 'FROM_TOML' })
         })
-        .buildAsync()
-
-      await withMockApi(routes, async ({ apiUrl }) => {
-        const cliResponse = await callCli(
-          ['env:get', '--json', 'from_toml_file'],
-          getCLIOptions({ builder, apiUrl }),
-          true,
-        )
-
-        t.expect(cliResponse).toStrictEqual({ from_toml_file: 'from_toml_file_value' })
       })
     })
   })
 
-  test('env:list --json should return empty object if no vars set', async (t) => {
-    await withSiteBuilder(t, async (builder) => {
-      await builder.buildAsync()
+  describe('env:list', () => {
+    test('--json should return empty object if no vars set', async (t) => {
+      await withSiteBuilder(t, async (builder) => {
+        await builder.build()
 
-      await withMockApi(routes, async ({ apiUrl }) => {
-        const cliResponse = await callCli(['env:list', '--json'], getCLIOptions({ builder, apiUrl }), true)
+        const listRoutes = [...routes, { path: 'accounts/test-account/env', response: [] }]
 
-        t.expect(cliResponse).toStrictEqual({})
+        await withMockApi(listRoutes, async ({ apiUrl }) => {
+          const cliResponse = await callCli(['env:list', '--json'], getCLIOptions({ builder, apiUrl }), true)
+
+          t.expect(cliResponse).toStrictEqual({})
+        })
       })
     })
-  })
 
-  test('env:list --context should log an error message', async (t) => {
-    await withSiteBuilder(t, async (builder) => {
-      await builder.buildAsync()
-
-      await withMockApi(routes, async ({ apiUrl }) => {
-        const { stderr: cliResponse } = await callCli(
-          ['env:list', '--context', 'production'],
-          getCLIOptions({ builder, apiUrl }),
-        ).catch((error) => error)
-
-        t.expect(cliResponse.includes(`opt in to the new environment variables experience`)).toBe(true)
-      })
-    })
-  })
-
-  test('env:list --scope should log an error message', async (t) => {
-    await withSiteBuilder(t, async (builder) => {
-      await builder.buildAsync()
-
-      await withMockApi(routes, async ({ apiUrl }) => {
-        const { stderr: cliResponse } = await callCli(
-          ['env:list', '--scope', 'functions'],
-          getCLIOptions({ builder, apiUrl }),
-        ).catch((error) => error)
-
-        t.expect(cliResponse.includes(`opt in to the new environment variables experience`)).toBe(true)
-      })
-    })
-  })
-
-  test('env:list --json should return list of vars with netlify.toml taking priority', async (t) => {
-    await withSiteBuilder(t, async (builder) => {
-      await builder
-        .withNetlifyToml({
-          config: {
-            build: {
-              environment: { existing_env: 'from_toml_file' },
+    test('--json should return list of vars with netlify.toml taking priority', async (t) => {
+      await withSiteBuilder(t, async (builder) => {
+        await builder
+          .withNetlifyToml({
+            config: {
+              build: {
+                environment: { EXISTING_VAR: 'TOML_VALUE' },
+              },
             },
-          },
+          })
+          .build()
+
+        const listRoutes = [...routes, { path: 'accounts/test-account/env', response: [existingVar, otherVar] }]
+
+        await withMockApi(listRoutes, async ({ apiUrl }) => {
+          const cliResponse = await callCli(['env:list', '--json'], getCLIOptions({ builder, apiUrl }), true)
+
+          t.expect(cliResponse).toStrictEqual({
+            EXISTING_VAR: 'TOML_VALUE',
+            OTHER_VAR: 'all-value',
+          })
         })
-        .buildAsync()
-
-      const getRoutes = [
-        { path: 'sites/site_id', response: { ...siteInfo, build_settings: { env: { existing_env: 'from_ui' } } } },
-        { path: 'sites/site_id/service-instances', response: [] },
-        {
-          path: 'accounts',
-          response: [{ slug: siteInfo.account_slug }],
-        },
-      ]
-
-      await withMockApi(getRoutes, async ({ apiUrl }) => {
-        const cliResponse = await callCli(['env:list', '--json'], getCLIOptions({ builder, apiUrl }), true)
-
-        t.expect(cliResponse).toStrictEqual({ existing_env: 'from_toml_file' })
       })
     })
-  })
 
-  test('env:list should hide variables values and prompt to show', async (t) => {
-    await withSiteBuilder(t, async (builder) => {
-      await builder.buildAsync()
+    test('should hide variables values and prompt to show', async (t) => {
+      await withSiteBuilder(t, async (builder) => {
+        await builder.build()
 
-      const questions = [
-        {
-          question: 'Show values',
-          answer: CONFIRM,
-        },
-      ]
-
-      const envListRoutes = [
-        {
-          path: 'sites/site_id',
-          response: { ...siteInfo, build_settings: { env: { DB_ADMIN: 'admin', DB_PASSWORD: '1234' } } },
-        },
-        { path: 'sites/site_id/service-instances', response: [] },
-        {
-          path: 'accounts',
-          response: [{ slug: siteInfo.account_slug }],
-        },
-      ]
-
-      await withMockApi(envListRoutes, async ({ apiUrl }) => {
-        // we set extendEnv: false to prevent the CLI detecting GitHub Actions as CI
-        const childProcess = execa(
-          cliPath,
-          ['env:list'],
-          getCLIOptions({
-            apiUrl,
-            builder,
-            extendEnv: false,
-            env: { PATH: process.env.PATH, HOME: process.env.HOME, APPDATA: process.env.APPDATA },
-          }),
-        )
-
-        handleQuestions(childProcess, questions)
-
-        const { stdout: cliResponse } = await childProcess
-
-        t.expect(normalize(cliResponse)).toMatchSnapshot()
-      })
-    })
-  })
-
-  test('env:list should hide variables values and show on confirm', async (t) => {
-    await withSiteBuilder(t, async (builder) => {
-      await builder.buildAsync()
-
-      const questions = [
-        {
-          question: 'Show values',
-          answer: answerWithValue('y'),
-        },
-      ]
-
-      const envListRoutes = [
-        {
-          path: 'sites/site_id',
-          response: { ...siteInfo, build_settings: { env: { DB_ADMIN: 'admin', DB_PASSWORD: '1234' } } },
-        },
-        { path: 'sites/site_id/service-instances', response: [] },
-        {
-          path: 'accounts',
-          response: [{ slug: siteInfo.account_slug }],
-        },
-      ]
-
-      await withMockApi(envListRoutes, async ({ apiUrl }) => {
-        // we set extendEnv: false to prevent the CLI detecting GitHub Actions as CI
-        const childProcess = execa(
-          cliPath,
-          ['env:list'],
-          getCLIOptions({
-            apiUrl,
-            builder,
-            extendEnv: false,
-            env: { PATH: process.env.PATH, HOME: process.env.HOME, APPDATA: process.env.APPDATA },
-          }),
-        )
-
-        handleQuestions(childProcess, questions)
-
-        const { stdout: cliResponse } = await childProcess
-
-        t.expect(normalize(cliResponse)).toMatchSnapshot()
-      })
-    })
-  })
-
-  test('env:list should not prompt on CI', async (t) => {
-    await withSiteBuilder(t, async (builder) => {
-      await builder.buildAsync()
-
-      const envListRoutes = [
-        {
-          path: 'sites/site_id',
-          response: { ...siteInfo, build_settings: { env: { DB_ADMIN: 'admin', DB_PASSWORD: '1234' } } },
-        },
-        { path: 'sites/site_id/service-instances', response: [] },
-        {
-          path: 'accounts',
-          response: [{ slug: siteInfo.account_slug }],
-        },
-      ]
-
-      await withMockApi(envListRoutes, async ({ apiUrl }) => {
-        const cliResponse = await callCli(['env:list'], getCLIOptions({ builder, apiUrl, env: { CI: true } }))
-
-        t.expect(normalize(cliResponse)).toMatchSnapshot()
-      })
-    })
-  })
-
-  test('env:set --json should be able to set var with empty value', async (t) => {
-    await withSiteBuilder(t, async (builder) => {
-      await builder.buildAsync()
-
-      const newBuildSettings = { env: { empty: '' } }
-      const updateRoutes = [
-        { path: 'sites/site_id', response: { ...siteInfo, build_settings: { env: {} } } },
-        { path: 'sites/site_id/service-instances', response: [] },
-        {
-          path: 'accounts',
-          response: [{ slug: siteInfo.account_slug }],
-        },
-        {
-          path: 'sites/site_id',
-          method: 'PATCH',
-          requestBody: {
-            build_settings: newBuildSettings,
+        const questions = [
+          {
+            question: 'Show values',
+            answer: CONFIRM,
           },
-          response: {
-            ...siteInfo,
-            build_settings: newBuildSettings,
-          },
-        },
-      ]
+        ]
 
-      await withMockApi(updateRoutes, async ({ apiUrl }) => {
-        const cliResponse = await callCli(['env:set', '--json', 'empty'], getCLIOptions({ builder, apiUrl }), true)
+        const listRoutes = [...routes, { path: 'accounts/test-account/env', response: [existingVar, otherVar] }]
 
-        t.expect(cliResponse).toStrictEqual(newBuildSettings.env)
-      })
-    })
-  })
+        await withMockApi(listRoutes, async ({ apiUrl }) => {
+          // we set extendEnv: false to prevent the CLI detecting GitHub Actions as CI
+          const childProcess = execa(
+            cliPath,
+            ['env:list'],
+            getCLIOptions({
+              apiUrl,
+              builder,
+              extendEnv: false,
+              env: { PATH: process.env.PATH, HOME: process.env.HOME, APPDATA: process.env.APPDATA },
+            }),
+          )
 
-  test('env:unset --json should remove existing variable', async (t) => {
-    await withSiteBuilder(t, async (builder) => {
-      await builder.buildAsync()
+          handleQuestions(childProcess, questions)
 
-      const newBuildSettings = { env: {} }
-      const updateRoutes = [
-        { path: 'sites/site_id', response: { ...siteInfo, build_settings: { env: { to_delete: 'to_delete_value' } } } },
-        { path: 'sites/site_id/service-instances', response: [] },
-        {
-          path: 'accounts',
-          response: [{ slug: siteInfo.account_slug }],
-        },
-        {
-          path: 'sites/site_id',
-          method: 'PATCH',
-          requestBody: {
-            build_settings: newBuildSettings,
-          },
-          response: {
-            ...siteInfo,
-            build_settings: newBuildSettings,
-          },
-        },
-      ]
+          const { stdout: cliResponse } = await childProcess
 
-      await withMockApi(updateRoutes, async ({ apiUrl }) => {
-        const cliResponse = await callCli(
-          ['env:unset', '--json', 'to_delete'],
-          getCLIOptions({ builder, apiUrl }),
-          true,
-        )
-
-        t.expect(cliResponse).toStrictEqual(newBuildSettings.env)
-      })
-    })
-  })
-
-  test('env:import --json --replace-existing should replace all existing vars and return imported', async (t) => {
-    await withSiteBuilder(t, async (builder) => {
-      await builder
-        .withEnvFile({
-          path: '.env',
-          env: {
-            new_env: 'new_value',
-          },
+          t.expect(normalize(cliResponse)).toMatchSnapshot()
         })
-        .buildAsync()
+      })
+    })
 
-      const newBuildSettings = { env: { new_env: 'new_value' } }
-      const importRoutes = [
-        {
-          path: 'sites/site_id',
-          response: { ...siteInfo, build_settings: { env: { existing_env: 'existing_value' } } },
-        },
+    test('should hide variables values and show on confirm', async (t) => {
+      await withSiteBuilder(t, async (builder) => {
+        await builder.build()
+
+        const questions = [
+          {
+            question: 'Show values',
+            answer: answerWithValue('y'),
+          },
+        ]
+
+        const listRoutes = [...routes, { path: 'accounts/test-account/env', response: [existingVar, otherVar] }]
+
+        await withMockApi(listRoutes, async ({ apiUrl }) => {
+          // we set extendEnv: false to prevent the CLI detecting GitHub Actions as CI
+          const childProcess = execa(
+            cliPath,
+            ['env:list'],
+            getCLIOptions({
+              apiUrl,
+              builder,
+              extendEnv: false,
+              env: { PATH: process.env.PATH, HOME: process.env.HOME, APPDATA: process.env.APPDATA },
+            }),
+          )
+
+          handleQuestions(childProcess, questions)
+
+          const { stdout: cliResponse } = await childProcess
+
+          t.expect(normalize(cliResponse)).toMatchSnapshot()
+        })
+      })
+    })
+
+    test('should not prompt on CI', async (t) => {
+      await withSiteBuilder(t, async (builder) => {
+        await builder.build()
+
+        const listRoutes = [...routes, { path: 'accounts/test-account/env', response: [existingVar, otherVar] }]
+
+        await withMockApi(listRoutes, async ({ apiUrl }) => {
+          const cliResponse = await callCli(['env:list'], getCLIOptions({ builder, apiUrl, env: { CI: true } }))
+
+          t.expect(normalize(cliResponse)).toMatchSnapshot()
+        })
+      })
+    })
+  })
+
+  describe('env:set', () => {
+    test('--json should create and return new var', async (t) => {
+      await withSiteBuilder(t, async (builder) => {
+        await builder.build()
+
+        const setRoutes = [
+          ...routes,
+          { path: 'accounts/test-account/env', response: [existingVar, otherVar] },
+          { path: 'accounts/test-account/env', method: 'POST', response: {} },
+        ]
+
+        await withMockApi(setRoutes, async ({ apiUrl }) => {
+          const cliResponse = await callCli(
+            ['env:set', '--json', 'NEW_VAR', 'new-value'],
+            getCLIOptions({ builder, apiUrl }),
+            true,
+          )
+
+          t.expect(cliResponse).toStrictEqual({
+            EXISTING_VAR: 'dev-value',
+            OTHER_VAR: 'all-value',
+            NEW_VAR: 'new-value',
+          })
+        })
+      })
+    })
+
+    test('--json should update existing var', async (t) => {
+      await withSiteBuilder(t, async (builder) => {
+        await builder.build()
+
+        const setRoutes = [
+          ...routes,
+          { path: 'accounts/test-account/env', response: [existingVar, otherVar] },
+          { path: 'accounts/test-account/env/EXISTING_VAR', method: 'PUT', response: {} },
+        ]
+
+        await withMockApi(setRoutes, async ({ apiUrl }) => {
+          const cliResponse = await callCli(
+            ['env:set', '--json', 'EXISTING_VAR', 'new-value'],
+            getCLIOptions({ builder, apiUrl }),
+            true,
+          )
+
+          t.expect(cliResponse).toStrictEqual({
+            EXISTING_VAR: 'new-value',
+            OTHER_VAR: 'all-value',
+          })
+        })
+      })
+    })
+  })
+
+  describe('env:unset', () => {
+    test('--json should remove existing variable', async (t) => {
+      await withSiteBuilder(t, async (builder) => {
+        await builder.build()
+
+        const unsetRoutes = [
+          ...routes,
+          { path: 'accounts/test-account/env', response: [existingVar, otherVar] },
+          { path: 'accounts/test-account/env/EXISTING_VAR', method: 'DELETE', response: {} },
+        ]
+
+        await withMockApi(unsetRoutes, async ({ apiUrl }) => {
+          const cliResponse = await callCli(
+            ['env:unset', '--json', 'EXISTING_VAR'],
+            getCLIOptions({ builder, apiUrl }),
+            true,
+          )
+
+          t.expect(cliResponse).toStrictEqual({
+            OTHER_VAR: 'all-value',
+          })
+        })
+      })
+    })
+  })
+
+  describe('env:import', () => {
+    test('env:import should throw error if file not exists', async (t) => {
+      await withSiteBuilder(t, async (builder) => {
+        await builder.build()
+
+        await withMockApi(routes, async ({ apiUrl }) => {
+          await t.expect(() => callCli(['env:import', '.env'], getCLIOptions({ builder, apiUrl }))).rejects.toThrow()
+        })
+      })
+    })
+
+    test('--json should import new vars and override existing vars', async (t) => {
+      await withSiteBuilder(t, async (builder) => {
+        await builder
+          .withEnvFile({
+            path: '.env',
+            env: {
+              EXISTING_VAR: 'new-value',
+              NEW_VAR: 'new-value',
+            },
+          })
+          .build()
+
+        const importRoutes = [
+          ...routes,
+          { path: 'accounts/test-account/env', response: [existingVar] },
+          { path: 'accounts/test-account/env', method: 'POST', response: {} },
+          { path: 'accounts/test-account/env/EXISTING_VAR', method: 'DELETE', response: {} },
+        ]
+
+        await withMockApi(importRoutes, async ({ apiUrl }) => {
+          const cliResponse = await callCli(['env:import', '--json', '.env'], getCLIOptions({ builder, apiUrl }), true)
+
+          t.expect(cliResponse).toStrictEqual({
+            EXISTING_VAR: 'new-value',
+            NEW_VAR: 'new-value',
+          })
+        })
+      })
+    })
+
+    test('--json --replace-existing should replace all existing vars and return imported', async (t) => {
+      await withSiteBuilder(t, async (builder) => {
+        await builder
+          .withEnvFile({
+            path: '.env',
+            env: {
+              NEW_VAR: 'new-value',
+            },
+          })
+          .build()
+
+        const importRoutes = [
+          ...routes,
+          { path: 'accounts/test-account/env', response: [existingVar] },
+          { path: 'accounts/test-account/env', method: 'POST', response: [] },
+          { path: 'accounts/test-account/env/EXISTING_VAR', method: 'DELETE', response: {} },
+        ]
+
+        await withMockApi(importRoutes, async ({ apiUrl }) => {
+          const cliResponse = await callCli(
+            ['env:import', '--replace-existing', '--json', '.env'],
+            getCLIOptions({ builder, apiUrl }),
+            true,
+          )
+
+          t.expect(cliResponse).toStrictEqual({
+            NEW_VAR: 'new-value',
+          })
+        })
+      })
+    })
+  })
+
+  describe('env:clone', () => {
+    test("should return without clone if there's no env in source site", async (t) => {
+      await withSiteBuilder(t, async (builder) => {
+        await builder.build()
+        const createRoutes = [
+          { path: 'accounts', response: [{ slug: siteInfo.account_slug }] },
+          { path: 'accounts/test-account/env', response: [] },
+          { path: 'sites/site_id/service-instances', response: [] },
+          { path: 'sites/site_id', response: { ...siteInfo, build_settings: { env: {} } } },
+          { path: 'sites/site_id_a', response: { ...siteInfo, build_settings: { env: {} } } },
+        ]
+        await withMockApi(createRoutes, async ({ apiUrl }) => {
+          const cliResponse = await callCli(['env:clone', '--to', 'site_id_a'], getCLIOptions({ builder, apiUrl }))
+
+          t.expect(normalize(cliResponse)).toMatchSnapshot()
+        })
+      })
+    })
+
+    test("should print error if --to site doesn't exist", async (t) => {
+      await withSiteBuilder(t, async (builder) => {
+        await builder.build()
+        const createRoutes = [{ path: 'sites/site_id', response: { ...siteInfo, build_settings: { env: {} } } }]
+        await withMockApi(createRoutes, async ({ apiUrl }) => {
+          const { stderr: cliResponse } = await callCli(
+            ['env:clone', '--to', 'to-site'],
+            getCLIOptions({ builder, apiUrl }),
+          ).catch((error) => error)
+
+          t.expect(cliResponse.includes(`Can't find site with id to-site. Please make sure the site exists`)).toBe(true)
+        })
+      })
+    })
+
+    test("should print error if --from site doesn't exist", async (t) => {
+      await withSiteBuilder(t, async (builder) => {
+        await builder.build()
+        await withMockApi([], async ({ apiUrl }) => {
+          const { stderr: cliResponse } = await callCli(
+            ['env:clone', '--from', 'from-site', '--to', 'to-site'],
+            getCLIOptions({ builder, apiUrl }),
+          ).catch((error) => error)
+
+          t.expect(cliResponse.includes(`Can't find site with id from-site. Please make sure the site exists`)).toBe(
+            true,
+          )
+        })
+      })
+    })
+
+    test('should exit if the folder is not linked to a site, and --from is not provided', async (t) => {
+      await withSiteBuilder(t, async (builder) => {
+        await builder.build()
+
+        const cliResponse = await callCli(['env:clone', '--to', 'site_id_a'], {
+          cwd: builder.directory,
+          extendEnv: false,
+          PATH: process.env.PATH,
+        })
+        t.expect(normalize(cliResponse)).toMatchSnapshot()
+      })
+    })
+
+    test('should return success message', async (t) => {
+      const cloneRoutes = [
+        { path: 'accounts', response: [{ slug: siteInfo.account_slug }] },
         { path: 'sites/site_id/service-instances', response: [] },
+        { path: 'sites/site_id', response: siteInfo },
         {
-          path: 'accounts',
-          response: [{ slug: siteInfo.account_slug }],
-        },
-        {
-          path: 'sites/site_id',
-          method: 'PATCH',
-          requestBody: {
-            build_settings: newBuildSettings,
-          },
+          path: 'sites/site_id_a',
           response: {
-            ...siteInfo,
-            build_settings: newBuildSettings,
+            id: 'site_id_a',
+            name: 'site-name-a',
+            account_slug: 'test-account-a',
+            build_settings: { env: {} },
           },
         },
+        { path: 'accounts/test-account/env', response: [existingVar] },
+        { path: 'accounts/test-account-a/env', response: [otherVar] },
+        { path: 'accounts/test-account-a/env', method: 'POST', response: {} },
       ]
 
-      await withMockApi(importRoutes, async ({ apiUrl }) => {
-        const cliResponse = await callCli(
-          ['env:import', '--replace-existing', '--json', '.env'],
-          getCLIOptions({ builder, apiUrl }),
-          true,
-        )
+      await withSiteBuilder(t, async (builder) => {
+        await builder.build()
+        await withMockApi(cloneRoutes, async ({ apiUrl, requests }) => {
+          const cliResponse = await callCli(['env:clone', '--to', 'site_id_a'], getCLIOptions({ apiUrl, builder }))
 
-        t.expect(cliResponse).toStrictEqual(newBuildSettings.env)
-      })
-    })
-  })
+          t.expect(normalize(cliResponse)).toMatchSnapshot()
 
-  test("env:clone should return without clone if there's no env in source site", async (t) => {
-    await withSiteBuilder(t, async (builder) => {
-      await builder.buildAsync()
-      const createRoutes = [
-        { path: 'sites/site_id', response: { ...siteInfo, build_settings: { env: {} } } },
-        { path: 'sites/site_id_a', response: { ...siteInfo, build_settings: { env: {} } } },
-      ]
-      await withMockApi(createRoutes, async ({ apiUrl }) => {
-        const cliResponse = await callCli(['env:clone', '--to', 'site_id_a'], getCLIOptions({ builder, apiUrl }))
-
-        t.expect(normalize(cliResponse)).toMatchSnapshot()
-      })
-    })
-  })
-
-  test("env:clone should print error if --to site doesn't exist", async (t) => {
-    await withSiteBuilder(t, async (builder) => {
-      await builder.buildAsync()
-      const createRoutes = [{ path: 'sites/site_id', response: { ...siteInfo, build_settings: { env: {} } } }]
-      await withMockApi(createRoutes, async ({ apiUrl }) => {
-        const { stderr: cliResponse } = await callCli(
-          ['env:clone', '--to', 'to-site'],
-          getCLIOptions({ builder, apiUrl }),
-        ).catch((error) => error)
-
-        t.expect(cliResponse.includes(`Can't find site with id to-site. Please make sure the site exists`)).toBe(true)
-      })
-    })
-  })
-
-  test("env:clone should print error if --from site doesn't exist", async (t) => {
-    await withSiteBuilder(t, async (builder) => {
-      await builder.buildAsync()
-      await withMockApi([], async ({ apiUrl }) => {
-        const { stderr: cliResponse } = await callCli(
-          ['env:clone', '--from', 'from-site', '--to', 'to-site'],
-          getCLIOptions({ builder, apiUrl }),
-        ).catch((error) => error)
-
-        t.expect(cliResponse.includes(`Can't find site with id from-site. Please make sure the site exists`)).toBe(true)
-      })
-    })
-  })
-
-  test('env:clone should exit if the folder is not linked to a site, and --from is not provided', async (t) => {
-    await withSiteBuilder(t, async (builder) => {
-      await builder.buildAsync()
-
-      const cliResponse = await callCli(['env:clone', '--to', 'site_id_a'], {
-        cwd: builder.directory,
-        extendEnv: false,
-        PATH: process.env.PATH,
-      })
-      t.expect(normalize(cliResponse)).toMatchSnapshot()
-    })
-  })
-
-  test('env:clone should return success message', async (t) => {
-    const envFrom = {
-      clone_me: 'clone_me',
-    }
-
-    const envTo = {
-      existing_env: 'existing_env',
-    }
-
-    const siteInfoTo = {
-      ...siteInfo,
-      id: 'site_id_a',
-      name: 'site-name-a',
-    }
-
-    const newBuildSettings = {
-      env: {
-        ...envFrom,
-        ...envTo,
-      },
-    }
-    const expectedPatchRequest = {
-      path: 'sites/site_id_a',
-      method: 'PATCH',
-      requestBody: {
-        build_settings: newBuildSettings,
-      },
-      response: {
-        ...siteInfoTo,
-        build_settings: newBuildSettings,
-      },
-    }
-    const cloneRoutes = [
-      { path: 'sites/site_id', response: { ...siteInfo, build_settings: { env: envFrom } } },
-      { path: 'sites/site_id_a', response: { ...siteInfoTo, build_settings: { env: envTo } } },
-      { path: 'sites/site_id/service-instances', response: [] },
-      {
-        path: 'accounts',
-        response: [{ slug: siteInfo.account_slug }],
-      },
-      expectedPatchRequest,
-    ]
-
-    await withSiteBuilder(t, async (builder) => {
-      await builder.buildAsync()
-      await withMockApi(cloneRoutes, async ({ apiUrl, requests }) => {
-        const cliResponse = await callCli(['env:clone', '--to', 'site_id_a'], getCLIOptions({ apiUrl, builder }))
-
-        t.expect(normalize(cliResponse)).toMatchSnapshot()
-
-        const patchRequest = requests.find(
-          (request) => request.method === 'PATCH' && request.path === '/api/v1/sites/site_id_a',
-        )
-        t.expect(patchRequest.body).toStrictEqual(expectedPatchRequest.requestBody)
+          const postRequest = requests.find((request) => request.method === 'POST')
+          t.expect(postRequest.body).toStrictEqual([existingVar])
+        })
       })
     })
   })

@@ -5,7 +5,7 @@ import path from 'path'
 import express, { type RequestHandler } from 'express'
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'expr... Remove this comment to see the full error message
 import expressLogging from 'express-logging'
-import jwtDecode from 'jwt-decode'
+import { jwtDecode } from 'jwt-decode'
 
 import type BaseCommand from '../../commands/base-command.js'
 import type { $TSFixMe } from '../../commands/types.js'
@@ -22,13 +22,13 @@ import type { BlobsContext } from '../blobs/blobs.js'
 import { headers as efHeaders } from '../edge-functions/headers.js'
 import { getGeoLocation } from '../geo-location.js'
 
+import { UNLINKED_SITE_MOCK_ID } from '../../utils/dev.js'
 import { handleBackgroundFunction, handleBackgroundFunctionResult } from './background.js'
 import { createFormSubmissionHandler } from './form-submissions-handler.js'
 import { FunctionsRegistry } from './registry.js'
 import { handleScheduledFunction } from './scheduled.js'
 import { handleSynchronousFunction } from './synchronous.js'
 import { shouldBase64Encode } from './utils.js'
-import { UNLINKED_SITE_MOCK_ID } from '../../utils/dev.js'
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'headers' implicitly has an 'any' type.
 const buildClientContext = function (headers) {
@@ -39,7 +39,7 @@ const buildClientContext = function (headers) {
   if (parts.length !== 2 || parts[0] !== 'Bearer') return
 
   const identity = {
-    url: 'https://netlify-dev-locally-emulated-identity.netlify.com/.netlify/identity',
+    url: 'https://netlify-dev-locally-emulated-identity.netlify.app/.netlify/identity',
     token:
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzb3VyY2UiOiJuZXRsaWZ5IGRldiIsInRlc3REYXRhIjoiTkVUTElGWV9ERVZfTE9DQUxMWV9FTVVMQVRFRF9JREVOVElUWSJ9.2eSDqUOZAOBsx39FHFePjYj12k0LrxldvGnlvDu3GMI',
     // you can decode this with https://jwt.io/
@@ -53,7 +53,6 @@ const buildClientContext = function (headers) {
   try {
     // This data is available on both the context root and under custom.netlify for retro-compatibility.
     // In the future it will only be available in custom.netlify.
-    // @ts-expect-error
     const user = jwtDecode(parts[1])
 
     const netlifyContext = JSON.stringify({

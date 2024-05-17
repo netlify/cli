@@ -28,7 +28,7 @@ describe(`integration:deploy`, () => {
   beforeEach(() => {
     vi.resetAllMocks()
   })
-  test('deploys an integration', async () => {
+  test('deploys an integration', async (t) => {
     vi.mock(`../../../../src/commands/deploy/deploy.js`, () => ({
       deploy: vi.fn(() => console.log(`yay it was mocked!`)),
     }))
@@ -63,7 +63,7 @@ describe(`integration:deploy`, () => {
       },
     ]
 
-    await withSiteBuilder('my-integration', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       builder.withContentFiles([
         {
           path: 'integration.yaml',
@@ -78,7 +78,7 @@ describe(`integration:deploy`, () => {
       `,
         },
       ])
-      await builder.buildAsync()
+      await builder.build()
 
       vi.spyOn(process, 'cwd').mockReturnValue(builder.directory)
 

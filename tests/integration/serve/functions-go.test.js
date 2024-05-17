@@ -50,7 +50,7 @@ describe.concurrent('serve/functions-go', () => {
     })
   `)
 
-    await withSiteBuilder('go-function-update', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       try {
         await builder
           .withNetlifyToml({
@@ -73,7 +73,7 @@ describe.concurrent('serve/functions-go', () => {
               content: `<mock main.go>`,
             },
           ])
-          .buildAsync()
+          .build()
 
         await withDevServer(
           {
@@ -92,7 +92,7 @@ describe.concurrent('serve/functions-go', () => {
 
             await builder
               .withContentFile({ path: 'functions/go-func/main.go', content: `<updated mock main.go>` })
-              .buildAsync()
+              .build()
 
             await waitForLogMatching('Reloaded function go-func')
 
@@ -138,7 +138,7 @@ describe.concurrent('serve/functions-go', () => {
     })
   `)
 
-    await withSiteBuilder('go-scheduled-function', async (builder) => {
+    await withSiteBuilder(t, async (builder) => {
       try {
         await builder
           .withNetlifyToml({
@@ -161,7 +161,7 @@ describe.concurrent('serve/functions-go', () => {
               content: `<mock main.go>`,
             },
           ])
-          .buildAsync()
+          .build()
 
         await withDevServer(
           {
