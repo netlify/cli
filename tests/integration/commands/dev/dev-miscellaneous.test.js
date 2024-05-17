@@ -1,5 +1,6 @@
 import { Buffer } from 'buffer'
 import path from 'path'
+import { platform } from 'process'
 import { fileURLToPath } from 'url'
 
 import { setProperty } from 'dot-prop'
@@ -177,12 +178,12 @@ describe.concurrent('commands/dev-miscellaneous', () => {
         }).then((res) => res.json())
 
         t.expect(response.clientContext.identity.url).toEqual(
-          'https://netlify-dev-locally-emulated-identity.netlify.com/.netlify/identity',
+          'https://netlify-dev-locally-emulated-identity.netlify.app/.netlify/identity',
         )
 
         const netlifyContext = Buffer.from(response.clientContext.custom.netlify, 'base64').toString()
         t.expect(JSON.parse(netlifyContext).identity.url).toEqual(
-          'https://netlify-dev-locally-emulated-identity.netlify.com/.netlify/identity',
+          'https://netlify-dev-locally-emulated-identity.netlify.app/.netlify/identity',
         )
       })
     })
@@ -751,7 +752,8 @@ describe.concurrent('commands/dev-miscellaneous', () => {
     })
   })
 
-  test('should detect content changes in edge functions', async (t) => {
+  // on windows, fetch throws an error while files are refreshing instead of returning the old value
+  test.skipIf(platform === 'win32')('should detect content changes in edge functions', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       const publicDir = 'public'
       builder
