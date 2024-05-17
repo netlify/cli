@@ -23,16 +23,6 @@ export const checkOptions = ({ cachedConfig: { siteInfo = {} }, token }) => {
   }
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'command' implicitly has an 'any' type.
-const injectEnv = async function (command, { api, buildOptions, context, siteInfo }) {
-  const isUsingEnvelope = siteInfo && siteInfo.use_envelope
-
-  const { env } = buildOptions.cachedConfig
-  if (isUsingEnvelope) {
-    buildOptions.cachedConfig.env = await getEnvelopeEnv({ api, context, env, siteInfo })
-  }
-}
-
 export const build = async (options: OptionValues, command: BaseCommand) => {
   const { cachedConfig, siteInfo } = command.netlify
   command.setAnalyticsPayload({ dry: options.dry })
@@ -58,10 +48,13 @@ export const build = async (options: OptionValues, command: BaseCommand) => {
 
   if (!options.offline) {
     checkOptions(buildOptions)
-    const { api, site } = command.netlify
-    const { context } = options
-    // @ts-expect-error TS(2345) FIXME: Argument of type '{ api: any; buildOptions: { cach... Remove this comment to see the full error message
-    await injectEnv(command, { api, buildOptions, context, site, siteInfo })
+
+    buildOptions.cachedConfig.env = await getEnvelopeEnv({
+      api: command.netlify.api,
+      context: options.context,
+      env: buildOptions.cachedConfig.env,
+      siteInfo,
+    })
   }
 
   const { exitCode } = await runBuild(buildOptions)

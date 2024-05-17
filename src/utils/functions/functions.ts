@@ -19,24 +19,21 @@ export const SERVE_FUNCTIONS_FOLDER = 'functions-serve'
 export const getFunctionsDir = ({ config, options }, defaultValue) =>
   options.functions || config.dev?.functions || config.functionsDirectory || config.dev?.Functions || defaultValue
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'base' implicitly has an 'any' typ... Remove this comment to see the full error message
-export const getFunctionsManifestPath = async ({ base, packagePath = '' }) => {
+export const getFunctionsManifestPath = async ({ base, packagePath = '' }: { base: string; packagePath?: string }) => {
   const path = resolve(base, packagePath, getPathInProject(['functions', 'manifest.json']))
   const isFile = await isFileAsync(path)
 
   return isFile ? path : null
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'base' implicitly has an 'any' typ... Remove this comment to see the full error message
-export const getFunctionsDistPath = async ({ base, packagePath = '' }) => {
+export const getFunctionsDistPath = async ({ base, packagePath = '' }: { base: string; packagePath?: string }) => {
   const path = resolve(base, packagePath, getPathInProject(['functions']))
   const isDirectory = await isDirectoryAsync(path)
 
   return isDirectory ? path : null
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'base' implicitly has an 'any' typ... Remove this comment to see the full error message
-export const getFunctionsServePath = ({ base, packagePath = '' }) => {
+export const getFunctionsServePath = ({ base, packagePath = '' }: { base: string; packagePath?: string }) => {
   const path = resolve(base, packagePath, getPathInProject([SERVE_FUNCTIONS_FOLDER]))
 
   return path
