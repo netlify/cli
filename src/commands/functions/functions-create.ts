@@ -476,7 +476,7 @@ const installDeps = async ({ functionPackageJson, functionPath, functionsDir }) 
  * @param {'edge' | 'serverless'} funcType
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'command' implicitly has an 'any' type.
-// eslint-disable-next-line max-params
+
 const scaffoldFromTemplate = async function (command, options, argumentName, functionsDir, funcType) {
   // pull the rest of the metadata from the template
   const chosenTemplate = await pickTemplate(options, funcType)
