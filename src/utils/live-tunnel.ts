@@ -61,7 +61,6 @@ const connectTunnel = function ({ localPort, netlifyApiToken, session }) {
   }
 
   const ps = execa(execPath, args, { stdio: 'inherit' })
-  // @ts-expect-error TS(7006) FIXME: Parameter 'code' implicitly has an 'any' type.
   ps.on('close', (code) => process.exit(code))
   ps.on('SIGINT', process.exit)
   ps.on('SIGTERM', process.exit)
