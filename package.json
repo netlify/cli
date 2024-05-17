@@ -149,7 +149,7 @@
     "netlify-headers-parser": "7.1.4",
     "netlify-redirect-parser": "14.3.0",
     "netlify-redirector": "0.5.0",
-    "node-fetch": "2.7.0",
+    "node-fetch": "3.3.2",
     "node-version-alias": "3.4.1",
     "ora": "8.0.1",
     "p-filter": "3.0.0",
