@@ -380,7 +380,7 @@ const downloadFromURL = async function (command, options, argumentName, function
         const res = await fetch(downloadUrl)
         const finalName = path.basename(name, '.js') === functionName ? `${nameToUse}.js` : name
         const dest = fs.createWriteStream(path.join(fnFolder, finalName))
-        res.body.pipe(dest)
+        res.body?.pipe(dest)
       } catch (error_) {
         throw new Error(`Error while retrieving ${downloadUrl} ${error_}`)
       }
