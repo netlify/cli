@@ -10,7 +10,7 @@ import { describe, test } from 'vitest'
 import { withDevServer } from '../../utils/dev-server.ts'
 import { startExternalServer } from '../../utils/external-server.js'
 import { withMockApi } from '../../utils/mock-api.js'
-import { type SiteBuilder, withSiteBuilder } from '../../utils/site-builder.ts'
+import { withSiteBuilder, type SiteBuilder } from '../../utils/site-builder.ts'
 
 type BlobFixture = {
   key: string

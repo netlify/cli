@@ -100,7 +100,7 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
             data: {
               ip: '::ffff:127.0.0.1',
               some: 'thing',
-              user_agent: 'node-fetch/1.0 (+https://github.com/bitinn/node-fetch)',
+              user_agent: 'node-fetch',
             },
             human_fields: {
               Some: 'thing',
@@ -275,7 +275,7 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
           fetch(`${server.url}/foo`).then((res) => res.text()),
         ])
 
-        t.expect(response.headers.get('location')).toEqual(`${server.url}/not-foo`)
+        t.expect(response.headers.get('location')).toEqual('/not-foo')
         t.expect(body).toEqual('<html><h1>not-foo')
       })
     })
@@ -333,7 +333,7 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
           fetch(`${server.url}/foo.html`).then((res) => res.text()),
         ])
 
-        t.expect(response.headers.get('location')).toEqual(`${server.url}/not-foo`)
+        t.expect(response.headers.get('location')).toEqual('/not-foo')
         t.expect(body).toEqual('<html><h1>not-foo')
       })
     })

@@ -65,13 +65,13 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
         t.expect(fromFunction.multiValueQueryStringParameters).toStrictEqual({ bar: ['1', '2'], foo: ['1', '2'] })
 
         // query params should be passed through from the request
-        t.expect(queryPassthrough.headers.get('location')).toEqual(`${server.url}/?foo=1&foo=2&bar=1&bar=2`)
+        t.expect(queryPassthrough.headers.get('location')).toEqual('/?foo=1&foo=2&bar=1&bar=2')
 
         // query params should be taken from the redirect rule
-        t.expect(queryInRedirect.headers.get('location')).toEqual(`${server.url}/?a=1&a=2`)
+        t.expect(queryInRedirect.headers.get('location')).toEqual('/?a=1&a=2')
 
         // query params should be taken from the redirect rule
-        t.expect(withParamMatching.headers.get('location')).toEqual(`${server.url}/?param=1`)
+        t.expect(withParamMatching.headers.get('location')).toEqual('/?param=1')
 
         // splat should be passed as query param in function redirects
         t.expect(functionWithSplat.queryStringParameters).toStrictEqual({ query: 'abc' })
