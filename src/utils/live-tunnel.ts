@@ -45,6 +45,7 @@ const createTunnel = async function ({ netlifyApiToken, siteId, slug }) {
   const data = await response.json()
 
   if (response.status !== 201) {
+    // @ts-expect-error TS(18046) - 'data' is of type 'unknown'
     throw new Error(data.message)
   }
 
@@ -100,6 +101,7 @@ export const startLiveTunnel = async ({ localPort, netlifyApiToken, siteId, slug
   })
 
   const isLiveTunnelReady = async function () {
+    // @ts-expect-error TS(18046) - 'session' is of type 'unknown'
     const url = `https://api.netlify.com/api/v1/live_sessions/${session.id}`
     const response = await fetch(url, {
       method: 'GET',
@@ -111,9 +113,11 @@ export const startLiveTunnel = async ({ localPort, netlifyApiToken, siteId, slug
     const data = await response.json()
 
     if (response.status !== 200) {
+      // @ts-expect-error TS(18046) - 'session' is of type 'unknown'
       throw new Error(data.message)
     }
 
+    // @ts-expect-error TS(18046) - 'data' is of type 'unknown'
     return data.state === 'online'
   }
 
@@ -125,6 +129,7 @@ export const startLiveTunnel = async ({ localPort, netlifyApiToken, siteId, slug
     timeout: TUNNEL_POLL_TIMEOUT,
   })
 
+  // @ts-expect-error TS(18046) - 'session' is of type 'unknown'
   return session.session_url
 }
 
