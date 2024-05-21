@@ -171,7 +171,7 @@
     "terminal-link": "3.0.0",
     "through2-filter": "4.0.0",
     "through2-map": "4.0.0",
-    "to-readable-stream": "3.0.0",
+    "to-readable-stream": "4.0.0",
     "toml": "3.0.0",
     "tomlify-j0.4": "3.0.0",
     "ulid": "2.3.0",
