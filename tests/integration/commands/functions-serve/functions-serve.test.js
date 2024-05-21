@@ -1,4 +1,4 @@
-import execa from 'execa'
+import { execa } from 'execa'
 import getPort from 'get-port'
 import fetch from 'node-fetch'
 import { describe, test } from 'vitest'

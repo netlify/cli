@@ -4,7 +4,7 @@ import { dirname, join, normalize, sep } from 'path'
 import { env } from 'process'
 import { fileURLToPath } from 'url'
 
-import execa from 'execa'
+import { execa } from 'execa'
 import getPort from 'get-port'
 import pTimeout from 'p-timeout'
 import { runServer } from 'verdaccio'

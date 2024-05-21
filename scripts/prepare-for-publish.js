@@ -2,7 +2,7 @@ import { readFile, writeFile } from 'fs/promises'
 import { dirname, join } from 'path'
 import { fileURLToPath } from 'url'
 
-import execa from 'execa'
+import { execa } from 'execa'
 import ora from 'ora'
 
 // These scripts from package.json need to be preserved on publish

@@ -1,7 +1,7 @@
 import { readFile } from 'fs/promises'
 
 import cleanDeep from 'clean-deep'
-import execa from 'execa'
+import { execa } from 'execa'
 import toml from 'toml'
 import { describe, test } from 'vitest'
 

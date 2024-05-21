@@ -2,7 +2,7 @@ import { readFile } from 'fs/promises'
 import { resolve } from 'path'
 
 import { parse } from 'comment-json'
-import execa from 'execa'
+import { execa } from 'execa'
 import { describe, test } from 'vitest'
 
 import { callCli } from '../../utils/call-cli.js'

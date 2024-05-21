@@ -1,5 +1,5 @@
 import { OptionValues } from 'commander'
-import execa from 'execa'
+import { execa } from 'execa'
 
 import { getDotEnvVariables, injectEnvVariables } from '../../utils/dev.js'
 import { getEnvelopeEnv, normalizeContext } from '../../utils/env/index.js'

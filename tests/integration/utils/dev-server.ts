@@ -1,7 +1,7 @@
 import path from 'path'
 import process from 'process'
 
-import execa from 'execa'
+import { execa } from 'execa'
 import getPort from 'get-port'
 import pTimeout from 'p-timeout'
 

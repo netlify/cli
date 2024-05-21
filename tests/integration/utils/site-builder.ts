@@ -4,7 +4,7 @@ import path from 'path'
 import process from 'process'
 
 import slugify from '@sindresorhus/slugify'
-import execa from 'execa'
+import { execa } from 'execa'
 import serializeJS from 'serialize-javascript'
 import tempDirectory from 'temp-dir'
 import tomlify from 'tomlify-j0.4'

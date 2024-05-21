@@ -2,7 +2,7 @@ import { readFile } from 'fs/promises'
 import os from 'os'
 import process from 'process'
 
-import execa from 'execa'
+import { execa, execaCommand } from 'execa'
 import ini from 'ini'
 import { describe, expect, test } from 'vitest'
 
@@ -81,7 +81,7 @@ describe('lm command', () => {
         const match = cliResponse.match(/source[\s\S]+?(\/.+inc)/)
         if (!match) expect.fail('could not match path')
         const [, sourcePath] = match
-        const { stdout } = await execa.command(`source ${sourcePath} && git-credential-netlify version`, {
+        const { stdout } = await execaCommand(`source ${sourcePath} && git-credential-netlify version`, {
           shell: execOptions.env.SHELL,
         })
 

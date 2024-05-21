@@ -4,7 +4,7 @@ import path, { join, sep } from 'path'
 import process from 'process'
 import { fileURLToPath } from 'url'
 
-import execa from 'execa'
+import { execa } from 'execa'
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'hasb... Remove this comment to see the full error message
 import hasbin from 'hasbin'
 import { Listr } from 'listr2'

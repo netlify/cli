@@ -1,7 +1,7 @@
 import path from 'path'
 import process from 'process'
 
-import execa from 'execa'
+import { execa } from 'execa'
 import { describe, test } from 'vitest'
 
 import { cliPath } from '../../utils/cli-path.js'

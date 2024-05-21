@@ -2,7 +2,7 @@ import { existsSync } from 'fs'
 import { readFile } from 'fs/promises'
 import { join } from 'path'
 
-import execa from 'execa'
+import { execa } from 'execa'
 import { describe, expect, test } from 'vitest'
 
 import { fileExistsAsync } from '../../../../src/lib/fs.js'

@@ -1,4 +1,4 @@
-import execa from 'execa'
+import { execa } from 'execa'
 
 const CURL_TIMEOUT = 1e5
 

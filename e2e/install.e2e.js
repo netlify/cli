@@ -1,11 +1,11 @@
-import { readFileSync, existsSync } from 'fs'
+import { existsSync, readFileSync } from 'fs'
 import { mkdir } from 'fs/promises'
 import { platform } from 'os'
 import { join, resolve } from 'path'
 import { env } from 'process'
 import { fileURLToPath } from 'url'
 
-import execa from 'execa'
+import { execa } from 'execa'
 import { expect, test } from 'vitest'
 
 import { packageManagerConfig, packageManagerExists } from './utils.js'

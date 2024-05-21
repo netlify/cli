@@ -1,7 +1,7 @@
 import { join } from 'path'
 
 import { DenoBridge } from '@netlify/edge-bundler'
-import execa from 'execa'
+import { execa } from 'execa'
 import inquirer from 'inquirer'
 
 import { NETLIFYDEVLOG, NETLIFYDEVWARN, chalk, error, log } from '../../utils/command-helpers.js'

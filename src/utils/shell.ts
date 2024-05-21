@@ -1,6 +1,6 @@
 import process from 'process'
 
-import execa from 'execa'
+import { execaCommand } from 'execa'
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'stri... Remove this comment to see the full error message
 import stripAnsiCc from 'strip-ansi-control-characters'
 
@@ -54,7 +54,7 @@ const cleanupBeforeExit = async ({ exitCode }) => {
 export const runCommand = (command, options = {}) => {
   // @ts-expect-error TS(2339) FIXME: Property 'cwd' does not exist on type '{}'.
   const { cwd, env = {}, spinner = null } = options
-  const commandProcess = execa.command(command, {
+  const commandProcess = execaCommand(command, {
     preferLocal: true,
     // we use reject=false to avoid rejecting synchronously when the command doesn't exist
     reject: false,
@@ -84,11 +84,8 @@ export const runCommand = (command, options = {}) => {
     })
   }
 
-  // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
   commandProcess.stdout.pipe(stripAnsiCc.stream()).on('data', pipeDataWithSpinner.bind(null, process.stdout))
-  // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
   commandProcess.stderr.pipe(stripAnsiCc.stream()).on('data', pipeDataWithSpinner.bind(null, process.stderr))
-  // @ts-expect-error TS(2345) FIXME: Argument of type 'Writable | null' is not assignab... Remove this comment to see the full error message
   process.stdin.pipe(commandProcess.stdin)
 
   // we can't try->await->catch since we don't want to block on the framework server which
@@ -107,8 +104,7 @@ export const runCommand = (command, options = {}) => {
         )
       } else {
         const errorMessage = result.failed
-          ? // @ts-expect-error TS(2339) FIXME: Property 'shortMessage' does not exist on type 'Ex... Remove this comment to see the full error message
-            `${NETLIFYDEVERR} ${result.shortMessage}`
+          ? `${NETLIFYDEVERR} ${result.shortMessage}`
           : `${NETLIFYDEVWARN} "${command}" exited with code ${result.exitCode}`
 
         log(`${errorMessage}. Shutting down Netlify Dev server`)

@@ -1,6 +1,6 @@
 import process from 'process'
 
-import execa from 'execa'
+import { execa } from 'execa'
 import { describe, test } from 'vitest'
 
 import { callCli } from '../../utils/call-cli.js'

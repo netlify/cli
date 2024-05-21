@@ -1,8 +1,8 @@
-import process from 'process'
 import { rename } from 'fs/promises'
 import { join } from 'path'
+import process from 'process'
 
-import execa from 'execa'
+import { execa } from 'execa'
 import fetch from 'node-fetch'
 import { describe, expect, expectTypeOf, test } from 'vitest'
 

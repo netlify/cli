@@ -1,7 +1,7 @@
 import { env as _env, version as nodejsVersion } from 'process'
 
 import type { Options } from 'execa'
-import execa from 'execa'
+import { execa } from 'execa'
 import { version as uuidVersion } from 'uuid'
 import { expect, test } from 'vitest'
 

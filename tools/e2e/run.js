@@ -3,7 +3,7 @@ import { dirname, join } from 'path'
 import { exit } from 'process'
 import { fileURLToPath } from 'url'
 
-import execa from 'execa'
+import { execa } from 'execa'
 
 import { setup } from './setup.js'
 

@@ -6,7 +6,7 @@ import process from 'process'
 import { fileURLToPath } from 'url'
 
 import chalk from 'chalk'
-import execa from 'execa'
+import { execa } from 'execa'
 import glob from 'fast-glob'
 
 import { DependencyGraph, fileVisitor, visitorPlugins } from './project-graph/index.js'

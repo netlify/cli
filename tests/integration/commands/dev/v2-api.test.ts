@@ -1,6 +1,6 @@
 import { version } from 'process'
 
-import execa from 'execa'
+import { execa } from 'execa'
 import { gte } from 'semver'
 import { describe, expect, test } from 'vitest'
 

@@ -2,7 +2,7 @@ import path from 'path'
 import process from 'process'
 import { fileURLToPath } from 'url'
 
-import execa from 'execa'
+import { execaCommand } from 'execa'
 import fetch from 'node-fetch'
 import { afterAll, beforeAll, describe, test } from 'vitest'
 
@@ -886,7 +886,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         })
         .build()
 
-      await execa.command('npm install', { cwd: builder.directory })
+      await execaCommand('npm install', { cwd: builder.directory })
       const { deploy_url: deployUrl } = await callCli(
         ['deploy', '--json'],
         {

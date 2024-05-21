@@ -63,6 +63,7 @@ export const shouldFetchLatestVersion = async ({
     return false
   }
 
+  // @ts-expect-error TS(2339) Property 'match' does not exist on type 'never'
   const match = stdout.match(new RegExp(pattern))
   if (!match) {
     return false
