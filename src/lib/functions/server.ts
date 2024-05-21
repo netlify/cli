@@ -10,6 +10,7 @@ import { jwtDecode } from 'jwt-decode'
 import type BaseCommand from '../../commands/base-command.js'
 import type { $TSFixMe } from '../../commands/types.js'
 import { NETLIFYDEVERR, NETLIFYDEVLOG, error as errorExit, log } from '../../utils/command-helpers.js'
+import { UNLINKED_SITE_MOCK_ID } from '../../utils/dev.js'
 import { isFeatureFlagEnabled } from '../../utils/feature-flags.js'
 import {
   CLOCKWORK_USERAGENT,
@@ -22,7 +23,6 @@ import type { BlobsContext } from '../blobs/blobs.js'
 import { headers as efHeaders } from '../edge-functions/headers.js'
 import { getGeoLocation } from '../geo-location.js'
 
-import { UNLINKED_SITE_MOCK_ID } from '../../utils/dev.js'
 import { handleBackgroundFunction, handleBackgroundFunctionResult } from './background.js'
 import { createFormSubmissionHandler } from './form-submissions-handler.js'
 import { FunctionsRegistry } from './registry.js'
@@ -39,7 +39,7 @@ const buildClientContext = function (headers) {
   if (parts.length !== 2 || parts[0] !== 'Bearer') return
 
   const identity = {
-    url: 'https://netlify-dev-locally-emulated-identity.netlify.com/.netlify/identity',
+    url: 'https://netlify-dev-locally-emulated-identity.netlify.app/.netlify/identity',
     token:
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzb3VyY2UiOiJuZXRsaWZ5IGRldiIsInRlc3REYXRhIjoiTkVUTElGWV9ERVZfTE9DQUxMWV9FTVVMQVRFRF9JREVOVElUWSJ9.2eSDqUOZAOBsx39FHFePjYj12k0LrxldvGnlvDu3GMI',
     // you can decode this with https://jwt.io/
@@ -56,13 +56,13 @@ const buildClientContext = function (headers) {
     const user = jwtDecode(parts[1])
 
     const netlifyContext = JSON.stringify({
-      identity: identity,
-      user: user,
+      identity,
+      user,
     })
 
     return {
-      identity: identity,
-      user: user,
+      identity,
+      user,
       custom: {
         netlify: Buffer.from(netlifyContext).toString('base64'),
       },
@@ -320,7 +320,7 @@ export const startFunctionsServer = async (
     siteUrl,
     timeouts,
   } = options
-  const internalFunctionsDir = await getInternalFunctionsDir({ base: site.root })
+  const internalFunctionsDir = await getInternalFunctionsDir({ base: site.root, packagePath: command.workspacePackage })
   const functionsDirectories: string[] = []
   let manifest
 
@@ -328,7 +328,7 @@ export const startFunctionsServer = async (
   // use the built functions created by zip-it-and-ship-it rather than building
   // them from source.
   if (loadDistFunctions) {
-    const distPath = await getFunctionsDistPath({ base: site.root })
+    const distPath = await getFunctionsDistPath({ base: site.root, packagePath: command.workspacePackage })
 
     if (distPath) {
       functionsDirectories.push(distPath)
@@ -354,7 +354,7 @@ export const startFunctionsServer = async (
   }
 
   try {
-    const functionsServePath = getFunctionsServePath({ base: site.root })
+    const functionsServePath = getFunctionsServePath({ base: site.root, packagePath: command.workspacePackage })
 
     await fs.rm(functionsServePath, { force: true, recursive: true })
   } catch {

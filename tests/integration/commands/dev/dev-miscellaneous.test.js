@@ -1,5 +1,6 @@
 import { Buffer } from 'buffer'
 import path from 'path'
+import { platform } from 'process'
 import { fileURLToPath } from 'url'
 
 import { setProperty } from 'dot-prop'
@@ -11,7 +12,6 @@ import { describe, test } from 'vitest'
 
 import { cliPath } from '../../utils/cli-path.js'
 import { getExecaOptions, withDevServer } from '../../utils/dev-server.ts'
-import got from '../../utils/got.js'
 import { withMockApi } from '../../utils/mock-api.js'
 import { pause } from '../../utils/pause.js'
 import { withSiteBuilder } from '../../utils/site-builder.ts'
@@ -177,12 +177,12 @@ describe.concurrent('commands/dev-miscellaneous', () => {
         }).then((res) => res.json())
 
         t.expect(response.clientContext.identity.url).toEqual(
-          'https://netlify-dev-locally-emulated-identity.netlify.com/.netlify/identity',
+          'https://netlify-dev-locally-emulated-identity.netlify.app/.netlify/identity',
         )
 
         const netlifyContext = Buffer.from(response.clientContext.custom.netlify, 'base64').toString()
         t.expect(JSON.parse(netlifyContext).identity.url).toEqual(
-          'https://netlify-dev-locally-emulated-identity.netlify.com/.netlify/identity',
+          'https://netlify-dev-locally-emulated-identity.netlify.app/.netlify/identity',
         )
       })
     })
@@ -751,7 +751,8 @@ describe.concurrent('commands/dev-miscellaneous', () => {
     })
   })
 
-  test('should detect content changes in edge functions', async (t) => {
+  // on windows, fetch throws an error while files are refreshing instead of returning the old value
+  test.skipIf(platform === 'win32')('should detect content changes in edge functions', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       const publicDir = 'public'
       builder
@@ -777,7 +778,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
       await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async ({ port }) => {
-        const helloWorldMessage = await got(`http://localhost:${port}/hello`).then((res) => res.body)
+        const helloWorldMessage = await fetch(`http://localhost:${port}/hello`).then((res) => res.text())
 
         await builder
           .withEdgeFunction({
@@ -789,7 +790,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
         const DETECT_FILE_CHANGE_DELAY = 500
         await pause(DETECT_FILE_CHANGE_DELAY)
 
-        const helloBuilderMessage = await got(`http://localhost:${port}/hello`).then((res) => res.body)
+        const helloBuilderMessage = await fetch(`http://localhost:${port}/hello`, {}).then((res) => res.text())
 
         t.expect(helloWorldMessage).toEqual('Hello world')
         t.expect(helloBuilderMessage).toEqual('Hello builder')

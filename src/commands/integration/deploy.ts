@@ -1,6 +1,6 @@
 import fs from 'fs'
 import { resolve } from 'path'
-import { exit, env } from 'process'
+import { env, exit } from 'process'
 
 import { OptionValues } from 'commander'
 import inquirer from 'inquirer'
@@ -10,7 +10,7 @@ import fetch from 'node-fetch'
 import { z } from 'zod'
 
 import { getBuildOptions } from '../../lib/build.js'
-import { getToken, chalk, log } from '../../utils/command-helpers.js'
+import { chalk, getToken, log } from '../../utils/command-helpers.js'
 import { getSiteInformation } from '../../utils/dev.js'
 import BaseCommand from '../base-command.js'
 import { checkOptions } from '../build/build.js'
@@ -172,6 +172,7 @@ export async function registerIntegration(workingDir, siteId, accountId, localIn
     log(chalk.red(`There was an error registering the integration:`))
     log()
     log(chalk.red(`-----------------------------------------------`))
+    // @ts-expect-error TS(18046) - 'body' is of type 'unknown'
     log(chalk.red(body.msg))
     log(chalk.red(`-----------------------------------------------`))
     log()
@@ -179,9 +180,11 @@ export async function registerIntegration(workingDir, siteId, accountId, localIn
     exit(1)
   }
 
+  // @ts-expect-error TS(18046) - 'body' is of type 'unknown'
   log(chalk.green(`Successfully registered the integration with the slug: ${body.slug}`))
 
   const updatedIntegrationConfig = yaml.dump({
+    // @ts-expect-error TS(18046) - 'body' is of type 'unknown'
     config: { name, description, slug: body.slug, scopes, integrationLevel },
   })
 
