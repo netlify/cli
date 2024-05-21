@@ -134,7 +134,7 @@
     "is-docker": "3.0.0",
     "is-stream": "4.0.1",
     "is-wsl": "2.2.0",
-    "isexe": "2.0.0",
+    "isexe": "3.1.1",
     "js-yaml": "4.1.0",
     "jsonwebtoken": "9.0.2",
     "jwt-decode": "4.0.0",
