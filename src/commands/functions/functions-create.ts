@@ -551,7 +551,7 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
     }
 
     if (funcType === 'edge') {
-      registerEFInToml(name, command.netlify)
+      await registerEFInToml(name, command.netlify)
     }
 
     await installAddons(command, addons, path.resolve(functionPath))
