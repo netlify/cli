@@ -34,6 +34,11 @@
     {
       "matchFiles": ["package.json", "site/package.json"],
       "extends": [":pinAllExceptPeerDependencies"]
+    },
+    {
+      "description": "Pin get-port to v5 (https://github.com/netlify/cli/pull/6531)",
+      "matchPackageNames": ["get-port"],
+      "allowedVersions": "<6"
     }
   ]
 }
