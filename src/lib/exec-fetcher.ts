@@ -2,8 +2,7 @@ import path from 'path'
 import process from 'process'
 
 import { fetchLatest, fetchVersion, newerVersion, updateAvailable } from 'gh-release-fetch'
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'isex... Remove this comment to see the full error message
-import isExe from 'isexe'
+import { isexe } from 'isexe'
 
 import { NETLIFYDEVWARN, error, getTerminalLink, log } from '../utils/command-helpers.js'
 import execa from '../utils/execa.js'
@@ -52,7 +51,7 @@ export const shouldFetchLatestVersion = async ({
 }) => {
   const execPath = path.join(binPath, getExecName({ execName }))
 
-  const exists = await isExe(execPath, { ignoreErrors: true })
+  const exists = await isexe(execPath, { ignoreErrors: true })
   if (!exists) {
     return true
   }
