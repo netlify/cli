@@ -39,7 +39,7 @@
     "react-emotion": "9.2.12",
     "rebass": "2.3.4",
     "styled-components": "3.4.10",
-    "styled-system": "3.2.1"
+    "styled-system": "5.1.5"
   },
   "devDependencies": {
     "markdown-magic": "2.6.1",
