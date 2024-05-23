@@ -2,6 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
+import readdirp from 'readdirp'
 import { describe, expect, test } from 'vitest'
 
 import { copyTemplateDir } from '../../../../dist/utils/copy-template-dir/copy-template-dir.js'
@@ -39,10 +40,12 @@ describe('copyTemplateDir', () => {
     expect(Array.isArray(createdFiles)).toBe(true)
     expect(createdFiles.length).toBe(10)
 
+    // Checks the direct output of the function, to ensure names are correct
     checkCreatedFileNames(createdFiles.map((filePath) => path.relative(outDir, filePath)))
 
-    const files = fs.readdirSync(outDir, { recursive: true })
-    checkCreatedFileNames(files)
+    // Checks that the files were created in the file system
+    const files = await readdirp.promise(outDir)
+    checkCreatedFileNames(files.map((file) => file.path))
 
     // Cleanup
     fs.rmdirSync(outDir, { recursive: true })
