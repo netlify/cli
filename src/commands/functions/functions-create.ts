@@ -5,11 +5,8 @@ import { createRequire } from 'module'
 import path, { dirname, join, relative } from 'path'
 import process from 'process'
 import { fileURLToPath, pathToFileURL } from 'url'
-import { promisify } from 'util'
 
 import { OptionValues } from 'commander'
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'copy... Remove this comment to see the full error message
-import copyTemplateDirOriginal from 'copy-template-dir'
 import { findUp } from 'find-up'
 import fuzzy from 'fuzzy'
 import inquirer from 'inquirer'
@@ -19,12 +16,11 @@ import ora from 'ora'
 import { fileExistsAsync } from '../../lib/fs.js'
 import { getAddons, getCurrentAddon, getSiteData } from '../../utils/addons/prepare.js'
 import { NETLIFYDEVERR, NETLIFYDEVLOG, NETLIFYDEVWARN, chalk, error, log } from '../../utils/command-helpers.js'
+import { copyTemplateDir } from '../../utils/copy-template-dir/copy-template-dir.js'
 import { getDotEnvVariables, injectEnvVariables } from '../../utils/dev.js'
 import execa from '../../utils/execa.js'
 import { readRepoURL, validateRepoURL } from '../../utils/read-repo-url.js'
 import BaseCommand from '../base-command.js'
-
-const copyTemplateDir = promisify(copyTemplateDirOriginal)
 
 const require = createRequire(import.meta.url)
 
@@ -523,7 +519,6 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
     // be removed before the command finishes.
     const omittedFromOutput = new Set(['.netlify-function-template.mjs', 'package.json', 'package-lock.json'])
     const createdFiles = await copyTemplateDir(pathToTemplate, functionPath, vars)
-    // @ts-expect-error TS(7006) FIXME: Parameter 'filePath' implicitly has an 'any' type.
     createdFiles.forEach((filePath) => {
       const filename = path.basename(filePath)
 
