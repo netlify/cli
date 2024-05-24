@@ -71,7 +71,7 @@ const fetchEnvelopeItems = async function ({
   siteId: string
 }): Promise<$TSFixMe[]> {
   if (accountId === undefined) {
-    return {}
+    return []
   }
   try {
     // if a single key is passed, fetch that single env var
