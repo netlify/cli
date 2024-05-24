@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "17.23.6",
+  "version": "17.23.7",
   "author": "Netlify Inc.",
   "type": "module",
   "engines": {
@@ -99,7 +99,6 @@
     "configstore": "6.0.0",
     "content-type": "1.0.5",
     "cookie": "0.6.0",
-    "copy-template-dir": "1.4.0",
     "cron-parser": "4.9.0",
     "debug": "4.3.4",
     "decache": "4.6.2",
@@ -144,6 +143,8 @@
     "lodash": "4.17.21",
     "log-symbols": "6.0.0",
     "log-update": "6.0.0",
+    "maxstache": "^1.0.7",
+    "maxstache-stream": "^1.0.4",
     "multiparty": "4.2.3",
     "netlify": "13.1.16",
     "netlify-headers-parser": "7.1.4",
@@ -163,6 +164,7 @@
     "pump": "3.0.0",
     "raw-body": "2.5.2",
     "read-package-up": "11.0.0",
+    "readdirp": "^3.6.0",
     "semver": "7.6.2",
     "source-map-support": "0.5.21",
     "strip-ansi-control-characters": "2.0.0",
