@@ -1,3 +1,4 @@
+import { $TSFixMe } from '../../commands/types.js'
 import { error } from '../command-helpers.js'
 
 export const AVAILABLE_CONTEXTS = ['all', 'production', 'deploy-preview', 'branch-deploy', 'dev']
@@ -57,16 +58,18 @@ export const filterEnvBySource = (env, source) =>
   // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
   Object.fromEntries(Object.entries(env).filter(([, variable]) => variable.sources[0] === source))
 
-/**
- * Fetches data from Envelope
- * @param {string} accountId - The account id
- * @param {object} api - The api singleton object
- * @param {string} key - If present, fetch a single key (case-sensitive)
- * @param {string} siteId - The site id
- * @returns {Array<object>} An array of environment variables from the Envelope service
- */
-// @ts-expect-error TS(7031) FIXME: Binding element 'accountId' implicitly has an 'any... Remove this comment to see the full error message
-const fetchEnvelopeItems = async function ({ accountId, api, key, siteId }) {
+// Fetches data from Envelope
+const fetchEnvelopeItems = async function ({
+  accountId,
+  api,
+  key,
+  siteId,
+}: {
+  accountId: string
+  api: $TSFixMe
+  key: string
+  siteId: string
+}): Promise<$TSFixMe[]> {
   if (accountId === undefined) {
     return {}
   }
@@ -109,28 +112,32 @@ const fetchEnvelopeItems = async function ({ accountId, api, key, siteId }) {
  *   },
  * }
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'source' implicitly has an 'any' t... Remove this comment to see the full error message
-export const formatEnvelopeData = ({ context = 'dev', envelopeItems = [], scope = 'any', source }) =>
+export const formatEnvelopeData = ({
+  context = 'dev',
+  envelopeItems = [],
+  scope = 'any',
+  source,
+}: {
+  context?: string
+  envelopeItems: $TSFixMe[]
+  scope?: string
+  source: string
+}) =>
   envelopeItems
     // filter by context
     .filter(({ values }) => Boolean(findValueInValues(values, context)))
     // filter by scope
-    // @ts-expect-error TS(2339) FIXME: Property 'includes' does not exist on type 'never'... Remove this comment to see the full error message
     .filter(({ scopes }) => (scope === 'any' ? true : scopes.includes(scope)))
     // sort alphabetically, case insensitive
-    // @ts-expect-error TS(2339) FIXME: Property 'key' does not exist on type 'never'.
     .sort((left, right) => (left.key.toLowerCase() < right.key.toLowerCase() ? -1 : 1))
     // format the data
     .reduce((acc, cur) => {
-      // @ts-expect-error TS(2339) FIXME: Property 'values' does not exist on type 'never'.
       const { context: ctx, context_parameter: branch, value } = findValueInValues(cur.values, context)
       return {
         ...acc,
-        // @ts-expect-error TS(2339) FIXME: Property 'key' does not exist on type 'never'.
         [cur.key]: {
           context: ctx,
           branch,
-          // @ts-expect-error TS(2339) FIXME: Property 'scopes' does not exist on type 'never'.
           scopes: cur.scopes,
           sources: [source],
           value,
