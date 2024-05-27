@@ -98,7 +98,7 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
     autoLaunch: Boolean(options.open),
     ...(cachedConfig.siteInfo?.dev_server_settings && {
       command: cachedConfig.siteInfo.dev_server_settings.cmd,
-      targetPort: cachedConfig.siteInfo.dev_server_settings.targetPort,
+      targetPort: cachedConfig.siteInfo.dev_server_settings.target_port,
     }),
     ...(config.functionsDirectory && { functions: config.functionsDirectory }),
     ...(config.build.publish && { publish: config.build.publish }),
