@@ -882,7 +882,6 @@ export const startProxy = async function ({
       const reqUrl = reqToURL(req, req.url)
       const dest = new URL(match.to, `${reqUrl.protocol}//${reqUrl.host}`)
       const destURL = stripOrigin(dest)
-      console.log(`${NETLIFYDEVLOG} WS Redirect ${req.url} to ${destURL}`)
       return proxy.ws(req, socket, head, { target: dest.origin, changeOrigin: true, pathRewrite: () => destURL })
     }
     return proxy.ws(req, socket, head, {})
