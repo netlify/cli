@@ -661,7 +661,7 @@ const initializeProxy = async function ({
       return proxy.web(req, res, options)
     },
     // @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
-    ws: (req, socket, head) => proxy.ws(req, socket, head),
+    ws: (req, socket, head, options) => proxy.ws(req, socket, head, options),
   }
 
   return handlers
@@ -876,8 +876,15 @@ export const startProxy = async function ({
   const primaryServer = settings.https
     ? https.createServer({ cert: settings.https.cert, key: settings.https.key }, onRequestWithOptions)
     : http.createServer(onRequestWithOptions)
-  const onUpgrade = function onUpgrade(req: http.IncomingMessage, socket: Duplex, head: Buffer) {
-    proxy.ws(req, socket, head)
+  const onUpgrade = async function onUpgrade(req: http.IncomingMessage, socket: Duplex, head: Buffer) {
+    const match = await rewriter(req)
+    if (match && !match.force404 && isExternal(match)) {
+      const reqUrl = reqToURL(req, req.url)
+      const dest = new URL(match.to, `${reqUrl.protocol}//${reqUrl.host}`)
+      const destURL = stripOrigin(dest)
+      return proxy.ws(req, socket, head, { target: dest.origin, changeOrigin: true, pathRewrite: () => destURL })
+    }
+    return proxy.ws(req, socket, head, {})
   }
 
   primaryServer.on('upgrade', onUpgrade)
