@@ -169,6 +169,7 @@ const hashFns = async (
       runtime,
       runtimeVersion,
       trafficRules,
+      timeout,
     }) => ({
       filepath: functionPath,
       root: tmpDir,
@@ -182,6 +183,7 @@ const hashFns = async (
       displayName,
       generator,
       invocationMode,
+      timeout,
       buildData,
       priority,
       trafficRules,
