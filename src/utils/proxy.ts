@@ -466,16 +466,20 @@ const initializeProxy = async function ({
   })
 
   proxy.on('error', (_, req, res) => {
-    // @ts-expect-error TS(2339) FIXME: Property 'writeHead' does not exist on type 'Socke... Remove this comment to see the full error message
-    res.writeHead(500, {
-      'Content-Type': 'text/plain',
-    })
+    // res can be http.ServerResponse or net.Socket
+    if ('writeHead' in res) {
+      res.writeHead(500, {
+        'Content-Type': 'text/plain',
+      })
 
-    const message = isEdgeFunctionsRequest(req)
-      ? 'There was an error with an Edge Function. Please check the terminal for more details.'
-      : 'Could not proxy request.'
+      const message = isEdgeFunctionsRequest(req)
+        ? 'There was an error with an Edge Function. Please check the terminal for more details.'
+        : 'Could not proxy request.'
 
-    res.end(message)
+      res.end(message)
+    } else {
+      res.end()
+    }
   })
   proxy.on('proxyReq', (proxyReq, req) => {
     const requestID = generateRequestID()
