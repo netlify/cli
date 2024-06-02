@@ -4,6 +4,7 @@ import { readFile } from 'fs/promises'
 import http, { ServerResponse } from 'http'
 import https from 'https'
 import { isIPv6 } from 'net'
+import { Readable } from 'node:stream'
 import path from 'path'
 import { Duplex } from 'stream'
 import util from 'util'
@@ -23,7 +24,6 @@ import { jwtDecode } from 'jwt-decode'
 import { locatePath } from 'locate-path'
 import { Match } from 'netlify-redirector'
 import pFilter from 'p-filter'
-import toReadableStream from 'to-readable-stream'
 
 import { BaseCommand } from '../commands/index.js'
 import { $TSFixMe } from '../commands/types.js'
@@ -135,7 +135,7 @@ const proxyToExternalUrl = function ({
     pathRewrite: () => destURL,
     // hide logging
     logLevel: 'warn',
-    ...(Buffer.isBuffer(req.originalBody) && { buffer: toReadableStream(req.originalBody) }),
+    ...(Buffer.isBuffer(req.originalBody) && { buffer: Readable.from(req.originalBody) }),
   })
   // @ts-expect-error TS(2345) FIXME: Argument of type 'Request' is not assignable to parameter of type 'Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
   return handler(req, res, () => {})
