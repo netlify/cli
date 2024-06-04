@@ -552,6 +552,14 @@ export default class BaseCommand extends Command {
         process.env.NETLIFY_API_URL === `${apiUrl.protocol}//${apiUrl.host}` ? '/api/v1' : apiUrl.pathname
     }
 
+    const agent = await getAgent({
+      httpProxy: flags.httpProxy,
+      certificateFile: flags.httpProxyCertificateFilename,
+    })
+    const apiOpts = { ...apiUrlOpts, agent }
+    // TODO: remove typecast once we have proper types for the API
+    const api = new NetlifyAPI(token || '', apiOpts) as NetlifyOptions['api']
+
     // ==================================================
     // Start retrieving the configuration through the
     // configuration file and the API
@@ -569,13 +577,6 @@ export default class BaseCommand extends Command {
     const { buildDir, config, configPath, env, repositoryRoot, siteInfo } = cachedConfig
     env.NETLIFY_CLI_VERSION = { sources: ['internal'], value: version }
     const normalizedConfig = normalizeConfig(config)
-    const agent = await getAgent({
-      httpProxy: flags.httpProxy,
-      certificateFile: flags.httpProxyCertificateFilename,
-    })
-    const apiOpts = { ...apiUrlOpts, agent }
-    // TODO: remove typecast once we have proper types for the API
-    const api = new NetlifyAPI(token || '', apiOpts) as NetlifyOptions['api']
 
     // If a user passes a site name as an option instead of a site ID to options.site, the siteInfo object
     // will only have the property siteInfo.id. Checking for one of the other properties ensures that we can do
