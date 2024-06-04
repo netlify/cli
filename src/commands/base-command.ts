@@ -35,6 +35,7 @@ import {
   sortOptions,
   warn,
 } from '../utils/command-helpers.js'
+import { FeatureFlags } from '../utils/feature-flags.js'
 import getGlobalConfig from '../utils/get-global-config.js'
 import { getSiteByName } from '../utils/get-site.js'
 import openBrowser from '../utils/open-browser.js'
@@ -562,6 +563,12 @@ export default class BaseCommand extends Command {
 
     const siteId = flags.siteId || (typeof flags.site === 'string' && flags.site) || state.get('siteId')
 
+    let featureFlags: FeatureFlags = {}
+    if (api && siteId) {
+      const site = await api.getSite({ siteId, feature_flags: 'cli' })
+      featureFlags = site.feature_flags
+    }
+
     // ==================================================
     // Start retrieving the configuration through the
     // configuration file and the API
@@ -575,6 +582,7 @@ export default class BaseCommand extends Command {
       state,
       token,
       siteId,
+      featureFlags,
       ...apiUrlOpts,
     })
     const { buildDir, config, configPath, env, repositoryRoot, siteInfo } = cachedConfig
@@ -666,6 +674,7 @@ export default class BaseCommand extends Command {
     pathPrefix?: string
     scheme?: string
     siteId?: string
+    featureFlags: FeatureFlags
   }): ReturnType<typeof resolveConfig> {
     // the flags that are passed to the command like `--debug` or `--offline`
     const flags = this.opts()
@@ -686,6 +695,7 @@ export default class BaseCommand extends Command {
         scheme: config.scheme,
         offline: config.offline ?? flags.offline,
         siteFeatureFlagPrefix: 'cli',
+        featureFlags: config.featureFlags,
       })
     } catch (error_) {
       // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
