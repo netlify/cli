@@ -560,6 +560,8 @@ export default class BaseCommand extends Command {
     // TODO: remove typecast once we have proper types for the API
     const api = new NetlifyAPI(token || '', apiOpts) as NetlifyOptions['api']
 
+    const siteId = flags.siteId || (typeof flags.site === 'string' && flags.site) || state.get('siteId')
+
     // ==================================================
     // Start retrieving the configuration through the
     // configuration file and the API
@@ -572,6 +574,7 @@ export default class BaseCommand extends Command {
       configFilePath: packageConfig,
       state,
       token,
+      siteId,
       ...apiUrlOpts,
     })
     const { buildDir, config, configPath, env, repositoryRoot, siteInfo } = cachedConfig
@@ -662,6 +665,7 @@ export default class BaseCommand extends Command {
     host?: string
     pathPrefix?: string
     scheme?: string
+    siteId?: string
   }): ReturnType<typeof resolveConfig> {
     // the flags that are passed to the command like `--debug` or `--offline`
     const flags = this.opts()
@@ -674,7 +678,7 @@ export default class BaseCommand extends Command {
         cwd: config.cwd,
         context: flags.context || process.env.CONTEXT || this.getDefaultContext(),
         debug: flags.debug,
-        siteId: flags.siteId || (typeof flags.site === 'string' && flags.site) || config.state.get('siteId'),
+        siteId: config.siteId,
         token: config.token,
         mode: 'cli',
         host: config.host,
