@@ -577,6 +577,16 @@ export default class BaseCommand extends Command {
     // TODO: remove typecast once we have proper types for the API
     const api = new NetlifyAPI(token || '', apiOpts) as NetlifyOptions['api']
 
+    //TODO replace with open-api
+    api.markDevServerActivity = ({ devServerId, siteId }: { siteId: string; devServerId: string }) =>
+      fetch(process.env.NETLIFY_API_URL!, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      })
+
     // If a user passes a site name as an option instead of a site ID to options.site, the siteInfo object
     // will only have the property siteInfo.id. Checking for one of the other properties ensures that we can do
     // a re-call of the api.getSite() that is done in @netlify/config so we have the proper site object in all
