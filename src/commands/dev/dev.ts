@@ -1,6 +1,5 @@
 import process from 'process'
 
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module '@net... Remove this comment to see the full error message
 import { applyMutations } from '@netlify/config'
 import { Option, OptionValues } from 'commander'
 
