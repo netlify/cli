@@ -674,7 +674,7 @@ export default class BaseCommand extends Command {
     pathPrefix?: string
     scheme?: string
     siteId?: string
-    featureFlags: FeatureFlags
+    featureFlags?: FeatureFlags
   }): ReturnType<typeof resolveConfig> {
     // the flags that are passed to the command like `--debug` or `--offline`
     const flags = this.opts()
