@@ -2,11 +2,11 @@ import process from 'process'
 
 import { expect, beforeEach, afterEach, describe, test, vi } from 'vitest'
 
-import { withSiteBuilder } from '../../utils/site-builder.ts'
-import { createBuildCommand } from '../../../../src/commands/build/index.ts'
 import BaseCommand from '../../../../src/commands/base-command.ts'
+import { createBuildCommand } from '../../../../src/commands/build/index.ts'
 import { startMockApi } from '../../utils/mock-api-vitest.ts'
 import { getEnvironmentVariables } from '../../utils/mock-api.js'
+import { withSiteBuilder } from '../../utils/site-builder.ts'
 
 let configOptions = {}
 
@@ -45,6 +45,7 @@ const routes = [
 const routesWithCommand = [...routes]
 routesWithCommand.splice(0, 1, { path: 'sites/site_id', response: siteInfoWithCommand })
 
+// eslint-disable-next-line workspace/no-process-cwd
 const originalCwd = process.cwd
 const originalConsoleLog = console.log
 const originalEnv = process.env
@@ -56,6 +57,7 @@ describe('command/build', () => {
   })
 
   afterEach(() => {
+    // eslint-disable-next-line workspace/no-process-cwd
     process.cwd = originalCwd
     console.log = originalConsoleLog
     Object.assign(process.env, originalEnv)
@@ -68,6 +70,7 @@ describe('command/build', () => {
       expect(code).toBe(0)
     })
     await withSiteBuilder(t, async (builder) => {
+      // eslint-disable-next-line workspace/no-process-cwd
       process.cwd = () => builder.directory
       const { apiUrl } = await startMockApi({ routes: routesWithCommand })
 
