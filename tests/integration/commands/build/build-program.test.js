@@ -1,12 +1,12 @@
 import process from 'process'
 
-import { expect, beforeEach, afterEach, describe, test, vi } from 'vitest'
+import { expect, beforeEach, afterAll, describe, test, vi } from 'vitest'
 
 import BaseCommand from '../../../../src/commands/base-command.ts'
 import { createBuildCommand } from '../../../../src/commands/build/index.ts'
-import { startMockApi } from '../../utils/mock-api-vitest.ts'
 import { getEnvironmentVariables } from '../../utils/mock-api.js'
 import { withSiteBuilder } from '../../utils/site-builder.ts'
+import { withMockApi } from '../../utils/mock-api.js'
 
 let configOptions = {}
 
@@ -48,20 +48,30 @@ routesWithCommand.splice(0, 1, { path: 'sites/site_id', response: siteInfoWithCo
 // eslint-disable-next-line workspace/no-process-cwd
 const originalCwd = process.cwd
 const originalConsoleLog = console.log
-const originalEnv = process.env
+
+const OLD_ENV = process.env
 
 describe('command/build', () => {
   beforeEach(() => {
+    vi.resetModules()
+    vi.clearAllMocks()
     configOptions = {}
     console.log = () => {}
+
+    Object.defineProperty(process, 'env', { value: {} })
   })
 
-  afterEach(() => {
+  afterAll(() => {
     // eslint-disable-next-line workspace/no-process-cwd
     process.cwd = originalCwd
     console.log = originalConsoleLog
-    Object.assign(process.env, originalEnv)
-    vi.clearAllMocks()
+
+    vi.resetModules()
+    vi.restoreAllMocks()
+
+    Object.defineProperty(process, 'env', {
+      value: OLD_ENV,
+    })
   })
 
   test('should pass feature flags to @netlify/config', async (t) => {
@@ -72,24 +82,22 @@ describe('command/build', () => {
     await withSiteBuilder(t, async (builder) => {
       // eslint-disable-next-line workspace/no-process-cwd
       process.cwd = () => builder.directory
-      const { apiUrl } = await startMockApi({ routes: routesWithCommand })
+      await withMockApi(routesWithCommand, async ({ apiUrl }) => {
+        const env = getEnvironmentVariables({ apiUrl })
+        Object.assign(process.env, env)
 
-      const env = getEnvironmentVariables({ apiUrl })
-      Object.assign(process.env, env)
+        builder.withNetlifyToml({ config: {} }).withStateFile({ siteId: siteInfo.id })
 
-      builder.withNetlifyToml({ config: {} }).withStateFile({ siteId: siteInfo.id })
+        await builder.build()
 
-      await builder.build()
+        const program = new BaseCommand('netlify')
 
-      const program = new BaseCommand('netlify')
+        createBuildCommand(program)
 
-      createBuildCommand(program)
+        await program.parseAsync(['', '', 'build', '--offline'])
 
-      await program.parseAsync(['', '', 'build', '--offline'], {
-        env: { ...env },
+        expect(configOptions.featureFlags).toEqual(siteInfo.feature_flags)
       })
-
-      expect(configOptions.featureFlags).toEqual(siteInfo.feature_flags)
     })
   })
 })
