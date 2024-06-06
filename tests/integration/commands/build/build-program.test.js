@@ -4,9 +4,8 @@ import { expect, beforeEach, afterAll, describe, test, vi } from 'vitest'
 
 import BaseCommand from '../../../../src/commands/base-command.ts'
 import { createBuildCommand } from '../../../../src/commands/build/index.ts'
-import { getEnvironmentVariables } from '../../utils/mock-api.js'
+import { getEnvironmentVariables, withMockApi } from '../../utils/mock-api.js'
 import { withSiteBuilder } from '../../utils/site-builder.ts'
-import { withMockApi } from '../../utils/mock-api.js'
 
 let configOptions = {}
 
