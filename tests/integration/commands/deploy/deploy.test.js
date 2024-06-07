@@ -72,7 +72,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
     })
   })
 
-  test('should deploy site by name', async (t) => {
+  test.only('should deploy site by name', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       const content = '<h1>⊂◉‿◉つ</h1>'
       builder

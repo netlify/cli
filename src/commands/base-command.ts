@@ -561,17 +561,24 @@ export default class BaseCommand extends Command {
     // TODO: remove typecast once we have proper types for the API
     const api = new NetlifyAPI(token || '', apiOpts) as NetlifyOptions['api']
 
-    const hasSite = (typeof flags.site === 'string' && flags.site) || !!state.get('siteId')
+    const hasSite = flags.siteId || (typeof flags.site === 'string' && flags.site) || state.get('siteId')
 
     let featureFlags: FeatureFlags = {}
     let site: any
-    if (api && hasSite && actionCommand.name() === 'build') {
-      if (typeof flags.site === 'string' && flags.site) {
-        site = await getSiteByName(api, flags.site)
-      } else {
-        site = await api.getSite({ siteId: state.get('siteId') })
+
+    if (api && hasSite) {
+      if (flags.siteId) {
+        site = await api.getSite({ siteId: flags.siteId })
+        featureFlags = site?.feature_flags
       }
-      featureFlags = site?.feature_flags
+      if (flags.site) {
+        site = await getSiteByName(api, flags.site)
+        featureFlags = site?.feature_flags
+      }
+      if (state.get('siteId')) {
+        site = await api.getSite({ siteId: state.get('siteId') })
+        featureFlags = site?.feature_flags
+      }
     }
 
     // ==================================================
