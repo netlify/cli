@@ -561,6 +561,9 @@ export default class BaseCommand extends Command {
     // TODO: remove typecast once we have proper types for the API
     const api = new NetlifyAPI(token || '', apiOpts) as NetlifyOptions['api']
 
+    console.log('apiOpts', apiOpts)
+    console.log('agent', agent)
+
     const siteId = flags.siteId || (typeof flags.site === 'string' && flags.site) || state.get('siteId')
 
     let featureFlags: FeatureFlags = {}
