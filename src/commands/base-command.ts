@@ -607,7 +607,9 @@ export default class BaseCommand extends Command {
 
     const globalConfig = await getGlobalConfig()
 
-    siteData.feature_flags = featureFlags
+    if (siteData) {
+      siteData.feature_flags = featureFlags
+    }
     // ==================================================
     // Perform analytics reporting
     // ==================================================
