@@ -569,7 +569,7 @@ export default class BaseCommand extends Command {
       if (typeof flags.site === 'string' && flags.site) {
         site = await getSiteByName(api, flags.site)
       } else {
-        site = await api.getSite(state.get('siteId'))
+        site = await api.getSite({ siteId: state.get('siteId') })
       }
       featureFlags = site?.feature_flags
     }
