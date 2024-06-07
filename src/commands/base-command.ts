@@ -564,20 +564,24 @@ export default class BaseCommand extends Command {
     const hasSite = flags.siteId || (typeof flags.site === 'string' && flags.site) || state.get('siteId')
 
     let featureFlags: FeatureFlags = {}
-    let site: any
+    let siteData: any
 
     if (api && hasSite) {
       if (flags.siteId) {
-        site = await api.getSite({ siteId: flags.siteId })
-        featureFlags = site?.feature_flags
-      }
-      if (flags.site) {
-        site = await getSiteByName(api, flags.site)
-        featureFlags = site?.feature_flags
-      }
-      if (state.get('siteId')) {
-        site = await api.getSite({ siteId: state.get('siteId') })
-        featureFlags = site?.feature_flags
+        siteData = await api.getSite({ siteId: flags.siteId })
+        featureFlags = siteData?.feature_flags
+      } else if (state.get('siteId')) {
+        siteData = await api.getSite({ siteId: state.get('siteId') })
+        featureFlags = siteData?.feature_flags
+      } else {
+        // If a user passes a site name as an option instead of a site ID to options.site, the siteInfo object
+        // will only have the property siteInfo.id. Checking for one of the other properties ensures that we can do
+        // a re-call of the api.getSite() that is done in @netlify/config so we have the proper site object in all
+        // commands.
+        // options.site as a site name (and not just site id) was introduced for the deploy command, so users could
+        // deploy by name along with by id
+        siteData = await getSiteByName(api, flags.site)
+        featureFlags = siteData?.feature_flags
       }
     }
 
@@ -593,24 +597,13 @@ export default class BaseCommand extends Command {
       configFilePath: packageConfig,
       state,
       token,
-      siteId: site?.id,
+      siteId: siteData?.id,
       featureFlags,
       ...apiUrlOpts,
     })
     const { buildDir, config, configPath, env, repositoryRoot, siteInfo } = cachedConfig
     env.NETLIFY_CLI_VERSION = { sources: ['internal'], value: version }
     const normalizedConfig = normalizeConfig(config)
-
-    // If a user passes a site name as an option instead of a site ID to options.site, the siteInfo object
-    // will only have the property siteInfo.id. Checking for one of the other properties ensures that we can do
-    // a re-call of the api.getSite() that is done in @netlify/config so we have the proper site object in all
-    // commands.
-    // options.site as a site name (and not just site id) was introduced for the deploy command, so users could
-    // deploy by name along with by id
-    let siteData = siteInfo
-    if (!siteData.url && flags.site) {
-      siteData = await getSiteByName(api, flags.site)
-    }
 
     const globalConfig = await getGlobalConfig()
 
