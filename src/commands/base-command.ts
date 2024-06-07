@@ -601,12 +601,13 @@ export default class BaseCommand extends Command {
       featureFlags,
       ...apiUrlOpts,
     })
-    const { buildDir, config, configPath, env, repositoryRoot, siteInfo } = cachedConfig
+    const { buildDir, config, configPath, env, repositoryRoot } = cachedConfig
     env.NETLIFY_CLI_VERSION = { sources: ['internal'], value: version }
     const normalizedConfig = normalizeConfig(config)
 
     const globalConfig = await getGlobalConfig()
 
+    siteData.feature_flags = featureFlags
     // ==================================================
     // Perform analytics reporting
     // ==================================================
