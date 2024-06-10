@@ -567,10 +567,14 @@ export default class BaseCommand extends Command {
 
     if (api && hasSite) {
       if (flags.siteId) {
+        console.log('flags.siteId', flags.siteId)
         siteData = await api.getSite({ siteId: flags.siteId })
       } else if (state.get('siteId')) {
+        console.log({ state })
+        console.log("state.get('siteId')", state.get('siteId'))
         siteData = await api.getSite({ siteId: state.get('siteId') })
       } else {
+        console.log('flags.site', flags.site)
         // If a user passes a site name as an option instead of a site ID to options.site, the siteInfo object
         // will only have the property siteInfo.id. Checking for one of the other properties ensures that we can do
         // a re-call of the api.getSite() that is done in @netlify/config so we have the proper site object in all

@@ -38,8 +38,6 @@ export const startMockApi = ({ routes, silent }) => {
   })
 
   app.all('*', function onRequest(req, res) {
-    console.log('req', req)
-    console.log('routes', routes)
     addRequest(requests, req)
     if (!silent) {
       console.warn(`Route not found: (${req.method.toUpperCase()}) ${req.url}`)
