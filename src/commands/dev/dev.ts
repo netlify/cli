@@ -205,6 +205,7 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
 
   // TODO: We should consolidate this with the existing config watcher.
   const getUpdatedConfig = async () => {
+    // TODO: Call API to get site and pass feature flags as props
     const { config: newConfig } = await command.getConfig({
       cwd: command.workingDir,
       offline: true,

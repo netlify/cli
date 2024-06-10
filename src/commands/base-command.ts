@@ -563,16 +563,13 @@ export default class BaseCommand extends Command {
 
     const hasSite = flags.siteId || (typeof flags.site === 'string' && flags.site) || state.get('siteId')
 
-    let featureFlags: FeatureFlags = {}
     let siteData: any
 
     if (api && hasSite) {
       if (flags.siteId) {
         siteData = await api.getSite({ siteId: flags.siteId })
-        featureFlags = siteData?.feature_flags
       } else if (state.get('siteId')) {
         siteData = await api.getSite({ siteId: state.get('siteId') })
-        featureFlags = siteData?.feature_flags
       } else {
         // If a user passes a site name as an option instead of a site ID to options.site, the siteInfo object
         // will only have the property siteInfo.id. Checking for one of the other properties ensures that we can do
@@ -581,7 +578,6 @@ export default class BaseCommand extends Command {
         // options.site as a site name (and not just site id) was introduced for the deploy command, so users could
         // deploy by name along with by id
         siteData = await getSiteByName(api, flags.site)
-        featureFlags = siteData?.feature_flags
       }
     }
 
@@ -598,17 +594,17 @@ export default class BaseCommand extends Command {
       state,
       token,
       siteId: siteData?.id,
-      featureFlags,
+      featureFlags: siteData?.feature_flags,
       ...apiUrlOpts,
     })
-    const { buildDir, config, configPath, env, repositoryRoot } = cachedConfig
+    const { buildDir, config, configPath, env, repositoryRoot, siteInfo } = cachedConfig
     env.NETLIFY_CLI_VERSION = { sources: ['internal'], value: version }
     const normalizedConfig = normalizeConfig(config)
 
     const globalConfig = await getGlobalConfig()
 
     if (siteData) {
-      siteData.feature_flags = featureFlags
+      siteInfo.feature_flags = siteData.feature_flags
     }
     // ==================================================
     // Perform analytics reporting
@@ -654,7 +650,7 @@ export default class BaseCommand extends Command {
         },
       },
       // Site information retrieved using the API (api.getSite())
-      siteInfo: siteData,
+      siteInfo: siteData ?? siteInfo,
       // Configuration from netlify.[toml/yml]
       config: normalizedConfig,
       // Used to avoid calling @netlify/config again
