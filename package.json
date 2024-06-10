@@ -186,7 +186,7 @@
     "zod": "3.23.8"
   },
   "devDependencies": {
-    "@babel/preset-react": "7.24.6",
+    "@babel/preset-react": "7.24.7",
     "@netlify/eslint-config-node": "7.0.1",
     "@netlify/functions": "2.7.0",
     "@sindresorhus/slugify": "2.2.1",
