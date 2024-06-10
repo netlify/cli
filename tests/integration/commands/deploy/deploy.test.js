@@ -53,7 +53,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
     await callCli(['sites:delete', siteId, '--force'])
   })
 
-  test.only('should deploy site when dir flag is passed', async (t) => {
+  test('should deploy site when dir flag is passed', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       const content = '<h1>⊂◉‿◉つ</h1>'
       builder.withContentFile({
