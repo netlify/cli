@@ -71,6 +71,12 @@ const HELP_SEPARATOR_WIDTH = 5
  */
 const COMMANDS_WITHOUT_WORKSPACE_OPTIONS = new Set(['api', 'recipes', 'completion', 'status', 'switch', 'login', 'lm'])
 
+/**
+ * A list of commands where we need to fetch featureflags for config resolution
+ */
+const COMMANDS_WITH_FEATURE_FLAGS = new Set(['build', 'dev', 'deploy'])
+
+
 /** Formats a help list correctly with the correct indent */
 const formatHelpList = (textArray: string[]) => textArray.join('\n').replace(/^/gm, ' '.repeat(HELP_INDENT_WIDTH))
 
@@ -574,7 +580,7 @@ export default class BaseCommand extends Command {
 
     const siteId = siteIdByName || flags.siteId || (typeof flags.site === 'string' && flags.site) || state.get('siteId')
 
-    const needsFeatureFlagsToResolveConfig = ['build', 'dev', 'deploy'].includes(this.args[0])
+    const needsFeatureFlagsToResolveConfig = COMMANDS_WITH_FEATURE_FLAGS.has(actionCommand.name())
     let featureFlags: FeatureFlags = {}
     if (needsFeatureFlagsToResolveConfig && siteId) {
       const site = await api.getSite({ siteId })
