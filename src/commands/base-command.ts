@@ -564,7 +564,7 @@ export default class BaseCommand extends Command {
 
     let siteData: any
 
-    if (api && hasSite) {
+    if (api.accessToken && hasSite) {
       if (flags.siteId) {
         siteData = await api.getSite({ siteId: flags.siteId })
       } else if (state.get('siteId')) {
