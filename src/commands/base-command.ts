@@ -561,10 +561,11 @@ export default class BaseCommand extends Command {
     const api = new NetlifyAPI(token || '', apiOpts) as NetlifyOptions['api']
 
     const hasSite = flags.siteId || (typeof flags.site === 'string' && flags.site) || state.get('siteId')
+    const needsSiteData = this.args[0] === 'build' || this.args[0] === 'dev'
 
     let siteData: any
 
-    if (api.accessToken && hasSite) {
+    if (needsSiteData && api.accessToken && hasSite) {
       if (flags.siteId) {
         siteData = await api.getSite({ siteId: flags.siteId })
       } else if (state.get('siteId')) {
