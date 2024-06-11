@@ -70,12 +70,10 @@ describe('command/build', () => {
 
         await builder.withNetlifyToml({ config: {} }).withStateFile({ siteId: siteInfo.id }).build()
 
-        const program = createBuildCommand(new BaseCommand('netlify'))
-
-        await program.parseAsync(['', '', 'build'])
+        await createBuildCommand(new BaseCommand('netlify')).parseAsync(['', '', 'build'])
         expect(configOptions.featureFlags).toEqual(siteInfo.feature_flags)
 
-        await program.parseAsync(['', '', 'build', '--offline'])
+        await createBuildCommand(new BaseCommand('netlify')).parseAsync(['', '', 'build', '--offline'])
         expect(configOptions.featureFlags, 'should not call API in offline mode').toEqual({})
       })
     })

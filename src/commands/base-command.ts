@@ -175,6 +175,8 @@ export default class BaseCommand extends Command {
   /** The current workspace package we should execute the commands in  */
   workspacePackage?: string
 
+  featureFlags: FeatureFlags = {}
+
   /**
    * IMPORTANT this function will be called for each command!
    * Don't do anything expensive in there.
@@ -580,10 +582,9 @@ export default class BaseCommand extends Command {
     const siteId = siteIdByName || flags.siteId || (typeof flags.site === 'string' && flags.site) || state.get('siteId')
 
     const needsFeatureFlagsToResolveConfig = COMMANDS_WITH_FEATURE_FLAGS.has(actionCommand.name())
-    let featureFlags: FeatureFlags = {}
     if (api.accessToken && !flags.offline && needsFeatureFlagsToResolveConfig && siteId) {
       const site = await api.getSite({ siteId })
-      featureFlags = site.feature_flags
+      actionCommand.featureFlags = site.feature_flags
     }
 
     // ==================================================
@@ -598,7 +599,6 @@ export default class BaseCommand extends Command {
       configFilePath: packageConfig,
       token,
       siteId,
-      featureFlags,
       ...apiUrlOpts,
     })
     const { buildDir, config, configPath, env, repositoryRoot, siteInfo } = cachedConfig
@@ -677,7 +677,6 @@ export default class BaseCommand extends Command {
     pathPrefix?: string
     scheme?: string
     siteId?: string
-    featureFlags?: FeatureFlags
   }): ReturnType<typeof resolveConfig> {
     // the flags that are passed to the command like `--debug` or `--offline`
     const flags = this.opts()
@@ -698,7 +697,7 @@ export default class BaseCommand extends Command {
         scheme: config.scheme,
         offline: config.offline ?? flags.offline,
         siteFeatureFlagPrefix: 'cli',
-        featureFlags: config.featureFlags,
+        featureFlags: this.featureFlags,
       })
     } catch (error_) {
       // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
