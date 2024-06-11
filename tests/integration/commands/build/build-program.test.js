@@ -76,7 +76,7 @@ describe('command/build', () => {
         expect(configOptions.featureFlags).toEqual(siteInfo.feature_flags)
 
         await program.parseAsync(['', '', 'build', '--offline'])
-        expect(configOptions.featureFlags, "should not call API in offline mode").toEqual({})
+        expect(configOptions.featureFlags, 'should not call API in offline mode').toEqual({})
       })
     })
   })

@@ -76,7 +76,6 @@ const COMMANDS_WITHOUT_WORKSPACE_OPTIONS = new Set(['api', 'recipes', 'completio
  */
 const COMMANDS_WITH_FEATURE_FLAGS = new Set(['build', 'dev', 'deploy'])
 
-
 /** Formats a help list correctly with the correct indent */
 const formatHelpList = (textArray: string[]) => textArray.join('\n').replace(/^/gm, ' '.repeat(HELP_INDENT_WIDTH))
 
