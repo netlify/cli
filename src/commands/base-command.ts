@@ -560,25 +560,25 @@ export default class BaseCommand extends Command {
     // TODO: remove typecast once we have proper types for the API
     const api = new NetlifyAPI(token || '', apiOpts) as NetlifyOptions['api']
 
-    const hasSite = flags.siteId || (typeof flags.site === 'string' && flags.site) || state.get('siteId')
-    const needsSiteData = this.args[0] === 'build' || this.args[0] === 'dev'
+    // If a user passes a site name as an option instead of a site ID to options.site, the siteInfo object
+    // will only have the property siteInfo.id. Checking for one of the other properties ensures that we can do
+    // a re-call of the api.getSite() that is done in @netlify/config so we have the proper site object in all
+    // commands.
+    // options.site as a site name (and not just site id) was introduced for the deploy command, so users could
+    // deploy by name along with by id
+    let siteIdByName = ''
+    if (flags.site) {
+      const site = await getSiteByName(api, flags.site)
+      siteIdByName = site.id
+    }
 
-    let siteData: any
+    const siteId = siteIdByName || flags.siteId || (typeof flags.site === 'string' && flags.site) || state.get('siteId')
 
-    if (needsSiteData && api.accessToken && hasSite) {
-      if (flags.siteId) {
-        siteData = await api.getSite({ siteId: flags.siteId })
-      } else if (state.get('siteId')) {
-        siteData = await api.getSite({ siteId: state.get('siteId') })
-      } else {
-        // If a user passes a site name as an option instead of a site ID to options.site, the siteInfo object
-        // will only have the property siteInfo.id. Checking for one of the other properties ensures that we can do
-        // a re-call of the api.getSite() that is done in @netlify/config so we have the proper site object in all
-        // commands.
-        // options.site as a site name (and not just site id) was introduced for the deploy command, so users could
-        // deploy by name along with by id
-        siteData = await getSiteByName(api, flags.site)
-      }
+    const needsFeatureFlagsToResolveConfig = ['build', 'dev', 'deploy'].includes(this.args[0])
+    let featureFlags: FeatureFlags = {}
+    if (needsFeatureFlagsToResolveConfig && siteId) {
+      const site = await api.getSite({ siteId })
+      featureFlags = site.feature_flags
     }
 
     // ==================================================
@@ -592,8 +592,8 @@ export default class BaseCommand extends Command {
       // The config flag needs to be resolved from the actual process working directory
       configFilePath: packageConfig,
       token,
-      siteId: siteData?.id,
-      featureFlags: siteData?.feature_flags,
+      siteId,
+      featureFlags,
       ...apiUrlOpts,
     })
     const { buildDir, config, configPath, env, repositoryRoot, siteInfo } = cachedConfig
@@ -602,9 +602,6 @@ export default class BaseCommand extends Command {
 
     const globalConfig = await getGlobalConfig()
 
-    if (siteData) {
-      siteInfo.feature_flags = siteData.feature_flags
-    }
     // ==================================================
     // Perform analytics reporting
     // ==================================================
@@ -649,7 +646,7 @@ export default class BaseCommand extends Command {
         },
       },
       // Site information retrieved using the API (api.getSite())
-      siteInfo: siteData ?? siteInfo,
+      siteInfo,
       // Configuration from netlify.[toml/yml]
       config: normalizedConfig,
       // Used to avoid calling @netlify/config again
