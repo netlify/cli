@@ -591,7 +591,6 @@ export default class BaseCommand extends Command {
       packagePath: this.workspacePackage,
       // The config flag needs to be resolved from the actual process working directory
       configFilePath: packageConfig,
-      state,
       token,
       siteId: siteData?.id,
       featureFlags: siteData?.feature_flags,
@@ -667,8 +666,6 @@ export default class BaseCommand extends Command {
   async getConfig(config: {
     cwd: string
     token?: string | null
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    state?: any
     offline?: boolean
     /** An optional path to the netlify configuration file e.g. netlify.toml */
     configFilePath?: string
