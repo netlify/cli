@@ -13,10 +13,9 @@ vi.mock('@netlify/config', async (importOriginal) => {
   const original = await importOriginal()
   return {
     ...original,
-    resolveConfig: async (options) => {
-      const config = await original.resolveConfig(options)
+    resolveConfig: (options) => {
       configOptions = options
-      return config
+      return original.resolveConfig(options)
     },
   }
 })
@@ -27,12 +26,6 @@ const siteInfo = {
   name: 'site-name',
   feature_flags: { test_flag: true },
 }
-const siteInfoWithCommand = {
-  ...siteInfo,
-  build_settings: {
-    cmd: 'echo uiCommand',
-  },
-}
 const routes = [
   { path: 'sites/site_id', response: siteInfo },
   { path: 'sites/site_id/service-instances', response: [] },
@@ -41,14 +34,10 @@ const routes = [
     response: [{ slug: siteInfo.account_slug }],
   },
 ]
-const routesWithCommand = [...routes]
-routesWithCommand.splice(0, 1, { path: 'sites/site_id', response: siteInfoWithCommand })
-
 // eslint-disable-next-line workspace/no-process-cwd
 const originalCwd = process.cwd
 const originalConsoleLog = console.log
-
-const OLD_ENV = process.env
+const originalEnv = process.env
 
 describe('command/build', () => {
   beforeEach(() => {
@@ -56,21 +45,16 @@ describe('command/build', () => {
     vi.clearAllMocks()
     configOptions = {}
     console.log = () => {}
-
-    Object.defineProperty(process, 'env', { value: {} })
   })
 
   afterAll(() => {
     // eslint-disable-next-line workspace/no-process-cwd
     process.cwd = originalCwd
     console.log = originalConsoleLog
+    process.env = originalEnv
 
     vi.resetModules()
     vi.restoreAllMocks()
-
-    Object.defineProperty(process, 'env', {
-      value: OLD_ENV,
-    })
   })
 
   test('should pass feature flags to @netlify/config', async (t) => {
@@ -81,21 +65,18 @@ describe('command/build', () => {
     await withSiteBuilder(t, async (builder) => {
       // eslint-disable-next-line workspace/no-process-cwd
       process.cwd = () => builder.directory
-      await withMockApi(routesWithCommand, async ({ apiUrl }) => {
-        const env = getEnvironmentVariables({ apiUrl })
-        Object.assign(process.env, env)
+      await withMockApi(routes, async ({ apiUrl }) => {
+        process.env = getEnvironmentVariables({ apiUrl })
 
-        builder.withNetlifyToml({ config: {} }).withStateFile({ siteId: siteInfo.id })
+        await builder.withNetlifyToml({ config: {} }).withStateFile({ siteId: siteInfo.id }).build()
 
-        await builder.build()
+        const program = createBuildCommand(new BaseCommand('netlify'))
 
-        const program = new BaseCommand('netlify')
-
-        createBuildCommand(program)
+        await program.parseAsync(['', '', 'build'])
+        expect(configOptions.featureFlags).toEqual(siteInfo.feature_flags)
 
         await program.parseAsync(['', '', 'build', '--offline'])
-
-        expect(configOptions.featureFlags).toEqual(siteInfo.feature_flags)
+        expect(configOptions.featureFlags, "should not call API in offline mode").toEqual({})
       })
     })
   })
