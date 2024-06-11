@@ -582,7 +582,7 @@ export default class BaseCommand extends Command {
 
     const needsFeatureFlagsToResolveConfig = COMMANDS_WITH_FEATURE_FLAGS.has(actionCommand.name())
     let featureFlags: FeatureFlags = {}
-    if (needsFeatureFlagsToResolveConfig && siteId) {
+    if (!flags.offline && needsFeatureFlagsToResolveConfig && siteId) {
       const site = await api.getSite({ siteId })
       featureFlags = site.feature_flags
     }
