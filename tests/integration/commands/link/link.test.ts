@@ -8,28 +8,13 @@ import { callCli } from '../../utils/call-cli.js'
 import { getCLIOptions, withMockApi } from '../../utils/mock-api.js'
 import { withSiteBuilder } from '../../utils/site-builder.ts'
 
-const siteInfo = {
-  account_slug: 'test-account',
-  id: 'site_id',
-  name: 'site-name',
-}
-
-const routes = [
-  { path: 'sites/site_id', response: siteInfo },
-  { path: 'sites/site_id/service-instances', response: [] },
-  {
-    path: 'accounts',
-    response: [{ slug: siteInfo.account_slug }],
-  },
-]
-
 describe('link command', () => {
   test('should create gitignore in repository root when is root', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       await builder.withGit().build()
 
       await withMockApi(
-        routes,
+        [],
         async ({ apiUrl }) => {
           await callCli(['link'], getCLIOptions({ builder, apiUrl }))
 
@@ -48,7 +33,7 @@ describe('link command', () => {
         await builder.withGit().withNetlifyToml({ config: {}, pathPrefix: projectPath }).build()
 
         await withMockApi(
-          routes,
+          [],
           async ({ apiUrl }) => {
             const options = getCLIOptions({ builder, apiUrl })
             await callCli(['link'], { ...options, cwd: join(builder.directory, projectPath) })
