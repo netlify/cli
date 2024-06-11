@@ -16,6 +16,7 @@ const HOOK_TIMEOUT = 30_000
 
 interface MockApiOptions {
   routes: Route[]
+  silent?: boolean
 }
 
 export interface FixtureTestContext {
@@ -155,6 +156,9 @@ export async function setupFixtureTests(
         if (typeof options.devServer === 'object' && options.devServer.args) {
           args.push(...options.devServer.args)
         }
+
+        console.log(`apiUrl: ${mockApi?.apiUrl}`)
+        console.log(`args: ${args}`)
 
         devServer = await startDevServer({
           serve: typeof options.devServer === 'object' && options.devServer.serve,

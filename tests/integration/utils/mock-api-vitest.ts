@@ -57,6 +57,7 @@ const clearRequests = (requests) => {
 }
 
 export const startMockApi = ({ routes, silent }: MockApiOptions): Promise<MockApi> => {
+  console.log('routes', routes)
   const requests = []
   const app = express()
   app.use(urlencoded({ extended: true }))
