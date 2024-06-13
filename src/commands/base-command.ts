@@ -572,8 +572,12 @@ export default class BaseCommand extends Command {
 
     const needsFeatureFlagsToResolveConfig = COMMANDS_WITH_FEATURE_FLAGS.has(actionCommand.name())
     if (api.accessToken && !flags.offline && needsFeatureFlagsToResolveConfig && actionCommand.siteId) {
-      const site = await api.getSite({ siteId: actionCommand.siteId })
-      actionCommand.featureFlags = site.feature_flags
+      try {
+        const site = await api.getSite({ siteId: actionCommand.siteId })
+        actionCommand.featureFlags = site.feature_flags
+      } catch {
+        // if the site is not found, that could mean that the user passed a site name, not an ID
+      }
     }
 
     // ==================================================
