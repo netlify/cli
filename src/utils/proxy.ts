@@ -5,6 +5,7 @@ import http, { ServerResponse } from 'http'
 import https from 'https'
 import { isIPv6 } from 'net'
 import path from 'path'
+import process from 'process'
 import { Duplex } from 'stream'
 import util from 'util'
 import zlib from 'zlib'
@@ -24,6 +25,7 @@ import { locatePath } from 'locate-path'
 import { Match } from 'netlify-redirector'
 import pFilter from 'p-filter'
 import toReadableStream from 'to-readable-stream'
+import throttle from 'lodash/throttle.js'
 
 import { BaseCommand } from '../commands/index.js'
 import { $TSFixMe, NetlifyOptions } from '../commands/types.js'
@@ -229,6 +231,13 @@ const alternativePathsFor = function (url) {
 
   return paths
 }
+
+const notifyActivity = throttle((api: NetlifyOptions['api'], siteId: string, devServerId: string) => {
+  // eslint-disable-next-line promise/prefer-await-to-callbacks, promise/prefer-await-to-then
+  api.markDevServerActivity({ siteId, devServerId }).catch((error) => {
+    console.error(`${NETLIFYDEVWARN} Failed to notify activity`, error)
+  })
+}, 30 * 1000)
 
 const serveRedirect = async function ({
   env,
@@ -718,6 +727,7 @@ const initializeProxy = async function ({
 const onRequest = async (
   {
     addonsUrls,
+    api,
     edgeFunctionsProxy,
     env,
     functionsRegistry,
@@ -790,6 +800,10 @@ const onRequest = async (
     framework: settings.framework,
   }
 
+  if (api && process.env.NETLIFY_DEV_SERVER_ID) {
+    notifyActivity(api, siteInfo.id, process.env.NETLIFY_DEV_SERVER_ID)
+  }
+
   if (match) {
     // We don't want to generate an ETag for 3xx redirects.
     // @ts-expect-error TS(7031) FIXME: Binding element 'statusCode' implicitly has an 'an... Remove this comment to see the full error message
@@ -831,6 +845,7 @@ type EdgeFunctionsProxy = Awaited<ReturnType<typeof initializeEdgeFunctionsProxy
 export const startProxy = async function ({
   accountId,
   addonsUrls,
+  api,
   blobsContext,
   command,
   config,
@@ -920,6 +935,7 @@ export const startProxy = async function ({
     imageProxy,
     siteInfo,
     env,
+    api,
   })
   const primaryServer = settings.https
     ? https.createServer({ cert: settings.https.cert, key: settings.https.key }, onRequestWithOptions)
