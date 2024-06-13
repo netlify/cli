@@ -176,6 +176,7 @@ export default class BaseCommand extends Command {
   workspacePackage?: string
 
   featureFlags: FeatureFlags = {}
+  siteId?: string
 
   /**
    * IMPORTANT this function will be called for each command!
@@ -567,11 +568,11 @@ export default class BaseCommand extends Command {
     // TODO: remove typecast once we have proper types for the API
     const api = new NetlifyAPI(token || '', apiOpts) as NetlifyOptions['api']
 
-    const siteId = flags.siteId || (typeof flags.site === 'string' && flags.site) || state.get('siteId')
+    actionCommand.siteId = flags.siteId || (typeof flags.site === 'string' && flags.site) || state.get('siteId')
 
     const needsFeatureFlagsToResolveConfig = COMMANDS_WITH_FEATURE_FLAGS.has(actionCommand.name())
-    if (api.accessToken && !flags.offline && needsFeatureFlagsToResolveConfig && siteId) {
-      const site = await api.getSite({ siteId })
+    if (api.accessToken && !flags.offline && needsFeatureFlagsToResolveConfig && actionCommand.siteId) {
+      const site = await api.getSite({ siteId: actionCommand.siteId })
       actionCommand.featureFlags = site.feature_flags
     }
 
@@ -586,7 +587,6 @@ export default class BaseCommand extends Command {
       // The config flag needs to be resolved from the actual process working directory
       configFilePath: packageConfig,
       token,
-      siteId,
       ...apiUrlOpts,
     })
     const { buildDir, config, configPath, env, repositoryRoot, siteInfo } = cachedConfig
@@ -675,7 +675,6 @@ export default class BaseCommand extends Command {
     host?: string
     pathPrefix?: string
     scheme?: string
-    siteId?: string
   }): ReturnType<typeof resolveConfig> {
     // the flags that are passed to the command like `--debug` or `--offline`
     const flags = this.opts()
@@ -688,7 +687,7 @@ export default class BaseCommand extends Command {
         cwd: config.cwd,
         context: flags.context || process.env.CONTEXT || this.getDefaultContext(),
         debug: flags.debug,
-        siteId: config.siteId,
+        siteId: this.siteId,
         token: config.token,
         mode: 'cli',
         host: config.host,
