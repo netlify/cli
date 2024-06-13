@@ -385,7 +385,7 @@ describe('commands/env', () => {
   })
 
   describe('env:clone', () => {
-    test.only("should return without clone if there's no env in source site", async (t) => {
+    test("should return without clone if there's no env in source site", async (t) => {
       await withSiteBuilder(t, async (builder) => {
         await builder.build()
         const createRoutes = [
