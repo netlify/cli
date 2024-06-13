@@ -572,18 +572,11 @@ export default class BaseCommand extends Command {
 
     const needsFeatureFlagsToResolveConfig = COMMANDS_WITH_FEATURE_FLAGS.has(actionCommand.name())
     if (api.accessToken && !flags.offline && needsFeatureFlagsToResolveConfig && actionCommand.siteId) {
-      if (flags.site) {
-        // If a user passes a site name as an option instead of a site ID to options.site, the siteInfo object
-        // will only have the property siteInfo.id. Checking for one of the other properties ensures that we can do
-        // a re-call of the api.getSite() that is done in @netlify/config so we have the proper site object in all
-        // commands.
-        // options.site as a site name (and not just site id) was introduced for the deploy command, so users could
-        // deploy by name along with by id
-        const siteFromName = await getSiteByName(api, actionCommand.siteId)
-        actionCommand.featureFlags = siteFromName.feature_flags
-      } else {
+      try {
         const site = await api.getSite({ siteId: actionCommand.siteId })
         actionCommand.featureFlags = site.feature_flags
+      } catch {
+        // if the site is not found, that could mean that the user passed a site name, not an ID
       }
     }
 
@@ -603,6 +596,17 @@ export default class BaseCommand extends Command {
     const { buildDir, config, configPath, env, repositoryRoot, siteInfo } = cachedConfig
     env.NETLIFY_CLI_VERSION = { sources: ['internal'], value: version }
     const normalizedConfig = normalizeConfig(config)
+
+    // If a user passes a site name as an option instead of a site ID to options.site, the siteInfo object
+    // will only have the property siteInfo.id. Checking for one of the other properties ensures that we can do
+    // a re-call of the api.getSite() that is done in @netlify/config so we have the proper site object in all
+    // commands.
+    // options.site as a site name (and not just site id) was introduced for the deploy command, so users could
+    // deploy by name along with by id
+    let siteData = siteInfo
+    if (!siteData.url && flags.site) {
+      siteData = await getSiteByName(api, flags.site)
+    }
 
     const globalConfig = await getGlobalConfig()
 
@@ -650,7 +654,7 @@ export default class BaseCommand extends Command {
         },
       },
       // Site information retrieved using the API (api.getSite())
-      siteInfo,
+      siteInfo: siteData,
       // Configuration from netlify.[toml/yml]
       config: normalizedConfig,
       // Used to avoid calling @netlify/config again
