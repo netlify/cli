@@ -207,7 +207,6 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
     const { config: newConfig } = await command.getConfig({
       cwd: command.workingDir,
       offline: true,
-      state,
     })
     const normalizedNewConfig = normalizeConfig(newConfig)
 
