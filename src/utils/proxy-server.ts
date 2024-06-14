@@ -42,6 +42,7 @@ export const generateInspectSettings = (
 export const startProxyServer = async ({
   accountId,
   addonsUrls,
+  api,
   blobsContext,
   command,
   config,
@@ -64,6 +65,7 @@ export const startProxyServer = async ({
 }: {
   accountId: string
   addonsUrls: $TSFixMe
+  api?: NetlifyOptions['api']
   blobsContext?: BlobsContextWithEdgeAccess
   command: BaseCommand
   config: NetlifyOptions['config']
@@ -106,6 +108,7 @@ export const startProxyServer = async ({
     siteInfo,
     accountId,
     repositoryRoot,
+    api,
   })
   if (!url) {
     log(NETLIFYDEVERR, `Unable to start proxy server on port '${settings.port}'`)
