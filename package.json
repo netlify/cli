@@ -79,7 +79,7 @@
     "@netlify/edge-bundler": "12.0.1",
     "@netlify/edge-functions": "2.8.1",
     "@netlify/local-functions-proxy": "1.1.1",
-    "@netlify/zip-it-and-ship-it": "9.37.0",
+    "@netlify/zip-it-and-ship-it": "9.37.1",
     "@octokit/rest": "20.1.1",
     "@opentelemetry/api": "1.8.0",
     "ansi-escapes": "7.0.0",
