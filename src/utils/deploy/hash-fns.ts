@@ -2,9 +2,7 @@ import { readFile } from 'fs/promises'
 import path from 'path'
 import { promisify } from 'util'
 
-import { zipFunctions } from '@netlify/zip-it-and-ship-it'
-import type { TrafficRules } from '@netlify/zip-it-and-ship-it/dist/manifest.js'
-import type { FunctionResult } from '@netlify/zip-it-and-ship-it/dist/utils/format_result.js'
+import { zipFunctions, type FunctionResult, type TrafficRules } from '@netlify/zip-it-and-ship-it'
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'from... Remove this comment to see the full error message
 import fromArray from 'from2-array'
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'pump... Remove this comment to see the full error message
