@@ -198,6 +198,7 @@ const hashFns = async (
         ...funcs,
         [curr.name]: {
           display_name: curr.displayName,
+          excluded_routes: curr.excludedRoutes,
           generator: curr.generator,
           routes: curr.routes,
           build_data: curr.buildData,
