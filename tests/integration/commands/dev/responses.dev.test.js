@@ -297,4 +297,104 @@ describe.concurrent('commands/responses.dev', () => {
       })
     })
   })
+
+  test('should inject html snippet from dev.processing.html.injections before closing head tag', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      const pageHtml = '<html><head><title>title</title></head><body><h1>header</h1></body></html>'
+
+      builder
+        .withNetlifyToml({
+          config: {
+            plugins: [{ package: './plugins/injector' }],
+          },
+        })
+        .withBuildPlugin({
+          name: 'injector',
+          plugin: {
+            onPreDev: async ({ netlifyConfig }) => {
+              netlifyConfig.dev = {
+                ...netlifyConfig.dev,
+                processing: {
+                  ...netlifyConfig.dev?.processing,
+                  html: {
+                    ...netlifyConfig.dev?.processing?.html,
+                    injections: [
+                      ...(netlifyConfig.dev?.processing?.html?.injections ?? []),
+                      {
+                        location: 'before_closing_head_tag',
+                        html: '<script type="text/javascript" src="https://www.example.com"></script>',
+                      },
+                    ],
+                  },
+                },
+              }
+            },
+          },
+        })
+        .withContentFile({
+          path: 'index.html',
+          content: pageHtml,
+        })
+
+      await builder.build()
+
+      await withDevServer({ cwd: builder.directory }, async (server) => {
+        const response = await fetch(server.url)
+        const htmlResponse = await response.text()
+        t.expect(htmlResponse).toEqual(
+          pageHtml.replace('</head>', `<script type="text/javascript" src="https://www.example.com"></script></head>`),
+        )
+      })
+    })
+  })
+
+  test('should inject html snippet from dev.processing.html.injections before closing body tag', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      const pageHtml = '<html><head><title>title</title></head><body><h1>header</h1></body></html>'
+
+      builder
+        .withNetlifyToml({
+          config: {
+            plugins: [{ package: './plugins/injector' }],
+          },
+        })
+        .withBuildPlugin({
+          name: 'injector',
+          plugin: {
+            onPreDev: async ({ netlifyConfig }) => {
+              netlifyConfig.dev = {
+                ...netlifyConfig.dev,
+                processing: {
+                  ...netlifyConfig.dev?.processing,
+                  html: {
+                    ...netlifyConfig.dev?.processing?.html,
+                    injections: [
+                      ...(netlifyConfig.dev?.processing?.html?.injections ?? []),
+                      {
+                        location: 'before_closing_body_tag',
+                        html: '<script type="text/javascript" src="https://www.example.com"></script>',
+                      },
+                    ],
+                  },
+                },
+              }
+            },
+          },
+        })
+        .withContentFile({
+          path: 'index.html',
+          content: pageHtml,
+        })
+
+      await builder.build()
+
+      await withDevServer({ cwd: builder.directory }, async (server) => {
+        const response = await fetch(server.url)
+        const htmlResponse = await response.text()
+        t.expect(htmlResponse).toEqual(
+          pageHtml.replace('</body>', `<script type="text/javascript" src="https://www.example.com"></script></body>`),
+        )
+      })
+    })
+  })
 })

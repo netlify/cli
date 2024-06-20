@@ -148,7 +148,7 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
 
   // TODO: We should consolidate this with the existing config watcher.
   const getUpdatedConfig = async () => {
-    const { config: newConfig } = await command.getConfig({ cwd: command.workingDir, offline: true, state })
+    const { config: newConfig } = await command.getConfig({ cwd: command.workingDir, offline: true })
     const normalizedNewConfig = normalizeConfig(newConfig)
 
     return normalizedNewConfig
