@@ -800,10 +800,6 @@ const onRequest = async (
     framework: settings.framework,
   }
 
-  if (api && process.env.NETLIFY_DEV_SERVER_ID) {
-    notifyActivity(api, siteInfo.id, process.env.NETLIFY_DEV_SERVER_ID)
-  }
-
   if (match) {
     // We don't want to generate an ETag for 3xx redirects.
     // @ts-expect-error TS(7031) FIXME: Binding element 'statusCode' implicitly has an 'an... Remove this comment to see the full error message
@@ -830,6 +826,10 @@ const onRequest = async (
     (ct.endsWith('/x-www-form-urlencoded') || ct === 'multipart/form-data')
   ) {
     return proxy.web(req, res, { target: functionsServer })
+  }
+
+  if (req.method === 'GET' && api && process.env.NETLIFY_DEV_SERVER_ID) {
+    notifyActivity(api, siteInfo.id, process.env.NETLIFY_DEV_SERVER_ID)
   }
 
   proxy.web(req, res, options)
