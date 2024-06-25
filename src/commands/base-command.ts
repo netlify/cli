@@ -576,7 +576,7 @@ export default class BaseCommand extends Command {
       try {
         const site = await api.getSite({ siteId: actionCommand.siteId, feature_flags: 'cli' })
         actionCommand.featureFlags = site.feature_flags
-        this.accountId = site.account_id
+        actionCommand.accountId = site.account_id
       } catch {
         // if the site is not found, that could mean that the user passed a site name, not an ID
       }
