@@ -22,6 +22,7 @@ vi.mock('@netlify/config', async (importOriginal) => {
 
 const siteInfo = {
   account_slug: 'test-account',
+  account_id: 'account_id',
   id: 'site_id',
   name: 'site-name',
   feature_flags: { test_flag: true },
@@ -72,6 +73,7 @@ describe('command/build', () => {
 
         await createBuildCommand(new BaseCommand('netlify')).parseAsync(['', '', 'build'])
         expect(configOptions.featureFlags).toEqual(siteInfo.feature_flags)
+        expect(configOptions.accountId).toEqual(siteInfo.account_id)
 
         await createBuildCommand(new BaseCommand('netlify')).parseAsync(['', '', 'build', '--offline'])
         expect(configOptions.featureFlags, 'should not call API in offline mode').toEqual({})
