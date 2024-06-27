@@ -350,7 +350,11 @@ export const startFunctionsServer = async (
   } else {
     // The order of the function directories matters. Rightmost directories take
     // precedence.
-    const sourceDirectories = [internalFunctionsDir, frameworksAPIPaths.functions, settings.functions].filter(Boolean)
+    const sourceDirectories: string[] = [
+      internalFunctionsDir,
+      frameworksAPIPaths.functions.path,
+      settings.functions,
+    ].filter(Boolean)
 
     functionsDirectories.push(...sourceDirectories)
   }
