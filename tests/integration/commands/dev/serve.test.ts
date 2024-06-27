@@ -16,6 +16,9 @@ test.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true')('ntl serve should 
     await builder
       .withNetlifyToml({
         config: {
+          build: {
+            command: 'node build.mjs',
+          },
           plugins: [{ package: './plugins/deployblobs' }],
         },
       })
@@ -28,6 +31,25 @@ test.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true')('ntl serve should 
             await writeFile('.netlify/blobs/deploy/foo.txt', 'foo')
           },
         },
+      })
+      .withFunction({
+        config: { path: '/framework-function-1' },
+        path: 'framework-1.js',
+        pathPrefix: 'frameworks-api-seed/functions',
+        handler: async () => new Response('Frameworks API Function 1'),
+        runtimeAPIVersion: 2,
+      })
+      .withContentFile({
+        content: `
+          import { cp, readdir } from "fs/promises";
+          import { resolve } from "path";
+
+          const seedPath = resolve("frameworks-api-seed");
+          const destPath = resolve(".netlify/v1");
+
+          await cp(seedPath, destPath, { recursive: true });
+        `,
+        path: 'build.mjs',
       })
       .withContentFile({
         path: 'netlify/functions/index.ts',
@@ -54,8 +76,11 @@ test.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true')('ntl serve should 
       .build()
 
     await withDevServer({ cwd: builder.directory, serve: true }, async ({ url }) => {
-      const response = await fetch(new URL('/foo.txt', url)).then((res) => res.text())
-      t.expect(response).toEqual('foo')
+      const response1 = await fetch(new URL('/foo.txt', url))
+      t.expect(await response1.text()).toEqual('foo')
+
+      const response2 = await fetch(new URL('/framework-function-1', url))
+      t.expect(await response2.text()).toEqual('Frameworks API Function 1')
     })
   })
 })

@@ -468,11 +468,14 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
     })
   })
 
-  test('should deploy functions from internal functions directory', async (t) => {
+  test('should deploy functions from internal functions directory and Frameworks API', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       await builder
         .withNetlifyToml({
           config: {
+            build: {
+              command: 'node build.mjs',
+            },
             functions: { directory: 'functions' },
           },
         })
@@ -506,6 +509,13 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
             body: 'Internal 3',
           }),
         })
+        .withFunction({
+          config: { path: '/framework-function-1' },
+          path: 'framework-1.js',
+          pathPrefix: 'frameworks-api-seed/functions',
+          handler: async () => new Response('Frameworks API Function 1'),
+          runtimeAPIVersion: 2,
+        })
         .withContentFile({
           content: `
           export default async () => new Response("Internal V2 API")
@@ -520,6 +530,18 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
           `,
           path: '.netlify/functions-internal/func-4.mjs',
         })
+        .withContentFile({
+          content: `
+            import { cp, readdir } from "fs/promises";
+            import { resolve } from "path";
+
+            const seedPath = resolve("frameworks-api-seed");
+            const destPath = resolve(".netlify/v1");
+
+            await cp(seedPath, destPath, { recursive: true });
+          `,
+          path: 'build.mjs',
+        })
         .build()
 
       const { deploy_url: deployUrl } = await callCli(
@@ -531,19 +553,21 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         true,
       )
 
-      const [response1, response2, response3, response4, response5] = await Promise.all([
+      const [response1, response2, response3, response4, response5, response6] = await Promise.all([
         fetch(`${deployUrl}/.netlify/functions/func-1`).then((res) => res.text()),
         fetch(`${deployUrl}/.netlify/functions/func-2`).then((res) => res.text()),
         fetch(`${deployUrl}/.netlify/functions/func-3`).then((res) => res.text()),
         fetch(`${deployUrl}/.netlify/functions/func-4`),
         fetch(`${deployUrl}/internal-v2-func`).then((res) => res.text()),
+        fetch(`${deployUrl}/framework-function-1`).then((res) => res.text()),
       ])
 
       t.expect(response1).toEqual('User 1')
       t.expect(response2).toEqual('User 2')
       t.expect(response3).toEqual('Internal 3')
       t.expect(response4.status).toBe(404)
-      t.expect(response5, 'Internal V2 API')
+      t.expect(response5).toEqual('Internal V2 API')
+      t.expect(response6).toEqual('Frameworks API Function 1')
     })
   })
 

@@ -16,6 +16,7 @@ import {
   warn,
   watchDebounced,
 } from '../../utils/command-helpers.js'
+import { getFrameworksAPIPaths } from '../../utils/frameworks-api.js'
 import { INTERNAL_FUNCTIONS_FOLDER, SERVE_FUNCTIONS_FOLDER } from '../../utils/functions/functions.js'
 import type { BlobsContext } from '../blobs/blobs.js'
 import { BACKGROUND_FUNCTIONS_WARNING } from '../log.js'
@@ -28,8 +29,9 @@ export const DEFAULT_FUNCTION_URL_EXPRESSION = /^\/.netlify\/(functions|builders
 const TYPES_PACKAGE = '@netlify/functions'
 const ZIP_EXTENSION = '.zip'
 
-const isInternalFunction = (func: ListedFunction | NetlifyFunction) =>
-  func.mainFile.includes(getPathInProject([INTERNAL_FUNCTIONS_FOLDER]))
+const isInternalFunction = (func: ListedFunction | NetlifyFunction, frameworksAPIFunctionsPath: string) =>
+  func.mainFile.includes(getPathInProject([INTERNAL_FUNCTIONS_FOLDER])) ||
+  func.mainFile.includes(frameworksAPIFunctionsPath)
 
 /**
  * @typedef {"buildError" | "extracted" | "loaded" | "missing-types-package" | "reloaded" | "reloading" | "removed"} FunctionEvent
@@ -61,6 +63,7 @@ export class FunctionsRegistry {
   private projectRoot: string
   private isConnected: boolean
   private debug: boolean
+  private frameworksAPIPaths: ReturnType<typeof getFrameworksAPIPaths>
 
   constructor({
     blobsContext,
@@ -69,6 +72,7 @@ export class FunctionsRegistry {
     // @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'any' t... Remove this comment to see the full error message
     config,
     debug = false,
+    frameworksAPIPaths,
     isConnected = false,
     // @ts-expect-error TS(7031) FIXME: Binding element 'logLambdaCompat' implicitly has a... Remove this comment to see the full error message
     logLambdaCompat,
@@ -79,12 +83,19 @@ export class FunctionsRegistry {
     settings,
     // @ts-expect-error TS(7031) FIXME: Binding element 'timeouts' implicitly has an 'any'... Remove this comment to see the full error message
     timeouts,
-  }: { projectRoot: string; debug?: boolean; isConnected?: boolean; blobsContext: BlobsContext } & object) {
+  }: {
+    projectRoot: string
+    debug?: boolean
+    frameworksAPIPaths: ReturnType<typeof getFrameworksAPIPaths>
+    isConnected?: boolean
+    blobsContext: BlobsContext
+  } & object) {
     // @ts-expect-error TS(2339) FIXME: Property 'capabilities' does not exist on type 'Fu... Remove this comment to see the full error message
     this.capabilities = capabilities
     // @ts-expect-error TS(2339) FIXME: Property 'config' does not exist on type 'Function... Remove this comment to see the full error message
     this.config = config
     this.debug = debug
+    this.frameworksAPIPaths = frameworksAPIPaths
     this.isConnected = isConnected
     this.projectRoot = projectRoot
     // @ts-expect-error TS(2339) FIXME: Property 'timeouts' does not exist on type 'Functi... Remove this comment to see the full error message
@@ -484,9 +495,9 @@ export class FunctionsRegistry {
       functions
         .filter(
           (func) =>
-            isInternalFunction(func) &&
+            isInternalFunction(func, this.frameworksAPIPaths.functions.path) &&
             this.functions.has(func.name) &&
-            !isInternalFunction(this.functions.get(func.name)!),
+            !isInternalFunction(this.functions.get(func.name)!, this.frameworksAPIPaths.functions.path),
         )
         .map((func) => func.name),
     )

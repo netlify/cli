@@ -23,6 +23,7 @@ import {
 import detectServerSettings, { getConfigWithPlugins } from '../../utils/detect-server-settings.js'
 import { UNLINKED_SITE_MOCK_ID, getDotEnvVariables, getSiteInformation, injectEnvVariables } from '../../utils/dev.js'
 import { getEnvelopeEnv } from '../../utils/env/index.js'
+import { getFrameworksAPIPaths } from '../../utils/frameworks-api.js'
 import { getInternalFunctionsDir } from '../../utils/functions/functions.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import openBrowser from '../../utils/open-browser.js'
@@ -78,6 +79,10 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
     ensureExists: true,
     packagePath: command.workspacePackage,
   })
+
+  const frameworksAPIPaths = getFrameworksAPIPaths(site.root, command.workspacePackage)
+
+  await frameworksAPIPaths.functions.ensureExists()
 
   let settings: ServerSettings
   try {
