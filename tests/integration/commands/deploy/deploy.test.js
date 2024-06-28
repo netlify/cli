@@ -551,7 +551,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
 
             export default async () => new Response(greeting + ' from Frameworks API edge function 1');
           `,
-          pathPrefix: 'frameworks-api-seed/edge-functions',
+          path: 'frameworks-api-seed/edge-functions',
         })
         .withContentFile({
           content: `export const greeting = 'Hello'`,
