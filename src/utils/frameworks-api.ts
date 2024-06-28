@@ -17,7 +17,7 @@ export type FrameworksAPIPaths = ReturnType<typeof getFrameworksAPIPaths>
  * Returns an object containing the paths for all the operations of the
  * Frameworks API. Each key maps to an object containing a `path` property with
  * the path of the operation, an `exists` method that returns whether the path
- * exists, and an `ensureExists` methos that creates it in case it doesn't.
+ * exists, and an `ensureExists` method that creates it in case it doesn't.
  */
 export const getFrameworksAPIPaths = (basePath: string, packagePath?: string) => {
   const root = resolve(basePath, packagePath || '', '.netlify/v1')
