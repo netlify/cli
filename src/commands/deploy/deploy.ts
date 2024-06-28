@@ -33,6 +33,7 @@ import {
 import { DEFAULT_DEPLOY_TIMEOUT } from '../../utils/deploy/constants.js'
 import { deploySite } from '../../utils/deploy/deploy-site.js'
 import { getEnvelopeEnv } from '../../utils/env/index.js'
+import { getFrameworksAPIPaths } from '../../utils/frameworks-api.js'
 import { getFunctionsManifestPath, getInternalFunctionsDir } from '../../utils/functions/index.js'
 import openBrowser from '../../utils/open-browser.js'
 import BaseCommand from '../base-command.js'
@@ -460,12 +461,15 @@ const runDeploy = async ({
     deployId = results.id
 
     const internalFunctionsFolder = await getInternalFunctionsDir({ base: site.root, packagePath, ensureExists: true })
+    const frameworksAPIPaths = getFrameworksAPIPaths(site.root, packagePath)
+
+    await frameworksAPIPaths.functions.ensureExists()
 
     // The order of the directories matter: zip-it-and-ship-it will prioritize
     // functions from the rightmost directories. In this case, we want user
     // functions to take precedence over internal functions.
-    const functionDirectories = [internalFunctionsFolder, functionsFolder].filter((folder): folder is string =>
-      Boolean(folder),
+    const functionDirectories = [internalFunctionsFolder, frameworksAPIPaths.functions.path, functionsFolder].filter(
+      (folder): folder is string => Boolean(folder),
     )
     const manifestPath = skipFunctionsCache ? null : await getFunctionsManifestPath({ base: site.root, packagePath })
 

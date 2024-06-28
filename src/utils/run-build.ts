@@ -34,11 +34,11 @@ const copyConfig = async (configPath, destinationFolder) => {
   return newConfigPath
 }
 
-/**
- * @param {string} basePath
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'basePath' implicitly has an 'any' type.
-const cleanInternalDirectory = async (basePath) => {
+const cleanInternalDirectory = async (basePath?: string) => {
+  if (!basePath) {
+    return
+  }
+
   const ops = [INTERNAL_FUNCTIONS_FOLDER, INTERNAL_EDGE_FUNCTIONS_FOLDER, 'netlify.toml'].map((name) => {
     const fullPath = path.resolve(basePath, getPathInProject([name]))
 

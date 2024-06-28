@@ -6,6 +6,7 @@ import { describe, expect, test, vi } from 'vitest'
 
 import { FunctionsRegistry } from '../../../../dist/lib/functions/registry.js'
 import { watchDebounced } from '../../../../dist/utils/command-helpers.js'
+import { getFrameworksAPIPaths } from '../../../../dist/utils/frameworks-api.js'
 
 const duplicateFunctions = [
   {
@@ -45,8 +46,11 @@ vi.mock('../../../../dist/utils/command-helpers.js', async () => {
 })
 
 test('registry should only pass functions config to zip-it-and-ship-it', async () => {
+  const projectRoot = '/projectRoot'
+  const frameworksAPIPaths = getFrameworksAPIPaths(projectRoot)
   const functionsRegistry = new FunctionsRegistry({
-    projectRoot: '/projectRoot',
+    frameworksAPIPaths,
+    projectRoot,
     config: { functions: { '*': {} }, plugins: ['test'] },
   })
   const prepareDirectoryScanStub = vi.spyOn(FunctionsRegistry, 'prepareDirectoryScan').mockImplementation(() => {})
@@ -86,6 +90,7 @@ describe('the registry handles duplicate functions based on extension precedence
       config: {},
       timeouts: { syncFunctions: 1, backgroundFunctions: 1 },
       settings: { port: 8888 },
+      frameworksAPIPaths: getFrameworksAPIPaths(projectRoot),
     })
     const prepareDirectoryScanStub = vi.spyOn(FunctionsRegistry, 'prepareDirectoryScan').mockImplementation(() => {})
     const setupDirectoryWatcherStub = vi.spyOn(functionsRegistry, 'setupDirectoryWatcher').mockImplementation(() => {})
@@ -102,7 +107,9 @@ describe('the registry handles duplicate functions based on extension precedence
 })
 
 test('should add included_files to watcher', async () => {
-  const registry = new FunctionsRegistry({})
+  const registry = new FunctionsRegistry({
+    frameworksAPIPaths: getFrameworksAPIPaths('/project-root'),
+  })
   const func = {
     name: '',
     config: { functions: { '*': { included_files: ['include/*', '!include/a.txt'] } } },
