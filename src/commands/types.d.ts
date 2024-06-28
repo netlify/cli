@@ -2,7 +2,9 @@ import type { NetlifyConfig } from "@netlify/build";
 import type { NetlifyTOML } from '@netlify/build-info'
 import type { NetlifyAPI } from 'netlify'
 
+import type { FrameworksAPIPaths } from "../utils/frameworks-api.ts";
 import StateConfig from '../utils/state-config.js'
+
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type $TSFixMe = any;
@@ -69,4 +71,5 @@ export type NetlifyOptions = {
   cachedConfig: Record<string, $TSFixMe> & { env: EnvironmentVariables }
   globalConfig: $TSFixMe
   state: StateConfig
+  frameworksAPIPaths: FrameworksAPIPaths
 }

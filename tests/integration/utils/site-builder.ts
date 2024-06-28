@@ -113,20 +113,24 @@ export class SiteBuilder {
   withEdgeFunction({
     config,
     handler,
+    imports = '',
     internal = false,
     name = 'function',
     pathPrefix = '',
   }: {
     config?: any
     handler: string | Function
+    imports?: string
     internal?: boolean
     name?: string
     pathPrefix?: string
   }) {
-    const edgeFunctionsDirectory = internal ? '.netlify/edge-functions' : 'netlify/edge-functions'
-    const dest = path.join(this.directory, pathPrefix, edgeFunctionsDirectory, `${name}.js`)
+    const edgeFunctionsDirectory = pathPrefix ?? (internal ? '.netlify/edge-functions' : 'netlify/edge-functions')
+    const dest = path.join(this.directory, edgeFunctionsDirectory, `${name}.js`)
     this.tasks.push(async () => {
-      let content = typeof handler === 'string' ? handler : `export default ${handler.toString()}`
+      let content = `${imports};`
+
+      content += typeof handler === 'string' ? handler : `export default ${handler.toString()}`
 
       if (config) {
         content += `;export const config = ${JSON.stringify(config)}`
