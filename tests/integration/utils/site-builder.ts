@@ -125,7 +125,7 @@ export class SiteBuilder {
     name?: string
     pathPrefix?: string
   }) {
-    const edgeFunctionsDirectory = pathPrefix ?? (internal ? '.netlify/edge-functions' : 'netlify/edge-functions')
+    const edgeFunctionsDirectory = pathPrefix || (internal ? '.netlify/edge-functions' : 'netlify/edge-functions')
     const dest = path.join(this.directory, edgeFunctionsDirectory, `${name}.js`)
     this.tasks.push(async () => {
       let content = `${imports};`
