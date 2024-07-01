@@ -461,16 +461,17 @@ const runDeploy = async ({
     deployId = results.id
 
     const internalFunctionsFolder = await getInternalFunctionsDir({ base: site.root, packagePath, ensureExists: true })
-    const frameworksAPIPaths = getFrameworksAPIPaths(site.root, packagePath)
 
-    await frameworksAPIPaths.functions.ensureExists()
+    await command.netlify.frameworksAPIPaths.functions.ensureExists()
 
     // The order of the directories matter: zip-it-and-ship-it will prioritize
     // functions from the rightmost directories. In this case, we want user
     // functions to take precedence over internal functions.
-    const functionDirectories = [internalFunctionsFolder, frameworksAPIPaths.functions.path, functionsFolder].filter(
-      (folder): folder is string => Boolean(folder),
-    )
+    const functionDirectories = [
+      internalFunctionsFolder,
+      command.netlify.frameworksAPIPaths.functions.path,
+      functionsFolder,
+    ].filter((folder): folder is string => Boolean(folder))
     const manifestPath = skipFunctionsCache ? null : await getFunctionsManifestPath({ base: site.root, packagePath })
 
     const redirectsPath = `${deployFolder}/_redirects`

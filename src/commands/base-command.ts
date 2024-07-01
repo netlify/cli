@@ -35,6 +35,7 @@ import {
   warn,
 } from '../utils/command-helpers.js'
 import { FeatureFlags } from '../utils/feature-flags.js'
+import { getFrameworksAPIPaths } from '../utils/frameworks-api.js'
 import getGlobalConfig from '../utils/get-global-config.js'
 import { getSiteByName } from '../utils/get-site.js'
 import openBrowser from '../utils/open-browser.js'
@@ -665,6 +666,7 @@ export default class BaseCommand extends Command {
       globalConfig,
       // state of current site dir
       state,
+      frameworksAPIPaths: getFrameworksAPIPaths(buildDir, this.workspacePackage),
     }
     debug(`${this.name()}:init`)('end')
   }

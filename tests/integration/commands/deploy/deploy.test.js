@@ -542,6 +542,25 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
           `,
           path: 'build.mjs',
         })
+        .withEdgeFunction({
+          config: {
+            path: '/framework-edge-function-1',
+          },
+          handler: `
+            import { greeting } from 'alias:util';
+
+            export default async () => new Response(greeting + ' from Frameworks API edge function 1');
+          `,
+          path: 'frameworks-api-seed/edge-functions',
+        })
+        .withContentFile({
+          content: `export const greeting = 'Hello'`,
+          path: 'frameworks-api-seed/edge-functions/lib/util.ts',
+        })
+        .withContentFile({
+          content: JSON.stringify({ imports: { 'alias:util': './lib/util.ts' } }),
+          path: 'frameworks-api-seed/edge-functions/import_map.json',
+        })
         .build()
 
       const { deploy_url: deployUrl } = await callCli(
@@ -553,13 +572,14 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         true,
       )
 
-      const [response1, response2, response3, response4, response5, response6] = await Promise.all([
+      const [response1, response2, response3, response4, response5, response6, response7] = await Promise.all([
         fetch(`${deployUrl}/.netlify/functions/func-1`).then((res) => res.text()),
         fetch(`${deployUrl}/.netlify/functions/func-2`).then((res) => res.text()),
         fetch(`${deployUrl}/.netlify/functions/func-3`).then((res) => res.text()),
         fetch(`${deployUrl}/.netlify/functions/func-4`),
         fetch(`${deployUrl}/internal-v2-func`).then((res) => res.text()),
         fetch(`${deployUrl}/framework-function-1`).then((res) => res.text()),
+        fetch(`${deployUrl}/framework-edge-function-1`).then((res) => res.text()),
       ])
 
       t.expect(response1).toEqual('User 1')
@@ -568,6 +588,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
       t.expect(response4.status).toBe(404)
       t.expect(response5).toEqual('Internal V2 API')
       t.expect(response6).toEqual('Frameworks API Function 1')
+      t.expect(response7).toEqual('Hello from Frameworks API edge function 1')
     })
   })
 
