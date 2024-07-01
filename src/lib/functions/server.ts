@@ -348,7 +348,11 @@ export const startFunctionsServer = async (
   } else {
     // The order of the function directories matters. Rightmost directories take
     // precedence.
-    const sourceDirectories = [internalFunctionsDir, settings.functions].filter(Boolean)
+    const sourceDirectories: string[] = [
+      internalFunctionsDir,
+      command.netlify.frameworksAPIPaths.functions.path,
+      settings.functions,
+    ].filter(Boolean)
 
     functionsDirectories.push(...sourceDirectories)
   }
@@ -371,6 +375,7 @@ export const startFunctionsServer = async (
     capabilities,
     config,
     debug,
+    frameworksAPIPaths: command.netlify.frameworksAPIPaths,
     isConnected: Boolean(siteUrl),
     logLambdaCompat: isFeatureFlagEnabled('cli_log_lambda_compat', siteInfo),
     manifest,

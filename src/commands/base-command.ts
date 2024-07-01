@@ -35,6 +35,7 @@ import {
   warn,
 } from '../utils/command-helpers.js'
 import { FeatureFlags } from '../utils/feature-flags.js'
+import { getFrameworksAPIPaths } from '../utils/frameworks-api.js'
 import getGlobalConfig from '../utils/get-global-config.js'
 import { getSiteByName } from '../utils/get-site.js'
 import openBrowser from '../utils/open-browser.js'
@@ -177,6 +178,7 @@ export default class BaseCommand extends Command {
 
   featureFlags: FeatureFlags = {}
   siteId?: string
+  accountId?: string
 
   /**
    * IMPORTANT this function will be called for each command!
@@ -575,6 +577,7 @@ export default class BaseCommand extends Command {
       try {
         const site = await api.getSite({ siteId: actionCommand.siteId, feature_flags: 'cli' })
         actionCommand.featureFlags = site.feature_flags
+        actionCommand.accountId = site.account_id
       } catch {
         // if the site is not found, that could mean that the user passed a site name, not an ID
       }
@@ -663,6 +666,7 @@ export default class BaseCommand extends Command {
       globalConfig,
       // state of current site dir
       state,
+      frameworksAPIPaths: getFrameworksAPIPaths(buildDir, this.workspacePackage),
     }
     debug(`${this.name()}:init`)('end')
   }
@@ -685,6 +689,7 @@ export default class BaseCommand extends Command {
 
     try {
       return await resolveConfig({
+        accountId: this.accountId,
         config: config.configFilePath,
         packagePath: config.packagePath,
         repositoryRoot: config.repositoryRoot,
