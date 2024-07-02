@@ -2,6 +2,7 @@ import { copyFile, mkdir, rm, unlink, writeFile } from 'fs/promises'
 import os from 'os'
 import path from 'path'
 import process from 'process'
+import { inspect } from 'util'
 
 import slugify from '@sindresorhus/slugify'
 import execa from 'execa'
@@ -73,20 +74,36 @@ export class SiteBuilder {
   }
 
   withFunction({
+    config,
     esm = false,
     handler,
     path: filePath,
     pathPrefix = 'functions',
+    runtimeAPIVersion,
   }: {
+    config?: object
     esm?: boolean
     handler: any
     path: string
     pathPrefix?: string
+    runtimeAPIVersion?: number
   }) {
     const dest = path.join(this.directory, pathPrefix, filePath)
     this.tasks.push(async () => {
       await ensureDir(path.dirname(dest))
-      const file = esm ? `export const handler = ${handler.toString()}` : `exports.handler = ${handler.toString()}`
+
+      let file = ''
+
+      if (runtimeAPIVersion === 2) {
+        file = `const handler = ${handler.toString()}; export default handler;`
+
+        if (config) {
+          file += `export const config = ${inspect(config)};`
+        }
+      } else {
+        file = esm ? `export const handler = ${handler.toString()}` : `exports.handler = ${handler.toString()}`
+      }
+
       await writeFile(dest, file)
     })
 
@@ -96,20 +113,23 @@ export class SiteBuilder {
   withEdgeFunction({
     config,
     handler,
-    internal = false,
+    imports = '',
     name = 'function',
+    path: edgeFunctionsDirectory = 'netlify/edge-functions',
     pathPrefix = '',
   }: {
     config?: any
     handler: string | Function
-    internal?: boolean
+    imports?: string
     name?: string
+    path?: string
     pathPrefix?: string
   }) {
-    const edgeFunctionsDirectory = internal ? '.netlify/edge-functions' : 'netlify/edge-functions'
     const dest = path.join(this.directory, pathPrefix, edgeFunctionsDirectory, `${name}.js`)
     this.tasks.push(async () => {
-      let content = typeof handler === 'string' ? handler : `export default ${handler.toString()}`
+      let content = `${imports};`
+
+      content += typeof handler === 'string' ? handler : `export default ${handler.toString()}`
 
       if (config) {
         content += `;export const config = ${JSON.stringify(config)}`
