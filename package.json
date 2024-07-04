@@ -77,7 +77,7 @@
     "@netlify/build-info": "7.14.0",
     "@netlify/config": "20.16.0",
     "@netlify/edge-bundler": "12.2.0",
-    "@netlify/edge-functions": "2.8.1",
+    "@netlify/edge-functions": "2.9.0",
     "@netlify/local-functions-proxy": "1.1.1",
     "@netlify/zip-it-and-ship-it": "9.37.5",
     "@octokit/rest": "20.1.1",
