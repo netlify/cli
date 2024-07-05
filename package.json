@@ -187,7 +187,7 @@
   "devDependencies": {
     "@babel/preset-react": "7.24.7",
     "@netlify/eslint-config-node": "7.0.1",
-    "@netlify/functions": "2.7.0",
+    "@netlify/functions": "2.8.1",
     "@sindresorhus/slugify": "2.2.1",
     "@types/fs-extra": "11.0.4",
     "@types/inquirer": "9.0.7",

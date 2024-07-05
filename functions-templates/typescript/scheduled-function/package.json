@@ -15,7 +15,7 @@
   "author": "Netlify",
   "license": "MIT",
   "dependencies": {
-    "@netlify/functions": "^2.7.0",
+    "@netlify/functions": "^2.8.1",
     "@types/node": "^20.0.0",
     "typescript": "^4.5.5"
   }
