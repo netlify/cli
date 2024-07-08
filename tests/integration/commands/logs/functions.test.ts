@@ -1,3 +1,5 @@
+import process from 'node:process'
+
 import { Mock, afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 
 import BaseCommand from '../../../../src/commands/base-command.js'
@@ -20,7 +22,7 @@ vi.mock('../../../../src/utils/command-helpers.js', async () => {
   }
 })
 
-vi.mock('inquirer', () => ({
+vi.mock('enquirer', () => ({
   default: {
     prompt: vi.fn().mockResolvedValue({ result: 'cool-function' }),
     registerPrompt: vi.fn(),
@@ -55,7 +57,9 @@ const routes = [
     response: {
       functions: [
         {
+          // eslint-disable-next-line id-length
           n: 'cool-function',
+          // eslint-disable-next-line id-length
           a: 'account',
           oid: 'function-id',
         },
@@ -77,6 +81,7 @@ describe('logs:function command', () => {
     createLogsFunctionCommand(program)
   })
 
+  // eslint-disable-next-line no-empty-pattern
   test('should setup the functions stream correctly', async ({}) => {
     const { apiUrl } = await startMockApi({ routes })
     const spyWebsocket = getWebSocket as unknown as Mock<any, any>
@@ -96,6 +101,7 @@ describe('logs:function command', () => {
     expect(spyOn).toHaveBeenCalledTimes(4)
   })
 
+  // eslint-disable-next-line no-empty-pattern
   test('should send the correct payload to the websocket', async ({}) => {
     const { apiUrl } = await startMockApi({ routes })
     const spyWebsocket = getWebSocket as unknown as Mock<any, any>
@@ -114,10 +120,12 @@ describe('logs:function command', () => {
     const setupCall = spyOn.mock.calls.find((args) => args[0] === 'open')
     expect(setupCall).toBeDefined()
 
+    // eslint-disable-next-line prefer-destructuring
     const openCallback = setupCall[1]
     openCallback()
 
     expect(spySend).toHaveBeenCalledOnce()
+    // eslint-disable-next-line prefer-destructuring
     const call = spySend.mock.calls[0]
     const [message] = call
     const body = JSON.parse(message)
@@ -128,6 +136,7 @@ describe('logs:function command', () => {
     expect(body.access_token).toEqual(env.NETLIFY_AUTH_TOKEN)
   })
 
+  // eslint-disable-next-line no-empty-pattern
   test('should print only specified log levels', async ({}) => {
     const { apiUrl } = await startMockApi({ routes })
     const spyWebsocket = getWebSocket as unknown as Mock<any, any>
@@ -144,6 +153,7 @@ describe('logs:function command', () => {
 
     await program.parseAsync(['', '', 'logs:function', '--level', 'info'])
     const messageCallback = spyOn.mock.calls.find((args) => args[0] === 'message')
+    // eslint-disable-next-line prefer-destructuring
     const messageCallbackFunc = messageCallback[1]
     const mockInfoData = {
       level: LOG_LEVELS.INFO,
@@ -160,6 +170,7 @@ describe('logs:function command', () => {
     expect(spyLog).toHaveBeenCalledTimes(1)
   })
 
+  // eslint-disable-next-line no-empty-pattern
   test('should print all the log levels', async ({}) => {
     const { apiUrl } = await startMockApi({ routes })
     const spyWebsocket = getWebSocket as unknown as Mock<any, any>
@@ -176,6 +187,7 @@ describe('logs:function command', () => {
 
     await program.parseAsync(['', '', 'logs:function'])
     const messageCallback = spyOn.mock.calls.find((args) => args[0] === 'message')
+    // eslint-disable-next-line prefer-destructuring
     const messageCallbackFunc = messageCallback[1]
     const mockInfoData = {
       level: LOG_LEVELS.INFO,

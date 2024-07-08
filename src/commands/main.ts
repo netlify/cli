@@ -1,10 +1,10 @@
 import process from 'process'
 
 import { Option } from 'commander'
+import Enquirer from 'enquirer'
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'envi... Remove this comment to see the full error message
 import envinfo from 'envinfo'
 import { closest } from 'fastest-levenshtein'
-import inquirer from 'inquirer'
 
 import { BANG, chalk, error, exit, log, NETLIFY_CYAN, USER_AGENT, warn } from '../utils/command-helpers.js'
 import execa from '../utils/execa.js'
@@ -55,6 +55,7 @@ process.on('uncaughtException', async (err) => {
     { exit: false },
   )
 
+  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   const systemInfo = await getSystemInfo()
 
   console.log(chalk.dim(err.stack || err))
@@ -153,11 +154,11 @@ const mainCommand = async function (options, command) {
   const suggestion = closest(command.args[0], allCommands)
 
   const applySuggestion = await new Promise((resolve) => {
-    const prompt = inquirer.prompt({
+    const prompt = Enquirer.prompt<any>({
       type: 'confirm',
       name: 'suggestion',
       message: `Did you mean ${chalk.blue(suggestion)}`,
-      default: false,
+      initial: false,
     })
 
     setTimeout(() => {

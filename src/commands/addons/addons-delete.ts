@@ -1,5 +1,5 @@
 import { OptionValues } from 'commander'
-import inquirer from 'inquirer'
+import Enquirer from 'enquirer'
 
 import { ADDON_VALIDATION, prepareAddonCommand } from '../../utils/addons/prepare.js'
 import { error, exit, log } from '../../utils/command-helpers.js'
@@ -12,11 +12,11 @@ export const addonsDelete = async (addonName: string, options: OptionValues, com
     validation: ADDON_VALIDATION.EXISTS,
   })
   if (!options.force && !options.f) {
-    const { wantsToDelete } = await inquirer.prompt({
+    const { wantsToDelete } = await Enquirer.prompt<any>({
       type: 'confirm',
       name: 'wantsToDelete',
       message: `Are you sure you want to delete the ${addonName} add-on? (to skip this prompt, pass a --force flag)`,
-      default: false,
+      initial: false,
     })
     if (!wantsToDelete) {
       exit()

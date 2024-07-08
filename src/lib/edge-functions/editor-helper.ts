@@ -1,6 +1,6 @@
 import { env } from 'process'
 
-import inquirer from 'inquirer'
+import Enquirer from 'enquirer'
 
 import { runRecipe } from '../../commands/recipes/recipes.js'
 
@@ -23,11 +23,11 @@ export const promptEditorHelper = async ({ NETLIFYDEVLOG, chalk, config, log, re
   state.set(STATE_PROMPT_PROPERTY, true)
 
   const message = 'Would you like to configure VS Code to use Edge Functions?'
-  const { confirm } = await inquirer.prompt({
+  const { confirm } = await Enquirer.prompt<any>({
     type: 'confirm',
     name: 'confirm',
     message,
-    default: true,
+    initial: true,
   })
 
   if (!confirm) {

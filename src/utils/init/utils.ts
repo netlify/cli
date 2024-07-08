@@ -4,7 +4,7 @@ import path from 'path'
 import { NetlifyConfig } from '@netlify/build'
 import { Settings } from '@netlify/build-info'
 import cleanDeep from 'clean-deep'
-import inquirer from 'inquirer'
+import Enquirer from 'enquirer'
 
 import BaseCommand from '../../commands/base-command.js'
 import { $TSFixMe } from '../../commands/types.js'
@@ -69,25 +69,24 @@ const normalizeSettings = (settings: Partial<Settings>, config: NetlifyConfig, c
 const getPromptInputs = ({ defaultBaseDir, defaultBuildCmd, defaultBuildDir }) => {
   const inputs = [
     defaultBaseDir !== undefined &&
-      defaultBaseDir !== '' && {
-        type: 'input',
-        name: 'baseDir',
-        message: 'Base directory `(blank for current dir):',
-        default: defaultBaseDir,
-      },
+    defaultBaseDir !== '' && {
+      type: 'input',
+      name: 'baseDir',
+      message: 'Base directory `(blank for current dir):',
+      initial: defaultBaseDir,
+    },
     {
       type: 'input',
       name: 'buildCmd',
       message: 'Your build command (hugo build/yarn run build/etc):',
-      // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-      filter: (val) => (val === '' ? '# no build command' : val),
-      default: defaultBuildCmd,
+      result: (val: string) => (val === '' ? '# no build command' : val),
+      initial: defaultBuildCmd,
     },
     {
       type: 'input',
       name: 'buildDir',
       message: 'Directory to deploy (blank for current dir):',
-      default: defaultBuildDir,
+      initial: defaultBuildDir,
     },
   ].filter(Boolean)
 
@@ -107,12 +106,13 @@ export const getBuildSettings = async ({ command, config }: { command: BaseComma
     log()
   }
 
-  const { baseDir, buildCmd, buildDir } = await inquirer.prompt(
+  const { baseDir, buildCmd, buildDir } = await Enquirer.prompt<any>(
     getPromptInputs({
       defaultBaseDir,
       defaultBuildCmd,
       defaultBuildDir,
-    }),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    }) as any,
   )
 
   // @ts-expect-error TS(7006) FIXME: Parameter 'plugin' implicitly has an 'any' type.
@@ -179,12 +179,12 @@ export const saveNetlifyToml = async ({
     return
   }
 
-  const { makeNetlifyTOML } = await inquirer.prompt([
+  const { makeNetlifyTOML } = await Enquirer.prompt<any>([
     {
       type: 'confirm',
       name: 'makeNetlifyTOML',
       message: 'No netlify.toml detected. Would you like to create one with these build settings?',
-      default: true,
+      initial: true,
     },
   ])
   if (makeNetlifyTOML) {

@@ -1,5 +1,5 @@
 import { OptionValues } from 'commander'
-import inquirer from 'inquirer'
+import Enquirer from 'enquirer'
 import isEmpty from 'lodash/isEmpty.js'
 
 import compare from '../../utils/addons/compare.js'
@@ -88,14 +88,14 @@ export const addonsConfig = async (addonName: string, options: OptionValues, com
       return false
     }
 
-    const updatePrompt = await inquirer.prompt([
+    const updatePrompt = await Enquirer.prompt<any>([
       {
-        type: 'confirm',
-        name: 'updateNow',
-        message: `Do you want to update config values?`,
-        default: false,
-      },
-    ])
+      type: 'confirm',
+      name: 'updateNow',
+      message: `Do you want to update config values?`,
+      initial: false,
+    },
+  ])
     if (!updatePrompt.updateNow) {
       log('Sounds good! Exiting configuration...')
       return false
@@ -111,7 +111,8 @@ export const addonsConfig = async (addonName: string, options: OptionValues, com
       config: manifest.config,
       configValues: currentConfig,
     })
-    const userInput = await inquirer.prompt(prompts)
+    // TODO: Fix type argument
+    const userInput = await Enquirer.prompt<any>(prompts as any)
     // Merge user input with the flags specified
     const newConfig = updateConfigValues(manifest.config, currentConfig, userInput)
 
@@ -134,14 +135,14 @@ export const addonsConfig = async (addonName: string, options: OptionValues, com
     })
     log()
 
-    const confirmPrompt = await inquirer.prompt([
+    const confirmPrompt = await Enquirer.prompt<any>([
       {
-        type: 'confirm',
-        name: 'confirmChange',
-        message: `Do you want to publish the updated "${addonName} add-on" settings for ${chalk.cyan(siteData.name)}?`,
-        default: false,
-      },
-    ])
+      type: 'confirm',
+      name: 'confirmChange',
+      message: `Do you want to publish the updated "${addonName} add-on" settings for ${chalk.cyan(siteData.name)}?`,
+      initial: false,
+    },
+  ])
 
     if (!confirmPrompt.confirmChange) {
       log('Canceling changes... You are good to go!')

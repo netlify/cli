@@ -1,8 +1,8 @@
 import { basename } from 'path'
 
 import { OptionValues } from 'commander'
+import Enquirer from 'enquirer'
 import { closest } from 'fastest-levenshtein'
-import inquirer from 'inquirer'
 
 import { NETLIFYDEVERR, chalk, log } from '../../utils/command-helpers.js'
 import BaseCommand from '../base-command.js'
@@ -52,11 +52,11 @@ export const recipesCommand = async (recipeName: string, options: OptionValues, 
     const recipeNames = recipes.map(({ name }) => name)
     const suggestion = closest(recipeName, recipeNames)
     const applySuggestion = await new Promise((resolve) => {
-      const prompt = inquirer.prompt({
+      const prompt = Enquirer.prompt<any>({
         type: 'confirm',
         name: 'suggestion',
         message: `Did you mean ${chalk.blue(suggestion)}`,
-        default: false,
+        initial: false,
       })
 
       setTimeout(() => {

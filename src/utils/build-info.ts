@@ -1,33 +1,34 @@
+/* eslint-disable default-param-last */
 import { Settings } from '@netlify/build-info'
 import { isCI } from 'ci-info'
+import Enquirer from 'enquirer'
 import fuzzy from 'fuzzy'
-import inquirer from 'inquirer'
 
 import BaseCommand from '../commands/base-command.js'
 
 import { chalk, log } from './command-helpers.js'
 
 /**
- * Filters the inquirer settings based on the input
+ * Filters the enquirer settings based on the input
  */
 const filterSettings = function (
-  scriptInquirerOptions: ReturnType<typeof formatSettingsArrForInquirer>,
+  scriptEnquirerOptions: ReturnType<typeof formatSettingsArrForEnquirer>,
   input: string,
 ) {
-  const filterOptions = scriptInquirerOptions.map((scriptInquirerOption) => scriptInquirerOption.name)
+  const filterOptions = scriptEnquirerOptions.map((scriptEnquirerOption) => scriptEnquirerOption.name)
   // TODO: remove once https://github.com/sindresorhus/eslint-plugin-unicorn/issues/1394 is fixed
   // eslint-disable-next-line unicorn/no-array-method-this-argument
   const filteredSettings = fuzzy.filter(input, filterOptions)
   const filteredSettingNames = new Set(
     filteredSettings.map((filteredSetting) => (input ? filteredSetting.string : filteredSetting)),
   )
-  return scriptInquirerOptions.filter((t) => filteredSettingNames.has(t.name))
+  return scriptEnquirerOptions.filter((t) => filteredSettingNames.has(t.name))
 }
 
 /**
- * Formats the settings to present it as an array for the inquirer input so that it can choose one
+ * Formats the settings to present it as an array for the enquirer input so that it can choose one
  */
-const formatSettingsArrForInquirer = function (settings: Settings[], type = 'dev') {
+const formatSettingsArrForEnquirer = function (settings: Settings[], type = 'dev') {
   return settings.map((setting) => {
     const cmd = type === 'dev' ? setting.devCommand : setting.buildCommand
     return {
@@ -96,16 +97,17 @@ export const detectFrameworkSettings = async (
     }
 
     // multiple matching detectors, make the user choose
-    const scriptInquirerOptions = formatSettingsArrForInquirer(settings, type)
-    const { chosenSettings } = await inquirer.prompt<{ chosenSettings: Settings }>({
+    const scriptEnquirerOptions = formatSettingsArrForEnquirer(settings, type)
+    const { chosenSettings } = await Enquirer.prompt<{ chosenSettings: Settings }>({
       name: 'chosenSettings',
       message: `Multiple possible ${type} commands found`,
-      // @ts-expect-error is not known by the types as it uses the autocomplete plugin
       type: 'autocomplete',
-      source(_: string, input = '') {
-        if (!input) return scriptInquirerOptions
+      // @ts-expect-error Add enquirer types
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      suggest(input = '', _choices: any) {
+        if (!input) return scriptEnquirerOptions
         // only show filtered results
-        return filterSettings(scriptInquirerOptions, input)
+        return filterSettings(scriptEnquirerOptions, input)
       },
     })
 

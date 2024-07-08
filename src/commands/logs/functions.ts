@@ -1,5 +1,5 @@
 import { OptionValues } from 'commander'
-import inquirer from 'inquirer'
+import Enquirer from 'enquirer'
 
 import { chalk, log } from '../../utils/command-helpers.js'
 import { getWebSocket } from '../../utils/websockets/index.js'
@@ -49,9 +49,9 @@ export const logsFunction = async (functionName: string | undefined, options: Op
   if (functionName) {
     selectedFunction = functions.find((fn: any) => fn.n === functionName)
   } else {
-    const { result } = await inquirer.prompt({
+    const { result } = await Enquirer.prompt<any>({
       name: 'result',
-      type: 'list',
+      type: 'select',
       message: 'Select a function',
       choices: functions.map((fn: any) => fn.n),
     })

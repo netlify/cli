@@ -1,6 +1,6 @@
 import process from 'process'
 
-import inquirer from 'inquirer'
+import Enquirer from 'enquirer'
 import { render } from 'prettyjson'
 import { afterAll, beforeEach, describe, expect, test, vi } from 'vitest'
 
@@ -55,7 +55,7 @@ vi.mock('prettyjson', async () => {
   }
 })
 
-vi.spyOn(inquirer, 'prompt').mockImplementation(() => Promise.resolve({ accountSlug: 'test-account' }))
+vi.spyOn(Enquirer, 'prompt').mockImplementation(() => Promise.resolve({ accountSlug: 'test-account' }))
 
 const siteInfo = {
   admin_url: 'https://app.netlify.com/sites/site-name/overview',

@@ -11,10 +11,8 @@ import { resolveConfig } from '@netlify/config'
 import { Command, Help, Option } from 'commander'
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'debu... Remove this comment to see the full error message
 import debug from 'debug'
+import Enquirer from 'enquirer'
 import { findUp } from 'find-up'
-import inquirer from 'inquirer'
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'inqu... Remove this comment to see the full error message
-import inquirerAutocompletePrompt from 'inquirer-autocomplete-prompt'
 import merge from 'lodash/merge.js'
 import { NetlifyAPI } from 'netlify'
 
@@ -27,11 +25,11 @@ import {
   exit,
   getToken,
   log,
-  version,
   normalizeConfig,
   padLeft,
   pollForToken,
   sortOptions,
+  version,
   warn,
 } from '../utils/command-helpers.js'
 import { FeatureFlags } from '../utils/feature-flags.js'
@@ -49,8 +47,6 @@ type Analytics = {
   payload?: Record<string, unknown>
 }
 
-// load the autocomplete plugin
-inquirer.registerPrompt('autocomplete', inquirerAutocompletePrompt)
 /** Netlify CLI client id. Lives in bot@netlify.com */
 // TODO: setup client for multiple environments
 const CLIENT_ID = 'd6f37de6614df7ae58664cfca524744d73807a377f5ee71f1a254f78412e3750'
@@ -121,14 +117,14 @@ async function selectWorkspace(project: Project, filter?: string): Promise<strin
       )
     }
 
-    const { result } = await inquirer.prompt({
+    const { result } = await Enquirer.prompt<any>({
       name: 'result',
-      // @ts-expect-error TS(2769) FIXME: No overload matches this call.
       type: 'autocomplete',
       message: 'Select the site you want to work with',
-      // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
-      source: (/** @type {string} */ _, input = '') =>
-        (project.workspace?.packages || [])
+      // @ts-expect-error Add enquirer types
+      // eslint-disable-next-line default-param-last
+      suggest: (input = '', _choices: any) =>
+         (project.workspace?.packages || [])
           .filter((pkg) => pkg.path.includes(input))
           .map((pkg) => ({
             name: `${pkg.name ? `${chalk.bold(pkg.name)}  ` : ''}${pkg.path}  ${chalk.dim(
@@ -270,6 +266,7 @@ export default class BaseCommand extends Command {
       return (
         parentCommand?.commands
           .filter((cmd) => {
+            // eslint-disable-next-line no-underscore-dangle
             if ((cmd as any)._hidden) return false
             // the root command
             if (this.name() === 'netlify') {
@@ -353,8 +350,10 @@ export default class BaseCommand extends Command {
       // Aliases
 
       // @ts-expect-error TS(2551) FIXME: Property '_aliases' does not exist on type 'Comman... Remove this comment to see the full error message
+      // eslint-disable-next-line no-underscore-dangle
       if (command._aliases.length !== 0) {
         // @ts-expect-error TS(2551) FIXME: Property '_aliases' does not exist on type 'Comman... Remove this comment to see the full error message
+        // eslint-disable-next-line no-underscore-dangle
         const aliases = command._aliases.map((alias) => formatItem(`${parentCommand.name()} ${alias}`, null, true))
         output = [...output, chalk.bold('ALIASES'), formatHelpList(aliases), '']
       }
@@ -397,7 +396,7 @@ export default class BaseCommand extends Command {
         duration,
         status,
       })
-    } catch {}
+    } catch { }
 
     if (error_ !== undefined) {
       error(error_ instanceof Error ? error_ : format(error_), { exit: false })

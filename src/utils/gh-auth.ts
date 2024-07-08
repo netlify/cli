@@ -3,8 +3,8 @@ import http from 'http'
 import process from 'process'
 
 import { Octokit } from '@octokit/rest'
+import Enquirer from 'enquirer'
 import getPort from 'get-port'
-import inquirer from 'inquirer'
 
 import { log } from './command-helpers.js'
 import createDeferred from './create-deferred.js'
@@ -25,9 +25,9 @@ const promptForAuthMethod = async () => {
   const authChoiceToken = 'Authorize with a GitHub personal access token'
   const authChoices = [authChoiceNetlify, authChoiceToken]
 
-  const { authMethod } = await inquirer.prompt([
+  const { authMethod } = await Enquirer.prompt<any>([
     {
-      type: 'list',
+      type: 'select',
       name: 'authMethod',
       message:
         'Netlify CLI needs access to your GitHub account to configure Webhooks and Deploy Keys. ' +
@@ -56,7 +56,7 @@ export const authWithNetlify = async () => {
       res.end(
         `${
           "<html><head><title>Logged in</title><script>if(history.replaceState){history.replaceState({},'','/')}</script><style>html{font-family:system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';line-height:1.5;background:rgb(18 24 31)}body{overflow:hidden;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;width:100vw;}h3{margin:0}p{margin: 1rem 0 0.5rem}.card{position:relative;display:flex;flex-direction:column;width:75%;max-width:364px;padding:24px;background:white;color:rgb(18 24 31);border-radius:8px;box-shadow:rgb(6 11 16 / 20%) 0px 16px 24px, rgb(6 11 16 / 30%) 0px 6px 30px, rgb(6 11 16 / 40%) 0px 8px 10px;}</style></head>" +
-          "<body><div class=card><h3>Logged in</h3><p>You're now logged into Netlify CLI with your "
+        "<body><div class=card><h3>Logged in</h3><p>You're now logged into Netlify CLI with your "
         }${parameters.get('provider')} credentials. Please close this window.</p></div>`,
       )
       server.close()
@@ -88,12 +88,12 @@ export const authWithNetlify = async () => {
 }
 
 const getPersonalAccessToken = async () => {
-  const { token } = await inquirer.prompt([
+  const { token } = await Enquirer.prompt<any>([
     {
       type: 'input',
       name: 'token',
       message: 'Your GitHub personal access token:',
-      filter: (input) => input.trim(),
+      result: (input) => input.trim(),
     },
   ])
 

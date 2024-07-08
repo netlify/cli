@@ -1,5 +1,5 @@
 import { getStore, listStores } from '@netlify/blobs'
-import inquirer from 'inquirer'
+import Enquirer from 'enquirer'
 import pMap from 'p-map'
 
 import BaseCommand from '../../commands/base-command.js'
@@ -47,11 +47,11 @@ export const run = async ({ args, command }: Options) => {
   const { stores } = await listStores(clientOptions)
 
   if (stores.includes(storeName)) {
-    const { confirmExistingStore } = await inquirer.prompt({
+    const { confirmExistingStore } = await Enquirer.prompt<any>({
       type: 'confirm',
       name: 'confirmExistingStore',
       message: `The store '${storeName}' already exists in the new format, which means it has already been migrated or it has been used with a newer version of the Netlify Blobs client. If you continue with the migration, any blobs from the legacy store will overwrite newer entries that have the same key. Do you want to proceed?`,
-      default: false,
+      initial: false,
     })
 
     if (!confirmExistingStore) {
@@ -59,11 +59,11 @@ export const run = async ({ args, command }: Options) => {
     }
   }
 
-  const { confirmMigration } = await inquirer.prompt({
+  const { confirmMigration } = await Enquirer.prompt<any>({
     type: 'confirm',
     name: 'confirmMigration',
     message: `You're about to migrate the store '${storeName}' with ${blobs.length} blobs. Do you want to proceed?`,
-    default: true,
+    initial: true,
   })
 
   if (!confirmMigration) {

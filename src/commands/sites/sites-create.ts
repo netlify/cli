@@ -1,5 +1,5 @@
 import { OptionValues } from 'commander'
-import inquirer from 'inquirer'
+import Enquirer from 'enquirer'
 import pick from 'lodash/pick.js'
 import prettyjson from 'prettyjson'
 
@@ -13,12 +13,13 @@ import { link } from '../link/link.js'
 // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
 export const getSiteNameInput = async (name) => {
   if (!name) {
-    const { name: nameInput } = await inquirer.prompt([
+    const { name: nameInput } = await Enquirer.prompt<any>([
       {
         type: 'input',
         name: 'name',
         message: 'Site name (leave blank for a random name; you can change it later):',
         validate: (input) =>
+          // @ts-expect-error ignore by now
           /^[a-zA-Z\d-]+$/.test(input || undefined) || 'Only alphanumeric characters and hyphens are allowed',
       },
     ])
@@ -37,9 +38,9 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand) =
 
   let { accountSlug } = options
   if (!accountSlug) {
-    const { accountSlug: accountSlugInput } = await inquirer.prompt([
+    const { accountSlug: accountSlugInput } = await Enquirer.prompt<any>([
       {
-        type: 'list',
+        type: 'select',
         name: 'accountSlug',
         message: 'Team:',
         // @ts-expect-error TS(7006) FIXME: Parameter 'account' implicitly has an 'any' type.

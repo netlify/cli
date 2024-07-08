@@ -31,7 +31,7 @@ export default function generatePrompts(settings) {
           // if current stage value set show as default
           if (configValues[key]) {
             // @ts-expect-error TS(2339) FIXME: Property 'default' does not exist on type '{ type:... Remove this comment to see the full error message
-            prompt.default = configValues[key]
+            prompt.initial = configValues[key]
           }
         } else if (typeof setting === 'boolean') {
           prompt = {
@@ -45,7 +45,9 @@ export default function generatePrompts(settings) {
 
       // For future use. Once UX is decided
       // const defaultValidation = (setting.required) ? validateRequired : noValidate
+      // eslint-disable-next-line @typescript-eslint/no-use-before-define
       const defaultValidation = noValidate
+      // eslint-disable-next-line @typescript-eslint/no-use-before-define
       const validateFunction = setting.pattern ? validate(setting.pattern) : defaultValidation
       const isRequiredText = setting.required ? ` (${chalk.yellow('required')})` : ''
       if (setting.type === 'string' || /string/.test(setting.type)) {
@@ -58,11 +60,11 @@ export default function generatePrompts(settings) {
         // if value previously set show it
         if (configValues[key]) {
           // @ts-expect-error TS(2339) FIXME: Property 'default' does not exist on type '{ type:... Remove this comment to see the full error message
-          prompt.default = configValues[key]
+          prompt.initial = configValues[key]
           // else show default value if provided
         } else if (setting.default) {
           // @ts-expect-error TS(2339) FIXME: Property 'default' does not exist on type '{ type:... Remove this comment to see the full error message
-          prompt.default = setting.default
+          prompt.initial = setting.default
         }
         return prompt
       }

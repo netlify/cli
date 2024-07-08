@@ -1,5 +1,5 @@
 import { OptionValues } from 'commander'
-import inquirer from 'inquirer'
+import Enquirer from 'enquirer'
 
 import { chalk, log } from '../../utils/command-helpers.js'
 import BaseCommand from '../base-command.js'
@@ -15,13 +15,13 @@ export const switchCommand = async (options: OptionValues, command: BaseCommand)
     {},
   )
 
-  const { accountSwitchChoice } = await inquirer.prompt([
+  const { accountSwitchChoice } = await Enquirer.prompt<any>([
     {
-      type: 'list',
+      type: 'select',
       name: 'accountSwitchChoice',
       message: 'Please select the account you want to use:',
       // @ts-expect-error TS(2769) FIXME: No overload matches this call.
-      choices: [...Object.entries(availableUsersChoices).map(([, val]) => val), LOGIN_NEW],
+      choices: [...Object.entries(availableUsersChoices).map(([, val]) => val as any), LOGIN_NEW],
     },
   ])
 

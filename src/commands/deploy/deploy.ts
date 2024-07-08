@@ -4,7 +4,7 @@ import { basename, resolve } from 'path'
 
 import { runCoreSteps } from '@netlify/build'
 import { OptionValues } from 'commander'
-import inquirer from 'inquirer'
+import Enquirer from 'enquirer'
 import isEmpty from 'lodash/isEmpty.js'
 import isObject from 'lodash/isObject.js'
 import { parseAllHeaders } from 'netlify-headers-parser'
@@ -98,13 +98,13 @@ const getDeployFolder = async ({
 
   if (!deployFolder) {
     log('Please provide a publish directory (e.g. "public" or "dist" or "."):')
-    const { promptPath } = await inquirer.prompt([
+    const { promptPath } = await Enquirer.prompt<any>([
       {
         type: 'input',
         name: 'promptPath',
         message: 'Publish directory',
-        default: '.',
-        filter: (input) => resolve(command.workingDir, input),
+        initial: '.',
+        result: (input) => resolve(command.workingDir, input),
       },
     ])
     deployFolder = promptPath as string
@@ -255,12 +255,12 @@ const SYNC_FILE_LIMIT = 1e2
 const prepareProductionDeploy = async ({ api, siteData }) => {
   if (isObject(siteData.published_deploy) && siteData.published_deploy.locked) {
     log(`\n${NETLIFYDEVERR} Deployments are "locked" for production context of this site\n`)
-    const { unlockChoice } = await inquirer.prompt([
+    const { unlockChoice } = await Enquirer.prompt<any>([
       {
         type: 'confirm',
         name: 'unlockChoice',
         message: 'Would you like to "unlock" deployments for production context to proceed?',
-        default: false,
+        initial: false,
       },
     ])
     if (!unlockChoice) exit(0)
@@ -364,7 +364,8 @@ const uploadDeployBlobs = async ({
   silent: boolean
   siteId: string
 }) => {
-  const statusCb = silent ? () => {} : deployProgressCb()
+  // eslint-disable-next-line @typescript-eslint/no-empty-function, unicorn/empty-brace-spaces
+  const statusCb = silent ? () => { } : deployProgressCb()
 
   statusCb({
     type: 'blobs-uploading',
@@ -508,6 +509,7 @@ const runDeploy = async ({
       fnDir: functionDirectories,
       functionsConfig,
 
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
       statusCb: silent ? () => {} : deployProgressCb(),
       deployTimeout,
       syncFileLimit: SYNC_FILE_LIMIT,
@@ -589,6 +591,7 @@ const bundleEdgeFunctions = async (options, command: BaseCommand) => {
   // eslint-disable-next-line n/prefer-global/process, unicorn/prefer-set-has
   const argv = process.argv.slice(2)
   const statusCb =
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     options.silent || argv.includes('--json') || argv.includes('--silent') ? () => {} : deployProgressCb()
 
   statusCb({
@@ -811,14 +814,14 @@ export const deploy = async (options: OptionValues, command: BaseCommand) => {
 
     const initializeOpts = [EXISTING_SITE, NEW_SITE]
 
-    const { initChoice } = await inquirer.prompt([
+    const { initChoice } = await Enquirer.prompt<any>([
       {
-        type: 'list',
-        name: 'initChoice',
-        message: 'What would you like to do?',
-        choices: initializeOpts,
-      },
-    ])
+      type: 'select',
+      name: 'initChoice',
+      message: 'What would you like to do?',
+      choices: initializeOpts,
+    },
+  ])
     // create site or search for one
     if (initChoice === NEW_SITE) {
       // @ts-expect-error TS(2322) FIXME: Type 'undefined' is not assignable to type '{}'.

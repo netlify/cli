@@ -1,5 +1,5 @@
 import { OptionValues } from 'commander'
-import inquirer from 'inquirer'
+import Enquirer from 'enquirer'
 import isEmpty from 'lodash/isEmpty.js'
 
 import { listSites } from '../../lib/api.js'
@@ -38,9 +38,9 @@ const linkPrompt = async (command, options) => {
   log()
   log(`${chalk.cyanBright('netlify link')} will connect this folder to a site on Netlify`)
   log()
-  const { linkType } = await inquirer.prompt([
+  const { linkType } = await Enquirer.prompt<any>([
     {
-      type: 'list',
+      type: 'select',
       name: 'linkType',
       message: 'How do you want to link this folder to a site?',
       choices: linkChoices,
@@ -87,9 +87,9 @@ Run ${chalk.cyanBright('git remote -v')} to see a list of your git remotes.`)
         log(`Found ${matchingSites.length} matching sites!`)
 
         // Prompt which options
-        const { selectedSite } = await inquirer.prompt([
+        const { selectedSite } = await Enquirer.prompt<any>([
           {
-            type: 'list',
+            type: 'select',
             name: 'selectedSite',
             message: 'Which site do you want to link?',
             // @ts-expect-error TS(7006) FIXME: Parameter 'matchingSite' implicitly has an 'any' t... Remove this comment to see the full error message
@@ -108,7 +108,7 @@ Run ${chalk.cyanBright('git remote -v')} to see a list of your git remotes.`)
     }
     case SITE_NAME_PROMPT: {
       kind = 'byName'
-      const { searchTerm } = await inquirer.prompt([
+      const { searchTerm } = await Enquirer.prompt<any>([
         {
           type: 'input',
           name: 'searchTerm',
@@ -143,12 +143,12 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
 
       if (matchingSites.length > 1) {
         log(`Found ${matchingSites.length} matching sites!`)
-        const { selectedSite } = await inquirer.prompt([
+        const { selectedSite } = await Enquirer.prompt<any>([
           {
-            type: 'list',
+            type: 'select',
             name: 'selectedSite',
             message: 'Which site do you want to link?',
-            paginated: true,
+            // paginated: true,
             // @ts-expect-error TS(7006) FIXME: Parameter 'matchingSite' implicitly has an 'any' t... Remove this comment to see the full error message
             choices: matchingSites.map((matchingSite) => ({ name: matchingSite.name, value: matchingSite })),
           },
@@ -180,12 +180,12 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
         error(`You don't have any sites yet. Run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
       }
 
-      const { selectedSite } = await inquirer.prompt([
+      const { selectedSite } = await Enquirer.prompt<any>([
         {
-          type: 'list',
+          type: 'select',
           name: 'selectedSite',
           message: 'Which site do you want to link?',
-          paginated: true,
+          // paginated: true,
           // @ts-expect-error TS(7006) FIXME: Parameter 'matchingSite' implicitly has an 'any' t... Remove this comment to see the full error message
           choices: sites.map((matchingSite) => ({ name: matchingSite.name, value: matchingSite })),
         },
@@ -198,7 +198,7 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
     }
     case SITE_ID_PROMPT: {
       kind = 'bySiteId'
-      const { siteId } = await inquirer.prompt([
+      const { siteId } = await Enquirer.prompt<any>([
         {
           type: 'input',
           name: 'siteId',
