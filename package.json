@@ -157,7 +157,7 @@
     "p-map": "7.0.2",
     "p-wait-for": "5.0.2",
     "parallel-transform": "1.2.0",
-    "parse-github-url": "1.0.2",
+    "parse-github-url": "1.0.3",
     "parse-gitignore": "2.0.0",
     "path-key": "4.0.0",
     "prettyjson": "1.2.5",
