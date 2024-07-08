@@ -1,5 +1,3 @@
-import { isCI } from 'ci-info'
-
 import { existsSync } from 'fs'
 import { join, relative, resolve } from 'path'
 import process from 'process'
@@ -8,6 +6,7 @@ import { format } from 'util'
 import { DefaultLogger, Project } from '@netlify/build-info'
 import { NodeFS, NoopLogger } from '@netlify/build-info/node'
 import { resolveConfig } from '@netlify/config'
+import { isCI } from 'ci-info'
 import { Command, Help, Option } from 'commander'
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'debu... Remove this comment to see the full error message
 import debug from 'debug'
@@ -117,12 +116,13 @@ async function selectWorkspace(project: Project, filter?: string): Promise<strin
       )
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { result } = await Enquirer.prompt<any>({
       name: 'result',
       type: 'autocomplete',
       message: 'Select the site you want to work with',
       // @ts-expect-error Add enquirer types
-      // eslint-disable-next-line default-param-last
+      // eslint-disable-next-line default-param-last, @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
       suggest: (input = '', _choices: any) =>
          (project.workspace?.packages || [])
           .filter((pkg) => pkg.path.includes(input))
@@ -266,7 +266,7 @@ export default class BaseCommand extends Command {
       return (
         parentCommand?.commands
           .filter((cmd) => {
-            // eslint-disable-next-line no-underscore-dangle
+            // eslint-disable-next-line no-underscore-dangle, @typescript-eslint/no-explicit-any
             if ((cmd as any)._hidden) return false
             // the root command
             if (this.name() === 'netlify') {
@@ -396,7 +396,7 @@ export default class BaseCommand extends Command {
         duration,
         status,
       })
-    } catch { }
+    } catch {}
 
     if (error_ !== undefined) {
       error(error_ instanceof Error ? error_ : format(error_), { exit: false })

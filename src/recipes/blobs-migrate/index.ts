@@ -47,6 +47,7 @@ export const run = async ({ args, command }: Options) => {
   const { stores } = await listStores(clientOptions)
 
   if (stores.includes(storeName)) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { confirmExistingStore } = await Enquirer.prompt<any>({
       type: 'confirm',
       name: 'confirmExistingStore',
@@ -59,6 +60,7 @@ export const run = async ({ args, command }: Options) => {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { confirmMigration } = await Enquirer.prompt<any>({
     type: 'confirm',
     name: 'confirmMigration',

@@ -88,6 +88,7 @@ export const addonsConfig = async (addonName: string, options: OptionValues, com
       return false
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updatePrompt = await Enquirer.prompt<any>([
       {
       type: 'confirm',
@@ -112,6 +113,7 @@ export const addonsConfig = async (addonName: string, options: OptionValues, com
       configValues: currentConfig,
     })
     // TODO: Fix type argument
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const userInput = await Enquirer.prompt<any>(prompts as any)
     // Merge user input with the flags specified
     const newConfig = updateConfigValues(manifest.config, currentConfig, userInput)
@@ -135,6 +137,7 @@ export const addonsConfig = async (addonName: string, options: OptionValues, com
     })
     log()
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const confirmPrompt = await Enquirer.prompt<any>([
       {
       type: 'confirm',
