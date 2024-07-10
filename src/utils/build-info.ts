@@ -4,6 +4,7 @@ import fuzzy from 'fuzzy'
 import inquirer from 'inquirer'
 
 import BaseCommand from '../commands/base-command.js'
+import { $TSFixMe } from '../commands/types.js'
 
 import { chalk, log } from './command-helpers.js'
 
@@ -121,4 +122,33 @@ command = "${chosenSettings.devCommand}"
 `)
     return chosenSettings
   }
+}
+
+/**
+ * Merges the settings from the heuristics with the cached config.
+ * Returns the updated cached config
+ * @param cachedConfig The cached config
+ * @param settings The settings from the heuristics
+ */
+export const getDefaultConfig = (settings?: Settings): $TSFixMe | undefined => {
+  if (!settings) {
+    return undefined
+  }
+
+  // TODO: We need proper types for the netlify configuration
+  const config: $TSFixMe = { build: {} }
+
+  if (settings.buildCommand) {
+    config.build.command = settings.buildCommand
+    config.build.commandOrigin = 'default'
+  }
+
+  if (settings.dist) {
+    config.build.publish = settings.dist
+    config.build.publishOrigin = 'default'
+  }
+
+  config.plugins = settings.plugins_recommended.map((plugin) => ({ package: plugin }))
+
+  return config
 }
