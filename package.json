@@ -70,7 +70,7 @@
     "prettier": "--ignore-path .eslintignore --loglevel=warn \"{src,tools,scripts,tests,.github}/**/*.{mjs,cjs,js,mts,md,yml,json,html,ts}\" \"*.{mjs,cjs,js,mts,yml,json,html,ts}\" \".*.{mjs,cjs,js,yml,json,html,ts}\" \"!CHANGELOG.md\" \"!**/*/package-lock.json\" \"!.github/**/*.md\""
   },
   "dependencies": {
-    "@bugsnag/js": "7.23.0",
+    "@bugsnag/js": "7.25.0",
     "@fastify/static": "7.0.4",
     "@netlify/blobs": "7.4.0",
     "@netlify/build": "29.51.3",
@@ -112,7 +112,7 @@
     "express-logging": "1.1.1",
     "extract-zip": "2.0.1",
     "fastest-levenshtein": "1.0.16",
-    "fastify": "4.27.0",
+    "fastify": "4.28.1",
     "find-up": "7.0.0",
     "flush-write-stream": "2.0.0",
     "folder-walker": "3.2.0",
