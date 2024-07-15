@@ -70,7 +70,7 @@
     "prettier": "--ignore-path .eslintignore --loglevel=warn \"{src,tools,scripts,tests,.github}/**/*.{mjs,cjs,js,mts,md,yml,json,html,ts}\" \"*.{mjs,cjs,js,mts,yml,json,html,ts}\" \".*.{mjs,cjs,js,yml,json,html,ts}\" \"!CHANGELOG.md\" \"!**/*/package-lock.json\" \"!.github/**/*.md\""
   },
   "dependencies": {
-    "@bugsnag/js": "7.23.0",
+    "@bugsnag/js": "7.25.0",
     "@fastify/static": "7.0.4",
     "@netlify/blobs": "7.4.0",
     "@netlify/build": "29.51.3",
