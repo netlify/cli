@@ -125,9 +125,8 @@ command = "${chosenSettings.devCommand}"
 }
 
 /**
- * Merges the settings from the heuristics with the cached config.
- * Returns the updated cached config
- * @param cachedConfig The cached config
+ * Generates a defaultConfig for @netlify/build based on the settings from the heuristics
+ * Returns the defaultConfig in the format that @netlify/build expects (json version of toml)
  * @param settings The settings from the heuristics
  */
 export const getDefaultConfig = (settings?: Settings): $TSFixMe | undefined => {
