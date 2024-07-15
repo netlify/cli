@@ -50,6 +50,7 @@
     "test:init:cli-help": "npm run start -- --help",
     "test:init:eleventy-deps": "cd tests/integration/__fixtures__/eleventy-site && pnpm install --frozen-lockfile",
     "test:init:hugo-deps": "npm ci --prefix tests/integration/__fixtures__/hugo-site --no-audit",
+    "test:init:next-deps": "npm ci --prefix tests/integration/__fixtures__/next-app-without-config --no-audit",
     "test:dev:vitest": "vitest run tests/unit/ && vitest run tests/integration",
     "test:ci:vitest:unit": "vitest run --coverage tests/unit/",
     "test:ci:vitest:integration": "vitest run --coverage tests/integration/",
