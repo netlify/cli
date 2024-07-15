@@ -2,12 +2,14 @@ import path from 'path'
 import process from 'process'
 import { fileURLToPath } from 'url'
 
+import { load } from 'cheerio'
 import execa from 'execa'
 import fetch from 'node-fetch'
-import { afterAll, beforeAll, describe, test } from 'vitest'
+import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 
 import { callCli } from '../../utils/call-cli.js'
 import { createLiveTestSite, generateSiteName } from '../../utils/create-live-test-site.js'
+import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
 import { pause } from '../../utils/pause.js'
 import { withSiteBuilder } from '../../utils/site-builder.ts'
 
@@ -16,29 +18,41 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const SITE_NAME = generateSiteName('netlify-test-deploy-')
 
-// eslint-disable-next-line no-shadow
-const validateContent = async ({ content, path, siteUrl, t }) => {
-  const response = await fetch(`${siteUrl}${path}`)
+const validateContent = async ({ content, path: pathname, siteUrl }) => {
+  const response = await fetch(`${siteUrl}${pathname}`)
   const body = await response.text()
   if (content === undefined) {
-    t.expect(response.status).toBe(404)
+    expect(response.status).toBe(404)
     return
   }
-  t.expect(response.status, `status should be 200. request id: ${response.headers.get('x-nf-request-id')}`).toBe(200)
-  t.expect(body, `body should be as expected. request id: ${response.headers.get('x-nf-request-id')}`).toEqual(content)
+  expect(response.status, `status should be 200. request id: ${response.headers.get('x-nf-request-id')}`).toBe(200)
+  expect(body, `body should be as expected. request id: ${response.headers.get('x-nf-request-id')}`).toEqual(content)
 }
 
-const validateDeploy = async ({ content, contentMessage, deploy, siteName, t }) => {
-  t.expect(deploy.site_name).toBeTruthy()
-  t.expect(deploy.deploy_url).toBeTruthy()
-  t.expect(deploy.deploy_id).toBeTruthy()
-  t.expect(deploy.logs).toBeTruthy()
-  t.expect(deploy.site_name, contentMessage).toEqual(siteName)
+const validateDeploy = async ({
+  content,
+  contentMessage,
+  deploy,
+  siteName,
+}: {
+  contentMessage?: string
+  siteName: string
+  content?: string
+  deploy: { site_name: string; deploy_url: string; deploy_id: string; logs: string }
+}) => {
+  expect(deploy.site_name).toBeTruthy()
+  expect(deploy.deploy_url).toBeTruthy()
+  expect(deploy.deploy_id).toBeTruthy()
+  expect(deploy.logs).toBeTruthy()
+  expect(deploy.site_name, contentMessage).toEqual(siteName)
 
-  await validateContent({ siteUrl: deploy.deploy_url, path: '', content, t })
+  await validateContent({ siteUrl: deploy.deploy_url, path: '', content })
 }
 
-const context = {}
+const context: { account: unknown; siteId: string } = {
+  siteId: '',
+  account: undefined,
+}
 
 describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('commands/deploy', () => {
   beforeAll(async () => {
@@ -68,7 +82,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         env: { NETLIFY_SITE_ID: context.siteId },
       }).then((output) => JSON.parse(output))
 
-      await validateDeploy({ deploy, siteName: SITE_NAME, content, t })
+      await validateDeploy({ deploy, siteName: SITE_NAME, content })
     })
   })
 
@@ -92,7 +106,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         cwd: builder.directory,
       }).then((output) => JSON.parse(output))
 
-      await validateDeploy({ deploy, siteName: SITE_NAME, content, t })
+      await validateDeploy({ deploy, siteName: SITE_NAME, content })
     })
   })
 
@@ -117,7 +131,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         env: { NETLIFY_SITE_ID: context.siteId },
       }).then((output) => JSON.parse(output))
 
-      await validateDeploy({ deploy, siteName: SITE_NAME, content, t })
+      await validateDeploy({ deploy, siteName: SITE_NAME, content })
     })
   })
 
@@ -158,7 +172,6 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         siteName: SITE_NAME,
         content: 'Edge Function works',
         contentMessage: 'Edge function did not execute correctly or was not deployed correctly',
-        t,
       })
     })
   })
@@ -205,7 +218,6 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         siteName: SITE_NAME,
         content: 'Edge Function works',
         contentMessage: 'Edge function did not execute correctly or was not deployed correctly',
-        t,
       })
     })
   })
@@ -228,7 +240,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
           name: 'log-env',
           plugin: {
             async onSuccess() {
-              // eslint-disable-next-line n/global-require, no-undef
+              // eslint-disable-next-line n/global-require, @typescript-eslint/no-var-requires
               const { DEPLOY_ID, DEPLOY_URL } = require('process').env
               console.log(`DEPLOY_ID: ${DEPLOY_ID}`)
               console.log(`DEPLOY_URL: ${DEPLOY_URL}`)
@@ -310,24 +322,21 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         env: { NETLIFY_SITE_ID: context.siteId },
       }).then((output) => JSON.parse(output))
 
-      await validateDeploy({ deploy, siteName: SITE_NAME, content: 'index', t })
+      await validateDeploy({ deploy, siteName: SITE_NAME, content: 'index' })
       await validateContent({
         siteUrl: deploy.deploy_url,
         content: undefined,
         path: '/.hidden-file',
-        t,
       })
       await validateContent({
         siteUrl: deploy.deploy_url,
         content: undefined,
         path: '/.hidden-dir',
-        t,
       })
       await validateContent({
         siteUrl: deploy.deploy_url,
         content: undefined,
         path: '/__MACOSX',
-        t,
       })
     })
   })
@@ -358,12 +367,11 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         env: { NETLIFY_SITE_ID: context.siteId },
       }).then((output) => JSON.parse(output))
 
-      await validateDeploy({ deploy, siteName: SITE_NAME, content: 'index', t })
+      await validateDeploy({ deploy, siteName: SITE_NAME, content: 'index' })
       await validateContent({
         siteUrl: deploy.deploy_url,
         content: undefined,
         path: '/node_modules/package.json',
-        t,
       })
     })
   })
@@ -394,12 +402,11 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         env: { NETLIFY_SITE_ID: context.siteId },
       }).then((output) => JSON.parse(output))
 
-      await validateDeploy({ deploy, siteName: SITE_NAME, content: 'index', t })
+      await validateDeploy({ deploy, siteName: SITE_NAME, content: 'index' })
       await validateContent({
         siteUrl: deploy.deploy_url,
         content: '{}',
         path: '/node_modules/package.json',
-        t,
       })
     })
   })
@@ -414,7 +421,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
           env: { NETLIFY_SITE_ID: context.siteId },
         })
       } catch (error) {
-        t.expect(error.stderr.includes('Error: No files or functions to deploy')).toBe(true)
+        expect(error.stderr.includes('Error: No files or functions to deploy')).toBe(true)
       }
     })
   })
@@ -437,7 +444,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
           name: 'mutator',
           plugin: {
             onPreBuild: async ({ netlifyConfig }) => {
-              // eslint-disable-next-line no-undef, n/global-require
+              // eslint-disable-next-line n/global-require, @typescript-eslint/no-var-requires
               const { mkdir, writeFile } = require('fs/promises')
 
               const generatedFunctionsDir = 'new_functions'
@@ -690,7 +697,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
       const redirectsMessage = fullDeploy.summary.messages.find(({ title }) => title === '3 redirect rules processed')
       t.expect(redirectsMessage.description).toEqual('All redirect rules deployed without errors.')
 
-      await validateDeploy({ deploy, siteName: SITE_NAME, content, t })
+      await validateDeploy({ deploy, siteName: SITE_NAME, content })
 
       const [pluginRedirectResponse, _redirectsResponse, netlifyTomResponse] = await Promise.all([
         fetch(`${deploy.deploy_url}/other-api/hello`).then((res) => res.text()),
@@ -762,7 +769,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         true,
       )
       const response = await fetch(`${deployUrl}/.netlify/functions/bundled-function-1`).then((res) => res.text())
-      t.expect(response).toEqual('Pre-bundled')
+      expect(response).toEqual('Pre-bundled')
     })
   })
 
@@ -943,6 +950,28 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
 
       const response = await fetch(`${deployUrl}/read-blob`).then((res) => res.text())
       t.expect(response).toEqual('hello from the blob')
+    })
+  })
+
+  setupFixtureTests('next-app-without-config', () => {
+    test<FixtureTestContext>('should run deploy with --build without any netlify specific configuration', async ({
+      fixture,
+    }) => {
+      const { deploy_url: deployUrl } = await callCli(
+        ['deploy', '--build', '--json'],
+        {
+          cwd: fixture.directory,
+          env: { NETLIFY_SITE_ID: context.siteId },
+        },
+        true,
+      )
+
+      const html = await fetch(deployUrl).then((res) => res.text())
+      // eslint-disable-next-line id-length
+      const $ = load(html)
+
+      expect($('title').text()).toEqual('Create Next App')
+      expect($('img[alt="Next.js Logo"]').attr('src')).toBe('/next.svg')
     })
   })
 })

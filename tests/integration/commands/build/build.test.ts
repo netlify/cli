@@ -2,9 +2,11 @@ import path from 'path'
 import process from 'process'
 
 import execa from 'execa'
-import { describe, test } from 'vitest'
+import { describe, test, expect } from 'vitest'
 
+import { callCli } from '../../utils/call-cli.js'
 import { cliPath } from '../../utils/cli-path.js'
+import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.ts'
 import { withMockApi } from '../../utils/mock-api.js'
 import { withSiteBuilder } from '../../utils/site-builder.ts'
 
@@ -19,8 +21,15 @@ const defaultEnvs = {
 const runBuildCommand = async function (
   t,
   cwd,
-  { apiUrl, env = defaultEnvs, exitCode: expectedExitCode = 0, flags = [], output: outputs } = {},
+  options: Partial<{
+    exitCode: number
+    flags: string[]
+    output: any
+    env: Record<string, string>
+    apiUrl: string
+  }> = {},
 ) {
+  let { apiUrl, env = defaultEnvs, exitCode: expectedExitCode = 0, flags = [], output: outputs } = options
   const { all, exitCode } = await execa(cliPath, ['build', ...flags], {
     reject: false,
     cwd,
@@ -42,7 +51,7 @@ const runBuildCommand = async function (
     if (output instanceof RegExp) {
       t.expect(all).toMatch(output)
     } else {
-      t.expect(all.includes(output), `Output of build command does not include '${output}'`).toBe(true)
+      t.expect(all?.includes(output), `Output of build command does not include '${output}'`).toBe(true)
     }
   })
   t.expect(exitCode).toBe(expectedExitCode)
@@ -311,6 +320,20 @@ describe.concurrent('command/build', () => {
         output: /NETLIFY_CLI_VERSION=\d+\.\d+.\d+/,
         flags: ['--offline'],
       })
+    })
+  })
+
+  setupFixtureTests('next-app-without-config', () => {
+    test<FixtureTestContext>('should run build without any netlify specific configuration and install auto detected plugins', async ({
+      fixture,
+    }) => {
+      const output = await callCli(['build', '--offline'], { cwd: fixture.directory })
+
+      // expect on the output that it installed the next runtime (auto detected the plugin + the build command and therefore had functions to bundle)
+      expect(output).toMatch(/❯ Using Next.js Runtime -/)
+      expect(output).toMatch(/\$ npm run build/)
+      expect(output).toMatch(/Functions bundling completed/)
+      expect(output).toMatch(/Edge Functions bundling completed/)
     })
   })
 })

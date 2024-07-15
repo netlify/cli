@@ -125,7 +125,7 @@ const hashFns = async (
     statusCb: $TSFixMe
     tmpDir: $TSFixMe
   },
-) => {
+): Promise<$TSFixMe> => {
   const {
     assetType = 'function',
     concurrentHash,
@@ -166,8 +166,8 @@ const hashFns = async (
       priority,
       runtime,
       runtimeVersion,
-      trafficRules,
       timeout,
+      trafficRules,
     }) => ({
       filepath: functionPath,
       root: tmpDir,

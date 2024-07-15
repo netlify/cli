@@ -35,6 +35,8 @@ export const getBuildOptions = async ({
   cachedConfig,
   // @ts-expect-error TS(7031) FIXME: Binding element 'currentDir' implicitly has an 'an... Remove this comment to see the full error message
   currentDir,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'defaultConfig' implicitly has an '... Remove this comment to see the full error message
+  defaultConfig,
   // @ts-expect-error TS(7031) FIXME: Binding element 'deployHandler' implicitly has an ... Remove this comment to see the full error message
   deployHandler,
   // @ts-expect-error TS(7031) FIXME: Binding element 'context' implicitly has an 'any' ... Remove this comment to see the full error message
@@ -71,6 +73,7 @@ export const getBuildOptions = async ({
 
   return {
     cachedConfig,
+    defaultConfig,
     siteId: cachedConfig.siteInfo.id,
     packagePath,
     token,

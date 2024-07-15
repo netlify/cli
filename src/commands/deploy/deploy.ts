@@ -18,6 +18,7 @@ import { featureFlags as edgeFunctionsFeatureFlags } from '../../lib/edge-functi
 import { normalizeFunctionsConfig } from '../../lib/functions/config.js'
 import { BACKGROUND_FUNCTIONS_WARNING } from '../../lib/log.js'
 import { startSpinner, stopSpinner } from '../../lib/spinner.js'
+import { detectFrameworkSettings, getDefaultConfig } from '../../utils/build-info.js'
 import {
   NETLIFYDEV,
   NETLIFYDEVERR,
@@ -558,7 +559,7 @@ const runDeploy = async ({
  * @returns
  */
 // @ts-expect-error TS(7031) FIXME: Binding element 'cachedConfig' implicitly has an '... Remove this comment to see the full error message
-const handleBuild = async ({ cachedConfig, currentDir, deployHandler, options, packagePath }) => {
+const handleBuild = async ({ cachedConfig, currentDir, defaultConfig, deployHandler, options, packagePath }) => {
   if (!options.build) {
     return {}
   }
@@ -566,6 +567,7 @@ const handleBuild = async ({ cachedConfig, currentDir, deployHandler, options, p
   const [token] = await getToken()
   const resolvedOptions = await getBuildOptions({
     cachedConfig,
+    defaultConfig,
     packagePath,
     token,
     options,
@@ -784,6 +786,7 @@ export const deploy = async (options: OptionValues, command: BaseCommand) => {
   const { workingDir } = command
   const { api, site, siteInfo } = command.netlify
   const alias = options.alias || options.branch
+  const settings = await detectFrameworkSettings(command, 'build')
 
   command.setAnalyticsPayload({ open: options.open, prod: options.prod, json: options.json, alias: Boolean(alias) })
 
@@ -847,6 +850,7 @@ export const deploy = async (options: OptionValues, command: BaseCommand) => {
     await handleBuild({
       packagePath: command.workspacePackage,
       cachedConfig: command.netlify.cachedConfig,
+      defaultConfig: getDefaultConfig(settings),
       currentDir: command.workingDir,
       options,
       // @ts-expect-error TS(7031) FIXME: Binding element 'netlifyConfig' implicitly has an ... Remove this comment to see the full error message
