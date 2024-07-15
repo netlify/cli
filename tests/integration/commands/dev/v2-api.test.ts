@@ -68,10 +68,11 @@ describe.runIf(gte(version, '18.13.0')).concurrent('v2 api', () => {
       expect(context.server.region).toEqual('dev')
       expect(context.ip).toEqual('::1')
       expect(context.geo.city).toEqual('Mock City')
-
       expect(context.cookies).toEqual({ foo: 'bar' })
-
       expect(context.account.id).toEqual('mock-account-id')
+      expect(context.deploy.context).toEqual('dev')
+      expect(context.deploy.id).toEqual('0')
+      expect(context.deploy.published).toEqual(false)
     })
 
     test<FixtureTestContext>('logging works', async ({ devServer }) => {

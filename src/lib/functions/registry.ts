@@ -420,14 +420,21 @@ export class FunctionsRegistry {
     if (extname(func.mainFile) === ZIP_EXTENSION) {
       const unzippedDirectory = await this.unzipFunction(func)
 
-      if (this.debug) {
-        FunctionsRegistry.logEvent('extracted', { func })
-      }
-
       // If there's a manifest file, look up the function in order to extract
       // the build data.
       // @ts-expect-error TS(2339) FIXME: Property 'manifest' does not exist on type 'Functi... Remove this comment to see the full error message
       const manifestEntry = (this.manifest?.functions || []).find((manifestFunc) => manifestFunc.name === func.name)
+
+      // We found a zipped function that does not have a corresponding entry in
+      // the manifest. This shouldn't happen, but we ignore the function in
+      // this case.
+      if (!manifestEntry) {
+        return
+      }
+
+      if (this.debug) {
+        FunctionsRegistry.logEvent('extracted', { func })
+      }
 
       func.buildData = {
         ...manifestEntry?.buildData,

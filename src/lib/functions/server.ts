@@ -12,7 +12,6 @@ import type { $TSFixMe } from '../../commands/types.js'
 import { NETLIFYDEVERR, NETLIFYDEVLOG, error as errorExit, log } from '../../utils/command-helpers.js'
 import { UNLINKED_SITE_MOCK_ID } from '../../utils/dev.js'
 import { isFeatureFlagEnabled } from '../../utils/feature-flags.js'
-import { getFrameworksAPIPaths } from '../../utils/frameworks-api.js'
 import {
   CLOCKWORK_USERAGENT,
   getFunctionsDistPath,
@@ -322,7 +321,6 @@ export const startFunctionsServer = async (
     timeouts,
   } = options
   const internalFunctionsDir = await getInternalFunctionsDir({ base: site.root, packagePath: command.workspacePackage })
-  const frameworksAPIPaths = await getFrameworksAPIPaths(site.root, command.workspacePackage)
   const functionsDirectories: string[] = []
   let manifest
 
@@ -352,7 +350,7 @@ export const startFunctionsServer = async (
     // precedence.
     const sourceDirectories: string[] = [
       internalFunctionsDir,
-      frameworksAPIPaths.functions.path,
+      command.netlify.frameworksAPIPaths.functions.path,
       settings.functions,
     ].filter(Boolean)
 
@@ -377,7 +375,7 @@ export const startFunctionsServer = async (
     capabilities,
     config,
     debug,
-    frameworksAPIPaths,
+    frameworksAPIPaths: command.netlify.frameworksAPIPaths,
     isConnected: Boolean(siteUrl),
     logLambdaCompat: isFeatureFlagEnabled('cli_log_lambda_compat', siteInfo),
     manifest,

@@ -139,7 +139,9 @@ export const deploySite = async (
   }
 
   if (functionsWithNativeModules.length !== 0) {
-    const functionsWithNativeModulesMessage = functionsWithNativeModules.map(({ name }) => `- ${name}`).join('\n')
+    const functionsWithNativeModulesMessage = functionsWithNativeModules
+      .map(({ name }: { name: string }) => `- ${name}`)
+      .join('\n')
     warn(`Modules with native dependencies\n
     ${functionsWithNativeModulesMessage}
 

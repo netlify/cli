@@ -1,7 +1,7 @@
 import { OptionValues } from 'commander'
 
 import { getBuildOptions, runBuild } from '../../lib/build.js'
-import { detectFrameworkSettings } from '../../utils/build-info.js'
+import { detectFrameworkSettings, getDefaultConfig } from '../../utils/build-info.js'
 import { error, exit, getToken } from '../../utils/command-helpers.js'
 import { getEnvelopeEnv } from '../../utils/env/index.js'
 import BaseCommand from '../base-command.js'
@@ -31,14 +31,9 @@ export const build = async (options: OptionValues, command: BaseCommand) => {
   const [token] = await getToken()
   const settings = await detectFrameworkSettings(command, 'build')
 
-  // override the build command with the detection result if no command is specified through the config
-  if (!cachedConfig.config.build.command) {
-    cachedConfig.config.build.command = settings?.buildCommand
-    cachedConfig.config.build.commandOrigin = 'heuristics'
-  }
-
   const buildOptions = await getBuildOptions({
     cachedConfig,
+    defaultConfig: getDefaultConfig(settings),
     packagePath: command.workspacePackage,
     currentDir: command.workingDir,
     token,

@@ -77,7 +77,7 @@ describe.skipIf(isWindows)('edge functions', () => {
         const { deploy, geo, ip, params, requestId, server, site } = await response.json()
         expect(geo.city).toEqual('Mock City')
         expect(geo.country.code).toEqual('DE')
-        expect(deploy).toEqual({ id: '0' })
+        expect(deploy).toEqual({ context: 'dev', id: '0', published: false })
         expectTypeOf(ip).toBeString()
         expect(params).toEqual({})
         expectTypeOf(requestId).toBeString()

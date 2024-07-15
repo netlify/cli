@@ -118,7 +118,7 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
 
   env[BLOBS_CONTEXT_VARIABLE] = { sources: ['internal'], value: encodeBlobsContext(blobsContext) }
 
-  if (!options.offline) {
+  if (!options.offline && !options.offlineEnv) {
     env = await getEnvelopeEnv({ api, context: options.context, env, siteInfo })
     log(`${NETLIFYDEVLOG} Injecting environment variable values for ${chalk.yellow('all scopes')}`)
   }
@@ -275,6 +275,9 @@ export const createDevCommand = (program: BaseCommand) => {
     .option('-d ,--dir <path>', 'dir with static files')
     .option('-f ,--functions <folder>', 'specify a functions folder to serve')
     .option('-o ,--offline', 'disables any features that require network access')
+    .addOption(
+      new Option('--offline-env', 'disables fetching environment variables from the Netlify API').hideHelp(true),
+    )
     .addOption(
       new Option(
         '--internal-disable-edge-functions',

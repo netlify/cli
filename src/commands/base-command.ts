@@ -35,6 +35,7 @@ import {
   warn,
 } from '../utils/command-helpers.js'
 import { FeatureFlags } from '../utils/feature-flags.js'
+import { getFrameworksAPIPaths } from '../utils/frameworks-api.js'
 import getGlobalConfig from '../utils/get-global-config.js'
 import { getSiteByName } from '../utils/get-site.js'
 import openBrowser from '../utils/open-browser.js'
@@ -595,7 +596,11 @@ export default class BaseCommand extends Command {
       token,
       ...apiUrlOpts,
     })
-    const { buildDir, config, configPath, env, repositoryRoot, siteInfo } = cachedConfig
+    const { buildDir, config, configPath, repositoryRoot, siteInfo } = cachedConfig
+    let { env } = cachedConfig
+    if (flags.offlineEnv) {
+      env = {}
+    }
     env.NETLIFY_CLI_VERSION = { sources: ['internal'], value: version }
     const normalizedConfig = normalizeConfig(config)
 
@@ -660,11 +665,15 @@ export default class BaseCommand extends Command {
       // Configuration from netlify.[toml/yml]
       config: normalizedConfig,
       // Used to avoid calling @netlify/config again
-      cachedConfig,
+      cachedConfig: {
+        ...cachedConfig,
+        env,
+      },
       // global cli config
       globalConfig,
       // state of current site dir
       state,
+      frameworksAPIPaths: getFrameworksAPIPaths(buildDir, this.workspacePackage),
     }
     debug(`${this.name()}:init`)('end')
   }

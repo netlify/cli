@@ -238,7 +238,11 @@ describe.concurrent('commands/dev-miscellaneous', () => {
           },
         ])
         .withEdgeFunction({
-          handler: (req) => new Response(req.headers.get('x-nf-request-id')),
+          handler: (req, context) =>
+            Response.json({
+              requestID: req.headers.get('x-nf-request-id'),
+              deploy: context.deploy,
+            }),
           name: 'hello',
         })
 
@@ -246,11 +250,17 @@ describe.concurrent('commands/dev-miscellaneous', () => {
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const response = await fetch(`${server.url}/edge-function`)
-        const responseBody = await response.text()
+        const responseBody = await response.json()
 
         t.expect(response.status).toBe(200)
-        t.expect(responseBody.length).toBe(26)
-        t.expect(responseBody).toEqual(response.headers.get('x-nf-request-id'))
+        t.expect(responseBody).toEqual({
+          requestID: response.headers.get('x-nf-request-id'),
+          deploy: {
+            context: 'dev',
+            id: '0',
+            published: false,
+          },
+        })
       })
     })
   })
@@ -423,7 +433,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
 
             t.expect(response.status).toBe(200)
             t.expect(JSON.parse(await response.text())).toStrictEqual({
-              deploy: { id: '0' },
+              deploy: { context: 'dev', id: '0', published: false },
               site: { id: 'site_id', name: 'site-name', url: server.url },
             })
           },
@@ -994,8 +1004,8 @@ describe.concurrent('commands/dev-miscellaneous', () => {
           .withEdgeFunction({
             config: { path: '/internal-1' },
             handler: () => new Response('Hello from an internal function'),
-            internal: true,
             name: 'internal',
+            path: '.netlify/edge-functions',
           })
           .build()
 
@@ -1012,8 +1022,8 @@ describe.concurrent('commands/dev-miscellaneous', () => {
           .withEdgeFunction({
             config: { path: '/internal-2' },
             handler: () => new Response('Hello from an internal function'),
-            internal: true,
             name: 'internal',
+            path: '.netlify/edge-functions',
           })
           .build()
 
@@ -1070,7 +1080,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
           .withEdgeFunction({
             handler: `import { yell } from "yeller"; export default async () => new Response(yell("Netlify"))`,
             name: 'yell',
-            internal: true,
+            path: '.netlify/edge-functions',
           })
           // Internal import map
           .withContentFiles([
