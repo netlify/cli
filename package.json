@@ -139,7 +139,7 @@
     "jsonwebtoken": "9.0.2",
     "jwt-decode": "4.0.0",
     "lambda-local": "2.2.0",
-    "listr2": "8.2.3",
+    "listr2": "8.2.4",
     "locate-path": "7.2.0",
     "lodash": "4.17.21",
     "log-symbols": "6.0.0",
