@@ -122,7 +122,7 @@ export const getSiteInformation = async ({ api, offline, site, siteInfo }) => {
         backgroundFunctions: supportsBackgroundFunctions(account),
       },
       timeouts: {
-        syncFunctions: siteInfo.functions_config?.timeout ?? SYNCHRONOUS_FUNCTION_TIMEOUT,
+        syncFunctions: siteInfo.functions_timeout ?? siteInfo.functions_config?.timeout ?? SYNCHRONOUS_FUNCTION_TIMEOUT,
         backgroundFunctions: BACKGROUND_FUNCTION_TIMEOUT,
       },
     }
