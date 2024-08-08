@@ -1,5 +1,5 @@
 import { OptionValues } from 'commander'
-import inquirer from 'inquirer'
+import Enquirer from 'enquirer'
 import pick from 'lodash/pick.js'
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'pars... Remove this comment to see the full error message
 import parseGitHubUrl from 'parse-github-url'
@@ -50,9 +50,9 @@ const getTemplateName = async ({ ghToken, options, repository }) => {
 
   log(`Choose one of our starter templates. Netlify will create a new repo for this template in your GitHub account.`)
 
-  const { templateName } = await inquirer.prompt([
+  const { templateName }  = await Enquirer.prompt<any>([
     {
-      type: 'list',
+      type: 'select',
       name: 'templateName',
       message: 'Template:',
       // @ts-expect-error TS(7006) FIXME: Parameter 'template' implicitly has an 'any' type.
@@ -100,9 +100,9 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
   let { accountSlug } = options
 
   if (!accountSlug) {
-    const { accountSlug: accountSlugInput } = await inquirer.prompt([
+    const { accountSlug: accountSlugInput } = await Enquirer.prompt<any>([
       {
-        type: 'list',
+        type: 'select',
         name: 'accountSlug',
         message: 'Team:',
         // @ts-expect-error TS(7006) FIXME: Parameter 'account' implicitly has an 'any' type.
@@ -205,11 +205,11 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
     siteUrl,
   })
 
-  const { cloneConfirm } = await inquirer.prompt({
+  const { cloneConfirm }= await Enquirer.prompt<any>({
     type: 'confirm',
     name: 'cloneConfirm',
     message: `Do you want to clone the repository?`,
-    default: true,
+    initial: true,
   })
   if (cloneConfirm) {
     log()

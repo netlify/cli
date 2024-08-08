@@ -1,4 +1,4 @@
-import inquirer from 'inquirer'
+import Enquirer from 'enquirer'
 
 import { exit, log } from '../command-helpers.js'
 
@@ -14,12 +14,12 @@ const addDeployKey = async (deployKey) => {
   log('\nGive this Netlify SSH public key access to your repository:\n')
   log(`\n${deployKey.public_key}\n\n`)
 
-  const { sshKeyAdded } = await inquirer.prompt([
+  const { sshKeyAdded } = await Enquirer.prompt<any>([
     {
       type: 'confirm',
       name: 'sshKeyAdded',
       message: 'Continue?',
-      default: true,
+      initial: true,
     },
   ])
 
@@ -35,15 +35,16 @@ const addDeployKey = async (deployKey) => {
  */
 // @ts-expect-error TS(7031) FIXME: Binding element 'repoData' implicitly has an 'any'... Remove this comment to see the full error message
 const getRepoPath = async ({ repoData }) => {
-  const { repoPath } = await inquirer.prompt([
+  const { repoPath } = await Enquirer.prompt<any>([
     {
       type: 'input',
       name: 'repoPath',
       message: 'The SSH URL of the remote git repo:',
-      default: repoData.url,
+      initial: repoData.url,
       /**
        * @param {string} url
        */
+      // eslint-disable-next-line @typescript-eslint/no-use-before-define
       validate: (url) => SSH_URL_REGEXP.test(url) || 'The URL provided does not use the SSH protocol',
     },
   ])
@@ -59,12 +60,12 @@ const getRepoPath = async ({ repoData }) => {
 const addDeployHook = async (deployHook) => {
   log('\nConfigure the following webhook for your repository:\n')
   log(`\n${deployHook}\n\n`)
-  const { deployHookAdded } = await inquirer.prompt([
+  const { deployHookAdded } = await Enquirer.prompt<any>([
     {
       type: 'confirm',
       name: 'deployHookAdded',
       message: 'Continue?',
-      default: true,
+      initial: true,
     },
   ])
 

@@ -1,5 +1,5 @@
 import { OptionValues } from 'commander'
-import inquirer from 'inquirer'
+import Enquirer from 'enquirer'
 import isEmpty from 'lodash/isEmpty.js'
 
 import { chalk, exit, log } from '../../utils/command-helpers.js'
@@ -122,9 +122,9 @@ git remote add origin https://github.com/YourUserName/RepoName.git
   const NEW_SITE_NO_GIT = 'Yes, create and deploy site manually'
   const NO_ABORT = 'No, I will connect this directory with GitHub first'
 
-  const { noGitRemoteChoice } = await inquirer.prompt([
+  const { noGitRemoteChoice } = await Enquirer.prompt<any>([
     {
-      type: 'list',
+      type: 'select',
       name: 'noGitRemoteChoice',
       message: 'Do you want to create a Netlify site without a git repository?',
       choices: [NEW_SITE_NO_GIT, NO_ABORT],
@@ -149,9 +149,9 @@ const createOrLinkSiteToRepo = async (command) => {
 
   const initializeOpts = [EXISTING_SITE, NEW_SITE]
 
-  const { initChoice } = await inquirer.prompt([
+  const { initChoice } = await Enquirer.prompt<any>([
     {
-      type: 'list',
+      type: 'select',
       name: 'initChoice',
       message: 'What would you like to do?',
       choices: initializeOpts,
