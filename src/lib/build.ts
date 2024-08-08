@@ -75,6 +75,7 @@ export const getBuildOptions = async ({
     cachedConfig,
     defaultConfig,
     siteId: cachedConfig.siteInfo.id,
+    accountId: cachedConfig.siteInfo.account_id,
     packagePath,
     token,
     dry,
