@@ -28,7 +28,7 @@
     "@compositor/x0": "6.0.7",
     "@rebass/markdown": "1.0.0",
     "@rebass/mdx": "1.0.0",
-    "algoliasearch": "4.23.3",
+    "algoliasearch": "4.24.0",
     "lodash.sortby": "4.7.0",
     "prop-types": "15.8.1",
     "react": "16.14.0",
