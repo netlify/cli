@@ -365,7 +365,7 @@ const uploadDeployBlobs = async ({
   silent: boolean
   siteId: string
 }) => {
-  const statusCb = silent ? () => { } : deployProgressCb()
+  const statusCb = silent ? () => {} : deployProgressCb()
 
   statusCb({
     type: 'blobs-uploading',
@@ -509,7 +509,7 @@ const runDeploy = async ({
       fnDir: functionDirectories,
       functionsConfig,
 
-      statusCb: silent ? () => { } : deployProgressCb(),
+      statusCb: silent ? () => {} : deployProgressCb(),
       deployTimeout,
       syncFileLimit: SYNC_FILE_LIMIT,
       // pass an existing deployId to update
@@ -591,7 +591,7 @@ const bundleEdgeFunctions = async (options, command: BaseCommand) => {
   // eslint-disable-next-line n/prefer-global/process, unicorn/prefer-set-has
   const argv = process.argv.slice(2)
   const statusCb =
-    options.silent || argv.includes('--json') || argv.includes('--silent') ? () => { } : deployProgressCb()
+    options.silent || argv.includes('--json') || argv.includes('--silent') ? () => {} : deployProgressCb()
 
   statusCb({
     type: 'edge-functions-bundling',
