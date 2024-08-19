@@ -147,7 +147,7 @@ export const getDefaultConfig = (settings?: Settings): $TSFixMe | undefined => {
     config.build.publishOrigin = 'default'
   }
 
-  config.plugins = settings.plugins_recommended?.map((plugin) => ({ package: plugin })) || []
+  config.plugins = settings.plugins_recommended?.map((plugin) => ({ package: plugin, origin: 'default' })) || []
 
   return config
 }
