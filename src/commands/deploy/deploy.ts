@@ -531,7 +531,7 @@ const runDeploy = async ({
   const deployUrl = results.deploy.deploy_ssl_url || results.deploy.deploy_url
   const logsUrl = `${results.deploy.admin_url}/deploys/${results.deploy.id}`
 
-  let functionLogsUrl = `${results.deploy.admin_url}/functions`
+  let functionLogsUrl = `${results.deploy.admin_url}/logs/functions`
 
   if (!deployToProduction) {
     functionLogsUrl += `?scope=deploy:${deployId}`
