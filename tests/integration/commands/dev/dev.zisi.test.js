@@ -81,9 +81,15 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
 
   test('Should not use the ZISI function bundler if not using esbuild', async (t) => {
     await withSiteBuilder(t, async (builder) => {
-      builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withContentFile({
-        path: path.join('functions', 'esm-function', 'esm-function.js'),
-        content: `
+      builder
+        .withNetlifyToml({ config: { functions: { directory: 'functions' } } })
+        .withContentFile({
+          path: path.join('functions', 'esm-function', 'package.json'),
+          content: JSON.stringify({ type: 'commonjs' }),
+        })
+        .withContentFile({
+          path: path.join('functions', 'esm-function', 'esm-function.js'),
+          content: `
 export async function handler(event, context) {
   return {
     statusCode: 200,
@@ -91,7 +97,7 @@ export async function handler(event, context) {
   };
 }
     `,
-      })
+        })
 
       await builder.build()
 
@@ -106,6 +112,10 @@ export async function handler(event, context) {
     await withSiteBuilder(t, async (builder) => {
       builder
         .withNetlifyToml({ config: { functions: { directory: 'functions', node_bundler: 'esbuild' } } })
+        .withContentFile({
+          path: path.join('functions', 'esm-function', 'package.json'),
+          content: JSON.stringify({ type: 'commonjs' }),
+        })
         .withContentFile({
           path: path.join('functions', 'esm-function', 'esm-function.js'),
           content: `
