@@ -37,7 +37,7 @@ netlify dev
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`dev:exec`](/commands/dev#devexec) | Exec command  |
+| [`dev:exec`](/commands/dev#devexec) | Runs a command within the netlify dev environment, e.g. with env variables from any installed addons  |
 
 
 **Examples**
@@ -57,7 +57,6 @@ BROWSER=none netlify dev # disable browser auto opening
 ---
 ## `dev:exec`
 
-Exec command
 Runs a command within the netlify dev environment, e.g. with env variables from any installed addons
 
 **Usage**
