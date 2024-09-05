@@ -91,7 +91,7 @@ const getSiteAccount = ({ accounts, siteInfo }) => {
 }
 
 // default 10 seconds for synchronous functions
-const SYNCHRONOUS_FUNCTION_TIMEOUT = 10
+const SYNCHRONOUS_FUNCTION_TIMEOUT = 30
 
 // default 15 minutes for background functions
 const BACKGROUND_FUNCTION_TIMEOUT = 900
