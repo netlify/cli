@@ -140,11 +140,14 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
   try {
     settings = await detectServerSettings(devConfig, options, command)
 
-    if (process.env.NETLIFY_INCLUDE_DEV_SERVER_PLUGIN) {
+    const { NETLIFY_INCLUDE_DEV_SERVER_PLUGIN } = process.env
+
+    if (NETLIFY_INCLUDE_DEV_SERVER_PLUGIN) {
+      const plugins = NETLIFY_INCLUDE_DEV_SERVER_PLUGIN.split(',')
       if (options.debug) {
-        log(`${NETLIFYDEVLOG} Including dev server plugin: ${process.env.NETLIFY_INCLUDE_DEV_SERVER_PLUGIN}`)
+        log(`${NETLIFYDEVLOG} Including dev server plugins: ${NETLIFY_INCLUDE_DEV_SERVER_PLUGIN}`)
       }
-      settings.plugins = [...(settings.plugins || []), process.env.NETLIFY_INCLUDE_DEV_SERVER_PLUGIN]
+      settings.plugins = [...(settings.plugins || []), ...plugins]
     }
 
     cachedConfig.config = getConfigWithPlugins(cachedConfig.config, settings)
