@@ -59,7 +59,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
     const { account, siteId } = await createLiveTestSite(SITE_NAME)
     context.siteId = siteId
     context.account = account
-  }, 300_000)
+  })
 
   afterAll(async () => {
     const { siteId } = context
@@ -263,36 +263,30 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
     })
   })
 
-  test(
-    'should return valid json when both --build and --json are passed',
-    {
-      timeout: 300_000,
-    },
-    async (t) => {
-      await withSiteBuilder(t, async (builder) => {
-        const content = '<h1>⊂◉‿◉つ</h1>'
-        builder
-          .withContentFile({
-            path: 'public/index.html',
-            content,
-          })
-          .withNetlifyToml({
-            config: {
-              build: { publish: 'public' },
-            },
-          })
-
-        await builder.build()
-
-        const output = await callCli(['deploy', '--build', '--json'], {
-          cwd: builder.directory,
-          env: { NETLIFY_SITE_ID: context.siteId },
+  test('should return valid json when both --build and --json are passed', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      const content = '<h1>⊂◉‿◉つ</h1>'
+      builder
+        .withContentFile({
+          path: 'public/index.html',
+          content,
+        })
+        .withNetlifyToml({
+          config: {
+            build: { publish: 'public' },
+          },
         })
 
-        JSON.parse(output)
+      await builder.build()
+
+      const output = await callCli(['deploy', '--build', '--json'], {
+        cwd: builder.directory,
+        env: { NETLIFY_SITE_ID: context.siteId },
       })
-    },
-  )
+
+      JSON.parse(output)
+    })
+  })
 
   test('should deploy hidden public folder but ignore hidden/__MACOSX files', async (t) => {
     await withSiteBuilder(t, async (builder) => {
