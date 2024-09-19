@@ -62,7 +62,7 @@ jobs:
         uses: denoland/setup-deno@v1
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
         with:
-          deno-version: v1.x
+          deno-version: v1.44.4
       - name: Install core dependencies
         run: npm ci --no-audit
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
