@@ -59,7 +59,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
     const { account, siteId } = await createLiveTestSite(SITE_NAME)
     context.siteId = siteId
     context.account = account
-  })
+  }, 300_000)
 
   afterAll(async () => {
     const { siteId } = context
