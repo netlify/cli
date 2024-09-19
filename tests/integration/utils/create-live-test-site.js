@@ -19,7 +19,9 @@ const listAccounts = async function () {
 
 export const createLiveTestSite = async function (siteName) {
   console.log(`Creating new site for tests: ${siteName}`)
+  const beforeListAccounts = Date.now()
   const accounts = await listAccounts()
+  console.log(`list accounts command took  ${Date.now() - beforeListAccounts}ms`)
   if (!Array.isArray(accounts) || accounts.length <= 0) {
     throw new Error(`Can't find suitable account to create a site`)
   }
