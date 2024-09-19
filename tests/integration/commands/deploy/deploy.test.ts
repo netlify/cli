@@ -954,24 +954,28 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
   })
 
   setupFixtureTests('next-app-without-config', () => {
-    test<FixtureTestContext>('should run deploy with --build without any netlify specific configuration', async ({
-      fixture,
-    }) => {
-      const { deploy_url: deployUrl } = await callCli(
-        ['deploy', '--build', '--json'],
-        {
-          cwd: fixture.directory,
-          env: { NETLIFY_SITE_ID: context.siteId },
-        },
-        true,
-      )
+    test<FixtureTestContext>(
+      'should run deploy with --build without any netlify specific configuration',
+      {
+        timeout: 300_000,
+      },
+      async ({ fixture }) => {
+        const { deploy_url: deployUrl } = await callCli(
+          ['deploy', '--build', '--json'],
+          {
+            cwd: fixture.directory,
+            env: { NETLIFY_SITE_ID: context.siteId },
+          },
+          true,
+        )
 
-      const html = await fetch(deployUrl).then((res) => res.text())
-      // eslint-disable-next-line id-length
-      const $ = load(html)
+        const html = await fetch(deployUrl).then((res) => res.text())
+        // eslint-disable-next-line id-length
+        const $ = load(html)
 
-      expect($('title').text()).toEqual('Create Next App')
-      expect($('img[alt="Next.js Logo"]').attr('src')).toBe('/next.svg')
-    })
+        expect($('title').text()).toEqual('Create Next App')
+        expect($('img[alt="Next.js Logo"]').attr('src')).toBe('/next.svg')
+      },
+    )
   })
 })
