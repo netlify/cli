@@ -192,7 +192,7 @@
     "@sindresorhus/slugify": "2.2.1",
     "@types/fs-extra": "11.0.4",
     "@types/inquirer": "9.0.7",
-    "@types/jsonwebtoken": "9.0.6",
+    "@types/jsonwebtoken": "9.0.7",
     "@types/node": "20.14.8",
     "@types/node-fetch": "2.6.11",
     "@types/parse-gitignore": "1.0.2",
