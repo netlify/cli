@@ -249,7 +249,7 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
 }
 
 export const link = async (options: OptionValues, command: BaseCommand) => {
-  await command.authenticate()
+  await command.authenticate(options.auth)
 
   const {
     api,

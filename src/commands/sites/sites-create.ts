@@ -31,7 +31,7 @@ export const getSiteNameInput = async (name) => {
 export const sitesCreate = async (options: OptionValues, command: BaseCommand) => {
   const { api } = command.netlify
 
-  await command.authenticate()
+  await command.authenticate(options.auth)
 
   const accounts = await api.listAccountsForUser()
 

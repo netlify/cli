@@ -7,7 +7,7 @@ import BaseCommand from '../base-command.js'
 export const openAdmin = async (options: OptionValues, command: BaseCommand) => {
   const { siteInfo } = command.netlify
 
-  await command.authenticate()
+  await command.authenticate(options.auth)
 
   log(`Opening "${siteInfo.name}" site admin UI:`)
   log(`> ${siteInfo.admin_url}`)

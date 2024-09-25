@@ -10,7 +10,7 @@ import fetch from 'node-fetch'
 import { z } from 'zod'
 
 import { getBuildOptions } from '../../lib/build.js'
-import { chalk, getToken, log } from '../../utils/command-helpers.js'
+import { chalk, log } from '../../utils/command-helpers.js'
 import { getSiteInformation } from '../../utils/dev.js'
 import BaseCommand from '../base-command.js'
 import { checkOptions } from '../build/build.js'
@@ -394,8 +394,7 @@ export const getConfiguration = (workingDir) => {
 export const deploy = async (options: OptionValues, command: BaseCommand) => {
   const { api, cachedConfig, site, siteInfo } = command.netlify
   const { id: siteId } = site
-  // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
-  const [token] = await getToken()
+  const token = await command.authenticate(options.auth)
   const workingDir = resolve(command.workingDir)
   const buildOptions = await getBuildOptions({
     cachedConfig,

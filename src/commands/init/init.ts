@@ -188,7 +188,7 @@ export const init = async (options: OptionValues, command: BaseCommand) => {
   let { siteInfo } = command.netlify
 
   // Check logged in status
-  await command.authenticate()
+  await command.authenticate(options.auth)
 
   // Add .netlify to .gitignore file
   await ensureNetlifyIgnore(repositoryRoot)

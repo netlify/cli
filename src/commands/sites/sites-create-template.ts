@@ -72,7 +72,7 @@ const getGitHubLink = ({ options, templateName }) => options.url || `https://git
 export const sitesCreateTemplate = async (repository: string, options: OptionValues, command: BaseCommand) => {
   const { api } = command.netlify
 
-  await command.authenticate()
+  await command.authenticate(options.auth)
 
   const { globalConfig } = command.netlify
   const ghToken = await getGitHubToken({ globalConfig })
