@@ -757,6 +757,28 @@ const onRequest = async (
     return proxy.web(req, res, { target: edgeFunctionsProxyURL })
   }
 
+  const match = await rewriter(req)
+  const options = {
+    match,
+    addonsUrls,
+    target: `http://${
+      settings.frameworkHost && isIPv6(settings.frameworkHost) ? `[${settings.frameworkHost}]` : settings.frameworkHost
+    }:${settings.frameworkPort}`,
+    publicFolder: settings.dist,
+    functionsServer,
+    functionsPort: settings.functionsPort,
+    jwtRolePath: settings.jwtRolePath,
+    framework: settings.framework,
+  }
+
+  if (match) {
+    // We don't want to generate an ETag for 3xx redirects.
+    // @ts-expect-error TS(7031) FIXME: Binding element 'statusCode' implicitly has an 'an... Remove this comment to see the full error message
+    req[shouldGenerateETag] = ({ statusCode }) => statusCode < 300 || statusCode >= 400
+
+    return serveRedirect({ req, res, proxy, imageProxy, match, options, siteInfo, env, functionsRegistry })
+  }
+
   const functionMatch =
     functionsRegistry &&
     (await functionsRegistry.getFunctionForURLPath(req.url, req.method, () =>
@@ -784,28 +806,6 @@ const onRequest = async (
   const addonUrl = getAddonUrl(addonsUrls, req)
   if (addonUrl) {
     return handleAddonUrl({ req, res, addonUrl })
-  }
-
-  const match = await rewriter(req)
-  const options = {
-    match,
-    addonsUrls,
-    target: `http://${
-      settings.frameworkHost && isIPv6(settings.frameworkHost) ? `[${settings.frameworkHost}]` : settings.frameworkHost
-    }:${settings.frameworkPort}`,
-    publicFolder: settings.dist,
-    functionsServer,
-    functionsPort: settings.functionsPort,
-    jwtRolePath: settings.jwtRolePath,
-    framework: settings.framework,
-  }
-
-  if (match) {
-    // We don't want to generate an ETag for 3xx redirects.
-    // @ts-expect-error TS(7031) FIXME: Binding element 'statusCode' implicitly has an 'an... Remove this comment to see the full error message
-    req[shouldGenerateETag] = ({ statusCode }) => statusCode < 300 || statusCode >= 400
-
-    return serveRedirect({ req, res, proxy, imageProxy, match, options, siteInfo, env, functionsRegistry })
   }
 
   // The request will be served by the framework server, which means we want to

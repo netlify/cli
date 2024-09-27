@@ -451,6 +451,29 @@ describe.concurrent('commands/dev/config', () => {
     })
   })
 
+  test('will prefer a redirect to a function that matches the path', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      await builder
+        .withNetlifyToml({
+          config: {
+            redirects: [{ from: '/hello/', to: 'https://example.com', status: 301, force: true }],
+          },
+        })
+        .withFunction({
+          path: 'hello.js',
+          handler: async () => new Response('Function', { status: 200 }),
+          config: { path: '/*' },
+          runtimeAPIVersion: 2,
+        })
+        .build()
+
+      await withDevServer({ cwd: builder.directory }, async (server) => {
+        const response = await fetch(`${server.url}/hello`).then((res) => res.text())
+        t.expect(response).not.toEqual('Function')
+      })
+    })
+  })
+
   test.runIf(gte(version, '18.14.0'))('should support functions with streaming responses', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       builder
