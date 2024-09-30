@@ -75,7 +75,7 @@
     "@fastify/static": "7.0.4",
     "@netlify/blobs": "8.0.1",
     "@netlify/build": "29.54.5",
-    "@netlify/build-info": "^7.15.0-rc.0",
+    "@netlify/build-info": "^7.15.0-rc.1",
     "@netlify/config": "20.19.0",
     "@netlify/edge-bundler": "12.2.3",
     "@netlify/edge-functions": "2.9.0",
