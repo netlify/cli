@@ -633,6 +633,8 @@ interface JsonData {
   deploy_id: string
   deploy_url: string
   logs: string
+  function_logs: string
+  edge_function_logs: string
   url?: string
 }
 
@@ -673,6 +675,8 @@ const printResults = ({
       deploy_id: results.deployId,
       deploy_url: results.deployUrl,
       logs: results.logsUrl,
+      function_logs: results.functionLogsUrl,
+      edge_function_logs: results.edgeFunctionLogsUrl,
     }
     if (deployToProduction) {
       jsonData.url = results.siteUrl
