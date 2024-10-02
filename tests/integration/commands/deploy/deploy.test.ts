@@ -38,8 +38,9 @@ const validateDeploy = async ({
   contentMessage?: string
   siteName: string
   content?: string
-  deploy: { site_name: string; deploy_url: string; deploy_id: string; logs: string }
+  deploy: { site_id: string; site_name: string; deploy_url: string; deploy_id: string; logs: string }
 }) => {
+  expect(deploy.site_id).toBeTruthy()
   expect(deploy.site_name).toBeTruthy()
   expect(deploy.deploy_url).toBeTruthy()
   expect(deploy.deploy_id).toBeTruthy()

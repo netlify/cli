@@ -624,7 +624,6 @@ const bundleEdgeFunctions = async (options, command: BaseCommand) => {
 }
 
 interface JsonData {
-  name: string
   site_id: string
   site_name: string
   deploy_id: string
@@ -664,10 +663,7 @@ const printResults = ({
   // Json response for piping commands
   if (json) {
     const jsonData: JsonData = {
-      // @ts-expect-error(serhalp) FIXME: Remove. This doesn't exist.
-      name: results.name,
-      // @ts-expect-error(serhalp) FIXME: Change to `results.siteId`
-      site_id: results.site_id,
+      site_id: results.siteId,
       site_name: results.siteName,
       deploy_id: results.deployId,
       deploy_url: results.deployUrl,
