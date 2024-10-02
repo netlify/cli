@@ -445,6 +445,7 @@ const runDeploy = async ({
   deployUrl: string
   logsUrl: string
   functionLogsUrl: string
+  edgeFunctionLogsUrl: string
 }> => {
   let results
   let deployId
@@ -531,9 +532,11 @@ const runDeploy = async ({
   const logsUrl = `${results.deploy.admin_url}/deploys/${results.deploy.id}`
 
   let functionLogsUrl = `${results.deploy.admin_url}/logs/functions`
+  let edgeFunctionLogsUrl = `${results.deploy.admin_url}/logs/edge-functions`
 
   if (!deployToProduction) {
     functionLogsUrl += `?scope=deploy:${deployId}`
+    edgeFunctionLogsUrl += `?scope=deploy:${deployId}`
   }
 
   return {
@@ -544,6 +547,7 @@ const runDeploy = async ({
     deployUrl,
     logsUrl,
     functionLogsUrl,
+    edgeFunctionLogsUrl,
   }
 }
 
@@ -648,6 +652,7 @@ const printResults = ({
   const msgData: Record<string, string> = {
     'Build logs': results.logsUrl,
     'Function logs': results.functionLogsUrl,
+    'Edge Function Logs': results.edgeFunctionLogsUrl,
   }
 
   if (deployToProduction) {
