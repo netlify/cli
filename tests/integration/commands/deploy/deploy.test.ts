@@ -7,6 +7,7 @@ import execa from 'execa'
 import fetch from 'node-fetch'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 
+import { getToken } from '../../../../src/utils/command-helpers.ts'
 import { callCli } from '../../utils/call-cli.js'
 import { createLiveTestSite, generateSiteName } from '../../utils/create-live-test-site.js'
 import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
@@ -944,6 +945,71 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         {
           cwd: builder.directory,
           env: { NETLIFY_SITE_ID: context.siteId },
+        },
+        true,
+      )
+
+      const response = await fetch(`${deployUrl}/read-blob`).then((res) => res.text())
+      t.expect(response).toEqual('hello from the blob')
+    })
+  })
+
+  test('should upload blobs when saved into .netlify directory and using --auth flag', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      await builder
+        .withNetlifyToml({
+          config: {
+            build: { functions: 'functions', publish: 'dist' },
+          },
+        })
+        .withContentFile({
+          path: 'dist/index.html',
+          content: '<a href="/read-blob">get blob</a>',
+        })
+        .withContentFile({
+          path: '.netlify/blobs/deploy/hello',
+          content: 'hello from the blob',
+        })
+        .withPackageJson({
+          packageJson: {
+            dependencies: {
+              '@netlify/blobs': '^6.3.0',
+              '@netlify/functions': '^2.4.0',
+            },
+          },
+        })
+        .withContentFile({
+          path: 'functions/read-blob.ts',
+          content: `
+  import { getDeployStore } from "@netlify/blobs"
+  import { Config } from "@netlify/functions"
+
+  export default async () => {
+    const store = getDeployStore()
+    const blob = await store.get('hello')
+
+    return new Response(blob)
+  }
+
+  export const config: Config = {
+    path: "/read-blob"
+  }
+          `,
+        })
+        .build()
+
+      const [authToken] = await getToken('')
+
+      if (!authToken) {
+        throw new Error('Failed to get current auth token')
+      }
+
+      await execa.command('npm install', { cwd: builder.directory })
+      const { deploy_url: deployUrl } = await callCli(
+        ['deploy', '--json', '--auth', authToken],
+        {
+          cwd: builder.directory,
+          env: { NETLIFY_SITE_ID: context.siteId, NETLIFY_AUTH_TOKEN: '' },
         },
         true,
       )

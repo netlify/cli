@@ -98,23 +98,22 @@ export const pollForToken = async ({ api, ticket }) => {
   try {
     const accessToken = await api.getAccessToken(ticket, { timeout: TOKEN_TIMEOUT })
     if (!accessToken) {
-      error('Could not retrieve access token')
+      return error('Could not retrieve access token')
     }
-    return accessToken
+    return accessToken as string
   } catch (error_) {
     // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
     if (error_.name === 'TimeoutError') {
-      error(
+      return error(
         `Timed out waiting for authorization. If you do not have a ${chalk.bold.greenBright(
           'Netlify',
         )} account, please create one at ${chalk.magenta(
           'https://app.netlify.com/signup',
         )}, then run ${chalk.cyanBright('netlify login')} again.`,
       )
-    } else {
-      // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
-      error(error_)
     }
+    // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
+    return error(error_)
   } finally {
     clearSpinner({ spinner })
   }
@@ -123,10 +122,10 @@ export const pollForToken = async ({ api, ticket }) => {
 /**
  * Get a netlify token
  * @param {string} [tokenFromOptions] optional token from the provided --auth options
- * @returns {Promise<[null|string, 'flag' | 'env' |'config' |'not found']>}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'tokenFromOptions' implicitly has an 'an... Remove this comment to see the full error message
-export const getToken = async (tokenFromOptions) => {
+export const getToken = async (
+  tokenFromOptions: string,
+): Promise<[null | string, 'flag' | 'env' | 'config' | 'not found']> => {
   // 1. First honor command flag --auth
   if (tokenFromOptions) {
     return [tokenFromOptions, 'flag']
@@ -186,7 +185,10 @@ export const warn = (message = '') => {
 }
 
 /** Throws an error or logs it */
-export const error = (message: Error | string = '', options: { exit?: boolean } = {}) => {
+export function error(message: Error | string, options: { exit: false }): void
+export function error(message: Error | string): never
+export function error(message: Error | string, options: { exit: true }): never
+export function error(message: Error | string = '', options: { exit?: boolean } = {}): never | void {
   const err =
     message instanceof Error
       ? message

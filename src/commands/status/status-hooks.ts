@@ -7,7 +7,7 @@ import BaseCommand from '../base-command.js'
 export const statusHooks = async (options: OptionValues, command: BaseCommand) => {
   const { api, siteInfo } = command.netlify
 
-  await command.authenticate()
+  await command.authenticate(options.auth)
 
   const ntlHooks = await api.listHooksBySiteId({ siteId: siteInfo.id })
   const data = {

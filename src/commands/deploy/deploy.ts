@@ -26,7 +26,6 @@ import {
   chalk,
   error,
   exit,
-  getToken,
   log,
   logJson,
   warn,
@@ -357,6 +356,7 @@ const uploadDeployBlobs = async ({
   packagePath,
   silent,
   siteId,
+  token,
 }: {
   cachedConfig: $TSFixMe
   deployId: string
@@ -364,6 +364,7 @@ const uploadDeployBlobs = async ({
   packagePath?: string
   silent: boolean
   siteId: string
+  token: string
 }) => {
   const statusCb = silent ? () => {} : deployProgressCb()
 
@@ -373,8 +374,6 @@ const uploadDeployBlobs = async ({
     phase: 'start',
   })
 
-  const [token] = await getToken(false)
-
   const { success } = await runCoreSteps(['blobs_upload'], {
     ...options,
     quiet: silent,
@@ -382,7 +381,7 @@ const uploadDeployBlobs = async ({
     packagePath,
     deployId,
     siteId,
-    token,
+    token: token === null ? undefined : token,
   })
 
   if (!success) {
@@ -435,9 +434,11 @@ const runDeploy = async ({
   skipFunctionsCache,
   // @ts-expect-error TS(7031) FIXME: Binding element 'title' implicitly has an 'any' ty... Remove this comment to see the full error message
   title,
+  token,
 }: {
   functionsFolder?: string
   command: BaseCommand
+  token: string
 }): Promise<{
   siteId: string
   siteName: string
@@ -501,6 +502,7 @@ const runDeploy = async ({
       options,
       cachedConfig: command.netlify.cachedConfig,
       packagePath: command.workspacePackage,
+      token,
     })
 
     results = await deploySite(command, api, siteId, deployFolder, {
@@ -559,12 +561,11 @@ const runDeploy = async ({
  * @returns
  */
 // @ts-expect-error TS(7031) FIXME: Binding element 'cachedConfig' implicitly has an '... Remove this comment to see the full error message
-const handleBuild = async ({ cachedConfig, currentDir, defaultConfig, deployHandler, options, packagePath }) => {
+const handleBuild = async ({ cachedConfig, currentDir, defaultConfig, deployHandler, options, packagePath, token }) => {
   if (!options.build) {
     return {}
   }
-  // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
-  const [token] = await getToken()
+
   const resolvedOptions = await getBuildOptions({
     cachedConfig,
     defaultConfig,
@@ -704,6 +705,8 @@ const prepAndRunDeploy = async ({
   siteData,
   // @ts-expect-error TS(7031) FIXME: Binding element 'siteId' implicitly has an 'any' t... Remove this comment to see the full error message
   siteId,
+  // @ts-expect-error TS(7031) FIXME: Binding element 'token' implicitly has an 'any' ty... Remove this comment to see the full error message
+  token,
   // @ts-expect-error TS(7031) FIXME: Binding element 'workingDir' implicitly has an 'an... Remove this comment to see the full error message
   workingDir,
 }) => {
@@ -777,6 +780,7 @@ const prepAndRunDeploy = async ({
     siteId,
     skipFunctionsCache: options.skipFunctionsCache,
     title: options.message,
+    token,
   })
 
   return results
@@ -798,7 +802,7 @@ export const deploy = async (options: OptionValues, command: BaseCommand) => {
     return error('--context flag is only available when using the --build flag')
   }
 
-  await command.authenticate(options.auth)
+  const token = await command.authenticate(options.auth)
 
   let siteId = site.id || options.site
 
@@ -853,6 +857,7 @@ export const deploy = async (options: OptionValues, command: BaseCommand) => {
       defaultConfig: getDefaultConfig(settings),
       currentDir: command.workingDir,
       options,
+      token,
       // @ts-expect-error TS(7031) FIXME: Binding element 'netlifyConfig' implicitly has an ... Remove this comment to see the full error message
       deployHandler: async ({ netlifyConfig }) => {
         results = await prepAndRunDeploy({
@@ -864,6 +869,7 @@ export const deploy = async (options: OptionValues, command: BaseCommand) => {
           config: netlifyConfig,
           siteData,
           siteId,
+          token,
           deployToProduction,
         })
 
@@ -880,6 +886,7 @@ export const deploy = async (options: OptionValues, command: BaseCommand) => {
       config: command.netlify.config,
       siteData,
       siteId,
+      token,
       deployToProduction,
     })
   }

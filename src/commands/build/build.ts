@@ -27,8 +27,7 @@ export const build = async (options: OptionValues, command: BaseCommand) => {
   const { cachedConfig, siteInfo } = command.netlify
   command.setAnalyticsPayload({ dry: options.dry })
   // Retrieve Netlify Build options
-  // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
-  const [token] = await getToken()
+  const [token] = await getToken(options.auth)
   const settings = await detectFrameworkSettings(command, 'build')
 
   const buildOptions = await getBuildOptions({

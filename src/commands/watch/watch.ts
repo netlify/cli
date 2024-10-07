@@ -57,7 +57,7 @@ const waitForBuildFinish = async function (api, siteId, spinner) {
 }
 
 export const watch = async (options: OptionValues, command: BaseCommand) => {
-  await command.authenticate()
+  await command.authenticate(options.auth)
   const client = command.netlify.api
   let siteId = command.netlify.site.id
 

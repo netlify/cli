@@ -7,7 +7,7 @@ import BaseCommand from '../base-command.js'
 export const openSite = async (options: OptionValues, command: BaseCommand) => {
   const { siteInfo } = command.netlify
 
-  await command.authenticate()
+  await command.authenticate(options.auth)
 
   const url = siteInfo.ssl_url || siteInfo.url
   log(`Opening "${siteInfo.name}" site url:`)

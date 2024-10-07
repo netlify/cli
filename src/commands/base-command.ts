@@ -405,7 +405,7 @@ export default class BaseCommand extends Command {
     }
   }
 
-  async authenticate(tokenFromFlag?: string) {
+  async authenticate(tokenFromFlag: string) {
     const [token] = await getToken(tokenFromFlag)
     if (token) {
       return token

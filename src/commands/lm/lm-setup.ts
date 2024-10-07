@@ -56,7 +56,7 @@ const configureLFSURL = async function (siteId, api) {
 }
 
 export const lmSetup = async (options: OptionValues, command: BaseCommand) => {
-  await command.authenticate()
+  await command.authenticate(options.auth)
 
   const { api, site } = command.netlify
 

@@ -12,7 +12,7 @@ export const sitesList = async (options: OptionValues, command: BaseCommand) => 
   if (!options.json) {
     spinner = startSpinner({ text: 'Loading your sites' })
   }
-  await command.authenticate()
+  await command.authenticate(options.auth)
 
   const sites = await listSites({ api, options: { filter: 'all' } })
   if (!options.json) {

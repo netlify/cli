@@ -5,8 +5,9 @@ import { track } from '../../utils/telemetry/index.js'
 import BaseCommand from '../base-command.js'
 
 export const logout = async (options: OptionValues, command: BaseCommand) => {
-  // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
-  const [accessToken, location] = await getToken()
+  // for login and logout commands we explicitly don't want to pass `--auth` CLI switch,
+  // so instead we are passing empty(falsy) string
+  const [accessToken, location] = await getToken('')
 
   if (!accessToken) {
     log(`Already logged out`)
