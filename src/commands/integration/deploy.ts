@@ -3,7 +3,7 @@ import { resolve } from 'path'
 import { env, exit } from 'process'
 
 import { OptionValues } from 'commander'
-import inquirer from 'inquirer'
+import Enquirer from 'enquirer'
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'js-y... Remove this comment to see the full error message
 import yaml from 'js-yaml'
 import fetch from 'node-fetch'
@@ -121,12 +121,12 @@ function verifyRequiredFieldsAreInConfig(name, description, scopes, integrationL
 export async function registerIntegration(workingDir, siteId, accountId, localIntegrationConfig, token) {
   const { description, integrationLevel, name, scopes, slug } = localIntegrationConfig
   log(chalk.yellow(`An integration associated with the site ID ${siteId} is not registered.`))
-  const registerPrompt = await inquirer.prompt([
+  const registerPrompt = await Enquirer.prompt<any>([
     {
       type: 'confirm',
       name: 'registerIntegration',
       message: `Would you like to register this site as a private integration now?`,
-      default: false,
+      initial: false,
     },
   ])
 
@@ -260,12 +260,12 @@ export async function updateIntegration(
     // @ts-expect-error TS(7005) FIXME: Variable 'localScopes' implicitly has an 'any[]' t... Remove this comment to see the full error message
     logScopeConfirmationMessage(localScopes, registeredIntegrationScopes)
 
-    const scopePrompt = await inquirer.prompt([
+    const scopePrompt = await Enquirer.prompt<any>([
       {
         type: 'confirm',
         name: 'updateScopes',
         message: `Do you want to update the scopes?`,
-        default: false,
+        initial: false,
       },
     ])
 
@@ -302,12 +302,12 @@ export async function updateIntegration(
         exit(1)
       }
     } else {
-      const useRegisteredScopesPrompt = await inquirer.prompt([
+      const useRegisteredScopesPrompt = await Enquirer.prompt<any>([
         {
           type: 'confirm',
           name: 'useRegisteredScopes',
           message: `Do you want to save the scopes registered for your integration in your local configuration file?`,
-          default: false,
+          initial: false,
         },
       ])
 

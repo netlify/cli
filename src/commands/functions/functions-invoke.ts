@@ -3,7 +3,7 @@ import { createRequire } from 'module'
 import path from 'path'
 
 import { OptionValues } from 'commander'
-import inquirer from 'inquirer'
+import Enquirer from 'enquirer'
 import fetch from 'node-fetch'
 
 import { NETLIFYDEVWARN, chalk, error, exit } from '../../utils/command-helpers.js'
@@ -97,6 +97,7 @@ const processPayloadFromFlag = function (payloadString, workingDir) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'functions' implicitly has an 'any' type... Remove this comment to see the full error message
 const getNameFromArgs = async function (functions, options, argumentName) {
+  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   const functionToTrigger = getFunctionToTrigger(options, argumentName)
   // @ts-expect-error TS(7031) FIXME: Binding element 'name' implicitly has an 'any' typ... Remove this comment to see the full error message
   const functionNames = functions.map(({ name }) => name)
@@ -113,9 +114,9 @@ const getNameFromArgs = async function (functions, options, argumentName) {
     )
   }
 
-  const { trigger } = await inquirer.prompt([
+  const { trigger } = await Enquirer.prompt<any>([
     {
-      type: 'list',
+      type: 'select',
       message: 'Pick a function to trigger',
       name: 'trigger',
       choices: functionNames,

@@ -1,5 +1,5 @@
 import { OptionValues } from 'commander'
-import inquirer from 'inquirer'
+import Enquirer from 'enquirer'
 
 import { chalk, error, exit, log } from '../../utils/command-helpers.js'
 import BaseCommand from '../base-command.js'
@@ -37,11 +37,11 @@ export const sitesDelete = async (siteId: string, options: OptionValues, command
     log()
     log(`${chalk.bold('Be careful here. There is no undo!')}`)
     log()
-    const { wantsToDelete } = await inquirer.prompt({
+    const { wantsToDelete } = await Enquirer.prompt<any>({
       type: 'confirm',
       name: 'wantsToDelete',
       message: `WARNING: Are you sure you want to delete the "${siteData.name}" site?`,
-      default: false,
+      initial: false,
     })
     log()
     if (!wantsToDelete) {
@@ -58,11 +58,11 @@ export const sitesDelete = async (siteId: string, options: OptionValues, command
     log()
     log(`Verify this siteID "${siteId}" supplied is correct and proceed.`)
     log('To skip this prompt, pass a --force flag to the delete command')
-    const { wantsToDelete } = await inquirer.prompt({
+    const { wantsToDelete } = await Enquirer.prompt<any>({
       type: 'confirm',
       name: 'wantsToDelete',
       message: `Verify & Proceed with deletion of site "${siteId}"?`,
-      default: false,
+      initial: false,
     })
     if (!wantsToDelete) {
       exit()

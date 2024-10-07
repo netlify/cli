@@ -1,5 +1,5 @@
 import { OptionValues } from 'commander'
-import inquirer from 'inquirer'
+import Enquirer from 'enquirer'
 import isEmpty from 'lodash/isEmpty.js'
 
 import { ADDON_VALIDATION, prepareAddonCommand } from '../../utils/addons/prepare.js'
@@ -89,7 +89,8 @@ export const addonsCreate = async (addonName: string, options: OptionValues, com
       configValues: rawFlags,
     })
 
-    const userInput = await inquirer.prompt(prompts)
+    // TODO: fix argument
+    const userInput = await Enquirer.prompt<any>(prompts as any)
     // Merge user input with the flags specified
     configValues = updateConfigValues(manifest.config, rawFlags, userInput)
     const missingRequiredValues = missingConfigValues(required, configValues)

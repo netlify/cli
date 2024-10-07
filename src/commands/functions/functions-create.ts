@@ -7,9 +7,9 @@ import process from 'process'
 import { fileURLToPath, pathToFileURL } from 'url'
 
 import { OptionValues } from 'commander'
+import Enquirer from 'enquirer'
 import { findUp } from 'find-up'
 import fuzzy from 'fuzzy'
-import inquirer from 'inquirer'
 import fetch from 'node-fetch'
 import ora from 'ora'
 
@@ -57,17 +57,17 @@ const getNameFromArgs = async function (argumentName, options, defaultName) {
     return argumentName
   }
 
-  const { name } = await inquirer.prompt([
+  const { name } = await Enquirer.prompt<any>([
     {
-      name: 'name',
-      message: 'Name your function:',
-      default: defaultName,
-      type: 'input',
-      validate: (val) => Boolean(val) && /^[\w.-]+$/i.test(val),
-      // make sure it is not undefined and is a valid filename.
-      // this has some nuance i have ignored, eg crossenv and i18n concerns
-    },
-  ])
+    name: 'name',
+    message: 'Name your function:',
+    initial: defaultName,
+    type: 'input',
+    validate: (val) => Boolean(val) && /^[\w.-]+$/i.test(val),
+    // make sure it is not undefined and is a valid filename.
+    // this has some nuance i have ignored, eg crossenv and i18n concerns
+  },
+])
   return name
 }
 
@@ -103,7 +103,7 @@ const filterRegistry = function (registry, input) {
  * @param {'edge' | 'serverless'} funcType
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'lang' implicitly has an 'any' type.
-const formatRegistryArrayForInquirer = async function (lang, funcType) {
+const formatRegistryArrayForEnquirer = async function (lang, funcType) {
   const folders = await readdir(path.join(templatesDir, lang), { withFileTypes: true })
 
   const imports = await Promise.all(
@@ -116,13 +116,14 @@ const formatRegistryArrayForInquirer = async function (lang, funcType) {
           const template = await import(pathToFileURL(templatePath))
           return template.default
         } catch {
-          // noop if import fails we don't break the whole inquirer
+          // noop if import fails we don't break the whole enquirer
         }
       }),
   )
   const registry = imports
     .filter((template) => template?.functionType === funcType)
     .sort((templateA, templateB) => {
+      // eslint-disable-next-line @typescript-eslint/no-use-before-define
       const priorityDiff = (templateA.priority || DEFAULT_PRIORITY) - (templateB.priority || DEFAULT_PRIORITY)
 
       if (priorityDiff !== 0) {
@@ -138,10 +139,10 @@ const formatRegistryArrayForInquirer = async function (lang, funcType) {
     .map((t) => {
       t.lang = lang
       return {
-        // confusing but this is the format inquirer wants
+        // confusing but this is the format enquirer wants
         name: `[${t.name}] ${t.description}`,
         value: t,
-        short: `${lang}-${t.name}`,
+        hint: `${lang}-${t.name}`,
       }
     })
   return registry
@@ -155,7 +156,7 @@ const formatRegistryArrayForInquirer = async function (lang, funcType) {
 // @ts-expect-error TS(7031) FIXME: Binding element 'languageFromFlag' implicitly has ... Remove this comment to see the full error message
 const pickTemplate = async function ({ language: languageFromFlag }, funcType) {
   const specialCommands = [
-    new inquirer.Separator(),
+    { role: 'separator' },
     {
       name: `Clone template from GitHub URL`,
       value: 'url',
@@ -166,7 +167,7 @@ const pickTemplate = async function ({ language: languageFromFlag }, funcType) {
       value: 'report',
       short: 'gh-report',
     },
-    new inquirer.Separator(),
+    { role: 'separator' },
   ]
 
   let language = languageFromFlag
@@ -177,44 +178,39 @@ const pickTemplate = async function ({ language: languageFromFlag }, funcType) {
         ? languages.filter((lang) => lang.value === 'javascript' || lang.value === 'typescript')
         : languages.filter(Boolean)
 
-    const { language: languageFromPrompt } = await inquirer.prompt({
+    const { language: languageFromPrompt } = await Enquirer.prompt<any>({
       choices: langs,
       message: 'Select the language of your function',
       name: 'language',
-      type: 'list',
+      type: 'select',
     })
 
     language = languageFromPrompt
   }
 
-  // @ts-expect-error TS(7034) FIXME: Variable 'templatesForLanguage' implicitly has typ... Remove this comment to see the full error message
-  let templatesForLanguage
+  let templatesForLanguage: any
 
   try {
-    templatesForLanguage = await formatRegistryArrayForInquirer(language, funcType)
+    templatesForLanguage = await formatRegistryArrayForEnquirer(language, funcType)
   } catch {
     throw error(`Invalid language: ${language}`)
   }
 
-  const { chosenTemplate } = await inquirer.prompt({
+  const { chosenTemplate } = await Enquirer.prompt<any>({
     name: 'chosenTemplate',
     message: 'Pick a template',
-    // @ts-expect-error TS(2769) FIXME: No overload matches this call.
     type: 'autocomplete',
-    // @ts-expect-error TS(7006) FIXME: Parameter 'answersSoFar' implicitly has an 'any' t... Remove this comment to see the full error message
-    source(answersSoFar, input) {
+    // @ts-expect-error Add enquirer types
+    suggest: (input: string, answersSoFar: any) => {
       // if Edge Functions template, don't show url option
-      // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'Separator... Remove this comment to see the full error message
       const edgeCommands = specialCommands.filter((val) => val.value !== 'url')
       const parsedSpecialCommands = funcType === 'edge' ? edgeCommands : specialCommands
 
       if (!input || input === '') {
         // show separators
-        // @ts-expect-error TS(7005) FIXME: Variable 'templatesForLanguage' implicitly has an ... Remove this comment to see the full error message
         return [...templatesForLanguage, ...parsedSpecialCommands]
       }
       // only show filtered results sorted by score
-      // @ts-expect-error TS(7005) FIXME: Variable 'templatesForLanguage' implicitly has an ... Remove this comment to see the full error message
       const answers = [...filterRegistry(templatesForLanguage, input), ...parsedSpecialCommands].sort(
         (answerA, answerB) => answerB.score - answerA.score,
       )
@@ -233,11 +229,11 @@ const selectTypeOfFunc = async () => {
     { name: 'Serverless function (Node/Go/Rust)', value: 'serverless' },
   ]
 
-  const { functionType } = await inquirer.prompt([
+  const { functionType } = await Enquirer.prompt<any>([
     {
       name: 'functionType',
       message: "Select the type of function you'd like to create",
-      type: 'list',
+      type: 'select',
       choices: functionTypes,
     },
   ])
@@ -288,12 +284,12 @@ const promptFunctionsDirectory = async (command) => {
     error(`${NETLIFYDEVERR} No site id found, please run inside a site directory or \`netlify link\``)
   }
 
-  const { functionsDir } = await inquirer.prompt([
+  const { functionsDir } = await Enquirer.prompt<any>([
     {
       type: 'input',
       name: 'functionsDir',
       message: 'Enter the path, relative to your site, where your functions should live:',
-      default: 'netlify/functions',
+      initial: 'netlify/functions',
     },
   ])
 
@@ -395,7 +391,9 @@ const downloadFromURL = async function (command, options, argumentName, function
       default: { addons = [], onComplete },
     } = await import(pathToFileURL(fnTemplateFile).href)
 
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     await installAddons(command, addons, path.resolve(fnFolder))
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     await handleOnComplete({ command, onComplete })
     // delete
     await unlink(fnTemplateFile)
@@ -477,7 +475,7 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
   // pull the rest of the metadata from the template
   const chosenTemplate = await pickTemplate(options, funcType)
   if (chosenTemplate === 'url') {
-    const { chosenUrl } = await inquirer.prompt([
+    const { chosenUrl } = await Enquirer.prompt<any>([
       {
         name: 'chosenUrl',
         message: 'URL to clone: ',
@@ -510,6 +508,7 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
     const name = await getNameFromArgs(argumentName, options, templateName)
 
     log(`${NETLIFYDEVLOG} Creating function ${chalk.cyan.inverse(name)}`)
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     const functionPath = ensureFunctionPathIsOk(functionsDir, name)
 
     const vars = { name }
@@ -526,6 +525,7 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
         log(`${NETLIFYDEVLOG} ${chalk.greenBright('Created')} ${filePath}`)
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-use-before-define
       fs.chmodSync(path.resolve(filePath), TEMPLATE_PERMISSIONS)
       if (filePath.includes('package.json')) {
         functionPackageJson = path.resolve(filePath)
@@ -546,16 +546,19 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
     }
 
     if (funcType === 'edge') {
+      // eslint-disable-next-line @typescript-eslint/no-use-before-define
       await registerEFInToml(name, command.netlify)
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     await installAddons(command, addons, path.resolve(functionPath))
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     await handleOnComplete({ command, onComplete })
 
     log()
     log(chalk.greenBright(`Function created!`))
 
-    if (lang == 'rust') {
+    if (lang === 'rust') {
       log(
         chalk.green(
           `Please note that Rust functions require setting the NETLIFY_EXPERIMENTAL_BUILD_RUST_SOURCE environment variable to 'true' on your site.`,
@@ -624,12 +627,12 @@ const handleAddonDidInstall = async ({ addonCreated, addonDidInstall, command, f
     return
   }
 
-  const { confirmPostInstall } = await inquirer.prompt([
+  const { confirmPostInstall } = await Enquirer.prompt<any>([
     {
       type: 'confirm',
       name: 'confirmPostInstall',
       message: `This template has an optional setup script that runs after addon install. This can be helpful for first time users to try out templates. Run the script?`,
-      default: false,
+      initial: false,
     },
   ])
 
@@ -701,12 +704,12 @@ const registerEFInToml = async (funcName, options) => {
     log(`${NETLIFYDEVLOG} \`${relConfigFilePath}\` file does not exist yet. Creating it...`)
   }
 
-  let { funcPath } = await inquirer.prompt([
+  let { funcPath } = await Enquirer.prompt<any>([
     {
       type: 'input',
       name: 'funcPath',
       message: `What route do you want your edge function to be invoked on?`,
-      default: '/test',
+      initial: '/test',
       validate: (val) => Boolean(val),
       // Make sure route isn't undefined and is valid
       // Todo: add more validation?
