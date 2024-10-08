@@ -222,7 +222,7 @@
     "temp-dir": "3.0.0",
     "tree-kill": "1.2.2",
     "typescript": "5.1.6",
-    "verdaccio": "5.31.1",
+    "verdaccio": "5.32.2",
     "vitest": "1.6.0"
   },
   "ava": {
