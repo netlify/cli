@@ -38,12 +38,23 @@ const validateDeploy = async ({
   contentMessage?: string
   siteName: string
   content?: string
-  deploy: { site_name: string; deploy_url: string; deploy_id: string; logs: string }
+  deploy: {
+    site_id: string
+    site_name: string
+    deploy_url: string
+    deploy_id: string
+    logs: string
+    function_logs: string
+    edge_function_logs: string
+  }
 }) => {
+  expect(deploy.site_id).toBeTruthy()
   expect(deploy.site_name).toBeTruthy()
   expect(deploy.deploy_url).toBeTruthy()
   expect(deploy.deploy_id).toBeTruthy()
   expect(deploy.logs).toBeTruthy()
+  expect(deploy.function_logs).toBeTruthy()
+  expect(deploy.edge_function_logs).toBeTruthy()
   expect(deploy.site_name, contentMessage).toEqual(siteName)
 
   await validateContent({ siteUrl: deploy.deploy_url, path: '', content })
@@ -260,6 +271,57 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
       const [, deployURL] = output.match(/DEPLOY_URL: (.+)/)
       t.expect(deployId).not.toEqual('0')
       t.expect(deployURL).toContain(`https://${deployId}--`)
+    })
+  })
+
+  test('should print deploy-scoped URLs for build logs, function logs, and edge function logs', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      const content = '<h1>Why Next.js is perfect, an essay</h1>'
+      builder.withContentFile({
+        path: 'public/index.html',
+        content,
+      })
+      await builder.build()
+
+      const deploy = await callCli(['deploy', '--json', '--dir', 'public'], {
+        cwd: builder.directory,
+        env: { NETLIFY_SITE_ID: context.siteId },
+      }).then((output) => JSON.parse(output))
+
+      await validateDeploy({ deploy, siteName: SITE_NAME, content })
+      expect(deploy).toHaveProperty('logs', `https://app.netlify.com/sites/${SITE_NAME}/deploys/${deploy.deploy_id}`)
+      expect(deploy).toHaveProperty(
+        'function_logs',
+        `https://app.netlify.com/sites/${SITE_NAME}/logs/functions?scope=deploy:${deploy.deploy_id}`,
+      )
+      expect(deploy).toHaveProperty(
+        'edge_function_logs',
+        `https://app.netlify.com/sites/${SITE_NAME}/logs/edge-functions?scope=deploy:${deploy.deploy_id}`,
+      )
+    })
+  })
+
+  test('should print production URLs for build logs, function logs, and edge function logs when --prod is passed', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      const content = '<h1>Why Next.js is perfect, a novella</h1>'
+      builder.withContentFile({
+        path: 'public/index.html',
+        content,
+      })
+      await builder.build()
+
+      const deploy = await callCli(['deploy', '--json', '--dir', 'public', '--prod'], {
+        cwd: builder.directory,
+        env: { NETLIFY_SITE_ID: context.siteId },
+      }).then((output) => JSON.parse(output))
+
+      await validateDeploy({ deploy, siteName: SITE_NAME, content })
+      expect(deploy).toHaveProperty('logs', `https://app.netlify.com/sites/${SITE_NAME}/deploys/${deploy.deploy_id}`)
+      expect(deploy).toHaveProperty('function_logs', `https://app.netlify.com/sites/${SITE_NAME}/logs/functions`)
+      expect(deploy).toHaveProperty(
+        'edge_function_logs',
+        `https://app.netlify.com/sites/${SITE_NAME}/logs/edge-functions`,
+      )
     })
   })
 
@@ -954,24 +1016,28 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
   })
 
   setupFixtureTests('next-app-without-config', () => {
-    test<FixtureTestContext>('should run deploy with --build without any netlify specific configuration', async ({
-      fixture,
-    }) => {
-      const { deploy_url: deployUrl } = await callCli(
-        ['deploy', '--build', '--json'],
-        {
-          cwd: fixture.directory,
-          env: { NETLIFY_SITE_ID: context.siteId },
-        },
-        true,
-      )
+    test<FixtureTestContext>(
+      'should run deploy with --build without any netlify specific configuration',
+      {
+        timeout: 300_000,
+      },
+      async ({ fixture }) => {
+        const { deploy_url: deployUrl } = await callCli(
+          ['deploy', '--build', '--json'],
+          {
+            cwd: fixture.directory,
+            env: { NETLIFY_SITE_ID: context.siteId },
+          },
+          true,
+        )
 
-      const html = await fetch(deployUrl).then((res) => res.text())
-      // eslint-disable-next-line id-length
-      const $ = load(html)
+        const html = await fetch(deployUrl).then((res) => res.text())
+        // eslint-disable-next-line id-length
+        const $ = load(html)
 
-      expect($('title').text()).toEqual('Create Next App')
-      expect($('img[alt="Next.js Logo"]').attr('src')).toBe('/next.svg')
-    })
+        expect($('title').text()).toEqual('Create Next App')
+        expect($('img[alt="Next.js Logo"]').attr('src')).toBe('/next.svg')
+      },
+    )
   })
 })
