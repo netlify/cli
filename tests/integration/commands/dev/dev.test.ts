@@ -645,6 +645,48 @@ describe.concurrent('command/dev', () => {
           })
         },
       )
+
+      test('ensures installation of dev server plugins', async (t) => {
+        await withSiteBuilder(t, async (builder) => {
+          await builder
+            .withNetlifyToml({
+              config: {
+                plugins: [{ package: '@netlify/plugin-1' }],
+              },
+            })
+            .withPackageJson({
+              packageJson: {
+                dependencies: {
+                  '@netlify/plugin-1': '^6.3.0',
+                  '@netlify/plugin-2': '^6.3.0',
+                },
+              },
+            })
+            .withMockPackage({
+              name: '@netlify/plugin-1',
+              content: '',
+            })
+            .withMockPackage({
+              name: '@netlify/plugin-2',
+              content: '',
+            })
+            .build()
+
+          await withDevServer(
+            {
+              cwd: builder.directory,
+              env: {
+                NETLIFY_INCLUDE_DEV_SERVER_PLUGIN: '@netlify/plugin-1,@netlify/plugin-2',
+              },
+            },
+            async (server) => {
+              const output = server.outputBuffer.map((buff) => buff.toString()).join('\n')
+              t.expect(output).toContain('Server now ready')
+              t.expect(server.errorBuffer).toHaveLength(0)
+            },
+          )
+        })
+      })
     })
   })
 })

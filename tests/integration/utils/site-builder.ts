@@ -187,6 +187,18 @@ export class SiteBuilder {
     return this
   }
 
+  withMockPackage({ content, name }: { name: string; content: string }) {
+    const dir = path.join(this.directory, 'node_modules', name)
+    this.tasks.push(async () => {
+      await ensureDir(dir)
+      await writeFile(path.join(dir, 'index.js'), content)
+      await writeFile(path.join(dir, 'package.json'), '{}')
+      await writeFile(path.join(dir, 'manifest.yml'), `name: '${name}'`)
+    })
+
+    return this
+  }
+
   withCopiedFile({ path: filePath, src }: { path: string; src: string }) {
     const dest = path.join(this.directory, filePath)
     this.tasks.push(async () => {
