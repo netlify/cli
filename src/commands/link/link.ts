@@ -322,13 +322,13 @@ export const link = async (options: OptionValues, command: BaseCommand) => {
     if (results.length === 0) {
       error(new Error(`No sites found named ${options.name}`))
     }
-    const [firstSiteData] = results
-    state.set('siteId', firstSiteData.id)
+    const matchingSiteData = results.find((site: any) => site.name === options.name) || results[0]
+    state.set('siteId', matchingSiteData.id)
 
-    log(`Linked to ${firstSiteData.name}`)
+    log(`Linked to ${matchingSiteData.name}`)
 
     await track('sites_linked', {
-      siteId: (firstSiteData && firstSiteData.id) || siteId,
+      siteId: (matchingSiteData && matchingSiteData.id) || siteId,
       linkType: 'manual',
       kind: 'byName',
     })
