@@ -654,7 +654,7 @@ const printResults = ({
   const msgData: Record<string, string> = {
     'Build logs': results.logsUrl,
     'Function logs': results.functionLogsUrl,
-    'Edge Function Logs': results.edgeFunctionLogsUrl,
+    'Edge function Logs': results.edgeFunctionLogsUrl,
   }
 
   if (deployToProduction) {
