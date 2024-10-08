@@ -37,7 +37,7 @@ netlify dev
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`dev:exec`](/commands/dev#devexec) | Runs a command within the netlify dev environment, e.g. with env variables from any installed addons  |
+| [`dev:exec`](/commands/dev#devexec) | Runs a command within the netlify dev environment. For example, with environment variables from any installed add-ons  |
 
 
 **Examples**
