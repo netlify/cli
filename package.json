@@ -178,7 +178,7 @@
     "tomlify-j0.4": "3.0.0",
     "ulid": "2.3.0",
     "unixify": "1.0.0",
-    "update-notifier": "7.0.0",
+    "update-notifier": "7.3.1",
     "uuid": "9.0.1",
     "wait-port": "1.1.0",
     "write-file-atomic": "5.0.1",
@@ -193,6 +193,7 @@
     "@types/fs-extra": "11.0.4",
     "@types/inquirer": "9.0.7",
     "@types/jsonwebtoken": "9.0.7",
+    "@types/lodash": "^4.17.10",
     "@types/node": "20.14.8",
     "@types/node-fetch": "2.6.11",
     "@types/parse-gitignore": "1.0.2",
@@ -221,7 +222,7 @@
     "temp-dir": "3.0.0",
     "tree-kill": "1.2.2",
     "typescript": "5.1.6",
-    "verdaccio": "5.31.1",
+    "verdaccio": "5.32.2",
     "vitest": "1.6.0"
   },
   "ava": {
