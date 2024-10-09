@@ -11,6 +11,10 @@ vi.mock('inquirer', () => ({
   },
 }))
 
+vi.mock('/src/commands/env/env-set.ts', () => ({
+  confirmSetEnviroment: vi.fn(),
+}))
+
 describe('env:list command', () => {
   setupFixtureTests('empty-project', { mockApi: { routes } }, () => {
     // vi.mock('inquirer', () => ({
@@ -21,7 +25,7 @@ describe('env:list command', () => {
       // vi.spyOn(inquirer, 'prompt').mockImplementation(() => Promise.resolve({ confirm: true }))
       // const mockedInquirer = inquirer as jest.Mocked<typeof inquirer>
       // mockedInquirer.prompt.mockImplementation(async () => ({ wantsToSet: true }))
-      ;(inquirer.prompt as any).mockResolvedValue({ wantsToSet: true })
+      vi.spyOn(inquirer, 'prompt').mockResolvedValue({ wantsToSet: true }) // Simulates user answering 'Yes'
 
       const cliResponse = await fixture.callCli(['env:set', 'NEW_VAR', 'new-value', '--context', 'dev', '--json'], {
         offline: false,

@@ -161,6 +161,7 @@ const getConfirmationMessage = (key: string, value: string, { context, scope }: 
   } else if (scope === undefined) {
     message += ` in all scopes?`
   }
+  console.log(message)
   return message
 }
 
