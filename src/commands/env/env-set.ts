@@ -1,6 +1,7 @@
 import { OptionValues } from 'commander'
+import inquirer from 'inquirer'
 
-import { chalk, error, log, logJson } from '../../utils/command-helpers.js'
+import { chalk, error, log, exit, logJson } from '../../utils/command-helpers.js'
 import { AVAILABLE_CONTEXTS, AVAILABLE_SCOPES, translateFromEnvelopeToMongo } from '../../utils/env/index.js'
 import BaseCommand from '../base-command.js'
 
@@ -29,6 +30,8 @@ const setInEnvelope = async ({ api, context, key, scope, secret, siteInfo, value
   }
 
   // fetch envelope env vars
+  const userData = await api.getAccount({accountId})
+  log(userData)
   const envelopeVariables = await api.getEnvVars({ accountId, siteId })
   const contexts = context || ['all']
   let scopes = scope || AVAILABLE_SCOPES
@@ -109,14 +112,75 @@ const setInEnvelope = async ({ api, context, key, scope, secret, siteInfo, value
 
 export const envSet = async (key: string, value: string, options: OptionValues, command: BaseCommand) => {
   const { context, scope, secret } = options
-
   const { api, cachedConfig, site } = command.netlify
   const siteId = site.id
-
   if (!siteId) {
     log('No site id found, please run inside a site folder or `netlify link`')
     return false
   }
+
+  const noForce = options.force !== true
+
+  if (noForce) {
+    if (context === undefined && scope === undefined) {
+      log(`${chalk.redBright('Warning')}: No context defined, environent variable will be set for all contexts`)
+      log(`${chalk.redBright('Warning')}: No scope defined, environent variable will be set for all scopes`)
+      log(`${chalk.yellowBright('Notice')}: Scope setting is only available to paid Netlify accounts`)
+      log()
+      log(`${key}=${value}`)
+      log()
+      log('To skip this prompt, pass a --force flag to the delete command')
+      const { wantsToSet } = await inquirer.prompt({
+        type: 'confirm',
+        name: 'wantsToSet',
+        message: `WARNING: Are you sure you want to set ${key}=${value} in all contexts and scopes?`,
+        default: false,
+      })
+      log()
+      if (!wantsToSet) {
+        exit()
+      }
+    } else if (context === undefined) {
+      log(`${chalk.redBright('Warning')}: No context defined, environent variable will be set for all contexts`)
+      log(`${chalk.yellowBright('Notice')}: Scope setting is only available to paid Netlify accounts`)
+      log()
+      log(`${key}=${value}`)
+      log()
+      log('To skip this prompt, pass a --force flag to the delete command')
+      const { wantsToSet } = await inquirer.prompt({
+        type: 'confirm',
+        name: 'wantsToSet',
+        message: `WARNING: Are you sure you want to set ${key}=${value} in all contexts?`,
+        default: false,
+      })
+      log()
+      if (!wantsToSet) {
+        exit()
+      }
+    } else if (scope === undefined) {
+      log(`${chalk.redBright('Warning')}: No scopes defined, environent variable will be set for all scopes`)
+      log()
+      log(`${key}=${value}`)
+      log()
+      log('To skip this prompt, pass a --force flag to the delete command')
+
+      const { wantsToSet } = await inquirer.prompt({
+        type: 'confirm',
+        name: 'wantsToSet',
+        message: `WARNING: Are you sure you want to set ${key}=${value} in all scopes?`,
+        default: false,
+      })
+      log()
+      if (!wantsToSet) {
+        exit()
+      }
+    }
+  }
+
+  // Account type verification
+  // if (scope && freeAccount) {
+  //   log(`${chalk.yellowBright('Notice')}: Scope setting is only available to paid Netlify accounts`)
+  // }
 
   const { siteInfo } = cachedConfig
 
