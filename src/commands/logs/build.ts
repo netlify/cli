@@ -40,7 +40,7 @@ export const logsBuild = async (options: OptionValues, command: BaseCommand) => 
   const userId = command.netlify.globalConfig.get('userId')
 
   if (!siteId) {
-    log("You must link a site before attempting to view deploy logs")
+    log('You must link a site before attempting to view deploy logs')
     return
   }
 
