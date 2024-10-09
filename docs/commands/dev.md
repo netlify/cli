@@ -57,7 +57,7 @@ BROWSER=none netlify dev # disable browser auto opening
 ---
 ## `dev:exec`
 
-Runs a command within the netlify dev environment, e.g. with env variables from any installed addons
+Runs a command within the netlify dev environment. For example, with environment variables from any installed add-ons
 
 **Usage**
 
