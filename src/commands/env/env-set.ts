@@ -30,8 +30,8 @@ const setInEnvelope = async ({ api, context, key, scope, secret, siteInfo, value
   }
 
   // fetch envelope env vars
-  const userData = await api.getAccount({accountId})
-  log(userData)
+  // const userData = await api.getAccount({accountId})
+  // log(userData)
   const envelopeVariables = await api.getEnvVars({ accountId, siteId })
   const contexts = context || ['all']
   let scopes = scope || AVAILABLE_SCOPES
@@ -93,11 +93,19 @@ const setInEnvelope = async ({ api, context, key, scope, secret, siteInfo, value
         await api.updateEnvVar({ ...params, body })
       }
     } else {
+      
       // create whole env var
       const body = [{ key, is_secret: secret, scopes, values }]
       await api.createEnvVars({ ...params, body })
     }
   } catch (error_) {
+    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+    if (error_.json.status === 500) {
+      log(`${chalk.redBright('ERROR')}: Environment variable ${key} not created`)
+      if (scope) {
+        log(`${chalk.yellowBright('Notice')}: Scope setting is only available to paid Netlify accounts`)
+      }
+    }
     // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
     throw error_.json ? error_.json.msg : error_
   }
