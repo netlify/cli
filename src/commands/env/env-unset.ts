@@ -1,6 +1,6 @@
 import { OptionValues } from 'commander'
-
-import { chalk, log, logJson } from '../../utils/command-helpers.js'
+import inquirer from 'inquirer'
+import { chalk, log, logJson, exit } from '../../utils/command-helpers.js'
 import { AVAILABLE_CONTEXTS, translateFromEnvelopeToMongo } from '../../utils/env/index.js'
 import BaseCommand from '../base-command.js'
 
@@ -49,8 +49,21 @@ const unsetInEnvelope = async ({ api, context, key, siteInfo }) => {
         }
       }
     } else {
-      // otherwise, if no context passed, delete the whole key
-      await api.deleteEnvVar({ accountId, siteId, key })
+      // otherwise, if no context passed, prompt for approval,
+      // then delete the whole key
+      log(`${chalk.redBright('Warning')}: No context defined, environment variable will be unset for all contexts`)
+      const message = `Are you sure you want to unset ${key}?`
+      const { wantsToSet } = await inquirer.prompt({
+        type: 'confirm',
+        name: 'wantsToSet',
+        message,
+        default: false,
+      })
+      if (wantsToSet) {
+        await api.deleteEnvVar({ accountId, siteId, key })
+      } else {
+        exit()
+      }
     }
   } catch (error_) {
     // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
