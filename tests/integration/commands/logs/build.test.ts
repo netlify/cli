@@ -109,7 +109,7 @@ describe('logs:deploy command', () => {
     expect(body.access_token).toEqual(env.NETLIFY_AUTH_TOKEN)
   })
 
-  test.only('should instruct user to link a site if one is not linked', async () => {
+  test('should instruct user to link a site if one is not linked', async () => {
     expect(process.env.NETLIFY_SITE_ID).toBe(undefined)
     const stdout = await callCli(['logs:deploy'])
     expect(stdout).toContain('You must link a site before attempting to view deploy logs')
