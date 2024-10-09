@@ -134,15 +134,16 @@ export const createEnvCommand = (program: BaseCommand) => {
   //
   //
   // Milestones:
+  //   (Done)
   //   1. If no flags are given, then we need to promp the user Y/N,
   //     - we need to let the user know that they are going to set the enviroment variable for all scopes and contexts
-  //
+  //   (Done)
   //   2. If the context flag is given, and the scope is not given
   //     -
   //
   //   2. The `-f` should skip the promp
   //     - if the user gives us a -f, then we need to skip the prmopt
-  //
+  //   (Done)
   //   3. --scope without premium
   //       - check the status code and message returend by the api
   //       - If the error message is generic
@@ -155,7 +156,8 @@ export const createEnvCommand = (program: BaseCommand) => {
   //               - we can infer this to them
   //           - Netlify makes their api better with better error messages
   //       - add this to the documentation,
-  //
+  //   4. Test
+  //   5. Refactor
   //
   program
     .command('env:unset')

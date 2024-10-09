@@ -1,16 +1,34 @@
-import { describe, expect, test } from 'vitest'
+import { describe, expect, test, vi } from 'vitest'
+import inquirer from 'inquirer'
 
 import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
 
 import routes from './api-routes.js'
 
+vi.mock('inquirer', () => ({
+  default: {
+    prompt: vi.fn(),
+  },
+}))
+
 describe('env:list command', () => {
   setupFixtureTests('empty-project', { mockApi: { routes } }, () => {
+    // vi.mock('inquirer', () => ({
+    //   prompt: vi.fn().mockResolvedValue({ wantsToSet: true }),
+    // }))
+
     test<FixtureTestContext>('should create and return new var in the dev context', async ({ fixture, mockApi }) => {
+      // vi.spyOn(inquirer, 'prompt').mockImplementation(() => Promise.resolve({ confirm: true }))
+      // const mockedInquirer = inquirer as jest.Mocked<typeof inquirer>
+      // mockedInquirer.prompt.mockImplementation(async () => ({ wantsToSet: true }))
+      ;(inquirer.prompt as any).mockResolvedValue({ wantsToSet: true })
+
       const cliResponse = await fixture.callCli(['env:set', 'NEW_VAR', 'new-value', '--context', 'dev', '--json'], {
         offline: false,
         parseJson: true,
       })
+
+      console.log(cliResponse)
 
       expect(cliResponse).toEqual({
         EXISTING_VAR: 'envelope-dev-value',

@@ -5,6 +5,11 @@ import { chalk, error, log, exit, logJson } from '../../utils/command-helpers.js
 import { AVAILABLE_CONTEXTS, AVAILABLE_SCOPES, translateFromEnvelopeToMongo } from '../../utils/env/index.js'
 import BaseCommand from '../base-command.js'
 
+type ContextScope = {
+  context?: string
+  scope?: string
+}
+
 /**
  * Updates the env for a site configured with Envelope with a new key/value pair
  * @returns {Promise<object | boolean>}
@@ -99,12 +104,13 @@ const setInEnvelope = async ({ api, context, key, scope, secret, siteInfo, value
     }
   } catch (error_) {
     // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    if (error_.json.status === 500) {
+    if (error_.json && error_.json.status === 500) {
       log(`${chalk.redBright('ERROR')}: Environment variable ${key} not created`)
       if (scope) {
         log(`${chalk.yellowBright('Notice')}: Scope setting is only available to paid Netlify accounts`)
       }
     }
+
     // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
     throw error_.json ? error_.json.msg : error_
   }
@@ -114,6 +120,63 @@ const setInEnvelope = async ({ api, context, key, scope, secret, siteInfo, value
     ...env,
     // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     [key]: value || env[key],
+  }
+}
+
+const generateWarningMessage = ({ context, scope }: ContextScope): string[] => {
+  const warningMessages: string[] = []
+
+  if (context === undefined) {
+    warningMessages.push(
+      `${chalk.redBright('Warning')}: No context defined, environment variable will be set for all contexts`,
+    )
+  }
+  if (scope === undefined) {
+    warningMessages.push(
+      `${chalk.redBright('Warning')}: No scope defined, environment variable will be set for all scopes`,
+    )
+  }
+  if (scope) {
+    warningMessages.push(`${chalk.yellowBright('Notice')}: Scope setting is only available to paid Netlify accounts`)
+  }
+  return warningMessages
+}
+
+const logWarningsAndNotices = (key: string, value: string, contextScope: ContextScope): void => {
+  const warnings = generateWarningMessage(contextScope)
+  warnings.forEach((message) => log(message))
+  log()
+  log(`${key}=${value}`)
+  log()
+  log('To skip this prompt, pass a --force flag to the delete command')
+}
+
+const getConfirmationMessage = (key: string, value: string, { context, scope }: ContextScope) => {
+  let message = `WARNING: Are you sure you want to set ${key}=${value}`
+
+  if (context == undefined && scope === undefined) {
+    message += ' in all contexts and scopes?'
+  } else if (context === undefined) {
+    message += ` in all contexts?`
+  } else if (scope === undefined) {
+    message += ` in all scopes?`
+  }
+  return message
+}
+
+const confirmSetEnviroment = async (key: string, value: string, contextScope: ContextScope): Promise<void> => {
+  const message = getConfirmationMessage(key, value, contextScope)
+
+  const { wantsToSet } = await inquirer.prompt({
+    type: 'confirm',
+    name: 'wantsToSet',
+    message,
+    default: false,
+  })
+
+  log()
+  if (!wantsToSet) {
+    exit()
   }
 }
 
@@ -128,66 +191,11 @@ export const envSet = async (key: string, value: string, options: OptionValues, 
 
   const noForce = options.force !== true
 
-  if (noForce) {
-    if (context === undefined && scope === undefined) {
-      log(`${chalk.redBright('Warning')}: No context defined, environent variable will be set for all contexts`)
-      log(`${chalk.redBright('Warning')}: No scope defined, environent variable will be set for all scopes`)
-      log(`${chalk.yellowBright('Notice')}: Scope setting is only available to paid Netlify accounts`)
-      log()
-      log(`${key}=${value}`)
-      log()
-      log('To skip this prompt, pass a --force flag to the delete command')
-      const { wantsToSet } = await inquirer.prompt({
-        type: 'confirm',
-        name: 'wantsToSet',
-        message: `WARNING: Are you sure you want to set ${key}=${value} in all contexts and scopes?`,
-        default: false,
-      })
-      log()
-      if (!wantsToSet) {
-        exit()
-      }
-    } else if (context === undefined) {
-      log(`${chalk.redBright('Warning')}: No context defined, environent variable will be set for all contexts`)
-      log(`${chalk.yellowBright('Notice')}: Scope setting is only available to paid Netlify accounts`)
-      log()
-      log(`${key}=${value}`)
-      log()
-      log('To skip this prompt, pass a --force flag to the delete command')
-      const { wantsToSet } = await inquirer.prompt({
-        type: 'confirm',
-        name: 'wantsToSet',
-        message: `WARNING: Are you sure you want to set ${key}=${value} in all contexts?`,
-        default: false,
-      })
-      log()
-      if (!wantsToSet) {
-        exit()
-      }
-    } else if (scope === undefined) {
-      log(`${chalk.redBright('Warning')}: No scopes defined, environent variable will be set for all scopes`)
-      log()
-      log(`${key}=${value}`)
-      log()
-      log('To skip this prompt, pass a --force flag to the delete command')
-
-      const { wantsToSet } = await inquirer.prompt({
-        type: 'confirm',
-        name: 'wantsToSet',
-        message: `WARNING: Are you sure you want to set ${key}=${value} in all scopes?`,
-        default: false,
-      })
-      log()
-      if (!wantsToSet) {
-        exit()
-      }
-    }
+  // Checks if -f is passed, if not, then we need to prompt the user if scope or context is not provided
+  if (noForce && (!context || !scope)) {
+    logWarningsAndNotices(key, value, { context, scope })
+    await confirmSetEnviroment(key, value, { context, scope })
   }
-
-  // Account type verification
-  // if (scope && freeAccount) {
-  //   log(`${chalk.yellowBright('Notice')}: Scope setting is only available to paid Netlify accounts`)
-  // }
 
   const { siteInfo } = cachedConfig
 
