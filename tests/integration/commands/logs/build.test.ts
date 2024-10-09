@@ -5,6 +5,7 @@ import { createLogsBuildCommand } from '../../../../src/commands/logs/index.js'
 import { getWebSocket } from '../../../../src/utils/websockets/index.js'
 import { startMockApi } from '../../utils/mock-api-vitest.js'
 import { getEnvironmentVariables } from '../../utils/mock-api.js'
+import { callCli } from '../../utils/call-cli.js'
 
 vi.mock('../../../../src/utils/websockets/index.js', () => ({
   getWebSocket: vi.fn(),
@@ -106,5 +107,11 @@ describe('logs:deploy command', () => {
     expect(body.deploy_id).toEqual('deploy-id')
     expect(body.site_id).toEqual('site_id')
     expect(body.access_token).toEqual(env.NETLIFY_AUTH_TOKEN)
+  })
+
+  test.only('should instruct user to link a site if one is not linked', async () => {
+    expect(process.env.NETLIFY_SITE_ID).toBe(undefined)
+    const stdout = await callCli(['logs:deploy'])
+    expect(stdout).toContain('You must link a site before attempting to view deploy logs')
   })
 })
