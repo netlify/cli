@@ -93,7 +93,6 @@ const setInEnvelope = async ({ api, context, key, scope, secret, siteInfo, value
         await api.updateEnvVar({ ...params, body })
       }
     } else {
-      
       // create whole env var
       const body = [{ key, is_secret: secret, scopes, values }]
       await api.createEnvVars({ ...params, body })
