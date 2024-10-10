@@ -122,7 +122,7 @@ describe('logs:deploy command', () => {
       await withMockApi(
         routes,
         async ({ apiUrl }) => {
-          const options = getCLIOptions({ builder, apiUrl, env: { NETLIFY_SITE_ID: '' }})
+          const options = getCLIOptions({ builder, apiUrl, env: { NETLIFY_SITE_ID: '' } })
           const stdout = await callCli(['logs:deploy'], { ...options, cwd: join(builder.directory, projectPath) })
           expect(stdout).toContain('You must link a site before attempting to view deploy logs')
         },
