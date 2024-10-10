@@ -1,9 +1,11 @@
+/* eslint-disable array-callback-return */
 import { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 
 import { chalk, error, log, exit, logJson } from '../../utils/command-helpers.js'
 import { AVAILABLE_CONTEXTS, AVAILABLE_SCOPES, translateFromEnvelopeToMongo } from '../../utils/env/index.js'
 import BaseCommand from '../base-command.js'
+import { printBanner } from '../../utils/banner.js'
 
 type ContextScope = {
   context?: string
@@ -152,31 +154,33 @@ const logWarningsAndNotices = (key: string, value: string, contextScope: Context
 }
 
 const getConfirmationMessage = (key: string, value: string, { context, scope }: ContextScope) => {
-  let message = `WARNING: Are you sure you want to set ${key}=${value}`
-
-  if (context == undefined && scope === undefined) {
+  let message = `${chalk.redBright('Warning')}: Are you sure you want to set ${key}=${value}`
+  if (context === undefined && scope === undefined) {
     message += ' in all contexts and scopes?'
   } else if (context === undefined) {
     message += ` in all contexts?`
   } else if (scope === undefined) {
     message += ` in all scopes?`
   }
-  console.log(message)
   return message
 }
 
 const confirmSetEnviroment = async (key: string, value: string, contextScope: ContextScope): Promise<void> => {
-  const message = getConfirmationMessage(key, value, contextScope)
-
-  const { wantsToSet } = await inquirer.prompt({
-    type: 'confirm',
-    name: 'wantsToSet',
-    message,
-    default: false,
-  })
-
-  log()
-  if (!wantsToSet) {
+  try {
+    const message = getConfirmationMessage(key, value, contextScope)
+    const { wantsToSet } = await inquirer.prompt({
+      type: 'confirm',
+      name: 'wantsToSet',
+      message,
+      default: false,
+    })
+    log()
+    if (!wantsToSet) {
+      exit()
+    }
+    // eslint-disable-next-line @typescript-eslint/no-shadow
+  } catch (error) {
+    console.error(error)
     exit()
   }
 }
@@ -189,9 +193,9 @@ export const envSet = async (key: string, value: string, options: OptionValues, 
     log('No site id found, please run inside a site folder or `netlify link`')
     return false
   }
-
   const noForce = options.force !== true
-
+  log('context', context)
+  log('scope', scope)
   // Checks if -f is passed, if not, then we need to prompt the user if scope or context is not provided
   if (noForce && (!context || !scope)) {
     logWarningsAndNotices(key, value, { context, scope })
