@@ -103,7 +103,7 @@ export const createEnvCommand = (program: BaseCommand) => {
         'runtime',
       ]),
     )
-    .addOption(new Option('-f, --force', 'force the operation without warnings'))
+    .option('-f, --force', 'force the operation without warnings')
     .option('--secret', 'Indicate whether the environment variable value can be read again.')
     .description('Set value of environment variable')
     .addExamples([
@@ -120,45 +120,6 @@ export const createEnvCommand = (program: BaseCommand) => {
       await envSet(key, value, options, command)
     })
 
-  //
-  // - To prompt before we add an enviroment varaible
-  // - if context is not given, then the context will be all
-  // - If env:set command is run without any options, then we need to prompt the user to let them know that env will be set for all contexts and scope
-  // - If the user passes the -f, then we need to disable the promp
-  //   - this will be our force flag, to bypass prompting
-  //
-  // - context and scope are undefined
-  //   - we need to prompt the user to let them know that env will be set for all contexts and scope
-  // - context is defined, but scope is not
-  // - conext is not defined, but scope is defined
-  //
-  //
-  // Milestones:
-  //   (Done)
-  //   1. If no flags are given, then we need to promp the user Y/N,
-  //     - we need to let the user know that they are going to set the enviroment variable for all scopes and contexts
-  //   (Done)
-  //   2. If the context flag is given, and the scope is not given
-  //     -
-  //
-  //   2. The `-f` should skip the promp
-  //     - if the user gives us a -f, then we need to skip the prmopt
-  //   (Done)
-  //   3. --scope without premium
-  //       - check the status code and message returend by the api
-  //       - If the error message is generic
-  //         - Check with Daniel, and see what would be the best option
-  //           - validate the user has a premium subscription
-  //             - if the user does not have a premium subscription, then we need to throw an error
-  //             - we can check the api status code and message to see if the user has a premium subscription
-  //           - infer if the env variable is not created, and the `--scope` flag is passed
-  //             - we can let the user konw that the variable was not created, and they `--scope` is a premium feature
-  //               - we can infer this to them
-  //           - Netlify makes their api better with better error messages
-  //       - add this to the documentation,
-  //   4. Test
-  //   5. Refactor
-  //
   program
     .command('env:unset')
     .aliases(['env:delete', 'env:remove'])
@@ -170,6 +131,7 @@ export const createEnvCommand = (program: BaseCommand) => {
       // @ts-expect-error TS(7006) FIXME: Parameter 'context' implicitly has an 'any' type.
       (context, previous = []) => [...previous, normalizeContext(context)],
     )
+    .option('-f, --force', 'force the operation without warnings')
     .addExamples([
       'netlify env:unset VAR_NAME # unset in all contexts',
       'netlify env:unset VAR_NAME --context production',
@@ -185,6 +147,7 @@ export const createEnvCommand = (program: BaseCommand) => {
     .command('env:clone')
     .alias('env:migrate')
     .option('-f, --from <from>', 'Site ID (From)')
+    .option('-s, --skip', 'Skip prompts')
     .requiredOption('-t, --to <to>', 'Site ID (To)')
     .description(`Clone environment variables from one site to another`)
     .addExamples(['netlify env:clone --to <to-site-id>', 'netlify env:clone --to <to-site-id> --from <from-site-id>'])

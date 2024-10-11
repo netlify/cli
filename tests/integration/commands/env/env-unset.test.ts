@@ -1,13 +1,26 @@
-import { describe, expect, test } from 'vitest'
+import process from 'process'
 
+import chalk from 'chalk'
+import inquirer from 'inquirer'
+import { describe, expect, test, vi, beforeEach } from 'vitest'
+
+import BaseCommand from '../../../../src/commands/base-command.js'
+import { createEnvCommand } from '../../../../src/commands/env/env.js'
+import { log } from '../../../../src/utils/command-helpers.js'
 import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
+import { getEnvironmentVariables, withMockApi } from '../../utils/mock-api.js'
 
 import routes from './api-routes.js'
+
+vi.mock('../../../../src/utils/command-helpers.js', async () => ({
+  ...(await vi.importActual('../../../../src/utils/command-helpers.js')),
+  log: vi.fn(),
+}))
 
 describe('env:unset command', () => {
   setupFixtureTests('empty-project', { mockApi: { routes } }, () => {
     test<FixtureTestContext>('should remove existing variable', async ({ fixture, mockApi }) => {
-      const cliResponse = await fixture.callCli(['env:unset', '--json', 'EXISTING_VAR'], {
+      const cliResponse = await fixture.callCli(['env:unset', '--json', 'EXISTING_VAR', '--force'], {
         offline: false,
         parseJson: true,
       })
@@ -22,10 +35,13 @@ describe('env:unset command', () => {
     })
 
     test<FixtureTestContext>('should remove existing variable value', async ({ fixture, mockApi }) => {
-      const cliResponse = await fixture.callCli(['env:unset', 'EXISTING_VAR', '--context', 'production', '--json'], {
-        offline: false,
-        parseJson: true,
-      })
+      const cliResponse = await fixture.callCli(
+        ['env:unset', 'EXISTING_VAR', '--context', 'production', '--json', '--force'],
+        {
+          offline: false,
+          parseJson: true,
+        },
+      )
 
       expect(cliResponse).toEqual({
         OTHER_VAR: 'envelope-all-value',
@@ -37,10 +53,13 @@ describe('env:unset command', () => {
     })
 
     test<FixtureTestContext>('should split up an `all` value', async ({ fixture, mockApi }) => {
-      const cliResponse = await fixture.callCli(['env:unset', 'OTHER_VAR', '--context', 'branch-deploy', '--json'], {
-        offline: false,
-        parseJson: true,
-      })
+      const cliResponse = await fixture.callCli(
+        ['env:unset', 'OTHER_VAR', '--context', 'branch-deploy', '--json', '--force'],
+        {
+          offline: false,
+          parseJson: true,
+        },
+      )
 
       expect(cliResponse).toEqual({})
 
@@ -53,6 +72,113 @@ describe('env:unset command', () => {
       )
 
       expect(patchRequests).toHaveLength(3)
+    })
+  })
+
+  describe('user is prompted to confirm when unsetting an env var that already exists', () => {
+    // already exists as value in withMockApi
+    const existingVar = 'EXISTING_VAR'
+
+    const expectedWarningMessage = `${chalk.redBright('Warning')}: The environment variable ${chalk.bgBlueBright(
+      existingVar,
+    )} will be unset (deleted)!`
+
+    const expectedNoticeMessage = `${chalk.yellowBright(
+      'Notice',
+    )}: To unset the variable without confirmation, pass the -f or --force flag.`
+
+    const expectedSuccessMessage = `Unset environment variable ${chalk.yellow(`${existingVar}`)} in the ${chalk.magenta(
+      'all',
+    )} context`
+
+    beforeEach(() => {
+      vi.resetAllMocks()
+    })
+
+    test('should log warnings and prompts if enviroment variable already exists', async () => {
+      await withMockApi(routes, async ({ apiUrl }) => {
+        Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
+
+        const program = new BaseCommand('netlify')
+        createEnvCommand(program)
+
+        const promptSpy = vi.spyOn(inquirer, 'prompt').mockResolvedValue({ wantsToSet: true })
+
+        await program.parseAsync(['', '', 'env:unset', existingVar])
+
+        expect(promptSpy).toHaveBeenCalledWith({
+          type: 'confirm',
+          name: 'wantsToSet',
+          message: expect.stringContaining('Are you sure you want to unset (delete) the environment variable?'),
+          default: false,
+        })
+
+        expect(log).toHaveBeenCalledWith(expectedWarningMessage)
+        expect(log).toHaveBeenCalledWith(expectedNoticeMessage)
+        expect(log).toHaveBeenCalledWith(expectedSuccessMessage)
+      })
+    })
+
+    test('should skip warnings and prompts if -f flag is passed', async () => {
+      await withMockApi(routes, async ({ apiUrl }) => {
+        Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
+
+        const program = new BaseCommand('netlify')
+        createEnvCommand(program)
+
+        const promptSpy = vi.spyOn(inquirer, 'prompt')
+
+        await program.parseAsync(['', '', 'env:unset', existingVar, '-f'])
+
+        expect(promptSpy).not.toHaveBeenCalled()
+
+        expect(log).not.toHaveBeenCalledWith(expectedWarningMessage)
+        expect(log).not.toHaveBeenCalledWith(expectedNoticeMessage)
+        expect(log).toHaveBeenCalledWith(expectedSuccessMessage)
+      })
+    })
+
+    test('should exit user reponds is no to confirmatnion prompt', async () => {
+      await withMockApi(routes, async ({ apiUrl }) => {
+        Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
+
+        const program = new BaseCommand('netlify')
+        createEnvCommand(program)
+
+        const promptSpy = vi.spyOn(inquirer, 'prompt').mockResolvedValue({ wantsToSet: false })
+
+        try {
+          await program.parseAsync(['', '', 'env:unset', existingVar])
+        } catch (error) {
+          // We expect the process to exit, so this is fine
+          expect(error.message).toContain('process.exit unexpectedly called')
+        }
+
+        expect(promptSpy).toHaveBeenCalled()
+
+        expect(log).toHaveBeenCalledWith(expectedWarningMessage)
+        expect(log).toHaveBeenCalledWith(expectedNoticeMessage)
+        expect(log).not.toHaveBeenCalledWith(expectedSuccessMessage)
+      })
+    })
+
+    test('should not run prompts if enviroment variable does not exist', async () => {
+      await withMockApi(routes, async ({ apiUrl }) => {
+        Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
+
+        const program = new BaseCommand('netlify')
+        createEnvCommand(program)
+
+        const promptSpy = vi.spyOn(inquirer, 'prompt')
+
+        await program.parseAsync(['', '', 'env:unset', 'NEW_ENV_VAR'])
+
+        expect(promptSpy).not.toHaveBeenCalled()
+
+        expect(log).not.toHaveBeenCalledWith(expectedWarningMessage)
+        expect(log).not.toHaveBeenCalledWith(expectedNoticeMessage)
+        expect(log).not.toHaveBeenCalledWith(expectedSuccessMessage)
+      })
     })
   })
 })

@@ -9,7 +9,7 @@ import BaseCommand from '../base-command.js'
  * @returns {Promise<object>}
  */
 // @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-const unsetInEnvelope = async ({ api, context, key, siteInfo }) => {
+const unsetInEnvelope = async ({ api, context, force, key, siteInfo }) => {
   const accountId = siteInfo.account_slug
   const siteId = siteInfo.id
   // fetch envelope env vars
@@ -26,7 +26,9 @@ const unsetInEnvelope = async ({ api, context, key, siteInfo }) => {
     return env
   }
 
-  await envUnsetPrompts(key)
+  if (Boolean(force) === false) {
+    await envUnsetPrompts(key)
+  }
 
   const params = { accountId, siteId, key }
   try {
@@ -66,7 +68,7 @@ const unsetInEnvelope = async ({ api, context, key, siteInfo }) => {
 }
 
 export const envUnset = async (key: string, options: OptionValues, command: BaseCommand) => {
-  const { context } = options
+  const { context, force } = options
   const { api, cachedConfig, site } = command.netlify
   const siteId = site.id
 
@@ -77,7 +79,7 @@ export const envUnset = async (key: string, options: OptionValues, command: Base
 
   const { siteInfo } = cachedConfig
 
-  const finalEnv = await unsetInEnvelope({ api, context, siteInfo, key })
+  const finalEnv = await unsetInEnvelope({ api, context, force, siteInfo, key })
 
   // Return new environment variables of site if using json flag
   if (options.json) {

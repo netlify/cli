@@ -268,7 +268,7 @@ describe('env:set command', () => {
     })
   })
 
-  describe.only('user is prompted to confirm when setting an env var that already exists', () => {
+  describe('user is prompted to confirm when setting an env var that already exists', () => {
     // already exists as value in withMockApi
     const existingVar = 'EXISTING_VAR'
     const newEnvValue = 'value'
@@ -319,10 +319,9 @@ describe('env:set command', () => {
         Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
         const program = new BaseCommand('netlify')
+        createEnvCommand(program)
 
         const promptSpy = vi.spyOn(inquirer, 'prompt')
-
-        createEnvCommand(program)
 
         await program.parseAsync(['', '', 'env:set', 'NEW_ENV_VAR', 'NEW_VALUE'])
 
@@ -341,20 +340,40 @@ describe('env:set command', () => {
         Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
         const program = new BaseCommand('netlify')
+        createEnvCommand(program)
 
         const promptSpy = vi.spyOn(inquirer, 'prompt')
 
-        try {
-          await program.parseAsync(['', '', 'env:set', existingVar, newEnvValue, '-f'])
-        } catch (error) {
-          // We expect the process to exit, so this is fine
-          expect(error.message).toContain('process.exit unexpectedly called')
-        }
+        await program.parseAsync(['', '', 'env:set', existingVar, newEnvValue, '-f'])
 
         expect(promptSpy).not.toHaveBeenCalled()
 
         expect(log).not.toHaveBeenCalledWith(expectedMessageAlreadyExists)
         expect(log).not.toHaveBeenCalledWith(expectedNoticeMessage)
+        expect(log).toHaveBeenCalledWith(expectedSuccessMessage)
+      })
+    })
+
+    test('should exit user reponds is no to confirmatnion prompt', async () => {
+      await withMockApi(routes, async ({ apiUrl }) => {
+        Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
+
+        const program = new BaseCommand('netlify')
+        createEnvCommand(program)
+
+        const promptSpy = vi.spyOn(inquirer, 'prompt').mockResolvedValue({ wantsToSet: false })
+
+        try {
+          await program.parseAsync(['', '', 'env:set', existingVar, newEnvValue])
+        } catch (error) {
+          // We expect the process to exit, so this is fine
+          expect(error.message).toContain('process.exit unexpectedly called')
+        }
+
+        expect(promptSpy).toHaveBeenCalled()
+
+        expect(log).toHaveBeenCalledWith(expectedMessageAlreadyExists)
+        expect(log).toHaveBeenCalledWith(expectedNoticeMessage)
         expect(log).not.toHaveBeenCalledWith(expectedSuccessMessage)
       })
     })

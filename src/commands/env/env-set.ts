@@ -10,7 +10,7 @@ import BaseCommand from '../base-command.js'
  * @returns {Promise<object | boolean>}
  */
 // @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-const setInEnvelope = async ({ api, context, key, noForce, scope, secret, siteInfo, value }) => {
+const setInEnvelope = async ({ api, context, force, key, scope, secret, siteInfo, value }) => {
   const accountId = siteInfo.account_slug
   const siteId = siteInfo.id
 
@@ -51,8 +51,8 @@ const setInEnvelope = async ({ api, context, key, noForce, scope, secret, siteIn
   // @ts-expect-error TS(7006) FIXME: Parameter 'envVar' implicitly has an 'any' type.
   const existing = envelopeVariables.find((envVar) => envVar.key === key)
 
-  // Checks if -f is passed, if not, then we need to prompt the user if scope or context is not provided
-  if (noForce && existing && (!context || !scope)) {
+  // Checks if -f is passed and if it is an existing variaible, then we need to prompt the user
+  if (Boolean(force) === false && existing) {
     await envSetPrompts(key)
   }
 
@@ -103,13 +103,12 @@ const setInEnvelope = async ({ api, context, key, noForce, scope, secret, siteIn
       await api.createEnvVars({ ...params, body })
     }
   } catch (error_) {
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    if (error_.json && error_.json.status === 500) {
-      log(`${chalk.redBright('ERROR')}: Environment variable ${key} not created`)
-      if (scope) {
-        log(`${chalk.yellowBright('Notice')}: Scope setting is only available to paid Netlify accounts`)
-      }
-    }
+    // if (error_.json && error_.json.status === 500) {
+    //   log(`${chalk.redBright('ERROR')}: Environment variable ${key} not created`)
+    //   if (scope) {
+    //     log(`${chalk.yellowBright('Notice')}: Scope setting is only available to paid Netlify accounts`)
+    //   }
+    // }
 
     // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
     throw error_.json ? error_.json.msg : error_
@@ -124,20 +123,18 @@ const setInEnvelope = async ({ api, context, key, noForce, scope, secret, siteIn
 }
 
 export const envSet = async (key: string, value: string, options: OptionValues, command: BaseCommand) => {
-  const { context, scope, secret } = options
+  const { context, force, scope, secret } = options
   const { api, cachedConfig, site } = command.netlify
   const siteId = site.id
-
   if (!siteId) {
     log('No site id found, please run inside a site folder or `netlify link`')
     return false
   }
 
-  const noForce = options.force !== true
   const { siteInfo } = cachedConfig
 
   // Get current environment variables set in the UI
-  const finalEnv = await setInEnvelope({ api, siteInfo, key, noForce, value, context, scope, secret })
+  const finalEnv = await setInEnvelope({ api, siteInfo, force, key, value, context, scope, secret })
 
   if (!finalEnv) {
     return false
