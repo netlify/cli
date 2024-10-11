@@ -28,15 +28,15 @@ describe('env:clone command', () => {
         parseJson: false,
       })
 
-      console.log(cliResponse)
-      const postRequest = mockApi?.requests.find(
-        (request) => request.method === 'POST' && request.path === '/api/v1/accounts/test-account/env',
-      )
+      // console.log(cliResponse)
+      // const postRequest = mockApi?.requests.find(
+      //   (request) => request.method === 'POST' && request.path === '/api/v1/accounts/test-account/env',
+      // )
 
-      console.log(mockApi?.requests.map((request) => request.method))
-      // expect(postRequest.body[0].key).toBe('NEW_VAR')
-      // expect(postRequest.body[0].values[0].context).toBe('dev')
-      // expect(postRequest.body[0].values[0].value).toBe('new-value')
+      // console.log(mockApi?.requests.map((request) => request.method))
+      // // expect(postRequest.body[0].key).toBe('NEW_VAR')
+      // // expect(postRequest.body[0].values[0].context).toBe('dev')
+      // // expect(postRequest.body[0].values[0].value).toBe('new-value')
     })
   })
 })
