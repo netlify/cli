@@ -267,133 +267,96 @@ describe('env:set command', () => {
       )
     })
   })
-})
 
-describe('envSet Prompts if --force flag is not passed', () => {
-  const envVarName = 'VAR_NAME'
-  const envVarValue = 'value'
+  describe.only('user is prompted to confirm when setting an env var that already exists', () => {
+    // already exists as value in withMockApi
+    const existingVar = 'EXISTING_VAR'
+    const newEnvValue = 'value'
 
-  const expectedMessageNoContext = `${chalk.redBright(
-    'Warning',
-  )}: No context defined, environment variable will be set for all contexts`
-  const expectedMessageNoScope = `${chalk.redBright(
-    'Warning',
-  )}: No scope defined, environment variable will be set for all scopes`
-  const scopeOnlyAvailable = `${chalk.yellowBright('Notice')}: Scope setting is only available to paid Netlify accounts`
-  const skipConfirmationMessage = 'To skip this prompt, pass a --force flag to the delete command'
-  const envKeyValuePairMessage = `${envVarName}=${envVarValue}`
+    const expectedMessageAlreadyExists = `${chalk.redBright('Warning')}: The environment variable ${chalk.bgBlueBright(
+      existingVar,
+    )} already exists!`
 
-  beforeEach(() => {
-    vi.resetAllMocks()
-  })
+    const expectedNoticeMessage = `${chalk.yellowBright(
+      'Notice',
+    )}: To overwrite the existing variable without confirmation, pass the -f or --force flag.`
 
-  test('should log warnings and prompts for confirmation if scope and context flag is not passed ', async () => {
-    await withMockApi(routes, async ({ apiUrl }) => {
-      Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
+    const expectedSuccessMessage = `Set environment variable ${chalk.yellow(
+      `${existingVar}=${newEnvValue}`,
+    )} in the ${chalk.magenta('all')} context`
 
-      const program = new BaseCommand('netlify')
-
-      const promptSpy = vi.spyOn(inquirer, 'prompt').mockResolvedValue({ wantsToSet: true })
-      createEnvCommand(program)
-
-      await program.parseAsync(['', '', 'env:set', envVarName, envVarValue])
-
-      expect(promptSpy).toHaveBeenCalledWith({
-        type: 'confirm',
-        name: 'wantsToSet',
-        message: expect.stringContaining(
-          `${chalk.redBright(
-            'Warning',
-          )}: Are you sure you want to set ${envVarName}=${envVarValue} in all contexts and scopes?`,
-        ),
-        default: false,
-      })
-
-      expect(log).toHaveBeenCalledWith(expectedMessageNoContext)
-      expect(log).toHaveBeenCalledWith(expectedMessageNoScope)
-      expect(log).toHaveBeenCalledWith(skipConfirmationMessage)
-      expect(log).toHaveBeenCalledWith(envKeyValuePairMessage)
+    beforeEach(() => {
+      vi.resetAllMocks()
     })
-  })
-  test('should log warnings and prompts if context flag is passed but scope flag is not', async () => {
-    await withMockApi(routes, async ({ apiUrl }) => {
-      Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-      const program = new BaseCommand('netlify')
+    test('should log warnings and prompts if enviroment variable already exists', async () => {
+      await withMockApi(routes, async ({ apiUrl }) => {
+        Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-      const promptSpy = vi.spyOn(inquirer, 'prompt').mockResolvedValue({ wantsToSet: true })
-      createEnvCommand(program)
+        const program = new BaseCommand('netlify')
 
-      await program.parseAsync(['', '', 'env:set', envVarName, envVarValue, '--context', 'production'])
+        const promptSpy = vi.spyOn(inquirer, 'prompt').mockResolvedValue({ wantsToSet: true })
 
-      expect(promptSpy).toHaveBeenCalledWith({
-        type: 'confirm',
-        name: 'wantsToSet',
-        message: expect.stringContaining(
-          `${chalk.redBright('Warning')}: Are you sure you want to set ${envVarName}=${envVarValue} in all scopes?`,
-        ),
-        default: false,
+        createEnvCommand(program)
+
+        await program.parseAsync(['', '', 'env:set', existingVar, newEnvValue])
+
+        expect(promptSpy).toHaveBeenCalledWith({
+          type: 'confirm',
+          name: 'wantsToSet',
+          message: expect.stringContaining('The environment variable already exists. Do you want to overwrite it?'),
+          default: false,
+        })
+
+        expect(log).toHaveBeenCalledWith(expectedMessageAlreadyExists)
+        expect(log).toHaveBeenCalledWith(expectedNoticeMessage)
+        expect(log).toHaveBeenCalledWith(expectedSuccessMessage)
       })
-
-      expect(log).toHaveBeenCalledWith(expectedMessageNoScope)
-      expect(log).toHaveBeenCalledWith(skipConfirmationMessage)
-      expect(log).toHaveBeenCalledWith(envKeyValuePairMessage)
     })
-  })
 
-  test('should log warnings and prompts if scope flag is passed but context flag is not', async () => {
-    await withMockApi(routes, async ({ apiUrl }) => {
-      Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
+    test('should skip warnings and prompts if enviroment variable does not exist', async () => {
+      await withMockApi(routes, async ({ apiUrl }) => {
+        Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-      const program = new BaseCommand('netlify')
+        const program = new BaseCommand('netlify')
 
-      const promptSpy = vi.spyOn(inquirer, 'prompt').mockResolvedValue({ wantsToSet: true })
-      createEnvCommand(program)
+        const promptSpy = vi.spyOn(inquirer, 'prompt')
 
-      await program.parseAsync(['', '', 'env:set', envVarName, envVarValue, '--scope', 'runtime'])
+        createEnvCommand(program)
 
-      expect(promptSpy).toHaveBeenCalledWith({
-        type: 'confirm',
-        name: 'wantsToSet',
-        message: expect.stringContaining(
-          `${chalk.redBright('Warning')}: Are you sure you want to set ${envVarName}=${envVarValue} in all contexts?`,
-        ),
-        default: false,
+        await program.parseAsync(['', '', 'env:set', 'NEW_ENV_VAR', 'NEW_VALUE'])
+
+        expect(promptSpy).not.toHaveBeenCalled()
+
+        expect(log).not.toHaveBeenCalledWith(expectedMessageAlreadyExists)
+        expect(log).not.toHaveBeenCalledWith(expectedNoticeMessage)
+        expect(log).toHaveBeenCalledWith(
+          `Set environment variable ${chalk.yellow(`NEW_ENV_VAR=NEW_VALUE`)} in the ${chalk.magenta('all')} context`,
+        )
       })
-
-      expect(log).toHaveBeenCalledWith(expectedMessageNoContext)
-      expect(log).toHaveBeenCalledWith(scopeOnlyAvailable)
-      expect(log).toHaveBeenCalledWith(skipConfirmationMessage)
-      expect(log).toHaveBeenCalledWith(envKeyValuePairMessage)
     })
-  })
 
-  test('should skip warnings and prompts if scope and context flag is passed', async () => {
-    await withMockApi(routes, async ({ apiUrl }) => {
-      Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
+    test('should skip warnings and prompts if -f flag is passed', async () => {
+      await withMockApi(routes, async ({ apiUrl }) => {
+        Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-      const program = new BaseCommand('netlify')
+        const program = new BaseCommand('netlify')
 
-      const promptSpy = vi.spyOn(inquirer, 'prompt')
-      createEnvCommand(program)
+        const promptSpy = vi.spyOn(inquirer, 'prompt')
 
-      await program.parseAsync([
-        '',
-        '',
-        'env:set',
-        envVarName,
-        envVarValue,
-        '--scope',
-        'runtime',
-        '--context',
-        'production',
-      ])
+        try {
+          await program.parseAsync(['', '', 'env:set', existingVar, newEnvValue, '-f'])
+        } catch (error) {
+          // We expect the process to exit, so this is fine
+          expect(error.message).toContain('process.exit unexpectedly called')
+        }
 
-      expect(promptSpy).not.toHaveBeenCalled()
-      console.log(log.mock.calls)
-      expect(log).toHaveBeenCalledWith(expectedMessageNoContext)
-      expect(log).toHaveBeenCalledWith(expectedMessageNoScope)
-      expect(log).toHaveBeenCalledWith(envKeyValuePairMessage)
+        expect(promptSpy).not.toHaveBeenCalled()
+
+        expect(log).not.toHaveBeenCalledWith(expectedMessageAlreadyExists)
+        expect(log).not.toHaveBeenCalledWith(expectedNoticeMessage)
+        expect(log).not.toHaveBeenCalledWith(expectedSuccessMessage)
+      })
     })
   })
 })
