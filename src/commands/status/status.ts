@@ -2,7 +2,7 @@ import clean from 'clean-deep'
 import { OptionValues } from 'commander'
 import prettyjson from 'prettyjson'
 
-import { chalk, error, exit, getToken, log, logJson, warn } from '../../utils/command-helpers.js'
+import { chalk, error, exit, getToken, log, logJson, warn, errorHasStatus } from '../../utils/command-helpers.js'
 import BaseCommand from '../base-command.js'
 
 export const status = async (options: OptionValues, command: BaseCommand) => {
@@ -31,9 +31,10 @@ export const status = async (options: OptionValues, command: BaseCommand) => {
     // eslint-disable-next-line @typescript-eslint/no-extra-semi
     ;[accounts, user] = await Promise.all([api.listAccountsForUser(), api.getCurrentUser()])
   } catch (error_) {
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    if (error_.status === 401) {
+    if (errorHasStatus(error_)) {
       error('Your session has expired. Please try to re-authenticate by running `netlify logout` and `netlify login`.')
+    } else {
+      error(error_)
     }
   }
 

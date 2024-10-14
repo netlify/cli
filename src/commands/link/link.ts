@@ -3,7 +3,7 @@ import inquirer from 'inquirer'
 import isEmpty from 'lodash/isEmpty.js'
 
 import { listSites } from '../../lib/api.js'
-import { chalk, error, exit, log } from '../../utils/command-helpers.js'
+import { chalk, error, exit, log, errorHasStatus } from '../../utils/command-helpers.js'
 import getRepoData from '../../utils/get-repo-data.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import { track } from '../../utils/telemetry/index.js'
@@ -125,11 +125,9 @@ Run ${chalk.cyanBright('git remote -v')} to see a list of your git remotes.`)
           options: { name: searchTerm, filter: 'all' },
         })
       } catch (error_) {
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        if (error_.status === 404) {
+        if (errorHasStatus(error_, 404)) {
           error(`'${searchTerm}' not found`)
         } else {
-          // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
           error(error_)
         }
       }
@@ -172,7 +170,6 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
       try {
         sites = await listSites({ api, options: { maxPages: 1, filter: 'all' } })
       } catch (error_) {
-        // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
         error(error_)
       }
 
@@ -209,11 +206,9 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
       try {
         site = await api.getSite({ siteId })
       } catch (error_) {
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        if (error_.status === 404) {
-          error(new Error(`Site ID '${siteId}' not found`))
+        if (errorHasStatus(error_, 404)) {
+          error(`Site ID '${siteId}' not found`) // this is where we removed the new Error() call
         } else {
-          // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
           error(error_)
         }
       }
@@ -281,11 +276,9 @@ export const link = async (options: OptionValues, command: BaseCommand) => {
     try {
       siteData = await api.getSite({ site_id: options.id })
     } catch (error_) {
-      // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-      if (error_.status === 404) {
+      if (errorHasStatus(error_, 404)) {
         error(new Error(`Site id ${options.id} not found`))
       } else {
-        // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
         error(error_)
       }
     }
@@ -310,11 +303,9 @@ export const link = async (options: OptionValues, command: BaseCommand) => {
         },
       })
     } catch (error_) {
-      // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-      if (error_.status === 404) {
+      if (errorHasStatus(error_, 404)) {
         error(new Error(`${options.name} not found`))
       } else {
-        // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
         error(error_)
       }
     }

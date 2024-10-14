@@ -6,7 +6,7 @@ import { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 import fetch from 'node-fetch'
 
-import { NETLIFYDEVWARN, chalk, error, exit } from '../../utils/command-helpers.js'
+import { NETLIFYDEVWARN, chalk, error, exit, isAPIError } from '../../utils/command-helpers.js'
 import { BACKGROUND, CLOCKWORK_USERAGENT, getFunctions } from '../../utils/functions/index.js'
 import BaseCommand from '../base-command.js'
 
@@ -234,7 +234,6 @@ export const functionsInvoke = async (nameArgument: string, options: OptionValue
     const data = await response.text()
     console.log(data)
   } catch (error_) {
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    error(`Ran into an error invoking your function: ${error_.message}`)
+    isAPIError(error_) ? error(`Ran into an error invoking your function: ${error_.message}`) : error(error_)
   }
 }

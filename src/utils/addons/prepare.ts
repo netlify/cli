@@ -1,4 +1,4 @@
-import { chalk, error, exit, log, warn } from '../command-helpers.js'
+import { chalk, error, exit, log, warn, isAPIError } from '../command-helpers.js'
 
 export const ADDON_VALIDATION = {
   EXISTS: 'EXISTS',
@@ -55,12 +55,10 @@ export const getAddonManifest = async ({ addonName, api }) => {
   try {
     manifest = await api.showServiceManifest({ addonName })
   } catch (error_) {
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    if (typeof error_.message === 'string' && error_.message.includes('Not Found')) {
+    if (isAPIError(error_) && error_.message.includes('Not Found')) {
       error(`No add-on "${addonName}" found. Please double check your add-on name and try again`)
     } else {
-      // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-      error(error_.message)
+      isAPIError(error_) ? error(error_.message) : error(error_)
     }
   }
   return manifest
@@ -72,8 +70,7 @@ export const getSiteData = async ({ api, siteId }) => {
   try {
     siteData = await api.getSite({ siteId })
   } catch (error_) {
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    error(`Failed getting list of site data: ${error_.message}`)
+    isAPIError(error_) ? error(`Failed getting list of site data: ${error_.message}`) : error(error_)
   }
   return siteData
 }
@@ -84,8 +81,7 @@ export const getAddons = async ({ api, siteId }) => {
   try {
     addons = await api.listServiceInstancesForSite({ siteId })
   } catch (error_) {
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    error(`Failed getting list of addons: ${error_.message}`)
+    isAPIError(error_) ? error(`Failed getting list of addons: ${error_.message}`) : error(error_)
   }
   return addons
 }

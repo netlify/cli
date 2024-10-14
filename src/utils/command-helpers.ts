@@ -112,7 +112,6 @@ export const pollForToken = async ({ api, ticket }) => {
         )}, then run ${chalk.cyanBright('netlify login')} again.`,
       )
     } else {
-      // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
       error(error_)
     }
   } finally {
@@ -186,7 +185,7 @@ export const warn = (message = '') => {
 }
 
 /** Throws an error or logs it */
-export const error = (message: Error | string = '', options: { exit?: boolean } = {}) => {
+export const error = (message: unknown | Error | string = '', options: { exit?: boolean } = {}) => {
   const err =
     message instanceof Error
       ? message
@@ -300,3 +299,17 @@ export const nonNullable = <T>(value: T): value is NonNullable<T> => value !== n
 export const noOp = () => {
   // no-op
 }
+
+interface HTTPError extends Error {
+  status: number
+  message: string
+}
+
+export const isAPIError = (errorObject: unknown): errorObject is HTTPError =>
+  errorObject instanceof Error && 'status' in errorObject && 'message' in errorObject
+
+export const errorHasStatus = (errorObject: unknown, statusCode: number) =>
+  isAPIError(errorObject) && errorObject.status === statusCode
+
+// export const isMessageError = (errorObject: unknown): errorObject is HTTPError =>
+//   errorObject instanceof Error && 'message' in errorObject

@@ -1,7 +1,7 @@
 import { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 
-import { chalk, error, exit, log } from '../../utils/command-helpers.js'
+import { chalk, error, exit, log, errorHasStatus, isAPIError } from '../../utils/command-helpers.js'
 import BaseCommand from '../base-command.js'
 
 export const sitesDelete = async (siteId: string, options: OptionValues, command: BaseCommand) => {
@@ -17,9 +17,10 @@ export const sitesDelete = async (siteId: string, options: OptionValues, command
   try {
     siteData = await api.getSite({ siteId })
   } catch (error_) {
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    if (error_.status === 404) {
+    if (errorHasStatus(error_, 404)) {
       error(`No site with id ${siteId} found. Please verify the siteId & try again.`)
+    } else {
+      error(error_)
     }
   }
 
@@ -74,12 +75,10 @@ export const sitesDelete = async (siteId: string, options: OptionValues, command
   try {
     await api.deleteSite({ site_id: siteId })
   } catch (error_) {
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    if (error_.status === 404) {
+    if (errorHasStatus(error_, 404)) {
       error(`No site with id ${siteId} found. Please verify the siteId & try again.`)
     } else {
-      // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-      error(`Delete Site error: ${error_.status}: ${error_.message}`)
+      isAPIError(error_) ? error(`Delete Site error: ${error_.status}: ${error_.message}`) : error(error_)
     }
   }
   log(`Site "${siteId}" successfully deleted!`)

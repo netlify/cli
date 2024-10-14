@@ -30,6 +30,8 @@ import {
   log,
   logJson,
   warn,
+  isAPIError,
+  errorHasStatus,
 } from '../../utils/command-helpers.js'
 import { DEFAULT_DEPLOY_TIMEOUT } from '../../utils/deploy/constants.js'
 import { deploySite } from '../../utils/deploy/deploy-site.js'
@@ -58,12 +60,10 @@ const triggerDeploy = async ({ api, options, siteData, siteId }) => {
       )
     }
   } catch (error_) {
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    if (error_.status === 404) {
+    if (errorHasStatus(error_, 404)) {
       error('Site not found. Please rerun "netlify link" and make sure that your site has CI configured.')
     } else {
-      // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-      error(error_.message)
+      isAPIError(error_) ? error(error_.message) : error(error_)
     }
   }
 }
