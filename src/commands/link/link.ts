@@ -7,6 +7,7 @@ import { chalk, error, exit, log } from '../../utils/command-helpers.js'
 import getRepoData from '../../utils/get-repo-data.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import { track } from '../../utils/telemetry/index.js'
+import type { SiteInfo } from '../../utils/types.js'
 import BaseCommand from '../base-command.js'
 
 /**
@@ -61,7 +62,6 @@ const linkPrompt = async (command, options) => {
       }
 
       const matchingSites = sites.filter(
-        // @ts-expect-error TS(2339) FIXME: Property 'repo_url' does not exist on type '{}'.
         ({ build_settings: buildSettings = {} }) => repoData.httpsUrl === buildSettings.repo_url,
       )
 
@@ -92,7 +92,6 @@ Run ${chalk.cyanBright('git remote -v')} to see a list of your git remotes.`)
             type: 'list',
             name: 'selectedSite',
             message: 'Which site do you want to link?',
-            // @ts-expect-error TS(7006) FIXME: Parameter 'matchingSite' implicitly has an 'any' t... Remove this comment to see the full error message
             choices: matchingSites.map((matchingSite) => ({
               name: `${matchingSite.name} - ${matchingSite.ssl_url}`,
               value: matchingSite,
@@ -118,7 +117,7 @@ Run ${chalk.cyanBright('git remote -v')} to see a list of your git remotes.`)
       log(`Looking for sites with names containing '${searchTerm}'...`)
       log()
 
-      let matchingSites
+      let matchingSites: SiteInfo[] = []
       try {
         matchingSites = await listSites({
           api,
@@ -149,7 +148,6 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
             name: 'selectedSite',
             message: 'Which site do you want to link?',
             paginated: true,
-            // @ts-expect-error TS(7006) FIXME: Parameter 'matchingSite' implicitly has an 'any' t... Remove this comment to see the full error message
             choices: matchingSites.map((matchingSite) => ({ name: matchingSite.name, value: matchingSite })),
           },
         ])
@@ -300,7 +298,7 @@ export const link = async (options: OptionValues, command: BaseCommand) => {
       kind: 'byId',
     })
   } else if (options.name) {
-    let results
+    let results: SiteInfo[] = []
     try {
       results = await listSites({
         api,
@@ -322,7 +320,9 @@ export const link = async (options: OptionValues, command: BaseCommand) => {
     if (results.length === 0) {
       error(new Error(`No sites found named ${options.name}`))
     }
-    const matchingSiteData = results.find((site: any) => site.name === options.name) || results[0]
+
+    const matchingSiteData = results.find((site: SiteInfo) => site.name === options.name) || results[0]
+    console.log('matchingSiteData:', matchingSiteData)
     state.set('siteId', matchingSiteData.id)
 
     log(`Linked to ${matchingSiteData.name}`)
