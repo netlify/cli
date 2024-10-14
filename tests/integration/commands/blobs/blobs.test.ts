@@ -64,12 +64,14 @@ describe('blobs:* commands', () => {
   })
 
   setupFixtureTests('empty-project', { mockApi: { routes } }, () => {
+    const expectedSucusesMessage = `Blob my-key set in store my-store`
+
     test<FixtureTestContext>('should set, get, list, and delete blobs', async ({ fixture }) => {
       expect(
-        await fixture.callCli(['blobs:set', 'my-store', 'my-key', 'Hello world'], {
+        await fixture.callCli(['blobs:set', 'my-store', 'my-key', 'Hello world', '--force'], {
           offline: false,
         }),
-      ).toBe('')
+      ).toBe(expectedSucusesMessage)
 
       expect(
         await fixture.callCli(['blobs:get', 'my-store', 'my-key'], {

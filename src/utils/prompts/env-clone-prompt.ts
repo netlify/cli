@@ -39,7 +39,7 @@ const generateSetMessage = (envVarsToDelete: EnvVar[], siteId: string): void => 
   log(
     `${chalk.yellowBright(
       'Notice',
-    )}: To overwrite the existing variables without confirmation prompts, pass the -s or --skip flag.`,
+    )}: To overwrite the existing variables without confirmation prompts, pass the --force flag.`,
   )
 }
 

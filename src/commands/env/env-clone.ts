@@ -19,7 +19,7 @@ const safeGetSite = async (api, siteId) => {
  * @returns {Promise<boolean>}
  */
 // @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-const cloneEnvVars = async ({ api, siteFrom, siteTo, skip }): Promise<boolean> => {
+const cloneEnvVars = async ({ api, force, siteFrom, siteTo }): Promise<boolean> => {
   const [envelopeFrom, envelopeTo] = await Promise.all([
     api.getEnvVars({ accountId: siteFrom.account_slug, siteId: siteFrom.id }),
     api.getEnvVars({ accountId: siteTo.account_slug, siteId: siteTo.id }),
@@ -37,8 +37,8 @@ const cloneEnvVars = async ({ api, siteFrom, siteTo, skip }): Promise<boolean> =
   const siteId = siteTo.id
   // @ts-expect-error TS(7031) FIXME: Binding element 'key' implicitly has an 'any' type... Remove this comment to see the full error message
   const envVarsToDelete = envelopeTo.filter(({ key }) => keysFrom.includes(key))
-  
-  if (envVarsToDelete.length !== 0 && Boolean(skip) === false) {
+
+  if (envVarsToDelete.length !== 0 && Boolean(force) === false) {
     await envClonePrompts(siteTo.id, envVarsToDelete)
   }
   // delete marked env vars in parallel
@@ -57,7 +57,7 @@ const cloneEnvVars = async ({ api, siteFrom, siteTo, skip }): Promise<boolean> =
 
 export const envClone = async (options: OptionValues, command: BaseCommand) => {
   const { api, site } = command.netlify
-  const { skip } = options
+  const { force } = options
 
   if (!site.id && !options.from) {
     log(
@@ -86,7 +86,7 @@ export const envClone = async (options: OptionValues, command: BaseCommand) => {
     return false
   }
 
-  const success = await cloneEnvVars({ api, siteFrom, siteTo, skip })
+  const success = await cloneEnvVars({ api, siteFrom, siteTo, force })
 
   if (!success) {
     return false

@@ -147,7 +147,7 @@ export const createEnvCommand = (program: BaseCommand) => {
     .command('env:clone')
     .alias('env:migrate')
     .option('-f, --from <from>', 'Site ID (From)')
-    .option('-s, --skip', 'Skip prompts')
+    .option('--force', 'force the operation without warnings')
     .requiredOption('-t, --to <to>', 'Site ID (To)')
     .description(`Clone environment variables from one site to another`)
     .addExamples(['netlify env:clone --to <to-site-id>', 'netlify env:clone --to <to-site-id> --from <from-site-id>'])
