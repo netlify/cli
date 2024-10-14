@@ -1,6 +1,5 @@
 import { warn } from '../utils/command-helpers.js'
-
-import { SiteInfo } from './types.js'
+import { SiteInfo } from '../utils/types.js'
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
 export const cancelDeploy = async ({ api, deployId }) => {

@@ -3,11 +3,11 @@ import inquirer from 'inquirer'
 import isEmpty from 'lodash/isEmpty.js'
 
 import { listSites } from '../../lib/api.js'
-import type { SiteInfo } from '../../lib/types.d.ts'
 import { chalk, error, exit, log } from '../../utils/command-helpers.js'
 import getRepoData from '../../utils/get-repo-data.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import { track } from '../../utils/telemetry/index.js'
+import type { SiteInfo } from '../../utils/types.js'
 import BaseCommand from '../base-command.js'
 
 /**
