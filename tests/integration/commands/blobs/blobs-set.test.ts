@@ -201,10 +201,10 @@ describe('blob:set command', () => {
     await withMockApi(routes, async ({ apiUrl }) => {
       Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-      const mockDelete = vi.fn().mockRejectedValue('')
+      const mockSet = vi.fn().mockRejectedValue('')
 
       ;(getStore as any).mockReturnValue({
-        delete: mockDelete,
+        set: mockSet,
       })
 
       const program = new BaseCommand('netlify')

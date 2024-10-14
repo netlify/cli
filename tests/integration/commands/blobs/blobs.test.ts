@@ -64,7 +64,7 @@ describe('blobs:* commands', () => {
   })
 
   setupFixtureTests('empty-project', { mockApi: { routes } }, () => {
-    const expectedSucusesMessage = `Blob my-key set in store my-store`
+    const expectedSucusesMessage = 'Success: Blob my-key set in store my-store'
 
     test<FixtureTestContext>('should set, get, list, and delete blobs', async ({ fixture }) => {
       expect(
@@ -100,10 +100,10 @@ describe('blobs:* commands', () => {
       expect(listResult.directories).toEqual([])
 
       expect(
-        await fixture.callCli(['blobs:delete', 'my-store', 'my-key'], {
+        await fixture.callCli(['blobs:delete', 'my-store', 'my-key', '--force'], {
           offline: false,
         }),
-      ).toBe('')
+      ).toBe('Success: Blob my-key deleted from store my-store')
 
       expect(
         await fixture.callCli(['blobs:list', 'my-store', '--json'], {

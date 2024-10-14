@@ -5,7 +5,7 @@ import inquirer from 'inquirer'
 import { describe, expect, test, vi, beforeEach } from 'vitest'
 
 import BaseCommand from '../../../../src/commands/base-command.js'
-import { createEnvCommand } from '../../../../src/commands/env/env.js'
+import { createEnvCommand } from '../../../../src/commands/env/index.js'
 import { log } from '../../../../src/utils/command-helpers.js'
 import { getEnvironmentVariables, withMockApi } from '../../utils/mock-api.js'
 
