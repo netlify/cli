@@ -72,7 +72,7 @@ export interface SiteInfo {
     cmd: string
     deploy_key_id: string
     dir: string
-    env: Record<string, unknown>
+    env?: Record<string, unknown>
     id: number
     private_logs: boolean
     provider: string
