@@ -103,13 +103,6 @@ const setInEnvelope = async ({ api, context, force, key, scope, secret, siteInfo
       await api.createEnvVars({ ...params, body })
     }
   } catch (error_) {
-    // if (error_.json && error_.json.status === 500) {
-    //   log(`${chalk.redBright('ERROR')}: Environment variable ${key} not created`)
-    //   if (scope) {
-    //     log(`${chalk.yellowBright('Notice')}: Scope setting is only available to paid Netlify accounts`)
-    //   }
-    // }
-
     // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
     throw error_.json ? error_.json.msg : error_
   }
