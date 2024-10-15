@@ -373,7 +373,7 @@ const uploadDeployBlobs = async ({
     phase: 'start',
   })
 
-  const [token] = await getToken(false)
+  const [token] = await getToken()
 
   const { success } = await runCoreSteps(['blobs_upload'], {
     ...options,
@@ -563,7 +563,6 @@ const handleBuild = async ({ cachedConfig, currentDir, defaultConfig, deployHand
   if (!options.build) {
     return {}
   }
-  // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
   const [token] = await getToken()
   const resolvedOptions = await getBuildOptions({
     cachedConfig,
