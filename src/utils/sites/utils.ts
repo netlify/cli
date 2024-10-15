@@ -1,14 +1,6 @@
 import fetch from 'node-fetch'
 import { error } from '../../utils/command-helpers.js'
 
-interface RepoFromGithub {
-  name: string
-  html_url: string
-  full_name: string
-  archived: boolean
-  disabled: boolean
-}
-
 export const getTemplatesFromGitHub = async (token: string): Promise<RepoFromGithub[]> => {
   const getPublicGitHubReposFromOrg = new URL(`https://api.github.com/orgs/netlify-templates/repos`)
   // GitHub returns 30 by default and we want to avoid our limit
