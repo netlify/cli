@@ -310,6 +310,3 @@ export const isAPIError = (errorObject: unknown): errorObject is APIError =>
 
 export const errorHasStatus = (errorObject: unknown, statusCode: number) =>
   isAPIError(errorObject) && errorObject.status === statusCode
-
-// export const isMessageError = (errorObject: unknown): errorObject is HTTPError =>
-//   errorObject instanceof Error && 'message' in errorObject
