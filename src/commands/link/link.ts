@@ -207,7 +207,7 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
         site = await api.getSite({ siteId })
       } catch (error_) {
         if (errorHasStatus(error_, 404)) {
-          error(`Site ID '${siteId}' not found`) // this is where we removed the new Error() call
+          error(`Site ID '${siteId}' not found`)
         } else {
           error(error_)
         }
