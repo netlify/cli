@@ -394,7 +394,10 @@ export const getConfiguration = (workingDir) => {
 export const deploy = async (options: OptionValues, command: BaseCommand) => {
   const { api, cachedConfig, site, siteInfo } = command.netlify
   const { id: siteId } = site
-  const [token] = await getToken()
+  let [token] = await getToken()
+  if (!token) {
+    token = ''
+  }
   const workingDir = resolve(command.workingDir)
   const buildOptions = await getBuildOptions({
     cachedConfig,
@@ -417,7 +420,6 @@ export const deploy = async (options: OptionValues, command: BaseCommand) => {
     site,
     siteInfo,
   })
-
   const { body: registeredIntegration, statusCode } = await fetch(
     `${getIntegrationAPIUrl()}/${accountId}/integrations?site_id=${siteId}`,
     {
