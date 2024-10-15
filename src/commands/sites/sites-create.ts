@@ -9,7 +9,7 @@ import { configureRepo } from '../../utils/init/config.js'
 import { track } from '../../utils/telemetry/index.js'
 import BaseCommand from '../base-command.js'
 import { link } from '../link/link.js'
-import type { Account } from '../../utils/types.ts'
+import { Account } from '../../utils/types.js'
 
 export const getSiteNameInput = async (name: string | undefined): Promise<{ name: string }> => {
   if (!name) {
