@@ -51,7 +51,7 @@ const setInEnvelope = async ({ api, context, force, key, scope, secret, siteInfo
   // @ts-expect-error TS(7006) FIXME: Parameter 'envVar' implicitly has an 'any' type.
   const existing = envelopeVariables.find((envVar) => envVar.key === key)
 
-  // Checks if -f is passed and if it is an existing variaible, then we need to prompt the user
+  // Checks if --force is passed and if it is an existing variaible, then we need to prompt the user
   if (Boolean(force) === false && existing) {
     await envSetPrompts(key)
   }

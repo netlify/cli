@@ -103,7 +103,7 @@ export const createEnvCommand = (program: BaseCommand) => {
         'runtime',
       ]),
     )
-    .option('-f, --force', 'force the operation without warnings')
+    .option('-f, --force', 'Force the operation to proceed without confirmation or warnings')
     .option('--secret', 'Indicate whether the environment variable value can be read again.')
     .description('Set value of environment variable')
     .addExamples([
@@ -131,7 +131,7 @@ export const createEnvCommand = (program: BaseCommand) => {
       // @ts-expect-error TS(7006) FIXME: Parameter 'context' implicitly has an 'any' type.
       (context, previous = []) => [...previous, normalizeContext(context)],
     )
-    .option('-f, --force', 'force the operation without warnings')
+    .option('-f, --force', 'Force the operation to proceed without confirmation or warnings')
     .addExamples([
       'netlify env:unset VAR_NAME # unset in all contexts',
       'netlify env:unset VAR_NAME --context production',
@@ -147,7 +147,7 @@ export const createEnvCommand = (program: BaseCommand) => {
     .command('env:clone')
     .alias('env:migrate')
     .option('-f, --from <from>', 'Site ID (From)')
-    .option('--force', 'force the operation without warnings')
+    .option('--force', 'Force the operation to proceed without confirmation or warnings')
     .requiredOption('-t, --to <to>', 'Site ID (To)')
     .description(`Clone environment variables from one site to another`)
     .addExamples(['netlify env:clone --to <to-site-id>', 'netlify env:clone --to <to-site-id> --from <from-site-id>'])

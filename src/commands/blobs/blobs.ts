@@ -19,7 +19,7 @@ export const createBlobsCommand = (program: BaseCommand) => {
     .description(`Deletes an object with a given key, if it exists, from a Netlify Blobs store`)
     .argument('<store>', 'Name of the store')
     .argument('<key>', 'Object key')
-    .option('-f, --force', 'Force the operation without warnings')
+    .option('-f, --force', 'Force the operation to proceed without confirmation or warnings')
     .alias('blob:delete')
     .hook('preAction', requiresSiteInfo)
     .action(async (storeName: string, key: string, _options: OptionValues, command: BaseCommand) => {
@@ -71,7 +71,7 @@ export const createBlobsCommand = (program: BaseCommand) => {
     .argument('<key>', 'Object key')
     .argument('[value...]', 'Object value')
     .option('-i, --input <path>', 'Defines the filesystem path where the blob data should be read from')
-    .option('-f, --force', 'Force the operation without warnings')
+    .option('-f, --force', 'Force the operation to proceed without confirmation or warnings')
     .alias('blob:set')
     .hook('preAction', requiresSiteInfo)
 
