@@ -13,7 +13,7 @@ import { configureRepo } from '../../utils/init/config.js'
 import { createRepo, getTemplatesFromGitHub, validateTemplate } from '../../utils/sites/utils.js'
 import { track } from '../../utils/telemetry/index.js'
 import BaseCommand from '../base-command.js'
-import type { RepoFromGithub, Template } from '../../utils/types.ts'
+import { RepoFromGithub, Template } from '../../utils/types.js'
 import { getSiteNameInput } from './sites-create.js'
 
 export const fetchTemplates = async (token: string): Promise<Template[]> => {
