@@ -21,9 +21,14 @@ export const sitesList = async (options: OptionValues, command: BaseCommand) => 
   }
 
   if (sites && sites.length !== 0) {
-    // @ts-expect-error TS(7006) FIXME: Parameter 'site' implicitly has an 'any' type.
     const logSites = sites.map((site) => {
-      const siteInfo = {
+      const siteInfo: {
+        id: string
+        name: string
+        ssl_url: string
+        account_name: string
+        repo_url?: string
+      } = {
         id: site.id,
         name: site.name,
         ssl_url: site.ssl_url,
@@ -31,7 +36,6 @@ export const sitesList = async (options: OptionValues, command: BaseCommand) => 
       }
 
       if (site.build_settings && site.build_settings.repo_url) {
-        // @ts-expect-error TS(2339) FIXME: Property 'repo_url' does not exist on type '{ id: ... Remove this comment to see the full error message
         siteInfo.repo_url = site.build_settings.repo_url
       }
 
@@ -40,7 +44,6 @@ export const sitesList = async (options: OptionValues, command: BaseCommand) => 
 
     // Json response for piping commands
     if (options.json) {
-      // @ts-expect-error TS(7006) FIXME: Parameter 'site' implicitly has an 'any' type.
       const redactedSites = sites.map((site) => {
         if (site && site.build_settings) {
           delete site.build_settings.env
@@ -59,7 +62,6 @@ export const sitesList = async (options: OptionValues, command: BaseCommand) => 
 Count: ${logSites.length}
 `)
 
-    // @ts-expect-error TS(7006) FIXME: Parameter 'logSite' implicitly has an 'any' type.
     logSites.forEach((logSite) => {
       log(`${chalk.greenBright(logSite.name)} - ${logSite.id}`)
       log(`  ${chalk.whiteBright.bold('url:')}  ${chalk.yellowBright(logSite.ssl_url)}`)
