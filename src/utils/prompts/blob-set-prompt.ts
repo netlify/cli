@@ -10,7 +10,6 @@ const generateBlobWarningMessage = (key: string, storeName: string): void => {
   log()
   log(`This operation will ${chalk.redBright('overwrite')} the existing value.`)
   log(`${chalk.yellowBright('Notice')}: To overwrite without this warning, you can use the --force flag.`)
-  log()
 }
 
 export const blobSetPrompts = async (key: string, storeName: string): Promise<void> => {

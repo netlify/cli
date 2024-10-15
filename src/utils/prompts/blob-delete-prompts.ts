@@ -11,7 +11,6 @@ const generateBlobWarningMessage = (key: string, storeName: string): void => {
   )
   log()
   log(`${chalk.yellowBright('Notice')}: To overwrite without this warning, you can use the --force flag.`)
-  log()
 }
 
 export const blobDeletePrompts = async (key: string, storeName: string): Promise<void> => {
