@@ -1,6 +1,6 @@
 import { OptionValues } from 'commander'
 
-import { chalk, error, log, exit, logJson } from '../../utils/command-helpers.js'
+import { chalk, error, log, logJson } from '../../utils/command-helpers.js'
 import { AVAILABLE_CONTEXTS, AVAILABLE_SCOPES, translateFromEnvelopeToMongo } from '../../utils/env/index.js'
 import { envSetPrompts } from '../../utils/prompts/env-set-prompts.js'
 import BaseCommand from '../base-command.js'
