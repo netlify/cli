@@ -1,6 +1,6 @@
 import fetch from 'node-fetch'
 import { error } from '../../utils/command-helpers.js'
-import type { RepoFromGithub } from '../../utils/types.ts'
+import { RepoFromGithub } from '../../utils/types.js'
 
 export const getTemplatesFromGitHub = async (token: string): Promise<RepoFromGithub[]> => {
   const getPublicGitHubReposFromOrg = new URL(`https://api.github.com/orgs/netlify-templates/repos`)
