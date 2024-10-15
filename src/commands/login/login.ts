@@ -3,7 +3,7 @@ import { OptionValues } from 'commander'
 import { chalk, exit, getToken, log } from '../../utils/command-helpers.js'
 import BaseCommand from '../base-command.js'
 
-const msg = function (location: 'env' | 'flag' | 'config') {
+const msg = function (location: 'env' | 'flag' | 'config' | 'not found') {
   switch (location) {
     case 'env':
       return 'via process.env.NETLIFY_AUTH_TOKEN set in your terminal session'
