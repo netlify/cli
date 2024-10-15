@@ -9,9 +9,9 @@ import { configureRepo } from '../../utils/init/config.js'
 import { track } from '../../utils/telemetry/index.js'
 import BaseCommand from '../base-command.js'
 import { link } from '../link/link.js'
+import type { Account } from '../../utils/types.ts'
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-export const getSiteNameInput = async (name) => {
+export const getSiteNameInput = async (name: string | undefined): Promise<{ name: string }> => {
   if (!name) {
     const { name: nameInput } = await inquirer.prompt([
       {
@@ -22,7 +22,7 @@ export const getSiteNameInput = async (name) => {
           /^[a-zA-Z\d-]+$/.test(input || undefined) || 'Only alphanumeric characters and hyphens are allowed',
       },
     ])
-    name = nameInput || ''
+    name = typeof nameInput === 'string' ? nameInput : ''
   }
 
   return { name }
@@ -33,16 +33,17 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand) =
 
   await command.authenticate()
 
-  const accounts = await api.listAccountsForUser()
+  const accounts: Account[] = await api.listAccountsForUser()
 
-  let { accountSlug } = options
+  let { accountSlug }: { accountSlug?: string } = options
   if (!accountSlug) {
-    const { accountSlug: accountSlugInput } = await inquirer.prompt([
+    const { accountSlug: accountSlugInput }: { accountSlug: string } = await inquirer.prompt<
+      Promise<{ accountSlug: string }>
+    >([
       {
         type: 'list',
         name: 'accountSlug',
         message: 'Team:',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'account' implicitly has an 'any' type.
         choices: accounts.map((account) => ({
           value: account.slug,
           name: account.name,
@@ -55,13 +56,11 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand) =
   let site
 
   // Allow the user to reenter site name if selected one isn't available
-  // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-  const inputSiteName = async (name) => {
+  const inputSiteName = async (name?: string) => {
     const { name: siteName } = await getSiteNameInput(name)
 
-    const body = {}
+    const body: { name?: string } = {}
     if (typeof siteName === 'string') {
-      // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type '{}'.
       body.name = siteName.trim()
     }
     try {
@@ -73,7 +72,6 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand) =
       // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
       if (error_.status === 422) {
         warn(`${siteName}.netlify.app already exists. Please try a different slug.`)
-        // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
         await inputSiteName()
       } else {
         // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
@@ -109,7 +107,6 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand) =
 
   if (options.withCi) {
     log('Configuring CI')
-    // @ts-expect-error TS(2345) FIXME: Argument of type '{ workingDir: any; }' is not ass... Remove this comment to see the full error message
     const repoData = await getRepoData({ workingDir: command.workingDir })
     // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     await configureRepo({ command, siteId: site.id, repoData, manual: options.manual })
