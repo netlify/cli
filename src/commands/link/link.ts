@@ -322,7 +322,6 @@ export const link = async (options: OptionValues, command: BaseCommand) => {
     }
 
     const matchingSiteData = results.find((site: SiteInfo) => site.name === options.name) || results[0]
-    console.log('matchingSiteData:', matchingSiteData)
     state.set('siteId', matchingSiteData.id)
 
     log(`Linked to ${matchingSiteData.name}`)

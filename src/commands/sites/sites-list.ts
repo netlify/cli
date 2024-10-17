@@ -3,6 +3,7 @@ import { OptionValues } from 'commander'
 import { listSites } from '../../lib/api.js'
 import { startSpinner, stopSpinner } from '../../lib/spinner.js'
 import { chalk, log, logJson } from '../../utils/command-helpers.js'
+import { SiteInfo } from '../../utils/types.js'
 import BaseCommand from '../base-command.js'
 
 export const sitesList = async (options: OptionValues, command: BaseCommand) => {
@@ -22,13 +23,7 @@ export const sitesList = async (options: OptionValues, command: BaseCommand) => 
 
   if (sites && sites.length !== 0) {
     const logSites = sites.map((site) => {
-      const siteInfo: {
-        id: string
-        name: string
-        ssl_url: string
-        account_name: string
-        repo_url?: string
-      } = {
+      const siteInfo: Pick<SiteInfo, 'id' | 'name' | 'ssl_url' | 'account_name'> & { repo_url?: string } = {
         id: site.id,
         name: site.name,
         ssl_url: site.ssl_url,
