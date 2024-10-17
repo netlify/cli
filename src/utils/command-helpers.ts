@@ -133,7 +133,7 @@ export const pollForToken = async ({
  * @returns {Promise<[null|string, 'flag' | 'env' |'config' |'not found']>}
  */
 
-export type tokenTuple = [string | undefined, Location]
+export type tokenTuple = [string | null, Location]
 
 export const getToken = async (tokenFromOptions?: string): Promise<tokenTuple> => {
   // 1. First honor command flag --auth
@@ -152,7 +152,7 @@ export const getToken = async (tokenFromOptions?: string): Promise<tokenTuple> =
   if (tokenFromConfig) {
     return [tokenFromConfig, 'config']
   }
-  return [undefined, 'not found']
+  return [null, 'not found']
 }
 
 // 'api' command uses JSON output by default

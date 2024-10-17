@@ -374,6 +374,7 @@ const uploadDeployBlobs = async ({
 
   const [token] = await getToken()
 
+  const blobsToken = token || undefined
   const { success } = await runCoreSteps(['blobs_upload'], {
     ...options,
     quiet: silent,
@@ -381,7 +382,7 @@ const uploadDeployBlobs = async ({
     packagePath,
     deployId,
     siteId,
-    token,
+    token: blobsToken,
   })
 
   if (!success) {

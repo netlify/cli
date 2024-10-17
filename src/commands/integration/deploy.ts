@@ -411,7 +411,7 @@ export const deploy = async (options: OptionValues, command: BaseCommand) => {
   const { description, integrationLevel, name, scopes, slug } = await getConfiguration(command.workingDir)
   const localIntegrationConfig = { name, description, scopes, slug, integrationLevel }
 
-  const headers = token === undefined ? undefined : { 'netlify-token': token }
+  const headers = token ? { 'netlify-token': token } : undefined
   // @ts-expect-error TS(2345) FIXME: Argument of type '{ api: any; site: any; siteInfo:... Remove this comment to see the full error message
   const { accountId } = await getSiteInformation({
     api,
