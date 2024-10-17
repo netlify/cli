@@ -46,3 +46,60 @@ describe('link command', () => {
     },
   )
 })
+
+describe('link command with multiple sites', () => {
+  const siteInfo1 = {
+    id: 'site_id1',
+    name: 'next-app-playground',
+  }
+
+  const siteInfo2 = {
+    id: 'site_id2',
+    name: 'app',
+  }
+
+  const routes = [
+    {
+      path: 'sites',
+      response: [siteInfo1, siteInfo2],
+    },
+  ]
+
+  test('should prefer exact name match when available', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      await builder.build()
+
+      await withMockApi(
+        routes,
+        async ({ apiUrl }) => {
+          const stdout = await callCli(
+            ['link', '--name', 'app'],
+            getCLIOptions({ builder, apiUrl, env: { NETLIFY_SITE_ID: '' } }),
+          )
+
+          expect(stdout).toContain('Linked to app')
+        },
+        true,
+      )
+    })
+  })
+
+  test('should use first site when name flag is not an exact match', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      await builder.build()
+
+      await withMockApi(
+        routes,
+        async ({ apiUrl }) => {
+          const stdout = await callCli(
+            ['link', '--name', 'ap'],
+            getCLIOptions({ builder, apiUrl, env: { NETLIFY_SITE_ID: '' } }),
+          )
+
+          expect(stdout).toContain('Linked to next-app-playground')
+        },
+        true,
+      )
+    })
+  })
+})
