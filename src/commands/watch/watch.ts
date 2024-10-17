@@ -114,7 +114,6 @@ export const watch = async (options: OptionValues, command: BaseCommand) => {
     )
     console.timeEnd('Deploy time')
   } catch (error_) {
-    // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
     error(error_)
   }
 }

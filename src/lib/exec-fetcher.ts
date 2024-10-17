@@ -148,8 +148,6 @@ export const fetchLatestVersion = async ({ destination, execName, extension, lat
 Please open up an issue on our CLI repository so that we can support it:
 ${issueLink}`)
     }
-
-    // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
     error(error_)
   }
 }

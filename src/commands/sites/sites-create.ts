@@ -3,7 +3,7 @@ import inquirer from 'inquirer'
 import pick from 'lodash/pick.js'
 import prettyjson from 'prettyjson'
 
-import { chalk, error, log, logJson, warn } from '../../utils/command-helpers.js'
+import { chalk, error, log, logJson, warn, APIError } from '../../utils/command-helpers.js'
 import getRepoData from '../../utils/get-repo-data.js'
 import { configureRepo } from '../../utils/init/config.js'
 import { track } from '../../utils/telemetry/index.js'
@@ -70,14 +70,12 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand) =
         body,
       })
     } catch (error_) {
-      // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-      if (error_.status === 422) {
+      if ((error_ as APIError).status === 422) {
         warn(`${siteName}.netlify.app already exists. Please try a different slug.`)
         // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
         await inputSiteName()
       } else {
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        error(`createSiteInTeam error: ${error_.status}: ${error_.message}`)
+        error(`createSiteInTeam error: ${(error_ as APIError).status}: ${(error_ as APIError).message}`)
       }
     }
   }

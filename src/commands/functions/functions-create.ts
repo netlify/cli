@@ -15,7 +15,15 @@ import ora from 'ora'
 
 import { fileExistsAsync } from '../../lib/fs.js'
 import { getAddons, getCurrentAddon, getSiteData } from '../../utils/addons/prepare.js'
-import { NETLIFYDEVERR, NETLIFYDEVLOG, NETLIFYDEVWARN, chalk, error, log } from '../../utils/command-helpers.js'
+import {
+  APIError,
+  NETLIFYDEVERR,
+  NETLIFYDEVLOG,
+  NETLIFYDEVWARN,
+  chalk,
+  error,
+  log,
+} from '../../utils/command-helpers.js'
 import { copyTemplateDir } from '../../utils/copy-template-dir/copy-template-dir.js'
 import { getDotEnvVariables, injectEnvVariables } from '../../utils/dev.js'
 import execa from '../../utils/execa.js'
@@ -492,7 +500,6 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
       await downloadFromURL(command, options, argumentName, functionsDir)
     } catch (error_) {
       error(`$${NETLIFYDEVERR} Error downloading from URL: ${options.url}`)
-      // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
       error(error_)
       process.exit(1)
     }
@@ -583,8 +590,7 @@ const createFunctionAddon = async function ({ addonName, addons, api, siteData, 
     log(`Add-on "${addonName}" created for ${siteData.name}`)
     return true
   } catch (error_) {
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    error(error_.message)
+    error((error_ as APIError).message)
   }
 }
 
@@ -682,8 +688,7 @@ const installAddons = async function (command, functionAddons, fnPath) {
 
       await handleAddonDidInstall({ addonCreated, addonDidInstall, command, fnPath })
     } catch (error_) {
-      // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
-      error(`${NETLIFYDEVERR} Error installing addon: `, error_)
+      error(`${NETLIFYDEVERR} Error installing addon: ${error_}`)
     }
   })
   return Promise.all(arr)

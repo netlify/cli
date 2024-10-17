@@ -40,7 +40,6 @@ export const apiCommand = async (apiMethod: string, options: OptionValues, comma
     const apiResponse = await api[apiMethod](payload)
     logJson(apiResponse)
   } catch (error_) {
-    // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
     error(error_)
   }
 }
