@@ -5,7 +5,7 @@ import pick from 'lodash/pick.js'
 import parseGitHubUrl from 'parse-github-url'
 import { render } from 'prettyjson'
 
-import { chalk, error, getTerminalLink, log, logJson, warn, isAPIError } from '../../utils/command-helpers.js'
+import { chalk, error, getTerminalLink, log, logJson, warn, APIError } from '../../utils/command-helpers.js'
 import execa from '../../utils/execa.js'
 import getRepoData from '../../utils/get-repo-data.js'
 import { getGitHubToken } from '../../utils/init/config-github.js'
@@ -163,15 +163,14 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
         })
       }
     } catch (error_) {
-      // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-      if (hasErrorStatus(error_, 422) || (isAPIError(error_) && error_.message === 'Duplicate repo')) {
+      if ((error_ as APIError).status === 422 || (error_ as APIError).message === 'Duplicate repo') {
         warn(
           `${name}.netlify.app already exists or a repository named ${name} already exists on this account. Please try a different slug.`,
         )
         // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
         await inputSiteName()
       } else {
-        isAPIError(error_) ? error(`createSiteInTeam error: ${error_.status}: ${error_.message}`) : error(error_)
+        error(`createSiteInTeam error: ${(error_ as APIError).status}: ${(error_ as APIError).message}`)
       }
     }
   }

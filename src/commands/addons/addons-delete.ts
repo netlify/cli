@@ -2,7 +2,7 @@ import { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 
 import { ADDON_VALIDATION, prepareAddonCommand } from '../../utils/addons/prepare.js'
-import { error, exit, log, isAPIError } from '../../utils/command-helpers.js'
+import { error, exit, log, APIError } from '../../utils/command-helpers.js'
 import BaseCommand from '../base-command.js'
 
 export const addonsDelete = async (addonName: string, options: OptionValues, command: BaseCommand) => {
@@ -31,6 +31,6 @@ export const addonsDelete = async (addonName: string, options: OptionValues, com
     })
     log(`Addon "${addonName}" deleted`)
   } catch (error_) {
-    isAPIError(error_) ? error(error_.message) : error(error_)
+    error((error_ as APIError).message)
   }
 }

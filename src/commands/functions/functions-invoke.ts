@@ -6,7 +6,7 @@ import { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 import fetch from 'node-fetch'
 
-import { NETLIFYDEVWARN, chalk, error, exit, isAPIError } from '../../utils/command-helpers.js'
+import { APIError, NETLIFYDEVWARN, chalk, error, exit } from '../../utils/command-helpers.js'
 import { BACKGROUND, CLOCKWORK_USERAGENT, getFunctions } from '../../utils/functions/index.js'
 import BaseCommand from '../base-command.js'
 
@@ -234,6 +234,6 @@ export const functionsInvoke = async (nameArgument: string, options: OptionValue
     const data = await response.text()
     console.log(data)
   } catch (error_) {
-    isAPIError(error_) ? error(`Ran into an error invoking your function: ${error_.message}`) : error(error_)
+    error(`Ran into an error invoking your function: ${(error_ as APIError).message}`)
   }
 }

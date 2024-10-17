@@ -1,4 +1,4 @@
-import { error, warn, errorHasStatus } from '../command-helpers.js'
+import { error, warn, APIError } from '../command-helpers.js'
 
 /**
  * A preAction hook that errors out if siteInfo is an empty object
@@ -21,9 +21,10 @@ const requiresSiteInfo = async (command) => {
       return error(`Not authorized to view the currently linked site (${siteId})`)
     }
     // missing
-    if (errorHasStatus(error_, 404)) {
+    if ((error_ as APIError).status === 404) {
       return error(`The site this folder is linked to can't be found`)
     }
+
     return error(error_)
   }
 }

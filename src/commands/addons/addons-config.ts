@@ -8,7 +8,7 @@ import { ADDON_VALIDATION, prepareAddonCommand } from '../../utils/addons/prepar
 import generatePrompts from '../../utils/addons/prompts.js'
 import { renderConfigValues } from '../../utils/addons/render.js'
 import { missingConfigValues, requiredConfigValues, updateConfigValues } from '../../utils/addons/validation.js'
-import { chalk, error, log, isAPIError } from '../../utils/command-helpers.js'
+import { chalk, error, log, APIError } from '../../utils/command-helpers.js'
 import { parseRawFlags } from '../../utils/parse-raw-flags.js'
 import BaseCommand from '../base-command.js'
 
@@ -35,7 +35,7 @@ const update = async function ({ addonName, api, currentConfig, instanceId, newC
     })
     log(`Add-on "${addonName}" successfully updated`)
   } catch (error_) {
-    isAPIError(error_) ? error(error_.message) : error(error_)
+    error((error_ as APIError).message)
   }
 }
 

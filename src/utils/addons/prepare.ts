@@ -1,4 +1,4 @@
-import { chalk, error, exit, log, warn, isAPIError } from '../command-helpers.js'
+import { APIError, chalk, error, exit, log, warn } from '../command-helpers.js'
 
 export const ADDON_VALIDATION = {
   EXISTS: 'EXISTS',
@@ -55,10 +55,10 @@ export const getAddonManifest = async ({ addonName, api }) => {
   try {
     manifest = await api.showServiceManifest({ addonName })
   } catch (error_) {
-    if (isAPIError(error_) && error_.message.includes('Not Found')) {
+    if ((error_ as APIError).message.includes('Not Found')) {
       error(`No add-on "${addonName}" found. Please double check your add-on name and try again`)
     } else {
-      isAPIError(error_) ? error(error_.message) : error(error_)
+      error((error_ as APIError).message)
     }
   }
   return manifest
@@ -70,7 +70,7 @@ export const getSiteData = async ({ api, siteId }) => {
   try {
     siteData = await api.getSite({ siteId })
   } catch (error_) {
-    isAPIError(error_) ? error(`Failed getting list of site data: ${error_.message}`) : error(error_)
+    error(`Failed getting list of site data: ${(error_ as APIError).message}`)
   }
   return siteData
 }
@@ -81,7 +81,7 @@ export const getAddons = async ({ api, siteId }) => {
   try {
     addons = await api.listServiceInstancesForSite({ siteId })
   } catch (error_) {
-    isAPIError(error_) ? error(`Failed getting list of addons: ${error_.message}`) : error(error_)
+    error(`Failed getting list of addons: ${(error_ as APIError).message}`)
   }
   return addons
 }

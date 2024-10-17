@@ -300,13 +300,7 @@ export const noOp = () => {
   // no-op
 }
 
-interface APIError extends Error {
+export interface APIError extends Error {
   status: number
   message: string
 }
-
-export const isAPIError = (errorObject: unknown): errorObject is APIError =>
-  errorObject instanceof Error && 'status' in errorObject && 'message' in errorObject
-
-export const errorHasStatus = (errorObject: unknown, statusCode: number) =>
-  isAPIError(errorObject) && errorObject.status === statusCode

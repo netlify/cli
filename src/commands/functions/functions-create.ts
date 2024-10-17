@@ -16,13 +16,13 @@ import ora from 'ora'
 import { fileExistsAsync } from '../../lib/fs.js'
 import { getAddons, getCurrentAddon, getSiteData } from '../../utils/addons/prepare.js'
 import {
+  APIError,
   NETLIFYDEVERR,
   NETLIFYDEVLOG,
   NETLIFYDEVWARN,
   chalk,
   error,
   log,
-  isAPIError,
 } from '../../utils/command-helpers.js'
 import { copyTemplateDir } from '../../utils/copy-template-dir/copy-template-dir.js'
 import { getDotEnvVariables, injectEnvVariables } from '../../utils/dev.js'
@@ -590,7 +590,7 @@ const createFunctionAddon = async function ({ addonName, addons, api, siteData, 
     log(`Add-on "${addonName}" created for ${siteData.name}`)
     return true
   } catch (error_) {
-    isAPIError(error_) ? error(error_.message) : error(error_)
+    error((error_ as APIError).message)
   }
 }
 

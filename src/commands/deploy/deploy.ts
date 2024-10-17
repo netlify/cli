@@ -30,8 +30,7 @@ import {
   log,
   logJson,
   warn,
-  isAPIError,
-  errorHasStatus,
+  APIError,
 } from '../../utils/command-helpers.js'
 import { DEFAULT_DEPLOY_TIMEOUT } from '../../utils/deploy/constants.js'
 import { deploySite } from '../../utils/deploy/deploy-site.js'
@@ -60,11 +59,10 @@ const triggerDeploy = async ({ api, options, siteData, siteId }) => {
       )
     }
   } catch (error_) {
-    if (errorHasStatus(error_, 404)) {
+    if ((error_ as APIError).status === 404) {
       error('Site not found. Please rerun "netlify link" and make sure that your site has CI configured.')
     } else {
-      isAPIError(error_) ? error(error_.message) : error(error_)
-    }
+      error((error_ as APIError).message)
   }
 }
 

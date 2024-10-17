@@ -1,7 +1,7 @@
 import { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 
-import { chalk, error, exit, log, errorHasStatus, isAPIError } from '../../utils/command-helpers.js'
+import { chalk, error, exit, log, APIError } from '../../utils/command-helpers.js'
 import BaseCommand from '../base-command.js'
 
 export const sitesDelete = async (siteId: string, options: OptionValues, command: BaseCommand) => {
@@ -17,7 +17,7 @@ export const sitesDelete = async (siteId: string, options: OptionValues, command
   try {
     siteData = await api.getSite({ siteId })
   } catch (error_) {
-    if (errorHasStatus(error_, 404)) {
+    if ((error_ as APIError).status === 404) {
       error(`No site with id ${siteId} found. Please verify the siteId & try again.`)
     } else {
       error(error_)
@@ -75,10 +75,10 @@ export const sitesDelete = async (siteId: string, options: OptionValues, command
   try {
     await api.deleteSite({ site_id: siteId })
   } catch (error_) {
-    if (errorHasStatus(error_, 404)) {
+    if ((error_ as APIError).status === 404) {
       error(`No site with id ${siteId} found. Please verify the siteId & try again.`)
     } else {
-      isAPIError(error_) ? error(`Delete Site error: ${error_.status}: ${error_.message}`) : error(error_)
+      error(`Delete Site error: ${(error_ as APIError).status}: ${(error_ as APIError).message}`)
     }
   }
   log(`Site "${siteId}" successfully deleted!`)
