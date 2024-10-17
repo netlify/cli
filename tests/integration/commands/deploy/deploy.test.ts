@@ -296,7 +296,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
       )
       expect(deploy).toHaveProperty(
         'edge_function_logs',
-        `https://app.netlify.com/sites/${SITE_NAME}/logs/edge-functions?scope=deploy:${deploy.deploy_id}`,
+        `https://app.netlify.com/sites/${SITE_NAME}/logs/edge-functions?scope=deployid:${deploy.deploy_id}`,
       )
     })
   })
