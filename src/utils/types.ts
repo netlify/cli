@@ -91,7 +91,7 @@ export interface Account {
   updated_at: string
 }
 
-export interface RepoFromGithub {
+export interface GithubRepo {
   name: string
   html_url: string
   full_name: string

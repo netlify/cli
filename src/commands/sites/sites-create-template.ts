@@ -13,15 +13,15 @@ import { configureRepo } from '../../utils/init/config.js'
 import { createRepo, getTemplatesFromGitHub, validateTemplate } from '../../utils/sites/utils.js'
 import { track } from '../../utils/telemetry/index.js'
 import BaseCommand from '../base-command.js'
-import { RepoFromGithub, Template } from '../../utils/types.js'
+import { GithubRepo, Template } from '../../utils/types.js'
 import { getSiteNameInput } from './sites-create.js'
 
 export const fetchTemplates = async (token: string): Promise<Template[]> => {
-  const templatesFromGithubOrg: RepoFromGithub[] = await getTemplatesFromGitHub(token)
+  const templatesFromGithubOrg: GithubRepo[] = await getTemplatesFromGitHub(token)
 
   return templatesFromGithubOrg
-    .filter((repo: RepoFromGithub) => !repo.archived && !repo.disabled)
-    .map((template: RepoFromGithub) => ({
+    .filter((repo: GithubRepo) => !repo.archived && !repo.disabled)
+    .map((template: GithubRepo) => ({
       name: template.name,
       sourceCodeUrl: template.html_url,
       slug: template.full_name,
