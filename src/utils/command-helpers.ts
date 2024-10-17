@@ -16,6 +16,7 @@ import { clearSpinner, startSpinner } from '../lib/spinner.js'
 import getGlobalConfig from './get-global-config.js'
 import getPackageJson from './get-package-json.js'
 import { reportError } from './telemetry/report-error.js'
+import { Location } from './types.js'
 
 /** The parsed process argv without the binary only arguments and flags */
 const argv = process.argv.slice(2)
@@ -132,7 +133,7 @@ export const pollForToken = async ({
  * @returns {Promise<[null|string, 'flag' | 'env' |'config' |'not found']>}
  */
 
-export type tokenTuple = [string | undefined, 'flag' | 'env' | 'config' | 'not found']
+export type tokenTuple = [string | undefined, Location]
 
 export const getToken = async (tokenFromOptions?: string): Promise<tokenTuple> => {
   // 1. First honor command flag --auth
