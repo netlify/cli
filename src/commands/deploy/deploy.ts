@@ -63,6 +63,7 @@ const triggerDeploy = async ({ api, options, siteData, siteId }) => {
       error('Site not found. Please rerun "netlify link" and make sure that your site has CI configured.')
     } else {
       error((error_ as APIError).message)
+    }
   }
 }
 
