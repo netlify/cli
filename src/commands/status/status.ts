@@ -8,7 +8,6 @@ import BaseCommand from '../base-command.js'
 export const status = async (options: OptionValues, command: BaseCommand) => {
   const { api, globalConfig, site, siteInfo } = command.netlify
   const current = globalConfig.get('userId')
-  // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
   const [accessToken] = await getToken()
 
   if (!accessToken) {
