@@ -16,7 +16,7 @@ const requiresSiteInfo = async (command) => {
     await api.getSite({ siteId })
   } catch (error_) {
     // unauthorized
-    if (errorHasStatus(error_, 404)) {
+    if ((error_ as APIError).status === 401) {
       warn(`Log in with a different account or re-link to a site you have permission for`)
       return error(`Not authorized to view the currently linked site (${siteId})`)
     }
