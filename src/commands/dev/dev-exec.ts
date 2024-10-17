@@ -28,7 +28,9 @@ export const createDevExecCommand = (program: BaseCommand) =>
       normalizeContext,
       'dev',
     )
-    .description('Runs a command within the netlify dev environment. For example, with environment variables from any installed add-ons')
+    .description(
+      'Runs a command within the netlify dev environment. For example, with environment variables from any installed add-ons',
+    )
     .allowExcessArguments(true)
     .addExamples(['netlify dev:exec npm run bootstrap'])
     .action(devExec)
