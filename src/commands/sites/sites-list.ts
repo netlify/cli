@@ -40,7 +40,7 @@ export const sitesList = async (options: OptionValues, command: BaseCommand) => 
     // Json response for piping commands
     if (options.json) {
       const redactedSites = sites.map((site) => {
-        if (site && site.build_settings && site.build_settings.env) {
+        if (site?.build_settings?.env) {
           delete site.build_settings.env
         }
         return site
