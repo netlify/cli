@@ -9,7 +9,7 @@ import { OptionValues } from 'commander'
 import { install, uninstall } from 'tabtab'
 
 import { generateAutocompletion } from '../../lib/completion/index.js'
-import { error, log, chalk } from '../../utils/command-helpers.js'
+import { error, log, chalk, checkFileForLine } from '../../utils/command-helpers.js'
 import BaseCommand from '../base-command.js'
 
 const completer = join(dirname(fileURLToPath(import.meta.url)), '../../lib/completion/script.js')
@@ -28,21 +28,10 @@ export const completionGenerate = async (options: OptionValues, command: BaseCom
     completer,
   })
 
-  const checkFileForLine = (filename: string, line: string) => {
-    let filecontent = ''
-    try {
-      filecontent = fs.readFileSync(filename, 'utf8')
-    } catch (error_) {
-      // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-      error(error_)
-    }
-    return !!filecontent.match(`${line}`)
-  }
-
   const TABTAB_CONFIG_LINE = '[[ -f ~/.config/tabtab/__tabtab.zsh ]] && . ~/.config/tabtab/__tabtab.zsh || true'
   const AUTOLOAD_COMPINIT = 'autoload -U compinit; compinit'
   const zshConfigFilepath = join(process.env.HOME || homedir(), '.zshrc')
-  console.log('zsh config file:', zshConfigFilepath)
+
   if (
     fs.existsSync(zshConfigFilepath) &&
     checkFileForLine(zshConfigFilepath, TABTAB_CONFIG_LINE) &&
@@ -63,11 +52,11 @@ export const completionGenerate = async (options: OptionValues, command: BaseCom
         if (answer['compinitAdded']) {
           fs.readFile(zshConfigFilepath, 'utf8', (err, data) => {
             const updatedZshFile = AUTOLOAD_COMPINIT + '\n' + data
-            
+
             fs.writeFileSync(zshConfigFilepath, updatedZshFile, 'utf8')
           })
 
-          log(chalk.green('Successfully added compinit line to .zshrc'))
+          log('Successfully added compinit line to .zshrc')
         }
       })
   }
@@ -76,7 +65,7 @@ export const completionGenerate = async (options: OptionValues, command: BaseCom
 
   if (process.platform !== 'win32') {
     log("\nTo ensure proper functionality, you'll need to set appropriate file permissions.")
-    log(`Add executable permissions by running the following command:`)
+    log(chalk.bold('Add executable permissions by running the following command:'))
     log(chalk.bold.cyan(`\nchmod +x ${completer}\n`))
   } else {
     log(`\nTo ensure proper functionality, you may need to set appropriate file permissions to ${completer}.`)
