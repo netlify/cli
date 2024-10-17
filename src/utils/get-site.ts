@@ -12,7 +12,13 @@ export const getSiteByName = async (api, siteName) => {
     }
 
     return siteFoundByName
-  } catch {
-    error('Site not found. Please rerun "netlify link"')
+  } catch (error_) {
+    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+    if (error_.status === 401) {
+      // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+      error(error_.message)
+    } else {
+      error('Site not found. Please rerun "netlify link"')
+    }
   }
 }
