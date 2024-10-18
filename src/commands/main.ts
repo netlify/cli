@@ -45,10 +45,12 @@ process.on('uncaughtException', async (err: any) => {
 
   if (err.code === 'EADDRINUSE') {
     error(
-      `${chalk.red(
-        `Port ${err.port} is already in use.\n`,
-      )}\n This could be due to one of your serverless functions intializing a server to listen on a specific port\n` +
-        'without closing the port.\n',
+      `${chalk.red(`Port ${err.port} is already in use`)}\n\n` +
+        `This could be due to one of your serverless functions initializing a server\n` +
+        `to listen on port ${err.port} without properly closing it.\n\n` +
+        `To resolve this issue, try the following:\n` +
+        `1. Check if any other applications are using port ${err.port}\n` +
+        `2. Review your serverless functions for any lingering server connections\n`,
       { exit: false },
     )
   } else {
