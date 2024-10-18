@@ -536,7 +536,7 @@ const runDeploy = async ({
 
   if (!deployToProduction) {
     functionLogsUrl += `?scope=deploy:${deployId}`
-    edgeFunctionLogsUrl += `?scope=deploy:${deployId}`
+    edgeFunctionLogsUrl += `?scope=deployid:${deployId}`
   }
 
   return {
