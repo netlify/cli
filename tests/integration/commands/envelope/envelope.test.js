@@ -220,7 +220,7 @@ describe.concurrent('command/envelope', () => {
       await builder.build()
       await withMockApi(cloneRoutes, async ({ apiUrl, requests }) => {
         const cliResponse = await callCli(
-          ['env:clone', '--from', 'site_id_a', '--to', 'site_id_b'],
+          ['env:clone', '--from', 'site_id_a', '--to', 'site_id_b', '--force'],
           getCLIOptions({ apiUrl, builder }),
         )
 
