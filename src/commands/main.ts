@@ -40,27 +40,37 @@ import { createWatchCommand } from './watch/index.js'
 
 const SUGGESTION_TIMEOUT = 1e4
 
-process.on('uncaughtException', async (err) => {
+process.on('uncaughtException', async (err: any) => {
   console.log('')
-  error(
-    `${chalk.red(
-      'Netlify CLI has terminated unexpectedly',
-    )}\nThis is a problem with the Netlify CLI, not with your application.\nIf you recently updated the CLI, consider reverting to an older version by running:\n\n${chalk.bold(
-      'npm install -g netlify-cli@VERSION',
-    )}\n\nYou can use any version from ${chalk.underline(
-      'https://ntl.fyi/cli-versions',
-    )}.\n\nPlease report this problem at ${chalk.underline(
-      'https://ntl.fyi/cli-error',
-    )} including the error details below.\n`,
-    { exit: false },
-  )
 
-  const systemInfo = await getSystemInfo()
+  if (err.code === 'EADDRINUSE') {
+    error(
+      `${chalk.red(
+        `Port ${err.port} is already in use.\n`,
+      )}\n This could be due to one of your serverless functions intializing a server to listen on a specific port\n` +
+        'without closing the port.\n',
+      { exit: false },
+    )
+  } else {
+    error(
+      `${chalk.red(
+        'Netlify CLI has terminated unexpectedly',
+      )}\nThis is a problem with the Netlify CLI, not with your application.\nIf you recently updated the CLI, consider reverting to an older version by running:\n\n${chalk.bold(
+        'npm install -g netlify-cli@VERSION',
+      )}\n\nYou can use any version from ${chalk.underline(
+        'https://ntl.fyi/cli-versions',
+      )}.\n\nPlease report this problem at ${chalk.underline(
+        'https://ntl.fyi/cli-error',
+      )} including the error details below.\n`,
+      { exit: false },
+    )
 
-  console.log(chalk.dim(err.stack || err))
-  console.log(chalk.dim(systemInfo))
+    const systemInfo = await getSystemInfo()
 
-  reportError(err, { severity: 'error' })
+    console.log(chalk.dim(err.stack || err))
+    console.log(chalk.dim(systemInfo))
+    reportError(err, { severity: 'error' })
+  }
 
   process.exit(1)
 })
