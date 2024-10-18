@@ -13,25 +13,19 @@ import { configureRepo } from '../../utils/init/config.js'
 import { createRepo, getTemplatesFromGitHub, validateTemplate } from '../../utils/sites/utils.js'
 import { track } from '../../utils/telemetry/index.js'
 import BaseCommand from '../base-command.js'
-
+import { GithubRepo, Template } from '../../utils/types.js'
 import { getSiteNameInput } from './sites-create.js'
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'token' implicitly has an 'any' type.
-export const fetchTemplates = async (token) => {
-  const templatesFromGithubOrg = await getTemplatesFromGitHub(token)
+export const fetchTemplates = async (token: string): Promise<Template[]> => {
+  const templatesFromGithubOrg: GithubRepo[] = await getTemplatesFromGitHub(token)
 
-  return (
-    // @ts-expect-error TS(18046) - 'templatesFromGithubOrg' if of type 'unknown'
-    templatesFromGithubOrg
-      // @ts-expect-error TS(7006) FIXME: Parameter 'repo' implicitly has an 'any' type.
-      .filter((repo) => !repo.archived && !repo.disabled)
-      // @ts-expect-error TS(7006) FIXME: Parameter 'template' implicitly has an 'any' type.
-      .map((template) => ({
-        name: template.name,
-        sourceCodeUrl: template.html_url,
-        slug: template.full_name,
-      }))
-  )
+  return templatesFromGithubOrg
+    .filter((repo: GithubRepo) => !repo.archived && !repo.disabled)
+    .map((template: GithubRepo) => ({
+      name: template.name,
+      sourceCodeUrl: template.html_url,
+      slug: template.full_name,
+    }))
 }
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'ghToken' implicitly has an 'any' ... Remove this comment to see the full error message
@@ -55,7 +49,6 @@ const getTemplateName = async ({ ghToken, options, repository }) => {
       type: 'list',
       name: 'templateName',
       message: 'Template:',
-      // @ts-expect-error TS(7006) FIXME: Parameter 'template' implicitly has an 'any' type.
       choices: templates.map((template) => ({
         value: template.slug,
         name: template.name,
@@ -219,7 +212,6 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
 
   if (options.withCi) {
     log('Configuring CI')
-    // @ts-expect-error TS(2345) FIXME: Argument of type '{ workingDir: any; }' is not ass... Remove this comment to see the full error message
     const repoData = await getRepoData({ workingDir: command.workingDir })
     // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     await configureRepo({ command, siteId: site.id, repoData, manual: options.manual })
