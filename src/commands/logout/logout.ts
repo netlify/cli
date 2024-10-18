@@ -5,7 +5,6 @@ import { track } from '../../utils/telemetry/index.js'
 import BaseCommand from '../base-command.js'
 
 export const logout = async (options: OptionValues, command: BaseCommand) => {
-  // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
   const [accessToken, location] = await getToken()
 
   if (!accessToken) {
