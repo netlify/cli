@@ -16,7 +16,7 @@ export const getSiteByName = async (api, siteName) => {
     // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
     if (error_.status === 401) {
       // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-      error(error_.message)
+      error(`${error_.message}: could not retrieve site`)
     } else {
       error('Site not found. Please rerun "netlify link"')
     }
