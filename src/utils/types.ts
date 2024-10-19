@@ -63,4 +63,4 @@ export interface Request extends IncomingMessage {
 
 export type Rewriter = (req: Request) => Match | null
 
-export type Location = 'env' | 'flag' | 'config' | 'not found'
+export type TokenLocation = 'env' | 'flag' | 'config' | 'not found'
