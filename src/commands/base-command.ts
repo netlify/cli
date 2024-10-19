@@ -725,7 +725,6 @@ export default class BaseCommand extends Command {
       // the option to say that we don't need API data.)
       if (isUserError && !config.offline && config.token) {
         if (flags.debug) {
-          // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
           error(error_, { exit: false })
           warn('Failed to resolve config, falling back to offline resolution')
         }
