@@ -59,7 +59,7 @@ Local dev server
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`dev:exec`](/commands/dev#devexec) | Exec command  |
+| [`dev:exec`](/commands/dev#devexec) | Runs a command within the netlify dev environment. For example, with environment variables from any installed add-ons  |
 
 
 ### [env](/commands/env)
