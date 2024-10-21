@@ -9,7 +9,14 @@ import { OptionValues } from 'commander'
 import { install, uninstall } from 'tabtab'
 
 import { generateAutocompletion } from '../../lib/completion/index.js'
-import { error, log, chalk, checkFileForLine } from '../../utils/command-helpers.js'
+import {
+  error,
+  log,
+  chalk,
+  checkFileForLine,
+  TABTAB_CONFIG_LINE,
+  AUTOLOAD_COMPINIT,
+} from '../../utils/command-helpers.js'
 import BaseCommand from '../base-command.js'
 
 const completer = join(dirname(fileURLToPath(import.meta.url)), '../../lib/completion/script.js')
@@ -27,9 +34,6 @@ export const completionGenerate = async (options: OptionValues, command: BaseCom
     name: parent.name(),
     completer,
   })
-
-  const TABTAB_CONFIG_LINE = '[[ -f ~/.config/tabtab/__tabtab.zsh ]] && . ~/.config/tabtab/__tabtab.zsh || true'
-  const AUTOLOAD_COMPINIT = 'autoload -U compinit; compinit'
   const zshConfigFilepath = join(process.env.HOME || homedir(), '.zshrc')
 
   if (
@@ -39,26 +43,23 @@ export const completionGenerate = async (options: OptionValues, command: BaseCom
   ) {
     log(`To enable Tabtab autocompletion with zsh, the following line may need to be added to your ~/.zshrc:`)
     log(chalk.bold.cyan(`\n${AUTOLOAD_COMPINIT}\n`))
-    await inquirer
-      .prompt([
-        {
-          type: 'confirm',
-          name: 'compinitAdded',
-          message: `Would you like to add it?`,
-          default: true,
-        },
-      ])
-      .then((answer) => {
-        if (answer['compinitAdded']) {
-          fs.readFile(zshConfigFilepath, 'utf8', (err, data) => {
-            const updatedZshFile = AUTOLOAD_COMPINIT + '\n' + data
+    const { compinitAdded } = await inquirer.prompt([
+      {
+        type: 'confirm',
+        name: 'compinitAdded',
+        message: `Would you like to add it?`,
+        default: true,
+      },
+    ])
+    if (compinitAdded) {
+      await fs.readFile(zshConfigFilepath, 'utf8', (err, data) => {
+        const updatedZshFile = AUTOLOAD_COMPINIT + '\n' + data
 
-            fs.writeFileSync(zshConfigFilepath, updatedZshFile, 'utf8')
-          })
-
-          log('Successfully added compinit line to .zshrc')
-        }
+        fs.writeFileSync(zshConfigFilepath, updatedZshFile, 'utf8')
       })
+
+      log('Successfully added compinit line to .zshrc')
+    }
   }
 
   log(`Completion for ${parent.name()} successfully installed!`)

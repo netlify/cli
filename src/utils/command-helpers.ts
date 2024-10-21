@@ -312,3 +312,6 @@ export const checkFileForLine = (filename: string, line: string) => {
   }
   return !!filecontent.match(`${line}`)
 }
+
+export const TABTAB_CONFIG_LINE = '[[ -f ~/.config/tabtab/__tabtab.zsh ]] && . ~/.config/tabtab/__tabtab.zsh || true'
+export const AUTOLOAD_COMPINIT = 'autoload -U compinit; compinit'
