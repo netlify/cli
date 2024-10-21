@@ -1,7 +1,8 @@
 import fetch from 'node-fetch'
+import { error } from '../../utils/command-helpers.js'
+import { GithubRepo } from '../../utils/types.js'
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'token' implicitly has an 'any' type.
-export const getTemplatesFromGitHub = async (token) => {
+export const getTemplatesFromGitHub = async (token: string): Promise<GithubRepo[]> => {
   const getPublicGitHubReposFromOrg = new URL(`https://api.github.com/orgs/netlify-templates/repos`)
   // GitHub returns 30 by default and we want to avoid our limit
   // due to our archived repositories at any given time
@@ -12,14 +13,18 @@ export const getTemplatesFromGitHub = async (token) => {
   // @ts-expect-error TS(2345) FIXME: Argument of type 'number' is not assignable to par... Remove this comment to see the full error message
   getPublicGitHubReposFromOrg.searchParams.set('per_page', REPOS_PER_PAGE)
 
-  const templates = await fetch(getPublicGitHubReposFromOrg, {
-    method: 'GET',
-    headers: {
-      Authorization: `token ${token}`,
-    },
-  })
-  const allTemplates = await templates.json()
-
+  let allTemplates: GithubRepo[] = []
+  try {
+    const templates = await fetch(getPublicGitHubReposFromOrg, {
+      method: 'GET',
+      headers: {
+        Authorization: `token ${token}`,
+      },
+    })
+    allTemplates = (await templates.json()) as GithubRepo[]
+  } catch (error_) {
+    error(error_)
+  }
   return allTemplates
 }
 
