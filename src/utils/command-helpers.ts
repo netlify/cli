@@ -1,5 +1,6 @@
 import { once } from 'events'
 import os from 'os'
+import fs from 'fs'
 import process from 'process'
 import { format, inspect } from 'util'
 
@@ -312,4 +313,15 @@ export const noOp = () => {
 export interface APIError extends Error {
   status: number
   message: string
+}
+
+export const checkFileForLine = (filename: string, line: string) => {
+  let filecontent = ''
+  try {
+    filecontent = fs.readFileSync(filename, 'utf8')
+  } catch (error_) {
+    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+    error(error_)
+  }
+  return !!filecontent.match(`${line}`)
 }
