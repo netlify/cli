@@ -394,7 +394,6 @@ export const getConfiguration = (workingDir) => {
 export const deploy = async (options: OptionValues, command: BaseCommand) => {
   const { api, cachedConfig, site, siteInfo } = command.netlify
   const { id: siteId } = site
-  // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
   const [token] = await getToken()
   const workingDir = resolve(command.workingDir)
   const buildOptions = await getBuildOptions({
@@ -412,6 +411,7 @@ export const deploy = async (options: OptionValues, command: BaseCommand) => {
   const { description, integrationLevel, name, scopes, slug } = await getConfiguration(command.workingDir)
   const localIntegrationConfig = { name, description, scopes, slug, integrationLevel }
 
+  const headers = token ? { 'netlify-token': token } : undefined
   // @ts-expect-error TS(2345) FIXME: Argument of type '{ api: any; site: any; siteInfo:... Remove this comment to see the full error message
   const { accountId } = await getSiteInformation({
     api,
@@ -422,9 +422,7 @@ export const deploy = async (options: OptionValues, command: BaseCommand) => {
   const { body: registeredIntegration, statusCode } = await fetch(
     `${getIntegrationAPIUrl()}/${accountId}/integrations?site_id=${siteId}`,
     {
-      headers: {
-        'netlify-token': token,
-      },
+      headers,
     },
   ).then(async (res) => {
     const body = await res.json()
