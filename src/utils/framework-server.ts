@@ -70,7 +70,6 @@ export const startFrameworkServer = async function ({
     stopSpinner({ error: true, spinner })
     log(NETLIFYDEVERR, `Netlify Dev could not start or connect to localhost:${settings.frameworkPort}.`)
     log(NETLIFYDEVERR, `Please make sure your framework server is running on port ${settings.frameworkPort}`)
-    // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
     error(error_)
     exit(1)
   }
