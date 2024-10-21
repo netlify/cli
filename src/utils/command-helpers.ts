@@ -320,8 +320,10 @@ export const checkFileForLine = (filename: string, line: string) => {
   try {
     filecontent = fs.readFileSync(filename, 'utf8')
   } catch (error_) {
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
     error(error_)
   }
   return !!filecontent.match(`${line}`)
 }
+
+export const TABTAB_CONFIG_LINE = '[[ -f ~/.config/tabtab/__tabtab.zsh ]] && . ~/.config/tabtab/__tabtab.zsh || true'
+export const AUTOLOAD_COMPINIT = 'autoload -U compinit; compinit'
