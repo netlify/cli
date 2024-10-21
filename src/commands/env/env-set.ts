@@ -2,7 +2,7 @@ import { OptionValues } from 'commander'
 
 import { chalk, error, log, logJson } from '../../utils/command-helpers.js'
 import { AVAILABLE_CONTEXTS, AVAILABLE_SCOPES, translateFromEnvelopeToMongo } from '../../utils/env/index.js'
-import { envSetPrompts } from '../../utils/prompts/env-set-prompts.js'
+import { promptOverwriteEnvVariable } from '../../utils/prompts/env-set-prompts.js'
 import BaseCommand from '../base-command.js'
 
 /**
@@ -53,7 +53,7 @@ const setInEnvelope = async ({ api, context, force, key, scope, secret, siteInfo
 
   // Checks if --force is passed and if it is an existing variaible, then we need to prompt the user
   if (Boolean(force) === false && existing) {
-    await envSetPrompts(key)
+    await promptOverwriteEnvVariable(key)
   }
 
   const params = { accountId, siteId, key }

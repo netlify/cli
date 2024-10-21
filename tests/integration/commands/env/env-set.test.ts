@@ -7,6 +7,7 @@ import { describe, expect, test, vi, beforeEach } from 'vitest'
 import BaseCommand from '../../../../src/commands/base-command.js'
 import { createEnvCommand } from '../../../../src/commands/env/env.js'
 import { log } from '../../../../src/utils/command-helpers.js'
+import { generateSetMessage } from '../../../../src/utils/prompts/env-set-prompts.js'
 import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
 import { getEnvironmentVariables, withMockApi } from '../../utils/mock-api.js'
 
@@ -273,15 +274,9 @@ describe('env:set command', () => {
     const existingVar = 'EXISTING_VAR'
     const newEnvValue = 'value'
 
-    const expectedMessageAlreadyExists = `${chalk.redBright('Warning')}: The environment variable ${chalk.bgBlueBright(
-      existingVar,
-    )} already exists!`
+    const { confirmMessage, noticeMessage, warningMessage } = generateSetMessage(existingVar)
 
-    const expectedNoticeMessage = `${chalk.yellowBright(
-      'Notice',
-    )}: To overwrite the existing variable without confirmation, pass the -f or --force flag.`
-
-    const expectedSuccessMessage = `Set environment variable ${chalk.yellow(
+    const successMessage = `Set environment variable ${chalk.yellow(
       `${existingVar}=${newEnvValue}`,
     )} in the ${chalk.magenta('all')} context`
 
@@ -304,13 +299,13 @@ describe('env:set command', () => {
         expect(promptSpy).toHaveBeenCalledWith({
           type: 'confirm',
           name: 'wantsToSet',
-          message: expect.stringContaining('The environment variable already exists. Do you want to overwrite it?'),
+          message: expect.stringContaining(confirmMessage),
           default: false,
         })
 
-        expect(log).toHaveBeenCalledWith(expectedMessageAlreadyExists)
-        expect(log).toHaveBeenCalledWith(expectedNoticeMessage)
-        expect(log).toHaveBeenCalledWith(expectedSuccessMessage)
+        expect(log).toHaveBeenCalledWith(warningMessage)
+        expect(log).toHaveBeenCalledWith(noticeMessage)
+        expect(log).toHaveBeenCalledWith(successMessage)
       })
     })
 
@@ -327,10 +322,12 @@ describe('env:set command', () => {
 
         expect(promptSpy).not.toHaveBeenCalled()
 
-        expect(log).not.toHaveBeenCalledWith(expectedMessageAlreadyExists)
-        expect(log).not.toHaveBeenCalledWith(expectedNoticeMessage)
+        expect(log).not.toHaveBeenCalledWith(warningMessage)
+        expect(log).not.toHaveBeenCalledWith(noticeMessage)
         expect(log).toHaveBeenCalledWith(
-          `Set environment variable ${chalk.yellow(`NEW_ENV_VAR=NEW_VALUE`)} in the ${chalk.magenta('all')} context`,
+          `Set environment variable ${chalk.yellow(`${'NEW_ENV_VAR'}=${'NEW_VALUE'}`)} in the ${chalk.magenta(
+            'all',
+          )} context`,
         )
       })
     })
@@ -348,9 +345,9 @@ describe('env:set command', () => {
 
         expect(promptSpy).not.toHaveBeenCalled()
 
-        expect(log).not.toHaveBeenCalledWith(expectedMessageAlreadyExists)
-        expect(log).not.toHaveBeenCalledWith(expectedNoticeMessage)
-        expect(log).toHaveBeenCalledWith(expectedSuccessMessage)
+        expect(log).not.toHaveBeenCalledWith(warningMessage)
+        expect(log).not.toHaveBeenCalledWith(noticeMessage)
+        expect(log).toHaveBeenCalledWith(successMessage)
       })
     })
 
@@ -372,9 +369,9 @@ describe('env:set command', () => {
 
         expect(promptSpy).toHaveBeenCalled()
 
-        expect(log).toHaveBeenCalledWith(expectedMessageAlreadyExists)
-        expect(log).toHaveBeenCalledWith(expectedNoticeMessage)
-        expect(log).not.toHaveBeenCalledWith(expectedSuccessMessage)
+        expect(log).toHaveBeenCalledWith(warningMessage)
+        expect(log).toHaveBeenCalledWith(noticeMessage)
+        expect(log).not.toHaveBeenCalledWith(successMessage)
       })
     })
   })
