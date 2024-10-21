@@ -63,4 +63,47 @@ export interface Request extends IncomingMessage {
 
 export type Rewriter = (req: Request) => Match | null
 
+
 export type TokenLocation = 'env' | 'flag' | 'config' | 'not found'
+
+export interface Account {
+  id: string
+  name: string
+  slug: string
+  type: string
+  capabilities: {
+    sites: {
+      included: number
+      used: number
+    }
+    collaborators: {
+      included: number
+      used: number
+    }
+  }
+  billing_name: string
+  billing_email: string
+  billing_details: string
+  billing_period: string
+  payment_method_id: string
+  type_name: string
+  type_id: string
+  owner_ids: string[]
+  roles_allowed: string[]
+  created_at: string
+  updated_at: string
+}
+
+export interface GithubRepo {
+  name: string
+  html_url: string
+  full_name: string
+  archived: boolean
+  disabled: boolean
+}
+
+export interface Template {
+  name: string
+  sourceCodeUrl: string
+  slug: string
+}
