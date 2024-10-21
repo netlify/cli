@@ -23,7 +23,6 @@ export const getTemplatesFromGitHub = async (token: string): Promise<GithubRepo[
     })
     allTemplates = (await templates.json()) as GithubRepo[]
   } catch (error_) {
-    // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
     error(error_)
   }
   return allTemplates
