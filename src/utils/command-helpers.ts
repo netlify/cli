@@ -1,5 +1,6 @@
 import { once } from 'events'
 import os from 'os'
+import fs from 'fs'
 import process from 'process'
 import { format, inspect } from 'util'
 
@@ -313,3 +314,16 @@ export interface APIError extends Error {
   status: number
   message: string
 }
+
+export const checkFileForLine = (filename: string, line: string) => {
+  let filecontent = ''
+  try {
+    filecontent = fs.readFileSync(filename, 'utf8')
+  } catch (error_) {
+    error(error_)
+  }
+  return !!filecontent.match(`${line}`)
+}
+
+export const TABTAB_CONFIG_LINE = '[[ -f ~/.config/tabtab/__tabtab.zsh ]] && . ~/.config/tabtab/__tabtab.zsh || true'
+export const AUTOLOAD_COMPINIT = 'autoload -U compinit; compinit'
