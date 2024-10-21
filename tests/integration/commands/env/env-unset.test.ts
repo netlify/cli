@@ -7,6 +7,7 @@ import { describe, expect, test, vi, beforeEach } from 'vitest'
 import BaseCommand from '../../../../src/commands/base-command.js'
 import { createEnvCommand } from '../../../../src/commands/env/env.js'
 import { log } from '../../../../src/utils/command-helpers.js'
+import { generateUnsetMessage } from '../../../../src/utils/prompts/unset-set-prompts.js'
 import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
 import { getEnvironmentVariables, withMockApi } from '../../utils/mock-api.js'
 
@@ -79,13 +80,7 @@ describe('env:unset command', () => {
     // already exists as value in withMockApi
     const existingVar = 'EXISTING_VAR'
 
-    const expectedWarningMessage = `${chalk.redBright('Warning')}: The environment variable ${chalk.bgBlueBright(
-      existingVar,
-    )} will be unset (deleted)!`
-
-    const expectedNoticeMessage = `${chalk.yellowBright(
-      'Notice',
-    )}: To unset the variable without confirmation, pass the -f or --force flag.`
+    const { confirmMessage, noticeMessage, warningMessage } = generateUnsetMessage(existingVar)
 
     const expectedSuccessMessage = `Unset environment variable ${chalk.yellow(`${existingVar}`)} in the ${chalk.magenta(
       'all',
@@ -109,12 +104,12 @@ describe('env:unset command', () => {
         expect(promptSpy).toHaveBeenCalledWith({
           type: 'confirm',
           name: 'wantsToSet',
-          message: expect.stringContaining('Are you sure you want to unset (delete) the environment variable?'),
+          message: expect.stringContaining(confirmMessage),
           default: false,
         })
 
-        expect(log).toHaveBeenCalledWith(expectedWarningMessage)
-        expect(log).toHaveBeenCalledWith(expectedNoticeMessage)
+        expect(log).toHaveBeenCalledWith(warningMessage)
+        expect(log).toHaveBeenCalledWith(noticeMessage)
         expect(log).toHaveBeenCalledWith(expectedSuccessMessage)
       })
     })
@@ -132,8 +127,8 @@ describe('env:unset command', () => {
 
         expect(promptSpy).not.toHaveBeenCalled()
 
-        expect(log).not.toHaveBeenCalledWith(expectedWarningMessage)
-        expect(log).not.toHaveBeenCalledWith(expectedNoticeMessage)
+        expect(log).not.toHaveBeenCalledWith(warningMessage)
+        expect(log).not.toHaveBeenCalledWith(noticeMessage)
         expect(log).toHaveBeenCalledWith(expectedSuccessMessage)
       })
     })
@@ -156,8 +151,8 @@ describe('env:unset command', () => {
 
         expect(promptSpy).toHaveBeenCalled()
 
-        expect(log).toHaveBeenCalledWith(expectedWarningMessage)
-        expect(log).toHaveBeenCalledWith(expectedNoticeMessage)
+        expect(log).toHaveBeenCalledWith(warningMessage)
+        expect(log).toHaveBeenCalledWith(noticeMessage)
         expect(log).not.toHaveBeenCalledWith(expectedSuccessMessage)
       })
     })
@@ -175,8 +170,8 @@ describe('env:unset command', () => {
 
         expect(promptSpy).not.toHaveBeenCalled()
 
-        expect(log).not.toHaveBeenCalledWith(expectedWarningMessage)
-        expect(log).not.toHaveBeenCalledWith(expectedNoticeMessage)
+        expect(log).not.toHaveBeenCalledWith(warningMessage)
+        expect(log).not.toHaveBeenCalledWith(noticeMessage)
         expect(log).not.toHaveBeenCalledWith(expectedSuccessMessage)
       })
     })
