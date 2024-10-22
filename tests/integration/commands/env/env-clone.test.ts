@@ -7,9 +7,11 @@ import { describe, expect, test, vi, beforeEach } from 'vitest'
 import BaseCommand from '../../../../src/commands/base-command.js'
 import { createEnvCommand } from '../../../../src/commands/env/index.js'
 import { log } from '../../../../src/utils/command-helpers.js'
+import { generateEnvVarsList } from '../../../../src/utils/prompts/env-clone-prompt.js'
+import { destructiveCommandMessages } from '../../../../src/utils/prompts/prompt-messages.js'
 import { getEnvironmentVariables, withMockApi } from '../../utils/mock-api.js'
 
-import routes from './api-routes.js'
+import { existingVar, routes, secondSiteInfo } from './api-routes.js'
 
 vi.mock('../../../../src/utils/command-helpers.js', async () => ({
   ...(await vi.importActual('../../../../src/utils/command-helpers.js')),
@@ -18,18 +20,16 @@ vi.mock('../../../../src/utils/command-helpers.js', async () => ({
 
 describe('env:clone command', () => {
   describe('user is prompted to confirm when setting an env var that already exists', () => {
-    const sharedEnvVars = 'EXISTING_VAR'
-    const siteIdTwo = 'site_id_2'
-    const warningMessage = `${chalk.redBright(
-      'Warning',
-    )}: The following environment variables are already set on the site with ID ${chalk.bgBlueBright(
-      siteIdTwo,
-    )}. They will be overwritten!`
-    const expectedNoticeMessage = `${chalk.yellowBright('Notice')}: The following variables will be overwritten:`
+    const sharedEnvVars = [existingVar, existingVar]
+    const siteIdTwo = secondSiteInfo.id
 
-    const expectedSkipMessage = `${chalk.yellowBright(
-      'Notice',
-    )}: To overwrite the existing variables without confirmation prompts, pass the --force flag.`
+    const { overwriteNoticeMessage } = destructiveCommandMessages
+    const { generateWarningMessage, noticeEnvVarsMessage, overwriteConfirmationMessage } =
+      destructiveCommandMessages.envClone
+
+    const envVarsList = generateEnvVarsList(sharedEnvVars)
+    const warningMessage = generateWarningMessage(siteIdTwo)
+
     const expectedSuccessMessage = `Successfully cloned environment variables from ${chalk.green(
       'site-name',
     )} to ${chalk.green('site-name-2')}`
@@ -47,27 +47,21 @@ describe('env:clone command', () => {
 
         const promptSpy = vi.spyOn(inquirer, 'prompt').mockResolvedValue({ wantsToSet: true })
 
-        await program.parseAsync(['', '', 'env:clone', '-t', 'site_id_2'])
+        await program.parseAsync(['', '', 'env:clone', '-t', siteIdTwo])
 
         expect(promptSpy).toHaveBeenCalledWith({
           type: 'confirm',
           name: 'wantsToSet',
-          message: expect.stringContaining('Do you want to proceed with overwriting these variables?'),
+          message: expect.stringContaining(overwriteConfirmationMessage),
           default: false,
         })
 
-        expect(log).toHaveBeenCalledWith(
-          `${chalk.redBright(
-            'Warning',
-          )}: The following environment variables are already set on the site with ID ${chalk.bgBlueBright(
-            'site_id_2',
-          )}. They will be overwritten!`,
-        )
-
         expect(log).toHaveBeenCalledWith(warningMessage)
-        expect(log).toHaveBeenCalledWith(expectedNoticeMessage)
-        expect(log).toHaveBeenCalledWith(sharedEnvVars)
-        expect(log).toHaveBeenCalledWith(expectedSkipMessage)
+        expect(log).toHaveBeenCalledWith(noticeEnvVarsMessage)
+        envVarsList.forEach((envVar) => {
+          expect(log).toHaveBeenCalledWith(envVar)
+        })
+        expect(log).toHaveBeenCalledWith(overwriteNoticeMessage)
         expect(log).toHaveBeenCalledWith(expectedSuccessMessage)
       })
     })
@@ -81,14 +75,16 @@ describe('env:clone command', () => {
 
         const promptSpy = vi.spyOn(inquirer, 'prompt')
 
-        await program.parseAsync(['', '', 'env:clone', '--force', '-t', 'site_id_2'])
+        await program.parseAsync(['', '', 'env:clone', '--force', '-t', siteIdTwo])
 
         expect(promptSpy).not.toHaveBeenCalled()
 
         expect(log).not.toHaveBeenCalledWith(warningMessage)
-        expect(log).not.toHaveBeenCalledWith(expectedNoticeMessage)
-        expect(log).not.toHaveBeenCalledWith(sharedEnvVars)
-        expect(log).not.toHaveBeenCalledWith(expectedSkipMessage)
+        envVarsList.forEach((envVar) => {
+          expect(log).not.toHaveBeenCalledWith(envVar)
+        })
+        expect(log).not.toHaveBeenCalledWith(noticeEnvVarsMessage)
+        expect(log).not.toHaveBeenCalledWith(overwriteNoticeMessage)
         expect(log).toHaveBeenCalledWith(expectedSuccessMessage)
       })
     })
@@ -103,7 +99,7 @@ describe('env:clone command', () => {
         const promptSpy = vi.spyOn(inquirer, 'prompt').mockResolvedValue({ wantsToSet: false })
 
         try {
-          await program.parseAsync(['', '', 'env:clone', '-t', 'site_id_2'])
+          await program.parseAsync(['', '', 'env:clone', '-t', siteIdTwo])
         } catch (error) {
           // We expect the process to exit, so this is fine
           expect(error.message).toContain('process.exit unexpectedly called')
@@ -112,9 +108,11 @@ describe('env:clone command', () => {
         expect(promptSpy).toHaveBeenCalled()
 
         expect(log).toHaveBeenCalledWith(warningMessage)
-        expect(log).toHaveBeenCalledWith(expectedNoticeMessage)
-        expect(log).toHaveBeenCalledWith(sharedEnvVars)
-        expect(log).toHaveBeenCalledWith(expectedSkipMessage)
+        expect(log).toHaveBeenCalledWith(noticeEnvVarsMessage)
+        envVarsList.forEach((envVar) => {
+          expect(log).toHaveBeenCalledWith(envVar)
+        })
+        expect(log).toHaveBeenCalledWith(overwriteNoticeMessage)
         expect(log).not.toHaveBeenCalledWith(expectedSuccessMessage)
       })
     })
@@ -136,9 +134,11 @@ describe('env:clone command', () => {
         expect(promptSpy).not.toHaveBeenCalled()
 
         expect(log).not.toHaveBeenCalledWith(warningMessage)
-        expect(log).not.toHaveBeenCalledWith(expectedNoticeMessage)
-        expect(log).not.toHaveBeenCalledWith(sharedEnvVars)
-        expect(log).not.toHaveBeenCalledWith(expectedSkipMessage)
+        expect(log).not.toHaveBeenCalledWith(noticeEnvVarsMessage)
+        envVarsList.forEach((envVar) => {
+          expect(log).not.toHaveBeenCalledWith(envVar)
+        })
+        expect(log).not.toHaveBeenCalledWith(overwriteNoticeMessage)
         expect(log).toHaveBeenCalledWith(expectedSuccessMessageSite3)
       })
     })

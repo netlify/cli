@@ -68,6 +68,12 @@ const unsetInEnvelope = async ({ api, context, force, key, siteInfo }) => {
 }
 
 export const envUnset = async (key: string, options: OptionValues, command: BaseCommand) => {
+
+  // Prevents prompts from blocking scripted commands
+  if (command.scriptedCommand){
+    options.force = true
+  }
+
   const { context, force } = options
   const { api, cachedConfig, site } = command.netlify
   const siteId = site.id

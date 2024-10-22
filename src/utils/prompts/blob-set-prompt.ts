@@ -1,18 +1,19 @@
 import { chalk, log } from '../command-helpers.js'
 
 import { confirmPrompt } from './confirm-prompt.js'
+import { destructiveCommandMessages } from './prompt-messages.js'
 
-const generateBlobWarningMessage = (key: string, storeName: string): void => {
+export const promptBlobSetOverwrite = async (key: string, storeName: string): Promise<void> => {
+  const { overwriteNoticeMessage } = destructiveCommandMessages
+  const { generateWarningMessage, overwriteConfirmationMessage } = destructiveCommandMessages.blobSet
+
+  const warningMessage = generateWarningMessage(storeName)
+
   log()
-  log(`${chalk.redBright('Warning')}: The following blob key already exists in store ${chalk.cyan(storeName)}:`)
+  log(warningMessage)
   log()
   log(`${chalk.bold(key)}`)
   log()
-  log(`This operation will ${chalk.redBright('overwrite')} the existing value.`)
-  log(`${chalk.yellowBright('Notice')}: To overwrite without this warning, you can use the --force flag.`)
-}
-
-export const blobSetPrompts = async (key: string, storeName: string): Promise<void> => {
-  generateBlobWarningMessage(key, storeName)
-  await confirmPrompt('Do you want to proceed with overwriting this blob key existing value?')
+  log(overwriteNoticeMessage)
+  await confirmPrompt(overwriteConfirmationMessage)
 }

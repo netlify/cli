@@ -168,6 +168,12 @@ export default class BaseCommand extends Command {
   workingDir = process.cwd()
 
   /**
+   * Determines if the command is scripted or not.
+   * If the command is scripted (SHLVL is greater than 1 or CI/CONTINUOUS_INTEGRATION is true) then some commands
+   * might behave differently.
+   */
+  scriptedCommand = Boolean(process.env.SHLVL !== '1' || process.env.CI || process.env.CONTINUOUS_INTEGRATION)
+  /**
    * The workspace root if inside a mono repository.
    * Must not be the repository root!
    */

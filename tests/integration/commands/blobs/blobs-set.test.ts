@@ -8,6 +8,7 @@ import { describe, expect, test, vi, beforeEach } from 'vitest'
 import BaseCommand from '../../../../src/commands/base-command.js'
 import { createBlobsCommand } from '../../../../src/commands/blobs/blobs.js'
 import { log } from '../../../../src/utils/command-helpers.js'
+import { destructiveCommandMessages } from '../../../../src/utils/prompts/prompt-messages.js'
 import { Route } from '../../utils/mock-api-vitest.js'
 import { getEnvironmentVariables, withMockApi } from '../../utils/mock-api.js'
 
@@ -46,15 +47,12 @@ describe('blob:set command', () => {
   const value = 'my-value'
   const newValue = 'my-new-value'
 
-  const warningMessage = `${chalk.redBright('Warning')}: The following blob key already exists in store ${chalk.cyan(
-    storeName,
-  )}:`
+  const { overwriteNoticeMessage } = destructiveCommandMessages
+  const { generateWarningMessage, overwriteConfirmationMessage } = destructiveCommandMessages.blobSet
+
+  const warningMessage = generateWarningMessage(storeName)
 
   const boldKey = chalk.bold(key)
-  const overWriteMe = `This operation will ${chalk.redBright('overwrite')} the existing value.`
-  const noticeMessage = `${chalk.yellowBright(
-    'Notice',
-  )}: To overwrite without this warning, you can use the --force flag.`
 
   const successMessage = `${chalk.greenBright('Success')}: Blob ${chalk.yellow(key)} set in store ${chalk.yellow(
     storeName,
@@ -87,8 +85,7 @@ describe('blob:set command', () => {
       expect(log).toHaveBeenCalledWith(successMessage)
       expect(log).not.toHaveBeenCalledWith(warningMessage)
       expect(log).not.toHaveBeenCalledWith(boldKey)
-      expect(log).not.toHaveBeenCalledWith(overWriteMe)
-      expect(log).not.toHaveBeenCalledWith(noticeMessage)
+      expect(log).not.toHaveBeenCalledWith(overwriteNoticeMessage)
     })
   })
 
@@ -115,15 +112,14 @@ describe('blob:set command', () => {
       expect(promptSpy).toHaveBeenCalledWith({
         type: 'confirm',
         name: 'wantsToSet',
-        message: expect.stringContaining('Do you want to proceed with overwriting this blob key existing value?'),
+        message: expect.stringContaining(overwriteConfirmationMessage),
         default: false,
       })
 
       expect(log).toHaveBeenCalledWith(successMessage)
       expect(log).toHaveBeenCalledWith(warningMessage)
       expect(log).toHaveBeenCalledWith(boldKey)
-      expect(log).toHaveBeenCalledWith(overWriteMe)
-      expect(log).toHaveBeenCalledWith(noticeMessage)
+      expect(log).toHaveBeenCalledWith(overwriteNoticeMessage)
     })
   })
 
@@ -155,14 +151,13 @@ describe('blob:set command', () => {
       expect(promptSpy).toHaveBeenCalledWith({
         type: 'confirm',
         name: 'wantsToSet',
-        message: expect.stringContaining('Do you want to proceed with overwriting this blob key existing value?'),
+        message: expect.stringContaining(overwriteConfirmationMessage),
         default: false,
       })
 
       expect(log).toHaveBeenCalledWith(warningMessage)
       expect(log).toHaveBeenCalledWith(boldKey)
-      expect(log).toHaveBeenCalledWith(overWriteMe)
-      expect(log).toHaveBeenCalledWith(noticeMessage)
+      expect(log).toHaveBeenCalledWith(overwriteNoticeMessage)
       expect(log).not.toHaveBeenCalledWith(successMessage)
     })
   })
@@ -191,8 +186,7 @@ describe('blob:set command', () => {
 
       expect(log).not.toHaveBeenCalledWith(warningMessage)
       expect(log).not.toHaveBeenCalledWith(boldKey)
-      expect(log).not.toHaveBeenCalledWith(overWriteMe)
-      expect(log).not.toHaveBeenCalledWith(noticeMessage)
+      expect(log).not.toHaveBeenCalledWith(overwriteNoticeMessage)
       expect(log).toHaveBeenCalledWith(successMessage)
     })
   })
@@ -221,7 +215,7 @@ describe('blob:set command', () => {
       expect(promptSpy).not.toHaveBeenCalled()
 
       expect(log).not.toHaveBeenCalledWith(warningMessage)
-      expect(log).not.toHaveBeenCalledWith(noticeMessage)
+      expect(log).not.toHaveBeenCalledWith(overwriteNoticeMessage)
       expect(log).not.toHaveBeenCalledWith(successMessage)
     })
   })

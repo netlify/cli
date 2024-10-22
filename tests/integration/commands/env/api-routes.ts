@@ -1,3 +1,4 @@
+import { EnvVar } from '../../../../src/utils/types'
 import { HTTPMethod } from '../../utils/mock-api-vitest'
 
 const siteInfo = {
@@ -9,7 +10,7 @@ const siteInfo = {
   name: 'site-name',
 }
 
-const secondSiteInfo = {
+export const secondSiteInfo = {
   account_slug: 'test-account-2',
   build_settings: {
     env: {},
@@ -27,7 +28,7 @@ const thirdSiteInfo = {
   name: 'site-name-3',
 }
 
-const existingVar = {
+export const existingVar: EnvVar = {
   key: 'EXISTING_VAR',
   scopes: ['builds', 'functions'],
   values: [
@@ -42,6 +43,8 @@ const existingVar = {
       value: 'envelope-dev-value',
     },
   ],
+  updated_at: '2020-01-01T00:00:00Z',
+  is_secret: false,
 }
 
 const otherVar = {
@@ -59,7 +62,7 @@ const otherVar = {
 const response = [existingVar, otherVar]
 const secondSiteResponse = [existingVar]
 
-const routes = [
+export const routes = [
   { path: 'sites/site_id', response: siteInfo },
   { path: 'sites/site_id_2', response: secondSiteInfo },
   { path: 'sites/site_id_3', response: thirdSiteInfo },

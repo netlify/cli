@@ -5,12 +5,12 @@ import { getStore } from '@netlify/blobs'
 import { OptionValues } from 'commander'
 
 import { chalk, error as printError, isNodeError, log } from '../../utils/command-helpers.js'
-import { blobSetPrompts } from '../../utils/prompts/blob-set-prompt.js'
+import { promptBlobSetOverwrite } from '../../utils/prompts/blob-set-prompt.js'
 import BaseCommand from '../base-command.js'
 
 interface Options extends OptionValues {
   input?: string
-  force?: string
+  force?: string | boolean
 }
 
 export const blobsSet = async (
@@ -20,6 +20,12 @@ export const blobsSet = async (
   options: Options,
   command: BaseCommand,
 ) => {
+
+  // Prevents prompts from blocking scripted commands
+  if (command.scriptedCommand){
+    options.force = true
+  }
+
   const { api, siteInfo } = command.netlify
   const { force, input } = options
   const store = getStore({
@@ -61,7 +67,7 @@ export const blobsSet = async (
     const existingValue = await store.get(key)
 
     if (existingValue) {
-      await blobSetPrompts(key, storeName)
+      await promptBlobSetOverwrite(key, storeName)
     }
   }
 

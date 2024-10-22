@@ -1,7 +1,7 @@
 import { OptionValues } from 'commander'
 
 import { chalk, log, error as logError } from '../../utils/command-helpers.js'
-import { envClonePrompts } from '../../utils/prompts/env-clone-prompt.js'
+import { promptEnvCloneOverwrite } from '../../utils/prompts/env-clone-prompt.js'
 import BaseCommand from '../base-command.js'
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'api' implicitly has an 'any' type.
@@ -39,7 +39,7 @@ const cloneEnvVars = async ({ api, force, siteFrom, siteTo }): Promise<boolean> 
   const envVarsToDelete = envelopeTo.filter(({ key }) => keysFrom.includes(key))
 
   if (envVarsToDelete.length !== 0 && Boolean(force) === false) {
-    await envClonePrompts(siteTo.id, envVarsToDelete)
+    await promptEnvCloneOverwrite(siteTo.id, envVarsToDelete)
   }
   // delete marked env vars in parallel
   // @ts-expect-error TS(7031) FIXME: Binding element 'key' implicitly has an 'any' type... Remove this comment to see the full error message
@@ -56,6 +56,12 @@ const cloneEnvVars = async ({ api, force, siteFrom, siteTo }): Promise<boolean> 
 }
 
 export const envClone = async (options: OptionValues, command: BaseCommand) => {
+
+  // Prevents prompts from blocking scripted commands
+  if (command.scriptedCommand){
+    options.force = true
+  }
+
   const { api, site } = command.netlify
   const { force } = options
 

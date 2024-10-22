@@ -1,49 +1,34 @@
-import { chalk, log } from '../command-helpers.js'
+import { log } from '../command-helpers.js'
+import { EnvVar } from '../types.js'
 
 import { confirmPrompt } from './confirm-prompt.js'
+import { destructiveCommandMessages } from './prompt-messages.js'
 
-type User = {
-  id: string
-  email: string
-  avatar_url: string
-  full_name: string
-}
+export const generateEnvVarsList = (envVarsToDelete: EnvVar[]) => envVarsToDelete.map((envVar) => envVar.key)
 
-type EnvVar = {
-  key: string
-  scopes: string[]
-  values: Record<string, any>[]
-  updated_at: string
-  updated_by: User
-  is_secret: boolean
-}
+/**
+ * Prompts the user to confirm overwriting environment variables on a site.
+ *
+ * @param {string} siteId - The ID of the site.
+ * @param {EnvVar[]} existingEnvVars - The environment variables that already exist on the site.
+ * @returns {Promise<void>} A promise that resolves when the user has confirmed the overwriting of the variables.
+ */
+export async function promptEnvCloneOverwrite(siteId: string, existingEnvVars: EnvVar[]): Promise<void> {
+  const { overwriteNoticeMessage } = destructiveCommandMessages
+  const { generateWarningMessage, noticeEnvVarsMessage, overwriteConfirmationMessage } =
+    destructiveCommandMessages.envClone
 
-const generateSetMessage = (envVarsToDelete: EnvVar[], siteId: string): void => {
-  log()
-  log(
-    `${chalk.redBright(
-      'Warning',
-    )}: The following environment variables are already set on the site with ID ${chalk.bgBlueBright(
-      siteId,
-    )}. They will be overwritten!`,
-  )
-  log()
-
-  log(`${chalk.yellowBright('Notice')}: The following variables will be overwritten:`)
-  log()
-  envVarsToDelete.forEach((envVar) => {
-    log(envVar.key)
-  })
+  const existingEnvVarKeys = generateEnvVarsList(existingEnvVars)
+  const warningMessage = generateWarningMessage(siteId)
 
   log()
-  log(
-    `${chalk.yellowBright(
-      'Notice',
-    )}: To overwrite the existing variables without confirmation prompts, pass the --force flag.`,
-  )
-}
+  log(warningMessage)
+  log()
+  log(noticeEnvVarsMessage)
+  log()
+  existingEnvVarKeys.forEach(log)
+  log()
+  log(overwriteNoticeMessage)
 
-export const envClonePrompts = async (siteId: string, envVarsToDelete: EnvVar[]): Promise<void> => {
-  generateSetMessage(envVarsToDelete, siteId)
-  await confirmPrompt('Do you want to proceed with overwriting these variables?')
+  await confirmPrompt(overwriteConfirmationMessage)
 }
