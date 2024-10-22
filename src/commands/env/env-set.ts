@@ -32,8 +32,6 @@ const setInEnvelope = async ({ api, context, force, key, scope, secret, siteInfo
   }
 
   // fetch envelope env vars
-  // const userData = await api.getAccount({accountId})
-  // log(userData)
   const envelopeVariables = await api.getEnvVars({ accountId, siteId })
   const contexts = context || ['all']
   let scopes = scope || AVAILABLE_SCOPES
