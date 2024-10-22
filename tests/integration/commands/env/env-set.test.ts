@@ -2,14 +2,14 @@ import process from 'process'
 
 import chalk from 'chalk'
 import inquirer from 'inquirer'
-import { describe, expect, test, vi, beforeEach } from 'vitest'
+import { describe, expect, test, vi, beforeEach, afterEach } from 'vitest'
 
 import BaseCommand from '../../../../src/commands/base-command.js'
 import { createEnvCommand } from '../../../../src/commands/env/env.js'
 import { log } from '../../../../src/utils/command-helpers.js'
 import { destructiveCommandMessages } from '../../../../src/utils/prompts/prompt-messages.js'
 import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
-import { getEnvironmentVariables, withMockApi } from '../../utils/mock-api.js'
+import { getEnvironmentVariables, withMockApi, setTTYMode, setCI } from '../../utils/mock-api.js'
 
 import { routes } from './api-routes.js'
 
@@ -19,6 +19,18 @@ vi.mock('../../../../src/utils/command-helpers.js', async () => ({
 }))
 
 describe('env:set command', () => {
+  // already exists as value in withMockApi
+  const existingVar = 'EXISTING_VAR'
+  const newEnvValue = 'value'
+  const { overwriteNoticeMessage } = destructiveCommandMessages
+  const { generateWarningMessage, overwriteConfirmationMessage } = destructiveCommandMessages.envSet
+
+  const warningMessage = generateWarningMessage(existingVar)
+
+  const successMessage = `Set environment variable ${chalk.yellow(
+    `${existingVar}=${newEnvValue}`,
+  )} in the ${chalk.magenta('all')} context`
+
   setupFixtureTests('empty-project', { mockApi: { routes } }, () => {
     test<FixtureTestContext>('should create and return new var in the dev context', async ({ fixture, mockApi }) => {
       const cliResponse = await fixture.callCli(
@@ -269,21 +281,9 @@ describe('env:set command', () => {
     })
   })
 
-  describe.only('user is prompted to confirmOverwrite when setting an env var that already exists', () => {
-    // already exists as value in withMockApi
-    const existingVar = 'EXISTING_VAR'
-    const newEnvValue = 'value'
-    const { overwriteNoticeMessage } = destructiveCommandMessages
-    const { generateWarningMessage, overwriteConfirmationMessage } = destructiveCommandMessages.envSet
-
-    const warningMessage = generateWarningMessage(existingVar)
-
-    const successMessage = `Set environment variable ${chalk.yellow(
-      `${existingVar}=${newEnvValue}`,
-    )} in the ${chalk.magenta('all')} context`
-
+  describe('user is prompted to confirmOverwrite when setting an env var that already exists', () => {
     beforeEach(() => {
-      process.stdin.isTTY = true
+      setTTYMode(true)
       vi.resetAllMocks()
     })
 
@@ -354,7 +354,7 @@ describe('env:set command', () => {
       })
     })
 
-    test('should exit user reponds is no to confirmatnion prompt', async () => {
+    test('should exit user responds is no to confirmatnion prompt', async () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
@@ -379,24 +379,17 @@ describe('env:set command', () => {
     })
   })
 
-  describe('prompts should not show is in interactie shell or in a ci/cd enviroment', () => {
-    const existingVar = 'EXISTING_VAR'
-    const newEnvValue = 'value'
-
-    const { generateWarningMessage } = destructiveCommandMessages.envSet
-    const { overwriteNoticeMessage } = destructiveCommandMessages
-    const warningMessage = generateWarningMessage('EXISTING_VAR')
-
-    const successMessage = `Set environment variable ${chalk.yellow(
-      `${existingVar}=${newEnvValue}`,
-    )} in the ${chalk.magenta('all')} context`
-
+  describe('prompts should not show in an non-interactive shell or in a ci/cd enviroment', () => {
     beforeEach(() => {
       vi.resetAllMocks()
     })
+    afterEach(() => {
+      setTTYMode(true)
+      setCI('')
+    })
 
-    test('should not show is in interactie shell or in a ci/cd enviroment', async () => {
-      process.stdin.isTTY = false
+    test('should not show prompt in an non-interactive shell', async () => {
+      setTTYMode(false)
 
       await withMockApi(routes, async ({ apiUrl }) => {
         Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
@@ -417,7 +410,7 @@ describe('env:set command', () => {
     })
 
     test('should not show prompt in a ci/cd enviroment', async () => {
-      process.env.CI = true
+      setCI(true)
 
       await withMockApi(routes, async ({ apiUrl }) => {
         Object.assign(process.env, getEnvironmentVariables({ apiUrl }))

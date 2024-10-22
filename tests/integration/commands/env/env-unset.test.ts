@@ -2,16 +2,16 @@ import process from 'process'
 
 import chalk from 'chalk'
 import inquirer from 'inquirer'
-import { describe, expect, test, vi, beforeEach } from 'vitest'
+import { describe, expect, test, vi, beforeEach, afterEach } from 'vitest'
 
 import BaseCommand from '../../../../src/commands/base-command.js'
 import { createEnvCommand } from '../../../../src/commands/env/env.js'
 import { log } from '../../../../src/utils/command-helpers.js'
 import { destructiveCommandMessages } from '../../../../src/utils/prompts/prompt-messages.js'
 import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
-import { getEnvironmentVariables, withMockApi } from '../../utils/mock-api.js'
+import { getEnvironmentVariables, withMockApi, setTTYMode, setCI } from '../../utils/mock-api.js'
 
-import routes from './api-routes.js'
+import { routes } from './api-routes.js'
 
 vi.mock('../../../../src/utils/command-helpers.js', async () => ({
   ...(await vi.importActual('../../../../src/utils/command-helpers.js')),
@@ -19,6 +19,16 @@ vi.mock('../../../../src/utils/command-helpers.js', async () => ({
 }))
 
 describe('env:unset command', () => {
+  const { overwriteNoticeMessage } = destructiveCommandMessages
+  const { generateWarningMessage, overwriteConfirmationMessage } = destructiveCommandMessages.envUnset
+
+  // already exists as value in withMockApi
+  const existingVar = 'EXISTING_VAR'
+  const warningMessage = generateWarningMessage(existingVar)
+  const expectedSuccessMessage = `Unset environment variable ${chalk.yellow(`${existingVar}`)} in the ${chalk.magenta(
+    'all',
+  )} context`
+
   setupFixtureTests('empty-project', { mockApi: { routes } }, () => {
     test<FixtureTestContext>('should remove existing variable', async ({ fixture, mockApi }) => {
       const cliResponse = await fixture.callCli(['env:unset', '--json', 'EXISTING_VAR', '--force'], {
@@ -77,19 +87,8 @@ describe('env:unset command', () => {
   })
 
   describe('user is prompted to confirm when unsetting an env var that already exists', () => {
-    // already exists as value in withMockApi
-    const existingVar = 'EXISTING_VAR'
-
-    const { overwriteNoticeMessage } = destructiveCommandMessages
-    const { generateWarningMessage, overwriteConfirmationMessage } = destructiveCommandMessages.envUnset
-
-    const warningMessage = generateWarningMessage(existingVar)
-
-    const expectedSuccessMessage = `Unset environment variable ${chalk.yellow(`${existingVar}`)} in the ${chalk.magenta(
-      'all',
-    )} context`
-
     beforeEach(() => {
+      setTTYMode(true)
       vi.resetAllMocks()
     })
 
@@ -176,6 +175,59 @@ describe('env:unset command', () => {
         expect(log).not.toHaveBeenCalledWith(warningMessage)
         expect(log).not.toHaveBeenCalledWith(overwriteNoticeMessage)
         expect(log).not.toHaveBeenCalledWith(expectedSuccessMessage)
+      })
+    })
+  })
+
+  describe('prompts should not show in an non-interactive shell or in a ci/cd enviroment', () => {
+    beforeEach(() => {
+      vi.resetAllMocks()
+    })
+
+    afterEach(() => {
+      setTTYMode(true)
+      setCI('')
+    })
+
+    test('prompts should not show in an non-interactive shell', async () => {
+      setTTYMode(false)
+
+      await withMockApi(routes, async ({ apiUrl }) => {
+        Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
+
+        const program = new BaseCommand('netlify')
+        createEnvCommand(program)
+
+        const promptSpy = vi.spyOn(inquirer, 'prompt')
+
+        await program.parseAsync(['', '', 'env:unset', existingVar])
+
+        expect(promptSpy).not.toHaveBeenCalled()
+
+        expect(log).not.toHaveBeenCalledWith(warningMessage)
+        expect(log).not.toHaveBeenCalledWith(overwriteNoticeMessage)
+        expect(log).toHaveBeenCalledWith(expectedSuccessMessage)
+      })
+    })
+
+    test('prompts should not show in a ci/cd enviroment', async () => {
+      setCI(true)
+
+      await withMockApi(routes, async ({ apiUrl }) => {
+        Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
+
+        const program = new BaseCommand('netlify')
+        createEnvCommand(program)
+
+        const promptSpy = vi.spyOn(inquirer, 'prompt')
+
+        await program.parseAsync(['', '', 'env:unset', existingVar])
+
+        expect(promptSpy).not.toHaveBeenCalled()
+
+        expect(log).not.toHaveBeenCalledWith(warningMessage)
+        expect(log).not.toHaveBeenCalledWith(overwriteNoticeMessage)
+        expect(log).toHaveBeenCalledWith(expectedSuccessMessage)
       })
     })
   })

@@ -1,3 +1,4 @@
+import process from 'process'
 import { isDeepStrictEqual, promisify } from 'util'
 
 import express from 'express'
@@ -86,6 +87,24 @@ export const getEnvironmentVariables = ({ apiUrl }) => ({
   NETLIFY_SITE_ID: 'site_id',
   NETLIFY_API_URL: apiUrl,
 })
+
+/**
+ * Set the `isTTY` property of `process.stdin` to the given boolean value.
+ * This function is used to establish flexible testing environments.
+ * Falsey value is for noninteractive shell (-force flags overide user prompts)
+ * Truthy value is for interactive shell
+ */
+export const setTTYMode = (bool) => {
+  process.stdin.isTTY = bool
+}
+
+/**
+ * Simulates a Continuous Integration environment by toggling the `CI`
+ * environment variable. Truthy value is
+ */
+export const setCI = (value) => {
+  process.env.CI = value
+}
 
 /**
  *
