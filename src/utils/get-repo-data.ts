@@ -17,8 +17,8 @@ import { log } from './command-helpers.js'
  * @param {string} config.workingDir
  * @returns
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'remoteName' implicitly has an 'an... Remove this comment to see the full error message
-const getRepoData = async function ({ remoteName, workingDir }) {
+
+const getRepoData = async function ({ remoteName, workingDir }: { remoteName?: string; workingDir: string }) {
   try {
     const [gitConfig, gitDirectory] = await Promise.all([
       util.promisify(gitconfiglocal)(workingDir),
