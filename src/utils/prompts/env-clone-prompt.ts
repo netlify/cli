@@ -26,7 +26,9 @@ export async function promptEnvCloneOverwrite(siteId: string, existingEnvVars: E
   log()
   log(noticeEnvVarsMessage)
   log()
-  existingEnvVarKeys.forEach(log)
+  existingEnvVarKeys.forEach((envVar) => {
+    log(envVar)
+  })
   log()
   log(overwriteNoticeMessage)
 

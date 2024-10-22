@@ -4,14 +4,14 @@ import { log, exit } from '../command-helpers.js'
 
 export const confirmPrompt = async (message: string): Promise<void> => {
   try {
-    const { wantsToSet } = await inquirer.prompt({
+    const { confirm } = await inquirer.prompt({
       type: 'confirm',
-      name: 'wantsToSet',
+      name: 'confirm',
       message,
       default: false,
     })
     log()
-    if (!wantsToSet) {
+    if (!confirm) {
       exit()
     }
   } catch (error) {

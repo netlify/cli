@@ -20,9 +20,8 @@ export const blobsSet = async (
   options: Options,
   command: BaseCommand,
 ) => {
-
   // Prevents prompts from blocking scripted commands
-  if (command.scriptedCommand){
+  if (command.scriptedCommand) {
     options.force = true
   }
 

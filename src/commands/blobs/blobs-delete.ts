@@ -1,12 +1,17 @@
 import { getStore } from '@netlify/blobs'
 
 import { chalk, error as printError, log } from '../../utils/command-helpers.js'
-import { blobDeletePrompts } from '../../utils/prompts/blob-delete-prompts.js'
+import { promptBlobDelete } from '../../utils/prompts/blob-delete-prompts.js'
 
 /**
  * The blobs:delete command
  */
 export const blobsDelete = async (storeName: string, key: string, _options: Record<string, unknown>, command: any) => {
+  // Prevents prompts from blocking scripted commands
+  if (command.scriptedCommand) {
+    _options.force = true
+  }
+
   const { api, siteInfo } = command.netlify
   const { force } = _options
 
@@ -18,7 +23,7 @@ export const blobsDelete = async (storeName: string, key: string, _options: Reco
   })
 
   if (force === undefined) {
-    await blobDeletePrompts(key, storeName)
+    await promptBlobDelete(key, storeName)
   }
 
   try {

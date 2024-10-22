@@ -116,9 +116,8 @@ const setInEnvelope = async ({ api, context, force, key, scope, secret, siteInfo
 }
 
 export const envSet = async (key: string, value: string, options: OptionValues, command: BaseCommand) => {
-  
   // Prevents prompts from blocking scripted commands
-  if (command.scriptedCommand){
+  if (command.scriptedCommand) {
     options.force = true
   }
 

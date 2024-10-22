@@ -2,7 +2,7 @@ import { OptionValues } from 'commander'
 
 import { chalk, log, logJson, exit } from '../../utils/command-helpers.js'
 import { AVAILABLE_CONTEXTS, translateFromEnvelopeToMongo } from '../../utils/env/index.js'
-import { promptOverwriteEnvVariable } from '../../utils/prompts/unset-set-prompts.js'
+import { promptOverwriteEnvVariable } from '../../utils/prompts/env-unset-prompts.js'
 import BaseCommand from '../base-command.js'
 /**
  * Deletes a given key from the env of a site configured with Envelope
@@ -68,9 +68,8 @@ const unsetInEnvelope = async ({ api, context, force, key, siteInfo }) => {
 }
 
 export const envUnset = async (key: string, options: OptionValues, command: BaseCommand) => {
-
   // Prevents prompts from blocking scripted commands
-  if (command.scriptedCommand){
+  if (command.scriptedCommand) {
     options.force = true
   }
 

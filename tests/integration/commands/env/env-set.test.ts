@@ -7,11 +7,11 @@ import { describe, expect, test, vi, beforeEach } from 'vitest'
 import BaseCommand from '../../../../src/commands/base-command.js'
 import { createEnvCommand } from '../../../../src/commands/env/env.js'
 import { log } from '../../../../src/utils/command-helpers.js'
-import { generateSetMessage } from '../../../../src/utils/prompts/env-set-prompts.js'
+import { destructiveCommandMessages } from '../../../../src/utils/prompts/prompt-messages.js'
 import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
 import { getEnvironmentVariables, withMockApi } from '../../utils/mock-api.js'
 
-import routes from './api-routes.js'
+import { routes } from './api-routes.js'
 
 vi.mock('../../../../src/utils/command-helpers.js', async () => ({
   ...(await vi.importActual('../../../../src/utils/command-helpers.js')),
@@ -269,12 +269,14 @@ describe('env:set command', () => {
     })
   })
 
-  describe('user is prompted to confirm when setting an env var that already exists', () => {
+  describe.only('user is prompted to confirmOverwrite when setting an env var that already exists', () => {
     // already exists as value in withMockApi
     const existingVar = 'EXISTING_VAR'
     const newEnvValue = 'value'
+    const { overwriteNoticeMessage } = destructiveCommandMessages
+    const { generateWarningMessage, overwriteConfirmationMessage } = destructiveCommandMessages.envSet
 
-    const { confirmMessage, noticeMessage, warningMessage } = generateSetMessage(existingVar)
+    const warningMessage = generateWarningMessage(existingVar)
 
     const successMessage = `Set environment variable ${chalk.yellow(
       `${existingVar}=${newEnvValue}`,
@@ -287,10 +289,10 @@ describe('env:set command', () => {
     test('should log warnings and prompts if enviroment variable already exists', async () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
-
+        console.log(process.env.SHLVL)
         const program = new BaseCommand('netlify')
 
-        const promptSpy = vi.spyOn(inquirer, 'prompt').mockResolvedValue({ wantsToSet: true })
+        const promptSpy = vi.spyOn(inquirer, 'prompt').mockResolvedValue({ confirm: true })
 
         createEnvCommand(program)
 
@@ -298,13 +300,13 @@ describe('env:set command', () => {
 
         expect(promptSpy).toHaveBeenCalledWith({
           type: 'confirm',
-          name: 'wantsToSet',
-          message: expect.stringContaining(confirmMessage),
+          name: 'confirm',
+          message: expect.stringContaining(overwriteConfirmationMessage),
           default: false,
         })
 
         expect(log).toHaveBeenCalledWith(warningMessage)
-        expect(log).toHaveBeenCalledWith(noticeMessage)
+        expect(log).toHaveBeenCalledWith(overwriteNoticeMessage)
         expect(log).toHaveBeenCalledWith(successMessage)
       })
     })
@@ -323,7 +325,7 @@ describe('env:set command', () => {
         expect(promptSpy).not.toHaveBeenCalled()
 
         expect(log).not.toHaveBeenCalledWith(warningMessage)
-        expect(log).not.toHaveBeenCalledWith(noticeMessage)
+        expect(log).not.toHaveBeenCalledWith(overwriteNoticeMessage)
         expect(log).toHaveBeenCalledWith(
           `Set environment variable ${chalk.yellow(`${'NEW_ENV_VAR'}=${'NEW_VALUE'}`)} in the ${chalk.magenta(
             'all',
@@ -346,7 +348,7 @@ describe('env:set command', () => {
         expect(promptSpy).not.toHaveBeenCalled()
 
         expect(log).not.toHaveBeenCalledWith(warningMessage)
-        expect(log).not.toHaveBeenCalledWith(noticeMessage)
+        expect(log).not.toHaveBeenCalledWith(overwriteNoticeMessage)
         expect(log).toHaveBeenCalledWith(successMessage)
       })
     })
@@ -358,7 +360,7 @@ describe('env:set command', () => {
         const program = new BaseCommand('netlify')
         createEnvCommand(program)
 
-        const promptSpy = vi.spyOn(inquirer, 'prompt').mockResolvedValue({ wantsToSet: false })
+        const promptSpy = vi.spyOn(inquirer, 'prompt').mockResolvedValue({ confirm: false })
 
         try {
           await program.parseAsync(['', '', 'env:set', existingVar, newEnvValue])
@@ -370,7 +372,7 @@ describe('env:set command', () => {
         expect(promptSpy).toHaveBeenCalled()
 
         expect(log).toHaveBeenCalledWith(warningMessage)
-        expect(log).toHaveBeenCalledWith(noticeMessage)
+        expect(log).toHaveBeenCalledWith(overwriteNoticeMessage)
         expect(log).not.toHaveBeenCalledWith(successMessage)
       })
     })

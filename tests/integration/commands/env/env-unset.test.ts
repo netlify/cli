@@ -100,13 +100,13 @@ describe('env:unset command', () => {
         const program = new BaseCommand('netlify')
         createEnvCommand(program)
 
-        const promptSpy = vi.spyOn(inquirer, 'prompt').mockResolvedValue({ wantsToSet: true })
+        const promptSpy = vi.spyOn(inquirer, 'prompt').mockResolvedValue({ confirm: true })
 
         await program.parseAsync(['', '', 'env:unset', existingVar])
 
         expect(promptSpy).toHaveBeenCalledWith({
           type: 'confirm',
-          name: 'wantsToSet',
+          name: 'confirm',
           message: expect.stringContaining(overwriteConfirmationMessage),
           default: false,
         })
@@ -143,7 +143,7 @@ describe('env:unset command', () => {
         const program = new BaseCommand('netlify')
         createEnvCommand(program)
 
-        const promptSpy = vi.spyOn(inquirer, 'prompt').mockResolvedValue({ wantsToSet: false })
+        const promptSpy = vi.spyOn(inquirer, 'prompt').mockResolvedValue({ confirm: false })
 
         try {
           await program.parseAsync(['', '', 'env:unset', existingVar])

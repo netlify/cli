@@ -105,13 +105,13 @@ describe('blob:set command', () => {
       const program = new BaseCommand('netlify')
       createBlobsCommand(program)
 
-      const promptSpy = vi.spyOn(inquirer, 'prompt').mockResolvedValue({ wantsToSet: true })
+      const promptSpy = vi.spyOn(inquirer, 'prompt').mockResolvedValue({ confirm: true })
 
       await program.parseAsync(['', '', 'blob:set', storeName, key, newValue])
 
       expect(promptSpy).toHaveBeenCalledWith({
         type: 'confirm',
-        name: 'wantsToSet',
+        name: 'confirm',
         message: expect.stringContaining(overwriteConfirmationMessage),
         default: false,
       })
@@ -139,7 +139,7 @@ describe('blob:set command', () => {
       const program = new BaseCommand('netlify')
       createBlobsCommand(program)
 
-      const promptSpy = vi.spyOn(inquirer, 'prompt').mockResolvedValue({ wantsToSet: false })
+      const promptSpy = vi.spyOn(inquirer, 'prompt').mockResolvedValue({ confirm: false })
 
       try {
         await program.parseAsync(['', '', 'blob:set', storeName, key, newValue])
@@ -150,7 +150,7 @@ describe('blob:set command', () => {
 
       expect(promptSpy).toHaveBeenCalledWith({
         type: 'confirm',
-        name: 'wantsToSet',
+        name: 'confirm',
         message: expect.stringContaining(overwriteConfirmationMessage),
         default: false,
       })

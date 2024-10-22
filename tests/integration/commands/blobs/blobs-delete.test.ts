@@ -8,6 +8,7 @@ import { describe, expect, test, vi, beforeEach } from 'vitest'
 import BaseCommand from '../../../../src/commands/base-command.js'
 import { createBlobsCommand } from '../../../../src/commands/blobs/blobs.js'
 import { log } from '../../../../src/utils/command-helpers.js'
+import { destructiveCommandMessages } from '../../../../src/utils/prompts/prompt-messages.js'
 import { Route } from '../../utils/mock-api-vitest.js'
 import { getEnvironmentVariables, withMockApi } from '../../utils/mock-api.js'
 
@@ -44,13 +45,10 @@ describe('blob:delete command', () => {
   const storeName = 'my-store'
   const key = 'my-key'
 
-  const warningMessage = `${chalk.redBright('Warning')}: The following blob key ${chalk.cyan(
-    key,
-  )} will be deleted from store ${chalk.cyan(storeName)}:`
+  const { overwriteNoticeMessage } = destructiveCommandMessages
+  const { generateWarningMessage, overwriteConfirmationMessage } = destructiveCommandMessages.blobDelete
 
-  const noticeMessage = `${chalk.yellowBright(
-    'Notice',
-  )}: To overwrite without this warning, you can use the --force flag.`
+  const warningMessage = generateWarningMessage(key, storeName)
 
   const successMessage = `${chalk.greenBright('Success')}: Blob ${chalk.yellow(key)} deleted from store ${chalk.yellow(
     storeName,
@@ -73,19 +71,19 @@ describe('blob:delete command', () => {
       const program = new BaseCommand('netlify')
       createBlobsCommand(program)
 
-      const promptSpy = vi.spyOn(inquirer, 'prompt').mockResolvedValue({ wantsToSet: true })
+      const promptSpy = vi.spyOn(inquirer, 'prompt').mockResolvedValue({ confirm: true })
 
       await program.parseAsync(['', '', 'blob:delete', storeName, key])
 
       expect(promptSpy).toHaveBeenCalledWith({
         type: 'confirm',
-        name: 'wantsToSet',
-        message: expect.stringContaining('Do you want to proceed with deleting the value at this key?'),
+        name: 'confirm',
+        message: expect.stringContaining(overwriteConfirmationMessage),
         default: false,
       })
 
       expect(log).toHaveBeenCalledWith(warningMessage)
-      expect(log).toHaveBeenCalledWith(noticeMessage)
+      expect(log).toHaveBeenCalledWith(overwriteNoticeMessage)
       expect(log).toHaveBeenCalledWith(successMessage)
     })
   })
@@ -103,7 +101,7 @@ describe('blob:delete command', () => {
       const program = new BaseCommand('netlify')
       createBlobsCommand(program)
 
-      const promptSpy = vi.spyOn(inquirer, 'prompt').mockResolvedValue({ wantsToSet: false })
+      const promptSpy = vi.spyOn(inquirer, 'prompt').mockResolvedValue({ confirm: false })
 
       try {
         await program.parseAsync(['', '', 'blob:delete', storeName, key])
@@ -114,13 +112,13 @@ describe('blob:delete command', () => {
 
       expect(promptSpy).toHaveBeenCalledWith({
         type: 'confirm',
-        name: 'wantsToSet',
-        message: expect.stringContaining('Do you want to proceed with deleting the value at this key?'),
+        name: 'confirm',
+        message: expect.stringContaining(overwriteConfirmationMessage),
         default: false,
       })
 
       expect(log).toHaveBeenCalledWith(warningMessage)
-      expect(log).toHaveBeenCalledWith(noticeMessage)
+      expect(log).toHaveBeenCalledWith(overwriteNoticeMessage)
       expect(log).not.toHaveBeenCalledWith(successMessage)
     })
   })
@@ -145,7 +143,7 @@ describe('blob:delete command', () => {
       expect(promptSpy).not.toHaveBeenCalled()
 
       expect(log).not.toHaveBeenCalledWith(warningMessage)
-      expect(log).not.toHaveBeenCalledWith(noticeMessage)
+      expect(log).not.toHaveBeenCalledWith(overwriteNoticeMessage)
       expect(log).toHaveBeenCalledWith(successMessage)
     })
   })
@@ -176,7 +174,7 @@ describe('blob:delete command', () => {
       expect(promptSpy).not.toHaveBeenCalled()
 
       expect(log).not.toHaveBeenCalledWith(warningMessage)
-      expect(log).not.toHaveBeenCalledWith(noticeMessage)
+      expect(log).not.toHaveBeenCalledWith(overwriteNoticeMessage)
       expect(log).not.toHaveBeenCalledWith(successMessage)
     })
   })

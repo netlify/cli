@@ -1,19 +1,17 @@
-import { chalk, log } from '../command-helpers.js'
+import { log } from '../command-helpers.js'
 
 import { confirmPrompt } from './confirm-prompt.js'
+import { destructiveCommandMessages } from './prompt-messages.js'
 
-const generateBlobWarningMessage = (key: string, storeName: string): void => {
-  log()
-  log(
-    `${chalk.redBright('Warning')}: The following blob key ${chalk.cyan(key)} will be deleted from store ${chalk.cyan(
-      storeName,
-    )}:`,
-  )
-  log()
-  log(`${chalk.yellowBright('Notice')}: To overwrite without this warning, you can use the --force flag.`)
-}
+export const promptBlobDelete = async (key: string, storeName: string): Promise<void> => {
+  const { overwriteNoticeMessage } = destructiveCommandMessages
+  const { generateWarningMessage, overwriteConfirmationMessage } = destructiveCommandMessages.blobDelete
 
-export const blobDeletePrompts = async (key: string, storeName: string): Promise<void> => {
-  generateBlobWarningMessage(key, storeName)
-  await confirmPrompt('Do you want to proceed with deleting the value at this key?')
+  const warningMessage = generateWarningMessage(key, storeName)
+
+  log()
+  log(warningMessage)
+  log()
+  log(overwriteNoticeMessage)
+  await confirmPrompt(overwriteConfirmationMessage)
 }

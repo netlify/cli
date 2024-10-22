@@ -1,5 +1,4 @@
 import { chalk } from '../command-helpers.js'
-import { EnvVar } from '../types.js'
 
 export const destructiveCommandMessages = {
   overwriteNoticeMessage: `${chalk.yellowBright(
@@ -10,6 +9,14 @@ export const destructiveCommandMessages = {
     generateWarningMessage: (storeName: string) =>
       `${chalk.redBright('Warning')}: The blob key already exists in store ${chalk.cyan(storeName)}.`,
     overwriteConfirmationMessage: 'Do you want to proceed with overwriting this blob key existing value?',
+  },
+
+  blobDelete: {
+    generateWarningMessage: (key: string, storeName: string) =>
+      `${chalk.redBright('Warning')}: The following blob key ${chalk.cyan(key)} will be deleted from store ${chalk.cyan(
+        storeName,
+      )}:`,
+    overwriteConfirmationMessage: 'Do you want to proceed with deleting the value at this key?',
   },
 
   envSet: {
