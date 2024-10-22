@@ -8,6 +8,7 @@ import chokidar from 'chokidar'
 import decache from 'decache'
 import WSL from 'is-wsl'
 import debounce from 'lodash/debounce.js'
+import { NetlifyAPI } from 'netlify'
 import terminalLink from 'terminal-link'
 
 import { clearSpinner, startSpinner } from '../lib/spinner.js'
@@ -15,6 +16,7 @@ import { clearSpinner, startSpinner } from '../lib/spinner.js'
 import getGlobalConfig from './get-global-config.js'
 import getPackageJson from './get-package-json.js'
 import { reportError } from './telemetry/report-error.js'
+import { TokenLocation } from './types.js'
 
 /** The parsed process argv without the binary only arguments and flags */
 const argv = process.argv.slice(2)
@@ -92,8 +94,14 @@ const TOKEN_TIMEOUT = 3e5
  * @param {object} config.ticket
  * @returns
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-export const pollForToken = async ({ api, ticket }) => {
+
+export const pollForToken = async ({
+  api,
+  ticket,
+}: {
+  api: NetlifyAPI
+  ticket: { id: string; client_id: string; authorized: boolean; created_at: string }
+}) => {
   const spinner = startSpinner({ text: 'Waiting for authorization...' })
   try {
     const accessToken = await api.getAccessToken(ticket, { timeout: TOKEN_TIMEOUT })
@@ -112,21 +120,21 @@ export const pollForToken = async ({ api, ticket }) => {
         )}, then run ${chalk.cyanBright('netlify login')} again.`,
       )
     } else {
-      // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
       error(error_)
     }
   } finally {
     clearSpinner({ spinner })
   }
 }
-
 /**
  * Get a netlify token
  * @param {string} [tokenFromOptions] optional token from the provided --auth options
  * @returns {Promise<[null|string, 'flag' | 'env' |'config' |'not found']>}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'tokenFromOptions' implicitly has an 'an... Remove this comment to see the full error message
-export const getToken = async (tokenFromOptions) => {
+
+export type tokenTuple = [string | null, TokenLocation]
+
+export const getToken = async (tokenFromOptions?: string): Promise<tokenTuple> => {
   // 1. First honor command flag --auth
   if (tokenFromOptions) {
     return [tokenFromOptions, 'flag']
@@ -186,7 +194,7 @@ export const warn = (message = '') => {
 }
 
 /** Throws an error or logs it */
-export const error = (message: Error | string = '', options: { exit?: boolean } = {}) => {
+export const error = (message: unknown | Error | string = '', options: { exit?: boolean } = {}) => {
   const err =
     message instanceof Error
       ? message
@@ -299,4 +307,9 @@ export const nonNullable = <T>(value: T): value is NonNullable<T> => value !== n
 
 export const noOp = () => {
   // no-op
+}
+
+export interface APIError extends Error {
+  status: number
+  message: string
 }

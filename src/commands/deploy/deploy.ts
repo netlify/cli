@@ -1,9 +1,9 @@
-import { Stats } from 'fs'
+import { type Stats } from 'fs'
 import { stat } from 'fs/promises'
 import { basename, resolve } from 'path'
 
-import { runCoreSteps } from '@netlify/build'
-import { OptionValues } from 'commander'
+import { type NetlifyConfig, runCoreSteps } from '@netlify/build'
+import { type OptionValues } from 'commander'
 import inquirer from 'inquirer'
 import isEmpty from 'lodash/isEmpty.js'
 import isObject from 'lodash/isObject.js'
@@ -30,11 +30,11 @@ import {
   log,
   logJson,
   warn,
+  APIError,
 } from '../../utils/command-helpers.js'
 import { DEFAULT_DEPLOY_TIMEOUT } from '../../utils/deploy/constants.js'
 import { deploySite } from '../../utils/deploy/deploy-site.js'
 import { getEnvelopeEnv } from '../../utils/env/index.js'
-import { getFrameworksAPIPaths } from '../../utils/frameworks-api.js'
 import { getFunctionsManifestPath, getInternalFunctionsDir } from '../../utils/functions/index.js'
 import openBrowser from '../../utils/open-browser.js'
 import BaseCommand from '../base-command.js'
@@ -59,12 +59,10 @@ const triggerDeploy = async ({ api, options, siteData, siteId }) => {
       )
     }
   } catch (error_) {
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    if (error_.status === 404) {
+    if ((error_ as APIError).status === 404) {
       error('Site not found. Please rerun "netlify link" and make sure that your site has CI configured.')
     } else {
-      // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-      error(error_.message)
+      error((error_ as APIError).message)
     }
   }
 }
@@ -373,8 +371,9 @@ const uploadDeployBlobs = async ({
     phase: 'start',
   })
 
-  const [token] = await getToken(false)
+  const [token] = await getToken()
 
+  const blobsToken = token || undefined
   const { success } = await runCoreSteps(['blobs_upload'], {
     ...options,
     quiet: silent,
@@ -382,7 +381,7 @@ const uploadDeployBlobs = async ({
     packagePath,
     deployId,
     siteId,
-    token,
+    token: blobsToken,
   })
 
   if (!success) {
@@ -446,6 +445,7 @@ const runDeploy = async ({
   deployUrl: string
   logsUrl: string
   functionLogsUrl: string
+  edgeFunctionLogsUrl: string
 }> => {
   let results
   let deployId
@@ -532,9 +532,11 @@ const runDeploy = async ({
   const logsUrl = `${results.deploy.admin_url}/deploys/${results.deploy.id}`
 
   let functionLogsUrl = `${results.deploy.admin_url}/logs/functions`
+  let edgeFunctionLogsUrl = `${results.deploy.admin_url}/logs/edge-functions`
 
   if (!deployToProduction) {
     functionLogsUrl += `?scope=deploy:${deployId}`
+    edgeFunctionLogsUrl += `?scope=deployid:${deployId}`
   }
 
   return {
@@ -545,6 +547,7 @@ const runDeploy = async ({
     deployUrl,
     logsUrl,
     functionLogsUrl,
+    edgeFunctionLogsUrl,
   }
 }
 
@@ -563,7 +566,6 @@ const handleBuild = async ({ cachedConfig, currentDir, defaultConfig, deployHand
   if (!options.build) {
     return {}
   }
-  // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
   const [token] = await getToken()
   const resolvedOptions = await getBuildOptions({
     cachedConfig,
@@ -624,30 +626,40 @@ const bundleEdgeFunctions = async (options, command: BaseCommand) => {
   })
 }
 
-/**
- *
- * @param {object} config
- * @param {boolean} config.deployToProduction
- * @param {boolean} config.isIntegrationDeploy If the user ran netlify integration:deploy instead of just netlify deploy
- * @param {boolean} config.json If the result should be printed as json message
- * @param {boolean} config.runBuildCommand If the build command should be run
- * @param {object} config.results
- * @returns {void}
- */
-// @ts-expect-error TS(7031) FIXME: Binding element 'deployToProduction' implicitly ha... Remove this comment to see the full error message
-const printResults = ({ deployToProduction, isIntegrationDeploy, json, results, runBuildCommand }) => {
-  const msgData = {
+interface JsonData {
+  site_id: string
+  site_name: string
+  deploy_id: string
+  deploy_url: string
+  logs: string
+  function_logs: string
+  edge_function_logs: string
+  url?: string
+}
+
+const printResults = ({
+  deployToProduction,
+  isIntegrationDeploy,
+  json,
+  results,
+  runBuildCommand,
+}: {
+  deployToProduction: boolean
+  isIntegrationDeploy: boolean
+  json: boolean
+  results: Awaited<ReturnType<typeof prepAndRunDeploy>>
+  runBuildCommand: boolean
+}): void => {
+  const msgData: Record<string, string> = {
     'Build logs': results.logsUrl,
     'Function logs': results.functionLogsUrl,
+    'Edge function Logs': results.edgeFunctionLogsUrl,
   }
 
   if (deployToProduction) {
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     msgData['Unique deploy URL'] = results.deployUrl
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     msgData['Website URL'] = results.siteUrl
   } else {
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     msgData['Website draft URL'] = results.deployUrl
   }
 
@@ -656,16 +668,16 @@ const printResults = ({ deployToProduction, isIntegrationDeploy, json, results, 
 
   // Json response for piping commands
   if (json) {
-    const jsonData = {
-      name: results.name,
-      site_id: results.site_id,
+    const jsonData: JsonData = {
+      site_id: results.siteId,
       site_name: results.siteName,
       deploy_id: results.deployId,
       deploy_url: results.deployUrl,
       logs: results.logsUrl,
+      function_logs: results.functionLogsUrl,
+      edge_function_logs: results.edgeFunctionLogsUrl,
     }
     if (deployToProduction) {
-      // @ts-expect-error TS(2339) FIXME: Property 'url' does not exist on type '{ name: any... Remove this comment to see the full error message
       jsonData.url = results.siteUrl
     }
 
@@ -853,8 +865,7 @@ export const deploy = async (options: OptionValues, command: BaseCommand) => {
       defaultConfig: getDefaultConfig(settings),
       currentDir: command.workingDir,
       options,
-      // @ts-expect-error TS(7031) FIXME: Binding element 'netlifyConfig' implicitly has an ... Remove this comment to see the full error message
-      deployHandler: async ({ netlifyConfig }) => {
+      deployHandler: async ({ netlifyConfig }: { netlifyConfig: NetlifyConfig }) => {
         results = await prepAndRunDeploy({
           command,
           options,
