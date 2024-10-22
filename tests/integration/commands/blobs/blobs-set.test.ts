@@ -50,7 +50,7 @@ describe('blob:set command', () => {
   const { overwriteNoticeMessage } = destructiveCommandMessages
   const { generateWarningMessage, overwriteConfirmationMessage } = destructiveCommandMessages.blobSet
 
-  const warningMessage = generateWarningMessage(storeName)
+  const warningMessage = generateWarningMessage(key, storeName)
 
   const boldKey = chalk.bold(key)
 

@@ -1,3 +1,5 @@
+import process from 'process'
+
 import { OptionValues } from 'commander'
 
 import { chalk, error, log, logJson } from '../../utils/command-helpers.js'
@@ -116,7 +118,7 @@ const setInEnvelope = async ({ api, context, force, key, scope, secret, siteInfo
 }
 
 export const envSet = async (key: string, value: string, options: OptionValues, command: BaseCommand) => {
-  // Prevents prompts from blocking scripted commands
+  // Prevents prompts from ci and non ineractive shells
   if (command.scriptedCommand) {
     options.force = true
   }
@@ -128,7 +130,6 @@ export const envSet = async (key: string, value: string, options: OptionValues, 
     log('No site id found, please run inside a site folder or `netlify link`')
     return false
   }
-
   const { siteInfo } = cachedConfig
 
   // Get current environment variables set in the UI

@@ -283,13 +283,14 @@ describe('env:set command', () => {
     )} in the ${chalk.magenta('all')} context`
 
     beforeEach(() => {
+      process.stdin.isTTY = true
       vi.resetAllMocks()
     })
 
     test('should log warnings and prompts if enviroment variable already exists', async () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
-        console.log(process.env.SHLVL)
+
         const program = new BaseCommand('netlify')
 
         const promptSpy = vi.spyOn(inquirer, 'prompt').mockResolvedValue({ confirm: true })
@@ -374,6 +375,65 @@ describe('env:set command', () => {
         expect(log).toHaveBeenCalledWith(warningMessage)
         expect(log).toHaveBeenCalledWith(overwriteNoticeMessage)
         expect(log).not.toHaveBeenCalledWith(successMessage)
+      })
+    })
+  })
+
+  describe('prompts should not show is in interactie shell or in a ci/cd enviroment', () => {
+    const existingVar = 'EXISTING_VAR'
+    const newEnvValue = 'value'
+
+    const { generateWarningMessage } = destructiveCommandMessages.envSet
+    const { overwriteNoticeMessage } = destructiveCommandMessages
+    const warningMessage = generateWarningMessage('EXISTING_VAR')
+
+    const successMessage = `Set environment variable ${chalk.yellow(
+      `${existingVar}=${newEnvValue}`,
+    )} in the ${chalk.magenta('all')} context`
+
+    beforeEach(() => {
+      vi.resetAllMocks()
+    })
+
+    test('should not show is in interactie shell or in a ci/cd enviroment', async () => {
+      process.stdin.isTTY = false
+
+      await withMockApi(routes, async ({ apiUrl }) => {
+        Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
+
+        const program = new BaseCommand('netlify')
+        createEnvCommand(program)
+
+        const promptSpy = vi.spyOn(inquirer, 'prompt')
+
+        await program.parseAsync(['', '', 'env:set', existingVar, newEnvValue])
+
+        expect(promptSpy).not.toHaveBeenCalled()
+
+        expect(log).not.toHaveBeenCalledWith(warningMessage)
+        expect(log).not.toHaveBeenCalledWith(overwriteNoticeMessage)
+        expect(log).toHaveBeenCalledWith(successMessage)
+      })
+    })
+
+    test('should not show prompt in a ci/cd enviroment', async () => {
+      process.env.CI = true
+
+      await withMockApi(routes, async ({ apiUrl }) => {
+        Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
+
+        const program = new BaseCommand('netlify')
+        createEnvCommand(program)
+
+        const promptSpy = vi.spyOn(inquirer, 'prompt')
+
+        await program.parseAsync(['', '', 'env:set', existingVar, newEnvValue])
+
+        expect(promptSpy).not.toHaveBeenCalled()
+
+        expect(log).not.toHaveBeenCalledWith(warningMessage)
+        expect(log).not.toHaveBeenCalledWith(overwriteNoticeMessage)
+        expect(log).toHaveBeenCalledWith(successMessage)
       })
     })
   })

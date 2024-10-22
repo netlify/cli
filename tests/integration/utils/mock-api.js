@@ -78,14 +78,13 @@ export const withMockApi = async (routes, testHandler, silent = false) => {
   }
 }
 
-// `SHLVL` set to "1" to mock commands run from terminal command line
+// `CI` set to "true" to mock commands run from terminal command line
 // `SHLVL` used to overwrite prompts for scripted commands in production/dev
 // environments see `scriptedCommand` property of `BaseCommand`
 export const getEnvironmentVariables = ({ apiUrl }) => ({
   NETLIFY_AUTH_TOKEN: 'fake-token',
   NETLIFY_SITE_ID: 'site_id',
   NETLIFY_API_URL: apiUrl,
-  SHLVL: '1',
 })
 
 /**
