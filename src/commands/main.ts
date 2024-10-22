@@ -37,20 +37,23 @@ import { createStatusCommand } from './status/index.js'
 import { createSwitchCommand } from './switch/index.js'
 import { createUnlinkCommand } from './unlink/index.js'
 import { createWatchCommand } from './watch/index.js'
-
+import { AddressInUseError } from './types.js'
 const SUGGESTION_TIMEOUT = 1e4
 
-process.on('uncaughtException', async (err: any) => {
-  console.log('')
 
-  if (err.code === 'EADDRINUSE') {
+process.on('uncaughtException', async (err: AddressInUseError | Error) => {
+
+  if ('code' in err && err.code === 'EADDRINUSE') {
     error(
       `${chalk.red(`Port ${err.port} is already in use`)}\n\n` +
-        `This could be due to one of your serverless functions initializing a server\n` +
-        `to listen on port ${err.port} without properly closing it.\n\n` +
+        `Your serverless functions might be initializing a server\n` +
+        `to listen on specific port without properly closing it.\n\n` +
+        `This behavior is generally not advised\n` +
         `To resolve this issue, try the following:\n` +
-        `1. Check if any other applications are using port ${err.port}\n` +
-        `2. Review your serverless functions for any lingering server connections\n`,
+        `1. If you NEED your serverless function to listen on a specific port,\n` +
+        `use a randomly assigned port as we do not officially support this.\n` +
+        `2. Review your serverless functions for lingering server connections, close them\n` +
+        `3. Check if any other applications are using port ${err.port}\n`,
       { exit: false },
     )
   } else {
