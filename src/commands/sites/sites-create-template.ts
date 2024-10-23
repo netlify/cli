@@ -124,54 +124,81 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
   const inputSiteName = async (name) => {
     const { name: inputName } = await getSiteNameInput(name)
 
+    class GitHubRepoError extends Error {
+      status: string
+
+      constructor(status: string, message: string) {
+        super(message)
+        this.status = status
+        this.name = 'GitHubRepoError'
+      }
+    }
+
+    const siteName = inputName.trim()
     try {
-      const siteName = inputName.trim()
-
-      // Create new repo from template
-      repoResp = await createRepo(templateName, ghToken, siteName || templateName)
-
-      // @ts-expect-error TS(18046) - 'repoResp' if of type 'unknown'
-      if (repoResp.errors) {
-        // @ts-expect-error TS(18046) - 'repoResp' if of type 'unknown'
-        if (repoResp.errors[0].includes('Name already exists on this account')) {
-          warn(
-            `Oh no! We found already a repository with this name. It seems you have already created a template with the name ${templateName}. Please try to run the command again and provide a different name.`,
-          )
-          // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
-          await inputSiteName()
-        } else {
-          throw new Error(
-            // @ts-expect-error TS(18046) - 'repoResp' if of type 'unknown'
-            `Oops! Seems like something went wrong trying to create the repository. We're getting the following error: '${repoResp.errors[0]}'. You can try to re-run this command again or open an issue in our repository: https://github.com/netlify/cli/issues`,
-          )
-        }
-      } else {
-        site = await api.createSiteInTeam({
-          accountSlug,
-          body: {
-            repo: {
-              provider: 'github',
-              // @ts-expect-error TS(18046) - 'repoResp' if of type 'unknown'
-              repo: repoResp.full_name,
-              // @ts-expect-error TS(18046) - 'repoResp' if of type 'unknown'
-              private: repoResp.private,
-              // @ts-expect-error TS(18046) - 'repoResp' if of type 'unknown'
-              branch: repoResp.default_branch,
-            },
-            name: siteName,
-          },
-        })
+      const sites = await api.listSites({ name: siteName, filter: 'all' })
+      // @ts-expect-error TS(7006) FIXME: Parameter 'filteredSite' implicitly has an 'any' t... Remove this comment to see the full error message
+      const siteFoundByName = sites.find((filteredSite) => filteredSite.name === siteName)
+      if (siteFoundByName) {
+        console.log('A site with that name already exists')
+        // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
+        return inputSiteName()
       }
     } catch (error_) {
-      if ((error_ as APIError).status === 422 || (error_ as APIError).message === 'Duplicate repo') {
+      error(error_)
+    }
+
+    try {
+      // Create new repo from template
+      repoResp = await createRepo(templateName, ghToken, siteName || templateName)
+      // @ts-expect-error TS(18046) - 'repoResp' if of type 'unknown'
+      if (repoResp.errors && repoResp.errors[0].includes('Name already exists on this account')) {
         warn(
-          `${name}.netlify.app already exists or a repository named ${name} already exists on this account. Please try a different slug.`,
+          `Oh no! We found already a repository with this name. It seems you have already created a template with the name ${templateName}. Please try to run the command again and provide a different name.`,
         )
         // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
-        await inputSiteName()
-      } else {
-        error(`createSiteInTeam error: ${(error_ as APIError).status}: ${(error_ as APIError).message}`)
+        return inputSiteName()
       }
+      // @ts-expect-error TS(18046) - 'repoResp' if of type 'unknown'
+      if (!repoResp.id) {
+        throw new GitHubRepoError((repoResp as GitHubRepoError).status, (repoResp as GitHubRepoError).message)
+      }
+    } catch (error_) {
+      if ((error_ as GitHubRepoError).status === '404') {
+        error(
+          `Could not retrieve repository: ${
+            (error_ as GitHubRepoError).message
+          } Ensure that your PAT has neccessary permissions.`,
+        )
+      } else {
+        error(
+          `Oops! Seems like something went wrong trying to create the repository. We're getting the following error: '${
+            (error_ as GitHubRepoError).message
+          }'. You can try to re-run this command again or open an issue in our repository: https://github.com/netlify/cli/issues`,
+        )
+      }
+    }
+
+    try {
+      console.log('siteName', siteName)
+      console.log('repoRespWithinTry', JSON.stringify(repoResp))
+      site = await api.createSiteInTeam({
+        accountSlug,
+        body: {
+          repo: {
+            provider: 'github',
+            // @ts-expect-error TS(18046) - 'repoResp' if of type 'unknown'
+            repo: repoResp.full_name,
+            // @ts-expect-error TS(18046) - 'repoResp' if of type 'unknown'
+            private: repoResp.private,
+            // @ts-expect-error TS(18046) - 'repoResp' if of type 'unknown'
+            branch: repoResp.default_branch,
+          },
+          name: siteName,
+        },
+      })
+    } catch (error_) {
+      error(`createSiteInTeam error: ${(error_ as APIError).status}: ${(error_ as APIError).message}`)
     }
   }
 
