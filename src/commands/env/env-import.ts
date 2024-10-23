@@ -5,7 +5,7 @@ import { OptionValues } from 'commander'
 import dotenv from 'dotenv'
 
 import { exit, log, logJson } from '../../utils/command-helpers.js'
-import { translateFromEnvelopeToMongo, translateFromMongoToEnvelope } from '../../utils/env/index.js'
+import { translateFromEnvelopeToMongo, translateFromMongoToEnvelope, isAPIEnvError } from '../../utils/env/index.js'
 import BaseCommand from '../base-command.js'
 
 /**
@@ -36,9 +36,10 @@ const importDotEnv = async ({ api, importedEnv, options, siteInfo }) => {
   const body = translateFromMongoToEnvelope(importedEnv)
   try {
     await api.createEnvVars({ accountId, siteId, body })
-  } catch (error) {
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    throw error.json ? error.json.msg : error
+  } catch (error: unknown) {
+    if (isAPIEnvError(error)) {
+      throw error.json ? error.json.msg : error
+    }
   }
 
   // return final env to aid in --json output (for testing)

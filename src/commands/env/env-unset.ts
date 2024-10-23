@@ -1,24 +1,30 @@
 import { OptionValues } from 'commander'
 
 import { chalk, log, logJson } from '../../utils/command-helpers.js'
-import { AVAILABLE_CONTEXTS, translateFromEnvelopeToMongo } from '../../utils/env/index.js'
+import { AVAILABLE_CONTEXTS, translateFromEnvelopeToMongo, isAPIEnvError } from '../../utils/env/index.js'
 import BaseCommand from '../base-command.js'
+import type { EnviromentVariables } from '../types.d.ts'
 
-import type { UnsetInEnvelope } from './types.d.ts'
+import type { UnsetInEnvelopeParams } from './types.d.ts'
 
 /**
  * Deletes a given key from the env of a site configured with Envelope
  * @returns {Promise<object>}
  */
 
-const unsetInEnvelope = async ({ api, context, key, siteInfo }: UnsetInEnvelope) => {
+const unsetInEnvelope = async ({
+  api,
+  context,
+  key,
+  siteInfo,
+}: UnsetInEnvelopeParams): Promise<EnviromentVariables> => {
   const accountId = siteInfo.account_slug
   const siteId = siteInfo.id
   console.log('siteId is type of', typeof siteId)
   // fetch envelope env vars
   const envelopeVariables = await api.getEnvVars({ accountId, siteId })
   const contexts = context || ['all']
-  console.log('envVar', envelopeVariables)
+
   const env = translateFromEnvelopeToMongo(envelopeVariables, context ? context[0] : 'dev')
 
   // check if the given key exists
@@ -52,12 +58,14 @@ const unsetInEnvelope = async ({ api, context, key, siteInfo }: UnsetInEnvelope)
       // otherwise, if no context passed, delete the whole key
       await api.deleteEnvVar({ accountId, siteId, key })
     }
-  } catch (error_) {
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    throw error_.json ? error_.json.msg : error_
+  } catch (error_: unknown) {
+    if (isAPIEnvError(error_)) {
+      const errorMessage = error_.json ? error_.json.msg : error_
+      throw errorMessage
+    }
+    throw error_
   }
 
-  // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
   delete env[key]
 
   return env

@@ -1,9 +1,10 @@
 import type { NetlifyConfig } from "@netlify/build";
 import type { NetlifyTOML } from '@netlify/build-info'
-import type { NetlifyAPI } from 'netlify'
 
 import type { FrameworksAPIPaths } from "../utils/frameworks-api.ts";
 import StateConfig from '../utils/state-config.js'
+
+import type { ExtendedNetlifyAPI } from "./api-types.d.ts";
 
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -18,6 +19,7 @@ export type NetlifySite = {
 }
 
 export type Context = 'dev' | 'production' | 'deploy-preview' | 'branch-deploy' | 'all'
+
 
 type PatchedConfig = NetlifyTOML & Pick<NetlifyConfig, 'images'> & {
   functionsDirectory?: string
@@ -54,57 +56,8 @@ type EnvironmentVariableScope = 'builds' | 'functions' | 'runtime' | 'post_proce
 type EnvironmentVariableSource = 'account' | 'addons' | 'configFile' | 'general' |  'internal' | 'ui'
 
 
-// Define the structure for the 'updated_by' field
-interface UpdatedBy {
-  // Add specific properties here if known
-  // For now, we'll keep it generic
-  [key: string]: any;
-}
-
-// Define the structure for each item in the array
-
-interface EnvVarValue {
-  id: string,
-  value: string,
-  context: string,
-  context_parameter: string
-}
-
-interface EnvVar {
-  key: string;
-  scopes: string[];
-  values: EnvVarValue[];
-  is_secret: boolean;
-  updated_at: string; 
-  updated_by: UpdatedBy;
-}
-
-interface GetEnvParams {
-  accountId: string,
-  siteId?: string,
-  context?: Context,
-  scope?: EnvironmentVariableScope
-}
-
-interface DeleteEnvVarValueParams {
-  accountId: string,
-  key: string,
-  id: string,
-  siteId?: string 
-}
-
-interface SetEnvVarValueParams {
-  accountId: string,
-  key: string,
-  siteId?: string
-}
-
-interface DeleteEnvVarValueParams extends SetEnvVarValueParams{}
-
-interface ExtendedNetlifyAPI extends NetlifyAPI {
-  getEnvVars( params: GetEnvParams): Promise<EnvVar[]>
-  deleteEnvVarValue( params: DeleteEnvVarValueParams  ): Promise<void>
-  setEnvVarValue( params: SetEnvVarValueParams): 
+type EnviromentVariables  = { 
+  [key: string]: string 
 }
 
 export type EnvironmentVariables = Record<string, { sources: EnvironmentVariableSource[], value: string; scopes?: EnvironmentVariableScope[] }>

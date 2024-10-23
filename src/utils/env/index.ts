@@ -1,6 +1,7 @@
-import { $TSFixMe } from '../../commands/types.js'
-import type { EnvVar, Context } from '../../commands/types.js'
+import { EnvVar } from '../../commands/api-types.d.js'
+import type { Context, EnviromentVariables, $TSFixMe } from '../../commands/types.js'
 import { error } from '../command-helpers.js'
+import { APIEnvError } from '../types.js'
 
 export const AVAILABLE_CONTEXTS: Context[] = ['all', 'production', 'deploy-preview', 'branch-deploy', 'dev']
 export const AVAILABLE_SCOPES = ['builds', 'functions', 'runtime', 'post_processing']
@@ -255,7 +256,8 @@ export const translateFromMongoToEnvelope = (env = {}) => {
  * @param {string} context - The deploy context or branch of the environment variable
  * @returns {object} The env object as compatible with Mongo
  */
-export const translateFromEnvelopeToMongo = (envVars: EnvVar[] = [], context = 'dev') =>
+
+export const translateFromEnvelopeToMongo = (envVars: EnvVar[] = [], context = 'dev'): EnviromentVariables =>
   envVars
     .sort((left, right) => (left.key.toLowerCase() < right.key.toLowerCase() ? -1 : 1))
     .reduce((acc, cur) => {
@@ -268,3 +270,19 @@ export const translateFromEnvelopeToMongo = (envVars: EnvVar[] = [], context = '
       }
       return acc
     }, {})
+
+// {key: string: string}
+
+export const isAPIEnvError = (err: unknown): err is APIEnvError =>
+  /**
+   * Checks if an error is an APIEnvError
+   * @param {unknown} err - The error to check
+   * @returns {err is APIEnvError} Whether the error is an APIEnvError
+   */
+  err !== null &&
+  typeof err === 'object' &&
+  'json' in err &&
+  err.json !== null &&
+  typeof err.json === 'object' &&
+  'msg' in err.json &&
+  typeof err.json.msg === 'string'

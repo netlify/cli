@@ -1,6 +1,7 @@
 import { OptionValues } from 'commander'
 
 import { chalk, log, error as logError } from '../../utils/command-helpers.js'
+import { isAPIEnvError } from '../../utils/env/index.js'
 import BaseCommand from '../base-command.js'
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'api' implicitly has an 'any' type.
@@ -43,9 +44,8 @@ const cloneEnvVars = async ({ api, siteFrom, siteTo }): Promise<boolean> => {
   // hit create endpoint
   try {
     await api.createEnvVars({ accountId, siteId, body: envelopeFrom })
-  } catch (error) {
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    throw error.json ? error.json.msg : error
+  } catch (error: unknown) {
+    if (isAPIEnvError(error)) throw error.json ? error.json.msg : error
   }
 
   return true
