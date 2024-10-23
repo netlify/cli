@@ -17,6 +17,8 @@ export type NetlifySite = {
   set id(id: string): void
 }
 
+export type Context = 'dev' | 'production' | 'deploy-preview' | 'branch-deploy' | 'all'
+
 type PatchedConfig = NetlifyTOML & Pick<NetlifyConfig, 'images'> & {
   functionsDirectory?: string
   build: NetlifyTOML['build'] & {
@@ -51,14 +53,67 @@ type HTMLInjection = {
 type EnvironmentVariableScope = 'builds' | 'functions' | 'runtime' | 'post_processing'
 type EnvironmentVariableSource = 'account' | 'addons' | 'configFile' | 'general' |  'internal' | 'ui'
 
-export type EnvironmentVariables = Record<string, { sources: EnvironmentVariableSource[], value: string; scopes?: EnvironmentVariableScope[] }>
 
+// Define the structure for the 'updated_by' field
+interface UpdatedBy {
+  // Add specific properties here if known
+  // For now, we'll keep it generic
+  [key: string]: any;
+}
+
+// Define the structure for each item in the array
+
+interface EnvVarValue {
+  id: string,
+  value: string,
+  context: string,
+  context_parameter: string
+}
+
+interface EnvVar {
+  key: string;
+  scopes: string[];
+  values: EnvVarValue[];
+  is_secret: boolean;
+  updated_at: string; 
+  updated_by: UpdatedBy;
+}
+
+interface GetEnvParams {
+  accountId: string,
+  siteId?: string,
+  context?: Context,
+  scope?: EnvironmentVariableScope
+}
+
+interface DeleteEnvVarValueParams {
+  accountId: string,
+  key: string,
+  id: string,
+  siteId?: string 
+}
+
+interface SetEnvVarValueParams {
+  accountId: string,
+  key: string,
+  siteId?: string
+}
+
+interface DeleteEnvVarValueParams extends SetEnvVarValueParams{}
+
+interface ExtendedNetlifyAPI extends NetlifyAPI {
+  getEnvVars( params: GetEnvParams): Promise<EnvVar[]>
+  deleteEnvVarValue( params: DeleteEnvVarValueParams  ): Promise<void>
+  setEnvVarValue( params: SetEnvVarValueParams): 
+}
+
+export type EnvironmentVariables = Record<string, { sources: EnvironmentVariableSource[], value: string; scopes?: EnvironmentVariableScope[] }>
 /**
  * The netlify object inside each command with the state
  */
 export type NetlifyOptions = {
   // poorly duck type the missing api functions
-  api: NetlifyAPI & Record<string, (...args: $TSFixMe) => Promise<$TSFixMe>>
+  api: ExtendedNetlifyAPI & Record<string, (...args: $TSFixMe) => Promise<$TSFixMe>>
   apiOpts: $TSFixMe
   repositoryRoot: string
   /** Absolute path of the netlify configuration file */

@@ -92,8 +92,7 @@ export const createEnvCommand = (program: BaseCommand) => {
       '-c, --context <context...>',
       'Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev") (default: all contexts)',
       // spread over an array for variadic options
-      // @ts-expect-error TS(7006) FIXME: Parameter 'context' implicitly has an 'any' type.
-      (context, previous = []) => [...previous, normalizeContext(context)],
+      (context, previous: string[] = []) => [...previous, normalizeContext(context)],
     )
     .addOption(
       new Option('-s, --scope <scope...>', 'Specify a scope (default: all scopes)').choices([
@@ -127,8 +126,7 @@ export const createEnvCommand = (program: BaseCommand) => {
       '-c, --context <context...>',
       'Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev") (default: all contexts)',
       // spread over an array for variadic options
-      // @ts-expect-error TS(7006) FIXME: Parameter 'context' implicitly has an 'any' type.
-      (context, previous = []) => [...previous, normalizeContext(context)],
+      (context, previous: string[] = []) => [...previous, normalizeContext(context)],
     )
     .addExamples([
       'netlify env:unset VAR_NAME # unset in all contexts',

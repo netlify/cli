@@ -1,7 +1,8 @@
 import { $TSFixMe } from '../../commands/types.js'
+import type { EnvVar, Context } from '../../commands/types.js'
 import { error } from '../command-helpers.js'
 
-export const AVAILABLE_CONTEXTS = ['all', 'production', 'deploy-preview', 'branch-deploy', 'dev']
+export const AVAILABLE_CONTEXTS: Context[] = ['all', 'production', 'deploy-preview', 'branch-deploy', 'dev']
 export const AVAILABLE_SCOPES = ['builds', 'functions', 'runtime', 'post_processing']
 
 /**
@@ -254,17 +255,14 @@ export const translateFromMongoToEnvelope = (env = {}) => {
  * @param {string} context - The deploy context or branch of the environment variable
  * @returns {object} The env object as compatible with Mongo
  */
-export const translateFromEnvelopeToMongo = (envVars = [], context = 'dev') =>
+export const translateFromEnvelopeToMongo = (envVars: EnvVar[] = [], context = 'dev') =>
   envVars
-    // @ts-expect-error TS(2339) FIXME: Property 'key' does not exist on type 'never'.
     .sort((left, right) => (left.key.toLowerCase() < right.key.toLowerCase() ? -1 : 1))
     .reduce((acc, cur) => {
-      // @ts-expect-error TS(2339) FIXME: Property 'values' does not exist on type 'never'.
       const envVar = cur.values.find((val) => [context, 'all'].includes(val.context_parameter || val.context))
       if (envVar && envVar.value) {
         return {
           ...acc,
-          // @ts-expect-error TS(2339) FIXME: Property 'key' does not exist on type 'never'.
           [cur.key]: envVar.value,
         }
       }
