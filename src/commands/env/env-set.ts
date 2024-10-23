@@ -16,15 +16,7 @@ import type { SetInEnvelopeParams } from './types.d.ts'
  * @returns {Promise<object | boolean>}
  */
 // //@ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-const setInEnvelope = async ({ 
-  api, 
-  context, 
-  key, 
-  scope, 
-  secret, 
-  siteInfo, 
-  value 
-}: SetInEnvelopeParams) => {
+const setInEnvelope = async ({ api, context, key, scope, secret, siteInfo, value }: SetInEnvelopeParams) => {
   const accountId = siteInfo.account_slug
   const siteId = siteInfo.id
 
