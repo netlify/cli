@@ -21,3 +21,4 @@ export interface SafeGetSite {
   api: ExtendedNetlifyAPI
   siteId: string
 }
+\

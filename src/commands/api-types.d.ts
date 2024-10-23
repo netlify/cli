@@ -213,5 +213,5 @@ export interface ExtendedNetlifyAPI extends NetlifyAPI {
   deleteEnvVar(params: DeleteEnvVarValueParams): Promise<void>
   updateEnvVar(params: UpdateEnvVarParams): Promise<EnvVar>
   createEnvVars(params: createEnvVarParams): Promise<EnvVar[]>
-  getSite(siteId: string): Promise<SiteData> 
+  getSite({siteId: string}): Promise<SiteData> 
 }

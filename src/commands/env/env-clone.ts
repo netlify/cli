@@ -2,9 +2,8 @@ import { OptionValues } from 'commander'
 
 import { chalk, log, error as logError } from '../../utils/command-helpers.js'
 import { isAPIEnvError } from '../../utils/env/index.js'
+import type { ExtendedNetlifyAPI } from '../api-types.d.ts'
 import BaseCommand from '../base-command.js'
-
-import type { ExtendedNetlifyAPI } from './types.d.ts'
 
 const safeGetSite = async (api: ExtendedNetlifyAPI, siteId: string) => {
   try {
@@ -82,13 +81,15 @@ export const envClone = async (options: OptionValues, command: BaseCommand) => {
     return false
   }
 
-  const success = await cloneEnvVars({ api, siteFrom, siteTo })
+  if (siteFrom && siteTo) {
+    const success = await cloneEnvVars({ api, siteFrom, siteTo })
 
-  if (!success) {
-    return false
+    if (!success) {
+      return false
+    }
+
+    log(`Successfully cloned environment variables from ${chalk.green(siteFrom.name)} to ${chalk.green(siteTo.name)}`)
   }
-
-  log(`Successfully cloned environment variables from ${chalk.green(siteFrom.name)} to ${chalk.green(siteTo.name)}`)
 
   return true
 }
