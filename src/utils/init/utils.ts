@@ -34,7 +34,7 @@ export const getPluginsToAutoInstall = (
   pluginsInstalled: string[] = [],
   pluginsRecommended: string[] = [],
 ) => {
-  const nextRuntime = '@netlify/plugin-nextjs'
+  const nextRuntime = '@opennextjs/netlify'
   const pluginsToAlwaysInstall = new Set([nextRuntime])
   return pluginsRecommended.reduce(
     (acc, plugin) =>
