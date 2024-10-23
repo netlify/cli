@@ -1,5 +1,5 @@
 import type { EnvironmentVariableScope } from '../../types.d.ts'
-import type { ExtendedNetlifyAPI, Context } from '../apiTypes.d.ts'
+import type { ExtendedNetlifyAPI, Context } from '../api-types.d.ts'
 
 
 export interface UnsetInEnvelopeParams {
@@ -15,4 +15,9 @@ export interface SetInEnvelopeParams extends UnsetInEnvelopeParams {
   value: string,
   scope: EnvironmentVariableScope[],
   secret: boolean, 
+}
+
+export interface SafeGetSite {
+  api: ExtendedNetlifyAPI
+  siteId: string
 }

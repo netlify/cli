@@ -5,8 +5,9 @@ import {
   AVAILABLE_CONTEXTS,
   AVAILABLE_SCOPES,
   translateFromEnvelopeToMongo,
-  APIEnvErrorMessage,
+  isAPIEnvError,
 } from '../../utils/env/index.js'
+import type { Value } from '../api-types.js'
 import BaseCommand from '../base-command.js'
 
 import type { SetInEnvelopeParams } from './types.d.ts'
@@ -45,7 +46,7 @@ const setInEnvelope = async ({ api, context, key, scope, secret, siteInfo, value
   }
 
   // if the passed context is unknown, it is actually a branch name
-  let values = contexts.map((ctx) =>
+  let values: Value[] = contexts.map((ctx) =>
     AVAILABLE_CONTEXTS.includes(ctx) ? { context: ctx, value } : { context: 'branch', context_parameter: ctx, value },
   )
 
@@ -81,8 +82,7 @@ const setInEnvelope = async ({ api, context, key, scope, secret, siteInfo, value
             values = AVAILABLE_CONTEXTS.filter((ctx) => ctx !== 'all').map((ctx) => ({
               context: ctx,
               // empty out dev value so that secret is indeed secret
-              // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-              value: ctx === 'dev' ? '' : values.find((val) => val.context === 'all').value,
+              value: ctx === 'dev' ? '' : values.find((val) => val.context === 'all')?.value ?? '',
             }))
           }
         }
@@ -95,15 +95,13 @@ const setInEnvelope = async ({ api, context, key, scope, secret, siteInfo, value
       await api.createEnvVars({ ...params, body })
     }
   } catch (error_) {
-    if (error_ instanceof APIEnvErrorMessage) {
-      throw error_.json ? error_.json.msg : error_
-    }
+    const errortoThrow = isAPIEnvError(error_) ? error_.json.msg : error_
+    throw errortoThrow
   }
 
   const env = translateFromEnvelopeToMongo(envelopeVariables, context ? context[0] : 'dev')
   return {
     ...env,
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     [key]: value || env[key],
   }
 }

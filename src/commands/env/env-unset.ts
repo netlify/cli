@@ -58,12 +58,9 @@ const unsetInEnvelope = async ({
       // otherwise, if no context passed, delete the whole key
       await api.deleteEnvVar({ accountId, siteId, key })
     }
-  } catch (error_: unknown) {
-    if (isAPIEnvError(error_)) {
-      const errorMessage = error_.json ? error_.json.msg : error_
-      throw errorMessage
-    }
-    throw error_
+  } catch (error_) {
+    const errortoThrow = isAPIEnvError(error_) ? error_.json.msg : error_
+    throw errortoThrow
   }
 
   delete env[key]

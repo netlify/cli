@@ -4,8 +4,9 @@ import { chalk, log, error as logError } from '../../utils/command-helpers.js'
 import { isAPIEnvError } from '../../utils/env/index.js'
 import BaseCommand from '../base-command.js'
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'api' implicitly has an 'any' type.
-const safeGetSite = async (api, siteId) => {
+import type { SafeGetSite } from './types.d.ts'
+
+const safeGetSite = async (api: ExtendedNetlifyAPI, siteId: string) => {
   try {
     const data = await api.getSite({ siteId })
     return { data }

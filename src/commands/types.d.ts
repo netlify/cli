@@ -20,7 +20,6 @@ export type NetlifySite = {
 
 export type Context = 'dev' | 'production' | 'deploy-preview' | 'branch-deploy' | 'all'
 
-
 type PatchedConfig = NetlifyTOML & Pick<NetlifyConfig, 'images'> & {
   functionsDirectory?: string
   build: NetlifyTOML['build'] & {

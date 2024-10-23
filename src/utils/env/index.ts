@@ -271,8 +271,6 @@ export const translateFromEnvelopeToMongo = (envVars: EnvVar[] = [], context = '
       return acc
     }, {})
 
-// {key: string: string}
-
 export const isAPIEnvError = (err: unknown): err is APIEnvError =>
   /**
    * Checks if an error is an APIEnvError
