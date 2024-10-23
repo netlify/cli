@@ -30,7 +30,7 @@ const formatTitle = (title: string) => chalk.cyan(title)
  * @returns
  */
 export const getPluginsToAutoInstall = (
-  command: BaseCommand,
+  _command: BaseCommand,
   pluginsInstalled: string[] = [],
   pluginsRecommended: string[] = [],
 ) => {
@@ -100,10 +100,10 @@ export const getBuildSettings = async ({ command, config }: { command: BaseComma
   // eslint-disable-next-line unicorn/explicit-length-check
   const setting: Partial<Settings> = settings.length > 0 ? settings[0] : {}
   const { defaultBaseDir, defaultBuildCmd, defaultBuildDir, defaultFunctionsDir, recommendedPlugins } =
-    await normalizeSettings(setting, config, command)
+    normalizeSettings(setting, config, command)
 
   if (recommendedPlugins.length !== 0 && setting.framework?.name) {
-    log(`Configuring ${formatTitle(setting.framework.name)} runtime...`)
+    log(`Configuring ${formatTitle(setting.framework.name)}...`)
     log()
   }
 
