@@ -4,7 +4,7 @@ import { chalk, log, error as logError } from '../../utils/command-helpers.js'
 import { isAPIEnvError } from '../../utils/env/index.js'
 import BaseCommand from '../base-command.js'
 
-import type { SafeGetSite } from './types.d.ts'
+import type { ExtendedNetlifyAPI } from './types.d.ts'
 
 const safeGetSite = async (api: ExtendedNetlifyAPI, siteId: string) => {
   try {
