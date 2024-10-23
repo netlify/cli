@@ -313,3 +313,13 @@ export interface APIError extends Error {
   status: number
   message: string
 }
+
+export class GitHubAPIError extends Error {
+  status: string
+
+  constructor(status: string, message: string) {
+    super(message)
+    this.status = status
+    this.name = 'GitHubAPIError'
+  }
+}

@@ -5,7 +5,16 @@ import pick from 'lodash/pick.js'
 import parseGitHubUrl from 'parse-github-url'
 import { render } from 'prettyjson'
 
-import { chalk, error, getTerminalLink, log, logJson, warn, APIError } from '../../utils/command-helpers.js'
+import {
+  chalk,
+  error,
+  getTerminalLink,
+  log,
+  logJson,
+  warn,
+  APIError,
+  GitHubAPIError,
+} from '../../utils/command-helpers.js'
 import execa from '../../utils/execa.js'
 import getRepoData from '../../utils/get-repo-data.js'
 import { getGitHubToken } from '../../utils/init/config-github.js'
@@ -124,23 +133,13 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
   const inputSiteName = async (name) => {
     const { name: inputName } = await getSiteNameInput(name)
 
-    class GitHubRepoError extends Error {
-      status: string
-
-      constructor(status: string, message: string) {
-        super(message)
-        this.status = status
-        this.name = 'GitHubRepoError'
-      }
-    }
-
     const siteName = inputName.trim()
     try {
       const sites = await api.listSites({ name: siteName, filter: 'all' })
       // @ts-expect-error TS(7006) FIXME: Parameter 'filteredSite' implicitly has an 'any' t... Remove this comment to see the full error message
       const siteFoundByName = sites.find((filteredSite) => filteredSite.name === siteName)
       if (siteFoundByName) {
-        console.log('A site with that name already exists')
+        log('A site with that name already exists')
         // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
         return inputSiteName()
       }
@@ -154,34 +153,32 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
       // @ts-expect-error TS(18046) - 'repoResp' if of type 'unknown'
       if (repoResp.errors && repoResp.errors[0].includes('Name already exists on this account')) {
         warn(
-          `Oh no! We found already a repository with this name. It seems you have already created a template with the name ${templateName}. Please try to run the command again and provide a different name.`,
+          `It seems you have already created a template with the name ${templateName}. Please try to run the command again and provide a different name.`,
         )
         // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
         return inputSiteName()
       }
       // @ts-expect-error TS(18046) - 'repoResp' if of type 'unknown'
       if (!repoResp.id) {
-        throw new GitHubRepoError((repoResp as GitHubRepoError).status, (repoResp as GitHubRepoError).message)
+        throw new GitHubAPIError((repoResp as GitHubAPIError).status, (repoResp as GitHubAPIError).message)
       }
     } catch (error_) {
-      if ((error_ as GitHubRepoError).status === '404') {
+      if ((error_ as GitHubAPIError).status === '404') {
         error(
           `Could not retrieve repository: ${
-            (error_ as GitHubRepoError).message
+            (error_ as GitHubAPIError).message
           } Ensure that your PAT has neccessary permissions.`,
         )
       } else {
         error(
-          `Oops! Seems like something went wrong trying to create the repository. We're getting the following error: '${
-            (error_ as GitHubRepoError).message
+          `Something went wrong trying to create the repository. We're getting the following error: '${
+            (error_ as GitHubAPIError).message
           }'. You can try to re-run this command again or open an issue in our repository: https://github.com/netlify/cli/issues`,
         )
       }
     }
 
     try {
-      console.log('siteName', siteName)
-      console.log('repoRespWithinTry', JSON.stringify(repoResp))
       site = await api.createSiteInTeam({
         accountSlug,
         body: {
