@@ -147,3 +147,5 @@ export interface SiteInfo {
   url: string
   user_id: string
 }
+
+export type TokenLocation = 'env' | 'flag' | 'config' | 'not found'
