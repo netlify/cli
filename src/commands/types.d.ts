@@ -73,3 +73,11 @@ export type NetlifyOptions = {
   state: StateConfig
   frameworksAPIPaths: FrameworksAPIPaths
 }
+
+export interface AddressInUseError extends Error {
+  code: 'EADDRINUSE'
+  errno: number
+  syscall: 'listen'
+  address: string
+  port: number
+}
