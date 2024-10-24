@@ -51,10 +51,10 @@ describe('blob:delete command', () => {
   const storeName = 'my-store'
   const key = 'my-key'
 
-  const { overwriteNoticeMessage } = destructiveCommandMessages
-  const { generateWarningMessage, overwriteConfirmationMessage } = destructiveCommandMessages.blobDelete
+  const { overwriteNotice } = destructiveCommandMessages
+  const { generateWarning, overwriteConfirmation } = destructiveCommandMessages.blobDelete
 
-  const warningMessage = generateWarningMessage(key, storeName)
+  const warningMessage = generateWarning(key, storeName)
 
   const successMessage = `${chalk.greenBright('Success')}: Blob ${chalk.yellow(key)} deleted from store ${chalk.yellow(
     storeName,
@@ -89,12 +89,12 @@ describe('blob:delete command', () => {
         expect(promptSpy).toHaveBeenCalledWith({
           type: 'confirm',
           name: 'confirm',
-          message: expect.stringContaining(overwriteConfirmationMessage),
+          message: expect.stringContaining(overwriteConfirmation),
           default: false,
         })
 
         expect(log).toHaveBeenCalledWith(warningMessage)
-        expect(log).toHaveBeenCalledWith(overwriteNoticeMessage)
+        expect(log).toHaveBeenCalledWith(overwriteNotice)
         expect(log).toHaveBeenCalledWith(successMessage)
       })
     })
@@ -124,12 +124,12 @@ describe('blob:delete command', () => {
         expect(promptSpy).toHaveBeenCalledWith({
           type: 'confirm',
           name: 'confirm',
-          message: expect.stringContaining(overwriteConfirmationMessage),
+          message: expect.stringContaining(overwriteConfirmation),
           default: false,
         })
 
         expect(log).toHaveBeenCalledWith(warningMessage)
-        expect(log).toHaveBeenCalledWith(overwriteNoticeMessage)
+        expect(log).toHaveBeenCalledWith(overwriteNotice)
         expect(log).not.toHaveBeenCalledWith(successMessage)
       })
     })
@@ -154,7 +154,7 @@ describe('blob:delete command', () => {
         expect(promptSpy).not.toHaveBeenCalled()
 
         expect(log).not.toHaveBeenCalledWith(warningMessage)
-        expect(log).not.toHaveBeenCalledWith(overwriteNoticeMessage)
+        expect(log).not.toHaveBeenCalledWith(overwriteNotice)
         expect(log).toHaveBeenCalledWith(successMessage)
       })
     })
@@ -188,7 +188,7 @@ describe('blob:delete command', () => {
           expect(promptSpy).not.toHaveBeenCalled()
 
           expect(log).not.toHaveBeenCalledWith(warningMessage)
-          expect(log).not.toHaveBeenCalledWith(overwriteNoticeMessage)
+          expect(log).not.toHaveBeenCalledWith(overwriteNotice)
           expect(log).not.toHaveBeenCalledWith(successMessage)
         })
       } catch (error) {
@@ -229,7 +229,7 @@ describe('blob:delete command', () => {
         expect(promptSpy).not.toHaveBeenCalled()
 
         expect(log).not.toHaveBeenCalledWith(warningMessage)
-        expect(log).not.toHaveBeenCalledWith(overwriteNoticeMessage)
+        expect(log).not.toHaveBeenCalledWith(overwriteNotice)
         expect(log).toHaveBeenCalledWith(successMessage)
       })
     })
@@ -255,7 +255,7 @@ describe('blob:delete command', () => {
         expect(promptSpy).not.toHaveBeenCalled()
 
         expect(log).not.toHaveBeenCalledWith(warningMessage)
-        expect(log).not.toHaveBeenCalledWith(overwriteNoticeMessage)
+        expect(log).not.toHaveBeenCalledWith(overwriteNotice)
         expect(log).toHaveBeenCalledWith(successMessage)
       })
     })

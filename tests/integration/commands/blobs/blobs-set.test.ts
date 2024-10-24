@@ -52,10 +52,10 @@ describe('blob:set command', () => {
   const value = 'my-value'
   const newValue = 'my-new-value'
 
-  const { overwriteNoticeMessage } = destructiveCommandMessages
-  const { generateWarningMessage, overwriteConfirmationMessage } = destructiveCommandMessages.blobSet
+  const { overwriteNotice } = destructiveCommandMessages
+  const { generateWarning, overwriteConfirmation } = destructiveCommandMessages.blobSet
 
-  const warningMessage = generateWarningMessage(key, storeName)
+  const warningMessage = generateWarning(key, storeName)
 
   const successMessage = `${chalk.greenBright('Success')}: Blob ${chalk.yellow(key)} set in store ${chalk.yellow(
     storeName,
@@ -89,7 +89,7 @@ describe('blob:set command', () => {
         expect(promptSpy).not.toHaveBeenCalled()
         expect(log).toHaveBeenCalledWith(successMessage)
         expect(log).not.toHaveBeenCalledWith(warningMessage)
-        expect(log).not.toHaveBeenCalledWith(overwriteNoticeMessage)
+        expect(log).not.toHaveBeenCalledWith(overwriteNotice)
       })
     })
 
@@ -116,13 +116,13 @@ describe('blob:set command', () => {
         expect(promptSpy).toHaveBeenCalledWith({
           type: 'confirm',
           name: 'confirm',
-          message: expect.stringContaining(overwriteConfirmationMessage),
+          message: expect.stringContaining(overwriteConfirmation),
           default: false,
         })
 
         expect(log).toHaveBeenCalledWith(successMessage)
         expect(log).toHaveBeenCalledWith(warningMessage)
-        expect(log).toHaveBeenCalledWith(overwriteNoticeMessage)
+        expect(log).toHaveBeenCalledWith(overwriteNotice)
       })
     })
 
@@ -154,12 +154,12 @@ describe('blob:set command', () => {
         expect(promptSpy).toHaveBeenCalledWith({
           type: 'confirm',
           name: 'confirm',
-          message: expect.stringContaining(overwriteConfirmationMessage),
+          message: expect.stringContaining(overwriteConfirmation),
           default: false,
         })
 
         expect(log).toHaveBeenCalledWith(warningMessage)
-        expect(log).toHaveBeenCalledWith(overwriteNoticeMessage)
+        expect(log).toHaveBeenCalledWith(overwriteNotice)
         expect(log).not.toHaveBeenCalledWith(successMessage)
       })
     })
@@ -187,7 +187,7 @@ describe('blob:set command', () => {
         expect(promptSpy).not.toHaveBeenCalled()
 
         expect(log).not.toHaveBeenCalledWith(warningMessage)
-        expect(log).not.toHaveBeenCalledWith(overwriteNoticeMessage)
+        expect(log).not.toHaveBeenCalledWith(overwriteNotice)
         expect(log).toHaveBeenCalledWith(successMessage)
       })
     })
@@ -216,7 +216,7 @@ describe('blob:set command', () => {
         expect(promptSpy).not.toHaveBeenCalled()
 
         expect(log).not.toHaveBeenCalledWith(warningMessage)
-        expect(log).not.toHaveBeenCalledWith(overwriteNoticeMessage)
+        expect(log).not.toHaveBeenCalledWith(overwriteNotice)
         expect(log).not.toHaveBeenCalledWith(successMessage)
       })
     })
@@ -256,7 +256,7 @@ describe('blob:set command', () => {
         expect(promptSpy).not.toHaveBeenCalled()
 
         expect(log).not.toHaveBeenCalledWith(warningMessage)
-        expect(log).not.toHaveBeenCalledWith(overwriteNoticeMessage)
+        expect(log).not.toHaveBeenCalledWith(overwriteNotice)
         expect(log).toHaveBeenCalledWith(successMessage)
       })
     })
@@ -285,7 +285,7 @@ describe('blob:set command', () => {
         expect(promptSpy).not.toHaveBeenCalled()
 
         expect(log).not.toHaveBeenCalledWith(warningMessage)
-        expect(log).not.toHaveBeenCalledWith(overwriteNoticeMessage)
+        expect(log).not.toHaveBeenCalledWith(overwriteNotice)
         expect(log).toHaveBeenCalledWith(successMessage)
       })
     })

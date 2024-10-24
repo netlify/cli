@@ -22,10 +22,10 @@ describe('env:set command', () => {
   // already exists as value in withMockApi
   const existingVar = 'EXISTING_VAR'
   const newEnvValue = 'value'
-  const { overwriteNoticeMessage } = destructiveCommandMessages
-  const { generateWarningMessage, overwriteConfirmationMessage } = destructiveCommandMessages.envSet
+  const { overwriteNotice } = destructiveCommandMessages
+  const { generateWarning, overwriteConfirmation } = destructiveCommandMessages.envSet
 
-  const warningMessage = generateWarningMessage(existingVar)
+  const warningMessage = generateWarning(existingVar)
 
   const successMessage = `Set environment variable ${chalk.yellow(
     `${existingVar}=${newEnvValue}`,
@@ -302,12 +302,12 @@ describe('env:set command', () => {
         expect(promptSpy).toHaveBeenCalledWith({
           type: 'confirm',
           name: 'confirm',
-          message: expect.stringContaining(overwriteConfirmationMessage),
+          message: expect.stringContaining(overwriteConfirmation),
           default: false,
         })
 
         expect(log).toHaveBeenCalledWith(warningMessage)
-        expect(log).toHaveBeenCalledWith(overwriteNoticeMessage)
+        expect(log).toHaveBeenCalledWith(overwriteNotice)
         expect(log).toHaveBeenCalledWith(successMessage)
       })
     })
@@ -326,7 +326,7 @@ describe('env:set command', () => {
         expect(promptSpy).not.toHaveBeenCalled()
 
         expect(log).not.toHaveBeenCalledWith(warningMessage)
-        expect(log).not.toHaveBeenCalledWith(overwriteNoticeMessage)
+        expect(log).not.toHaveBeenCalledWith(overwriteNotice)
         expect(log).toHaveBeenCalledWith(
           `Set environment variable ${chalk.yellow(`${'NEW_ENV_VAR'}=${'NEW_VALUE'}`)} in the ${chalk.magenta(
             'all',
@@ -349,7 +349,7 @@ describe('env:set command', () => {
         expect(promptSpy).not.toHaveBeenCalled()
 
         expect(log).not.toHaveBeenCalledWith(warningMessage)
-        expect(log).not.toHaveBeenCalledWith(overwriteNoticeMessage)
+        expect(log).not.toHaveBeenCalledWith(overwriteNotice)
         expect(log).toHaveBeenCalledWith(successMessage)
       })
     })
@@ -373,7 +373,7 @@ describe('env:set command', () => {
         expect(promptSpy).toHaveBeenCalled()
 
         expect(log).toHaveBeenCalledWith(warningMessage)
-        expect(log).toHaveBeenCalledWith(overwriteNoticeMessage)
+        expect(log).toHaveBeenCalledWith(overwriteNotice)
         expect(log).not.toHaveBeenCalledWith(successMessage)
       })
     })
@@ -404,7 +404,7 @@ describe('env:set command', () => {
         expect(promptSpy).not.toHaveBeenCalled()
 
         expect(log).not.toHaveBeenCalledWith(warningMessage)
-        expect(log).not.toHaveBeenCalledWith(overwriteNoticeMessage)
+        expect(log).not.toHaveBeenCalledWith(overwriteNotice)
         expect(log).toHaveBeenCalledWith(successMessage)
       })
     })
@@ -425,7 +425,7 @@ describe('env:set command', () => {
         expect(promptSpy).not.toHaveBeenCalled()
 
         expect(log).not.toHaveBeenCalledWith(warningMessage)
-        expect(log).not.toHaveBeenCalledWith(overwriteNoticeMessage)
+        expect(log).not.toHaveBeenCalledWith(overwriteNotice)
         expect(log).toHaveBeenCalledWith(successMessage)
       })
     })

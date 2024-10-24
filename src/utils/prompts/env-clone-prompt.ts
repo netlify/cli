@@ -14,23 +14,21 @@ export const generateEnvVarsList = (envVarsToDelete: EnvVar[]) => envVarsToDelet
  * @returns {Promise<void>} A promise that resolves when the user has confirmed the overwriting of the variables.
  */
 export async function promptEnvCloneOverwrite(siteId: string, existingEnvVars: EnvVar[]): Promise<void> {
-  const { overwriteNoticeMessage } = destructiveCommandMessages
-  const { generateWarningMessage, noticeEnvVarsMessage, overwriteConfirmationMessage } =
-    destructiveCommandMessages.envClone
+  const { generateWarning } = destructiveCommandMessages.envClone
 
   const existingEnvVarKeys = generateEnvVarsList(existingEnvVars)
-  const warningMessage = generateWarningMessage(siteId)
+  const warningMessage = generateWarning(siteId)
 
   log()
   log(warningMessage)
   log()
-  log(noticeEnvVarsMessage)
+  log(destructiveCommandMessages.envClone.noticeEnvVars)
   log()
   existingEnvVarKeys.forEach((envVar) => {
     log(envVar)
   })
   log()
-  log(overwriteNoticeMessage)
+  log(destructiveCommandMessages.overwriteNotice)
 
-  await confirmPrompt(overwriteConfirmationMessage)
+  await confirmPrompt(destructiveCommandMessages.envClone.overwriteConfirmation)
 }

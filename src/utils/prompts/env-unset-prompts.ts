@@ -10,13 +10,12 @@ import { destructiveCommandMessages } from './prompt-messages.js'
  * @returns {Promise<void>} A promise that resolves when the user has confirmed overwriting the variable
  */
 export const promptOverwriteEnvVariable = async (existingKey: string): Promise<void> => {
-  const { overwriteNoticeMessage } = destructiveCommandMessages
-  const { generateWarningMessage, overwriteConfirmationMessage } = destructiveCommandMessages.envUnset
+  const { generateWarning } = destructiveCommandMessages.envUnset
 
-  const warningMessage = generateWarningMessage(existingKey)
+  const warningMessage = generateWarning(existingKey)
 
   log(warningMessage)
   log()
-  log(overwriteNoticeMessage)
-  await confirmPrompt(overwriteConfirmationMessage)
+  log(destructiveCommandMessages.overwriteNotice)
+  await confirmPrompt(destructiveCommandMessages.envUnset.overwriteConfirmation)
 }

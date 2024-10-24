@@ -1,5 +1,3 @@
-import process from 'process'
-
 import { OptionValues } from 'commander'
 
 import { chalk, error, log, logJson } from '../../utils/command-helpers.js'

@@ -22,12 +22,11 @@ describe('env:clone command', () => {
   const sharedEnvVars = [existingVar, existingVar]
   const siteIdTwo = secondSiteInfo.id
 
-  const { overwriteNoticeMessage } = destructiveCommandMessages
-  const { generateWarningMessage, noticeEnvVarsMessage, overwriteConfirmationMessage } =
-    destructiveCommandMessages.envClone
+  const { overwriteNotice } = destructiveCommandMessages
+  const { generateWarning, noticeEnvVars, overwriteConfirmation } = destructiveCommandMessages.envClone
 
   const envVarsList = generateEnvVarsList(sharedEnvVars)
-  const warningMessage = generateWarningMessage(siteIdTwo)
+  const warningMessage = generateWarning(siteIdTwo)
 
   const successMessage = `Successfully cloned environment variables from ${chalk.green('site-name')} to ${chalk.green(
     'site-name-2',
@@ -53,16 +52,16 @@ describe('env:clone command', () => {
         expect(promptSpy).toHaveBeenCalledWith({
           type: 'confirm',
           name: 'confirm',
-          message: expect.stringContaining(overwriteConfirmationMessage),
+          message: expect.stringContaining(overwriteConfirmation),
           default: false,
         })
 
         expect(log).toHaveBeenCalledWith(warningMessage)
-        expect(log).toHaveBeenCalledWith(noticeEnvVarsMessage)
+        expect(log).toHaveBeenCalledWith(noticeEnvVars)
         envVarsList.forEach((envVar) => {
           expect(log).toHaveBeenCalledWith(envVar)
         })
-        expect(log).toHaveBeenCalledWith(overwriteNoticeMessage)
+        expect(log).toHaveBeenCalledWith(overwriteNotice)
         expect(log).toHaveBeenCalledWith(successMessage)
       })
     })
@@ -84,8 +83,8 @@ describe('env:clone command', () => {
         envVarsList.forEach((envVar) => {
           expect(log).not.toHaveBeenCalledWith(envVar)
         })
-        expect(log).not.toHaveBeenCalledWith(noticeEnvVarsMessage)
-        expect(log).not.toHaveBeenCalledWith(overwriteNoticeMessage)
+        expect(log).not.toHaveBeenCalledWith(noticeEnvVars)
+        expect(log).not.toHaveBeenCalledWith(overwriteNotice)
         expect(log).toHaveBeenCalledWith(successMessage)
       })
     })
@@ -109,11 +108,11 @@ describe('env:clone command', () => {
         expect(promptSpy).toHaveBeenCalled()
 
         expect(log).toHaveBeenCalledWith(warningMessage)
-        expect(log).toHaveBeenCalledWith(noticeEnvVarsMessage)
+        expect(log).toHaveBeenCalledWith(noticeEnvVars)
         envVarsList.forEach((envVar) => {
           expect(log).toHaveBeenCalledWith(envVar)
         })
-        expect(log).toHaveBeenCalledWith(overwriteNoticeMessage)
+        expect(log).toHaveBeenCalledWith(overwriteNotice)
         expect(log).not.toHaveBeenCalledWith(successMessage)
       })
     })
@@ -135,11 +134,11 @@ describe('env:clone command', () => {
         expect(promptSpy).not.toHaveBeenCalled()
 
         expect(log).not.toHaveBeenCalledWith(warningMessage)
-        expect(log).not.toHaveBeenCalledWith(noticeEnvVarsMessage)
+        expect(log).not.toHaveBeenCalledWith(noticeEnvVars)
         envVarsList.forEach((envVar) => {
           expect(log).not.toHaveBeenCalledWith(envVar)
         })
-        expect(log).not.toHaveBeenCalledWith(overwriteNoticeMessage)
+        expect(log).not.toHaveBeenCalledWith(overwriteNotice)
         expect(log).toHaveBeenCalledWith(successMessageSite3)
       })
     })
@@ -171,7 +170,7 @@ describe('env:clone command', () => {
         expect(promptSpy).not.toHaveBeenCalled()
 
         expect(log).not.toHaveBeenCalledWith(warningMessage)
-        expect(log).not.toHaveBeenCalledWith(overwriteNoticeMessage)
+        expect(log).not.toHaveBeenCalledWith(overwriteNotice)
         expect(log).toHaveBeenCalledWith(successMessage)
       })
     })
@@ -192,7 +191,7 @@ describe('env:clone command', () => {
         expect(promptSpy).not.toHaveBeenCalled()
 
         expect(log).not.toHaveBeenCalledWith(warningMessage)
-        expect(log).not.toHaveBeenCalledWith(overwriteNoticeMessage)
+        expect(log).not.toHaveBeenCalledWith(overwriteNotice)
         expect(log).toHaveBeenCalledWith(successMessage)
       })
     })
