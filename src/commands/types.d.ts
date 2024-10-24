@@ -19,6 +19,7 @@ export type NetlifySite = {
 }
 
 export type Context = 'dev' | 'production' | 'deploy-preview' | 'branch-deploy' | 'all'
+export type Scope = 'builds' | 'functions' | 'runtime' | 'post_processing'
 
 type PatchedConfig = NetlifyTOML & Pick<NetlifyConfig, 'images'> & {
   functionsDirectory?: string
@@ -73,9 +74,9 @@ export type NetlifyOptions = {
   /** Relative path of the netlify configuration file */
   relConfigFilePath: string
   site: NetlifySite
-  siteInfo: $TSFixMe
+  siteInfo: SiteInfo
   config: PatchedConfig
-  cachedConfig: Record<string, $TSFixMe> & { env: EnvironmentVariables }
+  cachedConfig: Record<string, $TSFixMe> & { env: EnvironmentVariables, siteInfo: SiteInfo }
   globalConfig: $TSFixMe
   state: StateConfig
   frameworksAPIPaths: FrameworksAPIPaths

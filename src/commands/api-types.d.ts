@@ -76,23 +76,23 @@ interface UpdateEnvVarParams {
 
 interface createEnvVarParams {
   accountId: string,
-  key: string,
+  key?: string,
   siteId?: string,
   body: EnvVar[]
 }
 
 // Top-Level Interface
-interface SiteData {
+interface SiteInfo {
   id: string;
   state: string;
   plan: string;
   name: string;
-  custom_domain: string;
+  custom_domain: string | null;
   domain_aliases: string[];
-  branch_deploy_custom_domain: string;
-  deploy_preview_custom_domain: string;
-  password: string;
-  notification_email: string;
+  branch_deploy_custom_domain: string | null;
+  deploy_preview_custom_domain: string | null;
+  password: string | null;
+  notification_email: string | null;
   url: string;
   ssl_url: string;
   admin_url: string;
@@ -102,23 +102,24 @@ interface SiteData {
   user_id: string;
   session_id: string;
   ssl: boolean;
-  force_ssl: boolean;
+  force_ssl: boolean | null;
   managed_dns: boolean;
   deploy_url: string;
   published_deploy: PublishedDeploy;
   account_id: string;
   account_name: string;
   account_slug: string;
-  git_provider: string;
+  git_provider?: string;
   deploy_hook: string;
   capabilities: Capabilities;
   processing_settings: ProcessingSettings;
   build_settings: BuildSettings;
   id_domain: string;
-  default_hooks_data: DefaultHooksData;
+  default_hooks_data?: DefaultHooksData;
   build_image: string;
-  prerender: string;
+  prerender: string | null;
   functions_region: string;
+  feature_flags: FeatureFlags;
 }
 
 // Published Deploy Interface
@@ -135,7 +136,7 @@ interface PublishedDeploy {
   deploy_url: string;
   deploy_ssl_url: string;
   screenshot_url: string;
-  review_id: number;
+  review_id: number | null;
   draft: boolean;
   required: string[];
   required_functions: string[];
@@ -143,16 +144,16 @@ interface PublishedDeploy {
   branch: string;
   commit_ref: string;
   commit_url: string;
-  skipped: boolean;
+  skipped: boolean | null;
   created_at: string;
   updated_at: string;
   published_at: string;
   title: string;
   context: string;
-  locked: boolean;
-  review_url: string;
+  locked: boolean | null;
+  review_url: string | null;
   framework: string;
-  function_schedules: FunctionSchedule[];
+  function_schedules: FunctionSchedule[] | [];
 }
 
 // Function Schedule Interface
@@ -203,15 +204,21 @@ interface EnvVariables {
 // Default Hooks Data Interface
 interface DefaultHooksData {
   access_token: string;
+} 
+
+interface GetSiteParams {
+  siteId?: string,
+  feature_flags?: string
+  site_id?: string
 }
 
-  
 export interface ExtendedNetlifyAPI extends NetlifyAPI {
+  getEnvVar(params: GetEnvVarParams): Promise<EnvVar>
   getEnvVars( params: GetEnvParams): Promise<EnvVar[]>
   deleteEnvVarValue( params: DeleteEnvVarValueParams  ): Promise<void>
   setEnvVarValue( params: SetEnvVarValueParams): Promise<EnvVar>
   deleteEnvVar(params: DeleteEnvVarValueParams): Promise<void>
   updateEnvVar(params: UpdateEnvVarParams): Promise<EnvVar>
   createEnvVars(params: createEnvVarParams): Promise<EnvVar[]>
-  getSite({siteId: string}): Promise<SiteData> 
+  getSite(params: GetSiteParams): Promise<SiteInfo> 
 }

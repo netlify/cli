@@ -1,10 +1,11 @@
-import { EnvVar } from '../../commands/api-types.d.js'
-import type { Context, EnviromentVariables, $TSFixMe } from '../../commands/types.js'
+import { EnvVar, ExtendedNetlifyAPI } from '../../commands/api-types.d.js'
+import type { Context, EnviromentVariables, $TSFixMe, Scope } from '../../commands/types.js'
 import { error } from '../command-helpers.js'
 import { APIEnvError } from '../types.js'
+import { GetEnvelopeEnvParams, ProcessedEnvVars } from './types.js'
 
 export const AVAILABLE_CONTEXTS: Context[] = ['all', 'production', 'deploy-preview', 'branch-deploy', 'dev']
-export const AVAILABLE_SCOPES = ['builds', 'functions', 'runtime', 'post_processing']
+export const AVAILABLE_SCOPES: Scope[] = ['builds', 'functions', 'runtime', 'post_processing']
 
 /**
  * @param {string|undefined} context - The deploy context or branch of the environment variable value
@@ -56,7 +57,7 @@ export const findValueInValues = (values, context) =>
  * @returns {object} The dictionary of env vars that match the given source
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'env' implicitly has an 'any' type.
-export const filterEnvBySource = (env, source) =>
+export const filterEnvBySource = (env: EnviromentVariables, source) =>
   // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
   Object.fromEntries(Object.entries(env).filter(([, variable]) => variable.sources[0] === source))
 
@@ -68,10 +69,10 @@ const fetchEnvelopeItems = async function ({
   siteId,
 }: {
   accountId: string
-  api: $TSFixMe
+  api: ExtendedNetlifyAPI
   key: string
-  siteId: string
-}): Promise<$TSFixMe[]> {
+  siteId?: string
+}): Promise<EnvVar[]> {
   if (accountId === undefined) {
     return []
   }
@@ -121,10 +122,10 @@ export const formatEnvelopeData = ({
   source,
 }: {
   context?: string
-  envelopeItems: $TSFixMe[]
+  envelopeItems: EnvVar[]
   scope?: string
   source: string
-}) =>
+}): ProcessedEnvVars =>
   envelopeItems
     // filter by context
     .filter(({ values }) => Boolean(findValueInValues(values, context)))
@@ -158,12 +159,10 @@ export const formatEnvelopeData = ({
  * @param {object} siteInfo - The site object
  * @returns {object} An object of environment variables keys and their metadata
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-export const getEnvelopeEnv = async ({ api, context = 'dev', env, key = '', raw = false, scope = 'any', siteInfo }) => {
+export const getEnvelopeEnv = async ({ api, context = 'dev', env, key = '', raw = false, scope = 'any', siteInfo }: GetEnvelopeEnvParams):Promise<$TSFixMe> => {
   const { account_slug: accountId, id: siteId } = siteInfo
 
   const [accountEnvelopeItems, siteEnvelopeItems] = await Promise.all([
-    // @ts-expect-error TS(2345) FIXME: Argument of type '{ api: any; accountId: any; key:... Remove this comment to see the full error message
     fetchEnvelopeItems({ api, accountId, key }),
     fetchEnvelopeItems({ api, accountId, key, siteId }),
   ])
@@ -176,7 +175,6 @@ export const getEnvelopeEnv = async ({ api, context = 'dev', env, key = '', raw 
     return entries.reduce(
       (obj, [envVarKey, metadata]) => ({
         ...obj,
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         [envVarKey]: metadata.value,
       }),
       {},

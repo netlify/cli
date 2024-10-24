@@ -12,13 +12,18 @@ export interface UnsetInEnvelopeParams {
 
 
 export interface SetInEnvelopeParams extends UnsetInEnvelopeParams {
-  value: string,
-  scope: EnvironmentVariableScope[],
-  secret: boolean, 
+  value: string
+  scope: EnvironmentVariableScope[]
+  secret: boolean
 }
 
 export interface SafeGetSite {
   api: ExtendedNetlifyAPI
   siteId: string
 }
-\
+
+export interface CloneEnvParams {
+  api: ExtendedNetlifyAPI
+  siteFrom: Site
+  siteTo: Site
+}

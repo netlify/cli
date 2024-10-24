@@ -4,6 +4,7 @@ import { chalk, log, error as logError } from '../../utils/command-helpers.js'
 import { isAPIEnvError } from '../../utils/env/index.js'
 import type { ExtendedNetlifyAPI } from '../api-types.d.ts'
 import BaseCommand from '../base-command.js'
+import { CloneEnvParams } from './types.js'
 
 const safeGetSite = async (api: ExtendedNetlifyAPI, siteId: string) => {
   try {
@@ -18,14 +19,12 @@ const safeGetSite = async (api: ExtendedNetlifyAPI, siteId: string) => {
  * Copies the env from a site configured with Envelope to a different site configured with Envelope
  * @returns {Promise<boolean>}
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-const cloneEnvVars = async ({ api, siteFrom, siteTo }): Promise<boolean> => {
+const cloneEnvVars = async ({ api, siteFrom, siteTo }: CloneEnvParams): Promise<boolean> => {
   const [envelopeFrom, envelopeTo] = await Promise.all([
     api.getEnvVars({ accountId: siteFrom.account_slug, siteId: siteFrom.id }),
     api.getEnvVars({ accountId: siteTo.account_slug, siteId: siteTo.id }),
   ])
 
-  // @ts-expect-error TS(7031) FIXME: Binding element 'key' implicitly has an 'any' type... Remove this comment to see the full error message
   const keysFrom = envelopeFrom.map(({ key }) => key)
 
   if (keysFrom.length === 0) {
@@ -35,10 +34,8 @@ const cloneEnvVars = async ({ api, siteFrom, siteTo }): Promise<boolean> => {
 
   const accountId = siteTo.account_slug
   const siteId = siteTo.id
-  // @ts-expect-error TS(7031) FIXME: Binding element 'key' implicitly has an 'any' type... Remove this comment to see the full error message
   const envVarsToDelete = envelopeTo.filter(({ key }) => keysFrom.includes(key))
   // delete marked env vars in parallel
-  // @ts-expect-error TS(7031) FIXME: Binding element 'key' implicitly has an 'any' type... Remove this comment to see the full error message
   await Promise.all(envVarsToDelete.map(({ key }) => api.deleteEnvVar({ accountId, siteId, key })))
 
   // hit create endpoint
