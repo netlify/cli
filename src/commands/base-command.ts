@@ -1,5 +1,3 @@
-import { isCI } from 'ci-info'
-
 import { existsSync } from 'fs'
 import { join, relative, resolve } from 'path'
 import process from 'process'
@@ -8,6 +6,7 @@ import { format } from 'util'
 import { DefaultLogger, Project } from '@netlify/build-info'
 import { NodeFS, NoopLogger } from '@netlify/build-info/node'
 import { resolveConfig } from '@netlify/config'
+import { isCI } from 'ci-info'
 import { Command, Help, Option } from 'commander'
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'debu... Remove this comment to see the full error message
 import debug from 'debug'
@@ -167,6 +166,13 @@ export default class BaseCommand extends Command {
   // here we actually want to disable the lint rule as its value is set
   // eslint-disable-next-line workspace/no-process-cwd
   workingDir = process.cwd()
+
+  /**
+   * Determines if the command is scripted or not.
+   * If the command is scripted (SHLVL is greater than 1 or CI/CONTINUOUS_INTEGRATION is true) then some commands
+   * might behave differently.
+   */
+  scriptedCommand = Boolean(!process.stdin.isTTY || isCI || process.env.CI)
 
   /**
    * The workspace root if inside a mono repository.

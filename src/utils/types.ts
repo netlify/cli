@@ -64,3 +64,17 @@ export interface Request extends IncomingMessage {
 export type Rewriter = (req: Request) => Match | null
 
 export type TokenLocation = 'env' | 'flag' | 'config' | 'not found'
+
+export type EnvVar = {
+  key: string
+  scopes: string[]
+  values: EnvVarValue[]
+  updated_at: string
+  is_secret: boolean
+}
+
+type EnvVarValue = {
+  id: string
+  context: string
+  value: string
+}
