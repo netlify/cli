@@ -159,7 +159,15 @@ export const formatEnvelopeData = ({
  * @param {object} siteInfo - The site object
  * @returns {object} An object of environment variables keys and their metadata
  */
-export const getEnvelopeEnv = async ({ api, context = 'dev', env, key = '', raw = false, scope = 'any', siteInfo }: GetEnvelopeEnvParams):Promise<$TSFixMe> => {
+export const getEnvelopeEnv = async ({
+  api,
+  context = 'dev',
+  env,
+  key = '',
+  raw = false,
+  scope = 'any',
+  siteInfo,
+}: GetEnvelopeEnvParams): Promise<$TSFixMe> => {
   const { account_slug: accountId, id: siteId } = siteInfo
 
   const [accountEnvelopeItems, siteEnvelopeItems] = await Promise.all([
