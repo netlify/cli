@@ -1,10 +1,9 @@
-import { OptionValues } from 'commander'
-
 import { chalk, log, error as logError } from '../../utils/command-helpers.js'
 import { isAPIEnvError } from '../../utils/env/index.js'
 import type { ExtendedNetlifyAPI } from '../api-types.d.ts'
 import BaseCommand from '../base-command.js'
-import { CloneEnvParams } from './types.js'
+
+import { CloneEnvParams, EnvCloneOptions } from './types.js'
 
 const safeGetSite = async (api: ExtendedNetlifyAPI, siteId: string) => {
   try {
@@ -48,10 +47,10 @@ const cloneEnvVars = async ({ api, siteFrom, siteTo }: CloneEnvParams): Promise<
   return true
 }
 
-export const envClone = async (options: OptionValues, command: BaseCommand) => {
+export const envClone = async (options: EnvCloneOptions, command: BaseCommand) => {
   const { api, site } = command.netlify
 
-  if (!site.id && !options.from) {
+  if (!site.id || !options.from) {
     log(
       'Please include the source site Id as the `--from` option, or run `netlify link` to link this folder to a Netlify site',
     )

@@ -1,5 +1,3 @@
-import { OptionValues } from 'commander'
-
 import { chalk, error, log, logJson } from '../../utils/command-helpers.js'
 import {
   AVAILABLE_CONTEXTS,
@@ -10,7 +8,7 @@ import {
 import type { Value } from '../api-types.js'
 import BaseCommand from '../base-command.js'
 
-import type { SetInEnvelopeParams } from './types.d.ts'
+import type { SetInEnvelopeParams, EnvSetOptions } from './types.d.ts'
 
 /**
  * Updates the env for a site configured with Envelope with a new key/value pair
@@ -106,7 +104,7 @@ const setInEnvelope = async ({ api, context, key, scope, secret, siteInfo, value
   }
 }
 
-export const envSet = async (key: string, value: string, options: OptionValues, command: BaseCommand) => {
+export const envSet = async (key: string, value: string, options: EnvSetOptions, command: BaseCommand) => {
   const { context, scope, secret } = options
 
   const { api, cachedConfig, site } = command.netlify

@@ -1,7 +1,15 @@
-import { EnvVar, ExtendedNetlifyAPI } from '../../commands/api-types.d.js'
-import type { Context, EnviromentVariables, $TSFixMe, Scope } from '../../commands/types.js'
+import { EnvVar, EnvVarValue, ExtendedNetlifyAPI } from '../../commands/api-types.d.js'
+import type {
+  Context,
+  EnviromentVariables,
+  $TSFixMe,
+  Scope,
+  EnvironmentVariableSource,
+  EnvironmentVariableScope,
+} from '../../commands/types.js'
 import { error } from '../command-helpers.js'
 import { APIEnvError } from '../types.js'
+
 import { GetEnvelopeEnvParams, ProcessedEnvVars } from './types.js'
 
 export const AVAILABLE_CONTEXTS: Context[] = ['all', 'production', 'deploy-preview', 'branch-deploy', 'dev']
@@ -56,8 +64,7 @@ export const findValueInValues = (values, context) =>
  * @param {enum<general,account,addons,ui,configFile>} source - The source of the environment variable
  * @returns {object} The dictionary of env vars that match the given source
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'env' implicitly has an 'any' type.
-export const filterEnvBySource = (env: EnviromentVariables, source) =>
+export const filterEnvBySource = (env: EnviromentVariables, source: EnvironmentVariableSource): ProcessedEnvVars =>
   // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
   Object.fromEntries(Object.entries(env).filter(([, variable]) => variable.sources[0] === source))
 
@@ -123,8 +130,8 @@ export const formatEnvelopeData = ({
 }: {
   context?: string
   envelopeItems: EnvVar[]
-  scope?: string
-  source: string
+  scope?: EnvironmentVariableScope | 'any'
+  source: EnvironmentVariableSource
 }): ProcessedEnvVars =>
   envelopeItems
     // filter by context
@@ -167,7 +174,7 @@ export const getEnvelopeEnv = async ({
   raw = false,
   scope = 'any',
   siteInfo,
-}: GetEnvelopeEnvParams): Promise<$TSFixMe> => {
+}: GetEnvelopeEnvParams): Promise<ProcessedEnvVars> => {
   const { account_slug: accountId, id: siteId } = siteInfo
 
   const [accountEnvelopeItems, siteEnvelopeItems] = await Promise.all([
@@ -241,14 +248,17 @@ export const getHumanReadableScopes = (scopes) => {
  * @param {object} env - The site's env as it exists in Mongo
  * @returns {Array<object>} The array of Envelope env vars
  */
-export const translateFromMongoToEnvelope = (env = {}) => {
+
+export const translateFromMongoToEnvelope = (env = {}): EnvVar[] => {
+  const context: Context = 'all'
+
   const envVars = Object.entries(env).map(([key, value]) => ({
     key,
     scopes: AVAILABLE_SCOPES,
     values: [
       {
-        context: 'all',
-        value,
+        context,
+        value: String(value),
       },
     ],
   }))

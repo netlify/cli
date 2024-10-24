@@ -26,9 +26,9 @@ interface EnvVarValue {
 
 export interface EnvVar {
   key: string;
-  scopes: string[];
+  scopes: Scope[];
   values: EnvVarValue[];
-  is_secret: boolean;
+  is_secret?: boolean;
   updated_at?: string; 
   updated_by?: UpdatedBy;
 }

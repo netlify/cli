@@ -1,7 +1,6 @@
 import ansiEscapes from 'ansi-escapes'
 import AsciiTable from 'ascii-table'
 import { isCI } from 'ci-info'
-import { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 import logUpdate from 'log-update'
 
@@ -9,6 +8,8 @@ import { chalk, log, logJson } from '../../utils/command-helpers.js'
 import { AVAILABLE_CONTEXTS, getEnvelopeEnv, getHumanReadableScopes } from '../../utils/env/index.js'
 import BaseCommand from '../base-command.js'
 import { EnvironmentVariables } from '../types.js'
+
+import { EnvListOptions } from './types.js'
 
 const MASK_LENGTH = 50
 const MASK = '*'.repeat(MASK_LENGTH)
@@ -40,7 +41,7 @@ const getTable = ({
   return table.toString()
 }
 
-export const envList = async (options: OptionValues, command: BaseCommand) => {
+export const envList = async (options: EnvListOptions, command: BaseCommand) => {
   const { context, scope } = options
   const { api, cachedConfig, site } = command.netlify
   const siteId = site.id
@@ -56,7 +57,6 @@ export const envList = async (options: OptionValues, command: BaseCommand) => {
   // filter out general sources
   environment = Object.fromEntries(
     Object.entries(environment).filter(
-      // @ts-expect-error TS(18046) - 'variable' is of type 'unknown'
       ([, variable]) => variable.sources[0] !== 'general' && variable.sources[0] !== 'internal',
     ),
   )
@@ -64,7 +64,6 @@ export const envList = async (options: OptionValues, command: BaseCommand) => {
   // Return json response for piping commands
   if (options.json) {
     const envDictionary = Object.fromEntries(
-      // @ts-expect-error TS(18046) - 'variable' is of type 'unknown'
       Object.entries(environment).map(([key, variable]) => [key, variable.value]),
     )
     logJson(envDictionary)
@@ -73,7 +72,6 @@ export const envList = async (options: OptionValues, command: BaseCommand) => {
 
   if (options.plain) {
     const plaintext = Object.entries(environment)
-      // @ts-expect-error TS(18046) - 'variable' is of type 'unknown'
       .map(([key, variable]) => `${key}=${variable.value}`)
       .join('\n')
     log(plaintext)
@@ -81,7 +79,7 @@ export const envList = async (options: OptionValues, command: BaseCommand) => {
   }
 
   const forSite = `for site ${chalk.green(siteInfo.name)}`
-  const contextType = AVAILABLE_CONTEXTS.includes(context) ? 'context' : 'branch'
+  const contextType = context === undefined ? 'branch' : AVAILABLE_CONTEXTS.includes(context)
   const withContext = `in the ${chalk.magenta(options.context)} ${contextType}`
   const withScope = scope === 'any' ? '' : `and ${chalk.yellow(options.scope)} scope`
   if (Object.keys(environment).length === 0) {

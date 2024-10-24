@@ -1,11 +1,9 @@
-import { OptionValues } from 'commander'
-
 import { chalk, log, logJson } from '../../utils/command-helpers.js'
 import { AVAILABLE_CONTEXTS, translateFromEnvelopeToMongo, isAPIEnvError } from '../../utils/env/index.js'
 import BaseCommand from '../base-command.js'
 import type { EnviromentVariables } from '../types.d.ts'
 
-import type { UnsetInEnvelopeParams } from './types.d.ts'
+import type { EnvUnsetOptions, UnsetInEnvelopeParams } from './types.d.ts'
 
 /**
  * Deletes a given key from the env of a site configured with Envelope
@@ -68,7 +66,7 @@ const unsetInEnvelope = async ({
   return env
 }
 
-export const envUnset = async (key: string, options: OptionValues, command: BaseCommand) => {
+export const envUnset = async (key: string, options: EnvUnsetOptions, command: BaseCommand) => {
   const { context } = options
   const { api, cachedConfig, site } = command.netlify
   const siteId = site.id

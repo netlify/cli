@@ -16,6 +16,7 @@ export type NetlifySite = {
   siteId?: string
   get id(): string | undefined
   set id(id: string): void
+  id: string
 }
 
 export type Context = 'dev' | 'production' | 'deploy-preview' | 'branch-deploy' | 'all'
@@ -52,8 +53,8 @@ type HTMLInjection = {
   html: string
 }
 
-type EnvironmentVariableScope = 'builds' | 'functions' | 'runtime' | 'post_processing'
-type EnvironmentVariableSource = 'account' | 'addons' | 'configFile' | 'general' |  'internal' | 'ui'
+export type EnvironmentVariableScope = 'builds' | 'functions' | 'runtime' | 'post_processing'
+export type EnvironmentVariableSource = 'account' | 'addons' | 'configFile' | 'general' |  'internal' | 'ui'
 
 
 type EnviromentVariables  = { 

@@ -1,10 +1,10 @@
-import { OptionValues } from 'commander'
-
 import { chalk, log, logJson } from '../../utils/command-helpers.js'
 import { AVAILABLE_CONTEXTS, getEnvelopeEnv } from '../../utils/env/index.js'
 import BaseCommand from '../base-command.js'
 
-export const envGet = async (name: string, options: OptionValues, command: BaseCommand) => {
+import { EnvOptions } from './types.js'
+
+export const envGet = async (name: string, options: EnvOptions, command: BaseCommand) => {
   const { context, scope } = options
   const { api, cachedConfig, site } = command.netlify
   const siteId = site.id
@@ -27,7 +27,7 @@ export const envGet = async (name: string, options: OptionValues, command: BaseC
   }
 
   if (!value) {
-    const contextType = AVAILABLE_CONTEXTS.includes(context) ? 'context' : 'branch'
+    const contextType = context === undefined ? 'branch' : AVAILABLE_CONTEXTS.includes(context)
     const withContext = `in the ${chalk.magenta(context)} ${contextType}`
     const withScope = scope === 'any' ? '' : ` and the ${chalk.magenta(scope)} scope`
     log(`No value set ${withContext}${withScope} for environment variable ${chalk.yellow(name)}`)
