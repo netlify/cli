@@ -1,4 +1,10 @@
+import { OptionValues } from 'commander'
+import inquirer from 'inquirer'
 import fetch from 'node-fetch'
+// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'pars... Remove this comment to see the full error message
+import parseGitHubUrl from 'parse-github-url'
+
+import { log } from '../command-helpers.js'
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'token' implicitly has an 'any' type.
 export const getTemplatesFromGitHub = async (token) => {
@@ -59,4 +65,88 @@ export const createRepo = async (templateName: string, ghToken: string, siteName
   const data = await resp.json()
 
   return data
+}
+
+export const renameRepo = async (templateName: string, ghToken: string, siteName: string) => {
+  const resp = await fetch(`https://api.github.com/repos/${templateName}/generate`, {
+    method: 'PATCH',
+    headers: {
+      Authorization: `token ${ghToken}`,
+    },
+    body: JSON.stringify({
+      name: siteName,
+    }),
+  })
+
+  const data = await resp.json()
+
+  return data
+}
+// https://stackoverflow.com/questions/4777535/how-do-i-rename-a-github-repository-via-their-api
+
+export const fetchTemplates = async (token: string) => {
+  const templatesFromGithubOrg = await getTemplatesFromGitHub(token)
+
+  return (
+    // @ts-expect-error TS(18046) - 'templatesFromGithubOrg' if of type 'unknown'
+    templatesFromGithubOrg
+      // @ts-expect-error TS(7006) FIXME: Parameter 'repo' implicitly has an 'any' type.
+      .filter((repo) => !repo.archived && !repo.disabled)
+      // @ts-expect-error TS(7006) FIXME: Parameter 'template' implicitly has an 'any' type.
+      .map((template) => ({
+        name: template.name,
+        sourceCodeUrl: template.html_url,
+        slug: template.full_name,
+      }))
+  )
+}
+
+export const getTemplateName = async ({
+  ghToken,
+  options,
+  repository,
+}: {
+  ghToken: string
+  options: OptionValues
+  repository: string
+}) => {
+  if (repository) {
+    const { repo } = parseGitHubUrl(repository)
+    return repo || `netlify-templates/${repository}`
+  }
+
+  if (options.url) {
+    const urlFromOptions = new URL(options.url)
+    return urlFromOptions.pathname.slice(1)
+  }
+
+  const templates = await fetchTemplates(ghToken)
+
+  log(`Choose one of our starter templates. Netlify will create a new repo for this template in your GitHub account.`)
+
+  const { templateName } = await inquirer.prompt([
+    {
+      type: 'list',
+      name: 'templateName',
+      message: 'Template:',
+      // @ts-expect-error TS(7006) FIXME: Parameter 'template' implicitly has an 'any' type.
+      choices: templates.map((template) => ({
+        value: template.slug,
+        name: template.name,
+      })),
+    },
+  ])
+
+  return templateName
+}
+
+export const getGitHubLink = ({ options, templateName }: { options: OptionValues; templateName: string }) =>
+  options.url || `https://github.com/${templateName}`
+
+export const deployedSiteExists = async (name: string): Promise<boolean> => {
+  const resp = await fetch(`https://${name}.netlify.app`, {
+    method: 'GET',
+  })
+
+  return resp.status === 200
 }
