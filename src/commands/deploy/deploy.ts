@@ -30,6 +30,7 @@ import {
   log,
   logJson,
   warn,
+  APIError,
 } from '../../utils/command-helpers.js'
 import { DEFAULT_DEPLOY_TIMEOUT } from '../../utils/deploy/constants.js'
 import { deploySite } from '../../utils/deploy/deploy-site.js'
@@ -58,12 +59,10 @@ const triggerDeploy = async ({ api, options, siteData, siteId }) => {
       )
     }
   } catch (error_) {
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    if (error_.status === 404) {
+    if ((error_ as APIError).status === 404) {
       error('Site not found. Please rerun "netlify link" and make sure that your site has CI configured.')
     } else {
-      // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-      error(error_.message)
+      error((error_ as APIError).message)
     }
   }
 }
@@ -372,8 +371,9 @@ const uploadDeployBlobs = async ({
     phase: 'start',
   })
 
-  const [token] = await getToken(false)
+  const [token] = await getToken()
 
+  const blobsToken = token || undefined
   const { success } = await runCoreSteps(['blobs_upload'], {
     ...options,
     quiet: silent,
@@ -381,7 +381,7 @@ const uploadDeployBlobs = async ({
     packagePath,
     deployId,
     siteId,
-    token,
+    token: blobsToken,
   })
 
   if (!success) {
@@ -536,7 +536,7 @@ const runDeploy = async ({
 
   if (!deployToProduction) {
     functionLogsUrl += `?scope=deploy:${deployId}`
-    edgeFunctionLogsUrl += `?scope=deploy:${deployId}`
+    edgeFunctionLogsUrl += `?scope=deployid:${deployId}`
   }
 
   return {
@@ -566,7 +566,6 @@ const handleBuild = async ({ cachedConfig, currentDir, defaultConfig, deployHand
   if (!options.build) {
     return {}
   }
-  // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
   const [token] = await getToken()
   const resolvedOptions = await getBuildOptions({
     cachedConfig,
