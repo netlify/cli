@@ -1,4 +1,4 @@
-import { error } from './command-helpers.js'
+import { APIError, error } from './command-helpers.js'
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'api' implicitly has an 'any' type.
 export const getSiteByName = async (api, siteName) => {
@@ -13,10 +13,8 @@ export const getSiteByName = async (api, siteName) => {
 
     return siteFoundByName
   } catch (error_) {
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    if (error_.status === 401) {
-      // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-      error(`${error_.message}: could not retrieve site`)
+    if ((error_ as APIError).status === 401) {
+      error(`${(error_ as APIError).message}: could not retrieve site`)
     } else {
       error('Site not found. Please rerun "netlify link"')
     }
