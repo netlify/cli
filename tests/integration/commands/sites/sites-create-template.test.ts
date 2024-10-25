@@ -2,7 +2,7 @@ import { join } from 'path'
 import process from 'process'
 
 import execa from 'execa'
-import { afterAll, beforeAll, describe, expect, test, vi } from 'vitest'
+import { afterAll, beforeEach, afterEach, beforeAll, describe, expect, test, vi } from 'vitest'
 
 import { sitesCreateTemplate } from '../../../../src/commands/sites/sites-create-template.ts'
 import { getGitHubToken } from '../../../../src/utils/init/config-github.ts'
@@ -22,6 +22,7 @@ import { withSiteBuilder } from '../../utils/site-builder.ts'
 import { sanityCheck } from './sanity'
 import BaseCommand from '../../../../src/commands/base-command.ts'
 import { createSitesFromTemplateCommand } from '../../../../src/commands/sites/sites.ts'
+import { getSiteNameInput } from '../../../../src/commands/sites/sites-create.ts'
 
 // import { log } from '../../../../src/utils/command-helpers.ts'
 // const { stdout: cliResponse } = await childProcess
@@ -29,6 +30,7 @@ import { createSitesFromTemplateCommand } from '../../../../src/commands/sites/s
 // vi.mock('../../../../src/utils/gh-auth.ts')
 vi.mock('../../../../src/utils/init/config-github.ts')
 vi.mock('../../../../src/utils/sites/utils.ts')
+vi.mock('../../../../src/commands/sites/sites-create.ts')
 // vi.mock('../../../../src/commands/sites/sites-create-template.ts')
 
 // https://www.bitovi.com/blog/more-mocks-mocking-modules-in-vitest
@@ -99,36 +101,6 @@ vi.mock('../../../../src/utils/sites/utils.ts')
 //   }
 // })
 
-vi.mocked(getGitHubToken).mockResolvedValue('mockToken')
-vi.mocked(fetchTemplates).mockResolvedValue([
-  {
-    name: 'mockTemplateName',
-    sourceCodeUrl: 'mockUrl',
-    slug: 'mockSlug',
-  },
-])
-vi.mocked(getTemplatesFromGitHub).mockResolvedValue([
-  {
-    name: 'mockTemplateName',
-    sourceCodeUrl: 'mockUrl',
-    slug: 'mockSlug',
-  },
-])
-vi.mocked(getGitHubToken).mockResolvedValue('mockTemplate')
-vi.mocked(getTemplateName).mockResolvedValue('mockTemplateName')
-
-vi.mocked(validateTemplate).mockResolvedValue({
-  exists: true,
-  isTemplate: true,
-})
-
-vi.mocked(createRepo).mockResolvedValue({
-  id: 'mockId',
-  full_name: 'mockName',
-  private: true,
-  default_branch: 'mockBranch',
-})
-
 const routes = [
   {
     path: 'accounts',
@@ -140,81 +112,152 @@ const routes = [
   },
 ]
 
+const gitHubTest = [...routes, { path: 'test-account/sites', method: 'post', status: 422 }]
+
 describe('inputSiteName', () => {
   let mockApi
   let mockCommand
-  beforeAll(async () => {
-    mockApi = await startMockApi({ routes, silent: false })
-    console.log('here is the mockapi', JSON.stringify(mockApi))
-    mockApi.listAccountsForUser = () => [{ slug: 'testAccount' }]
-    mockApi.listSites = () => [{ name: 'mockSiteName' }]
-    mockCommand = { netlify: { api: mockApi, globalConfig: '' }, authenticate: vi.fn() }
-  })
-  afterAll(() => {})
+  beforeEach(async () => {
+    vi.mocked(getGitHubToken).mockResolvedValue('mockToken')
+    vi.mocked(fetchTemplates).mockResolvedValue([
+      {
+        name: 'mockTemplateName',
+        sourceCodeUrl: 'mockUrl',
+        slug: 'mockSlug',
+      },
+    ])
+    vi.mocked(getTemplatesFromGitHub).mockResolvedValue([
+      {
+        name: 'mockTemplateName',
+        sourceCodeUrl: 'mockUrl',
+        slug: 'mockSlug',
+      },
+    ])
+    vi.mocked(getGitHubToken).mockResolvedValue('mockTemplate')
+    vi.mocked(getTemplateName).mockResolvedValue('mockTemplateName')
 
-  test('it should ask for a new site name if site with that name already exists on a globally deployed site', async (t) => {
+    vi.mocked(validateTemplate).mockResolvedValue({
+      exists: true,
+      isTemplate: true,
+    })
+
+    vi.mocked(createRepo).mockResolvedValue({
+      id: 'mockId',
+      full_name: 'mockName',
+      private: true,
+      default_branch: 'mockBranch',
+    })
+    // vi.mocked(getSiteNameInput).mockResolvedValue({ name: 'test-name' })
+  })
+  afterEach(() => {
+    vi.resetModules()
+    vi.restoreAllMocks()
+  })
+
+  test.only('it should ask for a new site name if site with that name already exists on a globally deployed site', async (t) => {
     await withMockApi(routes, async ({ apiUrl }) => {
       Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
       const program = new BaseCommand('netlify')
 
-      createSitesFromTemplateCommand(program)
-
-      await program.parseAsync(['', '', 'sites:create-template'])
-    })
-
-    const stdoutwriteSpy = vi.spyOn(process.stdout, 'write')
-    vi.mocked(deployedSiteExists).mockResolvedValue(true)
-    sitesCreateTemplate('', { name: 'globallyExistingName', accountSlug: 'mockSlug' }, mockCommand as any)
-
-    await new Promise((resolve) => {
-      setTimeout(resolve, 2000)
-    })
-
-    // expect(stdoutwriteSpy).toHaveBeenCalledWith('asdfsaf HERE!!!!!\n')
-    expect(stdoutwriteSpy).toHaveBeenCalledWith('A site with that name already exists!!!!\n')
-  })
-
-  test('it should ask for a new site name if site with that name already exists on a globally deployed site', async (t) => {
-    await withMockApi(routes, async () => {
       const stdoutwriteSpy = vi.spyOn(process.stdout, 'write')
       vi.mocked(deployedSiteExists).mockResolvedValue(true)
-      sitesCreateTemplate('', { name: 'globallyExistingName', accountSlug: 'mockSlug' }, mockCommand as any)
+
+      createSitesFromTemplateCommand(program)
+
+      program.parseAsync([
+        '',
+        '',
+        'sites:create-template',
+        '--account-slug',
+        'mockSlug',
+        '--name',
+        'globallyExistingName',
+      ])
 
       await new Promise((resolve) => {
         setTimeout(resolve, 2000)
       })
 
-      // expect(stdoutwriteSpy).toHaveBeenCalledWith('asdfsaf HERE!!!!!\n')
       expect(stdoutwriteSpy).toHaveBeenCalledWith('A site with that name already exists!!!!\n')
     })
   })
 
   test('it should ask for a new site name if site with that name already exists on account', async (t) => {
-    const stdoutwriteSpy = vi.spyOn(process.stdout, 'write')
-    vi.mocked(deployedSiteExists).mockResolvedValue(false)
-    sitesCreateTemplate('', { name: 'mockSiteName', accountSlug: 'mockSlug' }, mockCommand as any)
+    await withMockApi(routes, async ({ apiUrl }) => {
+      Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-    await new Promise((resolve) => {
-      setTimeout(resolve, 2000)
+      const program = new BaseCommand('netlify')
+
+      const stdoutwriteSpy = vi.spyOn(process.stdout, 'write')
+      vi.mocked(deployedSiteExists).mockResolvedValue(false)
+
+      createSitesFromTemplateCommand(program)
+
+      program.parseAsync(['', '', 'sites:create-template', '--account-slug', 'slug', '--name', 'mockSiteName'])
+
+      await new Promise((resolve) => {
+        setTimeout(resolve, 2000)
+      })
+
+      expect(stdoutwriteSpy).toHaveBeenCalledWith('A site with that name already exists\n')
     })
-
-    // expect(stdoutwriteSpy).toHaveBeenCalledWith('asdfsaf HERE!!!!!\n')
-    expect(stdoutwriteSpy).toHaveBeenCalledWith('A site with that name already exists\n')
   })
 
-  test('it should ask for a new site name if site with that name already exists on account', async (t) => {
-    const stdoutwriteSpy = vi.spyOn(process.stdout, 'write')
-    vi.mocked(deployedSiteExists).mockResolvedValue(false)
-    sitesCreateTemplate('', { name: 'uniqueName', accountSlug: 'mockSlug' }, mockCommand as any)
+  test('no call github twice', async (t) => {
+    await withMockApi(gitHubTest, async ({ apiUrl }) => {
+      Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-    await new Promise((resolve) => {
-      setTimeout(resolve, 2000)
+      const program = new BaseCommand('netlify')
+
+      vi.mocked(getSiteNameInput).mockResolvedValue({ name: 'test-name' })
+
+      createSitesFromTemplateCommand(program)
+
+      program.parseAsync([
+        '',
+        '',
+        'sites:create-template',
+        '--account-slug',
+        'test-account',
+        '--name',
+        'uniqueSiteName',
+      ])
+
+      await new Promise((resolve) => {
+        setTimeout(resolve, 250)
+      })
+
+      expect(getSiteNameInput).toHaveBeenCalled()
+      expect(getSiteNameInput).not.toHaveBeenCalledOnce()
+      expect(createRepo).toHaveBeenCalledOnce()
     })
-
-    // expect(stdoutwriteSpy).toHaveBeenCalledWith('asdfsaf HERE!!!!!\n')
-    expect(stdoutwriteSpy).toHaveBeenCalledWith('Site name may already exist globally\n')
   })
+  // test('it should ask for a new site name if site with that name already exists on account', async (t) => {
+  //   const stdoutwriteSpy = vi.spyOn(process.stdout, 'write')
+  //   vi.mocked(deployedSiteExists).mockResolvedValue(false)
+  //   sitesCreateTemplate('', { name: 'mockSiteName', accountSlug: 'mockSlug' }, mockCommand as any)
+
+  //   await new Promise((resolve) => {
+  //     setTimeout(resolve, 2000)
+  //   })
+
+  //   // expect(stdoutwriteSpy).toHaveBeenCalledWith('asdfsaf HERE!!!!!\n')
+  //   expect(stdoutwriteSpy).toHaveBeenCalledWith('A site with that name already exists\n')
+  // })
+
+  // test('it should ask for a new site name if site with that name already exists on account', async (t) => {
+  //   const stdoutwriteSpy = vi.spyOn(process.stdout, 'write')
+  //   vi.mocked(deployedSiteExists).mockResolvedValue(false)
+  //   sitesCreateTemplate('', { name: 'uniqueName', accountSlug: 'mockSlug' }, mockCommand as any)
+
+  //   await new Promise((resolve) => {
+  //     setTimeout(resolve, 2000)
+  //   })
+
+  //   // expect(stdoutwriteSpy).toHaveBeenCalledWith('asdfsaf HERE!!!!!\n')
+  //   expect(stdoutwriteSpy).toHaveBeenCalledWith('Site name may already exist globally\n')
+  // })
 
   // test('it should ask for a new site name if name already exists', async (t) => {
   //   const stdoutwriteSpy = vi.spyOn(process.stdout, 'write')

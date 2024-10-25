@@ -60,6 +60,7 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
   }
   console.log('before listAccountsForUser')
   const accounts = await api.listAccountsForUser()
+  console.log('ACCOUNTS:', accounts)
   console.log('after listAccountsForUser')
   let { accountSlug } = options
 
@@ -87,14 +88,18 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
   // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
   const inputSiteName = async (name?, existingRepoName?) => {
     console.log('name type', typeof name)
+    console.log('name!!!!!!!!!:', name)
     const { name: inputName } = await getSiteNameInput(name)
 
+    console.log('got to trim')
     const siteName = inputName.trim()
+    console.log('got past trim')
 
     if (await deployedSiteExists(siteName)) {
       log('A site with that name already exists!!!!')
       return inputSiteName()
     }
+    console.log('got past the deployedSiteExists')
     // get z.netlify.app
     //
 
@@ -144,7 +149,7 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
         }
       }
     }
-
+    console.log('create site in team about to be called!!!!!!!')
     try {
       site = await api.createSiteInTeam({
         accountSlug,
