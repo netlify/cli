@@ -6,9 +6,7 @@ import { handleQuestions, CONFIRM, DOWN, NO, answerWithValue } from '../../utils
 import execa from 'execa'
 import { cliPath } from '../../utils/cli-path.js'
 import { join } from 'path'
-
-const TABTAB_CONFIG_LINE = '[[ -f ~/.config/tabtab/__tabtab.zsh ]] && . ~/.config/tabtab/__tabtab.zsh || true'
-const AUTOLOAD_COMPINIT = 'autoload -U compinit; compinit'
+import { TABTAB_CONFIG_LINE, AUTOLOAD_COMPINIT } from '../../../../src/utils/command-helpers.js'
 
 describe('completion:install command', () => {
   let tempDir
