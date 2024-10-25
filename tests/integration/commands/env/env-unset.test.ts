@@ -116,7 +116,7 @@ describe('env:unset command', () => {
       })
     })
 
-    test('should skip warnings and prompts if -f flag is passed', async () => {
+    test('should skip warnings and prompts if --force flag is passed', async () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
@@ -125,7 +125,7 @@ describe('env:unset command', () => {
 
         const promptSpy = vi.spyOn(inquirer, 'prompt')
 
-        await program.parseAsync(['', '', 'env:unset', existingVar, '-f'])
+        await program.parseAsync(['', '', 'env:unset', existingVar, '--force'])
 
         expect(promptSpy).not.toHaveBeenCalled()
 

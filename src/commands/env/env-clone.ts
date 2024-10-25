@@ -57,9 +57,6 @@ const cloneEnvVars = async ({ api, force, siteFrom, siteTo }): Promise<boolean> 
 
 export const envClone = async (options: OptionValues, command: BaseCommand) => {
   // Prevents prompts from blocking scripted commands
-  if (command.scriptedCommand) {
-    options.force = true
-  }
 
   const { api, site } = command.netlify
   const { force } = options

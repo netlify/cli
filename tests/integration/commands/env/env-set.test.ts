@@ -335,7 +335,7 @@ describe('env:set command', () => {
       })
     })
 
-    test('should skip warnings and prompts if -f flag is passed', async () => {
+    test('should skip warnings and prompts if --force flag is passed', async () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
@@ -344,7 +344,7 @@ describe('env:set command', () => {
 
         const promptSpy = vi.spyOn(inquirer, 'prompt')
 
-        await program.parseAsync(['', '', 'env:set', existingVar, newEnvValue, '-f'])
+        await program.parseAsync(['', '', 'env:set', existingVar, newEnvValue, '--force'])
 
         expect(promptSpy).not.toHaveBeenCalled()
 
@@ -410,7 +410,7 @@ describe('env:set command', () => {
     })
 
     test('should not show prompt in a ci/cd enviroment', async () => {
-      setCI(true)
+      setCI('true')
 
       await withMockApi(routes, async ({ apiUrl }) => {
         Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
@@ -419,7 +419,6 @@ describe('env:set command', () => {
         createEnvCommand(program)
 
         const promptSpy = vi.spyOn(inquirer, 'prompt')
-
         await program.parseAsync(['', '', 'env:set', existingVar, newEnvValue])
 
         expect(promptSpy).not.toHaveBeenCalled()

@@ -193,6 +193,7 @@ export default class BaseCommand extends Command {
   createCommand(name: string): BaseCommand {
     const base = new BaseCommand(name)
       // If  --silent or --json flag passed disable logger
+      .addOption(new Option('--force', 'Force command to run. Bypasses prompts for certain destructive commands.'))
       .addOption(new Option('--json', 'Output return values as JSON').hideHelp(true))
       .addOption(new Option('--silent', 'Silence CLI output').hideHelp(true))
       .addOption(new Option('--cwd <cwd>').hideHelp(true))
