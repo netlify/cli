@@ -323,3 +323,16 @@ export class GitHubAPIError extends Error {
     this.name = 'GitHubAPIError'
   }
 }
+
+export interface GitHubRepoResponse {
+  status?: string
+  message?: string
+  id?: number
+  name?: string
+  clone_url?: string
+  full_name?: string
+  private?: boolean
+  default_branch?: string
+  errors?: string[]
+  is_template?: boolean
+}

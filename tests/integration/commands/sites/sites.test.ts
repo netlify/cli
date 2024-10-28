@@ -5,9 +5,9 @@ import { render } from 'prettyjson'
 import { afterAll, beforeEach, describe, expect, test, vi } from 'vitest'
 
 import BaseCommand from '../../../../src/commands/base-command.js'
-import { fetchTemplates } from '../../../../src/commands/sites/sites-create-template.js'
 import { createSitesCreateCommand, createSitesFromTemplateCommand } from '../../../../src/commands/sites/sites.js'
 import { getGitHubToken } from '../../../../src/utils/init/config-github.js'
+import { fetchTemplates } from '../../../../src/utils/sites/create-template.js'
 import { createRepo, getTemplatesFromGitHub } from '../../../../src/utils/sites/utils.js'
 import { getEnvironmentVariables, withMockApi } from '../../utils/mock-api.js'
 
@@ -39,6 +39,7 @@ vi.mock('../../../../src/utils/sites/utils.js', () => ({
     full_name: 'Next starter',
     private: false,
     branch: 'main',
+    id: 1,
   })),
   validateTemplate: vi.fn().mockImplementation(() => ({
     exists: true,
