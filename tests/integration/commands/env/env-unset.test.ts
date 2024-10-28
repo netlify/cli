@@ -10,6 +10,7 @@ import { log } from '../../../../src/utils/command-helpers.js'
 import { destructiveCommandMessages } from '../../../../src/utils/prompts/prompt-messages.js'
 import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
 import { getEnvironmentVariables, withMockApi, setTTYMode, setCI } from '../../utils/mock-api.js'
+import { scriptedCommand } from '../../../../src/utils/scriptedCommands.js'
 
 import { routes } from './api-routes.js'
 
@@ -190,7 +191,6 @@ describe('env:unset command', () => {
     })
 
     test('prompts should not show in an non-interactive shell', async () => {
-      setTTYMode(false)
 
       await withMockApi(routes, async ({ apiUrl }) => {
         Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
@@ -198,9 +198,14 @@ describe('env:unset command', () => {
         const program = new BaseCommand('netlify')
         createEnvCommand(program)
 
+        const mockArgv = ['', '', 'env:unset', existingVar]
+        if (scriptedCommand(mockArgv)) {
+          mockArgv.push('--force')
+        }
+
         const promptSpy = vi.spyOn(inquirer, 'prompt')
 
-        await program.parseAsync(['', '', 'env:unset', existingVar])
+        await program.parseAsync(mockArgv)
 
         expect(promptSpy).not.toHaveBeenCalled()
 
