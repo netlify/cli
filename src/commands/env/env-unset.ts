@@ -18,7 +18,7 @@ const unsetInEnvelope = async ({
 }: UnsetInEnvelopeParams): Promise<EnviromentVariables> => {
   const accountId = siteInfo.account_slug
   const siteId = siteInfo.id
-  console.log('siteId is type of', typeof siteId)
+
   // fetch envelope env vars
   const envelopeVariables = await api.getEnvVars({ accountId, siteId })
   const contexts = context || ['all']

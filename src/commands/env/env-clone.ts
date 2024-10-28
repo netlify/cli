@@ -2,6 +2,7 @@ import { chalk, log, error as logError } from '../../utils/command-helpers.js'
 import { isAPIEnvError } from '../../utils/env/index.js'
 import type { ExtendedNetlifyAPI } from '../api-types.d.ts'
 import BaseCommand from '../base-command.js'
+import { $TSFixMe } from '../types.js'
 
 import { CloneEnvParams, EnvCloneOptions } from './types.js'
 
@@ -50,15 +51,21 @@ const cloneEnvVars = async ({ api, siteFrom, siteTo }: CloneEnvParams): Promise<
 export const envClone = async (options: EnvCloneOptions, command: BaseCommand) => {
   const { api, site } = command.netlify
 
-  if (!site.id || !options.from) {
+  if (!site.id && !options.from) {
     log(
       'Please include the source site Id as the `--from` option, or run `netlify link` to link this folder to a Netlify site',
     )
     return false
   }
 
+  const sourceId = options.from || site.id
+
+  if (!sourceId) {
+    throw new Error('Site ID is required')
+  }
+
   const siteId = {
-    from: options.from || site.id,
+    from: sourceId,
     to: options.to,
   }
 
