@@ -182,7 +182,7 @@
     "uuid": "9.0.1",
     "wait-port": "1.1.0",
     "write-file-atomic": "5.0.1",
-    "ws": "8.17.1",
+    "ws": "8.18.0",
     "zod": "3.23.8"
   },
   "devDependencies": {
@@ -200,7 +200,7 @@
     "@types/prettyjson": "0.0.33",
     "@types/semver": "7.5.8",
     "@types/uuid": "9.0.8",
-    "@types/ws": "8.5.10",
+    "@types/ws": "8.5.12",
     "@vitest/coverage-v8": "1.6.0",
     "c8": "9.1.0",
     "cheerio": "1.0.0",
