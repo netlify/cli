@@ -19,6 +19,7 @@ netlify sites
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
+- `force` (*boolean*) - Force command to run. Bypasses prompts for certain destructive commands.
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
@@ -54,8 +55,9 @@ netlify sites:create
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `manual` (*boolean*) - force manual CI setup.  Used --with-ci flag
 - `name` (*string*) - name of site
-- `with-ci` (*boolean*) - initialize CI hooks during site creation
 - `debug` (*boolean*) - Print debugging information
+- `force` (*boolean*) - Force command to run. Bypasses prompts for certain destructive commands.
+- `with-ci` (*boolean*) - initialize CI hooks during site creation
 
 ---
 ## `sites:create-template`
@@ -79,8 +81,9 @@ netlify sites:create-template
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `name` (*string*) - name of site
 - `url` (*string*) - template url
-- `with-ci` (*boolean*) - initialize CI hooks during site creation
 - `debug` (*boolean*) - Print debugging information
+- `force` (*boolean*) - Force command to run. Bypasses prompts for certain destructive commands.
+- `with-ci` (*boolean*) - initialize CI hooks during site creation
 
 **Examples**
 
@@ -109,8 +112,8 @@ netlify sites:delete
 **Flags**
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
-- `force` (*boolean*) - delete without prompting (useful for CI)
 - `debug` (*boolean*) - Print debugging information
+- `force` (*boolean*) - Force command to run. Bypasses prompts for certain destructive commands.
 
 **Examples**
 
@@ -134,6 +137,7 @@ netlify sites:list
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `json` (*boolean*) - Output site data as JSON
 - `debug` (*boolean*) - Print debugging information
+- `force` (*boolean*) - Force command to run. Bypasses prompts for certain destructive commands.
 
 ---
 

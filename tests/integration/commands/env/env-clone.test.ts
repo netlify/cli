@@ -4,14 +4,13 @@ import chalk from 'chalk'
 import inquirer from 'inquirer'
 import { describe, expect, test, vi, beforeEach, afterEach } from 'vitest'
 
-import BaseCommand from '../../../../src/commands/base-command.js'
-import { createEnvCommand } from '../../../../src/commands/env/index.js'
 import { log } from '../../../../src/utils/command-helpers.js'
 import { generateEnvVarsList } from '../../../../src/utils/prompts/env-clone-prompt.js'
 import { destructiveCommandMessages } from '../../../../src/utils/prompts/prompt-messages.js'
 import { getEnvironmentVariables, withMockApi, setTTYMode, setCI } from '../../utils/mock-api.js'
 
 import { existingVar, routes, secondSiteInfo } from './api-routes.js'
+import { runMockProgram } from '../../utils/mock-program.js'
 
 vi.mock('../../../../src/utils/command-helpers.js', async () => ({
   ...(await vi.importActual('../../../../src/utils/command-helpers.js')),
@@ -42,12 +41,9 @@ describe('env:clone command', () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-        const program = new BaseCommand('netlify')
-        createEnvCommand(program)
-
         const promptSpy = vi.spyOn(inquirer, 'prompt').mockResolvedValue({ confirm: true })
 
-        await program.parseAsync(['', '', 'env:clone', '-t', siteIdTwo])
+        await runMockProgram(['', '', 'env:clone', '-t', siteIdTwo])
 
         expect(promptSpy).toHaveBeenCalledWith({
           type: 'confirm',
@@ -70,12 +66,9 @@ describe('env:clone command', () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-        const program = new BaseCommand('netlify')
-        createEnvCommand(program)
-
         const promptSpy = vi.spyOn(inquirer, 'prompt')
 
-        await program.parseAsync(['', '', 'env:clone', '--force', '-t', siteIdTwo])
+        await runMockProgram(['', '', 'env:clone', '--force', '-t', siteIdTwo])
 
         expect(promptSpy).not.toHaveBeenCalled()
 
@@ -93,13 +86,10 @@ describe('env:clone command', () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-        const program = new BaseCommand('netlify')
-        createEnvCommand(program)
-
         const promptSpy = vi.spyOn(inquirer, 'prompt').mockResolvedValue({ confirm: false })
 
         try {
-          await program.parseAsync(['', '', 'env:clone', '-t', siteIdTwo])
+          await runMockProgram(['', '', 'env:clone', '-t', siteIdTwo])
         } catch (error) {
           // We expect the process to exit, so this is fine
           expect(error.message).toContain('process.exit unexpectedly called')
@@ -124,12 +114,9 @@ describe('env:clone command', () => {
           'site-name',
         )} to ${chalk.green('site-name-3')}`
 
-        const program = new BaseCommand('netlify')
-        createEnvCommand(program)
-
         const promptSpy = vi.spyOn(inquirer, 'prompt')
 
-        await program.parseAsync(['', '', 'env:clone', '-t', 'site_id_3'])
+        await runMockProgram(['', '', 'env:clone', '-t', 'site_id_3'])
 
         expect(promptSpy).not.toHaveBeenCalled()
 
@@ -160,12 +147,9 @@ describe('env:clone command', () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-        const program = new BaseCommand('netlify')
-        createEnvCommand(program)
-
         const promptSpy = vi.spyOn(inquirer, 'prompt')
 
-        await program.parseAsync(['', '', 'env:clone', '-t', siteIdTwo])
+        await runMockProgram(['', '', 'env:clone', '-t', siteIdTwo])
 
         expect(promptSpy).not.toHaveBeenCalled()
 
@@ -181,12 +165,9 @@ describe('env:clone command', () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-        const program = new BaseCommand('netlify')
-        createEnvCommand(program)
-
         const promptSpy = vi.spyOn(inquirer, 'prompt')
 
-        await program.parseAsync(['', '', 'env:clone', '-t', siteIdTwo])
+        await runMockProgram(['', '', 'env:clone', '-t', siteIdTwo])
 
         expect(promptSpy).not.toHaveBeenCalled()
 

@@ -21,6 +21,7 @@ netlify link
 - `id` (*string*) - ID of site to link to
 - `name` (*string*) - Name of site to link to
 - `debug` (*boolean*) - Print debugging information
+- `force` (*boolean*) - Force command to run. Bypasses prompts for certain destructive commands.
 
 **Examples**
 

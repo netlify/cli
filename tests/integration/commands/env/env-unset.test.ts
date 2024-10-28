@@ -4,15 +4,13 @@ import chalk from 'chalk'
 import inquirer from 'inquirer'
 import { describe, expect, test, vi, beforeEach, afterEach } from 'vitest'
 
-import BaseCommand from '../../../../src/commands/base-command.js'
-import { createEnvCommand } from '../../../../src/commands/env/env.js'
 import { log } from '../../../../src/utils/command-helpers.js'
 import { destructiveCommandMessages } from '../../../../src/utils/prompts/prompt-messages.js'
 import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
 import { getEnvironmentVariables, withMockApi, setTTYMode, setCI } from '../../utils/mock-api.js'
-import { scriptedCommand } from '../../../../src/utils/scriptedCommands.js'
 
 import { routes } from './api-routes.js'
+import { runMockProgram } from '../../utils/mock-program.js'
 
 vi.mock('../../../../src/utils/command-helpers.js', async () => ({
   ...(await vi.importActual('../../../../src/utils/command-helpers.js')),
@@ -97,12 +95,9 @@ describe('env:unset command', () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-        const program = new BaseCommand('netlify')
-        createEnvCommand(program)
-
         const promptSpy = vi.spyOn(inquirer, 'prompt').mockResolvedValue({ confirm: true })
 
-        await program.parseAsync(['', '', 'env:unset', existingVar])
+        await runMockProgram(['', '', 'env:unset', existingVar])
 
         expect(promptSpy).toHaveBeenCalledWith({
           type: 'confirm',
@@ -121,12 +116,9 @@ describe('env:unset command', () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-        const program = new BaseCommand('netlify')
-        createEnvCommand(program)
-
         const promptSpy = vi.spyOn(inquirer, 'prompt')
 
-        await program.parseAsync(['', '', 'env:unset', existingVar, '--force'])
+        await runMockProgram(['', '', 'env:unset', existingVar, '--force'])
 
         expect(promptSpy).not.toHaveBeenCalled()
 
@@ -140,13 +132,10 @@ describe('env:unset command', () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-        const program = new BaseCommand('netlify')
-        createEnvCommand(program)
-
         const promptSpy = vi.spyOn(inquirer, 'prompt').mockResolvedValue({ confirm: false })
 
         try {
-          await program.parseAsync(['', '', 'env:unset', existingVar])
+          await runMockProgram(['', '', 'env:unset', existingVar])
         } catch (error) {
           // We expect the process to exit, so this is fine
           expect(error.message).toContain('process.exit unexpectedly called')
@@ -164,12 +153,9 @@ describe('env:unset command', () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-        const program = new BaseCommand('netlify')
-        createEnvCommand(program)
-
         const promptSpy = vi.spyOn(inquirer, 'prompt')
 
-        await program.parseAsync(['', '', 'env:unset', 'NEW_ENV_VAR'])
+        await runMockProgram(['', '', 'env:unset', 'NEW_ENV_VAR'])
 
         expect(promptSpy).not.toHaveBeenCalled()
 
@@ -191,22 +177,14 @@ describe('env:unset command', () => {
     })
 
     test('prompts should not show in an non-interactive shell', async () => {
+      setTTYMode(false)
 
       await withMockApi(routes, async ({ apiUrl }) => {
         Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-        const program = new BaseCommand('netlify')
-        createEnvCommand(program)
-
-        const mockArgv = ['', '', 'env:unset', existingVar]
-        if (scriptedCommand(mockArgv)) {
-          mockArgv.push('--force')
-        }
-
         const promptSpy = vi.spyOn(inquirer, 'prompt')
 
-        await program.parseAsync(mockArgv)
-
+        await runMockProgram(['', '', 'env:unset', existingVar])
         expect(promptSpy).not.toHaveBeenCalled()
 
         expect(log).not.toHaveBeenCalledWith(warningMessage)
@@ -221,13 +199,9 @@ describe('env:unset command', () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-        const program = new BaseCommand('netlify')
-        createEnvCommand(program)
-
         const promptSpy = vi.spyOn(inquirer, 'prompt')
 
-        await program.parseAsync(['', '', 'env:unset', existingVar])
-
+        await runMockProgram(['', '', 'env:unset', existingVar])
         expect(promptSpy).not.toHaveBeenCalled()
 
         expect(log).not.toHaveBeenCalledWith(warningMessage)

@@ -5,13 +5,12 @@ import chalk from 'chalk'
 import inquirer from 'inquirer'
 import { describe, expect, test, vi, beforeEach, afterEach, beforeAll } from 'vitest'
 
-import BaseCommand from '../../../../src/commands/base-command.js'
-import { createBlobsCommand } from '../../../../src/commands/blobs/blobs.js'
 import { log } from '../../../../src/utils/command-helpers.js'
 import { destructiveCommandMessages } from '../../../../src/utils/prompts/prompt-messages.js'
 import { reportError } from '../../../../src/utils/telemetry/report-error.js'
 import { Route } from '../../utils/mock-api-vitest.js'
 import { getEnvironmentVariables, withMockApi, setTTYMode, setCI } from '../../utils/mock-api.js'
+import { runMockProgram } from '../../utils/mock-program.js'
 
 const siteInfo = {
   account_slug: 'test-account',
@@ -79,12 +78,9 @@ describe('blob:delete command', () => {
           delete: mockDelete,
         })
 
-        const program = new BaseCommand('netlify')
-        createBlobsCommand(program)
-
         const promptSpy = vi.spyOn(inquirer, 'prompt').mockResolvedValue({ confirm: true })
 
-        await program.parseAsync(['', '', 'blob:delete', storeName, key])
+        await runMockProgram(['', '', 'blob:delete', storeName, key])
 
         expect(promptSpy).toHaveBeenCalledWith({
           type: 'confirm',
@@ -109,13 +105,10 @@ describe('blob:delete command', () => {
           delete: mockDelete,
         })
 
-        const program = new BaseCommand('netlify')
-        createBlobsCommand(program)
-
         const promptSpy = vi.spyOn(inquirer, 'prompt').mockResolvedValue({ confirm: false })
 
         try {
-          await program.parseAsync(['', '', 'blob:delete', storeName, key])
+          await runMockProgram(['', '', 'blob:delete', storeName, key])
         } catch (error) {
           // We expect the process to exit, so this is fine
           expect(error.message).toContain('process.exit unexpectedly called')
@@ -144,12 +137,9 @@ describe('blob:delete command', () => {
           delete: mockDelete,
         })
 
-        const program = new BaseCommand('netlify')
-        createBlobsCommand(program)
-
         const promptSpy = vi.spyOn(inquirer, 'prompt')
 
-        await program.parseAsync(['', '', 'blob:delete', storeName, key, '--force'])
+        await runMockProgram(['', '', 'blob:delete', storeName, key, '--force'])
 
         expect(promptSpy).not.toHaveBeenCalled()
 
@@ -172,13 +162,10 @@ describe('blob:delete command', () => {
             delete: mockDelete,
           })
 
-          const program = new BaseCommand('netlify')
-          createBlobsCommand(program)
-
           const promptSpy = vi.spyOn(inquirer, 'prompt')
 
           try {
-            await program.parseAsync(['', '', 'blob:delete', storeName, key, '--force'])
+            await runMockProgram(['', '', 'blob:delete', storeName, key, '--force'])
           } catch (error) {
             expect(error.message).toContain(
               `Could not delete blob ${chalk.yellow(key)} from store ${chalk.yellow(storeName)}`,
@@ -219,13 +206,9 @@ describe('blob:delete command', () => {
           delete: mockDelete,
         })
 
-        const program = new BaseCommand('netlify')
-        createBlobsCommand(program)
-
         const promptSpy = vi.spyOn(inquirer, 'prompt')
 
-        await program.parseAsync(['', '', 'blob:delete', storeName, key])
-
+        await runMockProgram(['', '', 'blob:delete', storeName, key])
         expect(promptSpy).not.toHaveBeenCalled()
 
         expect(log).not.toHaveBeenCalledWith(warningMessage)
@@ -245,12 +228,9 @@ describe('blob:delete command', () => {
           delete: mockDelete,
         })
 
-        const program = new BaseCommand('netlify')
-        createBlobsCommand(program)
-
         const promptSpy = vi.spyOn(inquirer, 'prompt')
 
-        await program.parseAsync(['', '', 'blob:delete', storeName, key])
+        await runMockProgram(['', '', 'blob:delete', storeName, key])
 
         expect(promptSpy).not.toHaveBeenCalled()
 

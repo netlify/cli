@@ -6,6 +6,7 @@ import updateNotifier from 'update-notifier'
 import { createMainCommand } from '../dist/commands/index.js'
 import { error } from '../dist/utils/command-helpers.js'
 import getPackageJson from '../dist/utils/get-package-json.js'
+import { injectForceFlagIfScripted } from '../dist/utils/scripted-commands.js'
 
 // 12 hours
 const UPDATE_CHECK_INTERVAL = 432e5
@@ -23,12 +24,13 @@ try {
 
 const program = createMainCommand()
 
-
 try {
-  // Prevents prompts from blocking scripted commands
-  if (scriptedCommand(argv)) {
-    argv.push("--force")
+  const isValidCommand = program.commands.some((cmd) => cmd.name() === argv[2])
+
+  if (isValidCommand) {
+    injectForceFlagIfScripted(argv)
   }
+  // inject the force flag if the command is a non-interactive shell or Ci enviroment
 
   await program.parseAsync(argv)
 

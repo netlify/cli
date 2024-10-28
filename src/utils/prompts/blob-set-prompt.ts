@@ -4,11 +4,11 @@ import { confirmPrompt } from './confirm-prompt.js'
 import { destructiveCommandMessages } from './prompt-messages.js'
 
 export const promptBlobSetOverwrite = async (key: string, storeName: string): Promise<void> => {
-  const warningMessage = destructiveCommandMessages.blobDelete.generateWarning(key, storeName)
+  const warningMessage = destructiveCommandMessages.blobSet.generateWarning(key, storeName)
 
   log()
   log(warningMessage)
   log()
   log(destructiveCommandMessages.overwriteNotice)
-  await confirmPrompt(destructiveCommandMessages.blobDelete.overwriteConfirmation)
+  await confirmPrompt(destructiveCommandMessages.blobSet.overwriteConfirmation)
 }

@@ -18,8 +18,9 @@ netlify build
 - `context` (*string*) - Specify a build context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev")
 - `dry` (*boolean*) - Dry run: show instructions without running them
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
-- `offline` (*boolean*) - disables any features that require network access
 - `debug` (*boolean*) - Print debugging information
+- `force` (*boolean*) - Force command to run. Bypasses prompts for certain destructive commands.
+- `offline` (*boolean*) - disables any features that require network access
 
 **Examples**
 

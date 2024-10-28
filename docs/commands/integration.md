@@ -18,6 +18,7 @@ netlify integration
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
+- `force` (*boolean*) - Force command to run. Bypasses prompts for certain destructive commands.
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
@@ -41,8 +42,9 @@ netlify integration:deploy
 - `build` (*boolean*) - Build the integration
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `prod` (*boolean*) - Deploy to production
-- `site` (*string*) - A site name or ID to deploy to
 - `debug` (*boolean*) - Print debugging information
+- `force` (*boolean*) - Force command to run. Bypasses prompts for certain destructive commands.
+- `site` (*string*) - A site name or ID to deploy to
 
 ---
 

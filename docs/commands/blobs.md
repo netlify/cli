@@ -18,6 +18,7 @@ netlify blobs
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
+- `force` (*boolean*) - Force command to run. Bypasses prompts for certain destructive commands.
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
@@ -57,8 +58,8 @@ netlify blobs:delete
 **Flags**
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
-- `force` (*boolean*) - Force the operation to proceed without confirmation or warnings
 - `debug` (*boolean*) - Print debugging information
+- `force` (*boolean*) - Force command to run. Bypasses prompts for certain destructive commands.
 
 ---
 ## `blobs:get`
@@ -81,6 +82,7 @@ netlify blobs:get
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `output` (*string*) - Defines the filesystem path where the blob data should be persisted
 - `debug` (*boolean*) - Print debugging information
+- `force` (*boolean*) - Force command to run. Bypasses prompts for certain destructive commands.
 
 ---
 ## `blobs:list`
@@ -104,6 +106,7 @@ netlify blobs:list
 - `json` (*boolean*) - Output list contents as JSON
 - `prefix` (*string*) - A string for filtering down the entries; when specified, only the entries whose key starts with that prefix are returned
 - `debug` (*boolean*) - Print debugging information
+- `force` (*boolean*) - Force command to run. Bypasses prompts for certain destructive commands.
 
 ---
 ## `blobs:set`
@@ -125,9 +128,9 @@ netlify blobs:set
 **Flags**
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
-- `force` (*boolean*) - Force the operation to proceed without confirmation or warnings
 - `input` (*string*) - Defines the filesystem path where the blob data should be read from
 - `debug` (*boolean*) - Print debugging information
+- `force` (*boolean*) - Force command to run. Bypasses prompts for certain destructive commands.
 
 ---
 

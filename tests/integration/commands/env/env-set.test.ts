@@ -4,13 +4,11 @@ import chalk from 'chalk'
 import inquirer from 'inquirer'
 import { describe, expect, test, vi, beforeEach, afterEach } from 'vitest'
 
-import BaseCommand from '../../../../src/commands/base-command.js'
-import { createEnvCommand } from '../../../../src/commands/env/env.js'
 import { log } from '../../../../src/utils/command-helpers.js'
 import { destructiveCommandMessages } from '../../../../src/utils/prompts/prompt-messages.js'
 import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
 import { getEnvironmentVariables, withMockApi, setTTYMode, setCI } from '../../utils/mock-api.js'
-
+import { runMockProgram } from '../../utils/mock-program.js'
 import { routes } from './api-routes.js'
 
 vi.mock('../../../../src/utils/command-helpers.js', async () => ({
@@ -291,13 +289,9 @@ describe('env:set command', () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-        const program = new BaseCommand('netlify')
-
         const promptSpy = vi.spyOn(inquirer, 'prompt').mockResolvedValue({ confirm: true })
 
-        createEnvCommand(program)
-
-        await program.parseAsync(['', '', 'env:set', existingVar, newEnvValue])
+        await runMockProgram(['', '', 'env:set', existingVar, newEnvValue])
 
         expect(promptSpy).toHaveBeenCalledWith({
           type: 'confirm',
@@ -316,12 +310,9 @@ describe('env:set command', () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-        const program = new BaseCommand('netlify')
-        createEnvCommand(program)
-
         const promptSpy = vi.spyOn(inquirer, 'prompt')
 
-        await program.parseAsync(['', '', 'env:set', 'NEW_ENV_VAR', 'NEW_VALUE'])
+        await runMockProgram(['', '', 'env:set', 'NEW_ENV_VAR', 'NEW_VALUE'])
 
         expect(promptSpy).not.toHaveBeenCalled()
 
@@ -339,12 +330,9 @@ describe('env:set command', () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-        const program = new BaseCommand('netlify')
-        createEnvCommand(program)
-
         const promptSpy = vi.spyOn(inquirer, 'prompt')
 
-        await program.parseAsync(['', '', 'env:set', existingVar, newEnvValue, '--force'])
+        await runMockProgram(['', '', 'env:set', existingVar, newEnvValue, '--force'])
 
         expect(promptSpy).not.toHaveBeenCalled()
 
@@ -358,13 +346,10 @@ describe('env:set command', () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-        const program = new BaseCommand('netlify')
-        createEnvCommand(program)
-
         const promptSpy = vi.spyOn(inquirer, 'prompt').mockResolvedValue({ confirm: false })
 
         try {
-          await program.parseAsync(['', '', 'env:set', existingVar, newEnvValue])
+          await runMockProgram(['', '', 'env:set', existingVar, newEnvValue])
         } catch (error) {
           // We expect the process to exit, so this is fine
           expect(error.message).toContain('process.exit unexpectedly called')
@@ -394,12 +379,9 @@ describe('env:set command', () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-        const program = new BaseCommand('netlify')
-        createEnvCommand(program)
-
         const promptSpy = vi.spyOn(inquirer, 'prompt')
 
-        await program.parseAsync(['', '', 'env:set', existingVar, newEnvValue])
+        await runMockProgram(['', '', 'env:set', existingVar, newEnvValue])
 
         expect(promptSpy).not.toHaveBeenCalled()
 
@@ -415,11 +397,8 @@ describe('env:set command', () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-        const program = new BaseCommand('netlify')
-        createEnvCommand(program)
-
         const promptSpy = vi.spyOn(inquirer, 'prompt')
-        await program.parseAsync(['', '', 'env:set', existingVar, newEnvValue])
+        await runMockProgram(['', '', 'env:set', existingVar, newEnvValue])
 
         expect(promptSpy).not.toHaveBeenCalled()
 

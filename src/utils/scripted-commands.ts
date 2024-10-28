@@ -1,7 +1,7 @@
-import process from 'process'
+import process, { argv } from 'process'
 import { isCI } from 'ci-info'
 
-export const scriptedCommand = (argv: string[]): boolean => {
+export const shouldForceFlagBeInjected = (argv: string[]): boolean => {
   // Is the command run in a non-interactive shell or CI/CD environment?
   const scriptedCommand = Boolean(!process.stdin.isTTY || isCI || process.env.CI)
 
@@ -9,7 +9,7 @@ export const scriptedCommand = (argv: string[]): boolean => {
   const notNetlifyCommand = argv.length > 2
 
   // Is not the base `netlify` command w/ flags
-  const notNetlifyCommandWithFlags = argv[2] && !(argv[2].startsWith('-'))
+  const notNetlifyCommandWithFlags = argv[2] && !argv[2].startsWith('-')
 
   // is not the `netlify help` command
   const notNetlifyHelpCommand = argv[2] && !(argv[2] === 'help')
@@ -19,11 +19,12 @@ export const scriptedCommand = (argv: string[]): boolean => {
 
   // Prevents prompts from blocking scripted commands
   return Boolean(
-    scriptedCommand &&
-    notNetlifyCommand &&
-    notNetlifyCommandWithFlags &&
-    notNetlifyHelpCommand &&
-    noForceFlag
+    scriptedCommand && notNetlifyCommand && notNetlifyCommandWithFlags && notNetlifyHelpCommand && noForceFlag,
   )
+}
 
+export const injectForceFlagIfScripted = (argv: string[]) => {
+  if (shouldForceFlagBeInjected(argv)) {
+    argv.push('--force')
+  }
 }
