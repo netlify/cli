@@ -1,4 +1,4 @@
-import { error } from './command-helpers.js'
+import { APIError, error } from './command-helpers.js'
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'api' implicitly has an 'any' type.
 export const getSiteByName = async (api, siteName) => {
@@ -12,7 +12,11 @@ export const getSiteByName = async (api, siteName) => {
     }
 
     return siteFoundByName
-  } catch {
-    error('Site not found. Please rerun "netlify link"')
+  } catch (error_) {
+    if ((error_ as APIError).status === 401) {
+      error(`${(error_ as APIError).message}: could not retrieve site`)
+    } else {
+      error('Site not found. Please rerun "netlify link"')
+    }
   }
 }
