@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "17.37.1",
+  "version": "17.37.2",
   "author": "Netlify Inc.",
   "type": "module",
   "engines": {
@@ -74,7 +74,7 @@
     "@bugsnag/js": "7.25.0",
     "@fastify/static": "7.0.4",
     "@netlify/blobs": "8.1.0",
-    "@netlify/build": "29.55.5",
+    "@netlify/build": "29.56.0",
     "@netlify/build-info": "7.15.2",
     "@netlify/config": "20.19.0",
     "@netlify/edge-bundler": "12.2.3",
