@@ -19,7 +19,6 @@ netlify functions
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
-- `force` (*boolean*) - Force command to run. Bypasses prompts for certain destructive commands.
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
@@ -54,7 +53,6 @@ netlify functions:build
 - `functions` (*string*) - Specify a functions directory to build to
 - `src` (*string*) - Specify the source directory for the functions
 - `debug` (*boolean*) - Print debugging information
-- `force` (*boolean*) - Force command to run. Bypasses prompts for certain destructive commands.
 
 ---
 ## `functions:create`
@@ -78,7 +76,6 @@ netlify functions:create
 - `name` (*string*) - function name
 - `url` (*string*) - pull template from URL
 - `debug` (*boolean*) - Print debugging information
-- `force` (*boolean*) - Force command to run. Bypasses prompts for certain destructive commands.
 
 **Examples**
 
@@ -111,10 +108,9 @@ netlify functions:invoke
 - `name` (*string*) - function name to invoke
 - `no-identity` (*boolean*) - simulate Netlify Identity authentication JWT. pass --no-identity to affirm unauthenticated request
 - `payload` (*string*) - Supply POST payload in stringified json, or a path to a json file
-- `debug` (*boolean*) - Print debugging information
-- `force` (*boolean*) - Force command to run. Bypasses prompts for certain destructive commands.
 - `port` (*string*) - Port where netlify dev is accessible. e.g. 8888
 - `querystring` (*string*) - Querystring to add to your function invocation
+- `debug` (*boolean*) - Print debugging information
 
 **Examples**
 
@@ -149,7 +145,6 @@ netlify functions:list
 - `functions` (*string*) - Specify a functions directory to list
 - `json` (*boolean*) - Output function data as JSON
 - `debug` (*boolean*) - Print debugging information
-- `force` (*boolean*) - Force command to run. Bypasses prompts for certain destructive commands.
 
 ---
 ## `functions:serve`
@@ -169,7 +164,6 @@ netlify functions:serve
 - `offline` (*boolean*) - disables any features that require network access
 - `port` (*string*) - Specify a port for the functions server
 - `debug` (*boolean*) - Print debugging information
-- `force` (*boolean*) - Force command to run. Bypasses prompts for certain destructive commands.
 
 ---
 

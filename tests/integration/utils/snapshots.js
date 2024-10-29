@@ -14,10 +14,6 @@ const baseNormalizers = [
   // this is specific to npm v6
   { pattern: /@ (\w+).+\/.+netlify-cli-tests-v[\d{2}].+/, value: '$1' },
   { pattern: /It should be one of.+/gm, value: 'It should be one of: *' },
-  {
-    pattern: /--force\s+Force command to run\. Bypasses prompts for certain\s*\n\s*destructive commands\./g,
-    value: '--force               Force command to run. Bypasses prompts for certain destructive commands.',
-  },
 ]
 
 const optionalNormalizers = {

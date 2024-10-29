@@ -92,15 +92,14 @@ netlify deploy
 - `functions` (*string*) - Specify a functions folder to deploy
 - `json` (*boolean*) - Output deployment data as JSON
 - `message` (*string*) - A short message to include in the deploy log
-- `prod-if-unlocked` (*boolean*) - Deploy to production if unlocked, create a draft otherwise
-- `debug` (*boolean*) - Print debugging information
-- `force` (*boolean*) - Force command to run. Bypasses prompts for certain destructive commands.
 - `open` (*boolean*) - Open site after deploy
 - `prod` (*boolean*) - Deploy to production
+- `prod-if-unlocked` (*boolean*) - Deploy to production if unlocked, create a draft otherwise
 - `site` (*string*) - A site name or ID to deploy to
 - `skip-functions-cache` (*boolean*) - Ignore any functions created as part of a previous `build` or `deploy` commands, forcing them to be bundled again as part of the deployment
 - `timeout` (*string*) - Timeout to wait for deployment to finish
 - `trigger` (*boolean*) - Trigger a new build of your site on Netlify without uploading local files
+- `debug` (*boolean*) - Print debugging information
 
 **Examples**
 

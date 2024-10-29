@@ -18,7 +18,6 @@ netlify watch
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
-- `force` (*boolean*) - Force command to run. Bypasses prompts for certain destructive commands.
 
 **Examples**
 

@@ -46,7 +46,6 @@ USAGE
 OPTIONS
   -h, --help             display help for command
   --debug                Print debugging information
-  --force               Force command to run. Bypasses prompts for certain destructive commands.
 
 DESCRIPTION
   Run this command to see instructions for your shell.

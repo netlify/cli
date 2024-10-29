@@ -26,7 +26,6 @@ netlify serve
 - `offline` (*boolean*) - disables any features that require network access
 - `port` (*string*) - port of netlify dev
 - `debug` (*boolean*) - Print debugging information
-- `force` (*boolean*) - Force command to run. Bypasses prompts for certain destructive commands.
 
 **Examples**
 

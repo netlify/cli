@@ -17,7 +17,6 @@ netlify switch
 **Flags**
 
 - `debug` (*boolean*) - Print debugging information
-- `force` (*boolean*) - Force command to run. Bypasses prompts for certain destructive commands.
 
 
 <!-- AUTO-GENERATED-CONTENT:END -->

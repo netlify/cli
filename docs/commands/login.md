@@ -19,7 +19,6 @@ netlify login
 
 - `new` (*boolean*) - Login to new Netlify account
 - `debug` (*boolean*) - Print debugging information
-- `force` (*boolean*) - Force command to run. Bypasses prompts for certain destructive commands.
 
 
 <!-- AUTO-GENERATED-CONTENT:END -->

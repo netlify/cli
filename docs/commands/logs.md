@@ -17,7 +17,6 @@ netlify logs
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
-- `force` (*boolean*) - Force command to run. Bypasses prompts for certain destructive commands.
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
@@ -48,7 +47,6 @@ netlify logs:deploy
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
-- `force` (*boolean*) - Force command to run. Bypasses prompts for certain destructive commands.
 
 ---
 ## `logs:function`
@@ -70,7 +68,6 @@ netlify logs:function
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `level` (*string*) - Log levels to stream. Choices are: trace, debug, info, warn, error, fatal
 - `debug` (*boolean*) - Print debugging information
-- `force` (*boolean*) - Force command to run. Bypasses prompts for certain destructive commands.
 
 **Examples**
 

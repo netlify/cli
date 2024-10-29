@@ -39,6 +39,18 @@ import { createUnlinkCommand } from './unlink/index.js'
 import { createWatchCommand } from './watch/index.js'
 
 const SUGGESTION_TIMEOUT = 1e4
+export const COMMANDS_WITH_FORCE = new Set([
+  'env:set',
+  'env:unset',
+  'env:clone',
+  'blobs:set',
+  'blobs:delete',
+  'addons:delete',
+  'init',
+  'lm:install',
+  'lm:setup',
+  'sites:delete',
+])
 
 process.on('uncaughtException', async (err) => {
   console.log('')
@@ -229,6 +241,12 @@ export const createMainCommand = () => {
       },
     })
     .action(mainCommand)
+
+  program.commands.forEach((cmd) => {
+    if (COMMANDS_WITH_FORCE.has(cmd.name())) {
+      cmd.option('--force', 'Bypasses prompts & Force the command to run.')
+    }
+  })
 
   return program
 }

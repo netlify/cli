@@ -17,10 +17,10 @@ netlify init
 **Flags**
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
+- `force` (*boolean*) - Bypasses prompts & Force the command to run.
 - `git-remote-name` (*string*) - Name of Git remote to use. e.g. "origin"
 - `manual` (*boolean*) - Manually configure a git remote for CI
 - `debug` (*boolean*) - Print debugging information
-- `force` (*boolean*) - Force command to run. Bypasses prompts for certain destructive commands.
 
 
 <!-- AUTO-GENERATED-CONTENT:END -->

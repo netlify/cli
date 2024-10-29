@@ -19,7 +19,6 @@ netlify open
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `site` (*boolean*) - Open site
 - `debug` (*boolean*) - Print debugging information
-- `force` (*boolean*) - Force command to run. Bypasses prompts for certain destructive commands.
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
@@ -51,7 +50,6 @@ netlify open:admin
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
-- `force` (*boolean*) - Force command to run. Bypasses prompts for certain destructive commands.
 
 **Examples**
 
@@ -74,7 +72,6 @@ netlify open:site
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
-- `force` (*boolean*) - Force command to run. Bypasses prompts for certain destructive commands.
 
 **Examples**
 

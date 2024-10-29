@@ -18,7 +18,6 @@ netlify env
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
-- `force` (*boolean*) - Force command to run. Bypasses prompts for certain destructive commands.
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
@@ -55,10 +54,10 @@ netlify env:clone
 **Flags**
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
+- `force` (*boolean*) - Bypasses prompts & Force the command to run.
 - `from` (*string*) - Site ID (From)
 - `to` (*string*) - Site ID (To)
 - `debug` (*boolean*) - Print debugging information
-- `force` (*boolean*) - Force command to run. Bypasses prompts for certain destructive commands.
 
 **Examples**
 
@@ -88,7 +87,6 @@ netlify env:get
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `scope` (*builds | functions | post-processing | runtime | any*) - Specify a scope
 - `debug` (*boolean*) - Print debugging information
-- `force` (*boolean*) - Force command to run. Bypasses prompts for certain destructive commands.
 
 **Examples**
 
@@ -119,7 +117,6 @@ netlify env:import
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `replace-existing` (*boolean*) - Replace all existing variables instead of merging them with the current ones
 - `debug` (*boolean*) - Print debugging information
-- `force` (*boolean*) - Force command to run. Bypasses prompts for certain destructive commands.
 
 ---
 ## `env:list`
@@ -137,10 +134,9 @@ netlify env:list
 - `context` (*string*) - Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev")
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `json` (*boolean*) - Output environment variables as JSON
+- `plain` (*boolean*) - Output environment variables as plaintext
 - `scope` (*builds | functions | post-processing | runtime | any*) - Specify a scope
 - `debug` (*boolean*) - Print debugging information
-- `force` (*boolean*) - Force command to run. Bypasses prompts for certain destructive commands.
-- `plain` (*boolean*) - Output environment variables as plaintext
 
 **Examples**
 
@@ -172,10 +168,10 @@ netlify env:set
 
 - `context` (*string*) - Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev") (default: all contexts)
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
+- `force` (*boolean*) - Bypasses prompts & Force the command to run.
 - `scope` (*builds | functions | post-processing | runtime*) - Specify a scope (default: all scopes)
-- `debug` (*boolean*) - Print debugging information
-- `force` (*boolean*) - Force command to run. Bypasses prompts for certain destructive commands.
 - `secret` (*boolean*) - Indicate whether the environment variable value can be read again.
+- `debug` (*boolean*) - Print debugging information
 
 **Examples**
 
@@ -208,8 +204,8 @@ netlify env:unset
 
 - `context` (*string*) - Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev") (default: all contexts)
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
+- `force` (*boolean*) - Bypasses prompts & Force the command to run.
 - `debug` (*boolean*) - Print debugging information
-- `force` (*boolean*) - Force command to run. Bypasses prompts for certain destructive commands.
 
 **Examples**
 
