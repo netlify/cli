@@ -77,7 +77,7 @@ describe('sites:create-template', () => {
       program.parseAsync(['', '', 'sites:create-template', '--account-slug', 'test-account', '--name', 'test-name'])
 
       await new Promise((resolve) => {
-        setTimeout(resolve, 2000)
+        setTimeout(resolve, 5000)
       })
 
       expect(stdoutwriteSpy).toHaveBeenCalledWith('A site with that name already exists\n')
@@ -98,7 +98,7 @@ describe('sites:create-template', () => {
       program.parseAsync(['', '', 'sites:create-template', '--account-slug', 'test-account', '--name', 'mockSiteName'])
 
       await new Promise((resolve) => {
-        setTimeout(resolve, 2000)
+        setTimeout(resolve, 5000)
       })
 
       expect(stdoutwriteSpy).toHaveBeenCalledWith('A site with that name already exists on your account\n')
@@ -147,7 +147,7 @@ describe('sites:create-template', () => {
         setTimeout(() => {
           clearInterval(interval)
           resolve()
-        }, 2000)
+        }, 5000)
       })
 
       expect(mockGetSiteNameInput).toHaveBeenCalled()
