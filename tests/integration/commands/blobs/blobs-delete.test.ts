@@ -46,7 +46,7 @@ const routes: Route[] = [
   },
 ]
 
-describe('blob:delete command', () => {
+describe('blobs:delete command', () => {
   const storeName = 'my-store'
   const key = 'my-key'
 
@@ -80,7 +80,7 @@ describe('blob:delete command', () => {
 
         const promptSpy = vi.spyOn(inquirer, 'prompt').mockResolvedValue({ confirm: true })
 
-        await runMockProgram(['', '', 'blob:delete', storeName, key])
+        await runMockProgram(['', '', 'blobs:delete', storeName, key])
 
         expect(promptSpy).toHaveBeenCalledWith({
           type: 'confirm',
@@ -108,7 +108,7 @@ describe('blob:delete command', () => {
         const promptSpy = vi.spyOn(inquirer, 'prompt').mockResolvedValue({ confirm: false })
 
         try {
-          await runMockProgram(['', '', 'blob:delete', storeName, key])
+          await runMockProgram(['', '', 'blobs:delete', storeName, key])
         } catch (error) {
           // We expect the process to exit, so this is fine
           expect(error.message).toContain('process.exit unexpectedly called')
@@ -139,7 +139,7 @@ describe('blob:delete command', () => {
 
         const promptSpy = vi.spyOn(inquirer, 'prompt')
 
-        await runMockProgram(['', '', 'blob:delete', storeName, key, '--force'])
+        await runMockProgram(['', '', 'blobs:delete', storeName, key, '--force'])
 
         expect(promptSpy).not.toHaveBeenCalled()
 
@@ -165,7 +165,7 @@ describe('blob:delete command', () => {
           const promptSpy = vi.spyOn(inquirer, 'prompt')
 
           try {
-            await runMockProgram(['', '', 'blob:delete', storeName, key, '--force'])
+            await runMockProgram(['', '', 'blobs:delete', storeName, key, '--force'])
           } catch (error) {
             expect(error.message).toContain(
               `Could not delete blob ${chalk.yellow(key)} from store ${chalk.yellow(storeName)}`,
@@ -208,7 +208,7 @@ describe('blob:delete command', () => {
 
         const promptSpy = vi.spyOn(inquirer, 'prompt')
 
-        await runMockProgram(['', '', 'blob:delete', storeName, key])
+        await runMockProgram(['', '', 'blobs:delete', storeName, key])
         expect(promptSpy).not.toHaveBeenCalled()
 
         expect(log).not.toHaveBeenCalledWith(warningMessage)
@@ -230,7 +230,7 @@ describe('blob:delete command', () => {
 
         const promptSpy = vi.spyOn(inquirer, 'prompt')
 
-        await runMockProgram(['', '', 'blob:delete', storeName, key])
+        await runMockProgram(['', '', 'blobs:delete', storeName, key])
 
         expect(promptSpy).not.toHaveBeenCalled()
 

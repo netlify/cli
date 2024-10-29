@@ -45,7 +45,7 @@ const routes: Route[] = [
   },
 ]
 
-describe('blob:set command', () => {
+describe('blobs:set command', () => {
   const storeName = 'my-store'
   const key = 'my-key'
   const value = 'my-value'
@@ -80,7 +80,7 @@ describe('blob:set command', () => {
 
         const promptSpy = vi.spyOn(inquirer, 'prompt').mockResolvedValue({ wantsToSet: true })
 
-        await runMockProgram(['', '', 'blob:set', storeName, key, value])
+        await runMockProgram(['', '', 'blobs:set', storeName, key, value])
 
         expect(promptSpy).not.toHaveBeenCalled()
         expect(log).toHaveBeenCalledWith(successMessage)
@@ -104,7 +104,7 @@ describe('blob:set command', () => {
 
         const promptSpy = vi.spyOn(inquirer, 'prompt').mockResolvedValue({ confirm: true })
 
-        await runMockProgram(['', '', 'blob:set', storeName, key, newValue])
+        await runMockProgram(['', '', 'blobs:set', storeName, key, newValue])
 
         expect(promptSpy).toHaveBeenCalledWith({
           type: 'confirm',
@@ -135,7 +135,7 @@ describe('blob:set command', () => {
         const promptSpy = vi.spyOn(inquirer, 'prompt').mockResolvedValue({ confirm: false })
 
         try {
-          await runMockProgram(['', '', 'blob:set', storeName, key, newValue])
+          await runMockProgram(['', '', 'blobs:set', storeName, key, newValue])
         } catch (error) {
           // We expect the process to exit, so this is fine
           expect(error.message).toContain('process.exit unexpectedly called with "0"')
@@ -169,7 +169,7 @@ describe('blob:set command', () => {
 
         const promptSpy = vi.spyOn(inquirer, 'prompt')
 
-        await runMockProgram(['', '', 'blob:set', storeName, key, newValue, '--force'])
+        await runMockProgram(['', '', 'blobs:set', storeName, key, newValue, '--force'])
 
         expect(promptSpy).not.toHaveBeenCalled()
 
@@ -192,7 +192,7 @@ describe('blob:set command', () => {
         const promptSpy = vi.spyOn(inquirer, 'prompt')
 
         try {
-          await runMockProgram(['', '', 'blob:set', storeName, key, newValue, '--force'])
+          await runMockProgram(['', '', 'blobs:set', storeName, key, newValue, '--force'])
         } catch (error) {
           expect(error.message).toContain(`Could not set blob ${chalk.yellow(key)} in store ${chalk.yellow(storeName)}`)
         }
@@ -232,7 +232,7 @@ describe('blob:set command', () => {
 
         const promptSpy = vi.spyOn(inquirer, 'prompt')
 
-        await runMockProgram(['', '', 'blob:set', storeName, key, newValue, '--force'])
+        await runMockProgram(['', '', 'blobs:set', storeName, key, newValue, '--force'])
 
         expect(promptSpy).not.toHaveBeenCalled()
 
@@ -258,7 +258,7 @@ describe('blob:set command', () => {
 
         const promptSpy = vi.spyOn(inquirer, 'prompt')
 
-        await runMockProgram(['', '', 'blob:set', storeName, key, newValue, '--force'])
+        await runMockProgram(['', '', 'blobs:set', storeName, key, newValue, '--force'])
         expect(promptSpy).not.toHaveBeenCalled()
 
         expect(log).not.toHaveBeenCalledWith(warningMessage)
