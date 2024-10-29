@@ -34,6 +34,7 @@ describe('env:clone command', () => {
   describe('user is prompted to confirm when setting an env var that already exists', () => {
     beforeEach(() => {
       setTTYMode(true)
+      setCI('')
       vi.resetAllMocks()
     })
 

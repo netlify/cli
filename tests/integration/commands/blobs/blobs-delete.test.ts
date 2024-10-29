@@ -60,8 +60,10 @@ describe('blobs:delete command', () => {
   )}`
 
   describe('user is prompted to confirm when deleting a blob key', () => {
-    beforeAll(() => {
+    beforeEach(() => {
       setTTYMode(true)
+      setCI('')
+      vi.resetAllMocks()
     })
 
     beforeEach(() => {

@@ -62,8 +62,9 @@ describe('blobs:set command', () => {
 
   describe('user is prompted to confirm when setting a a blob key that already exists', () => {
     beforeEach(() => {
-      vi.resetAllMocks()
       setTTYMode(true)
+      setCI('')
+      vi.resetAllMocks()
     })
 
     test('should not log warnings and prompt if blob key does not exist', async () => {

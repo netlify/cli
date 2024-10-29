@@ -282,6 +282,7 @@ describe('env:set command', () => {
   describe('user is prompted to confirmOverwrite when setting an env var that already exists', () => {
     beforeEach(() => {
       setTTYMode(true)
+      setCI('')
       vi.resetAllMocks()
     })
 
