@@ -1,5 +1,6 @@
 import process from 'process'
 
+import inquirer from 'inquirer'
 import { beforeEach, afterEach, describe, expect, test, vi } from 'vitest'
 
 import BaseCommand from '../../../../src/commands/base-command.ts'
@@ -13,19 +14,37 @@ vi.mock('../../../../src/utils/init/config-github.ts')
 vi.mock('../../../../src/utils/sites/utils.ts')
 vi.mock('../../../../src/utils/sites/create-template.ts')
 
+const siteInfo = {
+  admin_url: 'https://app.netlify.com/sites/site-name/overview',
+  ssl_url: 'https://site-name.netlify.app/',
+  id: 'site_id',
+  name: 'site-name',
+  build_settings: { repo_url: 'https://github.com/owner/repo' },
+}
+
 const routes = [
   {
     path: 'accounts',
-    response: [{ slug: 'testAccount' }],
+    response: [{ slug: 'test-account' }],
   },
   {
     path: 'sites',
-    response: [{ name: 'mockSiteName' }],
+    response: [{ name: 'test-name' }],
+  },
+  {
+    path: 'test-account/sites',
+    response: siteInfo,
+    method: 'post',
   },
 ]
 
 describe('sites:create-template', () => {
   beforeEach(async () => {
+    vi.mock('inquirer')
+    vi.mocked(inquirer.prompt)
+      .mockImplementationOnce(() => Promise.resolve({ accountSlug: 'test-account' }))
+      .mockImplementationOnce(() => Promise.resolve({ name: 'test-name' }))
+
     vi.mocked(getGitHubToken).mockResolvedValue('mockToken')
     vi.mocked(fetchTemplates).mockResolvedValue([
       {
@@ -64,55 +83,71 @@ describe('sites:create-template', () => {
   })
 
   test('it should ask for a new site name if site with that name already exists on a globally deployed site', async (t) => {
+    const stdoutwriteSpy = vi.spyOn(process.stdout, 'write')
     await withMockApi(routes, async ({ apiUrl }) => {
       Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
       const program = new BaseCommand('netlify')
 
-      const stdoutwriteSpy = vi.spyOn(process.stdout, 'write')
       vi.mocked(deployedSiteExists).mockResolvedValue(true)
 
       createSitesFromTemplateCommand(program)
 
-      program.parseAsync(['', '', 'sites:create-template', '--account-slug', 'test-account', '--name', 'test-name'])
-
-      await new Promise((resolve) => {
-        setTimeout(resolve, 5000)
-      })
-
-      expect(stdoutwriteSpy).toHaveBeenCalledWith('A site with that name already exists\n')
+      await program.parseAsync([
+        '',
+        '',
+        'sites:create-template',
+        '--account-slug',
+        'test-account',
+        '--name',
+        'test-name',
+      ])
     })
+    expect(stdoutwriteSpy).toHaveBeenCalledWith('A site with that name already exists\n')
   })
 
   test('it should ask for a new site name if site with that name already exists on account', async (t) => {
+    const stdoutwriteSpy = vi.spyOn(process.stdout, 'write')
     await withMockApi(routes, async ({ apiUrl }) => {
       Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
       const program = new BaseCommand('netlify')
 
-      const stdoutwriteSpy = vi.spyOn(process.stdout, 'write')
       vi.mocked(deployedSiteExists).mockResolvedValue(false)
 
       createSitesFromTemplateCommand(program)
 
-      program.parseAsync(['', '', 'sites:create-template', '--account-slug', 'test-account', '--name', 'mockSiteName'])
-
-      await new Promise((resolve) => {
-        setTimeout(resolve, 5000)
-      })
-
-      expect(stdoutwriteSpy).toHaveBeenCalledWith('A site with that name already exists on your account\n')
+      await program.parseAsync([
+        '',
+        '',
+        'sites:create-template',
+        '--account-slug',
+        'test-account',
+        '--name',
+        'test-name',
+      ])
     })
+    expect(stdoutwriteSpy).toHaveBeenCalledWith('A site with that name already exists on your account\n')
   })
 
   test('it should only create a repo once even when prompting for new name input', async (t) => {
-    const gitHubTestRoutes = [...routes, { path: 'test-account/sites', method: 'post', status: 422 }]
+    const gitHubTestRoutes = [
+      {
+        path: 'accounts',
+        response: [{ slug: 'test-account' }],
+      },
+      {
+        path: 'sites',
+        response: [{ name: 'test-name' }],
+      },
+      { path: 'test-account/sites', method: 'post', status: 422 },
+    ]
 
     vi.doMock('../../../../src/commands/sites/sites-create.ts', async () => {
       const actual = await vi.importActual('../../../../src/commands/sites/sites-create.ts')
       return {
         ...actual,
-        getSiteNameInput: vi.fn().mockResolvedValue({ name: 'test-name' }),
+        getSiteNameInput: vi.fn().mockResolvedValue({ name: 'uniqueSiteName' }),
       }
     })
 
@@ -149,10 +184,9 @@ describe('sites:create-template', () => {
           resolve()
         }, 5000)
       })
-
-      expect(mockGetSiteNameInput).toHaveBeenCalled()
-      expect(mockGetSiteNameInput).not.toHaveBeenCalledOnce()
-      expect(createRepo).toHaveBeenCalledOnce()
     })
+    expect(mockGetSiteNameInput).toHaveBeenCalled()
+    expect(mockGetSiteNameInput).not.toHaveBeenCalledOnce()
+    expect(createRepo).toHaveBeenCalledOnce()
   })
 })
