@@ -3,6 +3,15 @@ import { OptionValues, Option } from 'commander'
 import { normalizeContext } from '../../utils/env/index.js'
 import BaseCommand from '../base-command.js'
 
+import {
+  EnvCloneOptions,
+  EnvImportOptions,
+  EnvListOptions,
+  EnvOptions,
+  EnvSetOptions,
+  EnvUnsetOptions,
+} from './types.js'
+
 const env = (options: OptionValues, command: BaseCommand) => {
   command.help()
 }
@@ -29,7 +38,7 @@ export const createEnvCommand = (program: BaseCommand) => {
       'netlify env:get MY_VAR --scope functions',
     ])
     .description('Get resolved value of specified environment variable (includes netlify.toml)')
-    .action(async (name: string, options: OptionValues, command: BaseCommand) => {
+    .action(async (name: string, options: EnvOptions, command: BaseCommand) => {
       const { envGet } = await import('./env-get.js')
       await envGet(name, options, command)
     })
@@ -51,7 +60,7 @@ export const createEnvCommand = (program: BaseCommand) => {
       false,
     )
     .description('Import and set environment variables from .env file')
-    .action(async (fileName: string, options: OptionValues, command: BaseCommand) => {
+    .action(async (fileName: string, options: EnvImportOptions, command: BaseCommand) => {
       const { envImport } = await import('./env-import.js')
       await envImport(fileName, options, command)
     })
@@ -79,7 +88,7 @@ export const createEnvCommand = (program: BaseCommand) => {
       'netlify env:list --plain',
     ])
     .description('Lists resolved environment variables for site (includes netlify.toml)')
-    .action(async (options: OptionValues, command: BaseCommand) => {
+    .action(async (options: EnvListOptions, command: BaseCommand) => {
       const { envList } = await import('./env-list.js')
       await envList(options, command)
     })
@@ -92,8 +101,7 @@ export const createEnvCommand = (program: BaseCommand) => {
       '-c, --context <context...>',
       'Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev") (default: all contexts)',
       // spread over an array for variadic options
-      // @ts-expect-error TS(7006) FIXME: Parameter 'context' implicitly has an 'any' type.
-      (context, previous = []) => [...previous, normalizeContext(context)],
+      (context, previous: string[] = []) => [...previous, normalizeContext(context)],
     )
     .addOption(
       new Option('-s, --scope <scope...>', 'Specify a scope (default: all scopes)').choices([
@@ -114,7 +122,7 @@ export const createEnvCommand = (program: BaseCommand) => {
       'netlify env:set VAR_NAME value --scope builds functions',
       'netlify env:set VAR_NAME --secret # convert existing variable to secret',
     ])
-    .action(async (key: string, value: string, options: OptionValues, command: BaseCommand) => {
+    .action(async (key: string, value: string, options: EnvSetOptions, command: BaseCommand) => {
       const { envSet } = await import('./env-set.js')
       await envSet(key, value, options, command)
     })
@@ -127,8 +135,7 @@ export const createEnvCommand = (program: BaseCommand) => {
       '-c, --context <context...>',
       'Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev") (default: all contexts)',
       // spread over an array for variadic options
-      // @ts-expect-error TS(7006) FIXME: Parameter 'context' implicitly has an 'any' type.
-      (context, previous = []) => [...previous, normalizeContext(context)],
+      (context, previous: string[] = []) => [...previous, normalizeContext(context)],
     )
     .addExamples([
       'netlify env:unset VAR_NAME # unset in all contexts',
@@ -136,7 +143,7 @@ export const createEnvCommand = (program: BaseCommand) => {
       'netlify env:unset VAR_NAME --context production deploy-preview',
     ])
     .description('Unset an environment variable which removes it from the UI')
-    .action(async (key: string, options: OptionValues, command: BaseCommand) => {
+    .action(async (key: string, options: EnvUnsetOptions, command: BaseCommand) => {
       const { envUnset } = await import('./env-unset.js')
       await envUnset(key, options, command)
     })
@@ -148,7 +155,7 @@ export const createEnvCommand = (program: BaseCommand) => {
     .requiredOption('-t, --to <to>', 'Site ID (To)')
     .description(`Clone environment variables from one site to another`)
     .addExamples(['netlify env:clone --to <to-site-id>', 'netlify env:clone --to <to-site-id> --from <from-site-id>'])
-    .action(async (options: OptionValues, command: BaseCommand) => {
+    .action(async (options: EnvCloneOptions, command: BaseCommand) => {
       const { envClone } = await import('./env-clone.js')
       await envClone(options, command)
     })

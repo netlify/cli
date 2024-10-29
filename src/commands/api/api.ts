@@ -40,6 +40,8 @@ export const apiCommand = async (apiMethod: string, options: OptionValues, comma
     const apiResponse = await api[apiMethod](payload)
     logJson(apiResponse)
   } catch (error_) {
-    error(error_)
+    if (error_ instanceof Error || typeof error_ === 'string') {
+      error(error_)
+    }
   }
 }

@@ -1,8 +1,19 @@
-import { $TSFixMe } from '../../commands/types.js'
+import { EnvVar, EnvVarValue, ExtendedNetlifyAPI } from '../../commands/api-types.d.js'
+import type {
+  Context,
+  EnviromentVariables,
+  $TSFixMe,
+  Scope,
+  EnvironmentVariableSource,
+  EnvironmentVariableScope,
+} from '../../commands/types.js'
 import { error } from '../command-helpers.js'
+import { APIEnvError } from '../types.js'
 
-export const AVAILABLE_CONTEXTS = ['all', 'production', 'deploy-preview', 'branch-deploy', 'dev']
-export const AVAILABLE_SCOPES = ['builds', 'functions', 'runtime', 'post_processing']
+import { GetEnvelopeEnvParams, ProcessedEnvVars } from './types.js'
+
+export const AVAILABLE_CONTEXTS: Context[] = ['all', 'production', 'deploy-preview', 'branch-deploy', 'dev']
+export const AVAILABLE_SCOPES: Scope[] = ['builds', 'functions', 'runtime', 'post_processing']
 
 /**
  * @param {string|undefined} context - The deploy context or branch of the environment variable value
@@ -53,8 +64,7 @@ export const findValueInValues = (values, context) =>
  * @param {enum<general,account,addons,ui,configFile>} source - The source of the environment variable
  * @returns {object} The dictionary of env vars that match the given source
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'env' implicitly has an 'any' type.
-export const filterEnvBySource = (env, source) =>
+export const filterEnvBySource = (env: EnviromentVariables, source: EnvironmentVariableSource): ProcessedEnvVars =>
   // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
   Object.fromEntries(Object.entries(env).filter(([, variable]) => variable.sources[0] === source))
 
@@ -66,10 +76,10 @@ const fetchEnvelopeItems = async function ({
   siteId,
 }: {
   accountId: string
-  api: $TSFixMe
+  api: ExtendedNetlifyAPI
   key: string
-  siteId: string
-}): Promise<$TSFixMe[]> {
+  siteId?: string
+}): Promise<EnvVar[]> {
   if (accountId === undefined) {
     return []
   }
@@ -119,10 +129,10 @@ export const formatEnvelopeData = ({
   source,
 }: {
   context?: string
-  envelopeItems: $TSFixMe[]
-  scope?: string
-  source: string
-}) =>
+  envelopeItems: EnvVar[]
+  scope?: EnvironmentVariableScope | 'any'
+  source: EnvironmentVariableSource
+}): ProcessedEnvVars =>
   envelopeItems
     // filter by context
     .filter(({ values }) => Boolean(findValueInValues(values, context)))
@@ -156,12 +166,18 @@ export const formatEnvelopeData = ({
  * @param {object} siteInfo - The site object
  * @returns {object} An object of environment variables keys and their metadata
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-export const getEnvelopeEnv = async ({ api, context = 'dev', env, key = '', raw = false, scope = 'any', siteInfo }) => {
+export const getEnvelopeEnv = async ({
+  api,
+  context = 'dev',
+  env,
+  key = '',
+  raw = false,
+  scope = 'any',
+  siteInfo,
+}: GetEnvelopeEnvParams): Promise<ProcessedEnvVars> => {
   const { account_slug: accountId, id: siteId } = siteInfo
 
   const [accountEnvelopeItems, siteEnvelopeItems] = await Promise.all([
-    // @ts-expect-error TS(2345) FIXME: Argument of type '{ api: any; accountId: any; key:... Remove this comment to see the full error message
     fetchEnvelopeItems({ api, accountId, key }),
     fetchEnvelopeItems({ api, accountId, key, siteId }),
   ])
@@ -174,7 +190,6 @@ export const getEnvelopeEnv = async ({ api, context = 'dev', env, key = '', raw 
     return entries.reduce(
       (obj, [envVarKey, metadata]) => ({
         ...obj,
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         [envVarKey]: metadata.value,
       }),
       {},
@@ -233,14 +248,17 @@ export const getHumanReadableScopes = (scopes) => {
  * @param {object} env - The site's env as it exists in Mongo
  * @returns {Array<object>} The array of Envelope env vars
  */
-export const translateFromMongoToEnvelope = (env = {}) => {
+
+export const translateFromMongoToEnvelope = (env = {}): EnvVar[] => {
+  const context: Context = 'all'
+
   const envVars = Object.entries(env).map(([key, value]) => ({
     key,
     scopes: AVAILABLE_SCOPES,
     values: [
       {
-        context: 'all',
-        value,
+        context,
+        value: String(value),
       },
     ],
   }))
@@ -254,19 +272,31 @@ export const translateFromMongoToEnvelope = (env = {}) => {
  * @param {string} context - The deploy context or branch of the environment variable
  * @returns {object} The env object as compatible with Mongo
  */
-export const translateFromEnvelopeToMongo = (envVars = [], context = 'dev') =>
+
+export const translateFromEnvelopeToMongo = (envVars: EnvVar[] = [], context = 'dev'): EnviromentVariables =>
   envVars
-    // @ts-expect-error TS(2339) FIXME: Property 'key' does not exist on type 'never'.
     .sort((left, right) => (left.key.toLowerCase() < right.key.toLowerCase() ? -1 : 1))
     .reduce((acc, cur) => {
-      // @ts-expect-error TS(2339) FIXME: Property 'values' does not exist on type 'never'.
       const envVar = cur.values.find((val) => [context, 'all'].includes(val.context_parameter || val.context))
       if (envVar && envVar.value) {
         return {
           ...acc,
-          // @ts-expect-error TS(2339) FIXME: Property 'key' does not exist on type 'never'.
           [cur.key]: envVar.value,
         }
       }
       return acc
     }, {})
+
+export const isAPIEnvError = (err: unknown): err is APIEnvError =>
+  /**
+   * Checks if an error is an APIEnvError
+   * @param {unknown} err - The error to check
+   * @returns {err is APIEnvError} Whether the error is an APIEnvError
+   */
+  err !== null &&
+  typeof err === 'object' &&
+  'json' in err &&
+  err.json !== null &&
+  typeof err.json === 'object' &&
+  'msg' in err.json &&
+  typeof err.json.msg === 'string'

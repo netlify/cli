@@ -1,9 +1,10 @@
 import type { NetlifyConfig } from "@netlify/build";
 import type { NetlifyTOML } from '@netlify/build-info'
-import type { NetlifyAPI } from 'netlify'
 
 import type { FrameworksAPIPaths } from "../utils/frameworks-api.ts";
 import StateConfig from '../utils/state-config.js'
+
+import type { ExtendedNetlifyAPI } from "./api-types.d.ts";
 
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -15,7 +16,11 @@ export type NetlifySite = {
   siteId?: string
   get id(): string | undefined
   set id(id: string): void
+  id: string
 }
+
+export type Context = 'dev' | 'production' | 'deploy-preview' | 'branch-deploy' | 'all'
+export type Scope = 'builds' | 'functions' | 'runtime' | 'post_processing'
 
 type PatchedConfig = NetlifyTOML & Pick<NetlifyConfig, 'images'> & {
   functionsDirectory?: string
@@ -48,17 +53,21 @@ type HTMLInjection = {
   html: string
 }
 
-type EnvironmentVariableScope = 'builds' | 'functions' | 'runtime' | 'post_processing'
-type EnvironmentVariableSource = 'account' | 'addons' | 'configFile' | 'general' |  'internal' | 'ui'
+export type EnvironmentVariableScope = 'builds' | 'functions' | 'runtime' | 'post_processing'
+export type EnvironmentVariableSource = 'account' | 'addons' | 'configFile' | 'general' |  'internal' | 'ui'
+
+
+type EnviromentVariables  = { 
+  [key: string]: string 
+}
 
 export type EnvironmentVariables = Record<string, { sources: EnvironmentVariableSource[], value: string; scopes?: EnvironmentVariableScope[] }>
-
 /**
  * The netlify object inside each command with the state
  */
 export type NetlifyOptions = {
   // poorly duck type the missing api functions
-  api: NetlifyAPI & Record<string, (...args: $TSFixMe) => Promise<$TSFixMe>>
+  api: ExtendedNetlifyAPI & Record<string, (...args: $TSFixMe) => Promise<$TSFixMe>>
   apiOpts: $TSFixMe
   repositoryRoot: string
   /** Absolute path of the netlify configuration file */
@@ -66,9 +75,9 @@ export type NetlifyOptions = {
   /** Relative path of the netlify configuration file */
   relConfigFilePath: string
   site: NetlifySite
-  siteInfo: $TSFixMe
+  siteInfo: SiteInfo
   config: PatchedConfig
-  cachedConfig: Record<string, $TSFixMe> & { env: EnvironmentVariables }
+  cachedConfig: Record<string, $TSFixMe> & { env: EnvironmentVariables, siteInfo: SiteInfo }
   globalConfig: $TSFixMe
   state: StateConfig
   frameworksAPIPaths: FrameworksAPIPaths

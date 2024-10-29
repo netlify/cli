@@ -1,20 +1,25 @@
-import { OptionValues } from 'commander'
-
 import { chalk, error, log, logJson } from '../../utils/command-helpers.js'
-import { AVAILABLE_CONTEXTS, AVAILABLE_SCOPES, translateFromEnvelopeToMongo } from '../../utils/env/index.js'
+import {
+  AVAILABLE_CONTEXTS,
+  AVAILABLE_SCOPES,
+  translateFromEnvelopeToMongo,
+  isAPIEnvError,
+} from '../../utils/env/index.js'
+import type { Value } from '../api-types.js'
 import BaseCommand from '../base-command.js'
+
+import type { SetInEnvelopeParams, EnvSetOptions } from './types.d.ts'
 
 /**
  * Updates the env for a site configured with Envelope with a new key/value pair
  * @returns {Promise<object | boolean>}
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-const setInEnvelope = async ({ api, context, key, scope, secret, siteInfo, value }) => {
+// //@ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
+const setInEnvelope = async ({ api, context, key, scope, secret, siteInfo, value }: SetInEnvelopeParams) => {
   const accountId = siteInfo.account_slug
   const siteId = siteInfo.id
 
   // secret values may not be used in the post-processing scope
-  // @ts-expect-error TS(7006) FIXME: Parameter 'sco' implicitly has an 'any' type.
   if (secret && scope && scope.some((sco) => /post[-_]processing/.test(sco))) {
     error(`Secret values cannot be used within the post-processing scope.`)
     return false
@@ -35,17 +40,14 @@ const setInEnvelope = async ({ api, context, key, scope, secret, siteInfo, value
 
   if (secret) {
     // post_processing (aka post-processing) scope is not allowed with secrets
-    // @ts-expect-error TS(7006) FIXME: Parameter 'sco' implicitly has an 'any' type.
     scopes = scopes.filter((sco) => !/post[-_]processing/.test(sco))
   }
 
   // if the passed context is unknown, it is actually a branch name
-  // @ts-expect-error TS(7006) FIXME: Parameter 'ctx' implicitly has an 'any' type.
-  let values = contexts.map((ctx) =>
+  let values: Value[] = contexts.map((ctx) =>
     AVAILABLE_CONTEXTS.includes(ctx) ? { context: ctx, value } : { context: 'branch', context_parameter: ctx, value },
   )
 
-  // @ts-expect-error TS(7006) FIXME: Parameter 'envVar' implicitly has an 'any' type.
   const existing = envelopeVariables.find((envVar) => envVar.key === key)
 
   const params = { accountId, siteId, key }
@@ -67,22 +69,18 @@ const setInEnvelope = async ({ api, context, key, scope, secret, siteInfo, value
       }
       if (context) {
         // update individual value(s)
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
         await Promise.all(values.map((val) => api.setEnvVarValue({ ...params, body: val })))
       } else {
         // otherwise update whole env var
         if (secret) {
-          // @ts-expect-error TS(7006) FIXME: Parameter 'sco' implicitly has an 'any' type.
           scopes = scopes.filter((sco) => !/post[-_]processing/.test(sco))
-          // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
           if (values.some((val) => val.context === 'all')) {
             log(`This secret's value will be empty in the dev context.`)
             log(`Run \`netlify env:set ${key} <value> --context dev\` to set a new value for the dev context.`)
             values = AVAILABLE_CONTEXTS.filter((ctx) => ctx !== 'all').map((ctx) => ({
               context: ctx,
               // empty out dev value so that secret is indeed secret
-              // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-              value: ctx === 'dev' ? '' : values.find((val) => val.context === 'all').value,
+              value: ctx === 'dev' ? '' : values.find((val) => val.context === 'all')?.value ?? '',
             }))
           }
         }
@@ -95,19 +93,18 @@ const setInEnvelope = async ({ api, context, key, scope, secret, siteInfo, value
       await api.createEnvVars({ ...params, body })
     }
   } catch (error_) {
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    throw error_.json ? error_.json.msg : error_
+    const errortoThrow = isAPIEnvError(error_) ? error_.json.msg : error_
+    throw errortoThrow
   }
 
   const env = translateFromEnvelopeToMongo(envelopeVariables, context ? context[0] : 'dev')
   return {
     ...env,
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     [key]: value || env[key],
   }
 }
 
-export const envSet = async (key: string, value: string, options: OptionValues, command: BaseCommand) => {
+export const envSet = async (key: string, value: string, options: EnvSetOptions, command: BaseCommand) => {
   const { context, scope, secret } = options
 
   const { api, cachedConfig, site } = command.netlify

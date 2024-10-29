@@ -191,3 +191,7 @@ export interface Template {
   sourceCodeUrl: string
   slug: string
 }
+
+export interface APIEnvError {
+  json: { msg: string }
+}
