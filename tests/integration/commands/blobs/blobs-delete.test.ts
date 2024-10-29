@@ -3,13 +3,13 @@ import process from 'process'
 import { getStore } from '@netlify/blobs'
 import chalk from 'chalk'
 import inquirer from 'inquirer'
-import { describe, expect, test, vi, beforeEach, afterEach, beforeAll } from 'vitest'
+import { describe, expect, test, vi, beforeEach, afterEach, beforeAll, afterAll } from 'vitest'
 
 import { log } from '../../../../src/utils/command-helpers.js'
 import { destructiveCommandMessages } from '../../../../src/utils/prompts/prompt-messages.js'
 import { reportError } from '../../../../src/utils/telemetry/report-error.js'
 import { Route } from '../../utils/mock-api-vitest.js'
-import { getEnvironmentVariables, withMockApi, setTTYMode, setCI } from '../../utils/mock-api.js'
+import { getEnvironmentVariables, withMockApi, setTTYMode, setCI, setTestingPrompts } from '../../utils/mock-api.js'
 import { runMockProgram } from '../../utils/mock-program.js'
 
 const siteInfo = {
@@ -60,14 +60,16 @@ describe('blobs:delete command', () => {
   )}`
 
   describe('user is prompted to confirm when deleting a blob key', () => {
-    beforeEach(() => {
-      setTTYMode(true)
-      setCI('')
-      vi.resetAllMocks()
+    beforeAll(() => {
+      setTestingPrompts('true')
     })
 
     beforeEach(() => {
       vi.resetAllMocks()
+    })
+
+    afterAll(() => {
+      setTestingPrompts('false')
     })
 
     test('should log warning message and prompt for confirmation', async () => {

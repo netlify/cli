@@ -2,12 +2,12 @@ import process from 'process'
 
 import chalk from 'chalk'
 import inquirer from 'inquirer'
-import { describe, expect, test, vi, beforeEach, afterEach } from 'vitest'
+import { describe, expect, test, vi, beforeEach, afterEach, beforeAll, afterAll } from 'vitest'
 
 import { log } from '../../../../src/utils/command-helpers.js'
 import { destructiveCommandMessages } from '../../../../src/utils/prompts/prompt-messages.js'
 import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
-import { getEnvironmentVariables, withMockApi, setTTYMode, setCI } from '../../utils/mock-api.js'
+import { getEnvironmentVariables, withMockApi, setTTYMode, setCI, setTestingPrompts } from '../../utils/mock-api.js'
 import { runMockProgram } from '../../utils/mock-program.js'
 import { routes } from './api-routes.js'
 
@@ -280,10 +280,16 @@ describe('env:set command', () => {
   })
 
   describe('user is prompted to confirmOverwrite when setting an env var that already exists', () => {
+    beforeAll(() => {
+      setTestingPrompts('true')
+    })
+
     beforeEach(() => {
-      setTTYMode(true)
-      setCI('')
       vi.resetAllMocks()
+    })
+
+    afterAll(() => {
+      setTestingPrompts('false')
     })
 
     test('should log warnings and prompts if enviroment variable already exists', async () => {
@@ -369,6 +375,7 @@ describe('env:set command', () => {
     beforeEach(() => {
       vi.resetAllMocks()
     })
+
     afterEach(() => {
       setTTYMode(true)
       setCI('')

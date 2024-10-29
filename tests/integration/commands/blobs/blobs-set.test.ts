@@ -3,13 +3,13 @@ import process from 'process'
 import { getStore } from '@netlify/blobs'
 import chalk from 'chalk'
 import inquirer from 'inquirer'
-import { describe, expect, test, vi, beforeEach, afterEach } from 'vitest'
+import { describe, expect, test, vi, beforeEach, afterEach, beforeAll, afterAll } from 'vitest'
 
 import { log } from '../../../../src/utils/command-helpers.js'
 import { destructiveCommandMessages } from '../../../../src/utils/prompts/prompt-messages.js'
 import { reportError } from '../../../../src/utils/telemetry/report-error.js'
 import { Route } from '../../utils/mock-api-vitest.js'
-import { getEnvironmentVariables, withMockApi, setTTYMode, setCI } from '../../utils/mock-api.js'
+import { getEnvironmentVariables, withMockApi, setTTYMode, setCI, setTestingPrompts } from '../../utils/mock-api.js'
 import { runMockProgram } from '../../utils/mock-program.js'
 
 const siteInfo = {
@@ -61,10 +61,16 @@ describe('blobs:set command', () => {
   )}`
 
   describe('user is prompted to confirm when setting a a blob key that already exists', () => {
+    beforeAll(() => {
+      setTestingPrompts('true')
+    })
+
     beforeEach(() => {
-      setTTYMode(true)
-      setCI('')
       vi.resetAllMocks()
+    })
+
+    afterAll(() => {
+      setTestingPrompts('false')
     })
 
     test('should not log warnings and prompt if blob key does not exist', async () => {
@@ -205,10 +211,6 @@ describe('blobs:set command', () => {
         expect(log).not.toHaveBeenCalledWith(successMessage)
       })
     })
-  })
-
-  beforeEach(() => {
-    vi.resetAllMocks()
   })
 
   describe('prompts should not show in a non-interactive shell or in a ci/cd enviroment', () => {

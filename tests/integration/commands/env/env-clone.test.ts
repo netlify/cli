@@ -2,12 +2,12 @@ import process from 'process'
 
 import chalk from 'chalk'
 import inquirer from 'inquirer'
-import { describe, expect, test, vi, beforeEach, afterEach } from 'vitest'
+import { describe, expect, test, vi, beforeEach, afterEach, beforeAll, afterAll } from 'vitest'
 
 import { log } from '../../../../src/utils/command-helpers.js'
 import { generateEnvVarsList } from '../../../../src/utils/prompts/env-clone-prompt.js'
 import { destructiveCommandMessages } from '../../../../src/utils/prompts/prompt-messages.js'
-import { getEnvironmentVariables, withMockApi, setTTYMode, setCI } from '../../utils/mock-api.js'
+import { getEnvironmentVariables, withMockApi, setTTYMode, setCI, setTestingPrompts } from '../../utils/mock-api.js'
 
 import { existingVar, routes, secondSiteInfo } from './api-routes.js'
 import { runMockProgram } from '../../utils/mock-program.js'
@@ -32,10 +32,16 @@ describe('env:clone command', () => {
   )}`
 
   describe('user is prompted to confirm when setting an env var that already exists', () => {
+    beforeAll(() => {
+      setTestingPrompts('true')
+    })
+
     beforeEach(() => {
-      setTTYMode(true)
-      setCI('')
       vi.resetAllMocks()
+    })
+
+    afterAll(() => {
+      setTestingPrompts('false')
     })
 
     test('should log warnings and prompts if enviroment variable already exists', async () => {

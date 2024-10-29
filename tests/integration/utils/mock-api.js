@@ -98,6 +98,10 @@ export const setTTYMode = (bool) => {
   process.stdin.isTTY = bool
 }
 
+export const setTestingPrompts = (value) => {
+  process.env.TESTING_PROMPTS = value
+}
+
 /**
  * Simulates a Continuous Integration environment by toggling the `CI`
  * environment variable. Truthy value is
