@@ -68,8 +68,16 @@ export const envClone = async (options: OptionValues, command: BaseCommand) => {
     return false
   }
 
+  const sourceId = options.from || site.id
+
+  if (!sourceId) {
+    log(
+      'Please include the source site Id as the `--from` option, or run `netlify link` to link this folder to a Netlify site',
+    )
+  }
+
   const siteId = {
-    from: options.from || site.id,
+    from: sourceId,
     to: options.to,
   }
 

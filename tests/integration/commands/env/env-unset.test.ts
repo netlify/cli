@@ -1,8 +1,7 @@
 import process from 'process'
 
 import chalk from 'chalk'
-import inquirer from 'inquirer'
-import { describe, expect, test, vi, beforeEach, afterEach, beforeAll, afterAll } from 'vitest'
+import { describe, expect, test, vi, beforeEach, afterAll } from 'vitest'
 
 import { log } from '../../../../src/utils/command-helpers.js'
 import { destructiveCommandMessages } from '../../../../src/utils/prompts/prompt-messages.js'
@@ -11,11 +10,14 @@ import { getEnvironmentVariables, withMockApi, setTTYMode, setCI, setTestingProm
 
 import { routes } from './api-routes.js'
 import { runMockProgram } from '../../utils/mock-program.js'
+import { mockPrompt, spyOnMockPrompt } from '../../utils/inquirer-mock-prompt.js'
 
 vi.mock('../../../../src/utils/command-helpers.js', async () => ({
   ...(await vi.importActual('../../../../src/utils/command-helpers.js')),
   log: vi.fn(),
 }))
+
+const OLD_ENV = process.env
 
 describe('env:unset command', () => {
   const { overwriteNotice } = destructiveCommandMessages
@@ -27,6 +29,22 @@ describe('env:unset command', () => {
   const expectedSuccessMessage = `Unset environment variable ${chalk.yellow(`${existingVar}`)} in the ${chalk.magenta(
     'all',
   )} context`
+
+  beforeEach(() => {
+    vi.resetModules()
+    vi.clearAllMocks()
+
+    Object.defineProperty(process, 'env', { value: {} })
+  })
+
+  afterAll(() => {
+    vi.resetModules()
+    vi.restoreAllMocks()
+
+    Object.defineProperty(process, 'env', {
+      value: OLD_ENV,
+    })
+  })
 
   setupFixtureTests('empty-project', { mockApi: { routes } }, () => {
     test<FixtureTestContext>('should remove existing variable', async ({ fixture, mockApi }) => {
@@ -86,23 +104,15 @@ describe('env:unset command', () => {
   })
 
   describe('user is prompted to confirm when unsetting an env var that already exists', () => {
-    beforeAll(() => {
-      setTestingPrompts('true')
-    })
-
     beforeEach(() => {
-      vi.resetAllMocks()
-    })
-
-    afterAll(() => {
-      setTestingPrompts('false')
+      setTestingPrompts('true')
     })
 
     test('should log warnings and prompts if enviroment variable already exists', async () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-        const promptSpy = vi.spyOn(inquirer, 'prompt').mockResolvedValue({ confirm: true })
+        const promptSpy = mockPrompt({ confirm: true })
 
         await runMockProgram(['', '', 'env:unset', existingVar])
 
@@ -123,7 +133,7 @@ describe('env:unset command', () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-        const promptSpy = vi.spyOn(inquirer, 'prompt')
+        const promptSpy = spyOnMockPrompt()
 
         await runMockProgram(['', '', 'env:unset', existingVar, '--force'])
 
@@ -139,7 +149,7 @@ describe('env:unset command', () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-        const promptSpy = vi.spyOn(inquirer, 'prompt').mockResolvedValue({ confirm: false })
+        const promptSpy = mockPrompt({ confirm: false })
 
         try {
           await runMockProgram(['', '', 'env:unset', existingVar])
@@ -160,7 +170,7 @@ describe('env:unset command', () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-        const promptSpy = vi.spyOn(inquirer, 'prompt')
+        const promptSpy = spyOnMockPrompt()
 
         await runMockProgram(['', '', 'env:unset', 'NEW_ENV_VAR'])
 
@@ -174,22 +184,13 @@ describe('env:unset command', () => {
   })
 
   describe('prompts should not show in an non-interactive shell or in a ci/cd enviroment', () => {
-    beforeEach(() => {
-      vi.resetAllMocks()
-    })
-
-    afterEach(() => {
-      setTTYMode(true)
-      setCI('')
-    })
-
     test('prompts should not show in an non-interactive shell', async () => {
       setTTYMode(false)
 
       await withMockApi(routes, async ({ apiUrl }) => {
         Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-        const promptSpy = vi.spyOn(inquirer, 'prompt')
+        const promptSpy = spyOnMockPrompt()
 
         await runMockProgram(['', '', 'env:unset', existingVar])
         expect(promptSpy).not.toHaveBeenCalled()
@@ -206,7 +207,7 @@ describe('env:unset command', () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-        const promptSpy = vi.spyOn(inquirer, 'prompt')
+        const promptSpy = spyOnMockPrompt()
 
         await runMockProgram(['', '', 'env:unset', existingVar])
         expect(promptSpy).not.toHaveBeenCalled()

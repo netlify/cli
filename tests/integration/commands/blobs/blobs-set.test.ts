@@ -3,7 +3,7 @@ import process from 'process'
 import { getStore } from '@netlify/blobs'
 import chalk from 'chalk'
 import inquirer from 'inquirer'
-import { describe, expect, test, vi, beforeEach, afterEach, beforeAll, afterAll } from 'vitest'
+import { describe, expect, test, vi, beforeEach, afterAll } from 'vitest'
 
 import { log } from '../../../../src/utils/command-helpers.js'
 import { destructiveCommandMessages } from '../../../../src/utils/prompts/prompt-messages.js'
@@ -11,6 +11,7 @@ import { reportError } from '../../../../src/utils/telemetry/report-error.js'
 import { Route } from '../../utils/mock-api-vitest.js'
 import { getEnvironmentVariables, withMockApi, setTTYMode, setCI, setTestingPrompts } from '../../utils/mock-api.js'
 import { runMockProgram } from '../../utils/mock-program.js'
+import { mockPrompt, spyOnMockPrompt } from '../../utils/inquirer-mock-prompt.js'
 
 const siteInfo = {
   account_slug: 'test-account',
@@ -45,6 +46,8 @@ const routes: Route[] = [
   },
 ]
 
+const OLD_ENV = process.env
+
 describe('blobs:set command', () => {
   const storeName = 'my-store'
   const key = 'my-key'
@@ -60,17 +63,25 @@ describe('blobs:set command', () => {
     storeName,
   )}`
 
+  beforeEach(() => {
+    vi.resetModules()
+    vi.clearAllMocks()
+
+    Object.defineProperty(process, 'env', { value: {} })
+  })
+
+  afterAll(() => {
+    vi.resetModules()
+    vi.restoreAllMocks()
+
+    Object.defineProperty(process, 'env', {
+      value: OLD_ENV,
+    })
+  })
+
   describe('user is prompted to confirm when setting a a blob key that already exists', () => {
-    beforeAll(() => {
-      setTestingPrompts('true')
-    })
-
     beforeEach(() => {
-      vi.resetAllMocks()
-    })
-
-    afterAll(() => {
-      setTestingPrompts('false')
+      setTestingPrompts('true')
     })
 
     test('should not log warnings and prompt if blob key does not exist', async () => {
@@ -109,7 +120,7 @@ describe('blobs:set command', () => {
           set: mockSet,
         })
 
-        const promptSpy = vi.spyOn(inquirer, 'prompt').mockResolvedValue({ confirm: true })
+        const promptSpy = mockPrompt({ confirm: true })
 
         await runMockProgram(['', '', 'blobs:set', storeName, key, newValue])
 
@@ -139,7 +150,7 @@ describe('blobs:set command', () => {
           set: mockSet,
         })
 
-        const promptSpy = vi.spyOn(inquirer, 'prompt').mockResolvedValue({ confirm: false })
+        const promptSpy = mockPrompt({ confirm: false })
 
         try {
           await runMockProgram(['', '', 'blobs:set', storeName, key, newValue])
@@ -174,7 +185,7 @@ describe('blobs:set command', () => {
           set: mockSet,
         })
 
-        const promptSpy = vi.spyOn(inquirer, 'prompt')
+        const promptSpy = spyOnMockPrompt()
 
         await runMockProgram(['', '', 'blobs:set', storeName, key, newValue, '--force'])
 
@@ -196,7 +207,7 @@ describe('blobs:set command', () => {
           set: mockSet,
         })
 
-        const promptSpy = vi.spyOn(inquirer, 'prompt')
+        const promptSpy = spyOnMockPrompt()
 
         try {
           await runMockProgram(['', '', 'blobs:set', storeName, key, newValue, '--force'])
@@ -214,10 +225,6 @@ describe('blobs:set command', () => {
   })
 
   describe('prompts should not show in a non-interactive shell or in a ci/cd enviroment', () => {
-    afterEach(() => {
-      setTTYMode(true)
-      setCI('')
-    })
     test('should not show prompt in an non-interactive shell', async () => {
       setTTYMode(false)
 
@@ -233,7 +240,7 @@ describe('blobs:set command', () => {
           set: mockSet,
         })
 
-        const promptSpy = vi.spyOn(inquirer, 'prompt')
+        const promptSpy = spyOnMockPrompt()
 
         await runMockProgram(['', '', 'blobs:set', storeName, key, newValue, '--force'])
 
@@ -259,7 +266,7 @@ describe('blobs:set command', () => {
           set: mockSet,
         })
 
-        const promptSpy = vi.spyOn(inquirer, 'prompt')
+        const promptSpy = spyOnMockPrompt()
 
         await runMockProgram(['', '', 'blobs:set', storeName, key, newValue, '--force'])
         expect(promptSpy).not.toHaveBeenCalled()

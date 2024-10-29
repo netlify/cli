@@ -3,7 +3,7 @@ import process from 'process'
 import { getStore } from '@netlify/blobs'
 import chalk from 'chalk'
 import inquirer from 'inquirer'
-import { describe, expect, test, vi, beforeEach, afterEach, beforeAll, afterAll } from 'vitest'
+import { describe, expect, test, vi, beforeEach, afterAll } from 'vitest'
 
 import { log } from '../../../../src/utils/command-helpers.js'
 import { destructiveCommandMessages } from '../../../../src/utils/prompts/prompt-messages.js'
@@ -11,6 +11,7 @@ import { reportError } from '../../../../src/utils/telemetry/report-error.js'
 import { Route } from '../../utils/mock-api-vitest.js'
 import { getEnvironmentVariables, withMockApi, setTTYMode, setCI, setTestingPrompts } from '../../utils/mock-api.js'
 import { runMockProgram } from '../../utils/mock-program.js'
+import { mockPrompt, spyOnMockPrompt } from '../../utils/inquirer-mock-prompt.js'
 
 const siteInfo = {
   account_slug: 'test-account',
@@ -46,6 +47,8 @@ const routes: Route[] = [
   },
 ]
 
+const OLD_ENV = process.env
+
 describe('blobs:delete command', () => {
   const storeName = 'my-store'
   const key = 'my-key'
@@ -59,17 +62,25 @@ describe('blobs:delete command', () => {
     storeName,
   )}`
 
+  beforeEach(() => {
+    vi.resetModules()
+    vi.clearAllMocks()
+
+    Object.defineProperty(process, 'env', { value: {} })
+  })
+
+  afterAll(() => {
+    vi.resetModules()
+    vi.restoreAllMocks()
+
+    Object.defineProperty(process, 'env', {
+      value: OLD_ENV,
+    })
+  })
+
   describe('user is prompted to confirm when deleting a blob key', () => {
-    beforeAll(() => {
-      setTestingPrompts('true')
-    })
-
     beforeEach(() => {
-      vi.resetAllMocks()
-    })
-
-    afterAll(() => {
-      setTestingPrompts('false')
+      setTestingPrompts('true')
     })
 
     test('should log warning message and prompt for confirmation', async () => {
@@ -82,7 +93,7 @@ describe('blobs:delete command', () => {
           delete: mockDelete,
         })
 
-        const promptSpy = vi.spyOn(inquirer, 'prompt').mockResolvedValue({ confirm: true })
+        const promptSpy = mockPrompt({ confirm: true })
 
         await runMockProgram(['', '', 'blobs:delete', storeName, key])
 
@@ -109,7 +120,7 @@ describe('blobs:delete command', () => {
           delete: mockDelete,
         })
 
-        const promptSpy = vi.spyOn(inquirer, 'prompt').mockResolvedValue({ confirm: false })
+        const promptSpy = mockPrompt({ confirm: false })
 
         try {
           await runMockProgram(['', '', 'blobs:delete', storeName, key])
@@ -141,7 +152,7 @@ describe('blobs:delete command', () => {
           delete: mockDelete,
         })
 
-        const promptSpy = vi.spyOn(inquirer, 'prompt')
+        const promptSpy = spyOnMockPrompt()
 
         await runMockProgram(['', '', 'blobs:delete', storeName, key, '--force'])
 
@@ -166,7 +177,7 @@ describe('blobs:delete command', () => {
             delete: mockDelete,
           })
 
-          const promptSpy = vi.spyOn(inquirer, 'prompt')
+          const promptSpy = spyOnMockPrompt()
 
           try {
             await runMockProgram(['', '', 'blobs:delete', storeName, key, '--force'])
@@ -189,15 +200,6 @@ describe('blobs:delete command', () => {
   })
 
   describe('should not show prompts if in non-interactive shell or CI/CD', () => {
-    beforeEach(() => {
-      vi.resetAllMocks()
-    })
-
-    afterEach(() => {
-      setTTYMode(true)
-      setCI('')
-    })
-
     test('should not show prompt for non-interactive shell', async () => {
       setTTYMode(false)
 
@@ -210,7 +212,7 @@ describe('blobs:delete command', () => {
           delete: mockDelete,
         })
 
-        const promptSpy = vi.spyOn(inquirer, 'prompt')
+        const promptSpy = spyOnMockPrompt()
 
         await runMockProgram(['', '', 'blobs:delete', storeName, key])
         expect(promptSpy).not.toHaveBeenCalled()
@@ -232,7 +234,7 @@ describe('blobs:delete command', () => {
           delete: mockDelete,
         })
 
-        const promptSpy = vi.spyOn(inquirer, 'prompt')
+        const promptSpy = spyOnMockPrompt()
 
         await runMockProgram(['', '', 'blobs:delete', storeName, key])
 

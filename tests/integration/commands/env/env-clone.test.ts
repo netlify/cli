@@ -1,7 +1,6 @@
 import process from 'process'
 
 import chalk from 'chalk'
-import inquirer from 'inquirer'
 import { describe, expect, test, vi, beforeEach, afterEach, beforeAll, afterAll } from 'vitest'
 
 import { log } from '../../../../src/utils/command-helpers.js'
@@ -11,11 +10,13 @@ import { getEnvironmentVariables, withMockApi, setTTYMode, setCI, setTestingProm
 
 import { existingVar, routes, secondSiteInfo } from './api-routes.js'
 import { runMockProgram } from '../../utils/mock-program.js'
+import { mockPrompt, spyOnMockPrompt } from '../../utils/inquirer-mock-prompt.js'
 
 vi.mock('../../../../src/utils/command-helpers.js', async () => ({
   ...(await vi.importActual('../../../../src/utils/command-helpers.js')),
   log: vi.fn(),
 }))
+const OLD_ENV = process.env
 
 describe('env:clone command', () => {
   const sharedEnvVars = [existingVar, existingVar]
@@ -31,24 +32,32 @@ describe('env:clone command', () => {
     'site-name-2',
   )}`
 
+  beforeEach(() => {
+    vi.resetModules()
+    vi.clearAllMocks()
+
+    Object.defineProperty(process, 'env', { value: {} })
+  })
+
+  afterAll(() => {
+    vi.resetModules()
+    vi.restoreAllMocks()
+
+    Object.defineProperty(process, 'env', {
+      value: OLD_ENV,
+    })
+  })
+
   describe('user is prompted to confirm when setting an env var that already exists', () => {
-    beforeAll(() => {
-      setTestingPrompts('true')
-    })
-
     beforeEach(() => {
-      vi.resetAllMocks()
-    })
-
-    afterAll(() => {
-      setTestingPrompts('false')
+      setTestingPrompts('true')
     })
 
     test('should log warnings and prompts if enviroment variable already exists', async () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-        const promptSpy = vi.spyOn(inquirer, 'prompt').mockResolvedValue({ confirm: true })
+        const promptSpy = mockPrompt({ confirm: true })
 
         await runMockProgram(['', '', 'env:clone', '-t', siteIdTwo])
 
@@ -73,7 +82,7 @@ describe('env:clone command', () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-        const promptSpy = vi.spyOn(inquirer, 'prompt')
+        const promptSpy = spyOnMockPrompt()
 
         await runMockProgram(['', '', 'env:clone', '--force', '-t', siteIdTwo])
 
@@ -93,7 +102,7 @@ describe('env:clone command', () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-        const promptSpy = vi.spyOn(inquirer, 'prompt').mockResolvedValue({ confirm: false })
+        const promptSpy = mockPrompt({ confirm: false })
 
         try {
           await runMockProgram(['', '', 'env:clone', '-t', siteIdTwo])
@@ -121,7 +130,7 @@ describe('env:clone command', () => {
           'site-name',
         )} to ${chalk.green('site-name-3')}`
 
-        const promptSpy = vi.spyOn(inquirer, 'prompt')
+        const promptSpy = spyOnMockPrompt()
 
         await runMockProgram(['', '', 'env:clone', '-t', 'site_id_3'])
 
@@ -139,22 +148,13 @@ describe('env:clone command', () => {
   })
 
   describe('should not run prompts if in non-interactive shell or CI/CD environment', async () => {
-    beforeEach(() => {
-      vi.resetAllMocks()
-    })
-
-    afterEach(() => {
-      setTTYMode(true)
-      setCI('')
-    })
-
     test('should not show prompt in an non-interactive shell', async () => {
       setTTYMode(false)
 
       await withMockApi(routes, async ({ apiUrl }) => {
         Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-        const promptSpy = vi.spyOn(inquirer, 'prompt')
+        const promptSpy = spyOnMockPrompt()
 
         await runMockProgram(['', '', 'env:clone', '-t', siteIdTwo])
 
@@ -172,7 +172,7 @@ describe('env:clone command', () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-        const promptSpy = vi.spyOn(inquirer, 'prompt')
+        const promptSpy = spyOnMockPrompt()
 
         await runMockProgram(['', '', 'env:clone', '-t', siteIdTwo])
 

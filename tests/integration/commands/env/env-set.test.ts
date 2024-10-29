@@ -1,8 +1,7 @@
 import process from 'process'
 
 import chalk from 'chalk'
-import inquirer from 'inquirer'
-import { describe, expect, test, vi, beforeEach, afterEach, beforeAll, afterAll } from 'vitest'
+import { describe, expect, test, vi, beforeEach, afterAll } from 'vitest'
 
 import { log } from '../../../../src/utils/command-helpers.js'
 import { destructiveCommandMessages } from '../../../../src/utils/prompts/prompt-messages.js'
@@ -10,11 +9,14 @@ import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
 import { getEnvironmentVariables, withMockApi, setTTYMode, setCI, setTestingPrompts } from '../../utils/mock-api.js'
 import { runMockProgram } from '../../utils/mock-program.js'
 import { routes } from './api-routes.js'
+import { mockPrompt, spyOnMockPrompt } from '../../utils/inquirer-mock-prompt.js'
 
 vi.mock('../../../../src/utils/command-helpers.js', async () => ({
   ...(await vi.importActual('../../../../src/utils/command-helpers.js')),
   log: vi.fn(),
 }))
+
+const OLD_ENV = process.env
 
 describe('env:set command', () => {
   // already exists as value in withMockApi
@@ -28,6 +30,22 @@ describe('env:set command', () => {
   const successMessage = `Set environment variable ${chalk.yellow(
     `${existingVar}=${newEnvValue}`,
   )} in the ${chalk.magenta('all')} context`
+
+  beforeEach(() => {
+    vi.resetModules()
+    vi.clearAllMocks()
+
+    Object.defineProperty(process, 'env', { value: {} })
+  })
+
+  afterAll(() => {
+    vi.resetModules()
+    vi.restoreAllMocks()
+
+    Object.defineProperty(process, 'env', {
+      value: OLD_ENV,
+    })
+  })
 
   setupFixtureTests('empty-project', { mockApi: { routes } }, () => {
     test<FixtureTestContext>('should create and return new var in the dev context', async ({ fixture, mockApi }) => {
@@ -280,23 +298,15 @@ describe('env:set command', () => {
   })
 
   describe('user is prompted to confirmOverwrite when setting an env var that already exists', () => {
-    beforeAll(() => {
-      setTestingPrompts('true')
-    })
-
     beforeEach(() => {
-      vi.resetAllMocks()
-    })
-
-    afterAll(() => {
-      setTestingPrompts('false')
+      setTestingPrompts('true')
     })
 
     test('should log warnings and prompts if enviroment variable already exists', async () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-        const promptSpy = vi.spyOn(inquirer, 'prompt').mockResolvedValue({ confirm: true })
+        const promptSpy = mockPrompt({ confirm: true })
 
         await runMockProgram(['', '', 'env:set', existingVar, newEnvValue])
 
@@ -317,7 +327,7 @@ describe('env:set command', () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-        const promptSpy = vi.spyOn(inquirer, 'prompt')
+        const promptSpy = spyOnMockPrompt()
 
         await runMockProgram(['', '', 'env:set', 'NEW_ENV_VAR', 'NEW_VALUE'])
 
@@ -337,7 +347,7 @@ describe('env:set command', () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-        const promptSpy = vi.spyOn(inquirer, 'prompt')
+        const promptSpy = spyOnMockPrompt()
 
         await runMockProgram(['', '', 'env:set', existingVar, newEnvValue, '--force'])
 
@@ -353,7 +363,7 @@ describe('env:set command', () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-        const promptSpy = vi.spyOn(inquirer, 'prompt').mockResolvedValue({ confirm: false })
+        const promptSpy = mockPrompt({ confirm: false })
 
         try {
           await runMockProgram(['', '', 'env:set', existingVar, newEnvValue])
@@ -372,22 +382,13 @@ describe('env:set command', () => {
   })
 
   describe('prompts should not show in an non-interactive shell or in a ci/cd enviroment', () => {
-    beforeEach(() => {
-      vi.resetAllMocks()
-    })
-
-    afterEach(() => {
-      setTTYMode(true)
-      setCI('')
-    })
-
     test('should not show prompt in an non-interactive shell', async () => {
       setTTYMode(false)
 
       await withMockApi(routes, async ({ apiUrl }) => {
         Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-        const promptSpy = vi.spyOn(inquirer, 'prompt')
+        const promptSpy = spyOnMockPrompt()
 
         await runMockProgram(['', '', 'env:set', existingVar, newEnvValue])
 
@@ -405,7 +406,7 @@ describe('env:set command', () => {
       await withMockApi(routes, async ({ apiUrl }) => {
         Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-        const promptSpy = vi.spyOn(inquirer, 'prompt')
+        const promptSpy = spyOnMockPrompt()
         await runMockProgram(['', '', 'env:set', existingVar, newEnvValue])
 
         expect(promptSpy).not.toHaveBeenCalled()

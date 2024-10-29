@@ -98,6 +98,14 @@ export const setTTYMode = (bool) => {
   process.stdin.isTTY = bool
 }
 
+/**
+ * Sets the `TESTING_PROMPTS` environment variable to the specified value.
+ * This is used to make sure prompts are shown in the needed test sin ci/cd enviroments
+ * If this is set to 'true', then prompts will be shown in for destructive commands even in non-interactive shells
+ * or CI/CD enviroment
+ *
+ * @param {string} value - The value to set for the `TESTING_PROMPTS` environment variable.
+ */
 export const setTestingPrompts = (value) => {
   process.env.TESTING_PROMPTS = value
 }

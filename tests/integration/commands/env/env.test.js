@@ -446,6 +446,7 @@ describe('commands/env', () => {
           extendEnv: false,
           PATH: process.env.PATH,
         })
+
         t.expect(normalize(cliResponse)).toMatchSnapshot()
       })
     })
