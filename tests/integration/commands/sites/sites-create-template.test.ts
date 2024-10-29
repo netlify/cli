@@ -156,22 +156,3 @@ describe('sites:create-template', () => {
     })
   })
 })
-
-// all with good pat:
-
-// Y- perfectly fine name, unique no problems see that it works
-
-// Y- globally existing name -> "a site with that name already exists" (z) AND prompt for new name
-
-// Y- account existing name  -> "A site with that name already exists on your account" (one on ur account) AND prompt for new name
-
-// Y- duplicate repo name that is a template name -> creates a repo with a uuid appended AND NOT prompt for new name
-
-// Y- duplicate repo name that is not a template name -> `It seems you have already created a site with the name ${templateName}.` AND prmopt for new name
-
-// Y- one of ben's non-deployed repo names -> 422, and create github repo with the name
-// Y -  -- when you enter new unique name after this, should work and link to repo with original name
-// aesthetic-gecko-b7dde3
-
-// all with bad pat:
-// perfectly fine unique name (global and account) -> 'could not create repository...' and NOT prompt for new name
