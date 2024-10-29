@@ -28,7 +28,7 @@ const thirdSiteInfo = {
   name: 'site-name-3',
 }
 
-export const existingVar: EnvVar = {
+export const existingVar = {
   key: 'EXISTING_VAR',
   scopes: ['builds', 'functions'],
   values: [
