@@ -161,6 +161,7 @@ export type EnvVar = {
 type EnvVarValue = {
   id: string
   context: string
+}
 
 export interface Account {
   id: string
