@@ -174,7 +174,6 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
       if (!sites || sites.length === 0) {
         error(`You don't have any sites yet. Run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
       } else if (sites) {
-
         const { selectedSite } = await inquirer.prompt([
           {
             type: 'list',

@@ -60,7 +60,7 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand): 
   const inputSiteName = async (name?: string) => {
     const { name: siteName } = await getSiteNameInput(name)
 
-    const body: {name?: string} = {}
+    const body: { name?: string } = {}
     if (typeof siteName === 'string') {
       body.name = siteName.trim()
     }
@@ -86,7 +86,7 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand): 
 
   if (site === undefined) {
     error('Failed to create site')
-    return undefined  
+    return undefined
   }
 
   const siteUrl = site.ssl_url || site.url

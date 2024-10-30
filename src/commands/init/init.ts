@@ -10,14 +10,14 @@ import { track } from '../../utils/telemetry/index.js'
 import BaseCommand from '../base-command.js'
 import { link } from '../link/link.js'
 import { sitesCreate } from '../sites/sites-create.js'
-import { 
+import {
   PersistStateParams,
   LogExistingAndExitParams,
   CreateNewSiteAndExitParams,
   HandleNoGitRemoteAndExitParams,
-  LogExistingRepoSetupAndExitParams
+  LogExistingRepoSetupAndExitParams,
 } from './types.js'
-import { SiteInfo, } from '../../types/api/sites.js'
+import { SiteInfo } from '../../types/api/sites.js'
 
 const persistState = ({ siteInfo, state }: PersistStateParams) => {
   // Save to .netlify/state.json file
@@ -36,7 +36,7 @@ const logExistingAndExit = ({ siteInfo }: LogExistingAndExitParams) => {
   log()
   log(`Site Name:  ${chalk.cyan(siteInfo.name)}`)
   log(`Site Url:   ${chalk.cyan(siteInfo.ssl_url || siteInfo.url)}`)
-  log(`Site Repo:  ${chalk.cyan(getRepoUrl( siteInfo ))}`)
+  log(`Site Repo:  ${chalk.cyan(getRepoUrl(siteInfo))}`)
   log(`Site Id:    ${chalk.cyan(siteInfo.id)}`)
   log(`Admin URL:  ${chalk.cyan(siteInfo.admin_url)}`)
   log()
