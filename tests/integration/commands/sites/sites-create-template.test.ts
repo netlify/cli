@@ -5,7 +5,6 @@ import { beforeEach, afterEach, describe, expect, test, vi } from 'vitest'
 
 import BaseCommand from '../../../../src/commands/base-command.ts'
 import { createSitesFromTemplateCommand } from '../../../../src/commands/sites/sites.ts'
-import { getGitHubToken } from '../../../../src/utils/init/config-github.ts'
 import { deployedSiteExists, fetchTemplates, getTemplateName } from '../../../../src/utils/sites/create-template.ts'
 import { getTemplatesFromGitHub, validateTemplate, createRepo } from '../../../../src/utils/sites/utils.ts'
 import { getEnvironmentVariables, withMockApi } from '../../utils/mock-api.js'
@@ -44,7 +43,6 @@ describe('sites:create-template', () => {
     vi.mocked(inquirer.prompt)
       .mockImplementationOnce(() => Promise.resolve({ accountSlug: 'test-account' }))
       .mockImplementationOnce(() => Promise.resolve({ name: 'test-name' }))
-    vi.mocked(getGitHubToken).mockResolvedValue('mockToken')
     vi.mocked(fetchTemplates).mockResolvedValue([
       {
         name: 'mockTemplateName',
@@ -61,7 +59,6 @@ describe('sites:create-template', () => {
         disabled: false,
       },
     ])
-    vi.mocked(getGitHubToken).mockResolvedValue('mockTemplate')
     vi.mocked(getTemplateName).mockResolvedValue('mockTemplateName')
     vi.mocked(validateTemplate).mockResolvedValue({
       exists: true,
