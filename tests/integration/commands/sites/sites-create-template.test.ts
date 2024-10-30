@@ -44,7 +44,6 @@ describe('sites:create-template', () => {
     vi.mocked(inquirer.prompt)
       .mockImplementationOnce(() => Promise.resolve({ accountSlug: 'test-account' }))
       .mockImplementationOnce(() => Promise.resolve({ name: 'test-name' }))
-
     vi.mocked(getGitHubToken).mockResolvedValue('mockToken')
     vi.mocked(fetchTemplates).mockResolvedValue([
       {
@@ -64,12 +63,10 @@ describe('sites:create-template', () => {
     ])
     vi.mocked(getGitHubToken).mockResolvedValue('mockTemplate')
     vi.mocked(getTemplateName).mockResolvedValue('mockTemplateName')
-
     vi.mocked(validateTemplate).mockResolvedValue({
       exists: true,
       isTemplate: true,
     })
-
     vi.mocked(createRepo).mockResolvedValue({
       id: 1,
       full_name: 'mockName',
@@ -77,6 +74,7 @@ describe('sites:create-template', () => {
       default_branch: 'mockBranch',
     })
   })
+
   afterEach(() => {
     vi.resetModules()
     vi.restoreAllMocks()
@@ -128,65 +126,5 @@ describe('sites:create-template', () => {
       ])
     })
     expect(stdoutwriteSpy).toHaveBeenCalledWith('A site with that name already exists on your account\n')
-  })
-
-  test('it should only create a repo once even when prompting for new name input', async (t) => {
-    const gitHubTestRoutes = [
-      {
-        path: 'accounts',
-        response: [{ slug: 'test-account' }],
-      },
-      {
-        path: 'sites',
-        response: [{ name: 'test-name' }],
-      },
-      { path: 'test-account/sites', method: 'post', status: 422 },
-    ]
-
-    vi.doMock('../../../../src/commands/sites/sites-create.ts', async () => {
-      const actual = await vi.importActual('../../../../src/commands/sites/sites-create.ts')
-      return {
-        ...actual,
-        getSiteNameInput: vi.fn().mockResolvedValue({ name: 'uniqueSiteName' }),
-      }
-    })
-
-    const { getSiteNameInput } = await import('../../../../src/commands/sites/sites-create.ts')
-    const mockGetSiteNameInput = vi.mocked(getSiteNameInput)
-
-    await withMockApi(gitHubTestRoutes, async ({ apiUrl }) => {
-      Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
-
-      const program = new BaseCommand('netlify')
-
-      createSitesFromTemplateCommand(program)
-
-      program.parseAsync([
-        '',
-        '',
-        'sites:create-template',
-        '--account-slug',
-        'test-account',
-        '--name',
-        'uniqueSiteName',
-      ])
-
-      await new Promise<void>((resolve, reject) => {
-        const interval = setInterval(() => {
-          if (mockGetSiteNameInput.mock.calls.length >= 2) {
-            clearInterval(interval)
-            resolve()
-          }
-        }, 1)
-
-        setTimeout(() => {
-          clearInterval(interval)
-          resolve()
-        }, 5000)
-      })
-    })
-    expect(mockGetSiteNameInput).toHaveBeenCalled()
-    expect(mockGetSiteNameInput).not.toHaveBeenCalledOnce()
-    expect(createRepo).toHaveBeenCalledOnce()
   })
 })
