@@ -40,9 +40,7 @@ import { createWatchCommand } from './watch/index.js'
 import { AddressInUseError } from './types.js'
 const SUGGESTION_TIMEOUT = 1e4
 
-
 process.on('uncaughtException', async (err: AddressInUseError | Error) => {
-
   if ('code' in err && err.code === 'EADDRINUSE') {
     error(
       `${chalk.red(`Port ${err.port} is already in use`)}\n\n` +
