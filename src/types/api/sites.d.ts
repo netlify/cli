@@ -1,88 +1,22 @@
-import type { NetlifyAPI } from 'netlify'
-
-import { Context } from './types.d.ts'
-
-type ApiContext = Context | 'branch'
-
-// Define the structure for the 'updated_by' field
-interface UpdatedBy {
-  // Add specific properties here if known
-  // For now, we'll keep it generic
-  id: string;
-  full_name: string;
-  email: string;
-  avatar_url: string;
-}
-
-export type Value = Pick<EnvVarValue, 'value' | 'context' | 'context_parameter'>
-// Define the structure for each item in the array
-
-interface EnvVarValue {
-  value: string,
-  context: ApiContext,
-  context_parameter?: string,
-  id?: string,
-} 
-
-export interface EnvVar {
-  key: string;
-  scopes: Scope[];
-  values: EnvVarValue[];
-  is_secret?: boolean;
-  updated_at?: string; 
-  updated_by?: UpdatedBy;
-}
-
-interface GetEnvParams {
-  accountId: string,
+interface GetSiteParams {
   siteId?: string,
-  context?: Context,
-  scope?: EnvironmentVariableScope
+  feature_flags?: string
+  site_id?: string
 }
 
-interface DeleteEnvVarValueParams {
-  accountId: string,
-  key: string,
-  id?: string,
-  siteId?: string 
+interface CreateSiteInTeamParams {
+  accountSlug?: string,
+  body: SiteRequestBody | {name?: string}
 }
 
-interface SetEnvVarValueBody {
-  context: string,
-  value: string,
-  contextParameter?: string,
+interface ListSitesParams {
+  name?: string,
+  filter?: "all" | "owner" | "guest",
+  page?: number,
+  per_page?: number,
 }
 
-interface SetEnvVarValueParams {
-  accountId: string,
-  key: string,
-  siteId?: string,
-  body: SetEnvVarValueBody
-}
-
-interface UpdateEnvVarBody {
-  key: string,
-  scopes: string[],
-  values: EnvVar[]
-  is_secret: boolean
-}
-
-interface UpdateEnvVarParams {
-  accountId: string,
-  key: string,
-  siteId?: string
-  body: EnvVar
-}
-
-interface createEnvVarParams {
-  accountId: string,
-  key?: string,
-  siteId?: string,
-  body: EnvVar[]
-}
-
-// Top-Level Interface
-interface SiteInfo {
+interface CommonSiteProperties {
   id: string;
   state: string;
   plan: string;
@@ -119,9 +53,7 @@ interface SiteInfo {
   build_image: string;
   prerender: string | null;
   functions_region: string;
-  feature_flags: FeatureFlags;
 }
-
 // Published Deploy Interface
 interface PublishedDeploy {
   id: string;
@@ -191,7 +123,7 @@ interface BuildSettings {
   public_repo: boolean;
   private_logs: boolean;
   repo_url: string;
-  env: EnvVariables;
+  env?: EnvVariables;
   installation_id: number;
   stop_builds: boolean;
 }
@@ -204,21 +136,32 @@ interface EnvVariables {
 // Default Hooks Data Interface
 interface DefaultHooksData {
   access_token: string;
-} 
+}
+  
 
-interface GetSiteParams {
-  siteId?: string,
-  feature_flags?: string
-  site_id?: string
+interface SiteRequestBody extends CommonSiteProperties {
+  repo: {
+    id: number;
+    provider: string;
+    deploy_key_id: string;
+    repo_path: string;
+    repo_branch: string;
+    dir: string;
+    functions_dir: string;
+    cmd: string;
+    allowed_branches: string[];
+    public_repo: boolean;
+    private_logs: boolean;
+    repo_url: string;
+    env: {
+      [key: string]: string;
+    };
+    installation_id: number;
+    stop_builds: boolean;
+  };
 }
 
-export interface ExtendedNetlifyAPI extends NetlifyAPI {
-  getEnvVar(params: GetEnvVarParams): Promise<EnvVar>
-  getEnvVars( params: GetEnvParams): Promise<EnvVar[]>
-  deleteEnvVarValue( params: DeleteEnvVarValueParams  ): Promise<void>
-  setEnvVarValue( params: SetEnvVarValueParams): Promise<EnvVar>
-  deleteEnvVar(params: DeleteEnvVarValueParams): Promise<void>
-  updateEnvVar(params: UpdateEnvVarParams): Promise<EnvVar>
-  createEnvVars(params: createEnvVarParams): Promise<EnvVar[]>
-  getSite(params: GetSiteParams): Promise<SiteInfo> 
+// Response object for API calls that return site information
+export interface SiteInfo extends CommonSiteProperties {
+  feature_flags: FeatureFlags;
 }

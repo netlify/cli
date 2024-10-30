@@ -7,7 +7,7 @@ import { chalk, error, exit, log, APIError } from '../../utils/command-helpers.j
 import getRepoData from '../../utils/get-repo-data.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import { track } from '../../utils/telemetry/index.js'
-import type { SiteInfo } from '../../utils/types.js'
+import type { SiteInfo } from '../../types/api/sites.js'
 import BaseCommand from '../base-command.js'
 
 /**
@@ -15,8 +15,8 @@ import BaseCommand from '../base-command.js'
  * @param {import('../base-command.js').default} command
  * @param {import('commander').OptionValues} options
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'command' implicitly has an 'any' type.
-const linkPrompt = async (command, options) => {
+// // @ts-expect-error TS(7006) FIXME: Parameter 'command' implicitly has an 'any' type.
+const linkPrompt = async (command: BaseCommand, options: OptionValues) => {
   const { api, state } = command.netlify
 
   const SITE_NAME_PROMPT = 'Search by full or partial site name'
@@ -173,23 +173,23 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
 
       if (!sites || sites.length === 0) {
         error(`You don't have any sites yet. Run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
-      }
+      } else if (sites) {
 
-      const { selectedSite } = await inquirer.prompt([
-        {
-          type: 'list',
-          name: 'selectedSite',
-          message: 'Which site do you want to link?',
-          paginated: true,
-          // @ts-expect-error TS(7006) FIXME: Parameter 'matchingSite' implicitly has an 'any' t... Remove this comment to see the full error message
-          choices: sites.map((matchingSite) => ({ name: matchingSite.name, value: matchingSite })),
-        },
-      ])
-      if (!selectedSite) {
-        error('No site selected')
+        const { selectedSite } = await inquirer.prompt([
+          {
+            type: 'list',
+            name: 'selectedSite',
+            message: 'Which site do you want to link?',
+            paginated: true,
+            choices: sites.map((matchingSite) => ({ name: matchingSite.name, value: matchingSite })),
+          },
+        ])
+        if (!selectedSite) {
+          error('No site selected')
+        }
+        site = selectedSite
+        break
       }
-      site = selectedSite
-      break
     }
     case SITE_ID_PROMPT: {
       kind = 'bySiteId'
@@ -241,7 +241,7 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
   return site
 }
 
-export const link = async (options: OptionValues, command: BaseCommand) => {
+export const link = async (options: OptionValues, command: BaseCommand): Promise<SiteInfo> => {
   await command.authenticate()
 
   const {

@@ -1,7 +1,7 @@
 import { OptionValues } from 'commander'
 
 import type { EnvironmentVariableScope } from '../../types.d.ts'
-import type { ExtendedNetlifyAPI, Context, SiteInfo } from '../api-types.d.ts'
+import type { ExtendedNetlifyAPI, Context, SiteInfo } from '../../types/api/api.js'
 import { $TSFixMe } from '../types.js'
 
 

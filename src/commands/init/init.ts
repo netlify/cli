@@ -10,9 +10,16 @@ import { track } from '../../utils/telemetry/index.js'
 import BaseCommand from '../base-command.js'
 import { link } from '../link/link.js'
 import { sitesCreate } from '../sites/sites-create.js'
+import { 
+  PersistStateParams,
+  LogExistingAndExitParams,
+  CreateNewSiteAndExitParams,
+  HandleNoGitRemoteAndExitParams,
+  LogExistingRepoSetupAndExitParams
+} from './types.js'
+import { SiteInfo, } from '../../types/api/sites.js'
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'siteInfo' implicitly has an 'any'... Remove this comment to see the full error message
-const persistState = ({ siteInfo, state }) => {
+const persistState = ({ siteInfo, state }: PersistStateParams) => {
   // Save to .netlify/state.json file
   state.set('siteId', siteInfo.id)
 }
@@ -21,17 +28,15 @@ const persistState = ({ siteInfo, state }) => {
  * @param {{} | undefined} siteInfo
  * @returns {string | undefined}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'siteInfo' implicitly has an 'any' type.
-const getRepoUrl = (siteInfo) => siteInfo?.build_settings?.repo_url
+const getRepoUrl = (siteInfo: SiteInfo) => siteInfo?.build_settings?.repo_url
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'siteInfo' implicitly has an 'any'... Remove this comment to see the full error message
-const logExistingAndExit = ({ siteInfo }) => {
+const logExistingAndExit = ({ siteInfo }: LogExistingAndExitParams) => {
   log()
   log(`This site has been initialized`)
   log()
   log(`Site Name:  ${chalk.cyan(siteInfo.name)}`)
   log(`Site Url:   ${chalk.cyan(siteInfo.ssl_url || siteInfo.url)}`)
-  log(`Site Repo:  ${chalk.cyan(getRepoUrl({ siteInfo }))}`)
+  log(`Site Repo:  ${chalk.cyan(getRepoUrl( siteInfo ))}`)
   log(`Site Id:    ${chalk.cyan(siteInfo.id)}`)
   log(`Admin URL:  ${chalk.cyan(siteInfo.admin_url)}`)
   log()
@@ -47,11 +52,13 @@ const logExistingAndExit = ({ siteInfo }) => {
  * @param {*} config.state
  * @param {import('../base-command.js').default} config.command
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'command' implicitly has an 'any' ... Remove this comment to see the full error message
-const createNewSiteAndExit = async ({ command, state }) => {
-  const siteInfo = await sitesCreate({}, command)
 
-  // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
+const createNewSiteAndExit = async ({ command, state }: CreateNewSiteAndExitParams) => {
+  const siteInfo = await sitesCreate({}, command)
+  if (siteInfo === undefined) {
+    throw new Error('Failed to create site')
+  }
+
   log(`"${siteInfo.name}" site was created`)
   log()
   log(`To deploy to this site. Run your site build and then ${chalk.cyanBright.bold('netlify deploy')}`)
@@ -101,8 +108,8 @@ const logGitSetupInstructionsAndExit = () => {
  * @param {object} config.error
  * @param {object} config.state
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'command' implicitly has an 'any' ... Remove this comment to see the full error message
-const handleNoGitRemoteAndExit = async ({ command, error, state }) => {
+
+const handleNoGitRemoteAndExit = async ({ command, error, state }: HandleNoGitRemoteAndExitParams) => {
   log()
   log(`${chalk.yellow('No git remote was found, would you like to set one up?')}`)
   log(`
@@ -142,8 +149,8 @@ git remote add origin https://github.com/YourUserName/RepoName.git
  * Creates a new site or links an existing one to the repository
  * @param {import('../base-command.js').default} command
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'command' implicitly has an 'any' type.
-const createOrLinkSiteToRepo = async (command) => {
+
+const createOrLinkSiteToRepo = async (command: BaseCommand) => {
   const NEW_SITE = '+  Create & configure a new site'
   const EXISTING_SITE = '⇄  Connect this directory to an existing Netlify site'
 
@@ -172,8 +179,7 @@ const createOrLinkSiteToRepo = async (command) => {
   }
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'repoUrl' implicitly has an 'any' ... Remove this comment to see the full error message
-const logExistingRepoSetupAndExit = ({ repoUrl, siteName }) => {
+const logExistingRepoSetupAndExit = ({ repoUrl, siteName }: LogExistingRepoSetupAndExitParams) => {
   log()
   log(chalk.underline.bold(`Success`))
   log(`This site "${siteName}" is configured to automatically deploy via ${repoUrl}`)

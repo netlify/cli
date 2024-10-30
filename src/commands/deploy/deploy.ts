@@ -41,6 +41,7 @@ import BaseCommand from '../base-command.js'
 import { link } from '../link/link.js'
 import { sitesCreate } from '../sites/sites-create.js'
 import { $TSFixMe } from '../types.js'
+import { SiteInfo } from '../../types/api/sites.js'
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
 const triggerDeploy = async ({ api, options, siteData, siteId }) => {
@@ -814,11 +815,12 @@ export const deploy = async (options: OptionValues, command: BaseCommand) => {
 
   let siteId = site.id || options.site
 
-  let siteData = {}
+  let siteData: SiteInfo | undefined
   if (siteId && !isEmpty(siteInfo)) {
     siteData = siteInfo
-    // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type '{}'.
-    siteId = siteData.id
+    if (siteData) {
+      siteId = siteData.id
+    }
   } else {
     log("This folder isn't linked to a site yet")
     const NEW_SITE = '+  Create & configure a new site'
@@ -836,16 +838,17 @@ export const deploy = async (options: OptionValues, command: BaseCommand) => {
     ])
     // create site or search for one
     if (initChoice === NEW_SITE) {
-      // @ts-expect-error TS(2322) FIXME: Type 'undefined' is not assignable to type '{}'.
       siteData = await sitesCreate({}, command)
-      // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type '{}'.
-      site.id = siteData.id
-      siteId = site.id
+      if (siteData) {
+        site.id = siteData.id
+        siteId = site.id
+      }
     } else if (initChoice === EXISTING_SITE) {
       siteData = await link({}, command)
-      // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type '{}'.
-      site.id = siteData.id
-      siteId = site.id
+      if (siteData) {
+        site.id = siteData.id
+        siteId = site.id
+      }
     }
   }
 
@@ -853,61 +856,63 @@ export const deploy = async (options: OptionValues, command: BaseCommand) => {
     return triggerDeploy({ api, options, siteData, siteId })
   }
 
-  // @ts-expect-error TS(2339) FIXME: Property 'published_deploy' does not exist on type... Remove this comment to see the full error message
-  const deployToProduction = options.prod || (options.prodIfUnlocked && !siteData.published_deploy.locked)
+  // // @ts-expect-error TS(2339) FIXME: Property 'published_deploy' does not exist on type... Remove this comment to see the full error message
+  if (siteData) {
+    const deployToProduction = options.prod || (options.prodIfUnlocked && !siteData.published_deploy.locked)
 
-  let results = {} as Awaited<ReturnType<typeof prepAndRunDeploy>>
+    let results = {} as Awaited<ReturnType<typeof prepAndRunDeploy>>
 
-  if (options.build) {
-    await handleBuild({
-      packagePath: command.workspacePackage,
-      cachedConfig: command.netlify.cachedConfig,
-      defaultConfig: getDefaultConfig(settings),
-      currentDir: command.workingDir,
-      options,
-      deployHandler: async ({ netlifyConfig }: { netlifyConfig: NetlifyConfig }) => {
-        results = await prepAndRunDeploy({
-          command,
-          options,
-          workingDir,
-          api,
-          site,
-          config: netlifyConfig,
-          siteData,
-          siteId,
-          deployToProduction,
-        })
+    if (options.build) {
+      await handleBuild({
+        packagePath: command.workspacePackage,
+        cachedConfig: command.netlify.cachedConfig,
+        defaultConfig: getDefaultConfig(settings),
+        currentDir: command.workingDir,
+        options,
+        deployHandler: async ({ netlifyConfig }: { netlifyConfig: NetlifyConfig }) => {
+          results = await prepAndRunDeploy({
+            command,
+            options,
+            workingDir,
+            api,
+            site,
+            config: netlifyConfig,
+            siteData,
+            siteId,
+            deployToProduction,
+          })
 
-        return { newEnvChanges: { DEPLOY_ID: results.deployId, DEPLOY_URL: results.deployUrl } }
-      },
-    })
-  } else {
-    results = await prepAndRunDeploy({
-      command,
-      options,
-      workingDir,
-      api,
-      site,
-      config: command.netlify.config,
-      siteData,
-      siteId,
+          return { newEnvChanges: { DEPLOY_ID: results.deployId, DEPLOY_URL: results.deployUrl } }
+        },
+      })
+    } else {
+      results = await prepAndRunDeploy({
+        command,
+        options,
+        workingDir,
+        api,
+        site,
+        config: command.netlify.config,
+        siteData,
+        siteId,
+        deployToProduction,
+      })
+    }
+    const isIntegrationDeploy = command.name() === 'integration:deploy'
+
+    printResults({
+      runBuildCommand: options.build,
+      isIntegrationDeploy,
+      json: options.json,
+      results,
       deployToProduction,
     })
-  }
-  const isIntegrationDeploy = command.name() === 'integration:deploy'
 
-  printResults({
-    runBuildCommand: options.build,
-    isIntegrationDeploy,
-    json: options.json,
-    results,
-    deployToProduction,
-  })
-
-  if (options.open) {
-    const urlToOpen = deployToProduction ? results.siteUrl : results.deployUrl
-    // @ts-expect-error TS(2345) FIXME: Argument of type '{ url: any; }' is not assignable... Remove this comment to see the full error message
-    await openBrowser({ url: urlToOpen })
-    exit()
+    if (options.open) {
+      const urlToOpen = deployToProduction ? results.siteUrl : results.deployUrl
+      // @ts-expect-error TS(2345) FIXME: Argument of type '{ url: any; }' is not assignable... Remove this comment to see the full error message
+      await openBrowser({ url: urlToOpen })
+      exit()
+    }
   }
 }

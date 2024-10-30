@@ -4,7 +4,7 @@ import type { NetlifyTOML } from '@netlify/build-info'
 import type { FrameworksAPIPaths } from "../utils/frameworks-api.ts";
 import StateConfig from '../utils/state-config.js'
 
-import type { ExtendedNetlifyAPI } from "./api-types.d.ts";
+import type { ExtendedNetlifyAPI } from "../types/api/api.js";
 
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

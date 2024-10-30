@@ -5,7 +5,7 @@ import {
   translateFromEnvelopeToMongo,
   isAPIEnvError,
 } from '../../utils/env/index.js'
-import type { Value } from '../api-types.js'
+import type { Value } from '../../types/api/env.js'
 import BaseCommand from '../base-command.js'
 
 import type { SetInEnvelopeParams, EnvSetOptions } from './types.d.ts'

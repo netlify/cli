@@ -1,4 +1,4 @@
-import { SiteInfo } from "../../commands/api-types.js"
+import { SiteInfo } from "../../types/api/api.js"
 import {  Context, EnvironmentVariableSource, EnvironmentVariableScope } from "../../commands/types.js"
 
 export interface GetEnvelopeEnvParams {

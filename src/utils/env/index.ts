@@ -1,4 +1,5 @@
-import { EnvVar, EnvVarValue, ExtendedNetlifyAPI } from '../../commands/api-types.d.js'
+import { ExtendedNetlifyAPI } from '../../types/api/api.js'
+import { EnvVar } from '../../types/api/env.js'
 import type {
   Context,
   EnviromentVariables,

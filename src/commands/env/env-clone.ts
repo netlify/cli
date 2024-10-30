@@ -1,6 +1,6 @@
 import { chalk, log, error as logError } from '../../utils/command-helpers.js'
 import { isAPIEnvError } from '../../utils/env/index.js'
-import type { ExtendedNetlifyAPI } from '../api-types.d.ts'
+import type { ExtendedNetlifyAPI } from '../../types/api/api.js'
 import BaseCommand from '../base-command.js'
 import { $TSFixMe } from '../types.js'
 

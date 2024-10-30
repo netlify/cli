@@ -1,8 +1,9 @@
 import { warn } from '../utils/command-helpers.js'
-import { SiteInfo } from '../utils/types.js'
+import { ExtendedNetlifyAPI } from '../types/api/api.js'
+import { SiteInfo } from '../types/api/sites.js'
+import { OptionValues } from 'commander'
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-export const cancelDeploy = async ({ api, deployId }) => {
+export const cancelDeploy = async ({ api, deployId }: { api: ExtendedNetlifyAPI, deployId: string }) => {
   try {
     await api.cancelSiteDeploy({ deploy_id: deployId })
   } catch (error) {
@@ -15,8 +16,8 @@ const FIRST_PAGE = 1
 const MAX_PAGES = 10
 const MAX_PER_PAGE = 100
 
-// @ts-expect-error TS(7023) FIXME: 'listSites' implicitly has return type 'any' becau... Remove this comment to see the full error message
-export const listSites = async ({ api, options }): SiteInfo[] => {
+
+export const listSites = async ({ api, options }: { api: ExtendedNetlifyAPI, options: OptionValues }): Promise<SiteInfo[]> => {
   const { maxPages = MAX_PAGES, page = FIRST_PAGE, ...rest } = options
   const sites = await api.listSites({ page, per_page: MAX_PER_PAGE, ...rest })
   // TODO: use pagination headers when js-client returns them

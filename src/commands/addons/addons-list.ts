@@ -20,7 +20,7 @@ export const addonsList = async (options: OptionValues, command: BaseCommand) =>
     return false
   }
 
-  // @ts-expect-error TS(7006) FIXME: Parameter 'addon' implicitly has an 'any' type.
+  // // @ts-expect-error TS(7006) FIXME: Parameter 'addon' implicitly has an 'any' type.
   const addonData = addons.map((addon) => ({
     namespace: addon.service_path.replace('/.netlify/', ''),
     name: addon.service_name,
@@ -33,7 +33,7 @@ export const addonsList = async (options: OptionValues, command: BaseCommand) =>
 
   table.setHeading('NameSpace', 'Name', 'Instance Id')
 
-  // @ts-expect-error TS(7031) FIXME: Binding element 'id' implicitly has an 'any' type.
+  // // @ts-expect-error TS(7031) FIXME: Binding element 'id' implicitly has an 'any' type.
   addonData.forEach(({ id, name, namespace }) => {
     table.addRow(namespace, name, id)
   })
