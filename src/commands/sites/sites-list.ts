@@ -12,7 +12,6 @@ export const sitesList = async (options: OptionValues, command: BaseCommand) => 
   let spinner
   if (!options.json) {
     spinner = startSpinner({ text: 'Loading your sites' })
-    
   }
   await command.authenticate()
 

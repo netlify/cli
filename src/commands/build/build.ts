@@ -8,7 +8,7 @@ import { CheckOptionsParams, BuildOptions } from './types.js'
 /**
  * @param {import('../../lib/build.js').BuildConfig} options
  */
-export const checkOptions = ({ cachedConfig: {siteInfo = {}}, token }: CheckOptionsParams) => {
+export const checkOptions = ({ cachedConfig: { siteInfo = {} }, token }: CheckOptionsParams) => {
   if (!siteInfo.id) {
     error(
       'Could not find the site ID. If your site is not on Netlify, please run `netlify init` or `netlify deploy` first. If it is, please run `netlify link`.',
@@ -33,7 +33,7 @@ export const build = async (options: BuildOptions, command: BaseCommand) => {
     packagePath: command.workspacePackage,
     currentDir: command.workingDir,
     token,
-    options ,
+    options,
   })
 
   if (!options.offline) {

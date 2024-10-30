@@ -411,7 +411,7 @@ export const deploy = async (options: IntergrationOptions, command: BaseCommand)
   const localIntegrationConfig = { name, description, scopes, slug, integrationLevel }
 
   const headers = token ? { 'netlify-token': token } : undefined
-  
+
   const { accountId } = await getSiteInformation({
     api,
     site,

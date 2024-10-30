@@ -7,7 +7,14 @@ import { supportsBackgroundFunctions } from '../lib/account.js'
 
 import { NETLIFYDEVLOG, chalk, error, log, warn, APIError } from './command-helpers.js'
 import { loadDotEnvFiles } from './dot-env.js'
-import { Account, GetAccountParams, GetAddonsInformationParams, getAddonsParams, GetSiteInformationParams, ValidateSiteInfoParams } from './types.js'
+import {
+  Account,
+  GetAccountParams,
+  GetAddonsInformationParams,
+  getAddonsParams,
+  GetSiteInformationParams,
+  ValidateSiteInfoParams,
+} from './types.js'
 import { ExtendedNetlifyAPI } from '../types/api/api.js'
 
 // Possible sources of environment variables. For the purpose of printing log messages only. Order does not matter.
@@ -41,13 +48,13 @@ const ENV_VAR_SOURCES = {
 const ERROR_CALL_TO_ACTION =
   "Double-check your login status with 'netlify status' or contact support with details of your error."
 
-const validateSiteInfo = ({ site, siteInfo }: ValidateSiteInfoParams ) => {
+const validateSiteInfo = ({ site, siteInfo }: ValidateSiteInfoParams) => {
   if (isEmpty(siteInfo)) {
     error(`Failed retrieving site information for site ${chalk.yellow(site.id)}. ${ERROR_CALL_TO_ACTION}`)
   }
 }
 
-const getAccounts = async ({ api }: GetAccountParams )=> {
+const getAccounts = async ({ api }: GetAccountParams) => {
   try {
     const accounts = await api.listAccountsForUser()
 
@@ -105,9 +112,7 @@ const BACKGROUND_FUNCTION_TIMEOUT = 900
  * @returns
  */
 
-
 export const getSiteInformation = async ({ api, offline, site, siteInfo }: GetSiteInformationParams) => {
-
   if (site.id && !offline) {
     validateSiteInfo({ site, siteInfo })
     const [accounts, addons] = await Promise.all([getAccounts({ api }), getAddons({ api, siteId: site.id })])

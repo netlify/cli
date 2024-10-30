@@ -43,8 +43,8 @@ import { link } from '../link/link.js'
 import { sitesCreate } from '../sites/sites-create.js'
 import { $TSFixMe } from '../types.js'
 import { SiteInfo } from '../../types/api/sites.js'
-import { 
-  DeployParams, 
+import {
+  DeployParams,
   TriggerDeployParams,
   RunDeployParams,
   GetDeployFilesFilterParams,
@@ -440,7 +440,7 @@ const runDeploy = async ({
   skipFunctionsCache,
   // // @ts-expect-error TS(7031) FIXME: Binding element 'title' implicitly has an 'any' ty... Remove this comment to see the full error message
   title,
-}: RunDeployParams ): Promise<{
+}: RunDeployParams): Promise<{
   siteId: string
   siteName: string
   deployId: string
@@ -516,7 +516,7 @@ const runDeploy = async ({
       cachedConfig: command.netlify.cachedConfig,
       packagePath: command.workspacePackage,
     })
-  
+
     results = await deploySite(command, api, siteId, deployFolder, {
       // @ts-expect-error TS(2353) FIXME: Object literal may only specify known properties, and 'config' does not exist in type '{ concurrentHash?: number | undefined; concurrentUpload?: number | undefined; deployTimeout?: number | undefined; draft?: boolean | undefined; maxRetry?: number | undefined; statusCb?: ((status: { ...; }) => void) | ... 1 more ... | undefined; syncFileLimit?: number | undefined; tmpDir?: string | undefined; fnDir?: ...'.
       config,

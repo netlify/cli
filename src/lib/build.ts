@@ -44,7 +44,7 @@ export const getBuildOptions = async ({
 }: BuildParams) => {
   const eventHandlers: BuildEventHandlers = {
     onEnd: {
-      handler: ({ netlifyConfig}: {netlifyConfig: NetlifyConfig}) => {
+      handler: ({ netlifyConfig }: { netlifyConfig: NetlifyConfig }) => {
         const string = tomlify.toToml(netlifyConfig)
 
         if (!fs.existsSync(`${currentDir}/.netlify`)) {
