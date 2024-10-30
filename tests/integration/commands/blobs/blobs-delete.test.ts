@@ -65,7 +65,6 @@ describe('blobs:delete command', () => {
     beforeEach(() => {
       vi.resetModules()
       vi.clearAllMocks()
-
       Object.defineProperty(process, 'env', { value: {} })
     })
 

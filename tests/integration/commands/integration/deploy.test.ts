@@ -24,13 +24,15 @@ describe('integration:deploy areScopesEqual', () => {
   })
 })
 
-const OLD_ENV = process.env
+const originalEnv = process.env
 
 describe(`integration:deploy`, () => {
   beforeEach(() => {
     vi.resetModules()
     vi.clearAllMocks()
-    Object.defineProperty(process, 'env', { value: OLD_ENV })
+    Object.defineProperty(process, 'env', {
+      value: originalEnv,
+    })
   })
 
   afterAll(() => {
@@ -38,7 +40,7 @@ describe(`integration:deploy`, () => {
     vi.restoreAllMocks()
 
     Object.defineProperty(process, 'env', {
-      value: OLD_ENV,
+      value: originalEnv,
     })
   })
 
