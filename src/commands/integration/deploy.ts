@@ -15,6 +15,7 @@ import { getSiteInformation } from '../../utils/dev.js'
 import BaseCommand from '../base-command.js'
 import { checkOptions } from '../build/build.js'
 import { deploy as siteDeploy } from '../deploy/deploy.js'
+import { IntergrationOptions, IntegrationConfiguration } from './types.js'
 
 function getIntegrationAPIUrl() {
   return env.INTEGRATION_URL || 'https://api.netlifysdk.com'
@@ -359,8 +360,7 @@ const getConfigurationFile = (workingDir) => {
   return fileName
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'workingDir' implicitly has an 'any' typ... Remove this comment to see the full error message
-export const getConfiguration = (workingDir) => {
+export const getConfiguration = (workingDir: string): IntegrationConfiguration => {
   const pwd = workingDir
 
   const fileName = getConfigurationFile(workingDir)
@@ -370,7 +370,7 @@ export const getConfiguration = (workingDir) => {
   }
 
   try {
-    const { config } = yaml.load(fs.readFileSync(resolve(pwd, fileName), 'utf-8'))
+    const { config }: { config: IntegrationConfiguration } = yaml.load(fs.readFileSync(resolve(pwd, fileName), 'utf-8'))
 
     if (!config) {
       throw new Error('No configuration found')
@@ -391,7 +391,7 @@ export const getConfiguration = (workingDir) => {
   }
 }
 
-export const deploy = async (options: OptionValues, command: BaseCommand) => {
+export const deploy = async (options: IntergrationOptions, command: BaseCommand) => {
   const { api, cachedConfig, site, siteInfo } = command.netlify
   const { id: siteId } = site
   const [token] = await getToken()
@@ -401,7 +401,6 @@ export const deploy = async (options: OptionValues, command: BaseCommand) => {
     packagePath: command.workspacePackage,
     currentDir: command.workingDir,
     token,
-    // @ts-expect-error TS(2740)
     options,
   })
 
@@ -412,7 +411,7 @@ export const deploy = async (options: OptionValues, command: BaseCommand) => {
   const localIntegrationConfig = { name, description, scopes, slug, integrationLevel }
 
   const headers = token ? { 'netlify-token': token } : undefined
-  // @ts-expect-error TS(2345) FIXME: Argument of type '{ api: any; site: any; siteInfo:... Remove this comment to see the full error message
+  
   const { accountId } = await getSiteInformation({
     api,
     site,

@@ -1,17 +1,14 @@
-import { OptionValues } from 'commander'
-
 import { getBuildOptions, runBuild } from '../../lib/build.js'
 import { detectFrameworkSettings, getDefaultConfig } from '../../utils/build-info.js'
 import { error, exit, getToken } from '../../utils/command-helpers.js'
 import { getEnvelopeEnv } from '../../utils/env/index.js'
 import BaseCommand from '../base-command.js'
+import { CheckOptionsParams, BuildOptions } from './types.js'
 
 /**
  * @param {import('../../lib/build.js').BuildConfig} options
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'token' implicitly has an 'any' ty... Remove this comment to see the full error message
-export const checkOptions = ({ cachedConfig: { siteInfo = {} }, token }) => {
-  // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type '{}'.
+export const checkOptions = ({ cachedConfig: {siteInfo = {}}, token }: CheckOptionsParams) => {
   if (!siteInfo.id) {
     error(
       'Could not find the site ID. If your site is not on Netlify, please run `netlify init` or `netlify deploy` first. If it is, please run `netlify link`.',
@@ -23,7 +20,7 @@ export const checkOptions = ({ cachedConfig: { siteInfo = {} }, token }) => {
   }
 }
 
-export const build = async (options: OptionValues, command: BaseCommand) => {
+export const build = async (options: BuildOptions, command: BaseCommand) => {
   const { cachedConfig, siteInfo } = command.netlify
   command.setAnalyticsPayload({ dry: options.dry })
   // Retrieve Netlify Build options
@@ -36,8 +33,7 @@ export const build = async (options: OptionValues, command: BaseCommand) => {
     packagePath: command.workspacePackage,
     currentDir: command.workingDir,
     token,
-    // @ts-expect-error TS(2740)
-    options,
+    options ,
   })
 
   if (!options.offline) {
@@ -46,7 +42,7 @@ export const build = async (options: OptionValues, command: BaseCommand) => {
     buildOptions.cachedConfig.env = await getEnvelopeEnv({
       api: command.netlify.api,
       context: options.context,
-      env: buildOptions.cachedConfig.env,
+      env: buildOptions.cachedConfig.siteInfo.env,
       siteInfo,
     })
   }

@@ -163,5 +163,10 @@ interface SiteRequestBody extends CommonSiteProperties {
 
 // Response object for API calls that return site information
 export interface SiteInfo extends CommonSiteProperties {
+  functions_config?: {
+    timeout: Number
+  };
+  functions_timeout?: Number;
   feature_flags: FeatureFlags;
 }
+

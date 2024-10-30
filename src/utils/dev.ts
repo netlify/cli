@@ -7,6 +7,8 @@ import { supportsBackgroundFunctions } from '../lib/account.js'
 
 import { NETLIFYDEVLOG, chalk, error, log, warn, APIError } from './command-helpers.js'
 import { loadDotEnvFiles } from './dot-env.js'
+import { Account, GetAccountParams, GetAddonsInformationParams, getAddonsParams, GetSiteInformationParams, ValidateSiteInfoParams } from './types.js'
+import { ExtendedNetlifyAPI } from '../types/api/api.js'
 
 // Possible sources of environment variables. For the purpose of printing log messages only. Order does not matter.
 const ENV_VAR_SOURCES = {
@@ -39,44 +41,39 @@ const ENV_VAR_SOURCES = {
 const ERROR_CALL_TO_ACTION =
   "Double-check your login status with 'netlify status' or contact support with details of your error."
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'site' implicitly has an 'any' typ... Remove this comment to see the full error message
-const validateSiteInfo = ({ site, siteInfo }) => {
+const validateSiteInfo = ({ site, siteInfo }: ValidateSiteInfoParams ) => {
   if (isEmpty(siteInfo)) {
     error(`Failed retrieving site information for site ${chalk.yellow(site.id)}. ${ERROR_CALL_TO_ACTION}`)
   }
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-const getAccounts = async ({ api }) => {
+const getAccounts = async ({ api }: GetAccountParams )=> {
   try {
     const accounts = await api.listAccountsForUser()
+
     return accounts
   } catch (error_) {
     error(`Failed retrieving user account: ${(error_ as APIError).message}. ${ERROR_CALL_TO_ACTION}`)
   }
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-const getAddons = async ({ api, site }) => {
+const getAddons = async ({ api, siteId }: getAddonsParams) => {
   try {
-    const addons = await api.listServiceInstancesForSite({ siteId: site.id })
+    const addons = await api.listServiceInstancesForSite({ siteId })
     return addons
   } catch (error_) {
     error(
-      `Failed retrieving addons for site ${chalk.yellow(site.id)}: ${
+      `Failed retrieving addons for site ${chalk.yellow(siteId)}: ${
         (error_ as APIError).message
       }. ${ERROR_CALL_TO_ACTION}`,
     )
   }
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'addons' implicitly has an 'any' t... Remove this comment to see the full error message
-const getAddonsInformation = ({ addons, siteInfo }) => {
+const getAddonsInformation = ({ addons, siteInfo }: GetAddonsInformationParams) => {
   const urls = Object.fromEntries(
-    // @ts-expect-error TS(7006) FIXME: Parameter 'addon' implicitly has an 'any' type.
     addons.map((addon) => [addon.service_slug, `${siteInfo.ssl_url}${addon.service_path}`]),
   )
-  // @ts-expect-error TS(7006) FIXME: Parameter 'addon' implicitly has an 'any' type.
   const env = Object.assign({}, ...addons.map((addon) => addon.env))
   return { urls, env }
 }
@@ -107,12 +104,16 @@ const BACKGROUND_FUNCTION_TIMEOUT = 900
  * @param {*} config.siteInfo
  * @returns
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-export const getSiteInformation = async ({ api, offline, site, siteInfo }) => {
+
+
+export const getSiteInformation = async ({ api, offline, site, siteInfo }: GetSiteInformationParams) => {
+
   if (site.id && !offline) {
     validateSiteInfo({ site, siteInfo })
-    const [accounts, addons] = await Promise.all([getAccounts({ api }), getAddons({ api, site })])
-
+    const [accounts, addons] = await Promise.all([getAccounts({ api }), getAddons({ api, siteId: site.id })])
+    if (addons === undefined) {
+      throw new Error('Addons are undefined')
+    }
     const { urls: addonsUrls } = getAddonsInformation({ siteInfo, addons })
     const account = getSiteAccount({ siteInfo, accounts })
 

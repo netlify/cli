@@ -12,12 +12,17 @@ export const sitesList = async (options: OptionValues, command: BaseCommand) => 
   let spinner
   if (!options.json) {
     spinner = startSpinner({ text: 'Loading your sites' })
+    
   }
   await command.authenticate()
 
   const sites = await listSites({ api, options: { filter: 'all' } })
   if (!options.json) {
-    // @ts-expect-error TS(2345) FIXME: Argument of type '{ spinner: Ora | undefined; }' i... Remove this comment to see the full error message
+    // this is to make sure that spinner is defined, narrowing Ora type
+    if (spinner === undefined) {
+      throw new Error('Spinner is undefined')
+    }
+
     stopSpinner({ spinner })
   }
 

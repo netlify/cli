@@ -20,6 +20,7 @@ import hashFiles from './hash-files.js'
 import hashFns from './hash-fns.js'
 import uploadFiles from './upload-files.js'
 import { getUploadList, waitForDeploy, waitForDiff } from './util.js'
+import { DeployEvent } from '../../commands/deploy/types.js'
 
 const buildStatsString = (possibleParts: Array<string | false | undefined>) => {
   const parts = possibleParts.filter(Boolean)
@@ -74,7 +75,7 @@ export const deploySite = async (
     deployTimeout?: number
     draft?: boolean
     maxRetry?: number
-    statusCb?: (status: { type: string; msg: string; phase: string }) => void
+    statusCb?: ((status: { type: string; msg: string; phase: string }) => void) | ((event: DeployEvent) => void)
     syncFileLimit?: number
     tmpDir?: string
     fnDir?: string[]

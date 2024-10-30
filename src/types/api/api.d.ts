@@ -32,5 +32,7 @@ export interface ExtendedNetlifyAPI extends NetlifyAPI {
   createSiteInTeam(params: CreateSiteInTeamParams): Promise<SiteInfo>
   listSites(params: ListSitesParams): Promise<SiteInfo[]>
   cancelSiteDeploy(params: CancelSiteDeployParams): Promise<void>
+  showServiceManifest(params: {addonName: string}): Promise<any>
   listServiceInstancesForSite(params: {siteId: string}): Promise<ServiceInstance[]>
+  listAccountsForUser(): Promise<Account[]>
 }

@@ -2,6 +2,10 @@ import { Buffer } from 'buffer'
 import { IncomingMessage } from 'http'
 
 import { Match } from 'netlify-redirector'
+import { ExtendedNetlifyAPI } from '../types/api/api.js'
+import { NetlifySite } from '../commands/types.js'
+import { SiteInfo } from '../types/api/sites.js'
+import { ServiceInstance } from '../types/api/service-instance.js'
 
 export type FrameworkNames = '#static' | '#auto' | '#custom' | string
 
@@ -109,4 +113,30 @@ export interface Template {
 
 export interface APIEnvError {
   json: { msg: string }
+}
+
+export interface GetSiteInformationParams {
+  api: ExtendedNetlifyAPI
+  offline?: boolean
+  site: NetlifySite
+  siteInfo: SiteInfo
+}
+
+export interface ValidateSiteInfoParams {
+  site: NetlifySite
+  siteInfo: SiteInfo
+}
+
+export interface GetAccountParams {
+  api: ExtendedNetlifyAPI
+}
+
+export interface getAddonsParams {
+  api: ExtendedNetlifyAPI
+  siteId: string
+}
+
+export interface GetAddonsInformationParams {
+  addons: ServiceInstance[]
+  siteInfo: SiteInfo
 }
