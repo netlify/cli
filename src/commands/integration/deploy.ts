@@ -426,7 +426,6 @@ export const deploy = async (options: OptionValues, command: BaseCommand) => {
       headers,
     },
   ).then(async (res) => {
-    console.log('res', res)
     const body = await res.json()
     return { body, statusCode: res.status }
   })
