@@ -30,8 +30,7 @@ describe(`integration:deploy`, () => {
   beforeEach(() => {
     vi.resetModules()
     vi.clearAllMocks()
-
-    Object.defineProperty(process, 'env', { value: {} })
+    Object.defineProperty(process, 'env', { value: OLD_ENV })
   })
 
   afterAll(() => {

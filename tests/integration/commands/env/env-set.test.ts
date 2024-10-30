@@ -4,7 +4,7 @@ import chalk from 'chalk'
 import { describe, expect, test, vi, beforeEach, afterAll } from 'vitest'
 
 import { log } from '../../../../src/utils/command-helpers.js'
-import { destructiveCommandMessages } from '../../../../src/utils/prompts/prompt-messages.js'
+import { destructiveCommandMessages } from '../.././../../src/utils/prompts/prompt-messages.js'
 import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
 import { getEnvironmentVariables, withMockApi, setTTYMode, setCI, setTestingPrompts } from '../../utils/mock-api.js'
 import { runMockProgram } from '../../utils/mock-program.js'
@@ -19,34 +19,6 @@ vi.mock('../../../../src/utils/command-helpers.js', async () => ({
 const OLD_ENV = process.env
 
 describe('env:set command', () => {
-  // already exists as value in withMockApi
-  const existingVar = 'EXISTING_VAR'
-  const newEnvValue = 'value'
-  const { overwriteNotice } = destructiveCommandMessages
-  const { generateWarning, overwriteConfirmation } = destructiveCommandMessages.envSet
-
-  const warningMessage = generateWarning(existingVar)
-
-  const successMessage = `Set environment variable ${chalk.yellow(
-    `${existingVar}=${newEnvValue}`,
-  )} in the ${chalk.magenta('all')} context`
-
-  beforeEach(() => {
-    vi.resetModules()
-    vi.clearAllMocks()
-
-    Object.defineProperty(process, 'env', { value: {} })
-  })
-
-  afterAll(() => {
-    vi.resetModules()
-    vi.restoreAllMocks()
-
-    Object.defineProperty(process, 'env', {
-      value: OLD_ENV,
-    })
-  })
-
   setupFixtureTests('empty-project', { mockApi: { routes } }, () => {
     test<FixtureTestContext>('should create and return new var in the dev context', async ({ fixture, mockApi }) => {
       const cliResponse = await fixture.callCli(
@@ -297,123 +269,151 @@ describe('env:set command', () => {
     })
   })
 
-  describe('user is prompted to confirmOverwrite when setting an env var that already exists', () => {
+  describe('prompt messages for env:set command', () => {
+    const existingVar = 'EXISTING_VAR'
+    const newEnvValue = 'value'
+    const { overwriteNotice } = destructiveCommandMessages
+    const { generateWarning, overwriteConfirmation } = destructiveCommandMessages.envSet
+
+    const warningMessage = generateWarning(existingVar)
+
+    const successMessage = `Set environment variable ${chalk.yellow(
+      `${existingVar}=${newEnvValue}`,
+    )} in the ${chalk.magenta('all')} context`
+
     beforeEach(() => {
-      setTestingPrompts('true')
+      vi.resetModules()
+      vi.clearAllMocks()
+
+      Object.defineProperty(process, 'env', { value: {} })
     })
 
-    test('should log warnings and prompts if enviroment variable already exists', async () => {
-      await withMockApi(routes, async ({ apiUrl }) => {
-        Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
+    afterAll(() => {
+      vi.resetModules()
+      vi.restoreAllMocks()
 
-        const promptSpy = mockPrompt({ confirm: true })
-
-        await runMockProgram(['', '', 'env:set', existingVar, newEnvValue])
-
-        expect(promptSpy).toHaveBeenCalledWith({
-          type: 'confirm',
-          name: 'confirm',
-          message: expect.stringContaining(overwriteConfirmation),
-          default: false,
-        })
-
-        expect(log).toHaveBeenCalledWith(warningMessage)
-        expect(log).toHaveBeenCalledWith(overwriteNotice)
-        expect(log).toHaveBeenCalledWith(successMessage)
+      Object.defineProperty(process, 'env', {
+        value: OLD_ENV,
       })
     })
-
-    test('should skip warnings and prompts if enviroment variable does not exist', async () => {
-      await withMockApi(routes, async ({ apiUrl }) => {
-        Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
-
-        const promptSpy = spyOnMockPrompt()
-
-        await runMockProgram(['', '', 'env:set', 'NEW_ENV_VAR', 'NEW_VALUE'])
-
-        expect(promptSpy).not.toHaveBeenCalled()
-
-        expect(log).not.toHaveBeenCalledWith(warningMessage)
-        expect(log).not.toHaveBeenCalledWith(overwriteNotice)
-        expect(log).toHaveBeenCalledWith(
-          `Set environment variable ${chalk.yellow(`${'NEW_ENV_VAR'}=${'NEW_VALUE'}`)} in the ${chalk.magenta(
-            'all',
-          )} context`,
-        )
+    describe('user is prompted to confirmOverwrite when setting an env var that already exists', () => {
+      beforeEach(() => {
+        setTestingPrompts('true')
       })
-    })
 
-    test('should skip warnings and prompts if --force flag is passed', async () => {
-      await withMockApi(routes, async ({ apiUrl }) => {
-        Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
+      test('should log warnings and prompts if enviroment variable already exists', async () => {
+        await withMockApi(routes, async ({ apiUrl }) => {
+          Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-        const promptSpy = spyOnMockPrompt()
+          const promptSpy = mockPrompt({ confirm: true })
 
-        await runMockProgram(['', '', 'env:set', existingVar, newEnvValue, '--force'])
-
-        expect(promptSpy).not.toHaveBeenCalled()
-
-        expect(log).not.toHaveBeenCalledWith(warningMessage)
-        expect(log).not.toHaveBeenCalledWith(overwriteNotice)
-        expect(log).toHaveBeenCalledWith(successMessage)
-      })
-    })
-
-    test('should exit user responds is no to confirmatnion prompt', async () => {
-      await withMockApi(routes, async ({ apiUrl }) => {
-        Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
-
-        const promptSpy = mockPrompt({ confirm: false })
-
-        try {
           await runMockProgram(['', '', 'env:set', existingVar, newEnvValue])
-        } catch (error) {
-          // We expect the process to exit, so this is fine
-          expect(error.message).toContain('process.exit unexpectedly called')
-        }
 
-        expect(promptSpy).toHaveBeenCalled()
+          expect(promptSpy).toHaveBeenCalledWith({
+            type: 'confirm',
+            name: 'confirm',
+            message: expect.stringContaining(overwriteConfirmation),
+            default: false,
+          })
 
-        expect(log).toHaveBeenCalledWith(warningMessage)
-        expect(log).toHaveBeenCalledWith(overwriteNotice)
-        expect(log).not.toHaveBeenCalledWith(successMessage)
+          expect(log).toHaveBeenCalledWith(warningMessage)
+          expect(log).toHaveBeenCalledWith(overwriteNotice)
+          expect(log).toHaveBeenCalledWith(successMessage)
+        })
+      })
+
+      test('should skip warnings and prompts if enviroment variable does not exist', async () => {
+        await withMockApi(routes, async ({ apiUrl }) => {
+          Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
+
+          const promptSpy = spyOnMockPrompt()
+
+          await runMockProgram(['', '', 'env:set', 'NEW_ENV_VAR', 'NEW_VALUE'])
+
+          expect(promptSpy).not.toHaveBeenCalled()
+
+          expect(log).not.toHaveBeenCalledWith(warningMessage)
+          expect(log).not.toHaveBeenCalledWith(overwriteNotice)
+          expect(log).toHaveBeenCalledWith(
+            `Set environment variable ${chalk.yellow(`${'NEW_ENV_VAR'}=${'NEW_VALUE'}`)} in the ${chalk.magenta(
+              'all',
+            )} context`,
+          )
+        })
+      })
+
+      test('should skip warnings and prompts if --force flag is passed', async () => {
+        await withMockApi(routes, async ({ apiUrl }) => {
+          Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
+
+          const promptSpy = spyOnMockPrompt()
+
+          await runMockProgram(['', '', 'env:set', existingVar, newEnvValue, '--force'])
+
+          expect(promptSpy).not.toHaveBeenCalled()
+
+          expect(log).not.toHaveBeenCalledWith(warningMessage)
+          expect(log).not.toHaveBeenCalledWith(overwriteNotice)
+          expect(log).toHaveBeenCalledWith(successMessage)
+        })
+      })
+
+      test('should exit user responds is no to confirmatnion prompt', async () => {
+        await withMockApi(routes, async ({ apiUrl }) => {
+          Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
+
+          const promptSpy = mockPrompt({ confirm: false })
+
+          try {
+            await runMockProgram(['', '', 'env:set', existingVar, newEnvValue])
+          } catch (error) {
+            // We expect the process to exit, so this is fine
+            expect(error.message).toContain('process.exit unexpectedly called')
+          }
+
+          expect(promptSpy).toHaveBeenCalled()
+
+          expect(log).toHaveBeenCalledWith(warningMessage)
+          expect(log).toHaveBeenCalledWith(overwriteNotice)
+          expect(log).not.toHaveBeenCalledWith(successMessage)
+        })
       })
     })
-  })
 
-  describe('prompts should not show in an non-interactive shell or in a ci/cd enviroment', () => {
-    test('should not show prompt in an non-interactive shell', async () => {
-      setTTYMode(false)
+    describe('prompts should not show in an non-interactive shell or in a ci/cd enviroment', () => {
+      test('should not show prompt in an non-interactive shell', async () => {
+        setTTYMode(false)
 
-      await withMockApi(routes, async ({ apiUrl }) => {
-        Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
+        await withMockApi(routes, async ({ apiUrl }) => {
+          Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-        const promptSpy = spyOnMockPrompt()
+          const promptSpy = spyOnMockPrompt()
 
-        await runMockProgram(['', '', 'env:set', existingVar, newEnvValue])
+          await runMockProgram(['', '', 'env:set', existingVar, newEnvValue])
 
-        expect(promptSpy).not.toHaveBeenCalled()
+          expect(promptSpy).not.toHaveBeenCalled()
 
-        expect(log).not.toHaveBeenCalledWith(warningMessage)
-        expect(log).not.toHaveBeenCalledWith(overwriteNotice)
-        expect(log).toHaveBeenCalledWith(successMessage)
+          expect(log).not.toHaveBeenCalledWith(warningMessage)
+          expect(log).not.toHaveBeenCalledWith(overwriteNotice)
+          expect(log).toHaveBeenCalledWith(successMessage)
+        })
       })
-    })
 
-    test('should not show prompt in a ci/cd enviroment', async () => {
-      setCI('true')
+      test('should not show prompt in a ci/cd enviroment', async () => {
+        setCI('true')
 
-      await withMockApi(routes, async ({ apiUrl }) => {
-        Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
+        await withMockApi(routes, async ({ apiUrl }) => {
+          Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-        const promptSpy = spyOnMockPrompt()
-        await runMockProgram(['', '', 'env:set', existingVar, newEnvValue])
+          const promptSpy = spyOnMockPrompt()
+          await runMockProgram(['', '', 'env:set', existingVar, newEnvValue])
 
-        expect(promptSpy).not.toHaveBeenCalled()
+          expect(promptSpy).not.toHaveBeenCalled()
 
-        expect(log).not.toHaveBeenCalledWith(warningMessage)
-        expect(log).not.toHaveBeenCalledWith(overwriteNotice)
-        expect(log).toHaveBeenCalledWith(successMessage)
+          expect(log).not.toHaveBeenCalledWith(warningMessage)
+          expect(log).not.toHaveBeenCalledWith(overwriteNotice)
+          expect(log).toHaveBeenCalledWith(successMessage)
+        })
       })
     })
   })

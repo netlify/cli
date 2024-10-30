@@ -2,11 +2,10 @@ import process from 'process'
 
 import { getStore } from '@netlify/blobs'
 import chalk from 'chalk'
-import inquirer from 'inquirer'
 import { describe, expect, test, vi, beforeEach, afterAll } from 'vitest'
 
 import { log } from '../../../../src/utils/command-helpers.js'
-import { destructiveCommandMessages } from '../../../../src/utils/prompts/prompt-messages.js'
+import { destructiveCommandMessages } from '../.././../../src/utils/prompts/prompt-messages.js'
 import { reportError } from '../../../../src/utils/telemetry/report-error.js'
 import { Route } from '../../utils/mock-api-vitest.js'
 import { getEnvironmentVariables, withMockApi, setTTYMode, setCI, setTestingPrompts } from '../../utils/mock-api.js'
@@ -50,128 +49,104 @@ const routes: Route[] = [
 const OLD_ENV = process.env
 
 describe('blobs:delete command', () => {
-  const storeName = 'my-store'
-  const key = 'my-key'
+  describe('prompt messages for blobs:delete command', () => {
+    const storeName = 'my-store'
+    const key = 'my-key'
 
-  const { overwriteNotice } = destructiveCommandMessages
-  const { generateWarning, overwriteConfirmation } = destructiveCommandMessages.blobDelete
+    const { overwriteNotice } = destructiveCommandMessages
+    const { generateWarning, overwriteConfirmation } = destructiveCommandMessages.blobDelete
 
-  const warningMessage = generateWarning(key, storeName)
+    const warningMessage = generateWarning(key, storeName)
 
-  const successMessage = `${chalk.greenBright('Success')}: Blob ${chalk.yellow(key)} deleted from store ${chalk.yellow(
-    storeName,
-  )}`
+    const successMessage = `${chalk.greenBright('Success')}: Blob ${chalk.yellow(
+      key,
+    )} deleted from store ${chalk.yellow(storeName)}`
 
-  beforeEach(() => {
-    vi.resetModules()
-    vi.clearAllMocks()
-
-    Object.defineProperty(process, 'env', { value: {} })
-  })
-
-  afterAll(() => {
-    vi.resetModules()
-    vi.restoreAllMocks()
-
-    Object.defineProperty(process, 'env', {
-      value: OLD_ENV,
-    })
-  })
-
-  describe('user is prompted to confirm when deleting a blob key', () => {
     beforeEach(() => {
-      setTestingPrompts('true')
+      vi.resetModules()
+      vi.clearAllMocks()
+
+      Object.defineProperty(process, 'env', { value: {} })
     })
 
-    test('should log warning message and prompt for confirmation', async () => {
-      await withMockApi(routes, async ({ apiUrl }) => {
-        Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
+    afterAll(() => {
+      vi.resetModules()
+      vi.restoreAllMocks()
 
-        const mockDelete = vi.fn().mockResolvedValue('true')
-
-        ;(getStore as any).mockReturnValue({
-          delete: mockDelete,
-        })
-
-        const promptSpy = mockPrompt({ confirm: true })
-
-        await runMockProgram(['', '', 'blobs:delete', storeName, key])
-
-        expect(promptSpy).toHaveBeenCalledWith({
-          type: 'confirm',
-          name: 'confirm',
-          message: expect.stringContaining(overwriteConfirmation),
-          default: false,
-        })
-
-        expect(log).toHaveBeenCalledWith(warningMessage)
-        expect(log).toHaveBeenCalledWith(overwriteNotice)
-        expect(log).toHaveBeenCalledWith(successMessage)
+      Object.defineProperty(process, 'env', {
+        value: OLD_ENV,
       })
     })
 
-    test('should exit if user responds with no to confirmation prompt', async () => {
-      await withMockApi(routes, async ({ apiUrl }) => {
-        Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
-
-        const mockDelete = vi.fn().mockResolvedValue('true')
-
-        ;(getStore as any).mockReturnValue({
-          delete: mockDelete,
-        })
-
-        const promptSpy = mockPrompt({ confirm: false })
-
-        try {
-          await runMockProgram(['', '', 'blobs:delete', storeName, key])
-        } catch (error) {
-          // We expect the process to exit, so this is fine
-          expect(error.message).toContain('process.exit unexpectedly called')
-        }
-
-        expect(promptSpy).toHaveBeenCalledWith({
-          type: 'confirm',
-          name: 'confirm',
-          message: expect.stringContaining(overwriteConfirmation),
-          default: false,
-        })
-
-        expect(log).toHaveBeenCalledWith(warningMessage)
-        expect(log).toHaveBeenCalledWith(overwriteNotice)
-        expect(log).not.toHaveBeenCalledWith(successMessage)
+    describe('user is prompted to confirm when deleting a blob key', () => {
+      beforeEach(() => {
+        setTestingPrompts('true')
       })
-    })
 
-    test('should not log warning message and prompt for confirmation if --force flag is passed', async () => {
-      await withMockApi(routes, async ({ apiUrl }) => {
-        Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
-
-        const mockDelete = vi.fn().mockResolvedValue('true')
-
-        ;(getStore as any).mockReturnValue({
-          delete: mockDelete,
-        })
-
-        const promptSpy = spyOnMockPrompt()
-
-        await runMockProgram(['', '', 'blobs:delete', storeName, key, '--force'])
-
-        expect(promptSpy).not.toHaveBeenCalled()
-
-        expect(log).not.toHaveBeenCalledWith(warningMessage)
-        expect(log).not.toHaveBeenCalledWith(overwriteNotice)
-        expect(log).toHaveBeenCalledWith(successMessage)
-      })
-    })
-
-    test('should log error message if delete fails', async () => {
-      try {
+      test('should log warning message and prompt for confirmation', async () => {
         await withMockApi(routes, async ({ apiUrl }) => {
           Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-          vi.mocked(reportError).mockResolvedValue()
+          const mockDelete = vi.fn().mockResolvedValue('true')
 
-          const mockDelete = vi.fn().mockRejectedValue(new Error('Could not delete blob'))
+          ;(getStore as any).mockReturnValue({
+            delete: mockDelete,
+          })
+
+          const promptSpy = mockPrompt({ confirm: true })
+
+          await runMockProgram(['', '', 'blobs:delete', storeName, key])
+
+          expect(promptSpy).toHaveBeenCalledWith({
+            type: 'confirm',
+            name: 'confirm',
+            message: expect.stringContaining(overwriteConfirmation),
+            default: false,
+          })
+
+          expect(log).toHaveBeenCalledWith(warningMessage)
+          expect(log).toHaveBeenCalledWith(overwriteNotice)
+          expect(log).toHaveBeenCalledWith(successMessage)
+        })
+      })
+
+      test('should exit if user responds with no to confirmation prompt', async () => {
+        await withMockApi(routes, async ({ apiUrl }) => {
+          Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
+
+          const mockDelete = vi.fn().mockResolvedValue('true')
+
+          ;(getStore as any).mockReturnValue({
+            delete: mockDelete,
+          })
+
+          const promptSpy = mockPrompt({ confirm: false })
+
+          try {
+            await runMockProgram(['', '', 'blobs:delete', storeName, key])
+          } catch (error) {
+            // We expect the process to exit, so this is fine
+            expect(error.message).toContain('process.exit unexpectedly called')
+          }
+
+          expect(promptSpy).toHaveBeenCalledWith({
+            type: 'confirm',
+            name: 'confirm',
+            message: expect.stringContaining(overwriteConfirmation),
+            default: false,
+          })
+
+          expect(log).toHaveBeenCalledWith(warningMessage)
+          expect(log).toHaveBeenCalledWith(overwriteNotice)
+          expect(log).not.toHaveBeenCalledWith(successMessage)
+        })
+      })
+
+      test('should not log warning message and prompt for confirmation if --force flag is passed', async () => {
+        await withMockApi(routes, async ({ apiUrl }) => {
+          Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
+
+          const mockDelete = vi.fn().mockResolvedValue('true')
 
           ;(getStore as any).mockReturnValue({
             delete: mockDelete,
@@ -179,70 +154,96 @@ describe('blobs:delete command', () => {
 
           const promptSpy = spyOnMockPrompt()
 
-          try {
-            await runMockProgram(['', '', 'blobs:delete', storeName, key, '--force'])
-          } catch (error) {
-            expect(error.message).toContain(
-              `Could not delete blob ${chalk.yellow(key)} from store ${chalk.yellow(storeName)}`,
-            )
-          }
+          await runMockProgram(['', '', 'blobs:delete', storeName, key, '--force'])
 
           expect(promptSpy).not.toHaveBeenCalled()
 
           expect(log).not.toHaveBeenCalledWith(warningMessage)
           expect(log).not.toHaveBeenCalledWith(overwriteNotice)
-          expect(log).not.toHaveBeenCalledWith(successMessage)
+          expect(log).toHaveBeenCalledWith(successMessage)
         })
-      } catch (error) {
-        console.error(error)
-      }
-    })
-  })
+      })
 
-  describe('should not show prompts if in non-interactive shell or CI/CD', () => {
-    test('should not show prompt for non-interactive shell', async () => {
-      setTTYMode(false)
+      test('should log error message if delete fails', async () => {
+        try {
+          await withMockApi(routes, async ({ apiUrl }) => {
+            Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-      await withMockApi(routes, async ({ apiUrl }) => {
-        Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
+            vi.mocked(reportError).mockResolvedValue()
 
-        const mockDelete = vi.fn().mockResolvedValue('true')
+            const mockDelete = vi.fn().mockRejectedValue(new Error('Could not delete blob'))
 
-        ;(getStore as any).mockReturnValue({
-          delete: mockDelete,
-        })
+            ;(getStore as any).mockReturnValue({
+              delete: mockDelete,
+            })
 
-        const promptSpy = spyOnMockPrompt()
+            const promptSpy = spyOnMockPrompt()
 
-        await runMockProgram(['', '', 'blobs:delete', storeName, key])
-        expect(promptSpy).not.toHaveBeenCalled()
+            try {
+              await runMockProgram(['', '', 'blobs:delete', storeName, key, '--force'])
+            } catch (error) {
+              expect(error.message).toContain(
+                `Could not delete blob ${chalk.yellow(key)} from store ${chalk.yellow(storeName)}`,
+              )
+            }
 
-        expect(log).not.toHaveBeenCalledWith(warningMessage)
-        expect(log).not.toHaveBeenCalledWith(overwriteNotice)
-        expect(log).toHaveBeenCalledWith(successMessage)
+            expect(promptSpy).not.toHaveBeenCalled()
+
+            expect(log).not.toHaveBeenCalledWith(warningMessage)
+            expect(log).not.toHaveBeenCalledWith(overwriteNotice)
+            expect(log).not.toHaveBeenCalledWith(successMessage)
+          })
+        } catch (error) {
+          console.error(error)
+        }
       })
     })
 
-    test('should not show prompt for CI/CD', async () => {
-      setCI(true)
-      await withMockApi(routes, async ({ apiUrl }) => {
-        Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
+    describe('should not show prompts if in non-interactive shell or CI/CD', () => {
+      test('should not show prompt for non-interactive shell', async () => {
+        setTTYMode(false)
 
-        const mockDelete = vi.fn().mockResolvedValue('true')
+        await withMockApi(routes, async ({ apiUrl }) => {
+          Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-        ;(getStore as any).mockReturnValue({
-          delete: mockDelete,
+          const mockDelete = vi.fn().mockResolvedValue('true')
+
+          ;(getStore as any).mockReturnValue({
+            delete: mockDelete,
+          })
+
+          const promptSpy = spyOnMockPrompt()
+
+          await runMockProgram(['', '', 'blobs:delete', storeName, key])
+          expect(promptSpy).not.toHaveBeenCalled()
+
+          expect(log).not.toHaveBeenCalledWith(warningMessage)
+          expect(log).not.toHaveBeenCalledWith(overwriteNotice)
+          expect(log).toHaveBeenCalledWith(successMessage)
         })
+      })
 
-        const promptSpy = spyOnMockPrompt()
+      test('should not show prompt for CI/CD', async () => {
+        setCI(true)
+        await withMockApi(routes, async ({ apiUrl }) => {
+          Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
-        await runMockProgram(['', '', 'blobs:delete', storeName, key])
+          const mockDelete = vi.fn().mockResolvedValue('true')
 
-        expect(promptSpy).not.toHaveBeenCalled()
+          ;(getStore as any).mockReturnValue({
+            delete: mockDelete,
+          })
 
-        expect(log).not.toHaveBeenCalledWith(warningMessage)
-        expect(log).not.toHaveBeenCalledWith(overwriteNotice)
-        expect(log).toHaveBeenCalledWith(successMessage)
+          const promptSpy = spyOnMockPrompt()
+
+          await runMockProgram(['', '', 'blobs:delete', storeName, key])
+
+          expect(promptSpy).not.toHaveBeenCalled()
+
+          expect(log).not.toHaveBeenCalledWith(warningMessage)
+          expect(log).not.toHaveBeenCalledWith(overwriteNotice)
+          expect(log).toHaveBeenCalledWith(successMessage)
+        })
       })
     })
   })
