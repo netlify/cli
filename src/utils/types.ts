@@ -140,3 +140,13 @@ export interface GetAddonsInformationParams {
   addons: ServiceInstance[]
   siteInfo: SiteInfo
 }
+
+export interface GetAddonsInformationResult {
+  urls: Record<string, string>
+  env: Record<string, string>
+}
+
+export interface GetSiteAccountParams {
+  accounts: Account[]
+  siteInfo: SiteInfo
+}

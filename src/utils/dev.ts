@@ -11,7 +11,10 @@ import {
   Account,
   GetAccountParams,
   GetAddonsInformationParams,
+  GetAddonsInformationResult,
   getAddonsParams,
+  GetSiteAccount,
+  GetSiteAccountParams,
   GetSiteInformationParams,
   ValidateSiteInfoParams,
 } from './types.js'
@@ -60,7 +63,9 @@ const getAccounts = async ({ api }: GetAccountParams) => {
 
     return accounts
   } catch (error_) {
-    error(`Failed retrieving user account: ${(error_ as APIError).message}. ${ERROR_CALL_TO_ACTION}`)
+    error(`Failed retrieving user account: ${(error_ as APIError).message}. ${ERROR_CALL_TO_ACTION}`, { exit: true })
+
+    throw error_
   }
 }
 
@@ -73,11 +78,16 @@ const getAddons = async ({ api, siteId }: getAddonsParams) => {
       `Failed retrieving addons for site ${chalk.yellow(siteId)}: ${
         (error_ as APIError).message
       }. ${ERROR_CALL_TO_ACTION}`,
+      { exit: true },
     )
+
+    throw error_
   }
 }
 
-const getAddonsInformation = ({ addons, siteInfo }: GetAddonsInformationParams) => {
+interface Urls {}
+
+const getAddonsInformation = ({ addons, siteInfo }: GetAddonsInformationParams): GetAddonsInformationResult => {
   const urls = Object.fromEntries(
     addons.map((addon) => [addon.service_slug, `${siteInfo.ssl_url}${addon.service_path}`]),
   )
@@ -85,9 +95,7 @@ const getAddonsInformation = ({ addons, siteInfo }: GetAddonsInformationParams) 
   return { urls, env }
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'accounts' implicitly has an 'any'... Remove this comment to see the full error message
-const getSiteAccount = ({ accounts, siteInfo }) => {
-  // @ts-expect-error TS(7006) FIXME: Parameter 'account' implicitly has an 'any' type.
+const getSiteAccount = ({ accounts, siteInfo }: GetSiteAccountParams): Account | {} => {
   const siteAccount = accounts.find((account) => account.slug === siteInfo.account_slug)
   if (!siteAccount) {
     warn(`Could not find account for site '${siteInfo.name}' with account slug '${siteInfo.account_slug}'`)
@@ -116,16 +124,14 @@ export const getSiteInformation = async ({ api, offline, site, siteInfo }: GetSi
   if (site.id && !offline) {
     validateSiteInfo({ site, siteInfo })
     const [accounts, addons] = await Promise.all([getAccounts({ api }), getAddons({ api, siteId: site.id })])
-    if (addons === undefined) {
-      throw new Error('Addons are undefined')
-    }
+
     const { urls: addonsUrls } = getAddonsInformation({ siteInfo, addons })
     const account = getSiteAccount({ siteInfo, accounts })
 
     return {
       addonsUrls,
       siteUrl: siteInfo.ssl_url,
-      accountId: account.id,
+      accountId: account && 'id' in account ? account?.id : undefined,
       capabilities: {
         backgroundFunctions: supportsBackgroundFunctions(account),
       },

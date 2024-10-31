@@ -10,12 +10,12 @@ import fetch from 'node-fetch'
 import { z } from 'zod'
 
 import { getBuildOptions } from '../../lib/build.js'
-import { chalk, getToken, log } from '../../utils/command-helpers.js'
+import { chalk, getToken, log, tokenTuple } from '../../utils/command-helpers.js'
 import { getSiteInformation } from '../../utils/dev.js'
 import BaseCommand from '../base-command.js'
 import { checkOptions } from '../build/build.js'
 import { deploy as siteDeploy } from '../deploy/deploy.js'
-import { IntergrationOptions, IntegrationConfiguration } from './types.js'
+import { IntergrationOptions, IntegrationConfiguration, RegisteredIntegration } from './types.js'
 
 function getIntegrationAPIUrl() {
   return env.INTEGRATION_URL || 'https://api.netlifysdk.com'
@@ -196,20 +196,13 @@ export async function registerIntegration(workingDir, siteId, accountId, localIn
 }
 
 export async function updateIntegration(
-  // @ts-expect-error TS(7006) FIXME: Parameter 'workingDir' implicitly has an 'any' typ... Remove this comment to see the full error message
-  workingDir,
-  // @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
-  options,
-  // @ts-expect-error TS(7006) FIXME: Parameter 'siteId' implicitly has an 'any' type.
-  siteId,
-  // @ts-expect-error TS(7006) FIXME: Parameter 'accountId' implicitly has an 'any' type... Remove this comment to see the full error message
-  accountId,
-  // @ts-expect-error TS(7006) FIXME: Parameter 'localIntegrationConfig' implicitly has ... Remove this comment to see the full error message
-  localIntegrationConfig,
-  // @ts-expect-error TS(7006) FIXME: Parameter 'token' implicitly has an 'any' type.
-  token,
-  // @ts-expect-error TS(7006) FIXME: Parameter 'registeredIntegration' implicitly has a... Remove this comment to see the full error message
-  registeredIntegration,
+  workingDir: string,
+  options: IntergrationOptions,
+  siteId: string | undefined,
+  accountId: string | undefined,
+  localIntegrationConfig: IntegrationConfiguration,
+  token: string | null,
+  registeredIntegration: RegisteredIntegration,
 ) {
   let { description, integrationLevel, name, scopes, slug } = localIntegrationConfig
 

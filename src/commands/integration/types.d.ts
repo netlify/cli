@@ -1,3 +1,5 @@
+import { tokenTuple } from "../../utils/command-helpers.ts"
+
 export interface IntergrationOptions extends OptionValues {
   context: Context
   cwd: string
@@ -9,7 +11,7 @@ export interface IntergrationOptions extends OptionValues {
   prod?: boolean
 }
 
-interface IntegrationConfiguration {
+export interface IntegrationConfiguration {
   name?: string;
   description?: string;
   slug?: string;
@@ -21,3 +23,12 @@ interface IntegrationConfiguration {
   };
   integrationLevel?: 'site' | 'team' | 'team-and-site';
 }
+
+
+export interface registeredIntegration {
+    slug: string
+    name: string
+    description: string
+    integrationLevel: 'site' | 'team' | 'team-and-site';
+    scopes: string
+  }
