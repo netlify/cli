@@ -10,13 +10,13 @@ export interface IntergrationOptions extends OptionValues {
   silent: boolean
   prod?: boolean
 }
-
+export type IntegrationLevel = 'site' | 'team' | 'team-and-site';
 export interface IntegrationConfiguration {
   name?: string;
   description?: string;
   slug: string;
   scopes?: ScopePermissions
-  integrationLevel?: 'site' | 'team' | 'team-and-site';
+  integrationLevel?: IntegrationLevel;
 }
 
 
@@ -24,17 +24,24 @@ export interface RegisteredIntegration {
     slug: string
     name: string
     description: string
-    integrationLevel: 'site' | 'team' | 'team-and-site';
+    integrationLevel: IntegrationLevel;
     scopes: string
   }
 
+export type ScopeResource = 'site' | 'env' | 'user';
+export type ScopePermission = 'read' | 'write' | 'delete';
+
 export interface ScopePermissions {
   all?: boolean;
-  site?: ('read' | 'write')[];
-  env?: ('read' | 'write' | 'delete')[];
-  user?: ('read' | 'write')[];
-};
+  site?: Array<Exclude<ScopePermission, 'delete'>>;
+  env?: ScopePermission[];
+  user?: Array<Exclude<ScopePermission, 'delete'>>;
+}
 
-export type RegisteredIntegrationScopes = 'site:read' | 'site:write' | 'env:read' | 'env:write' | 'env:delete' | 'user:read' | 'user:write' 
+export type RegisteredIntegrationScopes = 
+  | `site:${'read' | 'write'}`
+  | `env:${'read' | 'write' | 'delete'}`
+  | `user:${'read' | 'write'}`
+  | 'all';
 
-export type LocalTypeScope = RegisteredIntegrationScopes | 'all'
+export type LocalTypeScope = RegisteredIntegrationScopes | 'all';
