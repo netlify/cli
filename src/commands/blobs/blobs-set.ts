@@ -20,8 +20,6 @@ export const blobsSet = async (
   options: Options,
   command: BaseCommand,
 ) => {
-  // Prevents prompts from blocking scripted commands
-
   const { api, siteInfo } = command.netlify
   const { force, input } = options
   const store = getStore({

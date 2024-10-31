@@ -7,8 +7,6 @@ import { promptBlobDelete } from '../../utils/prompts/blob-delete-prompts.js'
  * The blobs:delete command
  */
 export const blobsDelete = async (storeName: string, key: string, _options: Record<string, unknown>, command: any) => {
-  // Prevents prompts from blocking scripted commands
-
   const { api, siteInfo } = command.netlify
   const { force } = _options
 

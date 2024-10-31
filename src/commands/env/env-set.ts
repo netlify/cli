@@ -113,8 +113,6 @@ const setInEnvelope = async ({ api, context, force, key, scope, secret, siteInfo
 }
 
 export const envSet = async (key: string, value: string, options: OptionValues, command: BaseCommand) => {
-  // Prevents prompts from ci and non ineractive shells
-
   const { context, force, scope, secret } = options
   const { api, cachedConfig, site } = command.netlify
   const siteId = site.id
