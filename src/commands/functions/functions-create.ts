@@ -29,6 +29,16 @@ import { getDotEnvVariables, injectEnvVariables } from '../../utils/dev.js'
 import execa from '../../utils/execa.js'
 import { readRepoURL, validateRepoURL } from '../../utils/read-repo-url.js'
 import BaseCommand from '../base-command.js'
+import type { 
+  RegistryElement,
+  FuncType,
+  Packages,
+  InstallDepsParams,
+  CreateFunctionAddonParams,
+  HandleOnCompleteParams,
+  HandleAddonDidInstallParams
+} from './types.js'
+
 
 const require = createRequire(import.meta.url)
 
@@ -52,8 +62,8 @@ const languages = [
  * @param {string} [defaultName]
  * @returns
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'argumentName' implicitly has an 'any' t... Remove this comment to see the full error message
-const getNameFromArgs = async function (argumentName, options, defaultName) {
+
+const getNameFromArgs = async function (argumentName: string, options: OptionValues, defaultName: string) {
   if (options.name) {
     if (argumentName) {
       throw new Error('function name specified in both flag and arg format, pick one')
@@ -79,9 +89,9 @@ const getNameFromArgs = async function (argumentName, options, defaultName) {
   return name
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'registry' implicitly has an 'any' type.
-const filterRegistry = function (registry, input) {
-  // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
+// //@ts-expect-error TS(7006) FIXME: Parameter 'registry' implicitly has an 'any' type.
+const filterRegistry = function (registry: RegistryElement[], input: string) {
+  // //@ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
   const temp = registry.map((value) => value.name + value.description)
   // TODO: remove once https://github.com/sindresorhus/eslint-plugin-unicorn/issues/1394 is fixed
   // eslint-disable-next-line unicorn/no-array-method-this-argument
@@ -91,9 +101,9 @@ const filterRegistry = function (registry, input) {
   )
   return (
     registry
-      // @ts-expect-error TS(7006) FIXME: Parameter 't' implicitly has an 'any' type.
+      // //@ts-expect-error TS(7006) FIXME: Parameter 't' implicitly has an 'any' type.
       .filter((t) => filteredTemplateNames.has(t.name + t.description))
-      // @ts-expect-error TS(7006) FIXME: Parameter 't' implicitly has an 'any' type.
+      // // @ts-expect-error TS(7006) FIXME: Parameter 't' implicitly has an 'any' type.
       .map((t) => {
         // add the score
         // @ts-expect-error TS(2339) FIXME: Property 'score' does not exist on type 'FilterRes... Remove this comment to see the full error message
@@ -110,8 +120,8 @@ const filterRegistry = function (registry, input) {
  * @param {string} lang
  * @param {'edge' | 'serverless'} funcType
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'lang' implicitly has an 'any' type.
-const formatRegistryArrayForInquirer = async function (lang, funcType) {
+//// @ts-expect-error TS(7006) FIXME: Parameter 'lang' implicitly has an 'any' type.
+const formatRegistryArrayForInquirer = async function (lang: string, funcType: FuncType) {
   const folders = await readdir(path.join(templatesDir, lang), { withFileTypes: true })
 
   const imports = await Promise.all(
@@ -160,9 +170,9 @@ const formatRegistryArrayForInquirer = async function (lang, funcType) {
  * @param {import('commander').OptionValues} config
  * @param {'edge' | 'serverless'} funcType
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'languageFromFlag' implicitly has ... Remove this comment to see the full error message
-const pickTemplate = async function ({ language: languageFromFlag }, funcType) {
-  const specialCommands = [
+
+const pickTemplate = async function ({ language: languageFromFlag }: OptionValues, funcType: FuncType) {
+  const specialCommands: (RegistryElement | inquirer.Separator)[] = [
     new inquirer.Separator(),
     {
       name: `Clone template from GitHub URL`,
@@ -195,7 +205,7 @@ const pickTemplate = async function ({ language: languageFromFlag }, funcType) {
     language = languageFromPrompt
   }
 
-  // @ts-expect-error TS(7034) FIXME: Variable 'templatesForLanguage' implicitly has typ... Remove this comment to see the full error message
+  
   let templatesForLanguage
 
   try {
@@ -218,12 +228,13 @@ const pickTemplate = async function ({ language: languageFromFlag }, funcType) {
 
       if (!input || input === '') {
         // show separators
-        // @ts-expect-error TS(7005) FIXME: Variable 'templatesForLanguage' implicitly has an ... Remove this comment to see the full error message
+        // // @ts-expect-error TS(7005) FIXME: Variable 'templatesForLanguage' implicitly has an ... Remove this comment to see the full error message
         return [...templatesForLanguage, ...parsedSpecialCommands]
       }
       // only show filtered results sorted by score
-      // @ts-expect-error TS(7005) FIXME: Variable 'templatesForLanguage' implicitly has an ... Remove this comment to see the full error message
+      
       const answers = [...filterRegistry(templatesForLanguage, input), ...parsedSpecialCommands].sort(
+        // @ts-expect-error TS(2339) FIXME: Property 'score' does not exist on type 'RegistryElement | Separator... Remove this comment to see the full error message
         (answerA, answerB) => answerB.score - answerA.score,
       )
       return answers
@@ -255,8 +266,7 @@ const selectTypeOfFunc = async () => {
 /**
  * @param {import('../base-command.js').default} command
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'command' implicitly has an 'any' type.
-const ensureEdgeFuncDirExists = function (command) {
+const ensureEdgeFuncDirExists = function (command: BaseCommand) {
   const { config, site } = command.netlify
   const siteId = site.id
 
@@ -287,8 +297,7 @@ const ensureEdgeFuncDirExists = function (command) {
  * @param {import('../base-command.js').default} command
  * @returns {Promise<string>} - functions directory or throws an error
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'command' implicitly has an 'any' type.
-const promptFunctionsDirectory = async (command) => {
+const promptFunctionsDirectory = async (command: BaseCommand) => {
   const { api, relConfigFilePath, site } = command.netlify
   log(`\n${NETLIFYDEVLOG} functions directory not specified in ${relConfigFilePath} or UI settings`)
 
@@ -329,8 +338,7 @@ const promptFunctionsDirectory = async (command) => {
  * @param {import('../base-command.js').default} command
  * @returns {Promise<string>} - functions directory or throws an error
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'command' implicitly has an 'any' type.
-const ensureFunctionDirExists = async function (command) {
+const ensureFunctionDirExists = async function (command: BaseCommand) {
   const { config } = command.netlify
   const functionsDirHolder =
     config.functionsDirectory || join(command.workingDir, await promptFunctionsDirectory(command))
@@ -358,8 +366,8 @@ const ensureFunctionDirExists = async function (command) {
  * @param {string} argumentName
  * @param {string} functionsDir
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'command' implicitly has an 'any' type.
-const downloadFromURL = async function (command, options, argumentName, functionsDir) {
+// // @ts-expect-error TS(7006) FIXME: Parameter 'command' implicitly has an 'any' type.
+const downloadFromURL = async function (command: BaseCommand, options: OptionValues, argumentName: string, functionsDir: string) {
   const folderContents = await readRepoURL(options.url)
   const [functionName] = options.url.split('/').slice(-1)
   const nameToUse = await getNameFromArgs(argumentName, options, functionName)
@@ -379,7 +387,7 @@ const downloadFromURL = async function (command, options, argumentName, function
   }
   await Promise.all(
     // @ts-expect-error TS(7031) FIXME: Binding element 'downloadUrl' implicitly has an 'a... Remove this comment to see the full error message
-    folderContents.map(async ({ download_url: downloadUrl, name }) => {
+    folderContents.map(async ({ download_url: downloadUrl, name }: { download_url: string, name: string }) => {
       try {
         const res = await fetch(downloadUrl)
         const finalName = path.basename(name, '.js') === functionName ? `${nameToUse}.js` : name
@@ -416,9 +424,8 @@ const downloadFromURL = async function (command, options, argumentName, function
  * in the former. The packages are returned as an array of strings with the
  * name and version range (e.g. '@netlify/functions@0.1.0').
  */
-const getNpmInstallPackages = (existingPackages = {}, neededPackages = {}) =>
+const getNpmInstallPackages = (existingPackages: Packages = {}, neededPackages: Packages = {}) =>
   Object.entries(neededPackages)
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     .filter(([name]) => existingPackages[name] === undefined)
     .map(([name, version]) => `${name}@${version}`)
 
@@ -429,8 +436,8 @@ const getNpmInstallPackages = (existingPackages = {}, neededPackages = {}) =>
  * we don't do this check, we may be upgrading the version of a module used in
  * another part of the project, which we don't want to do.
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'functionPackageJson' implicitly h... Remove this comment to see the full error message
-const installDeps = async ({ functionPackageJson, functionPath, functionsDir }) => {
+// //@ts-expect-error TS(7031) FIXME: Binding element 'functionPackageJson' implicitly h... Remove this comment to see the full error message
+const installDeps = async ({ functionPackageJson, functionPath, functionsDir }: InstallDepsParams) => {
   const { dependencies: functionDependencies, devDependencies: functionDevDependencies } = require(functionPackageJson)
   const sitePackageJson = await findUp('package.json', { cwd: functionsDir })
   const npmInstallFlags = ['--no-audit', '--no-fund']
@@ -479,9 +486,9 @@ const installDeps = async ({ functionPackageJson, functionPath, functionsDir }) 
  * @param {string} functionsDir Absolute path of the functions directory
  * @param {'edge' | 'serverless'} funcType
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'command' implicitly has an 'any' type.
+// //@ts-expect-error TS(7006) FIXME: Parameter 'command' implicitly has an 'any' type.
 
-const scaffoldFromTemplate = async function (command, options, argumentName, functionsDir, funcType) {
+const scaffoldFromTemplate = async function (command: BaseCommand, options: OptionValues, argumentName: string, functionsDir: string, funcType: FuncType) {
   // pull the rest of the metadata from the template
   const chosenTemplate = await pickTemplate(options, funcType)
   if (chosenTemplate === 'url') {
@@ -574,8 +581,8 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
 
 const TEMPLATE_PERMISSIONS = 0o777
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'addonName' implicitly has an 'any... Remove this comment to see the full error message
-const createFunctionAddon = async function ({ addonName, addons, api, siteData, siteId }) {
+// // @ts-expect-error TS(7031) FIXME: Binding element 'addonName' implicitly has an 'any... Remove this comment to see the full error message
+const createFunctionAddon = async function ({ addonName, addons, api, siteData, siteId }: CreateFunctionAddonParams) {
   try {
     const addon = getCurrentAddon({ addons, addonName })
     if (addon && addon.id) {
@@ -600,8 +607,8 @@ const createFunctionAddon = async function ({ addonName, addons, api, siteData, 
  * @param {import('../base-command.js').default} config.command
  * @param {(command: import('../base-command.js').default) => any} config.onComplete
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'command' implicitly has an 'any' ... Remove this comment to see the full error message
-const handleOnComplete = async ({ command, onComplete }) => {
+//// @ts-expect-error TS(7031) FIXME: Binding element 'command' implicitly has an 'any' ... Remove this comment to see the full error message
+const handleOnComplete = async ({ command, onComplete }: HandleOnCompleteParams) => {
   const { config } = command.netlify
 
   if (onComplete) {
@@ -622,8 +629,8 @@ const handleOnComplete = async ({ command, onComplete }) => {
  * @param {import('../base-command.js').default} config.command
  * @param {string} config.fnPath
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'addonCreated' implicitly has an '... Remove this comment to see the full error message
-const handleAddonDidInstall = async ({ addonCreated, addonDidInstall, command, fnPath }) => {
+// //@ts-expect-error TS(7031) FIXME: Binding element 'addonCreated' implicitly has an '... Remove this comment to see the full error message
+const handleAddonDidInstall = async ({ addonCreated, addonDidInstall, command, fnPath }: HandleAddonDidInstallParams) => {
   const { config } = command.netlify
 
   if (!addonCreated || !addonDidInstall) {
@@ -699,8 +706,8 @@ const installAddons = async function (command, functionAddons, fnPath) {
  * @param {string} funcName
  * @param {import('../types.js').NetlifyOptions} options
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'funcName' implicitly has an 'any' type.
-const registerEFInToml = async (funcName, options) => {
+// // @ts-expect-error TS(7006) FIXME: Parameter 'funcName' implicitly has an 'any' type.
+const registerEFInToml = async (funcName: string, options: OptionValues) => {
   const { configFilePath, relConfigFilePath } = options
   if (!fs.existsSync(configFilePath)) {
     log(`${NETLIFYDEVLOG} \`${relConfigFilePath}\` file does not exist yet. Creating it...`)
@@ -742,8 +749,8 @@ const registerEFInToml = async (funcName, options) => {
  * @param {string} name
  * @returns
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'functionsDir' implicitly has an 'any' t... Remove this comment to see the full error message
-const ensureFunctionPathIsOk = function (functionsDir, name) {
+// // @ts-expect-error TS(7006) FIXME: Parameter 'functionsDir' implicitly has an 'any' t... Remove this comment to see the full error message
+const ensureFunctionPathIsOk = function (functionsDir: string, name: string) {
   const functionPath = path.join(functionsDir, name)
   if (fs.existsSync(functionPath)) {
     log(`${NETLIFYDEVLOG} Function ${functionPath} already exists, cancelling...`)

@@ -28,6 +28,7 @@ import { getProxyUrl } from '../../utils/proxy.js'
 import { runDevTimeline } from '../../utils/run-build.js'
 import { getGeoCountryArgParser } from '../../utils/validation.js'
 import BaseCommand from '../base-command.js'
+import type { LiveTunnelParams } from './types.js'
 
 import { createDevExecCommand } from './dev-exec.js'
 import { type DevConfig } from './types.js'
@@ -42,8 +43,7 @@ import { type DevConfig } from './types.js'
  * @param {*} config.state
  * @returns
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-const handleLiveTunnel = async ({ api, options, settings, site, state }) => {
+const handleLiveTunnel = async ({ api, options, settings, site, state }: LiveTunnelParams) => {
   const { live } = options
 
   if (live) {

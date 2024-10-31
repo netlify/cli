@@ -425,7 +425,6 @@ export default class BaseCommand extends Command {
     const authLink = `${webUI}/authorize?response_type=ticket&ticket=${ticket.id}`
 
     log(`Opening ${authLink}`)
-    // @ts-expect-error TS(2345) FIXME: Argument of type '{ url: string; }' is not assigna... Remove this comment to see the full error message
     await openBrowser({ url: authLink })
 
     const accessToken = await pollForToken({

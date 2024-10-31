@@ -4,10 +4,11 @@ import { OptionValues } from 'commander'
 import { exit, log, logJson } from '../../utils/command-helpers.js'
 import { getFunctions, getFunctionsDir } from '../../utils/functions/index.js'
 import BaseCommand from '../base-command.js'
+import { $TSFixMe } from '../types.js'
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'deployedFunctions' implicitly has an 'a... Remove this comment to see the full error message
-const normalizeFunction = function (deployedFunctions, { name, urlPath: url }) {
-  // @ts-expect-error TS(7006) FIXME: Parameter 'deployedFunction' implicitly has an 'an... Remove this comment to see the full error message
+// //@ts-expect-error TS(7006) FIXME: Parameter 'deployedFunctions' implicitly has an 'a... Remove this comment to see the full error message
+const normalizeFunction = function (deployedFunctions: $TSFixMe[], { name, urlPath: url }: { name: string, urlPath: string }) {
+  //// @ts-expect-error TS(7006) FIXME: Parameter 'deployedFunction' implicitly has an 'an... Remove this comment to see the full error message
   const isDeployed = deployedFunctions.some((deployedFunction) => deployedFunction.n === name)
   return { name, url, isDeployed }
 }
@@ -18,8 +19,8 @@ export const functionsList = async (options: OptionValues, command: BaseCommand)
   const deploy = siteInfo.published_deploy || {}
   const deployedFunctions = deploy.available_functions || []
 
-  // @ts-expect-error TS(2554) FIXME: Expected 2 arguments, but got 1.
-  const functionsDir = getFunctionsDir({ options, config })
+  //// @ts-expect-error TS(2554) FIXME: Expected 2 arguments, but got 1.
+  const functionsDir = getFunctionsDir({ options, config },  null)
 
   if (typeof functionsDir === 'undefined') {
     log('Functions directory is undefined')

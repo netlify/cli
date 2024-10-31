@@ -833,6 +833,7 @@ export const deploy = async (options: OptionValues, command: BaseCommand) => {
   let siteId = site.id || options.site
 
   let siteData: SiteInfo | undefined
+  
   if (siteId && !isEmpty(siteInfo)) {
     siteData = siteInfo
     if (siteData) {
@@ -868,16 +869,14 @@ export const deploy = async (options: OptionValues, command: BaseCommand) => {
       }
     }
   }
-  if (siteData === undefined) {
-    throw new Error('Site data is undefined')
-  }
 
-  if (options.trigger) {
-    return triggerDeploy({ api, options, siteData, siteId })
-  }
 
-  // // @ts-expect-error TS(2339) FIXME: Property 'published_deploy' does not exist on type... Remove this comment to see the full error message
   if (siteData) {
+
+    if (options.trigger) {
+      return triggerDeploy({ api, options, siteData, siteId })
+    }
+
     const deployToProduction = options.prod || (options.prodIfUnlocked && !siteData.published_deploy.locked)
 
     let results = {} as Awaited<ReturnType<typeof prepAndRunDeploy>>
@@ -930,7 +929,6 @@ export const deploy = async (options: OptionValues, command: BaseCommand) => {
 
     if (options.open) {
       const urlToOpen = deployToProduction ? results.siteUrl : results.deployUrl
-      // @ts-expect-error TS(2345) FIXME: Argument of type '{ url: any; }' is not assignable... Remove this comment to see the full error message
       await openBrowser({ url: urlToOpen })
       exit()
     }

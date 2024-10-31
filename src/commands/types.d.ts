@@ -5,7 +5,8 @@ import type { FrameworksAPIPaths } from "../utils/frameworks-api.ts";
 import StateConfig from '../utils/state-config.js'
 
 import type { ExtendedNetlifyAPI } from "../types/api/api.js";
-
+import type { OptionValues } from 'commander'
+import type { SiteInfo } from '../types/api/sites.d.ts'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type $TSFixMe = any;

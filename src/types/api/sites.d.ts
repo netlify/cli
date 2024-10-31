@@ -1,3 +1,5 @@
+import type { $TSFixMe } from '../types.js'
+
 interface GetSiteParams {
   siteId?: string,
   feature_flags?: string
@@ -86,6 +88,7 @@ interface PublishedDeploy {
   review_url: string | null;
   framework: string;
   function_schedules: FunctionSchedule[] | [];
+  available_functions: $TSFixMe[];
 }
 
 // Function Schedule Interface
@@ -168,5 +171,12 @@ export interface SiteInfo extends CommonSiteProperties {
   };
   functions_timeout?: Number;
   feature_flags: FeatureFlags;
+  dev_server_settings?: DevServerSettings;
+
+}
+
+interface DevServerSettings {
+  cmd: string;
+  target_port: number;
 }
 

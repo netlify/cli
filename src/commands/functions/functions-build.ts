@@ -11,8 +11,8 @@ export const functionsBuild = async (options: OptionValues, command: BaseCommand
   const { config } = command.netlify
 
   const src = options.src || config.build.functionsSource
-  // @ts-expect-error TS(2554) FIXME: Expected 2 arguments, but got 1.
-  const dst = getFunctionsDir({ options, config })
+  
+  const dst = getFunctionsDir({ options, config }, null)
 
   if (src === dst) {
     log(`${NETLIFYDEVERR} Source and destination for function build can't be the same`)

@@ -10,12 +10,12 @@ import fetch from 'node-fetch'
 import { z } from 'zod'
 
 import { getBuildOptions } from '../../lib/build.js'
-import { chalk, getToken, log, tokenTuple } from '../../utils/command-helpers.js'
+import { chalk, error, getToken, log, tokenTuple } from '../../utils/command-helpers.js'
 import { getSiteInformation } from '../../utils/dev.js'
 import BaseCommand from '../base-command.js'
 import { checkOptions } from '../build/build.js'
 import { deploy as siteDeploy } from '../deploy/deploy.js'
-import { IntergrationOptions, IntegrationConfiguration, RegisteredIntegration } from './types.js'
+import { IntergrationOptions, IntegrationConfiguration, RegisteredIntegration, ScopePermissions, RegisteredIntegrationScopes, LocalTypeScope } from './types.js'
 
 function getIntegrationAPIUrl() {
   return env.INTEGRATION_URL || 'https://api.netlifysdk.com'
@@ -201,7 +201,7 @@ export async function updateIntegration(
   siteId: string | undefined,
   accountId: string | undefined,
   localIntegrationConfig: IntegrationConfiguration,
-  token: string | null,
+  token: string,
   registeredIntegration: RegisteredIntegration,
 ) {
   let { description, integrationLevel, name, scopes, slug } = localIntegrationConfig
@@ -215,8 +215,6 @@ export async function updateIntegration(
   }
 
   if (!name) {
-    // Disabling this lint rule because the destructuring was not assigning the variable correct and leading to a bug
-    // eslint-disable-next-line prefer-destructuring
     name = registeredIntegration.name
   }
 
@@ -233,25 +231,31 @@ export async function updateIntegration(
   // This is returned as a comma separated string and will be easier to manage here as an array
   const registeredIntegrationScopes = registeredIntegration.scopes.split(',')
 
-  const scopeResources = Object.keys(scopes)
-  // @ts-expect-error TS(7034) FIXME: Variable 'localScopes' implicitly has type 'any[]'... Remove this comment to see the full error message
-  let localScopes = []
+  let localScopes: LocalTypeScope[] = []
 
-  if (scopeResources.includes('all')) {
-    localScopes = ['all']
-  } else {
-    scopeResources.forEach((resource) => {
-      const permissionsRequested = scopes[resource]
-      // @ts-expect-error TS(7006) FIXME: Parameter 'permission' implicitly has an 'any' typ... Remove this comment to see the full error message
-      permissionsRequested.forEach((permission) => {
-        localScopes.push(`${resource}:${permission}`)
+  if (scopes) {
+    const scopeResources = Object.keys(scopes) as (keyof ScopePermissions)[];
+
+    if (scopeResources.includes('all')) {
+      localScopes = ['all']
+    } else {
+      scopeResources.forEach((resource) => {
+        const permissionsRequested = scopes[resource]
+
+        if (permissionsRequested && Array.isArray(permissionsRequested) && resource !== 'all') {
+          
+          permissionsRequested.forEach((permission) => {
+            // @ts-expect-error TS(7005) FIXME: Variable 'localScopes' implicitly has an 'any[]' t... Remove this comment to see the full error message
+          localScopes.push(`${resource}:${permission}`)
+        })
+      }
       })
-    })
+    }
   }
 
-  // @ts-expect-error TS(7005) FIXME: Variable 'localScopes' implicitly has an 'any[]' t... Remove this comment to see the full error message
+  //// @ts-expect-error TS(7005) FIXME: Variable 'localScopes' implicitly has an 'any[]' t... Remove this comment to see the full error message
   if (!areScopesEqual(localScopes, registeredIntegrationScopes)) {
-    // @ts-expect-error TS(7005) FIXME: Variable 'localScopes' implicitly has an 'any[]' t... Remove this comment to see the full error message
+    // // @ts-expect-error TS(7005) FIXME: Variable 'localScopes' implicitly has an 'any[]' t... Remove this comment to see the full error message
     logScopeConfirmationMessage(localScopes, registeredIntegrationScopes)
 
     const scopePrompt = await inquirer.prompt([
@@ -278,7 +282,7 @@ export async function updateIntegration(
             name,
             description,
             hostSiteId: siteId,
-            // @ts-expect-error TS(7005) FIXME: Variable 'localScopes' implicitly has an 'any[]' t... Remove this comment to see the full error message
+            // // @ts-expect-error TS(7005) FIXME: Variable 'localScopes' implicitly has an 'any[]' t... Remove this comment to see the full error message
             scopes: localScopes.join(','),
             integrationLevel,
           }),
@@ -400,6 +404,9 @@ export const deploy = async (options: IntergrationOptions, command: BaseCommand)
   // Confirm that a site is linked and that the user is logged in
   checkOptions(buildOptions)
 
+  if (!token) throw error('Token is not defined')
+  if (!siteId) throw error('Site ID is not defined')
+
   const { description, integrationLevel, name, scopes, slug } = await getConfiguration(command.workingDir)
   const localIntegrationConfig = { name, description, scopes, slug, integrationLevel }
 
@@ -411,13 +418,13 @@ export const deploy = async (options: IntergrationOptions, command: BaseCommand)
     siteInfo,
   })
 
-  const { body: registeredIntegration, statusCode }: { P } = await fetch(
+  const { body: registeredIntegration, statusCode }: {body: RegisteredIntegration, statusCode: number} = await fetch(
     `${getIntegrationAPIUrl()}/${accountId}/integrations?site_id=${siteId}`,
     {
       headers,
     },
   ).then(async (res) => {
-    const body = await res.json()
+    const body = await res.json() as RegisteredIntegration
     return { body, statusCode: res.status }
   })
 

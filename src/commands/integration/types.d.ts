@@ -14,13 +14,8 @@ export interface IntergrationOptions extends OptionValues {
 export interface IntegrationConfiguration {
   name?: string;
   description?: string;
-  slug?: string;
-  scopes?: {
-    all?: boolean;
-    site?: ('read' | 'write')[];
-    env?: ('read' | 'write' | 'delete')[];
-    user?: ('read' | 'write')[];
-  };
+  slug: string;
+  scopes?: ScopePermissions
   integrationLevel?: 'site' | 'team' | 'team-and-site';
 }
 
@@ -32,3 +27,14 @@ export interface RegisteredIntegration {
     integrationLevel: 'site' | 'team' | 'team-and-site';
     scopes: string
   }
+
+export interface ScopePermissions {
+  all?: boolean;
+  site?: ('read' | 'write')[];
+  env?: ('read' | 'write' | 'delete')[];
+  user?: ('read' | 'write')[];
+};
+
+export type RegisteredIntegrationScopes = 'site:read' | 'site:write' | 'env:read' | 'env:write' | 'env:delete' | 'user:read' | 'user:write' 
+
+export type LocalTypeScope = RegisteredIntegrationScopes | 'all'
