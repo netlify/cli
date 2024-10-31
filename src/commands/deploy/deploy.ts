@@ -833,7 +833,7 @@ export const deploy = async (options: OptionValues, command: BaseCommand) => {
   let siteId = site.id || options.site
 
   let siteData: SiteInfo | undefined
-  
+
   if (siteId && !isEmpty(siteInfo)) {
     siteData = siteInfo
     if (siteData) {
@@ -870,9 +870,7 @@ export const deploy = async (options: OptionValues, command: BaseCommand) => {
     }
   }
 
-
   if (siteData) {
-
     if (options.trigger) {
       return triggerDeploy({ api, options, siteData, siteId })
     }

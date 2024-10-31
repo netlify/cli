@@ -11,7 +11,7 @@ export const functionsBuild = async (options: OptionValues, command: BaseCommand
   const { config } = command.netlify
 
   const src = options.src || config.build.functionsSource
-  
+
   const dst = getFunctionsDir({ options, config }, null)
 
   if (src === dst) {

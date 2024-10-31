@@ -212,7 +212,7 @@ export const init = async (options: OptionValues, command: BaseCommand) => {
 
   if (isEmpty(siteInfo)) {
     const placeholder = await createOrLinkSiteToRepo(command)
-    
+
     // Type narrowing
     if (placeholder) {
       siteInfo = placeholder

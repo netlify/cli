@@ -15,7 +15,14 @@ import { getSiteInformation } from '../../utils/dev.js'
 import BaseCommand from '../base-command.js'
 import { checkOptions } from '../build/build.js'
 import { deploy as siteDeploy } from '../deploy/deploy.js'
-import { IntergrationOptions, IntegrationConfiguration, RegisteredIntegration, ScopePermissions, RegisteredIntegrationScopes, LocalTypeScope } from './types.js'
+import {
+  IntergrationOptions,
+  IntegrationConfiguration,
+  RegisteredIntegration,
+  ScopePermissions,
+  RegisteredIntegrationScopes,
+  LocalTypeScope,
+} from './types.js'
 
 function getIntegrationAPIUrl() {
   return env.INTEGRATION_URL || 'https://api.netlifysdk.com'
@@ -234,7 +241,7 @@ export async function updateIntegration(
   let localScopes: LocalTypeScope[] = []
 
   if (scopes) {
-    const scopeResources = Object.keys(scopes) as (keyof ScopePermissions)[];
+    const scopeResources = Object.keys(scopes) as (keyof ScopePermissions)[]
 
     if (scopeResources.includes('all')) {
       localScopes = ['all']
@@ -243,12 +250,11 @@ export async function updateIntegration(
         const permissionsRequested = scopes[resource]
 
         if (permissionsRequested && Array.isArray(permissionsRequested) && resource !== 'all') {
-          
           permissionsRequested.forEach((permission) => {
             // @ts-expect-error TS(7005) FIXME: Variable 'localScopes' implicitly has an 'any[]' t... Remove this comment to see the full error message
-          localScopes.push(`${resource}:${permission}`)
-        })
-      }
+            localScopes.push(`${resource}:${permission}`)
+          })
+        }
       })
     }
   }
@@ -418,13 +424,13 @@ export const deploy = async (options: IntergrationOptions, command: BaseCommand)
     siteInfo,
   })
 
-  const { body: registeredIntegration, statusCode }: {body: RegisteredIntegration, statusCode: number} = await fetch(
+  const { body: registeredIntegration, statusCode }: { body: RegisteredIntegration; statusCode: number } = await fetch(
     `${getIntegrationAPIUrl()}/${accountId}/integrations?site_id=${siteId}`,
     {
       headers,
     },
   ).then(async (res) => {
-    const body = await res.json() as RegisteredIntegration
+    const body = (await res.json()) as RegisteredIntegration
     return { body, statusCode: res.status }
   })
 

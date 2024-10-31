@@ -29,16 +29,15 @@ import { getDotEnvVariables, injectEnvVariables } from '../../utils/dev.js'
 import execa from '../../utils/execa.js'
 import { readRepoURL, validateRepoURL } from '../../utils/read-repo-url.js'
 import BaseCommand from '../base-command.js'
-import type { 
+import type {
   RegistryElement,
   FuncType,
   Packages,
   InstallDepsParams,
   CreateFunctionAddonParams,
   HandleOnCompleteParams,
-  HandleAddonDidInstallParams
+  HandleAddonDidInstallParams,
 } from './types.js'
-
 
 const require = createRequire(import.meta.url)
 
@@ -205,7 +204,6 @@ const pickTemplate = async function ({ language: languageFromFlag }: OptionValue
     language = languageFromPrompt
   }
 
-  
   let templatesForLanguage
 
   try {
@@ -232,7 +230,7 @@ const pickTemplate = async function ({ language: languageFromFlag }: OptionValue
         return [...templatesForLanguage, ...parsedSpecialCommands]
       }
       // only show filtered results sorted by score
-      
+
       const answers = [...filterRegistry(templatesForLanguage, input), ...parsedSpecialCommands].sort(
         // @ts-expect-error TS(2339) FIXME: Property 'score' does not exist on type 'RegistryElement | Separator... Remove this comment to see the full error message
         (answerA, answerB) => answerB.score - answerA.score,
@@ -367,7 +365,12 @@ const ensureFunctionDirExists = async function (command: BaseCommand) {
  * @param {string} functionsDir
  */
 // // @ts-expect-error TS(7006) FIXME: Parameter 'command' implicitly has an 'any' type.
-const downloadFromURL = async function (command: BaseCommand, options: OptionValues, argumentName: string, functionsDir: string) {
+const downloadFromURL = async function (
+  command: BaseCommand,
+  options: OptionValues,
+  argumentName: string,
+  functionsDir: string,
+) {
   const folderContents = await readRepoURL(options.url)
   const [functionName] = options.url.split('/').slice(-1)
   const nameToUse = await getNameFromArgs(argumentName, options, functionName)
@@ -387,7 +390,7 @@ const downloadFromURL = async function (command: BaseCommand, options: OptionVal
   }
   await Promise.all(
     // @ts-expect-error TS(7031) FIXME: Binding element 'downloadUrl' implicitly has an 'a... Remove this comment to see the full error message
-    folderContents.map(async ({ download_url: downloadUrl, name }: { download_url: string, name: string }) => {
+    folderContents.map(async ({ download_url: downloadUrl, name }: { download_url: string; name: string }) => {
       try {
         const res = await fetch(downloadUrl)
         const finalName = path.basename(name, '.js') === functionName ? `${nameToUse}.js` : name
@@ -488,7 +491,13 @@ const installDeps = async ({ functionPackageJson, functionPath, functionsDir }: 
  */
 // //@ts-expect-error TS(7006) FIXME: Parameter 'command' implicitly has an 'any' type.
 
-const scaffoldFromTemplate = async function (command: BaseCommand, options: OptionValues, argumentName: string, functionsDir: string, funcType: FuncType) {
+const scaffoldFromTemplate = async function (
+  command: BaseCommand,
+  options: OptionValues,
+  argumentName: string,
+  functionsDir: string,
+  funcType: FuncType,
+) {
   // pull the rest of the metadata from the template
   const chosenTemplate = await pickTemplate(options, funcType)
   if (chosenTemplate === 'url') {
@@ -630,7 +639,12 @@ const handleOnComplete = async ({ command, onComplete }: HandleOnCompleteParams)
  * @param {string} config.fnPath
  */
 // //@ts-expect-error TS(7031) FIXME: Binding element 'addonCreated' implicitly has an '... Remove this comment to see the full error message
-const handleAddonDidInstall = async ({ addonCreated, addonDidInstall, command, fnPath }: HandleAddonDidInstallParams) => {
+const handleAddonDidInstall = async ({
+  addonCreated,
+  addonDidInstall,
+  command,
+  fnPath,
+}: HandleAddonDidInstallParams) => {
   const { config } = command.netlify
 
   if (!addonCreated || !addonDidInstall) {
