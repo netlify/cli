@@ -411,7 +411,7 @@ export const deploy = async (options: IntergrationOptions, command: BaseCommand)
     siteInfo,
   })
 
-  const { body: registeredIntegration, statusCode } = await fetch(
+  const { body: registeredIntegration, statusCode }: { P } = await fetch(
     `${getIntegrationAPIUrl()}/${accountId}/integrations?site_id=${siteId}`,
     {
       headers,

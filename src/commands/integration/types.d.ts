@@ -25,7 +25,7 @@ export interface IntegrationConfiguration {
 }
 
 
-export interface registeredIntegration {
+export interface RegisteredIntegration {
     slug: string
     name: string
     description: string
