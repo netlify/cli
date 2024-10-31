@@ -214,7 +214,7 @@
     "ini": "4.1.3",
     "is-ci": "3.0.1",
     "mock-fs": "5.4.1",
-    "nock": "13.5.4",
+    "nock": "13.5.5",
     "p-timeout": "6.1.2",
     "serialize-javascript": "6.0.2",
     "sinon": "18.0.1",
