@@ -53,5 +53,5 @@ export interface IntegrationRegistrationResponse {
 
 export interface ScopeWriter {
   all?: boolean;
-  [key: string]:  ScopePermission[] | ;
+  [key: string]:  ScopePermission[] | boolean;
 }
