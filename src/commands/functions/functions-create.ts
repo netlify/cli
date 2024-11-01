@@ -38,6 +38,7 @@ import type {
   HandleOnCompleteParams,
   HandleAddonDidInstallParams,
 } from './types.js'
+import { $TSFixMe } from '../types.js'
 
 const require = createRequire(import.meta.url)
 
@@ -119,7 +120,6 @@ const filterRegistry = function (registry: RegistryElement[], input: string) {
  * @param {string} lang
  * @param {'edge' | 'serverless'} funcType
  */
-//// @ts-expect-error TS(7006) FIXME: Parameter 'lang' implicitly has an 'any' type.
 const formatRegistryArrayForInquirer = async function (lang: string, funcType: FuncType) {
   const folders = await readdir(path.join(templatesDir, lang), { withFileTypes: true })
 
@@ -204,7 +204,7 @@ const pickTemplate = async function ({ language: languageFromFlag }: OptionValue
     language = languageFromPrompt
   }
 
-  let templatesForLanguage
+  let templatesForLanguage: $TSFixMe
 
   try {
     templatesForLanguage = await formatRegistryArrayForInquirer(language, funcType)
@@ -226,7 +226,6 @@ const pickTemplate = async function ({ language: languageFromFlag }: OptionValue
 
       if (!input || input === '') {
         // show separators
-        // // @ts-expect-error TS(7005) FIXME: Variable 'templatesForLanguage' implicitly has an ... Remove this comment to see the full error message
         return [...templatesForLanguage, ...parsedSpecialCommands]
       }
       // only show filtered results sorted by score

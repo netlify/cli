@@ -13,12 +13,10 @@ import {
   GetAddonsInformationParams,
   GetAddonsInformationResult,
   getAddonsParams,
-  GetSiteAccount,
   GetSiteAccountParams,
   GetSiteInformationParams,
   ValidateSiteInfoParams,
 } from './types.js'
-import { ExtendedNetlifyAPI } from '../types/api/api.js'
 
 // Possible sources of environment variables. For the purpose of printing log messages only. Order does not matter.
 const ENV_VAR_SOURCES = {

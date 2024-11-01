@@ -52,22 +52,23 @@ function logScopeConfirmationMessage(localScopes: LocalTypeScope[], remoteScopes
   log(chalk.yellow('if you continue. This will only affect future installations of the integration.'))
 }
 
-function formatScopesToWrite(registeredIntegrationScopes: RegisteredIntegrationScopes[]): ScopePermissions {
-  let scopesToWrite: ScopeWriter = {}
+// @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+function formatScopesToWrite(registeredIntegrationScopes) {
+  let scopesToWrite = {}
 
   for (const scope of registeredIntegrationScopes) {
-    const [resource, permission] = scope.split(':') as [ScopeResource | 'all', ScopePermission]
+    const [resource, permission] = scope.split(':')
     if (resource === 'all') {
       scopesToWrite = { all: true }
       break
     } else {
-      const resourceKey = resource
-      if (!scopesToWrite[resourceKey]) {
-        scopesToWrite[resourceKey] = []
+      // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+      if (!scopesToWrite[resource]) {
+        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+        scopesToWrite[resource] = []
       }
-      if (Array.isArray(scopesToWrite[resourceKey])) {
-        scopesToWrite[resourceKey].push(permission)
-      }
+      // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+      scopesToWrite[resource].push(permission)
     }
   }
   return scopesToWrite

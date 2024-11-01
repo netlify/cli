@@ -65,8 +65,7 @@ export const findValueInValues = (values, context) =>
  * @param {enum<general,account,addons,ui,configFile>} source - The source of the environment variable
  * @returns {object} The dictionary of env vars that match the given source
  */
-export const filterEnvBySource = (env: EnviromentVariables, source: EnvironmentVariableSource): ProcessedEnvVars =>
-  // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+export const filterEnvBySource = (env: EnviromentVariables, source: EnvironmentVariableSource) =>
   Object.fromEntries(Object.entries(env).filter(([, variable]) => variable.sources[0] === source))
 
 // Fetches data from Envelope
