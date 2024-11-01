@@ -45,3 +45,13 @@ export type RegisteredIntegrationScopes =
   | 'all';
 
 export type LocalTypeScope = RegisteredIntegrationScopes | 'all';
+
+export interface IntegrationRegistrationResponse {
+  slug: string;
+  msg?: string;  
+}
+
+export interface ScopeWriter {
+  all?: boolean;
+  [key: string]:  ScopePermission[] | ;
+}

@@ -2,7 +2,6 @@ import fs from 'fs'
 import { resolve } from 'path'
 import { env, exit } from 'process'
 
-import { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'js-y... Remove this comment to see the full error message
 import yaml from 'js-yaml'
@@ -23,6 +22,10 @@ import {
   RegisteredIntegrationScopes,
   ScopePermissions,
   IntegrationLevel,
+  IntegrationRegistrationResponse,
+  ScopePermission,
+  ScopeResource,
+  ScopeWriter,
 } from './types.js'
 
 function getIntegrationAPIUrl() {
@@ -49,33 +52,34 @@ function logScopeConfirmationMessage(localScopes: LocalTypeScope[], remoteScopes
   log(chalk.yellow('if you continue. This will only affect future installations of the integration.'))
 }
 
-function formatScopesToWrite(registeredIntegrationScopes: RegisteredIntegrationScopes[]) {
-  let scopesToWrite = {}
+function formatScopesToWrite(registeredIntegrationScopes: RegisteredIntegrationScopes[]): ScopePermissions {
+  let scopesToWrite: ScopeWriter = {}
 
   for (const scope of registeredIntegrationScopes) {
-    const [resource, permission] = scope.split(':')
+    const [resource, permission] = scope.split(':') as [ScopeResource | 'all', ScopePermission]
     if (resource === 'all') {
       scopesToWrite = { all: true }
       break
     } else {
-      // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-      if (!scopesToWrite[resource]) {
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        scopesToWrite[resource] = []
+      const resourceKey = resource
+      if (!scopesToWrite[resourceKey]) {
+        scopesToWrite[resourceKey] = []
       }
-      // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-      scopesToWrite[resource].push(permission)
+      if (Array.isArray(scopesToWrite[resourceKey])) {
+        scopesToWrite[resourceKey].push(permission)
+      }
     }
   }
   return scopesToWrite
 }
 
 function formatScopesForRemote(scopes: ScopePermissions) {
-  const scopesToWrite = []
+  const scopesToWrite: string[] = []
+
   if (scopes.all) {
     scopesToWrite.push('all')
   } else {
-    const scopeResources = Object.keys(scopes) as Array<keyof ScopePermissions>
+    const scopeResources = Object.keys(scopes) as Array<keyof Omit<ScopePermissions, 'all'>>
     scopeResources.forEach((resource) => {
       const permissionsRequested = scopes[resource]
 
@@ -90,10 +94,10 @@ function formatScopesForRemote(scopes: ScopePermissions) {
 }
 
 function verifyRequiredFieldsAreInConfig(
-  name: string,
-  description: string,
-  scopes: ScopePermissions,
-  integrationLevel: IntegrationLevel,
+  name: string | undefined,
+  description: string | undefined,
+  scopes: ScopePermissions | undefined,
+  integrationLevel: IntegrationLevel | undefined,
 ) {
   const missingFields = []
 
@@ -127,8 +131,13 @@ function verifyRequiredFieldsAreInConfig(
   return true
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'workingDir' implicitly has an 'any' typ... Remove this comment to see the full error message
-export async function registerIntegration(workingDir, siteId, accountId, localIntegrationConfig, token) {
+export async function registerIntegration(
+  workingDir: string,
+  siteId: string,
+  accountId: string | undefined,
+  localIntegrationConfig: IntegrationConfiguration,
+  token: string,
+) {
   const { description, integrationLevel, name, scopes, slug } = localIntegrationConfig
   log(chalk.yellow(`An integration associated with the site ID ${siteId} is not registered.`))
   const registerPrompt = await inquirer.prompt([
@@ -158,6 +167,11 @@ export async function registerIntegration(workingDir, siteId, accountId, localIn
     exit(1)
   }
 
+  //For TypeScript for some reason the scopes, integrationLevel, name, description, and slug are undefined
+  if (!scopes || !integrationLevel || !name || !description || !slug) {
+    exit(1)
+  }
+
   log(chalk.white('Registering the integration...'))
 
   const { body, statusCode } = await fetch(`${getIntegrationAPIUrl()}/${accountId}/integrations`, {
@@ -174,7 +188,7 @@ export async function registerIntegration(workingDir, siteId, accountId, localIn
       integrationLevel,
     }),
   }).then(async (res) => {
-    const response = await res.json()
+    const response = (await res.json()) as IntegrationRegistrationResponse
     return { body: response, statusCode: res.status }
   })
 
@@ -182,7 +196,6 @@ export async function registerIntegration(workingDir, siteId, accountId, localIn
     log(chalk.red(`There was an error registering the integration:`))
     log()
     log(chalk.red(`-----------------------------------------------`))
-    // @ts-expect-error TS(18046) - 'body' is of type 'unknown'
     log(chalk.red(body.msg))
     log(chalk.red(`-----------------------------------------------`))
     log()
@@ -190,11 +203,9 @@ export async function registerIntegration(workingDir, siteId, accountId, localIn
     exit(1)
   }
 
-  // @ts-expect-error TS(18046) - 'body' is of type 'unknown'
   log(chalk.green(`Successfully registered the integration with the slug: ${body.slug}`))
 
   const updatedIntegrationConfig = yaml.dump({
-    // @ts-expect-error TS(18046) - 'body' is of type 'unknown'
     config: { name, description, slug: body.slug, scopes, integrationLevel },
   })
 
@@ -207,7 +218,7 @@ export async function registerIntegration(workingDir, siteId, accountId, localIn
 export async function updateIntegration(
   workingDir: string,
   options: IntergrationOptions,
-  siteId: string | undefined,
+  siteId: string,
   accountId: string | undefined,
   localIntegrationConfig: IntegrationConfiguration,
   token: string,
@@ -272,6 +283,7 @@ export async function updateIntegration(
     ])
 
     let scopesToWrite
+
     if (scopePrompt.updateScopes) {
       // Update the scopes in remote
       scopesToWrite = scopes
