@@ -10,6 +10,7 @@ import isObject from 'lodash/isObject.js'
 import { parseAllHeaders } from 'netlify-headers-parser'
 import { parseAllRedirects } from 'netlify-redirect-parser'
 import prettyjson from 'prettyjson'
+import { Ora } from 'ora'
 
 import { cancelDeploy } from '../../lib/api.js'
 import { getBuildOptions, runBuild } from '../../lib/build.js'
@@ -41,9 +42,17 @@ import BaseCommand from '../base-command.js'
 import { link } from '../link/link.js'
 import { sitesCreate } from '../sites/sites-create.js'
 import { $TSFixMe } from '../types.js'
+import { SiteInfo } from '../../types/api/sites.js'
+import {
+  DeployParams,
+  TriggerDeployParams,
+  RunDeployParams,
+  GetDeployFilesFilterParams,
+  DeployError,
+  DeployEvent,
+} from './types.js'
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-const triggerDeploy = async ({ api, options, siteData, siteId }) => {
+const triggerDeploy = async ({ api, options, siteData, siteId }: TriggerDeployParams) => {
   try {
     const siteBuild = await api.createSiteBuild({ siteId })
     if (options.json) {
@@ -129,12 +138,13 @@ const validateDeployFolder = async (deployFolder: string) => {
         return error('Permission error when trying to access deploy folder')
       }
     }
-    throw error_
   }
 
+  // @ts-expect-error TS(2339) FIXME: Property 'isDirectory' does not exist on type 'Stats'.
   if (!stats.isDirectory()) {
     return error('Deploy target must be a path to a directory')
   }
+  // @ts-expect-error TS(2339) FIXME: Property 'isDirectory' does not exist on type 'Stats'.
   return stats
 }
 
@@ -213,8 +223,8 @@ const validateFolders = async ({
  * @param {*} config.site
  * @returns
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'deployFolder' implicitly has an '... Remove this comment to see the full error message
-const getDeployFilesFilter = ({ deployFolder, site }) => {
+// //@ts-expect-error TS(7031) FIXME: Binding element 'deployFolder' implicitly has an '... Remove this comment to see the full error message
+const getDeployFilesFilter = ({ deployFolder, site }: GetDeployFilesFilterParams) => {
   // site.root === deployFolder can happen when users run `netlify deploy --dir .`
   // in that specific case we don't want to publish the repo node_modules
   // when site.root !== deployFolder the behaviour matches our buildbot
@@ -223,8 +233,8 @@ const getDeployFilesFilter = ({ deployFolder, site }) => {
   /**
    * @param {string} filename
    */
-  // @ts-expect-error TS(7006) FIXME: Parameter 'filename' implicitly has an 'any' type.
-  return (filename) => {
+  // // @ts-expect-error TS(7006) FIXME: Parameter 'filename' implicitly has an 'any' type.
+  return (filename: string) => {
     if (filename == null) {
       return false
     }
@@ -250,8 +260,7 @@ const SEC_TO_MILLISEC = 1e3
 // 100 bytes
 const SYNC_FILE_LIMIT = 1e2
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-const prepareProductionDeploy = async ({ api, siteData }) => {
+const prepareProductionDeploy = async ({ api, siteData }: DeployParams) => {
   if (isObject(siteData.published_deploy) && siteData.published_deploy.locked) {
     log(`\n${NETLIFYDEVERR} Deployments are "locked" for production context of this site\n`)
     const { unlockChoice } = await inquirer.prompt([
@@ -269,16 +278,14 @@ const prepareProductionDeploy = async ({ api, siteData }) => {
   log('Deploying to main site URL...')
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'actual' implicitly has an 'any' type.
-const hasErrorMessage = (actual, expected) => {
+const hasErrorMessage = (actual: string | undefined, expected: string) => {
   if (typeof actual === 'string') {
     return actual.includes(expected)
   }
   return false
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'error_' implicitly has an 'any' t... Remove this comment to see the full error message
-const reportDeployError = ({ error_, failAndExit }) => {
+const reportDeployError = ({ error_, failAndExit }: DeployError) => {
   switch (true) {
     case error_.name === 'JSONHTTPError': {
       const message = error_?.json?.message ?? ''
@@ -312,19 +319,19 @@ const deployProgressCb = function () {
   /**
    * @type {Record<string, import('ora').Ora>}
    */
-  const events = {}
-  // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
-  return (event) => {
+  const events: Record<string, Ora> = {}
+  // // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
+  return (event: DeployEvent) => {
     switch (event.phase) {
       case 'start': {
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+        //// @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         events[event.type] = startSpinner({
           text: event.msg,
         })
         return
       }
       case 'progress': {
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+        //// @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         const spinner = events[event.type]
         if (spinner) {
           spinner.text = event.msg
@@ -332,16 +339,16 @@ const deployProgressCb = function () {
         return
       }
       case 'error':
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+        //// @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         stopSpinner({ error: true, spinner: events[event.type], text: event.msg })
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+        //// @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         delete events[event.type]
         return
       case 'stop':
       default: {
-        // @ts-expect-error TS(2345) FIXME: Argument of type '{ spinner: any; text: any; }' is... Remove this comment to see the full error message
+        // //@ts-expect-error TS(2345) FIXME: Argument of type '{ spinner: any; text: any; }' is... Remove this comment to see the full error message
         stopSpinner({ spinner: events[event.type], text: event.msg })
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+        //// @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         delete events[event.type]
       }
     }
@@ -402,42 +409,39 @@ const uploadDeployBlobs = async ({
 }
 
 const runDeploy = async ({
-  // @ts-expect-error TS(7031) FIXME: Binding element 'alias' implicitly has an 'any' ty... Remove this comment to see the full error message
+  // // @ts-expect-error TS(7031) FIXME: Binding element 'alias' implicitly has an 'any' ty... Remove this comment to see the full error message
   alias,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
+  // // @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
   api,
   command,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'any' t... Remove this comment to see the full error message
+  // //@ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'any' t... Remove this comment to see the full error message
   config,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'deployFolder' implicitly has an '... Remove this comment to see the full error message
+  // //@ts-expect-error TS(7031) FIXME: Binding element 'deployFolder' implicitly has an '... Remove this comment to see the full error message
   deployFolder,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'deployTimeout' implicitly has an ... Remove this comment to see the full error message
+  // //@ts-expect-error TS(7031) FIXME: Binding element 'deployTimeout' implicitly has an ... Remove this comment to see the full error message
   deployTimeout,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'deployToProduction' implicitly ha... Remove this comment to see the full error message
+  // //@ts-expect-error TS(7031) FIXME: Binding element 'deployToProduction' implicitly ha... Remove this comment to see the full error message
   deployToProduction,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'functionsConfig' implicitly has a... Remove this comment to see the full error message
+  // //@ts-expect-error TS(7031) FIXME: Binding element 'functionsConfig' implicitly has a... Remove this comment to see the full error message
   functionsConfig,
   functionsFolder,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'options' implicitly has an 'a... Remove this comment to see the full error message
+  // //@ts-expect-error TS(7031) FIXME: Binding element 'options' implicitly has an 'a... Remove this comment to see the full error message
   options,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'packagePath' implicitly has an 'a... Remove this comment to see the full error message
+  //// @ts-expect-error TS(7031) FIXME: Binding element 'packagePath' implicitly has an 'a... Remove this comment to see the full error message
   packagePath,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'silent' implicitly has an 'any' t... Remove this comment to see the full error message
+  // //@ts-expect-error TS(7031) FIXME: Binding element 'silent' implicitly has an 'any' t... Remove this comment to see the full error message
   silent,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'site' implicitly has an 'any' typ... Remove this comment to see the full error message
+  // //@ts-expect-error TS(7031) FIXME: Binding element 'site' implicitly has an 'any' typ... Remove this comment to see the full error message
   site,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'siteData' implicitly has an 'any'... Remove this comment to see the full error message
+  ////  @ts-expect-error TS(7031) FIXME: Binding element 'siteData' implicitly has an 'any'... Remove this comment to see the full error message
   siteData,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'siteId' implicitly has an 'any' t... Remove this comment to see the full error message
+  // // @ts-expect-error TS(7031) FIXME: Binding element 'siteId' implicitly has an 'any' t... Remove this comment to see the full error message
   siteId,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'skipFunctionsCache' implicitly ha... Remove this comment to see the full error message
+  // //@ts-expect-error TS(7031) FIXME: Binding element 'skipFunctionsCache' implicitly ha... Remove this comment to see the full error message
   skipFunctionsCache,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'title' implicitly has an 'any' ty... Remove this comment to see the full error message
+  // // @ts-expect-error TS(7031) FIXME: Binding element 'title' implicitly has an 'any' ty... Remove this comment to see the full error message
   title,
-}: {
-  functionsFolder?: string
-  command: BaseCommand
-}): Promise<{
+}: RunDeployParams): Promise<{
   siteId: string
   siteName: string
   deployId: string
@@ -460,6 +464,11 @@ const runDeploy = async ({
     const draft = !deployToProduction && !alias
     results = await api.createSiteDeploy({ siteId, title, body: { draft, branch: alias } })
     deployId = results.id
+
+    // add this check to make sure that site.root is defined, narrowing NetlifySite root property type
+    if (site.root === undefined) {
+      throw new Error('Site root is undefined')
+    }
 
     const internalFunctionsFolder = await getInternalFunctionsDir({ base: site.root, packagePath, ensureExists: true })
 
@@ -494,6 +503,12 @@ const runDeploy = async ({
     })
 
     config.headers = headers
+
+    // this is to make sure that siteId is defined, narrowing string type
+    if (siteId === undefined) {
+      throw new Error('Site ID is undefined')
+    }
+
     await uploadDeployBlobs({
       deployId,
       siteId,
@@ -504,7 +519,7 @@ const runDeploy = async ({
     })
 
     results = await deploySite(command, api, siteId, deployFolder, {
-      // @ts-expect-error FIXME
+      // @ts-expect-error TS(2353) FIXME: Object literal may only specify known properties, and 'config' does not exist in type '{ concurrentHash?: number | undefined; concurrentUpload?: number | undefined; deployTimeout?: number | undefined; draft?: boolean | undefined; maxRetry?: number | undefined; statusCb?: ((status: { ...; }) => void) | ... 1 more ... | undefined; syncFileLimit?: number | undefined; tmpDir?: string | undefined; fnDir?: ...'.
       config,
       fnDir: functionDirectories,
       functionsConfig,
@@ -524,6 +539,7 @@ const runDeploy = async ({
     if (deployId) {
       await cancelDeploy({ api, deployId })
     }
+    // @ts-expect-error TS(2339) FIXME: Property 'failAndExit' does not exist on type 'unknown'.
     reportDeployError({ error_, failAndExit: error })
   }
 
@@ -769,8 +785,11 @@ const prepAndRunDeploy = async ({
     siteEnv,
   })
 
+  // if (functionsFolder === undefined) {
+  //   throw new Error('Functions folder is undefined')
+  // }
+
   const results = await runDeploy({
-    // @ts-expect-error FIXME
     alias,
     api,
     command,
@@ -814,11 +833,13 @@ export const deploy = async (options: OptionValues, command: BaseCommand) => {
 
   let siteId = site.id || options.site
 
-  let siteData = {}
+  let siteData: SiteInfo | undefined
+
   if (siteId && !isEmpty(siteInfo)) {
     siteData = siteInfo
-    // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type '{}'.
-    siteId = siteData.id
+    if (siteData) {
+      siteId = siteData.id
+    }
   } else {
     log("This folder isn't linked to a site yet")
     const NEW_SITE = '+  Create & configure a new site'
@@ -836,78 +857,79 @@ export const deploy = async (options: OptionValues, command: BaseCommand) => {
     ])
     // create site or search for one
     if (initChoice === NEW_SITE) {
-      // @ts-expect-error TS(2322) FIXME: Type 'undefined' is not assignable to type '{}'.
       siteData = await sitesCreate({}, command)
-      // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type '{}'.
-      site.id = siteData.id
-      siteId = site.id
+      if (siteData) {
+        site.id = siteData.id
+        siteId = site.id
+      }
     } else if (initChoice === EXISTING_SITE) {
       siteData = await link({}, command)
-      // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type '{}'.
-      site.id = siteData.id
-      siteId = site.id
+      if (siteData) {
+        site.id = siteData.id
+        siteId = site.id
+      }
     }
   }
 
-  if (options.trigger) {
-    return triggerDeploy({ api, options, siteData, siteId })
-  }
+  if (siteData) {
+    if (options.trigger) {
+      return triggerDeploy({ api, options, siteData, siteId })
+    }
 
-  // @ts-expect-error TS(2339) FIXME: Property 'published_deploy' does not exist on type... Remove this comment to see the full error message
-  const deployToProduction = options.prod || (options.prodIfUnlocked && !siteData.published_deploy.locked)
+    const deployToProduction = options.prod || (options.prodIfUnlocked && !siteData.published_deploy.locked)
 
-  let results = {} as Awaited<ReturnType<typeof prepAndRunDeploy>>
+    let results = {} as Awaited<ReturnType<typeof prepAndRunDeploy>>
 
-  if (options.build) {
-    await handleBuild({
-      packagePath: command.workspacePackage,
-      cachedConfig: command.netlify.cachedConfig,
-      defaultConfig: getDefaultConfig(settings),
-      currentDir: command.workingDir,
-      options,
-      deployHandler: async ({ netlifyConfig }: { netlifyConfig: NetlifyConfig }) => {
-        results = await prepAndRunDeploy({
-          command,
-          options,
-          workingDir,
-          api,
-          site,
-          config: netlifyConfig,
-          siteData,
-          siteId,
-          deployToProduction,
-        })
+    if (options.build) {
+      await handleBuild({
+        packagePath: command.workspacePackage,
+        cachedConfig: command.netlify.cachedConfig,
+        defaultConfig: getDefaultConfig(settings),
+        currentDir: command.workingDir,
+        options,
+        deployHandler: async ({ netlifyConfig }: { netlifyConfig: NetlifyConfig }) => {
+          results = await prepAndRunDeploy({
+            command,
+            options,
+            workingDir,
+            api,
+            site,
+            config: netlifyConfig,
+            siteData,
+            siteId,
+            deployToProduction,
+          })
 
-        return { newEnvChanges: { DEPLOY_ID: results.deployId, DEPLOY_URL: results.deployUrl } }
-      },
-    })
-  } else {
-    results = await prepAndRunDeploy({
-      command,
-      options,
-      workingDir,
-      api,
-      site,
-      config: command.netlify.config,
-      siteData,
-      siteId,
+          return { newEnvChanges: { DEPLOY_ID: results.deployId, DEPLOY_URL: results.deployUrl } }
+        },
+      })
+    } else {
+      results = await prepAndRunDeploy({
+        command,
+        options,
+        workingDir,
+        api,
+        site,
+        config: command.netlify.config,
+        siteData,
+        siteId,
+        deployToProduction,
+      })
+    }
+    const isIntegrationDeploy = command.name() === 'integration:deploy'
+
+    printResults({
+      runBuildCommand: options.build,
+      isIntegrationDeploy,
+      json: options.json,
+      results,
       deployToProduction,
     })
-  }
-  const isIntegrationDeploy = command.name() === 'integration:deploy'
 
-  printResults({
-    runBuildCommand: options.build,
-    isIntegrationDeploy,
-    json: options.json,
-    results,
-    deployToProduction,
-  })
-
-  if (options.open) {
-    const urlToOpen = deployToProduction ? results.siteUrl : results.deployUrl
-    // @ts-expect-error TS(2345) FIXME: Argument of type '{ url: any; }' is not assignable... Remove this comment to see the full error message
-    await openBrowser({ url: urlToOpen })
-    exit()
+    if (options.open) {
+      const urlToOpen = deployToProduction ? results.siteUrl : results.deployUrl
+      await openBrowser({ url: urlToOpen })
+      exit()
+    }
   }
 }

@@ -259,7 +259,7 @@ interface GetFunctionsServerOptions {
   functionsRegistry: FunctionsRegistry
   siteUrl: string
   siteInfo?: $TSFixMe
-  accountId: string
+  accountId: string | undefined
   geoCountry: string
   offline: boolean
   state: $TSFixMe

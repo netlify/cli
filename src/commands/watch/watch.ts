@@ -36,7 +36,6 @@ const waitForBuildFinish = async function (api, siteId, spinner) {
     // @TODO implement build error messages into this
 
     if (!currentBuilds || currentBuilds.length === 0) {
-      // @ts-expect-error TS(2345) FIXME: Argument of type '{ spinner: any; }' is not assign... Remove this comment to see the full error message
       stopSpinner({ spinner })
       return true
     }

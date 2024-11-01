@@ -1,6 +1,11 @@
 import type { PollingStrategy, NetlifyTOML } from '@netlify/build-info'
 
 import type { FrameworkNames } from '../../utils/types'
+import type { ExtendedNetlifyAPI } from '../../types/api/api.js'
+import type { OptionValues } from 'commander'
+import type { NetlifySite } from '../types.js'
+import type { ServerSettings } from '../../utils/types.js'
+import type { $TSFixMe } from '../types.js'
 
 /** The configuration specified in the netlify.toml under [build] */
 export type BuildConfig = NonNullable<NetlifyTOML['build']>
@@ -27,4 +32,13 @@ export type DevConfig = NonNullable<NetlifyTOML['dev']> & {
   jwtSecret: string
   jwtRolePath: string
   pollingStrategies?: PollingStrategy[]
+}
+
+
+export interface LiveTunnelParams {
+  api: ExtendedNetlifyAPI
+  options: OptionValues
+  settings: ServerSettings
+  site: NetlifySite
+  state: $TSFixMe
 }

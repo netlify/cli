@@ -3,7 +3,7 @@ import { OptionValues } from 'commander'
 import { listSites } from '../../lib/api.js'
 import { startSpinner, stopSpinner } from '../../lib/spinner.js'
 import { chalk, log, logJson } from '../../utils/command-helpers.js'
-import { SiteInfo } from '../../utils/types.js'
+import { SiteInfo } from '../../types/api/sites.js'
 import BaseCommand from '../base-command.js'
 
 export const sitesList = async (options: OptionValues, command: BaseCommand) => {
@@ -17,7 +17,11 @@ export const sitesList = async (options: OptionValues, command: BaseCommand) => 
 
   const sites = await listSites({ api, options: { filter: 'all' } })
   if (!options.json) {
-    // @ts-expect-error TS(2345) FIXME: Argument of type '{ spinner: Ora | undefined; }' i... Remove this comment to see the full error message
+    // this is to make sure that spinner is defined, narrowing Ora type
+    if (spinner === undefined) {
+      throw new Error('Spinner is undefined')
+    }
+
     stopSpinner({ spinner })
   }
 

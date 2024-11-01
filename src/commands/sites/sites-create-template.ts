@@ -98,7 +98,6 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
         type: 'list',
         name: 'accountSlug',
         message: 'Team:',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'account' implicitly has an 'any' type.
         choices: accounts.map((account) => ({
           value: account.slug,
           name: account.name,

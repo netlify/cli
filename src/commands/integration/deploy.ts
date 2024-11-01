@@ -2,7 +2,6 @@ import fs from 'fs'
 import { resolve } from 'path'
 import { env, exit } from 'process'
 
-import { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'js-y... Remove this comment to see the full error message
 import yaml from 'js-yaml'
@@ -10,28 +9,38 @@ import fetch from 'node-fetch'
 import { z } from 'zod'
 
 import { getBuildOptions } from '../../lib/build.js'
-import { chalk, getToken, log } from '../../utils/command-helpers.js'
+import { chalk, error, getToken, log, tokenTuple } from '../../utils/command-helpers.js'
 import { getSiteInformation } from '../../utils/dev.js'
 import BaseCommand from '../base-command.js'
 import { checkOptions } from '../build/build.js'
 import { deploy as siteDeploy } from '../deploy/deploy.js'
+import {
+  IntergrationOptions,
+  IntegrationConfiguration,
+  RegisteredIntegration,
+  LocalTypeScope,
+  RegisteredIntegrationScopes,
+  ScopePermissions,
+  IntegrationLevel,
+  IntegrationRegistrationResponse,
+  ScopePermission,
+  ScopeResource,
+  ScopeWriter,
+} from './types.js'
 
 function getIntegrationAPIUrl() {
   return env.INTEGRATION_URL || 'https://api.netlifysdk.com'
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'localScopes' implicitly has an 'any' ty... Remove this comment to see the full error message
-export function areScopesEqual(localScopes, remoteScopes) {
+export function areScopesEqual(localScopes: LocalTypeScope[], remoteScopes: RegisteredIntegrationScopes[]) {
   if (localScopes.length !== remoteScopes.length) {
     return false
   }
 
-  // @ts-expect-error TS(7006) FIXME: Parameter 'scope' implicitly has an 'any' type.
   return localScopes.every((scope) => remoteScopes.includes(scope))
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'localScopes' implicitly has an 'any' ty... Remove this comment to see the full error message
-function logScopeConfirmationMessage(localScopes, remoteScopes) {
+function logScopeConfirmationMessage(localScopes: LocalTypeScope[], remoteScopes: RegisteredIntegrationScopes[]) {
   log(chalk.yellow(`This integration is already registered. The current required scopes are:`))
   for (const scope of remoteScopes) {
     log(chalk.green(`- ${scope}`))
@@ -43,7 +52,7 @@ function logScopeConfirmationMessage(localScopes, remoteScopes) {
   log(chalk.yellow('if you continue. This will only affect future installations of the integration.'))
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'registeredIntegrationScopes' implicitly... Remove this comment to see the full error message
+// @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
 function formatScopesToWrite(registeredIntegrationScopes) {
   let scopesToWrite = {}
 
@@ -65,26 +74,32 @@ function formatScopesToWrite(registeredIntegrationScopes) {
   return scopesToWrite
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'scopes' implicitly has an 'any' type.
-function formatScopesForRemote(scopes) {
-  const scopesToWrite = []
+function formatScopesForRemote(scopes: ScopePermissions) {
+  const scopesToWrite: string[] = []
+
   if (scopes.all) {
     scopesToWrite.push('all')
   } else {
-    const scopeResources = Object.keys(scopes)
+    const scopeResources = Object.keys(scopes) as Array<keyof Omit<ScopePermissions, 'all'>>
     scopeResources.forEach((resource) => {
       const permissionsRequested = scopes[resource]
-      // @ts-expect-error TS(7006) FIXME: Parameter 'permission' implicitly has an 'any' typ... Remove this comment to see the full error message
-      permissionsRequested.forEach((permission) => {
-        scopesToWrite.push(`${resource}:${permission}`)
-      })
+
+      if (Array.isArray(permissionsRequested)) {
+        permissionsRequested.forEach((permission) => {
+          scopesToWrite.push(`${resource}:${permission}`)
+        })
+      }
     })
   }
   return scopesToWrite.join(',')
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-function verifyRequiredFieldsAreInConfig(name, description, scopes, integrationLevel) {
+function verifyRequiredFieldsAreInConfig(
+  name: string | undefined,
+  description: string | undefined,
+  scopes: ScopePermissions | undefined,
+  integrationLevel: IntegrationLevel | undefined,
+) {
   const missingFields = []
 
   if (!name) {
@@ -117,8 +132,13 @@ function verifyRequiredFieldsAreInConfig(name, description, scopes, integrationL
   return true
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'workingDir' implicitly has an 'any' typ... Remove this comment to see the full error message
-export async function registerIntegration(workingDir, siteId, accountId, localIntegrationConfig, token) {
+export async function registerIntegration(
+  workingDir: string,
+  siteId: string,
+  accountId: string | undefined,
+  localIntegrationConfig: IntegrationConfiguration,
+  token: string,
+) {
   const { description, integrationLevel, name, scopes, slug } = localIntegrationConfig
   log(chalk.yellow(`An integration associated with the site ID ${siteId} is not registered.`))
   const registerPrompt = await inquirer.prompt([
@@ -148,6 +168,11 @@ export async function registerIntegration(workingDir, siteId, accountId, localIn
     exit(1)
   }
 
+  //For TypeScript for some reason the scopes, integrationLevel, name, description, and slug are undefined
+  if (!scopes || !integrationLevel || !name || !description || !slug) {
+    exit(1)
+  }
+
   log(chalk.white('Registering the integration...'))
 
   const { body, statusCode } = await fetch(`${getIntegrationAPIUrl()}/${accountId}/integrations`, {
@@ -164,7 +189,7 @@ export async function registerIntegration(workingDir, siteId, accountId, localIn
       integrationLevel,
     }),
   }).then(async (res) => {
-    const response = await res.json()
+    const response = (await res.json()) as IntegrationRegistrationResponse
     return { body: response, statusCode: res.status }
   })
 
@@ -172,7 +197,6 @@ export async function registerIntegration(workingDir, siteId, accountId, localIn
     log(chalk.red(`There was an error registering the integration:`))
     log()
     log(chalk.red(`-----------------------------------------------`))
-    // @ts-expect-error TS(18046) - 'body' is of type 'unknown'
     log(chalk.red(body.msg))
     log(chalk.red(`-----------------------------------------------`))
     log()
@@ -180,11 +204,9 @@ export async function registerIntegration(workingDir, siteId, accountId, localIn
     exit(1)
   }
 
-  // @ts-expect-error TS(18046) - 'body' is of type 'unknown'
   log(chalk.green(`Successfully registered the integration with the slug: ${body.slug}`))
 
   const updatedIntegrationConfig = yaml.dump({
-    // @ts-expect-error TS(18046) - 'body' is of type 'unknown'
     config: { name, description, slug: body.slug, scopes, integrationLevel },
   })
 
@@ -195,20 +217,13 @@ export async function registerIntegration(workingDir, siteId, accountId, localIn
 }
 
 export async function updateIntegration(
-  // @ts-expect-error TS(7006) FIXME: Parameter 'workingDir' implicitly has an 'any' typ... Remove this comment to see the full error message
-  workingDir,
-  // @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
-  options,
-  // @ts-expect-error TS(7006) FIXME: Parameter 'siteId' implicitly has an 'any' type.
-  siteId,
-  // @ts-expect-error TS(7006) FIXME: Parameter 'accountId' implicitly has an 'any' type... Remove this comment to see the full error message
-  accountId,
-  // @ts-expect-error TS(7006) FIXME: Parameter 'localIntegrationConfig' implicitly has ... Remove this comment to see the full error message
-  localIntegrationConfig,
-  // @ts-expect-error TS(7006) FIXME: Parameter 'token' implicitly has an 'any' type.
-  token,
-  // @ts-expect-error TS(7006) FIXME: Parameter 'registeredIntegration' implicitly has a... Remove this comment to see the full error message
-  registeredIntegration,
+  workingDir: string,
+  options: IntergrationOptions,
+  siteId: string,
+  accountId: string | undefined,
+  localIntegrationConfig: IntegrationConfiguration,
+  token: string,
+  registeredIntegration: RegisteredIntegration,
 ) {
   let { description, integrationLevel, name, scopes, slug } = localIntegrationConfig
 
@@ -221,8 +236,6 @@ export async function updateIntegration(
   }
 
   if (!name) {
-    // Disabling this lint rule because the destructuring was not assigning the variable correct and leading to a bug
-    // eslint-disable-next-line prefer-destructuring
     name = registeredIntegration.name
   }
 
@@ -237,27 +250,28 @@ export async function updateIntegration(
   }
 
   // This is returned as a comma separated string and will be easier to manage here as an array
-  const registeredIntegrationScopes = registeredIntegration.scopes.split(',')
+  const registeredIntegrationScopes = registeredIntegration.scopes.split(',') as RegisteredIntegrationScopes[]
 
-  const scopeResources = Object.keys(scopes)
-  // @ts-expect-error TS(7034) FIXME: Variable 'localScopes' implicitly has type 'any[]'... Remove this comment to see the full error message
-  let localScopes = []
+  const scopeResources = scopes ? (Object.keys(scopes) as Array<keyof ScopePermissions>) : []
+
+  let localScopes: LocalTypeScope[] = []
 
   if (scopeResources.includes('all')) {
     localScopes = ['all']
   } else {
     scopeResources.forEach((resource) => {
-      const permissionsRequested = scopes[resource]
-      // @ts-expect-error TS(7006) FIXME: Parameter 'permission' implicitly has an 'any' typ... Remove this comment to see the full error message
-      permissionsRequested.forEach((permission) => {
-        localScopes.push(`${resource}:${permission}`)
-      })
+      const permissionsRequested = scopes?.[resource]
+
+      if (Array.isArray(permissionsRequested)) {
+        permissionsRequested.forEach((permission) => {
+          // This type assertion is safe because we're constructing a valid scope
+          localScopes.push(`${resource}:${permission}` as LocalTypeScope)
+        })
+      }
     })
   }
 
-  // @ts-expect-error TS(7005) FIXME: Variable 'localScopes' implicitly has an 'any[]' t... Remove this comment to see the full error message
   if (!areScopesEqual(localScopes, registeredIntegrationScopes)) {
-    // @ts-expect-error TS(7005) FIXME: Variable 'localScopes' implicitly has an 'any[]' t... Remove this comment to see the full error message
     logScopeConfirmationMessage(localScopes, registeredIntegrationScopes)
 
     const scopePrompt = await inquirer.prompt([
@@ -270,6 +284,7 @@ export async function updateIntegration(
     ])
 
     let scopesToWrite
+
     if (scopePrompt.updateScopes) {
       // Update the scopes in remote
       scopesToWrite = scopes
@@ -284,7 +299,6 @@ export async function updateIntegration(
             name,
             description,
             hostSiteId: siteId,
-            // @ts-expect-error TS(7005) FIXME: Variable 'localScopes' implicitly has an 'any[]' t... Remove this comment to see the full error message
             scopes: localScopes.join(','),
             integrationLevel,
           }),
@@ -350,8 +364,7 @@ const IntegrationConfigurationSchema = z.object({
   integrationLevel: z.enum(['site', 'team', 'team-and-site']).optional(),
 })
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'workingDir' implicitly has an 'any' typ... Remove this comment to see the full error message
-const getConfigurationFile = (workingDir) => {
+const getConfigurationFile = (workingDir: string) => {
   const pwd = workingDir
 
   const fileName = possibleFiles.find((configFileName) => fs.existsSync(resolve(pwd, configFileName)))
@@ -359,8 +372,7 @@ const getConfigurationFile = (workingDir) => {
   return fileName
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'workingDir' implicitly has an 'any' typ... Remove this comment to see the full error message
-export const getConfiguration = (workingDir) => {
+export const getConfiguration = (workingDir: string): IntegrationConfiguration => {
   const pwd = workingDir
 
   const fileName = getConfigurationFile(workingDir)
@@ -370,7 +382,7 @@ export const getConfiguration = (workingDir) => {
   }
 
   try {
-    const { config } = yaml.load(fs.readFileSync(resolve(pwd, fileName), 'utf-8'))
+    const { config }: { config: IntegrationConfiguration } = yaml.load(fs.readFileSync(resolve(pwd, fileName), 'utf-8'))
 
     if (!config) {
       throw new Error('No configuration found')
@@ -391,7 +403,7 @@ export const getConfiguration = (workingDir) => {
   }
 }
 
-export const deploy = async (options: OptionValues, command: BaseCommand) => {
+export const deploy = async (options: IntergrationOptions, command: BaseCommand) => {
   const { api, cachedConfig, site, siteInfo } = command.netlify
   const { id: siteId } = site
   const [token] = await getToken()
@@ -401,31 +413,33 @@ export const deploy = async (options: OptionValues, command: BaseCommand) => {
     packagePath: command.workspacePackage,
     currentDir: command.workingDir,
     token,
-    // @ts-expect-error TS(2740)
     options,
   })
 
   // Confirm that a site is linked and that the user is logged in
   checkOptions(buildOptions)
 
+  if (!token) throw error('Token is not defined')
+  if (!siteId) throw error('Site ID is not defined')
+
   const { description, integrationLevel, name, scopes, slug } = await getConfiguration(command.workingDir)
   const localIntegrationConfig = { name, description, scopes, slug, integrationLevel }
 
   const headers = token ? { 'netlify-token': token } : undefined
-  // @ts-expect-error TS(2345) FIXME: Argument of type '{ api: any; site: any; siteInfo:... Remove this comment to see the full error message
+
   const { accountId } = await getSiteInformation({
     api,
     site,
     siteInfo,
   })
 
-  const { body: registeredIntegration, statusCode } = await fetch(
+  const { body: registeredIntegration, statusCode }: { body: RegisteredIntegration; statusCode: number } = await fetch(
     `${getIntegrationAPIUrl()}/${accountId}/integrations?site_id=${siteId}`,
     {
       headers,
     },
   ).then(async (res) => {
-    const body = await res.json()
+    const body = (await res.json()) as RegisteredIntegration
     return { body, statusCode: res.status }
   })
 

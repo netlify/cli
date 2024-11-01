@@ -19,6 +19,7 @@ export const createIntegrationDeployCommand = (program: BaseCommand) => {
     .option('-s, --site <name-or-id>', 'A site name or ID to deploy to', env.NETLIFY_SITE_ID)
     .action(async (options: OptionValues, command: BaseCommand) => {
       const { deploy } = await import('./deploy.js')
+      // @ts-expect-error TS(2339) FIXME: Property 'deploy' does not exist on type 'typeof import("./deploy.js")'.
       await deploy(options, command)
     })
 }

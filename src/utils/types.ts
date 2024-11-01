@@ -2,6 +2,10 @@ import { Buffer } from 'buffer'
 import { IncomingMessage } from 'http'
 
 import { Match } from 'netlify-redirector'
+import { ExtendedNetlifyAPI } from '../types/api/api.js'
+import { NetlifySite } from '../commands/types.js'
+import { SiteInfo } from '../types/api/sites.js'
+import { ServiceInstance } from '../types/api/service-instance.js'
 
 export type FrameworkNames = '#static' | '#auto' | '#custom' | string
 
@@ -63,91 +67,6 @@ export interface Request extends IncomingMessage {
 
 export type Rewriter = (req: Request) => Match | null
 
-export interface SiteInfo {
-  account_name: string
-  account_slug: string
-  admin_url: string
-  build_settings: {
-    allowed_branches: string[]
-    cmd: string
-    deploy_key_id: string
-    dir: string
-    env?: Record<string, unknown>
-    id: number
-    private_logs: boolean
-    provider: string
-    public_repo: boolean
-    repo_branch: string
-    repo_path: string
-    repo_url: string
-  }
-  capabilities: Record<string, unknown>
-  created_at: string
-  custom_domain: string
-  deploy_hook: string
-  deploy_url: string
-  domain_aliases: string[]
-  force_ssl: boolean
-  git_provider: string
-  id: string
-  managed_dns: boolean
-  name: string
-  notification_email: string
-  password: string
-  plan: string
-  processing_settings: {
-    css: {
-      bundle: boolean
-      minify: boolean
-    }
-    html: Record<string, unknown>
-    images: Record<string, unknown>
-    js: {
-      bundle: boolean
-      minify: boolean
-    }
-    skip: boolean
-  }
-  published_deploy: {
-    admin_url: string
-    branch: string
-    build_id: string
-    commit_ref: string
-    commit_url: string
-    context: string
-    created_at: string
-    deploy_ssl_url: string
-    deploy_url: string
-    draft: boolean
-    error_message: string
-    id: string
-    locked: boolean
-    name: string
-    published_at: string
-    required: string[]
-    required_functions: string[]
-    review_id: number
-    review_url: string
-    screenshot_url: string
-    site_id: string
-    skipped: boolean
-    ssl_url: string
-    state: string
-    title: string
-    updated_at: string
-    url: string
-    user_id: string
-  }
-  screenshot_url: string
-  session_id: string
-  ssl: boolean
-  ssl_url: string
-  state: string
-  updated_at: string
-  url: string
-  user_id: string
-}
-
 export type TokenLocation = 'env' | 'flag' | 'config' | 'not found'
 
 export interface Account {
@@ -190,4 +109,44 @@ export interface Template {
   name: string
   sourceCodeUrl: string
   slug: string
+}
+
+export interface APIEnvError {
+  json: { msg: string }
+}
+
+export interface GetSiteInformationParams {
+  api: ExtendedNetlifyAPI
+  offline?: boolean
+  site: NetlifySite
+  siteInfo: SiteInfo
+}
+
+export interface ValidateSiteInfoParams {
+  site: NetlifySite
+  siteInfo: SiteInfo
+}
+
+export interface GetAccountParams {
+  api: ExtendedNetlifyAPI
+}
+
+export interface getAddonsParams {
+  api: ExtendedNetlifyAPI
+  siteId: string
+}
+
+export interface GetAddonsInformationParams {
+  addons: ServiceInstance[]
+  siteInfo: SiteInfo
+}
+
+export interface GetAddonsInformationResult {
+  urls: Record<string, string>
+  env: Record<string, string>
+}
+
+export interface GetSiteAccountParams {
+  accounts: Account[]
+  siteInfo: SiteInfo
 }

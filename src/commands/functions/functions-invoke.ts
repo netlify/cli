@@ -9,6 +9,7 @@ import fetch from 'node-fetch'
 import { APIError, NETLIFYDEVWARN, chalk, error, exit } from '../../utils/command-helpers.js'
 import { BACKGROUND, CLOCKWORK_USERAGENT, getFunctions } from '../../utils/functions/index.js'
 import BaseCommand from '../base-command.js'
+import { Function } from './types.js'
 
 const require = createRequire(import.meta.url)
 
@@ -33,8 +34,8 @@ const eventTriggeredFunctions = new Set([...events, ...events.map((name) => `${n
 const DEFAULT_PORT = 8888
 
 // https://stackoverflow.com/questions/3710204/how-to-check-if-a-string-is-a-valid-json-string-in-javascript-without-using-try
-// @ts-expect-error TS(7006) FIXME: Parameter 'jsonString' implicitly has an 'any' typ... Remove this comment to see the full error message
-const tryParseJSON = function (jsonString) {
+// // @ts-expect-error TS(7006) FIXME: Parameter 'jsonString' implicitly has an 'any' typ... Remove this comment to see the full error message
+const tryParseJSON = function (jsonString: string) {
   try {
     const parsedValue = JSON.parse(jsonString)
 
@@ -50,8 +51,8 @@ const tryParseJSON = function (jsonString) {
   return false
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'querystring' implicitly has an 'any' ty... Remove this comment to see the full error message
-const formatQstring = function (querystring) {
+// // @ts-expect-error TS(7006) FIXME: Parameter 'querystring' implicitly has an 'any' ty... Remove this comment to see the full error message
+const formatQstring = function (querystring: string) {
   if (querystring) {
     return `?${querystring}`
   }
@@ -95,10 +96,10 @@ const processPayloadFromFlag = function (payloadString, workingDir) {
  * @param {string} [argumentName] The name that might be provided as argument (optional argument)
  * @returns {Promise<string>}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'functions' implicitly has an 'any' type... Remove this comment to see the full error message
-const getNameFromArgs = async function (functions, options, argumentName) {
+// // @ts-expect-error TS(7006) FIXME: Parameter 'functions' implicitly has an 'any' type... Remove this comment to see the full error message
+const getNameFromArgs = async function (functions: Function[], options: OptionValues, argumentName: string) {
   const functionToTrigger = getFunctionToTrigger(options, argumentName)
-  // @ts-expect-error TS(7031) FIXME: Binding element 'name' implicitly has an 'any' typ... Remove this comment to see the full error message
+  // // @ts-expect-error TS(7031) FIXME: Binding element 'name' implicitly has an 'any' typ... Remove this comment to see the full error message
   const functionNames = functions.map(({ name }) => name)
 
   if (functionToTrigger) {
@@ -130,8 +131,8 @@ const getNameFromArgs = async function (functions, options, argumentName) {
  * @param {string} [argumentName] The name that might be provided as argument (optional argument)
  * @returns {string}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
-const getFunctionToTrigger = function (options, argumentName) {
+// // @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
+const getFunctionToTrigger = function (options: OptionValues, argumentName: string) {
   if (options.name) {
     if (argumentName) {
       console.error('function name specified in both flag and arg format, pick one')
@@ -162,9 +163,8 @@ export const functionsInvoke = async (nameArgument: string, options: OptionValue
 
   let headers = {}
   let body = {}
-
-  // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-  if (functionObj.schedule) {
+  // //@ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
+  if (functionObj?.schedule) {
     headers = {
       'user-agent': CLOCKWORK_USERAGENT,
     }

@@ -68,6 +68,9 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand) =
         accountSlug,
         body,
       })
+      if (site) {
+        return site
+      }
     } catch (error_) {
       if ((error_ as APIError).status === 422) {
         warn(`${siteName}.netlify.app already exists. Please try a different slug.`)
@@ -77,74 +80,70 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand) =
       }
     }
   }
-  await inputSiteName(options.name)
+  site = await inputSiteName(options.name)
 
   log()
   log(chalk.greenBright.bold.underline(`Site Created`))
   log()
 
-  // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-  const siteUrl = site.ssl_url || site.url
-  log(
-    prettyjson.render({
-      // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-      'Admin URL': site.admin_url,
-      URL: siteUrl,
-      // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-      'Site ID': site.id,
-    }),
-  )
-
-  track('sites_created', {
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-    siteId: site.id,
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-    adminUrl: site.admin_url,
-    siteUrl,
-  })
-
-  if (options.withCi) {
-    log('Configuring CI')
-    const repoData = await getRepoData({ workingDir: command.workingDir })
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-    await configureRepo({ command, siteId: site.id, repoData, manual: options.manual })
-  }
-
-  if (options.json) {
-    logJson(
-      pick(site, [
-        'id',
-        'state',
-        'plan',
-        'name',
-        'custom_domain',
-        'domain_aliases',
-        'url',
-        'ssl_url',
-        'admin_url',
-        'screenshot_url',
-        'created_at',
-        'updated_at',
-        'user_id',
-        'ssl',
-        'force_ssl',
-        'managed_dns',
-        'deploy_url',
-        'account_name',
-        'account_slug',
-        'git_provider',
-        'deploy_hook',
-        'capabilities',
-        'id_domain',
-      ]),
+  // for type narrowing.
+  if (site !== undefined) {
+    const siteUrl = site.ssl_url || site.url
+    log(
+      prettyjson.render({
+        'Admin URL': site.admin_url,
+        URL: siteUrl,
+        'Site ID': site.id,
+      }),
     )
-  }
 
-  if (!options.disableLinking) {
-    log()
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-    await link({ id: site.id }, command)
-  }
+    track('sites_created', {
+      siteId: site.id,
+      adminUrl: site.admin_url,
+      siteUrl,
+    })
 
-  return site
+    if (options.withCi) {
+      log('Configuring CI')
+      const repoData = await getRepoData({ workingDir: command.workingDir })
+      await configureRepo({ command, siteId: site.id, repoData, manual: options.manual })
+    }
+
+    if (options.json) {
+      logJson(
+        pick(site, [
+          'id',
+          'state',
+          'plan',
+          'name',
+          'custom_domain',
+          'domain_aliases',
+          'url',
+          'ssl_url',
+          'admin_url',
+          'screenshot_url',
+          'created_at',
+          'updated_at',
+          'user_id',
+          'ssl',
+          'force_ssl',
+          'managed_dns',
+          'deploy_url',
+          'account_name',
+          'account_slug',
+          'git_provider',
+          'deploy_hook',
+          'capabilities',
+          'id_domain',
+        ]),
+      )
+    }
+
+    if (!options.disableLinking) {
+      log()
+      await link({ id: site.id }, command)
+    }
+
+    return site
+  }
 }

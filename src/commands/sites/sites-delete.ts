@@ -31,7 +31,7 @@ export const sitesDelete = async (siteId: string, options: OptionValues, command
   const noForce = options.force !== true
 
   /* Verify the user wants to delete the site */
-  if (noForce) {
+  if (noForce && siteData) {
     log(`${chalk.redBright('Warning')}: You are about to permanently delete "${chalk.bold(siteData.name)}"`)
     log(`         Verify this siteID "${siteId}" supplied is correct and proceed.`)
     log('         To skip this prompt, pass a --force flag to the delete command')
