@@ -58,9 +58,10 @@ export type EnvironmentVariableScope = 'builds' | 'functions' | 'runtime' | 'pos
 export type EnvironmentVariableSource = 'account' | 'addons' | 'configFile' | 'general' |  'internal' | 'ui'
 
 
-type EnviromentVariables  = { 
-  [key: string]: string 
-}
+type EnviromentVariables = Record<string, {
+  sources: EnvironmentVariableSource[];
+  value: string;
+}>;
 
 export type EnvironmentVariables = Record<string, { sources: EnvironmentVariableSource[], value: string; scopes?: EnvironmentVariableScope[] }>
 /**

@@ -1,5 +1,6 @@
 import { SiteInfo } from "../../types/api/api.js"
 import {  Context, EnvironmentVariableSource, EnvironmentVariableScope } from "../../commands/types.js"
+import { EnvironmentVariables } from "../../commands/types.js"
 
 export interface GetEnvelopeEnvParams {
   api: ExtendedNetlifyAPI,

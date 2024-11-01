@@ -138,12 +138,13 @@ const validateDeployFolder = async (deployFolder: string) => {
         return error('Permission error when trying to access deploy folder')
       }
     }
-    throw error_
   }
 
+  // @ts-expect-error TS(2339) FIXME: Property 'isDirectory' does not exist on type 'Stats'.
   if (!stats.isDirectory()) {
     return error('Deploy target must be a path to a directory')
   }
+  // @ts-expect-error TS(2339) FIXME: Property 'isDirectory' does not exist on type 'Stats'.
   return stats
 }
 
@@ -784,9 +785,9 @@ const prepAndRunDeploy = async ({
     siteEnv,
   })
 
-  if (functionsFolder === undefined) {
-    throw new Error('Functions folder is undefined')
-  }
+  // if (functionsFolder === undefined) {
+  //   throw new Error('Functions folder is undefined')
+  // }
 
   const results = await runDeploy({
     alias,

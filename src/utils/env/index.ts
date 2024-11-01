@@ -7,6 +7,7 @@ import type {
   Scope,
   EnvironmentVariableSource,
   EnvironmentVariableScope,
+  EnvironmentVariables,
 } from '../../commands/types.js'
 import { error } from '../command-helpers.js'
 import { APIEnvError } from '../types.js'
@@ -59,14 +60,8 @@ export const findValueInValues = (values, context) =>
     return [context, 'all'].includes(val.context)
   })
 
-/**
- * Finds environment variables that match a given source
- * @param {object} env - The dictionary of environment variables
- * @param {enum<general,account,addons,ui,configFile>} source - The source of the environment variable
- * @returns {object} The dictionary of env vars that match the given source
- */
 export const filterEnvBySource = (env: EnviromentVariables, source: EnvironmentVariableSource) =>
-  Object.fromEntries(Object.entries(env).filter(([, variable]) => variable.sources[0] === source))
+  Object.fromEntries(Object.entries(env || {}).filter(([, variable]) => variable.sources[0] === source))
 
 // Fetches data from Envelope
 const fetchEnvelopeItems = async function ({
@@ -174,7 +169,7 @@ export const getEnvelopeEnv = async ({
   raw = false,
   scope = 'any',
   siteInfo,
-}: GetEnvelopeEnvParams): Promise<ProcessedEnvVars> => {
+}: GetEnvelopeEnvParams): Promise<EnvironmentVariables> => {
   const { account_slug: accountId, id: siteId } = siteInfo
 
   const [accountEnvelopeItems, siteEnvelopeItems] = await Promise.all([
