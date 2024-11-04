@@ -79,7 +79,6 @@ describe('sites:create-template', () => {
 
   afterEach(() => {
     vi.clearAllMocks()
-    vi.resetModules()
   })
 
   afterAll(() => {
