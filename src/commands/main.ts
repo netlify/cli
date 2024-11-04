@@ -40,7 +40,8 @@ import { createWatchCommand } from './watch/index.js'
 import { AddressInUseError } from './types.js'
 const SUGGESTION_TIMEOUT = 1e4
 
-export const COMMANDS_WITH_FORCE = {
+// These commands run with the --force flag in non-interactive and CI environments
+export const CI_FORCED_COMMANDS = {
   'env:set': { options: '--force', description: 'Bypasses prompts & Force the command to run.' },
   'env:unset': { options: '--force', description: 'Bypasses prompts & Force the command to run.' },
   'env:clone': { options: '--force', description: 'Bypasses prompts & Force the command to run.' },
@@ -48,8 +49,6 @@ export const COMMANDS_WITH_FORCE = {
   'blobs:delete': { options: '--force', description: 'Bypasses prompts & Force the command to run.' },
   'addons:delete': { options: '-f, --force', description: 'Delete without prompting (useful for CI)' },
   init: { options: '--force', description: 'Reinitialize CI hooks if the linked site is already configured to use CI' },
-  'lm:install': { options: '-f, --force', description: 'Force the credentials helper installation.' },
-  'lm:setup': { options: '-f, --force-install', description: 'Force the credentials helper installation.' },
   'sites:delete': { options: '-f, --force', description: 'Delete without prompting (useful for CI).' },
 }
 
@@ -258,8 +257,8 @@ export const createMainCommand = () => {
 
   program.commands.forEach((cmd) => {
     const cmdName = cmd.name()
-    if (cmdName in COMMANDS_WITH_FORCE) {
-      const { options, description } = COMMANDS_WITH_FORCE[cmdName as keyof typeof COMMANDS_WITH_FORCE]
+    if (cmdName in CI_FORCED_COMMANDS) {
+      const { options, description } = CI_FORCED_COMMANDS[cmdName as keyof typeof CI_FORCED_COMMANDS]
       cmd.option(options, description)
     }
   })
