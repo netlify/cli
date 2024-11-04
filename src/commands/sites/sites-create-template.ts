@@ -1,75 +1,38 @@
 import { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 import pick from 'lodash/pick.js'
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'pars... Remove this comment to see the full error message
-import parseGitHubUrl from 'parse-github-url'
 import { render } from 'prettyjson'
+import { v4 as uuid } from 'uuid'
 
-import { chalk, error, getTerminalLink, log, logJson, warn, APIError } from '../../utils/command-helpers.js'
+import {
+  chalk,
+  error,
+  getTerminalLink,
+  log,
+  logJson,
+  warn,
+  APIError,
+  GitHubAPIError,
+  GitHubRepoResponse,
+} from '../../utils/command-helpers.js'
 import execa from '../../utils/execa.js'
 import getRepoData from '../../utils/get-repo-data.js'
 import { getGitHubToken } from '../../utils/init/config-github.js'
 import { configureRepo } from '../../utils/init/config.js'
-import { createRepo, getTemplatesFromGitHub, validateTemplate } from '../../utils/sites/utils.js'
+import { deployedSiteExists, getGitHubLink, getTemplateName } from '../../utils/sites/create-template.js'
+import { createRepo, validateTemplate } from '../../utils/sites/utils.js'
 import { track } from '../../utils/telemetry/index.js'
+import { Account, SiteInfo } from '../../utils/types.js'
 import BaseCommand from '../base-command.js'
-import { GithubRepo, Template } from '../../utils/types.js'
+
 import { getSiteNameInput } from './sites-create.js'
-
-export const fetchTemplates = async (token: string): Promise<Template[]> => {
-  const templatesFromGithubOrg: GithubRepo[] = await getTemplatesFromGitHub(token)
-
-  return templatesFromGithubOrg
-    .filter((repo: GithubRepo) => !repo.archived && !repo.disabled)
-    .map((template: GithubRepo) => ({
-      name: template.name,
-      sourceCodeUrl: template.html_url,
-      slug: template.full_name,
-    }))
-}
-
-// @ts-expect-error TS(7031) FIXME: Binding element 'ghToken' implicitly has an 'any' ... Remove this comment to see the full error message
-const getTemplateName = async ({ ghToken, options, repository }) => {
-  if (repository) {
-    const { repo } = parseGitHubUrl(repository)
-    return repo || `netlify-templates/${repository}`
-  }
-
-  if (options.url) {
-    const urlFromOptions = new URL(options.url)
-    return urlFromOptions.pathname.slice(1)
-  }
-
-  const templates = await fetchTemplates(ghToken)
-
-  log(`Choose one of our starter templates. Netlify will create a new repo for this template in your GitHub account.`)
-
-  const { templateName } = await inquirer.prompt([
-    {
-      type: 'list',
-      name: 'templateName',
-      message: 'Template:',
-      choices: templates.map((template) => ({
-        value: template.slug,
-        name: template.name,
-      })),
-    },
-  ])
-
-  return templateName
-}
-
-// @ts-expect-error TS(7031) FIXME: Binding element 'options' implicitly has an 'any' ... Remove this comment to see the full error message
-const getGitHubLink = ({ options, templateName }) => options.url || `https://github.com/${templateName}`
 
 export const sitesCreateTemplate = async (repository: string, options: OptionValues, command: BaseCommand) => {
   const { api } = command.netlify
-
   await command.authenticate()
 
   const { globalConfig } = command.netlify
   const ghToken = await getGitHubToken({ globalConfig })
-
   const templateName = await getTemplateName({ ghToken, options, repository })
   const { exists, isTemplate } = await validateTemplate({ templateName, ghToken })
   if (!exists) {
@@ -87,7 +50,6 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
     error(`${getTerminalLink(chalk.bold(templateName), githubLink)} is not a valid GitHub template`)
     return
   }
-
   const accounts = await api.listAccountsForUser()
 
   let { accountSlug } = options
@@ -98,8 +60,7 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
         type: 'list',
         name: 'accountSlug',
         message: 'Team:',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'account' implicitly has an 'any' type.
-        choices: accounts.map((account) => ({
+        choices: accounts.map((account: Account) => ({
           value: account.slug,
           name: account.name,
         })),
@@ -109,89 +70,108 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
   }
 
   const { name: nameFlag } = options
-  let site
+  let site: SiteInfo
   let repoResp: Awaited<ReturnType<typeof createRepo>>
 
   // Allow the user to reenter site name if selected one isn't available
-  // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-  const inputSiteName = async (name) => {
+  const inputSiteName = async (name?: string, hasExistingRepo?: boolean): Promise<[SiteInfo, GitHubRepoResponse]> => {
     const { name: inputName } = await getSiteNameInput(name)
 
+    const siteName = inputName.trim()
+
+    if (siteName && (await deployedSiteExists(siteName))) {
+      log('A site with that name already exists')
+      return inputSiteName()
+    }
+
     try {
-      const siteName = inputName.trim()
-
-      // Create new repo from template
-      repoResp = await createRepo(templateName, ghToken, siteName || templateName)
-
-      // @ts-expect-error TS(18046) - 'repoResp' if of type 'unknown'
-      if (repoResp.errors) {
-        // @ts-expect-error TS(18046) - 'repoResp' if of type 'unknown'
-        if (repoResp.errors[0].includes('Name already exists on this account')) {
-          warn(
-            `Oh no! We found already a repository with this name. It seems you have already created a template with the name ${templateName}. Please try to run the command again and provide a different name.`,
-          )
-          // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
-          await inputSiteName()
-        } else {
-          throw new Error(
-            // @ts-expect-error TS(18046) - 'repoResp' if of type 'unknown'
-            `Oops! Seems like something went wrong trying to create the repository. We're getting the following error: '${repoResp.errors[0]}'. You can try to re-run this command again or open an issue in our repository: https://github.com/netlify/cli/issues`,
-          )
-        }
-      } else {
-        site = await api.createSiteInTeam({
-          accountSlug,
-          body: {
-            repo: {
-              provider: 'github',
-              // @ts-expect-error TS(18046) - 'repoResp' if of type 'unknown'
-              repo: repoResp.full_name,
-              // @ts-expect-error TS(18046) - 'repoResp' if of type 'unknown'
-              private: repoResp.private,
-              // @ts-expect-error TS(18046) - 'repoResp' if of type 'unknown'
-              branch: repoResp.default_branch,
-            },
-            name: siteName,
-          },
-        })
+      const sites: SiteInfo[] = await api.listSites({ name: siteName, filter: 'all' })
+      const siteFoundByName = sites.find((filteredSite) => filteredSite.name === siteName)
+      if (siteFoundByName) {
+        log('A site with that name already exists on your account')
+        return inputSiteName()
       }
     } catch (error_) {
-      if ((error_ as APIError).status === 422 || (error_ as APIError).message === 'Duplicate repo') {
-        warn(
-          `${name}.netlify.app already exists or a repository named ${name} already exists on this account. Please try a different slug.`,
-        )
-        // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
-        await inputSiteName()
-      } else {
-        error(`createSiteInTeam error: ${(error_ as APIError).status}: ${(error_ as APIError).message}`)
+      error(error_)
+    }
+
+    if (!hasExistingRepo) {
+      try {
+        // Create new repo from template
+        let gitHubInputName = siteName || templateName
+        repoResp = await createRepo(templateName, ghToken, gitHubInputName)
+        if (repoResp.errors && repoResp.errors[0].includes('Name already exists on this account')) {
+          if (gitHubInputName === templateName) {
+            gitHubInputName += `-${uuid().split('-')[0]}`
+            repoResp = await createRepo(templateName, ghToken, gitHubInputName)
+          } else {
+            warn(`It seems you have already created a repository with the name ${gitHubInputName}.`)
+            return inputSiteName()
+          }
+        }
+        if (!repoResp.id) {
+          throw new GitHubAPIError((repoResp as GitHubAPIError).status, (repoResp as GitHubAPIError).message)
+        }
+        hasExistingRepo = true
+      } catch (error_) {
+        if ((error_ as GitHubAPIError).status === '404') {
+          error(
+            `Could not create repository: ${
+              (error_ as GitHubAPIError).message
+            }. Ensure that your PAT grants permission to create repositories`,
+          )
+        } else {
+          error(
+            `Something went wrong trying to create the repository. We're getting the following error: '${
+              (error_ as GitHubAPIError).message
+            }'. You can try to re-run this command again or open an issue in our repository: https://github.com/netlify/cli/issues`,
+          )
+        }
       }
     }
+
+    try {
+      site = await api.createSiteInTeam({
+        accountSlug,
+        body: {
+          repo: {
+            provider: 'github',
+            repo: repoResp.full_name,
+            private: repoResp.private,
+            branch: repoResp.default_branch,
+          },
+          name: siteName,
+        },
+      })
+    } catch (error_) {
+      if ((error_ as APIError).status === 422) {
+        log(`createSiteInTeam error: ${(error_ as APIError).status}: ${(error_ as APIError).message}`)
+        log('Cannot create a site with that name. Site name may already exist. Please try a new name.')
+        return inputSiteName(undefined, hasExistingRepo)
+      }
+      error(`createSiteInTeam error: ${(error_ as APIError).status}: ${(error_ as APIError).message}`)
+    }
+    return [site, repoResp]
   }
 
-  await inputSiteName(nameFlag)
+  ;[site, repoResp] = await inputSiteName(nameFlag)
 
   log()
   log(chalk.greenBright.bold.underline(`Site Created`))
   log()
 
-  // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
   const siteUrl = site.ssl_url || site.url
   log(
     render({
-      // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
       'Admin URL': site.admin_url,
       URL: siteUrl,
-      // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
       'Site ID': site.id,
-      // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
       'Repo URL': site.build_settings.repo_url,
     }),
   )
 
   track('sites_createdFromTemplate', {
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     siteId: site.id,
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     adminUrl: site.admin_url,
     siteUrl,
   })
@@ -199,21 +179,22 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
   const { cloneConfirm } = await inquirer.prompt({
     type: 'confirm',
     name: 'cloneConfirm',
-    message: `Do you want to clone the repository?`,
+    message: `Do you want to clone the repository to your local machine?`,
     default: true,
   })
   if (cloneConfirm) {
     log()
-    // @ts-expect-error TS(18046) - 'repoResp' if of type 'unknown'
-    await execa('git', ['clone', repoResp.clone_url, `${repoResp.name}`])
-    // @ts-expect-error TS(18046) - 'repoResp' if of type 'unknown'
+
+    if (repoResp.clone_url) {
+      await execa('git', ['clone', repoResp.clone_url, `${repoResp.name}`])
+    }
+
     log(`🚀 Repository cloned successfully. You can find it under the ${chalk.magenta(repoResp.name)} folder`)
   }
 
   if (options.withCi) {
     log('Configuring CI')
     const repoData = await getRepoData({ workingDir: command.workingDir })
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     await configureRepo({ command, siteId: site.id, repoData, manual: options.manual })
   }
 
