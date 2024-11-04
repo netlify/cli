@@ -1,21 +1,17 @@
 import type { NetlifyAPI } from 'netlify'
 
-import { Context } from './types.d.ts'
+import { DeployContext } from './types.d.ts'
 
-type ApiContext = Context | 'branch'
+type ApiContext = DeployContext | 'branch'
 
-// Define the structure for the 'updated_by' field
 interface UpdatedBy {
-  // Add specific properties here if known
-  // For now, we'll keep it generic
   id: string;
   full_name: string;
   email: string;
   avatar_url: string;
 }
 
-export type Value = Pick<EnvVarValue, 'value' | 'context' | 'context_parameter'>
-// Define the structure for each item in the array
+export type NarrowedEnvVarValue = Pick<EnvVarValue, 'value' | 'context' | 'context_parameter'>
 
 interface EnvVarValue {
   value: string,
@@ -36,7 +32,7 @@ export interface EnvVar {
 interface GetEnvParams {
   accountId: string,
   siteId?: string,
-  context?: Context,
+  context?: DeployContext,
   scope?: EnvironmentVariableScope
 }
 
@@ -74,14 +70,13 @@ interface UpdateEnvVarParams {
   body: EnvVar
 }
 
-interface createEnvVarParams {
+interface CreateEnvVarParams {
   accountId: string,
   key?: string,
   siteId?: string,
   body: EnvVar[]
 }
 
-// Top-Level Interface
 interface SiteInfo {
   id: string;
   state: string;
@@ -122,7 +117,6 @@ interface SiteInfo {
   feature_flags: FeatureFlags;
 }
 
-// Published Deploy Interface
 interface PublishedDeploy {
   id: string;
   site_id: string;
@@ -156,13 +150,11 @@ interface PublishedDeploy {
   function_schedules: FunctionSchedule[] | [];
 }
 
-// Function Schedule Interface
 interface FunctionSchedule {
   name: string;
   cron: string;
 }
 
-// Capabilities Interface
 interface Capabilities {
   [key: string]: Record<string, unknown>;
 }
@@ -177,7 +169,6 @@ interface HTMLProcessingSettings {
   pretty_urls: boolean;
 }
 
-// Build Settings Interface
 interface BuildSettings {
   id: number;
   provider: string;
@@ -196,12 +187,10 @@ interface BuildSettings {
   stop_builds: boolean;
 }
 
-// Environment Variables Interface
 interface EnvVariables {
   [key: string]: string;
 }
 
-// Default Hooks Data Interface
 interface DefaultHooksData {
   access_token: string;
 } 
@@ -219,6 +208,6 @@ export interface ExtendedNetlifyAPI extends NetlifyAPI {
   setEnvVarValue( params: SetEnvVarValueParams): Promise<EnvVar>
   deleteEnvVar(params: DeleteEnvVarValueParams): Promise<void>
   updateEnvVar(params: UpdateEnvVarParams): Promise<EnvVar>
-  createEnvVars(params: createEnvVarParams): Promise<EnvVar[]>
+  createEnvVars(params: CreateEnvVarParams): Promise<EnvVar[]>
   getSite(params: GetSiteParams): Promise<SiteInfo> 
 }

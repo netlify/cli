@@ -19,7 +19,7 @@ export type NetlifySite = {
   id: string
 }
 
-export type Context = 'dev' | 'production' | 'deploy-preview' | 'branch-deploy' | 'all'
+export type DeployContext = 'dev' | 'production' | 'deploy-preview' | 'branch-deploy' | 'all'
 export type Scope = 'builds' | 'functions' | 'runtime' | 'post_processing'
 
 type PatchedConfig = NetlifyTOML & Pick<NetlifyConfig, 'images'> & {

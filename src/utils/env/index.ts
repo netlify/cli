@@ -1,8 +1,7 @@
 import { EnvVar, EnvVarValue, ExtendedNetlifyAPI } from '../../commands/api-types.d.js'
 import type {
-  Context,
+  DeployContext,
   EnviromentVariables,
-  $TSFixMe,
   Scope,
   EnvironmentVariableSource,
   EnvironmentVariableScope,
@@ -12,7 +11,7 @@ import { APIEnvError } from '../types.js'
 
 import { GetEnvelopeEnvParams, ProcessedEnvVars } from './types.js'
 
-export const AVAILABLE_CONTEXTS: Context[] = ['all', 'production', 'deploy-preview', 'branch-deploy', 'dev']
+export const AVAILABLE_CONTEXTS: DeployContext[] = ['all', 'production', 'deploy-preview', 'branch-deploy', 'dev']
 export const AVAILABLE_SCOPES: Scope[] = ['builds', 'functions', 'runtime', 'post_processing']
 
 /**
@@ -250,7 +249,7 @@ export const getHumanReadableScopes = (scopes) => {
  */
 
 export const translateFromMongoToEnvelope = (env = {}): EnvVar[] => {
-  const context: Context = 'all'
+  const context: DeployContext = 'all'
 
   const envVars = Object.entries(env).map(([key, value]) => ({
     key,

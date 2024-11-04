@@ -1,13 +1,13 @@
 import { OptionValues } from 'commander'
 
 import type { EnvironmentVariableScope } from '../../types.d.ts'
-import type { ExtendedNetlifyAPI, Context, SiteInfo } from '../api-types.d.ts'
+import type { ExtendedNetlifyAPI, DeployContext, SiteInfo } from '../api-types.d.ts'
 import { $TSFixMe } from '../types.js'
 
 
 
 export interface EnvOptions extends OptionValues {
-  context: Context
+  context: DeployContext
   scope: EnvironmentVariableScope
   json: boolean
 
@@ -39,7 +39,7 @@ export interface EnvImportOptions extends OptionValues {
 
 export interface UnsetInEnvelopeParams {
   api: ExtendedNetlifyAPI
-  context: Context[]
+  context: DeployContext[]
   key: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   siteInfo: any

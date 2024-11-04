@@ -5,7 +5,7 @@ import {
   translateFromEnvelopeToMongo,
   isAPIEnvError,
 } from '../../utils/env/index.js'
-import type { Value } from '../api-types.js'
+import type { NarrowedEnvVarValue } from '../api-types.js'
 import BaseCommand from '../base-command.js'
 
 import type { SetInEnvelopeParams, EnvSetOptions } from './types.d.ts'
@@ -44,7 +44,7 @@ const setInEnvelope = async ({ api, context, key, scope, secret, siteInfo, value
   }
 
   // if the passed context is unknown, it is actually a branch name
-  let values: Value[] = contexts.map((ctx) =>
+  let values: NarrowedEnvVarValue[] = contexts.map((ctx) =>
     AVAILABLE_CONTEXTS.includes(ctx) ? { context: ctx, value } : { context: 'branch', context_parameter: ctx, value },
   )
 
