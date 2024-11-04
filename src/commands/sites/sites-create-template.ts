@@ -3,6 +3,8 @@ import inquirer from 'inquirer'
 import pick from 'lodash/pick.js'
 import { render } from 'prettyjson'
 import { v4 as uuid } from 'uuid'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 import {
   chalk,
@@ -20,7 +22,7 @@ import getRepoData from '../../utils/get-repo-data.js'
 import { getGitHubToken } from '../../utils/init/config-github.js'
 import { configureRepo } from '../../utils/init/config.js'
 import { deployedSiteExists, getGitHubLink, getTemplateName } from '../../utils/sites/create-template.js'
-import { createRepo, validateTemplate } from '../../utils/sites/utils.js'
+import { callLinkSite, createRepo, validateTemplate } from '../../utils/sites/utils.js'
 import { track } from '../../utils/telemetry/index.js'
 import { Account, SiteInfo } from '../../utils/types.js'
 import BaseCommand from '../base-command.js'
@@ -190,6 +192,58 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
     }
 
     log(`🚀 Repository cloned successfully. You can find it under the ${chalk.magenta(repoResp.name)} folder`)
+
+    const { linkConfirm } = await inquirer.prompt({
+      type: 'confirm',
+      name: 'linkConfirm',
+      message: `Do you want to link the cloned directory to the site?`,
+      default: true,
+    })
+
+    if (linkConfirm) {
+      const __dirname = path.dirname(fileURLToPath(import.meta.url))
+
+      const cliPath = path.resolve(__dirname, '../../../bin/run.js')
+
+      let stdout
+      if (repoResp.name) {
+        stdout = await callLinkSite(cliPath, repoResp.name, '\n')
+      } else {
+        error()
+        return
+      }
+
+      const linkedSiteUrlRegex = /Site url:\s+(\S+)/
+      const lineMatch = linkedSiteUrlRegex.exec(stdout)
+      const urlMatch = lineMatch ? lineMatch[1] : undefined
+      if (urlMatch) {
+        log(`\nDirectory ${chalk.cyanBright(repoResp.name)} linked to site ${chalk.cyanBright(urlMatch)}\n`)
+        log(
+          `${chalk.cyanBright.bold('cd', repoResp.name)} to use other netlify cli commands in the cloned directory.\n`,
+        )
+      } else {
+        const linkedSiteMatch = /Site already linked to\s+(\S+)/.exec(stdout)
+        const linkedSiteNameMatch = linkedSiteMatch ? linkedSiteMatch[1] : undefined
+        if (linkedSiteNameMatch) {
+          log(`\nThis directory appears to be linked to ${chalk.cyanBright(linkedSiteNameMatch)}`)
+          log('This can happen if you cloned the template into a subdirectory of an existing Netlify project.')
+          log(
+            `You may need to move the ${chalk.cyanBright(
+              repoResp.name,
+            )} directory out of its parent directory and then re-run the ${chalk.cyanBright(
+              'link',
+            )} command manually\n`,
+          )
+        } else {
+          log('A problem occurred linking the site')
+          log('You can try again manually by running:')
+          log(chalk.cyanBright(`cd ${repoResp.name} && netlify link\n`))
+        }
+      }
+    } else {
+      log('To link the cloned directory manually, run:')
+      log(chalk.cyanBright(`cd ${repoResp.name} && netlify link\n`))
+    }
   }
 
   if (options.withCi) {
