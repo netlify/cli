@@ -245,7 +245,7 @@ describe('blobs:set command', () => {
 
           const promptSpy = spyOnMockPrompt()
 
-          await runMockProgram(['', '', 'blobs:set', storeName, key, newValue, '--force'])
+          await runMockProgram(['', '', 'blobs:set', storeName, key, newValue])
 
           expect(promptSpy).not.toHaveBeenCalled()
 
@@ -271,7 +271,7 @@ describe('blobs:set command', () => {
 
           const promptSpy = spyOnMockPrompt()
 
-          await runMockProgram(['', '', 'blobs:set', storeName, key, newValue, '--force'])
+          await runMockProgram(['', '', 'blobs:set', storeName, key, newValue])
           expect(promptSpy).not.toHaveBeenCalled()
 
           expect(log).not.toHaveBeenCalledWith(warningMessage)

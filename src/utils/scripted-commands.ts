@@ -17,6 +17,7 @@ export const shouldForceFlagBeInjected = (argv: string[]): boolean => {
 
 export const injectForceFlagIfScripted = (argv: string[]) => {
   if (shouldForceFlagBeInjected(argv)) {
-    argv.push('--force')
+    // // if the command is lm:setup, push --force-install instead of --force
+    argv[2] === 'lm:setup' ? argv.push('--force-install') : argv.push('--force')
   }
 }

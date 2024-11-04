@@ -4,8 +4,9 @@ import { COMMANDS_WITH_FORCE } from '../commands/main.js'
 
 // This function is used to run the program with the correct flags
 export const runProgram = async (program: BaseCommand, argv: string[]) => {
-  //if the command is not a valid command,
-  const isValidForceCommand = COMMANDS_WITH_FORCE.has(argv[2])
+  const cmdName = argv[2]
+  // checks if the command has a force option
+  const isValidForceCommand = cmdName in COMMANDS_WITH_FORCE
 
   if (isValidForceCommand) {
     injectForceFlagIfScripted(argv)

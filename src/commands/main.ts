@@ -39,19 +39,19 @@ import { createUnlinkCommand } from './unlink/index.js'
 import { createWatchCommand } from './watch/index.js'
 
 const SUGGESTION_TIMEOUT = 1e4
-export const COMMANDS_WITH_FORCE = new Set([
-  'env:set',
-  'env:unset',
-  'env:clone',
-  'blobs:set',
-  'blobs:delete',
-  'addons:delete',
-  'init',
-  'lm:install',
-  'lm:setup',
-  'sites:delete',
-])
 
+export const COMMANDS_WITH_FORCE = {
+  'env:set': { options: '--force', description: 'Bypasses prompts & Force the command to run.' },
+  'env:unset': { options: '--force', description: 'Bypasses prompts & Force the command to run.' },
+  'env:clone': { options: '--force', description: 'Bypasses prompts & Force the command to run.' },
+  'blobs:set': { options: '--force', description: 'Bypasses prompts & Force the command to run.' },
+  'blobs:delete': { options: '--force', description: 'Bypasses prompts & Force the command to run.' },
+  'addons:delete': { options: '-f, --force', description: 'Delete without prompting (useful for CI)' },
+  init: { options: '--force', description: 'Reinitialize CI hooks if the linked site is already configured to use CI' },
+  'lm:install': { options: '-f, --force', description: 'Force the credentials helper installation.' },
+  'lm:setup': { options: '-f, --force-install', description: 'Force the credentials helper installation.' },
+  'sites:delete': { options: '-f, --force', description: 'Delete without prompting (useful for CI).' },
+}
 process.on('uncaughtException', async (err) => {
   console.log('')
   error(
@@ -243,8 +243,10 @@ export const createMainCommand = () => {
     .action(mainCommand)
 
   program.commands.forEach((cmd) => {
-    if (COMMANDS_WITH_FORCE.has(cmd.name())) {
-      cmd.option('--force', 'Bypasses prompts & Force the command to run.')
+    const cmdName = cmd.name()
+    if (cmdName in COMMANDS_WITH_FORCE) {
+      const { options, description } = COMMANDS_WITH_FORCE[cmdName as keyof typeof COMMANDS_WITH_FORCE]
+      cmd.option(options, description)
     }
   })
 
