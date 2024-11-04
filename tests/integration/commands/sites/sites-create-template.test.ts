@@ -45,9 +45,17 @@ const OLD_ENV = process.env
 
 describe('sites:create-template', () => {
   beforeEach(async () => {
-    vi.mocked(inquirer.prompt)
-      .mockImplementationOnce(() => Promise.resolve({ accountSlug: 'test-account' }))
-      .mockImplementationOnce(() => Promise.resolve({ name: 'test-name' }))
+    inquirer.prompt = Object.assign(
+      vi
+        .fn()
+        .mockImplementationOnce(() => Promise.resolve({ accountSlug: 'test-account' }))
+        .mockImplementationOnce(() => Promise.resolve({ name: 'test-name' })),
+      {
+        prompts: inquirer.prompt?.prompts || {},
+        registerPrompt: inquirer.prompt?.registerPrompt || vi.fn(),
+        restoreDefaultPrompts: inquirer.prompt?.restoreDefaultPrompts || vi.fn(),
+      },
+    )
     vi.mocked(fetchTemplates).mockResolvedValue([
       {
         name: 'mockTemplateName',
