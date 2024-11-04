@@ -53,7 +53,6 @@ export const COMMANDS_WITH_FORCE = {
   'sites:delete': { options: '-f, --force', description: 'Delete without prompting (useful for CI).' },
 }
 
-
 process.on('uncaughtException', async (err: AddressInUseError | Error) => {
   if ('code' in err && err.code === 'EADDRINUSE') {
     error(
@@ -88,7 +87,6 @@ process.on('uncaughtException', async (err: AddressInUseError | Error) => {
     console.log(chalk.dim(systemInfo))
     reportError(err, { severity: 'error' })
   }
-
 
   process.exit(1)
 })

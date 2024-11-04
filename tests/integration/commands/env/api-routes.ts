@@ -1,4 +1,3 @@
-import { EnvVar } from '../../../../src/utils/types'
 import { HTTPMethod } from '../../utils/mock-api-vitest'
 
 const siteInfo = {
