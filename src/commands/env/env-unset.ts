@@ -1,17 +1,24 @@
-import { OptionValues } from 'commander'
-
 import { chalk, log, logJson } from '../../utils/command-helpers.js'
-import { AVAILABLE_CONTEXTS, translateFromEnvelopeToMongo } from '../../utils/env/index.js'
+import { AVAILABLE_CONTEXTS, translateFromEnvelopeToMongo, isAPIEnvError } from '../../utils/env/index.js'
 import BaseCommand from '../base-command.js'
+import type { EnviromentVariables } from '../types.d.ts'
+
+import type { EnvUnsetOptions, UnsetInEnvelopeParams } from './types.d.ts'
 
 /**
  * Deletes a given key from the env of a site configured with Envelope
  * @returns {Promise<object>}
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-const unsetInEnvelope = async ({ api, context, key, siteInfo }) => {
+
+const unsetInEnvelope = async ({
+  api,
+  context,
+  key,
+  siteInfo,
+}: UnsetInEnvelopeParams): Promise<EnviromentVariables> => {
   const accountId = siteInfo.account_slug
   const siteId = siteInfo.id
+
   // fetch envelope env vars
   const envelopeVariables = await api.getEnvVars({ accountId, siteId })
   const contexts = context || ['all']
@@ -19,7 +26,6 @@ const unsetInEnvelope = async ({ api, context, key, siteInfo }) => {
   const env = translateFromEnvelopeToMongo(envelopeVariables, context ? context[0] : 'dev')
 
   // check if the given key exists
-  // @ts-expect-error TS(7006) FIXME: Parameter 'envVar' implicitly has an 'any' type.
   const variable = envelopeVariables.find((envVar) => envVar.key === key)
   if (!variable) {
     // if not, no need to call delete; return early
@@ -30,12 +36,10 @@ const unsetInEnvelope = async ({ api, context, key, siteInfo }) => {
   try {
     if (context) {
       // if context(s) are passed, delete the matching contexts / branches, and the `all` context
-      // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
       const values = variable.values.filter((val) =>
         [...contexts, 'all'].includes(val.context_parameter || val.context),
       )
       if (values) {
-        // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
         await Promise.all(values.map((value) => api.deleteEnvVarValue({ ...params, id: value.id })))
         // if this was the `all` context, we need to create 3 values in the other contexts
         if (values.length === 1 && values[0].context === 'all') {
@@ -53,17 +57,16 @@ const unsetInEnvelope = async ({ api, context, key, siteInfo }) => {
       await api.deleteEnvVar({ accountId, siteId, key })
     }
   } catch (error_) {
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    throw error_.json ? error_.json.msg : error_
+    const errortoThrow = isAPIEnvError(error_) ? error_.json.msg : error_
+    throw errortoThrow
   }
 
-  // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
   delete env[key]
 
   return env
 }
 
-export const envUnset = async (key: string, options: OptionValues, command: BaseCommand) => {
+export const envUnset = async (key: string, options: EnvUnsetOptions, command: BaseCommand) => {
   const { context } = options
   const { api, cachedConfig, site } = command.netlify
   const siteId = site.id
