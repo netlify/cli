@@ -118,7 +118,7 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
           error(
             `Could not create repository: ${
               (error_ as GitHubAPIError).message
-            }. Ensure that your PAT grants permission to create repositories`,
+            }. Ensure that your GitHub personal access token grants permission to create repositories`,
           )
         } else {
           error(

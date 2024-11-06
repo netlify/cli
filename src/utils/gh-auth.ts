@@ -90,7 +90,7 @@ export const authWithNetlify = async () => {
 const getPersonalAccessToken = async () => {
   const { token } = await inquirer.prompt([
     {
-      type: 'input',
+      type: 'password',
       name: 'token',
       message: 'Your GitHub personal access token:',
       filter: (input) => input.trim(),
