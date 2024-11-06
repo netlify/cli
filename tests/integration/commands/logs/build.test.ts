@@ -1,4 +1,4 @@
-import { Mock, afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
+import { Mock, afterAll, afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 
 import BaseCommand from '../../../../src/commands/base-command.js'
 import { createLogsBuildCommand } from '../../../../src/commands/logs/index.js'
@@ -49,19 +49,27 @@ const routes = [
   },
 ]
 
+const originalEnv = { ...process.env }
+
 describe('logs:deploy command', () => {
   let program: BaseCommand
-  const originalEnv = { ...process.env }
 
   afterEach(() => {
     vi.clearAllMocks()
+    process.env = { ...originalEnv }
   })
 
   beforeEach(() => {
-    process.env = { ...originalEnv }
     program = new BaseCommand('netlify')
 
     createLogsBuildCommand(program)
+  })
+
+  afterAll(() => {
+    vi.restoreAllMocks()
+    vi.resetModules()
+
+    process.env = { ...originalEnv }
   })
 
   test('should setup the deploy stream correctly', async ({}) => {

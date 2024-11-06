@@ -40,6 +40,18 @@ import { createWatchCommand } from './watch/index.js'
 import { AddressInUseError } from './types.js'
 const SUGGESTION_TIMEOUT = 1e4
 
+// These commands run with the --force flag in non-interactive and CI environments
+export const CI_FORCED_COMMANDS = {
+  'env:set': { options: '--force', description: 'Bypasses prompts & Force the command to run.' },
+  'env:unset': { options: '--force', description: 'Bypasses prompts & Force the command to run.' },
+  'env:clone': { options: '--force', description: 'Bypasses prompts & Force the command to run.' },
+  'blobs:set': { options: '--force', description: 'Bypasses prompts & Force the command to run.' },
+  'blobs:delete': { options: '--force', description: 'Bypasses prompts & Force the command to run.' },
+  'addons:delete': { options: '-f, --force', description: 'Delete without prompting (useful for CI)' },
+  init: { options: '--force', description: 'Reinitialize CI hooks if the linked site is already configured to use CI' },
+  'sites:delete': { options: '-f, --force', description: 'Delete without prompting (useful for CI).' },
+}
+
 process.on('uncaughtException', async (err: AddressInUseError | Error) => {
   if ('code' in err && err.code === 'EADDRINUSE') {
     error(
@@ -242,6 +254,14 @@ export const createMainCommand = () => {
       },
     })
     .action(mainCommand)
+
+  program.commands.forEach((cmd) => {
+    const cmdName = cmd.name()
+    if (cmdName in CI_FORCED_COMMANDS) {
+      const { options, description } = CI_FORCED_COMMANDS[cmdName as keyof typeof CI_FORCED_COMMANDS]
+      cmd.option(options, description)
+    }
+  })
 
   return program
 }

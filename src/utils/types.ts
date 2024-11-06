@@ -150,6 +150,19 @@ export interface SiteInfo {
 
 export type TokenLocation = 'env' | 'flag' | 'config' | 'not found'
 
+export type EnvVar = {
+  key: string
+  scopes: string[]
+  values: EnvVarValue[]
+  updated_at: string
+  is_secret: boolean
+}
+
+type EnvVarValue = {
+  id: string
+  context: string
+}
+
 export interface Account {
   id: string
   name: string
