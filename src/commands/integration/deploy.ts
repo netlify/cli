@@ -1,6 +1,7 @@
 import fs from 'fs'
+import process from 'process'
 import { resolve } from 'path'
-import { env, exit } from 'process'
+import { exit } from 'process'
 
 import { OptionValues } from 'commander'
 import inquirer from 'inquirer'
@@ -17,7 +18,7 @@ import { checkOptions } from '../build/build.js'
 import { deploy as siteDeploy } from '../deploy/deploy.js'
 
 function getIntegrationAPIUrl() {
-  return env.INTEGRATION_URL || 'https://api.netlifysdk.com'
+  return process.env.INTEGRATION_URL || 'https://api.netlifysdk.com'
 }
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'localScopes' implicitly has an 'any' ty... Remove this comment to see the full error message

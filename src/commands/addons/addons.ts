@@ -51,7 +51,6 @@ Add-ons are a way to extend the functionality of your Netlify site`,
     .description(
       `Remove an add-on extension to your site\nAdd-ons are a way to extend the functionality of your Netlify site`,
     )
-    .option('-f, --force', 'delete without prompting (useful for CI)')
     .action(async (addonName: string, options: OptionValues, command: BaseCommand) => {
       const { addonsDelete } = await import('./addons-delete.js')
       await addonsDelete(addonName, options, command)
