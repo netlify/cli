@@ -1,5 +1,3 @@
-import { isCI } from 'ci-info'
-
 import { existsSync } from 'fs'
 import { join, relative, resolve } from 'path'
 import process from 'process'
@@ -8,6 +6,7 @@ import { format } from 'util'
 import { DefaultLogger, Project } from '@netlify/build-info'
 import { NodeFS, NoopLogger } from '@netlify/build-info/node'
 import { resolveConfig } from '@netlify/config'
+import { isCI } from 'ci-info'
 import { Command, Help, Option } from 'commander'
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'debu... Remove this comment to see the full error message
 import debug from 'debug'
@@ -187,6 +186,7 @@ export default class BaseCommand extends Command {
   createCommand(name: string): BaseCommand {
     const base = new BaseCommand(name)
       // If  --silent or --json flag passed disable logger
+      // .addOption(new Option('--force', 'Force command to run. Bypasses prompts for certain destructive commands.'))
       .addOption(new Option('--json', 'Output return values as JSON').hideHelp(true))
       .addOption(new Option('--silent', 'Silence CLI output').hideHelp(true))
       .addOption(new Option('--cwd <cwd>').hideHelp(true))

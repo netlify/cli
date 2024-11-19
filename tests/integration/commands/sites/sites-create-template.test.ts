@@ -1,7 +1,7 @@
 import process from 'process'
 
 import inquirer from 'inquirer'
-import { beforeEach, afterEach, describe, expect, test, vi } from 'vitest'
+import { beforeEach, afterEach, describe, expect, test, vi, afterAll } from 'vitest'
 
 import BaseCommand from '../../../../src/commands/base-command.ts'
 import { createSitesFromTemplateCommand } from '../../../../src/commands/sites/sites.ts'
@@ -18,6 +18,10 @@ import { chalk } from '../../../../src/utils/command-helpers.ts'
 vi.mock('../../../../src/utils/init/config-github.ts')
 vi.mock('../../../../src/utils/sites/utils.ts')
 vi.mock('../../../../src/utils/sites/create-template.ts')
+vi.mock('inquirer')
+
+inquirer.registerPrompt = vi.fn()
+inquirer.prompt.registerPrompt = vi.fn()
 
 const siteInfo = {
   admin_url: 'https://app.netlify.com/sites/site-name/overview',
@@ -43,14 +47,24 @@ const routes = [
   },
 ]
 
+const OLD_ENV = process.env
+
 describe('sites:create-template', () => {
   beforeEach(async () => {
-    vi.mock('inquirer')
-    vi.mocked(inquirer.prompt)
-      .mockImplementationOnce(() => Promise.resolve({ accountSlug: 'test-account' }))
-      .mockImplementationOnce(() => Promise.resolve({ name: 'test-name' }))
-      .mockImplementationOnce(() => Promise.resolve({ cloneConfirm: true }))
-      .mockImplementationOnce(() => Promise.resolve({ linkConfirm: true }))
+    inquirer.prompt = Object.assign(
+      vi
+        .fn()
+        .mockImplementationOnce(() => Promise.resolve({ accountSlug: 'test-account' }))
+        .mockImplementationOnce(() => Promise.resolve({ name: 'test-name' }))
+        .mockImplementationOnce(() => Promise.resolve({ cloneConfirm: true }))
+        .mockImplementationOnce(() => Promise.resolve({ linkConfirm: true })),
+      {
+        prompts: inquirer.prompt?.prompts || {},
+        registerPrompt: inquirer.prompt?.registerPrompt || vi.fn(),
+        restoreDefaultPrompts: inquirer.prompt?.restoreDefaultPrompts || vi.fn(),
+      },
+    )
+
     vi.mocked(fetchTemplates).mockResolvedValue([
       {
         name: 'mockTemplateName',
@@ -82,8 +96,16 @@ describe('sites:create-template', () => {
   })
 
   afterEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterAll(() => {
     vi.resetModules()
     vi.restoreAllMocks()
+
+    Object.defineProperty(process, 'env', {
+      value: OLD_ENV,
+    })
   })
 
   test('it should ask for a new site name if site with that name already exists on a globally deployed site', async (t) => {
