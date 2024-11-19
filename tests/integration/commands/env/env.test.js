@@ -244,7 +244,7 @@ describe('commands/env', () => {
 
         await withMockApi(setRoutes, async ({ apiUrl }) => {
           const cliResponse = await callCli(
-            ['env:set', '--json', 'NEW_VAR', 'new-value'],
+            ['env:set', '--json', 'NEW_VAR', 'new-value', '--force'],
             getCLIOptions({ builder, apiUrl }),
             true,
           )
@@ -270,7 +270,7 @@ describe('commands/env', () => {
 
         await withMockApi(setRoutes, async ({ apiUrl }) => {
           const cliResponse = await callCli(
-            ['env:set', '--json', 'EXISTING_VAR', 'new-value'],
+            ['env:set', '--json', 'EXISTING_VAR', 'new-value', '--force'],
             getCLIOptions({ builder, apiUrl }),
             true,
           )
@@ -297,7 +297,7 @@ describe('commands/env', () => {
 
         await withMockApi(unsetRoutes, async ({ apiUrl }) => {
           const cliResponse = await callCli(
-            ['env:unset', '--json', 'EXISTING_VAR'],
+            ['env:unset', '--json', 'EXISTING_VAR', '--force'],
             getCLIOptions({ builder, apiUrl }),
             true,
           )
@@ -396,7 +396,10 @@ describe('commands/env', () => {
           { path: 'sites/site_id_a', response: { ...siteInfo, build_settings: { env: {} } } },
         ]
         await withMockApi(createRoutes, async ({ apiUrl }) => {
-          const cliResponse = await callCli(['env:clone', '--to', 'site_id_a'], getCLIOptions({ builder, apiUrl }))
+          const cliResponse = await callCli(
+            ['env:clone', '--to', 'site_id_a', '--force'],
+            getCLIOptions({ builder, apiUrl }),
+          )
 
           t.expect(normalize(cliResponse)).toMatchSnapshot()
         })
@@ -409,7 +412,7 @@ describe('commands/env', () => {
         const createRoutes = [{ path: 'sites/site_id', response: { ...siteInfo, build_settings: { env: {} } } }]
         await withMockApi(createRoutes, async ({ apiUrl }) => {
           const { stderr: cliResponse } = await callCli(
-            ['env:clone', '--to', 'to-site'],
+            ['env:clone', '--to', 'to-site', '--force'],
             getCLIOptions({ builder, apiUrl }),
           ).catch((error) => error)
 
@@ -423,7 +426,7 @@ describe('commands/env', () => {
         await builder.build()
         await withMockApi([], async ({ apiUrl }) => {
           const { stderr: cliResponse } = await callCli(
-            ['env:clone', '--from', 'from-site', '--to', 'to-site'],
+            ['env:clone', '--from', 'from-site', '--to', 'to-site', '--force'],
             getCLIOptions({ builder, apiUrl }),
           ).catch((error) => error)
 
@@ -438,11 +441,12 @@ describe('commands/env', () => {
       await withSiteBuilder(t, async (builder) => {
         await builder.build()
 
-        const cliResponse = await callCli(['env:clone', '--to', 'site_id_a'], {
+        const cliResponse = await callCli(['env:clone', '--to', 'site_id_a', '--force'], {
           cwd: builder.directory,
           extendEnv: false,
           PATH: process.env.PATH,
         })
+
         t.expect(normalize(cliResponse)).toMatchSnapshot()
       })
     })
@@ -469,7 +473,10 @@ describe('commands/env', () => {
       await withSiteBuilder(t, async (builder) => {
         await builder.build()
         await withMockApi(cloneRoutes, async ({ apiUrl, requests }) => {
-          const cliResponse = await callCli(['env:clone', '--to', 'site_id_a'], getCLIOptions({ apiUrl, builder }))
+          const cliResponse = await callCli(
+            ['env:clone', '--to', 'site_id_a', '--force'],
+            getCLIOptions({ apiUrl, builder }),
+          )
 
           t.expect(normalize(cliResponse)).toMatchSnapshot()
 

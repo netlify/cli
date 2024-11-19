@@ -150,7 +150,7 @@ describe.concurrent('command-addons', () => {
       ]
 
       await withMockApi(deleteRoutes, async ({ apiUrl }) => {
-        const cliResponse = await callCli(['addons:delete', 'demo', '-f'], getCLIOptions({ builder, apiUrl }))
+        const cliResponse = await callCli(['addons:delete', 'demo', '--force'], getCLIOptions({ builder, apiUrl }))
         t.expect(cliResponse.includes('Addon "demo" deleted')).toBe(true)
       })
     })

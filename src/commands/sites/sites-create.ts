@@ -7,9 +7,9 @@ import { chalk, error, log, logJson, warn, APIError } from '../../utils/command-
 import getRepoData from '../../utils/get-repo-data.js'
 import { configureRepo } from '../../utils/init/config.js'
 import { track } from '../../utils/telemetry/index.js'
+import { Account } from '../../utils/types.js'
 import BaseCommand from '../base-command.js'
 import { link } from '../link/link.js'
-import { Account } from '../../utils/types.js'
 
 export const getSiteNameInput = async (name: string | undefined): Promise<{ name: string }> => {
   if (!name) {

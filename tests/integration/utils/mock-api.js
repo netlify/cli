@@ -1,3 +1,4 @@
+import process from 'process'
 import { isDeepStrictEqual, promisify } from 'util'
 
 import express from 'express'
@@ -78,11 +79,44 @@ export const withMockApi = async (routes, testHandler, silent = false) => {
   }
 }
 
+// `CI` set to "true" to mock commands run from terminal command line
+// `SHLVL` used to overwrite prompts for scripted commands in production/dev
+// environments see `scriptedCommand` property of `BaseCommand`
 export const getEnvironmentVariables = ({ apiUrl }) => ({
   NETLIFY_AUTH_TOKEN: 'fake-token',
   NETLIFY_SITE_ID: 'site_id',
   NETLIFY_API_URL: apiUrl,
 })
+
+/**
+ * Set the `isTTY` property of `process.stdin` to the given boolean value.
+ * This function is used to establish flexible testing environments.
+ * Falsey value is for noninteractive shell (-force flags overide user prompts)
+ * Truthy value is for interactive shell
+ */
+export const setTTYMode = (bool) => {
+  process.stdin.isTTY = bool
+}
+
+/**
+ * Sets the `TESTING_PROMPTS` environment variable to the specified value.
+ * This is used to make sure prompts are shown in the needed test sin ci/cd enviroments
+ * If this is set to 'true', then prompts will be shown in for destructive commands even in non-interactive shells
+ * or CI/CD enviroment
+ *
+ * @param {string} value - The value to set for the `TESTING_PROMPTS` environment variable.
+ */
+export const setTestingPrompts = (value) => {
+  process.env.TESTING_PROMPTS = value
+}
+
+/**
+ * Simulates a Continuous Integration environment by toggling the `CI`
+ * environment variable. Truthy value is
+ */
+export const setCI = (value) => {
+  process.env.CI = value
+}
 
 /**
  *
