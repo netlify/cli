@@ -195,7 +195,7 @@
     "@types/jsonwebtoken": "9.0.7",
     "@types/lodash": "4.17.13",
     "@types/node": "20.14.8",
-    "@types/node-fetch": "2.6.11",
+    "@types/node-fetch": "2.6.12",
     "@types/parse-gitignore": "1.0.2",
     "@types/prettyjson": "0.0.33",
     "@types/semver": "7.5.8",
