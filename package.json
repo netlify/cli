@@ -153,7 +153,7 @@
     "netlify-redirector": "0.5.0",
     "node-fetch": "3.3.2",
     "node-version-alias": "3.4.1",
-    "ora": "8.1.0",
+    "ora": "8.1.1",
     "p-filter": "4.1.0",
     "p-map": "7.0.2",
     "p-wait-for": "5.0.2",
