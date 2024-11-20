@@ -56,7 +56,7 @@ jobs:
       - name: Install PNPM
         run: |
           corepack enable
-          corepack prepare pnpm@7.32.4 --activate
+          corepack prepare pnpm@9.14.2 --activate
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
       - name: Setup Deno
         uses: denoland/setup-deno@v1
