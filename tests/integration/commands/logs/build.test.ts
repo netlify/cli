@@ -1,10 +1,14 @@
-import { Mock, afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
+import { Mock, afterAll, afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 
 import BaseCommand from '../../../../src/commands/base-command.js'
 import { createLogsBuildCommand } from '../../../../src/commands/logs/index.js'
 import { getWebSocket } from '../../../../src/utils/websockets/index.js'
 import { startMockApi } from '../../utils/mock-api-vitest.js'
 import { getEnvironmentVariables } from '../../utils/mock-api.js'
+import { callCli } from '../../utils/call-cli.js'
+import { getCLIOptions, withMockApi } from '../../utils/mock-api.js'
+import { withSiteBuilder } from '../../utils/site-builder.ts'
+import { join } from 'path'
 
 vi.mock('../../../../src/utils/websockets/index.js', () => ({
   getWebSocket: vi.fn(),
@@ -45,17 +49,27 @@ const routes = [
   },
 ]
 
+const originalEnv = { ...process.env }
+
 describe('logs:deploy command', () => {
   let program: BaseCommand
 
   afterEach(() => {
     vi.clearAllMocks()
+    process.env = { ...originalEnv }
   })
 
   beforeEach(() => {
     program = new BaseCommand('netlify')
 
     createLogsBuildCommand(program)
+  })
+
+  afterAll(() => {
+    vi.restoreAllMocks()
+    vi.resetModules()
+
+    process.env = { ...originalEnv }
   })
 
   test('should setup the deploy stream correctly', async ({}) => {
@@ -106,5 +120,22 @@ describe('logs:deploy command', () => {
     expect(body.deploy_id).toEqual('deploy-id')
     expect(body.site_id).toEqual('site_id')
     expect(body.access_token).toEqual(env.NETLIFY_AUTH_TOKEN)
+  })
+
+  test('should instruct user to link a site if one is not linked', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      const projectPath = join('projects', 'project1')
+      await builder.withNetlifyToml({ config: {}, pathPrefix: projectPath }).build()
+
+      await withMockApi(
+        routes,
+        async ({ apiUrl }) => {
+          const options = getCLIOptions({ builder, apiUrl, env: { NETLIFY_SITE_ID: '' } })
+          const stdout = await callCli(['logs:deploy'], { ...options, cwd: join(builder.directory, projectPath) })
+          expect(stdout).toContain('You must link a site before attempting to view deploy logs')
+        },
+        true,
+      )
+    })
   })
 })

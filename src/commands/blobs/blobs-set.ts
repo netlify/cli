@@ -4,11 +4,13 @@ import { resolve } from 'path'
 import { getStore } from '@netlify/blobs'
 import { OptionValues } from 'commander'
 
-import { chalk, error as printError, isNodeError } from '../../utils/command-helpers.js'
+import { chalk, error as printError, isNodeError, log } from '../../utils/command-helpers.js'
+import { promptBlobSetOverwrite } from '../../utils/prompts/blob-set-prompt.js'
 import BaseCommand from '../base-command.js'
 
 interface Options extends OptionValues {
   input?: string
+  force?: string | boolean
 }
 
 export const blobsSet = async (
@@ -19,19 +21,17 @@ export const blobsSet = async (
   command: BaseCommand,
 ) => {
   const { api, siteInfo } = command.netlify
-  const { input } = options
+  const { force, input } = options
   const store = getStore({
     apiURL: `${api.scheme}://${api.host}`,
     name: storeName,
     siteID: siteInfo.id ?? '',
     token: api.accessToken ?? '',
   })
-
   let value = valueParts.join(' ')
 
   if (input) {
     const inputPath = resolve(input)
-
     try {
       value = await fs.readFile(inputPath, 'utf8')
     } catch (error) {
@@ -57,8 +57,17 @@ export const blobsSet = async (
     )
   }
 
+  if (force === undefined) {
+    const existingValue = await store.get(key)
+
+    if (existingValue) {
+      await promptBlobSetOverwrite(key, storeName)
+    }
+  }
+
   try {
     await store.set(key, value)
+    log(`${chalk.greenBright('Success')}: Blob ${chalk.yellow(key)} set in store ${chalk.yellow(storeName)}`)
   } catch {
     return printError(`Could not set blob ${chalk.yellow(key)} in store ${chalk.yellow(storeName)}`)
   }

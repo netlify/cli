@@ -54,6 +54,7 @@ netlify env:clone
 **Flags**
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
+- `force` (*boolean*) - Bypasses prompts & Force the command to run.
 - `from` (*string*) - Site ID (From)
 - `to` (*string*) - Site ID (To)
 - `debug` (*boolean*) - Print debugging information
@@ -167,6 +168,7 @@ netlify env:set
 
 - `context` (*string*) - Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev") (default: all contexts)
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
+- `force` (*boolean*) - Bypasses prompts & Force the command to run.
 - `scope` (*builds | functions | post-processing | runtime*) - Specify a scope (default: all scopes)
 - `secret` (*boolean*) - Indicate whether the environment variable value can be read again.
 - `debug` (*boolean*) - Print debugging information
@@ -202,6 +204,7 @@ netlify env:unset
 
 - `context` (*string*) - Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev") (default: all contexts)
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
+- `force` (*boolean*) - Bypasses prompts & Force the command to run.
 - `debug` (*boolean*) - Print debugging information
 
 **Examples**

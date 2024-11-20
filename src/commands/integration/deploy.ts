@@ -1,6 +1,7 @@
 import fs from 'fs'
+import process from 'process'
 import { resolve } from 'path'
-import { env, exit } from 'process'
+import { exit } from 'process'
 
 import { OptionValues } from 'commander'
 import inquirer from 'inquirer'
@@ -17,7 +18,7 @@ import { checkOptions } from '../build/build.js'
 import { deploy as siteDeploy } from '../deploy/deploy.js'
 
 function getIntegrationAPIUrl() {
-  return env.INTEGRATION_URL || 'https://api.netlifysdk.com'
+  return process.env.INTEGRATION_URL || 'https://api.netlifysdk.com'
 }
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'localScopes' implicitly has an 'any' ty... Remove this comment to see the full error message
@@ -383,7 +384,6 @@ export const getConfiguration = (workingDir) => {
 export const deploy = async (options: OptionValues, command: BaseCommand) => {
   const { api, cachedConfig, site, siteInfo } = command.netlify
   const { id: siteId } = site
-  // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
   const [token] = await getToken()
   const workingDir = resolve(command.workingDir)
   const buildOptions = await getBuildOptions({
@@ -401,6 +401,7 @@ export const deploy = async (options: OptionValues, command: BaseCommand) => {
   const { description, name, scopes, slug } = await getConfiguration(command.workingDir)
   const localIntegrationConfig = { name, description, scopes, slug }
 
+  const headers = token ? { 'netlify-token': token } : undefined
   // @ts-expect-error TS(2345) FIXME: Argument of type '{ api: any; site: any; siteInfo:... Remove this comment to see the full error message
   const { accountId } = await getSiteInformation({
     api,
@@ -411,9 +412,7 @@ export const deploy = async (options: OptionValues, command: BaseCommand) => {
   const { body: registeredIntegration, statusCode } = await fetch(
     `${getIntegrationAPIUrl()}/${accountId}/integrations?site_id=${siteId}`,
     {
-      headers: {
-        'netlify-token': token,
-      },
+      headers,
     },
   ).then(async (res) => {
     const body = await res.json()

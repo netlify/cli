@@ -109,7 +109,7 @@ netlify sites:delete
 **Flags**
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
-- `force` (*boolean*) - delete without prompting (useful for CI)
+- `force` (*boolean*) - Delete without prompting (useful for CI).
 - `debug` (*boolean*) - Print debugging information
 
 **Examples**
