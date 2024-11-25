@@ -48,7 +48,11 @@ describe('copyTemplateDir', () => {
     checkCreatedFileNames(files.map((file) => file.path))
 
     // Cleanup
-    fs.rmdirSync(outDir, { recursive: true })
+    try {
+      await fs.rm(outDir, { recursive: true, force: true })
+    } catch (error) {
+      console.error(`Cleanup failed: ${error.message}`)
+    }
   })
 
   test('should inject context variables strings', async () => {
@@ -61,7 +65,11 @@ describe('copyTemplateDir', () => {
     expect(fileContent).toBe('hello bar sama')
 
     // Cleanup
-    fs.rmdirSync(outDir, { recursive: true })
+    try {
+      await fs.rm(outDir, { recursive: true, force: true })
+    } catch (error) {
+      console.error(`Cleanup failed: ${error.message}`)
+    }
   })
 
   test('should inject context variables strings into filenames', async () => {
@@ -73,7 +81,11 @@ describe('copyTemplateDir', () => {
     expect(fs.existsSync(path.join(outDir, 'bar.txt'))).toBe(true)
 
     // Cleanup
-    fs.rmdirSync(outDir, { recursive: true })
+    try {
+      await fs.rm(outDir, { recursive: true, force: true })
+    } catch (error) {
+      console.error(`Cleanup failed: ${error.message}`)
+    }
   })
 
   test('should inject context variables strings into directory names', async () => {
@@ -85,6 +97,10 @@ describe('copyTemplateDir', () => {
     expect(fs.existsSync(path.join(outDir, 'bar'))).toBe(true)
 
     // Cleanup
-    fs.rmdirSync(outDir, { recursive: true })
+    try {
+      await fs.rm(outDir, { recursive: true, force: true })
+    } catch (error) {
+      console.error(`Cleanup failed: ${error.message}`)
+    }
   })
 })
