@@ -15,7 +15,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, macOS-latest, windows-latest]
         # Pinning 20.x version as a temporary workaround due to this https://github.com/nodejs/node/issues/52884
-        node-version: ['18.17.0', '20.12.2', '22']
+        node-version: ['18.17.0', '20.12.2', '22', '23']
         shard: ['1/4', '2/4', '3/4', '4/4']
 
         exclude:
