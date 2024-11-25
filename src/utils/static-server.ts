@@ -33,8 +33,8 @@ export const startStaticServer = async ({ settings }) => {
     }
     done()
   })
-
-  const address = await server.listen({ port: settings.frameworkPort })
+  await server.listen({ port: settings.frameworkPort })
+  const [address] = server.addresses()
   log(`\n${NETLIFYDEVLOG} Static server listening to`, settings.frameworkPort)
-  return { address }
+  return { family: address.family }
 }
