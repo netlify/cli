@@ -1,3 +1,4 @@
+import { isIPv6 } from 'net'
 import { rm } from 'node:fs/promises'
 
 import waitPort from 'wait-port'
@@ -30,9 +31,11 @@ export const startFrameworkServer = async function ({
     if (settings.command) {
       runCommand(settings.command, { env: settings.env, cwd })
     }
-    await startStaticServer({ settings })
+    const { address } = await startStaticServer({ settings })
+    // hostname might have brackets around ::1 as [::1] isIPv6 does not consider that valid as IPv6.
+    const hostname = new URL(address).hostname.replace(/[[\]]/g, '')
 
-    return {}
+    return { ipVersion: isIPv6(hostname) ? 6 : 4 }
   }
 
   log(`${NETLIFYDEVLOG} Starting Netlify Dev with ${settings.framework || 'custom config'}`)
