@@ -682,9 +682,7 @@ describe.concurrent('command/dev', () => {
             async (server) => {
               const output = server.outputBuffer.map((buff) => buff.toString()).join('\n')
               t.expect(output).toContain('Server now ready')
-              // With node 23 we might be getting some warnings, but no errors
-              const errorOutput = server.errorBuffer.map((buff) => buff.toString()).join('\n')
-              t.expect(errorOutput).not.toContain('Error')
+              t.expect(server.errorBuffer).toHaveLength(0)
             },
           )
         })

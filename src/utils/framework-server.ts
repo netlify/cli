@@ -30,8 +30,10 @@ export const startFrameworkServer = async function ({
     if (settings.command) {
       runCommand(settings.command, { env: settings.env, cwd })
     }
-    const { family } = await startStaticServer({ settings })
-    return { ipVersion: family === 'IPv6' ? 6 : 4 }
+    await startStaticServer({ settings })
+    // const { family } = await startStaticServer({ settings })
+    return {}
+    // return { ipVersion: family === 'IPv6' ? 6 : 4 }
   }
 
   log(`${NETLIFYDEVLOG} Starting Netlify Dev with ${settings.framework || 'custom config'}`)
