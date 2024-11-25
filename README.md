@@ -1,4 +1,5 @@
 ![Netlify CLI](cli.png)
+// let's trigger some pipelines to test
 
 [![Coverage Status](https://codecov.io/gh/netlify/cli/branch/main/graph/badge.svg)](https://codecov.io/gh/netlify/cli)
 [![npm version][npm-img]][npm] [![downloads][dl-img]][dl] [![netlify-status][netlify-img]][netlify]
