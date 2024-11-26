@@ -1,6 +1,6 @@
 import process from 'process'
 
-import { beforeEach, describe, expect, test, vi } from 'vitest'
+import { afterAll, beforeEach, describe, expect, test, vi } from 'vitest'
 
 import BaseCommand from '../../../../src/commands/base-command.js'
 import { deploy as siteDeploy } from '../../../../src/commands/deploy/deploy.js'
@@ -24,10 +24,26 @@ describe('integration:deploy areScopesEqual', () => {
   })
 })
 
+const originalEnv = process.env
+
 describe(`integration:deploy`, () => {
   beforeEach(() => {
-    vi.resetAllMocks()
+    vi.resetModules()
+    vi.clearAllMocks()
+    Object.defineProperty(process, 'env', {
+      value: originalEnv,
+    })
   })
+
+  afterAll(() => {
+    vi.resetModules()
+    vi.restoreAllMocks()
+
+    Object.defineProperty(process, 'env', {
+      value: originalEnv,
+    })
+  })
+
   test('deploys an integration', async (t) => {
     vi.mock(`../../../../src/commands/deploy/deploy.js`, () => ({
       deploy: vi.fn(() => console.log(`yay it was mocked!`)),
@@ -74,7 +90,6 @@ describe(`integration:deploy`, () => {
   scopes:
     site:
         - read
-  integrationLevel: team-and-site
       `,
         },
       ])

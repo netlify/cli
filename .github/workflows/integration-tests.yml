@@ -56,7 +56,7 @@ jobs:
       - name: Install PNPM
         run: |
           corepack enable
-          corepack prepare pnpm@7.32.4 --activate
+          corepack prepare pnpm@9.14.2 --activate
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
       - name: Setup Deno
         uses: denoland/setup-deno@v1
@@ -117,7 +117,105 @@ jobs:
           path: |
             /home/runner/.npm/_logs/**/*
 
-      - uses: codecov/codecov-action@v4
+      - uses: codecov/codecov-action@v5
+        continue-on-error: true
+        with:
+          flags: ${{ steps.test-coverage-flags.outputs.os }},${{ steps.test-coverage-flags.outputs.node }}
+          token: ${{ secrets.CODECOV_TOKEN }}
+        if: '${{ !steps.release-check.outputs.IS_RELEASE }}'
+  # Specific tests for known test that failed on windows using node 23.
+  # Can be replaced with larger node 23 tests in the future.
+  integration-win-node-23:
+    name: Integration test windows latest node23 specific
+    runs-on: windows-latest
+    timeout-minutes: 40
+    steps:
+      # Sets an output parameter if this is a release PR
+      - name: Check for release
+        id: release-check
+        # For windows we have to use $env:
+        run: |-
+          echo "IS_RELEASE=true" >> $GITHUB_OUTPUT
+          echo "IS_RELEASE=true" >> $env:GITHUB_OUTPUT
+        if: "${{ startsWith(github.head_ref, 'release-') }}"
+      # This improves Windows network performance, we need this since we open many ports in our tests
+      - name: Increase Windows port limit and reduce time wait delay
+        run: |
+          netsh int ipv4 set dynamicport tcp start=1025 num=64511
+          REG ADD HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\TCPIP\Parameters /v TcpTimedWaitDelay /t REG_DWORD /d 30 /f
+      - name: Git checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+        if: '${{!steps.release-check.outputs.IS_RELEASE}}'
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '23.x'
+          cache: npm
+          check-latest: true
+        if: '${{!steps.release-check.outputs.IS_RELEASE}}'
+      - name: Install PNPM
+        run: |
+          corepack enable
+          corepack prepare pnpm@9.14.2 --activate
+        if: '${{!steps.release-check.outputs.IS_RELEASE}}'
+      - name: Setup Deno
+        uses: denoland/setup-deno@v1
+        if: '${{!steps.release-check.outputs.IS_RELEASE}}'
+        with:
+          deno-version: v1.44.4
+      - name: Install core dependencies
+        run: npm ci --no-audit
+        if: '${{!steps.release-check.outputs.IS_RELEASE}}'
+      - name: Generate self-signed certificates
+        run: npm run certs
+        if: '${{!steps.release-check.outputs.IS_RELEASE}}'
+        shell: bash
+      - name: Prepare tests
+        run: npm run test:init
+        if: '${{ !steps.release-check.outputs.IS_RELEASE }}'
+      - name: Tests
+        uses: nick-fields/retry@v3
+        if: '${{ !steps.release-check.outputs.IS_RELEASE }}'
+        with:
+          timeout_minutes: 15
+          max_attempts: 3
+          retry_on: error
+          command: npm exec vitest -- run tests/integration/commands/dev/dev.test.ts
+        env:
+          # GitHub secrets are not available when running on PR from forks
+          # We set a flag so we can skip tests that access Netlify API
+          NETLIFY_TEST_DISABLE_LIVE:
+            ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == true }}
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          # NETLIFY_TEST_GITHUB_TOKEN is used to avoid reaching GitHub API limits in exec-fetcher.js
+          NETLIFY_TEST_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Changes the polling interval used by the file watcher
+          CHOKIDAR_INTERVAL: 20
+          CHOKIDAR_USEPOLLING: 1
+      - name: Get test coverage flags
+        id: test-coverage-flags
+        # For windows we have to use $env:
+        run: |-
+          os=windows-latest
+          node=$(node --version)
+          echo "os=${os/-latest/}" >> $GITHUB_OUTPUT
+          echo "os=${os/-latest/}" >> $env:GITHUB_OUTPUT
+          echo "node=node_${node/.*.*/}" >> $GITHUB_OUTPUT
+          echo "node=node_${node/.*.*/}" >> $env:GITHUB_OUTPUT
+        shell: bash
+        if: '${{ !steps.release-check.outputs.IS_RELEASE }}'
+
+      - name: Store npm error artefacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: npm-logs--windows-latest--23x
+          path: |
+            /home/runner/.npm/_logs/**/*
+
+      - uses: codecov/codecov-action@v5
         continue-on-error: true
         with:
           flags: ${{ steps.test-coverage-flags.outputs.os }},${{ steps.test-coverage-flags.outputs.node }}

@@ -1,4 +1,5 @@
 import fetch from 'node-fetch'
+import execa from 'execa'
 
 import { log, GitHubRepoResponse, error } from '../command-helpers.js'
 import { GitHubRepo, Template } from '../types.js'
@@ -67,4 +68,12 @@ export const createRepo = async (
   const data = await resp.json()
 
   return data as GitHubRepoResponse
+}
+
+export const callLinkSite = async (cliPath: string, repoName: string, input: string) => {
+  const { stdout } = await execa(cliPath, ['link'], {
+    input,
+    cwd: repoName,
+  })
+  return stdout
 }

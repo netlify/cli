@@ -57,6 +57,7 @@ netlify blobs:delete
 **Flags**
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
+- `force` (*boolean*) - Bypasses prompts & Force the command to run.
 - `debug` (*boolean*) - Print debugging information
 
 ---
@@ -124,6 +125,7 @@ netlify blobs:set
 **Flags**
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
+- `force` (*boolean*) - Bypasses prompts & Force the command to run.
 - `input` (*string*) - Defines the filesystem path where the blob data should be read from
 - `debug` (*boolean*) - Print debugging information
 
