@@ -1,4 +1,4 @@
-import { Handler } from '@netlify/functions'
+import type { Context } from '@netlify/functions'
 
 export const handler: Handler = async (event, context) => {
   const { name = 'stranger' } = event.queryStringParameters
