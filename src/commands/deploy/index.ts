@@ -79,14 +79,17 @@ Support for package.json's main field, and intrinsic index.js entrypoints are co
     )
     .option('-d, --dir <path>', 'Specify a folder to deploy')
     .option('-f, --functions <folder>', 'Specify a functions folder to deploy')
-    .option('-p, --prod', 'Deploy to production', false)
+    .addOption(
+      new Option('-p, --prod', 'Deploy to production').default(false).conflicts(['alias', 'branch', 'prodIfUnlocked']),
+    )
     .addOption(
       new Option(
         '--prodIfUnlocked',
         'Old, prefer --prod-if-unlocked. Deploy to production if unlocked, create a draft otherwise',
       )
         .default(false)
-        .hideHelp(true),
+        .hideHelp(true)
+        .conflicts(['alias', 'branch', 'prod']),
     )
     .option('--prod-if-unlocked', 'Deploy to production if unlocked, create a draft otherwise', false)
     .option(
@@ -103,7 +106,11 @@ Support for package.json's main field, and intrinsic index.js entrypoints are co
     .option('-s, --site <name-or-id>', 'A site name or ID to deploy to', env.NETLIFY_SITE_ID)
     .option('--json', 'Output deployment data as JSON')
     .option('--timeout <number>', 'Timeout to wait for deployment to finish', (value) => Number.parseInt(value))
-    .option('--trigger', 'Trigger a new build of your site on Netlify without uploading local files')
+    .addOption(
+      new Option('--trigger', 'Trigger a new build of your site on Netlify without uploading local files').conflicts(
+        'build',
+      ),
+    )
     .option('--build', 'Run build command before deploying')
     .option('--context <context>', 'Context to use when resolving build configuration')
     .option(

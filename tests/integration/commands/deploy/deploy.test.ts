@@ -8,6 +8,7 @@ import fetch from 'node-fetch'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 
 import { callCli } from '../../utils/call-cli.js'
+import { cliPath } from '../../utils/cli-path.js'
 import { createLiveTestSite, generateSiteName } from '../../utils/create-live-test-site.js'
 import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
 import { pause } from '../../utils/pause.js'
@@ -1039,5 +1040,21 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         expect($('img[alt="Next.js Logo"]').attr('src')).toBe('/next.svg')
       },
     )
+  })
+
+  test('should not run deploy with conflicting flags', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      await builder.build()
+      try {
+        await callCli(['deploy', '--prodIfUnlocked', '--prod'], {
+          cwd: builder.directory,
+          env: { NETLIFY_SITE_ID: context.siteId },
+        })
+      } catch (error) {
+        expect(error.stderr.includes(`Error: option '-p, --prod' cannot be used with option '--prodIfUnlocked`)).toBe(
+          true,
+        )
+      }
+    })
   })
 })
