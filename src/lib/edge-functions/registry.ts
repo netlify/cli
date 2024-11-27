@@ -436,11 +436,15 @@ export class EdgeFunctionsRegistry {
         return
       }
 
-      const isExcluded = this.manifest?.function_config[route.function]?.excluded_patterns?.some((pattern) =>
+      const isExcludedForFunction = this.manifest?.function_config[route.function]?.excluded_patterns?.some((pattern) =>
         new RegExp(pattern).test(urlPath),
       )
+      if (isExcludedForFunction) {
+        return
+      }
 
-      if (isExcluded) {
+      const isExcludedForRoute = route.excluded_patterns.some((pattern) => new RegExp(pattern).test(urlPath))
+      if (isExcludedForRoute) {
         return
       }
 
@@ -523,12 +527,22 @@ export class EdgeFunctionsRegistry {
       }
     }
 
+    const importMapPaths = [this.importMapFromTOML, this.importMapFromDeployConfig]
+
+    if (this.usesFrameworksAPI) {
+      const { edgeFunctionsImportMap } = this.command.netlify.frameworksAPIPaths
+
+      if (await edgeFunctionsImportMap.exists()) {
+        importMapPaths.push(edgeFunctionsImportMap.path)
+      }
+    }
+
     const { functionsConfig, graph, npmSpecifiersWithExtraneousFiles, success } = await this.runIsolate(
       this.functions,
       this.env,
       {
         getFunctionsConfig: true,
-        importMapPaths: [this.importMapFromTOML, this.importMapFromDeployConfig].filter(nonNullable),
+        importMapPaths: importMapPaths.filter(nonNullable),
       },
     )
 
@@ -565,11 +579,13 @@ export class EdgeFunctionsRegistry {
   }
 
   private async scanForFunctions() {
-    const [internalFunctions, userFunctions] = await Promise.all([
+    const [frameworkFunctions, integrationFunctions, userFunctions] = await Promise.all([
+      this.usesFrameworksAPI ? this.bundler.find([this.command.netlify.frameworksAPIPaths.edgeFunctions.path]) : [],
       this.bundler.find([this.internalDirectory]),
       this.bundler.find(this.directories),
       this.scanForDeployConfig(),
     ])
+    const internalFunctions = [...frameworkFunctions, ...integrationFunctions]
     const functions = [...internalFunctions, ...userFunctions]
     const newFunctions = functions.filter((func) => {
       const functionExists = this.functions.some(
@@ -629,5 +645,11 @@ export class EdgeFunctionsRegistry {
     })
 
     this.directoryWatchers.set(this.projectDir, watcher)
+  }
+
+  // We only take into account edge functions from the Frameworks API in
+  // the `serve` command, since we don't run the build command in `dev`.
+  private get usesFrameworksAPI() {
+    return this.command.name() === 'serve'
   }
 }

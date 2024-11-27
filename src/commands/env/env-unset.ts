@@ -1,44 +1,15 @@
 import { OptionValues } from 'commander'
 
-import { chalk, error, log, logJson } from '../../utils/command-helpers.js'
+import { chalk, log, logJson, exit } from '../../utils/command-helpers.js'
 import { AVAILABLE_CONTEXTS, translateFromEnvelopeToMongo } from '../../utils/env/index.js'
+import { promptOverwriteEnvVariable } from '../../utils/prompts/env-unset-prompts.js'
 import BaseCommand from '../base-command.js'
-
-/**
- * Deletes a given key from the env of a site record
- * @returns {Promise<object>}
- */
-// @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-const unsetInMongo = async ({ api, key, siteInfo }) => {
-  // Get current environment variables set in the UI
-  const {
-    build_settings: { env = {} },
-  } = siteInfo
-
-  const newEnv = env
-
-  // Delete environment variable from current variables
-  delete newEnv[key]
-
-  // Apply environment variable updates
-  await api.updateSite({
-    siteId: siteInfo.id,
-    body: {
-      build_settings: {
-        env: newEnv,
-      },
-    },
-  })
-
-  return newEnv
-}
-
 /**
  * Deletes a given key from the env of a site configured with Envelope
  * @returns {Promise<object>}
  */
 // @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-const unsetInEnvelope = async ({ api, context, key, siteInfo }) => {
+const unsetInEnvelope = async ({ api, context, force, key, siteInfo }) => {
   const accountId = siteInfo.account_slug
   const siteId = siteInfo.id
   // fetch envelope env vars
@@ -53,6 +24,10 @@ const unsetInEnvelope = async ({ api, context, key, siteInfo }) => {
   if (!variable) {
     // if not, no need to call delete; return early
     return env
+  }
+
+  if (Boolean(force) === false) {
+    await promptOverwriteEnvVariable(key)
   }
 
   const params = { accountId, siteId, key }
@@ -93,7 +68,7 @@ const unsetInEnvelope = async ({ api, context, key, siteInfo }) => {
 }
 
 export const envUnset = async (key: string, options: OptionValues, command: BaseCommand) => {
-  const { context } = options
+  const { context, force } = options
   const { api, cachedConfig, site } = command.netlify
   const siteId = site.id
 
@@ -104,19 +79,7 @@ export const envUnset = async (key: string, options: OptionValues, command: Base
 
   const { siteInfo } = cachedConfig
 
-  let finalEnv
-  if (siteInfo.use_envelope) {
-    finalEnv = await unsetInEnvelope({ api, context, siteInfo, key })
-  } else if (context) {
-    error(
-      `To specify a context, please run ${chalk.yellow(
-        'netlify open:admin',
-      )} to open the Netlify UI and opt in to the new environment variables experience from Site settings`,
-    )
-    return false
-  } else {
-    finalEnv = await unsetInMongo({ api, siteInfo, key })
-  }
+  const finalEnv = await unsetInEnvelope({ api, context, force, siteInfo, key })
 
   // Return new environment variables of site if using json flag
   if (options.json) {

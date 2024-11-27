@@ -1,5 +1,6 @@
 import { once } from 'events'
 import os from 'os'
+import fs from 'fs'
 import process from 'process'
 import { format, inspect } from 'util'
 
@@ -8,6 +9,7 @@ import chokidar from 'chokidar'
 import decache from 'decache'
 import WSL from 'is-wsl'
 import debounce from 'lodash/debounce.js'
+import { NetlifyAPI } from 'netlify'
 import terminalLink from 'terminal-link'
 
 import { clearSpinner, startSpinner } from '../lib/spinner.js'
@@ -15,6 +17,7 @@ import { clearSpinner, startSpinner } from '../lib/spinner.js'
 import getGlobalConfig from './get-global-config.js'
 import getPackageJson from './get-package-json.js'
 import { reportError } from './telemetry/report-error.js'
+import { TokenLocation } from './types.js'
 
 /** The parsed process argv without the binary only arguments and flags */
 const argv = process.argv.slice(2)
@@ -92,8 +95,14 @@ const TOKEN_TIMEOUT = 3e5
  * @param {object} config.ticket
  * @returns
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-export const pollForToken = async ({ api, ticket }) => {
+
+export const pollForToken = async ({
+  api,
+  ticket,
+}: {
+  api: NetlifyAPI
+  ticket: { id: string; client_id: string; authorized: boolean; created_at: string }
+}) => {
   const spinner = startSpinner({ text: 'Waiting for authorization...' })
   try {
     const accessToken = await api.getAccessToken(ticket, { timeout: TOKEN_TIMEOUT })
@@ -112,21 +121,21 @@ export const pollForToken = async ({ api, ticket }) => {
         )}, then run ${chalk.cyanBright('netlify login')} again.`,
       )
     } else {
-      // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
       error(error_)
     }
   } finally {
     clearSpinner({ spinner })
   }
 }
-
 /**
  * Get a netlify token
  * @param {string} [tokenFromOptions] optional token from the provided --auth options
  * @returns {Promise<[null|string, 'flag' | 'env' |'config' |'not found']>}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'tokenFromOptions' implicitly has an 'an... Remove this comment to see the full error message
-export const getToken = async (tokenFromOptions) => {
+
+export type tokenTuple = [string | null, TokenLocation]
+
+export const getToken = async (tokenFromOptions?: string): Promise<tokenTuple> => {
   // 1. First honor command flag --auth
   if (tokenFromOptions) {
     return [tokenFromOptions, 'flag']
@@ -186,7 +195,7 @@ export const warn = (message = '') => {
 }
 
 /** Throws an error or logs it */
-export const error = (message: Error | string = '', options: { exit?: boolean } = {}) => {
+export const error = (message: unknown | Error | string = '', options: { exit?: boolean } = {}) => {
   const err =
     message instanceof Error
       ? message
@@ -300,3 +309,44 @@ export const nonNullable = <T>(value: T): value is NonNullable<T> => value !== n
 export const noOp = () => {
   // no-op
 }
+
+export interface APIError extends Error {
+  status: number
+  message: string
+}
+
+export class GitHubAPIError extends Error {
+  status: string
+
+  constructor(status: string, message: string) {
+    super(message)
+    this.status = status
+    this.name = 'GitHubAPIError'
+  }
+}
+
+export interface GitHubRepoResponse {
+  status?: string
+  message?: string
+  id?: number
+  name?: string
+  clone_url?: string
+  full_name?: string
+  private?: boolean
+  default_branch?: string
+  errors?: string[]
+  is_template?: boolean
+}
+
+export const checkFileForLine = (filename: string, line: string) => {
+  let filecontent = ''
+  try {
+    filecontent = fs.readFileSync(filename, 'utf8')
+  } catch (error_) {
+    error(error_)
+  }
+  return !!filecontent.match(`${line}`)
+}
+
+export const TABTAB_CONFIG_LINE = '[[ -f ~/.config/tabtab/__tabtab.zsh ]] && . ~/.config/tabtab/__tabtab.zsh || true'
+export const AUTOLOAD_COMPINIT = 'autoload -U compinit; compinit'

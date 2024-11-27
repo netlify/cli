@@ -5,8 +5,8 @@ import { format } from 'util'
 
 import { DefaultLogger, Project } from '@netlify/build-info'
 import { NodeFS, NoopLogger } from '@netlify/build-info/node'
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module '@net... Remove this comment to see the full error message
 import { resolveConfig } from '@netlify/config'
+import { isCI } from 'ci-info'
 import { Command, Help, Option } from 'commander'
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'debu... Remove this comment to see the full error message
 import debug from 'debug'
@@ -33,6 +33,8 @@ import {
   sortOptions,
   warn,
 } from '../utils/command-helpers.js'
+import { FeatureFlags } from '../utils/feature-flags.js'
+import { getFrameworksAPIPaths } from '../utils/frameworks-api.js'
 import getGlobalConfig from '../utils/get-global-config.js'
 import { getSiteByName } from '../utils/get-site.js'
 import openBrowser from '../utils/open-browser.js'
@@ -69,6 +71,11 @@ const HELP_SEPARATOR_WIDTH = 5
  */
 const COMMANDS_WITHOUT_WORKSPACE_OPTIONS = new Set(['api', 'recipes', 'completion', 'status', 'switch', 'login', 'lm'])
 
+/**
+ * A list of commands where we need to fetch featureflags for config resolution
+ */
+const COMMANDS_WITH_FEATURE_FLAGS = new Set(['build', 'dev', 'deploy'])
+
 /** Formats a help list correctly with the correct indent */
 const formatHelpList = (textArray: string[]) => textArray.join('\n').replace(/^/gm, ' '.repeat(HELP_INDENT_WIDTH))
 
@@ -102,6 +109,16 @@ async function selectWorkspace(project: Project, filter?: string): Promise<strin
   if (!selected) {
     log()
     log(chalk.cyan(`We've detected multiple sites inside your repository`))
+
+    if (isCI) {
+      throw new Error(
+        `Sites detected: ${(project.workspace?.packages || [])
+          .map((pkg) => pkg.name || pkg.path)
+          .join(
+            ', ',
+          )}. Configure the site you want to work with and try again. Refer to https://ntl.fyi/configure-site for more information.`,
+      )
+    }
 
     const { result } = await inquirer.prompt({
       name: 'result',
@@ -158,6 +175,10 @@ export default class BaseCommand extends Command {
   /** The current workspace package we should execute the commands in  */
   workspacePackage?: string
 
+  featureFlags: FeatureFlags = {}
+  siteId?: string
+  accountId?: string
+
   /**
    * IMPORTANT this function will be called for each command!
    * Don't do anything expensive in there.
@@ -165,6 +186,7 @@ export default class BaseCommand extends Command {
   createCommand(name: string): BaseCommand {
     const base = new BaseCommand(name)
       // If  --silent or --json flag passed disable logger
+      // .addOption(new Option('--force', 'Force command to run. Bypasses prompts for certain destructive commands.'))
       .addOption(new Option('--json', 'Output return values as JSON').hideHelp(true))
       .addOption(new Option('--silent', 'Silence CLI output').hideHelp(true))
       .addOption(new Option('--cwd <cwd>').hideHelp(true))
@@ -493,8 +515,9 @@ export default class BaseCommand extends Command {
     const frameworks = await this.project.detectFrameworks()
     let packageConfig: string | undefined = flags.config ? resolve(flags.config) : undefined
     // check if we have detected multiple projects inside which one we have to perform our operations.
-    // only ask to select one if on the workspace root
+    // only ask to select one if on the workspace root and no --cwd was provided
     if (
+      !flags.cwd &&
       !COMMANDS_WITHOUT_WORKSPACE_OPTIONS.has(actionCommand.name()) &&
       this.project.workspace?.packages.length &&
       this.project.workspace.isRoot
@@ -539,6 +562,27 @@ export default class BaseCommand extends Command {
         process.env.NETLIFY_API_URL === `${apiUrl.protocol}//${apiUrl.host}` ? '/api/v1' : apiUrl.pathname
     }
 
+    const agent = await getAgent({
+      httpProxy: flags.httpProxy,
+      certificateFile: flags.httpProxyCertificateFilename,
+    })
+    const apiOpts = { ...apiUrlOpts, agent }
+    // TODO: remove typecast once we have proper types for the API
+    const api = new NetlifyAPI(token || '', apiOpts) as NetlifyOptions['api']
+
+    actionCommand.siteId = flags.siteId || (typeof flags.site === 'string' && flags.site) || state.get('siteId')
+
+    const needsFeatureFlagsToResolveConfig = COMMANDS_WITH_FEATURE_FLAGS.has(actionCommand.name())
+    if (api.accessToken && !flags.offline && needsFeatureFlagsToResolveConfig && actionCommand.siteId) {
+      try {
+        const site = await api.getSite({ siteId: actionCommand.siteId, feature_flags: 'cli' })
+        actionCommand.featureFlags = site.feature_flags
+        actionCommand.accountId = site.account_id
+      } catch {
+        // if the site is not found, that could mean that the user passed a site name, not an ID
+      }
+    }
+
     // ==================================================
     // Start retrieving the configuration through the
     // configuration file and the API
@@ -549,20 +593,16 @@ export default class BaseCommand extends Command {
       packagePath: this.workspacePackage,
       // The config flag needs to be resolved from the actual process working directory
       configFilePath: packageConfig,
-      state,
       token,
       ...apiUrlOpts,
     })
-    const { buildDir, config, configPath, env, repositoryRoot, siteInfo } = cachedConfig
+    const { buildDir, config, configPath, repositoryRoot, siteInfo } = cachedConfig
+    let { env } = cachedConfig
+    if (flags.offlineEnv) {
+      env = {}
+    }
     env.NETLIFY_CLI_VERSION = { sources: ['internal'], value: version }
     const normalizedConfig = normalizeConfig(config)
-    const agent = await getAgent({
-      httpProxy: flags.httpProxy,
-      certificateFile: flags.httpProxyCertificateFilename,
-    })
-    const apiOpts = { ...apiUrlOpts, agent }
-    // TODO: remove typecast once we have proper types for the API
-    const api = new NetlifyAPI(token || '', apiOpts) as NetlifyOptions['api']
 
     // If a user passes a site name as an option instead of a site ID to options.site, the siteInfo object
     // will only have the property siteInfo.id. Checking for one of the other properties ensures that we can do
@@ -625,11 +665,15 @@ export default class BaseCommand extends Command {
       // Configuration from netlify.[toml/yml]
       config: normalizedConfig,
       // Used to avoid calling @netlify/config again
-      cachedConfig,
+      cachedConfig: {
+        ...cachedConfig,
+        env,
+      },
       // global cli config
       globalConfig,
       // state of current site dir
       state,
+      frameworksAPIPaths: getFrameworksAPIPaths(buildDir, this.workspacePackage),
     }
     debug(`${this.name()}:init`)('end')
   }
@@ -638,8 +682,6 @@ export default class BaseCommand extends Command {
   async getConfig(config: {
     cwd: string
     token?: string | null
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    state?: any
     offline?: boolean
     /** An optional path to the netlify configuration file e.g. netlify.toml */
     configFilePath?: string
@@ -654,13 +696,14 @@ export default class BaseCommand extends Command {
 
     try {
       return await resolveConfig({
+        accountId: this.accountId,
         config: config.configFilePath,
         packagePath: config.packagePath,
         repositoryRoot: config.repositoryRoot,
         cwd: config.cwd,
         context: flags.context || process.env.CONTEXT || this.getDefaultContext(),
         debug: flags.debug,
-        siteId: flags.siteId || (typeof flags.site === 'string' && flags.site) || config.state.get('siteId'),
+        siteId: this.siteId,
         token: config.token,
         mode: 'cli',
         host: config.host,
@@ -668,6 +711,7 @@ export default class BaseCommand extends Command {
         scheme: config.scheme,
         offline: config.offline ?? flags.offline,
         siteFeatureFlagPrefix: 'cli',
+        featureFlags: this.featureFlags,
       })
     } catch (error_) {
       // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
@@ -681,7 +725,6 @@ export default class BaseCommand extends Command {
       // the option to say that we don't need API data.)
       if (isUserError && !config.offline && config.token) {
         if (flags.debug) {
-          // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
           error(error_, { exit: false })
           warn('Failed to resolve config, falling back to offline resolution')
         }

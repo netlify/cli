@@ -37,30 +37,55 @@ import { createStatusCommand } from './status/index.js'
 import { createSwitchCommand } from './switch/index.js'
 import { createUnlinkCommand } from './unlink/index.js'
 import { createWatchCommand } from './watch/index.js'
-
+import { AddressInUseError } from './types.js'
 const SUGGESTION_TIMEOUT = 1e4
 
-process.on('uncaughtException', async (err) => {
-  console.log('')
-  error(
-    `${chalk.red(
-      'Netlify CLI has terminated unexpectedly',
-    )}\nThis is a problem with the Netlify CLI, not with your application.\nIf you recently updated the CLI, consider reverting to an older version by running:\n\n${chalk.bold(
-      'npm install -g netlify-cli@VERSION',
-    )}\n\nYou can use any version from ${chalk.underline(
-      'https://ntl.fyi/cli-versions',
-    )}.\n\nPlease report this problem at ${chalk.underline(
-      'https://ntl.fyi/cli-error',
-    )} including the error details below.\n`,
-    { exit: false },
-  )
+// These commands run with the --force flag in non-interactive and CI environments
+export const CI_FORCED_COMMANDS = {
+  'env:set': { options: '--force', description: 'Bypasses prompts & Force the command to run.' },
+  'env:unset': { options: '--force', description: 'Bypasses prompts & Force the command to run.' },
+  'env:clone': { options: '--force', description: 'Bypasses prompts & Force the command to run.' },
+  'blobs:set': { options: '--force', description: 'Bypasses prompts & Force the command to run.' },
+  'blobs:delete': { options: '--force', description: 'Bypasses prompts & Force the command to run.' },
+  'addons:delete': { options: '-f, --force', description: 'Delete without prompting (useful for CI)' },
+  init: { options: '--force', description: 'Reinitialize CI hooks if the linked site is already configured to use CI' },
+  'sites:delete': { options: '-f, --force', description: 'Delete without prompting (useful for CI).' },
+}
 
-  const systemInfo = await getSystemInfo()
+process.on('uncaughtException', async (err: AddressInUseError | Error) => {
+  if ('code' in err && err.code === 'EADDRINUSE') {
+    error(
+      `${chalk.red(`Port ${err.port} is already in use`)}\n\n` +
+        `Your serverless functions might be initializing a server\n` +
+        `to listen on specific port without properly closing it.\n\n` +
+        `This behavior is generally not advised\n` +
+        `To resolve this issue, try the following:\n` +
+        `1. If you NEED your serverless function to listen on a specific port,\n` +
+        `use a randomly assigned port as we do not officially support this.\n` +
+        `2. Review your serverless functions for lingering server connections, close them\n` +
+        `3. Check if any other applications are using port ${err.port}\n`,
+      { exit: false },
+    )
+  } else {
+    error(
+      `${chalk.red(
+        'Netlify CLI has terminated unexpectedly',
+      )}\nThis is a problem with the Netlify CLI, not with your application.\nIf you recently updated the CLI, consider reverting to an older version by running:\n\n${chalk.bold(
+        'npm install -g netlify-cli@VERSION',
+      )}\n\nYou can use any version from ${chalk.underline(
+        'https://ntl.fyi/cli-versions',
+      )}.\n\nPlease report this problem at ${chalk.underline(
+        'https://ntl.fyi/cli-error',
+      )} including the error details below.\n`,
+      { exit: false },
+    )
 
-  console.log(chalk.dim(err.stack || err))
-  console.log(chalk.dim(systemInfo))
+    const systemInfo = await getSystemInfo()
 
-  reportError(err, { severity: 'error' })
+    console.log(chalk.dim(err.stack || err))
+    console.log(chalk.dim(systemInfo))
+    reportError(err, { severity: 'error' })
+  }
 
   process.exit(1)
 })
@@ -97,7 +122,7 @@ const mainCommand = async function (options, command) {
   if (options.telemetryDisable) {
     globalConfig.set('telemetryDisabled', true)
     console.log('Netlify telemetry has been disabled')
-    console.log('You can renable it anytime with the --telemetry-enable flag')
+    console.log('You can re-enable it anytime with the --telemetry-enable flag')
     exit()
   }
   if (options.telemetryEnable) {
@@ -229,6 +254,14 @@ export const createMainCommand = () => {
       },
     })
     .action(mainCommand)
+
+  program.commands.forEach((cmd) => {
+    const cmdName = cmd.name()
+    if (cmdName in CI_FORCED_COMMANDS) {
+      const { options, description } = CI_FORCED_COMMANDS[cmdName as keyof typeof CI_FORCED_COMMANDS]
+      cmd.option(options, description)
+    }
+  })
 
   return program
 }

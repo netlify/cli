@@ -8,13 +8,10 @@ import BaseCommand from '../base-command.js'
 export const devExec = async (cmd: string, options: OptionValues, command: BaseCommand) => {
   const { api, cachedConfig, config, site, siteInfo } = command.netlify
 
-  let { env } = cachedConfig
-  if (siteInfo.use_envelope) {
-    env = await getEnvelopeEnv({ api, context: options.context, env, siteInfo })
-  }
+  const withEnvelopeEnvVars = await getEnvelopeEnv({ api, context: options.context, env: cachedConfig.env, siteInfo })
+  const withDotEnvVars = await getDotEnvVariables({ devConfig: { ...config.dev }, env: withEnvelopeEnvVars, site })
 
-  env = await getDotEnvVariables({ devConfig: { ...config.dev }, env, site })
-  injectEnvVariables(env)
+  injectEnvVariables(withDotEnvVars)
 
   await execa(cmd, command.args.slice(1), {
     stdio: 'inherit',
@@ -32,7 +29,7 @@ export const createDevExecCommand = (program: BaseCommand) =>
       'dev',
     )
     .description(
-      'Exec command\nRuns a command within the netlify dev environment, e.g. with env variables from any installed addons',
+      'Runs a command within the netlify dev environment. For example, with environment variables from any installed add-ons',
     )
     .allowExcessArguments(true)
     .addExamples(['netlify dev:exec npm run bootstrap'])

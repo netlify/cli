@@ -2,6 +2,7 @@ import { copyFile, mkdir, rm, unlink, writeFile } from 'fs/promises'
 import os from 'os'
 import path from 'path'
 import process from 'process'
+import { inspect } from 'util'
 
 import slugify from '@sindresorhus/slugify'
 import execa from 'execa'
@@ -11,13 +12,14 @@ import tomlify from 'tomlify-j0.4'
 import { v4 as uuidv4 } from 'uuid'
 import type { TaskContext } from 'vitest'
 
-const ensureDir = (file) => mkdir(file, { recursive: true })
+const ensureDir = (directory: string) => mkdir(directory, { recursive: true })
 
 type Task = () => Promise<unknown>
 
 export class SiteBuilder {
   tasks: Task[] = []
 
+  // eslint-disable-next-line no-useless-constructor
   constructor(public readonly directory: string) {}
 
   ensureDirectoryExists(directory: string) {
@@ -72,20 +74,36 @@ export class SiteBuilder {
   }
 
   withFunction({
+    config,
     esm = false,
     handler,
     path: filePath,
     pathPrefix = 'functions',
+    runtimeAPIVersion,
   }: {
+    config?: object
     esm?: boolean
     handler: any
     path: string
     pathPrefix?: string
+    runtimeAPIVersion?: number
   }) {
     const dest = path.join(this.directory, pathPrefix, filePath)
     this.tasks.push(async () => {
       await ensureDir(path.dirname(dest))
-      const file = esm ? `export const handler = ${handler.toString()}` : `exports.handler = ${handler.toString()}`
+
+      let file = ''
+
+      if (runtimeAPIVersion === 2) {
+        file = `const handler = ${handler.toString()}; export default handler;`
+
+        if (config) {
+          file += `export const config = ${inspect(config)};`
+        }
+      } else {
+        file = esm ? `export const handler = ${handler.toString()}` : `exports.handler = ${handler.toString()}`
+      }
+
       await writeFile(dest, file)
     })
 
@@ -95,20 +113,23 @@ export class SiteBuilder {
   withEdgeFunction({
     config,
     handler,
-    internal = false,
+    imports = '',
     name = 'function',
+    path: edgeFunctionsDirectory = 'netlify/edge-functions',
     pathPrefix = '',
   }: {
     config?: any
     handler: string | Function
-    internal?: boolean
+    imports?: string
     name?: string
+    path?: string
     pathPrefix?: string
   }) {
-    const edgeFunctionsDirectory = internal ? '.netlify/edge-functions' : 'netlify/edge-functions'
     const dest = path.join(this.directory, pathPrefix, edgeFunctionsDirectory, `${name}.js`)
     this.tasks.push(async () => {
-      let content = typeof handler === 'string' ? handler : `export default ${handler.toString()}`
+      let content = `${imports};`
+
+      content += typeof handler === 'string' ? handler : `export default ${handler.toString()}`
 
       if (config) {
         content += `;export const config = ${JSON.stringify(config)}`
@@ -161,6 +182,18 @@ export class SiteBuilder {
     this.tasks.push(async () => {
       await ensureDir(path.dirname(dest))
       await writeFile(dest, content)
+    })
+
+    return this
+  }
+
+  withMockPackage({ content, name }: { name: string; content: string }) {
+    const dir = path.join(this.directory, 'node_modules', name)
+    this.tasks.push(async () => {
+      await ensureDir(dir)
+      await writeFile(path.join(dir, 'index.js'), content)
+      await writeFile(path.join(dir, 'package.json'), '{}')
+      await writeFile(path.join(dir, 'manifest.yml'), `name: '${name}'`)
     })
 
     return this
@@ -257,13 +290,6 @@ export class SiteBuilder {
     return this
   }
 
-  /**
-   * @deprecated
-   */
-  async buildAsync() {
-    return this.build()
-  }
-
   async cleanup() {
     try {
       await rm(this.directory, { force: true, recursive: true })
@@ -272,13 +298,6 @@ export class SiteBuilder {
     }
 
     return this
-  }
-
-  /**
-   * @deprecated
-   */
-  async cleanupAsync() {
-    return this.cleanup()
   }
 }
 
@@ -295,25 +314,15 @@ export const createSiteBuilder = ({ siteName }: { siteName: string }) => {
 }
 
 /**
- * @deprecated use the task-based signature instead
- */
-export function withSiteBuilder<T>(siteName: string, testHandler: (builder: SiteBuilder) => Promise<T>): Promise<T>
-/**
  * @param taskContext used to infer directory name from test name
  */
-export function withSiteBuilder<T>(
-  taskContext: TaskContext,
-  testHandler: (builder: SiteBuilder) => Promise<T>,
-): Promise<T>
 export async function withSiteBuilder<T>(
-  siteNameOrTaskContext: string | TaskContext,
+  taskContext: TaskContext,
   testHandler: (builder: SiteBuilder) => Promise<T>,
 ): Promise<T> {
   let builder: SiteBuilder | undefined
   try {
-    const siteName =
-      typeof siteNameOrTaskContext === 'string' ? siteNameOrTaskContext : slugify(siteNameOrTaskContext.task.name)
-    builder = createSiteBuilder({ siteName })
+    builder = createSiteBuilder({ siteName: slugify(taskContext.task.name) })
     return await testHandler(builder)
   } finally {
     if (builder) await builder.cleanup()

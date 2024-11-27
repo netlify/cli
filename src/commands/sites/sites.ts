@@ -81,7 +81,6 @@ export const createSitesCommand = (program: BaseCommand) => {
     .command('sites:delete')
     .description('Delete a site\nThis command will permanently delete the site on Netlify. Use with caution.')
     .argument('<siteId>', 'Site ID to delete.')
-    .option('-f, --force', 'delete without prompting (useful for CI)')
     .addExamples(['netlify sites:delete 1234-3262-1211'])
     .action(async (siteId: string, options: OptionValues, command: BaseCommand) => {
       const { sitesDelete } = await import('./sites-delete.js')

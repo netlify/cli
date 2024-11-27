@@ -151,6 +151,7 @@ export const initializeProxy = async ({
     // Setting header with geolocation and site info.
     req.headers[headers.Geo] = Buffer.from(JSON.stringify(geoLocation)).toString('base64')
     req.headers[headers.DeployID] = '0'
+    req.headers[headers.DeployContext] = 'dev'
     req.headers[headers.Site] = createSiteInfoHeader(siteInfo, `${protocol}://localhost:${mainPort}`)
     req.headers[headers.Account] = createAccountInfoHeader({ id: accountId })
 

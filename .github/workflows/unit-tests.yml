@@ -13,7 +13,10 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macOS-latest, windows-latest]
-        node-version: ['18.14.0', '*']
+        node-version: ['18.14.0', '22.x']
+        exclude:
+          - os: windows-latest
+            node-version: '22.x'
       fail-fast: false
     steps:
       # Sets an output parameter if this is a release PR
@@ -25,10 +28,10 @@ jobs:
           echo "IS_RELEASE=true" >> $env:GITHUB_OUTPUT
         if: "${{ startsWith(github.head_ref, 'release-') }}"
       - name: Git checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm
@@ -41,7 +44,7 @@ jobs:
         run: npm run format:ci
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
       - name: Run unit tests
-        uses: nick-fields/retry@v2
+        uses: nick-fields/retry@v3
         with:
           timeout_minutes: 15
           max_attempts: 3

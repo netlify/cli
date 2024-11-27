@@ -66,12 +66,13 @@ describe.runIf(gte(version, '18.13.0')).concurrent('v2 api', () => {
       expect(context.requestId).toEqual(response.headers.get('x-nf-request-id'))
       expect(context.site.url).toEqual(`http://localhost:${devServer.port}`)
       expect(context.server.region).toEqual('dev')
-      expect(context.ip).toEqual('::1')
+      expect(['::1', '127.0.0.1'].includes(context.ip)).toBe(true)
       expect(context.geo.city).toEqual('Mock City')
-
       expect(context.cookies).toEqual({ foo: 'bar' })
-
       expect(context.account.id).toEqual('mock-account-id')
+      expect(context.deploy.context).toEqual('dev')
+      expect(context.deploy.id).toEqual('0')
+      expect(context.deploy.published).toEqual(false)
     })
 
     test<FixtureTestContext>('logging works', async ({ devServer }) => {
@@ -172,6 +173,17 @@ describe.runIf(gte(version, '18.13.0')).concurrent('v2 api', () => {
       const url = `http://localhost:${devServer.port}/.netlify/functions/custom-path-literal`
       const response = await fetch(url)
       expect(response.status).toBe(404)
+    })
+
+    test<FixtureTestContext>('respects excluded paths', async ({ devServer }) => {
+      const url1 = `http://localhost:${devServer.port}/custom-path-excluded/t-shirt`
+      const response1 = await fetch(url1)
+      expect(response1.status).toBe(200)
+      expect(await response1.text()).toBe(`Your product: t-shirt`)
+
+      const url2 = `http://localhost:${devServer.port}/custom-path-excluded/jacket`
+      const response2 = await fetch(url2)
+      expect(response2.status).toBe(404)
     })
 
     describe('handles rewrites to a function', () => {

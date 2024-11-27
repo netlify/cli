@@ -1,8 +1,10 @@
 import { Settings } from '@netlify/build-info'
+import { isCI } from 'ci-info'
 import fuzzy from 'fuzzy'
 import inquirer from 'inquirer'
 
 import BaseCommand from '../commands/base-command.js'
+import { $TSFixMe } from '../commands/types.js'
 
 import { chalk, log } from './command-helpers.js'
 
@@ -75,8 +77,25 @@ export const detectFrameworkSettings = async (
       buildCommand: command.netlify.config.build.command,
     }
   }
+  if (type === 'dev' && command.netlify.config?.dev?.command?.length) {
+    return {
+      ...settings[0],
+      devCommand: command.netlify.config.dev.command,
+    }
+  }
 
   if (settings.length > 1) {
+    if (isCI) {
+      log(`Multiple possible ${type} commands found`)
+      throw new Error(
+        `Detected commands for: ${settings
+          .map((setting) => setting.framework.name)
+          .join(
+            ', ',
+          )}. Update your settings to specify which to use. Refer to https://ntl.fyi/dev-monorepo for more information.`,
+      )
+    }
+
     // multiple matching detectors, make the user choose
     const scriptInquirerOptions = formatSettingsArrForInquirer(settings, type)
     const { chosenSettings } = await inquirer.prompt<{ chosenSettings: Settings }>({
@@ -103,4 +122,32 @@ command = "${chosenSettings.devCommand}"
 `)
     return chosenSettings
   }
+}
+
+/**
+ * Generates a defaultConfig for @netlify/build based on the settings from the heuristics
+ * Returns the defaultConfig in the format that @netlify/build expects (json version of toml)
+ * @param settings The settings from the heuristics
+ */
+export const getDefaultConfig = (settings?: Settings): $TSFixMe | undefined => {
+  if (!settings) {
+    return undefined
+  }
+
+  // TODO: We need proper types for the netlify configuration
+  const config: $TSFixMe = { build: {} }
+
+  if (settings.buildCommand) {
+    config.build.command = settings.buildCommand
+    config.build.commandOrigin = 'default'
+  }
+
+  if (settings.dist) {
+    config.build.publish = settings.dist
+    config.build.publishOrigin = 'default'
+  }
+
+  config.plugins = settings.plugins_recommended?.map((plugin) => ({ package: plugin, origin: 'default' })) || []
+
+  return config
 }

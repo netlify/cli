@@ -7,9 +7,27 @@ const siteInfo = {
   },
   id: 'site_id',
   name: 'site-name',
-  use_envelope: true,
 }
-const existingVar = {
+
+export const secondSiteInfo = {
+  account_slug: 'test-account-2',
+  build_settings: {
+    env: {},
+  },
+  id: 'site_id_2',
+  name: 'site-name-2',
+}
+
+const thirdSiteInfo = {
+  account_slug: 'test-account-3',
+  build_settings: {
+    env: {},
+  },
+  id: 'site_id_3',
+  name: 'site-name-3',
+}
+
+export const existingVar = {
   key: 'EXISTING_VAR',
   scopes: ['builds', 'functions'],
   values: [
@@ -24,7 +42,10 @@ const existingVar = {
       value: 'envelope-dev-value',
     },
   ],
+  updated_at: '2020-01-01T00:00:00Z',
+  is_secret: false,
 }
+
 const otherVar = {
   key: 'OTHER_VAR',
   scopes: ['builds', 'functions', 'runtime', 'post_processing'],
@@ -36,9 +57,14 @@ const otherVar = {
     },
   ],
 }
-const envelopeResponse = [existingVar, otherVar]
-const routes = [
+
+const response = [existingVar, otherVar]
+const secondSiteResponse = [existingVar]
+
+export const routes = [
   { path: 'sites/site_id', response: siteInfo },
+  { path: 'sites/site_id_2', response: secondSiteInfo },
+  { path: 'sites/site_id_3', response: thirdSiteInfo },
   { path: 'sites/site_id/service-instances', response: [] },
   {
     path: 'accounts',
@@ -58,10 +84,32 @@ const routes = [
   },
   {
     path: 'accounts/test-account/env',
-    response: envelopeResponse,
+    response,
+  },
+  {
+    path: 'accounts/test-account-2/env/EXISTING_VAR',
+    response: existingVar,
+  },
+  {
+    path: 'accounts/test-account-2/env',
+    response: secondSiteResponse,
+  },
+  {
+    path: 'accounts/test-account-3/env',
+    response: [{}],
   },
   {
     path: 'accounts/test-account/env',
+    method: HTTPMethod.POST,
+    response: {},
+  },
+  {
+    path: 'accounts/test-account-2/env',
+    method: HTTPMethod.POST,
+    response: {},
+  },
+  {
+    path: 'accounts/test-account-3/env',
     method: HTTPMethod.POST,
     response: {},
   },
@@ -77,6 +125,16 @@ const routes = [
   },
   {
     path: 'accounts/test-account/env/EXISTING_VAR',
+    method: HTTPMethod.DELETE,
+    response: {},
+  },
+  {
+    path: 'accounts/test-account-2/env/EXISTING_VAR',
+    method: HTTPMethod.DELETE,
+    response: {},
+  },
+  {
+    path: 'accounts/test-account-3/env/EXISTING_VAR',
     method: HTTPMethod.DELETE,
     response: {},
   },

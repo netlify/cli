@@ -2,12 +2,13 @@ import { Buffer } from 'buffer'
 import { basename, extname } from 'path'
 import { version as nodeVersion } from 'process'
 
+import type { ExtendedRoute, Route } from '@netlify/zip-it-and-ship-it'
 import CronParser from 'cron-parser'
 import semver from 'semver'
 
 import { error as errorExit } from '../../utils/command-helpers.js'
 import { BACKGROUND } from '../../utils/functions/get-functions.js'
-import type { BlobsContextWithEdgeAccess } from '../blobs/blobs.js'
+import { BlobsContextWithEdgeAccess, getBlobsEventProperty } from '../blobs/blobs.js'
 
 const TYPESCRIPT_EXTENSIONS = new Set(['.cts', '.mts', '.ts'])
 const V2_MIN_NODE_VERSION = '18.14.0'
@@ -237,11 +238,7 @@ export default class NetlifyFunction {
     const environment = {}
 
     if (this.blobsContext) {
-      const payload = JSON.stringify({
-        url: this.blobsContext.edgeURL,
-        url_uncached: this.blobsContext.edgeURL,
-        token: this.blobsContext.token,
-      })
+      const payload = JSON.stringify(getBlobsEventProperty(this.blobsContext))
 
       // @ts-expect-error TS(2339) FIXME: Property 'blobs' does not exist on type '{}'.
       event.blobs = Buffer.from(payload).toString('base64')
@@ -271,19 +268,18 @@ export default class NetlifyFunction {
 
     let path = rawPath !== '/' && rawPath.endsWith('/') ? rawPath.slice(0, -1) : rawPath
     path = path.toLowerCase()
-    const { routes = [] } = this.buildData ?? {}
-    // @ts-expect-error TS(7031) FIXME: Binding element 'expression' implicitly has an 'an... Remove this comment to see the full error message
-    const route = routes.find(({ expression, literal, methods }) => {
-      if (methods.length !== 0 && !methods.includes(method)) {
+    const { excludedRoutes = [], routes = [] } = this.buildData ?? {}
+    const matchingRoute = routes.find((route: ExtendedRoute) => {
+      if (route.methods && route.methods.length !== 0 && !route.methods.includes(method)) {
         return false
       }
 
-      if (literal !== undefined) {
-        return path === literal
+      if ('literal' in route && route.literal !== undefined) {
+        return path === route.literal
       }
 
-      if (expression !== undefined) {
-        const regex = new RegExp(expression)
+      if ('expression' in route && route.expression !== undefined) {
+        const regex = new RegExp(route.expression)
 
         return regex.test(path)
       }
@@ -291,15 +287,33 @@ export default class NetlifyFunction {
       return false
     })
 
-    if (!route) {
+    if (!matchingRoute) {
       return
     }
 
-    if (route.prefer_static && (await hasStaticFile())) {
+    const isExcluded = excludedRoutes.some((excludedRoute: Route) => {
+      if ('literal' in excludedRoute && excludedRoute.literal !== undefined) {
+        return path === excludedRoute.literal
+      }
+
+      if ('expression' in excludedRoute && excludedRoute.expression !== undefined) {
+        const regex = new RegExp(excludedRoute.expression)
+
+        return regex.test(path)
+      }
+
+      return false
+    })
+
+    if (isExcluded) {
       return
     }
 
-    return route
+    if (matchingRoute.prefer_static && (await hasStaticFile())) {
+      return
+    }
+
+    return matchingRoute
   }
 
   get runtimeAPIVersion() {

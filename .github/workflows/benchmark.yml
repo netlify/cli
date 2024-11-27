@@ -11,9 +11,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Git checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Use Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: lts/*
           cache: npm
@@ -33,7 +33,7 @@ jobs:
         if: github.event_name == 'pull_request'
         run: echo ${{ github.event.number }} > ./pr_number
       - name: Upload deltas
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: delta-action-deltas
           retention-days: 7

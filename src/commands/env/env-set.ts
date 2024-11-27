@@ -2,37 +2,15 @@ import { OptionValues } from 'commander'
 
 import { chalk, error, log, logJson } from '../../utils/command-helpers.js'
 import { AVAILABLE_CONTEXTS, AVAILABLE_SCOPES, translateFromEnvelopeToMongo } from '../../utils/env/index.js'
+import { promptOverwriteEnvVariable } from '../../utils/prompts/env-set-prompts.js'
 import BaseCommand from '../base-command.js'
-
-/**
- * Updates the env for a site record with a new key/value pair
- * @returns {Promise<object>}
- */
-// @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-const setInMongo = async ({ api, key, siteInfo, value }) => {
-  const { env = {} } = siteInfo.build_settings
-  const newEnv = {
-    ...env,
-    [key]: value,
-  }
-  // Apply environment variable updates
-  await api.updateSite({
-    siteId: siteInfo.id,
-    body: {
-      build_settings: {
-        env: newEnv,
-      },
-    },
-  })
-  return newEnv
-}
 
 /**
  * Updates the env for a site configured with Envelope with a new key/value pair
  * @returns {Promise<object | boolean>}
  */
 // @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-const setInEnvelope = async ({ api, context, key, scope, secret, siteInfo, value }) => {
+const setInEnvelope = async ({ api, context, force, key, scope, secret, siteInfo, value }) => {
   const accountId = siteInfo.account_slug
   const siteId = siteInfo.id
 
@@ -70,6 +48,10 @@ const setInEnvelope = async ({ api, context, key, scope, secret, siteInfo, value
 
   // @ts-expect-error TS(7006) FIXME: Parameter 'envVar' implicitly has an 'any' type.
   const existing = envelopeVariables.find((envVar) => envVar.key === key)
+  // Checks if --force is passed and if it is an existing variaible, then we need to prompt the user
+  if (Boolean(force) === false && existing) {
+    await promptOverwriteEnvVariable(key)
+  }
 
   const params = { accountId, siteId, key }
   try {
@@ -131,32 +113,17 @@ const setInEnvelope = async ({ api, context, key, scope, secret, siteInfo, value
 }
 
 export const envSet = async (key: string, value: string, options: OptionValues, command: BaseCommand) => {
-  const { context, scope, secret } = options
-
+  const { context, force, scope, secret } = options
   const { api, cachedConfig, site } = command.netlify
   const siteId = site.id
-
   if (!siteId) {
     log('No site id found, please run inside a site folder or `netlify link`')
     return false
   }
-
   const { siteInfo } = cachedConfig
-  let finalEnv
 
   // Get current environment variables set in the UI
-  if (siteInfo.use_envelope) {
-    finalEnv = await setInEnvelope({ api, siteInfo, key, value, context, scope, secret })
-  } else if (context || scope) {
-    error(
-      `To specify a context or scope, please run ${chalk.yellow(
-        'netlify open:admin',
-      )} to open the Netlify UI and opt in to the new environment variables experience from Site settings`,
-    )
-    return false
-  } else {
-    finalEnv = await setInMongo({ api, siteInfo, key, value })
-  }
+  const finalEnv = await setInEnvelope({ api, siteInfo, force, key, value, context, scope, secret })
 
   if (!finalEnv) {
     return false

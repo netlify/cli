@@ -1,6 +1,7 @@
 import fs from 'fs'
+import process from 'process'
 import { resolve } from 'path'
-import { exit, env } from 'process'
+import { exit } from 'process'
 
 import { OptionValues } from 'commander'
 import inquirer from 'inquirer'
@@ -10,14 +11,14 @@ import fetch from 'node-fetch'
 import { z } from 'zod'
 
 import { getBuildOptions } from '../../lib/build.js'
-import { getToken, chalk, log } from '../../utils/command-helpers.js'
+import { chalk, getToken, log } from '../../utils/command-helpers.js'
 import { getSiteInformation } from '../../utils/dev.js'
 import BaseCommand from '../base-command.js'
 import { checkOptions } from '../build/build.js'
 import { deploy as siteDeploy } from '../deploy/deploy.js'
 
 function getIntegrationAPIUrl() {
-  return env.INTEGRATION_URL || 'https://api.netlifysdk.com'
+  return process.env.INTEGRATION_URL || 'https://api.netlifysdk.com'
 }
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'localScopes' implicitly has an 'any' ty... Remove this comment to see the full error message
@@ -84,7 +85,7 @@ function formatScopesForRemote(scopes) {
 }
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-function verifyRequiredFieldsAreInConfig(name, description, scopes, integrationLevel) {
+function verifyRequiredFieldsAreInConfig(name, description, scopes) {
   const missingFields = []
 
   if (!name) {
@@ -95,9 +96,6 @@ function verifyRequiredFieldsAreInConfig(name, description, scopes, integrationL
   }
   if (!scopes) {
     missingFields.push('scopes')
-  }
-  if (!integrationLevel) {
-    missingFields.push('integrationLevel')
   }
   if (missingFields.length !== 0) {
     log(
@@ -119,7 +117,7 @@ function verifyRequiredFieldsAreInConfig(name, description, scopes, integrationL
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'workingDir' implicitly has an 'any' typ... Remove this comment to see the full error message
 export async function registerIntegration(workingDir, siteId, accountId, localIntegrationConfig, token) {
-  const { description, integrationLevel, name, scopes, slug } = localIntegrationConfig
+  const { description, name, scopes, slug } = localIntegrationConfig
   log(chalk.yellow(`An integration associated with the site ID ${siteId} is not registered.`))
   const registerPrompt = await inquirer.prompt([
     {
@@ -144,7 +142,7 @@ export async function registerIntegration(workingDir, siteId, accountId, localIn
     exit(1)
   }
 
-  if (!verifyRequiredFieldsAreInConfig(name, description, scopes, integrationLevel)) {
+  if (!verifyRequiredFieldsAreInConfig(name, description, scopes)) {
     exit(1)
   }
 
@@ -161,7 +159,6 @@ export async function registerIntegration(workingDir, siteId, accountId, localIn
       description,
       hostSiteId: siteId,
       scopes: formatScopesForRemote(scopes),
-      integrationLevel,
     }),
   }).then(async (res) => {
     const response = await res.json()
@@ -172,6 +169,7 @@ export async function registerIntegration(workingDir, siteId, accountId, localIn
     log(chalk.red(`There was an error registering the integration:`))
     log()
     log(chalk.red(`-----------------------------------------------`))
+    // @ts-expect-error TS(18046) - 'body' is of type 'unknown'
     log(chalk.red(body.msg))
     log(chalk.red(`-----------------------------------------------`))
     log()
@@ -179,10 +177,12 @@ export async function registerIntegration(workingDir, siteId, accountId, localIn
     exit(1)
   }
 
+  // @ts-expect-error TS(18046) - 'body' is of type 'unknown'
   log(chalk.green(`Successfully registered the integration with the slug: ${body.slug}`))
 
   const updatedIntegrationConfig = yaml.dump({
-    config: { name, description, slug: body.slug, scopes, integrationLevel },
+    // @ts-expect-error TS(18046) - 'body' is of type 'unknown'
+    config: { name, description, slug: body.slug, scopes },
   })
 
   const filePath = resolve(workingDir, 'integration.yaml')
@@ -207,7 +207,7 @@ export async function updateIntegration(
   // @ts-expect-error TS(7006) FIXME: Parameter 'registeredIntegration' implicitly has a... Remove this comment to see the full error message
   registeredIntegration,
 ) {
-  let { description, integrationLevel, name, scopes, slug } = localIntegrationConfig
+  let { description, name, scopes, slug } = localIntegrationConfig
 
   let integrationSlug = slug
   if (slug !== registeredIntegration.slug) {
@@ -226,11 +226,6 @@ export async function updateIntegration(
   if (!description) {
     // eslint-disable-next-line prefer-destructuring
     description = registeredIntegration.description
-  }
-
-  if (!integrationLevel) {
-    // eslint-disable-next-line prefer-destructuring
-    integrationLevel = registeredIntegration.integrationLevel
   }
 
   // This is returned as a comma separated string and will be easier to manage here as an array
@@ -283,7 +278,6 @@ export async function updateIntegration(
             hostSiteId: siteId,
             // @ts-expect-error TS(7005) FIXME: Variable 'localScopes' implicitly has an 'any[]' t... Remove this comment to see the full error message
             scopes: localScopes.join(','),
-            integrationLevel,
           }),
         },
       ).then(async (res) => {
@@ -321,7 +315,7 @@ export async function updateIntegration(
     }
 
     const updatedIntegrationConfig = yaml.dump({
-      config: { name, description, slug: integrationSlug, scopes: scopesToWrite, integrationLevel },
+      config: { name, description, slug: integrationSlug, scopes: scopesToWrite },
     })
 
     const filePath = resolve(workingDir, 'integration.yaml')
@@ -344,7 +338,6 @@ const IntegrationConfigurationSchema = z.object({
       user: z.array(z.enum(['read', 'write'])).optional(),
     })
     .optional(),
-  integrationLevel: z.enum(['site', 'team', 'team-and-site']).optional(),
 })
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'workingDir' implicitly has an 'any' typ... Remove this comment to see the full error message
@@ -391,7 +384,6 @@ export const getConfiguration = (workingDir) => {
 export const deploy = async (options: OptionValues, command: BaseCommand) => {
   const { api, cachedConfig, site, siteInfo } = command.netlify
   const { id: siteId } = site
-  // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
   const [token] = await getToken()
   const workingDir = resolve(command.workingDir)
   const buildOptions = await getBuildOptions({
@@ -406,9 +398,10 @@ export const deploy = async (options: OptionValues, command: BaseCommand) => {
   // Confirm that a site is linked and that the user is logged in
   checkOptions(buildOptions)
 
-  const { description, integrationLevel, name, scopes, slug } = await getConfiguration(command.workingDir)
-  const localIntegrationConfig = { name, description, scopes, slug, integrationLevel }
+  const { description, name, scopes, slug } = await getConfiguration(command.workingDir)
+  const localIntegrationConfig = { name, description, scopes, slug }
 
+  const headers = token ? { 'netlify-token': token } : undefined
   // @ts-expect-error TS(2345) FIXME: Argument of type '{ api: any; site: any; siteInfo:... Remove this comment to see the full error message
   const { accountId } = await getSiteInformation({
     api,
@@ -419,9 +412,7 @@ export const deploy = async (options: OptionValues, command: BaseCommand) => {
   const { body: registeredIntegration, statusCode } = await fetch(
     `${getIntegrationAPIUrl()}/${accountId}/integrations?site_id=${siteId}`,
     {
-      headers: {
-        'netlify-token': token,
-      },
+      headers,
     },
   ).then(async (res) => {
     const body = await res.json()

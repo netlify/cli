@@ -4,7 +4,9 @@ import { readFile } from 'fs/promises'
 import http, { ServerResponse } from 'http'
 import https from 'https'
 import { isIPv6 } from 'net'
+import { Readable } from 'node:stream'
 import path from 'path'
+import process from 'process'
 import { Duplex } from 'stream'
 import util from 'util'
 import zlib from 'zlib'
@@ -19,14 +21,14 @@ import generateETag from 'etag'
 import getAvailablePort from 'get-port'
 import httpProxy from 'http-proxy'
 import { createProxyMiddleware } from 'http-proxy-middleware'
-import jwtDecode from 'jwt-decode'
+import { jwtDecode } from 'jwt-decode'
 import { locatePath } from 'locate-path'
 import { Match } from 'netlify-redirector'
 import pFilter from 'p-filter'
-import toReadableStream from 'to-readable-stream'
+import throttle from 'lodash/throttle.js'
 
 import { BaseCommand } from '../commands/index.js'
-import { $TSFixMe } from '../commands/types.js'
+import { $TSFixMe, NetlifyOptions } from '../commands/types.js'
 import {
   handleProxyRequest,
   initializeProxy as initializeEdgeFunctionsProxy,
@@ -38,17 +40,20 @@ import { DEFAULT_FUNCTION_URL_EXPRESSION } from '../lib/functions/registry.js'
 import { initializeProxy as initializeImageProxy, isImageRequest } from '../lib/images/proxy.js'
 import renderErrorTemplate from '../lib/render-error-template.js'
 
-import { NETLIFYDEVLOG, NETLIFYDEVWARN, log, chalk } from './command-helpers.js'
+import { NETLIFYDEVLOG, NETLIFYDEVWARN, chalk, log } from './command-helpers.js'
 import createStreamPromise from './create-stream-promise.js'
-import { headersForPath, parseHeaders, NFFunctionName, NFRequestID, NFFunctionRoute } from './headers.js'
+import { NFFunctionName, NFFunctionRoute, NFRequestID, headersForPath, parseHeaders } from './headers.js'
 import { generateRequestID } from './request-id.js'
 import { createRewriter, onChanges } from './rules-proxy.js'
 import { signRedirect } from './sign-redirect.js'
-import { Rewriter, Request, ServerSettings } from './types.js'
+import { Request, Rewriter, ServerSettings } from './types.js'
 
 const gunzip = util.promisify(zlib.gunzip)
+const gzip = util.promisify(zlib.gzip)
 const brotliDecompress = util.promisify(zlib.brotliDecompress)
+const brotliCompress = util.promisify(zlib.brotliCompress)
 const deflate = util.promisify(zlib.deflate)
+const inflate = util.promisify(zlib.inflate)
 const shouldGenerateETag = Symbol('Internal: response should generate ETag')
 
 const decompressResponseBody = async function (body: Buffer, contentEncoding = ''): Promise<Buffer> {
@@ -58,10 +63,46 @@ const decompressResponseBody = async function (body: Buffer, contentEncoding = '
     case 'br':
       return await brotliDecompress(body)
     case 'deflate':
-      return await deflate(body)
+      return await inflate(body)
     default:
       return body
   }
+}
+
+const compressResponseBody = async function (body: string, contentEncoding = ''): Promise<Buffer> {
+  switch (contentEncoding) {
+    case 'gzip':
+      return await gzip(body)
+    case 'br':
+      return await brotliCompress(body)
+    case 'deflate':
+      return await deflate(body)
+    default:
+      return Buffer.from(body, 'utf8')
+  }
+}
+
+type HTMLInjections = NonNullable<NonNullable<NetlifyOptions['config']['dev']['processing']>['html']>['injections']
+
+const injectHtml = async function (
+  responseBody: Buffer,
+  proxyRes: http.IncomingMessage,
+  htmlInjections: HTMLInjections,
+): Promise<Buffer> {
+  const decompressedBody: Buffer = await decompressResponseBody(responseBody, proxyRes.headers['content-encoding'])
+  const bodyWithInjections: string = (htmlInjections ?? []).reduce((accum, htmlInjection) => {
+    if (!htmlInjection.html || typeof htmlInjection.html !== 'string') {
+      return accum
+    }
+    const location = htmlInjection.location ?? 'before_closing_head_tag'
+    if (location === 'before_closing_head_tag') {
+      accum = accum.replace('</head>', `${htmlInjection.html}</head>`)
+    } else if (location === 'before_closing_body_tag') {
+      accum = accum.replace('</body>', `${htmlInjection.html}</body>`)
+    }
+    return accum
+  }, decompressedBody.toString())
+  return await compressResponseBody(bodyWithInjections, proxyRes.headers['content-encoding'])
 }
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'errorBuffer' implicitly has an 'any' ty... Remove this comment to see the full error message
@@ -135,7 +176,7 @@ const proxyToExternalUrl = function ({
     pathRewrite: () => destURL,
     // hide logging
     logLevel: 'warn',
-    ...(Buffer.isBuffer(req.originalBody) && { buffer: toReadableStream(req.originalBody) }),
+    ...(Buffer.isBuffer(req.originalBody) && { buffer: Readable.from(req.originalBody) }),
   })
   // @ts-expect-error TS(2345) FIXME: Argument of type 'Request' is not assignable to parameter of type 'Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
   return handler(req, res, () => {})
@@ -190,6 +231,13 @@ const alternativePathsFor = function (url) {
 
   return paths
 }
+
+const notifyActivity = throttle((api: NetlifyOptions['api'], siteId: string, devServerId: string) => {
+  // eslint-disable-next-line promise/prefer-await-to-callbacks, promise/prefer-await-to-then
+  api.markDevServerActivity({ siteId, devServerId }).catch((error) => {
+    console.error(`${NETLIFYDEVWARN} Failed to notify activity`, error)
+  })
+}, 30 * 1000)
 
 const serveRedirect = async function ({
   env,
@@ -264,7 +312,6 @@ const serveRedirect = async function ({
     if (token) {
       let jwtValue = {}
       try {
-        // @ts-expect-error TS(2349) This expression is not callable
         jwtValue = jwtDecode(token) || {}
       } catch (error) {
         // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
@@ -417,25 +464,16 @@ const reqToURL = function (req, pathname) {
 const MILLISEC_TO_SEC = 1e3
 
 const initializeProxy = async function ({
-  // @ts-expect-error TS(7031) FIXME: Binding element 'configPath' implicitly has an 'any... Remove this comment to see the full error message
   config,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'distDir' implicitly has an 'any... Remove this comment to see the full error message
   configPath,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'env' implicitly has an 'any... Remove this comment to see the full error message
   distDir,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'host' implicitly has an 'any... Remove this comment to see the full error message
   env,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'imageProxy' implicitly has an 'any... Remove this comment to see the full error message
   host,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'port' implicitly has an 'any... Remove this comment to see the full error message
   imageProxy,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'projectDir' implicitly has an 'any... Remove this comment to see the full error message
   port,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'siteInfo' implicitly has an 'any... Remove this comment to see the full error message
   projectDir,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'any... Remove this comment to see the full error message
   siteInfo,
-}) {
+}: { config: NetlifyOptions['config'] } & Record<string, $TSFixMe>) {
   const proxy = httpProxy.createProxyServer({
     selfHandleResponse: true,
     target: {
@@ -569,10 +607,18 @@ const initializeProxy = async function ({
     const requestURL = new URL(req.url, `http://${req.headers.host || '127.0.0.1'}`)
     const headersRules = headersForPath(headers, requestURL.pathname)
 
+    const htmlInjections =
+      config.dev?.processing?.html?.injections &&
+      config.dev.processing.html.injections.length !== 0 &&
+      proxyRes.headers?.['content-type']?.startsWith('text/html')
+        ? config.dev.processing.html.injections
+        : undefined
+
     // for streamed responses, we can't do etag generation nor error templates.
     // we'll just stream them through!
+    // when html_injections are present in dev config, we can't use streamed response
     const isStreamedResponse = proxyRes.headers['content-length'] === undefined
-    if (isStreamedResponse) {
+    if (isStreamedResponse && !htmlInjections) {
       Object.entries(headersRules).forEach(([key, val]) => {
         // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
         res.setHeader(key, val)
@@ -597,7 +643,7 @@ const initializeProxy = async function ({
 
     proxyRes.on('end', async function onEnd() {
       // @ts-expect-error TS(7005) FIXME: Variable 'responseData' implicitly has an 'any[]' ... Remove this comment to see the full error message
-      const responseBody = Buffer.concat(responseData)
+      let responseBody = Buffer.concat(responseData)
 
       // @ts-expect-error TS(2339) FIXME: Property 'proxyOptions' does not exist on type 'In... Remove this comment to see the full error message
       let responseStatus = req.proxyOptions.status || proxyRes.statusCode
@@ -641,7 +687,17 @@ const initializeProxy = async function ({
         return res.end()
       }
 
-      res.writeHead(responseStatus, proxyRes.headers)
+      let proxyResHeaders = proxyRes.headers
+
+      if (htmlInjections) {
+        responseBody = await injectHtml(responseBody, proxyRes, htmlInjections)
+        proxyResHeaders = {
+          ...proxyResHeaders,
+          'content-length': String(responseBody.byteLength),
+        }
+      }
+
+      res.writeHead(responseStatus, proxyResHeaders)
 
       if (responseStatus !== 304) {
         res.write(responseBody)
@@ -662,7 +718,7 @@ const initializeProxy = async function ({
       return proxy.web(req, res, options)
     },
     // @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
-    ws: (req, socket, head) => proxy.ws(req, socket, head),
+    ws: (req, socket, head, options) => proxy.ws(req, socket, head, options),
   }
 
   return handlers
@@ -671,6 +727,7 @@ const initializeProxy = async function ({
 const onRequest = async (
   {
     addonsUrls,
+    api,
     edgeFunctionsProxy,
     env,
     functionsRegistry,
@@ -771,6 +828,10 @@ const onRequest = async (
     return proxy.web(req, res, { target: functionsServer })
   }
 
+  if (req.method === 'GET' && api && process.env.NETLIFY_DEV_SERVER_ID) {
+    notifyActivity(api, siteInfo.id, process.env.NETLIFY_DEV_SERVER_ID)
+  }
+
   proxy.web(req, res, options)
 }
 
@@ -784,6 +845,7 @@ type EdgeFunctionsProxy = Awaited<ReturnType<typeof initializeEdgeFunctionsProxy
 export const startProxy = async function ({
   accountId,
   addonsUrls,
+  api,
   blobsContext,
   command,
   config,
@@ -873,12 +935,20 @@ export const startProxy = async function ({
     imageProxy,
     siteInfo,
     env,
+    api,
   })
   const primaryServer = settings.https
     ? https.createServer({ cert: settings.https.cert, key: settings.https.key }, onRequestWithOptions)
     : http.createServer(onRequestWithOptions)
-  const onUpgrade = function onUpgrade(req: http.IncomingMessage, socket: Duplex, head: Buffer) {
-    proxy.ws(req, socket, head)
+  const onUpgrade = async function onUpgrade(req: http.IncomingMessage, socket: Duplex, head: Buffer) {
+    const match = await rewriter(req)
+    if (match && !match.force404 && isExternal(match)) {
+      const reqUrl = reqToURL(req, req.url)
+      const dest = new URL(match.to, `${reqUrl.protocol}//${reqUrl.host}`)
+      const destURL = stripOrigin(dest)
+      return proxy.ws(req, socket, head, { target: dest.origin, changeOrigin: true, pathRewrite: () => destURL })
+    }
+    return proxy.ws(req, socket, head, {})
   }
 
   primaryServer.on('upgrade', onUpgrade)

@@ -5,11 +5,8 @@ import { createRequire } from 'module'
 import path, { dirname, join, relative } from 'path'
 import process from 'process'
 import { fileURLToPath, pathToFileURL } from 'url'
-import { promisify } from 'util'
 
 import { OptionValues } from 'commander'
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'copy... Remove this comment to see the full error message
-import copyTemplateDirOriginal from 'copy-template-dir'
 import { findUp } from 'find-up'
 import fuzzy from 'fuzzy'
 import inquirer from 'inquirer'
@@ -18,13 +15,20 @@ import ora from 'ora'
 
 import { fileExistsAsync } from '../../lib/fs.js'
 import { getAddons, getCurrentAddon, getSiteData } from '../../utils/addons/prepare.js'
-import { NETLIFYDEVERR, NETLIFYDEVLOG, NETLIFYDEVWARN, chalk, error, log } from '../../utils/command-helpers.js'
+import {
+  APIError,
+  NETLIFYDEVERR,
+  NETLIFYDEVLOG,
+  NETLIFYDEVWARN,
+  chalk,
+  error,
+  log,
+} from '../../utils/command-helpers.js'
+import { copyTemplateDir } from '../../utils/copy-template-dir/copy-template-dir.js'
 import { getDotEnvVariables, injectEnvVariables } from '../../utils/dev.js'
 import execa from '../../utils/execa.js'
 import { readRepoURL, validateRepoURL } from '../../utils/read-repo-url.js'
 import BaseCommand from '../base-command.js'
-
-const copyTemplateDir = promisify(copyTemplateDirOriginal)
 
 const require = createRequire(import.meta.url)
 
@@ -380,7 +384,7 @@ const downloadFromURL = async function (command, options, argumentName, function
         const res = await fetch(downloadUrl)
         const finalName = path.basename(name, '.js') === functionName ? `${nameToUse}.js` : name
         const dest = fs.createWriteStream(path.join(fnFolder, finalName))
-        res.body.pipe(dest)
+        res.body?.pipe(dest)
       } catch (error_) {
         throw new Error(`Error while retrieving ${downloadUrl} ${error_}`)
       }
@@ -476,7 +480,7 @@ const installDeps = async ({ functionPackageJson, functionPath, functionsDir }) 
  * @param {'edge' | 'serverless'} funcType
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'command' implicitly has an 'any' type.
-// eslint-disable-next-line max-params
+
 const scaffoldFromTemplate = async function (command, options, argumentName, functionsDir, funcType) {
   // pull the rest of the metadata from the template
   const chosenTemplate = await pickTemplate(options, funcType)
@@ -496,7 +500,6 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
       await downloadFromURL(command, options, argumentName, functionsDir)
     } catch (error_) {
       error(`$${NETLIFYDEVERR} Error downloading from URL: ${options.url}`)
-      // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
       error(error_)
       process.exit(1)
     }
@@ -523,7 +526,6 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
     // be removed before the command finishes.
     const omittedFromOutput = new Set(['.netlify-function-template.mjs', 'package.json', 'package-lock.json'])
     const createdFiles = await copyTemplateDir(pathToTemplate, functionPath, vars)
-    // @ts-expect-error TS(7006) FIXME: Parameter 'filePath' implicitly has an 'any' type.
     createdFiles.forEach((filePath) => {
       const filename = path.basename(filePath)
 
@@ -551,7 +553,7 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
     }
 
     if (funcType === 'edge') {
-      registerEFInToml(name, command.netlify)
+      await registerEFInToml(name, command.netlify)
     }
 
     await installAddons(command, addons, path.resolve(functionPath))
@@ -588,8 +590,7 @@ const createFunctionAddon = async function ({ addonName, addons, api, siteData, 
     log(`Add-on "${addonName}" created for ${siteData.name}`)
     return true
   } catch (error_) {
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    error(error_.message)
+    error((error_ as APIError).message)
   }
 }
 
@@ -687,8 +688,7 @@ const installAddons = async function (command, functionAddons, fnPath) {
 
       await handleAddonDidInstall({ addonCreated, addonDidInstall, command, fnPath })
     } catch (error_) {
-      // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
-      error(`${NETLIFYDEVERR} Error installing addon: `, error_)
+      error(`${NETLIFYDEVERR} Error installing addon: ${error_}`)
     }
   })
   return Promise.all(arr)

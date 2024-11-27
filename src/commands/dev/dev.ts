@@ -1,8 +1,7 @@
 import process from 'process'
 
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module '@net... Remove this comment to see the full error message
 import { applyMutations } from '@netlify/config'
-import { OptionValues, Option } from 'commander'
+import { Option, OptionValues } from 'commander'
 
 import { BLOBS_CONTEXT_VARIABLE, encodeBlobsContext, getBlobsContextWithEdgeAccess } from '../../lib/blobs/blobs.js'
 import { promptEditorHelper } from '../../lib/edge-functions/editor-helper.js'
@@ -10,16 +9,16 @@ import { startFunctionsServer } from '../../lib/functions/server.js'
 import { printBanner } from '../../utils/banner.js'
 import {
   BANG,
-  chalk,
-  log,
   NETLIFYDEV,
   NETLIFYDEVERR,
   NETLIFYDEVLOG,
   NETLIFYDEVWARN,
+  chalk,
+  log,
   normalizeConfig,
 } from '../../utils/command-helpers.js'
 import detectServerSettings, { getConfigWithPlugins } from '../../utils/detect-server-settings.js'
-import { getDotEnvVariables, getSiteInformation, injectEnvVariables, UNLINKED_SITE_MOCK_ID } from '../../utils/dev.js'
+import { UNLINKED_SITE_MOCK_ID, getDotEnvVariables, getSiteInformation, injectEnvVariables } from '../../utils/dev.js'
 import { getEnvelopeEnv, normalizeContext } from '../../utils/env/index.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import { getLiveTunnelSlug, startLiveTunnel } from '../../utils/live-tunnel.js'
@@ -96,6 +95,10 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
   const devConfig = {
     framework: '#auto',
     autoLaunch: Boolean(options.open),
+    ...(cachedConfig.siteInfo?.dev_server_settings && {
+      command: cachedConfig.siteInfo.dev_server_settings.cmd,
+      targetPort: cachedConfig.siteInfo.dev_server_settings.target_port,
+    }),
     ...(config.functionsDirectory && { functions: config.functionsDirectory }),
     ...(config.build.publish && { publish: config.build.publish }),
     ...(config.build.base && { base: config.build.base }),
@@ -115,7 +118,7 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
 
   env[BLOBS_CONTEXT_VARIABLE] = { sources: ['internal'], value: encodeBlobsContext(blobsContext) }
 
-  if (!options.offline && siteInfo.use_envelope) {
+  if (!options.offline && !options.offlineEnv) {
     env = await getEnvelopeEnv({ api, context: options.context, env, siteInfo })
     log(`${NETLIFYDEVLOG} Injecting environment variable values for ${chalk.yellow('all scopes')}`)
   }
@@ -137,11 +140,14 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
   try {
     settings = await detectServerSettings(devConfig, options, command)
 
-    if (process.env.NETLIFY_INCLUDE_DEV_SERVER_PLUGIN) {
+    const { NETLIFY_INCLUDE_DEV_SERVER_PLUGIN } = process.env
+
+    if (NETLIFY_INCLUDE_DEV_SERVER_PLUGIN) {
+      const plugins = NETLIFY_INCLUDE_DEV_SERVER_PLUGIN.split(',')
       if (options.debug) {
-        log(`${NETLIFYDEVLOG} Including dev server plugin: ${process.env.NETLIFY_INCLUDE_DEV_SERVER_PLUGIN}`)
+        log(`${NETLIFYDEVLOG} Including dev server plugins: ${NETLIFY_INCLUDE_DEV_SERVER_PLUGIN}`)
       }
-      settings.plugins = [...(settings.plugins || []), process.env.NETLIFY_INCLUDE_DEV_SERVER_PLUGIN]
+      settings.plugins = [...(settings.plugins || []), ...plugins]
     }
 
     cachedConfig.config = getConfigWithPlugins(cachedConfig.config, settings)
@@ -204,7 +210,6 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
     const { config: newConfig } = await command.getConfig({
       cwd: command.workingDir,
       offline: true,
-      state,
     })
     const normalizedNewConfig = normalizeConfig(newConfig)
 
@@ -215,6 +220,7 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
 
   await startProxyServer({
     addonsUrls,
+    api,
     blobsContext,
     command,
     config: mutatedConfig,
@@ -272,6 +278,9 @@ export const createDevCommand = (program: BaseCommand) => {
     .option('-d ,--dir <path>', 'dir with static files')
     .option('-f ,--functions <folder>', 'specify a functions folder to serve')
     .option('-o ,--offline', 'disables any features that require network access')
+    .addOption(
+      new Option('--offline-env', 'disables fetching environment variables from the Netlify API').hideHelp(true),
+    )
     .addOption(
       new Option(
         '--internal-disable-edge-functions',

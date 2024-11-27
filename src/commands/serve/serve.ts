@@ -23,6 +23,7 @@ import {
 import detectServerSettings, { getConfigWithPlugins } from '../../utils/detect-server-settings.js'
 import { UNLINKED_SITE_MOCK_ID, getDotEnvVariables, getSiteInformation, injectEnvVariables } from '../../utils/dev.js'
 import { getEnvelopeEnv } from '../../utils/env/index.js'
+import { getFrameworksAPIPaths, getFrameworksAPIConfig } from '../../utils/frameworks-api.js'
 import { getInternalFunctionsDir } from '../../utils/functions/functions.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import openBrowser from '../../utils/open-browser.js'
@@ -33,7 +34,7 @@ import BaseCommand from '../base-command.js'
 import { type DevConfig } from '../dev/types.js'
 
 export const serve = async (options: OptionValues, command: BaseCommand) => {
-  const { api, cachedConfig, config, repositoryRoot, site, siteInfo, state } = command.netlify
+  const { api, cachedConfig, config, frameworksAPIPaths, repositoryRoot, site, siteInfo, state } = command.netlify
   config.dev = { ...config.dev }
   config.build = { ...config.build }
   const devConfig = {
@@ -49,7 +50,7 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
 
   let { env } = cachedConfig
 
-  if (!options.offline && siteInfo.use_envelope) {
+  if (!options.offline) {
     env = await getEnvelopeEnv({ api, context: options.context, env, siteInfo })
     log(`${NETLIFYDEVLOG} Injecting environment variable values for ${chalk.yellow('all scopes')}`)
   }
@@ -78,6 +79,8 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
     ensureExists: true,
     packagePath: command.workspacePackage,
   })
+
+  await frameworksAPIPaths.functions.ensureExists()
 
   let settings: ServerSettings
   try {
@@ -114,6 +117,8 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
     env: {},
   })
 
+  const mergedConfig = await getFrameworksAPIConfig(config, frameworksAPIPaths.config.path)
+
   // Now we generate a second Blobs context object, this time with edge access
   // for runtime access (i.e. from functions and edge functions).
   const runtimeBlobsContext = await getBlobsContextWithEdgeAccess(blobsOptions)
@@ -123,7 +128,7 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
   const functionsRegistry = await startFunctionsServer({
     blobsContext: runtimeBlobsContext,
     command,
-    config,
+    config: mergedConfig,
     debug: options.debug,
     loadDistFunctions: true,
     settings,
@@ -148,7 +153,7 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
 
   // TODO: We should consolidate this with the existing config watcher.
   const getUpdatedConfig = async () => {
-    const { config: newConfig } = await command.getConfig({ cwd: command.workingDir, offline: true, state })
+    const { config: newConfig } = await command.getConfig({ cwd: command.workingDir, offline: true })
     const normalizedNewConfig = normalizeConfig(newConfig)
 
     return normalizedNewConfig
@@ -159,7 +164,7 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
     addonsUrls,
     blobsContext: runtimeBlobsContext,
     command,
-    config,
+    config: mergedConfig,
     configPath: configPathOverride,
     debug: options.debug,
     disableEdgeFunctions: options.internalDisableEdgeFunctions,
