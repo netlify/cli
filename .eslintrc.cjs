@@ -70,7 +70,7 @@ module.exports = {
     },
     // Example functions
     {
-      files: ['functions-templates/**/*.js'],
+      files: ['functions-templates/**/*.mjs'],
       rules: {
         'require-await': 0,
         'import/no-unresolved': 0,
