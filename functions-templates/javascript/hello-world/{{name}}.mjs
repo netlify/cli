@@ -8,7 +8,7 @@ export default (request, context) => {
       status: 200,
     })
   } catch (error) {
-    return new Response(error.toString, {
+    return new Response(error.toString(), {
       status: 500,
     })
   }
