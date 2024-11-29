@@ -80,6 +80,7 @@ module.exports = {
         'no-undef': 0,
         'no-unused-vars': 0,
         'arrow-body-style': 0,
+        camelcase: 0,
       },
       parserOptions: {
         sourceType: 'module',
