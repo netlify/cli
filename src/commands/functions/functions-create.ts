@@ -41,8 +41,6 @@ const templatesDir = path.resolve(dirname(fileURLToPath(import.meta.url)), '../.
 const languages = [
   { name: 'JavaScript', value: 'javascript' },
   { name: 'TypeScript', value: 'typescript' },
-  { name: 'Go', value: 'go' },
-  { name: 'Rust', value: 'rust' },
 ]
 
 /**
@@ -112,14 +110,13 @@ const filterRegistry = function (registry, input) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'lang' implicitly has an 'any' type.
 const formatRegistryArrayForInquirer = async function (lang, funcType) {
-  const folders = await readdir(path.join(templatesDir, lang), { withFileTypes: true })
-
+  const folders = await readdir(path.join(templatesDir, funcType, lang), { withFileTypes: true })
   const imports = await Promise.all(
     folders
       .filter((folder) => Boolean(folder?.isDirectory()))
       .map(async ({ name }) => {
         try {
-          const templatePath = path.join(templatesDir, lang, name, '.netlify-function-template.mjs')
+          const templatePath = path.join(templatesDir, funcType, lang, name, '.netlify-function-template.mjs')
           // @ts-expect-error TS(7036) FIXME: Dynamic import's specifier must be of type 'string... Remove this comment to see the full error message
           const template = await import(pathToFileURL(templatePath))
           return template.default
@@ -149,7 +146,7 @@ const formatRegistryArrayForInquirer = async function (lang, funcType) {
         // confusing but this is the format inquirer wants
         name: `[${t.name}] ${t.description}`,
         value: t,
-        short: `${lang}-${t.name}`,
+        short: `${t.name}`,
       }
     })
   return registry
@@ -194,7 +191,6 @@ const pickTemplate = async function ({ language: languageFromFlag }, funcType) {
 
     language = languageFromPrompt
   }
-
   // @ts-expect-error TS(7034) FIXME: Variable 'templatesForLanguage' implicitly has typ... Remove this comment to see the full error message
   let templatesForLanguage
 
@@ -238,7 +234,7 @@ const DEFAULT_PRIORITY = 999
 const selectTypeOfFunc = async () => {
   const functionTypes = [
     { name: 'Edge function (Deno)', value: 'edge' },
-    { name: 'Serverless function (Node/Go/Rust)', value: 'serverless' },
+    { name: 'Serverless function (Node)', value: 'serverless' },
   ]
 
   const { functionType } = await inquirer.prompt([
@@ -507,10 +503,10 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
     log(`${NETLIFYDEVLOG} Open in browser: https://github.com/netlify/cli/issues/new`)
   } else {
     const { addons = [], lang, name: templateName, onComplete } = chosenTemplate
-    const pathToTemplate = path.join(templatesDir, lang, templateName)
+    const pathToTemplate = path.join(templatesDir, funcType, lang, templateName)
     if (!fs.existsSync(pathToTemplate)) {
       throw new Error(
-        `There isn't a corresponding directory to the selected name. Template '${templateName}' is misconfigured`,
+        `There isn't a corresponding directory to the selected name. Template '${templateName}' is misconfigured and not found in ${pathToTemplate}`,
       )
     }
 
@@ -551,24 +547,11 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
       await installDeps({ functionPackageJson, functionPath, functionsDir })
       spinner.succeed(`Installed dependencies for ${name}`)
     }
-
-    if (funcType === 'edge') {
-      await registerEFInToml(name, command.netlify)
-    }
-
     await installAddons(command, addons, path.resolve(functionPath))
     await handleOnComplete({ command, onComplete })
 
     log()
     log(chalk.greenBright(`Function created!`))
-
-    if (lang == 'rust') {
-      log(
-        chalk.green(
-          `Please note that Rust functions require setting the NETLIFY_EXPERIMENTAL_BUILD_RUST_SOURCE environment variable to 'true' on your site.`,
-        ),
-      )
-    }
   }
 }
 
@@ -692,47 +675,6 @@ const installAddons = async function (command, functionAddons, fnPath) {
     }
   })
   return Promise.all(arr)
-}
-
-/**
- *
- * @param {string} funcName
- * @param {import('../types.js').NetlifyOptions} options
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'funcName' implicitly has an 'any' type.
-const registerEFInToml = async (funcName, options) => {
-  const { configFilePath, relConfigFilePath } = options
-  if (!fs.existsSync(configFilePath)) {
-    log(`${NETLIFYDEVLOG} \`${relConfigFilePath}\` file does not exist yet. Creating it...`)
-  }
-
-  let { funcPath } = await inquirer.prompt([
-    {
-      type: 'input',
-      name: 'funcPath',
-      message: `What route do you want your edge function to be invoked on?`,
-      default: '/test',
-      validate: (val) => Boolean(val),
-      // Make sure route isn't undefined and is valid
-      // Todo: add more validation?
-    },
-  ])
-
-  // Make sure path begins with a '/'
-  if (funcPath[0] !== '/') {
-    funcPath = `/${funcPath}`
-  }
-
-  const functionRegister = `\n\n[[edge_functions]]\nfunction = "${funcName}"\npath = "${funcPath}"`
-
-  try {
-    fs.promises.appendFile(configFilePath, functionRegister)
-    log(
-      `${NETLIFYDEVLOG} Function '${funcName}' registered for route \`${funcPath}\`. To change, edit your \`${relConfigFilePath}\` file.`,
-    )
-  } catch {
-    error(`${NETLIFYDEVERR} Unable to register function. Please check your \`${relConfigFilePath}\` file.`)
-  }
 }
 
 /**
