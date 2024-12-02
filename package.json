@@ -194,7 +194,7 @@
     "@types/inquirer": "9.0.7",
     "@types/jsonwebtoken": "9.0.7",
     "@types/lodash": "4.17.13",
-    "@types/node": "22.10.0",
+    "@types/node": "22.10.1",
     "@types/node-fetch": "2.6.12",
     "@types/parse-gitignore": "1.0.2",
     "@types/prettyjson": "0.0.33",
