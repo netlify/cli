@@ -57,6 +57,7 @@ export type EnvironmentVariables = Record<string, { sources: EnvironmentVariable
  * The netlify object inside each command with the state
  */
 export type NetlifyOptions = {
+  accounts: $TSFixMe
   // poorly duck type the missing api functions
   api: NetlifyAPI & Record<string, (...args: $TSFixMe) => Promise<$TSFixMe>>
   apiOpts: $TSFixMe
