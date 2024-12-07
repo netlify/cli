@@ -43,7 +43,6 @@ export const status = async (options: OptionValues, command: BaseCommand) => {
   }
   const teamsData = {}
 
-  // @ts-expect-error TS(7006) FIXME: Parameter 'team' implicitly has an 'any' type.
   accounts.forEach((team) => {
     // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     teamsData[team.name] = team.roles_allowed.join(' ')
