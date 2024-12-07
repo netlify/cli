@@ -26,8 +26,7 @@ export const status = async (options: OptionValues, command: BaseCommand) => {
   let user
 
   try {
-    // eslint-disable-next-line @typescript-eslint/no-extra-semi
-    ;[user] = await Promise.all([api.getCurrentUser()])
+    user = await api.getCurrentUser()
   } catch (error_) {
     if ((error_ as APIError).status === 401) {
       error('Your session has expired. Please try to re-authenticate by running `netlify logout` and `netlify login`.')
