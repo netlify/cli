@@ -168,16 +168,7 @@ export interface Account {
   name: string
   slug: string
   type: string
-  capabilities: {
-    sites: {
-      included: number
-      used: number
-    }
-    collaborators: {
-      included: number
-      used: number
-    }
-  }
+  capabilities: Record<string, {included: string, used: string}>
   billing_name: string
   billing_email: string
   billing_details: string

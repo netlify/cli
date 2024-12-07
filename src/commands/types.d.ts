@@ -4,6 +4,7 @@ import type { NetlifyAPI } from 'netlify'
 
 import type { FrameworksAPIPaths } from "../utils/frameworks-api.ts";
 import StateConfig from '../utils/state-config.js'
+import { Account } from "../utils/types.ts";
 
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -81,23 +82,4 @@ export interface AddressInUseError extends Error {
   syscall: 'listen'
   address: string
   port: number
-}
-
-export interface Account {
-	id: string;
-	name: string;
-	slug: string;
-	type: string;
-	capabilities: Record<string, {included: string, used: string}>;
-	billing_name: string;
-	billing_email: string;
-	billing_details: string;
-	billing_period: string;
-	payment_method_id: string;
-	type_name: string;
-	type_id: string;
-	owner_ids: string[];
-	roles_allowed: string[];
-	created_at: string;
-	updated_at: string;
 }
