@@ -57,7 +57,7 @@ export type EnvironmentVariables = Record<string, { sources: EnvironmentVariable
  * The netlify object inside each command with the state
  */
 export type NetlifyOptions = {
-  accounts: $TSFixMe
+  accounts: Account[]
   // poorly duck type the missing api functions
   api: NetlifyAPI & Record<string, (...args: $TSFixMe) => Promise<$TSFixMe>>
   apiOpts: $TSFixMe
@@ -81,4 +81,23 @@ export interface AddressInUseError extends Error {
   syscall: 'listen'
   address: string
   port: number
+}
+
+export interface Account {
+	id: string;
+	name: string;
+	slug: string;
+	type: string;
+	capabilities: Record<string, {included: string, used: string}>;
+	billing_name: string;
+	billing_email: string;
+	billing_details: string;
+	billing_period: string;
+	payment_method_id: string;
+	type_name: string;
+	type_id: string;
+	owner_ids: string[];
+	roles_allowed: string[];
+	created_at: string;
+	updated_at: string;
 }
