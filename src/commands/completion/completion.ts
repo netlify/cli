@@ -34,6 +34,21 @@ export const completionGenerate = async (options: OptionValues, command: BaseCom
     name: parent.name(),
     completer,
   })
+
+  const completionScriptPath = join(homedir(), `.config/tabtab/${parent.name()}.zsh`)
+
+  if (fs.existsSync(completionScriptPath)) {
+    let completionScript = fs.readFileSync(completionScriptPath, 'utf8')
+
+    completionScript = completionScript.replace(
+      /compdef _netlify_completion netlify/,
+      'compdef _netlify_completion netlify ntl',
+    )
+
+    fs.writeFileSync(completionScriptPath, completionScript, 'utf8')
+    log(`Added alias 'ntl' to completion script.`)
+  }
+
   const zshConfigFilepath = join(process.env.HOME || homedir(), '.zshrc')
 
   if (
