@@ -25,7 +25,6 @@ import { createFunctionsCommand } from './functions/index.js'
 import { createInitCommand } from './init/index.js'
 import { createIntegrationCommand } from './integration/index.js'
 import { createLinkCommand } from './link/index.js'
-import { createLmCommand } from './lm/index.js'
 import { createLoginCommand } from './login/index.js'
 import { createLogoutCommand } from './logout/index.js'
 import { createLogsCommand } from './logs/index.js'
@@ -35,9 +34,10 @@ import { createServeCommand } from './serve/index.js'
 import { createSitesCommand } from './sites/index.js'
 import { createStatusCommand } from './status/index.js'
 import { createSwitchCommand } from './switch/index.js'
+import { AddressInUseError } from './types.js'
 import { createUnlinkCommand } from './unlink/index.js'
 import { createWatchCommand } from './watch/index.js'
-import { AddressInUseError } from './types.js'
+
 const SUGGESTION_TIMEOUT = 1e4
 
 // These commands run with the --force flag in non-interactive and CI environments
@@ -225,7 +225,6 @@ export const createMainCommand = () => {
   createInitCommand(program)
   createIntegrationCommand(program)
   createLinkCommand(program)
-  createLmCommand(program)
   createLoginCommand(program)
   createLogoutCommand(program)
   createOpenCommand(program)
@@ -258,7 +257,7 @@ export const createMainCommand = () => {
   program.commands.forEach((cmd) => {
     const cmdName = cmd.name()
     if (cmdName in CI_FORCED_COMMANDS) {
-      const { options, description } = CI_FORCED_COMMANDS[cmdName as keyof typeof CI_FORCED_COMMANDS]
+      const { description, options } = CI_FORCED_COMMANDS[cmdName as keyof typeof CI_FORCED_COMMANDS]
       cmd.option(options, description)
     }
   })
