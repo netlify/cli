@@ -1,0 +1,6 @@
+[build]
+cmd = "hello world"
+publish = "dist"
+
+[[plugins]]
+package = "./tools/build-plugin"
