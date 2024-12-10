@@ -4,6 +4,7 @@ import type { NetlifyAPI } from 'netlify'
 
 import type { FrameworksAPIPaths } from "../utils/frameworks-api.ts";
 import StateConfig from '../utils/state-config.js'
+import { Account } from "../utils/types.ts";
 
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -57,6 +58,7 @@ export type EnvironmentVariables = Record<string, { sources: EnvironmentVariable
  * The netlify object inside each command with the state
  */
 export type NetlifyOptions = {
+  accounts: Account[]
   // poorly duck type the missing api functions
   api: NetlifyAPI & Record<string, (...args: $TSFixMe) => Promise<$TSFixMe>>
   apiOpts: $TSFixMe
