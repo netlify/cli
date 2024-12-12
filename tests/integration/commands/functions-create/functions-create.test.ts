@@ -66,7 +66,7 @@ describe.concurrent('functions:create command', () => {
 
         await childProcess
 
-        expect(existsSync(`${builder.directory}/test/functions/hello-world/hello-world.js`)).toBe(true)
+        expect(existsSync(`${builder.directory}/test/functions/hello-world/hello-world.mjs`)).toBe(true)
       })
     })
   })
@@ -175,7 +175,7 @@ describe.concurrent('functions:create command', () => {
 
         await childProcess
 
-        expect(await fileExistsAsync(`${builder.directory}/functions/hello-world/hello-world.js`)).toBe(true)
+        expect(await fileExistsAsync(`${builder.directory}/functions/hello-world/hello-world.mjs`)).toBe(true)
       })
     })
   })
@@ -219,8 +219,8 @@ describe.concurrent('functions:create command', () => {
         })
       })
 
-    await createWithLanguageTemplate('javascript', 'hello-world/hello-world.js')
-    await createWithLanguageTemplate('typescript', 'hello-world/hello-world.ts')
+    await createWithLanguageTemplate('javascript', 'hello-world/hello-world.mjs')
+    await createWithLanguageTemplate('typescript', 'hello-world/hello-world.mts')
   })
 
   test('throws an error when the --language flag contains an unsupported value', async (t) => {
@@ -257,7 +257,7 @@ describe.concurrent('functions:create command', () => {
 
         await expect(childProcess).rejects.toThrowError('Invalid language: coffeescript')
 
-        expect(await fileExistsAsync(`${builder.directory}/test/functions/hello-world/hello-world.js`)).toBe(false)
+        expect(await fileExistsAsync(`${builder.directory}/test/functions/hello-world/hello-world.mjs`)).toBe(false)
       })
     })
   })
@@ -355,7 +355,7 @@ describe.concurrent('functions:create command', () => {
         const pkgBase = join(fixture.directory, 'packages/website')
 
         await childProcess
-        expect(existsSync(join(pkgBase, 'my-dir/functions/hello-world/hello-world.js'))).toBe(true)
+        expect(existsSync(join(pkgBase, 'my-dir/functions/hello-world/hello-world.mjs'))).toBe(true)
       })
     })
   })

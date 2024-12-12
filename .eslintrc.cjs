@@ -70,7 +70,7 @@ module.exports = {
     },
     // Example functions
     {
-      files: ['functions-templates/**/*.js'],
+      files: ['functions-templates/**/*.mjs', 'functions-templates/**/*.mts'],
       rules: {
         'require-await': 0,
         'import/no-unresolved': 0,
@@ -80,6 +80,8 @@ module.exports = {
         'no-undef': 0,
         'no-unused-vars': 0,
         'arrow-body-style': 0,
+        'n/no-unsupported-features/node-builtins': 0,
+        camelcase: 0,
       },
       parserOptions: {
         sourceType: 'module',
