@@ -14,7 +14,7 @@ See the [CLI command line reference](https://cli.netlify.com/commands/) to get s
 <!-- AUTO-GENERATED-CONTENT:START (TOC:collapse=true&collapseText=Click to expand) -->
 <details>
 <summary>Click to expand</summary>
-
+a change
 - [Installation](#installation)
 - [Usage](#usage)
 - [Documentation](#documentation)
