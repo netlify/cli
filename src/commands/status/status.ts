@@ -6,7 +6,7 @@ import { chalk, error, exit, getToken, log, logJson, warn, APIError } from '../.
 import BaseCommand from '../base-command.js'
 
 export const status = async (options: OptionValues, command: BaseCommand) => {
-  const { api, globalConfig, site, siteInfo } = command.netlify
+  const { accounts, api, globalConfig, site, siteInfo } = command.netlify
   const current = globalConfig.get('userId')
   const [accessToken] = await getToken()
 
@@ -23,12 +23,10 @@ export const status = async (options: OptionValues, command: BaseCommand) => {
  Current Netlify User │
 ──────────────────────┘`)
 
-  let accounts
   let user
 
   try {
-    // eslint-disable-next-line @typescript-eslint/no-extra-semi
-    ;[accounts, user] = await Promise.all([api.listAccountsForUser(), api.getCurrentUser()])
+    user = await api.getCurrentUser()
   } catch (error_) {
     if ((error_ as APIError).status === 401) {
       error('Your session has expired. Please try to re-authenticate by running `netlify logout` and `netlify login`.')
@@ -45,7 +43,6 @@ export const status = async (options: OptionValues, command: BaseCommand) => {
   }
   const teamsData = {}
 
-  // @ts-expect-error TS(7006) FIXME: Parameter 'team' implicitly has an 'any' type.
   accounts.forEach((team) => {
     // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     teamsData[team.name] = team.roles_allowed.join(' ')

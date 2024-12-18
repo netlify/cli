@@ -29,11 +29,9 @@ export const getSiteNameInput = async (name: string | undefined): Promise<{ name
 }
 
 export const sitesCreate = async (options: OptionValues, command: BaseCommand) => {
-  const { api } = command.netlify
+  const { accounts, api } = command.netlify
 
   await command.authenticate()
-
-  const accounts: Account[] = await api.listAccountsForUser()
 
   let { accountSlug }: { accountSlug?: string } = options
   if (!accountSlug) {
