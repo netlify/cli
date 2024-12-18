@@ -1,4 +1,4 @@
-import { parseAllHeaders } from 'netlify-headers-parser'
+import { parseAllHeaders } from '@netlify/headers-parser'
 
 import { NETLIFYDEVERR, log } from './command-helpers.js'
 
