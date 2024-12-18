@@ -1,10 +1,11 @@
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+
 import { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 import pick from 'lodash/pick.js'
 import { render } from 'prettyjson'
 import { v4 as uuid } from 'uuid'
-import path from 'node:path'
-import { fileURLToPath } from 'node:url'
 
 import {
   chalk,
@@ -30,7 +31,7 @@ import BaseCommand from '../base-command.js'
 import { getSiteNameInput } from './sites-create.js'
 
 export const sitesCreateTemplate = async (repository: string, options: OptionValues, command: BaseCommand) => {
-  const { api } = command.netlify
+  const { accounts, api } = command.netlify
   await command.authenticate()
 
   const { globalConfig } = command.netlify
@@ -52,7 +53,6 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
     error(`${getTerminalLink(chalk.bold(templateName), githubLink)} is not a valid GitHub template`)
     return
   }
-  const accounts = await api.listAccountsForUser()
 
   let { accountSlug } = options
 

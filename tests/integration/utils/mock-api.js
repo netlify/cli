@@ -38,6 +38,12 @@ export const startMockApi = ({ routes, silent }) => {
     })
   })
 
+  app.get('/site/site_id/integrations/safe', function onRequest(req, res) {
+    addRequest(requests, req)
+    res.status(200)
+    res.json({ site_id: 'site_id', integrations: [] })
+  })
+
   app.all('*', function onRequest(req, res) {
     addRequest(requests, req)
     if (!silent) {
