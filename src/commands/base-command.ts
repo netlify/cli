@@ -596,7 +596,7 @@ export default class BaseCommand extends Command {
       token,
       ...apiUrlOpts,
     })
-    const { buildDir, config, configPath, repositoryRoot, siteInfo } = cachedConfig
+    const { accounts, buildDir, config, configPath, repositoryRoot, siteInfo } = cachedConfig
     let { env } = cachedConfig
     if (flags.offlineEnv) {
       env = {}
@@ -642,6 +642,7 @@ export default class BaseCommand extends Command {
     const configFilePath = configPath || join(this.workingDir, 'netlify.toml')
 
     actionCommand.netlify = {
+      accounts,
       // api methods
       api,
       apiOpts,
