@@ -18,12 +18,19 @@ jobs:
           workflow: ${{ github.event.workflow.id }}
           workflow_conclusion: success
           name: delta-action-deltas
+          if_no_artifact_found: ignore
           github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check File Existence
+        id: check-file-existence
+        uses: thebinaryfelix/check-file-existence-action@1.0.0
+        with:
+          files: '.delta.*'
       - name: Get PR number
-        if: github.event.workflow_run.event == 'pull_request'
+        if: github.event.workflow_run.event == 'pull_request' && steps.check-file-existence.outputs.exists == 'true'
         id: pr_number
         run: echo "pr_number=$(cat pr_number)" >> $GITHUB_OUTPUT
       - name: Post deltas to GitHub
+        if: steps.check-file-existence.outputs.exists == 'true'
         uses: netlify/delta-action@v4
         with:
           title: '📊 Benchmark results'
