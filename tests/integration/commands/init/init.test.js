@@ -274,7 +274,7 @@ describe.concurrent('commands/init', () => {
         method: 'patch',
         response: { deploy_hook: 'deploy_hook' },
         requestBody: {
-          plugins: [{ package: '@netlify/plugin-nextjs' }],
+          plugins: [{ package: '@opennextjs/netlify' }],
           repo: {
             allowed_branches: ['main'],
             cmd: command,
@@ -377,7 +377,7 @@ describe.concurrent('commands/init', () => {
         method: 'patch',
         response: { deploy_hook: 'deploy_hook' },
         requestBody: {
-          plugins: [{ package: '@netlify/plugin-nextjs' }],
+          plugins: [{ package: '@opennextjs/netlify' }],
           repo: {
             allowed_branches: ['main'],
             cmd: command,
@@ -466,7 +466,7 @@ describe.concurrent('commands/init', () => {
         method: 'patch',
         response: { deploy_hook: 'deploy_hook' },
         requestBody: {
-          plugins: [{ package: '@netlify/plugin-lighthouse' }, { package: '@netlify/plugin-nextjs' }],
+          plugins: [{ package: '@netlify/plugin-lighthouse' }, { package: '@opennextjs/netlify' }],
           repo: {
             allowed_branches: ['main'],
             cmd: command,
