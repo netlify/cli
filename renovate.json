@@ -7,32 +7,32 @@
   "postUpdateOptions": ["npmDedupe"],
   "packageRules": [
     {
-      "matchFiles": ["site/package.json"],
+      "matchFileNames": ["site/package.json"],
       "semanticCommitType": "chore",
       "addLabels": ["website"],
       "semanticCommitScope": "website",
       "additionalBranchPrefix": "website-"
     },
     {
-      "matchPaths": ["tests/**/package.json"],
+      "matchFileNames": ["tests/**/package.json"],
       "semanticCommitType": "chore",
       "addLabels": ["tests"],
       "semanticCommitScope": "tests",
       "additionalBranchPrefix": "tests-"
     },
     {
-      "matchPaths": ["src/**/package.json"],
+      "matchFileNames": ["src/**/package.json"],
       "semanticCommitType": "fix",
       "addLabels": ["templates"],
       "semanticCommitScope": "templates",
       "additionalBranchPrefix": "templates-"
     },
     {
-      "matchPaths": ["tests/**/package.json"],
+      "matchFileNames": ["tests/**/package.json"],
       "extends": [":pinAllExceptPeerDependencies"]
     },
     {
-      "matchFiles": ["package.json", "site/package.json"],
+      "matchFileNames": ["package.json", "site/package.json"],
       "extends": [":pinAllExceptPeerDependencies"]
     },
     {
