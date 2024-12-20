@@ -37,6 +37,7 @@ const navOrder = [
   'index',
   'getting-started',
   'commands',
+  'addons',
   'api',
   'blobs',
   'build',
@@ -48,6 +49,7 @@ const navOrder = [
   'init',
   'integration',
   'link',
+  'lm',
   'login',
   'logout',
   'logs',
@@ -64,6 +66,8 @@ const navOrder = [
 const pageNames = {
   index: 'CLI Reference',
   'getting-started': 'Getting Started',
+  addons: 'addons (deprecated)',
+  lm: 'lm (deprecated)',
 }
 
 const sortRoutes = (routes) =>
