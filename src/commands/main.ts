@@ -24,7 +24,6 @@ import { createFunctionsCommand } from './functions/index.js'
 import { createInitCommand } from './init/index.js'
 import { createIntegrationCommand } from './integration/index.js'
 import { createLinkCommand } from './link/index.js'
-import { createLmCommand } from './lm/index.js'
 import { createLoginCommand } from './login/index.js'
 import { createLogoutCommand } from './logout/index.js'
 import { createLogsCommand } from './logs/index.js'
@@ -223,7 +222,6 @@ export const createMainCommand = () => {
   createInitCommand(program)
   createIntegrationCommand(program)
   createLinkCommand(program)
-  createLmCommand(program)
   createLoginCommand(program)
   createLogoutCommand(program)
   createOpenCommand(program)
