@@ -69,7 +69,7 @@ const HELP_SEPARATOR_WIDTH = 5
  * Those commands work with the system or are not writing any config files that need to be
  * workspace aware.
  */
-const COMMANDS_WITHOUT_WORKSPACE_OPTIONS = new Set(['api', 'recipes', 'completion', 'status', 'switch', 'login', 'lm'])
+const COMMANDS_WITHOUT_WORKSPACE_OPTIONS = new Set(['api', 'recipes', 'completion', 'status', 'switch', 'login'])
 
 /**
  * A list of commands where we need to fetch featureflags for config resolution
