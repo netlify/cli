@@ -12,7 +12,6 @@ import getGlobalConfig from '../utils/get-global-config.js'
 import getPackageJson from '../utils/get-package-json.js'
 import { track, reportError } from '../utils/telemetry/index.js'
 
-import { createAddonsCommand } from './addons/index.js'
 import { createApiCommand } from './api/index.js'
 import BaseCommand from './base-command.js'
 import { createBlobsCommand } from './blobs/blobs.js'
@@ -35,9 +34,10 @@ import { createServeCommand } from './serve/index.js'
 import { createSitesCommand } from './sites/index.js'
 import { createStatusCommand } from './status/index.js'
 import { createSwitchCommand } from './switch/index.js'
+import { AddressInUseError } from './types.js'
 import { createUnlinkCommand } from './unlink/index.js'
 import { createWatchCommand } from './watch/index.js'
-import { AddressInUseError } from './types.js'
+
 const SUGGESTION_TIMEOUT = 1e4
 
 // These commands run with the --force flag in non-interactive and CI environments
@@ -47,7 +47,6 @@ export const CI_FORCED_COMMANDS = {
   'env:clone': { options: '--force', description: 'Bypasses prompts & Force the command to run.' },
   'blobs:set': { options: '--force', description: 'Bypasses prompts & Force the command to run.' },
   'blobs:delete': { options: '--force', description: 'Bypasses prompts & Force the command to run.' },
-  'addons:delete': { options: '-f, --force', description: 'Delete without prompting (useful for CI)' },
   init: { options: '--force', description: 'Reinitialize CI hooks if the linked site is already configured to use CI' },
   'sites:delete': { options: '-f, --force', description: 'Delete without prompting (useful for CI).' },
 }
@@ -212,7 +211,6 @@ const mainCommand = async function (options, command) {
 export const createMainCommand = () => {
   const program = new BaseCommand('netlify')
   // register all the commands
-  createAddonsCommand(program)
   createApiCommand(program)
   createBlobsCommand(program)
   createBuildCommand(program)
@@ -258,7 +256,7 @@ export const createMainCommand = () => {
   program.commands.forEach((cmd) => {
     const cmdName = cmd.name()
     if (cmdName in CI_FORCED_COMMANDS) {
-      const { options, description } = CI_FORCED_COMMANDS[cmdName as keyof typeof CI_FORCED_COMMANDS]
+      const { description, options } = CI_FORCED_COMMANDS[cmdName as keyof typeof CI_FORCED_COMMANDS]
       cmd.option(options, description)
     }
   })
