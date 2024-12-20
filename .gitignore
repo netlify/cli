@@ -26,8 +26,6 @@ test-site
 site/dist
 site-cra
 site/src/**/*.md
-!site/src/register-addon.md
-!site/src/register-addon-thanks.md
 
 # tests
 .verdaccio-storage
