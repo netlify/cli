@@ -49,7 +49,7 @@ export const startFrameworkServer = async function ({
   let port: { open: boolean; ipVersion?: 4 | 6 } | undefined
   try {
     if (settings.skipWaitPort) {
-      port = { open: true, ipVersion: 6 }
+      port = { open: true }
     } else {
       port = await waitPort({
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
