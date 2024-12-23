@@ -218,7 +218,7 @@
     "temp-dir": "3.0.0",
     "tree-kill": "1.2.2",
     "typescript": "5.1.6",
-    "verdaccio": "6.0.4",
+    "verdaccio": "6.0.5",
     "vitest": "1.6.0"
   },
   "ava": {
