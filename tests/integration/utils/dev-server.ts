@@ -47,6 +47,7 @@ interface DevServerOptions {
   offline?: boolean
   prompt?: $FIXME[]
   serve?: boolean
+  skipWaitPort?: boolean
 }
 
 // 240 seconds
@@ -62,6 +63,7 @@ const startServer = async ({
   offline = true,
   prompt,
   serve = false,
+  skipWaitPort = false,
 }: DevServerOptions): Promise<DevServer | { timeout: boolean; output: string }> => {
   const port = await getPort()
   const staticPort = await getPort()
@@ -69,7 +71,6 @@ const startServer = async ({
   const url = `http://${host}:${port}`
 
   console.log(`Starting dev server on port: ${port} in directory ${path.basename(cwd)}`)
-
   const baseCommand = serve ? 'serve' : 'dev'
   const baseArgs = [
     baseCommand,
@@ -79,6 +80,7 @@ const startServer = async ({
     '--staticServerPort',
     staticPort,
     debug ? '--debug' : '',
+    skipWaitPort ? '--skip-wait-port' : '',
   ]
 
   // We use `null` to override the default context and actually omit the flag
