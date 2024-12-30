@@ -357,6 +357,46 @@ describe.concurrent('command/dev', () => {
     })
   })
 
+  test('should follow 301 redirect to an external server', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      const externalServer = startExternalServer()
+      const { port } = externalServer.address() as AddressInfo
+      builder.withRedirectsFile({
+        redirects: [{ from: '/api/*', to: `http://localhost:${port}/:splat`, status: 301 }],
+      })
+
+      await builder.build()
+
+      await withDevServer({ cwd: builder.directory }, async (server) => {
+        const [response1, response2] = await Promise.all([
+          fetch(`${server.url}/api/ping`, { follow: 0, redirect: 'manual' }),
+          fetch(`${server.url}/api/ping`).then((res) => res.json()),
+        ])
+        t.expect(response1.headers.get('location')).toEqual(`http://localhost:${port}/ping`)
+
+        t.expect(response2.body).toStrictEqual({})
+        t.expect(response2.method).toEqual('GET')
+        t.expect(response2.url).toEqual('/ping')
+      })
+
+      externalServer.close()
+    })
+  })
+
+  test('should proxy server without waiting for port', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      const externalServer = startExternalServer()
+      await builder.build()
+
+      await withDevServer({ cwd: builder.directory, skipWaitPort: true }, async (server) => {
+        const response = await fetch(`${server.url}/api/test`)
+        t.expect(response.status).toBe(404)
+      })
+
+      externalServer.close()
+    })
+  })
+
   test('should rewrite POST request if content-type is missing and not crash dev server', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       builder.withNetlifyToml({
