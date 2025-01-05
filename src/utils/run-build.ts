@@ -103,11 +103,7 @@ export const runNetlifyBuild = async ({
       cwd,
     })
 
-    if (ipVersion) {
-      settings.frameworkHost = ipVersion === 6 ? '::1' : '127.0.0.1'
-    } else {
-      settings.frameworkHost = 'localhost'
-    }
+    settings.frameworkHost = ipVersion === 6 ? '::1' : '127.0.0.1'
   }
 
   if (timeline === 'build') {

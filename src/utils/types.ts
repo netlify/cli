@@ -31,7 +31,7 @@ export type BaseServerSettings = {
   /** A port where a proxy can listen to it */
   frameworkPort?: number
   /** The host where a proxy can listen to it */
-  frameworkHost?: '127.0.0.1' | '::1' | 'localhost'
+  frameworkHost?: '127.0.0.1' | '::1'
   functions?: string
   /** The framework name ('Create React App') */
   framework?: string
