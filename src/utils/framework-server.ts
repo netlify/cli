@@ -49,7 +49,9 @@ export const startFrameworkServer = async function ({
   let port: { open: boolean; ipVersion?: 4 | 6 } | undefined
   try {
     if (settings.skipWaitPort) {
-      port = { open: true, ipVersion: 6 }
+      // default ip version based on node version
+      const ipVersion = parseInt(process.versions.node.split('.')[0]) >= 18 ? 6 : 4
+      port = { open: true, ipVersion }
     } else {
       port = await waitPort({
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
