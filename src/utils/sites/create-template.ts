@@ -11,13 +11,16 @@ import { getTemplatesFromGitHub } from './utils.js'
 export const fetchTemplates = async (token: string): Promise<Template[]> => {
   const templatesFromGitHubOrg: GitHubRepo[] = await getTemplatesFromGitHub(token)
 
-  return templatesFromGitHubOrg
-    .filter((repo: GitHubRepo) => !repo.archived && !repo.disabled)
-    .map((template: GitHubRepo) => ({
-      name: template.name,
-      sourceCodeUrl: template.html_url,
-      slug: template.full_name,
-    }))
+  return (
+    templatesFromGitHubOrg
+      // adding this filter because the react-based-templates has multiple templates in one repo so doesn't work for this command
+      .filter((repo: GitHubRepo) => !repo.archived && !repo.disabled && repo.name !== 'react-based-templates')
+      .map((template: GitHubRepo) => ({
+        name: template.name,
+        sourceCodeUrl: template.html_url,
+        slug: template.full_name,
+      }))
+  )
 }
 
 export const getTemplateName = async ({
