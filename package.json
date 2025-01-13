@@ -203,7 +203,7 @@
     "cheerio": "1.0.0",
     "eslint-plugin-sort-destructure-keys": "2.0.0",
     "eslint-plugin-workspace": "file:./tools/lint-rules",
-    "fast-glob": "3.3.2",
+    "fast-glob": "3.3.3",
     "form-data": "4.0.1",
     "fs-extra": "11.2.0",
     "graphviz": "0.0.9",
