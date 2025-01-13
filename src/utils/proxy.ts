@@ -703,9 +703,11 @@ const initializeProxy = async function ({
 
       if (htmlInjections) {
         responseBody = await injectHtml(responseBody, proxyRes, htmlInjections)
-        proxyResHeaders = {
-          ...proxyResHeaders,
-          'content-length': String(responseBody.byteLength),
+        if (!proxyResHeaders['transfer-encoding']) {
+          proxyResHeaders = {
+            ...proxyResHeaders,
+            'content-length': String(responseBody.byteLength),
+          }
         }
       }
 
