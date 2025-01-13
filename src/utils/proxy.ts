@@ -707,6 +707,7 @@ const initializeProxy = async function ({
           ...proxyResHeaders,
           'content-length': String(responseBody.byteLength),
         }
+        delete proxyResHeaders['transfer-encoding']
       }
 
       res.writeHead(responseStatus, proxyResHeaders)
