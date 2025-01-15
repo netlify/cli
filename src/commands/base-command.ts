@@ -69,7 +69,7 @@ const HELP_SEPARATOR_WIDTH = 5
  * Those commands work with the system or are not writing any config files that need to be
  * workspace aware.
  */
-const COMMANDS_WITHOUT_WORKSPACE_OPTIONS = new Set(['api', 'recipes', 'completion', 'status', 'switch', 'login', 'lm'])
+const COMMANDS_WITHOUT_WORKSPACE_OPTIONS = new Set(['api', 'recipes', 'completion', 'status', 'switch', 'login'])
 
 /**
  * A list of commands where we need to fetch featureflags for config resolution
@@ -596,7 +596,7 @@ export default class BaseCommand extends Command {
       token,
       ...apiUrlOpts,
     })
-    const { buildDir, config, configPath, repositoryRoot, siteInfo } = cachedConfig
+    const { accounts, buildDir, config, configPath, repositoryRoot, siteInfo } = cachedConfig
     let { env } = cachedConfig
     if (flags.offlineEnv) {
       env = {}
@@ -642,6 +642,7 @@ export default class BaseCommand extends Command {
     const configFilePath = configPath || join(this.workingDir, 'netlify.toml')
 
     actionCommand.netlify = {
+      accounts,
       // api methods
       api,
       apiOpts,

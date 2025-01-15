@@ -3,10 +3,10 @@ import { argv } from 'process'
 
 import updateNotifier from 'update-notifier'
 
-import { runProgram } from '../dist/utils/run-program.js'
+import { createMainCommand } from '../dist/commands/main.js'
 import { error } from '../dist/utils/command-helpers.js'
 import getPackageJson from '../dist/utils/get-package-json.js'
-import { createMainCommand } from '../dist/commands/main.js'
+import { runProgram } from '../dist/utils/run-program.js'
 
 // 12 hours
 const UPDATE_CHECK_INTERVAL = 432e5
