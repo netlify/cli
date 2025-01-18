@@ -62,10 +62,10 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand) =
       body.name = siteName.trim()
     }
     try {
-        site = await api.createSiteInTeam({
-          accountSlug: accountSlug as string,
-          body,
-        })
+      site = await api.createSiteInTeam({
+        accountSlug: accountSlug as string,
+        body,
+      })
     } catch (error_) {
       if ((error_ as APIError).status === 422) {
         warn(`${siteName}.netlify.app already exists. Please try a different slug.`)

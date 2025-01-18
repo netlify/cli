@@ -134,7 +134,7 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
 
     try {
       // TODO: Update type once the open api spec is updated https://open-api.netlify.com/#tag/site/operation/createSiteInTeam
-      site = await(api as any).createSiteInTeam({
+      site = await (api as any).createSiteInTeam({
         accountSlug,
         body: {
           repo: {
