@@ -88,7 +88,7 @@ export async function track(
   return send('track', defaultData)
 }
 
-export async function identify(payload: { name: string; email: string; userId: string }) {
+export async function identify(payload: { name?: string; email?: string; userId?: string }) {
   if (isCI) {
     return
   }

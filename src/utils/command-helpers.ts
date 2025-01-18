@@ -101,7 +101,7 @@ export const pollForToken = async ({
   ticket,
 }: {
   api: NetlifyAPI
-  ticket: { id: string; client_id: string; authorized: boolean; created_at: string }
+  ticket: { id?: string; client_id?: string; authorized?: boolean; created_at?: string }
 }) => {
   const spinner = startSpinner({ text: 'Waiting for authorization...' })
   try {

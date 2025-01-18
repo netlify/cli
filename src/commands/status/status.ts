@@ -37,8 +37,8 @@ export const status = async (options: OptionValues, command: BaseCommand) => {
 
   const ghuser = command.netlify.globalConfig.get(`users.${current}.auth.github.user`)
   const accountData = {
-    Name: user.full_name,
-    Email: user.email,
+    Name: user?.full_name,
+    Email: user?.email,
     GitHub: ghuser,
   }
   const teamsData = {}
