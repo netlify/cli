@@ -97,7 +97,7 @@ Support for package.json's main field, and intrinsic index.js entrypoints are co
       '-b, --branch <name>',
       'Serves the same functionality as --alias. Deprecated and will be removed in future versions',
     )
-    .option('-o, --open', 'Open site after deploy', false)
+    .option('-O, --open', 'Open site after deploy', false)
     .option('-m, --message <message>', 'A short message to include in the deploy log')
     .option('-a, --auth <token>', 'Netlify auth token to deploy with', env.NETLIFY_AUTH_TOKEN)
     .option('-s, --site <name-or-id>', 'A site name or ID to deploy to', env.NETLIFY_SITE_ID)
