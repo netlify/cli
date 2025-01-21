@@ -33,3 +33,6 @@ site/src/**/*.md
 _test_out/**
 *.crt
 *.key
+
+# Used in local dev by tsc: https://www.typescriptlang.org/tsconfig/#tsBuildInfoFile
+tsconfig.tsbuildinfo
