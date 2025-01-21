@@ -575,7 +575,7 @@ export default class BaseCommand extends Command {
     const needsFeatureFlagsToResolveConfig = COMMANDS_WITH_FEATURE_FLAGS.has(actionCommand.name())
     if (api.accessToken && !flags.offline && needsFeatureFlagsToResolveConfig && actionCommand.siteId) {
       try {
-        const site = await api.getSite({ siteId: actionCommand.siteId, feature_flags: 'cli' })
+        const site = await (api as any).getSite({ siteId: actionCommand.siteId, feature_flags: 'cli' })
         actionCommand.featureFlags = site.feature_flags
         actionCommand.accountId = site.account_id
       } catch {

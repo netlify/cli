@@ -32,7 +32,7 @@ export const sitesDelete = async (siteId: string, options: OptionValues, command
 
   /* Verify the user wants to delete the site */
   if (noForce) {
-    log(`${chalk.redBright('Warning')}: You are about to permanently delete "${chalk.bold(siteData.name)}"`)
+    log(`${chalk.redBright('Warning')}: You are about to permanently delete "${chalk.bold(siteData?.name)}"`)
     log(`         Verify this siteID "${siteId}" supplied is correct and proceed.`)
     log('         To skip this prompt, pass a --force flag to the delete command')
     log()
@@ -41,7 +41,7 @@ export const sitesDelete = async (siteId: string, options: OptionValues, command
     const { wantsToDelete } = await inquirer.prompt({
       type: 'confirm',
       name: 'wantsToDelete',
-      message: `WARNING: Are you sure you want to delete the "${siteData.name}" site?`,
+      message: `WARNING: Are you sure you want to delete the "${siteData?.name}" site?`,
       default: false,
     })
     log()

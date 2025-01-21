@@ -38,7 +38,8 @@ export const logsFunction = async (functionName: string | undefined, options: Op
 
   const levelsToPrint = options.level || LOG_LEVELS_LIST
 
-  const { functions = [] } = await client.searchSiteFunctions({ siteId })
+  // TODO: Update type once the open api spec is updated https://open-api.netlify.com/#tag/function/operation/searchSiteFunctions
+  const { functions = [] } = (await client.searchSiteFunctions({ siteId: siteId as string })) as any
 
   if (functions.length === 0) {
     log(`No functions found for the site`)

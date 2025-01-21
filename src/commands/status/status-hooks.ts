@@ -14,7 +14,7 @@ export const statusHooks = async (options: OptionValues, command: BaseCommand) =
     site: siteInfo.name,
     hooks: {},
   }
-  // @ts-expect-error TS(7006) FIXME: Parameter 'hook' implicitly has an 'any' type.
+
   ntlHooks.forEach((hook) => {
     // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     data.hooks[hook.id] = {

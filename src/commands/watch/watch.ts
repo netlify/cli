@@ -101,7 +101,7 @@ export const watch = async (options: OptionValues, command: BaseCommand) => {
 
     const noActiveBuilds = await waitForBuildFinish(client, siteId, spinner)
 
-    const siteData = await client.getSite({ siteId })
+    const siteData = await client.getSite({ siteId: siteId as string })
 
     const message = chalk.cyanBright.bold.underline(noActiveBuilds ? 'Last build' : 'Deploy complete')
     log()
