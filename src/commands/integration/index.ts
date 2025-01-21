@@ -1,6 +1,6 @@
 import { env } from 'process'
 
-import { OptionValues } from 'commander'
+import { Option, OptionValues } from 'commander'
 
 import BaseCommand from '../base-command.js'
 
@@ -15,7 +15,7 @@ export const createIntegrationDeployCommand = (program: BaseCommand) => {
     .description('Register, build, and deploy a private integration on Netlify')
     .option('-p, --prod', 'Deploy to production', false)
     .option('-b, --build', 'Build the integration', false)
-    .option('-a, --auth <token>', 'Netlify auth token to deploy with', env.NETLIFY_AUTH_TOKEN)
+    .addHelpOption(new Option('-a, --auth <token>', 'Netlify auth token to deploy with'))
     .option('-s, --site <name-or-id>', 'A site name or ID to deploy to', env.NETLIFY_SITE_ID)
     .action(async (options: OptionValues, command: BaseCommand) => {
       const { deploy } = await import('./deploy.js')
