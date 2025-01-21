@@ -15,6 +15,7 @@ export const createIntegrationDeployCommand = (program: BaseCommand) => {
     .description('Register, build, and deploy a private integration on Netlify')
     .option('-p, --prod', 'Deploy to production', false)
     .option('-b, --build', 'Build the integration', false)
+    // The BaseCommand defines an `--auth` option which is hidden from the help by default
     .addHelpOption(new Option('-a, --auth <token>', 'Netlify auth token to deploy with'))
     .option('-s, --site <name-or-id>', 'A site name or ID to deploy to', env.NETLIFY_SITE_ID)
     .action(async (options: OptionValues, command: BaseCommand) => {
