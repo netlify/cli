@@ -1,4 +1,4 @@
-import { OptionValues } from 'commander'
+import { Option, OptionValues } from 'commander'
 
 import requiresSiteInfo from '../../utils/hooks/requires-site-info.js'
 import BaseCommand from '../base-command.js'
@@ -53,7 +53,8 @@ export const createBlobsCommand = (program: BaseCommand) => {
       '-p, --prefix <prefix>',
       `A string for filtering down the entries; when specified, only the entries whose key starts with that prefix are returned`,
     )
-    .option('--json', `Output list contents as JSON`)
+    // The BaseCommand defines a `--json` option which is hidden from the help by default
+    .addHelpOption(new Option('--json', 'Output list contents as JSON'))
     .alias('blob:list')
     .hook('preAction', requiresSiteInfo)
     .action(async (storeName: string, options: OptionValues, command: BaseCommand) => {
