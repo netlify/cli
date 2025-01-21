@@ -99,7 +99,7 @@ Support for package.json's main field, and intrinsic index.js entrypoints are co
     )
     .option('-O, --open', 'Open site after deploy', false)
     .option('-m, --message <message>', 'A short message to include in the deploy log')
-    .option('-a, --auth <token>', 'Netlify auth token to deploy with', env.NETLIFY_AUTH_TOKEN)
+    .addHelpOption(new Option('-a, --auth <token>', 'Netlify auth token to deploy with'))
     .option('-s, --site <name-or-id>', 'A site name or ID to deploy to', env.NETLIFY_SITE_ID)
     .option('--json', 'Output deployment data as JSON')
     .option('--timeout <number>', 'Timeout to wait for deployment to finish', (value) => Number.parseInt(value))
