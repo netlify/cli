@@ -1,4 +1,4 @@
-import { OptionValues } from 'commander'
+import { Option, OptionValues } from 'commander'
 
 import { chalk } from '../../utils/command-helpers.js'
 import requiresSiteInfo from '../../utils/hooks/requires-site-info.js'
@@ -97,7 +97,7 @@ NOT the same as listing the functions that have been deployed. For that info you
     .description('Serve functions locally')
     .option('-f, --functions <dir>', 'Specify a functions directory to serve')
     .option('-p, --port <port>', 'Specify a port for the functions server', (value) => Number.parseInt(value))
-    .option('-o, --offline', 'disables any features that require network access')
+    .addHelpOption(new Option('-o, --offline', 'Disables any features that require network access'))
     .addHelpText('after', 'Helpful for debugging functions.')
     .action(async (options: OptionValues, command: BaseCommand) => {
       const { functionsServe } = await import('./functions-serve.js')
