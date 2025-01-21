@@ -63,7 +63,7 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand) =
     }
     try {
       site = await api.createSiteInTeam({
-        accountSlug,
+        accountSlug: accountSlug as string,
         body,
       })
     } catch (error_) {

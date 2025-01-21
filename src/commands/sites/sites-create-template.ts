@@ -87,7 +87,7 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
     }
 
     try {
-      const sites: SiteInfo[] = await api.listSites({ name: siteName, filter: 'all' })
+      const sites = await api.listSites({ name: siteName, filter: 'all' })
       const siteFoundByName = sites.find((filteredSite) => filteredSite.name === siteName)
       if (siteFoundByName) {
         log('A site with that name already exists on your account')
@@ -133,7 +133,8 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
     }
 
     try {
-      site = await api.createSiteInTeam({
+      // TODO: Update type once the open api spec is updated https://open-api.netlify.com/#tag/site/operation/createSiteInTeam
+      site = await (api as any).createSiteInTeam({
         accountSlug,
         body: {
           repo: {
