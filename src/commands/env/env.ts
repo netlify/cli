@@ -56,7 +56,8 @@ export const createEnvCommand = (program: BaseCommand) => {
       normalizeContext,
       'dev',
     )
-    .option('--json', 'Output environment variables as JSON')
+    // The BaseCommand defines a `--json` option which is hidden from the help by default
+    .addHelpOption(new Option('--json', 'Output environment variables as JSON'))
     .addOption(new Option('--plain', 'Output environment variables as plaintext').conflicts('json'))
     .addOption(
       new Option('-s, --scope <scope>', 'Specify a scope')

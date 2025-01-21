@@ -1,4 +1,4 @@
-import { OptionValues, InvalidArgumentError } from 'commander'
+import { OptionValues, InvalidArgumentError, Option } from 'commander'
 
 import BaseCommand from '../base-command.js'
 
@@ -71,7 +71,8 @@ export const createSitesCommand = (program: BaseCommand) => {
   program
     .command('sites:list')
     .description('List all sites you have access to')
-    .option('--json', 'Output site data as JSON')
+    // The BaseCommand defines a `--json` option which is hidden from the help by default
+    .addHelpOption(new Option('--json', 'Output site data as JSON'))
     .action(async (options: OptionValues, command: BaseCommand) => {
       const { sitesList } = await import('./sites-list.js')
       await sitesList(options, command)

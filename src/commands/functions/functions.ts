@@ -84,7 +84,8 @@ Helpful for making sure that you have formatted your functions correctly
 NOT the same as listing the functions that have been deployed. For that info you need to go to your Netlify deploy log.`,
     )
     .option('-f, --functions <dir>', 'Specify a functions directory to list')
-    .option('--json', 'Output function data as JSON')
+    // The BaseCommand defines a `--json` option which is hidden from the help by default
+    .addHelpOption(new Option('--json', 'Output function data as JSON'))
     .hook('preAction', requiresSiteInfo)
     .action(async (options: OptionValues, command: BaseCommand) => {
       const { functionsList } = await import('./functions-list.js')
