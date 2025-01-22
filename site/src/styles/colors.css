@@ -1,0 +1,168 @@
+:root {
+  --facetsNeutralLight100: rgb(246, 246, 247);
+  --facetsNeutralLight200: rgb(233, 235, 237);
+  --facetsNeutralLight300: rgb(209, 213, 218);
+  --facetsNeutralLight400: rgb(157, 167, 178);
+  --facetsNeutralLight500: rgb(119, 128, 137);
+  --facetsNeutralLight600: rgb(84, 90, 97);
+  --facetsNeutralLight700: rgb(53, 58, 62);
+  --facetsNeutralLight800: rgb(24, 26, 28);
+  --facetsNeutralLight000: rgb(255, 255, 255);
+  --facetsNeutralDark100: rgb(230, 236, 242);
+  --facetsNeutralDark200: rgb(171, 181, 191);
+  --facetsNeutralDark300: rgb(126, 135, 146);
+  --facetsNeutralDark400: rgb(77, 86, 95);
+  --facetsNeutralDark500: rgb(59, 67, 76);
+  --facetsNeutralDark600: rgb(39, 47, 56);
+  --facetsNeutralDark700: rgb(30, 36, 44);
+  --facetsNeutralDark800: rgb(18, 24, 31);
+  --facetsNeutralDark900: rgb(6, 11, 16);
+  --facetsNeutralDark000: rgb(255, 255, 255);
+  --facetsTeal100: rgb(142, 251, 247);
+  --facetsTeal200: rgb(50, 230, 226);
+  --facetsTeal300: rgb(20, 216, 212);
+  --facetsTeal400: rgb(5, 189, 186);
+  --facetsTeal500: rgb(4, 162, 159);
+  --facetsTeal600: rgb(2, 128, 125);
+  --facetsTeal700: rgb(1, 105, 104);
+  --facetsTeal800: rgb(1, 72, 71);
+  --facetsTeal900: rgb(12, 42, 42);
+  --facetsTeal000: rgb(222, 255, 254);
+  --facetsGreen100: rgb(190, 249, 198);
+  --facetsGreen200: rgb(147, 245, 165);
+  --facetsGreen300: rgb(100, 216, 127);
+  --facetsGreen400: rgb(58, 195, 100);
+  --facetsGreen500: rgb(49, 168, 85);
+  --facetsGreen600: rgb(34, 130, 64);
+  --facetsGreen700: rgb(26, 107, 52);
+  --facetsGreen800: rgb(15, 74, 33);
+  --facetsGreen900: rgb(21, 42, 25);
+  --facetsGreen000: rgb(231, 252, 233);
+  --facetsGold100: rgb(246, 224, 165);
+  --facetsGold200: rgb(250, 205, 111);
+  --facetsGold300: rgb(251, 177, 61);
+  --facetsGold400: rgb(249, 142, 33);
+  --facetsGold500: rgb(213, 119, 26);
+  --facetsGold600: rgb(168, 93, 19);
+  --facetsGold700: rgb(140, 76, 13);
+  --facetsGold800: rgb(96, 52, 8);
+  --facetsGold900: rgb(51, 34, 19);
+  --facetsGold000: rgb(253, 245, 216);
+  --facetsRed100: rgb(251, 211, 208);
+  --facetsRed200: rgb(255, 189, 186);
+  --facetsRed300: rgb(255, 173, 169);
+  --facetsRed400: rgb(254, 131, 130);
+  --facetsRed500: rgb(254, 78, 92);
+  --facetsRed600: rgb(214, 39, 64);
+  --facetsRed700: rgb(175, 37, 54);
+  --facetsRed800: rgb(128, 10, 32);
+  --facetsRed900: rgb(61, 28, 27);
+  --facetsRed000: rgb(251, 238, 237);
+  --facetsPink100: rgb(246, 210, 242);
+  --facetsPink200: rgb(247, 188, 243);
+  --facetsPink300: rgb(243, 168, 238);
+  --facetsPink400: rgb(239, 127, 235);
+  --facetsPink500: rgb(223, 90, 220);
+  --facetsPink600: rgb(185, 56, 184);
+  --facetsPink700: rgb(154, 45, 153);
+  --facetsPink800: rgb(108, 29, 107);
+  --facetsPink900: rgb(56, 27, 55);
+  --facetsPink000: rgb(252, 240, 251);
+  --facetsPurple100: rgb(226, 217, 247);
+  --facetsPurple200: rgb(216, 199, 255);
+  --facetsPurple300: rgb(202, 185, 244);
+  --facetsPurple400: rgb(180, 157, 241);
+  --facetsPurple500: rgb(155, 128, 237);
+  --facetsPurple600: rgb(119, 92, 231);
+  --facetsPurple700: rgb(97, 74, 202);
+  --facetsPurple800: rgb(56, 42, 164);
+  --facetsPurple900: rgb(41, 33, 66);
+  --facetsPurple000: rgb(245, 242, 252);
+  --facetsBlue100: rgb(205, 226, 255);
+  --facetsBlue200: rgb(181, 210, 251);
+  --facetsBlue300: rgb(156, 190, 246);
+  --facetsBlue400: rgb(128, 171, 250);
+  --facetsBlue500: rgb(93, 141, 245);
+  --facetsBlue600: rgb(49, 107, 244);
+  --facetsBlue700: rgb(46, 81, 237);
+  --facetsBlue800: rgb(32, 54, 161);
+  --facetsBlue900: rgb(27, 32, 91);
+  --facetsBlue000: rgb(237, 244, 255);
+
+  --mutedLight: var(--facetsNeutralLight600);
+  --mutedDark: var(--facetsNeutralDark300);
+}
+
+:root[data-theme='dark'] {
+  /* Color Palette: Primary colors (teal) */
+  --colorTealDarkest: var(--facetsTeal800);
+  --colorTeal: var(--facetsTeal400);
+  --colorTealLighter: var(--facetsTeal200);
+
+  /* Color Palette: Primary colors (blue) */
+  --colorBlueDarkest: var(--facetsBlue900);
+  --colorBlueDarker: var(--facetsBlue800);
+  --colorBlue: var(--facetsBlue700);
+  --colorBlueLighter: var(--facetsBlue500);
+  --colorBlueLightest: var(--facetsBlue100);
+
+  /* Panel Colors */
+  --colorWarning: var(--facetsGold700);
+  --colorWarningLight: var(--facetsGold800);
+  --colorWarningText: var(--facetsGold100);
+
+  --colorTip: var(--facetsBlue800);
+  --colorTipLight: var(--facetsBlue900);
+  --colorTipText: var(--facetsBlue200);
+
+  --colorNote: var(--facetsTeal400);
+  --colorNoteLight: var(--facetsTeal900);
+  --colorNoteText: var(--facetsTeal100);
+
+  --colorDanger: var(--facetsRed700);
+  --colorDangerLight: var(--facetsRed900);
+  --colorDangerText: var(--facetsRed100);
+
+  /* Button Colors */
+  --colorButtonSecondary: var(--colorTeal);
+  --colorButtonSecondaryHover: var(--colorTealLighter);
+  --colorButtonSecondaryText: var(--colorTealDarkest);
+  --colorButtonTertiary: var(--colorGrayDarkest);
+}
+
+:root[data-theme='light'] {
+  /* Color Palette: Primary colors (teal) */
+  --colorTealDarkest: var(--facetsTeal800);
+  --colorTeal: var(--facetsTeal200);
+  --colorTealLighter: var(--facetsTeal100);
+
+  /* Color Palette: Primary colors (blue) */
+  --colorBlueDarkest: var(--facetsBlue900);
+  --colorBlueDarker: var(--facetsBlue800);
+  --colorBlue: var(--facetsBlue700);
+  --colorBlueLighter: var(--facetsBlue100);
+  --colorBlueLightest: var(--facetsBlue000);
+
+  /* Panel Colors */
+  --colorWarning: var(--facetsGold800);
+  --colorWarningLight: var(--facetsGold000);
+  --colorWarningText: var(--facetsGold800);
+
+  --colorTip: var(--facetsNeutralLight700);
+  --colorTipLight: var(--facetsNeutralLight100);
+  --colorTipText: var(--facetsNeutralLight700);
+
+  --colorNote: var(--facetsTeal800);
+  --colorNoteLight: var(--facetsTeal000);
+  --colorNoteText: var(--facetsTeal800);
+
+  --colorDanger: var(--facetsRed800);
+  --colorDangerLight: var(--facetsRed000);
+  --colorDangerText: var(--facetsRed800);
+
+  /* Button colors */
+  --colorButtonSecondary: var(--colorTeal);
+  --colorButtonSecondaryHover: var(--colorTealLighter);
+  --colorButtonSecondaryText: var(--colorTealDarkest);
+  --colorButtonTertiary: hsl(240, 2%, 91%);
+}

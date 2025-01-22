@@ -1,5 +1,7 @@
 ---
 title: Netlify CLI init command
+sidebar:
+  label: init
 description: Initialize a new site locally
 ---
 

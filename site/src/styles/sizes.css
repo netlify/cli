@@ -1,0 +1,35 @@
+:root {
+  /* padding */
+  --nano: 0.15rem;
+  --micro: 0.65rem;
+  --tiny: 1rem;
+  --small: 1.5rem;
+  --medium: 2.5rem;
+  --large: 4rem;
+  --xl: 6.5rem;
+  --xxl: 10.5rem;
+
+  /* typography sizes */
+  --xxlText: 2.25rem;
+  --xlText: 1.375rem;
+  --largeText: 1.125rem;
+  --mediumText: 1.25rem;
+  /* 20px */
+  --defaultText: 1.09375rem;
+  /* 17.5px */
+  --smallText: 0.984375rem;
+  /* 15.75px */
+  --tinyText: 0.75rem;
+  --letterSpacing: 0.02rem;
+  /* codeText is in ems so <code> text inside other elements scales according to closest parent text https://github.com/netlify/docs/issues/248#issue-498536370 */
+  --codeText: 0.886em;
+
+  /* typography weights */
+  --regular: 400;
+  --semibold: 600;
+  --bold: 700;
+
+  /* border radius */
+  --smallRadius: 0.25rem;
+  --bigRadius: 0.5rem;
+}

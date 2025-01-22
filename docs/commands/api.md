@@ -1,5 +1,7 @@
 ---
 title: Netlify CLI api command
+sidebar:
+  label: api
 ---
 
 # `api`

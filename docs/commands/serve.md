@@ -1,5 +1,7 @@
 ---
 title: Netlify CLI serve command
+sidebar:
+  label: serve
 description: (Beta) Build the site for production and serve locally. This does not watch the code for changes, so if you need to rebuild your site then you must exit and run `serve` again.
 ---
 

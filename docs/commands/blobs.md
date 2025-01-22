@@ -1,5 +1,7 @@
 ---
 title: Netlify CLI blobs command
+sidebar:
+  label: blobs
 description: Manage objects in Netlify Blobs
 ---
 

@@ -1,5 +1,7 @@
 ---
 title: Netlify CLI watch command
+sidebar:
+  label: watch
 description: Watch for site deploy to finish
 ---
 

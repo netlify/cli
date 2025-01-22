@@ -1,5 +1,7 @@
 ---
 title: Netlify CLI open command
+sidebar:
+  label: open
 ---
 
 # `open`

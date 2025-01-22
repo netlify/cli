@@ -1,24 +1,24 @@
-import { promises as fs } from 'fs'
-import { join, dirname } from 'path'
+import { mkdir, readdir, copyFile, lstat } from 'node:fs/promises'
+import { join, dirname } from 'node:path'
 
 export const copyDirRecursiveAsync = async (src, dest) => {
   try {
-    fs.mkdir(dest, { recursive: true })
+    await mkdir(dest, { recursive: true })
   } catch {
-    // ignore erros for mkdir
+    // ignore errors for mkdir
   }
 
-  const childrenItems = await fs.readdir(src)
+  const childrenItems = await readdir(src)
 
   await Promise.all(
     childrenItems.map(async (item) => {
       const srcPath = join(src, item)
       const destPath = join(dest, item)
 
-      const itemStat = await fs.lstat(srcPath)
+      const itemStat = await lstat(srcPath)
 
       if (itemStat.isFile()) {
-        fs.copyFile(srcPath, destPath)
+        await copyFile(srcPath, destPath)
       } else {
         await copyDirRecursiveAsync(srcPath, destPath)
       }
@@ -28,7 +28,7 @@ export const copyDirRecursiveAsync = async (src, dest) => {
 
 export const ensureFilePathAsync = async (filePath) => {
   try {
-    await fs.mkdir(dirname(filePath), { recursive: true })
+    await mkdir(dirname(filePath), { recursive: true })
   } catch {
     // ignore any errors with mkdir - it will throw if the path already exists.
   }

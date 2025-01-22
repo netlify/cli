@@ -1,5 +1,7 @@
 ---
 title: Netlify CLI link command
+sidebar:
+  label: link
 description: Link an existing site to a local site directory
 ---
 

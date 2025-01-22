@@ -1,5 +1,7 @@
 ---
 title: Netlify CLI dev command
+sidebar:
+  label: dev
 description: Run netlify dev locally
 ---
 

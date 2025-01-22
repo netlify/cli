@@ -1,5 +1,7 @@
 ---
 title: Netlify CLI recipes command
+sidebar:
+  label: recipes
 ---
 
 # `recipes`
