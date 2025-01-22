@@ -354,7 +354,10 @@ const serveRedirect = async function ({
   const reqUrl = reqToURL(req, req.url)
 
   const staticFile = await getStatic(decodeURIComponent(reqUrl.pathname), options.publicFolder)
-  const endpointExists = !staticFile && (await isEndpointExists(decodeURIComponent(reqUrl.pathname), options.target))
+  const endpointExists =
+    !staticFile &&
+    process.env.NETLIFY_DEV_SERVER_CHECK_SSG_ENDPOINTS &&
+    (await isEndpointExists(decodeURIComponent(reqUrl.pathname), options.target))
   if (staticFile || endpointExists) {
     const pathname = staticFile || reqUrl.pathname
     req.url = encodeURI(pathname) + reqUrl.search

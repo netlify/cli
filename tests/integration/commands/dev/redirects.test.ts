@@ -29,7 +29,7 @@ describe('redirects', () => {
     })
   })
 
-  setupFixtureTests('next-app', { devServer: true }, () => {
+  setupFixtureTests('next-app', { devServer: { env: { NETLIFY_DEV_SERVER_CHECK_SSG_ENDPOINTS: 1 } } }, () => {
     test<FixtureTestContext>('should prefer local files instead of redirect when not forced', async ({ devServer }) => {
       const response = await fetch(`http://localhost:${devServer.port}/test.txt`, {})
 
