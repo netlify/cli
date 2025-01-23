@@ -18,7 +18,10 @@ export default defineConfig({
       title: 'Netlify CLI command reference',
       description: 'Full command reference for the Netlify CLI',
       social: {
+        blueSky: 'https://bsky.app/profile/netlify.com',
         github: 'https://github.com/netlify/cli',
+        twitter: 'https://x.com/Netlify',
+        youtube: 'https://www.youtube.com/@NetlifyApp',
       },
       favicon: 'favicon.svg',
       logo: {
