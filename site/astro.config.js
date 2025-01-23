@@ -3,9 +3,11 @@ import { defineConfig } from 'astro/config'
 import sitemap from '@astrojs/sitemap'
 import starlight from '@astrojs/starlight'
 
+const baseUrl = process.env.DEPLOY_PRIME_URL ?? 'https://cli.netlify.com'
+
 // https://astro.build/config
 export default defineConfig({
-  site: 'http://cli.netlify.com',
+  site: baseUrl,
   trailingSlash: 'ignore',
   integrations: [
     sitemap({
@@ -64,15 +66,14 @@ export default defineConfig({
           tag: 'meta',
           attrs: {
             property: 'og:image',
-            // Generic Developer Hub OG image - better than none?
-            content: 'https://developers.netlify.com/images/netlify-developers--preview-default.png',
+            content: `${baseUrl}/og.png`,
           },
         },
         {
           tag: 'meta',
           attrs: {
             name: 'twitter:image',
-            content: 'https://developers.netlify.com/images/netlify-developers--preview-default.png',
+            content: `${baseUrl}/og.png`,
           },
         },
         {
