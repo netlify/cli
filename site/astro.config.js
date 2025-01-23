@@ -105,7 +105,7 @@ export default defineConfig({
           autogenerate: { directory: 'commands' },
         },
         {
-          label: 'Changelog',
+          label: 'Release notes',
           link: `https://developers.netlify.com/feed/tag/cli`,
           attrs: { target: '_blank', class: 'external-link margin-top' },
         },
