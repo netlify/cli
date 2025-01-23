@@ -111,7 +111,7 @@ export default defineConfig({
         },
         {
           label: 'Forums',
-          link: 'https://answers.netlify.com/',
+          link: 'https://answers.netlify.com/tag/netlify-cli',
           attrs: { target: '_blank', class: 'text-sm external-link marg' },
         },
         {
