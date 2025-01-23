@@ -23,7 +23,7 @@ export default defineConfig({
       favicon: 'favicon.svg',
       logo: {
         light: './src/assets/logo-light.svg',
-        dark: './src/assets/logo-dark.png',
+        dark: './src/assets/logo-dark.svg',
         alt: 'Netlify CLI Docs',
         replacesTitle: true,
       },
