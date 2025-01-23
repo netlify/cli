@@ -1,7 +1,7 @@
 import { readFile } from 'fs/promises'
 import { resolve } from 'path'
 
-import { program } from 'commander'
+import { Command } from 'commander'
 
 import execa from '../../../../../utils/execa.js'
 import { fileExistsAsync } from '../../../../fs.js'
@@ -14,19 +14,21 @@ export const detectNetlifyLambda = async function ({ packageJson } = {}) {
     return false
   }
 
+  const program = new Command()
+    .option('-s, --static')
+    .option('-c, --config [file]')
+    .option('-p, --port [number]')
+    .option('-b, --babelrc [file]')
+    .option('-t, --timeout [delay]')
+
+  program.allowExcessArguments()
+
   // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
   const matchingScripts = Object.entries(scripts).filter(([, script]) => script.match(/netlify-lambda\s+build/))
 
   for (const [key, script] of matchingScripts) {
     // E.g. ["netlify-lambda", "build", "functions/folder"]
     // these are all valid options for netlify-lambda
-    program
-      .option('-s, --static')
-      .option('-c, --config [file]')
-      .option('-p, --port [number]')
-      .option('-b, --babelrc [file]')
-      .option('-t, --timeout [delay]')
-
     program.parse((script as string).split(' ') ?? [])
 
     // We are not interested in 'netlify-lambda' and 'build' commands
