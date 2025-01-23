@@ -1,13 +1,13 @@
-import { basename } from 'path'
-import { env } from 'process'
-import { fileURLToPath } from 'url'
+import { basename } from 'node:path'
+import { env } from 'node:process'
+import { fileURLToPath } from 'node:url'
 
 import markdownMagic from 'markdown-magic'
 import stripAnsi from 'strip-ansi'
 
 import { normalizeBackslash } from '../../dist/lib/path.js'
 
-import { generateCommandData } from './generate-command-data.mjs'
+import { generateCommandData } from './util/generate-command-data.js'
 
 const rootDir = normalizeBackslash(fileURLToPath(new URL('../..', import.meta.url)))
 const markdownFiles = [`${rootDir}/docs/**/**.md`]
@@ -20,7 +20,7 @@ const newLine = '\n\n'
 
 const config = {
   transforms: {
-    GENERATE_COMMANDS_DOCS(content, options, instance) {
+    GENERATE_COMMANDS_DOCS(_content, _options, instance) {
       const command = basename(instance.originalPath, '.md')
       const info = commandData[command]
 

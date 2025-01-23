@@ -1,5 +1,7 @@
 ---
 title: Netlify CLI switch command
+sidebar:
+  label: switch
 description: Switch your active Netlify account
 ---
 

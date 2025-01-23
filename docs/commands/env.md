@@ -1,5 +1,7 @@
 ---
 title: Netlify CLI env command
+sidebar:
+  label: env
 description: Control environment variables for the current site
 ---
 

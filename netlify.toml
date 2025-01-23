@@ -4,11 +4,6 @@
   # This is the directory is publishing to netlify's CDN
   publish = "site/dist"
 
-  [build.environment]
-    # cannot use node 18, as we use x0 which uses webpack 4
-    NODE_VERSION = "16"
-    AWS_LAMBDA_JS_RUNTIME = "nodejs16.x"
-
 [functions]
   # Sets a custom directory for Netlify Functions
   directory = "functions"

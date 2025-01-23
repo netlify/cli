@@ -1,0 +1,415 @@
+/**
+ * For reference on what we can override on Starlight's theme, please check:
+ * https://github.com/withastro/starlight/blob/main/packages/starlight/style/props.css
+ */
+
+:root,
+::backdrop {
+  /* All variables below are selectively copied from netlify/docs:
+     https://github.com/netlify/docs/blob/main/docs/.vuepress/theme/styles/variables.css */
+  --fontFamilyHeading: Pacaembu, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif,
+    'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+  --fontFamilyMono: 'Roboto Mono', 'SFMono-Regular', Menlo, Consolas, 'Liberation Mono', Courier, monospace;
+
+  /* Color Palette: Neutral colors */
+  --colorBlack: var(--facetsNeutralLight800);
+
+  /* color only changes on dark theme, we add a light version to avoid an undefined variable, just in case! */
+  --colorGrayDarkest: var(--facetsNeutralLight700);
+  --colorGrayDarker: var(--facetsNeutralLight600);
+  --colorGrayDark: var(--facetsNeutralLight500);
+  --colorGray: var(--facetsNeutralLight400);
+  --colorGrayLight: var(--facetsNeutralLight200);
+
+  /* Background colors */
+  --colorBase: var(--colorBlack);
+  --colorBg: var(--facetsNeutralLight000);
+  --colorBgCode: hsl(198, 45%, 10%);
+  --colorBgCodeInverse: hsla(210, 13%, 12%, 0.1);
+  --codeText: var(--defaultText);
+
+  /* Text color */
+  --colorTextLoud: var(--colorBase);
+  --colorText: var(--colorTextLoud);
+  --colorCodeText: rgba(201, 238, 234, 0.75);
+  --colorTextMutedInverse: var(--colorGrayDarker);
+  --colorTextNeutral: var(--colorGrayDarker);
+
+  /* Functionality based names for colors */
+  --colorLink: var(--colorTealDarkest);
+  --colorNavBorder: var(--colorGrayLight);
+  --colorBorder: var(--colorGrayDark);
+
+  /* Sidebar Navigation */
+  --colorGroupHeadingAccessory: var(--colorGray);
+  --colorSidebarActiveLink: var(--colorLink);
+
+  /* Adjust Starlight's theme defaults */
+  --sl-nav-pad-y: 0;
+  --sl-font-system: Mulishvar, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif,
+    Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
+  --sl-font-mono: var(--fontFamilyMono);
+  --sl-color-bg: var(--colorBg);
+  --sl-color-bg-nav: var(--sl-color-bg);
+  --sl-color-bg-sidebar: var(--sl-color-bg);
+  --sl-color-hairline-shade: var(--colorNavBorder);
+  /* Slightly wider sidebar to prevent awkward line breaks for some of its current items */
+  --sl-sidebar-width: 20rem;
+
+  & a,
+  & a:hover {
+    color: var(--colorLink);
+  }
+
+  & .sidebar a,
+  & .right-sidebar a,
+  & a.site-title,
+  & .sidebar .large {
+    color: var(--colorTextMutedInverse);
+  }
+
+  & .sidebar a[aria-current='page'] {
+    background: transparent;
+    font-weight: bold;
+    color: var(--colorSidebarActiveLink);
+  }
+
+  & .right-sidebar a[aria-current='true'],
+  & .right-sidebar a[aria-current='true']:hover,
+  & .sidebar [open]>summary>.group-label>.large {
+    background: transparent;
+    color: var(--colorText);
+  }
+
+  & .sidebar summary {
+    color: var(--colorGroupHeadingAccessory);
+  }
+
+  & .sidebar details a:hover,
+  & .sidebar .large:hover,
+  & .sidebar [open]>summary>.group-label>.large:hover,
+  & .sidebar a.large[aria-current='page'],
+  & .right-sidebar a:hover {
+    color: var(--colorSidebarActiveLink);
+  }
+
+  & .sidebar details a::before {
+    background-color: var(--colorGroupHeadingAccessory);
+  }
+
+  & .sidebar details a[aria-current='page']::before,
+  & .right-sidebar a[aria-current='true']::before {
+    background-color: var(--colorSidebarActiveLink);
+  }
+
+  & .right-sidebar a::before {
+    background-color: var(--colorBg);
+  }
+
+  & pre[class*='language-'] {
+    background: var(--colorBgCode);
+  }
+
+  .expressive-code .frame,
+  .expressive-code pre {
+    border-radius: var(--smallRadius);
+  }
+}
+
+/* Colors (light mode) */
+:root[data-theme='light'],
+[data-theme='light'] ::backdrop {
+  /* Adjust Starlight's theme defaults */
+  --sl-color-bg: var(--facetsNeutralLight000);
+  --sl-color-bg-nav: var(--facetsNeutralLight000);
+  --sl-color-text: var(--colorText);
+  --sl-color-text-accent: var(--facetsBlue700);
+  --sl-color-bg-inline-code: var(--colorBgCodeInverse);
+}
+
+/* Colors (dark mode) */
+:root[data-theme='dark'],
+[data-theme='dark'] ::backdrop {
+  --colorGrayDarkest: var(--facetsNeutralDark700);
+  --colorGrayDark: var(--facetsNeutralDark600);
+  --colorGray: var(--facetsNeutralDark400);
+  --colorGrayLight: var(--facetsNeutralDark300);
+  --colorGrayLighter: var(--facetsNeutralDark300);
+
+  /* Background colors */
+  --colorBg: var(--facetsNeutralDark900);
+  --colorBgCode: hsl(210, 13%, 12%);
+  --colorBgCodeInverse: hsla(255, 100%, 100%, 0.2);
+
+  /* Text color */
+  --colorText: hsla(180, 9%, 98%, 0.85);
+  --colorTextMutedInverse: var(--colorGrayLighter);
+  --colorTextNeutral: var(--colorGrayLighter);
+
+  /* Functionality based names for colors */
+  --colorLink: var(--colorTeal);
+  --colorNavBorder: var(--colorGrayDark);
+  --colorBorder: var(--colorGrayLight);
+
+  /* Adjust Starlight's theme defaults */
+  --sl-color-text: var(--colorText);
+  --sl-color-text-accent: var(--facetsBlue700);
+  --sl-color-bg-inline-code: var(--colorBgCodeInverse);
+}
+
+/* Undo Starlight's default to render fonts like on docs.netlify.com */
+body {
+  -webkit-font-smoothing: unset;
+}
+
+/* Links */
+a {
+  transition: all var(--transitionDurationShort);
+}
+
+.main-pane a:hover {
+  text-decoration: none;
+}
+
+.main-pane .external-link:after {
+  content: '';
+  padding-right: 1em;
+  color: inherit;
+  background-color: currentColor;
+  mask: url('../assets/icon-external-link.svg') 50% / cover no-repeat;
+}
+
+/* Typography */
+.main-pane h1,
+.main-pane h2,
+.main-pane h3,
+.main-pane h4,
+.site-title {
+  font-family: var(--fontFamilyHeading);
+}
+
+/* Instead of fiddling around with Starlight's default 16px */
+.main-pane {
+  font-size: var(--defaultText);
+}
+
+/* Bump font size of first paragraph */
+.main-pane .sl-markdown-content>p:first-of-type:not(.netlify-panel) {
+  font-size: var(--mediumText);
+}
+
+/* Site title / version number font size */
+.site-title {
+  font-size: 0.875rem;
+  /* 14px */
+  font-weight: normal;
+}
+
+/* Primary buttons */
+.main-pane .sl-link-button.primary {
+  border-radius: var(--smallRadius);
+  color: var(--facetsNeutralLight000);
+  font-family: var(--fontFamilyHeading);
+  font-size: var(--defaultText);
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Remove border in between main heading and content */
+.content-panel+.content-panel {
+  border-top-width: 0;
+}
+
+/* Sidebars */
+/* Links */
+.sidebar a,
+.right-sidebar a,
+.sidebar .large {
+  font-size: var(--defaultText);
+  position: relative;
+}
+
+/* Top-level sidebar links with sub-items */
+.sidebar .large {
+  font-weight: normal;
+}
+
+.sidebar [open] summary .large {
+  font-weight: 600;
+}
+
+/* Move summary expand/collapse caret to the left */
+.sidebar summary {
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+  gap: calc(var(--sl-sidebar-item-padding-inline) / 2);
+}
+
+/* Align top-level links to caret */
+.sidebar .top-level>li>a {
+  --sl-icon-size: 1.25rem;
+  --sl-icon-caret-size: 4.16;
+  /* caret icon width is 4.16 at the original icon size of 16x16 */
+  --sl-icon-size-factor: 1.25;
+  /* caret icon is rendered at 1.25rem */
+  --sl-icon-caret-margin-left: var(--sl-icon-size-factor) * var(--sl-icon-caret-size) * 1.25 * 1px;
+  /* align to collabsible top-level item titles */
+  /* padding-inline-start: calc(var(--sl-sidebar-item-padding-inline) * 2 + var(--sl-icon-size)); */
+  /* align to collapsible top-level item icon container */
+  /* padding-inline-start: var(--sl-sidebar-item-padding-inline); */
+  /* align to collapsible top-level item icon */
+  padding-inline-start: calc(var(--sl-sidebar-item-padding-inline) + var(--sl-icon-caret-margin-left));
+}
+
+/* Second level sidebar links */
+.sidebar details ul>li {
+  border-inline-start: 0;
+  padding-inline-start: 2.5rem;
+
+  & a {
+    font-size: var(--smallText);
+  }
+}
+
+/* Second-level items with accordion (`summary`) */
+.sidebar ul ul>li:has(summary) {
+  margin-inline-start: -1rem;
+
+  & .large {
+    font-size: var(--smallText);
+  }
+}
+
+/* Utility classes */
+.text-sm {
+  font-size: var(--smallText);
+}
+
+.external-link:after {
+  color: var(--colorGroupHeadingAccessory);
+  content: '↗';
+  font-size: 80%;
+  margin-left: 0.25em;
+}
+
+/* Starlight's current sidebar HTML markup contains whitespace in
+   between tags, reduce default value a bit (not 0 to stay on the
+   safe side re:upstream changes) */
+.sidebar .top-level>li>a.external-link:after {
+  margin-left: 0.125em;
+}
+
+.external-link:hover:after {
+  color: inherit;
+}
+
+.margin-top {
+  margin-top: 2rem;
+}
+
+/* Right sidebar with table of contents */
+/* Establish a new stacking context to prevent code blocks from displaying above
+   the mobile version of the "table of contents" UI. Please ref. the related commit message for more context. */
+.right-sidebar-container {
+  position: relative;
+  z-index: 2;
+}
+
+.right-sidebar {
+  border-inline-start: 0;
+}
+
+.right-sidebar-panel {
+  padding-top: 2.5rem;
+  padding-left: 3vw;
+}
+
+#starlight__on-this-page {
+  color: var(--colorText);
+  font-size: 15px;
+  font-weight: normal;
+  text-transform: uppercase;
+  padding-left: 0.5rem;
+}
+
+.right-sidebar-panel a {
+  --pad-inline: 0.5rem;
+  font-size: var(--defaultText);
+  padding-inline: var(--pad-inline);
+  margin-inline: calc(1rem * var(--depth)) 0;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+/* Mimick selected state from docs.netlify.com */
+.sidebar details a::before,
+.right-sidebar a::before {
+  content: '';
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  left: -8px;
+  position: absolute;
+  top: 14px;
+  transition: all var(--transitionDurationLong) var(--transitionEasing);
+}
+
+.sidebar details a[aria-current='page']::before,
+.right-sidebar a[aria-current='true']::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+}
+
+/* Search in header */
+button[data-open-modal] {
+  background: var(--colorBg);
+  border-color: var(--colorBorder);
+  border-radius: var(--smallRadius);
+  color: var(--colorTextMutedInverse);
+  font-size: var(--defaultText);
+}
+
+details summary {
+  cursor: pointer;
+}
+
+/* Medium screens (Starlight breakpoint) */
+@media (min-width: 50rem) {
+
+  /* Increase default margin in between top-level sidebar items
+     with collapsible sub-items, very bespoke to the current sidebar structure */
+  .top-level>li+li>details {
+    margin-top: 1rem;
+  }
+
+  /* A bit brute, but the easiest way to handle our current sidebar link needs, and CSS specificity */
+  .sidebar a.text-sm {
+    font-size: var(--smallText);
+  }
+}
+
+.tab>a {
+  border-color: var(--colorBorder) !important;
+
+  &[aria-selected='true'] {
+    border-color: var(--colorLink) !important;
+    color: var(--colorLink) !important;
+  }
+}
+
+.sl-markdown-content code:not(:where(.not-content *)) {
+  border-radius: var(--smallRadius);
+  font-size: 90%;
+}
+
+table {
+  & code {
+    overflow-wrap: normal;
+  }
+
+  & .aside {
+    font-size: var(--smallText);
+  }
+}

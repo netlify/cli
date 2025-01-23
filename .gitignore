@@ -22,9 +22,8 @@ vendor
 /.netlify
 
 # site
-test-site
 site/dist
-site-cra
+site/.astro/
 site/src/**/*.md
 
 # tests

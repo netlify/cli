@@ -1,5 +1,7 @@
 ---
 title: Netlify CLI login command
+sidebar:
+  label: login
 description: Login to your Netlify account
 ---
 

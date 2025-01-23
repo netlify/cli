@@ -1,5 +1,7 @@
 ---
 title: Netlify CLI status command
+sidebar:
+  label: status
 description: Get the current context of the netlify CLI
 ---
 

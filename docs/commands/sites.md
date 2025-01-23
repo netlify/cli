@@ -1,5 +1,7 @@
 ---
 title: Netlify CLI sites command
+sidebar:
+  label: sites
 description: Manage Netlify sites via the command line
 ---
 

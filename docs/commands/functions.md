@@ -1,5 +1,7 @@
 ---
 title: Netlify CLI functions command
+sidebar:
+  label: functions
 description: Run netlify dev locally
 ---
 

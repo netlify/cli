@@ -1,5 +1,7 @@
 ---
 title: Netlify CLI unlink command
+sidebar:
+  label: unlink
 description: Link an existing site to a local site directory
 ---
 

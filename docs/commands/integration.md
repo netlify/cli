@@ -1,5 +1,7 @@
 ---
 title: Netlify CLI integration command
+sidebar:
+  label: integration
 description: Create, develop, and deploy integrations.
 ---
 
