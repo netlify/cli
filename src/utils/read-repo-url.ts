@@ -35,7 +35,7 @@ const getRepoURLContents = async function (repoHost, ownerAndRepo, contentsPath)
       console.error(`Error occurred while fetching ${APIURL}`, error)
     }
   }
-  throw new Error('unsupported host ', repoHost)
+  throw new Error(`unsupported host: ${repoHost}`)
 }
 
 /**
