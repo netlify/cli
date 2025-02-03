@@ -184,7 +184,7 @@
     "@sindresorhus/slugify": "2.2.1",
     "@types/fs-extra": "11.0.4",
     "@types/inquirer": "9.0.7",
-    "@types/jsonwebtoken": "9.0.7",
+    "@types/jsonwebtoken": "9.0.8",
     "@types/lodash": "4.17.15",
     "@types/node": "22.10.7",
     "@types/node-fetch": "2.6.12",
