@@ -125,7 +125,7 @@
     "http-proxy": "1.18.1",
     "http-proxy-middleware": "2.0.7",
     "https-proxy-agent": "7.0.6",
-    "inquirer": "9.3.7",
+    "inquirer": "9.1.0",
     "inquirer-autocomplete-prompt": "3.0.1",
     "ipx": "2.1.0",
     "is-docker": "3.0.0",
