@@ -210,7 +210,7 @@
     "tree-kill": "1.2.2",
     "typescript": "5.1.6",
     "verdaccio": "6.0.5",
-    "vitest": "1.6.0"
+    "vitest": "1.6.1"
   },
   "ava": {
     "files": [
