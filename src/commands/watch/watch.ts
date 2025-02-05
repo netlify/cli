@@ -1,8 +1,9 @@
 import { OptionValues } from 'commander'
 import pWaitFor from 'p-wait-for'
 import prettyjson from 'prettyjson'
+import type { NetlifyAPI } from 'netlify'
 
-import { startSpinner, stopSpinner } from '../../lib/spinner.js'
+import { type Spinner, startSpinner, stopSpinner } from '../../lib/spinner.js'
 import { chalk, error, log } from '../../utils/command-helpers.js'
 import BaseCommand from '../base-command.js'
 import { init } from '../init/init.js'
@@ -15,28 +16,18 @@ const BUILD_FINISH_INTERVAL = 1e3
 // 20 minutes
 const BUILD_FINISH_TIMEOUT = 12e5
 
-/**
- *
- * @param {import('netlify').NetlifyAPI} api
- * @param {string} siteId
- * @param {import('ora').Ora} spinner
- * @returns {Promise<boolean>}
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'api' implicitly has an 'any' type.
-const waitForBuildFinish = async function (api, siteId, spinner) {
+const waitForBuildFinish = async function (api: NetlifyAPI, siteId: string, spinner: Spinner) {
   let firstPass = true
 
   const waitForBuildToFinish = async function () {
     const builds = await api.listSiteBuilds({ siteId })
     // build.error
-    // @ts-expect-error TS(7006) FIXME: Parameter 'build' implicitly has an 'any' type.
     const currentBuilds = builds.filter((build) => !build.done)
 
     // if build.error
     // @TODO implement build error messages into this
 
     if (!currentBuilds || currentBuilds.length === 0) {
-      // @ts-expect-error TS(2345) FIXME: Argument of type '{ spinner: any; }' is not assign... Remove this comment to see the full error message
       stopSpinner({ spinner })
       return true
     }
@@ -64,7 +55,7 @@ export const watch = async (options: OptionValues, command: BaseCommand) => {
   if (!siteId) {
     // TODO: build init command
     const siteData = await init({}, command)
-    siteId = siteData.id
+    siteId = siteData.id as string
   }
 
   // wait for 1 sec for everything to kickoff
@@ -101,7 +92,7 @@ export const watch = async (options: OptionValues, command: BaseCommand) => {
 
     const noActiveBuilds = await waitForBuildFinish(client, siteId, spinner)
 
-    const siteData = await client.getSite({ siteId: siteId as string })
+    const siteData = await client.getSite({ siteId })
 
     const message = chalk.cyanBright.bold.underline(noActiveBuilds ? 'Last build' : 'Deploy complete')
     log()

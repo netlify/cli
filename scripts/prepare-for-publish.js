@@ -3,7 +3,7 @@ import { dirname, join } from 'path'
 import { fileURLToPath } from 'url'
 
 import execa from 'execa'
-import ora from 'ora'
+import yoctoSpinner from 'yocto-spinner'
 
 // These scripts from package.json need to be preserved on publish
 const preserveScripts = new Set([
@@ -15,8 +15,7 @@ const preserveScripts = new Set([
   'prepublishOnly',
 ])
 
-let spinner = ora({
-  spinner: 'star',
+let spinner = yoctoSpinner({
   text: 'Patching package.json (removing devDependencies, scripts, etc)',
 }).start()
 
@@ -41,18 +40,16 @@ pkgJson.scripts.postinstall = pkgJson.scripts['postinstall-pack']
 delete pkgJson.scripts['postinstall-pack']
 
 await writeFile(packageJsonPath, JSON.stringify(pkgJson, null, 2))
-spinner.succeed()
+spinner.success()
 
-spinner = ora({
-  spinner: 'star',
+spinner = yoctoSpinner({
   text: 'Running `npm install --no-audit`',
 }).start()
 await execa('npm', ['install', '--no-audit'])
-spinner.succeed()
+spinner.success()
 
-spinner = ora({
-  spinner: 'star',
+spinner = yoctoSpinner({
   text: 'Running `npm shrinkwrap`',
 }).start()
 await execa('npm', ['shrinkwrap'])
-spinner.succeed()
+spinner.success()
