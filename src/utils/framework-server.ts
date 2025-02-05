@@ -44,7 +44,9 @@ export const startFrameworkServer = async function ({
     await rm(settings.dist, { recursive: true, force: true })
   }
 
-  runCommand(settings.command, { env: settings.env, spinner, cwd })
+  if (settings.command) {
+    runCommand(settings.command, { env: settings.env, spinner, cwd })
+  }
 
   let port: { open: boolean; ipVersion?: 4 | 6 } | undefined
   try {

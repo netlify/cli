@@ -138,7 +138,6 @@
     "lambda-local": "2.2.0",
     "locate-path": "7.2.0",
     "lodash": "4.17.21",
-    "log-symbols": "6.0.0",
     "log-update": "6.1.0",
     "maxstache": "1.0.7",
     "maxstache-stream": "1.0.4",
@@ -146,7 +145,6 @@
     "netlify": "13.3.3",
     "netlify-redirector": "0.5.0",
     "node-fetch": "3.3.2",
-    "ora": "8.1.1",
     "p-filter": "4.1.0",
     "p-map": "7.0.3",
     "p-wait-for": "5.0.2",
@@ -175,6 +173,7 @@
     "wait-port": "1.1.0",
     "write-file-atomic": "5.0.1",
     "ws": "8.18.0",
+    "yocto-spinner": "0.2.0",
     "zod": "3.23.8"
   },
   "devDependencies": {

@@ -16,7 +16,7 @@ const MAX_PAGES = 10
 const MAX_PER_PAGE = 100
 
 // @ts-expect-error TS(7023) FIXME: 'listSites' implicitly has return type 'any' becau... Remove this comment to see the full error message
-export const listSites = async ({ api, options }): SiteInfo[] => {
+export const listSites = async ({ api, options }): Promise<SiteInfo[]> => {
   const { maxPages = MAX_PAGES, page = FIRST_PAGE, ...rest } = options
   const sites = await api.listSites({ page, per_page: MAX_PER_PAGE, ...rest })
   // TODO: use pagination headers when js-client returns them
