@@ -1,8 +1,8 @@
+import { cp } from 'fs/promises'
 import { join } from 'path'
 import { fileURLToPath } from 'url'
 
 import type { NodeOptions } from 'execa'
-import { copy } from 'fs-extra'
 import { temporaryDirectory } from 'tempy'
 import { afterAll, afterEach, beforeAll, beforeEach, describe } from 'vitest'
 
@@ -75,7 +75,10 @@ export class Fixture {
   static async create(fixturePath: string, options?: FixtureSettings): Promise<Fixture> {
     const fixture = new Fixture(fixturePath, temporaryDirectory(), options)
 
-    await copy(join(FIXTURES_DIRECTORY, fixturePath), fixture.directory)
+    await cp(join(FIXTURES_DIRECTORY, fixturePath), fixture.directory, {
+      recursive: true,
+      verbatimSymlinks: true,
+    })
 
     return fixture
   }

@@ -195,7 +195,6 @@ const pickTemplate = async function ({ language: languageFromFlag }, funcType) {
     language = languageFromPrompt
   }
 
-  // @ts-expect-error TS(7034) FIXME: Variable 'templatesForLanguage' implicitly has typ... Remove this comment to see the full error message
   let templatesForLanguage
 
   try {
@@ -218,11 +217,9 @@ const pickTemplate = async function ({ language: languageFromFlag }, funcType) {
 
       if (!input || input === '') {
         // show separators
-        // @ts-expect-error TS(7005) FIXME: Variable 'templatesForLanguage' implicitly has an ... Remove this comment to see the full error message
         return [...templatesForLanguage, ...parsedSpecialCommands]
       }
       // only show filtered results sorted by score
-      // @ts-expect-error TS(7005) FIXME: Variable 'templatesForLanguage' implicitly has an ... Remove this comment to see the full error message
       const answers = [...filterRegistry(templatesForLanguage, input), ...parsedSpecialCommands].sort(
         (answerA, answerB) => answerB.score - answerA.score,
       )
