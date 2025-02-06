@@ -2,7 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
-import readdirp from 'readdirp'
+import { readdirpPromise } from 'readdirp'
 import { describe, expect, test } from 'vitest'
 
 import { copyTemplateDir } from '../../../../dist/utils/copy-template-dir/copy-template-dir.js'
@@ -44,7 +44,7 @@ describe('copyTemplateDir', () => {
     checkCreatedFileNames(createdFiles.map((filePath) => path.relative(outDir, filePath)))
 
     // Checks that the files were created in the file system
-    const files = await readdirp.promise(outDir)
+    const files = await readdirpPromise(outDir)
     checkCreatedFileNames(files.map((file) => file.path))
 
     // Cleanup
