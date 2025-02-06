@@ -50,12 +50,8 @@
     "test:init:cli-help": "npm run start -- --help",
     "test:init:eleventy-deps": "cd tests/integration/__fixtures__/eleventy-site && pnpm install --frozen-lockfile",
     "test:init:hugo-deps": "npm ci --prefix tests/integration/__fixtures__/hugo-site --no-audit",
-<<<<<<< HEAD
-    "test:init:next-deps": "npm ci --prefix tests/integration/__fixtures__/next-app-without-config --no-audit",
     "test:init:monorepo-deps": "cd tests/integration/__fixtures__/monorepo && pnpm install --frozen-lockfile",
-=======
     "test:init:next-deps": "npm ci --prefix tests/integration/__fixtures__/next-app-without-config --no-audit && npm ci --prefix tests/integration/__fixtures__/next-app --no-audit",
->>>>>>> a7c2fab37a13c58f18d4c8054c9a898fe8e5ac84
     "test:dev:vitest": "vitest run tests/unit/ && vitest run tests/integration",
     "test:ci:vitest:unit": "vitest run --coverage tests/unit/",
     "test:ci:vitest:integration": "vitest run --coverage tests/integration/",
