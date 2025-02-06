@@ -277,7 +277,7 @@ export const createDevCommand = (program: BaseCommand) => {
     .option('--framework <name>', 'framework to use. Defaults to #auto which automatically detects a framework')
     .option('-d ,--dir <path>', 'dir with static files')
     .option('-f ,--functions <folder>', 'specify a functions folder to serve')
-    .option('-o ,--offline', 'disables any features that require network access')
+    .addHelpOption(new Option('-o, --offline', 'Disables any features that require network access'))
     .addOption(
       new Option('--offline-env', 'disables fetching environment variables from the Netlify API').hideHelp(true),
     )
@@ -319,7 +319,7 @@ export const createDevCommand = (program: BaseCommand) => {
     )
     .addOption(
       new Option(
-        '-e, --edgeInspect [address]',
+        '--edgeInspect [address]',
         'Old, prefer --edge-inspect. Enable the V8 Inspector Protocol for Edge Functions, with an optional address in the host:port format',
       )
         .conflicts('edgeInspectBrk')
@@ -336,7 +336,7 @@ export const createDevCommand = (program: BaseCommand) => {
     )
     .addOption(
       new Option(
-        '-E, --edgeInspectBrk [address]',
+        '--edgeInspectBrk [address]',
         'Old, prefer --edge-inspect-brk. Enable the V8 Inspector Protocol for Edge Functions and pause execution on the first line of code, with an optional address in the host:port format',
       )
         .conflicts('edgeInspect')

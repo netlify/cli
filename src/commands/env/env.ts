@@ -39,14 +39,14 @@ export const createEnvCommand = (program: BaseCommand) => {
     .argument('<fileName>', '.env file to import')
     .addOption(
       new Option(
-        '-r --replaceExisting',
+        '--replaceExisting',
         'Old, prefer --replace-existing. Replace all existing variables instead of merging them with the current ones',
       )
         .default(false)
         .hideHelp(true),
     )
     .option(
-      '-r, --replace-existing',
+      '-R, --replace-existing',
       'Replace all existing variables instead of merging them with the current ones',
       false,
     )
@@ -64,7 +64,8 @@ export const createEnvCommand = (program: BaseCommand) => {
       normalizeContext,
       'dev',
     )
-    .option('--json', 'Output environment variables as JSON')
+    // The BaseCommand defines a `--json` option which is hidden from the help by default
+    .addHelpOption(new Option('--json', 'Output environment variables as JSON'))
     .addOption(new Option('--plain', 'Output environment variables as plaintext').conflicts('json'))
     .addOption(
       new Option('-s, --scope <scope>', 'Specify a scope')

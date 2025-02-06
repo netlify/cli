@@ -190,13 +190,8 @@ export default class BaseCommand extends Command {
       .addOption(new Option('--json', 'Output return values as JSON').hideHelp(true))
       .addOption(new Option('--silent', 'Silence CLI output').hideHelp(true))
       .addOption(new Option('--cwd <cwd>').hideHelp(true))
-      .addOption(new Option('-o, --offline').hideHelp(true))
+      .addOption(new Option('-o, --offline').default(false).hideHelp(true))
       .addOption(new Option('--auth <token>', 'Netlify auth token').hideHelp(true))
-      .addOption(
-        new Option('--httpProxy [address]', 'Old, prefer --http-proxy. Proxy server address to route requests through.')
-          .default(process.env.HTTP_PROXY || process.env.HTTPS_PROXY)
-          .hideHelp(true),
-      )
       .addOption(
         new Option(
           '--httpProxyCertificateFilename [file]',

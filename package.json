@@ -94,7 +94,7 @@
     "chokidar": "3.6.0",
     "ci-info": "4.1.0",
     "clean-deep": "3.4.0",
-    "commander": "10.0.1",
+    "commander": "12.1.0",
     "comment-json": "4.2.5",
     "configstore": "7.0.0",
     "content-type": "1.0.5",
