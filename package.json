@@ -193,7 +193,7 @@
     "@types/semver": "7.5.8",
     "@types/uuid": "9.0.8",
     "@types/ws": "8.5.14",
-    "@vitest/coverage-v8": "1.6.0",
+    "@vitest/coverage-v8": "1.6.1",
     "c8": "9.1.0",
     "cheerio": "1.0.0",
     "eslint-plugin-sort-destructure-keys": "2.0.0",
