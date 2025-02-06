@@ -1,5 +1,7 @@
 ---
 title: Netlify CLI build command
+sidebar:
+  label: build
 ---
 
 # `build`

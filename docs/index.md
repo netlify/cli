@@ -3,8 +3,6 @@ title: Netlify CLI command reference
 description: All Netlify CLI commands
 ---
 
-# Netlify CLI command reference
-
 To get a list of commands, run
 
 ```

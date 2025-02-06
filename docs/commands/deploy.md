@@ -1,5 +1,7 @@
 ---
 title: Netlify CLI deploy command
+sidebar:
+  label: deploy
 ---
 
 # `deploy`

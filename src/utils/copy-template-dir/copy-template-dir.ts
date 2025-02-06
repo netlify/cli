@@ -28,7 +28,7 @@ import { promisify } from 'util'
 import maxstache from 'maxstache'
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'maxstache-stream... Remove this comment to see the full error message
 import maxstacheStream from 'maxstache-stream'
-import readdirp, { EntryInfo, ReaddirpStream } from 'readdirp'
+import { readdirp, EntryInfo, ReaddirpStream } from 'readdirp'
 
 const noop = (): void => undefined
 

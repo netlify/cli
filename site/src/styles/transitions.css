@@ -1,0 +1,8 @@
+:root,
+::backdrop {
+  /* animation */
+  --transitionDurationLong: 0.4s;
+  --transitionDuration: 0.2s;
+  --transitionDurationShort: 0.1s;
+  --transitionEasing: cubic-bezier(1, 0.5, 0.8, 1);
+}

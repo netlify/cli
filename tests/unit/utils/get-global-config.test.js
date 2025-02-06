@@ -1,9 +1,8 @@
 import { existsSync } from 'fs'
-import { mkdir, readFile, rm, writeFile } from 'fs/promises'
+import { cp, mkdir, readFile, rm, writeFile } from 'fs/promises'
 import os from 'os'
 import { join } from 'path'
 
-import { copy } from 'fs-extra'
 import { afterAll, beforeAll, beforeEach, expect, test } from 'vitest'
 
 import { getLegacyPathInHome, getPathInHome } from '../../../dist/lib/settings.js'
@@ -20,7 +19,7 @@ const tmpConfigBackupPath = join(os.tmpdir(), `netlify-config-backup-${Date.now(
 beforeAll(async () => {
   // backup current user config directory
   if (existsSync(configPath)) {
-    await copy(configPath, tmpConfigBackupPath)
+    await cp(configPath, tmpConfigBackupPath, { recursive: true })
   }
 })
 
@@ -34,7 +33,7 @@ afterAll(async () => {
   // Restore user config directory if exists
   if (existsSync(tmpConfigBackupPath)) {
     await mkdir(configPath)
-    await copy(tmpConfigBackupPath, configPath)
+    await cp(tmpConfigBackupPath, configPath, { recursive: true })
     // Remove tmp backup
     await rm(tmpConfigBackupPath, { force: true, recursive: true })
   }

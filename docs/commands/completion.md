@@ -1,5 +1,7 @@
 ---
 title: Netlify CLI completion command
+sidebar:
+  label: completion
 description: Shell completion script for netlify CLI
 ---
 

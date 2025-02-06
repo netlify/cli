@@ -63,7 +63,7 @@ export const logsBuild = async (options: OptionValues, command: BaseCommand) => 
       })),
     })
 
-    deploy = deploys.find((dep: any) => dep.id === result)
+    deploy = deploys.find((dep: any) => dep.id === result) || deploy
   }
 
   const { id } = deploy

@@ -1,6 +1,9 @@
+import { createHash } from 'node:crypto'
+import { createReadStream } from 'node:fs'
+import { pipeline } from 'node:stream/promises'
+
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'flus... Remove this comment to see the full error message
 import flushWriteStream from 'flush-write-stream'
-import hasha from 'hasha'
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'para... Remove this comment to see the full error message
 import transform from 'parallel-transform'
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'thro... Remove this comment to see the full error message
@@ -10,17 +13,23 @@ import { obj as map } from 'through2-map'
 
 import { normalizePath } from './util.js'
 
+const hashFile = async (filePath: string, algorithm: string) => {
+  const hasher = createHash(algorithm)
+  await pipeline([createReadStream(filePath), hasher])
+
+  return hasher.digest('hex')
+}
+
 // a parallel transform stream segment ctor that hashes fileObj's created by folder-walker
 // TODO: use promises instead of callbacks
 /* eslint-disable promise/prefer-await-to-callbacks */
 // @ts-expect-error TS(7031) FIXME: Binding element 'concurrentHash' implicitly has an... Remove this comment to see the full error message
 export const hasherCtor = ({ concurrentHash, hashAlgorithm }) => {
-  const hashaOpts = { algorithm: hashAlgorithm }
   if (!concurrentHash) throw new Error('Missing required opts')
   // @ts-expect-error TS(7006) FIXME: Parameter 'fileObj' implicitly has an 'any' type.
   return transform(concurrentHash, { objectMode: true }, async (fileObj, cb) => {
     try {
-      const hash = await hasha.fromFile(fileObj.filepath, hashaOpts)
+      const hash = await hashFile(fileObj.filepath, hashAlgorithm)
       // insert hash and asset type to file obj
       return cb(null, { ...fileObj, hash })
     } catch (error) {

@@ -16,14 +16,6 @@ const cleanupWork = []
 let cleanupStarted = false
 
 /**
- * @param {() => Promise<void>} job
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'job' implicitly has an 'any' type.
-export const addCleanupJob = (job) => {
-  cleanupWork.push(job)
-}
-
-/**
  * @param {object} input
  * @param {number=} input.exitCode The exit code to return when exiting the process after cleanup
  */

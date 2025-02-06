@@ -28,4 +28,26 @@ describe('redirects', () => {
       expect(result.multiValueQueryStringParameters).toHaveProperty('param', ['hello', 'world'])
     })
   })
+
+  setupFixtureTests('next-app', { devServer: { env: { NETLIFY_DEV_SERVER_CHECK_SSG_ENDPOINTS: 1 } } }, () => {
+    test<FixtureTestContext>('should prefer local files instead of redirect when not forced', async ({ devServer }) => {
+      const response = await fetch(`http://localhost:${devServer.port}/test.txt`, {})
+
+      expect(response.status).toBe(200)
+
+      const result = await response.text()
+      expect(result.trim()).toEqual('hello world')
+    })
+
+    test<FixtureTestContext>('should check for the dynamic page existence before doing redirect', async ({
+      devServer,
+    }) => {
+      const response = await fetch(`http://localhost:${devServer.port}/`, {})
+
+      expect(response.status).toBe(200)
+
+      const result = await response.text()
+      expect(result.toLowerCase()).not.toContain('netlify')
+    })
+  })
 })

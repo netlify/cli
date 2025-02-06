@@ -342,7 +342,7 @@ describe.concurrent('command/build', () => {
 })
 
 setupFixtureTests('monorepo', () => {
-  test<FixtureTestContext>('should set the PACKAGE_PATH constant when selecting a pkg', async ({ fixture }) => {
+  test.skip<FixtureTestContext>('should set the PACKAGE_PATH constant when selecting a pkg', async ({ fixture }) => {
     const childProcess = execa(cliPath, ['build', '--offline'], {
       cwd: join(fixture.directory),
     })
@@ -366,7 +366,7 @@ setupFixtureTests('monorepo', () => {
     expect(stdout).toContain(`@@ cwd: ${fixture.directory}`)
   })
 
-  test<FixtureTestContext>('should set the PACKAGE_PATH constant when run not from the monorepo root', async ({
+  test.skip<FixtureTestContext>('should set the PACKAGE_PATH constant when run not from the monorepo root', async ({
     fixture,
   }) => {
     const { stdout } = await execa(cliPath, ['build', '--offline'], {

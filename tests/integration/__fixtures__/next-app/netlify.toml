@@ -1,0 +1,10 @@
+[build]
+publish = "public"
+
+[dev]
+targetPort = 6123
+
+[[redirects]]
+from = "*"
+to = "https://www.netlify.app/:splat"
+status = 200

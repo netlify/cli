@@ -2,53 +2,24 @@
   "name": "cli-docs-site",
   "version": "1.0.0",
   "description": "Docs site for Netlify CLI",
-  "private": true,
-  "type": "commonjs",
+  "type": "module",
   "author": "Netlify Inc.",
-  "files": [
-    "/src",
-    "/dist"
-  ],
   "scripts": {
-    "start": "npm run sync && run-p start:*",
-    "dev:start": "npm run sync && NODE_OPTIONS=--openssl-legacy-provider x0 src",
-    "dev:build": "npm run clean && npm run sync && NODE_OPTIONS=--openssl-legacy-provider x0 build src",
-    "build": "npm run clean && run-s build:*",
-    "postbuild": "cp src/_redirects dist/_redirects",
-    "build:docs": "node scripts/docs.mjs",
-    "build:site": "npm run sync && x0 build src",
-    "start:site": "x0 src",
-    "start:watch": "node ./watch.mjs",
-    "watch": "node ./watch.mjs",
-    "sync": "node ./sync.mjs",
-    "clean": "rm -rf dist"
+    "build": "npm run build:docs-md && npm run build:site",
+    "build:docs-md": "npm run build:docs-md:gen && npm run build:docs-md:copy",
+    "build:docs-md:copy": "node ./scripts/sync.js",
+    "build:docs-md:gen": "node ./scripts/docs.js",
+    "build:site": "astro build",
+    "dev": "npm run build:docs-md:copy && astro dev",
+    "preview": "npm run build:docs-md:copy && astro preview",
+    "start": "npm run dev"
   },
   "license": "MIT",
   "dependencies": {
-    "@compositor/x0": "6.0.7",
-    "@rebass/markdown": "1.0.0",
-    "@rebass/mdx": "1.0.0",
-    "algoliasearch": "4.24.0",
-    "lodash.sortby": "4.7.0",
-    "prop-types": "15.8.1",
-    "react": "16.14.0",
-    "react-dom": "16.14.0",
-    "react-helmet": "6.1.0",
-    "react-instantsearch-dom": "6.40.4",
-    "react-router-dom": "4.3.1",
-    "react-emotion": "9.2.12",
-    "rebass": "2.3.4",
-    "styled-components": "3.4.10",
-    "styled-system": "5.1.5"
-  },
-  "devDependencies": {
+    "@astrojs/starlight": "0.31.1",
+    "astro": "5.1.8",
     "markdown-magic": "2.6.1",
-    "npm-run-all2": "5.0.2",
-    "sane": "5.0.1",
+    "sharp": "0.32.6",
     "strip-ansi": "7.1.0"
-  },
-  "overrides": {
-    "react": "$react",
-    "react-dom": "$react-dom"
   }
 }

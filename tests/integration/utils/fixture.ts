@@ -1,8 +1,8 @@
+import { cp } from 'fs/promises'
 import { join } from 'path'
 import { fileURLToPath } from 'url'
 
 import type { NodeOptions } from 'execa'
-import { copy } from 'fs-extra'
 import { temporaryDirectory } from 'tempy'
 import { afterAll, afterEach, beforeAll, beforeEach, describe } from 'vitest'
 
@@ -27,7 +27,7 @@ export interface FixtureTestContext {
 type LifecycleHook = (context: FixtureTestContext) => Promise<void> | void
 
 export interface FixtureOptions {
-  devServer?: boolean | { serve?: boolean; args?: string[] }
+  devServer?: boolean | { serve?: boolean; args?: string[]; env?: Record<string, any> }
   mockApi?: MockApiOptions
   /**
    * Executed after fixture setup, but before tests run
@@ -75,7 +75,10 @@ export class Fixture {
   static async create(fixturePath: string, options?: FixtureSettings): Promise<Fixture> {
     const fixture = new Fixture(fixturePath, temporaryDirectory(), options)
 
-    await copy(join(FIXTURES_DIRECTORY, fixturePath), fixture.directory)
+    await cp(join(FIXTURES_DIRECTORY, fixturePath), fixture.directory, {
+      recursive: true,
+      verbatimSymlinks: true,
+    })
 
     return fixture
   }
@@ -156,6 +159,7 @@ export async function setupFixtureTests(
           args.push(...options.devServer.args)
         }
 
+        const env = typeof options.devServer === 'object' && options.devServer.env
         devServer = await startDevServer({
           serve: typeof options.devServer === 'object' && options.devServer.serve,
           cwd: fixture.directory,
@@ -165,6 +169,7 @@ export async function setupFixtureTests(
             NETLIFY_API_URL: mockApi?.apiUrl,
             NETLIFY_SITE_ID: 'foo',
             NETLIFY_AUTH_TOKEN: 'fake-token',
+            ...env,
           },
         })
 

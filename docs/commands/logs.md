@@ -1,5 +1,7 @@
 ---
 title: Netlify CLI logs command
+sidebar:
+  label: logs
 ---
 
 # `logs`

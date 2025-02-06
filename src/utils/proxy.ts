@@ -149,6 +149,16 @@ const getStatic = async function (pathname: string, publicFolder: string) {
   return `/${path.relative(publicFolder, file)}`
 }
 
+const isEndpointExists = async function (endpoint: string, origin: string) {
+  const url = new URL(endpoint, origin)
+  try {
+    const res = await fetch(url, { method: 'HEAD' })
+    return res.status !== 404
+  } catch (e) {
+    return false
+  }
+}
+
 // @ts-expect-error TS(7006) FIXME: Parameter 'match' implicitly has an 'any' type.
 const isExternal = function (match) {
   return match.to && match.to.match(/^https?:\/\//)
@@ -344,8 +354,13 @@ const serveRedirect = async function ({
   const reqUrl = reqToURL(req, req.url)
 
   const staticFile = await getStatic(decodeURIComponent(reqUrl.pathname), options.publicFolder)
-  if (staticFile) {
-    req.url = encodeURI(staticFile) + reqUrl.search
+  const endpointExists =
+    !staticFile &&
+    process.env.NETLIFY_DEV_SERVER_CHECK_SSG_ENDPOINTS &&
+    (await isEndpointExists(decodeURIComponent(reqUrl.pathname), options.target))
+  if (staticFile || endpointExists) {
+    const pathname = staticFile || reqUrl.pathname
+    req.url = encodeURI(pathname) + reqUrl.search
     // if there is an existing static file and it is not a forced redirect, return the file
     if (!match.force) {
       return proxy.web(req, res, { ...options, staticFile })
@@ -695,6 +710,7 @@ const initializeProxy = async function ({
           ...proxyResHeaders,
           'content-length': String(responseBody.byteLength),
         }
+        delete proxyResHeaders['transfer-encoding']
       }
 
       res.writeHead(responseStatus, proxyResHeaders)

@@ -1,10 +1,5 @@
 import { APIError, error } from '../command-helpers.js'
 
-export const ADDON_VALIDATION = {
-  EXISTS: 'EXISTS',
-  NOT_EXISTS: 'NOT_EXISTS',
-}
-
 // @ts-expect-error TS(7031) FIXME: Binding element 'addonName' implicitly has an 'any... Remove this comment to see the full error message
 export const getCurrentAddon = ({ addonName, addons }) => addons.find((addon) => addon.service_slug === addonName)
 
