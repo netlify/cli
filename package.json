@@ -200,7 +200,7 @@
     "form-data": "4.0.1",
     "husky": "9.1.7",
     "is-ci": "4.1.0",
-    "nock": "14.0.0",
+    "nock": "14.0.1",
     "p-timeout": "6.1.4",
     "serialize-javascript": "6.0.2",
     "strip-ansi": "7.1.0",
