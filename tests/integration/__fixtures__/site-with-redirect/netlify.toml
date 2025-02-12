@@ -1,0 +1,14 @@
+[dev]
+targetPort = 6124
+command = "npm run dev"
+
+[[redirects]]
+from = "/local/*"
+to = "/:splat"
+status = 200
+
+[[redirects]]
+from = "/local-force/*"
+to = "/:splat"
+status = 402
+force = true

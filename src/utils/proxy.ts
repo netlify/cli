@@ -121,8 +121,12 @@ const formatEdgeFunctionError = (errorBuffer, acceptsHtml) => {
   })
 }
 
-function isInternal(url?: string): boolean {
+function isInternalFunctions(url?: string): boolean {
   return url?.startsWith('/.netlify/') ?? false
+}
+
+function isInternal(url?: string): boolean {
+  return url?.startsWith('/') ?? false
 }
 
 function isFunction(functionsPort: boolean | number | undefined, url: string) {
@@ -201,7 +205,7 @@ const handleAddonUrl = function ({ addonUrl, req, res }) {
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'match' implicitly has an 'any' type.
 const isRedirect = function (match) {
-  return match.status && match.status >= 300 && match.status <= 400
+  return match.status && match.status >= 300 && match.status < 400
 }
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'publicFolder' implicitly has an 'any' t... Remove this comment to see the full error message
@@ -415,8 +419,8 @@ const serveRedirect = async function ({
     const ct = req.headers['content-type'] ? contentType.parse(req).type : ''
     if (
       req.method === 'POST' &&
-      !isInternal(req.url) &&
-      !isInternal(destURL) &&
+      !isInternalFunctions(req.url) &&
+      !isInternalFunctions(destURL) &&
       (ct.endsWith('/x-www-form-urlencoded') || ct === 'multipart/form-data')
     ) {
       return proxy.web(req, res, { target: options.functionsServer })
@@ -431,9 +435,13 @@ const serveRedirect = async function ({
       match.force ||
       (!staticFile && ((!options.framework && destStaticFile) || isInternal(destURL) || matchingFunction))
     ) {
+      // 3xx redirects parsed above, here are 2xx meaning just override the url of proxying page and use the status
+      // which comes from that url
       req.url = destStaticFile ? destStaticFile + dest.search : destURL
       const { status } = match
-      statusValue = status
+      if (match.force || status !== 200) {
+        statusValue = status
+      }
       console.log(`${NETLIFYDEVLOG} Rewrote URL to`, req.url)
     }
 
@@ -450,9 +458,11 @@ const serveRedirect = async function ({
 
       return proxy.web(req, res, { headers: functionHeaders, target: options.functionsServer })
     }
+
     if (isImageRequest(req)) {
       return imageProxy(req, res)
     }
+
     const addonUrl = getAddonUrl(options.addonsUrls, req)
     if (addonUrl) {
       return handleAddonUrl({ req, res, addonUrl })
@@ -518,6 +528,8 @@ const initializeProxy = async function ({
   })
 
   proxy.on('error', (err, req, res, proxyUrl) => {
+    console.error('Got error from proxy', err)
+
     // @ts-expect-error TS(2339) FIXME: Property 'proxyOptions' does not exist on type 'In... Remove this comment to see the full error message
     const options = req.proxyOptions
 
@@ -632,7 +644,11 @@ const initializeProxy = async function ({
       }
     }
 
+<<<<<<< HEAD
     if (options.staticFile && isRedirect({ status: proxyRes.statusCode }) && proxyRes.headers.location) {
+=======
+    if (isRedirect({ status: proxyRes.statusCode }) && proxyRes.headers.location) {
+>>>>>>> 90cbb20c (fix: support for redirects with 200 status. Fix crashing dev server when have socket error. Follow redirects from proxyRes)
       req.url = proxyRes.headers.location
       return serveRedirect({
         // We don't want to match functions at this point because any redirects
@@ -875,7 +891,7 @@ const onRequest = async (
     hasFormSubmissionHandler &&
     functionsServer &&
     req.method === 'POST' &&
-    !isInternal(req.url) &&
+    !isInternalFunctions(req.url) &&
     (ct.endsWith('/x-www-form-urlencoded') || ct === 'multipart/form-data')
   ) {
     return proxy.web(req, res, { target: functionsServer })
