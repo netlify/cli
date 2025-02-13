@@ -12,18 +12,47 @@ import {
   getExistingContext,
   parseContextFile,
   writeFile,
+  FILE_NAME,
   NETLIFY_PROVIDER,
 } from './context.js'
 
-export const description = 'Create and update context files for AI tools'
+export const description = 'Manage context files for AI tools'
 
-const toolOptions = [
-  { name: 'Cursor', value: 'cursor' },
-  { name: 'Other', value: '' },
+const presets = [
+  { name: 'Cursor rules (.cursor/rules/)', value: '.cursor/rules' },
+  { name: 'Custom location', value: '' },
 ]
 
-const TOOLS = {
-  cursor: '.cursor/rules/netlify_development_rules.mdc',
+const promptForPath = async (): Promise<string> => {
+  const { presetPath } = await inquirer.prompt([
+    {
+      name: 'presetPath',
+      message: 'Where should we put the context files?',
+      type: 'list',
+      choices: presets,
+    },
+  ])
+
+  if (presetPath) {
+    return presetPath
+  }
+
+  const { customPath } = await inquirer.prompt([
+    {
+      type: 'input',
+      name: 'customPath',
+      message: 'Enter the path, relative to the project root, where the context files should be placed',
+      default: './ai-context',
+    },
+  ])
+
+  if (customPath) {
+    return customPath
+  }
+
+  log('You must select a path.')
+
+  return promptForPath()
 }
 
 export const run = async ({ args, command }: RunRecipeOptions) => {
@@ -31,36 +60,7 @@ export const run = async ({ args, command }: RunRecipeOptions) => {
   // eslint-disable-next-line promise/prefer-await-to-then
   const download = downloadFile(version).catch(() => null)
 
-  let [tool] = args
-
-  if (!tool) {
-    const { selectedTool } = await inquirer.prompt([
-      {
-        name: 'selectedTool',
-        message: "Select the AI tool you're working with",
-        type: 'list',
-        choices: toolOptions,
-      },
-    ])
-
-    tool = selectedTool
-  }
-
-  let filePath = TOOLS[tool as keyof typeof TOOLS]
-
-  if (!filePath) {
-    const { selectedPath } = await inquirer.prompt([
-      {
-        type: 'input',
-        name: 'selectedPath',
-        message: 'Enter the path, relative to the project root, where the context files should be placed',
-        default: './ai-context/netlify_development_rules.mdc',
-      },
-    ])
-
-    filePath = selectedPath
-  }
-
+  const filePath = args[0] || (await promptForPath())
   const { contents: downloadedFile, minimumCLIVersion } = (await download) ?? {}
 
   if (!downloadedFile) {
@@ -79,7 +79,7 @@ export const run = async ({ args, command }: RunRecipeOptions) => {
     return
   }
 
-  const absoluteFilePath = resolve(command?.workingDir ?? '', filePath)
+  const absoluteFilePath = resolve(command?.workingDir ?? '', filePath, FILE_NAME)
   const existing = await getExistingContext(absoluteFilePath)
   const remote = parseContextFile(downloadedFile)
 

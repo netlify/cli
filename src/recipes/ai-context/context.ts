@@ -2,16 +2,17 @@ import { promises as fs } from 'node:fs'
 import { dirname } from 'node:path'
 
 const ATTRIBUTES_REGEX = /(\S*)="([^\s"]*)"/gim
+const BASE_URL = 'https://docs.netlify.com/ai-context'
+export const FILE_NAME = 'netlify-development.mdc'
 const MINIMUM_CLI_VERSION_HEADER = 'x-cli-min-ver'
 export const NETLIFY_PROVIDER = 'netlify'
 const PROVIDER_CONTEXT_REGEX = /<providercontext ([^>]*)>(.*)<\/providercontext>/ims
 const PROVIDER_CONTEXT_OVERRIDES_REGEX = /<providercontextoverrides([^>]*)>(.*)<\/providercontextoverrides>/ims
 const PROVIDER_CONTEXT_OVERRIDES_TAG = 'ProviderContextOverrides'
-const BASE_URL = 'https://docs.netlify.com/ai-context/netlify-development.mdc'
 
 export const downloadFile = async (cliVersion: string) => {
   try {
-    const res = await fetch(BASE_URL, {
+    const res = await fetch(`${BASE_URL}/${FILE_NAME}`, {
       headers: {
         'user-agent': `NetlifyCLI ${cliVersion}`,
       },

@@ -6,6 +6,7 @@ exports[`commands/recipes > Shows a list of all the available recipes 1`] = `
 |-----------------------------------------------------------------------------------------|
 |     Name      |                               Description                               |
 |---------------|-------------------------------------------------------------------------|
+| ai-context    | Manage context files for AI tools                                       |
 | blobs-migrate | Migrate legacy Netlify Blobs stores                                     |
 | vscode        | Create VS Code settings for an optimal experience with Netlify projects |
 '-----------------------------------------------------------------------------------------'"
