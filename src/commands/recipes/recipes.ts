@@ -11,7 +11,7 @@ import { getRecipe, listRecipes } from './common.js'
 
 const SUGGESTION_TIMEOUT = 1e4
 
-interface RunRecipeOptions {
+export interface RunRecipeOptions {
   args: string[]
   command?: BaseCommand
   config: unknown
