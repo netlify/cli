@@ -83,7 +83,7 @@
     "@netlify/local-functions-proxy": "1.1.1",
     "@netlify/redirect-parser": "14.5.0",
     "@netlify/zip-it-and-ship-it": "9.42.5",
-    "@octokit/rest": "21.1.0",
+    "@octokit/rest": "21.1.1",
     "@opentelemetry/api": "1.8.0",
     "ansi-escapes": "7.0.0",
     "ansi-to-html": "0.7.2",
