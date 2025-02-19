@@ -133,7 +133,6 @@
     "is-stream": "4.0.1",
     "is-wsl": "3.1.0",
     "isexe": "3.1.1",
-    "js-yaml": "4.1.0",
     "jsonwebtoken": "9.0.2",
     "jwt-decode": "4.0.0",
     "lambda-local": "2.2.0",
@@ -175,8 +174,7 @@
     "uuid": "11.0.5",
     "wait-port": "1.1.0",
     "write-file-atomic": "5.0.1",
-    "ws": "8.18.0",
-    "zod": "3.24.1"
+    "ws": "8.18.0"
   },
   "devDependencies": {
     "@babel/preset-react": "7.26.3",
