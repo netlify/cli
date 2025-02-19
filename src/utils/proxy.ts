@@ -12,7 +12,6 @@ import util from 'util'
 import zlib from 'zlib'
 
 import contentType from 'content-type'
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'cook... Remove this comment to see the full error message
 import cookie from 'cookie'
 import { getProperty } from 'dot-prop'
 import generateETag from 'etag'
