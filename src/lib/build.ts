@@ -1,54 +1,79 @@
 import fs from 'fs'
 import process from 'process'
 
-import build from '@netlify/build'
+import build, { type OnEnd, type OnPostBuild } from '@netlify/build'
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'toml... Remove this comment to see the full error message
 import tomlify from 'tomlify-j0.4'
+import type { OptionValues } from 'commander'
 
 import { getFeatureFlagsFromSiteInfo } from '../utils/feature-flags.js'
+import type { EnvironmentVariables } from '../utils/types.js'
 
 import { getBootstrapURL } from './edge-functions/bootstrap.js'
 import { featureFlags as edgeFunctionsFeatureFlags } from './edge-functions/consts.js'
 
-/**
- * The buildConfig + a missing cachedConfig
- * @typedef BuildConfig
- * @type {Parameters<import('@netlify/build/src/core/main.js')>[0] & {cachedConfig: any}}
- */
+export interface CachedConfig {
+  env: EnvironmentVariables
+  siteInfo: {
+    id?: string
+    account_id?: string
+    feature_flags?: Record<string, boolean | boolean | number>
+  }
+  // TODO(serhalp) Add remaining properties
+  [k: string]: unknown
+}
+
+interface DefaultConfig {
+  // TODO(serhalp) Add remaining properties
+  [k: string]: unknown
+}
+
+// TODO(serhalp) This is patching weak or missing properties from @netlify/build. Fix there instead.
+export type BuildConfig = Parameters<typeof build>[0] & {
+  cachedConfig: CachedConfig
+  defaultConfig: DefaultConfig
+  // It's possible this one is correct in @netlify/build. Remove and stop passing it if so.
+  accountId?: string
+  edgeFunctionsBootstrapURL: string
+}
+
+interface HandlerResult {
+  newEnvChanges?: Record<string, string>
+  configMutations?: Record<string, string>
+  status?: string
+}
+// The @netlify/build type incorrectly states a `void | Promise<void>` return type.
+type PatchedHandlerType<T extends (opts: any) => void | Promise<void>> = (
+  opts: Parameters<T>[0],
+) => HandlerResult | Promise<HandlerResult>
+
+type EventHandler<T extends (opts: any) => void | Promise<void>> = {
+  handler: PatchedHandlerType<T>
+  description: string
+}
 
 // We have already resolved the configuration using `@netlify/config`
 // This is stored as `netlify.cachedConfig` and can be passed to
 // `@netlify/build --cachedConfig`.
-/**
- *
- * @param {object} config
- * @param {*} config.cachedConfig
- * @param {string} [config.packagePath]
- * @param {string} config.currentDir
- * @param {string} config.token
- * @param {import('commander').OptionValues} config.options
- * @param {*} config.deployHandler
- * @returns {BuildConfig}
- */
 export const getBuildOptions = async ({
-  // @ts-expect-error TS(7031) FIXME: Binding element 'cachedConfig' implicitly has an '... Remove this comment to see the full error message
   cachedConfig,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'currentDir' implicitly has an 'an... Remove this comment to see the full error message
   currentDir,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'defaultConfig' implicitly has an '... Remove this comment to see the full error message
   defaultConfig,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'deployHandler' implicitly has an ... Remove this comment to see the full error message
   deployHandler,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'context' implicitly has an 'any' ... Remove this comment to see the full error message
   options: { context, cwd, debug, dry, json, offline, silent },
-  // @ts-expect-error TS(7031) FIXME: Binding element 'packagePath' implicitly has an 'a... Remove this comment to see the full error message
   packagePath,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'token' implicitly has an 'any' ty... Remove this comment to see the full error message
   token,
-}) => {
-  const eventHandlers = {
+}: {
+  cachedConfig: CachedConfig
+  currentDir: string
+  defaultConfig?: DefaultConfig
+  deployHandler?: PatchedHandlerType<OnPostBuild>
+  options: OptionValues
+  packagePath?: string
+  token?: null | string
+}): Promise<BuildConfig> => {
+  const eventHandlers: { onEnd: EventHandler<OnEnd>; onPostBuild?: EventHandler<OnPostBuild> } = {
     onEnd: {
-      // @ts-expect-error TS(7031) FIXME: Binding element 'netlifyConfig' implicitly has an ... Remove this comment to see the full error message
       handler: ({ netlifyConfig }) => {
         const string = tomlify.toToml(netlifyConfig)
 
@@ -64,7 +89,6 @@ export const getBuildOptions = async ({
   }
 
   if (deployHandler) {
-    // @ts-expect-error TS(2339) FIXME: Property 'onPostBuild' does not exist on type '{ o... Remove this comment to see the full error message
     eventHandlers.onPostBuild = {
       handler: deployHandler,
       description: 'Deploy Site',
@@ -73,11 +97,11 @@ export const getBuildOptions = async ({
 
   return {
     cachedConfig,
-    defaultConfig,
+    defaultConfig: defaultConfig ?? {},
     siteId: cachedConfig.siteInfo.id,
     accountId: cachedConfig.siteInfo.account_id,
     packagePath,
-    token,
+    token: token ?? undefined,
     dry,
     debug,
     context,
@@ -92,18 +116,13 @@ export const getBuildOptions = async ({
       ...getFeatureFlagsFromSiteInfo(cachedConfig.siteInfo),
       functionsBundlingManifest: true,
     },
+    // @ts-expect-error(serhalp) -- TODO(serhalp) Upstream the type fixes above into @netlify/build
     eventHandlers,
     edgeFunctionsBootstrapURL: await getBootstrapURL(),
   }
 }
 
-/**
- * run the build command
- * @param {BuildConfig} options
- * @returns
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
-export const runBuild = async (options) => {
+export const runBuild = async (options: BuildConfig) => {
   // If netlify NETLIFY_API_URL is set we need to pass this information to @netlify/build
   // TODO don't use testOpts, but add real properties to do this.
   if (process.env.NETLIFY_API_URL) {
@@ -112,6 +131,8 @@ export const runBuild = async (options) => {
       scheme: apiUrl.protocol.slice(0, -1),
       host: apiUrl.host,
     }
+    // @ts-expect-error(serhalp) -- I don't know what's going on here and I can't convince myself it even works as
+    // intended. TODO(serhalp) Investigate and fix types.
     options = { ...options, testOpts }
   }
 

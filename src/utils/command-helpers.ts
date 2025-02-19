@@ -133,9 +133,9 @@ export const pollForToken = async ({
  * @returns {Promise<[null|string, 'flag' | 'env' |'config' |'not found']>}
  */
 
-export type tokenTuple = [string | null, TokenLocation]
+export type TokenTuple = [string | null, TokenLocation]
 
-export const getToken = async (tokenFromOptions?: string): Promise<tokenTuple> => {
+export const getToken = async (tokenFromOptions?: string): Promise<TokenTuple> => {
   // 1. First honor command flag --auth
   if (tokenFromOptions) {
     return [tokenFromOptions, 'flag']

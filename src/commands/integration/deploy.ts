@@ -391,7 +391,6 @@ export const deploy = async (options: OptionValues, command: BaseCommand) => {
     packagePath: command.workspacePackage,
     currentDir: command.workingDir,
     token,
-    // @ts-expect-error TS(2740)
     options,
   })
 

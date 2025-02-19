@@ -3,9 +3,9 @@ import type { NetlifyTOML } from '@netlify/build-info'
 import type { NetlifyAPI } from 'netlify'
 
 import type { FrameworksAPIPaths } from "../utils/frameworks-api.ts";
-import StateConfig from '../utils/state-config.js'
-import { Account } from "../utils/types.ts";
-
+import type StateConfig from '../utils/state-config.js'
+import type { Account } from "../utils/types.ts";
+import type { CachedConfig } from "../utils/build.js"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type $TSFixMe = any;
@@ -49,10 +49,6 @@ type HTMLInjection = {
   html: string
 }
 
-type EnvironmentVariableScope = 'builds' | 'functions' | 'runtime' | 'post_processing'
-type EnvironmentVariableSource = 'account' | 'addons' | 'configFile' | 'general' |  'internal' | 'ui'
-
-export type EnvironmentVariables = Record<string, { sources: EnvironmentVariableSource[], value: string; scopes?: EnvironmentVariableScope[] }>
 
 /**
  * The netlify object inside each command with the state
@@ -70,7 +66,7 @@ export type NetlifyOptions = {
   site: NetlifySite
   siteInfo: $TSFixMe
   config: PatchedConfig
-  cachedConfig: Record<string, $TSFixMe> & { env: EnvironmentVariables }
+  cachedConfig: CachedConfig
   globalConfig: $TSFixMe
   state: StateConfig
   frameworksAPIPaths: FrameworksAPIPaths
