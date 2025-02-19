@@ -5,8 +5,7 @@ import { promisify } from 'util'
 import { zipFunctions, type FunctionResult, type TrafficRules } from '@netlify/zip-it-and-ship-it'
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'from... Remove this comment to see the full error message
 import fromArray from 'from2-array'
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'pump... Remove this comment to see the full error message
-import pumpModule from 'pump'
+import pumpModule, { type Stream } from 'pump'
 
 import BaseCommand from '../../commands/base-command.js'
 import { $TSFixMe } from '../../commands/types.js'
@@ -14,7 +13,9 @@ import { INTERNAL_FUNCTIONS_FOLDER } from '../functions/functions.js'
 
 import { hasherCtor, manifestCollectorCtor } from './hasher-segments.js'
 
-const pump = promisify(pumpModule)
+// Explicitly passing type parameter because inference isn't playing nicely with incompatible patterns for typing
+// function spread parameters + function overloading
+const pump = promisify<Stream[]>(pumpModule)
 
 // Maximum age of functions manifest (2 minutes).
 const MANIFEST_FILE_TTL = 12e4
@@ -226,7 +227,7 @@ const hashFns = async (
   const fnShaMap = {}
   const manifestCollector = manifestCollectorCtor(functions, fnShaMap, { statusCb, assetType })
 
-  await pump(functionStream, hasher, manifestCollector)
+  await pump([functionStream, hasher, manifestCollector] as const)
   return { functionSchedules, functions, functionsWithNativeModules, fnShaMap, fnConfig }
 }
 

@@ -1,6 +1,5 @@
 import { readFile } from 'fs/promises'
 
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'conf... Remove this comment to see the full error message
 import Configstore from 'configstore'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -34,7 +33,8 @@ const getGlobalConfig = async function () {
     } catch {}
     // Use legacy config as default values
     const defaults = { ...globalConfigDefaults, ...legacyConfig }
-    configStore = new Configstore(null, defaults, { configPath })
+    // The id param is only used when not passing `configPath` but the type def requires it
+    configStore = new Configstore('unused-id', defaults, { configPath })
   }
 
   return configStore

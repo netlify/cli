@@ -1,13 +1,13 @@
 import { promisify } from 'util'
 
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'fold... Remove this comment to see the full error message
 import walker from 'folder-walker'
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'pump... Remove this comment to see the full error message
-import pumpModule from 'pump'
+import pumpModule, { type Stream } from 'pump'
 
 import { fileFilterCtor, fileNormalizerCtor, hasherCtor, manifestCollectorCtor } from './hasher-segments.js'
 
-const pump = promisify(pumpModule)
+// Explicitly passing type parameter because inference isn't playing nicely with incompatible patterns for typing
+// function spread parameters + function overloading
+const pump = promisify<Stream[]>(pumpModule)
 
 const hashFiles = async ({
   assetType = 'file',
@@ -37,7 +37,7 @@ const hashFiles = async ({
   const filesShaMap = {}
   const manifestCollector = manifestCollectorCtor(files, filesShaMap, { statusCb, assetType })
 
-  await pump(fileStream, fileFilter, hasher, fileNormalizer, manifestCollector)
+  await pump([fileStream, fileFilter, hasher, fileNormalizer, manifestCollector] as const)
 
   return { files, filesShaMap }
 }
