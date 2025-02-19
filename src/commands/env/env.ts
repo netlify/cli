@@ -37,14 +37,6 @@ export const createEnvCommand = (program: BaseCommand) => {
   program
     .command('env:import')
     .argument('<fileName>', '.env file to import')
-    .addOption(
-      new Option(
-        '-r --replaceExisting',
-        'Old, prefer --replace-existing. Replace all existing variables instead of merging them with the current ones',
-      )
-        .default(false)
-        .hideHelp(true),
-    )
     .option(
       '-r, --replace-existing',
       'Replace all existing variables instead of merging them with the current ones',
