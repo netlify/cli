@@ -730,6 +730,59 @@ describe.concurrent('command/dev', () => {
           )
         })
       })
+
+      test('ensures dev server plugins can mutate env', async (t) => {
+        await withSiteBuilder(t, async (builder) => {
+          await builder
+            .withNetlifyToml({
+              config: {
+                plugins: [{ package: './plugins/plugin' }],
+                dev: {
+                  command: 'node index.mjs',
+                  targetPort: 4444
+                },
+              },
+            })
+            .withBuildPlugin({
+              name: 'plugin',
+              plugin: {
+                async onPreDev({ netlifyConfig }) {
+                  netlifyConfig.build.environment.SOME_ENV = 'value'
+                },
+              },
+            })
+            .withContentFile({
+              path: 'index.mjs',
+              content: `
+              import process from 'process';
+              import http from 'http';
+
+              const server = http.createServer((req, res) => {
+                res.write(process.env.SOME_ENV)
+                res.end();
+              })
+
+              server.listen(4444)
+              `,
+            })
+            .build()
+
+          await withDevServer(
+            {
+              cwd: builder.directory,
+            },
+            async (server) => {
+              const output = server.outputBuffer.map((buff) => buff.toString()).join('\n')
+              t.expect(output).toContain('Netlify configuration property "build.environment.SOME_ENV" value changed.')
+              t.expect(output).toContain('Server now ready')
+
+              const res = await fetch(new URL('/', server.url))
+              t.expect(res.status).toBe(200)
+              t.expect(await res.text()).toBe('value')
+            },
+          )
+        })
+      })
     })
   })
 })
