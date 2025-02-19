@@ -25,11 +25,6 @@ export const createServeCommand = (program: BaseCommand) =>
         "disables edge functions. use this if your environment doesn't support Deno. This option is internal and should not be used by end users.",
       ).hideHelp(true),
     )
-    .addOption(
-      new Option('--functionsPort <port>', 'Old, prefer --functions-port. Port of functions server')
-        .argParser((value) => Number.parseInt(value))
-        .hideHelp(true),
-    )
     .option('--functions-port <port>', 'port of functions server', (value) => Number.parseInt(value))
     .addOption(
       new Option(
