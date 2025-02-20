@@ -4,7 +4,6 @@ import { isMainThread, workerData, parentPort } from 'worker_threads'
 
 import { isStream } from 'is-stream'
 import lambdaLocal from 'lambda-local'
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'sour... Remove this comment to see the full error message
 import sourceMapSupport from 'source-map-support'
 
 if (isMainThread) {

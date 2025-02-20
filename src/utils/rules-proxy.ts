@@ -1,7 +1,6 @@
 import path from 'path'
 
 import chokidar from 'chokidar'
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'cook... Remove this comment to see the full error message
 import cookie from 'cookie'
 import redirector from 'netlify-redirector'
 import type { Match, RedirectMatcher } from 'netlify-redirector'

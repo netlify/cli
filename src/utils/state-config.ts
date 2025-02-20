@@ -4,7 +4,6 @@ import process from 'process'
 
 import { deleteProperty, getProperty, hasProperty, setProperty } from 'dot-prop'
 import { findUpSync } from 'find-up'
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'writ... Remove this comment to see the full error message
 import writeFileAtomic from 'write-file-atomic'
 
 import { getPathInProject } from '../lib/settings.js'
