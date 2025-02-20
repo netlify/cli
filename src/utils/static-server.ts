@@ -1,40 +1,40 @@
+import { createServer } from 'http'
+import { AddressInfo } from 'net'
 import path from 'path'
 
-import fastifyStatic from '@fastify/static'
-import Fastify from 'fastify'
+import {App ,Request,Response} from '@tinyhttp/app'
+import sirv from 'sirv'
 
 import { log, NETLIFYDEVLOG } from './command-helpers.js'
 
-/**
- * @param {object} config
- * @param {import('./types.js').ServerSettings} config.settings
- */
-// @ts-expect-error TS(7031) FIXME: Binding element 'settings' implicitly has an 'any'... Remove this comment to see the full error message
-export const startStaticServer = async ({ settings }) => {
-  const server = Fastify()
-  const rootPath = path.resolve(settings.dist)
-  server.register(fastifyStatic, {
-    root: rootPath,
-    etag: false,
-    acceptRanges: false,
-    lastModified: false,
-  })
+export const startStaticServer = ({ settings }: { settings: import('./types.js').ServerSettings }) => {
+ 
+  const rootPath = path.resolve(settings.dist || '')
 
-  server.setNotFoundHandler((_req, res) => {
-    res.code(404).sendFile('404.html', rootPath)
-  })
-
-  server.addHook('onRequest', (req, reply, done) => {
-    reply.header('age', '0')
-    reply.header('cache-control', 'public, max-age=0, must-revalidate')
-    const validMethods = ['GET', 'HEAD']
-    if (!validMethods.includes(req.method)) {
-      reply.code(405).send('Method Not Allowed')
+  const app = new App({
+    noMatchHandler: (req, res) => {
+      res.status(404).sendFile(path.resolve(rootPath, '404.html'))
     }
-    done()
   })
-  await server.listen({ port: settings.frameworkPort })
-  const [address] = server.addresses()
+  app.use(sirv(rootPath, {etag:false}))
+  
+
+  app.use((req, res, next) => {
+    res.header('age', '0')
+    res.header('cache-control', 'public, max-age=0, must-revalidate')
+    const validMethods = ['GET', 'HEAD']
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    if (!validMethods.includes(req.method!)) {
+      res.status(405).send('Method Not Allowed')
+    }
+   return next?.()
+  })
+
+  
+
+  const server = createServer((req, res)=> app.handler(req as Request, res as Response))
+  server.listen(settings.frameworkPort)
+  const address = server.address() as AddressInfo
   log(`\n${NETLIFYDEVLOG} Static server listening to`, settings.frameworkPort)
   return { family: address.family }
 }
