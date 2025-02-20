@@ -51,7 +51,7 @@ const getRepoData = async function ({ remoteName, workingDir }: { remoteName?: s
     const { url } = gitConfig.remote[remoteName]
     const parsedUrl = parseGithubUrl(url)
     if (parsedUrl == null) {
-      throw new Error(`The specified Git remote ${remoteName} does not a valid URL: ${url}`)
+      throw new Error(`The specified Git remote ${remoteName} is not a valid URL: ${url}`)
     }
     const { host, name, owner, repo } = parsedUrl
     const { branch } = gitRepoInfo()
