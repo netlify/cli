@@ -2,7 +2,7 @@ import { mkdir, mkdtemp, writeFile } from 'fs/promises'
 import { tmpdir } from 'os'
 import { join } from 'path'
 
-import express from 'express'
+import { App } from '@tinyhttp/app'
 import fetch from 'node-fetch'
 import { afterAll, beforeAll, describe, expect, test, vi } from 'vitest'
 
@@ -35,7 +35,7 @@ describe('createHandler', () => {
       frameworksAPIPaths: getFrameworksAPIPaths(projectRoot),
     })
     await functionsRegistry.scan([functionsDirectory])
-    const app = express()
+    const app = new App()
     app.all('*', createHandler({ functionsRegistry, geo: 'mock', state: new StateConfig(projectRoot) }))
 
     return await new Promise((resolve) => {
