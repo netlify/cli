@@ -215,6 +215,7 @@
     "form-data": "4.0.2",
     "husky": "9.1.7",
     "is-ci": "4.1.0",
+    "milliparsec": "^5.0.1",
     "nock": "14.0.1",
     "p-timeout": "6.1.4",
     "serialize-javascript": "6.0.2",
