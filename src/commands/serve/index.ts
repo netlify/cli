@@ -18,7 +18,7 @@ export const createServeCommand = (program: BaseCommand) =>
     .option('-p ,--port <port>', 'port of netlify dev', (value) => Number.parseInt(value))
     .option('-d ,--dir <path>', 'dir with static files')
     .option('-f ,--functions <folder>', 'specify a functions folder to serve')
-    .addHelpOption(new Option('-o, --offline', 'Disables any features that require network access'))
+    .option('-o, --offline', 'Disables any features that require network access')
     .addOption(
       new Option(
         '--internal-disable-edge-functions',

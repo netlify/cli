@@ -1,10 +1,10 @@
-import { Option, OptionValues } from 'commander'
+import type { OptionValues } from 'commander'
 
 import { chalk } from '../../utils/command-helpers.js'
 import requiresSiteInfo from '../../utils/hooks/requires-site-info.js'
-import BaseCommand from '../base-command.js'
+import type BaseCommand from '../base-command.js'
 
-const functions = (options: OptionValues, command: BaseCommand) => {
+const functions = (_options: OptionValues, command: BaseCommand) => {
   command.help()
 }
 
@@ -28,6 +28,7 @@ export const createFunctionsCommand = (program: BaseCommand) => {
     .option('-n, --name <name>', 'function name')
     .option('-u, --url <url>', 'pull template from URL')
     .option('-l, --language <lang>', 'function language')
+    .option('-o, --offline', 'Disables any features that require network access')
     .addExamples([
       'netlify functions:create',
       'netlify functions:create hello-world',
@@ -59,6 +60,7 @@ export const createFunctionsCommand = (program: BaseCommand) => {
       'simulate Netlify Identity authentication JWT. pass --no-identity to affirm unauthenticated request',
     )
     .option('--port <port>', 'Port where netlify dev is accessible. e.g. 8888', (value) => Number.parseInt(value))
+    .option('-o, --offline', 'Disables any features that require network access')
     .addExamples([
       'netlify functions:invoke',
       'netlify functions:invoke myfunction',
@@ -84,8 +86,7 @@ Helpful for making sure that you have formatted your functions correctly
 NOT the same as listing the functions that have been deployed. For that info you need to go to your Netlify deploy log.`,
     )
     .option('-f, --functions <dir>', 'Specify a functions directory to list')
-    // The BaseCommand defines a `--json` option which is hidden from the help by default
-    .addHelpOption(new Option('--json', 'Output function data as JSON'))
+    .option('--json', 'Output function data as JSON')
     .hook('preAction', requiresSiteInfo)
     .action(async (options: OptionValues, command: BaseCommand) => {
       const { functionsList } = await import('./functions-list.js')
@@ -98,7 +99,7 @@ NOT the same as listing the functions that have been deployed. For that info you
     .description('Serve functions locally')
     .option('-f, --functions <dir>', 'Specify a functions directory to serve')
     .option('-p, --port <port>', 'Specify a port for the functions server', (value) => Number.parseInt(value))
-    .addHelpOption(new Option('-o, --offline', 'Disables any features that require network access'))
+    .option('-o, --offline', 'Disables any features that require network access')
     .addHelpText('after', 'Helpful for debugging functions.')
     .action(async (options: OptionValues, command: BaseCommand) => {
       const { functionsServe } = await import('./functions-serve.js')

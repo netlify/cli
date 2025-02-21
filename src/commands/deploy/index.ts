@@ -99,11 +99,8 @@ Support for package.json's main field, and intrinsic index.js entrypoints are co
     )
     .option('-O, --open', 'Open site after deploy', false)
     .option('-m, --message <message>', 'A short message to include in the deploy log')
-    // The BaseCommand defines an `--auth` option which is hidden from the help by default
-    .addHelpOption(new Option('-a, --auth <token>', 'Netlify auth token to deploy with'))
     .option('-s, --site <name-or-id>', 'A site name or ID to deploy to', env.NETLIFY_SITE_ID)
-    // The BaseCommand defines a `--json` option which is hidden from the help by default
-    .addHelpOption(new Option('--json', 'Output deployment data as JSON'))
+    .option('--json', 'Output deployment data as JSON')
     .option('--timeout <number>', 'Timeout to wait for deployment to finish', (value) => Number.parseInt(value))
     .addOption(
       new Option('--trigger', 'Trigger a new build of your site on Netlify without uploading local files').conflicts(

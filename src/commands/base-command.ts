@@ -183,13 +183,12 @@ export default class BaseCommand extends Command {
    */
   createCommand(name: string): BaseCommand {
     const base = new BaseCommand(name)
-      // If  --silent or --json flag passed disable logger
       // .addOption(new Option('--force', 'Force command to run. Bypasses prompts for certain destructive commands.'))
-      .addOption(new Option('--json', 'Output return values as JSON').hideHelp(true))
       .addOption(new Option('--silent', 'Silence CLI output').hideHelp(true))
       .addOption(new Option('--cwd <cwd>').hideHelp(true))
-      .addOption(new Option('-o, --offline').default(false).hideHelp(true))
-      .addOption(new Option('--auth <token>', 'Netlify auth token').hideHelp(true))
+      .addOption(
+        new Option('--auth <token>', 'Netlify auth token - can be used to run this command without logging in'),
+      )
       .addOption(
         new Option('--http-proxy [address]', 'Proxy server address to route requests through.')
           .default(process.env.HTTP_PROXY || process.env.HTTPS_PROXY)
