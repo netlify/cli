@@ -2,7 +2,7 @@ import { Buffer } from 'buffer'
 import { promises as fs } from 'fs'
 import path from 'path'
 
-import { App, Handler } from '@tinyhttp/app'
+import { App, Handler, Request } from '@tinyhttp/app'
 import { logger } from '@tinyhttp/logger'
 import { jwtDecode } from 'jwt-decode'
 import { text, raw } from 'milliparsec'
@@ -72,11 +72,11 @@ const buildClientContext = function (headers) {
   }
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
-const hasBody = (req) =>
+
+const hasBody = (req: Request) =>
   // copied from is-type package
   // eslint-disable-next-line unicorn/prefer-number-properties
-  (req.header('transfer-encoding') !== undefined || !isNaN(req.header('content-length'))) &&
+  (req.headers['transfer-encoding'] !== undefined || !isNaN(Number.parseInt(req.headers['content-length'] as string))) &&
   // we expect a string or a buffer, because we use the two bodyParsers(text, raw) from express
   (typeof req.body === 'string' || Buffer.isBuffer(req.body))
 
