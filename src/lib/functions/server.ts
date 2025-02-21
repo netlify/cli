@@ -74,9 +74,8 @@ const buildClientContext = function (headers) {
 
 const hasBody = (req: Request) =>
   // copied from is-type package
-  // eslint-disable-next-line unicorn/prefer-number-properties
   (req.headers['transfer-encoding'] !== undefined ||
-    !isNaN(Number.parseInt(req.headers['content-length'] as string))) &&
+    !Number.isNaN(Number.parseInt(req.headers['content-length'] as string))) &&
   // we expect a string or a buffer, because we use the two bodyParsers(text, raw) from express
   (typeof req.body === 'string' || Buffer.isBuffer(req.body))
 
