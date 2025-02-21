@@ -5,7 +5,7 @@ import path from 'path'
 import { App, Handler } from '@tinyhttp/app'
 import {logger} from '@tinyhttp/logger'
 import { jwtDecode } from 'jwt-decode'
-
+import  { text, raw } from 'milliparsec'
 import type BaseCommand from '../../commands/base-command.js'
 import type { $TSFixMe } from '../../commands/types.js'
 import { NETLIFYDEVERR, NETLIFYDEVLOG, error as errorExit, log } from '../../utils/command-helpers.js'
@@ -273,12 +273,12 @@ const getFunctionsServer = (options: GetFunctionsServerOptions) => {
   const functionHandler = createHandler(options)
 
   app.use(
-    express.text({
-      limit: '6mb',
+    text({
+      payloadLimit: 6_291_456,
       type: ['text/*', 'application/json'],
     }),
   )
-  app.use(express.raw({ limit: '6mb', type: '*/*' }))
+  app.use(raw({ payloadLimit: 6_291_456 }))
   app.use(createFormSubmissionHandler({ functionsRegistry, siteUrl }))
   app.use(
     logger(),
