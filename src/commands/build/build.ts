@@ -1,17 +1,12 @@
-import { OptionValues } from 'commander'
+import type { OptionValues } from 'commander'
 
-import { getBuildOptions, runBuild } from '../../lib/build.js'
+import { type BuildConfig, getBuildOptions, runBuild } from '../../lib/build.js'
 import { detectFrameworkSettings, getDefaultConfig } from '../../utils/build-info.js'
 import { error, exit, getToken } from '../../utils/command-helpers.js'
 import { getEnvelopeEnv } from '../../utils/env/index.js'
-import BaseCommand from '../base-command.js'
+import type BaseCommand from '../base-command.js'
 
-/**
- * @param {import('../../lib/build.js').BuildConfig} options
- */
-// @ts-expect-error TS(7031) FIXME: Binding element 'token' implicitly has an 'any' ty... Remove this comment to see the full error message
-export const checkOptions = ({ cachedConfig: { siteInfo = {} }, token }) => {
-  // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type '{}'.
+export const checkOptions = ({ cachedConfig: { siteInfo }, token }: BuildConfig) => {
   if (!siteInfo.id) {
     error(
       'Could not find the site ID. If your site is not on Netlify, please run `netlify init` or `netlify deploy` first. If it is, please run `netlify link`.',
@@ -36,7 +31,6 @@ export const build = async (options: OptionValues, command: BaseCommand) => {
     packagePath: command.workspacePackage,
     currentDir: command.workingDir,
     token,
-    // @ts-expect-error TS(2740)
     options,
   })
 

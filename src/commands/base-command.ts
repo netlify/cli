@@ -8,11 +8,9 @@ import { NodeFS, NoopLogger } from '@netlify/build-info/node'
 import { resolveConfig } from '@netlify/config'
 import { isCI } from 'ci-info'
 import { Command, Help, Option } from 'commander'
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'debu... Remove this comment to see the full error message
 import debug from 'debug'
 import { findUp } from 'find-up'
 import inquirer from 'inquirer'
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'inqu... Remove this comment to see the full error message
 import inquirerAutocompletePrompt from 'inquirer-autocomplete-prompt'
 import merge from 'lodash/merge.js'
 import { NetlifyAPI } from 'netlify'

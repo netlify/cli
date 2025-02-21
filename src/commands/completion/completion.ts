@@ -5,7 +5,6 @@ import { fileURLToPath } from 'url'
 import inquirer from 'inquirer'
 
 import { OptionValues } from 'commander'
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'tabt... Remove this comment to see the full error message
 import { install, uninstall } from 'tabtab'
 
 import { generateAutocompletion } from '../../lib/completion/index.js'

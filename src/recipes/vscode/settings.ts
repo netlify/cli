@@ -1,13 +1,15 @@
 import { mkdir, readFile, stat, writeFile } from 'fs/promises'
-import { dirname, relative } from 'path'
+import { dirname, posix, relative } from 'path'
 
 import * as JSONC from 'comment-json'
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'unix... Remove this comment to see the full error message
-import unixify from 'unixify'
+
+const toUnixPath = (path: string): string => path.replace(/\\/g, '/')
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'existingSettings' implicitly has an 'an... Remove this comment to see the full error message
 export const applySettings = (existingSettings, { denoBinary, edgeFunctionsPath, repositoryRoot }) => {
-  const relativeEdgeFunctionsPath = unixify(relative(repositoryRoot, edgeFunctionsPath))
+  // TODO(serhalp) I'm not convinced we want to convert to Unix paths on Windows? Does this even work? Was this a
+  // workaround for something, perhaps https://github.com/denoland/vscode_deno/pull/745?
+  const relativeEdgeFunctionsPath = toUnixPath(posix.normalize(relative(repositoryRoot, edgeFunctionsPath)))
   const settings = JSONC.assign(existingSettings, {
     'deno.enable': true,
     'deno.enablePaths': existingSettings['deno.enablePaths'] || [],

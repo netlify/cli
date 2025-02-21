@@ -1,7 +1,6 @@
 import process from 'process'
 
 import { Option } from 'commander'
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'envi... Remove this comment to see the full error message
 import envinfo from 'envinfo'
 import { closest } from 'fastest-levenshtein'
 import inquirer from 'inquirer'
