@@ -191,16 +191,8 @@ export default class BaseCommand extends Command {
       .addOption(new Option('-o, --offline').hideHelp(true))
       .addOption(new Option('--auth <token>', 'Netlify auth token').hideHelp(true))
       .addOption(
-        new Option('--httpProxy [address]', 'Old, prefer --http-proxy. Proxy server address to route requests through.')
+        new Option('--http-proxy [address]', 'Proxy server address to route requests through.')
           .default(process.env.HTTP_PROXY || process.env.HTTPS_PROXY)
-          .hideHelp(true),
-      )
-      .addOption(
-        new Option(
-          '--httpProxyCertificateFilename [file]',
-          'Old, prefer --http-proxy-certificate-filename. Certificate file to use when connecting using a proxy server.',
-        )
-          .default(process.env.NETLIFY_PROXY_CERTIFICATE_FILENAME)
           .hideHelp(true),
       )
       .addOption(
@@ -209,11 +201,6 @@ export default class BaseCommand extends Command {
           'Certificate file to use when connecting using a proxy server',
         )
           .default(process.env.NETLIFY_PROXY_CERTIFICATE_FILENAME)
-          .hideHelp(true),
-      )
-      .addOption(
-        new Option('--httpProxy [address]', 'Proxy server address to route requests through.')
-          .default(process.env.HTTP_PROXY || process.env.HTTPS_PROXY)
           .hideHelp(true),
       )
       .option('--debug', 'Print debugging information')
