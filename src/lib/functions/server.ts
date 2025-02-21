@@ -3,7 +3,7 @@ import { promises as fs } from 'fs'
 import path from 'path'
 
 import { App, Handler } from '@tinyhttp/app'
-import {logger} from '@tinyhttp/logger'
+import { logger } from '@tinyhttp/logger'
 import { jwtDecode } from 'jwt-decode'
 import { text, raw } from 'milliparsec'
 
@@ -274,10 +274,14 @@ const getFunctionsServer = (options: GetFunctionsServerOptions) => {
   const functionHandler = createHandler(options)
 
   app.use(
-    text({
-      payloadLimit: 6_291_456,
-      type: ['text/*', 'application/json'],
-    }),
+    (req, res, next) => {
+      if (req.is('text/*') || req.is('application/json')) {
+        text({
+          payloadLimit: 6_291_456,
+        })(req, res, next)
+      }
+      return next?.()
+    },
   )
   app.use(raw({ payloadLimit: 6_291_456 }))
   app.use(createFormSubmissionHandler({ functionsRegistry, siteUrl }))
