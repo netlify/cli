@@ -11,12 +11,9 @@ import { Duplex } from 'stream'
 import util from 'util'
 import zlib from 'zlib'
 
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'cont... Remove this comment to see the full error message
 import contentType from 'content-type'
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'cook... Remove this comment to see the full error message
 import cookie from 'cookie'
 import { getProperty } from 'dot-prop'
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'etag... Remove this comment to see the full error message
 import generateETag from 'etag'
 import getAvailablePort from 'get-port'
 import httpProxy from 'http-proxy'

@@ -5,7 +5,6 @@ import path from 'path'
 import { zipFunction, listFunction } from '@netlify/zip-it-and-ship-it'
 import decache from 'decache'
 import { readPackageUp } from 'read-package-up'
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'sour... Remove this comment to see the full error message
 import sourceMapSupport from 'source-map-support'
 
 import { NETLIFYDEVERR } from '../../../../../utils/command-helpers.js'

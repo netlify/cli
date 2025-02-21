@@ -6,7 +6,6 @@
 import { existsSync, readFileSync } from 'fs'
 import process from 'process'
 
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'tabt... Remove this comment to see the full error message
 import { log, parseEnv } from 'tabtab'
 
 import { AUTOCOMPLETION_FILE } from './constants.js'
