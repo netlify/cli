@@ -14,7 +14,7 @@ export const createBuildCommand = (program: BaseCommand) =>
       process.env.CONTEXT || 'production',
     )
     .option('--dry', 'Dry run: show instructions without running them', false)
-    .option('-o, --offline', 'disables any features that require network access', false)
+    .option('-o, --offline', 'Disables any features that require network access')
     .addExamples(['netlify build'])
     .action(async (options, command) => {
       const { build } = await import('./build.js')

@@ -21,6 +21,7 @@ netlify open
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `site` (*boolean*) - Open site
 - `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
@@ -52,6 +53,7 @@ netlify open:admin
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 **Examples**
 
@@ -74,6 +76,7 @@ netlify open:site
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 **Examples**
 

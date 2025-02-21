@@ -272,7 +272,7 @@ export const createDevCommand = (program: BaseCommand) => {
     .option('--framework <name>', 'framework to use. Defaults to #auto which automatically detects a framework')
     .option('-d ,--dir <path>', 'dir with static files')
     .option('-f ,--functions <folder>', 'specify a functions folder to serve')
-    .option('-o ,--offline', 'disables any features that require network access')
+    .option('-o, --offline', 'Disables any features that require network access')
     .addOption(
       new Option('--offline-env', 'disables fetching environment variables from the Netlify API').hideHelp(true),
     )

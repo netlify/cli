@@ -32,10 +32,11 @@ netlify dev
 - `geo` (*cache | mock | update*) - force geolocation data to be updated, use cached data from the last 24h if found, or use a mock location
 - `live` (*string*) - start a public live session; optionally, supply a subdomain to generate a custom URL
 - `no-open` (*boolean*) - disables the automatic opening of a browser window
-- `offline` (*boolean*) - disables any features that require network access
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
+- `offline` (*boolean*) - Disables any features that require network access
 - `port` (*string*) - port of netlify dev
 - `target-port` (*string*) - port of target app server
-- `debug` (*boolean*) - Print debugging information
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
@@ -76,6 +77,7 @@ netlify dev:exec
 - `context` (*string*) - Specify a deploy context or branch for environment variables (contexts: "production", "deploy-preview", "branch-deploy", "dev")
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 **Examples**
 

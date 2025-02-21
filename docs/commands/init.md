@@ -23,6 +23,7 @@ netlify init
 - `git-remote-name` (*string*) - Name of Git remote to use. e.g. "origin"
 - `manual` (*boolean*) - Manually configure a git remote for CI
 - `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 
 <!-- AUTO-GENERATED-CONTENT:END -->
