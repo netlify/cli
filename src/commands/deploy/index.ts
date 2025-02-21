@@ -80,7 +80,9 @@ Support for package.json's main field, and intrinsic index.js entrypoints are co
     .option('-d, --dir <path>', 'Specify a folder to deploy')
     .option('-f, --functions <folder>', 'Specify a functions folder to deploy')
     .addOption(
-      new Option('-p, --prod', 'Deploy to production').default(false).conflicts(['alias', 'branch', 'prodIfUnlocked']),
+      new Option('-p, --prod', 'Deploy to production')
+        .default(false)
+        .conflicts(['alias', 'branch', 'prod-if-unlocked']),
     )
     .addOption(
       new Option('--prod-if-unlocked', 'Deploy to production if unlocked, create a draft otherwise')
