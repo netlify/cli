@@ -1051,9 +1051,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
           env: { NETLIFY_SITE_ID: context.siteId },
         })
       } catch (error) {
-        expect(error.stderr.includes(`Error: option '-p, --prod' cannot be used with option '--prod-if-unlocked`)).toBe(
-          true,
-        )
+        expect(error.stderr).toContain(`Error: option '--prod-if-unlocked' cannot be used with option '-p, --prod'`)
       }
     })
   })
