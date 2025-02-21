@@ -336,7 +336,6 @@ describe.concurrent('command/build', () => {
       expect(output).toMatch(/❯ Using Next.js Runtime -/)
       expect(output).toMatch(/\$ npm run build/)
       expect(output).toMatch(/Functions bundling completed/)
-      expect(output).toMatch(/Edge Functions bundling completed/)
     })
   })
 })

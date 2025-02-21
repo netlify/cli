@@ -1,6 +1,8 @@
 import { promises as fs } from 'fs'
 import path, { join } from 'path'
 
+import { NetlifyConfig } from '@netlify/build'
+
 import BaseCommand from '../commands/base-command.js'
 import { $TSFixMe } from '../commands/types.js'
 import { getBootstrapURL } from '../lib/edge-functions/bootstrap.js'
@@ -87,7 +89,10 @@ export const runNetlifyBuild = async ({
     edgeFunctionsBootstrapURL: await getBootstrapURL(),
   }
 
-  const devCommand = async (settingsOverrides = {}) => {
+  const devCommand = async ({
+    netlifyConfig,
+    settingsOverrides,
+  }: { netlifyConfig?: NetlifyConfig; settingsOverrides?: Partial<ServerSettings> } = {}) => {
     let cwd = command.workingDir
 
     if (!options.cwd && command.project.workspace?.packages.length) {
@@ -99,6 +104,11 @@ export const runNetlifyBuild = async ({
         ...settings,
         ...settingsOverrides,
         ...(options.skipWaitPort ? { skipWaitPort: true } : {}),
+        env: {
+          ...settings.env,
+          ...settingsOverrides?.env,
+          ...netlifyConfig?.build.environment,
+        },
       },
       cwd,
     })
@@ -140,7 +150,7 @@ export const runNetlifyBuild = async ({
     if (!options.dir && netlifyConfig?.build?.publish) {
       settingsOverrides.dist = netlifyConfig.build.publish
     }
-    await devCommand(settingsOverrides)
+    await devCommand({ netlifyConfig, settingsOverrides })
 
     return { configPath: tempConfigPath }
   }
