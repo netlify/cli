@@ -57,7 +57,7 @@ export const version = packageVersion
 export const USER_AGENT = `${name}/${version} ${platform}-${arch} node-${process.version}`
 
 /** A list of base command flags that needs to be sorted down on documentation and on help pages */
-const BASE_FLAGS = new Set(['--debug', '--httpProxy', '--httpProxyCertificateFilename'])
+const BASE_FLAGS = new Set(['--debug', '--http-proxy', '--http-proxy-certificate-filename'])
 
 export const NETLIFY_CYAN = chalk.rgb(40, 180, 170)
 
@@ -133,9 +133,9 @@ export const pollForToken = async ({
  * @returns {Promise<[null|string, 'flag' | 'env' |'config' |'not found']>}
  */
 
-export type tokenTuple = [string | null, TokenLocation]
+export type TokenTuple = [string | null, TokenLocation]
 
-export const getToken = async (tokenFromOptions?: string): Promise<tokenTuple> => {
+export const getToken = async (tokenFromOptions?: string): Promise<TokenTuple> => {
   // 1. First honor command flag --auth
   if (tokenFromOptions) {
     return [tokenFromOptions, 'flag']

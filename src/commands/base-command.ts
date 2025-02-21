@@ -8,11 +8,9 @@ import { NodeFS, NoopLogger } from '@netlify/build-info/node'
 import { resolveConfig } from '@netlify/config'
 import { isCI } from 'ci-info'
 import { Command, Help, Option } from 'commander'
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'debu... Remove this comment to see the full error message
 import debug from 'debug'
 import { findUp } from 'find-up'
 import inquirer from 'inquirer'
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'inqu... Remove this comment to see the full error message
 import inquirerAutocompletePrompt from 'inquirer-autocomplete-prompt'
 import merge from 'lodash/merge.js'
 import { NetlifyAPI } from 'netlify'
@@ -193,16 +191,8 @@ export default class BaseCommand extends Command {
       .addOption(new Option('-o, --offline').hideHelp(true))
       .addOption(new Option('--auth <token>', 'Netlify auth token').hideHelp(true))
       .addOption(
-        new Option('--httpProxy [address]', 'Old, prefer --http-proxy. Proxy server address to route requests through.')
+        new Option('--http-proxy [address]', 'Proxy server address to route requests through.')
           .default(process.env.HTTP_PROXY || process.env.HTTPS_PROXY)
-          .hideHelp(true),
-      )
-      .addOption(
-        new Option(
-          '--httpProxyCertificateFilename [file]',
-          'Old, prefer --http-proxy-certificate-filename. Certificate file to use when connecting using a proxy server.',
-        )
-          .default(process.env.NETLIFY_PROXY_CERTIFICATE_FILENAME)
           .hideHelp(true),
       )
       .addOption(
@@ -211,11 +201,6 @@ export default class BaseCommand extends Command {
           'Certificate file to use when connecting using a proxy server',
         )
           .default(process.env.NETLIFY_PROXY_CERTIFICATE_FILENAME)
-          .hideHelp(true),
-      )
-      .addOption(
-        new Option('--httpProxy [address]', 'Proxy server address to route requests through.')
-          .default(process.env.HTTP_PROXY || process.env.HTTPS_PROXY)
           .hideHelp(true),
       )
       .option('--debug', 'Print debugging information')

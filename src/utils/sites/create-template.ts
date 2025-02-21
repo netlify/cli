@@ -1,6 +1,5 @@
 import { OptionValues } from 'commander'
 import inquirer from 'inquirer'
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'pars... Remove this comment to see the full error message
 import parseGitHubUrl from 'parse-github-url'
 
 import { log } from '../command-helpers.js'
@@ -33,8 +32,8 @@ export const getTemplateName = async ({
   repository: string
 }) => {
   if (repository) {
-    const { repo } = parseGitHubUrl(repository)
-    return repo || `netlify-templates/${repository}`
+    const parsedUrl = parseGitHubUrl(repository)
+    return parsedUrl?.repo || `netlify-templates/${repository}`
   }
 
   if (options.url) {
