@@ -273,21 +273,17 @@ const getFunctionsServer = (options: GetFunctionsServerOptions) => {
   const app = new App()
   const functionHandler = createHandler(options)
 
-  app.use(
-    (req, res, next) => {
-      if (req.is('text/*') || req.is('application/json')) {
-        text({
-          payloadLimit: 6_291_456,
-        })(req, res, next)
-      }
-      return next?.()
-    },
-  )
+  app.use((req, res, next) => {
+    if (req.is('text/*') || req.is('application/json')) {
+      text({
+        payloadLimit: 6_291_456,
+      })(req, res, next)
+    }
+    return next?.()
+  })
   app.use(raw({ payloadLimit: 6_291_456 }))
   app.use(createFormSubmissionHandler({ functionsRegistry, siteUrl }))
-  app.use(
-    logger(),
-  )
+  app.use(logger())
 
   app.all('*', functionHandler)
 

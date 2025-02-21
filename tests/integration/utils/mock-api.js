@@ -2,7 +2,7 @@ import process from 'process'
 import { isDeepStrictEqual, promisify } from 'util'
 
 import { App } from '@tinyhttp/app'
-import { urlencoded ,json,raw} from 'milliparsec'
+import { urlencoded, json, raw } from 'milliparsec'
 
 const addRequest = (requests, request) => {
   requests.push({

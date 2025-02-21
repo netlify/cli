@@ -84,7 +84,7 @@ export const createFormSubmissionHandler = function ({
       fields = Object.fromEntries(new URLSearchParams(bodyData.toString()))
     } else if (ct.type === 'multipart/form-data') {
       try {
-        [fields, files] = await new Promise((resolve, reject) => {
+        ;[fields, files] = await new Promise((resolve, reject) => {
           const form = new multiparty.Form({ encoding: ct.parameters.charset || 'utf8' })
           // @ts-expect-error TS(7006) FIXME: Parameter 'err' implicitly has an 'any' type.
           form.parse(fakeRequest, (err, Fields, Files) => {
