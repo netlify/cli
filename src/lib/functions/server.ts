@@ -3,8 +3,7 @@ import { promises as fs } from 'fs'
 import path from 'path'
 
 import { App, Handler } from '@tinyhttp/app'
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'expr... Remove this comment to see the full error message
-import expressLogging from 'express-logging'
+import {logger} from '@tinyhttp/logger'
 import { jwtDecode } from 'jwt-decode'
 
 import type BaseCommand from '../../commands/base-command.js'
@@ -282,9 +281,7 @@ const getFunctionsServer = (options: GetFunctionsServerOptions) => {
   app.use(express.raw({ limit: '6mb', type: '*/*' }))
   app.use(createFormSubmissionHandler({ functionsRegistry, siteUrl }))
   app.use(
-    expressLogging(console, {
-      blacklist: ['/favicon.ico'],
-    }),
+    logger(),
   )
 
   app.all('*', functionHandler)
