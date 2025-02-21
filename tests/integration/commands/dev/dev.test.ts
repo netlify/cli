@@ -739,7 +739,7 @@ describe.concurrent('command/dev', () => {
                 plugins: [{ package: './plugins/plugin' }],
                 dev: {
                   command: 'node index.mjs',
-                  targetPort: 4444
+                  targetPort: 4444,
                 },
               },
             })

@@ -89,7 +89,10 @@ export const runNetlifyBuild = async ({
     edgeFunctionsBootstrapURL: await getBootstrapURL(),
   }
 
-  const devCommand = async ({ netlifyConfig, settingsOverrides }: { netlifyConfig?: NetlifyConfig; settingsOverrides?: Partial<ServerSettings> } = {}) => {
+  const devCommand = async ({
+    netlifyConfig,
+    settingsOverrides,
+  }: { netlifyConfig?: NetlifyConfig; settingsOverrides?: Partial<ServerSettings> } = {}) => {
     let cwd = command.workingDir
 
     if (!options.cwd && command.project.workspace?.packages.length) {
@@ -104,8 +107,8 @@ export const runNetlifyBuild = async ({
         env: {
           ...settings.env,
           ...settingsOverrides?.env,
-          ...netlifyConfig?.build.environment
-        }
+          ...netlifyConfig?.build.environment,
+        },
       },
       cwd,
     })
