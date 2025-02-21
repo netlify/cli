@@ -5,7 +5,8 @@ import path from 'path'
 import { App, Handler } from '@tinyhttp/app'
 import {logger} from '@tinyhttp/logger'
 import { jwtDecode } from 'jwt-decode'
-import  { text, raw } from 'milliparsec'
+import { text, raw } from 'milliparsec'
+
 import type BaseCommand from '../../commands/base-command.js'
 import type { $TSFixMe } from '../../commands/types.js'
 import { NETLIFYDEVERR, NETLIFYDEVLOG, error as errorExit, log } from '../../utils/command-helpers.js'
@@ -86,7 +87,7 @@ export const createHandler = function (options: GetFunctionsServerOptions): Hand
     // If these headers are set, it means we've already matched a function and we
     // can just grab its name directly. We delete the header from the request
     // because we don't want to expose it to user code.
-    let functionName = request.headers[NFFunctionName] as string
+    let functionName = request.headers[NFFunctionName] as string | undefined
     delete request.headers[NFFunctionName]
     const functionRoute = request.headers[NFFunctionRoute] as string
     delete request.headers[NFFunctionRoute]
@@ -104,7 +105,7 @@ export const createHandler = function (options: GetFunctionsServerOptions): Hand
         // in a downstream server where we had access to the file system, so this never hits.
         () => Promise.resolve(false),
       )
-      functionName = match?.func?.name!
+      functionName = match?.func?.name
     }
 
     const func = functionsRegistry.get(functionName ?? '')
