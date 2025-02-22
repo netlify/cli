@@ -139,7 +139,7 @@
     "log-update": "6.1.0",
     "maxstache": "1.0.7",
     "maxstache-stream": "1.0.4",
-    "milliparsec": "^5.0.1",
+    "milliparsec": "^5.0.2",
     "multiparty": "4.2.3",
     "netlify": "13.3.3",
     "netlify-redirector": "0.5.0",
