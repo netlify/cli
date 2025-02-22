@@ -12,7 +12,7 @@ export const startStaticServer = ({ settings }: { settings: import('./types.js')
 
   const app = new App({
     noMatchHandler: (req, res) => {
-      res.status(404).sendFile(path.resolve(rootPath, '404.html'))
+      res.status(404).sendFile('400.html', { root: rootPath })
     },
   })
   app.use(sirv(rootPath, { etag: false }))
