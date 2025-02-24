@@ -20,7 +20,7 @@ import {
   NETLIFYDEVERR,
   NETLIFYDEVLOG,
   NETLIFYDEVWARN,
-  chalk,
+  picocolors,
   error,
   log,
 } from '../../utils/command-helpers.js'
@@ -266,14 +266,14 @@ const ensureEdgeFuncDirExists = function (command) {
 
   if (!fs.existsSync(functionsDir)) {
     log(
-      `${NETLIFYDEVLOG} Edge Functions directory ${chalk.magenta.inverse(
-        relFunctionsDir,
+      `${NETLIFYDEVLOG} Edge Functions directory ${picocolors.inverse(
+        picocolors.magenta(relFunctionsDir),
       )} does not exist yet, creating it...`,
     )
 
     fs.mkdirSync(functionsDir, { recursive: true })
 
-    log(`${NETLIFYDEVLOG} Edge Functions directory ${chalk.magenta.inverse(relFunctionsDir)} created.`)
+    log(`${NETLIFYDEVLOG} Edge Functions directory ${picocolors.inverse(picocolors.magenta(relFunctionsDir))} created.`)
   }
 
   return functionsDir
@@ -303,7 +303,7 @@ const promptFunctionsDirectory = async (command) => {
   ])
 
   try {
-    log(`${NETLIFYDEVLOG} updating site settings with ${chalk.magenta.inverse(functionsDir)}`)
+    log(`${NETLIFYDEVLOG} updating site settings with ${picocolors.inverse(picocolors.magenta(functionsDir))}`)
 
     await api.updateSite({
       siteId: site.id,
@@ -314,7 +314,11 @@ const promptFunctionsDirectory = async (command) => {
       },
     })
 
-    log(`${NETLIFYDEVLOG} functions directory ${chalk.magenta.inverse(functionsDir)} updated in site settings`)
+    log(
+      `${NETLIFYDEVLOG} functions directory ${picocolors.inverse(
+        picocolors.magenta(functionsDir),
+      )} updated in site settings`,
+    )
   } catch {
     throw error('Error updating site settings')
   }
@@ -335,14 +339,14 @@ const ensureFunctionDirExists = async function (command) {
 
   if (!fs.existsSync(functionsDirHolder)) {
     log(
-      `${NETLIFYDEVLOG} functions directory ${chalk.magenta.inverse(
-        relFunctionsDirHolder,
+      `${NETLIFYDEVLOG} functions directory ${picocolors.inverse(
+        picocolors.magenta(relFunctionsDirHolder),
       )} does not exist yet, creating it...`,
     )
 
     await mkdir(functionsDirHolder, { recursive: true })
 
-    log(`${NETLIFYDEVLOG} functions directory ${chalk.magenta.inverse(relFunctionsDirHolder)} created`)
+    log(`${NETLIFYDEVLOG} functions directory ${picocolors.inverse(picocolors.magenta(relFunctionsDirHolder))} created`)
   }
 
   return functionsDirHolder
@@ -513,7 +517,7 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
 
     const name = await getNameFromArgs(argumentName, options, templateName)
 
-    log(`${NETLIFYDEVLOG} Creating function ${chalk.cyan.inverse(name)}`)
+    log(`${NETLIFYDEVLOG} Creating function ${picocolors.inverse(picocolors.cyan(name))}`)
     const functionPath = ensureFunctionPathIsOk(functionsDir, name)
 
     const vars = { name }
@@ -527,7 +531,7 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
       const filename = path.basename(filePath)
 
       if (!omittedFromOutput.has(filename)) {
-        log(`${NETLIFYDEVLOG} ${chalk.greenBright('Created')} ${filePath}`)
+        log(`${NETLIFYDEVLOG} ${picocolors.greenBright('Created')} ${filePath}`)
       }
 
       fs.chmodSync(path.resolve(filePath), TEMPLATE_PERMISSIONS)
@@ -557,11 +561,11 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
     await handleOnComplete({ command, onComplete })
 
     log()
-    log(chalk.greenBright(`Function created!`))
+    log(picocolors.greenBright(`Function created!`))
 
     if (lang == 'rust') {
       log(
-        chalk.green(
+        picocolors.green(
           `Please note that Rust functions require setting the NETLIFY_EXPERIMENTAL_BUILD_RUST_SOURCE environment variable to 'true' on your site.`,
         ),
       )
@@ -673,7 +677,7 @@ const installAddons = async function (command, functionAddons, fnPath) {
 
   // @ts-expect-error TS(7031) FIXME: Binding element 'addonDidInstall' implicitly has a... Remove this comment to see the full error message
   const arr = functionAddons.map(async ({ addonDidInstall, addonName }) => {
-    log(`${NETLIFYDEVLOG} installing addon: ${chalk.yellow.inverse(addonName)}`)
+    log(`${NETLIFYDEVLOG} installing addon: ${picocolors.inverse(picocolors.yellow(addonName))}`)
     try {
       const addonCreated = await createFunctionAddon({
         api,

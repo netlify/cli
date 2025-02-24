@@ -3,7 +3,7 @@ import inquirer from 'inquirer'
 import isEmpty from 'lodash/isEmpty.js'
 
 import { listSites } from '../../lib/api.js'
-import { chalk, error, exit, log, APIError } from '../../utils/command-helpers.js'
+import { picocolors, error, exit, log, APIError } from '../../utils/command-helpers.js'
 import getRepoData from '../../utils/get-repo-data.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import { track } from '../../utils/telemetry/index.js'
@@ -37,7 +37,7 @@ const linkPrompt = async (command, options) => {
   }
 
   log()
-  log(`${chalk.cyanBright('netlify link')} will connect this folder to a site on Netlify`)
+  log(`${picocolors.cyanBright('netlify link')} will connect this folder to a site on Netlify`)
   log()
   const { linkType } = await inquirer.prompt([
     {
@@ -58,7 +58,7 @@ const linkPrompt = async (command, options) => {
       const sites = await listSites({ api, options: { filter: 'all' } })
 
       if (sites.length === 0) {
-        error(`You don't have any sites yet. Run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
+        error(`You don't have any sites yet. Run ${picocolors.cyanBright('netlify sites:create')} to create a site.`)
       }
 
       const matchingSites = sites.filter(
@@ -67,13 +67,13 @@ const linkPrompt = async (command, options) => {
 
       // If no remote matches. Throw error
       if (matchingSites.length === 0) {
-        log(chalk.redBright.bold.underline(`No Matching Site Found`))
+        log(picocolors.redBright(picocolors.bold(picocolors.underline('No Matching Site Found'))))
         log()
         log(`No site found with the remote ${repoData.httpsUrl}.
 
 Double check you are in the correct working directory and a remote origin repo is configured.
 
-Run ${chalk.cyanBright('git remote -v')} to see a list of your git remotes.`)
+Run ${picocolors.cyanBright('git remote -v')} to see a list of your git remotes.`)
 
         exit()
       }
@@ -134,8 +134,8 @@ Run ${chalk.cyanBright('git remote -v')} to see a list of your git remotes.`)
       if (!matchingSites || matchingSites.length === 0) {
         error(`No site names found containing '${searchTerm}'.
 
-Run ${chalk.cyanBright('netlify link')} again to try a new search,
-or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
+Run ${picocolors.cyanBright('netlify link')} again to try a new search,
+or run ${picocolors.cyanBright('netlify sites:create')} to create a site.`)
       }
 
       if (matchingSites.length > 1) {
@@ -172,7 +172,7 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
       }
 
       if (!sites || sites.length === 0) {
-        error(`You don't have any sites yet. Run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
+        error(`You don't have any sites yet. Run ${picocolors.cyanBright('netlify sites:create')} to create a site.`)
       }
 
       const { selectedSite } = await inquirer.prompt([
@@ -231,10 +231,10 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
 
   // Log output
   log()
-  log(chalk.greenBright.bold.underline(`Directory Linked`))
+  log(picocolors.greenBright(picocolors.bold(picocolors.underline('Directory Linked'))))
   log()
-  log(`Admin url: ${chalk.magentaBright(site.admin_url)}`)
-  log(`Site url:  ${chalk.cyanBright(site.ssl_url || site.url)}`)
+  log(`Admin url: ${picocolors.magentaBright(site.admin_url)}`)
+  log(`Site url:  ${picocolors.cyanBright(site.ssl_url || site.url)}`)
   log()
   log(`You can now run other \`netlify\` cli commands in this directory`)
 
@@ -269,7 +269,7 @@ export const link = async (options: OptionValues, command: BaseCommand) => {
     log(`Site already linked to "${siteData.name}"`)
     log(`Admin url: ${siteData.admin_url}`)
     log()
-    log(`To unlink this site, run: ${chalk.cyanBright('netlify unlink')}`)
+    log(`To unlink this site, run: ${picocolors.cyanBright('netlify unlink')}`)
   } else if (options.id) {
     try {
       siteData = await api.getSite({ site_id: options.id })

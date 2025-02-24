@@ -1,16 +1,16 @@
 import process from 'process'
 
-import chalk from 'chalk'
+import picocolors from 'picocolors'
 import { describe, expect, test, vi, beforeEach, afterEach, beforeAll, afterAll } from 'vitest'
 
 import { log } from '../../../../src/utils/command-helpers.js'
-import { generateEnvVarsList } from '../.././../../src/utils/prompts/env-clone-prompt.js'
-import { destructiveCommandMessages } from '../.././../../src/utils/prompts/prompt-messages.js'
+import { generateEnvVarsList } from '../../../../src/utils/prompts/env-clone-prompt.js'
+import { destructiveCommandMessages } from '../../../../src/utils/prompts/prompt-messages.js'
+import { mockPrompt, spyOnMockPrompt } from '../../utils/inquirer-mock-prompt.js'
 import { getEnvironmentVariables, withMockApi, setTTYMode, setCI, setTestingPrompts } from '../../utils/mock-api.js'
+import { runMockProgram } from '../../utils/mock-program.js'
 
 import { existingVar, routes, secondSiteInfo } from './api-routes.js'
-import { runMockProgram } from '../../utils/mock-program.js'
-import { mockPrompt, spyOnMockPrompt } from '../../utils/inquirer-mock-prompt.js'
 
 vi.mock('../../../../src/utils/command-helpers.js', async () => ({
   ...(await vi.importActual('../../../../src/utils/command-helpers.js')),
@@ -30,9 +30,9 @@ describe('env:clone command', () => {
     const envVarsList = generateEnvVarsList(sharedEnvVars)
     const warningMessage = generateWarning(siteIdTwo)
 
-    const successMessage = `Successfully cloned environment variables from ${chalk.green('site-name')} to ${chalk.green(
-      'site-name-2',
-    )}`
+    const successMessage = `Successfully cloned environment variables from ${picocolors.green(
+      'site-name',
+    )} to ${picocolors.green('site-name-2')}`
 
     beforeEach(() => {
       vi.resetModules()
@@ -128,9 +128,9 @@ describe('env:clone command', () => {
       test('should not run prompts if sites have no enviroment variables in common', async () => {
         await withMockApi(routes, async ({ apiUrl }) => {
           Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
-          const successMessageSite3 = `Successfully cloned environment variables from ${chalk.green(
+          const successMessageSite3 = `Successfully cloned environment variables from ${picocolors.green(
             'site-name',
-          )} to ${chalk.green('site-name-3')}`
+          )} to ${picocolors.green('site-name-3')}`
 
           const promptSpy = spyOnMockPrompt()
 

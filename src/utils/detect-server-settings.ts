@@ -10,13 +10,13 @@ import BaseCommand from '../commands/base-command.js'
 import { type DevConfig } from '../commands/dev/types.js'
 
 import { detectFrameworkSettings } from './build-info.js'
-import { NETLIFYDEVWARN, chalk, log } from './command-helpers.js'
+import { NETLIFYDEVWARN, picocolors, log } from './command-helpers.js'
 import { acquirePort } from './dev.js'
 import { getPluginsToAutoInstall } from './init/utils.js'
 import { BaseServerSettings, ServerSettings } from './types.js'
 
-const formatProperty = (str: string) => chalk.magenta(`'${str}'`)
-const formatValue = (str: string) => chalk.green(`'${str}'`)
+const formatProperty = (str: string) => picocolors.magenta(`'${str}'`)
+const formatValue = (str: string) => picocolors.green(`'${str}'`)
 
 const readHttpsSettings = async (options: {
   keyFile: string

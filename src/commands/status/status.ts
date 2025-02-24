@@ -2,7 +2,7 @@ import clean from 'clean-deep'
 import { OptionValues } from 'commander'
 import prettyjson from 'prettyjson'
 
-import { chalk, error, exit, getToken, log, logJson, warn, APIError } from '../../utils/command-helpers.js'
+import { picocolors, error, exit, getToken, log, logJson, warn, APIError } from '../../utils/command-helpers.js'
 import BaseCommand from '../base-command.js'
 
 export const status = async (options: OptionValues, command: BaseCommand) => {
@@ -86,9 +86,9 @@ export const status = async (options: OptionValues, command: BaseCommand) => {
     prettyjson.render({
       'Current site': `${siteInfo.name}`,
       'Netlify TOML': site.configPath,
-      'Admin URL': chalk.magentaBright(siteInfo.admin_url),
-      'Site URL': chalk.cyanBright(siteInfo.ssl_url || siteInfo.url),
-      'Site Id': chalk.yellowBright(siteInfo.id),
+      'Admin URL': picocolors.magentaBright(siteInfo.admin_url),
+      'Site URL': picocolors.cyanBright(siteInfo.ssl_url || siteInfo.url),
+      'Site Id': picocolors.yellowBright(siteInfo.id),
     }),
   )
   log()

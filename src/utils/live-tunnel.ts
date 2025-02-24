@@ -7,7 +7,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { fetchLatestVersion, shouldFetchLatestVersion } from '../lib/exec-fetcher.js'
 import { getPathInHome } from '../lib/settings.js'
 
-import { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log } from './command-helpers.js'
+import { NETLIFYDEVERR, NETLIFYDEVLOG, picocolors, log } from './command-helpers.js'
 import execa from './execa.js'
 
 const PACKAGE_NAME = 'live-tunnel-client'
@@ -25,9 +25,9 @@ const createTunnel = async function ({ netlifyApiToken, siteId, slug }) {
 
   if (!siteId) {
     console.error(
-      `${NETLIFYDEVERR} Error: no siteId defined, did you forget to run ${chalk.yellow(
+      `${NETLIFYDEVERR} Error: no siteId defined, did you forget to run ${picocolors.yellow(
         'netlify init',
-      )} or ${chalk.yellow('netlify link')}?`,
+      )} or ${picocolors.yellow('netlify link')}?`,
     )
     process.exit(1)
   }

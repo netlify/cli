@@ -12,13 +12,11 @@ import openBrowser from './open-browser.js'
 
 const SERVER_PORT = 3000
 
-/**
- * @typedef Token
- * @type {object}
- * @property {string} user - The username that is associated with the token
- * @property {string} token - The actual token value starting with `gho_`
- * @property {string} provider - The Provider where the token is associated with ('github').
- */
+export interface Token {
+  user: string
+  token: string
+  provider: string
+}
 
 const promptForAuthMethod = async () => {
   const authChoiceNetlify = 'Authorize with GitHub through app.netlify.com'
@@ -41,17 +39,18 @@ const promptForAuthMethod = async () => {
 
 /**
  * Authenticate with the netlify app
- * @returns {Promise<Token>} Returns a Promise with a token object
  */
-export const authWithNetlify = async () => {
+export const authWithNetlify = async (): Promise<Token> => {
   const port = await getPort({ port: SERVER_PORT })
-  const { promise: deferredPromise, reject: deferredReject, resolve: deferredResolve } = createDeferred()
+  const {
+    promise: deferredPromise,
+    reject: deferredReject,
+    resolve: deferredResolve,
+  } = createDeferred<Record<string, string | string[]>>()
 
   const server = http.createServer(function onRequest(req, res) {
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-    const parameters = new URLSearchParams(req.url.slice(req.url.indexOf('?') + 1))
+    const parameters = new URLSearchParams(req.url?.slice(req.url.indexOf('?') + 1))
     if (parameters.get('token')) {
-      // @ts-expect-error TS(2722) FIXME: Cannot invoke an object which is possibly 'undefin... Remove this comment to see the full error message
       deferredResolve(Object.fromEntries(parameters))
       res.end(
         `${
@@ -64,7 +63,6 @@ export const authWithNetlify = async () => {
     }
     res.end('BAD PARAMETERS')
     server.close()
-    // @ts-expect-error TS(2722) FIXME: Cannot invoke an object which is possibly 'undefin... Remove this comment to see the full error message
     deferredReject(new Error('Got invalid parameters for CLI login'))
   })
 
@@ -81,9 +79,9 @@ export const authWithNetlify = async () => {
   })
   const url = `${webUI}/cli?${urlParams.toString()}`
 
-  // @ts-expect-error TS(2345) FIXME: Argument of type '{ url: string; }' is not assigna... Remove this comment to see the full error message
   await openBrowser({ url })
 
+  // @ts-expect-error(serhalp) We're magically expecting an object over the wire to have a specific shape.
   return deferredPromise
 }
 
@@ -102,9 +100,8 @@ const getPersonalAccessToken = async () => {
 
 /**
  * Authenticate with the netlify app
- * @returns {Promise<Token>} Returns a Promise with a token object
  */
-const authWithToken = async () => {
+const authWithToken = async (): Promise<Token> => {
   const { token } = await getPersonalAccessToken()
   if (!token) {
     throw new Error('GitHub authentication failed')
@@ -119,9 +116,8 @@ const authWithToken = async () => {
 
 /**
  * Get a GitHub token
- * @returns {Promise<Token>} Returns a Promise with a token object
  */
-export const getGitHubToken = async () => {
+export const getGitHubToken = async (): Promise<Token> => {
   log('')
 
   const withNetlify = await promptForAuthMethod()

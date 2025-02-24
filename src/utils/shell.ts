@@ -4,7 +4,7 @@ import execa from 'execa'
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'stri... Remove this comment to see the full error message
 import stripAnsiCc from 'strip-ansi-control-characters'
 
-import { chalk, log, NETLIFYDEVERR, NETLIFYDEVWARN } from './command-helpers.js'
+import { picocolors, log, NETLIFYDEVERR, NETLIFYDEVWARN } from './command-helpers.js'
 import { processOnExit } from './dev.js'
 
 /**
@@ -93,7 +93,7 @@ export const runCommand = (command, options = {}) => {
       const [commandWithoutArgs] = command.split(' ')
       if (result.failed && isNonExistingCommandError({ command: commandWithoutArgs, error: result })) {
         log(
-          `${NETLIFYDEVERR} Failed running command: ${command}. Please verify ${chalk.magenta(
+          `${NETLIFYDEVERR} Failed running command: ${command}. Please verify ${picocolors.magenta(
             `'${commandWithoutArgs}'`,
           )} exists`,
         )

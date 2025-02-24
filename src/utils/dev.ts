@@ -5,34 +5,34 @@ import isEmpty from 'lodash/isEmpty.js'
 
 import { supportsBackgroundFunctions } from '../lib/account.js'
 
-import { NETLIFYDEVLOG, chalk, error, log, warn, APIError } from './command-helpers.js'
+import { NETLIFYDEVLOG, picocolors, error, log, warn, APIError } from './command-helpers.js'
 import { loadDotEnvFiles } from './dot-env.js'
 
 // Possible sources of environment variables. For the purpose of printing log messages only. Order does not matter.
 const ENV_VAR_SOURCES = {
   account: {
     name: 'shared',
-    printFn: chalk.magenta,
+    printFn: picocolors.magenta,
   },
   addons: {
     name: 'addon',
-    printFn: chalk.yellow,
+    printFn: picocolors.yellow,
   },
   configFile: {
     name: 'netlify.toml file',
-    printFn: chalk.green,
+    printFn: picocolors.green,
   },
   general: {
     name: 'general context',
-    printFn: chalk.italic,
+    printFn: picocolors.italic,
   },
   process: {
     name: 'process',
-    printFn: chalk.red,
+    printFn: picocolors.red,
   },
   ui: {
     name: 'site settings',
-    printFn: chalk.blue,
+    printFn: picocolors.blue,
   },
 }
 
@@ -42,7 +42,7 @@ const ERROR_CALL_TO_ACTION =
 // @ts-expect-error TS(7031) FIXME: Binding element 'site' implicitly has an 'any' typ... Remove this comment to see the full error message
 const validateSiteInfo = ({ site, siteInfo }) => {
   if (isEmpty(siteInfo)) {
-    error(`Failed retrieving site information for site ${chalk.yellow(site.id)}. ${ERROR_CALL_TO_ACTION}`)
+    error(`Failed retrieving site information for site ${picocolors.yellow(site.id)}. ${ERROR_CALL_TO_ACTION}`)
   }
 }
 
@@ -63,7 +63,7 @@ const getAddons = async ({ api, site }) => {
     return addons
   } catch (error_) {
     error(
-      `Failed retrieving addons for site ${chalk.yellow(site.id)}: ${
+      `Failed retrieving addons for site ${picocolors.yellow(site.id)}: ${
         (error_ as APIError).message
       }. ${ERROR_CALL_TO_ACTION}`,
     )
@@ -145,7 +145,7 @@ export const getSiteInformation = async ({ api, offline, site, siteInfo }) => {
 // @ts-expect-error TS(7006) FIXME: Parameter 'source' implicitly has an 'any' type.
 const getEnvSourceName = (source) => {
   // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-  const { name = source, printFn = chalk.green } = ENV_VAR_SOURCES[source] || {}
+  const { name = source, printFn = picocolors.green } = ENV_VAR_SOURCES[source] || {}
 
   return printFn(name)
 }
@@ -198,8 +198,8 @@ export const injectEnvVariables = (env) => {
       const sourceName = getEnvSourceName(source)
 
       log(
-        chalk.dim(
-          `${NETLIFYDEVLOG} Ignored ${chalk.bold(sourceName)} env var: ${chalk.yellow(
+        picocolors.dim(
+          `${NETLIFYDEVLOG} Ignored ${picocolors.bold(sourceName)} env var: ${picocolors.yellow(
             key,
           )} (defined in ${usedSourceName})`,
         ),
@@ -209,7 +209,7 @@ export const injectEnvVariables = (env) => {
     if (!existsInProcess || isInternal) {
       // Omitting `general` and `internal` env vars to reduce noise in the logs.
       if (usedSource !== 'general' && !isInternal) {
-        log(`${NETLIFYDEVLOG} Injected ${usedSourceName} env var: ${chalk.yellow(key)}`)
+        log(`${NETLIFYDEVLOG} Injected ${usedSourceName} env var: ${picocolors.yellow(key)}`)
       }
 
       // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.

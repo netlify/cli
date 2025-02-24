@@ -1,7 +1,7 @@
 import process from 'process'
 
 import { getStore } from '@netlify/blobs'
-import chalk from 'chalk'
+import picocolors from 'picocolors'
 import { describe, expect, test, vi, beforeEach, afterAll } from 'vitest'
 
 import { log } from '../../../../src/utils/command-helpers.js'
@@ -58,9 +58,9 @@ describe('blobs:delete command', () => {
 
     const warningMessage = generateWarning(key, storeName)
 
-    const successMessage = `${chalk.greenBright('Success')}: Blob ${chalk.yellow(
+    const successMessage = `${picocolors.greenBright('Success')}: Blob ${picocolors.yellow(
       key,
-    )} deleted from store ${chalk.yellow(storeName)}`
+    )} deleted from store ${picocolors.yellow(storeName)}`
 
     beforeEach(() => {
       vi.resetModules()
@@ -182,7 +182,7 @@ describe('blobs:delete command', () => {
               await runMockProgram(['', '', 'blobs:delete', storeName, key, '--force'])
             } catch (error) {
               expect(error.message).toContain(
-                `Could not delete blob ${chalk.yellow(key)} from store ${chalk.yellow(storeName)}`,
+                `Could not delete blob ${picocolors.yellow(key)} from store ${picocolors.yellow(storeName)}`,
               )
             }
 

@@ -2,7 +2,7 @@ import { OptionValues } from 'commander'
 
 import { listSites } from '../../lib/api.js'
 import { startSpinner, stopSpinner } from '../../lib/spinner.js'
-import { chalk, log, logJson } from '../../utils/command-helpers.js'
+import { picocolors, log, logJson } from '../../utils/command-helpers.js'
 import { SiteInfo } from '../../utils/types.js'
 import BaseCommand from '../base-command.js'
 
@@ -58,13 +58,13 @@ Count: ${logSites.length}
 `)
 
     logSites.forEach((logSite) => {
-      log(`${chalk.greenBright(logSite.name)} - ${logSite.id}`)
-      log(`  ${chalk.whiteBright.bold('url:')}  ${chalk.yellowBright(logSite.ssl_url)}`)
+      log(`${picocolors.greenBright(logSite.name)} - ${logSite.id}`)
+      log(`  ${picocolors.whiteBright(picocolors.bold('url:'))}  ${picocolors.yellowBright(logSite.ssl_url)}`)
       if (logSite.repo_url) {
-        log(`  ${chalk.whiteBright.bold('repo:')} ${chalk.white(logSite.repo_url)}`)
+        log(`  ${picocolors.whiteBright(picocolors.bold('repo:'))} ${picocolors.white(logSite.repo_url)}`)
       }
       if (logSite.account_name) {
-        log(`  ${chalk.whiteBright.bold('account:')} ${chalk.white(logSite.account_name)}`)
+        log(`  ${picocolors.whiteBright(picocolors.bold('account:'))} ${picocolors.white(logSite.account_name)}`)
       }
       log(`─────────────────────────────────────────────────`)
     })

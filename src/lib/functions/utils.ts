@@ -1,4 +1,4 @@
-import { chalk, warn } from '../../utils/command-helpers.js'
+import { picocolors, warn } from '../../utils/command-helpers.js'
 import { MISSING_AWS_SDK_WARNING } from '../log.js'
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'error' implicitly has an 'any' ty... Remove this comment to see the full error message
@@ -11,7 +11,7 @@ export const detectAwsSdkError = ({ error }) => {
 }
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'err' implicitly has an 'any' type.
-export const formatLambdaError = (err) => chalk.red(`${err.errorType}: ${err.errorMessage}`)
+export const formatLambdaError = (err) => picocolors.red(`${err.errorType}: ${err.errorMessage}`)
 
 // should be equivalent to https://github.com/netlify/proxy/blob/main/pkg/functions/request.go#L105
 const exceptionsList = new Set([
@@ -24,12 +24,7 @@ const exceptionsList = new Set([
   'application/xml',
 ])
 
-/**
- * @param {string | undefined} contentType
- * @returns {boolean}
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'contentType' implicitly has an 'any' ty... Remove this comment to see the full error message
-export const shouldBase64Encode = function (contentType) {
+export const shouldBase64Encode = function (contentType: undefined | string) {
   if (!contentType) {
     return true
   }
@@ -53,5 +48,4 @@ export const shouldBase64Encode = function (contentType) {
   return true
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-export const styleFunctionName = (name) => chalk.magenta(name)
+export const styleFunctionName = (name: string) => picocolors.magenta(name)

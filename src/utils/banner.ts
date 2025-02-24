@@ -1,9 +1,9 @@
 import boxen from 'boxen'
 
-import { chalk, log, NETLIFYDEVLOG } from './command-helpers.js'
+import { picocolors, log, NETLIFYDEVLOG } from './command-helpers.js'
 
 export const printBanner = (options: { url: string }): void => {
-  const banner = chalk.bold(`${NETLIFYDEVLOG} Server now ready on ${options.url}`)
+  const banner = picocolors.bold(`${NETLIFYDEVLOG} Server now ready on ${options.url}`)
 
   log(
     boxen(banner, {

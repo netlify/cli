@@ -2,7 +2,7 @@ import { Buffer } from 'buffer'
 
 import { isStream } from 'is-stream'
 
-import { chalk, logPadded, NETLIFYDEVERR } from '../../utils/command-helpers.js'
+import { picocolors, logPadded, NETLIFYDEVERR } from '../../utils/command-helpers.js'
 import renderErrorTemplate from '../render-error-template.js'
 
 import { detectAwsSdkError } from './utils.js'
@@ -41,9 +41,9 @@ export const handleSynchronousFunction = function ({
     const error = getNormalizedError(invocationError)
 
     logPadded(
-      `${NETLIFYDEVERR} Function ${chalk.yellow(functionName)} has returned an error: ${
+      `${NETLIFYDEVERR} Function ${picocolors.yellow(functionName)} has returned an error: ${
         error.errorMessage
-      }\n${chalk.dim(error.stackTrace.join('\n'))}`,
+      }\n${picocolors.dim(error.stackTrace.join('\n'))}`,
     )
 
     return handleErr(invocationError, request, response)
@@ -65,7 +65,7 @@ export const handleSynchronousFunction = function ({
     const normalizedError = getNormalizedError(headersError)
 
     logPadded(
-      `${NETLIFYDEVERR} Failed to set header in function ${chalk.yellow(functionName)}: ${
+      `${NETLIFYDEVERR} Failed to set header in function ${picocolors.yellow(functionName)}: ${
         normalizedError.errorMessage
       }`,
     )

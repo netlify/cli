@@ -1,15 +1,16 @@
 import process from 'process'
 
-import chalk from 'chalk'
+import picocolors from 'picocolors'
 import { describe, expect, test, vi, beforeEach, afterAll } from 'vitest'
 
 import { log } from '../../../../src/utils/command-helpers.js'
-import { destructiveCommandMessages } from '../.././../../src/utils/prompts/prompt-messages.js'
+import { destructiveCommandMessages } from '../../../../src/utils/prompts/prompt-messages.js'
 import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
+import { mockPrompt, spyOnMockPrompt } from '../../utils/inquirer-mock-prompt.js'
 import { getEnvironmentVariables, withMockApi, setTTYMode, setCI, setTestingPrompts } from '../../utils/mock-api.js'
 import { runMockProgram } from '../../utils/mock-program.js'
+
 import { routes } from './api-routes.js'
-import { mockPrompt, spyOnMockPrompt } from '../../utils/inquirer-mock-prompt.js'
 
 vi.mock('../../../../src/utils/command-helpers.js', async () => ({
   ...(await vi.importActual('../../../../src/utils/command-helpers.js')),
@@ -277,9 +278,9 @@ describe('env:set command', () => {
 
     const warningMessage = generateWarning(existingVar)
 
-    const successMessage = `Set environment variable ${chalk.yellow(
+    const successMessage = `Set environment variable ${picocolors.yellow(
       `${existingVar}=${newEnvValue}`,
-    )} in the ${chalk.magenta('all')} context`
+    )} in the ${picocolors.magenta('all')} context`
 
     beforeEach(() => {
       vi.resetModules()
@@ -335,9 +336,9 @@ describe('env:set command', () => {
           expect(log).not.toHaveBeenCalledWith(warningMessage)
           expect(log).not.toHaveBeenCalledWith(overwriteNotice)
           expect(log).toHaveBeenCalledWith(
-            `Set environment variable ${chalk.yellow(`${'NEW_ENV_VAR'}=${'NEW_VALUE'}`)} in the ${chalk.magenta(
-              'all',
-            )} context`,
+            `Set environment variable ${picocolors.yellow(
+              `${'NEW_ENV_VAR'}=${'NEW_VALUE'}`,
+            )} in the ${picocolors.magenta('all')} context`,
           )
         })
       })

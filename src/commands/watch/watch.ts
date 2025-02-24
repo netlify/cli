@@ -3,7 +3,7 @@ import pWaitFor from 'p-wait-for'
 import prettyjson from 'prettyjson'
 
 import { startSpinner, stopSpinner } from '../../lib/spinner.js'
-import { chalk, error, log } from '../../utils/command-helpers.js'
+import { picocolors, error, log } from '../../utils/command-helpers.js'
 import BaseCommand from '../base-command.js'
 import { init } from '../init/init.js'
 
@@ -56,7 +56,7 @@ const waitForBuildFinish = async function (api, siteId, spinner) {
   return firstPass
 }
 
-export const watch = async (options: OptionValues, command: BaseCommand) => {
+export const watch = async (_options: OptionValues, command: BaseCommand) => {
   await command.authenticate()
   const client = command.netlify.api
   let siteId = command.netlify.site.id
@@ -103,7 +103,9 @@ export const watch = async (options: OptionValues, command: BaseCommand) => {
 
     const siteData = await client.getSite({ siteId: siteId as string })
 
-    const message = chalk.cyanBright.bold.underline(noActiveBuilds ? 'Last build' : 'Deploy complete')
+    const message = picocolors.cyanBright(
+      picocolors.bold(picocolors.underline(noActiveBuilds ? 'Last build' : 'Deploy complete')),
+    )
     log()
     log(message)
     log(

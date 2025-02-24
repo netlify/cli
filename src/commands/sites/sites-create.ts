@@ -3,7 +3,7 @@ import inquirer from 'inquirer'
 import pick from 'lodash/pick.js'
 import prettyjson from 'prettyjson'
 
-import { chalk, error, log, logJson, warn, APIError } from '../../utils/command-helpers.js'
+import { picocolors, error, log, logJson, warn, APIError } from '../../utils/command-helpers.js'
 import getRepoData from '../../utils/get-repo-data.js'
 import { configureRepo } from '../../utils/init/config.js'
 import { track } from '../../utils/telemetry/index.js'
@@ -78,7 +78,7 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand) =
   await inputSiteName(options.name)
 
   log()
-  log(chalk.greenBright.bold.underline(`Site Created`))
+  log(picocolors.greenBright(picocolors.bold(picocolors.underline(`Site Created`))))
   log()
 
   // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.

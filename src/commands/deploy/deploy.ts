@@ -23,7 +23,7 @@ import {
   NETLIFYDEV,
   NETLIFYDEVERR,
   NETLIFYDEVLOG,
-  chalk,
+  picocolors,
   error,
   exit,
   getToken,
@@ -690,8 +690,10 @@ const printResults = ({
       log()
       log('If everything looks good on your draft URL, deploy it to your main site URL with the --prod flag.')
       log(
-        `${chalk.cyanBright.bold(
-          `netlify ${isIntegrationDeploy ? 'integration:' : ''}deploy${runBuildCommand ? ' --build' : ''} --prod`,
+        `${picocolors.cyanBright(
+          picocolors.bold(
+            `netlify ${isIntegrationDeploy ? 'integration:' : ''}deploy${runBuildCommand ? ' --build' : ''} --prod`,
+          ),
         )}`,
       )
       log()
@@ -906,7 +908,6 @@ export const deploy = async (options: OptionValues, command: BaseCommand) => {
 
   if (options.open) {
     const urlToOpen = deployToProduction ? results.siteUrl : results.deployUrl
-    // @ts-expect-error TS(2345) FIXME: Argument of type '{ url: any; }' is not assignable... Remove this comment to see the full error message
     await openBrowser({ url: urlToOpen })
     exit()
   }

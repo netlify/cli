@@ -1,7 +1,7 @@
 import process from 'process'
 
 import { getStore } from '@netlify/blobs'
-import chalk from 'chalk'
+import picocolors from 'picocolors'
 import inquirer from 'inquirer'
 import { describe, expect, test, vi, beforeEach, afterAll } from 'vitest'
 
@@ -60,9 +60,9 @@ describe('blobs:set command', () => {
 
     const warningMessage = generateWarning(key, storeName)
 
-    const successMessage = `${chalk.greenBright('Success')}: Blob ${chalk.yellow(key)} set in store ${chalk.yellow(
-      storeName,
-    )}`
+    const successMessage = `${picocolors.greenBright('Success')}: Blob ${picocolors.yellow(
+      key,
+    )} set in store ${picocolors.yellow(storeName)}`
 
     beforeEach(() => {
       vi.resetModules()
@@ -214,7 +214,7 @@ describe('blobs:set command', () => {
             await runMockProgram(['', '', 'blobs:set', storeName, key, newValue, '--force'])
           } catch (error) {
             expect(error.message).toContain(
-              `Could not set blob ${chalk.yellow(key)} in store ${chalk.yellow(storeName)}`,
+              `Could not set blob ${picocolors.yellow(key)} in store ${picocolors.yellow(storeName)}`,
             )
           }
 

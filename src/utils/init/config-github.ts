@@ -1,22 +1,13 @@
 import { Octokit } from '@octokit/rest'
 
-import { chalk, error as failAndExit, log } from '../command-helpers.js'
-import { getGitHubToken as ghauth } from '../gh-auth.js'
+import { picocolors, error as failAndExit, log } from '../command-helpers.js'
+import { getGitHubToken as ghauth, type Token } from '../gh-auth.js'
 
 import { createDeployKey, formatErrorMessage, getBuildSettings, saveNetlifyToml, setupSite } from './utils.js'
 
-/**
- * @typedef Token
- * @type {object}
- * @property {string} user - The username that is associated with the token
- * @property {string} token - The actual token value.
- * @property {string} provider - The Provider where the token is associated with ('github').
- */
-
-// @ts-expect-error TS(7031) FIXME: Binding element 'repoName' implicitly has an 'any'... Remove this comment to see the full error message
-const formatRepoAndOwner = ({ repoName, repoOwner }) => ({
-  name: chalk.magenta(repoName),
-  owner: chalk.magenta(repoOwner),
+const formatRepoAndOwner = ({ repoName, repoOwner }: { repoName: string; repoOwner: string }) => ({
+  name: picocolors.magenta(repoName),
+  owner: picocolors.magenta(repoOwner),
 })
 
 const PAGE_SIZE = 100
@@ -29,8 +20,7 @@ const PAGE_SIZE = 100
 export const getGitHubToken = async ({ globalConfig }) => {
   const userId = globalConfig.get('userId')
 
-  /** @type {Token} */
-  const githubToken = globalConfig.get(`users.${userId}.auth.github`)
+  const githubToken: Token = globalConfig.get(`users.${userId}.auth.github`)
 
   if (githubToken && githubToken.user && githubToken.token) {
     try {
@@ -40,24 +30,17 @@ export const getGitHubToken = async ({ globalConfig }) => {
         return githubToken.token
       }
     } catch {
-      log(chalk.yellow('Token is expired or invalid!'))
+      log(picocolors.yellow('Token is expired or invalid!'))
       log('Generating a new Github token...')
     }
   }
 
-  const newToken = await ghauth()
+  const newToken: Token = await ghauth()
   globalConfig.set(`users.${userId}.auth.github`, newToken)
-  // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
   return newToken.token
 }
 
-/**
- * Retrieves the GitHub octokit client
- * @param {string} token
- * @returns {Octokit}
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'token' implicitly has an 'any' type.
-const getGitHubClient = (token) =>
+const getGitHubClient = (token: string) =>
   new Octokit({
     auth: `token ${token}`,
   })
@@ -87,8 +70,15 @@ const addDeployKey = async ({ api, octokit, repoName, repoOwner }) => {
   }
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'octokit' implicitly has an 'any' ... Remove this comment to see the full error message
-const getGitHubRepo = async ({ octokit, repoName, repoOwner }) => {
+const getGitHubRepo = async ({
+  octokit,
+  repoName,
+  repoOwner,
+}: {
+  octokit: Octokit
+  repoName: string
+  repoOwner: string
+}) => {
   try {
     const { data } = await octokit.repos.get({
       owner: repoOwner,
@@ -204,7 +194,10 @@ const addNotificationHooks = async ({ api, siteId, token }) => {
         // @ts-expect-error TS(7005) FIXME: Variable 'ntlHooks' implicitly has an 'any' type.
         await upsertHook({ ntlHooks, event, api, siteId, token })
       } catch (error) {
-        const message = formatErrorMessage({ message: `Failed settings Netlify hook ${chalk.magenta(event)}`, error })
+        const message = formatErrorMessage({
+          message: `Failed settings Netlify hook ${picocolors.magenta(event)}`,
+          error,
+        })
         failAndExit(message)
       }
     }),
@@ -250,6 +243,12 @@ export const configGithub = async ({ command, repoName, repoOwner, siteId }) => 
     addDeployKey({ api, octokit, repoOwner, repoName }),
     getGitHubRepo({ octokit, repoOwner, repoName }),
   ])
+
+  // FIXME(serhalp) This is smelly, but `getGitHubRepo` can handle certain errors and return void. It should be
+  // refactored to avoid this.
+  if (githubRepo == null) {
+    return
+  }
 
   const repo = {
     id: githubRepo.id,

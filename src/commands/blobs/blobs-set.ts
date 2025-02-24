@@ -4,7 +4,7 @@ import { resolve } from 'path'
 import { getStore } from '@netlify/blobs'
 import { OptionValues } from 'commander'
 
-import { chalk, error as printError, isNodeError, log } from '../../utils/command-helpers.js'
+import { picocolors, error as printError, isNodeError, log } from '../../utils/command-helpers.js'
 import { promptBlobSetOverwrite } from '../../utils/prompts/blob-set-prompt.js'
 import BaseCommand from '../base-command.js'
 
@@ -37,18 +37,24 @@ export const blobsSet = async (
     } catch (error) {
       if (isNodeError(error) && error.code === 'ENOENT') {
         return printError(
-          `Could not set blob ${chalk.yellow(key)} because the file ${chalk.underline(inputPath)} does not exist`,
+          `Could not set blob ${picocolors.yellow(key)} because the file ${picocolors.underline(
+            inputPath,
+          )} does not exist`,
         )
       }
 
       if (isNodeError(error) && error.code === 'EISDIR') {
         return printError(
-          `Could not set blob ${chalk.yellow(key)} because the path ${chalk.underline(inputPath)} is a directory`,
+          `Could not set blob ${picocolors.yellow(key)} because the path ${picocolors.underline(
+            inputPath,
+          )} is a directory`,
         )
       }
 
       return printError(
-        `Could not set blob ${chalk.yellow(key)} because the path ${chalk.underline(inputPath)} could not be read`,
+        `Could not set blob ${picocolors.yellow(key)} because the path ${picocolors.underline(
+          inputPath,
+        )} could not be read`,
       )
     }
   } else if (!value) {
@@ -67,8 +73,12 @@ export const blobsSet = async (
 
   try {
     await store.set(key, value)
-    log(`${chalk.greenBright('Success')}: Blob ${chalk.yellow(key)} set in store ${chalk.yellow(storeName)}`)
+    log(
+      `${picocolors.greenBright('Success')}: Blob ${picocolors.yellow(key)} set in store ${picocolors.yellow(
+        storeName,
+      )}`,
+    )
   } catch {
-    return printError(`Could not set blob ${chalk.yellow(key)} in store ${chalk.yellow(storeName)}`)
+    return printError(`Could not set blob ${picocolors.yellow(key)} in store ${picocolors.yellow(storeName)}`)
   }
 }
