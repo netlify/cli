@@ -5,7 +5,7 @@ import envinfo from 'envinfo'
 import { closest } from 'fastest-levenshtein'
 import inquirer from 'inquirer'
 
-import { BANG, chalk, error, exit, log, NETLIFY_CYAN, USER_AGENT, warn } from '../utils/command-helpers.js'
+import { BANG, picocolors, error, exit, log, NETLIFY_CYAN, USER_AGENT, warn } from '../utils/command-helpers.js'
 import execa from '../utils/execa.js'
 import getGlobalConfig from '../utils/get-global-config.js'
 import getPackageJson from '../utils/get-package-json.js'
@@ -51,7 +51,7 @@ export const CI_FORCED_COMMANDS = {
 process.on('uncaughtException', async (err: AddressInUseError | Error) => {
   if ('code' in err && err.code === 'EADDRINUSE') {
     error(
-      `${chalk.red(`Port ${err.port} is already in use`)}\n\n` +
+      `${picocolors.red(`Port ${err.port} is already in use`)}\n\n` +
         `Your serverless functions might be initializing a server\n` +
         `to listen on specific port without properly closing it.\n\n` +
         `This behavior is generally not advised\n` +
@@ -64,13 +64,13 @@ process.on('uncaughtException', async (err: AddressInUseError | Error) => {
     )
   } else {
     error(
-      `${chalk.red(
+      `${picocolors.red(
         'Netlify CLI has terminated unexpectedly',
-      )}\nThis is a problem with the Netlify CLI, not with your application.\nIf you recently updated the CLI, consider reverting to an older version by running:\n\n${chalk.bold(
+      )}\nThis is a problem with the Netlify CLI, not with your application.\nIf you recently updated the CLI, consider reverting to an older version by running:\n\n${picocolors.bold(
         'npm install -g netlify-cli@VERSION',
-      )}\n\nYou can use any version from ${chalk.underline(
+      )}\n\nYou can use any version from ${picocolors.underline(
         'https://ntl.fyi/cli-versions',
-      )}.\n\nPlease report this problem at ${chalk.underline(
+      )}.\n\nPlease report this problem at ${picocolors.underline(
         'https://ntl.fyi/cli-error',
       )} including the error details below.\n`,
       { exit: false },
@@ -78,8 +78,8 @@ process.on('uncaughtException', async (err: AddressInUseError | Error) => {
 
     const systemInfo = await getSystemInfo()
 
-    console.log(chalk.dim(err.stack || err))
-    console.log(chalk.dim(systemInfo))
+    console.log(picocolors.dim(err.stack || err.toString()))
+    console.log(picocolors.dim(systemInfo))
     reportError(err, { severity: 'error' })
   }
 
@@ -142,9 +142,9 @@ const mainCommand = async function (options, command) {
   if (command.args.length === 0) {
     const pkg = await getPackageJson()
 
-    const title = `${chalk.bgBlack.cyan('⬥ Netlify CLI')}`
-    const docsMsg = `${chalk.greenBright('Read the docs:')} https://ntl.fyi/get-started-with-netlify-cli`
-    const supportMsg = `${chalk.magentaBright('Support and bugs:')} ${pkg.bugs.url}`
+    const title = `${picocolors.bgBlack(picocolors.cyan('⬥ Netlify CLI'))}`
+    const docsMsg = `${picocolors.greenBright('Read the docs:')} https://ntl.fyi/get-started-with-netlify-cli`
+    const supportMsg = `${picocolors.magentaBright('Support and bugs:')} ${pkg.bugs.url}`
 
     console.log()
     console.log(title)
@@ -167,7 +167,7 @@ const mainCommand = async function (options, command) {
     command.help()
   }
 
-  warn(`${chalk.yellow(command.args[0])} is not a ${command.name()} command.`)
+  warn(`${picocolors.yellow(command.args[0])} is not a ${command.name()} command.`)
 
   // @ts-expect-error TS(7006) FIXME: Parameter 'cmd' implicitly has an 'any' type.
   const allCommands = command.commands.map((cmd) => cmd.name())
@@ -177,7 +177,7 @@ const mainCommand = async function (options, command) {
     const prompt = inquirer.prompt({
       type: 'confirm',
       name: 'suggestion',
-      message: `Did you mean ${chalk.blue(suggestion)}`,
+      message: `Did you mean ${picocolors.blue(suggestion)}`,
       default: false,
     })
 
@@ -242,8 +242,8 @@ export const createMainCommand = () => {
     .noHelpOptions()
     .configureOutput({
       outputError: (message, write) => {
-        write(` ${chalk.red(BANG)}   Error: ${message.replace(/^error:\s/g, '')}`)
-        write(` ${chalk.red(BANG)}   See more help with --help\n`)
+        write(` ${picocolors.red(BANG)}   Error: ${message.replace(/^error:\s/g, '')}`)
+        write(` ${picocolors.red(BANG)}   See more help with --help\n`)
       },
     })
     .action(mainCommand)

@@ -1,6 +1,6 @@
 import { OptionValues } from 'commander'
 
-import { chalk, error, log, logJson } from '../../utils/command-helpers.js'
+import { picocolors, error, log, logJson } from '../../utils/command-helpers.js'
 import { AVAILABLE_CONTEXTS, AVAILABLE_SCOPES, translateFromEnvelopeToMongo } from '../../utils/env/index.js'
 import { promptOverwriteEnvVariable } from '../../utils/prompts/env-set-prompts.js'
 import BaseCommand from '../base-command.js'
@@ -135,12 +135,12 @@ export const envSet = async (key: string, value: string, options: OptionValues, 
     return false
   }
 
-  const withScope = scope ? ` scoped to ${chalk.white(scope)}` : ''
-  const withSecret = secret ? ` as a ${chalk.blue('secret')}` : ''
+  const withScope = scope ? ` scoped to ${picocolors.white(scope)}` : ''
+  const withSecret = secret ? ` as a ${picocolors.blue('secret')}` : ''
   const contextType = AVAILABLE_CONTEXTS.includes(context || 'all') ? 'context' : 'branch'
   log(
-    `Set environment variable ${chalk.yellow(
+    `Set environment variable ${picocolors.yellow(
       `${key}${value && !secret ? `=${value}` : ''}`,
-    )}${withScope}${withSecret} in the ${chalk.magenta(context || 'all')} ${contextType}`,
+    )}${withScope}${withSecret} in the ${picocolors.magenta(context || 'all')} ${contextType}`,
   )
 }

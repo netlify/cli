@@ -7,7 +7,7 @@ import { ListedFunction, listFunctions } from '@netlify/zip-it-and-ship-it'
 import extractZip from 'extract-zip'
 
 import {
-  chalk,
+  picocolors,
   log,
   getTerminalLink,
   NETLIFYDEVERR,
@@ -32,10 +32,6 @@ const ZIP_EXTENSION = '.zip'
 const isInternalFunction = (func: ListedFunction | NetlifyFunction, frameworksAPIFunctionsPath: string) =>
   func.mainFile.includes(getPathInProject([INTERNAL_FUNCTIONS_FOLDER])) ||
   func.mainFile.includes(frameworksAPIFunctionsPath)
-
-/**
- * @typedef {"buildError" | "extracted" | "loaded" | "missing-types-package" | "reloaded" | "reloading" | "removed"} FunctionEvent
- */
 
 export class FunctionsRegistry {
   /**
@@ -64,6 +60,7 @@ export class FunctionsRegistry {
   private isConnected: boolean
   private debug: boolean
   private frameworksAPIPaths: ReturnType<typeof getFrameworksAPIPaths>
+  private logLambdaCompat: boolean
 
   constructor({
     blobsContext,
@@ -129,7 +126,6 @@ export class FunctionsRegistry {
      *
      * @type {boolean}
      */
-    // @ts-expect-error TS(2339) FIXME: Property 'logLambdaCompat' does not exist on type ... Remove this comment to see the full error message
     this.logLambdaCompat = Boolean(logLambdaCompat)
 
     /**
@@ -156,8 +152,7 @@ export class FunctionsRegistry {
     } catch (error) {
       // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
       if (error?.code === 'MODULE_NOT_FOUND') {
-        // @ts-expect-error TS(2345) FIXME: Argument of type '{}' is not assignable to paramet... Remove this comment to see the full error message
-        FunctionsRegistry.logEvent('missing-types-package', {})
+        this.logEvent('missing-types-package', {})
       }
     }
   }
@@ -192,14 +187,14 @@ export class FunctionsRegistry {
    */
   async buildFunctionAndWatchFiles(func: NetlifyFunction, firstLoad = false) {
     if (!firstLoad) {
-      FunctionsRegistry.logEvent('reloading', { func })
+      this.logEvent('reloading', { func })
     }
 
     // @ts-expect-error TS(2339) FIXME: Property 'buildCache' does not exist on type 'Func... Remove this comment to see the full error message
     const { error: buildError, includedFiles, srcFilesDiff } = await func.build({ cache: this.buildCache })
 
     if (buildError) {
-      FunctionsRegistry.logEvent('buildError', { func })
+      this.logEvent('buildError', { func })
     } else {
       const event = firstLoad ? 'loaded' : 'reloaded'
       const recommendedExtension = func.getRecommendedExtension()
@@ -208,15 +203,15 @@ export class FunctionsRegistry {
         const { filename } = func
         const newFilename = filename ? `${basename(filename, extname(filename))}${recommendedExtension}` : null
         const action = newFilename
-          ? `rename the function file to ${chalk.underline(
+          ? `rename the function file to ${picocolors.underline(
               newFilename,
             )}. Refer to https://ntl.fyi/functions-runtime for more information`
           : `refer to https://ntl.fyi/functions-runtime`
         const warning = `The function is using the legacy CommonJS format. To start using ES modules, ${action}.`
 
-        FunctionsRegistry.logEvent(event, { func, warnings: [warning] })
+        this.logEvent(event, { func, warnings: [warning] })
       } else {
-        FunctionsRegistry.logEvent(event, { func })
+        this.logEvent(event, { func })
       }
     }
 
@@ -292,10 +287,10 @@ export class FunctionsRegistry {
 
       if (routes.length !== 0) {
         // @ts-expect-error TS(7006) FIXME: Parameter 'route' implicitly has an 'any' type.
-        const paths = routes.map((route) => chalk.underline(route.pattern)).join(', ')
+        const paths = routes.map((route) => picocolors.underline(route.pattern)).join(', ')
 
         warn(
-          `Function ${chalk.yellow(func.name)} cannot be invoked on ${chalk.underline(
+          `Function ${picocolors.yellow(func.name)} cannot be invoked on ${picocolors.underline(
             url.pathname,
           )}, because the function has the following URL paths defined: ${paths}`,
         )
@@ -318,9 +313,9 @@ export class FunctionsRegistry {
   /**
    * Logs an event associated with functions.
    */
-  static logEvent(
+  logEvent(
     event: 'buildError' | 'extracted' | 'loaded' | 'missing-types-package' | 'reloaded' | 'reloading' | 'removed',
-    { func, warnings = [] }: { func: NetlifyFunction; warnings?: string[] },
+    { func, warnings = [] }: { func?: NetlifyFunction; warnings?: string[] },
   ) {
     let warningsText = ''
 
@@ -330,7 +325,7 @@ export class FunctionsRegistry {
 
     if (event === 'buildError') {
       log(
-        `${NETLIFYDEVERR} ${chalk.red('Failed to load')} function ${chalk.yellow(func?.displayName)}: ${
+        `${NETLIFYDEVERR} ${picocolors.red('Failed to load')} function ${picocolors.yellow(func?.displayName)}: ${
           func?.buildError?.message
         }`,
       )
@@ -338,7 +333,7 @@ export class FunctionsRegistry {
 
     if (event === 'extracted') {
       log(
-        `${NETLIFYDEVLOG} ${chalk.green('Extracted')} function ${chalk.yellow(func?.displayName)} from ${
+        `${NETLIFYDEVLOG} ${picocolors.green('Extracted')} function ${picocolors.yellow(func?.displayName)} from ${
           func?.mainFile
         }.`,
       )
@@ -348,21 +343,20 @@ export class FunctionsRegistry {
 
     if (event === 'loaded') {
       const icon = warningsText ? NETLIFYDEVWARN : NETLIFYDEVLOG
-      const color = warningsText ? chalk.yellow : chalk.green
+      const color = warningsText ? picocolors.yellow : picocolors.green
       const mode =
-        // @ts-expect-error TS(2339) FIXME: Property 'logLambdaCompat' does not exist on type ... Remove this comment to see the full error message
         func?.runtimeAPIVersion === 1 && this.logLambdaCompat
           ? ` in ${getTerminalLink('Lambda compatibility mode', 'https://ntl.fyi/lambda-compat')}`
           : ''
 
-      log(`${icon} ${color('Loaded')} function ${chalk.yellow(func?.displayName)}${mode}${warningsText}`)
+      log(`${icon} ${color('Loaded')} function ${picocolors.yellow(func?.displayName)}${mode}${warningsText}`)
 
       return
     }
 
     if (event === 'missing-types-package') {
       log(
-        `${NETLIFYDEVWARN} For a better experience with TypeScript functions, consider installing the ${chalk.underline(
+        `${NETLIFYDEVWARN} For a better experience with TypeScript functions, consider installing the ${picocolors.underline(
           TYPES_PACKAGE,
         )} package. Refer to https://ntl.fyi/function-types for more information.`,
       )
@@ -370,21 +364,21 @@ export class FunctionsRegistry {
 
     if (event === 'reloaded') {
       const icon = warningsText ? NETLIFYDEVWARN : NETLIFYDEVLOG
-      const color = warningsText ? chalk.yellow : chalk.green
+      const color = warningsText ? picocolors.yellow : picocolors.green
 
-      log(`${icon} ${color('Reloaded')} function ${chalk.yellow(func?.displayName)}${warningsText}`)
+      log(`${icon} ${color('Reloaded')} function ${picocolors.yellow(func?.displayName)}${warningsText}`)
 
       return
     }
 
     if (event === 'reloading') {
-      log(`${NETLIFYDEVLOG} ${chalk.magenta('Reloading')} function ${chalk.yellow(func?.displayName)}...`)
+      log(`${NETLIFYDEVLOG} ${picocolors.magenta('Reloading')} function ${picocolors.yellow(func?.displayName)}...`)
 
       return
     }
 
     if (event === 'removed') {
-      log(`${NETLIFYDEVLOG} ${chalk.magenta('Removed')} function ${chalk.yellow(func?.displayName)}`)
+      log(`${NETLIFYDEVLOG} ${picocolors.magenta('Removed')} function ${picocolors.yellow(func?.displayName)}`)
     }
   }
 
@@ -433,7 +427,7 @@ export class FunctionsRegistry {
       }
 
       if (this.debug) {
-        FunctionsRegistry.logEvent('extracted', { func })
+        this.logEvent('extracted', { func })
       }
 
       func.buildData = {
@@ -583,7 +577,7 @@ export class FunctionsRegistry {
         return
       }
 
-      FunctionsRegistry.logEvent('removed', { func })
+      this.logEvent('removed', { func })
     })
 
     await Promise.all(directories.map((path) => this.setupDirectoryWatcher(path)))

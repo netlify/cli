@@ -8,7 +8,7 @@ import getAvailablePort from 'get-port'
 
 import BaseCommand from '../../commands/base-command.js'
 import { $TSFixMe } from '../../commands/types.js'
-import { NETLIFYDEVERR, chalk, error as printError } from '../../utils/command-helpers.js'
+import { NETLIFYDEVERR, picocolors, error as printError } from '../../utils/command-helpers.js'
 import { FeatureFlags, getFeatureFlagsFromSiteInfo } from '../../utils/feature-flags.js'
 import { BlobsContextWithEdgeAccess } from '../blobs/blobs.js'
 import { getGeoLocation } from '../geo-location.js'
@@ -233,11 +233,11 @@ const prepareServer = async ({
       distImportMapPath: join(projectDir, distImportMapPath),
       featureFlags,
       formatExportTypeError: (name) =>
-        `${NETLIFYDEVERR} ${chalk.red('Failed')} to load Edge Function ${chalk.yellow(
+        `${NETLIFYDEVERR} ${picocolors.red('Failed')} to load Edge Function ${picocolors.yellow(
           name,
         )}. The file does not seem to have a function as the default export.`,
       formatImportError: (name) =>
-        `${NETLIFYDEVERR} ${chalk.red('Failed')} to run Edge Function ${chalk.yellow(name)}:`,
+        `${NETLIFYDEVERR} ${picocolors.red('Failed')} to run Edge Function ${picocolors.yellow(name)}:`,
       inspectSettings,
       port,
       rootPath: repositoryRoot,

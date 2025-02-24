@@ -1,6 +1,7 @@
 import fs from 'fs'
 import { homedir } from 'os'
 import { dirname, join } from 'path'
+import process from 'process'
 import { fileURLToPath } from 'url'
 import inquirer from 'inquirer'
 
@@ -11,7 +12,7 @@ import { generateAutocompletion } from '../../lib/completion/index.js'
 import {
   error,
   log,
-  chalk,
+  picocolors,
   checkFileForLine,
   TABTAB_CONFIG_LINE,
   AUTOLOAD_COMPINIT,
@@ -20,7 +21,7 @@ import BaseCommand from '../base-command.js'
 
 const completer = join(dirname(fileURLToPath(import.meta.url)), '../../lib/completion/script.js')
 
-export const completionGenerate = async (options: OptionValues, command: BaseCommand) => {
+export const completionGenerate = async (_options: OptionValues, command: BaseCommand) => {
   const { parent } = command
 
   if (!parent) {
@@ -56,7 +57,7 @@ export const completionGenerate = async (options: OptionValues, command: BaseCom
     !checkFileForLine(zshConfigFilepath, AUTOLOAD_COMPINIT)
   ) {
     log(`To enable Tabtab autocompletion with zsh, the following line may need to be added to your ~/.zshrc:`)
-    log(chalk.bold.cyan(`\n${AUTOLOAD_COMPINIT}\n`))
+    log(picocolors.bold(picocolors.cyan(`\n${AUTOLOAD_COMPINIT}\n`)))
     const { compinitAdded } = await inquirer.prompt([
       {
         type: 'confirm',
@@ -66,7 +67,7 @@ export const completionGenerate = async (options: OptionValues, command: BaseCom
       },
     ])
     if (compinitAdded) {
-      await fs.readFile(zshConfigFilepath, 'utf8', (err, data) => {
+      fs.readFile(zshConfigFilepath, 'utf8', (err, data) => {
         const updatedZshFile = AUTOLOAD_COMPINIT + '\n' + data
 
         fs.writeFileSync(zshConfigFilepath, updatedZshFile, 'utf8')
@@ -80,8 +81,8 @@ export const completionGenerate = async (options: OptionValues, command: BaseCom
 
   if (process.platform !== 'win32') {
     log("\nTo ensure proper functionality, you'll need to set appropriate file permissions.")
-    log(chalk.bold('Add executable permissions by running the following command:'))
-    log(chalk.bold.cyan(`\nchmod +x ${completer}\n`))
+    log(picocolors.bold('Add executable permissions by running the following command:'))
+    log(picocolors.bold(picocolors.cyan(`\nchmod +x ${completer}\n`)))
   } else {
     log(`\nTo ensure proper functionality, you may need to set appropriate file permissions to ${completer}.`)
   }

@@ -19,7 +19,7 @@ import { getAgent } from '../lib/http-agent.js'
 import {
   NETLIFY_CYAN,
   USER_AGENT,
-  chalk,
+  picocolors,
   error,
   exit,
   getToken,
@@ -28,7 +28,7 @@ import {
   normalizeConfig,
   padLeft,
   pollForToken,
-  sortOptions,
+  compareOptions,
   warn,
 } from '../utils/command-helpers.js'
 import { FeatureFlags } from '../utils/feature-flags.js'
@@ -106,7 +106,7 @@ async function selectWorkspace(project: Project, filter?: string): Promise<strin
 
   if (!selected) {
     log()
-    log(chalk.cyan(`We've detected multiple sites inside your repository`))
+    log(picocolors.cyan(`We've detected multiple sites inside your repository`))
 
     if (isCI) {
       throw new Error(
@@ -128,7 +128,7 @@ async function selectWorkspace(project: Project, filter?: string): Promise<strin
         (project.workspace?.packages || [])
           .filter((pkg) => pkg.path.includes(input))
           .map((pkg) => ({
-            name: `${pkg.name ? `${chalk.bold(pkg.name)}  ` : ''}${pkg.path}  ${chalk.dim(
+            name: `${pkg.name ? `${picocolors.bold(pkg.name)}  ` : ''}${pkg.path}  ${picocolors.dim(
               `--filter ${pkg.name || pkg.path}`,
             )}`,
             value: pkg.path,
@@ -287,7 +287,7 @@ export default class BaseCommand extends Command {
 
         if (description) {
           const pad = termWidth + HELP_SEPARATOR_WIDTH
-          const fullText = `${bang}${term.padEnd(pad - (isCommand ? 2 : 0))}${chalk.grey(description)}`
+          const fullText = `${bang}${term.padEnd(pad - (isCommand ? 2 : 0))}${picocolors.gray(description)}`
           return helper.wrap(fullText, helpWidth - HELP_INDENT_WIDTH, pad)
         }
 
@@ -304,34 +304,34 @@ export default class BaseCommand extends Command {
 
       // on the parent help command the version should be displayed
       if (this.name() === 'netlify') {
-        output = [...output, chalk.bold('VERSION'), formatHelpList([formatItem(USER_AGENT)]), '']
+        output = [...output, picocolors.bold('VERSION'), formatHelpList([formatItem(USER_AGENT)]), '']
       }
 
       // Usage
-      output = [...output, chalk.bold('USAGE'), helper.commandUsage(command), '']
+      output = [...output, picocolors.bold('USAGE'), helper.commandUsage(command), '']
 
       // Arguments
       const argumentList = helper
         .visibleArguments(command)
         .map((argument) => formatItem(helper.argumentTerm(argument), helper.argumentDescription(argument)))
       if (argumentList.length !== 0) {
-        output = [...output, chalk.bold('ARGUMENTS'), formatHelpList(argumentList), '']
+        output = [...output, picocolors.bold('ARGUMENTS'), formatHelpList(argumentList), '']
       }
 
       if (command.#noBaseOptions === false) {
         // Options
         const optionList = helper
           .visibleOptions(command)
-          .sort(sortOptions)
+          .sort(compareOptions)
           .map((option) => formatItem(helper.optionTerm(option), helper.optionDescription(option)))
         if (optionList.length !== 0) {
-          output = [...output, chalk.bold('OPTIONS'), formatHelpList(optionList), '']
+          output = [...output, picocolors.bold('OPTIONS'), formatHelpList(optionList), '']
         }
       }
 
       // Description
       if (commandDescription.length !== 0) {
-        output = [...output, chalk.bold('DESCRIPTION'), formatHelpList(commandDescription), '']
+        output = [...output, picocolors.bold('DESCRIPTION'), formatHelpList(commandDescription), '']
       }
 
       // Aliases
@@ -340,13 +340,13 @@ export default class BaseCommand extends Command {
       if (command._aliases.length !== 0) {
         // @ts-expect-error TS(2551) FIXME: Property '_aliases' does not exist on type 'Comman... Remove this comment to see the full error message
         const aliases = command._aliases.map((alias) => formatItem(`${parentCommand.name()} ${alias}`, null, true))
-        output = [...output, chalk.bold('ALIASES'), formatHelpList(aliases), '']
+        output = [...output, picocolors.bold('ALIASES'), formatHelpList(aliases), '']
       }
 
       if (command.examples.length !== 0) {
         output = [
           ...output,
-          chalk.bold('EXAMPLES'),
+          picocolors.bold('EXAMPLES'),
           formatHelpList(command.examples.map((example) => `${HELP_$} ${example}`)),
           '',
         ]
@@ -356,7 +356,7 @@ export default class BaseCommand extends Command {
         formatItem(cmd.name(), helper.subcommandDescription(cmd).split('\n')[0], true),
       )
       if (commandList.length !== 0) {
-        output = [...output, chalk.bold('COMMANDS'), formatHelpList(commandList), '']
+        output = [...output, picocolors.bold('COMMANDS'), formatHelpList(commandList), '']
       }
 
       return [...output, ''].join('\n')
@@ -410,7 +410,6 @@ export default class BaseCommand extends Command {
     const authLink = `${webUI}/authorize?response_type=ticket&ticket=${ticket.id}`
 
     log(`Opening ${authLink}`)
-    // @ts-expect-error TS(2345) FIXME: Argument of type '{ url: string; }' is not assigna... Remove this comment to see the full error message
     await openBrowser({ url: authLink })
 
     const accessToken = await pollForToken({
@@ -448,11 +447,11 @@ export default class BaseCommand extends Command {
 
     // Log success
     log()
-    log(`${chalk.greenBright('You are now logged into your Netlify account!')}`)
+    log(`${picocolors.greenBright('You are now logged into your Netlify account!')}`)
     log()
-    log(`Run ${chalk.cyanBright('netlify status')} for account details`)
+    log(`Run ${picocolors.cyanBright('netlify status')} for account details`)
     log()
-    log(`To see all available commands run: ${chalk.cyanBright('netlify help')}`)
+    log(`To see all available commands run: ${picocolors.cyanBright('netlify help')}`)
     log()
     return accessToken
   }

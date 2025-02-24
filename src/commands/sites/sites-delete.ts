@@ -1,7 +1,7 @@
 import { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 
-import { chalk, error, exit, log, APIError } from '../../utils/command-helpers.js'
+import { picocolors, error, exit, log, APIError } from '../../utils/command-helpers.js'
 import BaseCommand from '../base-command.js'
 
 export const sitesDelete = async (siteId: string, options: OptionValues, command: BaseCommand) => {
@@ -32,11 +32,11 @@ export const sitesDelete = async (siteId: string, options: OptionValues, command
 
   /* Verify the user wants to delete the site */
   if (noForce) {
-    log(`${chalk.redBright('Warning')}: You are about to permanently delete "${chalk.bold(siteData?.name)}"`)
+    log(`${picocolors.redBright('Warning')}: You are about to permanently delete "${picocolors.bold(siteData?.name)}"`)
     log(`         Verify this siteID "${siteId}" supplied is correct and proceed.`)
     log('         To skip this prompt, pass a --force flag to the delete command')
     log()
-    log(`${chalk.bold('Be careful here. There is no undo!')}`)
+    log(`${picocolors.bold('Be careful here. There is no undo!')}`)
     log()
     const { wantsToDelete } = await inquirer.prompt({
       type: 'confirm',
@@ -52,7 +52,7 @@ export const sitesDelete = async (siteId: string, options: OptionValues, command
 
   /* Validation logic if siteId passed in does not match current site ID */
   if (noForce && cwdSiteId && cwdSiteId !== siteId) {
-    log(`${chalk.redBright('Warning')}: The siteId supplied does not match the current working directory siteId`)
+    log(`${picocolors.redBright('Warning')}: The siteId supplied does not match the current working directory siteId`)
     log()
     log(`Supplied:       "${siteId}"`)
     log(`Current Site:   "${cwdSiteId}"`)

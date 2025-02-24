@@ -8,11 +8,11 @@ import { render } from 'prettyjson'
 import { v4 as uuid } from 'uuid'
 
 import {
-  chalk,
   error,
   getTerminalLink,
   log,
   logJson,
+  picocolors,
   warn,
   APIError,
   GitHubAPIError,
@@ -41,7 +41,7 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
   if (!exists) {
     const githubLink = getGitHubLink({ options, templateName })
     error(
-      `Could not find template ${chalk.bold(templateName)}. Please verify it exists and you can ${getTerminalLink(
+      `Could not find template ${picocolors.bold(templateName)}. Please verify it exists and you can ${getTerminalLink(
         'access to it on GitHub',
         githubLink,
       )}`,
@@ -50,7 +50,7 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
   }
   if (!isTemplate) {
     const githubLink = getGitHubLink({ options, templateName })
-    error(`${getTerminalLink(chalk.bold(templateName), githubLink)} is not a valid GitHub template`)
+    error(`${getTerminalLink(picocolors.bold(templateName), githubLink)} is not a valid GitHub template`)
     return
   }
 
@@ -160,7 +160,7 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
   ;[site, repoResp] = await inputSiteName(nameFlag)
 
   log()
-  log(chalk.greenBright.bold.underline(`Site Created`))
+  log(picocolors.greenBright(picocolors.bold(picocolors.underline(`Site Created`))))
   log()
 
   const siteUrl = site.ssl_url || site.url
@@ -192,7 +192,7 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
       await execa('git', ['clone', repoResp.clone_url, `${repoResp.name}`])
     }
 
-    log(`🚀 Repository cloned successfully. You can find it under the ${chalk.magenta(repoResp.name)} folder`)
+    log(`🚀 Repository cloned successfully. You can find it under the ${picocolors.magenta(repoResp.name)} folder`)
 
     const { linkConfirm } = await inquirer.prompt({
       type: 'confirm',
@@ -218,32 +218,34 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
       const lineMatch = linkedSiteUrlRegex.exec(stdout)
       const urlMatch = lineMatch ? lineMatch[1] : undefined
       if (urlMatch) {
-        log(`\nDirectory ${chalk.cyanBright(repoResp.name)} linked to site ${chalk.cyanBright(urlMatch)}\n`)
+        log(`\nDirectory ${picocolors.cyanBright(repoResp.name)} linked to site ${picocolors.cyanBright(urlMatch)}\n`)
         log(
-          `${chalk.cyanBright.bold('cd', repoResp.name)} to use other netlify cli commands in the cloned directory.\n`,
+          `${picocolors.cyanBright(
+            picocolors.bold(`cd ${repoResp.name}`),
+          )} to use other netlify cli commands in the cloned directory.\n`,
         )
       } else {
         const linkedSiteMatch = /Site already linked to\s+(\S+)/.exec(stdout)
         const linkedSiteNameMatch = linkedSiteMatch ? linkedSiteMatch[1] : undefined
         if (linkedSiteNameMatch) {
-          log(`\nThis directory appears to be linked to ${chalk.cyanBright(linkedSiteNameMatch)}`)
+          log(`\nThis directory appears to be linked to ${picocolors.cyanBright(linkedSiteNameMatch)}`)
           log('This can happen if you cloned the template into a subdirectory of an existing Netlify project.')
           log(
-            `You may need to move the ${chalk.cyanBright(
+            `You may need to move the ${picocolors.cyanBright(
               repoResp.name,
-            )} directory out of its parent directory and then re-run the ${chalk.cyanBright(
+            )} directory out of its parent directory and then re-run the ${picocolors.cyanBright(
               'link',
             )} command manually\n`,
           )
         } else {
           log('A problem occurred linking the site')
           log('You can try again manually by running:')
-          log(chalk.cyanBright(`cd ${repoResp.name} && netlify link\n`))
+          log(picocolors.cyanBright(`cd ${repoResp.name} && netlify link\n`))
         }
       }
     } else {
       log('To link the cloned directory manually, run:')
-      log(chalk.cyanBright(`cd ${repoResp.name} && netlify link\n`))
+      log(picocolors.cyanBright(`cd ${repoResp.name} && netlify link\n`))
     }
   }
 

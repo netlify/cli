@@ -13,7 +13,7 @@ import {
   NETLIFYDEVERR,
   NETLIFYDEVLOG,
   NETLIFYDEVWARN,
-  chalk,
+  picocolors,
   log,
   normalizeConfig,
 } from '../../utils/command-helpers.js'
@@ -50,10 +50,10 @@ const handleLiveTunnel = async ({ api, options, settings, site, state }) => {
     const customSlug = typeof live === 'string' && live.length !== 0 ? live : undefined
     const slug = getLiveTunnelSlug(state, customSlug)
 
-    let message = `${NETLIFYDEVWARN} Creating live URL with ID ${chalk.yellow(slug)}`
+    let message = `${NETLIFYDEVWARN} Creating live URL with ID ${picocolors.yellow(slug)}`
 
     if (!customSlug) {
-      message += ` (to generate a custom URL, use ${chalk.magenta('--live=<subdomain>')})`
+      message += ` (to generate a custom URL, use ${picocolors.magenta('--live=<subdomain>')})`
     }
 
     log(message)
@@ -75,7 +75,7 @@ const validateShortFlagArgs = (args: string) => {
   if (args.startsWith('=')) {
     throw new Error(
       `Short flag options like -e or -E don't support the '=' sign
- ${chalk.red(BANG)}   Supported formats:
+ ${picocolors.red(BANG)}   Supported formats:
       netlify dev -e
       netlify dev -e 127.0.0.1:9229
       netlify dev -e127.0.0.1:9229
@@ -120,12 +120,12 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
 
   if (!options.offline && !options.offlineEnv) {
     env = await getEnvelopeEnv({ api, context: options.context, env, siteInfo })
-    log(`${NETLIFYDEVLOG} Injecting environment variable values for ${chalk.yellow('all scopes')}`)
+    log(`${NETLIFYDEVLOG} Injecting environment variable values for ${picocolors.yellow('all scopes')}`)
   }
 
   env = await getDotEnvVariables({ devConfig, env, site })
   injectEnvVariables(env)
-  await promptEditorHelper({ chalk, config, log, NETLIFYDEVLOG, repositoryRoot, state })
+  await promptEditorHelper({ picocolors, config, log, NETLIFYDEVLOG, repositoryRoot, state })
 
   const { accountId, addonsUrls, capabilities, siteUrl, timeouts } = await getSiteInformation({
     // inherited from base command --offline

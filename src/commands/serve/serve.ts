@@ -15,7 +15,7 @@ import {
   NETLIFYDEVERR,
   NETLIFYDEVLOG,
   NETLIFYDEVWARN,
-  chalk,
+  picocolors,
   exit,
   log,
   normalizeConfig,
@@ -52,12 +52,12 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
 
   if (!options.offline) {
     env = await getEnvelopeEnv({ api, context: options.context, env, siteInfo })
-    log(`${NETLIFYDEVLOG} Injecting environment variable values for ${chalk.yellow('all scopes')}`)
+    log(`${NETLIFYDEVLOG} Injecting environment variable values for ${picocolors.yellow('all scopes')}`)
   }
 
   env = await getDotEnvVariables({ devConfig, env, site })
   injectEnvVariables(env)
-  await promptEditorHelper({ chalk, config, log, NETLIFYDEVLOG, repositoryRoot, state })
+  await promptEditorHelper({ picocolors, config, log, NETLIFYDEVLOG, repositoryRoot, state })
 
   const { accountId, addonsUrls, capabilities, siteUrl, timeouts } = await getSiteInformation({
     // inherited from base command --offline

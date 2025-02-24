@@ -2,7 +2,7 @@ import { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 import isEmpty from 'lodash/isEmpty.js'
 
-import { chalk, exit, log } from '../../utils/command-helpers.js'
+import { picocolors, exit, log } from '../../utils/command-helpers.js'
 import getRepoData from '../../utils/get-repo-data.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import { configureRepo } from '../../utils/init/config.js'
@@ -29,15 +29,15 @@ const logExistingAndExit = ({ siteInfo }) => {
   log()
   log(`This site has been initialized`)
   log()
-  log(`Site Name:  ${chalk.cyan(siteInfo.name)}`)
-  log(`Site Url:   ${chalk.cyan(siteInfo.ssl_url || siteInfo.url)}`)
-  log(`Site Repo:  ${chalk.cyan(getRepoUrl({ siteInfo }))}`)
-  log(`Site Id:    ${chalk.cyan(siteInfo.id)}`)
-  log(`Admin URL:  ${chalk.cyan(siteInfo.admin_url)}`)
+  log(`Site Name:  ${picocolors.cyan(siteInfo.name)}`)
+  log(`Site Url:   ${picocolors.cyan(siteInfo.ssl_url || siteInfo.url)}`)
+  log(`Site Repo:  ${picocolors.cyan(getRepoUrl({ siteInfo }))}`)
+  log(`Site Id:    ${picocolors.cyan(siteInfo.id)}`)
+  log(`Admin URL:  ${picocolors.cyan(siteInfo.admin_url)}`)
   log()
   log(`To disconnect this directory and create a new site (or link to another siteId)`)
-  log(`1. Run ${chalk.cyanBright.bold('netlify unlink')}`)
-  log(`2. Then run ${chalk.cyanBright.bold('netlify init')} again`)
+  log(`1. Run ${picocolors.cyanBright(picocolors.bold('netlify unlink'))}`)
+  log(`2. Then run ${picocolors.cyanBright(picocolors.bold('netlify init'))} again`)
   exit()
 }
 
@@ -54,7 +54,9 @@ const createNewSiteAndExit = async ({ command, state }) => {
   // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
   log(`"${siteInfo.name}" site was created`)
   log()
-  log(`To deploy to this site. Run your site build and then ${chalk.cyanBright.bold('netlify deploy')}`)
+  log(
+    `To deploy to this site. Run your site build and then ${picocolors.cyanBright(picocolors.bold('netlify deploy'))}`,
+  )
 
   persistState({ state, siteInfo })
 
@@ -63,33 +65,33 @@ const createNewSiteAndExit = async ({ command, state }) => {
 
 const logGitSetupInstructionsAndExit = () => {
   log()
-  log(`${chalk.bold('To initialize a new git repo follow the steps below.')}
+  log(`${picocolors.bold('To initialize a new git repo follow the steps below.')}
 
 1. Initialize a new repo:
 
-   ${chalk.cyanBright.bold('git init')}
+   ${picocolors.cyanBright(picocolors.bold('git init'))}
 
 2. Add your files
 
-   ${chalk.cyanBright.bold('git add .')}
+   ${picocolors.cyanBright(picocolors.bold('git add .'))}
 
 3. Commit your files
 
-   ${chalk.cyanBright.bold("git commit -m 'initial commit'")}
+   ${picocolors.cyanBright(picocolors.bold("git commit -m 'initial commit'"))}
 
-4. Create a new repo in GitHub ${chalk.cyanBright.bold('https://github.com/new')}
+4. Create a new repo in GitHub ${picocolors.cyanBright(picocolors.bold('https://github.com/new'))}
 
 5. Link the remote repo with this local directory
 
-   ${chalk.cyanBright.bold('git remote add origin git@github.com:YourGithubName/your-repo-slug.git')}
+   ${picocolors.cyanBright(picocolors.bold('git remote add origin git@github.com:YourGithubName/your-repo-slug.git'))}
 
 6. Push up your files
 
-   ${chalk.cyanBright.bold('git push -u origin main')}
+   ${picocolors.cyanBright(picocolors.bold('git push -u origin main'))}
 
 7. Initialize your Netlify Site
 
-   ${chalk.cyanBright.bold('netlify init')}
+   ${picocolors.cyanBright(picocolors.bold('netlify init'))}
 `)
   exit()
 }
@@ -104,7 +106,7 @@ const logGitSetupInstructionsAndExit = () => {
 // @ts-expect-error TS(7031) FIXME: Binding element 'command' implicitly has an 'any' ... Remove this comment to see the full error message
 const handleNoGitRemoteAndExit = async ({ command, error, state }) => {
   log()
-  log(`${chalk.yellow('No git remote was found, would you like to set one up?')}`)
+  log(`${picocolors.yellow('No git remote was found, would you like to set one up?')}`)
   log(`
 It is recommended that you initialize a site that has a remote repository in GitHub.
 
@@ -175,7 +177,7 @@ const createOrLinkSiteToRepo = async (command) => {
 // @ts-expect-error TS(7031) FIXME: Binding element 'repoUrl' implicitly has an 'any' ... Remove this comment to see the full error message
 const logExistingRepoSetupAndExit = ({ repoUrl, siteName }) => {
   log()
-  log(chalk.underline.bold(`Success`))
+  log(picocolors.underline(picocolors.bold(`Success`)))
   log(`This site "${siteName}" is configured to automatically deploy via ${repoUrl}`)
   // TODO add support for changing GitHub repo in site:config command
   exit()

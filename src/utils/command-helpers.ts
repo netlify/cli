@@ -1,15 +1,16 @@
 import { once } from 'events'
-import os from 'os'
 import fs from 'fs'
+import os from 'os'
 import process from 'process'
 import { format, inspect } from 'util'
 
-import { Chalk } from 'chalk'
 import chokidar from 'chokidar'
+import type { Option } from 'commander'
 import decache from 'decache'
 import WSL from 'is-wsl'
 import debounce from 'lodash/debounce.js'
 import { NetlifyAPI } from 'netlify'
+import { createColors } from 'picocolors'
 import terminalLink from 'terminal-link'
 
 import { clearSpinner, startSpinner } from '../lib/spinner.js'
@@ -21,32 +22,17 @@ import { TokenLocation } from './types.js'
 
 /** The parsed process argv without the binary only arguments and flags */
 const argv = process.argv.slice(2)
+const shouldEnableColor = argv.includes('--json')
 /**
- * Chalk instance for CLI that can be initialized with no colors mode
+ * picocolors instance for CLI that can be initialized with no colors mode
  * needed for json outputs where we don't want to have colors
- * @param  {boolean} noColors - disable chalk colors
- * @return {import('chalk').ChalkInstance} - default or custom chalk instance
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'noColors' implicitly has an 'any' type.
-const safeChalk = function (noColors) {
-  if (noColors) {
-    const colorlessChalk = new Chalk({ level: 0 })
-    return colorlessChalk
-  }
-  return new Chalk()
-}
-
-export const chalk = safeChalk(argv.includes('--json'))
+export const picocolors = createColors(shouldEnableColor)
 
 /**
  * Adds the filler to the start of the string
- * @param {string} str
- * @param {number} count
- * @param {string} [filler]
- * @returns {string}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'str' implicitly has an 'any' type.
-export const padLeft = (str, count, filler = ' ') => str.padStart(str.length + count, filler)
+export const padLeft = (str: string, count: number, filler = ' ') => str.padStart(str.length + count, filler)
 
 const platform = WSL ? 'wsl' : os.platform()
 const arch = os.arch() === 'ia32' ? 'x86' : os.arch()
@@ -59,30 +45,30 @@ export const USER_AGENT = `${name}/${version} ${platform}-${arch} node-${process
 /** A list of base command flags that needs to be sorted down on documentation and on help pages */
 const BASE_FLAGS = new Set(['--debug', '--http-proxy', '--http-proxy-certificate-filename'])
 
-export const NETLIFY_CYAN = chalk.rgb(40, 180, 170)
+// XXX(serhalp) Restore equivalent of `chalk.rgb(40, 180, 170)`
+export const NETLIFY_CYAN = picocolors.blueBright
 
-export const NETLIFYDEV = `${chalk.greenBright('◈')} ${NETLIFY_CYAN('Netlify Dev')} ${chalk.greenBright('◈')}`
-export const NETLIFYDEVLOG = `${chalk.greenBright('◈')}`
-export const NETLIFYDEVWARN = `${chalk.yellowBright('◈')}`
-export const NETLIFYDEVERR = `${chalk.redBright('◈')}`
+export const NETLIFYDEV = `${picocolors.greenBright('◈')} ${NETLIFY_CYAN('Netlify Dev')} ${picocolors.greenBright('◈')}`
+export const NETLIFYDEVLOG = `${picocolors.greenBright('◈')}`
+export const NETLIFYDEVWARN = `${picocolors.yellowBright('◈')}`
+export const NETLIFYDEVERR = `${picocolors.redBright('◈')}`
 
 export const BANG = process.platform === 'win32' ? '»' : '›'
 
 /**
  * Sorts two options so that the base flags are at the bottom of the list
- * @param {import('commander').Option} optionA
- * @param {import('commander').Option} optionB
- * @returns {number}
  * @example
- * options.sort(sortOptions)
+ * options.sort(compareOptions)
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'optionA' implicitly has an 'any' type.
-export const sortOptions = (optionA, optionB) => {
+export const compareOptions = (optionA: Option, optionB: Option): number => {
+  const longOptionA = optionA.long ?? ''
+  const longOptionB = optionB.long ?? ''
   // base flags should be always at the bottom
-  if (BASE_FLAGS.has(optionA.long) || BASE_FLAGS.has(optionB.long)) {
+  // FIXME(serhalp) This logic can't be right? Look at it... This must only happen to work.
+  if (BASE_FLAGS.has(longOptionA) || BASE_FLAGS.has(longOptionB)) {
     return -1
   }
-  return optionA.long.localeCompare(optionB.long)
+  return longOptionA.localeCompare(longOptionB)
 }
 
 // Poll Token timeout 5 Minutes
@@ -101,11 +87,18 @@ export const pollForToken = async ({
   ticket,
 }: {
   api: NetlifyAPI
-  ticket: { id?: string; client_id?: string; authorized?: boolean; created_at?: string }
+  ticket: {
+    id?: string
+    client_id?: string
+    authorized?: boolean
+    created_at?: string
+  }
 }) => {
   const spinner = startSpinner({ text: 'Waiting for authorization...' })
   try {
-    const accessToken = await api.getAccessToken(ticket, { timeout: TOKEN_TIMEOUT })
+    const accessToken = await api.getAccessToken(ticket, {
+      timeout: TOKEN_TIMEOUT,
+    })
     if (!accessToken) {
       error('Could not retrieve access token')
     }
@@ -114,11 +107,11 @@ export const pollForToken = async ({
     // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
     if (error_.name === 'TimeoutError') {
       error(
-        `Timed out waiting for authorization. If you do not have a ${chalk.bold.greenBright(
-          'Netlify',
-        )} account, please create one at ${chalk.magenta(
+        `Timed out waiting for authorization. If you do not have a ${picocolors.bold(
+          picocolors.greenBright('Netlify'),
+        )} account, please create one at ${picocolors.magenta(
           'https://app.netlify.com/signup',
-        )}, then run ${chalk.cyanBright('netlify login')} again.`,
+        )}, then run ${picocolors.cyanBright('netlify login')} again.`,
       )
     } else {
       error(error_)
@@ -168,8 +161,7 @@ export const logJson = (message: unknown = '') => {
   }
 }
 
-// @ts-expect-error TS(7019) FIXME: Rest parameter 'args' implicitly has an 'any[]' ty... Remove this comment to see the full error message
-export const log = (message = '', ...args) => {
+export const log = (message = '', ...args: unknown[]) => {
   // If  --silent or --json flag passed disable logger
   if (argv.includes('--json') || argv.includes('--silent') || isDefaultJson()) {
     return
@@ -178,8 +170,7 @@ export const log = (message = '', ...args) => {
   process.stdout.write(`${format(message, ...args)}\n`)
 }
 
-// @ts-expect-error TS(7019) FIXME: Rest parameter 'args' implicitly has an 'any[]' ty... Remove this comment to see the full error message
-export const logPadded = (message = '', ...args) => {
+export const logPadded = (message = '', ...args: unknown[]) => {
   log('')
   log(message, ...args)
   log('')
@@ -190,7 +181,7 @@ export const logPadded = (message = '', ...args) => {
  * @param {string} message
  */
 export const warn = (message = '') => {
-  const bang = chalk.yellow(BANG)
+  const bang = picocolors.yellow(BANG)
   log(` ${bang}   Warning: ${message}`)
 }
 
@@ -205,11 +196,11 @@ export const error = (message: unknown | Error | string = '', options: { exit?: 
       : { message, stack: undefined, name: 'Error' }
 
   if (options.exit === false) {
-    const bang = chalk.red(BANG)
+    const bang = picocolors.red(BANG)
     if (process.env.DEBUG) {
       process.stderr.write(` ${bang}   Warning: ${err.stack?.split('\n').join(`\n ${bang}   `)}\n`)
     } else {
-      process.stderr.write(` ${bang}   ${chalk.red(`${err.name}:`)} ${err.message}\n`)
+      process.stderr.write(` ${bang}   ${picocolors.red(`${err.name}:`)} ${err.message}\n`)
     }
   } else {
     reportError(err, { severity: 'error' })
@@ -255,7 +246,11 @@ export const watchDebounced = async (
   { depth, ignored = [], onAdd = noOp, onChange = noOp, onUnlink = noOp }: WatchDebouncedOptions,
 ) => {
   const baseIgnores = [/\/(node_modules|.git)\//]
-  const watcher = chokidar.watch(target, { depth, ignored: [...baseIgnores, ...ignored], ignoreInitial: true })
+  const watcher = chokidar.watch(target, {
+    depth,
+    ignored: [...baseIgnores, ...ignored],
+    ignoreInitial: true,
+  })
 
   await once(watcher, 'ready')
 
@@ -299,8 +294,8 @@ export const watchDebounced = async (
   return watcher
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
-export const getTerminalLink = (text, url) => terminalLink(text, url, { fallback: () => `${text} (${url})` })
+export const getTerminalLink = (text: string, url: string) =>
+  terminalLink(text, url, { fallback: () => `${text} (${url})` })
 
 export const isNodeError = (err: unknown): err is NodeJS.ErrnoException => error instanceof Error
 
@@ -339,13 +334,13 @@ export interface GitHubRepoResponse {
 }
 
 export const checkFileForLine = (filename: string, line: string) => {
-  let filecontent = ''
+  let fileContent = ''
   try {
-    filecontent = fs.readFileSync(filename, 'utf8')
+    fileContent = fs.readFileSync(filename, 'utf8')
   } catch (error_) {
     error(error_)
   }
-  return !!filecontent.match(`${line}`)
+  return fileContent.includes(line)
 }
 
 export const TABTAB_CONFIG_LINE = '[[ -f ~/.config/tabtab/__tabtab.zsh ]] && . ~/.config/tabtab/__tabtab.zsh || true'

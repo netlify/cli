@@ -1,6 +1,6 @@
 import { OptionValues } from 'commander'
 
-import { chalk, log, error as logError } from '../../utils/command-helpers.js'
+import { picocolors, log, error as logError } from '../../utils/command-helpers.js'
 import { promptEnvCloneOverwrite } from '../../utils/prompts/env-clone-prompt.js'
 import BaseCommand from '../base-command.js'
 
@@ -29,7 +29,7 @@ const cloneEnvVars = async ({ api, force, siteFrom, siteTo }): Promise<boolean> 
   const keysFrom = envelopeFrom.map(({ key }) => key)
 
   if (keysFrom.length === 0) {
-    log(`${chalk.green(siteFrom.name)} has no environment variables, nothing to clone`)
+    log(`${picocolors.green(siteFrom.name)} has no environment variables, nothing to clone`)
     return false
   }
 
@@ -85,12 +85,12 @@ export const envClone = async (options: OptionValues, command: BaseCommand) => {
   ])
 
   if (errorFrom) {
-    logError(`Can't find site with id ${chalk.bold(siteId.from)}. Please make sure the site exists.`)
+    logError(`Can't find site with id ${picocolors.bold(siteId.from)}. Please make sure the site exists.`)
     return false
   }
 
   if (errorTo) {
-    logError(`Can't find site with id ${chalk.bold(siteId.to)}. Please make sure the site exists.`)
+    logError(`Can't find site with id ${picocolors.bold(siteId.to)}. Please make sure the site exists.`)
     return false
   }
 
@@ -100,7 +100,11 @@ export const envClone = async (options: OptionValues, command: BaseCommand) => {
     return false
   }
 
-  log(`Successfully cloned environment variables from ${chalk.green(siteFrom.name)} to ${chalk.green(siteTo.name)}`)
+  log(
+    `Successfully cloned environment variables from ${picocolors.green(siteFrom.name)} to ${picocolors.green(
+      siteTo.name,
+    )}`,
+  )
 
   return true
 }

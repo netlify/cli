@@ -1,5 +1,5 @@
 import { createMainCommand } from '../../../dist/commands/index.js'
-import { sortOptions } from '../../../dist/utils/command-helpers.js'
+import { compareOptions } from '../../../dist/utils/command-helpers.js'
 
 const program = createMainCommand()
 
@@ -19,7 +19,7 @@ const parseCommand = function (command) {
 
   const flags = command.options
     .filter((option) => !option.hidden)
-    .sort(sortOptions)
+    .sort(compareOptions)
     .reduce((prev, cur) => {
       const name = cur.long.replace('--', '')
       const contentType = cur.argChoices ? cur.argChoices.join(' | ') : 'string'

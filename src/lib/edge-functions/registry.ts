@@ -10,7 +10,7 @@ import {
   NETLIFYDEVLOG,
   NETLIFYDEVWARN,
   nonNullable,
-  chalk,
+  picocolors,
   log,
   warn,
   watchDebounced,
@@ -230,7 +230,7 @@ export class EdgeFunctionsRegistry {
       this.processGraph(graph)
 
       if (npmSpecifiersWithExtraneousFiles.length !== 0) {
-        const modules = npmSpecifiersWithExtraneousFiles.map((name) => chalk.yellow(name)).join(', ')
+        const modules = npmSpecifiersWithExtraneousFiles.map((name) => picocolors.yellow(name)).join(', ')
 
         log(
           `${NETLIFYDEVWARN} The following npm modules, which are directly or indirectly imported by an edge function, may not be supported: ${modules}. For more information, visit https://ntl.fyi/edge-functions-npm.`,
@@ -380,19 +380,21 @@ export class EdgeFunctionsRegistry {
     event: EdgeFunctionEvent,
     { buildError, functionName, warnings = [] }: { buildError?: Error; functionName?: string; warnings?: string[] },
   ) {
-    const subject = functionName ? `edge function ${chalk.yellow(this.getDisplayName(functionName))}` : 'edge functions'
+    const subject = functionName
+      ? `edge function ${picocolors.yellow(this.getDisplayName(functionName))}`
+      : 'edge functions'
     const warningsText =
       warnings.length === 0 ? '' : ` with warnings:\n${warnings.map((warning) => `  - ${warning}`).join('\n')}`
 
     if (event === 'buildError') {
-      log(`${NETLIFYDEVERR} ${chalk.red('Failed to load')} ${subject}: ${buildError}`)
+      log(`${NETLIFYDEVERR} ${picocolors.red('Failed to load')} ${subject}: ${buildError}`)
 
       return
     }
 
     if (event === 'loaded') {
       const icon = warningsText ? NETLIFYDEVWARN : NETLIFYDEVLOG
-      const color = warningsText ? chalk.yellow : chalk.green
+      const color = warningsText ? picocolors.yellow : picocolors.green
 
       log(`${icon} ${color('Loaded')} ${subject}${warningsText}`)
 
@@ -401,7 +403,7 @@ export class EdgeFunctionsRegistry {
 
     if (event === 'reloaded') {
       const icon = warningsText ? NETLIFYDEVWARN : NETLIFYDEVLOG
-      const color = warningsText ? chalk.yellow : chalk.green
+      const color = warningsText ? picocolors.yellow : picocolors.green
 
       log(`${icon} ${color('Reloaded')} ${subject}${warningsText}`)
 
@@ -409,13 +411,13 @@ export class EdgeFunctionsRegistry {
     }
 
     if (event === 'reloading') {
-      log(`${NETLIFYDEVLOG} ${chalk.magenta('Reloading')} ${subject}...`)
+      log(`${NETLIFYDEVLOG} ${picocolors.magenta('Reloading')} ${subject}...`)
 
       return
     }
 
     if (event === 'removed') {
-      log(`${NETLIFYDEVLOG} ${chalk.magenta('Removed')} ${subject}`)
+      log(`${NETLIFYDEVLOG} ${picocolors.magenta('Removed')} ${subject}`)
     }
   }
 

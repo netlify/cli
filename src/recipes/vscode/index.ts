@@ -4,7 +4,7 @@ import { DenoBridge } from '@netlify/edge-bundler'
 import execa from 'execa'
 import inquirer from 'inquirer'
 
-import { NETLIFYDEVLOG, NETLIFYDEVWARN, chalk, error, log } from '../../utils/command-helpers.js'
+import { NETLIFYDEVLOG, NETLIFYDEVWARN, picocolors, error, log } from '../../utils/command-helpers.js'
 
 import { applySettings, getSettings, writeSettings } from './settings.js'
 
@@ -12,7 +12,7 @@ export const description = 'Create VS Code settings for an optimal experience wi
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'fileExists' implicitly has an 'an... Remove this comment to see the full error message
 const getPrompt = ({ fileExists, path }) => {
-  const formattedPath = chalk.underline(path)
+  const formattedPath = picocolors.underline(path)
   const message = fileExists
     ? `There is a VS Code settings file at ${formattedPath}. Can we update it?`
     : `A new VS Code settings file will be created at ${formattedPath}`
@@ -95,7 +95,7 @@ export const run = async ({ config, repositoryRoot }) => {
     }
   } catch {
     log(
-      `${NETLIFYDEVWARN} Unable to install Deno VS Code extension. To install it manually, visit ${chalk.blue(
+      `${NETLIFYDEVWARN} Unable to install Deno VS Code extension. To install it manually, visit ${picocolors.blue(
         'https://ntl.fyi/deno-vscode',
       )}.`,
     )
