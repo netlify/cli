@@ -3,7 +3,7 @@ import prettyjson from 'prettyjson'
 import type { NetlifyAPI } from 'netlify'
 
 import { type Spinner, startSpinner, stopSpinner } from '../../lib/spinner.js'
-import { chalk, logAndThrowError, log } from '../../utils/command-helpers.js'
+import { ansis, logAndThrowError, log } from '../../utils/command-helpers.js'
 import type BaseCommand from '../base-command.js'
 import { init } from '../init/init.js'
 
@@ -94,7 +94,7 @@ export const watch = async (_options: unknown, command: BaseCommand) => {
 
     const siteData = await client.getSite({ siteId })
 
-    const message = chalk.cyanBright.bold.underline(noActiveBuilds ? 'Last build' : 'Deploy complete')
+    const message = ansis.cyanBright.bold.underline(noActiveBuilds ? 'Last build' : 'Deploy complete')
     log()
     log(message)
     log(

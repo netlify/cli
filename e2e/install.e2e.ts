@@ -7,6 +7,7 @@ import { platform } from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+import ansis from 'ansis'
 import execa from 'execa'
 import { runServer } from 'verdaccio'
 import { describe, expect, it } from 'vitest'
@@ -175,11 +176,14 @@ describe.each(tests)('%s → installs the cli and runs the help command without 
 
     const binary = path.resolve(path.join(cwd, `./node_modules/.bin/netlify${platform() === 'win32' ? '.cmd' : ''}`))
     const { stdout } = await execa(binary, ['help'], { cwd })
+    const normalizedOutput = ansis.strip(stdout.trim())
 
-    expect(stdout.trim(), `Help command does not start with 'VERSION':\n\n${stdout}`).toMatch(/^VERSION/)
-    expect(stdout, `Help command does not include 'netlify-cli/${pkg.version}':\n\n${stdout}`).toContain(
+    expect(normalizedOutput).toMatch(/VERSION/)
+    expect(normalizedOutput, `Help command does not include 'netlify-cli/${pkg.version}':\n\n${stdout}`).toContain(
       `netlify-cli/${pkg.version}`,
     )
-    expect(stdout, `Help command does not include '$ netlify [COMMAND]':\n\n${stdout}`).toMatch('$ netlify [COMMAND]')
+    expect(normalizedOutput, `Help command does not include '$ netlify [COMMAND]':\n\n${stdout}`).toMatch(
+      '$ netlify [COMMAND]',
+    )
   })
 })

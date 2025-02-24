@@ -5,7 +5,7 @@ import execa from 'execa'
 import stripAnsiCc from 'strip-ansi-control-characters'
 
 import { stopSpinner, type Spinner } from '../lib/spinner.js'
-import { chalk, log, NETLIFYDEVERR, NETLIFYDEVWARN } from './command-helpers.js'
+import { ansis, log, NETLIFYDEVERR, NETLIFYDEVWARN } from './command-helpers.js'
 import { processOnExit } from './dev.js'
 
 /**
@@ -86,7 +86,7 @@ export const runCommand = (
     const [commandWithoutArgs] = command.split(' ')
     if (result.failed && isNonExistingCommandError({ command: commandWithoutArgs, error: result })) {
       log(
-        `${NETLIFYDEVERR} Failed running command: ${command}. Please verify ${chalk.magenta(
+        `${NETLIFYDEVERR} Failed running command: ${command}. Please verify ${ansis.magenta(
           `'${commandWithoutArgs}'`,
         )} exists`,
       )

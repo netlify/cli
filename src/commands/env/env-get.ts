@@ -1,6 +1,6 @@
 import { OptionValues } from 'commander'
 
-import { chalk, log, logJson } from '../../utils/command-helpers.js'
+import { ansis, log, logJson } from '../../utils/command-helpers.js'
 import { AVAILABLE_CONTEXTS, getEnvelopeEnv } from '../../utils/env/index.js'
 import BaseCommand from '../base-command.js'
 
@@ -27,9 +27,9 @@ export const envGet = async (name: string, options: OptionValues, command: BaseC
 
   if (!value) {
     const contextType = AVAILABLE_CONTEXTS.includes(context) ? 'context' : 'branch'
-    const withContext = `in the ${chalk.magenta(context)} ${contextType}`
-    const withScope = scope === 'any' ? '' : ` and the ${chalk.magenta(scope)} scope`
-    log(`No value set ${withContext}${withScope} for environment variable ${chalk.yellow(name)}`)
+    const withContext = `in the ${ansis.magenta(context)} ${contextType}`
+    const withScope = scope === 'any' ? '' : ` and the ${ansis.magenta(scope)} scope`
+    log(`No value set ${withContext}${withScope} for environment variable ${ansis.yellow(name)}`)
     return false
   }
 

@@ -1,11 +1,9 @@
 import { createMainCommand } from '../../../src/commands/index.js'
-import { sortOptions } from '../../../src/utils/command-helpers.js'
+import { compareOptions } from '../../../src/utils/command-helpers.js'
 
 const program = createMainCommand()
 
-/** @type {Array<import('../../../src/commands/base-command.js').default>} */
-// @ts-ignore typecast needed
-const commands = program.commands.sort((cmdA, cmdB) => cmdA.name().localeCompare(cmdB.name()))
+const commands = [...program.commands].sort((cmdA, cmdB) => cmdA.name().localeCompare(cmdB.name()))
 
 /**
  *
@@ -19,7 +17,7 @@ const parseCommand = function (command) {
 
   const flags = command.options
     .filter((option) => !option.hidden)
-    .sort(sortOptions)
+    .sort(compareOptions)
     .reduce((prev, cur) => {
       const name = cur.long.replace('--', '')
       const contentType = cur.argChoices ? cur.argChoices.join(' | ') : 'string'

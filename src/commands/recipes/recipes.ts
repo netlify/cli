@@ -4,7 +4,7 @@ import { OptionValues } from 'commander'
 import { closest } from 'fastest-levenshtein'
 import inquirer from 'inquirer'
 
-import { NETLIFYDEVERR, chalk, log } from '../../utils/command-helpers.js'
+import { NETLIFYDEVERR, ansis, log } from '../../utils/command-helpers.js'
 import BaseCommand from '../base-command.js'
 
 import { getRecipe, listRecipes } from './common.js'
@@ -46,7 +46,7 @@ export const recipesCommand = async (recipeName: string, options: OptionValues, 
       throw error
     }
 
-    log(`${NETLIFYDEVERR} ${chalk.yellow(recipeName)} is not a valid recipe name.`)
+    log(`${NETLIFYDEVERR} ${ansis.yellow(recipeName)} is not a valid recipe name.`)
 
     const recipes = await listRecipes()
     const recipeNames = recipes.map(({ name }) => name)
@@ -55,7 +55,7 @@ export const recipesCommand = async (recipeName: string, options: OptionValues, 
       const prompt = inquirer.prompt({
         type: 'confirm',
         name: 'suggestion',
-        message: `Did you mean ${chalk.blue(suggestion)}`,
+        message: `Did you mean ${ansis.blue(suggestion)}`,
         default: false,
       })
 

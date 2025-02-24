@@ -1,7 +1,7 @@
 import process from 'process'
 
 import { getStore } from '@netlify/blobs'
-import chalk from 'chalk'
+import ansis from 'ansis'
 import { describe, expect, test, vi, beforeEach, afterAll } from 'vitest'
 
 import { log } from '../../../../src/utils/command-helpers.js'
@@ -58,9 +58,9 @@ describe('blobs:delete command', () => {
 
     const warningMessage = generateWarning(key, storeName)
 
-    const successMessage = `${chalk.greenBright('Success')}: Blob ${chalk.yellow(
+    const successMessage = `${ansis.greenBright('Success')}: Blob ${ansis.yellow(
       key,
-    )} deleted from store ${chalk.yellow(storeName)}`
+    )} deleted from store ${ansis.yellow(storeName)}`
 
     beforeEach(() => {
       vi.resetModules()
@@ -184,7 +184,7 @@ describe('blobs:delete command', () => {
             } catch (error) {
               expect(error).toBeInstanceOf(Error)
               expect((error as Error).message).toContain(
-                `Could not delete blob ${chalk.yellow(key)} from store ${chalk.yellow(storeName)}`,
+                `Could not delete blob ${ansis.yellow(key)} from store ${ansis.yellow(storeName)}`,
               )
             }
 

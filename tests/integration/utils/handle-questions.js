@@ -1,5 +1,7 @@
 import { Buffer } from 'buffer'
 
+import ansis from 'ansis'
+
 /**
  * Utility to mock the stdin of the cli. You must provide the correct number of
  * questions correctly typed or the process will keep waiting for input.
@@ -11,7 +13,7 @@ import { Buffer } from 'buffer'
 export const handleQuestions = (process, questions, prompts = []) => {
   let buffer = ''
   process.stdout.on('data', (data) => {
-    buffer = (buffer + data).replace(/\n/g, '')
+    buffer = (buffer + ansis.strip(data.toString())).replace(/\n/g, '')
     const index = questions.findIndex(
       ({ question }, questionIndex) => buffer.includes(question) && !prompts.includes(questionIndex),
     )

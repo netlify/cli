@@ -39,7 +39,7 @@ import { DEFAULT_FUNCTION_URL_EXPRESSION } from '../lib/functions/registry.js'
 import { initializeProxy as initializeImageProxy, isImageRequest } from '../lib/images/proxy.js'
 import renderErrorTemplate from '../lib/render-error-template.js'
 
-import { NETLIFYDEVLOG, NETLIFYDEVWARN, type NormalizedCachedConfigConfig, chalk, log } from './command-helpers.js'
+import { NETLIFYDEVLOG, NETLIFYDEVWARN, type NormalizedCachedConfigConfig, ansis, log } from './command-helpers.js'
 import createStreamPromise from './create-stream-promise.js'
 import { NFFunctionName, NFFunctionRoute, NFRequestID, headersForPath, parseHeaders } from './headers.js'
 import { generateRequestID } from './request-id.js'
@@ -154,7 +154,7 @@ const isEndpointExists = async function (endpoint: string, origin: string) {
   try {
     const res = await fetch(url, { method: 'HEAD' })
     return res.status !== 404
-  } catch (e) {
+  } catch {
     return false
   }
 }
@@ -292,7 +292,7 @@ const serveRedirect = async function ({
     } else {
       log(
         NETLIFYDEVWARN,
-        `Could not sign redirect because environment variable ${chalk.yellow(match.signingSecret)} is not set`,
+        `Could not sign redirect because environment variable ${ansis.yellow(match.signingSecret)} is not set`,
       )
     }
   }

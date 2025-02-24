@@ -2,7 +2,7 @@ import { getStore } from '@netlify/blobs'
 import AsciiTable from 'ascii-table'
 import { OptionValues } from 'commander'
 
-import { chalk, logAndThrowError, log, logJson } from '../../utils/command-helpers.js'
+import { ansis, logAndThrowError, log, logJson } from '../../utils/command-helpers.js'
 import BaseCommand from '../base-command.js'
 
 interface Options extends OptionValues {
@@ -32,7 +32,7 @@ export const blobsList = async (storeName: string, options: Options, command: Ba
     }
 
     if (blobs.length === 0 && directories.length === 0) {
-      log(`Netlify Blobs store ${chalk.yellow(storeName)} is empty`)
+      log(`Netlify Blobs store ${ansis.yellow(storeName)} is empty`)
       return
     }
 
@@ -50,6 +50,6 @@ export const blobsList = async (storeName: string, options: Options, command: Ba
 
     log(table.toString())
   } catch {
-    return logAndThrowError(`Could not list blobs from store ${chalk.yellow(storeName)}`)
+    return logAndThrowError(`Could not list blobs from store ${ansis.yellow(storeName)}`)
   }
 }

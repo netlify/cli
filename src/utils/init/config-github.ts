@@ -1,7 +1,7 @@
 import { Octokit } from '@octokit/rest'
 import type { NetlifyAPI } from 'netlify'
 
-import { chalk, logAndThrowError, log } from '../command-helpers.js'
+import { ansis, logAndThrowError, log } from '../command-helpers.js'
 import { getGitHubToken as ghauth, type Token } from '../gh-auth.js'
 import type { GlobalConfigStore } from '../types.js'
 import type { BaseCommand } from '../../commands/index.js'
@@ -9,8 +9,8 @@ import type { BaseCommand } from '../../commands/index.js'
 import { createDeployKey, formatErrorMessage, getBuildSettings, saveNetlifyToml, setupSite } from './utils.js'
 
 const formatRepoAndOwner = ({ repoName, repoOwner }: { repoName: string; repoOwner: string }) => ({
-  name: chalk.magenta(repoName),
-  owner: chalk.magenta(repoOwner),
+  name: ansis.magenta(repoName),
+  owner: ansis.magenta(repoOwner),
 })
 
 const PAGE_SIZE = 100
@@ -21,7 +21,7 @@ const PAGE_SIZE = 100
 export const getGitHubToken = async ({ globalConfig }: { globalConfig: GlobalConfigStore }): Promise<string> => {
   const userId = globalConfig.get('userId')
 
-  const githubToken: Token = globalConfig.get(`users.${userId}.auth.github`)
+  const githubToken: Token | undefined = globalConfig.get(`users.${userId}.auth.github`)
 
   if (githubToken && githubToken.user && githubToken.token) {
     try {
@@ -31,12 +31,12 @@ export const getGitHubToken = async ({ globalConfig }: { globalConfig: GlobalCon
         return githubToken.token
       }
     } catch {
-      log(chalk.yellow('Token is expired or invalid!'))
+      log(ansis.yellow('Token is expired or invalid!'))
       log('Generating a new Github token...')
     }
   }
 
-  const newToken = await ghauth()
+  const newToken: Token = await ghauth()
   globalConfig.set(`users.${userId}.auth.github`, newToken)
   return newToken.token
 }
@@ -202,7 +202,7 @@ const addNotificationHooks = async ({ api, siteId, token }) => {
       try {
         await upsertHook({ ntlHooks, event, api, siteId, token })
       } catch (error) {
-        const message = formatErrorMessage({ message: `Failed settings Netlify hook ${chalk.magenta(event)}`, error })
+        const message = formatErrorMessage({ message: `Failed settings Netlify hook ${ansis.magenta(event)}`, error })
         return logAndThrowError(message)
       }
     }),

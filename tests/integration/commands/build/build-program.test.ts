@@ -36,7 +36,6 @@ const routes = [
     response: [{ slug: siteInfo.account_slug }],
   },
 ]
-// eslint-disable-next-line no-restricted-properties
 const originalCwd = process.cwd
 const originalConsoleLog = console.log
 const originalEnv = process.env
@@ -50,7 +49,6 @@ describe('command/build', () => {
   })
 
   afterAll(() => {
-    // eslint-disable-next-line no-restricted-properties
     process.cwd = originalCwd
     console.log = originalConsoleLog
     process.env = originalEnv
@@ -66,7 +64,6 @@ describe('command/build', () => {
       expect(code).toBe(0)
     })
     await withSiteBuilder(t, async (builder) => {
-      // eslint-disable-next-line no-restricted-properties
       process.cwd = () => builder.directory
       await withMockApi(routes, async ({ apiUrl }) => {
         process.env = getEnvironmentVariables({ apiUrl })

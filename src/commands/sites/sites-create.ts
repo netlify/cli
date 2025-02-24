@@ -3,7 +3,7 @@ import inquirer from 'inquirer'
 import pick from 'lodash/pick.js'
 import prettyjson from 'prettyjson'
 
-import { chalk, logAndThrowError, log, logJson, warn, type APIError } from '../../utils/command-helpers.js'
+import { ansis, logAndThrowError, log, logJson, warn, type APIError } from '../../utils/command-helpers.js'
 import getRepoData from '../../utils/get-repo-data.js'
 import { configureRepo } from '../../utils/init/config.js'
 import { track } from '../../utils/telemetry/index.js'
@@ -81,7 +81,7 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand) =
   await inputSiteName(options.name)
 
   log()
-  log(chalk.greenBright.bold.underline(`Site Created`))
+  log(ansis.greenBright.bold.underline(`Site Created`))
   log()
 
   const siteUrl = site.ssl_url || site.url

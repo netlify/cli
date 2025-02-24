@@ -1,4 +1,4 @@
-import { chalk, warn } from '../../utils/command-helpers.js'
+import { ansis, warn } from '../../utils/command-helpers.js'
 import { MISSING_AWS_SDK_WARNING } from '../log.js'
 
 import type { InvocationError } from './netlify-function.js'
@@ -19,7 +19,7 @@ export const detectAwsSdkError = ({ error }: { error: Error | InvocationError | 
 // XXX(serhalp): This appears to be a bug? In the background and scheduled function code paths this can receive plain
 // errors, but this is assuming normalized `InvocationError`s only.
 export const formatLambdaError = (err: Error | InvocationError): string =>
-  chalk.red(`${'errorType' in err ? err.errorType : ''}: ${'errorMessage' in err ? err.errorMessage : ''}`)
+  ansis.red(`${'errorType' in err ? err.errorType : ''}: ${'errorMessage' in err ? err.errorMessage : ''}`)
 
 // should be equivalent to https://github.com/netlify/proxy/blob/main/pkg/functions/request.go#L105
 const exceptionsList = new Set([
@@ -56,4 +56,4 @@ export const shouldBase64Encode = function (contentType?: string): boolean {
   return true
 }
 
-export const styleFunctionName = (name: string): string => chalk.magenta(name)
+export const styleFunctionName = (name: string): string => ansis.magenta(name)

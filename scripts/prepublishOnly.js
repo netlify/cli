@@ -10,7 +10,6 @@ const main = async () => {
   //
   // Leaving development dependencies makes the CLI installation significantly larger and increases
   // the risk of platform-specific dependency installation issues.
-  // eslint-disable-next-line no-restricted-properties
   const packageJSONPath = path.join(process.cwd(), 'package.json')
   const rawPackageJSON = await fs.readFile(packageJSONPath, 'utf8')
 

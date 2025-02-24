@@ -7,7 +7,7 @@ import inquirer from 'inquirer'
 
 import {
   BANG,
-  chalk,
+  ansis,
   logAndThrowError,
   exit,
   log,
@@ -63,7 +63,7 @@ export const CI_FORCED_COMMANDS = {
 process.on('uncaughtException', async (err: AddressInUseError | Error) => {
   if ('code' in err && err.code === 'EADDRINUSE') {
     logError(
-      `${chalk.red(`Port ${err.port} is already in use`)}\n\n` +
+      `${ansis.red(`Port ${err.port} is already in use`)}\n\n` +
         `Your serverless functions might be initializing a server\n` +
         `to listen on specific port without properly closing it.\n\n` +
         `This behavior is generally not advised\n` +
@@ -75,21 +75,21 @@ process.on('uncaughtException', async (err: AddressInUseError | Error) => {
     )
   } else {
     logError(
-      `${chalk.red(
+      `${ansis.red(
         'Netlify CLI has terminated unexpectedly',
-      )}\nThis is a problem with the Netlify CLI, not with your application.\nIf you recently updated the CLI, consider reverting to an older version by running:\n\n${chalk.bold(
+      )}\nThis is a problem with the Netlify CLI, not with your application.\nIf you recently updated the CLI, consider reverting to an older version by running:\n\n${ansis.bold(
         'npm install -g netlify-cli@VERSION',
-      )}\n\nYou can use any version from ${chalk.underline(
+      )}\n\nYou can use any version from ${ansis.underline(
         'https://ntl.fyi/cli-versions',
-      )}.\n\nPlease report this problem at ${chalk.underline(
+      )}.\n\nPlease report this problem at ${ansis.underline(
         'https://ntl.fyi/cli-error',
       )} including the error details below.\n`,
     )
 
     const systemInfo = await getSystemInfo()
 
-    console.log(chalk.dim(err.stack || err))
-    console.log(chalk.dim(systemInfo))
+    console.log(ansis.dim(err.stack || err))
+    console.log(ansis.dim(systemInfo))
     reportError(err, { severity: 'error' })
   }
 
@@ -152,9 +152,9 @@ const mainCommand = async function (options, command) {
   if (command.args.length === 0) {
     const pkg = await getCLIPackageJson()
 
-    const title = chalk.bgBlack.cyan('⬥ Netlify CLI')
-    const docsMsg = `${chalk.greenBright('Read the docs:')} https://ntl.fyi/get-started-with-netlify-cli`
-    const supportMsg = `${chalk.magentaBright('Support and bugs:')} ${pkg.bugs?.url}`
+    const title = ansis.bgBlack.cyan('⬥ Netlify CLI')
+    const docsMsg = `${ansis.greenBright('Read the docs:')} https://ntl.fyi/get-started-with-netlify-cli`
+    const supportMsg = `${ansis.magentaBright('Support and bugs:')} ${pkg.bugs?.url}`
 
     console.log()
     console.log(title)
@@ -177,7 +177,7 @@ const mainCommand = async function (options, command) {
     command.help()
   }
 
-  warn(`${chalk.yellow(command.args[0])} is not a ${command.name()} command.`)
+  warn(`${ansis.yellow(command.args[0])} is not a ${command.name()} command.`)
 
   // @ts-expect-error TS(7006) FIXME: Parameter 'cmd' implicitly has an 'any' type.
   const allCommands = command.commands.map((cmd) => cmd.name())
@@ -187,7 +187,7 @@ const mainCommand = async function (options, command) {
     const prompt = inquirer.prompt({
       type: 'confirm',
       name: 'suggestion',
-      message: `Did you mean ${chalk.blue(suggestion)}`,
+      message: `Did you mean ${ansis.blue(suggestion)}`,
       default: false,
     })
 
@@ -255,8 +255,8 @@ export const createMainCommand = (): BaseCommand => {
     .noHelpOptions()
     .configureOutput({
       outputError: (message, write) => {
-        write(` ${chalk.red(BANG)}   Error: ${message.replace(/^error:\s/g, '')}`)
-        write(` ${chalk.red(BANG)}   See more help with --help\n`)
+        write(` ${ansis.red(BANG)}   Error: ${message.replace(/^error:\s/g, '')}`)
+        write(` ${ansis.red(BANG)}   See more help with --help\n`)
       },
     })
     .action(mainCommand)

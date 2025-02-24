@@ -1,9 +1,9 @@
 import process from 'process'
 
-import open from 'open'
 import isDockerContainer from 'is-docker'
+import open from 'open'
 
-import { chalk, log } from './command-helpers.js'
+import { ansis, log } from './command-helpers.js'
 
 type BrowserUnableMessage = {
   message: string
@@ -12,18 +12,18 @@ type BrowserUnableMessage = {
 
 const unableToOpenBrowserMessage = function ({ message, url }: BrowserUnableMessage) {
   log('---------------------------')
-  log(chalk.redBright(`Error: Unable to open browser automatically: ${message}`))
-  log(chalk.cyan('Please open your browser and open the URL below:'))
-  log(chalk.bold(url))
+  log(ansis.redBright(`Error: Unable to open browser automatically: ${message}`))
+  log(ansis.cyan('Please open your browser and open the URL below:'))
+  log(ansis.bold(url))
   log('---------------------------')
 }
 
-type OpenBrowsrProps = {
+type OpenBrowserProps = {
   silentBrowserNoneError?: boolean
   url: string
 }
 
-const openBrowser = async function ({ silentBrowserNoneError, url }: OpenBrowsrProps) {
+const openBrowser = async function ({ silentBrowserNoneError, url }: OpenBrowserProps) {
   if (isDockerContainer()) {
     unableToOpenBrowserMessage({ url, message: 'Running inside a docker container' })
     return

@@ -1,6 +1,6 @@
 import { OptionValues } from 'commander'
 
-import { chalk, exit, getToken, log } from '../../utils/command-helpers.js'
+import { ansis, exit, getToken, log } from '../../utils/command-helpers.js'
 import { TokenLocation } from '../../utils/types.js'
 import BaseCommand from '../base-command.js'
 
@@ -25,11 +25,11 @@ export const login = async (options: OptionValues, command: BaseCommand) => {
   if (accessToken && !options.new) {
     log(`Already logged in ${msg(location)}`)
     log()
-    log(`Run ${chalk.cyanBright('netlify status')} for account details`)
+    log(`Run ${ansis.cyanBright('netlify status')} for account details`)
     log()
-    log(`or run ${chalk.cyanBright('netlify switch')} to switch accounts`)
+    log(`or run ${ansis.cyanBright('netlify switch')} to switch accounts`)
     log()
-    log(`To see all available commands run: ${chalk.cyanBright('netlify help')}`)
+    log(`To see all available commands run: ${ansis.cyanBright('netlify help')}`)
     log()
     return exit()
   }

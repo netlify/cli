@@ -10,7 +10,7 @@ import {
   NETLIFYDEVLOG,
   NETLIFYDEVWARN,
   nonNullable,
-  chalk,
+  ansis,
   log,
   warn,
   watchDebounced,
@@ -365,19 +365,19 @@ export class EdgeFunctionsRegistry {
     event: EdgeFunctionEvent,
     { buildError, functionName, warnings = [] }: { buildError?: Error; functionName?: string; warnings?: string[] },
   ) {
-    const subject = functionName ? `edge function ${chalk.yellow(this.getDisplayName(functionName))}` : 'edge functions'
+    const subject = functionName ? `edge function ${ansis.yellow(this.getDisplayName(functionName))}` : 'edge functions'
     const warningsText =
       warnings.length === 0 ? '' : ` with warnings:\n${warnings.map((warning) => `  - ${warning}`).join('\n')}`
 
     if (event === 'buildError') {
-      log(`${NETLIFYDEVERR} ${chalk.red('Failed to load')} ${subject}: ${buildError}`)
+      log(`${NETLIFYDEVERR} ${ansis.red('Failed to load')} ${subject}: ${buildError}`)
 
       return
     }
 
     if (event === 'loaded') {
       const icon = warningsText ? NETLIFYDEVWARN : NETLIFYDEVLOG
-      const color = warningsText ? chalk.yellow : chalk.green
+      const color = warningsText ? ansis.yellow : ansis.green
 
       log(`${icon} ${color('Loaded')} ${subject}${warningsText}`)
 
@@ -386,7 +386,7 @@ export class EdgeFunctionsRegistry {
 
     if (event === 'reloaded') {
       const icon = warningsText ? NETLIFYDEVWARN : NETLIFYDEVLOG
-      const color = warningsText ? chalk.yellow : chalk.green
+      const color = warningsText ? ansis.yellow : ansis.green
 
       log(`${icon} ${color('Reloaded')} ${subject}${warningsText}`)
 
@@ -394,13 +394,13 @@ export class EdgeFunctionsRegistry {
     }
 
     if (event === 'reloading') {
-      log(`${NETLIFYDEVLOG} ${chalk.magenta('Reloading')} ${subject}...`)
+      log(`${NETLIFYDEVLOG} ${ansis.magenta('Reloading')} ${subject}...`)
 
       return
     }
 
     if (event === 'removed') {
-      log(`${NETLIFYDEVLOG} ${chalk.magenta('Removed')} ${subject}`)
+      log(`${NETLIFYDEVLOG} ${ansis.magenta('Removed')} ${subject}`)
     }
   }
 

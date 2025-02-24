@@ -11,7 +11,7 @@ import type { $TSFixMe } from '../../commands/types.js'
 import {
   NETLIFYDEVERR,
   type NormalizedCachedConfigConfig,
-  chalk,
+  ansis,
   logAndThrowError,
 } from '../../utils/command-helpers.js'
 import { FeatureFlags, getFeatureFlagsFromSiteInfo } from '../../utils/feature-flags.js'
@@ -231,11 +231,11 @@ const prepareServer = async ({
       distImportMapPath: join(projectDir, distImportMapPath),
       featureFlags,
       formatExportTypeError: (name) =>
-        `${NETLIFYDEVERR} ${chalk.red('Failed')} to load Edge Function ${chalk.yellow(
+        `${NETLIFYDEVERR} ${ansis.red('Failed')} to load Edge Function ${ansis.yellow(
           name,
         )}. The file does not seem to have a function as the default export.`,
       formatImportError: (name) =>
-        `${NETLIFYDEVERR} ${chalk.red('Failed')} to run Edge Function ${chalk.yellow(name)}:`,
+        `${NETLIFYDEVERR} ${ansis.red('Failed')} to run Edge Function ${ansis.yellow(name)}:`,
       inspectSettings,
       port,
       rootPath: repositoryRoot,

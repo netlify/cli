@@ -5,10 +5,10 @@ import type { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 import logUpdate from 'log-update'
 
-import { chalk, log, logJson } from '../../utils/command-helpers.js'
+import { ansis, log, logJson } from '../../utils/command-helpers.js'
 import { AVAILABLE_CONTEXTS, getEnvelopeEnv, getHumanReadableScopes } from '../../utils/env/index.js'
-import type BaseCommand from '../base-command.js'
 import { EnvironmentVariables } from '../../utils/types.js'
+import type BaseCommand from '../base-command.js'
 
 const MASK_LENGTH = 50
 const MASK = '*'.repeat(MASK_LENGTH)
@@ -80,10 +80,10 @@ export const envList = async (options: OptionValues, command: BaseCommand) => {
     return false
   }
 
-  const forSite = `for site ${chalk.green(siteInfo.name)}`
+  const forSite = `for site ${ansis.green(siteInfo.name)}`
   const contextType = AVAILABLE_CONTEXTS.includes(context) ? 'context' : 'branch'
-  const withContext = `in the ${chalk.magenta(options.context)} ${contextType}`
-  const withScope = scope === 'any' ? '' : `and ${chalk.yellow(options.scope)} scope`
+  const withContext = `in the ${ansis.magenta(options.context)} ${contextType}`
+  const withScope = scope === 'any' ? '' : `and ${ansis.yellow(options.scope)} scope`
   if (Object.keys(environment).length === 0) {
     log(`No environment variables set ${forSite} ${withContext} ${withScope}`)
     return false
@@ -112,6 +112,6 @@ export const envList = async (options: OptionValues, command: BaseCommand) => {
     // since inquirer adds a prompt, we need to account for it when printing the table again
     log(ansiEscapes.eraseLines(3))
     logUpdate(getTable({ environment, hideValues: false, scopesColumn: true }))
-    log(`${chalk.cyan('?')} Show values? ${chalk.cyan('Yes')}`)
+    log(`${ansis.cyan('?')} Show values? ${ansis.cyan('Yes')}`)
   }
 }

@@ -1,4 +1,4 @@
-import { chalk } from '../../utils/command-helpers.js'
+import { ansis } from '../../utils/command-helpers.js'
 import BaseCommand from '../base-command.js'
 
 export const createApiCommand = (program: BaseCommand) =>
@@ -7,7 +7,7 @@ export const createApiCommand = (program: BaseCommand) =>
     .argument('[apiMethod]', 'Open API method to run')
     .description(
       `Run any Netlify API method
-For more information on available methods checkout https://open-api.netlify.com/ or run '${chalk.grey(
+For more information on available methods checkout https://open-api.netlify.com/ or run '${ansis.gray(
         'netlify api --list',
       )}'`,
     )
