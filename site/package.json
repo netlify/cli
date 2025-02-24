@@ -16,8 +16,8 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@astrojs/starlight": "^0.31.1",
-    "astro": "^5.1.9",
+    "@astrojs/starlight": "0.31.1",
+    "astro": "5.2.5",
     "markdown-magic": "2.6.1",
     "sharp": "0.32.6",
     "strip-ansi": "7.1.0"
