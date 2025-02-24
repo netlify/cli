@@ -2,7 +2,7 @@ import { mkdir, mkdtemp, writeFile } from 'fs/promises'
 import { tmpdir } from 'os'
 import { join } from 'path'
 
-import express from 'express'
+import { App } from '@tinyhttp/app'
 import fetch from 'node-fetch'
 import { afterAll, beforeAll, describe, expect, test, vi } from 'vitest'
 
@@ -17,6 +17,9 @@ vi.mock('../../../../dist/utils/command-helpers.js', async () => ({
 }))
 
 describe('createHandler', () => {
+  /**
+   * @type {import('node:http').Server}
+   */
   let server
   let serverAddress
   beforeAll(async () => {
@@ -35,14 +38,15 @@ describe('createHandler', () => {
       frameworksAPIPaths: getFrameworksAPIPaths(projectRoot),
     })
     await functionsRegistry.scan([functionsDirectory])
-    const app = express()
-    app.all('*', createHandler({ functionsRegistry, geo: 'mock', state: new StateConfig(projectRoot) }))
+    const app = new App()
+    app.use(createHandler({ functionsRegistry, geo: 'mock', state: new StateConfig(projectRoot) }))
 
     return await new Promise((resolve) => {
-      server = app.listen(resolve)
+      server = app.listen()
       const { port } = server.address()
 
       serverAddress = `http://localhost:${port}`
+      resolve(serverAddress)
     })
   })
 
@@ -73,7 +77,6 @@ describe('createHandler', () => {
     const response = await fetch(new URL('/.netlify/functions/hello?jam=stack', serverAddress), {
       headers: { 'x-netlify-original-pathname': '/orig' },
     })
-
     expect(response.status).toBe(200)
     expect(await response.text()).toMatch(/^http:\/\/localhost:\d+?\/orig\?jam=stack$/)
   })

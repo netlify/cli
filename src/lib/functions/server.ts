@@ -2,10 +2,10 @@ import { Buffer } from 'buffer'
 import { promises as fs } from 'fs'
 import path from 'path'
 
-import express, { type RequestHandler } from 'express'
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'expr... Remove this comment to see the full error message
-import expressLogging from 'express-logging'
+import { App, Handler, Request } from '@tinyhttp/app'
+import { logger } from '@tinyhttp/logger'
 import { jwtDecode } from 'jwt-decode'
+import { text, raw } from 'milliparsec'
 
 import type BaseCommand from '../../commands/base-command.js'
 import type { $TSFixMe } from '../../commands/types.js'
@@ -72,24 +72,23 @@ const buildClientContext = function (headers) {
   }
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
-const hasBody = (req) =>
+const hasBody = (req: Request) =>
   // copied from is-type package
-  // eslint-disable-next-line unicorn/prefer-number-properties
-  (req.header('transfer-encoding') !== undefined || !isNaN(req.header('content-length'))) &&
+  (req.headers['transfer-encoding'] !== undefined ||
+    !Number.isNaN(Number.parseInt(req.headers['content-length'] as string))) &&
   // we expect a string or a buffer, because we use the two bodyParsers(text, raw) from express
   (typeof req.body === 'string' || Buffer.isBuffer(req.body))
 
-export const createHandler = function (options: GetFunctionsServerOptions): RequestHandler {
+export const createHandler = function (options: GetFunctionsServerOptions): Handler {
   const { functionsRegistry } = options
 
   return async function handler(request, response) {
     // If these headers are set, it means we've already matched a function and we
     // can just grab its name directly. We delete the header from the request
     // because we don't want to expose it to user code.
-    let functionName = request.header(NFFunctionName)
+    let functionName = request.headers[NFFunctionName] as string | undefined
     delete request.headers[NFFunctionName]
-    const functionRoute = request.header(NFFunctionRoute)
+    const functionRoute = request.headers[NFFunctionRoute] as string
     delete request.headers[NFFunctionRoute]
 
     // If there's still no function found, we check the functionsRegistry again.
@@ -98,7 +97,8 @@ export const createHandler = function (options: GetFunctionsServerOptions): Requ
     if (!functionName) {
       const match = await functionsRegistry.getFunctionForURLPath(
         request.url,
-        request.method,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        request.method!,
         // we're pretending there's no static file at the same URL.
         // This is wrong, but in local dev we already did the matching
         // in a downstream server where we had access to the file system, so this never hits.
@@ -121,26 +121,26 @@ export const createHandler = function (options: GetFunctionsServerOptions): Requ
       return
     }
 
-    const isBase64Encoded = shouldBase64Encode(request.header('content-type'))
+    const isBase64Encoded = shouldBase64Encode(request.headers['content-type'])
     let body
     if (hasBody(request)) {
       body = request.body.toString(isBase64Encoded ? 'base64' : 'utf8')
     }
 
-    let remoteAddress = request.header('x-forwarded-for') || request.connection.remoteAddress || ''
+    let remoteAddress = request.headers['x-forwarded-for'] || request.connection.remoteAddress || ''
     remoteAddress =
-      remoteAddress
+      (remoteAddress as string)
         .split(remoteAddress.includes('.') ? ':' : ',')
         .pop()
         ?.trim() ?? ''
 
-    const requestPath = request.header('x-netlify-original-pathname') ?? request.path
+    const requestPath = request.headers['x-netlify-original-pathname'] ?? request.path
     delete request.headers['x-netlify-original-pathname']
 
     let requestQuery = request.query
-    if (request.header('x-netlify-original-search')) {
+    if (request.headers['x-netlify-original-search']) {
       const newRequestQuery = {}
-      const searchParams = new URLSearchParams(request.header('x-netlify-original-search'))
+      const searchParams = new URLSearchParams(request.headers['x-netlify-original-search'] as string)
 
       for (const key of searchParams.keys()) {
         // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
@@ -269,24 +269,20 @@ interface GetFunctionsServerOptions {
 
 const getFunctionsServer = (options: GetFunctionsServerOptions) => {
   const { functionsRegistry, siteUrl } = options
-  const app = express()
+  const app = new App()
   const functionHandler = createHandler(options)
 
-  app.set('query parser', 'simple')
-
-  app.use(
-    express.text({
-      limit: '6mb',
-      type: ['text/*', 'application/json'],
-    }),
-  )
-  app.use(express.raw({ limit: '6mb', type: '*/*' }))
+  app.use((req, res, next) => {
+    if (req.is('text/*') || req.is('application/json')) {
+      text({
+        payloadLimit: 6_291_456,
+      })(req, res, next)
+    }
+    return next?.()
+  })
+  app.use(raw({ payloadLimit: 6_291_456 }))
   app.use(createFormSubmissionHandler({ functionsRegistry, siteUrl }))
-  app.use(
-    expressLogging(console, {
-      blacklist: ['/favicon.ico'],
-    }),
-  )
+  app.use(logger())
 
   app.all('*', functionHandler)
 

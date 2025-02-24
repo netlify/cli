@@ -1,7 +1,7 @@
 import { IncomingMessage } from 'http'
 
 import { NetlifyConfig } from '@netlify/build'
-import express from 'express'
+import { App } from '@tinyhttp/app'
 import { createIPX, ipxFSStorage, ipxHttpStorage, createIPXNodeServer } from 'ipx'
 
 import { log, NETLIFYDEVERR } from '../../utils/command-helpers.js'
@@ -137,7 +137,7 @@ export const initializeProxy = async function ({
   })
 
   const handler = createIPXNodeServer(ipx)
-  const app = express()
+  const app = new App()
 
   let lastTimeRemoteImagesConfigurationDetailsMessageWasLogged = 0
 

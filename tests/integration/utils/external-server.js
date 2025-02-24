@@ -1,10 +1,11 @@
 import { env } from 'process'
 
-import express from 'express'
+import { App } from '@tinyhttp/app'
+import { urlencoded } from 'milliparsec'
 
 export const startExternalServer = ({ port } = {}) => {
-  const app = express()
-  app.use(express.urlencoded({ extended: true }))
+  const app = new App()
+  app.use(urlencoded())
   app.all('*', function onRequest(req, res) {
     res.json({ url: req.url, body: req.body, method: req.method, headers: req.headers, env })
   })

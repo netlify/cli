@@ -1,7 +1,7 @@
 import { Readable } from 'stream'
 
+import type { Handler } from '@tinyhttp/app'
 import { parse as parseContentType } from 'content-type'
-import type { RequestHandler } from 'express'
 import multiparty from 'multiparty'
 import getRawBody from 'raw-body'
 
@@ -45,14 +45,14 @@ export const createFormSubmissionHandler = function ({
 }: {
   functionsRegistry: FunctionsRegistry
   siteUrl: string
-}): RequestHandler {
+}): Handler {
   return async function formSubmissionHandler(req, res, next) {
     if (
       req.url.startsWith('/.netlify/') ||
       req.method !== 'POST' ||
       (await functionsRegistry.getFunctionForURLPath(req.url, req.method, () => Promise.resolve(false)))
     )
-      return next()
+      return next?.()
 
     const fakeRequest = new Readable({
       read() {
@@ -65,7 +65,7 @@ export const createFormSubmissionHandler = function ({
 
     const handlerName = getFormHandler({ functionsRegistry })
     if (!handlerName) {
-      return next()
+      return next?.()
     }
 
     const originalUrl = new URL(req.url, 'http://localhost')
@@ -119,11 +119,11 @@ export const createFormSubmissionHandler = function ({
       } catch (error) {
         // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
         warn(error)
-        return next()
+        return next?.()
       }
     } else {
       warn('Invalid Content-Type for Netlify Dev forms request')
-      return next()
+      return next?.()
     }
     const data = JSON.stringify({
       payload: {
@@ -179,6 +179,6 @@ export const createFormSubmissionHandler = function ({
       'x-netlify-original-search': originalUrl.search,
     }
 
-    next()
+    return next?.()
   }
 }

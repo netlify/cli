@@ -2,8 +2,9 @@ import type { Server } from 'http'
 import type { AddressInfo } from 'net'
 import { isDeepStrictEqual, promisify } from 'util'
 
+import { App } from '@tinyhttp/app'
 import type { CommonOptions, NodeOptions } from 'execa'
-import express, { urlencoded, json, raw } from 'express'
+import { json, raw, urlencoded } from 'milliparsec'
 import { afterAll, beforeAll, beforeEach } from 'vitest'
 
 export enum HTTPMethod {
@@ -58,8 +59,8 @@ const clearRequests = (requests) => {
 
 export const startMockApi = ({ routes, silent }: MockApiOptions): Promise<MockApi> => {
   const requests = []
-  const app = express()
-  app.use(urlencoded({ extended: true }))
+  const app = new App()
+  app.use(urlencoded())
   app.use(json())
   app.use(raw())
 
@@ -90,7 +91,7 @@ export const startMockApi = ({ routes, silent }: MockApiOptions): Promise<MockAp
   app.all('*', function onRequest(req, res) {
     addRequest(requests, req)
     if (!silent) {
-      console.warn(`Route not found: (${req.method.toUpperCase()}) ${req.url}`)
+      console.warn(`Route not found: (${req.method!.toUpperCase()}) ${req.url}`)
     }
     res.status(404)
     res.json({ message: 'Not found' })

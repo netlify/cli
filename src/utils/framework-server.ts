@@ -1,4 +1,5 @@
 import { rm } from 'node:fs/promises'
+import process from 'process'
 
 import waitPort from 'wait-port'
 
@@ -50,7 +51,7 @@ export const startFrameworkServer = async function ({
   try {
     if (settings.skipWaitPort) {
       // default ip version based on node version
-      const ipVersion = parseInt(process.versions.node.split('.')[0]) >= 18 ? 6 : 4
+      const ipVersion = Number.parseInt(process.versions.node.split('.')[0]) >= 18 ? 6 : 4
       port = { open: true, ipVersion }
     } else {
       port = await waitPort({

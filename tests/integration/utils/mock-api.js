@@ -1,7 +1,8 @@
 import process from 'process'
 import { isDeepStrictEqual, promisify } from 'util'
 
-import express from 'express'
+import { App } from '@tinyhttp/app'
+import { urlencoded, json, raw } from 'milliparsec'
 
 const addRequest = (requests, request) => {
   requests.push({
@@ -19,10 +20,10 @@ const addRequest = (requests, request) => {
  */
 export const startMockApi = ({ routes, silent }) => {
   const requests = []
-  const app = express()
-  app.use(express.urlencoded({ extended: true }))
-  app.use(express.json())
-  app.use(express.raw())
+  const app = new App()
+  app.use(urlencoded())
+  app.use(json())
+  app.use(raw())
 
   routes.forEach(({ method = 'get', path, requestBody, response = {}, status = 200 }) => {
     app[method.toLowerCase()](`/api/v1/${path}`, function onRequest(req, res) {
