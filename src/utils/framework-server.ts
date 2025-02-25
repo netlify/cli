@@ -1,3 +1,4 @@
+import dns from 'node:dns/promises'
 import { rm } from 'node:fs/promises'
 
 import waitPort from 'wait-port'
@@ -49,8 +50,8 @@ export const startFrameworkServer = async function ({
   let port: { open: boolean; ipVersion?: 4 | 6 } | undefined
   try {
     if (settings.skipWaitPort) {
-      // default ip version based on node version
-      const ipVersion = parseInt(process.versions.node.split('.')[0]) >= 18 ? 6 : 4
+      const ipInfo = await dns.lookup('localhost')
+      const ipVersion = (ipInfo?.family as StartReturnObject['ipVersion']) || 4
       port = { open: true, ipVersion }
     } else {
       port = await waitPort({
