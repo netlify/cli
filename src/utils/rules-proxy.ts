@@ -1,6 +1,8 @@
+import type { Stats } from 'fs'
+import type { IncomingHttpHeaders } from 'http'
 import path from 'path'
 
-import chokidar from 'chokidar'
+import chokidar, { type FSWatcher } from 'chokidar'
 import cookie from 'cookie'
 import redirector from 'netlify-redirector'
 import type { Match, RedirectMatcher } from 'netlify-redirector'
@@ -12,12 +14,12 @@ import { NETLIFYDEVLOG } from './command-helpers.js'
 import { parseRedirects } from './redirects.js'
 import { Request, Rewriter } from './types.js'
 
-// @ts-expect-error TS(7034) FIXME: Variable 'watchers' implicitly has type 'any[]' in... Remove this comment to see the full error message
-const watchers = []
+// Not exported by chokidar for some reason
+type FSListener = (path: string, stats?: Stats) => void
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'files' implicitly has an 'any' type.
-export const onChanges = function (files, listener) {
-  // @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
+const watchers: FSWatcher[] = []
+
+export const onChanges = function (files: string[], listener: FSListener) {
   files.forEach((file) => {
     const watcher = chokidar.watch(file)
     watcher.on('change', listener)
@@ -26,13 +28,11 @@ export const onChanges = function (files, listener) {
   })
 }
 
-export const getWatchers = function () {
-  // @ts-expect-error TS(7005) FIXME: Variable 'watchers' implicitly has an 'any[]' type... Remove this comment to see the full error message
+export const getWatchers = function (): FSWatcher[] {
   return watchers
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'headers' implicitly has an 'any' type.
-export const getLanguage = function (headers) {
+export const getLanguage = function (headers: IncomingHttpHeaders): string {
   if (headers['accept-language']) {
     return headers['accept-language'].split(',')[0].slice(0, 2)
   }
@@ -86,7 +86,6 @@ export const createRewriter = async function ({
     }
   }
 
-  // @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
   return async function rewriter(req: Request): Promise<Match | null> {
     const matcherFunc = await getMatcher()
     const reqUrl = new URL(

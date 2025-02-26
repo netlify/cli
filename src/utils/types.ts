@@ -61,7 +61,7 @@ export interface Request extends IncomingMessage {
   hostname?: string
 }
 
-export type Rewriter = (req: Request) => Match | null
+export type Rewriter = (req: Request) => Promise<Match | null>
 
 export interface SiteInfo {
   account_name: string
