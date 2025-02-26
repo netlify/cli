@@ -18,9 +18,9 @@ import generateETag from 'etag'
 import getAvailablePort from 'get-port'
 import httpProxy from 'http-proxy'
 import { createProxyMiddleware } from 'http-proxy-middleware'
-import { jwtDecode } from 'jwt-decode'
+import { jwtDecode, type JwtPayload } from 'jwt-decode'
 import { locatePath } from 'locate-path'
-import { Match } from 'netlify-redirector'
+import type { Match } from 'netlify-redirector'
 import pFilter from 'p-filter'
 import throttle from 'lodash/throttle.js'
 
@@ -102,8 +102,7 @@ const injectHtml = async function (
   return await compressResponseBody(bodyWithInjections, proxyRes.headers['content-encoding'])
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'errorBuffer' implicitly has an 'any' ty... Remove this comment to see the full error message
-const formatEdgeFunctionError = (errorBuffer, acceptsHtml) => {
+const formatEdgeFunctionError = (errorBuffer: Buffer<ArrayBufferLike>, acceptsHtml: boolean): string => {
   const {
     error: { message, name, stack },
   } = JSON.parse(errorBuffer.toString())
@@ -156,13 +155,11 @@ const isEndpointExists = async function (endpoint: string, origin: string) {
   }
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'match' implicitly has an 'any' type.
-const isExternal = function (match) {
-  return match.to && match.to.match(/^https?:\/\//)
+const isExternal = function (match: Match) {
+  return 'to' in match && match.to.match(/^https?:\/\//)
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'hash' implicitly has an 'any' typ... Remove this comment to see the full error message
-const stripOrigin = function ({ hash, pathname, search }) {
+const stripOrigin = function ({ hash, pathname, search }: URL): string {
   return `${pathname}${search}${hash}`
 }
 
@@ -189,21 +186,18 @@ const proxyToExternalUrl = function ({
   return handler(req, res, () => {})
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'addonUrl' implicitly has an 'any'... Remove this comment to see the full error message
-const handleAddonUrl = function ({ addonUrl, req, res }) {
+const handleAddonUrl = function ({ addonUrl, req, res }: { req: Request; res: ServerResponse; addonUrl: string }) {
   const dest = new URL(addonUrl)
   const destURL = stripOrigin(dest)
 
   return proxyToExternalUrl({ req, res, dest, destURL })
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'match' implicitly has an 'any' type.
-const isRedirect = function (match) {
-  return match.status && match.status >= 300 && match.status <= 400
+const isRedirect = function (match: Match) {
+  return 'status' in match && match.status >= 300 && match.status <= 400
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'publicFolder' implicitly has an 'any' t... Remove this comment to see the full error message
-const render404 = async function (publicFolder) {
+const render404 = async function (publicFolder: string) {
   const maybe404Page = path.resolve(publicFolder, '404.html')
   try {
     const isFile = await isFileAsync(maybe404Page)
@@ -219,8 +213,7 @@ const render404 = async function (publicFolder) {
 // Used as an optimization to avoid dual lookups for missing assets
 const assetExtensionRegExp = /\.(html?|png|jpg|js|css|svg|gif|ico|woff|woff2)$/
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'url' implicitly has an 'any' type.
-const alternativePathsFor = function (url) {
+const alternativePathsFor = function (url: string) {
   if (isFunction(true, url)) {
     return []
   }
@@ -317,9 +310,9 @@ const serveRedirect = async function ({
     req.url = '/.netlify/non-existent-path'
 
     if (token) {
-      let jwtValue = {}
+      let jwtValue: JwtPayload = {}
       try {
-        jwtValue = jwtDecode(token) || {}
+        jwtValue = jwtDecode(token)
       } catch (error) {
         // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         console.warn(NETLIFYDEVWARN, 'Error while decoding JWT provided in request', error.message)
@@ -328,7 +321,6 @@ const serveRedirect = async function ({
         return
       }
 
-      // @ts-expect-error TS(2339) FIXME: Property 'exp' does not exist on type '{}'.
       if ((jwtValue.exp || 0) < Math.round(Date.now() / MILLISEC_TO_SEC)) {
         console.warn(NETLIFYDEVWARN, 'Expired JWT provided in request', req.url)
       } else {
@@ -462,10 +454,9 @@ const serveRedirect = async function ({
   return proxy.web(req, res, options)
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
-const reqToURL = function (req, pathname) {
+const reqToURL = function (req: Request, pathname: undefined | string) {
   return new URL(
-    pathname,
+    pathname ?? '',
     `${req.protocol || (req.headers.scheme && `${req.headers.scheme}:`) || 'http:'}//${
       req.headers.host || req.hostname
     }`,
@@ -612,10 +603,8 @@ const initializeProxy = async function ({
       })
     }
 
-    // @ts-expect-error TS(7034) FIXME: Variable 'responseData' implicitly has type 'any[]... Remove this comment to see the full error message
-    const responseData = []
-    // @ts-expect-error TS(2345) FIXME: Argument of type 'string | undefined' is not assig... Remove this comment to see the full error message
-    const requestURL = new URL(req.url, `http://${req.headers.host || '127.0.0.1'}`)
+    const responseData: Uint8Array[] = []
+    const requestURL = new URL(req.url ?? '', `http://${req.headers.host || '127.0.0.1'}`)
     const headersRules = headersForPath(headers, requestURL.pathname)
 
     const htmlInjections =
@@ -649,11 +638,10 @@ const initializeProxy = async function ({
     }
 
     proxyRes.on('data', function onData(data) {
-      responseData.push(data)
+      responseData.push(data as Uint8Array)
     })
 
     proxyRes.on('end', async function onEnd() {
-      // @ts-expect-error TS(7005) FIXME: Variable 'responseData' implicitly has an 'any[]' ... Remove this comment to see the full error message
       let responseBody = Buffer.concat(responseData)
 
       // @ts-expect-error TS(2339) FIXME: Property 'proxyOptions' does not exist on type 'In... Remove this comment to see the full error message
@@ -684,7 +672,7 @@ const initializeProxy = async function ({
       const isUncaughtError = proxyRes.headers['x-nf-uncaught-error'] === '1'
 
       if (isEdgeFunctionsRequest(req) && isUncaughtError) {
-        const acceptsHtml = req.headers && req.headers.accept && req.headers.accept.includes('text/html')
+        const acceptsHtml = req.headers?.accept?.includes('text/html') ?? false
         const decompressedBody = await decompressResponseBody(responseBody, proxyRes.headers['content-encoding'])
         const formattedBody = formatEdgeFunctionError(decompressedBody, acceptsHtml)
         const errorResponse = acceptsHtml
@@ -777,16 +765,13 @@ const onRequest = async (
   if (functionMatch) {
     // Setting an internal header with the function name so that we don't
     // have to match the URL again in the functions server.
-    /** @type {Record<string, string>} */
-    const headers = {}
+    const headers: Record<string, string> = {}
 
     if (functionMatch.func) {
-      // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
       headers[NFFunctionName] = functionMatch.func.name
     }
 
     if (functionMatch.route) {
-      // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
       headers[NFFunctionRoute] = functionMatch.route.pattern
     }
 
@@ -815,7 +800,7 @@ const onRequest = async (
   if (match) {
     // We don't want to generate an ETag for 3xx redirects.
     // @ts-expect-error TS(7031) FIXME: Binding element 'statusCode' implicitly has an 'an... Remove this comment to see the full error message
-    req[shouldGenerateETag] = ({ statusCode }) => statusCode < 300 || statusCode >= 400
+    req[shouldGenerateETag] = ({ statusCode }: { statusCode: number }) => statusCode < 300 || statusCode >= 400
 
     return serveRedirect({ req, res, proxy, imageProxy, match, options, siteInfo, env, functionsRegistry })
   }
@@ -824,7 +809,7 @@ const onRequest = async (
   // generate an ETag unless we're rendering an error page. The only way for
   // us to know that is by looking at the status code
   // @ts-expect-error TS(7031) FIXME: Binding element 'statusCode' implicitly has an 'an... Remove this comment to see the full error message
-  req[shouldGenerateETag] = ({ statusCode }) => statusCode >= 200 && statusCode < 300
+  req[shouldGenerateETag] = ({ statusCode }: { statusCode: number }) => statusCode >= 200 && statusCode < 300
 
   const hasFormSubmissionHandler: boolean =
     functionsRegistry && getFormHandler({ functionsRegistry, logWarning: false })
