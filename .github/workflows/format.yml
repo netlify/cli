@@ -1,0 +1,24 @@
+name: Format
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  format:
+    name: Format
+    if: "${{ !startsWith(github.head_ref, 'release-') }}"
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install core dependencies
+        run: npm ci --no-audit
+      - name: Check format
+        run: npm run format
