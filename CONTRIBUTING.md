@@ -72,6 +72,7 @@ to run ESLint and Prettier automatically on file save. Otherwise, you should run
 
 ```bash
 npm run format
+npm run lint
 ```
 
 Alternatively, you can set up your IDE to integrate with Prettier and ESLint for JavaScript and Markdown files.
