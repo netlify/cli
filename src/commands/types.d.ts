@@ -5,7 +5,7 @@ import type { NetlifyAPI } from 'netlify'
 import type { FrameworksAPIPaths } from "../utils/frameworks-api.ts";
 import type StateConfig from '../utils/state-config.js'
 import type { Account } from "../utils/types.ts";
-import type { CachedConfig } from "../utils/build.js"
+import type { CachedConfig } from "../lib/build.js"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type $TSFixMe = any;
@@ -15,7 +15,7 @@ export type NetlifySite = {
   configPath?: string
   siteId?: string
   get id(): string | undefined
-  set id(id: string): void
+  set id(id: string)
 }
 
 type PatchedConfig = NetlifyTOML & Pick<NetlifyConfig, 'images'> & {

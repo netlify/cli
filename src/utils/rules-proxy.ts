@@ -1,5 +1,5 @@
 import type { Stats } from 'fs'
-import type { IncomingHttpHeaders } from 'http'
+import type { IncomingHttpHeaders, IncomingMessage } from 'http'
 import path from 'path'
 
 import chokidar, { type FSWatcher } from 'chokidar'
@@ -12,7 +12,7 @@ import { fileExistsAsync } from '../lib/fs.js'
 
 import { NETLIFYDEVLOG } from './command-helpers.js'
 import { parseRedirects } from './redirects.js'
-import { Request, Rewriter } from './types.js'
+import { Rewriter } from './types.js'
 
 // Not exported by chokidar for some reason
 type FSListener = (path: string, stats?: Stats) => void
@@ -86,7 +86,7 @@ export const createRewriter = async function ({
     }
   }
 
-  return async function rewriter(req: Request): Promise<Match | null> {
+  return async function rewriter(req: IncomingMessage): Promise<Match | null> {
     const matcherFunc = await getMatcher()
     const reqUrl = new URL(
       req.url ?? '',

@@ -1,13 +1,13 @@
 import { Buffer } from 'buffer'
 import { once } from 'events'
 import { readFile } from 'fs/promises'
-import http, { ServerResponse } from 'http'
+import http, { type ServerResponse } from 'http'
 import https from 'https'
 import { isIPv6 } from 'net'
 import { Readable } from 'node:stream'
 import path from 'path'
 import process from 'process'
-import { Duplex } from 'stream'
+import type { Duplex } from 'stream'
 import util from 'util'
 import zlib from 'zlib'
 
@@ -24,8 +24,8 @@ import type { Match } from 'netlify-redirector'
 import pFilter from 'p-filter'
 import throttle from 'lodash/throttle.js'
 
-import { BaseCommand } from '../commands/index.js'
-import { $TSFixMe, NetlifyOptions } from '../commands/types.js'
+import type { BaseCommand } from '../commands/index.js'
+import type { $TSFixMe, NetlifyOptions } from '../commands/types.js'
 import {
   handleProxyRequest,
   initializeProxy as initializeEdgeFunctionsProxy,
@@ -43,7 +43,8 @@ import { NFFunctionName, NFFunctionRoute, NFRequestID, headersForPath, parseHead
 import { generateRequestID } from './request-id.js'
 import { createRewriter, onChanges } from './rules-proxy.js'
 import { signRedirect } from './sign-redirect.js'
-import { Request, Rewriter, ServerSettings } from './types.js'
+import type { Rewriter, ServerSettings } from './types.js'
+import { ClientRequest, IncomingMessage } from 'node:http'
 
 const gunzip = util.promisify(zlib.gunzip)
 const gzip = util.promisify(zlib.gzip)
@@ -51,7 +52,19 @@ const brotliDecompress = util.promisify(zlib.brotliDecompress)
 const brotliCompress = util.promisify(zlib.brotliCompress)
 const deflate = util.promisify(zlib.deflate)
 const inflate = util.promisify(zlib.inflate)
-const shouldGenerateETag = Symbol('Internal: response should generate ETag')
+
+const shouldGenerateETagSymbol = Symbol('Internal: response should generate ETag')
+type ShouldGenerateETag = ({ statusCode }: { statusCode: number }) => boolean
+const getShouldGenerateETag = (
+  req: IncomingMessage,
+  // @ts-expect-error(serhalp -- See `types/http/index.d.ts`. It isn't possible to reference
+  // a unique symbol from within our `http` type declaration augmentation. This function at
+  // least lets us limit the poor typing blast radius.
+): undefined | ShouldGenerateETag => req[shouldGenerateETagSymbol]
+const setShouldGenerateETag = (req: IncomingMessage, shouldGenerateETag: ShouldGenerateETag): void => {
+  // @ts-expect-error(serhalp -- See above
+  req[shouldGenerateETagSymbol] = shouldGenerateETag
+}
 
 const decompressResponseBody = async function (body: Buffer, contentEncoding = ''): Promise<Buffer> {
   switch (contentEncoding) {
@@ -126,13 +139,13 @@ function isFunction(functionsPort: boolean | number | undefined, url: string) {
   return functionsPort && url.match(DEFAULT_FUNCTION_URL_EXPRESSION)
 }
 
-function getAddonUrl(addonsUrls: Record<string, string>, req: http.IncomingMessage) {
+function getAddonUrl(addonsUrls: Record<string, string>, req: IncomingMessage) {
   const matches = req.url?.match(/^\/.netlify\/([^/]+)(\/.*)/)
   const addonUrl = matches && addonsUrls[matches[1]]
   return addonUrl ? `${addonUrl}${matches[2]}` : null
 }
 
-const getStatic = async function (pathname: string, publicFolder: string) {
+const getStatic = async function (pathname: string, publicFolder: string): Promise<string | false> {
   const alternatives = [pathname, ...alternativePathsFor(pathname)].map((filePath) =>
     path.resolve(publicFolder, filePath.slice(1)),
   )
@@ -171,7 +184,7 @@ const proxyToExternalUrl = function ({
 }: {
   dest: URL
   destURL: string
-  req: Request
+  req: IncomingMessage
   res: ServerResponse
 }) {
   const handler = createProxyMiddleware({
@@ -182,11 +195,19 @@ const proxyToExternalUrl = function ({
     logLevel: 'warn',
     ...(Buffer.isBuffer(req.originalBody) && { buffer: Readable.from(req.originalBody) }),
   })
-  // @ts-expect-error TS(2345) FIXME: Argument of type 'Request' is not assignable to parameter of type 'Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+  // @ts-expect-error TS(2345) FIXME: Argument of type 'IncomingMessage' is not assignable to parameter of type 'Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
   return handler(req, res, () => {})
 }
 
-const handleAddonUrl = function ({ addonUrl, req, res }: { req: Request; res: ServerResponse; addonUrl: string }) {
+const handleAddonUrl = function ({
+  addonUrl,
+  req,
+  res,
+}: {
+  req: IncomingMessage
+  res: ServerResponse
+  addonUrl: string
+}) {
   const dest = new URL(addonUrl)
   const destURL = stripOrigin(dest)
 
@@ -197,14 +218,17 @@ const isRedirect = function (match: Match) {
   return 'status' in match && match.status >= 300 && match.status <= 400
 }
 
-const render404 = async function (publicFolder: string) {
-  const maybe404Page = path.resolve(publicFolder, '404.html')
+const render404 = async function (publicFolder?: string) {
+  const maybe404Page = path.resolve(publicFolder ?? '', '404.html')
   try {
     const isFile = await isFileAsync(maybe404Page)
     if (isFile) return await readFile(maybe404Page, 'utf-8')
   } catch (error) {
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    console.warn(NETLIFYDEVWARN, 'Error while serving 404.html file', error.message)
+    console.warn(
+      NETLIFYDEVWARN,
+      'Error while serving 404.html file',
+      error instanceof Error ? error.message : error?.toString(),
+    )
   }
 
   return 'Not Found'
@@ -218,7 +242,7 @@ const alternativePathsFor = function (url: string) {
     return []
   }
 
-  const paths = []
+  const paths: string[] = []
   if (url[url.length - 1] === '/') {
     const end = url.length - 1
     if (url !== '/') {
@@ -250,6 +274,9 @@ const serveRedirect = async function ({
   res,
   siteInfo,
 }: {
+  options: IncomingMessage['proxyOptions']
+  req: IncomingMessage
+  res: ServerResponse
   match: Match | null
 } & Record<string, $TSFixMe>) {
   if (!match) return proxy.web(req, res, options)
@@ -287,11 +314,11 @@ const serveRedirect = async function ({
     }
   }
 
-  if (isFunction(options.functionsPort, req.url)) {
+  if (isFunction(options.functionsPort, req.url ?? '')) {
     return proxy.web(req, res, { target: options.functionsServer })
   }
 
-  const urlForAddons = getAddonUrl(options.addonsUrls, req)
+  const urlForAddons = getAddonUrl(options.addonsUrls ?? {}, req)
   if (urlForAddons) {
     return handleAddonUrl({ req, res, addonUrl: urlForAddons })
   }
@@ -314,8 +341,11 @@ const serveRedirect = async function ({
       try {
         jwtValue = jwtDecode(token)
       } catch (error) {
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        console.warn(NETLIFYDEVWARN, 'Error while decoding JWT provided in request', error.message)
+        console.warn(
+          NETLIFYDEVWARN,
+          'Error while decoding JWT provided in request',
+          error instanceof Error ? error.message : error?.toString(),
+        )
         res.writeHead(400)
         res.end('Invalid JWT provided. Please see logs for more info.')
         return
@@ -345,7 +375,7 @@ const serveRedirect = async function ({
     match.proxyHeaders &&
     Object.entries(match.proxyHeaders).some(([key, val]) => key.toLowerCase() === 'x-nf-hidden-proxy' && val === 'true')
 
-  const staticFile = await getStatic(decodeURIComponent(reqUrl.pathname), options.publicFolder)
+  const staticFile = await getStatic(decodeURIComponent(reqUrl.pathname), options.publicFolder ?? '')
   const endpointExists =
     !staticFile &&
     !isHiddenProxy &&
@@ -412,11 +442,11 @@ const serveRedirect = async function ({
       return proxy.web(req, res, { target: options.functionsServer })
     }
 
-    const destStaticFile = await getStatic(dest.pathname, options.publicFolder)
+    const destStaticFile = await getStatic(dest.pathname, options.publicFolder ?? '')
     const matchingFunction =
       functionsRegistry &&
       (await functionsRegistry.getFunctionForURLPath(destURL, req.method, () => Boolean(destStaticFile)))
-    let statusValue
+    let statusValue: number | undefined
     if (
       match.force ||
       (!staticFile && ((!options.framework && destStaticFile) || isInternal(destURL) || matchingFunction))
@@ -443,7 +473,7 @@ const serveRedirect = async function ({
     if (isImageRequest(req)) {
       return imageProxy(req, res)
     }
-    const addonUrl = getAddonUrl(options.addonsUrls, req)
+    const addonUrl = getAddonUrl(options.addonsUrls ?? {}, req)
     if (addonUrl) {
       return handleAddonUrl({ req, res, addonUrl })
     }
@@ -454,7 +484,7 @@ const serveRedirect = async function ({
   return proxy.web(req, res, options)
 }
 
-const reqToURL = function (req: Request, pathname: undefined | string) {
+const reqToURL = function (req: IncomingMessage, pathname: undefined | string) {
   return new URL(
     pathname ?? '',
     `${req.protocol || (req.headers.scheme && `${req.headers.scheme}:`) || 'http:'}//${
@@ -497,8 +527,8 @@ const initializeProxy = async function ({
     headers = await parseHeaders({ headersFiles, configPath, config })
   })
 
-  // @ts-expect-error TS(2339) FIXME: Property 'before' does not exist on type 'Server'.
-  proxy.before('web', 'stream', (req) => {
+  // @ts-expect-error TS(2339) FIXME: Property 'on' does not exist on type 'ProxyServer'. Remove this comment to see the full error message
+  proxy.before('web', 'stream', (req: IncomingMessage) => {
     // See https://github.com/http-party/node-http-proxy/issues/1219#issuecomment-511110375
     if (req.headers.expect) {
       req.__expectHeader = req.headers.expect
@@ -518,7 +548,7 @@ const initializeProxy = async function ({
 
     res.end(message)
   })
-  proxy.on('proxyReq', (proxyReq, req) => {
+  proxy.on('proxyReq', (proxyReq: ClientRequest, req: IncomingMessage, _res: unknown, _opts: unknown) => {
     const requestID = generateRequestID()
 
     proxyReq.setHeader(NFRequestID, requestID)
@@ -528,18 +558,14 @@ const initializeProxy = async function ({
       handleProxyRequest(req, proxyReq)
     }
 
-    // @ts-expect-error TS(2339) FIXME: Property '__expectHeader' does not exist on type '... Remove this comment to see the full error message
     if (req.__expectHeader) {
-      // @ts-expect-error TS(2339) FIXME: Property '__expectHeader' does not exist on type '... Remove this comment to see the full error message
       proxyReq.setHeader('Expect', req.__expectHeader)
     }
-    // @ts-expect-error TS(2339) FIXME: Property 'originalBody' does not exist on type 'In... Remove this comment to see the full error message
     if (req.originalBody) {
-      // @ts-expect-error TS(2339) FIXME: Property 'originalBody' does not exist on type 'In... Remove this comment to see the full error message
       proxyReq.write(req.originalBody)
     }
   })
-  proxy.on('proxyRes', (proxyRes, req, res) => {
+  proxy.on('proxyRes', (proxyRes: IncomingMessage, req: IncomingMessage, res: ServerResponse) => {
     res.setHeader('server', 'Netlify')
 
     const requestID = req.headers[NFRequestID]
@@ -551,18 +577,14 @@ const initializeProxy = async function ({
     if (proxyRes.statusCode === 404 || proxyRes.statusCode === 403) {
       // If a request for `/path` has failed, we'll a few variations like
       // `/path/index.html` to mimic the CDN behavior.
-      // @ts-expect-error TS(2339) FIXME: Property 'alternativePaths' does not exist on type... Remove this comment to see the full error message
       if (req.alternativePaths && req.alternativePaths.length !== 0) {
-        // @ts-expect-error TS(2339) FIXME: Property 'alternativePaths' does not exist on type... Remove this comment to see the full error message
         req.url = req.alternativePaths.shift()
-        // @ts-expect-error TS(2339) FIXME: Property 'proxyOptions' does not exist on type 'In... Remove this comment to see the full error message
         return proxy.web(req, res, req.proxyOptions)
       }
 
       // The request has failed but we might still have a matching redirect
       // rule (without `force`) that should kick in. This is how we mimic the
       // file shadowing behavior from the CDN.
-      // @ts-expect-error TS(2339) FIXME: Property 'proxyOptions' does not exist on type 'In... Remove this comment to see the full error message
       if (req.proxyOptions && req.proxyOptions.match) {
         return serveRedirect({
           // We don't want to match functions at this point because any redirects
@@ -573,9 +595,7 @@ const initializeProxy = async function ({
           res,
           proxy: handlers,
           imageProxy,
-          // @ts-expect-error TS(2339) FIXME: Property 'proxyOptions' does not exist on type 'In... Remove this comment to see the full error message
           match: req.proxyOptions.match,
-          // @ts-expect-error TS(2339) FIXME: Property 'proxyOptions' does not exist on type 'In... Remove this comment to see the full error message
           options: req.proxyOptions,
           siteInfo,
           env,
@@ -583,7 +603,7 @@ const initializeProxy = async function ({
       }
     }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'proxyOptions' does not exist on type 'In... Remove this comment to see the full error message
+    // @ts-expect-error(serhalp) -- This makes absolutely no sense. Take a deep breath and investigate.
     if (req.proxyOptions.staticFile && isRedirect({ status: proxyRes.statusCode }) && proxyRes.headers.location) {
       req.url = proxyRes.headers.location
       return serveRedirect({
@@ -596,7 +616,6 @@ const initializeProxy = async function ({
         proxy: handlers,
         imageProxy,
         match: null,
-        // @ts-expect-error TS(2339) FIXME: Property 'proxyOptions' does not exist on type 'In... Remove this comment to see the full error message
         options: req.proxyOptions,
         siteInfo,
         env,
@@ -623,8 +642,7 @@ const initializeProxy = async function ({
         // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
         res.setHeader(key, val)
       })
-      // @ts-expect-error TS(2339) FIXME: Property 'proxyOptions' does not exist on type 'In... Remove this comment to see the full error message
-      res.writeHead(req.proxyOptions.status || proxyRes.statusCode, proxyRes.headers)
+      res.writeHead(req.proxyOptions.status ?? proxyRes.statusCode ?? 200, proxyRes.headers)
 
       proxyRes.on('data', function onData(data) {
         res.write(data)
@@ -644,17 +662,12 @@ const initializeProxy = async function ({
     proxyRes.on('end', async function onEnd() {
       let responseBody = Buffer.concat(responseData)
 
-      // @ts-expect-error TS(2339) FIXME: Property 'proxyOptions' does not exist on type 'In... Remove this comment to see the full error message
       let responseStatus = req.proxyOptions.status || proxyRes.statusCode
 
       // `req[shouldGenerateETag]` may contain a function that determines
       // whether the response should have an ETag header.
-      if (
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        typeof req[shouldGenerateETag] === 'function' &&
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        req[shouldGenerateETag]({ statusCode: responseStatus }) === true
-      ) {
+      const shouldGenerateETag = getShouldGenerateETag(req)
+      if (typeof shouldGenerateETag === 'function' && shouldGenerateETag({ statusCode: responseStatus }) === true) {
         const etag = generateETag(responseBody, { weak: true })
 
         if (req.headers['if-none-match'] === etag) {
@@ -697,7 +710,7 @@ const initializeProxy = async function ({
         delete proxyResHeaders['transfer-encoding']
       }
 
-      res.writeHead(responseStatus, proxyResHeaders)
+      res.writeHead(responseStatus ?? 200, proxyResHeaders)
 
       if (responseStatus !== 304) {
         res.write(responseBody)
@@ -708,17 +721,24 @@ const initializeProxy = async function ({
   })
 
   const handlers = {
-    // @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
-    web: (req, res, options) => {
-      const requestURL = new URL(req.url, 'http://127.0.0.1')
+    web: (req: IncomingMessage, res: ServerResponse, options: IncomingMessage['proxyOptions']) => {
+      const requestURL = new URL(req.url ?? '', 'http://127.0.0.1')
       req.proxyOptions = options
       req.alternativePaths = alternativePathsFor(requestURL.pathname).map((filePath) => filePath + requestURL.search)
       // Ref: https://nodejs.org/api/net.html#net_socket_remoteaddress
-      req.headers['x-forwarded-for'] = req.connection.remoteAddress || ''
+      req.headers['x-forwarded-for'] = req.socket.remoteAddress || ''
       return proxy.web(req, res, options)
     },
-    // @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
-    ws: (req, socket, head, options) => proxy.ws(req, socket, head, options),
+    ws: (
+      req: IncomingMessage,
+      socket: Duplex,
+      head: Buffer,
+      options: {
+        target?: string
+        changeOrigin?: boolean
+        pathRewrite?: () => string
+      },
+    ) => proxy.ws(req, socket, head, options),
   }
 
   return handlers
@@ -737,11 +757,13 @@ const onRequest = async (
     rewriter,
     settings,
     siteInfo,
-  }: { rewriter: Rewriter; settings: ServerSettings; edgeFunctionsProxy?: EdgeFunctionsProxy } & Record<
-    string,
-    $TSFixMe
-  >,
-  req: Request,
+  }: {
+    addonsUrls: Record<string, string>
+    rewriter: Rewriter
+    settings: ServerSettings
+    edgeFunctionsProxy?: EdgeFunctionsProxy
+  } & Record<string, $TSFixMe>,
+  req: IncomingMessage,
   res: ServerResponse,
 ) => {
   req.originalBody =
@@ -799,8 +821,7 @@ const onRequest = async (
 
   if (match) {
     // We don't want to generate an ETag for 3xx redirects.
-    // @ts-expect-error TS(7031) FIXME: Binding element 'statusCode' implicitly has an 'an... Remove this comment to see the full error message
-    req[shouldGenerateETag] = ({ statusCode }: { statusCode: number }) => statusCode < 300 || statusCode >= 400
+    setShouldGenerateETag(req, ({ statusCode }: { statusCode: number }) => statusCode < 300 || statusCode >= 400)
 
     return serveRedirect({ req, res, proxy, imageProxy, match, options, siteInfo, env, functionsRegistry })
   }
@@ -808,8 +829,7 @@ const onRequest = async (
   // The request will be served by the framework server, which means we want to
   // generate an ETag unless we're rendering an error page. The only way for
   // us to know that is by looking at the status code
-  // @ts-expect-error TS(7031) FIXME: Binding element 'statusCode' implicitly has an 'an... Remove this comment to see the full error message
-  req[shouldGenerateETag] = ({ statusCode }: { statusCode: number }) => statusCode >= 200 && statusCode < 300
+  setShouldGenerateETag(req, ({ statusCode }: { statusCode: number }) => statusCode >= 200 && statusCode < 300)
 
   const hasFormSubmissionHandler: boolean =
     functionsRegistry && getFormHandler({ functionsRegistry, logWarning: false })
@@ -861,7 +881,12 @@ export const startProxy = async function ({
   settings,
   siteInfo,
   state,
-}: { command: BaseCommand; settings: ServerSettings; disableEdgeFunctions: boolean } & Record<string, $TSFixMe>) {
+}: {
+  addonsUrls: Record<string, string>
+  command: BaseCommand
+  settings: ServerSettings
+  disableEdgeFunctions: boolean
+} & Record<string, $TSFixMe>) {
   const secondaryServerPort = settings.https ? await getAvailablePort() : null
   const functionsServer = settings.functionsPort ? `http://127.0.0.1:${settings.functionsPort}` : null
 
@@ -937,7 +962,7 @@ export const startProxy = async function ({
   const primaryServer = settings.https
     ? https.createServer({ cert: settings.https.cert, key: settings.https.key }, onRequestWithOptions)
     : http.createServer(onRequestWithOptions)
-  const onUpgrade = async function onUpgrade(req: http.IncomingMessage, socket: Duplex, head: Buffer) {
+  const onUpgrade = async function onUpgrade(req: IncomingMessage, socket: Duplex, head: Buffer) {
     const match = await rewriter(req)
     if (match && !match.force404 && isExternal(match)) {
       const reqUrl = reqToURL(req, req.url)
