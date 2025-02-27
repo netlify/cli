@@ -118,7 +118,7 @@
     "http-proxy": "1.18.1",
     "http-proxy-middleware": "2.0.7",
     "https-proxy-agent": "7.0.6",
-    "inquirer": "8.0.0",
+    "inquirer": "8.2.6",
     "inquirer-autocomplete-prompt": "1.4.0",
     "ipx": "2.1.0",
     "is-docker": "3.0.0",
@@ -165,7 +165,7 @@
     "uuid": "11.0.5",
     "wait-port": "1.1.0",
     "write-file-atomic": "5.0.1",
-    "ws": "8.18.0"
+    "ws": "8.18.1"
   },
   "devDependencies": {
     "@babel/preset-react": "7.26.3",
@@ -181,7 +181,7 @@
     "@types/folder-walker": "3.2.4",
     "@types/gitconfiglocal": "2.0.3",
     "@types/inquirer": "9.0.7",
-    "@types/inquirer-autocomplete-prompt": "^3.0.3",
+    "@types/inquirer-autocomplete-prompt": "3.0.3",
     "@types/jsonwebtoken": "9.0.9",
     "@types/lodash": "4.17.15",
     "@types/multiparty": "4.2.1",
