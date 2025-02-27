@@ -173,7 +173,7 @@
     "uuid": "11.0.5",
     "wait-port": "1.1.0",
     "write-file-atomic": "5.0.1",
-    "ws": "8.18.0"
+    "ws": "8.18.1"
   },
   "devDependencies": {
     "@babel/preset-react": "7.26.3",
