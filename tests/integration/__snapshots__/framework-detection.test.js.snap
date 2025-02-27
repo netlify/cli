@@ -68,12 +68,12 @@ hello
 exports[`frameworks/framework-detection > should pass framework-info env to framework sub process 1`] = `
 "◈ Netlify Dev ◈
 ◈ Setting up local development server
-◈ Starting Netlify Dev with Nuxt 3
+◈ Starting Netlify Dev with RedwoodJS
 
 > dev
 > node -p process.env.NODE_VERSION
 
-18
+20
 ◈ \\"npm run dev\\" exited with code *. Shutting down Netlify Dev server"
 `;
 
