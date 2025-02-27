@@ -349,10 +349,14 @@ const serveRedirect = async function ({
   }
 
   const reqUrl = reqToURL(req, req.url)
+  const isHiddenProxy =
+    match.proxyHeaders &&
+    Object.entries(match.proxyHeaders).some(([key, val]) => key.toLowerCase() === 'x-nf-hidden-proxy' && val === 'true')
 
   const staticFile = await getStatic(decodeURIComponent(reqUrl.pathname), options.publicFolder)
   const endpointExists =
     !staticFile &&
+    !isHiddenProxy &&
     process.env.NETLIFY_DEV_SERVER_CHECK_SSG_ENDPOINTS &&
     (await isEndpointExists(decodeURIComponent(reqUrl.pathname), options.target))
   if (staticFile || endpointExists) {
@@ -388,11 +392,6 @@ const serveRedirect = async function ({
         // This is a redirect, so we set the complete external URL as destination
         destURL = `${dest}`
       } else {
-        const isHiddenProxy =
-          match.proxyHeaders &&
-          Object.entries(match.proxyHeaders).some(
-            ([key, val]) => key.toLowerCase() === 'x-nf-hidden-proxy' && val === 'true',
-          )
         if (!isHiddenProxy) {
           console.log(`${NETLIFYDEVLOG} Proxying to ${dest}`)
         }
