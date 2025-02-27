@@ -218,11 +218,5 @@
     "typescript": "5.7.3",
     "verdaccio": "6.0.5",
     "vitest": "1.6.1"
-  },
-  "ava": {
-    "files": [
-      "tools/**/*.test.js",
-      "tests/**/*.test.cjs"
-    ]
   }
 }

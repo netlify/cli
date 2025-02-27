@@ -38,7 +38,6 @@ const SCRIPTS_TO_KEEP_ON_PUBLISHED_PKG = new Set([
 
 const cleanPackageJson = (pkgJson) => {
   delete pkgJson.devDependencies
-  delete pkgJson.ava
   delete pkgJson.config
 
   for (const scriptName in pkgJson.scripts) {
