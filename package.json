@@ -59,7 +59,6 @@
     "site:build": "npm run build && npm install --prefix=site --no-audit && npm run --prefix=site build",
     "watch": "c8 --reporter=lcov vitest --watch",
     "postinstall-pack": "node ./scripts/postinstall.js",
-    "postinstall": "npm run build && node ./scripts/postinstall.js",
     "prepublishOnly": "node ./scripts/prepare-for-publish.js",
     "certs": "openssl req -x509 -out localhost.crt -keyout localhost.key -newkey rsa:2048 -nodes -sha256 -subj \"/CN=localhost\" -extensions EXT -config certconf"
   },

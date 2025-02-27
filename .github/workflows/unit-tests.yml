@@ -40,6 +40,9 @@ jobs:
       - name: Install core dependencies
         run: npm ci --no-audit
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
+      - name: Build package
+        run: npm run build
+        if: '${{!steps.release-check.outputs.IS_RELEASE}}'
       - name: Linting
         run: npm run format:ci
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'

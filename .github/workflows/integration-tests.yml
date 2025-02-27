@@ -66,6 +66,9 @@ jobs:
       - name: Install core dependencies
         run: npm ci --no-audit
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
+      - name: Build package
+        run: npm run build
+        if: '${{!steps.release-check.outputs.IS_RELEASE}}'
       - name: Generate self-signed certificates
         run: npm run certs
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
@@ -167,6 +170,9 @@ jobs:
           deno-version: v1.44.4
       - name: Install core dependencies
         run: npm ci --no-audit
+        if: '${{!steps.release-check.outputs.IS_RELEASE}}'
+      - name: Build package
+        run: npm run build
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
       - name: Generate self-signed certificates
         run: npm run certs

@@ -32,7 +32,7 @@ First, fork and clone the repository. If you’re not sure how to do this, pleas
 Run:
 
 ```bash
-npm install
+npm install && npm run build
 ```
 
 Tests are run with:
@@ -133,10 +133,10 @@ description: A description.
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
 
 <!-- AUTO-GENERATED-CONTENT:END -->
-
 ```
 
-When adding a new command, you will also need to add it to the nav sidebar manually by adding it to the `navOrder` array in `site/src/_app.js`
+When adding a new command, you will also need to add it to the nav sidebar manually by adding it to the `navOrder` array
+in `site/src/_app.js`
 
 ### Updating our documentation
 
@@ -204,7 +204,8 @@ We actively welcome your pull requests.
 
 ## Releasing
 
-Tag the 'release' pull request using the `automerge` label. This will merge the pull request on GitHub and publish the package to npm.
+Tag the 'release' pull request using the `automerge` label. This will merge the pull request on GitHub and publish the
+package to npm.
 
 ### Creating a prerelease
 

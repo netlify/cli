@@ -20,6 +20,13 @@ const installDeps = async () => {
   spinner.succeed()
 }
 
+// NOTE: this must run before `cleanPackageJson`, otherwise the `build` script has been deleted
+const buildPackageForPublish = async () => {
+  const spinner = ora('Running `npm run build`').start()
+  await execa('npm', ['run', 'build'])
+  spinner.succeed()
+}
+
 const SCRIPTS_TO_KEEP_ON_PUBLISHED_PKG = new Set([
   'postinstall-pack',
   'postpack',
@@ -42,7 +49,7 @@ const cleanPackageJson = (pkgJson) => {
 }
 
 const writeUpdatedPackageJson = async (pkgJson, packageJsonPath) => {
-  const spinner = ora('Patching package.json (removing devDependencies, scripts, etc)').start()
+  const spinner = ora('Patching package.json (removing devDependencies, scripts, etc').start()
   await writeFile(packageJsonPath, JSON.stringify(pkgJson, null, 2))
   spinner.succeed()
 }
@@ -52,12 +59,13 @@ const main = async () => {
   const pkgJsonPath = join(dir, '../package.json')
   const pkgJson = JSON.parse(await readFile(pkgJsonPath))
 
-  cleanPackageJson(pkgJson)
-  insertUserPostinstall(pkgJson)
-
-  await writeUpdatedPackageJson(pkgJson, pkgJsonPath)
-
   await installDeps()
+
+  await buildPackageForPublish()
+
+  insertUserPostinstall(pkgJson)
+  cleanPackageJson(pkgJson)
+  await writeUpdatedPackageJson(pkgJson, pkgJsonPath)
 }
 
 await main()
