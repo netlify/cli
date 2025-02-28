@@ -44,7 +44,7 @@ export const startMockApi = ({ routes, silent }) => {
     res.json({ site_id: 'site_id', integrations: [] })
   })
 
-  app.get('/team/team_id/integrations/installations/meta/site_id', function onRequest(req, res) {
+  app.get('/team/account_id/integrations/installations/meta/site_id', function onRequest(req, res) {
     addRequest(requests, req)
     res.status(200)
     res.json({ site_id: 'site_id', integrations: [] })
