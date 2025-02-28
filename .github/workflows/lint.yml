@@ -21,5 +21,8 @@ jobs:
           cache: npm
       - name: Install core dependencies
         run: npm ci --no-audit
+      # Almost not needed, but a single file in `scripts/` imports built code
+      - name: Build package
+        run: npm run build
       - name: Run lint
         run: npm run lint
