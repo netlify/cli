@@ -309,7 +309,7 @@ describe.concurrent('frameworks/framework-detection', () => {
       await builder
         .withPackageJson({
           packageJson: {
-            dependencies: { nuxt3: '^2.0.0' },
+            dependencies: { '@redwoodjs/core': '^2.0.0' },
             scripts: { dev: 'node -p process.env.NODE_VERSION' },
           },
         })
