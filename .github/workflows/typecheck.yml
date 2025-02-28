@@ -1,4 +1,4 @@
-name: Lint
+name: Typecheck
 
 on:
   push:
@@ -7,8 +7,8 @@ on:
     branches: [main]
 
 jobs:
-  lint:
-    name: Lint
+  typecheck:
+    name: Typecheck
     if: "${{ !startsWith(github.head_ref, 'release-') }}"
     runs-on: ubuntu-latest
     steps:
@@ -21,8 +21,5 @@ jobs:
           cache: npm
       - name: Install core dependencies
         run: npm ci --no-audit
-      # Almost not needed, but a single file in `scripts/` imports built code
-      - name: Build package
-        run: npm run build:ci
-      - name: Run lint
-        run: npm run lint
+      - name: Run typecheck
+        run: npm run typecheck
