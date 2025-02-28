@@ -53,6 +53,19 @@ export type ServerSettings = BaseServerSettings & {
   skipWaitPort?: boolean
 }
 
+export interface ExtraServerOptions {
+  status?: number
+  match: Match | null
+  staticFile?: string | false
+  target: string
+  publicFolder?: string | undefined
+  functionsPort: number
+  jwtRolePath: string
+  framework?: string | undefined
+  addonsUrls?: Record<string, string>
+  functionsServer?: string | null
+}
+
 export type Rewriter = (req: IncomingMessage) => Promise<Match | null>
 
 export interface SiteInfo {

@@ -16,7 +16,7 @@ import cookie from 'cookie'
 import { getProperty } from 'dot-prop'
 import generateETag from 'etag'
 import getAvailablePort from 'get-port'
-import httpProxy from 'http-proxy'
+import httpProxy, { type ServerOptions } from 'http-proxy'
 import { createProxyMiddleware } from 'http-proxy-middleware'
 import { jwtDecode, type JwtPayload } from 'jwt-decode'
 import { locatePath } from 'locate-path'
@@ -43,8 +43,24 @@ import { NFFunctionName, NFFunctionRoute, NFRequestID, headersForPath, parseHead
 import { generateRequestID } from './request-id.js'
 import { createRewriter, onChanges } from './rules-proxy.js'
 import { signRedirect } from './sign-redirect.js'
-import type { Rewriter, ServerSettings } from './types.js'
+import type { Rewriter, ExtraServerOptions, ServerSettings } from './types.js'
 import { ClientRequest, IncomingMessage } from 'node:http'
+
+declare module 'http' {
+  // This is only necessary because we're attaching custom junk to the `req` given to us
+  // by the `http-proxy` module. Since it in turn imports its request object type from `http`,
+  // we have no choice but to augment the `http` module itself globally.
+  // NOTE: to be extra clear, this is *augmenting* the existing type:
+  // https://www.typescriptlang.org/docs/handbook/declaration-merging.html#merging-interfaces.
+  interface IncomingMessage {
+    originalBody?: Buffer | null
+    protocol?: string
+    hostname?: string
+    __expectHeader?: string
+    alternativePaths?: string[]
+    proxyOptions: ServerOptions
+  }
+}
 
 const gunzip = util.promisify(zlib.gunzip)
 const gzip = util.promisify(zlib.gzip)
@@ -64,6 +80,18 @@ const getShouldGenerateETag = (
 const setShouldGenerateETag = (req: IncomingMessage, shouldGenerateETag: ShouldGenerateETag): void => {
   // @ts-expect-error(serhalp -- See above
   req[shouldGenerateETagSymbol] = shouldGenerateETag
+}
+
+type ExtendedServerOptions = ServerOptions | ExtraServerOptions
+
+const getExtraServerOption = (
+  options: ExtendedServerOptions,
+  name: keyof ExtendedServerOptions,
+): ExtendedServerOptions[typeof name] => {
+  if (name in options) {
+    return options[name]
+  }
+  return
 }
 
 const decompressResponseBody = async function (body: Buffer, contentEncoding = ''): Promise<Buffer> {
@@ -158,7 +186,7 @@ const getStatic = async function (pathname: string, publicFolder: string): Promi
   return `/${path.relative(publicFolder, file)}`
 }
 
-const isEndpointExists = async function (endpoint: string, origin: string) {
+const isEndpointExists = async function (endpoint: string, origin?: string | undefined) {
   const url = new URL(endpoint, origin)
   try {
     const res = await fetch(url, { method: 'HEAD' })
@@ -274,19 +302,21 @@ const serveRedirect = async function ({
   res,
   siteInfo,
 }: {
-  options: IncomingMessage['proxyOptions']
+  options: ExtendedServerOptions
   req: IncomingMessage
   res: ServerResponse
   match: Match | null
 } & Record<string, $TSFixMe>) {
   if (!match) return proxy.web(req, res, options)
 
-  options = options || req.proxyOptions || {}
-  options.match = null
+  options = {
+    ...(options ?? req.proxyOptions),
+    match: null,
+  }
 
   if (match.force404) {
     res.writeHead(404)
-    res.end(await render404(options.publicFolder))
+    res.end(await render404(getExtraServerOption(options, 'publicFolder')))
     return
   }
 
@@ -314,11 +344,11 @@ const serveRedirect = async function ({
     }
   }
 
-  if (isFunction(options.functionsPort, req.url ?? '')) {
+  if (isFunction(getExtraServerOption(options, 'functionsPort'), req.url ?? '')) {
     return proxy.web(req, res, { target: options.functionsServer })
   }
 
-  const urlForAddons = getAddonUrl(options.addonsUrls ?? {}, req)
+  const urlForAddons = getAddonUrl(getExtraServerOption(options, 'addonsUrls') ?? {}, req)
   if (urlForAddons) {
     return handleAddonUrl({ req, res, addonUrl: urlForAddons })
   }
@@ -354,9 +384,15 @@ const serveRedirect = async function ({
       if ((jwtValue.exp || 0) < Math.round(Date.now() / MILLISEC_TO_SEC)) {
         console.warn(NETLIFYDEVWARN, 'Expired JWT provided in request', req.url)
       } else {
-        const presentedRoles = getProperty(jwtValue, options.jwtRolePath) || []
+        // I think through some circuitous callback logic `options.jwtRolePath` is guaranteed to
+        // be defined at this point, but I don't think it's possible to convince TS of this.
+        const presentedRoles = getProperty(jwtValue, getExtraServerOption(options, 'jwtRolePath')) ?? []
         if (!Array.isArray(presentedRoles)) {
-          console.warn(NETLIFYDEVWARN, `Invalid roles value provided in JWT ${options.jwtRolePath}`, presentedRoles)
+          console.warn(
+            NETLIFYDEVWARN,
+            `Invalid roles value provided in JWT ${getExtraServerOption(options, 'jwtRolePath')}`,
+            presentedRoles,
+          )
           res.writeHead(400)
           res.end('Invalid JWT provided. Please see logs for more info.')
           return
@@ -375,12 +411,18 @@ const serveRedirect = async function ({
     match.proxyHeaders &&
     Object.entries(match.proxyHeaders).some(([key, val]) => key.toLowerCase() === 'x-nf-hidden-proxy' && val === 'true')
 
-  const staticFile = await getStatic(decodeURIComponent(reqUrl.pathname), options.publicFolder ?? '')
+  const staticFile = await getStatic(
+    decodeURIComponent(reqUrl.pathname),
+    getExtraServerOption(options, 'publicFolder') ?? '',
+  )
   const endpointExists =
     !staticFile &&
     !isHiddenProxy &&
     process.env.NETLIFY_DEV_SERVER_CHECK_SSG_ENDPOINTS &&
-    (await isEndpointExists(decodeURIComponent(reqUrl.pathname), options.target))
+    // @ts-expect-error(serhalp) -- TODO verify if the intent is that `options.target` is
+    // always a string (if so, use `typeof` to only pass strings), or if this is implicitly
+    // relying on built-in coercion to a string of the various support target URL-ish types.
+    (await isEndpointExists(decodeURIComponent(reqUrl.pathname), getExtraServerOption(options, 'target')))
   if (staticFile || endpointExists) {
     const pathname = staticFile || reqUrl.pathname
     req.url = encodeURI(pathname) + reqUrl.search
@@ -390,7 +432,7 @@ const serveRedirect = async function ({
     }
   }
 
-  if (match.force || !staticFile || !options.framework || req.method === 'POST') {
+  if (match.force || !staticFile || !getExtraServerOption(options, 'framework') || req.method === 'POST') {
     // construct destination URL from redirect rule match
     const dest = new URL(match.to, `${reqUrl.protocol}//${reqUrl.host}`)
 
@@ -439,17 +481,18 @@ const serveRedirect = async function ({
       !isInternal(destURL) &&
       (ct.endsWith('/x-www-form-urlencoded') || ct === 'multipart/form-data')
     ) {
-      return proxy.web(req, res, { target: options.functionsServer })
+      return proxy.web(req, res, { target: getExtraServerOption(options, 'functionsServer') })
     }
 
-    const destStaticFile = await getStatic(dest.pathname, options.publicFolder ?? '')
+    const destStaticFile = await getStatic(dest.pathname, getExtraServerOption(options, 'functionsServer') ?? '')
     const matchingFunction =
       functionsRegistry &&
       (await functionsRegistry.getFunctionForURLPath(destURL, req.method, () => Boolean(destStaticFile)))
     let statusValue: number | undefined
     if (
       match.force ||
-      (!staticFile && ((!options.framework && destStaticFile) || isInternal(destURL) || matchingFunction))
+      (!staticFile &&
+        ((!getExtraServerOption(options, 'framework') && destStaticFile) || isInternal(destURL) || matchingFunction))
     ) {
       req.url = destStaticFile ? destStaticFile + dest.search : destURL
       const { status } = match
@@ -468,12 +511,12 @@ const serveRedirect = async function ({
       req.headers['x-netlify-original-pathname'] = url.pathname
       req.headers['x-netlify-original-search'] = url.search
 
-      return proxy.web(req, res, { headers: functionHeaders, target: options.functionsServer })
+      return proxy.web(req, res, { headers: functionHeaders, target: getExtraServerOption(options, 'functionsServer') })
     }
     if (isImageRequest(req)) {
       return imageProxy(req, res)
     }
-    const addonUrl = getAddonUrl(options.addonsUrls ?? {}, req)
+    const addonUrl = getAddonUrl(getExtraServerOption(options, 'addonsUrls') ?? {}, req)
     if (addonUrl) {
       return handleAddonUrl({ req, res, addonUrl })
     }
@@ -585,7 +628,7 @@ const initializeProxy = async function ({
       // The request has failed but we might still have a matching redirect
       // rule (without `force`) that should kick in. This is how we mimic the
       // file shadowing behavior from the CDN.
-      if (req.proxyOptions && req.proxyOptions.match) {
+      if (req.proxyOptions?.match) {
         return serveRedirect({
           // We don't want to match functions at this point because any redirects
           // to functions will have already been processed, so we don't supply a
