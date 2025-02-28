@@ -114,6 +114,7 @@ export const runNetlifyBuild = async ({
     })
 
     settings.frameworkHost = ipVersion === 6 ? '::1' : '127.0.0.1'
+    settings.detectFrameworkHost = options.skipWaitPort
   }
 
   if (timeline === 'build') {
