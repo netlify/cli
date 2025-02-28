@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: [main]
 jobs:
-  package-size:
+  calculate-benchmarks:
     if: startsWith(github.head_ref, 'release-please') == false
     runs-on: ubuntu-latest
     steps:
