@@ -31,7 +31,8 @@ export const startStaticServer = ({ settings }: { settings: import('./types.js')
   const address = server.address()
 
   if (!address) throw new Error(`Failed to get server address`)
-  else if (typeof address === 'string') throw new Error(`Server is listening on a UNIX socket, please instead listen on an IP socket`)
+  else if (typeof address === 'string')
+    throw new Error(`Server is listening on a UNIX socket, please instead listen on an IP socket`)
   log(`\n${NETLIFYDEVLOG} Static server listening to`, settings.frameworkPort)
   return { family: address.family }
 }

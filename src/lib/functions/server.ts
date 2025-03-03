@@ -74,8 +74,8 @@ const buildClientContext = function (headers) {
 
 const hasBody = (req: Request) =>
   // copied from is-type package
- typeof req.headers['content-length'] === 'string' && (req.headers['transfer-encoding'] !== undefined ||
-    !Number.isNaN(Number.parseInt(req.headers['content-length']))) &&
+  typeof req.headers['content-length'] === 'string' &&
+  (req.headers['transfer-encoding'] !== undefined || !Number.isNaN(Number.parseInt(req.headers['content-length']))) &&
   // we expect a string or a buffer, because we use the two bodyParsers(text, raw) from express
   (typeof req.body === 'string' || Buffer.isBuffer(req.body))
 
@@ -282,7 +282,7 @@ const getFunctionsServer = (options: GetFunctionsServerOptions) => {
   })
   app.use(raw({ payloadLimit: 6_291_456 }))
   app.use(createFormSubmissionHandler({ functionsRegistry, siteUrl }))
-  app.use(logger({ignore: ['/favicon.ico']}))
+  app.use(logger({ ignore: ['/favicon.ico'] }))
 
   app.all('*', functionHandler)
 
