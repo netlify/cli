@@ -1,5 +1,4 @@
 import { createServer } from 'http'
-import { AddressInfo } from 'net'
 import path from 'path'
 
 import { App, Request, Response } from '@tinyhttp/app'
@@ -21,8 +20,7 @@ export const startStaticServer = ({ settings }: { settings: import('./types.js')
     res.header('age', '0')
     res.header('cache-control', 'public, max-age=0, must-revalidate')
     const validMethods = ['GET', 'HEAD']
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    if (!validMethods.includes(req.method!)) {
+    if (req.method && !validMethods.includes(req.method)) {
       res.status(405).send('Method Not Allowed')
     }
     return next?.()
@@ -30,7 +28,10 @@ export const startStaticServer = ({ settings }: { settings: import('./types.js')
 
   const server = createServer((req, res) => app.handler(req as Request, res as Response))
   server.listen(settings.frameworkPort)
-  const address = server.address() as AddressInfo
+  const address = server.address()
+
+  if (!address) throw new Error(`Failed to get server address`)
+  else if (typeof address === 'string') throw new Error(`Server is listening on a UNIX socket, please instead listen on an IP socket`)
   log(`\n${NETLIFYDEVLOG} Static server listening to`, settings.frameworkPort)
   return { family: address.family }
 }
