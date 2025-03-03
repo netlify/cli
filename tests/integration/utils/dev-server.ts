@@ -41,6 +41,8 @@ interface DevServerOptions {
   args?: string[]
   context?: string
   cwd: string
+  framework?: string
+  command?: string
   debug?: boolean
   env?: Record<string, string>
   expectFailure?: boolean
@@ -48,6 +50,7 @@ interface DevServerOptions {
   prompt?: $FIXME[]
   serve?: boolean
   skipWaitPort?: boolean
+  targetPort?: number
 }
 
 // 240 seconds
@@ -55,18 +58,20 @@ const SERVER_START_TIMEOUT = 24e4
 
 const startServer = async ({
   args = [],
+  command,
   context = 'dev',
   cwd,
   debug = false,
   env = {},
   expectFailure = false,
+  framework,
   offline = true,
   prompt,
   serve = false,
   skipWaitPort = false,
+  targetPort,
 }: DevServerOptions): Promise<DevServer | { timeout: boolean; output: string }> => {
   const port = await getPort()
-  const staticPort = await getPort()
   const host = 'localhost'
   const url = `http://${host}:${port}`
 
@@ -77,11 +82,24 @@ const startServer = async ({
     offline ? '--offline' : '',
     '-p',
     port,
-    '--staticServerPort',
-    staticPort,
     debug ? '--debug' : '',
     skipWaitPort ? '--skip-wait-port' : '',
   ]
+
+  if (targetPort) {
+    baseArgs.push('--target-port', targetPort)
+  } else {
+    const staticPort = await getPort()
+    baseArgs.push('--staticServerPort', staticPort)
+  }
+
+  if (framework) {
+    baseArgs.push('--framework', framework)
+  }
+
+  if (command) {
+    baseArgs.push('--command', command)
+  }
 
   // We use `null` to override the default context and actually omit the flag
   // from the command, which is useful in some test scenarios.

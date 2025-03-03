@@ -4,10 +4,12 @@ import { readFile } from 'fs/promises'
 import http, { ServerResponse } from 'http'
 import https from 'https'
 import { isIPv6 } from 'net'
+import { Socket } from 'node:net'
 import { Readable } from 'node:stream'
 import path from 'path'
 import process from 'process'
 import { Duplex } from 'stream'
+import url from 'url'
 import util from 'util'
 import zlib from 'zlib'
 
@@ -20,9 +22,9 @@ import httpProxy from 'http-proxy'
 import { createProxyMiddleware } from 'http-proxy-middleware'
 import { jwtDecode } from 'jwt-decode'
 import { locatePath } from 'locate-path'
+import throttle from 'lodash/throttle.js'
 import { Match } from 'netlify-redirector'
 import pFilter from 'p-filter'
-import throttle from 'lodash/throttle.js'
 
 import { BaseCommand } from '../commands/index.js'
 import { $TSFixMe, NetlifyOptions } from '../commands/types.js'
@@ -515,11 +517,33 @@ const initializeProxy = async function ({
     }
   })
 
-  proxy.on('error', (_, req, res) => {
-    // @ts-expect-error TS(2339) FIXME: Property 'writeHead' does not exist on type 'Socke... Remove this comment to see the full error message
-    res.writeHead(500, {
-      'Content-Type': 'text/plain',
-    })
+  proxy.on('error', (err, req, res, proxyUrl) => {
+    // @ts-expect-error TS(2339) FIXME: Property 'proxyOptions' does not exist on type 'In... Remove this comment to see the full error message
+    const options = req.proxyOptions
+
+    const isConRefused = 'code' in err && err.code === 'ECONNREFUSED'
+    if (options?.detectTarget && !(res instanceof Socket) && isConRefused && proxyUrl) {
+      // got econnrefused while detectTarget set to true -> try to switch between current ipVer and other (4 to 6 and vice versa)
+
+      // proxyUrl is parsed in http-proxy using url, parsing the same here. Difference between it and
+      // URL that hostname not includes [] symbols when using url.parse
+      // eslint-disable-next-line n/no-deprecated-api
+      const targetUrl = typeof proxyUrl === 'string' ? url.parse(proxyUrl) : proxyUrl
+      const isCurrentHost = targetUrl.hostname === options.targetHostname
+      if (targetUrl.hostname && isCurrentHost) {
+        const newHost = isIPv6(targetUrl.hostname) ? '127.0.0.1' : '::1'
+        options.target = `http://${isIPv6(newHost) ? `[${newHost}]` : newHost}:${targetUrl.port}`
+        options.targetHostname = newHost
+        options.isChangingTarget = true
+        return proxy.web(req, res, options)
+      }
+    }
+
+    if (res instanceof http.ServerResponse) {
+      res.writeHead(500, {
+        'Content-Type': 'text/plain',
+      })
+    }
 
     const message = isEdgeFunctionsRequest(req)
       ? 'There was an error with an Edge Function. Please check the terminal for more details.'
@@ -527,6 +551,7 @@ const initializeProxy = async function ({
 
     res.end(message)
   })
+
   proxy.on('proxyReq', (proxyReq, req) => {
     const requestID = generateRequestID()
 
@@ -548,6 +573,7 @@ const initializeProxy = async function ({
       proxyReq.write(req.originalBody)
     }
   })
+
   proxy.on('proxyRes', (proxyRes, req, res) => {
     res.setHeader('server', 'Netlify')
 
@@ -555,6 +581,23 @@ const initializeProxy = async function ({
 
     if (requestID) {
       res.setHeader(NFRequestID, requestID)
+    }
+
+    // @ts-expect-error TS(2339) FIXME: Property 'proxyOptions' does not exist on type 'In... Remove this comment to see the full error message
+    const options = req.proxyOptions
+
+    if (options.isChangingTarget) {
+      // got a response after switching the ipVer for host (and its not an error since we will be in on('error') handler) - let's remember this host now
+
+      // options are not exported in ts for the proxy:
+      // @ts-expect-error TS(2339) FIXME: Property 'options' does not exist on type 'In...
+      proxy.options.target.host = options.targetHostname
+
+      options.changeSettings?.({
+        frameworkHost: options.targetHostname,
+        detectFrameworkHost: false,
+      })
+      console.log(`${NETLIFYDEVLOG} Switched host to ${options.targetHostname}`)
     }
 
     if (proxyRes.statusCode === 404 || proxyRes.statusCode === 403) {
@@ -571,8 +614,7 @@ const initializeProxy = async function ({
       // The request has failed but we might still have a matching redirect
       // rule (without `force`) that should kick in. This is how we mimic the
       // file shadowing behavior from the CDN.
-      // @ts-expect-error TS(2339) FIXME: Property 'proxyOptions' does not exist on type 'In... Remove this comment to see the full error message
-      if (req.proxyOptions && req.proxyOptions.match) {
+      if (options && options.match) {
         return serveRedirect({
           // We don't want to match functions at this point because any redirects
           // to functions will have already been processed, so we don't supply a
@@ -582,18 +624,15 @@ const initializeProxy = async function ({
           res,
           proxy: handlers,
           imageProxy,
-          // @ts-expect-error TS(2339) FIXME: Property 'proxyOptions' does not exist on type 'In... Remove this comment to see the full error message
-          match: req.proxyOptions.match,
-          // @ts-expect-error TS(2339) FIXME: Property 'proxyOptions' does not exist on type 'In... Remove this comment to see the full error message
-          options: req.proxyOptions,
+          match: options.match,
+          options,
           siteInfo,
           env,
         })
       }
     }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'proxyOptions' does not exist on type 'In... Remove this comment to see the full error message
-    if (req.proxyOptions.staticFile && isRedirect({ status: proxyRes.statusCode }) && proxyRes.headers.location) {
+    if (options.staticFile && isRedirect({ status: proxyRes.statusCode }) && proxyRes.headers.location) {
       req.url = proxyRes.headers.location
       return serveRedirect({
         // We don't want to match functions at this point because any redirects
@@ -605,8 +644,7 @@ const initializeProxy = async function ({
         proxy: handlers,
         imageProxy,
         match: null,
-        // @ts-expect-error TS(2339) FIXME: Property 'proxyOptions' does not exist on type 'In... Remove this comment to see the full error message
-        options: req.proxyOptions,
+        options,
         siteInfo,
         env,
       })
@@ -634,8 +672,7 @@ const initializeProxy = async function ({
         // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
         res.setHeader(key, val)
       })
-      // @ts-expect-error TS(2339) FIXME: Property 'proxyOptions' does not exist on type 'In... Remove this comment to see the full error message
-      res.writeHead(req.proxyOptions.status || proxyRes.statusCode, proxyRes.headers)
+      res.writeHead(options.status || proxyRes.statusCode, proxyRes.headers)
 
       proxyRes.on('data', function onData(data) {
         res.write(data)
@@ -656,8 +693,7 @@ const initializeProxy = async function ({
       // @ts-expect-error TS(7005) FIXME: Variable 'responseData' implicitly has an 'any[]' ... Remove this comment to see the full error message
       let responseBody = Buffer.concat(responseData)
 
-      // @ts-expect-error TS(2339) FIXME: Property 'proxyOptions' does not exist on type 'In... Remove this comment to see the full error message
-      let responseStatus = req.proxyOptions.status || proxyRes.statusCode
+      let responseStatus = options.status || proxyRes.statusCode
 
       // `req[shouldGenerateETag]` may contain a function that determines
       // whether the response should have an ETag header.
@@ -805,11 +841,16 @@ const onRequest = async (
     target: `http://${
       settings.frameworkHost && isIPv6(settings.frameworkHost) ? `[${settings.frameworkHost}]` : settings.frameworkHost
     }:${settings.frameworkPort}`,
+    detectTarget: settings.detectFrameworkHost,
+    targetHostname: settings.frameworkHost,
     publicFolder: settings.dist,
     functionsServer,
     functionsPort: settings.functionsPort,
     jwtRolePath: settings.jwtRolePath,
     framework: settings.framework,
+    changeSettings(newSettings: Partial<ServerSettings>) {
+      Object.assign(settings, newSettings)
+    },
   }
 
   if (match) {

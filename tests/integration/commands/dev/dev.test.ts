@@ -2,6 +2,7 @@
 import fs from 'node:fs/promises'
 import { type AddressInfo } from 'node:net'
 import path from 'node:path'
+import process from 'process'
 
 import jwt, { type JwtPayload } from 'jsonwebtoken'
 import fetch from 'node-fetch'
@@ -392,6 +393,31 @@ describe.concurrent('command/dev', () => {
         const response = await fetch(`${server.url}/api/test`)
         t.expect(response.status).toBe(404)
       })
+
+      externalServer.close()
+    })
+  })
+
+  test('should detect ipVer when proxying without waiting for port', async (t) => {
+    // ipv6 is default from node 18
+    const nodeVer = Number.parseInt(process.versions.node.split('.')[0])
+    t.expect(nodeVer).toBeGreaterThanOrEqual(18)
+
+    await withSiteBuilder(t, async (builder) => {
+      const externalServer = startExternalServer({
+        host: '127.0.0.1',
+        port: 4567,
+      })
+      await builder.build()
+
+      await withDevServer(
+        { cwd: builder.directory, command: 'node', framework: '#custom', targetPort: 4567, skipWaitPort: true },
+        async (server) => {
+          const response = await fetch(`${server.url}/test`)
+          t.expect(response.status).toBe(200)
+          t.expect(String(server.output)).toContain('Switched host to 127.0.0.1')
+        },
+      )
 
       externalServer.close()
     })
