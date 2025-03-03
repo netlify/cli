@@ -19,7 +19,7 @@ const unableToOpenBrowserMessage = function ({ message, url }: BrowserUnableMess
 }
 
 type OpenBrowsrProps = {
-  silentBrowserNoneError: boolean
+  silentBrowserNoneError?: boolean
   url: string
 }
 

@@ -63,8 +63,8 @@ export const startProxyServer = async ({
   siteInfo,
   state,
 }: {
-  accountId: string
-  addonsUrls: $TSFixMe
+  accountId?: string | undefined
+  addonsUrls: Record<string, string>
   api?: NetlifyOptions['api']
   blobsContext?: BlobsContextWithEdgeAccess
   command: BaseCommand
