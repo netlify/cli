@@ -10,7 +10,6 @@ jobs:
   lint:
     name: Lint
     if: "${{ !startsWith(github.head_ref, 'release-') }}"
-    runs-on: ubuntu-latest
     steps:
       - name: Git checkout
         uses: actions/checkout@v4
@@ -21,8 +20,5 @@ jobs:
           cache: npm
       - name: Install core dependencies
         run: npm ci --no-audit
-      # Almost not needed, but a single file in `scripts/` imports built code
-      - name: Build package
-        run: npm run build
       - name: Run lint
         run: npm run lint
