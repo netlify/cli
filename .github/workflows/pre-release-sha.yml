@@ -38,7 +38,9 @@ jobs:
           git config --global user.email "82042599+token-generator-app[bot]@users.noreply.github.com"
 
       - name: Run npm version
-        run: npm --no-git-tag-version version "\$(jq --raw-output .version package.json)-pre.\$(git rev-parse --short ${{ inputs.ref }})"
+        run:
+          npm --no-git-tag-version version "\$(jq --raw-output .version package.json)-pre.\$(git rev-parse --short ${{
+          inputs.ref }})"
 
       - name: Run npm publish
         run: npm publish --provenance
