@@ -30,9 +30,8 @@ test('should report invalid remote images', () => {
 
 test('should transform image params correctly - without fit or position', () => {
   const query = {
-    // eslint-disable-next-line id-length
     w: '100',
-    // eslint-disable-next-line id-length
+
     q: '80',
     fm: 'jpg',
   }
@@ -42,11 +41,8 @@ test('should transform image params correctly - without fit or position', () => 
 
 test('should transform image params correctly - resize', () => {
   const query = {
-    // eslint-disable-next-line id-length
     w: '100',
-    // eslint-disable-next-line id-length
     h: '200',
-    // eslint-disable-next-line id-length
     q: '80',
     fm: 'jpg',
     fit: 'cover',
@@ -58,11 +54,8 @@ test('should transform image params correctly - resize', () => {
 
 test('should transform image params correctly - fit is contain', () => {
   const query = {
-    // eslint-disable-next-line id-length
     w: '100',
-    // eslint-disable-next-line id-length
     h: '200',
-    // eslint-disable-next-line id-length
     q: '80',
     fm: 'jpg',
     fit: 'contain',

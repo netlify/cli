@@ -25,7 +25,6 @@ describe.concurrent('commands/dev/config', () => {
           path: 'env.js',
           handler: async () => ({
             statusCode: 200,
-            // eslint-disable-next-line n/prefer-global/process
             body: `${process.env.TEST_BUILD_ENVIRONMENT}`,
           }),
         })
@@ -51,7 +50,6 @@ describe.concurrent('commands/dev/config', () => {
         })
         .withFunction({
           path: 'env.js',
-          // eslint-disable-next-line n/prefer-global/process
           handler: async () => ({ statusCode: 200, body: `${process.env.TEST_PRODUCTION_ENVIRONMENT}` }),
         })
 
@@ -71,7 +69,6 @@ describe.concurrent('commands/dev/config', () => {
         .withEnvFile({ path: '.env.development', env: { TEST: 'FROM_DEV_FILE' } })
         .withFunction({
           path: 'env.js',
-          // eslint-disable-next-line n/prefer-global/process
           handler: async () => ({ statusCode: 200, body: `${process.env.TEST}` }),
         })
 
@@ -92,7 +89,6 @@ describe.concurrent('commands/dev/config', () => {
         })
         .withFunction({
           path: 'env.js',
-          // eslint-disable-next-line n/prefer-global/process
           handler: async () => ({ statusCode: 200, body: `${process.env.TEST}` }),
         })
 
@@ -130,7 +126,6 @@ describe.concurrent('commands/dev/config', () => {
     await withSiteBuilder(t, async (builder) => {
       builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withFunction({
         path: 'env.js',
-        // eslint-disable-next-line n/prefer-global/process
         handler: async () => ({ statusCode: 200, body: `${process.env.NETLIFY_DEV}` }),
       })
 
@@ -198,7 +193,6 @@ describe.concurrent('commands/dev/config', () => {
     await withSiteBuilder(t, async (builder) => {
       builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withFunction({
         path: 'env.js',
-        // eslint-disable-next-line n/prefer-global/process
         handler: async () => ({ statusCode: 200, body: `${process.env.CONTEXT}` }),
       })
 
@@ -215,7 +209,6 @@ describe.concurrent('commands/dev/config', () => {
     await withSiteBuilder(t, async (builder) => {
       builder.withNetlifyToml({ config: { functions: { directory: 'functions' } } }).withFunction({
         path: 'env.js',
-        // eslint-disable-next-line n/prefer-global/process
         handler: async () => ({ statusCode: 200, body: `${process.env.CONTEXT}` }),
       })
 

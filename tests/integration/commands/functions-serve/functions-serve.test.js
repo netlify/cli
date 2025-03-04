@@ -114,7 +114,6 @@ describe.concurrent('functions:serve command', () => {
           path: 'echo-env.js',
           handler: async () => ({
             statusCode: 200,
-            // eslint-disable-next-line n/prefer-global/process
             body: `${process.env.MY_CONFIG}`,
           }),
         })
