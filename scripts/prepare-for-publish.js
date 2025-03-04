@@ -43,6 +43,7 @@ const cleanPackageJson = (pkgJson) => {
   for (const scriptName in pkgJson.scripts) {
     if (SCRIPTS_TO_KEEP_ON_PUBLISHED_PKG.has(scriptName)) continue
 
+    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
     delete pkgJson.scripts[scriptName]
   }
 }

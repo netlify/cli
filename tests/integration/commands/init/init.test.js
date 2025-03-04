@@ -413,6 +413,7 @@ describe.concurrent('commands/init', () => {
     })
   })
 
+  // eslint-disable-next-line vitest/expect-expect
   test('netlify init existing Next.js site with existing plugins', async (t) => {
     const [command, publish] = ['custom-build-command', 'custom-publish', 'custom-functions']
     const initQuestions = [
