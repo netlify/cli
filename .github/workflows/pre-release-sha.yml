@@ -42,6 +42,6 @@ jobs:
           npm --no-git-tag-version version "$(jq --raw-output .version package.json)-pre.$(git rev-parse --short ${{ inputs.ref }})"
 
       - name: Run npm publish
-        run: npm publish --provenance
+        run: npm publish --provenance --tag=rc
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
