@@ -172,7 +172,7 @@
   "devDependencies": {
     "@babel/preset-react": "7.26.3",
     "@netlify/eslint-config-node": "7.0.1",
-    "@netlify/functions": "3.0.0",
+    "@netlify/functions": "3.0.1",
     "@sindresorhus/slugify": "2.2.1",
     "@types/configstore": "6.0.2",
     "@types/content-type": "1.1.8",
