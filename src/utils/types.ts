@@ -1,7 +1,5 @@
-import { Buffer } from 'buffer'
-import { IncomingMessage } from 'http'
-
-import { Match } from 'netlify-redirector'
+import type { IncomingMessage } from 'http'
+import type { Match } from 'netlify-redirector'
 
 export type FrameworkNames = '#static' | '#auto' | '#custom' | string
 
@@ -55,13 +53,20 @@ export type ServerSettings = BaseServerSettings & {
   skipWaitPort?: boolean
 }
 
-export interface Request extends IncomingMessage {
-  originalBody?: Buffer | null
-  protocol?: string
-  hostname?: string
+export interface ExtraServerOptions {
+  status?: number
+  match: Match | null
+  staticFile?: string | false
+  target: string
+  publicFolder?: string | undefined
+  functionsPort: number
+  jwtRolePath: string
+  framework?: string | undefined
+  addonsUrls?: Record<string, string>
+  functionsServer?: string | null
 }
 
-export type Rewriter = (req: Request) => Match | null
+export type Rewriter = (req: IncomingMessage) => Promise<Match | null>
 
 export interface SiteInfo {
   account_name: string
@@ -88,6 +93,10 @@ export interface SiteInfo {
   deploy_url: string
   domain_aliases: string[]
   force_ssl: boolean
+  functions_config?: {
+    timeout?: number
+  }
+  functions_timeout?: number
   git_provider: string
   id: string
   managed_dns: boolean
