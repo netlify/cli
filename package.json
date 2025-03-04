@@ -32,7 +32,6 @@
   },
   "scripts": {
     "build": "tsc",
-    "build:ci": "tsc --noCheck",
     "certs": "openssl req -x509 -out localhost.crt -keyout localhost.key -newkey rsa:2048 -nodes -sha256 -subj \"/CN=localhost\" -extensions EXT -config certconf",
     "dev": "tsc --watch",
     "e2e": "node ./tools/e2e/run.js",
@@ -57,7 +56,6 @@
     "test:init:hugo-deps": "npm ci --prefix tests/integration/__fixtures__/hugo-site --no-audit",
     "test:init:monorepo-deps": "cd tests/integration/__fixtures__/monorepo && pnpm install --frozen-lockfile",
     "test:init:next-deps": "npm ci --prefix tests/integration/__fixtures__/next-app-without-config --no-audit && npm ci --prefix tests/integration/__fixtures__/next-app --no-audit",
-    "typecheck": "tsc --noEmit",
     "watch": "c8 --reporter=lcov vitest --watch"
   },
   "config": {

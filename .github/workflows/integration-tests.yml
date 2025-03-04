@@ -55,7 +55,7 @@ jobs:
       - name: Install core dependencies
         run: npm ci --no-audit
       - name: Build package
-        run: npm run build:ci
+        run: npm run build
       - name: Generate self-signed certificates
         run: npm run certs
         shell: bash
@@ -142,7 +142,7 @@ jobs:
       - name: Install core dependencies
         run: npm ci --no-audit
       - name: Build package
-        run: npm run build:ci
+        run: npm run build
       - name: Generate self-signed certificates
         run: npm run certs
         shell: bash
