@@ -6,7 +6,7 @@ on:
       - completed
 
 jobs:
-  post-benchmarks:
+  post-package-size:
     runs-on: ubuntu-latest
     steps:
       # This posts the status to the PR/commit
