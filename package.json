@@ -31,7 +31,6 @@
     "url": "https://github.com/netlify/cli/issues"
   },
   "scripts": {
-    "prepare": "is-ci || husky install node_modules/@netlify/eslint-config-node/.husky/",
     "start": "node ./bin/run.js",
     "build": "tsc",
     "dev": "tsc --watch",
@@ -67,7 +66,7 @@
     "certs": "openssl req -x509 -out localhost.crt -keyout localhost.key -newkey rsa:2048 -nodes -sha256 -subj \"/CN=localhost\" -extensions EXT -config certconf"
   },
   "config": {
-    "eslint": "--cache --format=codeframe --max-warnings=0 \"{src,scripts,tests,.github}/**/*.{mjs,cjs,js,md,html}\" \"*.{mjs,cjs,js,md,html}\" \".*.{mjs,cjs,js,md,html}\"",
+    "eslint": "--cache --max-warnings=0 \"{src,scripts,tests,.github}/**/*.{mjs,cjs,js,md,html}\" \"*.{mjs,cjs,js,md,html}\"",
     "prettier": "--ignore-path .eslintignore --loglevel=warn \"{src,tools,scripts,tests,.github}/**/*.{mjs,cjs,js,mts,md,yml,json,html,ts}\" \"*.{mjs,cjs,js,mts,yml,json,html,ts}\" \".*.{mjs,cjs,js,yml,json,html,ts}\" \"!CHANGELOG.md\" \"!**/*/package-lock.json\" \"!.github/**/*.md\""
   },
   "dependencies": {
@@ -177,9 +176,12 @@
   },
   "devDependencies": {
     "@babel/preset-react": "7.26.3",
-    "@netlify/eslint-config-node": "7.0.1",
+    "@eslint/compat": "^1.2.7",
+    "@eslint/js": "^9.21.0",
     "@netlify/functions": "3.0.1",
     "@sindresorhus/slugify": "2.2.1",
+    "@tsconfig/node18": "^18.2.4",
+    "@tsconfig/recommended": "^1.0.8",
     "@types/configstore": "6.0.2",
     "@types/content-type": "1.1.8",
     "@types/debug": "4.1.12",
@@ -206,20 +208,24 @@
     "@types/write-file-atomic": "4.0.3",
     "@types/ws": "8.5.14",
     "@vitest/coverage-v8": "1.6.1",
+    "@vitest/eslint-plugin": "^1.1.36",
     "c8": "10.1.3",
     "cheerio": "1.0.0",
-    "eslint-plugin-sort-destructure-keys": "2.0.0",
-    "eslint-plugin-workspace": "file:./tools/lint-rules",
+    "cross-env-shell": "^7.0.3",
+    "eslint": "^9.21.0",
+    "eslint-config-prettier": "^10.0.2",
+    "eslint-plugin-n": "^17.16.1",
     "form-data": "4.0.2",
-    "husky": "9.1.7",
     "is-ci": "4.1.0",
     "nock": "14.0.1",
     "p-timeout": "6.1.4",
+    "prettier": "2.6.2",
     "serialize-javascript": "6.0.2",
     "strip-ansi": "7.1.0",
     "temp-dir": "3.0.0",
     "tree-kill": "1.2.2",
     "typescript": "5.7.3",
+    "typescript-eslint": "^8.26.0",
     "verdaccio": "6.0.5",
     "vitest": "1.6.1"
   },
