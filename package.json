@@ -31,32 +31,40 @@
     "url": "https://github.com/netlify/cli/issues"
   },
   "scripts": {
-    "build": "tsc",
-    "certs": "openssl req -x509 -out localhost.crt -keyout localhost.key -newkey rsa:2048 -nodes -sha256 -subj \"/CN=localhost\" -extensions EXT -config certconf",
-    "dev": "tsc --watch",
-    "e2e": "node ./tools/e2e/run.js",
-    "format": "cross-env-shell prettier --check $npm_package_config_prettier --ignore-path .prettierignore",
-    "format:fix": "cross-env-shell prettier --write $npm_package_config_prettier --ignore-path .prettierignore",
-    "lint": "cross-env-shell eslint $npm_package_config_eslint",
-    "lint:fix": "cross-env-shell eslint --fix $npm_package_config_eslint",
-    "postinstall-pack": "node ./scripts/postinstall.js",
     "prepare": "is-ci || husky install node_modules/@netlify/eslint-config-node/.husky/",
-    "prepublishOnly": "node ./scripts/prepare-for-publish.js",
-    "site:build": "npm run build && npm install --prefix=site --no-audit && npm run --prefix=site build",
     "start": "node ./bin/run.js",
-    "test": "npm run format && npm run lint && npm run test:dev",
-    "test:ci:vitest:integration": "vitest run --coverage tests/integration/",
-    "test:ci:vitest:unit": "vitest run --coverage tests/unit/",
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "run-s format test:dev",
+    "format": "run-s format:check-fix:*",
+    "format:ci": "run-s format:check:*",
+    "format:check-fix:lint": "run-s format:check:lint format:fix:lint",
+    "format:check:lint": "cross-env-shell eslint $npm_package_config_eslint",
+    "format:fix:lint": "cross-env-shell eslint --fix $npm_package_config_eslint",
+    "format:check-fix:prettier": "run-s format:check:prettier format:fix:prettier",
+    "format:check:prettier": "cross-env-shell prettier --check $npm_package_config_prettier --ignore-path .prettierignore",
+    "format:fix:prettier": "cross-env-shell prettier --write $npm_package_config_prettier --ignore-path .prettierignore",
     "test:dev": "run-s certs test:init:* test:dev:*",
-    "test:dev:vitest": "vitest run tests/unit/ && vitest run tests/integration",
     "test:init": "run-s test:init:*",
-    "test:init:cli-help": "npm run start -- --help",
     "test:init:cli-version": "npm run start -- --version",
+    "test:init:cli-help": "npm run start -- --help",
     "test:init:eleventy-deps": "cd tests/integration/__fixtures__/eleventy-site && pnpm install --frozen-lockfile",
     "test:init:hugo-deps": "npm ci --prefix tests/integration/__fixtures__/hugo-site --no-audit",
     "test:init:monorepo-deps": "cd tests/integration/__fixtures__/monorepo && pnpm install --frozen-lockfile",
     "test:init:next-deps": "npm ci --prefix tests/integration/__fixtures__/next-app-without-config --no-audit && npm ci --prefix tests/integration/__fixtures__/next-app --no-audit",
-    "watch": "c8 --reporter=lcov vitest --watch"
+    "test:dev:vitest": "vitest run tests/unit/ && vitest run tests/integration",
+    "test:ci:vitest:unit": "vitest run --coverage tests/unit/",
+    "test:ci:vitest:integration": "vitest run --coverage tests/integration/",
+    "e2e": "node ./tools/e2e/run.js",
+    "docs": "npm run --prefix=site build",
+    "watch": "c8 --reporter=lcov vitest --watch",
+    "site:build": "run-s site:build:*",
+    "site:build:install": "cd site && npm install --no-audit",
+    "site:build:assets": "cd site && npm run build",
+    "postinstall-pack": "node ./scripts/postinstall.js",
+    "postinstall": "npm run build && node ./scripts/postinstall.js",
+    "prepublishOnly": "node ./scripts/prepare-for-publish.js",
+    "certs": "openssl req -x509 -out localhost.crt -keyout localhost.key -newkey rsa:2048 -nodes -sha256 -subj \"/CN=localhost\" -extensions EXT -config certconf"
   },
   "config": {
     "eslint": "--cache --format=codeframe --max-warnings=0 \"{src,scripts,tests,.github}/**/*.{mjs,cjs,js,md,html}\" \"*.{mjs,cjs,js,md,html}\" \".*.{mjs,cjs,js,md,html}\"",
@@ -206,7 +214,6 @@
     "husky": "9.1.7",
     "is-ci": "4.1.0",
     "nock": "14.0.1",
-    "npm-run-all2": "7.0.2",
     "p-timeout": "6.1.4",
     "serialize-javascript": "6.0.2",
     "strip-ansi": "7.1.0",
@@ -215,5 +222,12 @@
     "typescript": "5.7.3",
     "verdaccio": "6.0.5",
     "vitest": "1.6.1"
-  }
+  },
+  "ava": {
+    "files": [
+      "tools/**/*.test.js",
+      "tests/**/*.test.cjs"
+    ]
+  },
+  "packageManager": "pnpm@9.15.4+sha512.b2dc20e2fc72b3e18848459b37359a32064663e5627a51e4c74b2c29dd8e8e0491483c3abb40789cfd578bf362fb6ba8261b05f0387d76792ed6e23ea3b1b6a0"
 }

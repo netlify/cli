@@ -41,8 +41,6 @@ jobs:
           key: verdaccio-e2e-cli-${{ hashFiles('./package-lock.json') }}
       - name: Install dependencies
         run: npm ci --no-audit
-      - name: Build package
-        run: npm run build
       - run: npm run e2e
       - name: Notify Slack
         uses: 8398a7/action-slack@v3
@@ -91,8 +89,6 @@ jobs:
           key: verdaccio-e2e-cli-${{ hashFiles('./package-lock.json') }}
       - name: Install dependencies
         run: npm ci --no-audit
-      - name: Build package
-        run: npm run build
       - run: npm run e2e
       - name: Notify Slack
         uses: 8398a7/action-slack@v3
