@@ -21,16 +21,16 @@ const cookingFixtures = {
 
 describe('getAutocompletion', () => {
   test('should not autocomplete anything when completion is turned off', () => {
-    // @ts-ignore
+    // @ts-expect-error: Intentionally violating type safety
     expect(getAutocompletion({}, cookingFixtures)).toBeUndefined()
-    // @ts-ignore
+    // @ts-expect-error: Intentionally violating type safety
     expect(getAutocompletion({ complete: false }, cookingFixtures)).toBeUndefined()
-    // @ts-ignore
+    // @ts-expect-error: Intentionally violating type safety
     expect(getAutocompletion({ complete: false, words: 2 }, cookingFixtures)).toBeUndefined()
   })
 
   test('should get the correct autocompletion for the base command', () => {
-    // @ts-ignore
+    // @ts-expect-error: Intentionally violating type safety
     const completion = getAutocompletion({ complete: true, words: 1, lastPartial: '' }, cookingFixtures)
     expect(completion).toEqual([
       { name: 'cook', description: 'cooking' },
@@ -39,14 +39,14 @@ describe('getAutocompletion', () => {
   })
 
   test('should get the correct autocompletion for the base command if there is already a word', () => {
-    // @ts-ignore
+    // @ts-expect-error: Intentionally violating type safety
     const completion = getAutocompletion({ complete: true, words: 1, lastPartial: 'ba' }, cookingFixtures)
     expect(completion).toEqual([{ name: 'bake', description: 'baking' }])
   })
 
   test('should get no flags if the command has no flags', () => {
     const completion = getAutocompletion(
-      // @ts-ignore
+      // @ts-expect-error: Intentionally violating type safety
       { complete: true, words: 2, lastPartial: '', line: 'netlify cook' },
       cookingFixtures,
     )
@@ -55,7 +55,7 @@ describe('getAutocompletion', () => {
 
   test('should get the correct flags for the command', () => {
     const completion = getAutocompletion(
-      // @ts-ignore
+      // @ts-expect-error: Intentionally violating type safety
       { complete: true, words: 2, lastPartial: '', line: 'netlify bake' },
       cookingFixtures,
     )
@@ -64,7 +64,7 @@ describe('getAutocompletion', () => {
 
   test('should get the correct left over flags for the command', () => {
     const completion = getAutocompletion(
-      // @ts-ignore
+      // @ts-expect-error: Intentionally violating type safety
       { complete: true, words: 3, lastPartial: '', line: 'netlify bake --heat' },
       cookingFixtures,
     )
@@ -76,7 +76,7 @@ describe('getAutocompletion', () => {
 
   test('should get no results if the command has no left over flags anymore', () => {
     const completion = getAutocompletion(
-      // @ts-ignore
+      // @ts-expect-error: Intentionally violating type safety
       { complete: true, words: 4, lastPartial: '', line: 'netlify bake --heat --heat-type --duration' },
       cookingFixtures,
     )
@@ -85,7 +85,7 @@ describe('getAutocompletion', () => {
 
   test('should autocomplete flags', () => {
     const completion = getAutocompletion(
-      // @ts-ignore
+      // @ts-expect-error: Intentionally violating type safety
       { complete: true, words: 4, lastPartial: '--hea', line: 'netlify bake --heat --hea' },
       cookingFixtures,
     )

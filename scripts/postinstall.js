@@ -1,5 +1,5 @@
 import process from 'process'
-
+// eslint-disable-next-line no-restricted-imports
 import chalk from 'chalk'
 
 import { createMainCommand } from '../dist/commands/index.js'

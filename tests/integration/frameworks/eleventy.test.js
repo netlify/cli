@@ -8,7 +8,6 @@ import { afterAll, beforeAll, describe, test } from 'vitest'
 import { clientIP, originalIP } from '../../lib/local-ip.js'
 import { startDevServer } from '../utils/dev-server.ts'
 
-// eslint-disable-next-line no-underscore-dangle
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const context = {}

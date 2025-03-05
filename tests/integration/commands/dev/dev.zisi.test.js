@@ -14,7 +14,6 @@ import { withDevServer } from '../../utils/dev-server.ts'
 import { withMockApi } from '../../utils/mock-api.js'
 import { withSiteBuilder } from '../../utils/site-builder.ts'
 
-// eslint-disable-next-line no-underscore-dangle
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const testMatrix = [{ args: [] }]
@@ -232,7 +231,6 @@ export const handler = async function () {
         .withEdgeFunction({
           handler: async (req, { next }) => {
             if (req.url.includes('?ef=true')) {
-              // eslint-disable-next-line n/callback-return
               const res = await next()
               const text = await res.text()
 
@@ -365,16 +363,20 @@ export const handler = async function () {
         .build()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
-        await curl(`${server.url}/.netlify/functions/hello`, [
-          '-i',
-          '-v',
-          '-d',
-          '{"somefield":"somevalue"}',
-          '-H',
-          'Content-Type: application/json',
-          '-H',
-          `Expect: 100-continue' header`,
-        ])
+        await t
+          .expect(
+            curl(`${server.url}/.netlify/functions/hello`, [
+              '-i',
+              '-v',
+              '-d',
+              '{"somefield":"somevalue"}',
+              '-H',
+              'Content-Type: application/json',
+              '-H',
+              `Expect: 100-continue' header`,
+            ]),
+          )
+          .resolves.not.toThrowError()
       })
     })
   })
