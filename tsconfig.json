@@ -9,5 +9,5 @@
     "outDir": "dist",
     "typeRoots": ["node_modules/@types", "types"]
   },
-  "include": ["src/**/*.js", "src/**/*.ts"]
+  "include": ["src/**/*.ts"]
 }
