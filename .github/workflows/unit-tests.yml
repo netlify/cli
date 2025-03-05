@@ -42,7 +42,7 @@ jobs:
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
 
       - name: Formatting
-        run: npm run format:check:prettier
+        run: npm run format:check
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
 
       - name: Linting
