@@ -44,9 +44,9 @@
     "test:init": "run-s test:init:*",
     "test:init:cli-version": "npm run start -- --version",
     "test:init:cli-help": "npm run start -- --help",
-    "test:init:eleventy-deps": "cd tests/integration/__fixtures__/eleventy-site && pnpm install --frozen-lockfile",
+    "test:init:eleventy-deps": "cd tests/integration/__fixtures__/eleventy-site && COREPACK_ENABLE_STRICT=0 pnpm install --frozen-lockfile",
     "test:init:hugo-deps": "npm ci --prefix tests/integration/__fixtures__/hugo-site --no-audit",
-    "test:init:monorepo-deps": "cd tests/integration/__fixtures__/monorepo && pnpm install --frozen-lockfile",
+    "test:init:monorepo-deps": "cd tests/integration/__fixtures__/monorepo && COREPACK_ENABLE_STRICT=0 pnpm install --frozen-lockfile",
     "test:init:next-deps": "npm ci --prefix tests/integration/__fixtures__/next-app-without-config --no-audit && npm ci --prefix tests/integration/__fixtures__/next-app --no-audit",
     "test:dev:vitest": "vitest run tests/unit/ && vitest run tests/integration",
     "test:ci:vitest:unit": "vitest run --coverage tests/unit/",
@@ -227,5 +227,6 @@
       "tools/**/*.test.js",
       "tests/**/*.test.cjs"
     ]
-  }
+  },
+  "packageManager": "npm@11.1.0+sha512.acf301ad9b9ddba948fcb72341e2f0fcae477f56a95cc2a092934d133a7461062633cefbf93d5934a3dc0768674e2edee9f04dcfcc4bb4c327ff0e3a7d552a1b"
 }
