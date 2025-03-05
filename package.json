@@ -220,6 +220,7 @@
     "form-data": "4.0.2",
     "is-ci": "4.1.0",
     "nock": "14.0.1",
+    "npm-run-all2": "^7.0.2",
     "p-timeout": "6.1.4",
     "prettier": "2.6.2",
     "serialize-javascript": "6.0.2",
