@@ -53,13 +53,7 @@ export default tseslint.config(
 
   // Project-specific rules
   {
-    ignores: [
-      // .js files in this folder are compiled from TS
-      'src/**/*.js',
-
-      '.github/styles/',
-      '**/__fixtures__/',
-    ],
+    ignores: ['.github/styles/', '**/__fixtures__/'],
   },
   {
     files: ['**/*.?(c|m)ts?(x)'],
