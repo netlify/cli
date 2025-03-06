@@ -1,5 +1,3 @@
-import fetch from 'node-fetch'
-
 const TELEMETRY_SERVICE_URL = 'https://cli-telemetry.netlify.engineering'
 
 // This function is a workaround for our inability to redirect traffic to a ntl function in another site

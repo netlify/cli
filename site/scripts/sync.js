@@ -1,3 +1,5 @@
+#!/usr/bin/env -S npx tsx
+
 import { promises as fs } from 'node:fs'
 import { join } from 'node:path'
 
