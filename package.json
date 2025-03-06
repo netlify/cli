@@ -32,9 +32,10 @@
   },
   "scripts": {
     "_format": "prettier --loglevel=warn \"{src,tools,scripts,tests,.github}/**/*.{mjs,cjs,js,mts,md,yml,json,html,ts}\" \"*.{mjs,cjs,js,mts,yml,json,html,ts}\" \".*.{mjs,cjs,js,yml,json,html,ts}\" \"!CHANGELOG.md\" \"!**/*/package-lock.json\" \"!.github/**/*.md\"",
+    "clean": "rm -rf dist/",
     "start": "node ./bin/run.js",
-    "build": "tsc",
-    "dev": "tsc --watch",
+    "build": "tsc --project tsconfig.build.json",
+    "dev": "tsc --project tsconfig.build.json --watch",
     "test": "npm run test:dev",
     "format": "npm run _format -- --write",
     "format:check": "npm run _format -- --check",
@@ -57,7 +58,8 @@
     "postinstall-pack": "node ./scripts/postinstall.js",
     "postinstall": "npm run build && node ./scripts/postinstall.js",
     "prepublishOnly": "node ./scripts/prepare-for-publish.js",
-    "certs": "openssl req -x509 -out localhost.crt -keyout localhost.key -newkey rsa:2048 -nodes -sha256 -subj \"/CN=localhost\" -extensions EXT -config certconf"
+    "certs": "openssl req -x509 -out localhost.crt -keyout localhost.key -newkey rsa:2048 -nodes -sha256 -subj \"/CN=localhost\" -extensions EXT -config certconf",
+    "typecheck": "tsc"
   },
   "dependencies": {
     "@fastify/static": "7.0.4",
@@ -175,6 +177,7 @@
     "@types/content-type": "1.1.8",
     "@types/debug": "4.1.12",
     "@types/envinfo": "7.8.4",
+    "@types/eslint-config-prettier": "^6.11.3",
     "@types/etag": "1.8.3",
     "@types/flush-write-stream": "1.0.2",
     "@types/folder-walker": "3.2.4",

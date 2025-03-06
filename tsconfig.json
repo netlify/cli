@@ -1,13 +1,4 @@
 {
-  "extends": ["@tsconfig/recommended", "@tsconfig/node18"],
-  "compilerOptions": {
-    "allowJs": true,
-    "declaration": true,
-    "declarationMap": true,
-    "downlevelIteration": true,
-    "incremental": true,
-    "outDir": "dist",
-    "typeRoots": ["node_modules/@types", "types"]
-  },
-  "include": ["src/**/*.ts"]
+  "extends": "./tsconfig.base.json",
+  "exclude": ["**/__fixtures__/**", "dist/", "functions-templates/", "site/", "tests/"]
 }
