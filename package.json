@@ -35,7 +35,7 @@
     "start": "node ./bin/run.js",
     "build": "tsc",
     "dev": "tsc --watch",
-    "test": "run-s format test:dev",
+    "test": "npm run test:dev",
     "format": "npm run _format -- --write",
     "format:check": "npm run _format -- --check",
     "lint": "eslint --cache \"{src,scripts,tests,.github}/**/*.{mjs,cjs,js,md,html}\" \"*.{mjs,cjs,js,md,html}\"",

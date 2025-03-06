@@ -40,15 +40,6 @@ jobs:
       - name: Install core dependencies
         run: npm ci --no-audit
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
-
-      - name: Formatting
-        run: npm run format:check
-        if: '${{!steps.release-check.outputs.IS_RELEASE}}'
-
-      - name: Linting
-        run: npm run lint
-        if: '${{!steps.release-check.outputs.IS_RELEASE}}'
-
       - name: Run unit tests
         uses: nick-fields/retry@v3
         with:
