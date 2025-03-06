@@ -5,6 +5,7 @@
     "downlevelIteration": true,
     "noEmit": true,
     "incremental": true,
+    "resolveJsonModule": true,
     "typeRoots": ["node_modules/@types", "types"]
   },
   "exclude": ["**/__fixtures__/**", "dist/", "functions-templates/", "site/"]
