@@ -1,0 +1,11 @@
+{
+  "extends": ["@tsconfig/recommended", "@tsconfig/node18"],
+  "compilerOptions": {
+    "allowJs": true,
+    "downlevelIteration": true,
+    "noEmit": true,
+    "incremental": true,
+    "typeRoots": ["node_modules/@types", "types"]
+  },
+  "exclude": ["**/__fixtures__/**", "dist/", "functions-templates/", "site/"]
+}
