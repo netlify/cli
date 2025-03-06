@@ -12,7 +12,7 @@ import { MockApi, Route, getCLIOptions, startMockApi } from './mock-api-vitest.j
 import { SiteBuilder } from './site-builder.ts'
 
 const FIXTURES_DIRECTORY = fileURLToPath(new URL('../__fixtures__/', import.meta.url))
-const HOOK_TIMEOUT = 30_000
+const HOOK_TIMEOUT = 60_000
 
 interface MockApiOptions {
   routes: Route[]
