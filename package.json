@@ -54,16 +54,12 @@
     "e2e": "node ./tools/e2e/run.js",
     "docs": "npm run --prefix=site build",
     "watch": "c8 --reporter=lcov vitest --watch",
-    "site:build": "run-s site:build:*",
-    "site:build:install": "cd site && npm install --no-audit",
-    "site:build:assets": "cd site && npm run build",
     "postinstall-pack": "node ./scripts/postinstall.js",
     "postinstall": "npm run build && node ./scripts/postinstall.js",
     "prepublishOnly": "node ./scripts/prepare-for-publish.js",
     "certs": "openssl req -x509 -out localhost.crt -keyout localhost.key -newkey rsa:2048 -nodes -sha256 -subj \"/CN=localhost\" -extensions EXT -config certconf"
   },
   "dependencies": {
-    "@bugsnag/js": "8.2.0",
     "@fastify/static": "7.0.4",
     "@netlify/blobs": "8.1.1",
     "@netlify/build": "29.59.2",
@@ -169,6 +165,7 @@
   },
   "devDependencies": {
     "@babel/preset-react": "7.26.3",
+    "@bugsnag/js": "8.2.0",
     "@eslint/compat": "^1.2.7",
     "@eslint/js": "^9.21.0",
     "@netlify/functions": "3.0.1",
