@@ -2,7 +2,6 @@ import fs from 'fs'
 import process from 'process'
 
 import build, { type OnEnd, type OnPostBuild } from '@netlify/build'
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'toml... Remove this comment to see the full error message
 import tomlify from 'tomlify-j0.4'
 import type { OptionValues } from 'commander'
 

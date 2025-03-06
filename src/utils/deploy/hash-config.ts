@@ -1,6 +1,5 @@
 import { createHash } from 'node:crypto'
 
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'toml... Remove this comment to see the full error message
 import tomlify from 'tomlify-j0.4'
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'any' t... Remove this comment to see the full error message
