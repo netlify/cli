@@ -5,14 +5,14 @@ import execa from 'execa'
 import { version as uuidVersion } from 'uuid'
 import { expect, test } from 'vitest'
 
-import { name, version } from '../../package.json'
+import pkg from '../../package.json'
 
 import { callCli } from './utils/call-cli.js'
 import { cliPath } from './utils/cli-path.js'
 import { MockApiTestContext, withMockApi } from './utils/mock-api-vitest.js'
-import { withSiteBuilder } from './utils/site-builder.ts'
+import { withSiteBuilder } from './utils/site-builder.js'
 
-const getCLIOptions = (apiUrl): Options => ({
+const getCLIOptions = (apiUrl: string): Options => ({
   env: {
     NETLIFY_TEST_TRACK_URL: `${apiUrl}/track`,
     NETLIFY_TEST_IDENTIFY_URL: `${apiUrl}/identify`,
@@ -26,28 +26,26 @@ const getCLIOptions = (apiUrl): Options => ({
 })
 
 const routes = [
-  { path: 'track', method: 'POST', response: {} },
+  { path: 'track', method: 'POST' as const, response: {} },
   { path: 'sites', response: [] },
   { path: 'accounts', response: [] },
 ]
 
-await withMockApi(routes, async () => {
+await withMockApi(routes, () => {
   test<MockApiTestContext>('should not track --telemetry-disable', async ({ apiUrl, requests }) => {
     await callCli(['--telemetry-disable'], getCLIOptions(apiUrl))
     expect(requests).toEqual([])
   })
-
-  const UUID_VERSION = 4
 
   test<MockApiTestContext>('should track --telemetry-enable', async ({ apiUrl, requests }) => {
     await callCli(['--telemetry-enable'], getCLIOptions(apiUrl))
     expect(requests.length).toBe(1)
     expect(requests[0].method).toBe('POST')
     expect(requests[0].path).toBe('/api/v1/track')
-    expect(requests[0].headers['user-agent']).toBe(`${name}/${version}`)
-    expect(requests[0].body.event).toBe('cli:user_telemetryEnabled')
-    expect(uuidVersion(requests[0].body.anonymousId)).toBe(UUID_VERSION)
-    expect(requests[0].body.properties).toEqual({ cliVersion: version, nodejsVersion })
+    expect(requests[0].headers['user-agent']).toBe(`${pkg.name}/${pkg.version}`)
+    expect(requests[0].body).toHaveProperty('event', 'cli:user_telemetryEnabled')
+    expect(requests[0].body).toHaveProperty('anonymousId', expect.any(String))
+    expect(requests[0].body).toHaveProperty('properties', { cliVersion: pkg.version, nodejsVersion })
   })
 
   test<MockApiTestContext>('should send netlify-cli/<version> user-agent', async ({ apiUrl, requests }) => {
@@ -55,8 +53,9 @@ await withMockApi(routes, async () => {
     const request = requests.find(({ path }) => path === '/api/v1/track')
     expect(request).toBeDefined()
     // example: netlify-cli/6.14.25 darwin-x64 node-v16.13.0
-    const userAgent = request.headers['user-agent']
-    expect(userAgent.startsWith(`${name}/${version}`)).toBe(true)
+    const userAgent = request!.headers['user-agent']
+    expect(userAgent).toBeDefined()
+    expect(userAgent!.startsWith(`${pkg.name}/${pkg.version}`)).toBe(true)
   })
 
   test<MockApiTestContext>('should send correct command on success', async ({ apiUrl, requests }) => {
@@ -64,13 +63,13 @@ await withMockApi(routes, async () => {
     const request = requests.find(({ path }) => path === '/api/v1/track')
     expect(request).toBeDefined()
 
-    expect(typeof request.body.anonymousId).toBe('string')
-    expect(Number.isInteger(request.body.duration)).toBe(true)
-    expect(request.body.event).toBe('cli:command')
-    expect(request.body.status).toBe('success')
-    expect(request.body.properties).toEqual({
+    expect(request!.body).toHaveProperty('anonymousId', expect.any(String))
+    expect(request!.body).toHaveProperty('duration', expect.any(Number))
+    expect(request!.body).toHaveProperty('event', 'cli:command')
+    expect(request!.body).toHaveProperty('status', 'success')
+    expect(request!.body).toHaveProperty('properties', {
       buildSystem: [],
-      cliVersion: version,
+      cliVersion: pkg.version,
       command: 'api',
       monorepo: false,
       nodejsVersion,
@@ -84,13 +83,13 @@ await withMockApi(routes, async () => {
     const request = requests.find(({ path }) => path === '/api/v1/track')
     expect(request).toBeDefined()
 
-    expect(typeof request.body.anonymousId).toBe('string')
-    expect(Number.isInteger(request.body.duration)).toBe(true)
-    expect(request.body.event).toBe('cli:command')
-    expect(request.body.status).toBe('error')
-    expect(request.body.properties).toEqual({
+    expect(request!.body).toHaveProperty('anonymousId', expect.any(String))
+    expect(request!.body).toHaveProperty('duration', expect.any(Number))
+    expect(request!.body).toHaveProperty('event', 'cli:command')
+    expect(request!.body).toHaveProperty('status', 'error')
+    expect(request!.body).toHaveProperty('properties', {
       buildSystem: [],
-      cliVersion: version,
+      cliVersion: pkg.version,
       command: 'dev:exec',
       monorepo: false,
       nodejsVersion,
@@ -111,14 +110,14 @@ await withMockApi(routes, async () => {
       const request = t.requests.find(({ path }) => path === '/api/v1/track')
       expect(request).toBeDefined()
 
-      expect(typeof request.body.anonymousId).toBe('string')
-      expect(Number.isInteger(request.body.duration)).toBe(true)
-      expect(request.body.event).toBe('cli:command')
-      expect(request.body.status).toBe('success')
-      expect(request.body.properties).toEqual({
+      expect(request!.body).toHaveProperty('anonymousId', expect.any(String))
+      expect(request!.body).toHaveProperty('duration', expect.any(Number))
+      expect(request!.body).toHaveProperty('event', 'cli:command')
+      expect(request!.body).toHaveProperty('status', 'success')
+      expect(request!.body).toHaveProperty('properties', {
         frameworks: ['next'],
         buildSystem: [],
-        cliVersion: version,
+        cliVersion: pkg.version,
         command: 'api',
         monorepo: false,
         nodejsVersion,

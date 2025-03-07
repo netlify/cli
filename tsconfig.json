@@ -1,4 +1,3 @@
 {
-  "extends": "./tsconfig.base.json",
-  "exclude": ["**/__fixtures__/**", "dist/", "functions-templates/", "site/", "tests/"]
+  "extends": "./tsconfig.base.json"
 }

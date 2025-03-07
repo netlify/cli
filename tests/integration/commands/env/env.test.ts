@@ -7,7 +7,7 @@ import { callCli } from '../../utils/call-cli.js'
 import { cliPath } from '../../utils/cli-path.js'
 import { CONFIRM, answerWithValue, handleQuestions } from '../../utils/handle-questions.js'
 import { getCLIOptions, withMockApi } from '../../utils/mock-api.js'
-import { withSiteBuilder } from '../../utils/site-builder.ts'
+import { withSiteBuilder } from '../../utils/site-builder.js'
 import { normalize } from '../../utils/snapshots.js'
 
 const siteInfo = {
@@ -223,7 +223,7 @@ describe('commands/env', () => {
         const listRoutes = [...routes, { path: 'accounts/test-account/env', response: [existingVar, otherVar] }]
 
         await withMockApi(listRoutes, async ({ apiUrl }) => {
-          const cliResponse = await callCli(['env:list'], getCLIOptions({ builder, apiUrl, env: { CI: true } }))
+          const cliResponse = await callCli(['env:list'], getCLIOptions({ builder, apiUrl, env: { CI: 'true' } }))
 
           t.expect(normalize(cliResponse)).toMatchSnapshot()
         })
@@ -239,7 +239,7 @@ describe('commands/env', () => {
         const setRoutes = [
           ...routes,
           { path: 'accounts/test-account/env', response: [existingVar, otherVar] },
-          { path: 'accounts/test-account/env', method: 'POST', response: {} },
+          { path: 'accounts/test-account/env', method: 'POST' as const, response: {} },
         ]
 
         await withMockApi(setRoutes, async ({ apiUrl }) => {
@@ -265,7 +265,7 @@ describe('commands/env', () => {
         const setRoutes = [
           ...routes,
           { path: 'accounts/test-account/env', response: [existingVar, otherVar] },
-          { path: 'accounts/test-account/env/EXISTING_VAR', method: 'PUT', response: {} },
+          { path: 'accounts/test-account/env/EXISTING_VAR', method: 'PUT' as const, response: {} },
         ]
 
         await withMockApi(setRoutes, async ({ apiUrl }) => {
@@ -292,7 +292,7 @@ describe('commands/env', () => {
         const unsetRoutes = [
           ...routes,
           { path: 'accounts/test-account/env', response: [existingVar, otherVar] },
-          { path: 'accounts/test-account/env/EXISTING_VAR', method: 'DELETE', response: {} },
+          { path: 'accounts/test-account/env/EXISTING_VAR', method: 'DELETE' as const, response: {} },
         ]
 
         await withMockApi(unsetRoutes, async ({ apiUrl }) => {
@@ -336,8 +336,8 @@ describe('commands/env', () => {
         const importRoutes = [
           ...routes,
           { path: 'accounts/test-account/env', response: [existingVar] },
-          { path: 'accounts/test-account/env', method: 'POST', response: {} },
-          { path: 'accounts/test-account/env/EXISTING_VAR', method: 'DELETE', response: {} },
+          { path: 'accounts/test-account/env', method: 'POST' as const, response: {} },
+          { path: 'accounts/test-account/env/EXISTING_VAR', method: 'DELETE' as const, response: {} },
         ]
 
         await withMockApi(importRoutes, async ({ apiUrl }) => {
@@ -365,8 +365,8 @@ describe('commands/env', () => {
         const importRoutes = [
           ...routes,
           { path: 'accounts/test-account/env', response: [existingVar] },
-          { path: 'accounts/test-account/env', method: 'POST', response: [] },
-          { path: 'accounts/test-account/env/EXISTING_VAR', method: 'DELETE', response: {} },
+          { path: 'accounts/test-account/env', method: 'POST' as const, response: [] },
+          { path: 'accounts/test-account/env/EXISTING_VAR', method: 'DELETE' as const, response: {} },
         ]
 
         await withMockApi(importRoutes, async ({ apiUrl }) => {
@@ -411,12 +411,14 @@ describe('commands/env', () => {
         await builder.build()
         const createRoutes = [{ path: 'sites/site_id', response: { ...siteInfo, build_settings: { env: {} } } }]
         await withMockApi(createRoutes, async ({ apiUrl }) => {
-          const { stderr: cliResponse } = await callCli(
+          const cliResponse: { stderr: string } = await callCli(
             ['env:clone', '--to', 'to-site', '--force'],
             getCLIOptions({ builder, apiUrl }),
           ).catch((error) => error)
 
-          t.expect(cliResponse.includes(`Can't find site with id to-site. Please make sure the site exists`)).toBe(true)
+          t.expect(
+            cliResponse.stderr.includes(`Can't find site with id to-site. Please make sure the site exists`),
+          ).toBe(true)
         })
       })
     })
@@ -425,14 +427,14 @@ describe('commands/env', () => {
       await withSiteBuilder(t, async (builder) => {
         await builder.build()
         await withMockApi([], async ({ apiUrl }) => {
-          const { stderr: cliResponse } = await callCli(
+          const cliResponse: { stderr: string } = await callCli(
             ['env:clone', '--from', 'from-site', '--to', 'to-site', '--force'],
             getCLIOptions({ builder, apiUrl }),
           ).catch((error) => error)
 
-          t.expect(cliResponse.includes(`Can't find site with id from-site. Please make sure the site exists`)).toBe(
-            true,
-          )
+          t.expect(
+            cliResponse.stderr.includes(`Can't find site with id from-site. Please make sure the site exists`),
+          ).toBe(true)
         })
       })
     })
@@ -444,7 +446,9 @@ describe('commands/env', () => {
         const cliResponse = await callCli(['env:clone', '--to', 'site_id_a', '--force'], {
           cwd: builder.directory,
           extendEnv: false,
-          PATH: process.env.PATH,
+          env: {
+            PATH: process.env.PATH,
+          },
         })
 
         t.expect(normalize(cliResponse)).toMatchSnapshot()
@@ -467,7 +471,7 @@ describe('commands/env', () => {
         },
         { path: 'accounts/test-account/env', response: [existingVar] },
         { path: 'accounts/test-account-a/env', response: [otherVar] },
-        { path: 'accounts/test-account-a/env', method: 'POST', response: {} },
+        { path: 'accounts/test-account-a/env', method: 'POST' as const, response: {} },
       ]
 
       await withSiteBuilder(t, async (builder) => {
@@ -481,7 +485,8 @@ describe('commands/env', () => {
           t.expect(normalize(cliResponse)).toMatchSnapshot()
 
           const postRequest = requests.find((request) => request.method === 'POST')
-          t.expect(postRequest.body).toStrictEqual([existingVar])
+          t.expect(postRequest).toBeDefined()
+          t.expect(postRequest!.body).toStrictEqual([existingVar])
         })
       })
     })
