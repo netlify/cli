@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bia - Assistente de Voz</title>
+    <meta name="theme-color" content="#007bff">
+    <link rel="manifest" href="manifest.json">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            text-align: center;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #007bff;
+        }
+        button {
+            padding: 15px 30px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        p {
+            margin: 10px 0;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Bia</h1>
+        <p id="status">Clique no botão para falar com a Bia!</p>
+        <button id="start-btn">Falar com Bia</button>
+        <p id="output"></p>
+    </div>
+
+    <script>
+        const startBtn = document.getElementById('start-btn');
+        const status = document.getElementById('status');
+        const output = document.getElementById('output');
+
+        // Verifica suporte a reconhecimento de voz
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = SpeechRecognition ? new SpeechRecognition() : null;
+
+        // Carrega ou inicializa o banco de conhecimento da Bia
+        let knowledge = JSON.parse(localStorage.getItem('biaKnowledge')) || {
+            "como você está": "Oi, Beto! Estou bem, obrigada por perguntar!",
+            "que horas são": () => `Beto, agora são ${new Date().toLocaleTimeString('pt-BR')}`,
+            "qual é o seu nome": "Meu nome é Bia, prazer em conhecê-lo, Beto!"
+        };
+
+        if (!recognition) {
+            status.textContent = "Desculpe, seu navegador não suporta reconhecimento de voz.";
+        } else {
+            recognition.lang = 'pt-BR';
+            recognition.continuous = false;
+
+            startBtn.addEventListener('click', () => {
+                status.textContent = "Ouvindo... Fale algo, Beto!";
+                recognition.start();
+            });
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript.toLowerCase();
+                output.textContent = `Você disse: "${transcript}"`;
+                processCommand(transcript);
+            };
+
+            recognition.onerror = () => {
+                status.textContent = "Erro ao ouvir. Tente novamente!";
+            };
+
+            recognition.onend = () => {
+                status.textContent = "Clique no botão para falar comigo novamente!";
+            };
+        }
+
+        // Função para falar
+        function say(message) {
+            const utterance = new SpeechSynthesisUtterance(message);
+            utterance.lang = 'pt-BR';
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // Processa comandos e aprende
+        function processCommand(text) {
+            if (text.includes('beto')) {
+                // Modo de ensino: "Beto, ensine [pergunta] é [resposta]"
+                if (text.includes('ensine')) {
+                    const parts = text.split('ensine')[1].split('é');
+                    if (parts.length === 2) {
+                        const question = parts[0].trim();
+                        const answer = parts[1].trim();
+                        knowledge[question] = answer;
+                        localStorage.setItem('biaKnowledge', JSON.stringify(knowledge));
+                        say(`Beto, aprendi que "${question}" é "${answer}"!`);
+                        output.textContent += ` | Bia: Aprendi que "${question}" é "${answer}"!`;
+                    } else {
+                        say("Beto, por favor diga 'ensine [pergunta] é [resposta]' corretamente!");
+                        output.textContent += " | Bia: Diga 'ensine [pergunta] é [resposta]'!";
+                    }
+                    return;
+                }
+
+                // Responde perguntas conhecidas
+                let answered = false;
+                for (let question in knowledge) {
+                    if (text.includes(question)) {
+                        const response = typeof knowledge[question] === 'function' ? knowledge[question]() : knowledge[question];
+                        say(response);
+                        output.textContent += ` | Bia: ${response}`;
+                        answered = true;
+                        break;
+                    }
+                }
+
+                if (!answered) {
+                    say("Beto, não sei isso ainda. Me ensine dizendo 'Beto, ensine [pergunta] é [resposta]'!");
+                    output.textContent += " | Bia: Não sei isso ainda. Me ensine!";
+                }
+            } else {
+                say("Por favor, diga meu nome 'Bia' e seu nome 'Beto' para eu responder!");
+                output.textContent += " | Bia: Diga 'Beto' para eu responder!";
+            }
+        }
+    </script>
+</body>
+</html>
