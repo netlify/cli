@@ -6,13 +6,14 @@ import os from 'os'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
-import nodeFetch from 'node-fetch'
+import type { HandlerEvent, Context } from '@netlify/functions'
 import { describe, test } from 'vitest'
+import nodeFetch from 'node-fetch'
 
 import { curl } from '../../utils/curl.js'
-import { withDevServer } from '../../utils/dev-server.ts'
+import { withDevServer } from '../../utils/dev-server.js'
 import { withMockApi } from '../../utils/mock-api.js'
-import { withSiteBuilder } from '../../utils/site-builder.ts'
+import { withSiteBuilder } from '../../utils/site-builder.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -43,7 +44,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
         })
         .withFunction({
           path: 'echo.js',
-          handler: async (event) => ({
+          handler: (event: HandlerEvent) => ({
             statusCode: 200,
             body: JSON.stringify(event),
           }),
@@ -61,7 +62,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
           ])
 
         // query params should be taken from redirect rule for functions
-        t.expect(fromFunction.multiValueQueryStringParameters).toStrictEqual({ bar: ['1', '2'], foo: ['1', '2'] })
+        t.expect(fromFunction).toHaveProperty('multiValueQueryStringParameters', { bar: ['1', '2'], foo: ['1', '2'] })
 
         // query params should be passed through from the request
         t.expect(queryPassthrough.headers.get('location')).toEqual('/?foo=1&foo=2&bar=1&bar=2')
@@ -73,7 +74,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
         t.expect(withParamMatching.headers.get('location')).toEqual('/?param=1')
 
         // splat should be passed as query param in function redirects
-        t.expect(functionWithSplat.queryStringParameters).toStrictEqual({ query: 'abc' })
+        t.expect(functionWithSplat).toHaveProperty('queryStringParameters', { query: 'abc' })
       })
     })
   })
@@ -223,15 +224,19 @@ export const handler = async function () {
         })
         .withFunction({
           path: 'hello.js',
-          handler: async (event) => ({
+          handler: (event: HandlerEvent) => ({
             statusCode: 200,
-            body: JSON.stringify({ rawUrl: event.rawUrl, blobs: event.blobs }),
+            body: JSON.stringify({
+              rawUrl: event.rawUrl,
+              // @ts-expect-error
+              blobs: event.blobs,
+            }),
           }),
         })
         .withEdgeFunction({
-          handler: async (req, { next }) => {
+          handler: async (req: Request, { next }: Context) => {
             if (req.url.includes('?ef=true')) {
-              const res = await next()
+              const res = await (next() as Promise<Response>)
               const text = await res.text()
 
               return new Response(text.toUpperCase(), res)
@@ -240,7 +245,7 @@ export const handler = async function () {
             if (req.url.includes('?ef=fetch')) {
               const url = new URL('/origin', req.url)
 
-              return await fetch(url)
+              return await nodeFetch(url)
             }
 
             if (req.url.includes('?ef=url')) {
@@ -260,28 +265,32 @@ export const handler = async function () {
           agent: new Agent({ rejectUnauthorized: false }),
         }
 
-        t.expect(await nodeFetch(`https://localhost:${port}`, options).then((res) => res.text())).toEqual('index')
-        t.expect(await nodeFetch(`https://localhost:${port}?ef=true`, options).then((res) => res.text())).toEqual(
-          'INDEX',
+        t.expect(await nodeFetch(`https://localhost:${port.toString()}`, options).then((res) => res.text())).toEqual(
+          'index',
         )
-        t.expect(await nodeFetch(`https://localhost:${port}?ef=fetch`, options).then((res) => res.text())).toEqual(
-          'origin',
+        t.expect(
+          await nodeFetch(`https://localhost:${port.toString()}?ef=true`, options).then((res) => res.text()),
+        ).toEqual('INDEX')
+        t.expect(
+          await nodeFetch(`https://localhost:${port.toString()}?ef=fetch`, options).then((res) => res.text()),
+        ).toEqual('origin')
+
+        const hello = await nodeFetch(`https://localhost:${port.toString()}/api/hello`, options).then((res) =>
+          res.json(),
         )
 
-        const hello = await nodeFetch(`https://localhost:${port}/api/hello`, options).then((res) => res.json())
+        t.expect(hello).toHaveProperty('rawUrl', `https://localhost:${port.toString()}/api/hello`)
 
-        t.expect(hello.rawUrl).toBe(`https://localhost:${port}/api/hello`)
+        const blobsContext = JSON.parse(Buffer.from((hello as { blobs: any }).blobs, 'base64').toString())
 
-        const blobsContext = JSON.parse(Buffer.from(hello.blobs, 'base64').toString())
-
-        t.expect(blobsContext.url).toBeTruthy()
-        t.expect(blobsContext.token).toBeTruthy()
+        t.expect(blobsContext).toHaveProperty('url')
+        t.expect(blobsContext).toHaveProperty('token')
 
         // the fetch will go against the `https://` url of the dev server, which isn't trusted system-wide.
         // this is the expected behaviour for fetch, so we shouldn't change anything about it.
-        t.expect(await nodeFetch(`https://localhost:${port}?ef=fetch`, options).then((res) => res.text())).toEqual(
-          'origin',
-        )
+        t.expect(
+          await nodeFetch(`https://localhost:${port.toString()}?ef=fetch`, options).then((res) => res.text()),
+        ).toEqual('origin')
       })
     })
   })

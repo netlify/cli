@@ -8,46 +8,65 @@ import fetch from 'node-fetch'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 
 import { callCli } from '../../utils/call-cli.js'
-import { cliPath } from '../../utils/cli-path.js'
 import { createLiveTestSite, generateSiteName } from '../../utils/create-live-test-site.js'
 import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
 import { pause } from '../../utils/pause.js'
-import { withSiteBuilder } from '../../utils/site-builder.ts'
+import { withSiteBuilder } from '../../utils/site-builder.js'
 
 // eslint-disable-next-line no-underscore-dangle
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const SITE_NAME = generateSiteName('netlify-test-deploy-')
 
-const validateContent = async ({ content, path: pathname, siteUrl }) => {
+const validateContent = async ({
+  content,
+  path: pathname,
+  siteUrl,
+}: {
+  content?: string | undefined
+  path: string
+  pathname?: string | undefined
+  siteUrl: string
+}) => {
   const response = await fetch(`${siteUrl}${pathname}`)
   const body = await response.text()
   if (content === undefined) {
     expect(response.status).toBe(404)
     return
   }
-  expect(response.status, `status should be 200. request id: ${response.headers.get('x-nf-request-id')}`).toBe(200)
-  expect(body, `body should be as expected. request id: ${response.headers.get('x-nf-request-id')}`).toEqual(content)
+  expect(response.status, `status should be 200. request id: ${response.headers.get('x-nf-request-id') ?? ''}`).toBe(
+    200,
+  )
+  expect(body, `body should be as expected. request id: ${response.headers.get('x-nf-request-id') ?? ''}`).toEqual(
+    content,
+  )
+}
+
+type Deploy = {
+  summary: {
+    messages: {
+      title: string
+      description: string
+    }[]
+  }
+  site_id: string
+  site_name: string
+  deploy_url: string
+  deploy_id: string
+  logs: string
+  function_logs: string
+  edge_function_logs: string
 }
 
 const validateDeploy = async ({
   content,
-  contentMessage,
   deploy,
   siteName,
 }: {
   contentMessage?: string
   siteName: string
   content?: string
-  deploy: {
-    site_id: string
-    site_name: string
-    deploy_url: string
-    deploy_id: string
-    logs: string
-    function_logs: string
-    edge_function_logs: string
-  }
+  deploy: Deploy
 }) => {
   expect(deploy.site_id).toBeTruthy()
   expect(deploy.site_name).toBeTruthy()
@@ -56,7 +75,7 @@ const validateDeploy = async ({
   expect(deploy.logs).toBeTruthy()
   expect(deploy.function_logs).toBeTruthy()
   expect(deploy.edge_function_logs).toBeTruthy()
-  expect(deploy.site_name, contentMessage).toEqual(siteName)
+  expect(deploy.site_name).toEqual(siteName)
 
   await validateContent({ siteUrl: deploy.deploy_url, path: '', content })
 }
@@ -268,8 +287,9 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
       })
 
       t.expect(output.includes('Netlify Build completed in')).toBe(true)
-      const [, deployId] = output.match(/DEPLOY_ID: (\w+)/)
-      const [, deployURL] = output.match(/DEPLOY_URL: (.+)/)
+      const [, deployId] = output.match(/DEPLOY_ID: (\w+)/) ?? []
+      const [, deployURL] = output.match(/DEPLOY_URL: (.+)/) ?? []
+
       t.expect(deployId).not.toEqual('0')
       t.expect(deployURL).toContain(`https://${deployId}--`)
     })
@@ -484,7 +504,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
           env: { NETLIFY_SITE_ID: context.siteId },
         })
       } catch (error) {
-        expect(error.stderr.includes('Error: No files or functions to deploy')).toBe(true)
+        expect(error).toHaveProperty('stderr', expect.stringContaining('Error: No files or functions to deploy'))
       }
     })
   })
@@ -508,9 +528,10 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
           plugin: {
             onPreBuild: async ({ netlifyConfig }) => {
               // eslint-disable-next-line n/global-require, @typescript-eslint/no-var-requires
-              const { mkdir, writeFile } = require('fs/promises')
+              const { mkdir, writeFile } = require('node:fs/promises') as typeof import('node:fs/promises')
 
               const generatedFunctionsDir = 'new_functions'
+              // @ts-expect-error
               netlifyConfig.functions.directory = generatedFunctionsDir
 
               await mkdir(generatedFunctionsDir)
@@ -523,14 +544,14 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         })
         .build()
 
-      const { deploy_url: deployUrl } = await callCli(
+      const { deploy_url: deployUrl } = (await callCli(
         ['deploy', '--build', '--json'],
         {
           cwd: builder.directory,
           env: { NETLIFY_SITE_ID: context.siteId },
         },
         true,
-      )
+      )) as unknown as Deploy
 
       const response = await fetch(`${deployUrl}/.netlify/functions/hello`)
       t.expect(await response.text()).toEqual('Hello')
@@ -633,14 +654,14 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         })
         .build()
 
-      const { deploy_url: deployUrl } = await callCli(
+      const { deploy_url: deployUrl } = (await callCli(
         ['deploy', '--build', '--json'],
         {
           cwd: builder.directory,
           env: { NETLIFY_SITE_ID: context.siteId },
         },
         true,
-      )
+      )) as unknown as Deploy
 
       const [response1, response2, response3, response4, response5, response6, response7] = await Promise.all([
         fetch(`${deployUrl}/.netlify/functions/func-1`).then((res) => res.text()),
@@ -681,14 +702,14 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         })
         .build()
 
-      const { deploy_url: deployUrl } = await callCli(
+      const { deploy_url: deployUrl } = (await callCli(
         ['deploy', '--build', '--json'],
         {
           cwd: builder.directory,
           env: { NETLIFY_SITE_ID: context.siteId },
         },
         true,
-      )
+      )) as unknown as Deploy
       const response = await fetch(`${deployUrl}/.netlify/functions/func-1`).then((res) => res.text())
 
       t.expect(response).toEqual('Internal')
@@ -739,26 +760,27 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         })
         .build()
 
-      const deploy = await callCli(
+      const deploy = (await callCli(
         ['deploy', '--json', '--build'],
         {
           cwd: builder.directory,
           env: { NETLIFY_SITE_ID: context.siteId },
         },
         true,
-      )
+      )) as unknown as Deploy
 
-      const fullDeploy = await callCli(
+      const fullDeploy = (await callCli(
         ['api', 'getDeploy', '--data', JSON.stringify({ deploy_id: deploy.deploy_id })],
         {
           cwd: builder.directory,
           env: { NETLIFY_SITE_ID: context.siteId },
         },
         true,
-      )
+      )) as unknown as Deploy
 
       const redirectsMessage = fullDeploy.summary.messages.find(({ title }) => title === '3 redirect rules processed')
-      t.expect(redirectsMessage.description).toEqual('All redirect rules deployed without errors.')
+      t.expect(redirectsMessage).toBeDefined()
+      t.expect(redirectsMessage!.description).toEqual('All redirect rules deployed without errors.')
 
       await validateDeploy({ deploy, siteName: SITE_NAME, content })
 
@@ -823,14 +845,14 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         })
         .build()
 
-      const { deploy_url: deployUrl } = await callCli(
+      const { deploy_url: deployUrl } = (await callCli(
         ['deploy', '--json'],
         {
           cwd: builder.directory,
           env: { NETLIFY_SITE_ID: context.siteId },
         },
         true,
-      )
+      )) as unknown as Deploy
       const response = await fetch(`${deployUrl}/.netlify/functions/bundled-function-1`).then((res) => res.text())
       expect(response).toEqual('Pre-bundled')
     })
@@ -882,14 +904,14 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         })
         .build()
 
-      const { deploy_url: deployUrl } = await callCli(
+      const { deploy_url: deployUrl } = (await callCli(
         ['deploy', '--json', '--skip-functions-cache'],
         {
           cwd: builder.directory,
           env: { NETLIFY_SITE_ID: context.siteId },
         },
         true,
-      )
+      )) as unknown as Deploy
 
       const response = await fetch(`${deployUrl}/.netlify/functions/bundled-function-1`).then((res) => res.text())
       t.expect(response).toEqual('Bundled at deployment')
@@ -943,14 +965,14 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         })
         .build()
 
-      const { deploy_url: deployUrl } = await callCli(
+      const { deploy_url: deployUrl } = (await callCli(
         ['deploy', '--json'],
         {
           cwd: builder.directory,
           env: { NETLIFY_SITE_ID: context.siteId },
         },
         true,
-      )
+      )) as unknown as { deploy_url: string }
 
       const response = await fetch(`${deployUrl}/.netlify/functions/bundled-function-1`).then((res) => res.text())
       t.expect(response).toEqual('Bundled at deployment')
@@ -1002,14 +1024,14 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         .build()
 
       await execa.command('npm install', { cwd: builder.directory })
-      const { deploy_url: deployUrl } = await callCli(
+      const { deploy_url: deployUrl } = (await callCli(
         ['deploy', '--json'],
         {
           cwd: builder.directory,
           env: { NETLIFY_SITE_ID: context.siteId },
         },
         true,
-      )
+      )) as unknown as { deploy_url: string }
 
       const response = await fetch(`${deployUrl}/read-blob`).then((res) => res.text())
       t.expect(response).toEqual('hello from the blob')
@@ -1023,14 +1045,14 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         timeout: 300_000,
       },
       async ({ fixture }) => {
-        const { deploy_url: deployUrl } = await callCli(
+        const { deploy_url: deployUrl } = (await callCli(
           ['deploy', '--build', '--json'],
           {
             cwd: fixture.directory,
             env: { NETLIFY_SITE_ID: context.siteId },
           },
           true,
-        )
+        )) as unknown as { deploy_url: string }
 
         const html = await fetch(deployUrl).then((res) => res.text())
         // eslint-disable-next-line id-length
@@ -1051,7 +1073,10 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
           env: { NETLIFY_SITE_ID: context.siteId },
         })
       } catch (error) {
-        expect(error.stderr).toContain(`Error: option '--prod-if-unlocked' cannot be used with option '-p, --prod'`)
+        expect(error).toHaveProperty(
+          'stderr',
+          expect.stringContaining(`Error: option '--prod-if-unlocked' cannot be used with option '-p, --prod'`),
+        )
       }
     })
   })

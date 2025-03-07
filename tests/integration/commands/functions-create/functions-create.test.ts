@@ -7,10 +7,10 @@ import { describe, expect, test } from 'vitest'
 
 import { fileExistsAsync } from '../../../../src/lib/fs.js'
 import { cliPath } from '../../utils/cli-path.js'
-import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture'
+import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
 import { CONFIRM, DOWN, answerWithValue, handleQuestions } from '../../utils/handle-questions.js'
 import { getCLIOptions, withMockApi } from '../../utils/mock-api.js'
-import { withSiteBuilder } from '../../utils/site-builder.ts'
+import { withSiteBuilder } from '../../utils/site-builder.js'
 
 describe.concurrent('functions:create command', () => {
   const siteInfo = {
@@ -32,7 +32,7 @@ describe.concurrent('functions:create command', () => {
       path: 'sites',
       response: [siteInfo],
     },
-    { path: 'sites/site_id', method: 'patch', response: {} },
+    { path: 'sites/site_id', method: 'PATCH' as const, response: {} },
   ]
 
   test('should create a new function directory when none is found', async (t) => {
@@ -181,7 +181,7 @@ describe.concurrent('functions:create command', () => {
   })
 
   test('should only show function templates for the language specified via the --language flag, if one is present', async (t) => {
-    const createWithLanguageTemplate = async (language, outputPath) =>
+    const createWithLanguageTemplate = async (language: string, outputPath: string) => {
       await withSiteBuilder(t, async (builder) => {
         await builder.build()
 
@@ -218,6 +218,7 @@ describe.concurrent('functions:create command', () => {
           expect(await fileExistsAsync(`${builder.directory}/test/functions/${outputPath}`)).toBe(true)
         })
       })
+    }
 
     await createWithLanguageTemplate('javascript', 'hello-world/hello-world.mjs')
     await createWithLanguageTemplate('typescript', 'hello-world/hello-world.mts')

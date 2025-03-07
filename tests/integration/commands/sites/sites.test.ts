@@ -83,7 +83,7 @@ const routes = [
   },
   {
     path: 'test-account/sites',
-    method: 'post',
+    method: 'POST' as const,
     response: siteInfo,
   },
 ]

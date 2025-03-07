@@ -8,27 +8,36 @@ import execa from 'execa'
 import getAvailablePort from 'get-port'
 import jwt from 'jsonwebtoken'
 import fetch from 'node-fetch'
-import { describe, test } from 'vitest'
+import { type TestContext, type TaskContext, describe, test } from 'vitest'
+import type { HandlerContext } from '@netlify/functions'
 
 import { cliPath } from '../../utils/cli-path.js'
-import { getExecaOptions, withDevServer } from '../../utils/dev-server.ts'
+import { getExecaOptions, withDevServer } from '../../utils/dev-server.js'
 import { withMockApi } from '../../utils/mock-api.js'
 import { pause } from '../../utils/pause.js'
-import { withSiteBuilder } from '../../utils/site-builder.ts'
+import { withSiteBuilder, type SiteBuilder } from '../../utils/site-builder.js'
 import { normalize } from '../../utils/snapshots.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const JWT_EXPIRY = 1_893_456_000
-const getToken = async ({ jwtRolePath = 'app_metadata.authorization.roles', jwtSecret = 'secret', roles }) => {
+const getToken = async ({
+  jwtRolePath = 'app_metadata.authorization.roles',
+  jwtSecret = 'secret',
+  roles,
+}: {
+  jwtRolePath?: string | undefined
+  jwtSecret?: string | undefined
+  roles?: string[] | undefined
+}) => {
   const payload = {
     exp: JWT_EXPIRY,
     sub: '12345678',
   }
-  return jwt.sign(setProperty(payload, jwtRolePath, roles), jwtSecret)
+  return Promise.resolve(jwt.sign(setProperty(payload, jwtRolePath, roles), jwtSecret))
 }
 
-const setupRoleBasedRedirectsSite = (builder) => {
+const setupRoleBasedRedirectsSite = (builder: SiteBuilder) => {
   builder
     .withContentFiles([
       {
@@ -46,7 +55,17 @@ const setupRoleBasedRedirectsSite = (builder) => {
   return builder
 }
 
-const validateRoleBasedRedirectsSite = async ({ builder, jwtRolePath, jwtSecret, t }) => {
+const validateRoleBasedRedirectsSite = async ({
+  builder,
+  jwtRolePath,
+  jwtSecret,
+  t,
+}: {
+  builder: SiteBuilder
+  jwtRolePath?: string | undefined
+  jwtSecret?: string | undefined
+  t: TaskContext & TestContext
+}) => {
   const [adminToken, editorToken] = await Promise.all([
     getToken({ jwtSecret, jwtRolePath, roles: ['admin'] }),
     getToken({ jwtSecret, jwtRolePath, roles: ['editor'] }),
@@ -137,7 +156,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
         .withNetlifyToml({ config: { functions: { directory: 'functions' } } })
         .withFunction({
           path: 'hello-background.js',
-          handler: (_, context) => {
+          handler: (_: Request, context: HandlerContext) => {
             console.log(`__CLIENT_CONTEXT__START__${JSON.stringify(context)}__CLIENT_CONTEXT__END__`)
           },
         })
@@ -147,9 +166,9 @@ describe.concurrent('commands/dev-miscellaneous', () => {
         await fetch(`${url}/.netlify/functions/hello-background`)
 
         const output = outputBuffer.toString()
-        const context = JSON.parse(output.match(/__CLIENT_CONTEXT__START__(.*)__CLIENT_CONTEXT__END__/)[1])
-        t.expect(Object.keys(context.clientContext)).toEqual([])
-        t.expect(context.identity).toBe(null)
+        const context = JSON.parse(output.match(/__CLIENT_CONTEXT__START__(.*)__CLIENT_CONTEXT__END__/)![1])
+        t.expect(context).toHaveProperty('clientContext', {})
+        t.expect(context).toHaveProperty('identity', null)
       })
     })
   })
@@ -160,7 +179,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
         .withNetlifyToml({ config: { functions: { directory: 'functions' } } })
         .withFunction({
           path: 'hello.js',
-          handler: async (_, context) => ({
+          handler: async (_: Request, context: HandlerContext) => ({
             statusCode: 200,
             body: JSON.stringify(context),
           }),
@@ -237,7 +256,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
           },
         ])
         .withEdgeFunction({
-          handler: (req, context) =>
+          handler: (_: Request, context: HandlerContext) =>
             Response.json({
               requestID: req.headers.get('x-nf-request-id'),
               deploy: context.deploy,
@@ -297,7 +316,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
           },
         ])
         .withEdgeFunction({
-          handler: async (_, context) => {
+          handler: async (_: Request, context: HandlerContext) => {
             const res = await context.next()
             const text = await res.text()
 
@@ -306,7 +325,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
           name: 'yell',
         })
         .withEdgeFunction({
-          handler: (_, context) => context.rewrite('/goodbye'),
+          handler: (_: Request, context: HandlerContext) => context.rewrite('/goodbye'),
           name: 'hello-legacy',
         })
         .withEdgeFunction({
@@ -466,7 +485,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
           },
         ])
         .withEdgeFunction({
-          handler: async (_, context) => {
+          handler: async (_: Request, context: HandlerContext) => {
             const resp = await context.next()
             const text = await resp.text()
 
@@ -1177,21 +1196,22 @@ describe.concurrent('commands/dev-miscellaneous', () => {
             },
           },
           async ({ port }) => {
-            const response = await fetch(`http://localhost:${port}/env`).then((res) => res.json())
-            const buckets = Object.values(response)
+            const response = await fetch(`http://localhost:${port.toString()}/env`)
+            const body = (await response.json()) as object[]
+            const buckets = Object.values(body)
             t.expect(buckets.length).toBe(2)
 
             buckets.forEach((bucket) => {
               const bucketKeys = Object.keys(bucket)
 
               t.expect(bucketKeys.includes('DENO_REGION')).toBe(true)
-              t.expect(bucket.DENO_REGION).toEqual('local')
+              t.expect(bucket).toHaveProperty('DENO_REGION', 'local')
 
               t.expect(bucketKeys.includes('NETLIFY_DEV')).toBe(true)
-              t.expect(bucket.NETLIFY_DEV).toEqual('true')
+              t.expect(bucket).toHaveProperty('NETLIFY_DEV', 'true')
 
               t.expect(bucketKeys.includes('FROM_ENV')).toBe(true)
-              t.expect(bucket.FROM_ENV).toEqual('YAS')
+              t.expect(bucket).toHaveProperty('FROM_ENV', 'YAS')
 
               t.expect(bucketKeys.includes('DENO_DEPLOYMENT_ID')).toBe(false)
               t.expect(bucketKeys.includes('NODE_ENV')).toBe(false)
@@ -1210,7 +1230,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
   test('should inject the `NETLIFY_DEV` environment variable in the process (legacy environment variables)', async (t) => {
     const externalServerPort = await getAvailablePort()
     const externalServerPath = path.join(__dirname, '../../utils', 'external-server-cli.js')
-    const command = `node ${externalServerPath} ${externalServerPort}`
+    const command = `node ${externalServerPath} ${externalServerPort.toString()}`
 
     await withSiteBuilder(t, async (builder) => {
       const publicDir = 'public'
@@ -1232,8 +1252,9 @@ describe.concurrent('commands/dev-miscellaneous', () => {
         .build()
 
       await withDevServer({ cwd: builder.directory }, async ({ port }) => {
-        const response = await fetch(`http://localhost:${port}/`).then((res) => res.json())
-        t.expect(response.env.NETLIFY_DEV).toEqual('true')
+        const response = await fetch(`http://localhost:${port.toString()}/`)
+        const body = await response.json()
+        t.expect(body).toHaveProperty('env.NETLIFY_DEV', true)
       })
     })
   })
