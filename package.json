@@ -58,6 +58,7 @@
   },
   "dependencies": {
     "@fastify/static": "7.0.4",
+    "@mswjs/interceptors": "^0.37.6",
     "@netlify/api": "13.4.0",
     "@netlify/blobs": "8.2.0",
     "@netlify/build": "32.2.0",

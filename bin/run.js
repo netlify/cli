@@ -1,4 +1,7 @@
 #!/usr/bin/env node
+
+import './trace.js'
+
 import { argv } from 'process'
 import EventEmitter from 'events'
 
