@@ -7,7 +7,7 @@ import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 import { createRewriter, getWatchers } from '../../src/utils/rules-proxy.js'
 
 import fetch from 'node-fetch'
-import { createSiteBuilder, SiteBuilder } from './utils/site-builder.ts'
+import { createSiteBuilder, SiteBuilder } from './utils/site-builder.js'
 
 describe('rules-proxy', () => {
   let server: http.Server
@@ -49,16 +49,15 @@ describe('rules-proxy', () => {
   })
 
   test('should apply re-write rule based on _redirects file', async () => {
-    const response = await fetch(`http://localhost:${(server?.address() as net.AddressInfo).port}/something`).then(
-      (res) => res.json(),
-    )
+    const res = await fetch(`http://localhost:${(server?.address() as net.AddressInfo).port}/something`)
+    const body = await res.json()
 
-    expect(response.from).toBe('/something')
-    expect(response.to).toBe('/ping')
-    expect(response.force).toBe(false)
-    expect(response.host).toBe('')
-    expect(response.negative).toBe(false)
-    expect(response.scheme).toBe('')
-    expect(response.status).toBe(200)
+    expect(body).toHaveProperty('from', '/something')
+    expect(body).toHaveProperty('to', '/ping')
+    expect(body).toHaveProperty('force', false)
+    expect(body).toHaveProperty('host', '')
+    expect(body).toHaveProperty('negative', false)
+    expect(body).toHaveProperty('scheme', '')
+    expect(body).toHaveProperty('status', 200)
   })
 })

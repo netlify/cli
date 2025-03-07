@@ -2,18 +2,18 @@ import process from 'process'
 
 import { expect, beforeEach, afterAll, describe, test, vi } from 'vitest'
 
-import BaseCommand from '../../../../src/commands/base-command.ts'
-import { createBuildCommand } from '../../../../src/commands/build/index.ts'
+import BaseCommand from '../../../../src/commands/base-command.js'
+import { createBuildCommand } from '../../../../src/commands/build/index.js'
 import { getEnvironmentVariables, withMockApi } from '../../utils/mock-api.js'
-import { withSiteBuilder } from '../../utils/site-builder.ts'
+import { withSiteBuilder } from '../../utils/site-builder.js'
 
 let configOptions = {}
 
 vi.mock('@netlify/config', async (importOriginal) => {
-  const original = await importOriginal()
+  const original = (await importOriginal()) as typeof import('@netlify/config')
   return {
     ...original,
-    resolveConfig: (options) => {
+    resolveConfig: (options: object) => {
       configOptions = options
       return original.resolveConfig(options)
     },
@@ -60,6 +60,7 @@ describe('command/build', () => {
 
   test('should pass feature flags to @netlify/config', async (t) => {
     // this ensures that the process.exit does not exit the test process
+    // @ts-expect-error(ndhoule): Cannot mark the return value on this as as `never`
     vi.spyOn(process, 'exit').mockImplementation((code) => {
       expect(code).toBe(0)
     })
@@ -72,11 +73,11 @@ describe('command/build', () => {
         await builder.withNetlifyToml({ config: {} }).withStateFile({ siteId: siteInfo.id }).build()
 
         await createBuildCommand(new BaseCommand('netlify')).parseAsync(['', '', 'build'])
-        expect(configOptions.featureFlags).toEqual(siteInfo.feature_flags)
-        expect(configOptions.accountId).toEqual(siteInfo.account_id)
+        expect(configOptions).toHaveProperty('featureFlags', siteInfo.feature_flags)
+        expect(configOptions).toHaveProperty('accountId', siteInfo.account_id)
 
         await createBuildCommand(new BaseCommand('netlify')).parseAsync(['', '', 'build', '--offline'])
-        expect(configOptions.featureFlags, 'should not call API in offline mode').toEqual({})
+        expect(configOptions).toHaveProperty('featureFlags', {})
       })
     })
   })

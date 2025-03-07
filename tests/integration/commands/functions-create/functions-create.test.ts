@@ -7,12 +7,12 @@ import { describe, expect, test } from 'vitest'
 
 import { fileExistsAsync } from '../../../../src/lib/fs.js'
 import { cliPath } from '../../utils/cli-path.js'
-import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture'
+import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
 import { CONFIRM, DOWN, answerWithValue, handleQuestions } from '../../utils/handle-questions.js'
 import { getCLIOptions, withMockApi } from '../../utils/mock-api.js'
-import { withSiteBuilder } from '../../utils/site-builder.ts'
+import { withSiteBuilder } from '../../utils/site-builder.js'
 
-describe.concurrent('functions:create command', () => {
+describe.concurrent('functions:create command', async () => {
   const siteInfo = {
     admin_url: 'https://app.netlify.com/sites/site-name/overview',
     ssl_url: 'https://site-name.netlify.app/',
@@ -32,7 +32,7 @@ describe.concurrent('functions:create command', () => {
       path: 'sites',
       response: [siteInfo],
     },
-    { path: 'sites/site_id', method: 'patch', response: {} },
+    { path: 'sites/site_id', method: 'PATCH' as const, response: {} },
   ]
 
   test('should create a new function directory when none is found', async (t) => {
@@ -181,7 +181,7 @@ describe.concurrent('functions:create command', () => {
   })
 
   test('should only show function templates for the language specified via the --language flag, if one is present', async (t) => {
-    const createWithLanguageTemplate = async (language, outputPath) =>
+    const createWithLanguageTemplate = async (language: string, outputPath: string) => {
       await withSiteBuilder(t, async (builder) => {
         await builder.build()
 
@@ -218,6 +218,7 @@ describe.concurrent('functions:create command', () => {
           expect(await fileExistsAsync(`${builder.directory}/test/functions/${outputPath}`)).toBe(true)
         })
       })
+    }
 
     await createWithLanguageTemplate('javascript', 'hello-world/hello-world.mjs')
     await createWithLanguageTemplate('typescript', 'hello-world/hello-world.mts')
@@ -262,8 +263,8 @@ describe.concurrent('functions:create command', () => {
     })
   })
 
-  setupFixtureTests('nx-integrated-monorepo', () => {
-    test<FixtureTestContext>('should create a new edge function', async ({ fixture }) => {
+  await setupFixtureTests('nx-integrated-monorepo', () => {
+    test<FixtureTestContext>('should create a new edge function', async ({ fixture, expect }) => {
       await withMockApi(routes, async ({ apiUrl }) => {
         const childProcess = execa(
           cliPath,
@@ -303,11 +304,7 @@ describe.concurrent('functions:create command', () => {
         expect(existsSync(toml)).toBe(true)
 
         const tomlContent = await readFile(toml, 'utf-8')
-        expect(tomlContent.trim()).toMatchInlineSnapshot(`
-          "[[edge_functions]]
-          function = \\"abtest\\"
-          path = \\"/test\\""
-        `)
+        expect(tomlContent.trim()).toMatchSnapshot()
         expect(existsSync(join(pkgBase, 'netlify/edge-functions/abtest/abtest.ts'))).toBe(true)
       })
       // we need to wait till file watchers are loaded

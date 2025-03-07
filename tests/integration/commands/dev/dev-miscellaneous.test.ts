@@ -1,34 +1,45 @@
+import events from 'node:events'
 import { Buffer } from 'buffer'
 import path from 'path'
 import { platform } from 'process'
 import { fileURLToPath } from 'url'
 
 import { setProperty } from 'dot-prop'
-import execa from 'execa'
+import execa, { ExecaError } from 'execa'
 import getAvailablePort from 'get-port'
 import jwt from 'jsonwebtoken'
 import fetch from 'node-fetch'
-import { describe, test } from 'vitest'
+import { type TestContext, type TaskContext, describe, test } from 'vitest'
+import type { HandlerEvent, HandlerContext } from '@netlify/functions'
+import type { Context as EdgeHandlerContext } from '@netlify/edge-functions'
 
 import { cliPath } from '../../utils/cli-path.js'
-import { getExecaOptions, withDevServer } from '../../utils/dev-server.ts'
+import { getExecaOptions, withDevServer } from '../../utils/dev-server.js'
 import { withMockApi } from '../../utils/mock-api.js'
 import { pause } from '../../utils/pause.js'
-import { withSiteBuilder } from '../../utils/site-builder.ts'
+import { withSiteBuilder, type SiteBuilder } from '../../utils/site-builder.js'
 import { normalize } from '../../utils/snapshots.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const JWT_EXPIRY = 1_893_456_000
-const getToken = async ({ jwtRolePath = 'app_metadata.authorization.roles', jwtSecret = 'secret', roles }) => {
+const getToken = async ({
+  jwtRolePath = 'app_metadata.authorization.roles',
+  jwtSecret = 'secret',
+  roles,
+}: {
+  jwtRolePath?: string | undefined
+  jwtSecret?: string | undefined
+  roles?: string[] | undefined
+}) => {
   const payload = {
     exp: JWT_EXPIRY,
     sub: '12345678',
   }
-  return jwt.sign(setProperty(payload, jwtRolePath, roles), jwtSecret)
+  return Promise.resolve(jwt.sign(setProperty(payload, jwtRolePath, roles), jwtSecret))
 }
 
-const setupRoleBasedRedirectsSite = (builder) => {
+const setupRoleBasedRedirectsSite = (builder: SiteBuilder) => {
   builder
     .withContentFiles([
       {
@@ -46,7 +57,17 @@ const setupRoleBasedRedirectsSite = (builder) => {
   return builder
 }
 
-const validateRoleBasedRedirectsSite = async ({ builder, jwtRolePath, jwtSecret, t }) => {
+const validateRoleBasedRedirectsSite = async ({
+  builder,
+  jwtRolePath,
+  jwtSecret,
+  t,
+}: {
+  builder: SiteBuilder
+  jwtRolePath?: string | undefined
+  jwtSecret?: string | undefined
+  t: TaskContext & TestContext
+}) => {
   const [adminToken, editorToken] = await Promise.all([
     getToken({ jwtSecret, jwtRolePath, roles: ['admin'] }),
     getToken({ jwtSecret, jwtRolePath, roles: ['editor'] }),
@@ -137,7 +158,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
         .withNetlifyToml({ config: { functions: { directory: 'functions' } } })
         .withFunction({
           path: 'hello-background.js',
-          handler: (_, context) => {
+          handler: (_: HandlerEvent, context: HandlerContext) => {
             console.log(`__CLIENT_CONTEXT__START__${JSON.stringify(context)}__CLIENT_CONTEXT__END__`)
           },
         })
@@ -147,40 +168,49 @@ describe.concurrent('commands/dev-miscellaneous', () => {
         await fetch(`${url}/.netlify/functions/hello-background`)
 
         const output = outputBuffer.toString()
-        const context = JSON.parse(output.match(/__CLIENT_CONTEXT__START__(.*)__CLIENT_CONTEXT__END__/)[1])
-        t.expect(Object.keys(context.clientContext)).toEqual([])
-        t.expect(context.identity).toBe(null)
+        const context = JSON.parse(output.match(/__CLIENT_CONTEXT__START__(.*)__CLIENT_CONTEXT__END__/)![1])
+        t.expect(context).toHaveProperty('clientContext', {})
+        t.expect(context).toHaveProperty('identity', null)
       })
     })
   })
 
   test('function clientContext.custom.netlify should be set', async (t) => {
+    const { expect } = t
+
     await withSiteBuilder(t, async (builder) => {
       await builder
         .withNetlifyToml({ config: { functions: { directory: 'functions' } } })
         .withFunction({
           path: 'hello.js',
-          handler: async (_, context) => ({
-            statusCode: 200,
-            body: JSON.stringify(context),
-          }),
+          handler: async (_: HandlerEvent, context: HandlerContext) =>
+            Promise.resolve({
+              statusCode: 200,
+              body: JSON.stringify(context),
+            }),
         })
         .build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
-        const response = await fetch(`${server.url}/.netlify/functions/hello`, {
+        const res = await fetch(`${server.url}/.netlify/functions/hello`, {
           headers: {
             Authorization:
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzb3VyY2UiOiJuZXRsaWZ5IGRldiIsInRlc3REYXRhIjoiTkVUTElGWV9ERVZfTE9DQUxMWV9FTVVMQVRFRF9JREVOVElUWSJ9.2eSDqUOZAOBsx39FHFePjYj12k0LrxldvGnlvDu3GMI',
           },
-        }).then((res) => res.json())
+        })
+        const body = await res.json()
 
-        t.expect(response.clientContext.identity.url).toEqual(
+        expect(body).toHaveProperty(
+          'clientContext.identity.url',
           'https://netlify-dev-locally-emulated-identity.netlify.app/.netlify/identity',
         )
 
-        const netlifyContext = Buffer.from(response.clientContext.custom.netlify, 'base64').toString()
-        t.expect(JSON.parse(netlifyContext).identity.url).toEqual(
+        expect(body).toHaveProperty('clientContext.custom.netlify', expect.any(String))
+        const rawNetlifyContext = (body as { clientContext: { custom: { netlify: string } } }).clientContext.custom
+          .netlify
+        const netlifyContext = Buffer.from(rawNetlifyContext, 'base64').toString('utf-8')
+        expect(JSON.parse(netlifyContext)).toHaveProperty(
+          'identity.url',
           'https://netlify-dev-locally-emulated-identity.netlify.app/.netlify/identity',
         )
       })
@@ -240,7 +270,8 @@ describe.concurrent('commands/dev-miscellaneous', () => {
           handler: (req, context) =>
             Response.json({
               requestID: req.headers.get('x-nf-request-id'),
-              deploy: context.deploy,
+              deploy: (context as EdgeHandlerContext & { deploy: { context: string; id: string; published: boolean } })
+                .deploy,
             }),
           name: 'hello',
         })
@@ -297,7 +328,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
           },
         ])
         .withEdgeFunction({
-          handler: async (_, context) => {
+          handler: async (_: Request, context: EdgeHandlerContext) => {
             const res = await context.next()
             const text = await res.text()
 
@@ -393,7 +424,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
         .withEdgeFunction({
           handler: async (_, context) => {
             const { deploy, site } = context
-            return new Response(JSON.stringify({ deploy, site }))
+            return Promise.resolve(Response.json({ deploy, site }))
           },
           name: 'siteContext',
         })
@@ -428,7 +459,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
             },
           },
           async (server) => {
-            const response = await fetch(`${server.url}`)
+            const response = await fetch(server.url)
 
             t.expect(response.status).toBe(200)
             t.expect(JSON.parse(await response.text())).toStrictEqual({
@@ -467,10 +498,10 @@ describe.concurrent('commands/dev-miscellaneous', () => {
         ])
         .withEdgeFunction({
           handler: async (_, context) => {
-            const resp = await context.next()
-            const text = await resp.text()
+            const res = await context.next()
+            const text = await res.text()
 
-            return new Response(text.toUpperCase(), resp)
+            return new Response(text.toUpperCase(), res)
           },
           name: 'yell',
         })
@@ -487,6 +518,8 @@ describe.concurrent('commands/dev-miscellaneous', () => {
   })
 
   test('Serves an Edge Function that streams the response', async (t) => {
+    const { expect } = t
+
     await withSiteBuilder(t, async (builder) => {
       const publicDir = 'public'
       builder
@@ -509,7 +542,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
             const body = new ReadableStream({
               async start(controller) {
                 setInterval(() => {
-                  const msg = new TextEncoder().encode(`${Date.now()}\r\n`)
+                  const msg = new TextEncoder().encode(`${Date.now().toString()}\r\n`)
                   controller.enqueue(msg)
                 }, 100)
 
@@ -519,12 +552,14 @@ describe.concurrent('commands/dev-miscellaneous', () => {
               },
             })
 
-            return new Response(body, {
-              headers: {
-                'content-type': 'text/event-stream',
-              },
-              status: 200,
-            })
+            return Promise.resolve(
+              new Response(body, {
+                headers: {
+                  'content-type': 'text/event-stream',
+                },
+                status: 200,
+              }),
+            )
           },
           name: 'stream',
         })
@@ -532,20 +567,19 @@ describe.concurrent('commands/dev-miscellaneous', () => {
       await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
-        let numberOfChunks = 0
+        const res = await fetch(`${server.url}/stream`)
+        const stream = res.body
 
-        // eslint-disable-next-line no-async-promise-executor
-        await new Promise(async (resolve, reject) => {
-          const stream = await fetch(`${server.url}/stream`).then((response) => response.body)
-          stream.on('data', () => {
-            numberOfChunks += 1
-          })
-          stream.on('end', resolve)
-          stream.on('error', reject)
+        expect(stream).not.toBeNull()
+
+        let numberOfChunks = 0
+        stream!.on('data', () => {
+          numberOfChunks += 1
         })
+        await events.once(stream!, 'end')
 
         // streamed responses arrive in more than one batch
-        t.expect(numberOfChunks).not.toBe(1)
+        expect(numberOfChunks).not.toBe(1)
       })
     })
   })
@@ -577,7 +611,8 @@ describe.concurrent('commands/dev-miscellaneous', () => {
         .withEdgeFunction({
           config: { onError: 'bypass', path: '/hello-1' },
           handler: () => {
-            // eslint-disable-next-line no-undef
+            // @ts-expect-error: Intentionally referencing an undefined global
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             ermThisWillFail()
 
             return new Response('I will never get here')
@@ -587,7 +622,8 @@ describe.concurrent('commands/dev-miscellaneous', () => {
         .withEdgeFunction({
           config: { onError: '/error-page', path: '/hello-2' },
           handler: () => {
-            // eslint-disable-next-line no-undef
+            // @ts-expect-error: Intentionally referencing an undefined global
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             ermThisWillFail()
 
             return new Response('I will never get here')
@@ -717,7 +753,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
         .build()
 
       await withDevServer({ cwd: builder.directory }, async ({ port, url }) => {
-        const response = await fetch(`${url.replace(port, functionsPort)}/test`, {
+        const response = await fetch(`${url.replace(port.toString(), functionsPort.toString())}/test`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -737,21 +773,25 @@ describe.concurrent('commands/dev-miscellaneous', () => {
         .withNetlifyToml({ config: { functions: { directory: 'functions' }, dev: { functionsPort } } })
         .withFunction({
           path: 'exclamat!on.js',
-          handler: async (event) => ({
-            statusCode: 200,
-            body: JSON.stringify(event),
-          }),
+          handler: async (event: HandlerEvent) =>
+            Promise.resolve({
+              statusCode: 200,
+              body: JSON.stringify(event),
+            }),
         })
         .build()
 
       await withDevServer({ cwd: builder.directory }, async ({ port, url }) => {
-        const response = await fetch(`${url.replace(port, functionsPort)}/.netlify/functions/exclamat!on`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
+        const response = await fetch(
+          `${url.replace(port.toString(), functionsPort.toString())}/.netlify/functions/exclamat!on`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: '{}',
           },
-          body: '{}',
-        })
+        )
         t.expect(response.status).toBe(400)
         t.expect(await response.text()).toEqual(
           'Function name should consist only of alphanumeric characters, hyphen & underscores.',
@@ -1149,12 +1189,12 @@ describe.concurrent('commands/dev-miscellaneous', () => {
         })
         .withEdgeFunction({
           handler: () => {
-            // eslint-disable-next-line no-undef
-            const fromDenoGlobal = Deno.env.toObject()
-            // eslint-disable-next-line no-undef
+            // @ts-expect-error: We can't import Deno types without polluting the global environment
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+            const fromDenoGlobal = Deno.env.toObject() as Record<string, string>
             const fromNetlifyGlobal = Netlify.env.toObject()
 
-            return new Response(`${JSON.stringify({ fromDenoGlobal, fromNetlifyGlobal })}`)
+            return new Response(JSON.stringify({ fromDenoGlobal, fromNetlifyGlobal }))
           },
           name: 'env',
         })
@@ -1177,21 +1217,22 @@ describe.concurrent('commands/dev-miscellaneous', () => {
             },
           },
           async ({ port }) => {
-            const response = await fetch(`http://localhost:${port}/env`).then((res) => res.json())
-            const buckets = Object.values(response)
+            const response = await fetch(`http://localhost:${port.toString()}/env`)
+            const body = (await response.json()) as object[]
+            const buckets = Object.values(body)
             t.expect(buckets.length).toBe(2)
 
             buckets.forEach((bucket) => {
               const bucketKeys = Object.keys(bucket)
 
               t.expect(bucketKeys.includes('DENO_REGION')).toBe(true)
-              t.expect(bucket.DENO_REGION).toEqual('local')
+              t.expect(bucket).toHaveProperty('DENO_REGION', 'local')
 
               t.expect(bucketKeys.includes('NETLIFY_DEV')).toBe(true)
-              t.expect(bucket.NETLIFY_DEV).toEqual('true')
+              t.expect(bucket).toHaveProperty('NETLIFY_DEV', 'true')
 
               t.expect(bucketKeys.includes('FROM_ENV')).toBe(true)
-              t.expect(bucket.FROM_ENV).toEqual('YAS')
+              t.expect(bucket).toHaveProperty('FROM_ENV', 'YAS')
 
               t.expect(bucketKeys.includes('DENO_DEPLOYMENT_ID')).toBe(false)
               t.expect(bucketKeys.includes('NODE_ENV')).toBe(false)
@@ -1210,7 +1251,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
   test('should inject the `NETLIFY_DEV` environment variable in the process (legacy environment variables)', async (t) => {
     const externalServerPort = await getAvailablePort()
     const externalServerPath = path.join(__dirname, '../../utils', 'external-server-cli.js')
-    const command = `node ${externalServerPath} ${externalServerPort}`
+    const command = `node ${externalServerPath} ${externalServerPort.toString()}`
 
     await withSiteBuilder(t, async (builder) => {
       const publicDir = 'public'
@@ -1232,13 +1273,16 @@ describe.concurrent('commands/dev-miscellaneous', () => {
         .build()
 
       await withDevServer({ cwd: builder.directory }, async ({ port }) => {
-        const response = await fetch(`http://localhost:${port}/`).then((res) => res.json())
-        t.expect(response.env.NETLIFY_DEV).toEqual('true')
+        const response = await fetch(`http://localhost:${port.toString()}/`)
+        const body = await response.json()
+        t.expect(body).toHaveProperty('env.NETLIFY_DEV', 'true')
       })
     })
   })
 
   test('should inject the `NETLIFY_DEV` environment variable in the process', async (t) => {
+    const { expect } = t
+
     const siteInfo = {
       account_slug: 'test-account',
       build_settings: {
@@ -1282,7 +1326,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
 
     const externalServerPort = await getAvailablePort()
     const externalServerPath = path.join(__dirname, '../../utils', 'external-server-cli.js')
-    const command = `node ${externalServerPath} ${externalServerPort}`
+    const command = `node ${externalServerPath} ${externalServerPort.toString()}`
 
     await withSiteBuilder(t, async (builder) => {
       const publicDir = 'public'
@@ -1315,8 +1359,10 @@ describe.concurrent('commands/dev-miscellaneous', () => {
             },
           },
           async ({ port }) => {
-            const response = await fetch(`http://localhost:${port}/`).then((res) => res.json())
-            t.expect(response.env.NETLIFY_DEV).toEqual('true')
+            const res = await fetch(`http://localhost:${port.toString()}/`)
+            const body = await res.json()
+
+            expect(body).toHaveProperty('env.NETLIFY_DEV', 'true')
           },
         )
       })
@@ -1324,9 +1370,11 @@ describe.concurrent('commands/dev-miscellaneous', () => {
   })
 
   test('should send form-data POST requests to framework server if no function matches', async (t) => {
+    const { expect } = t
+
     const externalServerPort = await getAvailablePort()
     const externalServerPath = path.join(__dirname, '../../utils', 'external-server-cli.js')
-    const command = `node ${externalServerPath} ${externalServerPort}`
+    const command = `node ${externalServerPath} ${externalServerPort.toString()}`
 
     await withSiteBuilder(t, async (builder) => {
       await builder
@@ -1348,22 +1396,24 @@ describe.concurrent('commands/dev-miscellaneous', () => {
         async ({ port }) => {
           const form = new FormData()
           form.set('foo', 'bar')
-          const response = await fetch(`http://localhost:${port}/request-to-framework`, {
+          const res = await fetch(`http://localhost:${port.toString()}/request-to-framework`, {
             method: 'POST',
             body: form,
             headers: {
               'content-type': 'application/x-www-form-urlencoded;charset=UTF-8',
             },
           })
-          t.expect(await response.json(), 'response comes from framework').toMatchObject({
-            url: '/request-to-framework',
-          })
+          const body = await res.json()
+
+          expect(body).toMatchObject({ url: '/request-to-framework' })
         },
       )
     })
   })
 
   test('should fail in CI with multiple projects', async (t) => {
+    const { expect } = t
+
     await withSiteBuilder(t, async (builder) => {
       await builder
         .withPackageJson({ packageJson: { name: 'main', workspaces: ['*'] } })
@@ -1375,17 +1425,25 @@ describe.concurrent('commands/dev-miscellaneous', () => {
         const childProcess = execa(
           cliPath,
           ['dev', '--offline'],
-          getExecaOptions({ cwd: builder.directory, env: { CI: true } }),
+          getExecaOptions({ cwd: builder.directory, env: { CI: 'true' } }),
         )
         await childProcess
       }
-      const error = await asyncErrorBlock().catch((error_) => error_)
-      t.expect(
-        normalize(error.stderr, { duration: true, filePath: true }).includes(
-          'Sites detected: package1, package2. Configure the site you want to work with and try again. Refer to https://ntl.fyi/configure-site for more information.',
-        ),
-      )
-      t.expect(error.exitCode).toBe(1)
+
+      try {
+        await asyncErrorBlock()
+      } catch (_err: unknown) {
+        const err = _err as ExecaError
+
+        expect(normalize(err.stderr, { duration: true, filePath: true })).toEqual(
+          expect.stringContaining(
+            'Sites detected: package1, package2. Configure the site you want to work with and try again. Refer to https://ntl.fyi/configure-site for more information.',
+          ),
+        )
+        expect(err.exitCode).toBe(1)
+      } finally {
+        expect.assertions(2)
+      }
     })
   })
 })

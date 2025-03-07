@@ -1,4 +1,4 @@
-import type { Server } from 'http'
+import type { IncomingHttpHeaders, Server } from 'http'
 import type { AddressInfo } from 'net'
 import { isDeepStrictEqual, promisify } from 'util'
 
@@ -6,18 +6,10 @@ import type { CommonOptions, NodeOptions } from 'execa'
 import express, { urlencoded, json, raw } from 'express'
 import { afterAll, beforeAll, beforeEach } from 'vitest'
 
-export enum HTTPMethod {
-  DELETE = 'DELETE',
-  GET = 'GET',
-  PATCH = 'PATCH',
-  POST = 'POST',
-  PUT = 'PUT',
-}
-
 export interface Route {
-  method?: HTTPMethod | 'all'
+  method?: 'DELETE' | 'GET' | 'PATCH' | 'POST' | 'PUT' | 'HEAD' | 'OPTIONS' | 'all'
   path: string
-  response?: any
+  response?: ((req: express.Request, res: express.Response) => void) | Record<string, unknown> | unknown[]
   requestBody?: any
   status?: number
 }
@@ -30,19 +22,19 @@ interface MockApiOptions {
 export interface MockApi {
   apiUrl: string
   clearRequests: () => void
-  requests: any[]
+  requests: { path: string; body: unknown; method: string; headers: IncomingHttpHeaders }[]
   server: Server
   close: () => Promise<void>
 }
 
 export interface MockApiTestContext {
   apiUrl: string
-  requests: any[]
+  requests: MockApi['requests']
 }
 
 // Replace mock-api.js with this once everything migrated
 
-const addRequest = (requests, request) => {
+const addRequest = (requests: MockApi['requests'], request: express.Request) => {
   requests.push({
     path: request.path,
     body: request.body,
@@ -51,40 +43,45 @@ const addRequest = (requests, request) => {
   })
 }
 
-const clearRequests = (requests) => {
+const clearRequests = (requests: unknown[]) => {
   // We cannot create a new array, as the reference of this array is used in tests
   requests.length = 0
 }
 
 export const startMockApi = ({ routes, silent }: MockApiOptions): Promise<MockApi> => {
-  const requests = []
+  const requests: MockApi['requests'] = []
   const app = express()
   app.use(urlencoded({ extended: true }))
   app.use(json())
   app.use(raw())
 
   routes.forEach(({ method = 'get', path, requestBody, response = {}, status = 200 }) => {
-    app[method.toLowerCase()](`/api/v1/${path}`, function onRequest(req, res) {
-      // validate request body
-      if (requestBody !== undefined && !isDeepStrictEqual(requestBody, req.body)) {
-        res.status(500)
-        res.json({ message: `Request body doesn't match` })
-        return
-      }
-      addRequest(requests, req)
-      res.status(status)
+    app[method.toLowerCase() as 'all' | 'get' | 'post' | 'put' | 'delete' | 'patch' | 'options' | 'head'](
+      `/api/v1/${path}`,
+      function onRequest(req: express.Request, res: express.Response) {
+        // validate request body
+        if (requestBody !== undefined && !isDeepStrictEqual(requestBody, req.body)) {
+          res.status(500)
+          res.json({ message: `Request body doesn't match` })
+          return
+        }
+        addRequest(requests, req)
+        res.status(status)
 
-      if (typeof response === 'function') {
-        response(req, res)
+        if (typeof response === 'function') {
+          response(req, res)
 
-        return
-      }
+          return
+        }
 
-      if (status === 404) {
-        response.message = 'Not found'
-      }
-      res.json(response)
-    })
+        if (status === 404) {
+          if (typeof response === 'object' && !Array.isArray(response)) {
+            response.message = 'Not found'
+          }
+        }
+        res.json(response)
+      },
+    )
   })
 
   app.all('*', function onRequest(req, res) {
@@ -104,7 +101,7 @@ export const startMockApi = ({ routes, silent }: MockApiOptions): Promise<MockAp
 
       resolve({
         server,
-        apiUrl: `http://localhost:${address.port}/api/v1`,
+        apiUrl: `http://localhost:${address.port.toString()}/api/v1`,
         requests,
         clearRequests: clearRequests.bind(null, requests),
         async close() {
@@ -119,7 +116,7 @@ export const startMockApi = ({ routes, silent }: MockApiOptions): Promise<MockAp
   })
 }
 
-export const withMockApi = async (routes, factory, silent = false) => {
+export const withMockApi = async (routes: Route[], factory: () => void, silent = false) => {
   let mockApi: MockApi
   beforeAll(async () => {
     mockApi = await startMockApi({ routes, silent })
@@ -136,9 +133,11 @@ export const withMockApi = async (routes, factory, silent = false) => {
   })
 
   factory()
+
+  return Promise.resolve(undefined)
 }
 
-const getEnvironmentVariables = ({ apiUrl }) => ({
+const getEnvironmentVariables = ({ apiUrl }: { apiUrl?: string }) => ({
   NETLIFY_AUTH_TOKEN: 'fake-token',
   NETLIFY_SITE_ID: 'site_id',
   NETLIFY_API_URL: apiUrl,
@@ -152,7 +151,7 @@ export const getCLIOptions = ({
   extendEnv = true,
 }: {
   apiUrl?: string
-  builder?: any
+  builder?: { directory?: string } | undefined
   cwd?: string
   env?: CommonOptions<string>['env']
   extendEnv?: CommonOptions<string>['extendEnv']
