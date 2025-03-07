@@ -152,7 +152,7 @@ export default tseslint.config(
       'n/no-unsupported-features/node-builtins': [
         'error',
         {
-          ignores: ['FormData', 'ReadableStream', 'Response', 'fetch', 'fs/promises.cp'],
+          ignores: ['FormData', 'ReadableStream', 'Response', 'Request', 'fetch', 'fs/promises.cp'],
         },
       ],
     },

@@ -1,9 +1,8 @@
 import process from 'process'
 
-import chalk from 'chalk'
-import { describe, expect, test, vi, beforeEach, afterEach, beforeAll, afterAll } from 'vitest'
+import { describe, expect, test, vi, beforeEach, afterAll } from 'vitest'
 
-import { log } from '../../../../src/utils/command-helpers.js'
+import { chalk, log } from '../../../../src/utils/command-helpers.js'
 import { generateEnvVarsList } from '../.././../../src/utils/prompts/env-clone-prompt.js'
 import { destructiveCommandMessages } from '../.././../../src/utils/prompts/prompt-messages.js'
 import { getEnvironmentVariables, withMockApi, setTTYMode, setCI, setTestingPrompts } from '../../utils/mock-api.js'
@@ -110,7 +109,8 @@ describe('env:clone command', () => {
             await runMockProgram(['', '', 'env:clone', '-t', siteIdTwo])
           } catch (error) {
             // We expect the process to exit, so this is fine
-            expect(error.message).toContain('process.exit unexpectedly called')
+            expect(error).toBeInstanceOf(Error)
+            expect((error as Error).message).toContain('process.exit unexpectedly called')
           }
 
           expect(promptSpy).toHaveBeenCalled()
@@ -149,7 +149,7 @@ describe('env:clone command', () => {
       })
     })
 
-    describe('should not run prompts if in non-interactive shell or CI/CD environment', async () => {
+    describe('should not run prompts if in non-interactive shell or CI/CD environment', () => {
       test('should not show prompt in an non-interactive shell', async () => {
         setTTYMode(false)
 
@@ -169,7 +169,7 @@ describe('env:clone command', () => {
       })
 
       test('should not show prompt in a ci/cd enviroment', async () => {
-        setCI(true)
+        setCI('true')
 
         await withMockApi(routes, async ({ apiUrl }) => {
           Object.assign(process.env, getEnvironmentVariables({ apiUrl }))

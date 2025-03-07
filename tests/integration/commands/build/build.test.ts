@@ -2,14 +2,14 @@ import path, { join } from 'path'
 import process from 'process'
 
 import execa from 'execa'
-import { describe, expect, test } from 'vitest'
+import { describe, expect, test, type TaskContext, type TestContext } from 'vitest'
 
 import { callCli } from '../../utils/call-cli.js'
 import { cliPath } from '../../utils/cli-path.js'
-import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.ts'
+import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
 import { CONFIRM, handleQuestions } from '../../utils/handle-questions.js'
 import { withMockApi } from '../../utils/mock-api.js'
-import { withSiteBuilder } from '../../utils/site-builder.ts'
+import { withSiteBuilder } from '../../utils/site-builder.js'
 
 const defaultEnvs = {
   NETLIFY_AUTH_TOKEN: 'fake-token',
@@ -22,17 +22,18 @@ const defaultEnvs = {
  *  - that its output contains `output`
  */
 const runBuildCommand = async function (
-  t,
-  cwd,
+  t: TaskContext & TestContext,
+  cwd: string,
   options: Partial<{
     exitCode: number
     flags: string[]
-    output: any
+    expectedExitCode?: number | undefined
+    output: string | RegExp | (string | RegExp)[]
     env: Record<string, string>
     apiUrl: string
   }> = {},
 ) {
-  let { apiUrl, env = defaultEnvs, exitCode: expectedExitCode = 0, flags = [], output: outputs } = options
+  let { apiUrl, env = defaultEnvs, exitCode: expectedExitCode = 0, flags = [], output: outputs = [] } = options
   const { all, exitCode } = await execa(cliPath, ['build', ...flags], {
     reject: false,
     cwd,

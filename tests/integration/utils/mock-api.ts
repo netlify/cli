@@ -1,9 +1,37 @@
+import type { IncomingHttpHeaders, Server } from 'node:http'
+import type { AddressInfo } from 'node:net'
 import process from 'process'
 import { isDeepStrictEqual, promisify } from 'util'
 
+import type { CommonOptions, NodeOptions } from 'execa'
 import express from 'express'
 
-const addRequest = (requests, request) => {
+export interface Route {
+  method?: 'DELETE' | 'GET' | 'PATCH' | 'POST' | 'PUT' | 'HEAD' | 'OPTIONS' | 'all'
+  path: string
+  response?: ((req: express.Request, res: express.Response) => void) | Record<string, unknown> | unknown[]
+  requestBody?: any
+  status?: number
+}
+
+interface MockApiOptions {
+  routes: Route[]
+  silent?: boolean
+}
+
+export interface MockApi {
+  apiUrl: string
+  requests: { path: string; body: unknown; method: string; headers: IncomingHttpHeaders }[]
+  server: Server
+  close: () => Promise<void>
+}
+
+export interface MockApiTestContext {
+  apiUrl: string
+  requests: MockApi['requests']
+}
+
+const addRequest = (requests: MockApi['requests'], request: express.Request) => {
   requests.push({
     path: request.path,
     body: request.body,
@@ -17,25 +45,28 @@ const addRequest = (requests, request) => {
  * @param {*} param0
  * @returns
  */
-export const startMockApi = ({ routes, silent }) => {
-  const requests = []
+export const startMockApi = ({ routes, silent }: MockApiOptions): Promise<MockApi> => {
+  const requests: MockApi['requests'] = []
   const app = express()
   app.use(express.urlencoded({ extended: true }))
   app.use(express.json())
   app.use(express.raw())
 
   routes.forEach(({ method = 'get', path, requestBody, response = {}, status = 200 }) => {
-    app[method.toLowerCase()](`/api/v1/${path}`, function onRequest(req, res) {
-      // validate request body
-      if (requestBody !== undefined && !isDeepStrictEqual(requestBody, req.body)) {
-        res.status(500)
-        res.json({ message: `Request body doesn't match` })
-        return
-      }
-      addRequest(requests, req)
-      res.status(status)
-      res.json(response)
-    })
+    app[method.toLowerCase() as 'all' | 'get' | 'post' | 'put' | 'delete' | 'patch' | 'options' | 'head'](
+      `/api/v1/${path}`,
+      function onRequest(req, res) {
+        // validate request body
+        if (requestBody !== undefined && !isDeepStrictEqual(requestBody, req.body)) {
+          res.status(500)
+          res.json({ message: `Request body doesn't match` })
+          return
+        }
+        addRequest(requests, req)
+        res.status(status)
+        res.json(response)
+      },
+    )
   })
 
   app.get('/site/site_id/integrations/safe', function onRequest(req, res) {
@@ -59,13 +90,14 @@ export const startMockApi = ({ routes, silent }) => {
     res.json({ message: 'Not found' })
   })
 
-  const returnPromise = new Promise((resolve, reject) => {
+  const returnPromise = new Promise<MockApi>((resolve, reject) => {
     const server = app.listen()
 
     server.on('listening', () => {
+      const address: AddressInfo = server.address() as AddressInfo
       resolve({
         server,
-        apiUrl: `http://localhost:${server.address().port}/api/v1`,
+        apiUrl: `http://localhost:${address.port.toString()}/api/v1`,
         requests,
         async close() {
           return promisify(server.close.bind(server))()
@@ -81,12 +113,20 @@ export const startMockApi = ({ routes, silent }) => {
   return returnPromise
 }
 
-export const withMockApi = async (routes, testHandler, silent = false) => {
-  let mockApi
+export const withMockApi = async (
+  routes: Route[],
+  testHandler: (options: {
+    apiUrl: string
+    requests: { path: string; body: unknown; method: string; headers: IncomingHttpHeaders }[]
+  }) => Promise<void>,
+  silent = false,
+) => {
+  let mockApi: Awaited<ReturnType<typeof startMockApi>>
   try {
     mockApi = await startMockApi({ routes, silent })
-    return await testHandler({ apiUrl: mockApi.apiUrl, requests: mockApi.requests })
+    await testHandler({ apiUrl: mockApi.apiUrl, requests: mockApi.requests })
   } finally {
+    // @ts-expect-error Not worth fixing, this file is deprecated in favor of mock-api-vitest
     mockApi.server.close()
   }
 }
@@ -94,7 +134,7 @@ export const withMockApi = async (routes, testHandler, silent = false) => {
 // `CI` set to "true" to mock commands run from terminal command line
 // `SHLVL` used to overwrite prompts for scripted commands in production/dev
 // environments see `scriptedCommand` property of `BaseCommand`
-export const getEnvironmentVariables = ({ apiUrl }) => ({
+export const getEnvironmentVariables = ({ apiUrl }: { apiUrl?: string }) => ({
   NETLIFY_AUTH_TOKEN: 'fake-token',
   NETLIFY_SITE_ID: 'site_id',
   NETLIFY_API_URL: apiUrl,
@@ -106,7 +146,7 @@ export const getEnvironmentVariables = ({ apiUrl }) => ({
  * Falsey value is for noninteractive shell (-force flags overide user prompts)
  * Truthy value is for interactive shell
  */
-export const setTTYMode = (bool) => {
+export const setTTYMode = (bool: boolean) => {
   process.stdin.isTTY = bool
 }
 
@@ -118,7 +158,7 @@ export const setTTYMode = (bool) => {
  *
  * @param {string} value - The value to set for the `TESTING_PROMPTS` environment variable.
  */
-export const setTestingPrompts = (value) => {
+export const setTestingPrompts = (value: string) => {
   process.env.TESTING_PROMPTS = value
 }
 
@@ -126,7 +166,7 @@ export const setTestingPrompts = (value) => {
  * Simulates a Continuous Integration environment by toggling the `CI`
  * environment variable. Truthy value is
  */
-export const setCI = (value) => {
+export const setCI = (value: string) => {
   process.env.CI = value
 }
 
@@ -135,7 +175,18 @@ export const setCI = (value) => {
  * @param {*} param0
  * @returns {import('execa').Options<string>}
  */
-export const getCLIOptions = ({ apiUrl, builder, env = {}, extendEnv = true }) => ({
+export const getCLIOptions = ({
+  apiUrl,
+  builder,
+  env = {},
+  extendEnv = true,
+}: {
+  apiUrl?: string
+  builder?: { directory?: string } | undefined
+  cwd?: string
+  env?: CommonOptions<string>['env']
+  extendEnv?: CommonOptions<string>['extendEnv']
+}): NodeOptions => ({
   cwd: builder?.directory,
   env: { ...getEnvironmentVariables({ apiUrl }), ...env },
   extendEnv,

@@ -25,9 +25,9 @@ const routes = [
   { path: 'user', response: user },
 ]
 
-setupFixtureTests('empty-project', () => {
+await setupFixtureTests('empty-project', () => {
   test<FixtureTestContext>('should print status for a linked site', async ({ fixture }) => {
-    await withMockApi(routes, async ({ apiUrl }) => {
+    await withMockApi(routes, async ({ apiUrl }: { apiUrl: string }) => {
       const { account, siteData } = await fixture.callCli(['status', '--json'], {
         execOptions: getCLIOptions({ apiUrl }),
         offline: false,

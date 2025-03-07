@@ -1,21 +1,27 @@
-import { readFile } from 'fs/promises'
+import path from 'node:path'
+import { readFile } from 'node:fs/promises'
 
 import cleanDeep from 'clean-deep'
 import execa from 'execa'
 import toml from 'toml'
-import { describe, test } from 'vitest'
+import { describe, test, type TaskContext, type TestContext } from 'vitest'
 
 import { cliPath } from '../../utils/cli-path.js'
 import { CONFIRM, DOWN, answerWithValue, handleQuestions } from '../../utils/handle-questions.js'
 import { withMockApi } from '../../utils/mock-api.js'
-import { withSiteBuilder } from '../../utils/site-builder.ts'
+import { withSiteBuilder } from '../../utils/site-builder.js'
 
 const defaultFunctionsDirectory = 'netlify/functions'
 
-const assertNetlifyToml = async (t, tomlDir, { command, functions, publish }) => {
+const assertNetlifyToml = async (
+  t: TaskContext & TestContext,
+  tomlDir: string,
+  { command, functions, publish }: { command: string; functions: string; publish: string },
+) => {
   // assert netlify.toml was created with user inputs
-  const netlifyToml = toml.parse(await readFile(`${tomlDir}/netlify.toml`, 'utf8'))
+  const netlifyToml: unknown = toml.parse(await readFile(path.join(tomlDir, '/netlify.toml'), 'utf8'))
   t.expect(netlifyToml).toEqual(
+    // @ts-expect-error The types on this package are wrong/unusable
     cleanDeep({
       build: { command, functions, publish },
     }),
@@ -70,10 +76,10 @@ describe.concurrent('commands/init', () => {
         path: 'sites',
         response: [siteInfo],
       },
-      { path: 'deploy_keys', method: 'post', response: { public_key: 'public_key' } },
+      { path: 'deploy_keys', method: 'POST' as const, response: { public_key: 'public_key' } },
       {
         path: 'sites/site_id',
-        method: 'patch',
+        method: 'PATCH' as const,
         response: { deploy_hook: 'deploy_hook' },
         requestBody: {
           plugins: [],
@@ -164,13 +170,13 @@ describe.concurrent('commands/init', () => {
       },
       {
         path: 'test-account/sites',
-        method: 'post',
+        method: 'POST' as const,
         response: { id: 'site_id', name: 'test-site-name' },
       },
-      { path: 'deploy_keys', method: 'post', response: { public_key: 'public_key' } },
+      { path: 'deploy_keys', method: 'POST' as const, response: { public_key: 'public_key' } },
       {
         path: 'sites/site_id',
-        method: 'patch',
+        method: 'PATCH' as const,
         response: { deploy_hook: 'deploy_hook' },
         requestBody: {
           plugins: [],
@@ -265,13 +271,13 @@ describe.concurrent('commands/init', () => {
       },
       {
         path: 'test-account/sites',
-        method: 'post',
+        method: 'POST' as const,
         response: { id: 'site_id', name: 'test-site-name' },
       },
-      { path: 'deploy_keys', method: 'post', response: { public_key: 'public_key' } },
+      { path: 'deploy_keys', method: 'POST' as const, response: { public_key: 'public_key' } },
       {
         path: 'sites/site_id',
-        method: 'patch',
+        method: 'PATCH' as const,
         response: { deploy_hook: 'deploy_hook' },
         requestBody: {
           plugins: [{ package: '@netlify/plugin-nextjs' }],
@@ -368,13 +374,13 @@ describe.concurrent('commands/init', () => {
       },
       {
         path: 'test-account/sites',
-        method: 'post',
+        method: 'POST' as const,
         response: { id: 'site_id', name: 'test-site-name' },
       },
-      { path: 'deploy_keys', method: 'post', response: { public_key: 'public_key' } },
+      { path: 'deploy_keys', method: 'POST' as const, response: { public_key: 'public_key' } },
       {
         path: 'sites/site_id',
-        method: 'patch',
+        method: 'PATCH' as const,
         response: { deploy_hook: 'deploy_hook' },
         requestBody: {
           plugins: [{ package: '@netlify/plugin-nextjs' }],
@@ -461,10 +467,10 @@ describe.concurrent('commands/init', () => {
         path: 'sites',
         response: [siteInfo],
       },
-      { path: 'deploy_keys', method: 'post', response: { public_key: 'public_key' } },
+      { path: 'deploy_keys', method: 'POST' as const, response: { public_key: 'public_key' } },
       {
         path: 'sites/site_id',
-        method: 'patch',
+        method: 'PATCH' as const,
         response: { deploy_hook: 'deploy_hook' },
         requestBody: {
           plugins: [{ package: '@netlify/plugin-lighthouse' }, { package: '@netlify/plugin-nextjs' }],
@@ -561,13 +567,13 @@ describe.concurrent('commands/init', () => {
       },
       {
         path: 'test-account/sites',
-        method: 'post',
+        method: 'POST' as const,
         response: { id: 'site_id', name: 'test-site-name' },
       },
-      { path: 'deploy_keys', method: 'post', response: { public_key: 'public_key' } },
+      { path: 'deploy_keys', method: 'POST' as const, response: { public_key: 'public_key' } },
       {
         path: 'sites/site_id',
-        method: 'patch',
+        method: 'PATCH' as const,
         response: { deploy_hook: 'deploy_hook' },
         requestBody: {
           plugins: [{ package: '@netlify/plugin-gatsby' }],

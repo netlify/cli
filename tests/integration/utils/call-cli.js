@@ -10,7 +10,7 @@ const CLI_TIMEOUT = 3e5
  * @param {readonly string[]} args
  * @param {execa.Options<string>} execOptions
  * @param {boolean} parseJson
- * @returns {Promise<string|object>}
+ * @returns {Promise<string>}
  */
 export const callCli = async function (args, execOptions = {}, parseJson = false) {
   const { stdout } = await execa.node(cliPath, args, {

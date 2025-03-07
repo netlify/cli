@@ -7,9 +7,9 @@ import { temporaryDirectory } from 'tempy'
 import { afterAll, afterEach, beforeAll, beforeEach, describe } from 'vitest'
 
 import { callCli } from './call-cli.js'
-import { DevServer, startDevServer } from './dev-server.ts'
+import { DevServer, startDevServer } from './dev-server.js'
 import { MockApi, Route, getCLIOptions, startMockApi } from './mock-api-vitest.js'
-import { SiteBuilder } from './site-builder.ts'
+import { SiteBuilder } from './site-builder.js'
 
 const FIXTURES_DIRECTORY = fileURLToPath(new URL('../__fixtures__/', import.meta.url))
 const HOOK_TIMEOUT = 30_000
@@ -103,7 +103,7 @@ export class Fixture {
     args: string[],
     { execOptions = {}, offline = true, parseJson = false }: CallCliOptions = {},
   ): Promise<Record<string, unknown> | string> {
-    let cliOptions: NodeOptions<string> = execOptions
+    let cliOptions: NodeOptions = execOptions
     if (this.options.apiUrl) {
       cliOptions = getCLIOptions({ apiUrl: this.options.apiUrl, env: execOptions.env })
     }
@@ -115,7 +115,7 @@ export class Fixture {
       args.push('--offline')
     }
 
-    return await callCli(args, cliOptions, parseJson)
+    return callCli(args, cliOptions, parseJson)
   }
 }
 

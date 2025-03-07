@@ -1,7 +1,7 @@
 import { test } from 'vitest'
 
-import { withDevServer } from '../../utils/dev-server'
-import { withSiteBuilder } from '../../utils/site-builder'
+import { withDevServer } from '../../utils/dev-server.js'
+import { withSiteBuilder } from '../../utils/site-builder.js'
 
 test('nodeModuleFormat: esm v1 functions should work', async (t) => {
   await withSiteBuilder(t, async (builder) => {
@@ -36,7 +36,7 @@ test('nodeModuleFormat: esm v1 functions should work', async (t) => {
                   statusCode: 200,
                   body: "This is an internal function.",
                 };
-              }              
+              }
               `,
             )
           },

@@ -9,7 +9,7 @@ import { cliPath } from './cli-path.js'
 import { handleQuestions } from './handle-questions.js'
 import { killProcess } from './process.js'
 
-export const getExecaOptions = ({ cwd, env }) => {
+export const getExecaOptions = ({ cwd, env }: { cwd: string; env: NodeJS.ProcessEnv }) => {
   // Unused vars here are in order to omit LANg and LC_ALL from envs
 
   const { LANG, LC_ALL, ...baseEnv } = process.env
@@ -44,7 +44,7 @@ interface DevServerOptions {
   framework?: string
   command?: string
   debug?: boolean
-  env?: Record<string, string>
+  env?: NodeJS.ProcessEnv | undefined
   expectFailure?: boolean
   offline?: boolean
   prompt?: $FIXME[]
@@ -115,7 +115,7 @@ const startServer = async ({
     ps.stdout!.pipe(process.stdout)
   }
 
-  const promptHistory = []
+  const promptHistory: any[] = []
 
   if (prompt) {
     handleQuestions(ps, prompt, promptHistory)
@@ -177,7 +177,7 @@ const startServer = async ({
   })
 }
 
-export const startDevServer = async (options: DevServerOptions, expectFailure: boolean): Promise<DevServer> => {
+export const startDevServer = async (options: DevServerOptions, expectFailure?: boolean): Promise<DevServer> => {
   const maxAttempts = 5
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -210,7 +210,12 @@ export const withDevServer = async <T>(
   try {
     server = await startDevServer(options, expectFailure)
     return await testHandler(server)
-  } catch (error) {
+  } catch (err) {
+    if (!(err instanceof Error)) {
+      throw err
+    }
+
+    const error: Error & { stdout?: string | undefined; stderr?: string | undefined } = err
     if (server && !expectFailure) {
       error.stdout = server.output
       error.stderr = server.error
@@ -223,7 +228,7 @@ export const withDevServer = async <T>(
   }
 }
 
-export const tryAndLogOutput = async (func, outputBuffer) => {
+export const tryAndLogOutput = async (func: () => Promise<void>, outputBuffer: unknown[]) => {
   try {
     await func()
   } catch (error) {
