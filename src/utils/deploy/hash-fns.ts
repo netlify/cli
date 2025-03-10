@@ -12,7 +12,6 @@ import { INTERNAL_FUNCTIONS_FOLDER } from '../functions/functions.js'
 
 import { hasherCtor, manifestCollectorCtor } from './hasher-segments.js'
 
-
 // Maximum age of functions manifest (2 minutes).
 const MANIFEST_FILE_TTL = 12e4
 

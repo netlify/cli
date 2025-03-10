@@ -4,7 +4,6 @@ import walker from 'folder-walker'
 
 import { fileFilterCtor, fileNormalizerCtor, hasherCtor, manifestCollectorCtor } from './hasher-segments.js'
 
-
 const hashFiles = async ({
   assetType = 'file',
   // @ts-expect-error TS(7031) FIXME: Binding element 'concurrentHash' implicitly has an... Remove this comment to see the full error message
