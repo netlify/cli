@@ -2,7 +2,7 @@ import { describe, test } from 'vitest'
 
 import { callCli } from '../../utils/call-cli.js'
 import { getCLIOptions, withMockApi } from '../../utils/mock-api.js'
-import { withSiteBuilder } from '../../utils/site-builder.ts'
+import { withSiteBuilder } from '../../utils/site-builder.js'
 import { normalize } from '../../utils/snapshots.js'
 
 const siteInfo = {
@@ -62,47 +62,47 @@ const routes = [
   },
   {
     path: 'accounts/test-account/env',
-    method: 'POST',
+    method: 'POST' as const,
     response: {},
   },
   {
     path: 'accounts/test-account/env/EXISTING_VAR',
-    method: 'PUT',
+    method: 'PUT' as const,
     response: {},
   },
   {
     path: 'accounts/test-account/env/EXISTING_VAR',
-    method: 'PATCH',
+    method: 'PATCH' as const,
     response: {},
   },
   {
     path: 'accounts/test-account/env/EXISTING_VAR',
-    method: 'DELETE',
+    method: 'DELETE' as const,
     response: {},
   },
   {
     path: 'accounts/test-account/env/EXISTING_VAR/value/1234',
-    method: 'DELETE',
+    method: 'DELETE' as const,
     response: {},
   },
   {
     path: 'accounts/test-account/env/OTHER_VAR',
-    method: 'PATCH',
+    method: 'PATCH' as const,
     response: {},
   },
   {
     path: 'accounts/test-account/env/OTHER_VAR',
-    method: 'PUT',
+    method: 'PUT' as const,
     response: {},
   },
   {
     path: 'accounts/test-account/env/OTHER_VAR',
-    method: 'DELETE',
+    method: 'DELETE' as const,
     response: {},
   },
   {
     path: 'accounts/test-account/env/OTHER_VAR/value/3456',
-    method: 'DELETE',
+    method: 'DELETE' as const,
     response: {},
   },
 ]
@@ -201,17 +201,17 @@ describe.concurrent('command/envelope', () => {
       },
       {
         path: 'accounts/test-account/env',
-        method: 'POST',
+        method: 'POST' as const,
         response: {},
       },
       {
         path: 'accounts/test-account/env/EXISTING_VAR',
-        method: 'DELETE',
+        method: 'DELETE' as const,
         response: {},
       },
       {
         path: 'accounts/test-account/env/OTHER_VAR',
-        method: 'DELETE',
+        method: 'DELETE' as const,
         response: {},
       },
     ]
@@ -230,7 +230,11 @@ describe.concurrent('command/envelope', () => {
         t.expect(deleteRequests.length).toBe(2)
 
         const postRequest = requests.find((request) => request.method === 'POST')
-        t.expect(postRequest.body.map(({ key }) => key)).toStrictEqual(['EXISTING_VAR', 'OTHER_VAR'])
+        t.expect(postRequest).toBeDefined()
+        t.expect((postRequest!.body as { key: string }[]).map(({ key }) => key)).toStrictEqual([
+          'EXISTING_VAR',
+          'OTHER_VAR',
+        ])
       })
     })
   })

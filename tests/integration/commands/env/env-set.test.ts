@@ -18,8 +18,8 @@ vi.mock('../../../../src/utils/command-helpers.js', async () => ({
 
 const OLD_ENV = process.env
 
-describe('env:set command', () => {
-  setupFixtureTests('empty-project', { mockApi: { routes } }, () => {
+describe('env:set command', async () => {
+  await setupFixtureTests('empty-project', { mockApi: { routes } }, () => {
     test<FixtureTestContext>('should create and return new var in the dev context', async ({ fixture, mockApi }) => {
       const cliResponse = await fixture.callCli(
         ['env:set', 'NEW_VAR', 'new-value', '--context', 'dev', '--json', '--force'],
@@ -36,9 +36,9 @@ describe('env:set command', () => {
       const postRequest = mockApi?.requests.find(
         (request) => request.method === 'POST' && request.path === '/api/v1/accounts/test-account/env',
       )
-      expect(postRequest.body[0].key).toBe('NEW_VAR')
-      expect(postRequest.body[0].values[0].context).toBe('dev')
-      expect(postRequest.body[0].values[0].value).toBe('new-value')
+      expect(postRequest).toHaveProperty('body.[0].key', 'NEW_VAR')
+      expect(postRequest).toHaveProperty('body.[0].values[0].context', 'dev')
+      expect(postRequest).toHaveProperty('body.[0].values[0].value', 'new-value')
     })
     test<FixtureTestContext>('should update an existing var in the dev context', async ({ fixture, mockApi }) => {
       const cliResponse = await fixture.callCli(
@@ -55,8 +55,8 @@ describe('env:set command', () => {
       const patchRequest = mockApi?.requests.find(
         (request) => request.method === 'PATCH' && request.path === '/api/v1/accounts/test-account/env/EXISTING_VAR',
       )
-      expect(patchRequest.body.value).toBe('envelope-new-value')
-      expect(patchRequest.body.context).toBe('dev')
+      expect(patchRequest).toHaveProperty('body.value', 'envelope-new-value')
+      expect(patchRequest).toHaveProperty('body.context', 'dev')
     })
     test<FixtureTestContext>('should support variadic options', async ({ fixture, mockApi }) => {
       const cliResponse = await fixture.callCli(
@@ -75,12 +75,16 @@ describe('env:set command', () => {
       )
       expect(patchRequests).toHaveLength(2)
       // The order of the request might not be always the same, so we need to find the request
-      const dpRequest = patchRequests?.find((request) => request.body.context === 'deploy-preview')
-      expect(dpRequest).not.toBeUndefined()
-      expect(dpRequest.body.value).toBe('multiple')
-      const prodRequest = patchRequests?.find((request) => request.body.context === 'production')
-      expect(prodRequest).not.toBeUndefined()
-      expect(prodRequest.body.value).toBe('multiple')
+      const dpRequest = patchRequests?.find(
+        (request) => (request.body as { context?: string }).context === 'deploy-preview',
+      )
+      expect(dpRequest).toBeDefined()
+      expect(dpRequest).toHaveProperty('body.value', 'multiple')
+      const prodRequest = patchRequests?.find(
+        (request) => (request.body as { context?: string }).context === 'production',
+      )
+      expect(prodRequest).toBeDefined()
+      expect(prodRequest).toHaveProperty('body.value', 'multiple')
     })
     test<FixtureTestContext>('should update existing var without flags', async ({ fixture, mockApi }) => {
       const cliResponse = await fixture.callCli(
@@ -97,9 +101,9 @@ describe('env:set command', () => {
       const putRequest = mockApi?.requests.find(
         (request) => request.method === 'PUT' && request.path === '/api/v1/accounts/test-account/env/EXISTING_VAR',
       )
-      expect(putRequest.body.key).toBe('EXISTING_VAR')
-      expect(putRequest.body.values[0].context).toBe('all')
-      expect(putRequest.body.values[0].value).toBe('new-envelope-value')
+      expect(putRequest).toHaveProperty('body.key', 'EXISTING_VAR')
+      expect(putRequest).toHaveProperty('body.values[0].context', 'all')
+      expect(putRequest).toHaveProperty('body.values[0].value', 'new-envelope-value')
     })
     test<FixtureTestContext>('should set the scope of an existing env var without needing a value', async ({
       fixture,
@@ -119,10 +123,10 @@ describe('env:set command', () => {
       const putRequest = mockApi?.requests.find(
         (request) => request.method === 'PUT' && request.path === '/api/v1/accounts/test-account/env/EXISTING_VAR',
       )
-      expect(putRequest.body.values[0].context).toBe('production')
-      expect(putRequest.body.values[1].context).toBe('dev')
-      expect(putRequest.body.scopes[0]).toBe('runtime')
-      expect(putRequest.body.scopes[1]).toBe('post-processing')
+      expect(putRequest).toHaveProperty('body.values[0].context', 'production')
+      expect(putRequest).toHaveProperty('body.values[1].context', 'dev')
+      expect(putRequest).toHaveProperty('body.scopes[0]', 'runtime')
+      expect(putRequest).toHaveProperty('body.scopes[1]', 'post-processing')
     })
     test<FixtureTestContext>('should create new secret values for multiple contexts', async ({ fixture, mockApi }) => {
       const cliResponse = await fixture.callCli(
@@ -151,12 +155,12 @@ describe('env:set command', () => {
       const postRequest = mockApi?.requests.find(
         (request) => request.method === 'POST' && request.path === '/api/v1/accounts/test-account/env',
       )
-      expect(postRequest.body).toHaveLength(1)
-      expect(postRequest.body[0].key).toBe('TOTALLY_NEW_SECRET')
-      expect(postRequest.body[0].is_secret).toBe(true)
-      expect(postRequest.body[0].values[0].context).toBe('production')
-      expect(postRequest.body[0].values[0].value).toBe('shhhhhhecret')
-      expect(postRequest.body[0].values).toHaveLength(3)
+      expect(postRequest).toHaveProperty('body.length', 1)
+      expect(postRequest).toHaveProperty('body[0].key', 'TOTALLY_NEW_SECRET')
+      expect(postRequest).toHaveProperty('body[0].is_secret', true)
+      expect(postRequest).toHaveProperty('body[0].values[0].context', 'production')
+      expect(postRequest).toHaveProperty('body[0].values[0].value', 'shhhhhhecret')
+      expect(postRequest).toHaveProperty('body[0].values.length', 3)
     })
     test<FixtureTestContext>('should update a single value for production context', async ({ fixture, mockApi }) => {
       const cliResponse = await fixture.callCli(
@@ -173,8 +177,8 @@ describe('env:set command', () => {
       const patchRequest = mockApi?.requests.find(
         (request) => request.method === 'PATCH' && request.path === '/api/v1/accounts/test-account/env/EXISTING_VAR',
       )
-      expect(patchRequest.body.context).toBe('production')
-      expect(patchRequest.body.value).toBe('envelope-new-value')
+      expect(patchRequest).toHaveProperty('body.context', 'production')
+      expect(patchRequest).toHaveProperty('body.value', 'envelope-new-value')
     })
     test<FixtureTestContext>('should convert an `all` env var to a secret when no value is passed', async ({
       fixture,
@@ -191,18 +195,18 @@ describe('env:set command', () => {
       const putRequest = mockApi?.requests.find(
         (request) => request.method === 'PUT' && request.path === '/api/v1/accounts/test-account/env/OTHER_VAR',
       )
-      expect(putRequest.body.is_secret).toBe(true)
-      expect(putRequest.body.values.length).toBe(4)
-      expect(putRequest.body.values[0].context).toBe('production')
-      expect(putRequest.body.values[0].value).toBe('envelope-all-value')
-      expect(putRequest.body.values[1].context).toBe('deploy-preview')
-      expect(putRequest.body.values[2].context).toBe('branch-deploy')
-      expect(putRequest.body.values[3].context).toBe('dev')
-      expect(putRequest.body.values[3].value).toBe('')
-      expect(putRequest.body.scopes.length).toBe(3)
-      expect(putRequest.body.scopes[0]).toBe('builds')
-      expect(putRequest.body.scopes[1]).toBe('functions')
-      expect(putRequest.body.scopes[2]).toBe('runtime')
+      expect(putRequest).toHaveProperty('body.is_secret', true)
+      expect(putRequest).toHaveProperty('body.values.length', 4)
+      expect(putRequest).toHaveProperty('body.values[0].context', 'production')
+      expect(putRequest).toHaveProperty('body.values[0].value', 'envelope-all-value')
+      expect(putRequest).toHaveProperty('body.values[1].context', 'deploy-preview')
+      expect(putRequest).toHaveProperty('body.values[2].context', 'branch-deploy')
+      expect(putRequest).toHaveProperty('body.values[3].context', 'dev')
+      expect(putRequest).toHaveProperty('body.values[3].value', '')
+      expect(putRequest).toHaveProperty('body.scopes.length', 3)
+      expect(putRequest).toHaveProperty('body.scopes[0]', 'builds')
+      expect(putRequest).toHaveProperty('body.scopes[1]', 'functions')
+      expect(putRequest).toHaveProperty('body.scopes[2]', 'runtime')
     })
     test<FixtureTestContext>('should convert an env var with many values to a secret when no value is passed', async ({
       fixture,
@@ -219,15 +223,15 @@ describe('env:set command', () => {
       const putRequest = mockApi?.requests.find(
         (request) => request.method === 'PUT' && request.path === '/api/v1/accounts/test-account/env/EXISTING_VAR',
       )
-      expect(putRequest.body.is_secret).toBe(true)
-      expect(putRequest.body.values.length).toBe(2)
-      expect(putRequest.body.values[0].context).toBe('production')
-      expect(putRequest.body.values[0].value).toBe('envelope-prod-value')
-      expect(putRequest.body.values[1].context).toBe('dev')
-      expect(putRequest.body.values[1].value).toBe('envelope-dev-value')
-      expect(putRequest.body.scopes.length).toBe(2)
-      expect(putRequest.body.scopes[0]).toBe('builds')
-      expect(putRequest.body.scopes[1]).toBe('functions')
+      expect(putRequest).toHaveProperty('body.is_secret', true)
+      expect(putRequest).toHaveProperty('body.values.length', 2)
+      expect(putRequest).toHaveProperty('body.values[0].context', 'production')
+      expect(putRequest).toHaveProperty('body.values[0].value', 'envelope-prod-value')
+      expect(putRequest).toHaveProperty('body.values[1].context', 'dev')
+      expect(putRequest).toHaveProperty('body.values[1].value', 'envelope-dev-value')
+      expect(putRequest).toHaveProperty('body.scopes.length', 2)
+      expect(putRequest).toHaveProperty('body.scopes[0]', 'builds')
+      expect(putRequest).toHaveProperty('body.scopes[1]', 'functions')
     })
     describe('errors', () => {
       test.concurrent<FixtureTestContext>(
@@ -335,9 +339,7 @@ describe('env:set command', () => {
           expect(log).not.toHaveBeenCalledWith(warningMessage)
           expect(log).not.toHaveBeenCalledWith(overwriteNotice)
           expect(log).toHaveBeenCalledWith(
-            `Set environment variable ${chalk.yellow(`${'NEW_ENV_VAR'}=${'NEW_VALUE'}`)} in the ${chalk.magenta(
-              'all',
-            )} context`,
+            `Set environment variable ${chalk.yellow(`NEW_ENV_VAR=NEW_VALUE`)} in the ${chalk.magenta('all')} context`,
           )
         })
       })
@@ -368,7 +370,8 @@ describe('env:set command', () => {
             await runMockProgram(['', '', 'env:set', existingVar, newEnvValue])
           } catch (error) {
             // We expect the process to exit, so this is fine
-            expect(error.message).toContain('process.exit unexpectedly called')
+            expect(error).toBeInstanceOf(Error)
+            expect((error as Error).message).toContain('process.exit unexpectedly called')
           }
 
           expect(promptSpy).toHaveBeenCalled()

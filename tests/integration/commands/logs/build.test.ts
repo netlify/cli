@@ -7,7 +7,7 @@ import { startMockApi } from '../../utils/mock-api-vitest.js'
 import { getEnvironmentVariables } from '../../utils/mock-api.js'
 import { callCli } from '../../utils/call-cli.js'
 import { getCLIOptions, withMockApi } from '../../utils/mock-api.js'
-import { withSiteBuilder } from '../../utils/site-builder.ts'
+import { withSiteBuilder } from '../../utils/site-builder.js'
 import { join } from 'path'
 
 vi.mock('../../../../src/utils/websockets/index.js', () => ({
@@ -72,7 +72,7 @@ describe('logs:deploy command', () => {
     process.env = { ...originalEnv }
   })
 
-  test('should setup the deploy stream correctly', async ({}) => {
+  test('should setup the deploy stream correctly', async () => {
     const { apiUrl } = await startMockApi({ routes })
     const spyWebsocket = getWebSocket as unknown as Mock<any, any>
     const spyOn = vi.fn()
@@ -91,7 +91,7 @@ describe('logs:deploy command', () => {
     expect(spyOn).toHaveBeenCalledTimes(3)
   })
 
-  test('should send the correct payload to the websocket', async ({}) => {
+  test('should send the correct payload to the websocket', async () => {
     const { apiUrl } = await startMockApi({ routes })
     const spyWebsocket = getWebSocket as unknown as Mock<any, any>
     const spyOn = vi.fn()

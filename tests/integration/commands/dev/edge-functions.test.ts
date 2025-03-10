@@ -4,7 +4,7 @@ import { join } from 'path'
 
 import execa from 'execa'
 import fetch from 'node-fetch'
-import { describe, expect, expectTypeOf, test } from 'vitest'
+import { describe, expect, test } from 'vitest'
 
 import { withDevServer } from '../../utils/dev-server.js'
 import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
@@ -46,13 +46,13 @@ const recreateEdgeFunctions = async ({ fixture }: FixtureTestContext) => {
   )
 }
 
-describe.skipIf(isWindows)('edge functions', () => {
-  setupFixtureTests(
+describe.skipIf(isWindows)('edge functions', async () => {
+  await setupFixtureTests(
     'dev-server-with-edge-functions',
     { devServer: true, mockApi: { routes }, setupAfterDev: recreateEdgeFunctions },
     () => {
       test<FixtureTestContext>('should run edge functions in correct order', async ({ devServer }) => {
-        const response = await fetch(`http://localhost:${devServer.port}/ordertest`)
+        const response = await fetch(`http://localhost:${devServer!.port}/ordertest`)
         const body = await response.text()
 
         expect(response.status).toBe(200)
@@ -72,24 +72,26 @@ describe.skipIf(isWindows)('edge functions', () => {
       })
 
       test<FixtureTestContext>('should provide context properties', async ({ devServer }) => {
-        const response = await fetch(`http://localhost:${devServer.port}/context`)
+        const response = await fetch(`http://localhost:${devServer!.port}/context`)
 
-        const { deploy, geo, ip, params, requestId, server, site } = await response.json()
-        expect(geo.city).toEqual('Mock City')
-        expect(geo.country.code).toEqual('DE')
-        expect(deploy).toEqual({ context: 'dev', id: '0', published: false })
-        expectTypeOf(ip).toBeString()
-        expect(params).toEqual({})
-        expectTypeOf(requestId).toBeString()
-        expect(server).toEqual({ region: 'local' })
-        expect(site).toEqual({ id: 'foo', name: 'site-name', url: `http://localhost:${devServer.port}` })
+        const body = await response.json()
+        expect(body).toHaveProperty('geo.city', 'Mock City')
+        expect(body).toHaveProperty('geo.country.code', 'DE')
+        expect(body).toHaveProperty('deploy', { context: 'dev', id: '0', published: false })
+        expect(body).toHaveProperty('params', {})
+        expect(body).toHaveProperty('server', { region: 'local' })
+        expect(body).toHaveProperty('site', {
+          id: 'foo',
+          name: 'site-name',
+          url: `http://localhost:${devServer!.port}`,
+        })
       })
 
       test<FixtureTestContext>('should expose URL parameters', async ({ devServer }) => {
-        const response = await fetch(`http://localhost:${devServer.port}/categories/foo/products/bar`)
+        const response = await fetch(`http://localhost:${devServer!.port}/categories/foo/products/bar`)
 
-        const { params } = await response.json()
-        expect(params).toEqual({
+        const body = await response.json()
+        expect(body).toHaveProperty('params', {
           category: 'foo',
           product: 'bar',
         })
@@ -98,23 +100,23 @@ describe.skipIf(isWindows)('edge functions', () => {
       test<FixtureTestContext>('should expose URL parameters to edge functions with `cache: "manual"`', async ({
         devServer,
       }) => {
-        const response = await fetch(`http://localhost:${devServer.port}/categories-after-cache/foo/products/bar`)
+        const response = await fetch(`http://localhost:${devServer!.port}/categories-after-cache/foo/products/bar`)
 
-        const { params } = await response.json()
-        expect(params).toEqual({
+        const body = await response.json()
+        expect(body).toHaveProperty('params', {
           category: 'foo',
           product: 'bar',
         })
       })
 
       test<FixtureTestContext>('should respect config.methods field', async ({ devServer }) => {
-        const responseGet = await fetch(`http://localhost:${devServer.port}/products/really-bad-product`, {
+        const responseGet = await fetch(`http://localhost:${devServer!.port}/products/really-bad-product`, {
           method: 'GET',
         })
 
         expect(responseGet.status).toBe(404)
 
-        const responseDelete = await fetch(`http://localhost:${devServer.port}/products/really-bad-product`, {
+        const responseDelete = await fetch(`http://localhost:${devServer!.port}/products/really-bad-product`, {
           method: 'DELETE',
         })
 
@@ -125,10 +127,10 @@ describe.skipIf(isWindows)('edge functions', () => {
         devServer,
       }) => {
         const [plainTextResponse, htmlResponse] = await Promise.all([
-          fetch(`http://localhost:${devServer.port}/uncaught-exception`, {
+          fetch(`http://localhost:${devServer!.port}/uncaught-exception`, {
             method: 'GET',
           }),
-          fetch(`http://localhost:${devServer.port}/uncaught-exception`, {
+          fetch(`http://localhost:${devServer!.port}/uncaught-exception`, {
             method: 'GET',
             headers: {
               Accept: 'text/html',
@@ -147,19 +149,19 @@ describe.skipIf(isWindows)('edge functions', () => {
       test<FixtureTestContext>('should set the `URL`, `SITE_ID`, and `SITE_NAME` environment variables', async ({
         devServer,
       }) => {
-        const body = (await fetch(`http://localhost:${devServer.port}/echo-env`).then((res) => res.json())) as Record<
+        const body = (await fetch(`http://localhost:${devServer!.port}/echo-env`).then((res) => res.json())) as Record<
           string,
           string
         >
 
         expect(body.SITE_ID).toBe('foo')
         expect(body.SITE_NAME).toBe('site-name')
-        expect(body.URL).toBe(`http://localhost:${devServer.port}`)
+        expect(body.URL).toBe(`http://localhost:${devServer!.port}`)
       })
     },
   )
 
-  setupFixtureTests(
+  await setupFixtureTests(
     'dev-server-with-edge-functions',
     {
       devServer: { args: ['--internal-disable-edge-functions'] },
@@ -170,7 +172,7 @@ describe.skipIf(isWindows)('edge functions', () => {
       test<FixtureTestContext>('skips edge functions when --internal-disable-edge-functions is passed', async ({
         devServer,
       }) => {
-        const response = await fetch(`http://localhost:${devServer.port}/ordertest`)
+        const response = await fetch(`http://localhost:${devServer!.port}/ordertest`)
         const body = await response.text()
 
         expect(response.status).toBe(200)
@@ -180,7 +182,7 @@ describe.skipIf(isWindows)('edge functions', () => {
     },
   )
 
-  setupFixtureTests('dev-server-with-edge-functions', { devServer: true, mockApi: { routes } }, () => {
+  await setupFixtureTests('dev-server-with-edge-functions', { devServer: true, mockApi: { routes } }, () => {
     test<FixtureTestContext>('should not remove other edge functions on change', async ({ devServer, fixture }) => {
       // we need to wait till file watchers are loaded
       await pause(500)
@@ -188,14 +190,14 @@ describe.skipIf(isWindows)('edge functions', () => {
       await fixture.builder
         .withEdgeFunction({
           name: 'new',
-          handler: async () => new Response('hello'),
+          handler: async () => Promise.resolve(new Response('hello')),
           config: { path: ['/new'] },
         })
         .build()
 
-      await devServer.waitForLogMatching('Loaded edge function new')
+      await devServer!.waitForLogMatching('Loaded edge function new')
 
-      expect(devServer.output).not.toContain('Removed edge function')
+      expect(devServer!.output).not.toContain('Removed edge function')
     })
   })
 
@@ -268,12 +270,12 @@ describe.skipIf(isWindows)('edge functions', () => {
     })
   })
 
-  setupFixtureTests(
+  await setupFixtureTests(
     'dev-server-with-edge-functions-and-npm-modules',
     { devServer: true, mockApi: { routes }, setup },
     () => {
       test<FixtureTestContext>('should run an edge function that uses the Blobs npm module', async ({ devServer }) => {
-        const res = await fetch(`http://localhost:${devServer.port}/blobs`, {
+        const res = await fetch(`http://localhost:${devServer!.port}/blobs`, {
           method: 'GET',
         })
 

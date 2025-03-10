@@ -1,5 +1,3 @@
-import { HTTPMethod } from '../../utils/mock-api-vitest'
-
 const siteInfo = {
   account_slug: 'test-account',
   build_settings: {
@@ -100,67 +98,67 @@ export const routes = [
   },
   {
     path: 'accounts/test-account/env',
-    method: HTTPMethod.POST,
+    method: 'POST' as const,
     response: {},
   },
   {
     path: 'accounts/test-account-2/env',
-    method: HTTPMethod.POST,
+    method: 'POST' as const,
     response: {},
   },
   {
     path: 'accounts/test-account-3/env',
-    method: HTTPMethod.POST,
+    method: 'POST' as const,
     response: {},
   },
   {
     path: 'accounts/test-account/env/EXISTING_VAR',
-    method: HTTPMethod.PUT,
+    method: 'PUT' as const,
     response: {},
   },
   {
     path: 'accounts/test-account/env/EXISTING_VAR',
-    method: HTTPMethod.PATCH,
+    method: 'PATCH' as const,
     response: {},
   },
   {
     path: 'accounts/test-account/env/EXISTING_VAR',
-    method: HTTPMethod.DELETE,
+    method: 'DELETE' as const,
     response: {},
   },
   {
     path: 'accounts/test-account-2/env/EXISTING_VAR',
-    method: HTTPMethod.DELETE,
+    method: 'DELETE' as const,
     response: {},
   },
   {
     path: 'accounts/test-account-3/env/EXISTING_VAR',
-    method: HTTPMethod.DELETE,
+    method: 'DELETE' as const,
     response: {},
   },
   {
     path: 'accounts/test-account/env/EXISTING_VAR/value/1234',
-    method: HTTPMethod.DELETE,
+    method: 'DELETE' as const,
     response: {},
   },
   {
     path: 'accounts/test-account/env/OTHER_VAR',
-    method: HTTPMethod.PATCH,
+    method: 'PATCH' as const,
     response: {},
   },
   {
     path: 'accounts/test-account/env/OTHER_VAR',
-    method: HTTPMethod.PUT,
+    method: 'PUT' as const,
     response: {},
   },
   {
     path: 'accounts/test-account/env/OTHER_VAR',
-    method: HTTPMethod.DELETE,
+    method: 'DELETE' as const,
     response: {},
   },
   {
     path: 'accounts/test-account/env/OTHER_VAR/value/3456',
-    method: HTTPMethod.DELETE,
+    method: 'DELETE' as const,
     response: {},
   },
 ]
