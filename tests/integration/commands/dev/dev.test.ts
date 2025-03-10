@@ -2,6 +2,7 @@
 import fs from 'node:fs/promises'
 import { type AddressInfo } from 'node:net'
 import path from 'node:path'
+import process from 'process'
 
 import jwt, { type JwtPayload } from 'jsonwebtoken'
 import fetch from 'node-fetch'
@@ -397,6 +398,31 @@ describe.concurrent('command/dev', () => {
     })
   })
 
+  test('should detect ipVer when proxying without waiting for port', async (t) => {
+    // ipv6 is default from node 18
+    const nodeVer = Number.parseInt(process.versions.node.split('.')[0])
+    t.expect(nodeVer).toBeGreaterThanOrEqual(18)
+
+    await withSiteBuilder(t, async (builder) => {
+      const externalServer = startExternalServer({
+        host: '127.0.0.1',
+        port: 4567,
+      })
+      await builder.build()
+
+      await withDevServer(
+        { cwd: builder.directory, command: 'node', framework: '#custom', targetPort: 4567, skipWaitPort: true },
+        async (server) => {
+          const response = await fetch(`${server.url}/test`)
+          t.expect(response.status).toBe(200)
+          t.expect(String(server.output)).toContain('Switched host to 127.0.0.1')
+        },
+      )
+
+      externalServer.close()
+    })
+  })
+
   test('should rewrite POST request if content-type is missing and not crash dev server', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       builder.withNetlifyToml({
@@ -726,6 +752,59 @@ describe.concurrent('command/dev', () => {
               // which should go away once this is merged: https://github.com/debug-js/debug/pull/977
               const errorOutput = server.errorBuffer.map((buff) => buff.toString()).join('\n')
               t.expect(errorOutput).not.toContain('Error')
+            },
+          )
+        })
+      })
+
+      test('ensures dev server plugins can mutate env', async (t) => {
+        await withSiteBuilder(t, async (builder) => {
+          await builder
+            .withNetlifyToml({
+              config: {
+                plugins: [{ package: './plugins/plugin' }],
+                dev: {
+                  command: 'node index.mjs',
+                  targetPort: 4444,
+                },
+              },
+            })
+            .withBuildPlugin({
+              name: 'plugin',
+              plugin: {
+                async onPreDev({ netlifyConfig }) {
+                  netlifyConfig.build.environment.SOME_ENV = 'value'
+                },
+              },
+            })
+            .withContentFile({
+              path: 'index.mjs',
+              content: `
+              import process from 'process';
+              import http from 'http';
+
+              const server = http.createServer((req, res) => {
+                res.write(process.env.SOME_ENV)
+                res.end();
+              })
+
+              server.listen(4444)
+              `,
+            })
+            .build()
+
+          await withDevServer(
+            {
+              cwd: builder.directory,
+            },
+            async (server) => {
+              const output = server.outputBuffer.map((buff) => buff.toString()).join('\n')
+              t.expect(output).toContain('Netlify configuration property "build.environment.SOME_ENV" value changed.')
+              t.expect(output).toContain('Server now ready')
+
+              const res = await fetch(new URL('/', server.url))
+              t.expect(res.status).toBe(200)
+              t.expect(await res.text()).toBe('value')
             },
           )
         })

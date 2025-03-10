@@ -23,6 +23,7 @@ netlify link
 - `id` (*string*) - ID of site to link to
 - `name` (*string*) - Name of site to link to
 - `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 **Examples**
 

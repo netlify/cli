@@ -19,6 +19,7 @@ netlify logs
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
@@ -49,6 +50,7 @@ netlify logs:deploy
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 ---
 ## `logs:function`
@@ -70,6 +72,7 @@ netlify logs:function
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `level` (*string*) - Log levels to stream. Choices are: trace, debug, info, warn, error, fatal
 - `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 **Examples**
 

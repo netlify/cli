@@ -16,7 +16,6 @@ export const createMock = async (contents) => {
     NETLIFY_CLI_EXECA_PATH: pathToFileURL(path).href,
   }
   const cleanup = () =>
-    // eslint-disable-next-line promise/prefer-await-to-then
     rm(path, { force: true, recursive: true }).catch(() => {
       // no-op
     })

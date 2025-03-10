@@ -24,7 +24,6 @@ promote a positive and inclusive environment.
 - [Releasing](#releasing)
 - [License](#license)
 
-
 ## Developing locally
 
 First, fork and clone the repository. If you’re not sure how to do this, please watch
@@ -33,7 +32,7 @@ First, fork and clone the repository. If you’re not sure how to do this, pleas
 Run:
 
 ```bash
-npm install && npm run site:build:install
+npm install
 ```
 
 Tests are run with:
@@ -91,11 +90,14 @@ DEBUG=true ./bin/run.js [command]
 
 ### Attaching a Debugger
 
-When debugging a project, it's super helpful to attach a debugger to the CLI. If you use VS Code, here's how you can do it:
+When debugging a project, it's super helpful to attach a debugger to the CLI. If you use VS Code, here's how you can do
+it:
 
 1. Open this repository in VS Code.
-2. Open a "JavaScript Debug Terminal" (e.g. by searching for it in the Command Palette (Shift-Cmd+P)). Every Node process that's opened in this terminal will have a debugger attached.
-3. Place a breakpoint somewhere in the CLI. You will have to place them in the compiled `.js` files as opposed to the `.ts` files.
+2. Open a "JavaScript Debug Terminal" (e.g. by searching for it in the Command Palette (Shift-Cmd+P)). Every Node
+   process that's opened in this terminal will have a debugger attached.
+3. Place a breakpoint somewhere in the CLI. You will have to place them in the compiled `.js` files as opposed to the
+   `.ts` files.
 4. In your JavaScript Debug Terminal, navigate to the project you'd like to debug.
 5. Run `/path/to/netlify/cli/bin/run.js`. The debugger should be connecting automatically.
 
@@ -113,9 +115,9 @@ A good place to start is reading the base command README and looking at the comm
 
 > If you’d like to learn more on how `netlify dev` works, check [here](./docs/netlify-dev.md)
 
-
 ### Adding or updating a command
-If you're adding a new command or updating an existing one, make sure to also add docs for it by running `npm run site:build`.
+
+If you're adding a new command or updating an existing one, make sure to also add docs for it by running `npm run docs`.
 
 This will automatically generate documentation for you that will look like the following:
 
@@ -130,17 +132,17 @@ description: A description.
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
 
 <!-- AUTO-GENERATED-CONTENT:END -->
-
 ```
 
-When adding a new command, you will also need to add it to the nav sidebar manually by adding it to the `navOrder` array in `site/src/_app.js`
+When adding a new command, you will also need to add it to the nav sidebar manually by adding it to the `navOrder` array
+in `site/src/_app.js`
 
 ### Updating our documentation
 
 If documentation looks to be out of date, it is likely that the code for the command itself is not correct.
 
-To update the documentation, update the code (rather than the markdown files) and then run `npm run docs` to sync the docs. To confirm that the changes to the docs are correct, run `cd site && npm run dev:start` to run the docs locally.
-
+To update the documentation, update the code (rather than the markdown files) and then run `npm run docs` to sync the
+docs. To confirm that the changes to the docs are correct, run `cd site && npm run dev:start` to run the docs locally.
 
 ### Testing
 
@@ -200,7 +202,8 @@ We actively welcome your pull requests.
 
 ## Releasing
 
-Tag the 'release' pull request using the `automerge` label. This will merge the pull request on GitHub and publish the package to npm.
+Tag the 'release' pull request using the `automerge` label. This will merge the pull request on GitHub and publish the
+package to npm.
 
 ### Creating a prerelease
 

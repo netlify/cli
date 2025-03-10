@@ -80,18 +80,15 @@ Support for package.json's main field, and intrinsic index.js entrypoints are co
     .option('-d, --dir <path>', 'Specify a folder to deploy')
     .option('-f, --functions <folder>', 'Specify a functions folder to deploy')
     .addOption(
-      new Option('-p, --prod', 'Deploy to production').default(false).conflicts(['alias', 'branch', 'prodIfUnlocked']),
+      new Option('-p, --prod', 'Deploy to production')
+        .default(false)
+        .conflicts(['alias', 'branch', 'prod-if-unlocked']),
     )
     .addOption(
-      new Option(
-        '--prodIfUnlocked',
-        'Old, prefer --prod-if-unlocked. Deploy to production if unlocked, create a draft otherwise',
-      )
+      new Option('--prod-if-unlocked', 'Deploy to production if unlocked, create a draft otherwise')
         .default(false)
-        .hideHelp(true)
         .conflicts(['alias', 'branch', 'prod']),
     )
-    .option('--prod-if-unlocked', 'Deploy to production if unlocked, create a draft otherwise', false)
     .option(
       '--alias <name>',
       'Specifies the alias for deployment, the string at the beginning of the deploy subdomain. Useful for creating predictable deployment URLs. Avoid setting an alias string to the same value as a deployed branch. `alias` doesn’t create a branch deploy and can’t be used in conjunction with the branch subdomain feature. Maximum 37 characters.',
@@ -100,9 +97,8 @@ Support for package.json's main field, and intrinsic index.js entrypoints are co
       '-b, --branch <name>',
       'Serves the same functionality as --alias. Deprecated and will be removed in future versions',
     )
-    .option('-o, --open', 'Open site after deploy', false)
+    .option('-O, --open', 'Open site after deploy', false)
     .option('-m, --message <message>', 'A short message to include in the deploy log')
-    .option('-a, --auth <token>', 'Netlify auth token to deploy with', env.NETLIFY_AUTH_TOKEN)
     .option('-s, --site <name-or-id>', 'A site name or ID to deploy to', env.NETLIFY_SITE_ID)
     .option('--json', 'Output deployment data as JSON')
     .option('--timeout <number>', 'Timeout to wait for deployment to finish', (value) => Number.parseInt(value))

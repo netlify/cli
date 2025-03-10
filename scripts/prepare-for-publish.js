@@ -30,8 +30,10 @@ delete pkgJson.ava
 delete pkgJson.config
 
 for (const scriptName in pkgJson.scripts) {
-  if (preserveScripts.has(scriptName)) continue
-
+  if (preserveScripts.has(scriptName)) {
+    continue
+  }
+  // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
   delete pkgJson.scripts[scriptName]
 }
 

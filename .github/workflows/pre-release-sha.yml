@@ -1,0 +1,47 @@
+---
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Enter a full Git SHA to create a prerelease for'
+        required: true
+
+name: Publish a pre-release version of the CLI from a SHA
+
+jobs:
+  prerelease:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: write
+    steps:
+      - name: Check out specified ref (${{ inputs.ref }})
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18.17.0'
+          cache: npm
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install core dependencies
+        run: npm ci --no-audit
+
+      - name: Build
+        run: npm run build
+
+      - name: Configure Git user
+        run: |
+          git config --global user.name "Netlify"
+          git config --global user.email "82042599+token-generator-app[bot]@users.noreply.github.com"
+
+      - name: Run npm version
+        run: |
+          npm --no-git-tag-version version "$(jq --raw-output .version package.json)-pre.$(git rev-parse --short ${{ inputs.ref }})"
+
+      - name: Run npm publish
+        run: npm publish --provenance --tag=rc
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}

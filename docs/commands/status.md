@@ -18,8 +18,10 @@ netlify status
 
 **Flags**
 
+- `json` (*boolean*) - Output status information as JSON
 - `verbose` (*boolean*) - Output system info
 - `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
@@ -41,6 +43,7 @@ netlify status:hooks
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 ---
 
