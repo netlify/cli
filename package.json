@@ -185,7 +185,7 @@
     "@types/jsonwebtoken": "9.0.9",
     "@types/lodash": "4.17.16",
     "@types/multiparty": "4.2.1",
-    "@types/node": "22.13.8",
+    "@types/node": "22.13.10",
     "@types/node-fetch": "2.6.12",
     "@types/parallel-transform": "1.1.4",
     "@types/parse-github-url": "1.0.3",
