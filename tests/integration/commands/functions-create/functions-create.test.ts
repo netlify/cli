@@ -3,7 +3,7 @@ import { readFile } from 'fs/promises'
 import { join } from 'path'
 
 import execa from 'execa'
-import { describe, expect, test } from 'vitest'
+import { describe, test } from 'vitest'
 
 import { fileExistsAsync } from '../../../../src/lib/fs.js'
 import { cliPath } from '../../utils/cli-path.js'
@@ -36,6 +36,8 @@ describe.concurrent('functions:create command', () => {
   ]
 
   test('should create a new function directory when none is found', async (t) => {
+    const { expect } = t
+
     await withSiteBuilder(t, async (builder) => {
       await builder.build()
       await withMockApi(routes, async ({ apiUrl }) => {
@@ -72,6 +74,8 @@ describe.concurrent('functions:create command', () => {
   })
 
   test('should create a new edge function directory when none is found', async (t) => {
+    const { expect } = t
+
     await withSiteBuilder(t, async (builder) => {
       await builder.build()
       await withMockApi(routes, async ({ apiUrl }) => {
@@ -108,6 +112,8 @@ describe.concurrent('functions:create command', () => {
   })
 
   test('should use specified edge function directory when found', async (t) => {
+    const { expect } = t
+
     await withSiteBuilder(t, async (builder) => {
       builder.withNetlifyToml({ config: { build: { edge_functions: 'somethingEdgy' } } })
       await builder.build()
@@ -144,6 +150,8 @@ describe.concurrent('functions:create command', () => {
   })
 
   test('should not create a new function directory when one is found', async (t) => {
+    const { expect } = t
+
     await withSiteBuilder(t, async (builder) => {
       builder.withNetlifyToml({ config: { build: { functions: 'functions' } } })
 
@@ -181,6 +189,8 @@ describe.concurrent('functions:create command', () => {
   })
 
   test('should only show function templates for the language specified via the --language flag, if one is present', async (t) => {
+    const { expect } = t
+
     const createWithLanguageTemplate = async (language, outputPath) =>
       await withSiteBuilder(t, async (builder) => {
         await builder.build()
@@ -224,6 +234,8 @@ describe.concurrent('functions:create command', () => {
   })
 
   test('throws an error when the --language flag contains an unsupported value', async (t) => {
+    const { expect } = t
+
     await withSiteBuilder(t, async (builder) => {
       await builder.build()
 
@@ -263,7 +275,7 @@ describe.concurrent('functions:create command', () => {
   })
 
   setupFixtureTests('nx-integrated-monorepo', () => {
-    test<FixtureTestContext>('should create a new edge function', async ({ fixture }) => {
+    test<FixtureTestContext>('should create a new edge function', async ({ expect, fixture }) => {
       await withMockApi(routes, async ({ apiUrl }) => {
         const childProcess = execa(
           cliPath,
@@ -322,7 +334,7 @@ describe.concurrent('functions:create command', () => {
       // await devServer.waitForLogMatching('Loaded edge function new')
       // expect(devServer.output).not.toContain('Removed edge function')
     })
-    test<FixtureTestContext>('should create a new serverless function', async ({ fixture }) => {
+    test<FixtureTestContext>('should create a new serverless function', async ({ expect, fixture }) => {
       await withMockApi(routes, async ({ apiUrl }) => {
         const childProcess = execa(
           cliPath,
