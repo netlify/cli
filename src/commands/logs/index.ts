@@ -8,7 +8,7 @@ export const createLogsBuildCommand = (program: BaseCommand) => {
   program
     .command('logs:deploy')
     .alias('logs:build')
-    .description('(Beta) Stream the logs of deploys currently being built to the console')
+    .description('Stream the logs of deploys currently being built to the console')
     .action(async (options: OptionValues, command: BaseCommand) => {
       const { logsBuild } = await import('./build.js')
       await logsBuild(options, command)
@@ -28,7 +28,7 @@ export const createLogsFunctionCommand = (program: BaseCommand) => {
       'netlify logs:function my-function',
       'netlify logs:function my-function -l info warn',
     ])
-    .description('(Beta) Stream netlify function logs to the console')
+    .description('Stream netlify function logs to the console')
     .action(async (functionName: string | undefined, options: OptionValues, command: BaseCommand) => {
       const { logsFunction } = await import('./functions.js')
       await logsFunction(functionName, options, command)
