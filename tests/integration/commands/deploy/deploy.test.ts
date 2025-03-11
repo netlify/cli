@@ -1055,4 +1055,75 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
       }
     })
   })
+
+  test.only('should deploy functions when using --prod only', async (t) => {
+    const bundledFunctionPath = path.join(__dirname, '../../assets', 'bundled-function-1.zip')
+    const bundledFunctionData = {
+      mainFile: '/some/path/bundled-function-1.js',
+      name: 'bundled-function-1',
+      runtime: 'js',
+      buildData: {
+        bootstrapVersion: '1.35.0',
+        runtimeAPIVersion: 2,
+      },
+    }
+
+    await withSiteBuilder(t, async (builder) => {
+      await builder
+        .withNetlifyToml({
+          config: {
+            build: { publish: 'out' },
+            functions: { directory: 'functions' },
+          },
+        })
+        // When the below is commented back in the test works, but that is not what we want
+        // .withCopiedFile({
+        //   src: bundledFunctionPath,
+        //   path: '.netlify/functions/bundled-function-1.zip',
+        // })
+        // .withContentFile({
+        //   path: '.netlify/functions/manifest.json',
+        //   content: JSON.stringify({
+        //     functions: [
+        //       {
+        //         ...bundledFunctionData,
+        //         path: path.join(builder.directory, '.netlify', 'functions', 'bundled-function-1.zip'),
+        //       },
+        //     ],
+        //     timestamp: Date.now(),
+        //     version: 1,
+        //   }),
+        // })
+        .withContentFile({
+          path: 'out/index.html',
+          content: 'Hello world',
+        })
+        .withFunction({
+          path: 'bundled-function-1.js',
+          handler: async () => new Response('Hello'),
+          runtimeAPIVersion: 2,
+        })
+        .build()
+
+      const { deploy_id: deployId } = await callCli(
+        ['deploy', '--prod', '--json'],
+        {
+          cwd: builder.directory,
+          env: { NETLIFY_SITE_ID: context.siteId },
+        },
+        true,
+      )
+
+      const fullDeploy = await callCli(
+        ['api', 'getDeploy', '--data', JSON.stringify({ deploy_id: deployId })],
+        {
+          cwd: builder.directory,
+          env: { NETLIFY_SITE_ID: context.siteId },
+        },
+        true,
+      )
+      console.log(fullDeploy.available_functions)
+      expect(fullDeploy.available_functions[0].bd.bootstrapVersion).toEqual('1.35.0')
+    })
+  })
 })
