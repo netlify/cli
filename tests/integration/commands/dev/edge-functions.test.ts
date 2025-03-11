@@ -4,7 +4,7 @@ import { join } from 'path'
 
 import execa from 'execa'
 import fetch from 'node-fetch'
-import { describe, expect, expectTypeOf, test } from 'vitest'
+import { describe, expectTypeOf, test } from 'vitest'
 
 import { withDevServer } from '../../utils/dev-server.js'
 import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
@@ -51,7 +51,7 @@ describe.skipIf(isWindows)('edge functions', () => {
     'dev-server-with-edge-functions',
     { devServer: true, mockApi: { routes }, setupAfterDev: recreateEdgeFunctions },
     () => {
-      test<FixtureTestContext>('should run edge functions in correct order', async ({ devServer }) => {
+      test<FixtureTestContext>('should run edge functions in correct order', async ({ devServer, expect }) => {
         const response = await fetch(`http://localhost:${devServer.port}/ordertest`)
         const body = await response.text()
 
@@ -71,7 +71,7 @@ describe.skipIf(isWindows)('edge functions', () => {
         ])
       })
 
-      test<FixtureTestContext>('should provide context properties', async ({ devServer }) => {
+      test<FixtureTestContext>('should provide context properties', async ({ devServer, expect }) => {
         const response = await fetch(`http://localhost:${devServer.port}/context`)
 
         const { deploy, geo, ip, params, requestId, server, site } = await response.json()
@@ -85,7 +85,7 @@ describe.skipIf(isWindows)('edge functions', () => {
         expect(site).toEqual({ id: 'foo', name: 'site-name', url: `http://localhost:${devServer.port}` })
       })
 
-      test<FixtureTestContext>('should expose URL parameters', async ({ devServer }) => {
+      test<FixtureTestContext>('should expose URL parameters', async ({ devServer, expect }) => {
         const response = await fetch(`http://localhost:${devServer.port}/categories/foo/products/bar`)
 
         const { params } = await response.json()
@@ -97,6 +97,7 @@ describe.skipIf(isWindows)('edge functions', () => {
 
       test<FixtureTestContext>('should expose URL parameters to edge functions with `cache: "manual"`', async ({
         devServer,
+        expect,
       }) => {
         const response = await fetch(`http://localhost:${devServer.port}/categories-after-cache/foo/products/bar`)
 
@@ -107,7 +108,7 @@ describe.skipIf(isWindows)('edge functions', () => {
         })
       })
 
-      test<FixtureTestContext>('should respect config.methods field', async ({ devServer }) => {
+      test<FixtureTestContext>('should respect config.methods field', async ({ devServer, expect }) => {
         const responseGet = await fetch(`http://localhost:${devServer.port}/products/really-bad-product`, {
           method: 'GET',
         })
@@ -123,6 +124,7 @@ describe.skipIf(isWindows)('edge functions', () => {
 
       test<FixtureTestContext>('should show an error page when an edge function has an uncaught exception', async ({
         devServer,
+        expect,
       }) => {
         const [plainTextResponse, htmlResponse] = await Promise.all([
           fetch(`http://localhost:${devServer.port}/uncaught-exception`, {
@@ -146,6 +148,7 @@ describe.skipIf(isWindows)('edge functions', () => {
 
       test<FixtureTestContext>('should set the `URL`, `SITE_ID`, and `SITE_NAME` environment variables', async ({
         devServer,
+        expect,
       }) => {
         const body = (await fetch(`http://localhost:${devServer.port}/echo-env`).then((res) => res.json())) as Record<
           string,
@@ -169,6 +172,7 @@ describe.skipIf(isWindows)('edge functions', () => {
     () => {
       test<FixtureTestContext>('skips edge functions when --internal-disable-edge-functions is passed', async ({
         devServer,
+        expect,
       }) => {
         const response = await fetch(`http://localhost:${devServer.port}/ordertest`)
         const body = await response.text()
@@ -181,7 +185,11 @@ describe.skipIf(isWindows)('edge functions', () => {
   )
 
   setupFixtureTests('dev-server-with-edge-functions', { devServer: true, mockApi: { routes } }, () => {
-    test<FixtureTestContext>('should not remove other edge functions on change', async ({ devServer, fixture }) => {
+    test<FixtureTestContext>('should not remove other edge functions on change', async ({
+      devServer,
+      expect,
+      fixture,
+    }) => {
       // we need to wait till file watchers are loaded
       await pause(500)
 
@@ -200,6 +208,8 @@ describe.skipIf(isWindows)('edge functions', () => {
   })
 
   test('should reload on change to transitive dependency', async (t) => {
+    const { expect } = t
+
     await withSiteBuilder(t, async (builder) => {
       await builder
         .withContentFile({
@@ -221,8 +231,9 @@ describe.skipIf(isWindows)('edge functions', () => {
         .build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
-        const response = await fetch(server.url, {}).then((res) => res.text())
-        t.expect(response).toEqual('foo')
+        const response = await fetch(server.url, {})
+        const text = await response.text()
+        expect(text).toEqual('foo')
 
         // update file
         await builder
@@ -234,13 +245,16 @@ describe.skipIf(isWindows)('edge functions', () => {
 
         await pause(500)
 
-        const response2 = await fetch(server.url, {}).then((res) => res.text())
-        t.expect(response2).toEqual('bar')
+        const response2 = await fetch(server.url, {})
+        const text2 = await response2.text()
+        expect(text2).toEqual('bar')
       })
     })
   })
 
   test('functions and edge functions should receive url-encoded search params in the same way', async (t) => {
+    const { expect } = t
+
     await withSiteBuilder(t, async (builder) => {
       await builder
         .withContentFile({
@@ -262,8 +276,8 @@ describe.skipIf(isWindows)('edge functions', () => {
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const funcResponse = await fetch(new URL('/func?1,2,3', server.url), {})
         const efResponse = await fetch(new URL('/ef?1,2,3', server.url), {})
-        t.expect(await funcResponse.text()).toEqual('?1,2,3')
-        t.expect(await efResponse.text()).toEqual('?1,2,3')
+        expect(await funcResponse.text()).toEqual('?1,2,3')
+        expect(await efResponse.text()).toEqual('?1,2,3')
       })
     })
   })
@@ -272,7 +286,10 @@ describe.skipIf(isWindows)('edge functions', () => {
     'dev-server-with-edge-functions-and-npm-modules',
     { devServer: true, mockApi: { routes }, setup },
     () => {
-      test<FixtureTestContext>('should run an edge function that uses the Blobs npm module', async ({ devServer }) => {
+      test<FixtureTestContext>('should run an edge function that uses the Blobs npm module', async ({
+        devServer,
+        expect,
+      }) => {
         const res = await fetch(`http://localhost:${devServer.port}/blobs`, {
           method: 'GET',
         })
