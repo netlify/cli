@@ -5,6 +5,16 @@ publish = "public"
 targetPort = 6123
 
 [[redirects]]
+from = "/local/*"
+to = "/:splat"
+status = 200
+
+[[redirects]]
+from = "/test/*"
+to = "https://www.netlify.app/:splat"
+status = 200
+
+[[redirects]]
 from = "*"
 to = "https://www.netlify.app/:splat"
 status = 200
