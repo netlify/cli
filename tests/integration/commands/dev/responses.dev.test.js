@@ -157,7 +157,6 @@ describe.concurrent('commands/responses.dev', () => {
           path: 'env.js',
           handler: async () => ({
             statusCode: 200,
-            // eslint-disable-next-line n/prefer-global/process
             body: `${process.env.ENV_DEV_TEST}`,
             metadata: { builder_function: true },
           }),
@@ -183,7 +182,6 @@ describe.concurrent('commands/responses.dev', () => {
         path: 'env.js',
         handler: async () => ({
           statusCode: 200,
-          // eslint-disable-next-line n/prefer-global/process
           body: `${process.env.TEST}`,
           metadata: { builder_function: true },
         }),
@@ -216,7 +214,6 @@ describe.concurrent('commands/responses.dev', () => {
           path: 'env.js',
           handler: async () => ({
             statusCode: 200,
-            // eslint-disable-next-line n/prefer-global/process
             body: `${process.env.BUILD_ENV_TEST}`,
             metadata: { builder_function: true },
           }),
@@ -249,7 +246,6 @@ describe.concurrent('commands/responses.dev', () => {
           path: 'env.js',
           handler: async () => ({
             statusCode: 200,
-            // eslint-disable-next-line n/prefer-global/process
             body: `${process.env.CONTEXT_TEST}`,
           }),
         })
@@ -282,7 +278,6 @@ describe.concurrent('commands/responses.dev', () => {
           path: 'env.js',
           handler: async () => ({
             statusCode: 200,
-            // eslint-disable-next-line n/prefer-global/process
             body: `${process.env.TEST_1}__${process.env.TEST2}`,
           }),
         })

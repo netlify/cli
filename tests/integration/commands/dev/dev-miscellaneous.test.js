@@ -17,7 +17,6 @@ import { pause } from '../../utils/pause.js'
 import { withSiteBuilder } from '../../utils/site-builder.ts'
 import { normalize } from '../../utils/snapshots.js'
 
-// eslint-disable-next-line no-underscore-dangle
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const JWT_EXPIRY = 1_893_456_000
@@ -192,7 +191,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
     await withSiteBuilder(t, async (builder) => {
       setupRoleBasedRedirectsSite(builder)
       await builder.build()
-      await validateRoleBasedRedirectsSite({ builder, t })
+      await t.expect(validateRoleBasedRedirectsSite({ builder, t })).resolves.not.toThrowError()
     })
   })
 
@@ -209,7 +208,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
         },
       })
       await builder.build()
-      await validateRoleBasedRedirectsSite({ builder, t, jwtSecret, jwtRolePath })
+      await t.expect(validateRoleBasedRedirectsSite({ builder, t, jwtSecret, jwtRolePath })).resolves.not.toThrowError()
     })
   })
 
@@ -1064,7 +1063,6 @@ describe.concurrent('commands/dev-miscellaneous', () => {
         // User-defined import map
         .withContentFiles([
           {
-            // eslint-disable-next-line no-template-curly-in-string
             content: 'export const greet = (name: string) => `Hello, ${name}!`',
             path: 'greeter.ts',
           },

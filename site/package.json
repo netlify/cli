@@ -7,8 +7,8 @@
   "scripts": {
     "build": "npm run build:docs-md && npm run build:site",
     "build:docs-md": "npm run build:docs-md:gen && npm run build:docs-md:copy",
-    "build:docs-md:copy": "node ./scripts/sync.js",
-    "build:docs-md:gen": "node ./scripts/docs.js",
+    "build:docs-md:copy": "./scripts/sync.js",
+    "build:docs-md:gen": "./scripts/docs.js",
     "build:site": "astro build",
     "dev": "npm run build:docs-md:copy && astro dev",
     "preview": "npm run build:docs-md:copy && astro preview",
@@ -17,9 +17,14 @@
   "license": "MIT",
   "dependencies": {
     "@astrojs/starlight": "0.31.1",
+    "@bugsnag/js": "8.2.0",
     "astro": "5.2.5",
     "markdown-magic": "2.6.1",
     "sharp": "0.32.6",
     "strip-ansi": "7.1.0"
+  },
+  "devDependencies": {
+    "@netlify/functions": "3.0.1",
+    "tsx": "4.19.3"
   }
 }
