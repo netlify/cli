@@ -644,11 +644,7 @@ const initializeProxy = async function ({
       }
     }
 
-<<<<<<< HEAD
-    if (options.staticFile && isRedirect({ status: proxyRes.statusCode }) && proxyRes.headers.location) {
-=======
     if (isRedirect({ status: proxyRes.statusCode }) && proxyRes.headers.location) {
->>>>>>> 90cbb20c (fix: support for redirects with 200 status. Fix crashing dev server when have socket error. Follow redirects from proxyRes)
       req.url = proxyRes.headers.location
       return serveRedirect({
         // We don't want to match functions at this point because any redirects
