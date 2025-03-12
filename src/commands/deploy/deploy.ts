@@ -430,8 +430,6 @@ const runDeploy = async ({
   siteData,
   // @ts-expect-error TS(7031) FIXME: Binding element 'siteId' implicitly has an 'any' t... Remove this comment to see the full error message
   siteId,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'skipFunctionsCache' implicitly ha... Remove this comment to see the full error message
-  skipFunctionsCache,
   // @ts-expect-error TS(7031) FIXME: Binding element 'title' implicitly has an 'any' ty... Remove this comment to see the full error message
   title,
 }: {
@@ -473,7 +471,7 @@ const runDeploy = async ({
       command.netlify.frameworksAPIPaths.functions.path,
       functionsFolder,
     ].filter((folder): folder is string => Boolean(folder))
-    const manifestPath = skipFunctionsCache ? null : await getFunctionsManifestPath({ base: site.root, packagePath })
+    const manifestPath = await getFunctionsManifestPath({ base: site.root, packagePath })
 
     const redirectsPath = `${deployFolder}/_redirects`
     const headersPath = `${deployFolder}/_headers`
@@ -517,7 +515,6 @@ const runDeploy = async ({
       filter: getDeployFilesFilter({ site, deployFolder }),
       workingDir: command.workingDir,
       manifestPath,
-      skipFunctionsCache,
       siteRoot: site.root,
     })
   } catch (error_) {
@@ -787,7 +784,6 @@ const prepAndRunDeploy = async ({
     site,
     siteData,
     siteId,
-    skipFunctionsCache: options.skipFunctionsCache,
     title: options.message,
   })
 
@@ -882,13 +878,45 @@ export const deploy = async (options: OptionValues, command: BaseCommand) => {
       },
     })
   } else {
+    const argv = process.argv.slice(2)
+    const statusCb =
+    options.silent || argv.includes('--json') || argv.includes('--silent') ? () => {} : deployProgressCb()
+
+    statusCb({
+      type: 'functions-bundling',
+      msg: 'Bundling functions...\n',
+      phase: 'start',
+    })
+
+    const { severityCode, success, netlifyConfig } = await runCoreSteps(['functions_bundling'], {
+      ...options,
+      packagePath: command.workspacePackage,
+      cachedConfig: command.netlify.cachedConfig,
+      siteId,
+    })
+  
+    if (!success) {
+      statusCb({
+        type: 'functions-bundling',
+        msg: 'Deploy aborted due to error while bundling functions',
+        phase: 'error',
+      })
+      exit(severityCode)
+    }
+
+    statusCb({
+      type: 'functions-bundling',
+      msg: 'Finished bundling functions',
+      phase: 'stop',
+    })
+
     results = await prepAndRunDeploy({
       command,
       options,
       workingDir,
       api,
       site,
-      config: command.netlify.config,
+      config: netlifyConfig,
       siteData,
       siteId,
       deployToProduction,

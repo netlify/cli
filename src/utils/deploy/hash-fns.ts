@@ -21,7 +21,6 @@ const getFunctionZips = async ({
   functionsConfig,
   manifestPath,
   rootDir,
-  skipFunctionsCache,
   statusCb,
   tmpDir,
 }: {
@@ -30,7 +29,6 @@ const getFunctionZips = async ({
   functionsConfig: $TSFixMe
   manifestPath: $TSFixMe
   rootDir: $TSFixMe
-  skipFunctionsCache: $TSFixMe
   statusCb: $TSFixMe
   tmpDir: $TSFixMe
 }): Promise<(FunctionResult & { buildData?: unknown })[]> => {
@@ -53,7 +51,6 @@ const getFunctionZips = async ({
 
       statusCb({
         type: 'functions-manifest',
-        msg: 'Deploying functions from cache (use --skip-functions-cache to override)',
         phase: 'stop',
       })
 
@@ -66,9 +63,7 @@ const getFunctionZips = async ({
       })
     }
   } else {
-    const msg = skipFunctionsCache
-      ? 'Ignoring functions cache (use without --skip-functions-cache to change)'
-      : 'No cached functions were found'
+    const msg = 'No cached functions were found'
 
     statusCb({
       type: 'functions-manifest',
@@ -117,7 +112,6 @@ const hashFns = async (
     hashAlgorithm?: string
     manifestPath: $TSFixMe
     rootDir: $TSFixMe
-    skipFunctionsCache: $TSFixMe
     statusCb: $TSFixMe
     tmpDir: $TSFixMe
   },
@@ -129,7 +123,6 @@ const hashFns = async (
     hashAlgorithm = 'sha256',
     manifestPath,
     rootDir,
-    skipFunctionsCache,
     statusCb,
     tmpDir,
   } = config || {}
@@ -148,7 +141,6 @@ const hashFns = async (
     functionsConfig,
     manifestPath,
     rootDir,
-    skipFunctionsCache,
     statusCb,
     tmpDir,
   })

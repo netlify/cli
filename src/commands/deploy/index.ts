@@ -109,11 +109,6 @@ Support for package.json's main field, and intrinsic index.js entrypoints are co
     )
     .option('--build', 'Run build command before deploying')
     .option('--context <context>', 'Context to use when resolving build configuration')
-    .option(
-      '--skip-functions-cache',
-      'Ignore any functions created as part of a previous `build` or `deploy` commands, forcing them to be bundled again as part of the deployment',
-      false,
-    )
     .addExamples([
       'netlify deploy',
       'netlify deploy --site my-first-site',

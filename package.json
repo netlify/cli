@@ -65,7 +65,7 @@
   "dependencies": {
     "@fastify/static": "7.0.4",
     "@netlify/blobs": "8.1.1",
-    "@netlify/build": "29.59.2",
+    "@netlify/build": "file://../build/packages/build/",
     "@netlify/build-info": "8.1.0",
     "@netlify/config": "20.22.0",
     "@netlify/edge-bundler": "12.3.2",
@@ -73,7 +73,7 @@
     "@netlify/headers-parser": "7.3.0",
     "@netlify/local-functions-proxy": "1.1.1",
     "@netlify/redirect-parser": "14.5.0",
-    "@netlify/zip-it-and-ship-it": "9.43.1",
+    "@netlify/zip-it-and-ship-it": "file://../build/packages/zip-it-and-ship-it/",
     "@octokit/rest": "21.1.1",
     "@opentelemetry/api": "1.8.0",
     "@pnpm/tabtab": "0.5.4",
