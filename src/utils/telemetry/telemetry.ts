@@ -50,7 +50,7 @@ const eventConfig = {
  */
 export async function track(
   eventName: string,
-  payload: { status?: string; duration?: number; [key: string]: unknown } = {},
+  payload: { status?: string; duration?: number; [key: string]: unknown; args?: string[] } = {},
 ) {
   if (isCI) {
     return
@@ -78,6 +78,7 @@ export async function track(
   const { duration, status, ...properties } = payload
   const defaultData = {
     event: eventName,
+    args,
     userId,
     anonymousId: cliId,
     duration,
