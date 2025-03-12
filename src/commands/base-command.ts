@@ -372,6 +372,7 @@ export default class BaseCommand extends Command {
 
     const command = Array.isArray(this.args) ? this.args[0] : this.name()
     const commandArgs = Array.isArray(this.args) ? this.args.slice(1) : []
+    // TODO: find a way to only collect args that won't collect sensitive data
 
     debug(`${this.name()}:onEnd`)(`Command: ${command}. Status: ${status}. Duration: ${duration}ms`)
 
