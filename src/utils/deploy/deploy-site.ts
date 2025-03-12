@@ -60,8 +60,6 @@ export const deploySite = async (
     maxRetry = DEFAULT_MAX_RETRY,
     // @ts-expect-error TS(2525) FIXME: Initializer provides no value for this binding ele... Remove this comment to see the full error message
     siteRoot,
-    // @ts-expect-error TS(2525) FIXME: Initializer provides no value for this binding ele... Remove this comment to see the full error message
-    skipFunctionsCache,
     statusCb = () => {
       /* default to noop */
     },
@@ -110,7 +108,6 @@ export const deploySite = async (
       statusCb,
       assetType,
       manifestPath,
-      skipFunctionsCache,
       rootDir: siteRoot,
     }),
     hashConfig({ config }),
