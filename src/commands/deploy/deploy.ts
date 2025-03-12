@@ -321,7 +321,7 @@ const deployProgressCb = function () {
       case 'progress': {
         const spinner = spinnersByType[event.type]
         if (spinner) {
-          spinner.text = event.msg
+          spinner.update({ text: event.msg })
         }
         return
       }

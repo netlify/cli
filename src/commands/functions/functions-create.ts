@@ -11,7 +11,7 @@ import { findUp } from 'find-up'
 import fuzzy from 'fuzzy'
 import inquirer from 'inquirer'
 import fetch from 'node-fetch'
-import yoctoSpinner from 'yocto-spinner'
+import { createSpinner } from 'nanospinner'
 
 import { fileExistsAsync } from '../../lib/fs.js'
 import { getAddons, getCurrentAddon, getSiteData } from '../../utils/addons/prepare.js'
@@ -546,10 +546,7 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
 
     // npm install
     if (functionPackageJson !== undefined) {
-      const spinner = yoctoSpinner({
-        text: `Installing dependencies for ${name}`,
-        spinner: MOON_SPINNER,
-      }).start()
+      const spinner = createSpinner(`Installing dependencies for ${name}`, MOON_SPINNER).start()
       await installDeps({ functionPackageJson, functionPath, functionsDir })
       spinner.success(`Installed dependencies for ${name}`)
     }
