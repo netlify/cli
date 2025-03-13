@@ -371,8 +371,7 @@ export default class BaseCommand extends Command {
     const status = error_ === undefined ? 'success' : 'error'
 
     const command = Array.isArray(this.args) ? this.args[0] : this.name()
-    const commandArgs = Array.isArray(this.args) ? this.args.slice(1) : []
-    // TODO: find a way to only collect args that won't collect sensitive data
+    const commandArgsOnly = Array.isArray(this.args) ? this.args.slice(1).filter((arg) => arg.startsWith('--')) : []
 
     debug(`${this.name()}:onEnd`)(`Command: ${command}. Status: ${status}. Duration: ${duration}ms`)
 
@@ -382,7 +381,7 @@ export default class BaseCommand extends Command {
         command,
         duration,
         status,
-        args: commandArgs,
+        args: commandArgsOnly,
       })
     } catch {}
 
