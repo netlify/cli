@@ -17,7 +17,7 @@ import { getBootstrapURL } from '../../lib/edge-functions/bootstrap.js'
 import { featureFlags as edgeFunctionsFeatureFlags } from '../../lib/edge-functions/consts.js'
 import { normalizeFunctionsConfig } from '../../lib/functions/config.js'
 import { BACKGROUND_FUNCTIONS_WARNING } from '../../lib/log.js'
-import { startSpinner, stopSpinner } from '../../lib/spinner.js'
+import { type Spinner, startSpinner, stopSpinner } from '../../lib/spinner.js'
 import { detectFrameworkSettings, getDefaultConfig } from '../../utils/build-info.js'
 import {
   NETLIFYDEV,
@@ -33,7 +33,7 @@ import {
   APIError,
 } from '../../utils/command-helpers.js'
 import { DEFAULT_DEPLOY_TIMEOUT } from '../../utils/deploy/constants.js'
-import { deploySite } from '../../utils/deploy/deploy-site.js'
+import { type DeployEvent, deploySite } from '../../utils/deploy/deploy-site.js'
 import { getEnvelopeEnv } from '../../utils/env/index.js'
 import { getFunctionsManifestPath, getInternalFunctionsDir } from '../../utils/functions/index.js'
 import openBrowser from '../../utils/open-browser.js'
@@ -309,40 +309,30 @@ const reportDeployError = ({ error_, failAndExit }) => {
 }
 
 const deployProgressCb = function () {
-  /**
-   * @type {Record<string, import('ora').Ora>}
-   */
-  const events = {}
-  // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
-  return (event) => {
+  const spinnersByType: Record<DeployEvent['type'], Spinner> = {}
+  return (event: DeployEvent) => {
     switch (event.phase) {
       case 'start': {
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        events[event.type] = startSpinner({
+        spinnersByType[event.type] = startSpinner({
           text: event.msg,
         })
         return
       }
       case 'progress': {
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        const spinner = events[event.type]
+        const spinner = spinnersByType[event.type]
         if (spinner) {
-          spinner.text = event.msg
+          spinner.update({ text: event.msg })
         }
         return
       }
       case 'error':
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        stopSpinner({ error: true, spinner: events[event.type], text: event.msg })
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        delete events[event.type]
+        stopSpinner({ error: true, spinner: spinnersByType[event.type], text: event.msg })
+        delete spinnersByType[event.type]
         return
       case 'stop':
       default: {
-        // @ts-expect-error TS(2345) FIXME: Argument of type '{ spinner: any; text: any; }' is... Remove this comment to see the full error message
-        stopSpinner({ spinner: events[event.type], text: event.msg })
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        delete events[event.type]
+        stopSpinner({ spinner: spinnersByType[event.type], text: event.msg })
+        delete spinnersByType[event.type]
       }
     }
   }

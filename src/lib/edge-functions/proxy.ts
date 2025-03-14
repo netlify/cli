@@ -13,7 +13,7 @@ import { FeatureFlags, getFeatureFlagsFromSiteInfo } from '../../utils/feature-f
 import { BlobsContextWithEdgeAccess } from '../blobs/blobs.js'
 import { getGeoLocation } from '../geo-location.js'
 import { getPathInProject } from '../settings.js'
-import { startSpinner, stopSpinner } from '../spinner.js'
+import { type Spinner, startSpinner, stopSpinner } from '../spinner.js'
 
 import { getBootstrapURL } from './bootstrap.js'
 import { DIST_IMPORT_MAP_PATH, EDGE_FUNCTIONS_SERVE_FOLDER } from './consts.js'
@@ -25,7 +25,7 @@ const headersSymbol = Symbol('Edge Functions Headers')
 const LOCAL_HOST = '127.0.0.1'
 
 const getDownloadUpdateFunctions = () => {
-  let spinner: ReturnType<typeof startSpinner>
+  let spinner: Spinner
 
   const onAfterDownload = (error_: unknown) => {
     stopSpinner({ error: Boolean(error_), spinner })

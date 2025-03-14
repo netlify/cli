@@ -4,6 +4,7 @@ import execa from 'execa'
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'stri... Remove this comment to see the full error message
 import stripAnsiCc from 'strip-ansi-control-characters'
 
+import type { Spinner } from '../lib/spinner.js'
 import { chalk, log, NETLIFYDEVERR, NETLIFYDEVWARN } from './command-helpers.js'
 import { processOnExit } from './dev.js'
 
@@ -33,19 +34,15 @@ const cleanupBeforeExit = async ({ exitCode }) => {
   }
 }
 
-/**
- * Run a command and pipe stdout, stderr and stdin
- * @param {string} command
- * @param {object} options
- * @param {import('ora').Ora|null} [options.spinner]
- * @param {NodeJS.ProcessEnv} [options.env]
- * @param {string} [options.cwd]
- * @returns {execa.ExecaChildProcess<string>}
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'command' implicitly has an 'any' type.
-export const runCommand = (command, options = {}) => {
-  // @ts-expect-error TS(2339) FIXME: Property 'cwd' does not exist on type '{}'.
-  const { cwd, env = {}, spinner = null } = options
+export const runCommand = (
+  command: string,
+  options: {
+    spinner?: Spinner
+    env?: NodeJS.ProcessEnv
+    cwd: string
+  },
+) => {
+  const { cwd, env = {}, spinner } = options
   const commandProcess = execa.command(command, {
     preferLocal: true,
     // we use reject=false to avoid rejecting synchronously when the command doesn't exist
@@ -62,16 +59,13 @@ export const runCommand = (command, options = {}) => {
 
   // This ensures that an active spinner stays at the bottom of the commandline
   // even though the actual framework command might be outputting stuff
-  // @ts-expect-error TS(7006) FIXME: Parameter 'writeStream' implicitly has an 'any' ty... Remove this comment to see the full error message
-  const pipeDataWithSpinner = (writeStream, chunk) => {
-    if (spinner && spinner.isSpinning) {
+  const pipeDataWithSpinner = (writeStream: NodeJS.WriteStream, chunk: any) => {
+    if (spinner?.isSpinning) {
       spinner.clear()
-      spinner.isSilent = true
     }
     writeStream.write(chunk, () => {
-      if (spinner && spinner.isSpinning) {
-        spinner.isSilent = false
-        spinner.render()
+      if (spinner?.isSpinning) {
+        spinner.start()
       }
     })
   }

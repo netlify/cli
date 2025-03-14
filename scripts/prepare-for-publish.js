@@ -3,7 +3,7 @@ import { dirname, join } from 'path'
 import { fileURLToPath } from 'url'
 
 import execa from 'execa'
-import ora from 'ora'
+import { createSpinner } from 'nanospinner'
 
 // These scripts from package.json need to be preserved on publish
 const preserveScripts = new Set([
@@ -15,10 +15,7 @@ const preserveScripts = new Set([
   'prepublishOnly',
 ])
 
-let spinner = ora({
-  spinner: 'star',
-  text: 'Patching package.json (removing devDependencies, scripts, etc)',
-}).start()
+let spinner = createSpinner('Patching package.json (removing devDependencies, scripts, etc)').start()
 
 const dir = dirname(fileURLToPath(import.meta.url))
 const packageJsonPath = join(dir, '../package.json')
@@ -41,18 +38,12 @@ pkgJson.scripts.postinstall = pkgJson.scripts['postinstall-pack']
 delete pkgJson.scripts['postinstall-pack']
 
 await writeFile(packageJsonPath, JSON.stringify(pkgJson, null, 2))
-spinner.succeed()
+spinner.success()
 
-spinner = ora({
-  spinner: 'star',
-  text: 'Running `npm install --no-audit`',
-}).start()
+spinner = createSpinner('Running `npm install --no-audit`').start()
 await execa('npm', ['install', '--no-audit'])
-spinner.succeed()
+spinner.success()
 
-spinner = ora({
-  spinner: 'star',
-  text: 'Running `npm shrinkwrap`',
-}).start()
+spinner = createSpinner('Running `npm shrinkwrap`').start()
 await execa('npm', ['shrinkwrap'])
-spinner.succeed()
+spinner.success()

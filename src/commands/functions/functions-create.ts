@@ -11,7 +11,7 @@ import { findUp } from 'find-up'
 import fuzzy from 'fuzzy'
 import inquirer from 'inquirer'
 import fetch from 'node-fetch'
-import ora from 'ora'
+import { createSpinner } from 'nanospinner'
 
 import { fileExistsAsync } from '../../lib/fs.js'
 import { getAddons, getCurrentAddon, getSiteData } from '../../utils/addons/prepare.js'
@@ -44,6 +44,11 @@ const languages = [
   { name: 'Go', value: 'go' },
   { name: 'Rust', value: 'rust' },
 ]
+
+const MOON_SPINNER = {
+  interval: 80,
+  frames: ['🌑 ', '🌒 ', '🌓 ', '🌔 ', '🌕 ', '🌖 ', '🌗 ', '🌘 '],
+}
 
 /**
  * prompt for a name if name not supplied
@@ -541,12 +546,9 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
 
     // npm install
     if (functionPackageJson !== undefined) {
-      const spinner = ora({
-        text: `Installing dependencies for ${name}`,
-        spinner: 'moon',
-      }).start()
+      const spinner = createSpinner(`Installing dependencies for ${name}`, MOON_SPINNER).start()
       await installDeps({ functionPackageJson, functionPath, functionsDir })
-      spinner.succeed(`Installed dependencies for ${name}`)
+      spinner.success(`Installed dependencies for ${name}`)
     }
 
     if (funcType === 'edge') {
