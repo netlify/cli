@@ -50,6 +50,7 @@ export type ServerSettings = BaseServerSettings & {
   jwtRolePath: string
   /** The port where the dev server is running on */
   port: number
+  functionsLoopback: '::1' | '127.0.0.1'
   /** The port where the functions are running on */
   functionsPort: number
   https?: { key: string; cert: string; keyFilePath: string; certFilePath: string }

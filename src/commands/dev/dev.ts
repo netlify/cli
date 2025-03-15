@@ -323,6 +323,11 @@ export const createDevCommand = (program: BaseCommand) => {
         .conflicts('edgeInspect')
         .argParser(validateShortFlagArgs),
     )
+    .addOption(
+      new Option('--functions-loopback <host>', 'host for loopback requests to functions server')
+        .default('127.0.0.1')
+        .choices(['::1', '127.0.0.1']),
+    )
     .addExamples([
       'netlify dev',
       'netlify dev -d public',
