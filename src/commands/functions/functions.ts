@@ -1,4 +1,4 @@
-import type { OptionValues } from 'commander'
+import { Option, OptionValues } from 'commander'
 
 import { chalk } from '../../utils/command-helpers.js'
 import requiresSiteInfo from '../../utils/hooks/requires-site-info.js'
@@ -61,6 +61,11 @@ export const createFunctionsCommand = (program: BaseCommand) => {
     )
     .option('--port <port>', 'Port where netlify dev is accessible. e.g. 8888', (value) => Number.parseInt(value))
     .option('-o, --offline', 'Disables any features that require network access')
+    .addOption(
+      new Option('--functions-loopback <host>', 'host for loopback requests to functions server')
+        .default('127.0.0.1')
+        .choices(['::1', '127.0.0.1']),
+    )
     .addExamples([
       'netlify functions:invoke',
       'netlify functions:invoke myfunction',
@@ -100,6 +105,11 @@ NOT the same as listing the functions that have been deployed. For that info you
     .option('-f, --functions <dir>', 'Specify a functions directory to serve')
     .option('-p, --port <port>', 'Specify a port for the functions server', (value) => Number.parseInt(value))
     .option('-o, --offline', 'Disables any features that require network access')
+    .addOption(
+      new Option('--functions-loopback <host>', 'host for loopback requests to functions server')
+        .default('127.0.0.1')
+        .choices(['::1', '127.0.0.1']),
+    )
     .addHelpText('after', 'Helpful for debugging functions.')
     .action(async (options: OptionValues, command: BaseCommand) => {
       const { functionsServe } = await import('./functions-serve.js')

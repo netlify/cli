@@ -45,6 +45,11 @@ export const createServeCommand = (program: BaseCommand) =>
         .argParser((value) => Number.parseInt(value))
         .hideHelp(),
     )
+    .addOption(
+      new Option('--functions-loopback <host>', 'host for loopback requests to functions server')
+        .default('127.0.0.1')
+        .choices(['::1', '127.0.0.1']),
+    )
     .addExamples(['netlify serve', 'BROWSER=none netlify serve # disable browser auto opening'])
     .action(async (options: Option, command: BaseCommand) => {
       const { serve } = await import('./serve.js')

@@ -84,7 +84,7 @@ export const invokeFunction = async ({ context, environment, event, func, timeou
         const client = createConnection(
           {
             port: result.streamPort,
-            host: 'localhost',
+            host: func.settings.functionsLoopback,
           },
           () => {
             result.body = client
