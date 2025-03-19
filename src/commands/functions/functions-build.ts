@@ -11,7 +11,6 @@ export const functionsBuild = async (options: OptionValues, command: BaseCommand
   const { config } = command.netlify
 
   const src = options.src || config.build.functionsSource
-  // @ts-expect-error TS(2554) FIXME: Expected 2 arguments, but got 1.
   const dst = getFunctionsDir({ options, config })
 
   if (src === dst) {
@@ -35,7 +34,6 @@ export const functionsBuild = async (options: OptionValues, command: BaseCommand
 
   log(`${NETLIFYDEVLOG} Building functions`)
 
-  // @ts-expect-error TS(2345) FIXME: Argument of type '{ skipGo: boolean; }' is not ass... Remove this comment to see the full error message
-  zipFunctions(src, dst, { skipGo: true })
+  zipFunctions(src, dst)
   log(`${NETLIFYDEVLOG} Functions built to `, dst)
 }

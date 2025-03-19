@@ -1,11 +1,20 @@
 import AsciiTable from 'ascii-table'
-import { OptionValues } from 'commander'
-import { methods } from 'netlify'
+import type { OptionValues } from 'commander'
+import { methods, type NetlifyAPI } from 'netlify'
 
 import { chalk, error, exit, log, logJson } from '../../utils/command-helpers.js'
-import BaseCommand from '../base-command.js'
+import type BaseCommand from '../base-command.js'
 
-export const apiCommand = async (apiMethod: string, options: OptionValues, command: BaseCommand) => {
+type ApiMethodName = keyof NetlifyAPI
+
+const isValidApiMethod = (api: NetlifyAPI, apiMethod: ApiMethodName | string): apiMethod is ApiMethodName =>
+  Object.hasOwn(api, apiMethod)
+
+export const apiCommand = async (
+  apiMethodName: ApiMethodName | string,
+  options: OptionValues,
+  command: BaseCommand,
+) => {
   const { api } = command.netlify
 
   if (options.list) {
@@ -22,13 +31,15 @@ export const apiCommand = async (apiMethod: string, options: OptionValues, comma
     exit()
   }
 
-  if (!apiMethod) {
+  if (!apiMethodName) {
     error(`You must provide an API method. Run "netlify api --list" to see available methods`)
   }
 
-  if (!api[apiMethod] || typeof api[apiMethod] !== 'function') {
-    error(`"${apiMethod}"" is not a valid api method. Run "netlify api --list" to see available methods`)
+  if (!(isValidApiMethod(api, apiMethodName) && typeof api[apiMethodName] === 'function')) {
+    error(`"${apiMethodName}"" is not a valid api method. Run "netlify api --list" to see available methods`)
+    return
   }
+  const apiMethod = api[apiMethodName].bind(api)
 
   let payload
   if (options.data) {
@@ -37,7 +48,7 @@ export const apiCommand = async (apiMethod: string, options: OptionValues, comma
     payload = {}
   }
   try {
-    const apiResponse = await api[apiMethod](payload)
+    const apiResponse = await apiMethod(payload)
     logJson(apiResponse)
   } catch (error_) {
     error(error_)

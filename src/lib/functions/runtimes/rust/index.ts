@@ -5,17 +5,28 @@ import { platform } from 'process'
 import { findUp } from 'find-up'
 import toml from 'toml'
 
+import type {
+  BaseBuildResult,
+  BuildFunction,
+  GetBuildFunctionOpts,
+  InvokeFunction,
+  OnRegisterFunction,
+} from '../index.js'
 import execa from '../../../../utils/execa.js'
 import { SERVE_FUNCTIONS_FOLDER } from '../../../../utils/functions/functions.js'
 import { getPathInProject } from '../../../settings.js'
 import { runFunctionsProxy } from '../../local-proxy.js'
+import type NetlifyFunction from '../../netlify-function.js'
 
 const isWindows = platform === 'win32'
 
 export const name = 'rs'
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'func' implicitly has an 'any' typ... Remove this comment to see the full error message
-const build = async ({ func }) => {
+export type RustBuildResult = BaseBuildResult & {
+  binaryPath: string
+}
+
+const build = async ({ func }: { func: NetlifyFunction<RustBuildResult> }): Promise<RustBuildResult> => {
   const functionDirectory = dirname(func.mainFile)
   const cacheDirectory = resolve(getPathInProject([SERVE_FUNCTIONS_FOLDER]))
   const targetDirectory = join(cacheDirectory, func.name)
@@ -34,25 +45,30 @@ const build = async ({ func }) => {
 }
 
 export const getBuildFunction =
-  // @ts-expect-error TS(7031) FIXME: Binding element 'func' implicitly has an 'any' typ... Remove this comment to see the full error message
+  async ({ func }: GetBuildFunctionOpts<RustBuildResult>): Promise<BuildFunction<RustBuildResult>> =>
+  async () =>
+    build({ func })
 
-
-    ({ func }) =>
-    () =>
-      build({ func })
-
-// @ts-expect-error TS(7006) FIXME: Parameter 'cwd' implicitly has an 'any' type.
-const getCrateName = async (cwd) => {
+const getCrateName = async (cwd: string): Promise<string> => {
   const manifestPath = await findUp('Cargo.toml', { cwd, type: 'file' })
-  // @ts-expect-error TS(2769) FIXME: No overload matches this call.
-  const manifest = await readFile(manifestPath, 'utf-8')
-  const { package: CargoPackage } = toml.parse(manifest)
+  if (!manifestPath) {
+    throw new Error('Cargo.toml not found')
+  }
+
+  const parsedManifest = toml.parse(await readFile(manifestPath, 'utf-8'))
+  if (!parsedManifest?.package) {
+    throw new Error('Cargo.toml is missing or invalid')
+  }
+  const { package: CargoPackage } = parsedManifest as { package: { name: string } }
 
   return CargoPackage.name
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'context' implicitly has an 'any' ... Remove this comment to see the full error message
-export const invokeFunction = async ({ context, event, func, timeout }) => {
+export const invokeFunction: InvokeFunction<RustBuildResult> = async ({ context, event, func, timeout }) => {
+  // TODO(serhalp) Make this the caller's responsibility
+  if (func.buildData == null) {
+    throw new Error('Cannot invoke a function that has not been built')
+  }
   const { stdout } = await runFunctionsProxy({
     binaryPath: func.buildData.binaryPath,
     context,
@@ -78,8 +94,7 @@ export const invokeFunction = async ({ context, event, func, timeout }) => {
   }
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'func' implicitly has an 'any' type.
-export const onRegister = (func) => {
+export const onRegister: OnRegisterFunction<RustBuildResult> = (func) => {
   const isSource = extname(func.mainFile) === '.rs'
 
   return isSource ? func : null
