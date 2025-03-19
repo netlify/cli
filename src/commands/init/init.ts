@@ -51,7 +51,6 @@ const logExistingAndExit = ({ siteInfo }) => {
 const createNewSiteAndExit = async ({ command, state }) => {
   const siteInfo = await sitesCreate({}, command)
 
-  // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
   log(`"${siteInfo.name}" site was created`)
   log()
   log(`To deploy to this site. Run your site build and then ${chalk.cyanBright.bold('netlify deploy')}`)
@@ -142,8 +141,7 @@ git remote add origin https://github.com/YourUserName/RepoName.git
  * Creates a new site or links an existing one to the repository
  * @param {import('../base-command.js').default} command
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'command' implicitly has an 'any' type.
-const createOrLinkSiteToRepo = async (command) => {
+const createOrLinkSiteToRepo = async (command: BaseCommand) => {
   const NEW_SITE = '+  Create & configure a new site'
   const EXISTING_SITE = '⇄  Connect this directory to an existing Netlify site'
 
@@ -172,8 +170,7 @@ const createOrLinkSiteToRepo = async (command) => {
   }
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'repoUrl' implicitly has an 'any' ... Remove this comment to see the full error message
-const logExistingRepoSetupAndExit = ({ repoUrl, siteName }) => {
+const logExistingRepoSetupAndExit = ({ repoUrl, siteName }: { repoUrl: string; siteName: string }) => {
   log()
   log(chalk.underline.bold(`Success`))
   log(`This site "${siteName}" is configured to automatically deploy via ${repoUrl}`)
@@ -185,7 +182,7 @@ export const init = async (options: OptionValues, command: BaseCommand) => {
   command.setAnalyticsPayload({ manual: options.manual, force: options.force })
 
   const { repositoryRoot, state } = command.netlify
-  let { siteInfo } = command.netlify
+  let { siteInfo: existingSiteInfo } = command.netlify
 
   // Check logged in status
   await command.authenticate()
@@ -193,9 +190,9 @@ export const init = async (options: OptionValues, command: BaseCommand) => {
   // Add .netlify to .gitignore file
   await ensureNetlifyIgnore(repositoryRoot)
 
-  const repoUrl = getRepoUrl(siteInfo)
+  const repoUrl = getRepoUrl(existingSiteInfo)
   if (repoUrl && !options.force) {
-    logExistingAndExit({ siteInfo })
+    logExistingAndExit({ siteInfo: existingSiteInfo })
   }
 
   // Look for local repo
@@ -204,9 +201,7 @@ export const init = async (options: OptionValues, command: BaseCommand) => {
     await handleNoGitRemoteAndExit({ command, error: repoData.error, state })
   }
 
-  if (isEmpty(siteInfo)) {
-    siteInfo = await createOrLinkSiteToRepo(command)
-  }
+  const siteInfo = isEmpty(existingSiteInfo) ? await createOrLinkSiteToRepo(command) : existingSiteInfo
 
   log()
 

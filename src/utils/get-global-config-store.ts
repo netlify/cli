@@ -12,15 +12,14 @@ const globalConfigDefaults = {
   cliId: uuidv4(),
 }
 
-// Memoise config result so that we only load it once
-// @ts-expect-error TS(7034) FIXME: Variable 'configStore' implicitly has type 'any' i... Remove this comment to see the full error message
-let configStore
+export type GlobalConfigStore = Configstore
 
-/**
- * @returns {Promise<Configstore>}
- */
-const getGlobalConfig = async function () {
-  // @ts-expect-error TS(7005) FIXME: Variable 'configStore' implicitly has an 'any' typ... Remove this comment to see the full error message
+// Memoise config result so that we only load it once
+let configStore: GlobalConfigStore | undefined
+
+// TODO(serhalp) `Configstore`'s getter and setter are very weakly typed. Use something else
+// or wrap with a strongly typed class.
+const getGlobalConfigStore = async function (): Promise<GlobalConfigStore> {
   if (!configStore) {
     const configPath = getPathInHome(['config.json'])
     // Legacy config file in home ~/.netlify/config.json
@@ -28,8 +27,7 @@ const getGlobalConfig = async function () {
     let legacyConfig
     // Read legacy config if exists
     try {
-      // @ts-expect-error TS(2345) FIXME: Argument of type 'Buffer' is not assignable to par... Remove this comment to see the full error message
-      legacyConfig = JSON.parse(await readFile(legacyPath))
+      legacyConfig = JSON.parse(await readFile(legacyPath, { encoding: 'utf8' }))
     } catch {}
     // Use legacy config as default values
     const defaults = { ...globalConfigDefaults, ...legacyConfig }
@@ -44,4 +42,4 @@ export const resetConfigCache = () => {
   configStore = undefined
 }
 
-export default getGlobalConfig
+export default getGlobalConfigStore

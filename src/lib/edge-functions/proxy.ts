@@ -14,11 +14,11 @@ import { BlobsContextWithEdgeAccess } from '../blobs/blobs.js'
 import { getGeoLocation } from '../geo-location.js'
 import { getPathInProject } from '../settings.js'
 import { type Spinner, startSpinner, stopSpinner } from '../spinner.js'
-
 import { getBootstrapURL } from './bootstrap.js'
 import { DIST_IMPORT_MAP_PATH, EDGE_FUNCTIONS_SERVE_FOLDER } from './consts.js'
 import { getFeatureFlagsHeader, getInvocationMetadataHeader, headers } from './headers.js'
 import { EdgeFunctionsRegistry, type Config } from './registry.js'
+import type { SiteInfo } from '../../utils/types.js'
 
 const headersSymbol = Symbol('Edge Functions Headers')
 
@@ -46,15 +46,6 @@ export const handleProxyRequest = (req, proxyReq) => {
   Object.entries(req[headersSymbol]).forEach(([header, value]) => {
     proxyReq.setHeader(header, value)
   })
-}
-
-// TODO: This should be replaced with a proper type for the entire API response
-// for the site endpoint.
-// See https://github.com/netlify/build/pull/5308.
-interface SiteInfo {
-  id: string
-  name: string
-  url: string
 }
 
 export const createSiteInfoHeader = (siteInfo: SiteInfo, localURL: string) => {

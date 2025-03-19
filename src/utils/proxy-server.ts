@@ -5,7 +5,7 @@ import { FunctionsRegistry } from '../lib/functions/registry.js'
 
 import { exit, log, NETLIFYDEVERR } from './command-helpers.js'
 import { startProxy } from './proxy.js'
-import type StateConfig from './state-config.js'
+import type CLIState from './state-config.js'
 import { ServerSettings } from './types.js'
 
 interface InspectSettings {
@@ -84,7 +84,7 @@ export const startProxyServer = async ({
   siteInfo: $TSFixMe
   projectDir: string
   repositoryRoot?: string
-  state: StateConfig
+  state: CLIState
   functionsRegistry?: FunctionsRegistry
 }) => {
   const url = await startProxy({

@@ -33,13 +33,14 @@ import {
 } from '../utils/command-helpers.js'
 import { FeatureFlags } from '../utils/feature-flags.js'
 import { getFrameworksAPIPaths } from '../utils/frameworks-api.js'
-import getGlobalConfig from '../utils/get-global-config.js'
+import getGlobalConfigStore from '../utils/get-global-config-store.js'
 import { getSiteByName } from '../utils/get-site.js'
 import openBrowser from '../utils/open-browser.js'
-import StateConfig from '../utils/state-config.js'
+import CLIState from '../utils/state-config.js'
 import { identify, reportError, track } from '../utils/telemetry/index.js'
 
 import { type NetlifyOptions } from './types.js'
+import { CachedConfig } from '../lib/build.js'
 
 type Analytics = {
   startTime: bigint
@@ -150,8 +151,7 @@ async function getRepositoryRoot(cwd?: string): Promise<string | undefined> {
 /** Base command class that provides tracking and config initialization */
 export default class BaseCommand extends Command {
   /** The netlify object inside each command with the state */
-  // @ts-expect-error This will be set for each command, TypeScript is just not able to infer it
-  netlify: NetlifyOptions
+  netlify!: NetlifyOptions
   analytics: Analytics = { startTime: process.hrtime.bigint() }
   // @ts-expect-error This will be set for each command, TypeScript is just not able to infer it
   project: Project
@@ -410,7 +410,6 @@ export default class BaseCommand extends Command {
     const authLink = `${webUI}/authorize?response_type=ticket&ticket=${ticket.id}`
 
     log(`Opening ${authLink}`)
-    // @ts-expect-error TS(2345) FIXME: Argument of type '{ url: string; }' is not assigna... Remove this comment to see the full error message
     await openBrowser({ url: authLink })
 
     const accessToken = await pollForToken({
@@ -526,7 +525,7 @@ export default class BaseCommand extends Command {
     // ==================================================
     // Retrieve Site id and build state from the state.json
     // ==================================================
-    const state = new StateConfig(this.workingDir)
+    const state = new CLIState(this.workingDir)
     const [token] = await getToken(flags.auth)
 
     const apiUrlOpts: {
@@ -551,14 +550,14 @@ export default class BaseCommand extends Command {
       certificateFile: flags.httpProxyCertificateFilename,
     })
     const apiOpts = { ...apiUrlOpts, agent }
-    // TODO: remove typecast once we have proper types for the API
-    const api = new NetlifyAPI(token || '', apiOpts) as NetlifyOptions['api']
+    const api = new NetlifyAPI(token || '', apiOpts)
 
     actionCommand.siteId = flags.siteId || (typeof flags.site === 'string' && flags.site) || state.get('siteId')
 
     const needsFeatureFlagsToResolveConfig = COMMANDS_WITH_FEATURE_FLAGS.has(actionCommand.name())
     if (api.accessToken && !flags.offline && needsFeatureFlagsToResolveConfig && actionCommand.siteId) {
       try {
+        // FIXME(serhalp) Remove `any` and fix errors. API types exist now.
         const site = await (api as any).getSite({ siteId: actionCommand.siteId, feature_flags: 'cli' })
         actionCommand.featureFlags = site.feature_flags
         actionCommand.accountId = site.account_id
@@ -599,7 +598,7 @@ export default class BaseCommand extends Command {
       siteData = await getSiteByName(api, flags.site)
     }
 
-    const globalConfig = await getGlobalConfig()
+    const globalConfig = await getGlobalConfigStore()
 
     // ==================================================
     // Perform analytics reporting
@@ -664,7 +663,7 @@ export default class BaseCommand extends Command {
   }
 
   /** Find and resolve the Netlify configuration */
-  async getConfig(config: {
+  async getConfig(opts: {
     cwd: string
     token?: string | null
     offline?: boolean
@@ -675,26 +674,28 @@ export default class BaseCommand extends Command {
     host?: string
     pathPrefix?: string
     scheme?: string
-  }): ReturnType<typeof resolveConfig> {
+  }): Promise<CachedConfig> {
+    const { configFilePath, cwd, host, offline, packagePath, pathPrefix, repositoryRoot, scheme, token } = opts
     // the flags that are passed to the command like `--debug` or `--offline`
     const flags = this.opts()
 
     try {
+      // FIXME(serhalp) Type this in `netlify/build`! This is blocking a ton of proper types across the CLI.
       return await resolveConfig({
         accountId: this.accountId,
-        config: config.configFilePath,
-        packagePath: config.packagePath,
-        repositoryRoot: config.repositoryRoot,
-        cwd: config.cwd,
+        config: configFilePath,
+        packagePath: packagePath,
+        repositoryRoot: repositoryRoot,
+        cwd: cwd,
         context: flags.context || process.env.CONTEXT || this.getDefaultContext(),
         debug: flags.debug,
         siteId: this.siteId,
-        token: config.token,
+        token: token,
         mode: 'cli',
-        host: config.host,
-        pathPrefix: config.pathPrefix,
-        scheme: config.scheme,
-        offline: config.offline ?? flags.offline,
+        host: host,
+        pathPrefix: pathPrefix,
+        scheme: scheme,
+        offline: offline ?? flags.offline,
         siteFeatureFlagPrefix: 'cli',
         featureFlags: this.featureFlags,
       })
@@ -708,18 +709,20 @@ export default class BaseCommand extends Command {
       //
       // @todo Replace this with a mechanism for calling `resolveConfig` with more granularity (i.e. having
       // the option to say that we don't need API data.)
-      if (isUserError && !config.offline && config.token) {
+      if (isUserError && !offline && token) {
         if (flags.debug) {
           error(error_, { exit: false })
           warn('Failed to resolve config, falling back to offline resolution')
         }
         // recursive call with trying to resolve offline
-        return this.getConfig({ ...config, offline: true })
+        return this.getConfig({ ...opts, offline: true })
       }
 
       // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
       const message = isUserError ? error_.message : error_.stack
       error(message, { exit: true })
+      // See TODO in `error()`. This is unreachable, but adding it lets TS know we can't return void here.
+      throw new Error('This should never happen')
     }
   }
 
@@ -742,7 +745,8 @@ export default class BaseCommand extends Command {
   /**
    * Retrieve feature flags for this site
    */
-  getFeatureFlag<T = null | boolean | string>(flagName: string): T {
+  getFeatureFlag<T extends null | boolean | string>(flagName: string): T {
+    // @ts-expect-error(serhalp) -- XXX nathanplzfix
     return this.netlify.siteInfo.feature_flags?.[flagName] || null
   }
 }

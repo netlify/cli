@@ -31,6 +31,7 @@ import BaseCommand from '../base-command.js'
 
 import { createDevExecCommand } from './dev-exec.js'
 import { type DevConfig } from './types.js'
+import type { ServerSettings } from '../../utils/types.js'
 
 /**
  *
@@ -135,8 +136,7 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
     siteInfo,
   })
 
-  /** @type {import('../../utils/types.js').ServerSettings} */
-  let settings
+  let settings: ServerSettings
   try {
     settings = await detectServerSettings(devConfig, options, command)
 

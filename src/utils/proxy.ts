@@ -243,7 +243,9 @@ const alternativePathsFor = function (url) {
 
 const notifyActivity = throttle((api: NetlifyOptions['api'], siteId: string, devServerId: string) => {
   // eslint-disable-next-line promise/prefer-await-to-callbacks, promise/prefer-await-to-then
-  api.markDevServerActivity({ siteId, devServerId }).catch((error) => {
+  // @ts-expect-error(serhalp) -- It looks like the generated API types don't include "internal" methods
+  // (https://github.com/netlify/open-api/blob/66813d46e47f207443b7aebce2c22c4a4c8ca867/swagger.yml#L2642). Fix?
+  api.markDevServerActivity({ siteId, devServerId }).catch((error: unknown) => {
     console.error(`${NETLIFYDEVWARN} Failed to notify activity`, error)
   })
 }, 30 * 1000)

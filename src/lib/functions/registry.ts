@@ -3,7 +3,7 @@ import { createRequire } from 'module'
 import { basename, extname, isAbsolute, join, resolve } from 'path'
 import { env } from 'process'
 
-import { ListedFunction, listFunctions } from '@netlify/zip-it-and-ship-it'
+import { type ListedFunction, listFunctions, type Manifest } from '@netlify/zip-it-and-ship-it'
 import extractZip from 'extract-zip'
 
 import {
@@ -18,12 +18,15 @@ import {
 } from '../../utils/command-helpers.js'
 import { getFrameworksAPIPaths } from '../../utils/frameworks-api.js'
 import { INTERNAL_FUNCTIONS_FOLDER, SERVE_FUNCTIONS_FOLDER } from '../../utils/functions/functions.js'
-import type { BlobsContext } from '../blobs/blobs.js'
+import type { BlobsContextWithEdgeAccess } from '../blobs/blobs.js'
 import { BACKGROUND_FUNCTIONS_WARNING } from '../log.js'
 import { getPathInProject } from '../settings.js'
 
 import NetlifyFunction from './netlify-function.js'
-import runtimes from './runtimes/index.js'
+import runtimes, { BaseBuildResult } from './runtimes/index.js'
+import type { PatchedConfig } from '../../commands/types.js'
+import type { ServerSettings } from '../../utils/types.js'
+import { BuildCommandCache } from './memoized-build.js'
 
 export const DEFAULT_FUNCTION_URL_EXPRESSION = /^\/.netlify\/(functions|builders)\/([^/]+).*/
 const TYPES_PACKAGE = '@netlify/functions'
@@ -32,10 +35,6 @@ const ZIP_EXTENSION = '.zip'
 const isInternalFunction = (func: ListedFunction | NetlifyFunction, frameworksAPIFunctionsPath: string) =>
   func.mainFile.includes(getPathInProject([INTERNAL_FUNCTIONS_FOLDER])) ||
   func.mainFile.includes(frameworksAPIFunctionsPath)
-
-/**
- * @typedef {"buildError" | "extracted" | "loaded" | "missing-types-package" | "reloaded" | "reloading" | "removed"} FunctionEvent
- */
 
 export class FunctionsRegistry {
   /**
@@ -49,6 +48,8 @@ export class FunctionsRegistry {
    */
   private functionWatchers = new Map<string, Awaited<ReturnType<typeof watchDebounced>>>()
 
+  private directoryWatchers: Map<string, Awaited<ReturnType<typeof watchDebounced>>>
+
   /**
    * Keeps track of whether we've checked whether `TYPES_PACKAGE` is
    * installed.
@@ -58,49 +59,57 @@ export class FunctionsRegistry {
   /**
    * Context object for Netlify Blobs
    */
-  private blobsContext: BlobsContext
+  private blobsContext: BlobsContextWithEdgeAccess
 
-  private projectRoot: string
-  private isConnected: boolean
+  private buildCommandCache?: BuildCommandCache<BaseBuildResult>
+  private capabilities: {
+    backgroundFunctions?: boolean
+  }
+  // XXX(serhalp) probably not right
+  private config: PatchedConfig
   private debug: boolean
   private frameworksAPIPaths: ReturnType<typeof getFrameworksAPIPaths>
+  private isConnected: boolean
+  private manifest?: Manifest
+  private projectRoot: string
+  private settings: ServerSettings
+  private timeouts: { backgroundFunctions: number; syncFunctions: number }
 
   constructor({
     blobsContext,
-    // @ts-expect-error TS(7031) FIXME: Binding element 'capabilities' implicitly has an '... Remove this comment to see the full error message
     capabilities,
-    // @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'any' t... Remove this comment to see the full error message
     config,
     debug = false,
     frameworksAPIPaths,
     isConnected = false,
     // @ts-expect-error TS(7031) FIXME: Binding element 'logLambdaCompat' implicitly has a... Remove this comment to see the full error message
     logLambdaCompat,
-    // @ts-expect-error TS(7031) FIXME: Binding element 'manifest' implicitly has an 'any'... Remove this comment to see the full error message
     manifest,
     projectRoot,
-    // @ts-expect-error TS(7031) FIXME: Binding element 'settings' implicitly has an 'any'... Remove this comment to see the full error message
     settings,
-    // @ts-expect-error TS(7031) FIXME: Binding element 'timeouts' implicitly has an 'any'... Remove this comment to see the full error message
     timeouts,
   }: {
-    projectRoot: string
+    blobsContext: BlobsContextWithEdgeAccess
+    buildCache?: Record<string, unknown>
+    capabilities: {
+      backgroundFunctions?: boolean
+    }
+    config: PatchedConfig
     debug?: boolean
     frameworksAPIPaths: ReturnType<typeof getFrameworksAPIPaths>
     isConnected?: boolean
-    blobsContext: BlobsContext
+    manifest?: Manifest
+    projectRoot: string
+    settings: ServerSettings
+    timeouts: { backgroundFunctions: number; syncFunctions: number }
   } & object) {
-    // @ts-expect-error TS(2339) FIXME: Property 'capabilities' does not exist on type 'Fu... Remove this comment to see the full error message
     this.capabilities = capabilities
-    // @ts-expect-error TS(2339) FIXME: Property 'config' does not exist on type 'Function... Remove this comment to see the full error message
     this.config = config
     this.debug = debug
     this.frameworksAPIPaths = frameworksAPIPaths
     this.isConnected = isConnected
     this.projectRoot = projectRoot
-    // @ts-expect-error TS(2339) FIXME: Property 'timeouts' does not exist on type 'Functi... Remove this comment to see the full error message
     this.timeouts = timeouts
-    // @ts-expect-error TS(2339) FIXME: Property 'settings' does not exist on type 'Functi... Remove this comment to see the full error message
     this.settings = settings
     this.blobsContext = blobsContext
 
@@ -108,20 +117,14 @@ export class FunctionsRegistry {
      * An object to be shared among all functions in the registry. It can be
      * used to cache the results of the build function — e.g. it's used in
      * the `memoizedBuild` method in the JavaScript runtime.
-     *
-     * @type {Record<string, unknown>}
      */
-    // @ts-expect-error TS(2339) FIXME: Property 'buildCache' does not exist on type 'Func... Remove this comment to see the full error message
-    this.buildCache = {}
+    this.buildCommandCache = {}
 
     /**
      * File watchers for parent directories where functions live — i.e. the
      * ones supplied to `scan()`. This is a Map because in the future we
      * might have several function directories.
-     *
-     * @type {Map<string, Awaited<ReturnType<watchDebounced>>>}
      */
-    // @ts-expect-error TS(2339) FIXME: Property 'directoryWatchers' does not exist on typ... Remove this comment to see the full error message
     this.directoryWatchers = new Map()
 
     /**
@@ -136,9 +139,7 @@ export class FunctionsRegistry {
      * Contents of a `manifest.json` file that can be looked up when dealing
      * with built functions.
      *
-     * @type {object}
      */
-    // @ts-expect-error TS(2339) FIXME: Property 'manifest' does not exist on type 'Functi... Remove this comment to see the full error message
     this.manifest = manifest
   }
 
@@ -154,9 +155,7 @@ export class FunctionsRegistry {
     try {
       require.resolve(TYPES_PACKAGE, { paths: [this.projectRoot] })
     } catch (error) {
-      // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-      if (error?.code === 'MODULE_NOT_FOUND') {
-        // @ts-expect-error TS(2345) FIXME: Argument of type '{}' is not assignable to paramet... Remove this comment to see the full error message
+      if (error != null && typeof error === 'object' && 'code' in error && error?.code === 'MODULE_NOT_FOUND') {
         FunctionsRegistry.logEvent('missing-types-package', {})
       }
     }
@@ -175,12 +174,10 @@ export class FunctionsRegistry {
     // `onDirectoryScan` hook, we run it.
     await Promise.all(
       Object.values(runtimes).map((runtime) => {
-        // @ts-expect-error TS(2339) FIXME: Property 'onDirectoryScan' does not exist on type ... Remove this comment to see the full error message
-        if (typeof runtime.onDirectoryScan !== 'function') {
+        if (!('onDirectoryScan' in runtime)) {
           return null
         }
 
-        // @ts-expect-error TS(2339) FIXME: Property 'onDirectoryScan' does not exist on type ... Remove this comment to see the full error message
         return runtime.onDirectoryScan({ directory })
       }),
     )
@@ -195,8 +192,7 @@ export class FunctionsRegistry {
       FunctionsRegistry.logEvent('reloading', { func })
     }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'buildCache' does not exist on type 'Func... Remove this comment to see the full error message
-    const { error: buildError, includedFiles, srcFilesDiff } = await func.build({ cache: this.buildCache })
+    const { error: buildError, includedFiles, srcFilesDiff } = await func.build({ cache: this.buildCommandCache })
 
     if (buildError) {
       FunctionsRegistry.logEvent('buildError', { func })
@@ -291,7 +287,6 @@ export class FunctionsRegistry {
       const { routes = [] } = (await func.getBuildData()) ?? {}
 
       if (routes.length !== 0) {
-        // @ts-expect-error TS(7006) FIXME: Parameter 'route' implicitly has an 'any' type.
         const paths = routes.map((route) => chalk.underline(route.pattern)).join(', ')
 
         warn(
@@ -320,7 +315,7 @@ export class FunctionsRegistry {
    */
   static logEvent(
     event: 'buildError' | 'extracted' | 'loaded' | 'missing-types-package' | 'reloaded' | 'reloading' | 'removed',
-    { func, warnings = [] }: { func: NetlifyFunction; warnings?: string[] },
+    { func, warnings = [] }: { func?: NetlifyFunction; warnings?: string[] },
   ) {
     let warningsText = ''
 
@@ -397,14 +392,12 @@ export class FunctionsRegistry {
     // The `onRegister` hook allows runtimes to modify the function before it's
     // registered, or to prevent it from being registered altogether if the
     // hook returns `null`.
-    // @ts-expect-error FIXME
     const func = typeof runtime.onRegister === 'function' ? runtime.onRegister(funcBeforeHook) : funcBeforeHook
 
     if (func === null) {
       return
     }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'isConnected' does not exist on type 'Fun... Remove this comment to see the full error message
     if (func.isBackground && this.isConnected && !this.capabilities.backgroundFunctions) {
       warn(BACKGROUND_FUNCTIONS_WARNING)
     }
@@ -420,9 +413,7 @@ export class FunctionsRegistry {
     if (extname(func.mainFile) === ZIP_EXTENSION) {
       const unzippedDirectory = await this.unzipFunction(func)
 
-      // If there's a manifest file, look up the function in order to extract
-      // the build data.
-      // @ts-expect-error TS(2339) FIXME: Property 'manifest' does not exist on type 'Functi... Remove this comment to see the full error message
+      // If there's a manifest file, look up the function in order to extract the build data.
       const manifestEntry = (this.manifest?.functions || []).find((manifestFunc) => manifestFunc.name === func.name)
 
       // We found a zipped function that does not have a corresponding entry in
@@ -492,7 +483,7 @@ export class FunctionsRegistry {
         buildRustSource: env.NETLIFY_EXPERIMENTAL_BUILD_RUST_SOURCE === 'true',
       },
       configFileDirectories: [getPathInProject([INTERNAL_FUNCTIONS_FOLDER])],
-      // @ts-expect-error TS(2339) FIXME: Property 'config' does not exist on type 'Function... Remove this comment to see the full error message
+      // @ts-expect-error -- TODO(serhalp) Function config types do not match. Investigate and fix.
       config: this.config.functions,
     })
 
@@ -548,7 +539,6 @@ export class FunctionsRegistry {
 
         const func = new NetlifyFunction({
           blobsContext: this.blobsContext,
-          // @ts-expect-error TS(2339) FIXME: Property 'config' does not exist on type 'Function... Remove this comment to see the full error message
           config: this.config,
           directory: directories.find((directory) => mainFile.startsWith(directory)),
           mainFile,
@@ -556,11 +546,8 @@ export class FunctionsRegistry {
           displayName,
           projectRoot: this.projectRoot,
           runtime,
-          // @ts-expect-error TS(2339) FIXME: Property 'timeouts' does not exist on type 'Functi... Remove this comment to see the full error message
           timeoutBackground: this.timeouts.backgroundFunctions,
-          // @ts-expect-error TS(2339) FIXME: Property 'timeouts' does not exist on type 'Functi... Remove this comment to see the full error message
           timeoutSynchronous: this.timeouts.syncFunctions,
-          // @ts-expect-error TS(2339) FIXME: Property 'settings' does not exist on type 'Functi... Remove this comment to see the full error message
           settings: this.settings,
         })
 
@@ -595,7 +582,6 @@ export class FunctionsRegistry {
    * those will be handled by each functions' watcher.
    */
   async setupDirectoryWatcher(directory: string) {
-    // @ts-expect-error TS(2339) FIXME: Property 'directoryWatchers' does not exist on typ... Remove this comment to see the full error message
     if (this.directoryWatchers.has(directory)) {
       return
     }
@@ -610,7 +596,6 @@ export class FunctionsRegistry {
       },
     })
 
-    // @ts-expect-error TS(2339) FIXME: Property 'directoryWatchers' does not exist on typ... Remove this comment to see the full error message
     this.directoryWatchers.set(directory, watcher)
   }
 

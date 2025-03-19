@@ -27,7 +27,7 @@ const findStatePath = (cwd) => {
   return statePath
 }
 
-export default class StateConfig {
+export default class CLIState {
   // @ts-expect-error TS(7006) FIXME: Parameter 'cwd' implicitly has an 'any' type.
   constructor(cwd) {
     // @ts-expect-error TS(2339) FIXME: Property 'path' does not exist on type 'StateConfi... Remove this comment to see the full error message

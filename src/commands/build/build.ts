@@ -1,12 +1,12 @@
 import type { OptionValues } from 'commander'
 
-import { type BuildConfig, getBuildOptions, runBuild } from '../../lib/build.js'
+import { type RunBuildOptions, getRunBuildOptions, runBuild } from '../../lib/build.js'
 import { detectFrameworkSettings, getDefaultConfig } from '../../utils/build-info.js'
 import { error, exit, getToken } from '../../utils/command-helpers.js'
 import { getEnvelopeEnv } from '../../utils/env/index.js'
 import type BaseCommand from '../base-command.js'
 
-export const checkOptions = ({ cachedConfig: { siteInfo }, token }: BuildConfig) => {
+export const checkOptions = ({ cachedConfig: { siteInfo }, token }: RunBuildOptions) => {
   if (!siteInfo.id) {
     error(
       'Could not find the site ID. If your site is not on Netlify, please run `netlify init` or `netlify deploy` first. If it is, please run `netlify link`.',
@@ -25,7 +25,7 @@ export const build = async (options: OptionValues, command: BaseCommand) => {
   const [token] = await getToken()
   const settings = await detectFrameworkSettings(command, 'build')
 
-  const buildOptions = await getBuildOptions({
+  const buildOptions = await getRunBuildOptions({
     cachedConfig,
     defaultConfig: getDefaultConfig(settings),
     packagePath: command.workspacePackage,

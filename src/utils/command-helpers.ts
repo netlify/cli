@@ -14,10 +14,12 @@ import terminalLink from 'terminal-link'
 
 import { clearSpinner, startSpinner } from '../lib/spinner.js'
 
-import getGlobalConfig from './get-global-config.js'
+import getGlobalConfigStore from './get-global-config-store.js'
 import getPackageJson from './get-package-json.js'
 import { reportError } from './telemetry/report-error.js'
 import { TokenLocation } from './types.js'
+import { CachedConfig } from '../lib/build.js'
+import { PatchedConfig } from '../commands/types.js'
 
 /** The parsed process argv without the binary only arguments and flags */
 const argv = process.argv.slice(2)
@@ -146,7 +148,7 @@ export const getToken = async (tokenFromOptions?: string): Promise<TokenTuple> =
     return [NETLIFY_AUTH_TOKEN, 'env']
   }
   // 3. If no env var use global user setting
-  const globalConfig = await getGlobalConfig()
+  const globalConfig = await getGlobalConfigStore()
   const userId = globalConfig.get('userId')
   const tokenFromConfig = globalConfig.get(`users.${userId}.auth.token`)
   if (tokenFromConfig) {
@@ -213,6 +215,8 @@ export const error = (message: unknown | Error | string = '', options: { exit?: 
     }
   } else {
     reportError(err, { severity: 'error' })
+    // TODO(serhalp) Type this function to let TS know that when `exit: true` this function never returns.
+    // This will help with typing upstream code.
     throw err
   }
 }
@@ -226,12 +230,12 @@ export const exit = (code = 0) => {
  * several ways. It detects it by checking if `build.publish` is `undefined`.
  * However, `@netlify/config` adds a default value to `build.publish`.
  * This removes 'publish' and 'publishOrigin' in this case.
- * @param {*} config
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'config' implicitly has an 'any' type.
-export const normalizeConfig = (config) => {
+type Foo = CachedConfig['config'] & {
+  build: Omit<CachedConfig['config']['build'], 'publish' | 'publishOrigin'>
+}
+export const normalizeConfig = (config: CachedConfig['config']): CachedConfig['config'] | Foo => {
   // Unused var here is in order to omit 'publish' from build config
-
   const { publish, publishOrigin, ...build } = config.build
 
   return publishOrigin === 'default' ? { ...config, build } : config

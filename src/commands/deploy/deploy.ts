@@ -12,7 +12,7 @@ import { parseAllRedirects } from '@netlify/redirect-parser'
 import prettyjson from 'prettyjson'
 
 import { cancelDeploy } from '../../lib/api.js'
-import { getBuildOptions, runBuild } from '../../lib/build.js'
+import { getRunBuildOptions, runBuild } from '../../lib/build.js'
 import { getBootstrapURL } from '../../lib/edge-functions/bootstrap.js'
 import { featureFlags as edgeFunctionsFeatureFlags } from '../../lib/edge-functions/consts.js'
 import { normalizeFunctionsConfig } from '../../lib/functions/config.js'
@@ -41,6 +41,7 @@ import BaseCommand from '../base-command.js'
 import { link } from '../link/link.js'
 import { sitesCreate } from '../sites/sites-create.js'
 import { $TSFixMe } from '../types.js'
+import { SiteInfo } from '../../utils/types.js'
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
 const triggerDeploy = async ({ api, options, siteData, siteId }) => {
@@ -220,11 +221,7 @@ const getDeployFilesFilter = ({ deployFolder, site }) => {
   // when site.root !== deployFolder the behaviour matches our buildbot
   const skipNodeModules = site.root === deployFolder
 
-  /**
-   * @param {string} filename
-   */
-  // @ts-expect-error TS(7006) FIXME: Parameter 'filename' implicitly has an 'any' type.
-  return (filename) => {
+  return (filename: string) => {
     if (filename == null) {
       return false
     }
@@ -556,7 +553,7 @@ const handleBuild = async ({ cachedConfig, currentDir, defaultConfig, deployHand
     return {}
   }
   const [token] = await getToken()
-  const resolvedOptions = await getBuildOptions({
+  const resolvedOptions = await getRunBuildOptions({
     cachedConfig,
     defaultConfig,
     packagePath,
@@ -803,11 +800,11 @@ export const deploy = async (options: OptionValues, command: BaseCommand) => {
 
   let siteId = site.id || options.site
 
-  let siteData = {}
+  let initialSiteData: SiteInfo | undefined
+  let newSiteData!: SiteInfo
   if (siteId && !isEmpty(siteInfo)) {
-    siteData = siteInfo
-    // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type '{}'.
-    siteId = siteData.id
+    initialSiteData = siteInfo
+    siteId = initialSiteData.id
   } else {
     log("This folder isn't linked to a site yet")
     const NEW_SITE = '+  Create & configure a new site'
@@ -825,24 +822,24 @@ export const deploy = async (options: OptionValues, command: BaseCommand) => {
     ])
     // create site or search for one
     if (initChoice === NEW_SITE) {
-      // @ts-expect-error TS(2322) FIXME: Type 'undefined' is not assignable to type '{}'.
-      siteData = await sitesCreate({}, command)
-      // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type '{}'.
-      site.id = siteData.id
+      // @ts-expect-error(serhalp) -- Mismatch between hardcoded `SiteInfo` and new generated Netlify API types.
+      newSiteData = await sitesCreate({}, command)
+      site.id = newSiteData.id
       siteId = site.id
     } else if (initChoice === EXISTING_SITE) {
-      siteData = await link({}, command)
-      // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type '{}'.
-      site.id = siteData.id
+      newSiteData = await link({}, command)
+      site.id = newSiteData?.id
       siteId = site.id
     }
   }
+
+  // This is the best I could come up with to make TS happy with the complexities above.
+  const siteData = initialSiteData ?? newSiteData
 
   if (options.trigger) {
     return triggerDeploy({ api, options, siteData, siteId })
   }
 
-  // @ts-expect-error TS(2339) FIXME: Property 'published_deploy' does not exist on type... Remove this comment to see the full error message
   const deployToProduction = options.prod || (options.prodIfUnlocked && !siteData.published_deploy.locked)
 
   let results = {} as Awaited<ReturnType<typeof prepAndRunDeploy>>
@@ -895,7 +892,6 @@ export const deploy = async (options: OptionValues, command: BaseCommand) => {
 
   if (options.open) {
     const urlToOpen = deployToProduction ? results.siteUrl : results.deployUrl
-    // @ts-expect-error TS(2345) FIXME: Argument of type '{ url: any; }' is not assignable... Remove this comment to see the full error message
     await openBrowser({ url: urlToOpen })
     exit()
   }

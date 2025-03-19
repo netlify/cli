@@ -3,6 +3,9 @@ import { IncomingMessage } from 'http'
 
 import { Match } from 'netlify-redirector'
 
+export type { GlobalConfigStore } from './get-global-config-store.js'
+export { default as CLIState } from './state-config.js'
+
 export type FrameworkNames = '#static' | '#auto' | '#custom' | string
 
 export type FrameworkInfo = {
@@ -89,6 +92,7 @@ export interface SiteInfo {
   deploy_hook: string
   deploy_url: string
   domain_aliases: string[]
+  feature_flags?: Record<string, string | boolean>
   force_ssl: boolean
   git_provider: string
   id: string

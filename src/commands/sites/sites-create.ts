@@ -2,14 +2,16 @@ import { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 import pick from 'lodash/pick.js'
 import prettyjson from 'prettyjson'
+import type { NetlifyAPI } from 'netlify'
 
 import { chalk, error, log, logJson, warn, APIError } from '../../utils/command-helpers.js'
 import getRepoData from '../../utils/get-repo-data.js'
 import { configureRepo } from '../../utils/init/config.js'
 import { track } from '../../utils/telemetry/index.js'
-import { Account } from '../../utils/types.js'
 import BaseCommand from '../base-command.js'
 import { link } from '../link/link.js'
+
+type Site = Awaited<ReturnType<NetlifyAPI['createSiteInTeam']>>
 
 export const getSiteNameInput = async (name: string | undefined): Promise<{ name: string }> => {
   if (!name) {
@@ -51,7 +53,7 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand) =
     accountSlug = accountSlugInput
   }
 
-  let site
+  let site!: Site
 
   // Allow the user to reenter site name if selected one isn't available
   const inputSiteName = async (name?: string) => {
@@ -81,22 +83,17 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand) =
   log(chalk.greenBright.bold.underline(`Site Created`))
   log()
 
-  // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
   const siteUrl = site.ssl_url || site.url
   log(
     prettyjson.render({
-      // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
       'Admin URL': site.admin_url,
       URL: siteUrl,
-      // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
       'Site ID': site.id,
     }),
   )
 
   track('sites_created', {
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     siteId: site.id,
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     adminUrl: site.admin_url,
     siteUrl,
   })
@@ -104,7 +101,6 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand) =
   if (options.withCi) {
     log('Configuring CI')
     const repoData = await getRepoData({ workingDir: command.workingDir })
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     await configureRepo({ command, siteId: site.id, repoData, manual: options.manual })
   }
 
@@ -140,7 +136,6 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand) =
 
   if (!options.disableLinking) {
     log()
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     await link({ id: site.id }, command)
   }
 
