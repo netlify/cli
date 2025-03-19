@@ -16,7 +16,7 @@ export const blobsList = async (storeName: string, options: Options, command: Ba
   const store = getStore({
     apiURL: `${api.scheme}://${api.host}`,
     name: storeName,
-    siteID: siteInfo?.id ?? '',
+    siteID: siteInfo.id,
     token: api.accessToken ?? '',
   })
 

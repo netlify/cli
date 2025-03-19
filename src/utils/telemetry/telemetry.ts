@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url'
 import { isCI } from 'ci-info'
 
 import execa from '../execa.js'
-import getGlobalConfig from '../get-global-config.js'
+import getGlobalConfigStore from '../get-global-config-store.js'
 
 import { isTelemetryDisabled, cliVersion } from './utils.js'
 import isValidEventName from './validation.js'
@@ -56,7 +56,7 @@ export async function track(
     return
   }
 
-  const globalConfig = await getGlobalConfig()
+  const globalConfig = await getGlobalConfigStore()
   if (isTelemetryDisabled(globalConfig)) {
     return
   }
@@ -93,7 +93,7 @@ export async function identify(payload: { name?: string; email?: string; userId?
     return
   }
 
-  const globalConfig = await getGlobalConfig()
+  const globalConfig = await getGlobalConfigStore()
   if (isTelemetryDisabled(globalConfig)) {
     return
   }

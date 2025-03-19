@@ -24,7 +24,8 @@ export const run = async ({ args, command }: Options) => {
   const { api, siteInfo } = command.netlify
   const clientOptions = {
     apiURL: `${api.scheme}://${api.host}`,
-    siteID: siteInfo?.id ?? '',
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- XXX(serhalp) fixed in stacked PR.
+    siteID: siteInfo.id ?? '',
     token: api.accessToken ?? '',
   }
 

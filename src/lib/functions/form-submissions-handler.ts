@@ -11,6 +11,7 @@ import { capitalize } from '../string.js'
 
 import type NetlifyFunction from './netlify-function.js'
 import type { FunctionsRegistry } from './registry.js'
+import type { BaseBuildResult } from './runtimes/index.js'
 
 export const getFormHandler = function ({
   functionsRegistry,
@@ -21,7 +22,7 @@ export const getFormHandler = function ({
 }) {
   const handlers = ['submission-created', `submission-created${BACKGROUND}`]
     .map((name) => functionsRegistry.get(name))
-    .filter((func): func is NetlifyFunction => Boolean(func))
+    .filter((func): func is NetlifyFunction<BaseBuildResult> => func != null)
     .map(({ name }) => name)
 
   if (handlers.length === 0) {
@@ -46,7 +47,7 @@ export const createFormSubmissionHandler = function ({
   functionsRegistry: FunctionsRegistry
   siteUrl: string
 }): RequestHandler {
-  return async function formSubmissionHandler(req, res, next) {
+  return async function formSubmissionHandler(req, _res, next) {
     if (
       req.url.startsWith('/.netlify/') ||
       req.method !== 'POST' ||

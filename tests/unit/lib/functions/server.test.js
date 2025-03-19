@@ -9,7 +9,7 @@ import { afterAll, beforeAll, describe, expect, test, vi } from 'vitest'
 import { FunctionsRegistry } from '../../../../dist/lib/functions/registry.js'
 import { createHandler } from '../../../../dist/lib/functions/server.js'
 import { getFrameworksAPIPaths } from '../../../../dist/utils/frameworks-api.js'
-import StateConfig from '../../../../dist/utils/state-config.js'
+import StateConfig from '../../../../dist/utils/cli-state.js'
 
 vi.mock('../../../../dist/utils/command-helpers.js', async () => ({
   ...(await vi.importActual('../../../../dist/utils/command-helpers.js')),

@@ -14,6 +14,7 @@ import { NETLIFYDEVWARN, chalk, log } from './command-helpers.js'
 import { acquirePort } from './dev.js'
 import { getPluginsToAutoInstall } from './init/utils.js'
 import { BaseServerSettings, ServerSettings } from './types.js'
+import { CachedConfig } from '../lib/build.js'
 
 const formatProperty = (str: string) => chalk.magenta(`'${str}'`)
 const formatValue = (str: string) => chalk.green(`'${str}'`)
@@ -202,27 +203,27 @@ const handleCustomFramework = ({
  */
 const mergeSettings = async ({
   devConfig,
-  frameworkSettings = {},
+  frameworkSettings,
   workingDir,
 }: {
   devConfig: DevConfig
-  frameworkSettings?: BaseServerSettings
+  frameworkSettings?: BaseServerSettings | undefined
   workingDir: string
 }) => {
-  const command = devConfig.command || frameworkSettings.command
-  const frameworkPort = devConfig.targetPort || frameworkSettings.frameworkPort
+  const command = devConfig.command || frameworkSettings?.command
+  const frameworkPort = devConfig.targetPort || frameworkSettings?.frameworkPort
   const useStaticServer = !(command && frameworkPort)
 
   return {
-    baseDirectory: devConfig.base || frameworkSettings.baseDirectory,
+    baseDirectory: devConfig.base || frameworkSettings?.baseDirectory,
     command,
     frameworkPort: useStaticServer ? await getStaticServerPort({ devConfig }) : frameworkPort,
-    dist: devConfig.publish || frameworkSettings.dist || getDefaultDist(workingDir),
-    framework: frameworkSettings.framework,
-    env: frameworkSettings.env,
-    pollingStrategies: frameworkSettings.pollingStrategies || [],
+    dist: devConfig.publish || frameworkSettings?.dist || getDefaultDist(workingDir),
+    framework: frameworkSettings?.framework,
+    env: frameworkSettings?.env,
+    pollingStrategies: frameworkSettings?.pollingStrategies ?? [],
     useStaticServer,
-    clearPublishDirectory: frameworkSettings.clearPublishDirectory,
+    clearPublishDirectory: frameworkSettings?.clearPublishDirectory,
   }
 }
 
@@ -240,6 +241,11 @@ const handleForcedFramework = async (options: {
   const framework = await getFramework(options.devConfig.framework, options.project)
   const settings = await getSettings(framework, options.project, options.workspacePackage || '')
   const frameworkSettings = getSettingsFromDetectedSettings(options.command, settings)
+  // TODO(serhalp) Remove and update `getSettingsFromDetectedSettings` type to return non-nullable
+  // when given non-nullable second arg
+  if (frameworkSettings == null) {
+    throw new Error(`Could not get settings for framework ${options.devConfig.framework}`)
+  }
   return mergeSettings({ devConfig: options.devConfig, workingDir: options.workingDir, frameworkSettings })
 }
 
@@ -253,8 +259,8 @@ const detectServerSettings = async (
 ): Promise<ServerSettings> => {
   validateProperty(devConfig, 'framework', 'string')
 
-  /** @type {Partial<import('./types.js').BaseServerSettings>} */
-  let settings = {}
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO(serhalp) Set to `BaseServerSettings`. Good luck!
+  let settings: any = {}
 
   if (flags.dir || devConfig.framework === '#static') {
     // serving files statically without a framework server
@@ -275,7 +281,6 @@ const detectServerSettings = async (
       settings = await mergeSettings({ devConfig, frameworkSettings, workingDir: command.workingDir })
     }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'plugins' does not exist on type '{}'.
     settings.plugins = frameworkSettings?.plugins
   } else if (devConfig.framework === '#custom') {
     validateFrameworkConfig({ devConfig })
@@ -293,7 +298,6 @@ const detectServerSettings = async (
     })
   }
 
-  // @ts-expect-error TS(2339) FIXME: Property 'frameworkPort' does not exist on type '{... Remove this comment to see the full error message
   validateConfiguredPort({ devConfig, detectedPort: settings.frameworkPort })
 
   const acquiredPort = await acquirePort({
@@ -301,7 +305,6 @@ const detectServerSettings = async (
     defaultPort: DEFAULT_PORT,
     errorMessage: `Could not acquire required ${formatProperty('port')}`,
   })
-  // @ts-expect-error TS(2339) FIXME: Property 'functions' does not exist on type '{}'.
   const functionsDir = devConfig.functions || settings.functions
 
   return {
@@ -319,8 +322,7 @@ const detectServerSettings = async (
  * Returns a copy of the provided config with any plugins provided by the
  * server settings
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'config' implicitly has an 'any' type.
-export const getConfigWithPlugins = (config, settings: ServerSettings) => {
+export const getConfigWithPlugins = (config: CachedConfig['config'], settings: ServerSettings) => {
   if (!settings.plugins) {
     return config
   }
@@ -330,7 +332,6 @@ export const getConfigWithPlugins = (config, settings: ServerSettings) => {
   // whether the plugin has already been added by another source (like the
   // TOML file or the UI), as we don't want to run the same plugin twice.
   const { plugins: existingPlugins = [] } = config
-  // @ts-expect-error TS(7006) FIXME: Parameter 'plugin' implicitly has an 'any' type.
   const existingPluginNames = new Set(existingPlugins.map((plugin) => plugin.package))
   const newPlugins = settings.plugins
     .map((pluginName) => {
@@ -338,13 +339,13 @@ export const getConfigWithPlugins = (config, settings: ServerSettings) => {
         return
       }
 
-      return { package: pluginName, origin: 'config', inputs: {} }
+      return { package: pluginName, origin: 'config' }
     })
-    .filter(Boolean)
+    .filter((plugin): plugin is { package: string; origin: 'config' } => plugin != null)
 
   return {
     ...config,
-    plugins: [...newPlugins, ...config.plugins],
+    plugins: [...newPlugins, ...(config.plugins ?? [])],
   }
 }
 

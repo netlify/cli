@@ -5,43 +5,50 @@ import { Worker } from 'worker_threads'
 
 import lambdaLocal from 'lambda-local'
 
+import type { BuildFunction, GetBuildFunction, InvokeFunction, OnDirectoryScanFunction } from '../index.js'
 import { BLOBS_CONTEXT_VARIABLE } from '../../../blobs/blobs.js'
 import type NetlifyFunction from '../../netlify-function.js'
 
-import detectNetlifyLambdaBuilder from './builders/netlify-lambda.js'
-import detectZisiBuilder, { parseFunctionForMetadata } from './builders/zisi.js'
+import detectNetlifyLambdaBuilder, {
+  type NetlifyLambdaBuildResult,
+  type NetlifyLambdaBuilder,
+} from './builders/netlify-lambda.js'
+import detectZisiBuilder, { getFunctionMetadata, ZisiBuildResult } from './builders/zisi.js'
 import { SECONDS_TO_MILLISECONDS } from './constants.js'
-import { $TSFixMe } from '../../../../commands/types.js'
 
 export const name = 'js'
 
-// @ts-expect-error TS(7034) FIXME: Variable 'netlifyLambdaDetectorCache' implicitly h... Remove this comment to see the full error message
-let netlifyLambdaDetectorCache
+export type JsBuildResult = ZisiBuildResult | NetlifyLambdaBuildResult
+
+let netlifyLambdaDetectorCache: undefined | NetlifyLambdaBuilder
 
 lambdaLocal.getLogger().level = 'alert'
 
 // The netlify-lambda builder can't be enabled or disabled on a per-function
 // basis and its detection mechanism is also quite expensive, so we detect
 // it once and cache the result.
-const detectNetlifyLambdaWithCache = () => {
-  // @ts-expect-error TS(7005) FIXME: Variable 'netlifyLambdaDetectorCache' implicitly h... Remove this comment to see the full error message
+const detectNetlifyLambdaWithCache = async () => {
   if (netlifyLambdaDetectorCache === undefined) {
-    netlifyLambdaDetectorCache = detectNetlifyLambdaBuilder()
+    netlifyLambdaDetectorCache = await detectNetlifyLambdaBuilder()
   }
 
-  // @ts-expect-error TS(7005) FIXME: Variable 'netlifyLambdaDetectorCache' implicitly h... Remove this comment to see the full error message
   return netlifyLambdaDetectorCache
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'any' t... Remove this comment to see the full error message
-export const getBuildFunction = async ({ config, directory, errorExit, func, projectRoot }) => {
+export async function getBuildFunction({
+  config,
+  directory,
+  errorExit,
+  func,
+  projectRoot,
+}: Parameters<GetBuildFunction<JsBuildResult>>[0]) {
   const netlifyLambdaBuilder = await detectNetlifyLambdaWithCache()
 
   if (netlifyLambdaBuilder) {
     return netlifyLambdaBuilder.build
   }
 
-  const metadata = await parseFunctionForMetadata({ mainFile: func.mainFile, config, projectRoot })
+  const metadata = await getFunctionMetadata({ mainFile: func.mainFile, config, projectRoot })
   const zisiBuilder = await detectZisiBuilder({ config, directory, errorExit, func, metadata, projectRoot })
 
   if (zisiBuilder) {
@@ -54,15 +61,23 @@ export const getBuildFunction = async ({ config, directory, errorExit, func, pro
   const functionDirectory = dirname(func.mainFile)
   const srcFiles = functionDirectory === directory ? [func.mainFile] : [functionDirectory]
 
-  // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-  return () => ({ schedule: metadata.schedule, srcFiles })
+  // eslint-disable-next-line @typescript-eslint/require-await -- Must be async to match the interface
+  const build: BuildFunction<JsBuildResult> = async () => ({ schedule: metadata?.schedule, srcFiles })
+  return build
 }
 
 const workerURL = new URL('worker.js', import.meta.url)
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'context' implicitly has an 'any' ... Remove this comment to see the full error message
-export const invokeFunction = async ({ context, environment, event, func, timeout }) => {
-  if (func.buildData?.runtimeAPIVersion !== 2) {
+export const invokeFunction = async ({
+  context,
+  environment,
+  event,
+  func,
+  timeout,
+}: Parameters<InvokeFunction<JsBuildResult>>[0]) => {
+  const { buildData } = func
+
+  if (buildData != null && 'runtimeAPIVersion' in buildData && buildData.runtimeAPIVersion !== 2) {
     return await invokeFunctionDirectly({ context, event, func, timeout })
   }
 
@@ -73,7 +88,9 @@ export const invokeFunction = async ({ context, environment, event, func, timeou
     // If a function builder has defined a `buildPath` property, we use it.
     // Otherwise, we'll invoke the function's main file.
     // Because we use import() we have to use file:// URLs for Windows.
-    entryFilePath: pathToFileURL(func.buildData?.buildPath ?? func.mainFile).href,
+    entryFilePath: pathToFileURL(
+      buildData != null && 'buildPath' in buildData && buildData.buildPath ? buildData.buildPath : func.mainFile,
+    ).href,
     timeoutMs: timeout * SECONDS_TO_MILLISECONDS,
   }
 
@@ -101,21 +118,25 @@ export const invokeFunction = async ({ context, environment, event, func, timeou
   })
 }
 
-export const invokeFunctionDirectly = async ({
+export const invokeFunctionDirectly = async <BuildResult extends JsBuildResult>({
   context,
   event,
   func,
   timeout,
 }: {
-  context: $TSFixMe
-  event: $TSFixMe
-  func: NetlifyFunction
+  context: Record<string, unknown>
+  event: Record<string, unknown>
+  func: NetlifyFunction<BuildResult>
   timeout: number
 }) => {
+  const buildData = await func.getBuildData()
+  if (buildData == null) {
+    throw new Error('Cannot invoke a function that has not been built')
+  }
   // If a function builder has defined a `buildPath` property, we use it.
   // Otherwise, we'll invoke the function's main file.
-  const { buildPath } = await func.getBuildData()
-  const lambdaPath = buildPath ?? func.mainFile
+  const lambdaPath =
+    'buildPath' in buildData && typeof buildData.buildPath === 'string' ? buildData.buildPath : func.mainFile
   const result = await lambdaLocal.execute({
     clientContext: JSON.stringify(context),
     environment: {
@@ -136,7 +157,7 @@ export const invokeFunctionDirectly = async ({
   return result
 }
 
-export const onDirectoryScan = async () => {
+export const onDirectoryScan: OnDirectoryScanFunction = async () => {
   const netlifyLambdaBuilder = await detectNetlifyLambdaWithCache()
 
   // Before we start a directory scan, we check whether netlify-lambda is being

@@ -1221,7 +1221,7 @@ export default [
     },
   },
   {
-    files: ['src/utils/get-global-config.ts'],
+    files: ['src/utils/get-global-config-store.ts'],
     rules: {
       '@typescript-eslint/no-deprecated': 'off',
       '@typescript-eslint/no-unsafe-assignment': 'off',
@@ -1488,7 +1488,7 @@ export default [
     },
   },
   {
-    files: ['src/utils/state-config.ts'],
+    files: ['src/utils/cli-state.ts'],
     rules: {
       '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/no-unsafe-argument': 'off',

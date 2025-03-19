@@ -47,7 +47,8 @@ const headers = [
 
 const parseHeadersFile = async function (context, fixtureName) {
   const normalizedHeadersFile = resolve(context.builder.directory, fixtureName)
-  return await parseHeaders({ headersFiles: [normalizedHeadersFile] })
+  // TODO(serhalp) Lazy test type. Create a factory and use it here.
+  return await parseHeaders({ config: {}, headersFiles: [normalizedHeadersFile] })
 }
 
 // Ignore added properties like `forRegExp`

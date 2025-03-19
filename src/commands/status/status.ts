@@ -61,6 +61,7 @@ export const status = async (options: OptionValues, command: BaseCommand) => {
     error(`You don't appear to be in a folder that is linked to a site`)
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- XXX(serhalp) fixed in stacked PR.
   if (!siteInfo) {
     error(`No site info found for site ${siteId}`)
   }
@@ -70,7 +71,7 @@ export const status = async (options: OptionValues, command: BaseCommand) => {
     logJson({
       account: cleanAccountData,
       siteData: {
-        'site-name': `${siteInfo.name}`,
+        'site-name': siteInfo.name,
         'config-path': site.configPath,
         'admin-url': siteInfo.admin_url,
         'site-url': siteInfo.ssl_url || siteInfo.url,
@@ -84,7 +85,7 @@ export const status = async (options: OptionValues, command: BaseCommand) => {
 ────────────────────┘`)
   log(
     prettyjson.render({
-      'Current site': `${siteInfo.name}`,
+      'Current site': siteInfo.name,
       'Netlify TOML': site.configPath,
       'Admin URL': chalk.magentaBright(siteInfo.admin_url),
       'Site URL': chalk.cyanBright(siteInfo.ssl_url || siteInfo.url),

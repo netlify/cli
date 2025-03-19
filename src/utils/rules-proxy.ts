@@ -1,6 +1,6 @@
 import path from 'path'
 
-import chokidar from 'chokidar'
+import chokidar, { type FSWatcher } from 'chokidar'
 import cookie from 'cookie'
 import redirector from 'netlify-redirector'
 import type { Match, RedirectMatcher } from 'netlify-redirector'
@@ -8,16 +8,13 @@ import pFilter from 'p-filter'
 
 import { fileExistsAsync } from '../lib/fs.js'
 
-import { NETLIFYDEVLOG } from './command-helpers.js'
+import { NETLIFYDEVLOG, type NormalizedCachedConfigConfig } from './command-helpers.js'
 import { parseRedirects } from './redirects.js'
-import { Request, Rewriter } from './types.js'
+import type { Request, Rewriter } from './types.js'
 
-// @ts-expect-error TS(7034) FIXME: Variable 'watchers' implicitly has type 'any[]' in... Remove this comment to see the full error message
-const watchers = []
+const watchers: FSWatcher[] = []
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'files' implicitly has an 'any' type.
-export const onChanges = function (files, listener) {
-  // @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
+export const onChanges = function (files: string[], listener: () => unknown): void {
   files.forEach((file) => {
     const watcher = chokidar.watch(file)
     watcher.on('change', listener)
@@ -26,8 +23,7 @@ export const onChanges = function (files, listener) {
   })
 }
 
-export const getWatchers = function () {
-  // @ts-expect-error TS(7005) FIXME: Variable 'watchers' implicitly has an 'any[]' type... Remove this comment to see the full error message
+export const getWatchers = function (): FSWatcher[] {
   return watchers
 }
 
@@ -40,27 +36,30 @@ export const getLanguage = function (headers) {
 }
 
 export const createRewriter = async function ({
-  // @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'an... Remove this comment to see the full error message
   config,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'configPath' implicitly has an 'an... Remove this comment to see the full error message
   configPath,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'distDir' implicitly has an 'any' ... Remove this comment to see the full error message
   distDir,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'geoCountry' implicitly has an 'an... Remove this comment to see the full error message
   geoCountry,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'jwtRoleClaim' implicitly has an '... Remove this comment to see the full error message
   jwtRoleClaim,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'jwtSecret' implicitly has an 'any... Remove this comment to see the full error message
   jwtSecret,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'projectDir' implicitly has an 'an... Remove this comment to see the full error message
   projectDir,
+}: {
+  config: NormalizedCachedConfigConfig
+  configPath?: string | undefined
+  distDir?: string | undefined
+  geoCountry?: string | undefined
+  jwtRoleClaim: string
+  jwtSecret: string
+  projectDir: string
 }): Promise<Rewriter> {
   let matcher: RedirectMatcher | null = null
-  const redirectsFiles = [...new Set([path.resolve(distDir, '_redirects'), path.resolve(projectDir, '_redirects')])]
+  const redirectsFiles = [
+    ...new Set([path.resolve(distDir ?? '', '_redirects'), path.resolve(projectDir, '_redirects')]),
+  ]
   let redirects = await parseRedirects({ config, redirectsFiles, configPath })
 
   const watchedRedirectFiles = configPath === undefined ? redirectsFiles : [...redirectsFiles, configPath]
-  onChanges(watchedRedirectFiles, async () => {
+  onChanges(watchedRedirectFiles, async (): Promise<void> => {
     const existingRedirectsFiles = await pFilter(watchedRedirectFiles, fileExistsAsync)
     console.log(
       `${NETLIFYDEVLOG} Reloading redirect rules from`,
@@ -86,7 +85,6 @@ export const createRewriter = async function ({
     }
   }
 
-  // @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
   return async function rewriter(req: Request): Promise<Match | null> {
     const matcherFunc = await getMatcher()
     const reqUrl = new URL(

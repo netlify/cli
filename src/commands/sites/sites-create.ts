@@ -1,14 +1,14 @@
-import { OptionValues } from 'commander'
+import type { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 import pick from 'lodash/pick.js'
 import prettyjson from 'prettyjson'
 
-import { chalk, error, log, logJson, warn, APIError } from '../../utils/command-helpers.js'
+import { chalk, error, log, logJson, warn, type APIError } from '../../utils/command-helpers.js'
 import getRepoData from '../../utils/get-repo-data.js'
 import { configureRepo } from '../../utils/init/config.js'
 import { track } from '../../utils/telemetry/index.js'
-import { Account } from '../../utils/types.js'
-import BaseCommand from '../base-command.js'
+import type { SiteInfo } from '../../utils/types.js'
+import type BaseCommand from '../base-command.js'
 import { link } from '../link/link.js'
 
 export const getSiteNameInput = async (name: string | undefined): Promise<{ name: string }> => {
@@ -51,7 +51,7 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand) =
     accountSlug = accountSlugInput
   }
 
-  let site
+  let site!: SiteInfo
 
   // Allow the user to reenter site name if selected one isn't available
   const inputSiteName = async (name?: string) => {
@@ -62,10 +62,11 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand) =
       body.name = siteName.trim()
     }
     try {
-      site = await api.createSiteInTeam({
-        accountSlug,
+      // FIXME(serhalp) `id` and `name` should be required in `netlify` package type
+      site = (await api.createSiteInTeam({
+        accountSlug: accountSlug,
         body,
-      })
+      })) as unknown as SiteInfo
     } catch (error_) {
       if ((error_ as APIError).status === 422) {
         warn(`${siteName}.netlify.app already exists. Please try a different slug.`)
@@ -81,22 +82,17 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand) =
   log(chalk.greenBright.bold.underline(`Site Created`))
   log()
 
-  // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
   const siteUrl = site.ssl_url || site.url
   log(
     prettyjson.render({
-      // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
       'Admin URL': site.admin_url,
       URL: siteUrl,
-      // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
       'Site ID': site.id,
     }),
   )
 
   track('sites_created', {
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     siteId: site.id,
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     adminUrl: site.admin_url,
     siteUrl,
   })
@@ -104,7 +100,13 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand) =
   if (options.withCi) {
     log('Configuring CI')
     const repoData = await getRepoData({ workingDir: command.workingDir })
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
+
+    if ('error' in repoData) {
+      error('Failed to get repo data', { exit: true })
+      // TODO(serhalp) Remove after updating `error()` type to refine to `never` when exiting
+      process.exit(1)
+    }
+
     await configureRepo({ command, siteId: site.id, repoData, manual: options.manual })
   }
 
@@ -140,7 +142,6 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand) =
 
   if (!options.disableLinking) {
     log()
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     await link({ id: site.id }, command)
   }
 

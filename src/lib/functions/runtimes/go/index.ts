@@ -3,6 +3,13 @@ import { platform } from 'process'
 
 import { temporaryFile } from 'tempy'
 
+import type {
+  BaseBuildResult,
+  BuildFunction,
+  GetBuildFunctionOpts,
+  InvokeFunction,
+  OnRegisterFunction,
+} from '../index.js'
 import execa from '../../../../utils/execa.js'
 import { runFunctionsProxy } from '../../local-proxy.js'
 
@@ -10,8 +17,17 @@ const isWindows = platform === 'win32'
 
 export const name = 'go'
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'binaryPath' implicitly has an 'an... Remove this comment to see the full error message
-const build = async ({ binaryPath, functionDirectory }) => {
+export type GoBuildResult = BaseBuildResult & {
+  binaryPath: string
+}
+
+const build = async ({
+  binaryPath,
+  functionDirectory,
+}: {
+  binaryPath: string
+  functionDirectory: string
+}): Promise<GoBuildResult> => {
   try {
     await execa('go', ['build', '-o', binaryPath], { cwd: functionDirectory })
 
@@ -29,8 +45,7 @@ const build = async ({ binaryPath, functionDirectory }) => {
   }
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'cwd' implicitly has an 'any' type... Remove this comment to see the full error message
-const checkGoInstallation = async ({ cwd }) => {
+const checkGoInstallation = async ({ cwd }: { cwd: string }): Promise<boolean> => {
   try {
     await execa('go', ['version'], { cwd })
 
@@ -40,16 +55,20 @@ const checkGoInstallation = async ({ cwd }) => {
   }
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'func' implicitly has an 'any' typ... Remove this comment to see the full error message
-export const getBuildFunction = ({ func }) => {
+export const getBuildFunction = async ({
+  func,
+}: // eslint-disable-next-line @typescript-eslint/require-await -- Must be async to match the interface
+GetBuildFunctionOpts<GoBuildResult>): Promise<BuildFunction<GoBuildResult>> => {
   const functionDirectory = dirname(func.mainFile)
   const binaryPath = temporaryFile(isWindows ? { extension: 'exe' } : undefined)
 
-  return () => build({ binaryPath, functionDirectory })
+  return async () => build({ binaryPath, functionDirectory })
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'context' implicitly has an 'any' ... Remove this comment to see the full error message
-export const invokeFunction = async ({ context, event, func, timeout }) => {
+export const invokeFunction: InvokeFunction<GoBuildResult> = async ({ context, event, func, timeout }) => {
+  if (func.buildData == null) {
+    throw new Error('Cannot invoke a function that has not been built')
+  }
   const { stdout } = await runFunctionsProxy({
     binaryPath: func.buildData.binaryPath,
     context,
@@ -75,8 +94,7 @@ export const invokeFunction = async ({ context, event, func, timeout }) => {
   }
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'func' implicitly has an 'any' type.
-export const onRegister = (func) => {
+export const onRegister: OnRegisterFunction<GoBuildResult> = (func) => {
   const isSource = extname(func.mainFile) === '.go'
 
   return isSource ? func : null

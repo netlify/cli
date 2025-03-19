@@ -1,3 +1,5 @@
+import assert from 'node:assert'
+
 import { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 import isEmpty from 'lodash/isEmpty.js'
@@ -10,13 +12,7 @@ import { track } from '../../utils/telemetry/index.js'
 import type { SiteInfo } from '../../utils/types.js'
 import BaseCommand from '../base-command.js'
 
-/**
- *
- * @param {import('../base-command.js').default} command
- * @param {import('commander').OptionValues} options
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'command' implicitly has an 'any' type.
-const linkPrompt = async (command, options) => {
+const linkPrompt = async (command: BaseCommand, options: OptionValues) => {
   const { api, state } = command.netlify
 
   const SITE_NAME_PROMPT = 'Search by full or partial site name'
@@ -30,7 +26,7 @@ const linkPrompt = async (command, options) => {
 
   let linkChoices = [SITE_NAME_PROMPT, SITE_LIST_PROMPT, SITE_ID_PROMPT]
 
-  if (!repoData.error) {
+  if (!('error' in repoData)) {
     // Add git GIT_REMOTE_PROMPT if in a repo
     GIT_REMOTE_PROMPT = `Use current git remote origin (${repoData.httpsUrl})`
     linkChoices = [GIT_REMOTE_PROMPT, ...linkChoices]
@@ -51,6 +47,9 @@ const linkPrompt = async (command, options) => {
   let kind
   switch (linkType) {
     case GIT_REMOTE_PROMPT: {
+      // TODO(serhalp) Refactor function to avoid this. We can only be here if `repoData` is not an error.
+      assert(!('error' in repoData))
+
       kind = 'gitRemote'
       log()
       log(`Looking for sites connected to '${repoData.httpsUrl}'...`)
@@ -169,6 +168,8 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
         sites = await listSites({ api, options: { maxPages: 1, filter: 'all' } })
       } catch (error_) {
         error(error_)
+        // TODO(serhalp) Remove after updating `error()` type to refine to `never` when exiting
+        process.exit(1)
       }
 
       if (!sites || sites.length === 0) {
@@ -181,7 +182,6 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
           name: 'selectedSite',
           message: 'Which site do you want to link?',
           paginated: true,
-          // @ts-expect-error TS(7006) FIXME: Parameter 'matchingSite' implicitly has an 'any' t... Remove this comment to see the full error message
           choices: sites.map((matchingSite) => ({ name: matchingSite.name, value: matchingSite })),
         },
       ])
@@ -252,27 +252,30 @@ export const link = async (options: OptionValues, command: BaseCommand) => {
     state,
   } = command.netlify
 
-  let siteData = siteInfo
+  let initialSiteData: SiteInfo | undefined
+  let newSiteData!: SiteInfo
 
   // Add .netlify to .gitignore file
   await ensureNetlifyIgnore(repositoryRoot)
 
   // Site id is incorrect
-  if (siteId && isEmpty(siteData)) {
+  if (siteId && isEmpty(siteInfo)) {
     log(`"${siteId}" was not found in your Netlify account.`)
     log(`Please double check your siteID and which account you are logged into via \`netlify status\`.`)
     return exit()
   }
 
   if (!isEmpty(siteInfo)) {
-    // If already linked to site. exit and prompt for unlink
-    log(`Site already linked to "${siteData.name}"`)
-    log(`Admin url: ${siteData.admin_url}`)
+    // If already linked to site, exit and prompt for unlink
+    initialSiteData = siteInfo
+    log(`Site already linked to "${initialSiteData.name}"`)
+    log(`Admin url: ${initialSiteData.admin_url}`)
     log()
     log(`To unlink this site, run: ${chalk.cyanBright('netlify unlink')}`)
   } else if (options.id) {
     try {
-      siteData = await api.getSite({ site_id: options.id })
+      // @ts-expect-error(serhalp) -- Mismatch between hardcoded `SiteInfo` and new generated Netlify API types.
+      newSiteData = await api.getSite({ site_id: options.id })
     } catch (error_) {
       if ((error_ as APIError).status === 404) {
         error(new Error(`Site id ${options.id} not found`))
@@ -282,11 +285,11 @@ export const link = async (options: OptionValues, command: BaseCommand) => {
     }
 
     // Save site ID
-    state.set('siteId', siteData.id)
-    log(`Linked to ${siteData.name}`)
+    state.set('siteId', newSiteData.id)
+    log(`Linked to ${newSiteData.name}`)
 
     await track('sites_linked', {
-      siteId: siteData.id,
+      siteId: newSiteData.id,
       linkType: 'manual',
       kind: 'byId',
     })
@@ -323,7 +326,9 @@ export const link = async (options: OptionValues, command: BaseCommand) => {
       kind: 'byName',
     })
   } else {
-    siteData = await linkPrompt(command, options)
+    newSiteData = await linkPrompt(command, options)
   }
-  return siteData
+  // FIXME(serhalp) All the cases above except one (look up by site name) end up *returning*
+  // the site data. This is probably not intentional and may result in bugs in deploy/init. Investigate.
+  return initialSiteData || newSiteData
 }

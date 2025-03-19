@@ -1,7 +1,7 @@
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { OptionValues } from 'commander'
+import type { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 import pick from 'lodash/pick.js'
 import { render } from 'prettyjson'
@@ -14,9 +14,9 @@ import {
   log,
   logJson,
   warn,
-  APIError,
+  type APIError,
   GitHubAPIError,
-  GitHubRepoResponse,
+  type GitHubRepoResponse,
 } from '../../utils/command-helpers.js'
 import execa from '../../utils/execa.js'
 import getRepoData from '../../utils/get-repo-data.js'
@@ -25,8 +25,8 @@ import { configureRepo } from '../../utils/init/config.js'
 import { deployedSiteExists, getGitHubLink, getTemplateName } from '../../utils/sites/create-template.js'
 import { callLinkSite, createRepo, validateTemplate } from '../../utils/sites/utils.js'
 import { track } from '../../utils/telemetry/index.js'
-import { Account, SiteInfo } from '../../utils/types.js'
-import BaseCommand from '../base-command.js'
+import type { Account, SiteInfo } from '../../utils/types.js'
+import type BaseCommand from '../base-command.js'
 
 import { getSiteNameInput } from './sites-create.js'
 
@@ -133,19 +133,22 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
     }
 
     try {
-      // TODO: Update type once the open api spec is updated https://open-api.netlify.com/#tag/site/operation/createSiteInTeam
-      site = await (api as any).createSiteInTeam({
+      // FIXME(serhalp) `id` and `name` should be required in `netlify` package type
+      site = (await api.createSiteInTeam({
         accountSlug,
         body: {
           repo: {
             provider: 'github',
+            // @ts-expect-error -- FIXME(serhalp) Supposedly this is does not exist. Investigate.
             repo: repoResp.full_name,
+            // FIXME(serhalp) Supposedly this should be `public_repo`. Investigate.
             private: repoResp.private,
+            // FIXME(serhalp) Supposedly this should be `repo_branch`. Investigate.
             branch: repoResp.default_branch,
           },
           name: siteName,
         },
-      })
+      })) as unknown as SiteInfo
     } catch (error_) {
       if ((error_ as APIError).status === 422) {
         log(`createSiteInTeam error: ${(error_ as APIError).status}: ${(error_ as APIError).message}`)
@@ -169,7 +172,7 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
       'Admin URL': site.admin_url,
       URL: siteUrl,
       'Site ID': site.id,
-      'Repo URL': site.build_settings.repo_url,
+      'Repo URL': site.build_settings?.repo_url ?? '',
     }),
   )
 
@@ -250,6 +253,13 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
   if (options.withCi) {
     log('Configuring CI')
     const repoData = await getRepoData({ workingDir: command.workingDir })
+
+    if ('error' in repoData) {
+      error('Failed to get repo data', { exit: true })
+      // TODO(serhalp) Remove after updating `error()` type to refine to `never` when exiting
+      process.exit(1)
+    }
+
     await configureRepo({ command, siteId: site.id, repoData, manual: options.manual })
   }
 

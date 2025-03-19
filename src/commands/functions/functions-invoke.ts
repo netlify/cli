@@ -147,7 +147,7 @@ const getFunctionToTrigger = function (options, argumentName) {
 export const functionsInvoke = async (nameArgument: string, options: OptionValues, command: BaseCommand) => {
   const { config, relConfigFilePath } = command.netlify
 
-  const functionsDir = options.functions || (config.dev && config.dev.functions) || config.functionsDirectory
+  const functionsDir = options.functions || config.dev?.functions || config.functionsDirectory
   if (typeof functionsDir === 'undefined') {
     error(`Functions directory is undefined, did you forget to set it in ${relConfigFilePath}?`)
   }

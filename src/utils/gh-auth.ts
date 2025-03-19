@@ -12,13 +12,11 @@ import openBrowser from './open-browser.js'
 
 const SERVER_PORT = 3000
 
-/**
- * @typedef Token
- * @type {object}
- * @property {string} user - The username that is associated with the token
- * @property {string} token - The actual token value starting with `gho_`
- * @property {string} provider - The Provider where the token is associated with ('github').
- */
+export interface Token {
+  user: string
+  token: string
+  provider: string
+}
 
 const promptForAuthMethod = async () => {
   const authChoiceNetlify = 'Authorize with GitHub through app.netlify.com'
@@ -41,18 +39,16 @@ const promptForAuthMethod = async () => {
 
 /**
  * Authenticate with the netlify app
- * @returns {Promise<Token>} Returns a Promise with a token object
  */
-export const authWithNetlify = async () => {
+export const authWithNetlify = async (): Promise<Token> => {
   const port = await getPort({ port: SERVER_PORT })
-  const { promise: deferredPromise, reject: deferredReject, resolve: deferredResolve } = createDeferred()
+  const { promise: deferredPromise, reject: deferredReject, resolve: deferredResolve } = createDeferred<Token>()
 
   const server = http.createServer(function onRequest(req, res) {
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-    const parameters = new URLSearchParams(req.url.slice(req.url.indexOf('?') + 1))
+    const parameters = new URLSearchParams((req.url ?? '').slice((req.url ?? '').indexOf('?') + 1))
     if (parameters.get('token')) {
-      // @ts-expect-error TS(2722) FIXME: Cannot invoke an object which is possibly 'undefin... Remove this comment to see the full error message
-      deferredResolve(Object.fromEntries(parameters))
+      // TODO(serhalp) Parse payload to validate type actually conforms
+      deferredResolve(Object.fromEntries(parameters) as unknown as Token)
       res.end(
         `${
           "<html><head><title>Logged in</title><script>if(history.replaceState){history.replaceState({},'','/')}</script><style>html{font-family:system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';line-height:1.5;background:rgb(18 24 31)}body{overflow:hidden;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;width:100vw;}h3{margin:0}p{margin: 1rem 0 0.5rem}.card{position:relative;display:flex;flex-direction:column;width:75%;max-width:364px;padding:24px;background:white;color:rgb(18 24 31);border-radius:8px;box-shadow:rgb(6 11 16 / 20%) 0px 16px 24px, rgb(6 11 16 / 30%) 0px 6px 30px, rgb(6 11 16 / 40%) 0px 8px 10px;}</style></head>" +
@@ -64,14 +60,14 @@ export const authWithNetlify = async () => {
     }
     res.end('BAD PARAMETERS')
     server.close()
-    // @ts-expect-error TS(2722) FIXME: Cannot invoke an object which is possibly 'undefin... Remove this comment to see the full error message
     deferredReject(new Error('Got invalid parameters for CLI login'))
   })
 
   await new Promise(function waitForListening(resolve, reject) {
     server.on('error', reject)
-    // @ts-expect-error TS(2769) FIXME: No overload matches this call.
-    server.listen(port, resolve)
+    server.listen(port, () => {
+      resolve(undefined)
+    })
   })
 
   const webUI = process.env.NETLIFY_WEB_UI || 'https://app.netlify.com'
@@ -81,7 +77,6 @@ export const authWithNetlify = async () => {
   })
   const url = `${webUI}/cli?${urlParams.toString()}`
 
-  // @ts-expect-error TS(2345) FIXME: Argument of type '{ url: string; }' is not assigna... Remove this comment to see the full error message
   await openBrowser({ url })
 
   return deferredPromise
@@ -102,16 +97,15 @@ const getPersonalAccessToken = async () => {
 
 /**
  * Authenticate with the netlify app
- * @returns {Promise<Token>} Returns a Promise with a token object
  */
-const authWithToken = async () => {
+const authWithToken = async (): Promise<Token> => {
   const { token } = await getPersonalAccessToken()
   if (!token) {
     throw new Error('GitHub authentication failed')
   }
 
   const octokit = new Octokit({ auth: `token ${token}` })
-  // @ts-expect-error TS(2339) FIXME: Property 'login' does not exist on type 'OctokitRe... Remove this comment to see the full error message
+  // @ts-expect-error -- XXX(serhalp) actual bug - fixed in stacked PR
   const { login: user } = await octokit.users.getAuthenticated()
 
   return { token, user, provider: 'github' }
@@ -119,9 +113,8 @@ const authWithToken = async () => {
 
 /**
  * Get a GitHub token
- * @returns {Promise<Token>} Returns a Promise with a token object
  */
-export const getGitHubToken = async () => {
+export const getGitHubToken = async (): Promise<Token> => {
   log('')
 
   const withNetlify = await promptForAuthMethod()

@@ -9,15 +9,16 @@ import chokidar from 'chokidar'
 import decache from 'decache'
 import WSL from 'is-wsl'
 import debounce from 'lodash/debounce.js'
-import { NetlifyAPI } from 'netlify'
+import type { NetlifyAPI } from 'netlify'
 import terminalLink from 'terminal-link'
 
 import { clearSpinner, startSpinner } from '../lib/spinner.js'
 
-import getGlobalConfig from './get-global-config.js'
+import getGlobalConfigStore from './get-global-config-store.js'
 import getPackageJson from './get-package-json.js'
 import { reportError } from './telemetry/report-error.js'
-import { TokenLocation } from './types.js'
+import type { TokenLocation } from './types.js'
+import type { CachedConfig } from '../lib/build.js'
 
 /** The parsed process argv without the binary only arguments and flags */
 const argv = process.argv.slice(2)
@@ -88,14 +89,6 @@ export const sortOptions = (optionA, optionB) => {
 // Poll Token timeout 5 Minutes
 const TOKEN_TIMEOUT = 3e5
 
-/**
- *
- * @param {object} config
- * @param {import('netlify').NetlifyAPI} config.api
- * @param {object} config.ticket
- * @returns
- */
-
 export const pollForToken = async ({
   api,
   ticket,
@@ -146,7 +139,7 @@ export const getToken = async (tokenFromOptions?: string): Promise<TokenTuple> =
     return [NETLIFY_AUTH_TOKEN, 'env']
   }
   // 3. If no env var use global user setting
-  const globalConfig = await getGlobalConfig()
+  const globalConfig = await getGlobalConfigStore()
   const userId = globalConfig.get('userId')
   const tokenFromConfig = globalConfig.get(`users.${userId}.auth.token`)
   if (tokenFromConfig) {
@@ -168,8 +161,7 @@ export const logJson = (message: unknown = '') => {
   }
 }
 
-// @ts-expect-error TS(7019) FIXME: Rest parameter 'args' implicitly has an 'any[]' ty... Remove this comment to see the full error message
-export const log = (message = '', ...args) => {
+export const log = (message = '', ...args: string[]) => {
   // If  --silent or --json flag passed disable logger
   if (argv.includes('--json') || argv.includes('--silent') || isDefaultJson()) {
     return
@@ -178,8 +170,7 @@ export const log = (message = '', ...args) => {
   process.stdout.write(`${format(message, ...args)}\n`)
 }
 
-// @ts-expect-error TS(7019) FIXME: Rest parameter 'args' implicitly has an 'any[]' ty... Remove this comment to see the full error message
-export const logPadded = (message = '', ...args) => {
+export const logPadded = (message = '', ...args: string[]) => {
   log('')
   log(message, ...args)
   log('')
@@ -187,7 +178,6 @@ export const logPadded = (message = '', ...args) => {
 
 /**
  * logs a warning message
- * @param {string} message
  */
 export const warn = (message = '') => {
   const bang = chalk.yellow(BANG)
@@ -212,11 +202,13 @@ export const error = (message: unknown | Error | string = '', options: { exit?: 
     }
   } else {
     reportError(err, { severity: 'error' })
+    // TODO(serhalp) Type this function to let TS know that when `exit: true` this function never returns.
+    // This will help with typing upstream code.
     throw err
   }
 }
 
-export const exit = (code = 0) => {
+export const exit = (code = 0): never => {
   process.exit(code)
 }
 
@@ -225,12 +217,15 @@ export const exit = (code = 0) => {
  * several ways. It detects it by checking if `build.publish` is `undefined`.
  * However, `@netlify/config` adds a default value to `build.publish`.
  * This removes 'publish' and 'publishOrigin' in this case.
- * @param {*} config
+ * TODO(serhalp) Come up with a better name (or kill it?). This sucks but it's descriptive.
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'config' implicitly has an 'any' type.
-export const normalizeConfig = (config) => {
+export type NormalizedCachedConfigConfig =
+  | CachedConfig['config']
+  | (Omit<CachedConfig['config'], 'build'> & {
+      build: Omit<CachedConfig['config']['build'], 'publish' | 'publishOrigin'>
+    })
+export const normalizeConfig = (config: CachedConfig['config']): NormalizedCachedConfigConfig => {
   // Unused var here is in order to omit 'publish' from build config
-
   const { publish, publishOrigin, ...build } = config.build
 
   return publishOrigin === 'default' ? { ...config, build } : config

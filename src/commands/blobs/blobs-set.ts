@@ -25,7 +25,7 @@ export const blobsSet = async (
   const store = getStore({
     apiURL: `${api.scheme}://${api.host}`,
     name: storeName,
-    siteID: siteInfo.id ?? '',
+    siteID: siteInfo.id,
     token: api.accessToken ?? '',
   })
   let value = valueParts.join(' ')

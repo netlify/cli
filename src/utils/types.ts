@@ -1,8 +1,11 @@
 import type { Buffer } from 'buffer'
 import type { IncomingMessage } from 'http'
 
-import type { PollingStrategy, Settings } from '@netlify/build-info'
+import type { PollingStrategy } from '@netlify/build-info'
 import type { Match } from 'netlify-redirector'
+
+export type { GlobalConfigStore } from './get-global-config-store.js'
+export { default as CLIState } from './cli-state.js'
 
 export type FrameworkNames = '#static' | '#auto' | '#custom' | string
 
@@ -23,7 +26,7 @@ export type FrameworkInfo = {
 
 export type BaseServerSettings = {
   baseDirectory?: string
-  dist?: string
+  dist: string
   /** The command that was provided for the dev config */
   command?: string
   /** If it should be served like static files */
@@ -64,32 +67,47 @@ export interface Request extends IncomingMessage {
   hostname?: string
 }
 
-export type Rewriter = (req: Request) => Match | null
+export type Rewriter = (req: Request) => Promise<Match | null>
 
+// FIXME(serhalp) Much of this appears to be wrong? Most of these should be optional, or at
+// the very least `siteInfo` should be optional on `CachedConfig` when no site is linked...
+// Delete all of this and replace with generated Netlify API type.
 export interface SiteInfo {
+  account_id?: string | undefined
   account_name: string
   account_slug: string
   admin_url: string
-  build_settings: {
-    allowed_branches: string[]
-    cmd: string
-    deploy_key_id: string
-    dir: string
-    env?: Record<string, unknown>
-    id: number
-    private_logs: boolean
-    provider: string
-    public_repo: boolean
-    repo_branch: string
-    repo_path: string
-    repo_url: string
-  }
+  // TODO(serhalp) Investigate this. It seems like this should be required but there appear to
+  // be cases where it is missing.
+  build_settings?:
+    | {
+        allowed_branches: string[]
+        cmd: string
+        deploy_key_id: string
+        dir: string
+        env?: Record<string, unknown>
+        id: number
+        private_logs: boolean
+        provider: string
+        public_repo: boolean
+        repo_branch: string
+        repo_path: string
+        repo_url: string
+      }
+    | undefined
   capabilities: Record<string, unknown>
   created_at: string
   custom_domain: string
   deploy_hook: string
   deploy_url: string
+  dev_server_settings?:
+    | {
+        cmd: string
+        target_port: number
+      }
+    | undefined
   domain_aliases: string[]
+  feature_flags?: Record<string, string | boolean>
   force_ssl: boolean
   git_provider: string
   id: string
@@ -206,3 +224,9 @@ export type EnvironmentVariables = Record<
   string,
   { sources: EnvironmentVariableSource[]; value: string; scopes?: EnvironmentVariableScope[] }
 >
+
+export interface Plugin {
+  origin?: string
+  package: string
+  pinned_version?: string | undefined
+}

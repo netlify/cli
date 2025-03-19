@@ -7,7 +7,7 @@ import inquirer from 'inquirer'
 
 import { BANG, chalk, error, exit, log, NETLIFY_CYAN, USER_AGENT, warn } from '../utils/command-helpers.js'
 import execa from '../utils/execa.js'
-import getGlobalConfig from '../utils/get-global-config.js'
+import getGlobalConfigStore from '../utils/get-global-config-store.js'
 import getPackageJson from '../utils/get-package-json.js'
 import { track, reportError } from '../utils/telemetry/index.js'
 
@@ -113,7 +113,7 @@ ${USER_AGENT}
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
 const mainCommand = async function (options, command) {
-  const globalConfig = await getGlobalConfig()
+  const globalConfig = await getGlobalConfigStore()
 
   if (options.telemetryDisable) {
     globalConfig.set('telemetryDisabled', true)
@@ -144,7 +144,7 @@ const mainCommand = async function (options, command) {
 
     const title = chalk.bgBlack.cyan('⬥ Netlify CLI')
     const docsMsg = `${chalk.greenBright('Read the docs:')} https://ntl.fyi/get-started-with-netlify-cli`
-    const supportMsg = `${chalk.magentaBright('Support and bugs:')} ${pkg.bugs.url}`
+    const supportMsg = `${chalk.magentaBright('Support and bugs:')} ${pkg.bugs?.url}`
 
     console.log()
     console.log(title)
