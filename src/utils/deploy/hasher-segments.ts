@@ -4,7 +4,6 @@ import { Transform, Writable } from 'node:stream'
 import { pipeline } from 'node:stream/promises'
 
 import transform from 'parallel-transform'
-import { obj as map } from 'through2-map'
 
 import { normalizePath } from './util.js'
 
@@ -34,17 +33,26 @@ export const hasherCtor = ({ concurrentHash, hashAlgorithm }) => {
 }
 
 // Inject normalized file names into normalizedPath and assetType
-// @ts-expect-error TS(7031) FIXME: Binding element 'assetType' implicitly has an 'any... Remove this comment to see the full error message
-export const fileNormalizerCtor = ({ assetType, normalizer: normalizeFunction }) =>
-  map((fileObj) => {
-    const normalizedFile = { ...fileObj, assetType, normalizedPath: normalizePath(fileObj.relname) }
+export const fileNormalizerCtor = ({
+  assetType,
+  normalizer: normalizeFunction,
+}: {
+  assetType: string
+  normalizer?: (file: unknown) => unknown
+}) => {
+  return new Transform({
+    objectMode: true,
+    transform(fileObj, _, callback) {
+      const normalizedFile = { ...fileObj, assetType, normalizedPath: normalizePath(fileObj.relname) }
 
-    if (normalizeFunction !== undefined) {
-      return normalizeFunction(normalizedFile)
-    }
+      const result = normalizeFunction !== undefined ? normalizeFunction(normalizedFile) : normalizedFile
 
-    return normalizedFile
+      this.push(result)
+
+      callback()
+    },
   })
+}
 
 // A writable stream segment ctor that normalizes file paths, and writes shaMap's
 export const manifestCollectorCtor = (
@@ -66,7 +74,6 @@ export const manifestCollectorCtor = (
         shaMap[fileObj.hash] = [fileObj]
       }
 
-      // Update status callback
       statusCb({
         type: 'hashing',
         msg: `Hashing ${fileObj.relname}`,
