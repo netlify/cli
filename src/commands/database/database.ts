@@ -4,7 +4,7 @@ import { OptionValues } from 'commander'
 import BaseCommand from '../base-command.js'
 
 import openBrowser from '../../utils/open-browser.js'
-import { getExtension, getExtensionInstallations, installExtension } from './utils.js'
+import { carefullyWriteFile, getExtension, getExtensionInstallations, installExtension } from './utils.js'
 import { getToken } from '../../utils/command-helpers.js'
 import inquirer from 'inquirer'
 import { NetlifyAPI } from 'netlify'
@@ -69,25 +69,24 @@ const init = async (_options: OptionValues, command: BaseCommand) => {
     })
   }
 
+  if (!command.netlify.api.accessToken) {
+    throw new Error(`No access token found, please login with netlify login`)
+  }
+
   let site: Awaited<ReturnType<typeof command.netlify.api.getSite>>
   try {
     // @ts-expect-error -- feature_flags is not in the types
     site = await command.netlify.api.getSite({ siteId: command.siteId, feature_flags: 'cli' })
   } catch (e) {
-    console.error(`Error getting site, make sure you are logged in with netlify login`, e)
-    return
+    throw new Error(`Error getting site, make sure you are logged in with netlify login`, {
+      cause: e,
+    })
   }
   if (!site.account_id) {
-    console.error(`Error getting site, make sure you are logged in with netlify login`)
-    return
-  }
-  if (!command.netlify.api.accessToken) {
-    console.error(`You must be logged in with netlify login to initialize a database.`)
-    return
+    throw new Error(`No account id found for site ${command.siteId}`)
   }
 
   const netlifyToken = command.netlify.api.accessToken.replace('Bearer ', '')
-
   const extension = await getExtension({
     accountId: site.account_id,
     token: netlifyToken,
@@ -132,14 +131,13 @@ const init = async (_options: OptionValues, command: BaseCommand) => {
     })
 
     if (siteEnv.key === 'NETLIFY_DATABASE_URL') {
-      console.error(`Database already initialized for site: ${command.siteId}, skipping.`)
-      return
+      throw new Error(`Database already initialized for site: ${command.siteId}`)
     }
   } catch {
     // no op, env var does not exist, so we just continue
   }
 
-  console.log('Initializing a new database for site:', command.siteId)
+  console.log('Initializing a new database for site: ', command.siteId)
 
   const initEndpoint = new URL(
     '/cli-db-init',
@@ -276,20 +274,3 @@ export const db = drizzle({
     schema
 });
 `
-
-const carefullyWriteFile = async (filePath: string, data: string) => {
-  if (fs.existsSync(filePath)) {
-    const answers = await inquirer.prompt([
-      {
-        type: 'confirm',
-        name: 'overwrite',
-        message: `Overwrite existing ${path.basename(filePath)}?`,
-      },
-    ])
-    if (answers.overwrite) {
-      fs.writeFileSync(filePath, data)
-    }
-  } else {
-    fs.writeFileSync(filePath, data)
-  }
-}
