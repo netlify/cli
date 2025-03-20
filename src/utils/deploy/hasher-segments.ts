@@ -1,11 +1,10 @@
 import { createHash } from 'node:crypto'
 import { createReadStream } from 'node:fs'
+import { Transform } from 'node:stream'
 import { pipeline } from 'node:stream/promises'
 
 import flushWriteStream from 'flush-write-stream'
 import transform from 'parallel-transform'
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'thro... Remove this comment to see the full error message
-import { objCtor as objFilterCtor } from 'through2-filter'
 import { obj as map } from 'through2-map'
 
 import { normalizePath } from './util.js'
@@ -72,6 +71,13 @@ export const manifestCollectorCtor = (filesObj, shaMap, { assetType, statusCb })
   })
 }
 
-// transform stream ctor that filters folder-walker results for only files
-// @ts-expect-error TS(7006) FIXME: Parameter 'fileObj' implicitly has an 'any' type.
-export const fileFilterCtor = objFilterCtor((fileObj) => fileObj.type === 'file')
+export const fileFilterCtor = () => new Transform({
+  objectMode: true,
+  transform(fileObj, _, callback) {
+    if (fileObj.type === 'file') {
+      this.push(fileObj);
+    }
+    // eslint-disable-next-line promise/prefer-await-to-callbacks
+    callback()
+  }
+});
