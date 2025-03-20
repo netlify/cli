@@ -71,7 +71,7 @@
     "@netlify/edge-bundler": "12.3.2",
     "@netlify/edge-functions": "2.11.1",
     "@netlify/headers-parser": "8.0.0",
-    "@netlify/local-functions-proxy": "1.1.1",
+    "@netlify/local-functions-proxy": "2.0.0",
     "@netlify/redirect-parser": "14.5.0",
     "@netlify/zip-it-and-ship-it": "10.0.3",
     "@octokit/rest": "21.1.1",
