@@ -1,8 +1,8 @@
 import { Buffer } from 'buffer'
 
-import { isStream } from 'is-stream'
 
 import { chalk, logPadded, NETLIFYDEVERR } from '../../utils/command-helpers.js'
+import { isStream } from '../../utils/is-stream.js'
 import renderErrorTemplate from '../render-error-template.js'
 
 import { detectAwsSdkError } from './utils.js'
