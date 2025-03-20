@@ -1,3 +1,4 @@
+---
 name: Integration Tests
 
 on:
@@ -35,17 +36,20 @@ jobs:
           echo "IS_RELEASE=true" >> $GITHUB_OUTPUT
           echo "IS_RELEASE=true" >> $env:GITHUB_OUTPUT
         if: "${{ startsWith(github.head_ref, 'release-') }}"
+
       # This improves Windows network performance, we need this since we open many ports in our tests
       - name: Increase Windows port limit and reduce time wait delay
         run: |
           netsh int ipv4 set dynamicport tcp start=1025 num=64511
           REG ADD HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\TCPIP\Parameters /v TcpTimedWaitDelay /t REG_DWORD /d 30 /f
         if: "${{ matrix.os == 'windows-latest' && !steps.release-check.outputs.IS_RELEASE }}"
+
       - name: Git checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
+
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
@@ -53,26 +57,32 @@ jobs:
           cache: npm
           check-latest: true
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
+
       - name: Install PNPM
         run: |
           corepack enable
           corepack prepare pnpm@9.14.2 --activate
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
+
       - name: Setup Deno
         uses: denoland/setup-deno@v1
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
         with:
           deno-version: v1.44.4
+
       - name: Install core dependencies
         run: npm ci --no-audit
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
+
       - name: Generate self-signed certificates
         run: npm run certs
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
         shell: bash
+
       - name: Prepare tests
         run: npm run test:init
         if: '${{ !steps.release-check.outputs.IS_RELEASE }}'
+
       - name: Tests
         uses: nick-fields/retry@v3
         if: '${{ !steps.release-check.outputs.IS_RELEASE }}'
@@ -92,6 +102,7 @@ jobs:
           # Changes the polling interval used by the file watcher
           CHOKIDAR_INTERVAL: 20
           CHOKIDAR_USEPOLLING: 1
+
       - name: Get test coverage flags
         id: test-coverage-flags
         # For windows we have to use $env:
@@ -138,16 +149,19 @@ jobs:
           echo "IS_RELEASE=true" >> $GITHUB_OUTPUT
           echo "IS_RELEASE=true" >> $env:GITHUB_OUTPUT
         if: "${{ startsWith(github.head_ref, 'release-') }}"
+
       # This improves Windows network performance, we need this since we open many ports in our tests
       - name: Increase Windows port limit and reduce time wait delay
         run: |
           netsh int ipv4 set dynamicport tcp start=1025 num=64511
           REG ADD HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\TCPIP\Parameters /v TcpTimedWaitDelay /t REG_DWORD /d 30 /f
+
       - name: Git checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
+
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
@@ -155,26 +169,32 @@ jobs:
           cache: npm
           check-latest: true
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
+
       - name: Install PNPM
         run: |
           corepack enable
           corepack prepare pnpm@9.14.2 --activate
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
+
       - name: Setup Deno
         uses: denoland/setup-deno@v1
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
         with:
           deno-version: v1.44.4
+
       - name: Install core dependencies
         run: npm ci --no-audit
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
+
       - name: Generate self-signed certificates
         run: npm run certs
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
         shell: bash
+
       - name: Prepare tests
         run: npm run test:init
         if: '${{ !steps.release-check.outputs.IS_RELEASE }}'
+
       - name: Tests
         uses: nick-fields/retry@v3
         if: '${{ !steps.release-check.outputs.IS_RELEASE }}'
@@ -194,6 +214,7 @@ jobs:
           # Changes the polling interval used by the file watcher
           CHOKIDAR_INTERVAL: 20
           CHOKIDAR_USEPOLLING: 1
+
       - name: Get test coverage flags
         id: test-coverage-flags
         # For windows we have to use $env:
