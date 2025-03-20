@@ -169,7 +169,6 @@
     "@types/envinfo": "7.8.4",
     "@types/eslint-config-prettier": "^6.11.3",
     "@types/etag": "1.8.3",
-    "@types/flush-write-stream": "1.0.2",
     "@types/folder-walker": "3.2.4",
     "@types/gitconfiglocal": "2.0.3",
     "@types/inquirer": "9.0.7",
