@@ -2,10 +2,10 @@ import { Buffer } from 'buffer'
 import { inspect } from 'util'
 
 import express from 'express'
-import { isReadableStream as baseIsReadableStream } from 'is-stream'
 import type { LambdaEvent } from 'lambda-local'
 
 import { chalk, logPadded, NETLIFYDEVERR } from '../../utils/command-helpers.js'
+import { isStream as baseIsReadableStream } from '../../utils/is-stream.js'
 import renderErrorTemplate from '../render-error-template.js'
 
 import { detectAwsSdkError } from './utils.js'
