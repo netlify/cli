@@ -478,7 +478,6 @@ const runDeploy = async ({
 
     const { headers } = await parseAllHeaders({
       configHeaders: config.headers,
-      // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'never'.
       headersFiles: [headersPath],
       minimal: true,
     })
