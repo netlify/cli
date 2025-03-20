@@ -1,3 +1,4 @@
+---
 name: Unit Tests
 
 on:
@@ -27,9 +28,11 @@ jobs:
           echo "IS_RELEASE=true" >> $GITHUB_OUTPUT
           echo "IS_RELEASE=true" >> $env:GITHUB_OUTPUT
         if: "${{ startsWith(github.head_ref, 'release-') }}"
+
       - name: Git checkout
         uses: actions/checkout@v4
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
+
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
@@ -37,9 +40,11 @@ jobs:
           cache: npm
           check-latest: true
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
+
       - name: Install core dependencies
         run: npm ci --no-audit
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
+
       - name: Run unit tests
         uses: nick-fields/retry@v3
         with:

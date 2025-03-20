@@ -1,3 +1,4 @@
+---
 name: Verify Docs
 
 on:
@@ -22,7 +23,7 @@ jobs:
         run: npm ci --no-audit
 
       - name: Install ./site dependencies
-        run: npm ci  --prefix=site --no-audit
+        run: npm ci --prefix=site --no-audit
 
       - name: Generate docs
         run: npm run --prefix=site build

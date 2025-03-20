@@ -1,3 +1,4 @@
+---
 name: Calculate benchmarks
 
 on:
@@ -12,26 +13,33 @@ jobs:
     steps:
       - name: Git checkout
         uses: actions/checkout@v4
+
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
           cache: npm
+
       - name: Install dependencies
         run: npm ci --no-audit && npm prune --production
+
       - name: Get size
         run: du -sk node_modules | cut -f1 > .delta.packageSize && echo "kb (Package size)" >> .delta.packageSize
+
       - name: Get dependency count
         run:
           npm ls -a -p | wc -l | tr -d ' \n' > .delta.dependencyCount && echo " (Dependency count)" >>
           .delta.dependencyCount
+
       - name: Get TypeScript conversion progress
         run:
           grep -r --exclude-dir="node_modules" --include="*.ts" "@ts-expect-error" . | wc -l | xargs >
           .delta.tsConversion && echo " (Number of ts-expect-error directives)" >> .delta.tsConversion
+
       - name: Save PR number
         if: github.event_name == 'pull_request'
         run: echo ${{ github.event.number }} > ./pr_number
+
       - name: Upload deltas
         uses: actions/upload-artifact@v4
         with:
