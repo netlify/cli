@@ -34,6 +34,7 @@ import { createSwitchCommand } from './switch/index.js'
 import { AddressInUseError } from './types.js'
 import { createUnlinkCommand } from './unlink/index.js'
 import { createWatchCommand } from './watch/index.js'
+import { createDatabaseCommand } from './database/database.js'
 
 const SUGGESTION_TIMEOUT = 1e4
 
@@ -229,6 +230,7 @@ export const createMainCommand = () => {
   createUnlinkCommand(program)
   createWatchCommand(program)
   createLogsCommand(program)
+  createDatabaseCommand(program)
 
   program
     .version(USER_AGENT, '-V')
