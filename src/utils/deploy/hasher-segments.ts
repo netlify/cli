@@ -1,9 +1,8 @@
 import { createHash } from 'node:crypto'
 import { createReadStream } from 'node:fs'
-import { Transform } from 'node:stream'
+import { Transform, Writable } from 'node:stream'
 import { pipeline } from 'node:stream/promises'
 
-import flushWriteStream from 'flush-write-stream'
 import transform from 'parallel-transform'
 import { obj as map } from 'through2-map'
 
@@ -48,36 +47,46 @@ export const fileNormalizerCtor = ({ assetType, normalizer: normalizeFunction })
   })
 
 // A writable stream segment ctor that normalizes file paths, and writes shaMap's
-// @ts-expect-error TS(7006) FIXME: Parameter 'filesObj' implicitly has an 'any' type.
-export const manifestCollectorCtor = (filesObj, shaMap, { assetType, statusCb }) => {
+export const manifestCollectorCtor = (
+  filesObj: Record<string, unknown>,
+  shaMap: Record<string, unknown[]>,
+  { assetType, statusCb }: { assetType: string; statusCb: Function },
+) => {
   if (!statusCb || !assetType) throw new Error('Missing required options')
-  return flushWriteStream.obj((fileObj, _, cb) => {
-    filesObj[fileObj.normalizedPath] = fileObj.hash
 
-    // We map a hash to multiple fileObj's because the same file
-    // might live in two different locations
+  return new Writable({
+    objectMode: true,
+    write(fileObj, encoding, callback) {
+      filesObj[fileObj.normalizedPath] = fileObj.hash
 
-    if (Array.isArray(shaMap[fileObj.hash])) {
-      shaMap[fileObj.hash].push(fileObj)
-    } else {
-      shaMap[fileObj.hash] = [fileObj]
-    }
-    statusCb({
-      type: 'hashing',
-      msg: `Hashing ${fileObj.relname}`,
-      phase: 'progress',
-    })
-    cb()
+      // Maintain hash to fileObj mapping
+      if (Array.isArray(shaMap[fileObj.hash])) {
+        shaMap[fileObj.hash].push(fileObj)
+      } else {
+        shaMap[fileObj.hash] = [fileObj]
+      }
+
+      // Update status callback
+      statusCb({
+        type: 'hashing',
+        msg: `Hashing ${fileObj.relname}`,
+        phase: 'progress',
+      })
+
+      callback()
+    },
   })
 }
+/* eslint-enable promise/prefer-await-to-callbacks */
 
-export const fileFilterCtor = () => new Transform({
-  objectMode: true,
-  transform(fileObj, _, callback) {
-    if (fileObj.type === 'file') {
-      this.push(fileObj);
-    }
-    // eslint-disable-next-line promise/prefer-await-to-callbacks
-    callback()
-  }
-});
+export const fileFilterCtor = () =>
+  new Transform({
+    objectMode: true,
+    transform(fileObj, _, callback) {
+      if (fileObj.type === 'file') {
+        this.push(fileObj)
+      }
+      // eslint-disable-next-line promise/prefer-await-to-callbacks
+      callback()
+    },
+  })
