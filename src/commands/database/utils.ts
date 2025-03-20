@@ -1,3 +1,7 @@
+import fs from 'fs'
+import inquirer from 'inquirer'
+import path from 'path'
+
 const JIGSAW_URL = 'https://jigsaw.services-prod.nsvcs.net'
 
 export const getExtensionInstallations = async ({
@@ -80,4 +84,21 @@ export const installExtension = async ({
   console.log('installExtensionData', installExtensionData)
 
   return installExtensionData
+}
+
+export const carefullyWriteFile = async (filePath: string, data: string) => {
+  if (fs.existsSync(filePath)) {
+    const answers = await inquirer.prompt([
+      {
+        type: 'confirm',
+        name: 'overwrite',
+        message: `Overwrite existing ${path.basename(filePath)}?`,
+      },
+    ])
+    if (answers.overwrite) {
+      fs.writeFileSync(filePath, data)
+    }
+  } else {
+    fs.writeFileSync(filePath, data)
+  }
 }
