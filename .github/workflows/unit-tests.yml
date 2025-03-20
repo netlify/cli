@@ -45,6 +45,10 @@ jobs:
         run: npm ci --no-audit
         if: '${{!steps.release-check.outputs.IS_RELEASE}}'
 
+      - name: Build project
+        run: npm run build
+        if: '${{!steps.release-check.outputs.IS_RELEASE}}'
+
       - name: Run unit tests
         uses: nick-fields/retry@v3
         with:

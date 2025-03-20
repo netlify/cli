@@ -43,6 +43,7 @@ jobs:
       - name: Install core dependencies
         run: npm ci --no-audit
 
-      - run: npm publish --provenance
+      - name: Publish package
+        run: npm publish --provenance
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
