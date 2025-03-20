@@ -1,10 +1,9 @@
 import { readFile } from 'fs/promises'
 import path from 'path'
 import { pipeline } from 'stream/promises'
+import { Readable } from 'stream'
 
 import { zipFunctions, type FunctionResult, type TrafficRules } from '@netlify/zip-it-and-ship-it'
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'from... Remove this comment to see the full error message
-import fromArray from 'from2-array'
 
 import BaseCommand from '../../commands/base-command.js'
 import { $TSFixMe } from '../../commands/types.js'
@@ -211,7 +210,7 @@ const hashFns = async (
     ({ nativeNodeModules }) => nativeNodeModules !== undefined && Object.keys(nativeNodeModules).length !== 0,
   )
 
-  const functionStream = fromArray.obj(fileObjs)
+  const functionStream = Readable.from(fileObjs)
 
   const hasher = hasherCtor({ concurrentHash, hashAlgorithm })
 
