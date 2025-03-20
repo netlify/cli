@@ -45,21 +45,24 @@ export const fileNormalizerCtor = ({ assetType, normalizer: normalizeFunction })
     return normalizedFile
   })
 
-
 // A writable stream segment ctor that normalizes file paths, and writes shaMap's
-export const manifestCollectorCtor = (filesObj: Record<string, unknown>, shaMap: Record<string, unknown[]>, { assetType, statusCb }: { assetType: string; statusCb: Function }) => {
-  if (!statusCb || !assetType) throw new Error('Missing required options');
+export const manifestCollectorCtor = (
+  filesObj: Record<string, unknown>,
+  shaMap: Record<string, unknown[]>,
+  { assetType, statusCb }: { assetType: string; statusCb: Function },
+) => {
+  if (!statusCb || !assetType) throw new Error('Missing required options')
 
   return new Writable({
     objectMode: true,
     write(fileObj, encoding, callback) {
-      filesObj[fileObj.normalizedPath] = fileObj.hash;
+      filesObj[fileObj.normalizedPath] = fileObj.hash
 
       // Maintain hash to fileObj mapping
       if (Array.isArray(shaMap[fileObj.hash])) {
-        shaMap[fileObj.hash].push(fileObj);
+        shaMap[fileObj.hash].push(fileObj)
       } else {
-        shaMap[fileObj.hash] = [fileObj];
+        shaMap[fileObj.hash] = [fileObj]
       }
 
       // Update status callback
@@ -67,21 +70,22 @@ export const manifestCollectorCtor = (filesObj: Record<string, unknown>, shaMap:
         type: 'hashing',
         msg: `Hashing ${fileObj.relname}`,
         phase: 'progress',
-      });
+      })
 
-      callback();
-    }
-  });
-};
+      callback()
+    },
+  })
+}
 /* eslint-enable promise/prefer-await-to-callbacks */
 
-export const fileFilterCtor = () => new Transform({
-  objectMode: true,
-  transform(fileObj, _, callback) {
-    if (fileObj.type === 'file') {
-      this.push(fileObj);
-    }
-    // eslint-disable-next-line promise/prefer-await-to-callbacks
-    callback()
-  }
-});
+export const fileFilterCtor = () =>
+  new Transform({
+    objectMode: true,
+    transform(fileObj, _, callback) {
+      if (fileObj.type === 'file') {
+        this.push(fileObj)
+      }
+      // eslint-disable-next-line promise/prefer-await-to-callbacks
+      callback()
+    },
+  })
