@@ -309,7 +309,7 @@ describe.concurrent('frameworks/framework-detection', () => {
       await builder
         .withPackageJson({
           packageJson: {
-            dependencies: { nuxt3: '^2.0.0' },
+            dependencies: { '@redwoodjs/core': '^2.0.0' },
             scripts: { dev: 'node -p process.env.NODE_VERSION' },
           },
         })
@@ -367,7 +367,7 @@ describe.concurrent('frameworks/framework-detection', () => {
           name: 'frameworker',
           plugin: {
             onPreBuild: async ({ netlifyConfig }) => {
-              // eslint-disable-next-line n/global-require, no-undef
+              // eslint-disable-next-line no-undef, @typescript-eslint/no-require-imports
               const { mkdir, writeFile } = require('fs/promises')
 
               const generatedFunctionsDir = 'new_functions'

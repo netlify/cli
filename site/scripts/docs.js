@@ -1,3 +1,5 @@
+#!/usr/bin/env -S npx tsx
+
 import { basename } from 'node:path'
 import { env } from 'node:process'
 import { fileURLToPath } from 'node:url'
@@ -5,7 +7,7 @@ import { fileURLToPath } from 'node:url'
 import markdownMagic from 'markdown-magic'
 import stripAnsi from 'strip-ansi'
 
-import { normalizeBackslash } from '../../dist/lib/path.js'
+import { normalizeBackslash } from '../../src/lib/path.js'
 
 import { generateCommandData } from './util/generate-command-data.js'
 

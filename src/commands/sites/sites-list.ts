@@ -8,7 +8,6 @@ import BaseCommand from '../base-command.js'
 
 export const sitesList = async (options: OptionValues, command: BaseCommand) => {
   const { api } = command.netlify
-  /** @type {import('ora').Ora} */
   let spinner
   if (!options.json) {
     spinner = startSpinner({ text: 'Loading your sites' })
@@ -16,8 +15,7 @@ export const sitesList = async (options: OptionValues, command: BaseCommand) => 
   await command.authenticate()
 
   const sites = await listSites({ api, options: { filter: 'all' } })
-  if (!options.json) {
-    // @ts-expect-error TS(2345) FIXME: Argument of type '{ spinner: Ora | undefined; }' i... Remove this comment to see the full error message
+  if (spinner) {
     stopSpinner({ spinner })
   }
 

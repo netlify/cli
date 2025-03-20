@@ -1,20 +1,15 @@
 import { readFile } from 'fs/promises'
-import path from 'path'
-import { Readable } from 'stream'
-import { promisify } from 'util'
+import * as path from 'path'
+import { pipeline } from 'stream/promises'
 
 import { zipFunctions, type FunctionResult, type TrafficRules } from '@netlify/zip-it-and-ship-it'
-import pumpModule, { type Stream } from 'pump'
 
 import BaseCommand from '../../commands/base-command.js'
 import { $TSFixMe } from '../../commands/types.js'
 import { INTERNAL_FUNCTIONS_FOLDER } from '../functions/functions.js'
 
 import { hasherCtor, manifestCollectorCtor } from './hasher-segments.js'
-
-// Explicitly passing type parameter because inference isn't playing nicely with incompatible patterns for typing
-// function spread parameters + function overloading
-const pump = promisify<Stream[]>(pumpModule)
+import { Readable } from 'stream'
 
 // Maximum age of functions manifest (2 minutes).
 const MANIFEST_FILE_TTL = 12e4
@@ -226,7 +221,7 @@ const hashFns = async (
   const fnShaMap = {}
   const manifestCollector = manifestCollectorCtor(functions, fnShaMap, { statusCb, assetType })
 
-  await pump([functionStream, hasher, manifestCollector] as const)
+  await pipeline([functionStream, hasher, manifestCollector])
   return { functionSchedules, functions, functionsWithNativeModules, fnShaMap, fnConfig }
 }
 

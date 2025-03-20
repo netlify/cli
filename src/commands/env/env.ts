@@ -3,7 +3,7 @@ import { OptionValues, Option } from 'commander'
 import { normalizeContext } from '../../utils/env/index.js'
 import BaseCommand from '../base-command.js'
 
-const env = (options: OptionValues, command: BaseCommand) => {
+const env = (_options: OptionValues, command: BaseCommand) => {
   command.help()
 }
 
@@ -17,6 +17,7 @@ export const createEnvCommand = (program: BaseCommand) => {
       normalizeContext,
       'dev',
     )
+    .option('--json', 'Output environment variables as JSON')
     .addOption(
       new Option('-s, --scope <scope>', 'Specify a scope')
         .choices(['builds', 'functions', 'post-processing', 'runtime', 'any'])
@@ -37,19 +38,12 @@ export const createEnvCommand = (program: BaseCommand) => {
   program
     .command('env:import')
     .argument('<fileName>', '.env file to import')
-    .addOption(
-      new Option(
-        '-r --replaceExisting',
-        'Old, prefer --replace-existing. Replace all existing variables instead of merging them with the current ones',
-      )
-        .default(false)
-        .hideHelp(true),
-    )
     .option(
       '-r, --replace-existing',
       'Replace all existing variables instead of merging them with the current ones',
       false,
     )
+    .option('--json', 'Output environment variables as JSON')
     .description('Import and set environment variables from .env file')
     .action(async (fileName: string, options: OptionValues, command: BaseCommand) => {
       const { envImport } = await import('./env-import.js')
@@ -95,6 +89,7 @@ export const createEnvCommand = (program: BaseCommand) => {
       // @ts-expect-error TS(7006) FIXME: Parameter 'context' implicitly has an 'any' type.
       (context, previous = []) => [...previous, normalizeContext(context)],
     )
+    .option('--json', 'Output environment variables as JSON')
     .addOption(
       new Option('-s, --scope <scope...>', 'Specify a scope (default: all scopes)').choices([
         'builds',
@@ -130,6 +125,7 @@ export const createEnvCommand = (program: BaseCommand) => {
       // @ts-expect-error TS(7006) FIXME: Parameter 'context' implicitly has an 'any' type.
       (context, previous = []) => [...previous, normalizeContext(context)],
     )
+    .option('--json', 'Output environment variables as JSON')
     .addExamples([
       'netlify env:unset VAR_NAME # unset in all contexts',
       'netlify env:unset VAR_NAME --context production',

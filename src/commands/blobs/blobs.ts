@@ -33,7 +33,7 @@ export const createBlobsCommand = (program: BaseCommand) => {
     )
     .argument('<store>', 'Name of the store')
     .argument('<key>', 'Object key')
-    .option('-o, --output <path>', 'Defines the filesystem path where the blob data should be persisted')
+    .option('-O, --output <path>', 'Defines the filesystem path where the blob data should be persisted')
     .alias('blob:get')
     .hook('preAction', requiresSiteInfo)
     .action(async (storeName: string, key: string, options: OptionValues, command: BaseCommand) => {
@@ -53,7 +53,7 @@ export const createBlobsCommand = (program: BaseCommand) => {
       '-p, --prefix <prefix>',
       `A string for filtering down the entries; when specified, only the entries whose key starts with that prefix are returned`,
     )
-    .option('--json', `Output list contents as JSON`)
+    .option('--json', 'Output list contents as JSON')
     .alias('blob:list')
     .hook('preAction', requiresSiteInfo)
     .action(async (storeName: string, options: OptionValues, command: BaseCommand) => {

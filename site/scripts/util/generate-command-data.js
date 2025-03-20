@@ -1,15 +1,15 @@
-import { createMainCommand } from '../../../dist/commands/index.js'
-import { sortOptions } from '../../../dist/utils/command-helpers.js'
+import { createMainCommand } from '../../../src/commands/index.js'
+import { sortOptions } from '../../../src/utils/command-helpers.js'
 
 const program = createMainCommand()
 
-/** @type {Array<import('../../src/commands/base-command.js').default>} */
+/** @type {Array<import('../../../src/commands/base-command.js').default>} */
 // @ts-ignore typecast needed
 const commands = program.commands.sort((cmdA, cmdB) => cmdA.name().localeCompare(cmdB.name()))
 
 /**
  *
- * @param {import('../../src/commands/base-command.js').default} command
+ * @param {import('../../../src/commands/base-command.js').default} command
  */
 const parseCommand = function (command) {
   const args = command._args.map(({ _name: name, description }) => ({

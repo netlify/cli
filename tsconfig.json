@@ -1,21 +1,3 @@
 {
-  "compilerOptions": {
-    "outDir": "dist",
-    "incremental": true,
-    "lib": ["es2020"],
-    "target": "es2020",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "declaration": true,
-    "declarationMap": true,
-    "removeComments": false,
-    "downlevelIteration": true,
-    "forceConsistentCasingInFileNames": true,
-    "strict": true,
-    "skipLibCheck": true /* Skip type checking all .d.ts files. */,
-    "allowJs": true,
-    "typeRoots": ["node_modules/@types", "types"]
-  },
-  "include": ["src/**/*.ts"],
-  "exclude": ["node_modules"]
+  "extends": "./tsconfig.base.json"
 }

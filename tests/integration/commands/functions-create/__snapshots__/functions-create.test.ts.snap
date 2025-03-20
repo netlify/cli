@@ -1,0 +1,7 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`functions:create command > fixture: nx-integrated-monorepo > should create a new edge function 1`] = `
+"[[edge_functions]]
+function = \\"abtest\\"
+path = \\"/test\\""
+`;

@@ -19,11 +19,12 @@ netlify logs
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`logs:deploy`](/commands/logs#logsdeploy) | (Beta) Stream the logs of deploys currently being built to the console  |
-| [`logs:function`](/commands/logs#logsfunction) | (Beta) Stream netlify function logs to the console  |
+| [`logs:deploy`](/commands/logs#logsdeploy) | Stream the logs of deploys currently being built to the console  |
+| [`logs:function`](/commands/logs#logsfunction) | Stream netlify function logs to the console  |
 
 
 **Examples**
@@ -37,7 +38,7 @@ netlify logs:function my-function
 ---
 ## `logs:deploy`
 
-(Beta) Stream the logs of deploys currently being built to the console
+Stream the logs of deploys currently being built to the console
 
 **Usage**
 
@@ -49,11 +50,12 @@ netlify logs:deploy
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 ---
 ## `logs:function`
 
-(Beta) Stream netlify function logs to the console
+Stream netlify function logs to the console
 
 **Usage**
 
@@ -70,6 +72,7 @@ netlify logs:function
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `level` (*string*) - Log levels to stream. Choices are: trace, debug, info, warn, error, fatal
 - `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 **Examples**
 

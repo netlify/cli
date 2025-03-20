@@ -9,7 +9,7 @@ import { cliPath } from './cli-path.js'
 import { handleQuestions } from './handle-questions.js'
 import { killProcess } from './process.js'
 
-export const getExecaOptions = ({ cwd, env }) => {
+export const getExecaOptions = ({ cwd, env }: { cwd: string; env: NodeJS.ProcessEnv }) => {
   // Unused vars here are in order to omit LANg and LC_ALL from envs
 
   const { LANG, LC_ALL, ...baseEnv } = process.env
@@ -41,13 +41,16 @@ interface DevServerOptions {
   args?: string[]
   context?: string
   cwd: string
+  framework?: string
+  command?: string
   debug?: boolean
-  env?: Record<string, string>
+  env?: NodeJS.ProcessEnv | undefined
   expectFailure?: boolean
   offline?: boolean
   prompt?: $FIXME[]
   serve?: boolean
   skipWaitPort?: boolean
+  targetPort?: number
 }
 
 // 240 seconds
@@ -55,18 +58,20 @@ const SERVER_START_TIMEOUT = 24e4
 
 const startServer = async ({
   args = [],
+  command,
   context = 'dev',
   cwd,
   debug = false,
   env = {},
   expectFailure = false,
+  framework,
   offline = true,
   prompt,
   serve = false,
   skipWaitPort = false,
+  targetPort,
 }: DevServerOptions): Promise<DevServer | { timeout: boolean; output: string }> => {
   const port = await getPort()
-  const staticPort = await getPort()
   const host = 'localhost'
   const url = `http://${host}:${port}`
 
@@ -77,11 +82,24 @@ const startServer = async ({
     offline ? '--offline' : '',
     '-p',
     port,
-    '--staticServerPort',
-    staticPort,
     debug ? '--debug' : '',
     skipWaitPort ? '--skip-wait-port' : '',
   ]
+
+  if (targetPort) {
+    baseArgs.push('--target-port', targetPort)
+  } else {
+    const staticPort = await getPort()
+    baseArgs.push('--staticServerPort', staticPort)
+  }
+
+  if (framework) {
+    baseArgs.push('--framework', framework)
+  }
+
+  if (command) {
+    baseArgs.push('--command', command)
+  }
 
   // We use `null` to override the default context and actually omit the flag
   // from the command, which is useful in some test scenarios.
@@ -97,7 +115,7 @@ const startServer = async ({
     ps.stdout!.pipe(process.stdout)
   }
 
-  const promptHistory = []
+  const promptHistory: any[] = []
 
   if (prompt) {
     handleQuestions(ps, prompt, promptHistory)
@@ -159,7 +177,7 @@ const startServer = async ({
   })
 }
 
-export const startDevServer = async (options: DevServerOptions, expectFailure: boolean): Promise<DevServer> => {
+export const startDevServer = async (options: DevServerOptions, expectFailure?: boolean): Promise<DevServer> => {
   const maxAttempts = 5
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -192,7 +210,12 @@ export const withDevServer = async <T>(
   try {
     server = await startDevServer(options, expectFailure)
     return await testHandler(server)
-  } catch (error) {
+  } catch (err) {
+    if (!(err instanceof Error)) {
+      throw err
+    }
+
+    const error: Error & { stdout?: string | undefined; stderr?: string | undefined } = err
     if (server && !expectFailure) {
       error.stdout = server.output
       error.stderr = server.error
@@ -205,7 +228,7 @@ export const withDevServer = async <T>(
   }
 }
 
-export const tryAndLogOutput = async (func, outputBuffer) => {
+export const tryAndLogOutput = async (func: () => Promise<void>, outputBuffer: unknown[]) => {
   try {
     await func()
   } catch (error) {

@@ -20,6 +20,7 @@ netlify env
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
@@ -60,6 +61,7 @@ netlify env:clone
 - `from` (*string*) - Site ID (From)
 - `to` (*string*) - Site ID (To)
 - `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 **Examples**
 
@@ -87,8 +89,10 @@ netlify env:get
 
 - `context` (*string*) - Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev")
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
-- `scope` (*builds | functions | post-processing | runtime | any*) - Specify a scope
+- `json` (*boolean*) - Output environment variables as JSON
 - `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
+- `scope` (*builds | functions | post-processing | runtime | any*) - Specify a scope
 
 **Examples**
 
@@ -117,8 +121,10 @@ netlify env:import
 **Flags**
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
+- `json` (*boolean*) - Output environment variables as JSON
 - `replace-existing` (*boolean*) - Replace all existing variables instead of merging them with the current ones
 - `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 ---
 ## `env:list`
@@ -136,9 +142,10 @@ netlify env:list
 - `context` (*string*) - Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev")
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `json` (*boolean*) - Output environment variables as JSON
-- `plain` (*boolean*) - Output environment variables as plaintext
 - `scope` (*builds | functions | post-processing | runtime | any*) - Specify a scope
 - `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
+- `plain` (*boolean*) - Output environment variables as plaintext
 
 **Examples**
 
@@ -171,9 +178,11 @@ netlify env:set
 - `context` (*string*) - Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev") (default: all contexts)
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `force` (*boolean*) - Bypasses prompts & Force the command to run.
-- `scope` (*builds | functions | post-processing | runtime*) - Specify a scope (default: all scopes)
+- `json` (*boolean*) - Output environment variables as JSON
 - `secret` (*boolean*) - Indicate whether the environment variable value can be read again.
 - `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
+- `scope` (*builds | functions | post-processing | runtime*) - Specify a scope (default: all scopes)
 
 **Examples**
 
@@ -207,7 +216,9 @@ netlify env:unset
 - `context` (*string*) - Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev") (default: all contexts)
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `force` (*boolean*) - Bypasses prompts & Force the command to run.
+- `json` (*boolean*) - Output environment variables as JSON
 - `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 **Examples**
 

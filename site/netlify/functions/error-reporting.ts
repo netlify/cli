@@ -1,7 +1,7 @@
 import process from 'process'
 
 import Bugsnag from '@bugsnag/js'
-import { Handler } from '@netlify/functions'
+import type { Handler } from '@netlify/functions'
 
 Bugsnag.start({
   apiKey: `${process.env.NETLIFY_BUGSNAG_API_KEY}`,

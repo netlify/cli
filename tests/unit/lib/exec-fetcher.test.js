@@ -63,8 +63,6 @@ test(`should not append anything on linux to executable`, () => {
 test('should test if an error is thrown if the cpu architecture and the os are not available', async () => {
   processArchSpy.mockReturnValue('amd64')
   processPlatformSpy.mockReturnValue('windows')
-
-  // eslint-disable-next-line prefer-promise-reject-errors
   fetchLatest.mockReturnValue(Promise.reject({ statusCode: 404 }))
 
   await expect(
@@ -95,8 +93,6 @@ test('should provide the error if it is not a 404', async () => {
 test('should map linux x64 to amd64 arch', async () => {
   processArchSpy.mockReturnValue('x64')
   processPlatformSpy.mockReturnValue('linux')
-
-  // eslint-disable-next-line prefer-promise-reject-errors
   fetchLatest.mockReturnValue(Promise.reject({ statusCode: 404 }))
 
   await expect(

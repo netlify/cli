@@ -18,17 +18,12 @@ export const createServeCommand = (program: BaseCommand) =>
     .option('-p ,--port <port>', 'port of netlify dev', (value) => Number.parseInt(value))
     .option('-d ,--dir <path>', 'dir with static files')
     .option('-f ,--functions <folder>', 'specify a functions folder to serve')
-    .option('-o ,--offline', 'disables any features that require network access')
+    .option('-o, --offline', 'Disables any features that require network access')
     .addOption(
       new Option(
         '--internal-disable-edge-functions',
         "disables edge functions. use this if your environment doesn't support Deno. This option is internal and should not be used by end users.",
       ).hideHelp(true),
-    )
-    .addOption(
-      new Option('--functionsPort <port>', 'Old, prefer --functions-port. Port of functions server')
-        .argParser((value) => Number.parseInt(value))
-        .hideHelp(true),
     )
     .option('--functions-port <port>', 'port of functions server', (value) => Number.parseInt(value))
     .addOption(

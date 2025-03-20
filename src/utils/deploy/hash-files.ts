@@ -1,13 +1,8 @@
-import { promisify } from 'util'
+import { pipeline } from 'stream/promises'
 
 import walker from 'folder-walker'
-import pumpModule, { type Stream } from 'pump'
 
 import { fileFilterCtor, fileNormalizerCtor, hasherCtor, manifestCollectorCtor } from './hasher-segments.js'
-
-// Explicitly passing type parameter because inference isn't playing nicely with incompatible patterns for typing
-// function spread parameters + function overloading
-const pump = promisify<Stream[]>(pumpModule)
 
 const hashFiles = async ({
   assetType = 'file',
@@ -37,7 +32,7 @@ const hashFiles = async ({
   const filesShaMap = {}
   const manifestCollector = manifestCollectorCtor(files, filesShaMap, { statusCb, assetType })
 
-  await pump([fileStream, fileFilter, hasher, fileNormalizer, manifestCollector] as const)
+  await pipeline([fileStream, fileFilter, hasher, fileNormalizer, manifestCollector])
 
   return { files, filesShaMap }
 }

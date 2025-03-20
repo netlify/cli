@@ -21,6 +21,7 @@ netlify sites
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
@@ -56,8 +57,9 @@ netlify sites:create
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `manual` (*boolean*) - force manual CI setup.  Used --with-ci flag
 - `name` (*string*) - name of site
-- `with-ci` (*boolean*) - initialize CI hooks during site creation
 - `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
+- `with-ci` (*boolean*) - initialize CI hooks during site creation
 
 ---
 ## `sites:create-template`
@@ -81,8 +83,9 @@ netlify sites:create-template
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `name` (*string*) - name of site
 - `url` (*string*) - template url
-- `with-ci` (*boolean*) - initialize CI hooks during site creation
 - `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
+- `with-ci` (*boolean*) - initialize CI hooks during site creation
 
 **Examples**
 
@@ -113,6 +116,7 @@ netlify sites:delete
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `force` (*boolean*) - Delete without prompting (useful for CI).
 - `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 **Examples**
 
@@ -136,6 +140,7 @@ netlify sites:list
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `json` (*boolean*) - Output site data as JSON
 - `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 ---
 

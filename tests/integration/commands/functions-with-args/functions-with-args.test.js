@@ -8,7 +8,6 @@ import { tryAndLogOutput, withDevServer } from '../../utils/dev-server.ts'
 import { pause } from '../../utils/pause.js'
 import { withSiteBuilder } from '../../utils/site-builder.ts'
 
-// eslint-disable-next-line no-underscore-dangle
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const testMatrix = [{ args: [] }, { args: ['esbuild'] }]
@@ -183,7 +182,6 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
           .withContentFile({ path: 'functions/lib/util.js', content: `exports.bark = () => 'WOOF WOOF!'` })
           .build()
 
-        // eslint-disable-next-line unicorn/prefer-ternary
         if (args.includes('esbuild')) {
           await waitForLogMatching('Reloaded function hello')
         } else {
@@ -735,7 +733,7 @@ describe.concurrent('serving functions', () => {
           handler: async (event) => {
             const { name } = event.queryStringParameters
 
-            // eslint-disable-next-line n/global-require, no-undef
+            // eslint-disable-next-line no-undef, @typescript-eslint/no-require-imports
             const { data } = require(`../files/${name}.json`)
 
             return {
@@ -908,7 +906,7 @@ describe.concurrent('serving functions', () => {
         .withFunction({
           path: 'hello.js',
           handler: async (event) => {
-            // eslint-disable-next-line n/global-require, no-undef
+            // eslint-disable-next-line no-undef, @typescript-eslint/no-require-imports
             const { readFileSync } = require('fs')
             const { name } = event.queryStringParameters
             const { data } = JSON.parse(readFileSync(`${__dirname}/../files/${name}.json`, 'utf-8'))

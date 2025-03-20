@@ -57,7 +57,7 @@ export const version = packageVersion
 export const USER_AGENT = `${name}/${version} ${platform}-${arch} node-${process.version}`
 
 /** A list of base command flags that needs to be sorted down on documentation and on help pages */
-const BASE_FLAGS = new Set(['--debug', '--httpProxy', '--httpProxyCertificateFilename'])
+const BASE_FLAGS = new Set(['--debug', '--http-proxy', '--http-proxy-certificate-filename'])
 
 export const NETLIFY_CYAN = chalk.rgb(40, 180, 170)
 

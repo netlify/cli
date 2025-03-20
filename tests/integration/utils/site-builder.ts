@@ -4,6 +4,9 @@ import path from 'path'
 import process from 'process'
 import { inspect } from 'util'
 
+import type { OnPreBuild, OnBuild, OnPostBuild, OnSuccess } from '@netlify/build'
+import type { Context, Handler } from '@netlify/functions'
+import type { EdgeFunction } from '@netlify/edge-functions'
 import slugify from '@sindresorhus/slugify'
 import execa from 'execa'
 import serializeJS from 'serialize-javascript'
@@ -28,18 +31,17 @@ export class SiteBuilder {
     return this
   }
 
-  withNetlifyToml({ config, pathPrefix = '' }) {
+  withNetlifyToml({ config, pathPrefix = '' }: { config: unknown; pathPrefix?: string | undefined }) {
     const dest = path.join(this.directory, pathPrefix, 'netlify.toml')
     const content = tomlify.toToml(config, {
       replace: (_, val) => {
-        // Strip off `.0` from integers that tomlify normally generates
-
-        if (!Number.isInteger(val)) {
-          // Output normal value
-          return false
+        if (typeof val === 'number' && Number.isInteger(val)) {
+          // Strip off `.0` from integers that tomlify normally generates
+          return String(Math.round(val))
         }
 
-        return String(Math.round(val))
+        // Output normal value
+        return false
       },
       space: 2,
     })
@@ -83,7 +85,8 @@ export class SiteBuilder {
   }: {
     config?: object
     esm?: boolean
-    handler: any
+    // handler: Handler | string
+    handler: Handler | ((req: Request, context: Context) => Response | Promise<Response>) | string
     path: string
     pathPrefix?: string
     runtimeAPIVersion?: number
@@ -119,7 +122,7 @@ export class SiteBuilder {
     pathPrefix = '',
   }: {
     config?: any
-    handler: string | Function
+    handler: EdgeFunction | string
     imports?: string
     name?: string
     path?: string
@@ -257,7 +260,22 @@ export class SiteBuilder {
     return this
   }
 
-  withBuildPlugin({ name, pathPrefix = 'plugins', plugin }: { name: string; pathPrefix?: string; plugin: any }) {
+  withBuildPlugin({
+    name,
+    pathPrefix = 'plugins',
+    plugin,
+  }: {
+    name: string
+    pathPrefix?: string
+    plugin: {
+      onBuild?: OnBuild | undefined
+      onDev?: OnBuild | undefined
+      onPostBuild?: OnPostBuild | undefined
+      onPreBuild?: OnPreBuild | undefined
+      onPreDev?: OnPreBuild | undefined
+      onSuccess?: OnSuccess | undefined
+    }
+  }) {
     const dest = path.join(this.directory, pathPrefix, `${name}.js`)
     this.tasks.push(async () => {
       await ensureDir(path.dirname(dest))

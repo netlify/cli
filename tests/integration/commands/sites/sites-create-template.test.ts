@@ -3,17 +3,17 @@ import process from 'process'
 import inquirer from 'inquirer'
 import { beforeEach, afterEach, describe, expect, test, vi, afterAll } from 'vitest'
 
-import BaseCommand from '../../../../src/commands/base-command.ts'
-import { createSitesFromTemplateCommand } from '../../../../src/commands/sites/sites.ts'
-import { deployedSiteExists, fetchTemplates, getTemplateName } from '../../../../src/utils/sites/create-template.ts'
+import BaseCommand from '../../../../src/commands/base-command.js'
+import { createSitesFromTemplateCommand } from '../../../../src/commands/sites/sites.js'
+import { deployedSiteExists, fetchTemplates, getTemplateName } from '../../../../src/utils/sites/create-template.js'
 import {
   getTemplatesFromGitHub,
   validateTemplate,
   createRepo,
   callLinkSite,
-} from '../../../../src/utils/sites/utils.ts'
+} from '../../../../src/utils/sites/utils.js'
 import { getEnvironmentVariables, withMockApi } from '../../utils/mock-api.js'
-import { chalk } from '../../../../src/utils/command-helpers.ts'
+import { chalk } from '../../../../src/utils/command-helpers.js'
 
 vi.mock('../../../../src/utils/init/config-github.ts')
 vi.mock('../../../../src/utils/sites/utils.ts')
@@ -43,7 +43,7 @@ const routes = [
   {
     path: 'test-account/sites',
     response: siteInfo,
-    method: 'post',
+    method: 'POST' as const,
   },
 ]
 
@@ -179,7 +179,7 @@ describe('sites:create-template', () => {
       {
         path: 'test-account/sites',
         response: siteInfo,
-        method: 'post',
+        method: 'POST' as const,
       },
     ]
 
@@ -225,7 +225,7 @@ describe('sites:create-template', () => {
       {
         path: 'test-account/sites',
         response: siteInfo,
-        method: 'post',
+        method: 'POST' as const,
       },
     ]
 

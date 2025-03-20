@@ -13,10 +13,11 @@ export const createStatusCommand = (program: BaseCommand) => {
       await statusHooks(options, command)
     })
 
-  return program
+  program
     .command('status')
     .description('Print status information')
     .option('--verbose', 'Output system info')
+    .option('--json', 'Output status information as JSON')
     .action(async (options: OptionValues, command: BaseCommand) => {
       const { status } = await import('./status.js')
       await status(options, command)

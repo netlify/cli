@@ -6,29 +6,19 @@
 import { existsSync, readFileSync } from 'fs'
 import process from 'process'
 
-import { log, parseEnv } from 'tabtab'
+import { getShellFromEnv, log, parseEnv } from '@pnpm/tabtab'
 
 import { AUTOCOMPLETION_FILE } from './constants.js'
 import getAutocompletion from './get-autocompletion.js'
 
-/**
- * @typedef CompletionItem
- * @type import('tabtab').CompletionItem
- */
-/**
- *
- * @param {import('tabtab').TabtabEnv} env
- * @param {Record<string, CompletionItem & {options: CompletionItem[]}>} program
- * @returns {CompletionItem[]|void}
- */
-
 const env = parseEnv(process.env)
+const shell = getShellFromEnv(process.env)
 
 if (existsSync(AUTOCOMPLETION_FILE)) {
   const program = JSON.parse(readFileSync(AUTOCOMPLETION_FILE, 'utf-8'))
   const autocomplete = getAutocompletion(env, program)
 
   if (autocomplete && autocomplete.length !== 0) {
-    log(autocomplete)
+    log(autocomplete, shell)
   }
 }

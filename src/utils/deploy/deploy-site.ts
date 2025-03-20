@@ -28,6 +28,13 @@ const buildStatsString = (possibleParts: Array<string | false | undefined>) => {
   return parts.length > 1 ? `${message} and ${parts[parts.length - 1]}` : message
 }
 
+// TODO(serhalp) This is alternatingly called "event", "status", and "progress". Standardize.
+export interface DeployEvent {
+  type: string
+  msg: string
+  phase: 'start' | 'progress' | 'error' | 'stop'
+}
+
 export const deploySite = async (
   command: BaseCommand,
   api: $TSFixMe,
@@ -74,7 +81,7 @@ export const deploySite = async (
     deployTimeout?: number
     draft?: boolean
     maxRetry?: number
-    statusCb?: (status: { type: string; msg: string; phase: string }) => void
+    statusCb?: (status: DeployEvent) => void
     syncFileLimit?: number
     tmpDir?: string
     fnDir?: string[]

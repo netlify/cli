@@ -1,14 +1,8 @@
 [build]
-  # This will be run the site build
-  command = "npm run site:build"
-  # This is the directory is publishing to netlify's CDN
-  publish = "site/dist"
+  command = "pushd .. && npm ci --no-verify && popd && npm run build"
+  publish = "dist"
 
 [functions]
-  # Sets a custom directory for Netlify Functions
-  directory = "functions"
-
-  # Specifies `esbuild` for functions bundling
   node_bundler = "esbuild"
 
 #####################

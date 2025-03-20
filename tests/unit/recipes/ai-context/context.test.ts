@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 
-import { applyOverrides, parseContextFile } from '../../../../dist/recipes/ai-context/context.js'
+import { applyOverrides, parseContextFile } from '../../../../src/recipes/ai-context/context.js'
 
 describe('applyOverrides', () => {
   test('applies overrides to a context file', () => {
