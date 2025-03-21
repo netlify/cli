@@ -129,7 +129,7 @@ jobs:
         with:
           name: npm-logs--${{ matrix.os }}--${{ matrix.node-version }}--${{ steps.sanitize-shard-name.outputs.shard }}
           path: |
-            /home/runner/.npm/_logs/**/*
+            ~/.npm/_logs/**/*
 
       - uses: codecov/codecov-action@v5
         continue-on-error: true
@@ -240,7 +240,7 @@ jobs:
         with:
           name: npm-logs--windows-latest--23x
           path: |
-            /home/runner/.npm/_logs/**/*
+            ~/.npm/_logs/**/*
 
       - uses: codecov/codecov-action@v5
         continue-on-error: true
