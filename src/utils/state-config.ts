@@ -3,7 +3,7 @@ import path from 'path'
 import process from 'process'
 
 import { deleteProperty, getProperty, hasProperty, setProperty } from 'dot-prop'
-import { findUpSync } from 'find-up'
+import { up } from 'empathic/find'
 import writeFileAtomic from 'write-file-atomic'
 
 import { getPathInProject } from '../lib/settings.js'
@@ -13,12 +13,10 @@ const permissionError = "You don't have access to this file."
 
 /**
  * Finds location of `.netlify/state.json`
- * @param {string} cwd
- * @returns {string}
+ * @param cwd
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'cwd' implicitly has an 'any' type.
-const findStatePath = (cwd) => {
-  const statePath = findUpSync([STATE_PATH], { cwd })
+const findStatePath = (cwd: string): string => {
+  const statePath = up(STATE_PATH, { cwd })
 
   if (!statePath) {
     return path.join(cwd, STATE_PATH)
