@@ -1,14 +1,8 @@
-import fs from 'fs'
-import path from 'path'
 import { OptionValues } from 'commander'
-import BaseCommand from '../base-command.js'
-
-import openBrowser from '../../utils/open-browser.js'
-import { carefullyWriteFile, getExtension, getExtensionInstallations, installExtension } from './utils.js'
-import { getToken } from '../../utils/command-helpers.js'
 import inquirer from 'inquirer'
-import { NetlifyAPI } from 'netlify'
-import { spawn } from 'child_process'
+import BaseCommand from '../base-command.js'
+import { getExtension, getExtensionInstallations, installExtension } from './utils.js'
+import { initDrizzle } from './drizzle.js'
 
 const NETLIFY_DATABASE_EXTENSION_SLUG = '-94w9m6w-netlify-database-extension'
 
@@ -36,37 +30,8 @@ const init = async (_options: OptionValues, command: BaseCommand) => {
     command.setOptionValue('drizzle', answers.drizzle)
   }
   const opts = command.opts()
-
   if (opts.drizzle && command.project.root) {
-    const drizzleConfigFilePath = path.resolve(command.project.root, 'drizzle.config.ts')
-    await carefullyWriteFile(drizzleConfigFilePath, drizzleConfig)
-
-    fs.mkdirSync(path.resolve(command.project.root, 'db'), { recursive: true })
-    const schemaFilePath = path.resolve(command.project.root, 'db/schema.ts')
-    await carefullyWriteFile(schemaFilePath, exampleDrizzleSchema)
-
-    const dbIndexFilePath = path.resolve(command.project.root, 'db/index.ts')
-    await carefullyWriteFile(dbIndexFilePath, exampleDbIndex)
-
-    console.log('Adding drizzle-kit and drizzle-orm to the project')
-    // install dev deps
-    const devDepProc = spawn(
-      command.project.packageManager?.installCommand ?? 'npm install',
-      ['drizzle-kit@latest', '-D'],
-      {
-        stdio: 'inherit',
-        shell: true,
-      },
-    )
-    devDepProc.on('exit', (code) => {
-      if (code === 0) {
-        // install deps
-        spawn(command.project.packageManager?.installCommand ?? 'npm install', ['drizzle-orm@latest'], {
-          stdio: 'inherit',
-          shell: true,
-        })
-      }
-    })
+    await initDrizzle(command)
   }
 
   if (!command.netlify.api.accessToken) {
@@ -131,7 +96,8 @@ const init = async (_options: OptionValues, command: BaseCommand) => {
     })
 
     if (siteEnv.key === 'NETLIFY_DATABASE_URL') {
-      throw new Error(`Database already initialized for site: ${command.siteId}`)
+      console.error(`Database already initialized for site: ${command.siteId}`)
+      return
     }
   } catch {
     // no op, env var does not exist, so we just continue
@@ -168,109 +134,5 @@ export const createDatabaseCommand = (program: BaseCommand) => {
     .option('--drizzle', 'Sets up drizzle-kit and drizzle-orm in your project')
     .action(init)
 
-  dbCommand
-    .command('drizzle-kit', 'TODO: write description for drizzle-kit command', {
-      executableFile: path.resolve(program.workingDir, './node_modules/drizzle-kit/bin.cjs'),
-    })
-    .option('--open', 'when running drizzle-kit studio, open the browser to the studio url')
-    .hook('preSubcommand', async (thisCommand, actionCommand) => {
-      if (actionCommand.name() === 'drizzle-kit') {
-        // @ts-expect-error thisCommand is not assignable to BaseCommand
-        await drizzleKitPreAction(thisCommand) // set the NETLIFY_DATABASE_URL env var before drizzle-kit runs
-      }
-    })
-    .allowUnknownOption() // allow unknown options to be passed through to drizzle-kit executable
-
   return dbCommand
 }
-
-const drizzleKitPreAction = async (thisCommand: BaseCommand) => {
-  const opts = thisCommand.opts()
-  const workingDir = thisCommand.workingDir
-  const drizzleKitBinPath = path.resolve(workingDir, './node_modules/drizzle-kit/bin.cjs')
-  try {
-    fs.statSync(drizzleKitBinPath)
-  } catch {
-    console.error(`drizzle-kit not found in project's node modules, make sure you have installed drizzle-kit.`)
-    return
-  }
-
-  const rawState = fs.readFileSync(path.resolve(workingDir, '.netlify/state.json'), 'utf8')
-  const state = JSON.parse(rawState) as { siteId?: string } | undefined
-  if (!state?.siteId) {
-    throw new Error(`No site id found in .netlify/state.json`)
-  }
-
-  const [token] = await getToken()
-  if (!token) {
-    throw new Error(`No token found, please login with netlify login`)
-  }
-  const client = new NetlifyAPI(token)
-  let site
-  try {
-    site = await client.getSite({ siteId: state.siteId })
-  } catch {
-    throw new Error(`No site found for site id ${state.siteId}`)
-  }
-  const accountId = site.account_id
-  if (!accountId) {
-    throw new Error(`No account id found for site ${state.siteId}`)
-  }
-
-  let netlifyDatabaseEnv
-  try {
-    netlifyDatabaseEnv = await client.getEnvVar({
-      siteId: state.siteId,
-      accountId,
-      key: 'NETLIFY_DATABASE_URL',
-    })
-  } catch {
-    throw new Error(
-      `NETLIFY_DATABASE_URL environment variable not found on site ${state.siteId}. Run \`netlify db init\` first.`,
-    )
-  }
-
-  const NETLIFY_DATABASE_URL = netlifyDatabaseEnv.values?.find(
-    (val) => val.context === 'all' || val.context === 'dev',
-  )?.value
-
-  if (!NETLIFY_DATABASE_URL) {
-    console.error(`NETLIFY_DATABASE_URL environment variable not found in project settings.`)
-    return
-  }
-
-  if (typeof NETLIFY_DATABASE_URL === 'string') {
-    process.env.NETLIFY_DATABASE_URL = NETLIFY_DATABASE_URL
-    if (opts.open) {
-      await openBrowser({ url: 'https://local.drizzle.studio/', silentBrowserNoneError: true })
-    }
-  }
-}
-
-const drizzleConfig = `import { defineConfig } from 'drizzle-kit';
-
-export default defineConfig({
-    dialect: 'postgresql',
-    dbCredentials: {
-        url: process.env.NETLIFY_DATABASE_URL!
-    },
-    schema: './db/schema.ts'
-});`
-
-const exampleDrizzleSchema = `import { integer, pgTable, varchar, text } from 'drizzle-orm/pg-core';
-
-export const post = pgTable('post', {
-    id: integer().primaryKey().generatedAlwaysAsIdentity(),
-    title: varchar({ length: 255 }).notNull(),
-    content: text().notNull().default('')
-});
-`
-
-const exampleDbIndex = `import { drizzle } from 'lib/db';
-// import { drizzle } from '@netlify/database'
-import * as schema from 'db/schema';
-
-export const db = drizzle({
-    schema
-});
-`

@@ -48,7 +48,7 @@ import { AddressInUseError } from './types.js'
 import { createUnlinkCommand } from './unlink/index.js'
 import { createWatchCommand } from './watch/index.js'
 import terminalLink from 'terminal-link'
-import { createDatabaseCommand } from './database/database.js'
+import { createDatabaseCommand } from './database/index.js'
 
 const SUGGESTION_TIMEOUT = 1e4
 
