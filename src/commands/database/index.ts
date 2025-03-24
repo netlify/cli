@@ -1,1 +1,1 @@
-export { createDatabaseCommand as createDevCommand } from './database.js'
+export { createDatabaseCommand } from './database.js'
