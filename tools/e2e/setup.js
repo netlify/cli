@@ -134,8 +134,6 @@ export const setup = async () => {
       cwd: rootDir,
     })
 
-    // Reset the workspace, as npm publish does patch package.json etc
-    await execa('git', ['checkout', '.'], { cwd: rootDir })
     await execa('npm', ['install', '--no-audit'], { cwd: rootDir })
 
     console.log(`------------------------------------------
