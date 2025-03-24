@@ -29,7 +29,7 @@ export const getExtensionInstallations = async ({
   }
 
   const installations = await installationsResponse.json()
-  // console.log('installations', installations)
+  // console.log('installations', installations
   return installations
 }
 
