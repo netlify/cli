@@ -1,3 +1,4 @@
+import fsPromises from 'fs/promises'
 import fs from 'fs'
 import inquirer from 'inquirer'
 import path from 'path'
@@ -96,9 +97,37 @@ export const carefullyWriteFile = async (filePath: string, data: string) => {
       },
     ])
     if (answers.overwrite) {
-      fs.writeFileSync(filePath, data)
+      await fsPromises.writeFile(filePath, data)
     }
   } else {
-    fs.writeFileSync(filePath, data)
+    await fsPromises.writeFile(filePath, data)
   }
+}
+
+export const getSiteConfiguration = async ({
+  siteId,
+  accountId,
+  token,
+  slug,
+}: {
+  siteId: string
+  accountId: string
+  token: string
+  slug: string
+}) => {
+  const siteConfigurationResponse = await fetch(
+    `${JIGSAW_URL}/team/${accountId}/integrations/${slug}/configuration/site/${siteId}`,
+    {
+      headers: {
+        'netlify-token': token,
+      },
+    },
+  )
+
+  if (!siteConfigurationResponse.ok) {
+    throw new Error(`Failed to fetch extension site configuration for ${siteId}. Is the extension installed?`)
+  }
+
+  const siteConfiguration = await siteConfigurationResponse.json()
+  return siteConfiguration
 }
