@@ -4,7 +4,7 @@ import execa from 'execa'
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'stri... Remove this comment to see the full error message
 import stripAnsiCc from 'strip-ansi-control-characters'
 
-import type { Spinner } from '../lib/spinner.js'
+import { stopSpinner, type Spinner } from '../lib/spinner.js'
 import { chalk, log, NETLIFYDEVERR, NETLIFYDEVWARN } from './command-helpers.js'
 import { processOnExit } from './dev.js'
 
@@ -57,16 +57,19 @@ export const runCommand = (
     cwd,
   })
 
-  // This ensures that an active spinner stays at the bottom of the commandline
+  // Ensure that an active spinner stays at the bottom of the commandline
   // even though the actual framework command might be outputting stuff
+  if (spinner?.isSpinning) {
+    // The spinner is initially "started" in the usual sense (rendering frames on an interval).
+    // In this case, we want to manually control when to clear and when to render a frame, so we turn this off.
+    stopSpinner({ error: false, spinner })
+  }
   const pipeDataWithSpinner = (writeStream: NodeJS.WriteStream, chunk: any) => {
     if (spinner?.isSpinning) {
       spinner.clear()
     }
     writeStream.write(chunk, () => {
-      if (spinner?.isSpinning) {
-        spinner.start()
-      }
+      spinner?.spin()
     })
   }
 
