@@ -77,7 +77,7 @@ const init = async (_options: OptionValues, command: BaseCommand) => {
   }
 
   const installNeonExtension = async () => {
-    if (!siteInfo.account_id || !account.name || !extension.name || !extension.hostSiteUrl) {
+    if (!siteInfo.account_id || !account.name) {
       throw new Error(`Failed to install extension "${extension.name}"`)
     }
     const installed = await installExtension({
