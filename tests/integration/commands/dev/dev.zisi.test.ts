@@ -1,14 +1,16 @@
 // Handlers are meant to be async outside tests
-import { Buffer } from 'buffer'
-import fs, { copyFile } from 'fs/promises'
+import { Buffer } from 'node:buffer'
+import fs from 'node:fs/promises'
 import { Agent } from 'node:https'
-import os from 'os'
-import path from 'path'
-import { fileURLToPath } from 'url'
+import os from 'node:os'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 import type { HandlerEvent } from '@netlify/functions'
 import { describe, test } from 'vitest'
 import nodeFetch from 'node-fetch'
+import execa from 'execa'
+import dedent from 'dedent'
 
 import { curl } from '../../utils/curl.js'
 import { withDevServer } from '../../utils/dev-server.js'
@@ -18,6 +20,51 @@ import { withSiteBuilder } from '../../utils/site-builder.js'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const testMatrix = [{ args: [] }]
+
+const generateSSLCertificate = async () => {
+  const tmpdir = await fs.mkdtemp(path.join(os.tmpdir(), 'certs-'))
+
+  await fs.writeFile(
+    path.join(tmpdir, 'certconf'),
+    dedent`
+      [dn]
+      CN=localhost
+      [req]
+      distinguished_name = dn
+      [EXT]
+      subjectAltName=DNS:localhost
+      keyUsage=digitalSignature
+      extendedKeyUsage=serverAuth
+    `,
+  )
+  await execa(
+    'openssl',
+    [
+      'req',
+      '-x509',
+      '-out',
+      'localhost.crt',
+      '-keyout',
+      'localhost.key',
+      '-newkey',
+      'rsa:2048',
+      '-nodes',
+      '-sha256',
+      '-subj',
+      '/CN=localhost',
+      '-extensions',
+      'EXT',
+      '-config',
+      'certconf',
+    ],
+    { cwd: tmpdir },
+  )
+
+  return {
+    cert: path.join(tmpdir, 'localhost.crt'),
+    key: path.join(tmpdir, 'localhost.key'),
+  }
+}
 
 describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args }) => {
   test('should handle query params in redirects', async (t) => {
@@ -257,9 +304,10 @@ export const handler = async function () {
         })
         .build()
 
+      const certificatePaths = await generateSSLCertificate()
       await Promise.all([
-        copyFile(path.join(__dirname, '../../../../localhost.crt'), path.join(builder.directory, 'localhost.crt')),
-        copyFile(path.join(__dirname, '../../../../localhost.key'), path.join(builder.directory, 'localhost.key')),
+        fs.copyFile(certificatePaths.cert, path.join(builder.directory, 'localhost.crt')),
+        fs.copyFile(certificatePaths.key, path.join(builder.directory, 'localhost.key')),
       ])
       await withDevServer({ cwd: builder.directory, args }, async ({ port }) => {
         const options = {

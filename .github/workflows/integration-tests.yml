@@ -3,9 +3,9 @@ name: Integration Tests
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   pull_request:
-    branches: [main]
 
 jobs:
   integration:
@@ -76,11 +76,6 @@ jobs:
 
       - name: Build project
         run: npm run build
-
-      - name: Generate self-signed certificates
-        run: npm run certs
-        if: '${{!steps.release-check.outputs.IS_RELEASE}}'
-        shell: bash
 
       - name: Prepare tests
         run: npm run test:init
@@ -191,11 +186,6 @@ jobs:
 
       - name: Build project
         run: npm run build
-
-      - name: Generate self-signed certificates
-        run: npm run certs
-        if: '${{!steps.release-check.outputs.IS_RELEASE}}'
-        shell: bash
 
       - name: Prepare tests
         run: npm run test:init
