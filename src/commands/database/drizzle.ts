@@ -9,36 +9,52 @@ export const initDrizzle = async (command: BaseCommand) => {
   if (!command.project.root) {
     throw new Error('Failed to initialize Drizzle in project. Project root not found.')
   }
+  const opts = command.opts<{
+    overwrite?: true | undefined
+  }>()
   const drizzleConfigFilePath = path.resolve(command.project.root, 'drizzle.config.ts')
-  await carefullyWriteFile(drizzleConfigFilePath, drizzleConfig)
-
-  await fs.mkdir(path.resolve(command.project.root, 'db'), { recursive: true })
   const schemaFilePath = path.resolve(command.project.root, 'db/schema.ts')
-  await carefullyWriteFile(schemaFilePath, exampleDrizzleSchema)
-
   const dbIndexFilePath = path.resolve(command.project.root, 'db/index.ts')
-  await carefullyWriteFile(dbIndexFilePath, exampleDbIndex)
+  if (opts.overwrite) {
+    await fs.writeFile(drizzleConfigFilePath, drizzleConfig)
+    await fs.mkdir(path.resolve(command.project.root, 'db'), { recursive: true })
+    await fs.writeFile(schemaFilePath, exampleDrizzleSchema)
+    await fs.writeFile(dbIndexFilePath, exampleDbIndex)
+  } else {
+    await carefullyWriteFile(drizzleConfigFilePath, drizzleConfig, command.project.root)
+    await fs.mkdir(path.resolve(command.project.root, 'db'), { recursive: true })
+    await carefullyWriteFile(schemaFilePath, exampleDrizzleSchema, command.project.root)
+    await carefullyWriteFile(dbIndexFilePath, exampleDbIndex, command.project.root)
+  }
 
   const packageJsonPath = path.resolve(command.project.root, 'package.json')
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf-8'))
-
-  const answers = await inquirer.prompt([
-    {
-      type: 'confirm',
-      name: 'updatePackageJson',
-      message: `Add drizzle db commands to package.json?`,
-    },
-  ])
-  if (answers.updatePackageJson) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-    packageJson.scripts = {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      ...(packageJson.scripts ?? {}),
-      ...packageJsonScripts,
-    }
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+  packageJson.scripts = {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    ...(packageJson.scripts ?? {}),
+    ...packageJsonScripts,
+  }
+  if (opts.overwrite) {
     await fs.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2))
+  }
+
+  if (!opts.overwrite) {
+    type Answers = {
+      updatePackageJson: boolean
+    }
+    const answers = await inquirer.prompt<Answers>([
+      {
+        type: 'confirm',
+        name: 'updatePackageJson',
+        message: `Add drizzle db commands to package.json?`,
+      },
+    ])
+    if (answers.updatePackageJson) {
+      await fs.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2))
+    }
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
@@ -47,9 +63,6 @@ export const initDrizzle = async (command: BaseCommand) => {
       stdio: 'inherit',
       shell: true,
     })
-  } else {
-    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions, @typescript-eslint/no-unsafe-member-access
-    console.log(`drizzle-kit already installed... Using version ${packageJson?.devDependencies?.['drizzle-kit']}`)
   }
   // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
   if (!Object.keys(packageJson?.dependencies ?? {}).includes('drizzle-orm')) {
@@ -57,9 +70,6 @@ export const initDrizzle = async (command: BaseCommand) => {
       stdio: 'inherit',
       shell: true,
     })
-  } else {
-    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions, @typescript-eslint/no-unsafe-member-access
-    console.log(`drizzle-orm already installed... Using version ${packageJson?.dependencies?.['drizzle-orm']}`)
   }
 }
 
