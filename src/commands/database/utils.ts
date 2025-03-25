@@ -1,52 +1,24 @@
 import fsPromises from 'fs/promises'
 import fs from 'fs'
 import inquirer from 'inquirer'
-import path from 'path'
 
-const JIGSAW_URL = 'https://jigsaw.services-prod.nsvcs.net'
-
-export const getExtensionInstallations = async ({
-  siteId,
-  accountId,
-  token,
-}: {
-  siteId: string
-  accountId: string
-  token: string
-}) => {
-  const installationsResponse = await fetch(
-    `${JIGSAW_URL}/team/${encodeURIComponent(accountId)}/integrations/installations/${encodeURIComponent(siteId)}`,
-    {
-      headers: {
-        'netlify-token': token,
-      },
-    },
-  )
-
-  if (!installationsResponse.ok) {
-    return new Response('Failed to fetch installed extensions for site', {
-      status: 500,
-    })
-  }
-
-  const installations = await installationsResponse.json()
-  // console.log('installations', installations
-  return installations
-}
+import { JIGSAW_URL, NETLIFY_WEB_UI } from './constants.js'
+import BaseCommand from '../base-command.js'
 
 export const getExtension = async ({ accountId, token, slug }: { accountId: string; token: string; slug: string }) => {
-  const fetchExtensionUrl = new URL('/.netlify/functions/fetch-extension', 'https://app.netlify.com/')
-  fetchExtensionUrl.searchParams.append('teamId', accountId)
-  fetchExtensionUrl.searchParams.append('slug', slug)
+  const url = new URL('/.netlify/functions/fetch-extension', NETLIFY_WEB_UI)
+  url.searchParams.append('teamId', accountId)
+  url.searchParams.append('slug', slug)
 
-  const extensionReq = await fetch(fetchExtensionUrl.toString(), {
+  const extensionReq = await fetch(url.toString(), {
     headers: {
       Cookie: `_nf-auth=${token}`,
     },
   })
   const extension = (await extensionReq.json()) as
     | {
-        hostSiteUrl?: string
+        name: string
+        hostSiteUrl: string
         installedOnTeam: boolean
       }
     | undefined
@@ -65,7 +37,8 @@ export const installExtension = async ({
   slug: string
   hostSiteUrl: string
 }) => {
-  const installExtensionResponse = await fetch(`https://app.netlify.com/.netlify/functions/install-extension`, {
+  const url = new URL('/.netlify/functions/install-extension', NETLIFY_WEB_UI)
+  const installExtensionResponse = await fetch(url.toString(), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -83,26 +56,7 @@ export const installExtension = async ({
   }
 
   const installExtensionData = await installExtensionResponse.json()
-  console.log('installExtensionData', installExtensionData)
-
   return installExtensionData
-}
-
-export const carefullyWriteFile = async (filePath: string, data: string) => {
-  if (fs.existsSync(filePath)) {
-    const answers = await inquirer.prompt([
-      {
-        type: 'confirm',
-        name: 'overwrite',
-        message: `Overwrite existing ${path.basename(filePath)}?`,
-      },
-    ])
-    if (answers.overwrite) {
-      await fsPromises.writeFile(filePath, data)
-    }
-  } else {
-    await fsPromises.writeFile(filePath, data)
-  }
 }
 
 export const getSiteConfiguration = async ({
@@ -116,19 +70,62 @@ export const getSiteConfiguration = async ({
   token: string
   slug: string
 }) => {
-  const siteConfigurationResponse = await fetch(
-    `${JIGSAW_URL}/team/${accountId}/integrations/${slug}/configuration/site/${siteId}`,
-    {
-      headers: {
-        'netlify-token': token,
-      },
+  const url = new URL(`/team/${accountId}/integrations/${slug}/configuration/site/${siteId}`, JIGSAW_URL)
+  const siteConfigurationResponse = await fetch(url.toString(), {
+    headers: {
+      'netlify-token': token,
     },
-  )
-
+  })
   if (!siteConfigurationResponse.ok) {
     throw new Error(`Failed to fetch extension site configuration for ${siteId}. Is the extension installed?`)
   }
 
   const siteConfiguration = await siteConfigurationResponse.json()
   return siteConfiguration
+}
+
+export const carefullyWriteFile = async (filePath: string, data: string, projectRoot: string) => {
+  if (fs.existsSync(filePath)) {
+    type Answers = {
+      overwrite: boolean
+    }
+    const answers = await inquirer.prompt<Answers>([
+      {
+        type: 'confirm',
+        name: 'overwrite',
+        message: `Overwrite existing file .${filePath.replace(projectRoot, '')}?`,
+      },
+    ])
+    if (answers.overwrite) {
+      await fsPromises.writeFile(filePath, data)
+    }
+  } else {
+    await fsPromises.writeFile(filePath, data)
+  }
+}
+
+export const getAccount = async (
+  command: BaseCommand,
+  {
+    accountId,
+  }: {
+    accountId: string
+  },
+) => {
+  let account: Awaited<ReturnType<typeof command.netlify.api.getAccount>>[number]
+  try {
+    // @ts-expect-error -- TODO: fix the getAccount type in the openapi spec. It should not be an array of accounts, just one account.
+    account = await command.netlify.api.getAccount({ accountId })
+  } catch (e) {
+    throw new Error(`Error getting account, make sure you are logged in with netlify login`, {
+      cause: e,
+    })
+  }
+  if (!account.id || !account.name) {
+    throw new Error(`Error getting account, make sure you are logged in with netlify login`)
+  }
+  return account as { id: string; name: string } & Omit<
+    Awaited<ReturnType<typeof command.netlify.api.getAccount>>[number],
+    'id' | 'name'
+  >
 }
