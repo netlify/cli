@@ -58,18 +58,6 @@ const init = async (_options: OptionValues, command: BaseCommand) => {
     throw new Error(`Please login with netlify login before running this command`)
   }
 
-  // let site: Awaited<ReturnType<typeof command.netlify.api.getSite>>
-  // try {
-  //   site = await command.netlify.api.getSite({
-  //     siteId: command.siteId,
-  //     // @ts-expect-error -- feature_flags is not in the types
-  //     feature_flags: 'cli',
-  //   })
-  // } catch (e) {
-  //   throw new Error(`Error getting site, make sure you are logged in with netlify login`, {
-  //     cause: e,
-  //   })
-  // }
   if (!siteInfo.account_id || !siteInfo.name) {
     throw new Error(`Error getting site, make sure you are logged in with netlify login`)
   }
