@@ -14,7 +14,7 @@ const init = async (_options: OptionValues, command: BaseCommand) => {
 
   const initialOpts = command.opts()
 
-  if (initialOpts.drizzle !== false) {
+  if (initialOpts.drizzle !== false && initialOpts.drizzle !== true) {
     const answers = await inquirer.prompt(
       [
         {
