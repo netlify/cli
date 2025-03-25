@@ -4,11 +4,9 @@ import BaseCommand from '../base-command.js'
 import { getExtension, getExtensionInstallations, getSiteConfiguration, installExtension } from './utils.js'
 import { initDrizzle } from './drizzle.js'
 
-const NETLIFY_DATABASE_EXTENSION_SLUG = '-94w9m6w-netlify-database-extension'
+const NETLIFY_DATABASE_EXTENSION_SLUG = '7jjmnqyo-netlify-neon'
 
 const init = async (_options: OptionValues, command: BaseCommand) => {
-  process.env.UNSTABLE_NETLIFY_DATABASE_EXTENSION_HOST_SITE_URL = 'http://localhost:8989'
-
   if (!command.siteId) {
     console.error(`The project must be linked with netlify link before initializing a database.`)
     return
@@ -16,18 +14,20 @@ const init = async (_options: OptionValues, command: BaseCommand) => {
 
   const initialOpts = command.opts()
 
-  const answers = await inquirer.prompt(
-    [
-      {
-        type: 'confirm',
-        name: 'drizzle',
-        message: 'Use Drizzle?',
-      },
-    ].filter((q) => !initialOpts[q.name]),
-  )
+  if (initialOpts.drizzle !== false) {
+    const answers = await inquirer.prompt(
+      [
+        {
+          type: 'confirm',
+          name: 'drizzle',
+          message: 'Use Drizzle?',
+        },
+      ].filter((q) => !initialOpts[q.name]),
+    )
 
-  if (!initialOpts.drizzle) {
-    command.setOptionValue('drizzle', answers.drizzle)
+    if (!initialOpts.drizzle) {
+      command.setOptionValue('drizzle', answers.drizzle)
+    }
   }
   const opts = command.opts()
   if (opts.drizzle && command.project.root) {
@@ -37,8 +37,7 @@ const init = async (_options: OptionValues, command: BaseCommand) => {
   if (!command.netlify.api.accessToken) {
     throw new Error(`No access token found, please login with netlify login`)
   }
-  console.log(`Initializing a new database for site: ${command.siteId}
-Please wait...`)
+
   let site: Awaited<ReturnType<typeof command.netlify.api.getSite>>
   try {
     // @ts-expect-error -- feature_flags is not in the types
@@ -48,9 +47,13 @@ Please wait...`)
       cause: e,
     })
   }
+  // console.log('site', site)
   if (!site.account_id) {
     throw new Error(`No account id found for site ${command.siteId}`)
   }
+
+  console.log(`Initializing a new database for site: ${command.siteId} on account ${site.account_id}
+    Please wait...`)
 
   const netlifyToken = command.netlify.api.accessToken.replace('Bearer ', '')
   const extension = await getExtension({
@@ -63,20 +66,7 @@ Please wait...`)
     throw new Error(`Failed to get extension host site url when installing extension`)
   }
 
-  const installations = await getExtensionInstallations({
-    accountId: site.account_id,
-    siteId: command.siteId,
-    token: netlifyToken,
-  })
-  const dbExtensionInstallation = (
-    installations as {
-      integrationSlug: string
-    }[]
-  ).find((installation) => installation.integrationSlug === NETLIFY_DATABASE_EXTENSION_SLUG)
-
-  if (!dbExtensionInstallation) {
-    console.log(`Netlify Database extension not installed on team ${site.account_id}, attempting to install now...`)
-
+  if (!extension.installedOnTeam) {
     const answers = await inquirer.prompt([
       {
         type: 'confirm',
@@ -115,22 +105,23 @@ Please wait...`)
     // no op, env var does not exist, so we just continue
   }
 
-  console.log('Initializing a new database for site: ', command.siteId)
+  const extensionSiteUrl = process.env.UNSTABLE_NETLIFY_DATABASE_EXTENSION_HOST_SITE_URL ?? extension.hostSiteUrl
 
-  const initEndpoint = new URL(
-    '/cli-db-init',
-    process.env.UNSTABLE_NETLIFY_DATABASE_EXTENSION_HOST_SITE_URL ?? extension.hostSiteUrl,
-  ).toString()
-
+  const initEndpoint = new URL('/cli-db-init', extensionSiteUrl).toString()
+  console.log('initEndpoint', initEndpoint)
   const req = await fetch(initEndpoint, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${netlifyToken}`,
-      'x-nf-db-site-id': command.siteId,
-      'x-nf-db-account-id': site.account_id,
+      'nf-db-token': netlifyToken,
+      'nf-db-site-id': command.siteId,
+      'nf-db-account-id': site.account_id,
     },
   })
+
+  if (!req.ok) {
+    throw new Error(`Failed to initialize DB: ${await req.text()}`)
+  }
 
   const res = await req.json()
   console.log(res)
@@ -198,6 +189,7 @@ export const createDatabaseCommand = (program: BaseCommand) => {
     .command('init')
     .description('Initialize a new database')
     .option('--drizzle', 'Sets up drizzle-kit and drizzle-orm in your project')
+    .option('--no-drizzle', 'Skips drizzle')
     .action(init)
 
   dbCommand.command('status').description('Check the status of the database').action(status)
