@@ -1,7 +1,8 @@
-import { Buffer } from 'buffer'
-import { IncomingMessage } from 'http'
+import type { Buffer } from 'buffer'
+import type { IncomingMessage } from 'http'
 
-import { Match } from 'netlify-redirector'
+import type { PollingStrategy, Settings } from '@netlify/build-info'
+import type { Match } from 'netlify-redirector'
 
 export type FrameworkNames = '#static' | '#auto' | '#custom' | string
 
@@ -12,7 +13,7 @@ export type FrameworkInfo = {
   dev: {
     commands: string[]
     port: number
-    pollingStrategies: { name: string }[]
+    pollingStrategies: PollingStrategy[]
   }
   name: FrameworkNames
   staticAssetsDirectory: string

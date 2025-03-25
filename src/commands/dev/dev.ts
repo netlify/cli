@@ -92,7 +92,7 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
   const { api, cachedConfig, config, repositoryRoot, site, siteInfo, state } = command.netlify
   config.dev = { ...config.dev }
   config.build = { ...config.build }
-  const devConfig = {
+  const devConfig: DevConfig = {
     framework: '#auto',
     autoLaunch: Boolean(options.open),
     ...(cachedConfig.siteInfo?.dev_server_settings && {
@@ -104,7 +104,7 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
     ...(config.build.base && { base: config.build.base }),
     ...config.dev,
     ...options,
-  } as DevConfig
+  }
 
   let { env } = cachedConfig
 
