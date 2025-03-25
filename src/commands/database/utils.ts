@@ -47,6 +47,7 @@ export const getExtension = async ({ accountId, token, slug }: { accountId: stri
   const extension = (await extensionReq.json()) as
     | {
         hostSiteUrl?: string
+        installedOnTeam: boolean
       }
     | undefined
 

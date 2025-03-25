@@ -41,15 +41,26 @@ export const initDrizzle = async (command: BaseCommand) => {
     await fs.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2))
   }
 
-  await spawnAsync(command.project.packageManager?.installCommand ?? 'npm install', ['drizzle-kit@latest', '-D'], {
-    stdio: 'inherit',
-    shell: true,
-  })
-
-  await spawnAsync(command.project.packageManager?.installCommand ?? 'npm install', ['drizzle-orm@latest'], {
-    stdio: 'inherit',
-    shell: true,
-  })
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+  if (!Object.keys(packageJson?.devDependencies ?? {}).includes('drizzle-kit')) {
+    await spawnAsync(command.project.packageManager?.installCommand ?? 'npm install', ['drizzle-kit@latest', '-D'], {
+      stdio: 'inherit',
+      shell: true,
+    })
+  } else {
+    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions, @typescript-eslint/no-unsafe-member-access
+    console.log(`drizzle-kit already installed... Using version ${packageJson?.devDependencies?.['drizzle-kit']}`)
+  }
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+  if (!Object.keys(packageJson?.dependencies ?? {}).includes('drizzle-orm')) {
+    await spawnAsync(command.project.packageManager?.installCommand ?? 'npm install', ['drizzle-orm@latest'], {
+      stdio: 'inherit',
+      shell: true,
+    })
+  } else {
+    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions, @typescript-eslint/no-unsafe-member-access
+    console.log(`drizzle-orm already installed... Using version ${packageJson?.dependencies?.['drizzle-orm']}`)
+  }
 }
 
 const drizzleConfig = `import { defineConfig } from 'drizzle-kit';
@@ -59,31 +70,33 @@ export default defineConfig({
     dbCredentials: {
         url: process.env.NETLIFY_DATABASE_URL!
     },
-    schema: './db/schema.ts'
+    schema: './db/schema.ts',
+    out: './migrations'
 });`
 
 const exampleDrizzleSchema = `import { integer, pgTable, varchar, text } from 'drizzle-orm/pg-core';
 
-export const post = pgTable('post', {
+export const posts = pgTable('posts', {
     id: integer().primaryKey().generatedAlwaysAsIdentity(),
     title: varchar({ length: 255 }).notNull(),
     content: text().notNull().default('')
-});
-`
+});`
 
-const exampleDbIndex = `import { drizzle } from 'lib/db';
-// import { drizzle } from '@netlify/database'
+const exampleDbIndex = `import { neon } from '@netlify/neon';
+import { drizzle } from 'drizzle-orm/neon-http';
+
 import * as schema from 'db/schema';
 
 export const db = drizzle({
-    schema
-});
-`
+    schema,
+    client: neon()
+});`
 
 const packageJsonScripts = {
   'db:generate': 'netlify dev:exec --context dev drizzle-kit generate',
   'db:migrate': 'netlify dev:exec --context dev drizzle-kit migrate',
   'db:studio': 'netlify dev:exec --context dev drizzle-kit studio',
+  'db:push': 'netlify dev:exec --context dev drizzle-kit push',
 }
 
 const spawnAsync = (command: string, args: string[], options: Parameters<typeof spawn>[2]): Promise<number> => {
