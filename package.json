@@ -64,7 +64,7 @@
   "dependencies": {
     "@fastify/static": "7.0.4",
     "@netlify/blobs": "8.1.2",
-    "@netlify/build": "30.0.3",
+    "@netlify/build": "30.0.6",
     "@netlify/build-info": "9.0.1",
     "@netlify/config": "21.0.2",
     "@netlify/edge-bundler": "12.3.2",
