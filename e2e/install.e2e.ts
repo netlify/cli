@@ -136,15 +136,6 @@ const itWithMockNpmRegistry = it.extend<{ registry: { address: string; cwd: stri
   },
 })
 
-const doesPackageManagerExist = (packageManager: string): boolean => {
-  try {
-    execSync(`${packageManager} --version`)
-    return true
-  } catch {
-    return false
-  }
-}
-
 const tests: [packageManager: string, config: { install: [cmd: string, args: string[]]; lockfile: string }][] = [
   [
     'npm',
@@ -170,29 +161,26 @@ const tests: [packageManager: string, config: { install: [cmd: string, args: str
 ]
 
 describe.each(tests)('%s → installs the cli and runs the help command without error', (packageManager, config) => {
-  itWithMockNpmRegistry.runIf(doesPackageManagerExist(packageManager))(
-    'installs the cli and runs the help command without error',
-    async ({ registry }) => {
-      const cwd = registry.cwd
-      await execa(...config.install, {
-        cwd,
-        env: { npm_config_registry: registry.address },
-        stdio: debug.enabled ? 'inherit' : 'ignore',
-      })
+  itWithMockNpmRegistry('installs the cli and runs the help command without error', async ({ registry }) => {
+    const cwd = registry.cwd
+    await execa(...config.install, {
+      cwd,
+      env: { npm_config_registry: registry.address },
+      stdio: debug.enabled ? 'inherit' : 'ignore',
+    })
 
-      expect(
-        existsSync(path.join(cwd, config.lockfile)),
-        `Generated lock file ${config.lockfile} does not exist in ${cwd}`,
-      ).toBe(true)
+    expect(
+      existsSync(path.join(cwd, config.lockfile)),
+      `Generated lock file ${config.lockfile} does not exist in ${cwd}`,
+    ).toBe(true)
 
-      const binary = path.resolve(path.join(cwd, `./node_modules/.bin/netlify${platform() === 'win32' ? '.cmd' : ''}`))
-      const { stdout } = await execa(binary, ['help'], { cwd })
+    const binary = path.resolve(path.join(cwd, `./node_modules/.bin/netlify${platform() === 'win32' ? '.cmd' : ''}`))
+    const { stdout } = await execa(binary, ['help'], { cwd })
 
-      expect(stdout.trim(), `Help command does not start with 'VERSION':\n\n${stdout}`).toMatch(/^VERSION/)
-      expect(stdout, `Help command does not include 'netlify-cli/${pkg.version}':\n\n${stdout}`).toContain(
-        `netlify-cli/${pkg.version}`,
-      )
-      expect(stdout, `Help command does not include '$ netlify [COMMAND]':\n\n${stdout}`).toMatch('$ netlify [COMMAND]')
-    },
-  )
+    expect(stdout.trim(), `Help command does not start with 'VERSION':\n\n${stdout}`).toMatch(/^VERSION/)
+    expect(stdout, `Help command does not include 'netlify-cli/${pkg.version}':\n\n${stdout}`).toContain(
+      `netlify-cli/${pkg.version}`,
+    )
+    expect(stdout, `Help command does not include '$ netlify [COMMAND]':\n\n${stdout}`).toMatch('$ netlify [COMMAND]')
+  })
 })

@@ -35,11 +35,9 @@ jobs:
           cache: npm
           check-latest: true
 
-      - name: Cache verdaccio storage
-        uses: actions/cache@v4
+      - uses: pnpm/action-setup@v4
         with:
-          path: ./.verdaccio-storage
-          key: verdaccio-e2e-cli-${{ hashFiles('./package-lock.json') }}
+          version: 10
 
       - name: Install dependencies
         run: npm ci --no-audit
@@ -91,11 +89,9 @@ jobs:
           cache: npm
           check-latest: true
 
-      - name: Cache verdaccio storage
-        uses: actions/cache@v4
+      - uses: pnpm/action-setup@v4
         with:
-          path: ./.verdaccio-storage
-          key: verdaccio-e2e-cli-${{ hashFiles('./package-lock.json') }}
+          version: 10
 
       - name: Install dependencies
         run: npm ci --no-audit
