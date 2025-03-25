@@ -5,6 +5,9 @@ on:
   push:
     branches: [main]
   pull_request:
+    branches:
+      - '**'
+      - '!release-please--**'
   schedule:
     # check daily to notice potential package manager issues
     - cron: '0 1 * * *' # At 01:00 daily
