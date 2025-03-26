@@ -167,7 +167,7 @@
     "@bugsnag/js": "8.2.0",
     "@eslint/compat": "^1.2.7",
     "@eslint/js": "^9.21.0",
-    "@netlify/functions": "3.0.2",
+    "@netlify/functions": "3.0.4",
     "@sindresorhus/slugify": "2.2.1",
     "@tsconfig/node18": "^18.2.4",
     "@tsconfig/recommended": "^1.0.8",
