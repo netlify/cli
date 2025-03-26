@@ -76,6 +76,7 @@ jobs:
 
       - name: Build project
         run: npm run build
+        if: '${{!steps.release-check.outputs.IS_RELEASE}}'
 
       - name: Prepare tests
         run: npm run test:init
@@ -186,6 +187,7 @@ jobs:
 
       - name: Build project
         run: npm run build
+        if: '${{!steps.release-check.outputs.IS_RELEASE}}'
 
       - name: Prepare tests
         run: npm run test:init
