@@ -26,11 +26,13 @@ export const blobsGet = async (storeName: string, key: string, options: Options,
   try {
     blob = await store.get(key)
   } catch {
-    return printError(`Could not retrieve blob ${chalk.yellow(key)} from store ${chalk.yellow(storeName)}`)
+    printError(`Could not retrieve blob ${chalk.yellow(key)} from store ${chalk.yellow(storeName)}`)
+    return
   }
 
   if (blob === null) {
-    return printError(`Blob ${chalk.yellow(key)} does not exist in store ${chalk.yellow(storeName)}`)
+    printError(`Blob ${chalk.yellow(key)} does not exist in store ${chalk.yellow(storeName)}`)
+    return
   }
 
   if (output) {

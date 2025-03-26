@@ -8,6 +8,8 @@ import node from 'eslint-plugin-n'
 import vitest from '@vitest/eslint-plugin'
 import tseslint from 'typescript-eslint'
 
+import cliTemporarySuppressions from './eslint_temporary_suppressions.js'
+
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
@@ -140,23 +142,7 @@ export default tseslint.config(
     },
   },
 
-  // XXX: Temporarily disabled rules: These rules are disabled because we have offending code that we haven't yet fixed.
-  {
-    rules: {
-      // Empty functions and blocks are useful (e.g `noop() {}`, `catch {}`) but can mask unintentionally omitted
-      // implementation. We should add explanatory comments like `// intentionally empty` and `// ignore error` in these
-      // scenarios to communicate intent.
-      'no-empty': 'off',
-      '@typescript-eslint/no-empty-function': 'off',
-
-      'n/no-unsupported-features/node-builtins': [
-        'error',
-        {
-          ignores: ['FormData', 'ReadableStream', 'Response', 'Request', 'fetch', 'fs/promises.cp'],
-        },
-      ],
-    },
-  },
+  ...cliTemporarySuppressions,
 
   // Must be last
   prettier,

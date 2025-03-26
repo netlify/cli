@@ -22,7 +22,6 @@ type Task = () => Promise<unknown>
 export class SiteBuilder {
   tasks: Task[] = []
 
-  // eslint-disable-next-line no-useless-constructor
   constructor(public readonly directory: string) {}
 
   ensureDirectoryExists(directory: string) {
@@ -170,7 +169,7 @@ export class SiteBuilder {
       const content = headers
         .map(
           ({ headers: headersValues, path: headerPath }) =>
-            `${headerPath}${os.EOL}${headersValues.map((header) => `  ${header}`).join(`${os.EOL}`)}`,
+            `${headerPath}${os.EOL}${headersValues.map((header) => `  ${header}`).join(os.EOL)}`,
         )
         .join(os.EOL)
       await ensureDir(path.dirname(dest))

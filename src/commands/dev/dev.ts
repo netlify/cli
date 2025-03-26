@@ -88,7 +88,7 @@ const validateShortFlagArgs = (args: string) => {
 }
 
 export const dev = async (options: OptionValues, command: BaseCommand) => {
-  log(`${NETLIFYDEV}`)
+  log(NETLIFYDEV)
   const { api, cachedConfig, config, repositoryRoot, site, siteInfo, state } = command.netlify
   config.dev = { ...config.dev }
   config.build = { ...config.build }

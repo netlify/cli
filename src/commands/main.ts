@@ -142,7 +142,7 @@ const mainCommand = async function (options, command) {
   if (command.args.length === 0) {
     const pkg = await getPackageJson()
 
-    const title = `${chalk.bgBlack.cyan('⬥ Netlify CLI')}`
+    const title = chalk.bgBlack.cyan('⬥ Netlify CLI')
     const docsMsg = `${chalk.greenBright('Read the docs:')} https://ntl.fyi/get-started-with-netlify-cli`
     const supportMsg = `${chalk.magentaBright('Support and bugs:')} ${pkg.bugs.url}`
 
@@ -187,8 +187,9 @@ const mainCommand = async function (options, command) {
       resolve(false)
     }, SUGGESTION_TIMEOUT)
 
-    // eslint-disable-next-line promise/catch-or-return
-    prompt.then((value) => resolve(value.suggestion))
+    prompt.then((value) => {
+      resolve(value.suggestion)
+    })
   })
   // create new log line
   log()

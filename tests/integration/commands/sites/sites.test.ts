@@ -48,6 +48,7 @@ vi.mock('../../../../src/utils/sites/utils.js', () => ({
 }))
 
 vi.mock('prettyjson', async () => {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
   const realRender = (await vi.importActual('prettyjson')) as typeof import('prettyjson')
 
   return {

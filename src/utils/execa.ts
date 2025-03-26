@@ -6,7 +6,6 @@ import execaLib from 'execa'
 // alternative path to the module location, making it easier to mock its logic
 // in tests (see `tests/utils/moc
 
-// eslint-disable-next-line import/no-mutable-exports
 let execa: typeof execaLib
 
 if (env.NETLIFY_CLI_EXECA_PATH) {
