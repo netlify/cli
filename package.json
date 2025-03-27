@@ -55,6 +55,7 @@
     "test:init:next-deps": "npm ci --prefix tests/integration/__fixtures__/next-app-without-config --no-audit && npm ci --prefix tests/integration/__fixtures__/next-app --no-audit",
     "test:ci:vitest:integration": "vitest run --coverage tests/integration/",
     "test:ci:vitest:unit": "vitest run --coverage tests/unit/",
+    "postinstall": "node ./scripts/postinstall.js",
     "prepublishOnly": "npm shrinkwrap",
     "typecheck": "tsc",
     "typecheck:watch": "tsc --watch",
