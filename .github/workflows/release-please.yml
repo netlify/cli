@@ -40,6 +40,11 @@ jobs:
           cache: npm
           registry-url: 'https://registry.npmjs.org'
 
+      # Used by E2E tests
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
       - name: Install core dependencies
         run: npm ci --no-audit
 
