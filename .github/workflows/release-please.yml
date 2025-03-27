@@ -43,6 +43,9 @@ jobs:
       - name: Install core dependencies
         run: npm ci --no-audit
 
+      - name: Build project
+        run: npm run build
+
       - name: Publish package
         run: npm publish --provenance
         env:
