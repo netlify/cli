@@ -45,4 +45,4 @@ jobs:
           timeout_minutes: 15
           max_attempts: 3
           retry_on: error
-          command: npm run test:ci:vitest:unit
+          command: npm run test:unit -- --coverage

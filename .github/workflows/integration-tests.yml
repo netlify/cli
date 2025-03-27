@@ -76,7 +76,7 @@ jobs:
           timeout_minutes: 15
           max_attempts: 3
           retry_on: error
-          command: npm run test:ci:vitest:integration -- --shard=${{ matrix.shard }}
+          command: npm run test:integration -- --coverage --shard=${{ matrix.shard }}
         env:
           # GitHub secrets are not available when running on PR from forks
           # We set a flag so we can skip tests that access Netlify API
@@ -169,7 +169,7 @@ jobs:
           timeout_minutes: 15
           max_attempts: 3
           retry_on: error
-          command: npm exec vitest -- run tests/integration/commands/dev/dev.test.ts
+          command: npm exec vitest -- run tests/integration/commands/dev/dev.test.ts --coverage
         env:
           # GitHub secrets are not available when running on PR from forks
           # We set a flag so we can skip tests that access Netlify API

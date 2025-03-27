@@ -1,5 +1,3 @@
-import process from 'process'
-
 import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
@@ -19,7 +17,6 @@ export default defineConfig({
         singleThread: true,
       },
     },
-    reporters: [process.env.DEBUG_TESTS ? 'tap' : 'default'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov'],
