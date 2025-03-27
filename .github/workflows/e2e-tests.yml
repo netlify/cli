@@ -49,7 +49,7 @@ jobs:
         run: npm run build
 
       - name: Run E2E tests
-        run: npm run e2e
+        run: npm run test:e2e
 
       - name: Notify Slack
         uses: 8398a7/action-slack@v3
@@ -103,7 +103,7 @@ jobs:
         run: npm run build
 
       - name: Run E2E tests
-        run: npm run e2e
+        run: npm run test:e2e
 
       - name: Notify Slack
         uses: 8398a7/action-slack@v3

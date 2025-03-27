@@ -52,7 +52,7 @@ jobs:
         run: npm run build
 
       - name: Run E2E tests
-        run: npm run e2e
+        run: npm run test:e2e
 
       - name: Publish package
         run: npm publish --provenance
