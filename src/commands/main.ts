@@ -34,6 +34,7 @@ import { createSwitchCommand } from './switch/index.js'
 import { AddressInUseError } from './types.js'
 import { createUnlinkCommand } from './unlink/index.js'
 import { createWatchCommand } from './watch/index.js'
+import { createDatabaseCommand } from './database/index.js'
 
 const SUGGESTION_TIMEOUT = 1e4
 
@@ -142,7 +143,7 @@ const mainCommand = async function (options, command) {
   if (command.args.length === 0) {
     const pkg = await getPackageJson()
 
-    const title = `${chalk.bgBlack.cyan('⬥ Netlify CLI')}`
+    const title = chalk.bgBlack.cyan('⬥ Netlify CLI')
     const docsMsg = `${chalk.greenBright('Read the docs:')} https://ntl.fyi/get-started-with-netlify-cli`
     const supportMsg = `${chalk.magentaBright('Support and bugs:')} ${pkg.bugs.url}`
 
@@ -188,7 +189,9 @@ const mainCommand = async function (options, command) {
     }, SUGGESTION_TIMEOUT)
 
     // eslint-disable-next-line promise/catch-or-return
-    prompt.then((value) => resolve(value.suggestion))
+    prompt.then((value) => {
+      resolve(value.suggestion)
+    })
   })
   // create new log line
   log()
@@ -229,6 +232,7 @@ export const createMainCommand = () => {
   createUnlinkCommand(program)
   createWatchCommand(program)
   createLogsCommand(program)
+  createDatabaseCommand(program)
 
   program
     .version(USER_AGENT, '-V')
