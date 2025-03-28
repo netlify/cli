@@ -57,7 +57,6 @@ const promptForPath = async (): Promise<string> => {
 
 export const run = async ({ args, command }: RunRecipeOptions) => {
   // Start the download in the background while we wait for the prompts.
-  // eslint-disable-next-line promise/prefer-await-to-then
   const download = downloadFile(version).catch(() => null)
 
   const filePath = args[0] || (await promptForPath())

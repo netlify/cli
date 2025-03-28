@@ -10,6 +10,7 @@ import { withSiteBuilder } from '../../utils/site-builder.js'
 let configOptions = {}
 
 vi.mock('@netlify/config', async (importOriginal) => {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
   const original = (await importOriginal()) as typeof import('@netlify/config')
   return {
     ...original,

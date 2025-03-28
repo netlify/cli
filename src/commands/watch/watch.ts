@@ -61,8 +61,9 @@ export const watch = async (options: OptionValues, command: BaseCommand) => {
   // wait for 1 sec for everything to kickoff
   console.time('Deploy time')
   await new Promise((resolve) => {
-    // @ts-expect-error TS(2794) FIXME: Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
-    setTimeout(() => resolve(), INIT_WAIT)
+    setTimeout(() => {
+      resolve(undefined)
+    }, INIT_WAIT)
   })
 
   // Get latest commit and look for that

@@ -72,8 +72,9 @@ const getDenoExtPrompt = () => {
 // @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'any' t... Remove this comment to see the full error message
 export const run = async ({ config, repositoryRoot }) => {
   const deno = new DenoBridge({
-    onBeforeDownload: () =>
-      log(`${NETLIFYDEVWARN} Setting up the Edge Functions environment. This may take a couple of minutes.`),
+    onBeforeDownload: () => {
+      log(`${NETLIFYDEVWARN} Setting up the Edge Functions environment. This may take a couple of minutes.`)
+    },
   })
   const denoBinary = await deno.getBinaryPath()
   const settingsPath = getSettingsPath(repositoryRoot)

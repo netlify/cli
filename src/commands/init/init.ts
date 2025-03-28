@@ -104,7 +104,7 @@ const logGitSetupInstructionsAndExit = () => {
 // @ts-expect-error TS(7031) FIXME: Binding element 'command' implicitly has an 'any' ... Remove this comment to see the full error message
 const handleNoGitRemoteAndExit = async ({ command, error, state }) => {
   log()
-  log(`${chalk.yellow('No git remote was found, would you like to set one up?')}`)
+  log(chalk.yellow('No git remote was found, would you like to set one up?'))
   log(`
 It is recommended that you initialize a site that has a remote repository in GitHub.
 

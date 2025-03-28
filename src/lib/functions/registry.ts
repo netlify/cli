@@ -465,7 +465,6 @@ export class FunctionsRegistry {
    * A proxy to zip-it-and-ship-it's `listFunctions` method. It exists just so
    * that we can mock it in tests.
    */
-  // eslint-disable-next-line class-methods-use-this
   async listFunctions(...args: Parameters<typeof listFunctions>) {
     return await listFunctions(...args)
   }

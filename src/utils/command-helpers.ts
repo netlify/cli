@@ -62,9 +62,9 @@ const BASE_FLAGS = new Set(['--debug', '--http-proxy', '--http-proxy-certificate
 export const NETLIFY_CYAN = chalk.rgb(40, 180, 170)
 
 export const NETLIFYDEV = `${chalk.greenBright('◈')} ${NETLIFY_CYAN('Netlify Dev')} ${chalk.greenBright('◈')}`
-export const NETLIFYDEVLOG = `${chalk.greenBright('◈')}`
-export const NETLIFYDEVWARN = `${chalk.yellowBright('◈')}`
-export const NETLIFYDEVERR = `${chalk.redBright('◈')}`
+export const NETLIFYDEVLOG = chalk.greenBright('◈')
+export const NETLIFYDEVWARN = chalk.yellowBright('◈')
+export const NETLIFYDEVERR = chalk.redBright('◈')
 
 export const BANG = process.platform === 'win32' ? '»' : '›'
 
@@ -199,8 +199,7 @@ export const error = (message: unknown | Error | string = '', options: { exit?: 
   const err =
     message instanceof Error
       ? message
-      : // eslint-disable-next-line unicorn/no-nested-ternary
-      typeof message === 'string'
+      : typeof message === 'string'
       ? new Error(message)
       : { message, stack: undefined, name: 'Error' }
 
@@ -345,7 +344,7 @@ export const checkFileForLine = (filename: string, line: string) => {
   } catch (error_) {
     error(error_)
   }
-  return !!filecontent.match(`${line}`)
+  return !!filecontent.match(line)
 }
 
 export const TABTAB_CONFIG_LINE = '[[ -f ~/.config/tabtab/__tabtab.zsh ]] && . ~/.config/tabtab/__tabtab.zsh || true'

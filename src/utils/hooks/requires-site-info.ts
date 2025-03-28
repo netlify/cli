@@ -10,7 +10,8 @@ const requiresSiteInfo = async (command) => {
   const siteId = site.id
   if (!siteId) {
     warn('Did you run `netlify link` yet?')
-    return error(`You don't appear to be in a folder that is linked to a site`)
+    error(`You don't appear to be in a folder that is linked to a site`)
+    return
   }
   try {
     await api.getSite({ siteId })
@@ -18,14 +19,17 @@ const requiresSiteInfo = async (command) => {
     // unauthorized
     if ((error_ as APIError).status === 401) {
       warn(`Log in with a different account or re-link to a site you have permission for`)
-      return error(`Not authorized to view the currently linked site (${siteId})`)
+      error(`Not authorized to view the currently linked site (${siteId})`)
+      return
     }
     // missing
     if ((error_ as APIError).status === 404) {
-      return error(`The site this folder is linked to can't be found`)
+      error(`The site this folder is linked to can't be found`)
+      return
     }
 
-    return error(error_)
+    error(error_)
+    return
   }
 }
 

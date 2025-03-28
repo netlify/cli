@@ -663,7 +663,6 @@ describe.concurrent('command/dev', () => {
                 name: 'deploy-blobs',
                 plugin: {
                   async onDev() {
-                    // eslint-disable-next-line @typescript-eslint/no-shadow, @typescript-eslint/no-var-requires, n/global-require
                     const fs = require('node:fs/promises') as typeof import('node:fs/promises')
 
                     await fs.mkdir('.netlify/blobs/deploy', { recursive: true })

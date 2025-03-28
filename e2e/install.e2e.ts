@@ -2,7 +2,6 @@ import http from 'node:http'
 import os from 'node:os'
 import events from 'node:events'
 import { existsSync } from 'node:fs'
-import { execSync } from 'node:child_process'
 import fs from 'node:fs/promises'
 import { platform } from 'node:os'
 import path from 'node:path'
@@ -160,7 +159,7 @@ const tests: [packageManager: string, config: { install: [cmd: string, args: str
   ],
 ]
 
-describe.each(tests)('%s → installs the cli and runs the help command without error', (packageManager, config) => {
+describe.each(tests)('%s → installs the cli and runs the help command without error', (_, config) => {
   itWithMockNpmRegistry('installs the cli and runs the help command without error', async ({ registry }) => {
     const cwd = registry.cwd
     await execa(...config.install, {

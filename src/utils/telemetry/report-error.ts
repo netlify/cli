@@ -27,7 +27,6 @@ export const reportError = async function (error, config = {}) {
   }
 
   // convert a NotifiableError to an error class
-  // eslint-disable-next-line unicorn/no-nested-ternary
   const err = error instanceof Error ? error : typeof error === 'string' ? new Error(error) : error
 
   const globalConfig = await getGlobalConfig()

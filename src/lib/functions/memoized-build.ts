@@ -12,7 +12,6 @@ const DEBOUNCE_INTERVAL = 300
 export const memoizedBuild = ({ cache, cacheKey, command }) => {
   if (cache[cacheKey] === undefined) {
     cache[cacheKey] = {
-      // eslint-disable-next-line promise/prefer-await-to-then
       task: command().finally(() => {
         const entry = cache[cacheKey]
 
