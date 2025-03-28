@@ -21,6 +21,7 @@ describe('rules-proxy', () => {
     await builder.build()
 
     const rewriter = await createRewriter({
+      // @ts-expect-error(serhalp) -- Lazy test type. Create a factory and use it here.
       config: {},
       distDir: builder.directory,
       projectDir: builder.directory,

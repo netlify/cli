@@ -6,7 +6,7 @@ import { join } from 'path'
 import { afterAll, beforeAll, beforeEach, expect, test } from 'vitest'
 
 import { getLegacyPathInHome, getPathInHome } from '../../../dist/lib/settings.js'
-import getGlobalConfig, { resetConfigCache } from '../../../dist/utils/get-global-config.js'
+import getGlobalConfig, { resetConfigCache } from '../../../dist/utils/get-global-config-store.js'
 
 const configFilePath = getPathInHome(['config.json'])
 const configPath = getPathInHome([])
