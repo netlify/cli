@@ -34,6 +34,6 @@ export const functionsBuild = async (options: OptionValues, command: BaseCommand
 
   log(`${NETLIFYDEVLOG} Building functions`)
 
-  zipFunctions(src, dst)
+  await zipFunctions(src, dst)
   log(`${NETLIFYDEVLOG} Functions built to `, dst)
 }
