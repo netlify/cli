@@ -21,7 +21,7 @@ import hashFns from './hash-fns.js'
 import uploadFiles from './upload-files.js'
 import { getUploadList, waitForDeploy, waitForDiff } from './util.js'
 
-const buildStatsString = (possibleParts: Array<string | false | undefined>) => {
+const buildStatsString = (possibleParts: (string | false | undefined)[]) => {
   const parts = possibleParts.filter(Boolean)
   const message = parts.slice(0, -1).join(', ')
 

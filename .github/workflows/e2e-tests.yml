@@ -5,6 +5,9 @@ on:
   push:
     branches: [main]
   pull_request:
+    branches:
+      - '**'
+      - '!release-please--**'
   schedule:
     # check daily to notice potential package manager issues
     - cron: '0 1 * * *' # At 01:00 daily
@@ -35,11 +38,9 @@ jobs:
           cache: npm
           check-latest: true
 
-      - name: Cache verdaccio storage
-        uses: actions/cache@v4
+      - uses: pnpm/action-setup@v4
         with:
-          path: ./.verdaccio-storage
-          key: verdaccio-e2e-cli-${{ hashFiles('./package-lock.json') }}
+          version: 10
 
       - name: Install dependencies
         run: npm ci --no-audit
@@ -48,7 +49,7 @@ jobs:
         run: npm run build
 
       - name: Run E2E tests
-        run: npm run e2e
+        run: npm run test:e2e
 
       - name: Notify Slack
         uses: 8398a7/action-slack@v3
@@ -91,11 +92,9 @@ jobs:
           cache: npm
           check-latest: true
 
-      - name: Cache verdaccio storage
-        uses: actions/cache@v4
+      - uses: pnpm/action-setup@v4
         with:
-          path: ./.verdaccio-storage
-          key: verdaccio-e2e-cli-${{ hashFiles('./package-lock.json') }}
+          version: 10
 
       - name: Install dependencies
         run: npm ci --no-audit
@@ -104,7 +103,7 @@ jobs:
         run: npm run build
 
       - name: Run E2E tests
-        run: npm run e2e
+        run: npm run test:e2e
 
       - name: Notify Slack
         uses: 8398a7/action-slack@v3

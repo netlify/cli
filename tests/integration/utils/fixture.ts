@@ -44,7 +44,7 @@ export interface FixtureOptions {
 }
 
 interface CallCliOptions {
-  execOptions?: NodeOptions<string>
+  execOptions?: NodeOptions
   offline?: boolean
   parseJson?: boolean
 }
@@ -139,7 +139,7 @@ export async function setupFixtureTests(
     factory = optionsOrFactory
   } else {
     options = optionsOrFactory
-    factory = factoryInput as TestFactory
+    factory = factoryInput!
   }
 
   describe(`fixture: ${fixturePath}`, async () => {

@@ -6,7 +6,6 @@ type BuildFunction = (func: object) => Promise<{ srcFiles: string[]; buildPath?:
 type GetBuildFunction = (params: {
   config: object
   context: object
-  // eslint-disable-next-line @typescript-eslint/ban-types
   errorExit: Function
   func: object
   functionsDirectory: string

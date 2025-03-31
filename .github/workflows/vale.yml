@@ -3,8 +3,12 @@ name: Lint Docs
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   pull_request:
+    branches:
+      - '**'
+      - '!release-please--**'
 
 permissions:
   checks: write

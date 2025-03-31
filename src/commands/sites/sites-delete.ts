@@ -36,7 +36,7 @@ export const sitesDelete = async (siteId: string, options: OptionValues, command
     log(`         Verify this siteID "${siteId}" supplied is correct and proceed.`)
     log('         To skip this prompt, pass a --force flag to the delete command')
     log()
-    log(`${chalk.bold('Be careful here. There is no undo!')}`)
+    log(chalk.bold('Be careful here. There is no undo!'))
     log()
     const { wantsToDelete } = await inquirer.prompt({
       type: 'confirm',

@@ -3,8 +3,12 @@ name: Verify Docs
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   pull_request:
+    branches:
+      - '**'
+      - '!release-please--**'
 
 jobs:
   verify-docs:

@@ -26,6 +26,7 @@ export const blobsDelete = async (storeName: string, key: string, _options: Reco
 
     log(`${chalk.greenBright('Success')}: Blob ${chalk.yellow(key)} deleted from store ${chalk.yellow(storeName)}`)
   } catch {
-    return printError(`Could not delete blob ${chalk.yellow(key)} from store ${chalk.yellow(storeName)}`)
+    printError(`Could not delete blob ${chalk.yellow(key)} from store ${chalk.yellow(storeName)}`)
+    return
   }
 }

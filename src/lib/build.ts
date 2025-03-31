@@ -16,16 +16,14 @@ export interface CachedConfig {
   siteInfo: {
     id?: string
     account_id?: string
-    feature_flags?: Record<string, boolean | boolean | number>
+    feature_flags?: Record<string, boolean | number>
   }
   // TODO(serhalp) Add remaining properties
   [k: string]: unknown
 }
 
-interface DefaultConfig {
-  // TODO(serhalp) Add remaining properties
-  [k: string]: unknown
-}
+// TODO(serhalp) Add remaining properties
+type DefaultConfig = Record<string, unknown>
 
 // TODO(serhalp) This is patching weak or missing properties from @netlify/build. Fix there instead.
 export type BuildConfig = Parameters<typeof build>[0] & {

@@ -119,21 +119,22 @@ const validateDeployFolder = async (deployFolder: string) => {
   } catch (error_) {
     if (error_ && typeof error_ === 'object' && 'code' in error_) {
       if (error_.code === 'ENOENT') {
-        return error(
-          `The deploy directory "${deployFolder}" has not been found. Did you forget to run 'netlify build'?`,
-        )
+        error(`The deploy directory "${deployFolder}" has not been found. Did you forget to run 'netlify build'?`)
+        return
       }
 
       // Improve the message of permission errors
       if (error_.code === 'EACCES') {
-        return error('Permission error when trying to access deploy folder')
+        error('Permission error when trying to access deploy folder')
+        return
       }
     }
     throw error_
   }
 
   if (!stats.isDirectory()) {
-    return error('Deploy target must be a path to a directory')
+    error('Deploy target must be a path to a directory')
+    return
   }
   return stats
 }
@@ -579,7 +580,6 @@ const handleBuild = async ({ cachedConfig, currentDir, defaultConfig, deployHand
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
 const bundleEdgeFunctions = async (options, command: BaseCommand) => {
-  // eslint-disable-next-line n/prefer-global/process, unicorn/prefer-set-has
   const argv = process.argv.slice(2)
   const statusCb =
     options.silent || argv.includes('--json') || argv.includes('--silent') ? () => {} : deployProgressCb()
@@ -679,9 +679,9 @@ const printResults = ({
       log()
       log('If everything looks good on your draft URL, deploy it to your main site URL with the --prod flag.')
       log(
-        `${chalk.cyanBright.bold(
+        chalk.cyanBright.bold(
           `netlify ${isIntegrationDeploy ? 'integration:' : ''}deploy${runBuildCommand ? ' --build' : ''} --prod`,
-        )}`,
+        ),
       )
       log()
     }
@@ -796,7 +796,8 @@ export const deploy = async (options: OptionValues, command: BaseCommand) => {
   }
 
   if (options.context && !options.build) {
-    return error('--context flag is only available when using the --build flag')
+    error('--context flag is only available when using the --build flag')
+    return
   }
 
   await command.authenticate(options.auth)

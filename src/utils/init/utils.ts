@@ -36,10 +36,10 @@ export const getPluginsToAutoInstall = (
 ) => {
   const nextRuntime = '@netlify/plugin-nextjs'
   const pluginsToAlwaysInstall = new Set([nextRuntime])
-  return pluginsRecommended.reduce(
+  return pluginsRecommended.reduce<string[]>(
     (acc, plugin) =>
       pluginsInstalled.includes(plugin) && !pluginsToAlwaysInstall.has(plugin) ? acc : [...acc, plugin],
-    [] as string[],
+    [],
   )
 }
 
@@ -97,7 +97,6 @@ const getPromptInputs = ({ defaultBaseDir, defaultBuildCmd, defaultBuildDir }) =
 export const getBuildSettings = async ({ command, config }: { command: BaseCommand; config: $TSFixMe }) => {
   const settings = await detectBuildSettings(command)
   // TODO: add prompt for asking to choose the build command
-  // eslint-disable-next-line unicorn/explicit-length-check
   const setting: Partial<Settings> = settings.length > 0 ? settings[0] : {}
   const { defaultBaseDir, defaultBuildCmd, defaultBuildDir, defaultFunctionsDir, recommendedPlugins } =
     await normalizeSettings(setting, config, command)

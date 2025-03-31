@@ -155,7 +155,7 @@ export const getCLIOptions = ({
   cwd?: string
   env?: CommonOptions<string>['env']
   extendEnv?: CommonOptions<string>['extendEnv']
-}): NodeOptions<string> => ({
+}): NodeOptions => ({
   cwd: builder?.directory || cwd,
   env: { ...getEnvironmentVariables({ apiUrl }), ...env },
   extendEnv,

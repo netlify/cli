@@ -89,7 +89,7 @@ describe('logs:function command', () => {
 
   test('should setup the functions stream correctly', async ({}) => {
     const { apiUrl } = await startMockApi({ routes })
-    const spyWebsocket = getWebSocket as unknown as Mock<any, any>
+    const spyWebsocket = getWebSocket as unknown as Mock
     const spyOn = vi.fn()
     const spySend = vi.fn()
     spyWebsocket.mockReturnValue({
@@ -108,7 +108,7 @@ describe('logs:function command', () => {
 
   test('should send the correct payload to the websocket', async ({}) => {
     const { apiUrl } = await startMockApi({ routes })
-    const spyWebsocket = getWebSocket as unknown as Mock<any, any>
+    const spyWebsocket = getWebSocket as unknown as Mock
     const spyOn = vi.fn()
     const spySend = vi.fn()
     spyWebsocket.mockReturnValue({
@@ -140,14 +140,14 @@ describe('logs:function command', () => {
 
   test('should print only specified log levels', async ({}) => {
     const { apiUrl } = await startMockApi({ routes })
-    const spyWebsocket = getWebSocket as unknown as Mock<any, any>
+    const spyWebsocket = getWebSocket as unknown as Mock
     const spyOn = vi.fn()
     const spySend = vi.fn()
     spyWebsocket.mockReturnValue({
       on: spyOn,
       send: spySend,
     })
-    const spyLog = log as unknown as Mock<any, any>
+    const spyLog = log as unknown as Mock
 
     const env = getEnvironmentVariables({ apiUrl })
     Object.assign(process.env, env)
@@ -172,14 +172,14 @@ describe('logs:function command', () => {
 
   test('should print all the log levels', async ({}) => {
     const { apiUrl } = await startMockApi({ routes })
-    const spyWebsocket = getWebSocket as unknown as Mock<any, any>
+    const spyWebsocket = getWebSocket as unknown as Mock
     const spyOn = vi.fn()
     const spySend = vi.fn()
     spyWebsocket.mockReturnValue({
       on: spyOn,
       send: spySend,
     })
-    const spyLog = log as unknown as Mock<any, any>
+    const spyLog = log as unknown as Mock
 
     const env = getEnvironmentVariables({ apiUrl })
     Object.assign(process.env, env)

@@ -131,7 +131,7 @@ const startServer = async ({
     ps.stdout!.on('data', (data) => {
       outputBuffer.push(data)
       if (!expectFailure && data.includes('Server now ready on')) {
-        setImmediate(() =>
+        setImmediate(() => {
           resolve({
             url,
             host,
@@ -139,7 +139,6 @@ const startServer = async ({
             errorBuffer,
             outputBuffer,
             waitForLogMatching(match: string) {
-              // eslint-disable-next-line promise/param-names
               return new Promise<void>((resolveWait) => {
                 const listener = (stdoutData: string) => {
                   if (stdoutData.includes(match)) {
@@ -163,11 +162,10 @@ const startServer = async ({
               await killProcess(ps)
             },
             promptHistory,
-          }),
-        )
+          })
+        })
       }
     })
-    // eslint-disable-next-line promise/prefer-await-to-callbacks,promise/prefer-await-to-then
     ps.catch((error) => !selfKilled && reject(error))
   })
 

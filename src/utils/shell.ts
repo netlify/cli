@@ -20,8 +20,7 @@ let cleanupStarted = false
  * @param {object} input
  * @param {number=} input.exitCode The exit code to return when exiting the process after cleanup
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'exitCode' implicitly has an 'any'... Remove this comment to see the full error message
-const cleanupBeforeExit = async ({ exitCode }) => {
+const cleanupBeforeExit = async ({ exitCode }: { exitCode?: number | undefined } = {}) => {
   // If cleanup has started, then wherever started it will be responsible for exiting
   if (!cleanupStarted) {
     cleanupStarted = true
@@ -82,31 +81,29 @@ export const runCommand = (
 
   // we can't try->await->catch since we don't want to block on the framework server which
   // is a long running process
-  // eslint-disable-next-line promise/catch-or-return
-  commandProcess
-    // eslint-disable-next-line promise/prefer-await-to-then
-    .then(async () => {
-      const result = await commandProcess
-      const [commandWithoutArgs] = command.split(' ')
-      if (result.failed && isNonExistingCommandError({ command: commandWithoutArgs, error: result })) {
-        log(
-          `${NETLIFYDEVERR} Failed running command: ${command}. Please verify ${chalk.magenta(
-            `'${commandWithoutArgs}'`,
-          )} exists`,
-        )
-      } else {
-        const errorMessage = result.failed
-          ? // @ts-expect-error TS(2339) FIXME: Property 'shortMessage' does not exist on type 'Ex... Remove this comment to see the full error message
-            `${NETLIFYDEVERR} ${result.shortMessage}`
-          : `${NETLIFYDEVWARN} "${command}" exited with code ${result.exitCode}`
+  commandProcess.then(async () => {
+    const result = await commandProcess
+    const [commandWithoutArgs] = command.split(' ')
+    if (result.failed && isNonExistingCommandError({ command: commandWithoutArgs, error: result })) {
+      log(
+        `${NETLIFYDEVERR} Failed running command: ${command}. Please verify ${chalk.magenta(
+          `'${commandWithoutArgs}'`,
+        )} exists`,
+      )
+    } else {
+      const errorMessage = result.failed
+        ? // @ts-expect-error TS(2339) FIXME: Property 'shortMessage' does not exist on type 'Ex... Remove this comment to see the full error message
+          `${NETLIFYDEVERR} ${result.shortMessage}`
+        : `${NETLIFYDEVWARN} "${command}" exited with code ${result.exitCode}`
 
-        log(`${errorMessage}. Shutting down Netlify Dev server`)
-      }
+      log(`${errorMessage}. Shutting down Netlify Dev server`)
+    }
 
-      return await cleanupBeforeExit({ exitCode: 1 })
-    })
-  // @ts-expect-error TS(2345) FIXME: Argument of type '{}' is not assignable to paramet... Remove this comment to see the full error message
-  processOnExit(async () => await cleanupBeforeExit({}))
+    await cleanupBeforeExit({ exitCode: 1 })
+  })
+  processOnExit(async () => {
+    await cleanupBeforeExit({})
+  })
 
   return commandProcess
 }
