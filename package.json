@@ -53,7 +53,7 @@
     "test:integration": "vitest run tests/integration/",
     "test:unit": "vitest run tests/unit/",
     "postinstall": "node ./scripts/postinstall.js",
-    "prepublishOnly": "npm shrinkwrap",
+    "prepublishOnly": "node ./scripts/prepublishOnly.js",
     "typecheck": "tsc",
     "typecheck:watch": "tsc --watch"
   },
