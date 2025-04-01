@@ -105,8 +105,9 @@ const authWithToken = async (): Promise<Token> => {
   }
 
   const octokit = new Octokit({ auth: `token ${token}` })
-  // @ts-expect-error -- XXX(serhalp): actual bug - fixed in stacked PR
-  const { login: user } = await octokit.users.getAuthenticated()
+  const {
+    data: { login: user },
+  } = await octokit.users.getAuthenticated()
 
   return { token, user, provider: 'github' }
 }
