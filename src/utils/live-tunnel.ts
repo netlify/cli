@@ -121,11 +121,18 @@ export const startLiveTunnel = async ({
     )
     process.exit(1)
   }
+  if (!netlifyApiToken) {
+    console.error(
+      `${NETLIFYDEVERR} Error: no Netlify auth token defined, did you forget to run ${chalk.yellow(
+        'netlify login',
+      )} or define 'NETLIFY_AUTH_TOKEN'?`,
+    )
+    process.exit(1)
+  }
 
   const session = await createTunnel({
     siteId,
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- XXX(serhalp): removed in favor of runtime user feedback in stacked PR
-    netlifyApiToken: netlifyApiToken!,
+    netlifyApiToken,
     slug,
   })
 
@@ -148,8 +155,7 @@ export const startLiveTunnel = async ({
     return (data as LiveSession).state === 'online'
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- XXX(serhalp): removed in favor of runtime user feedback in stacked PR
-  connectTunnel({ session, netlifyApiToken: netlifyApiToken!, localPort })
+  connectTunnel({ session, netlifyApiToken, localPort })
 
   // Waiting for the live session to have a state of `online`.
   await pWaitFor(isLiveTunnelReady, {
