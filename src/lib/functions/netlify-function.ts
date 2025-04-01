@@ -6,7 +6,7 @@ import type { ExtendedRoute, Route } from '@netlify/zip-it-and-ship-it'
 import CronParser from 'cron-parser'
 import semver from 'semver'
 
-import { error as errorExit, type NormalizedCachedConfigConfig } from '../../utils/command-helpers.js'
+import { logAndThrowError, type NormalizedCachedConfigConfig } from '../../utils/command-helpers.js'
 import { BACKGROUND } from '../../utils/functions/get-functions.js'
 import { type BlobsContextWithEdgeAccess, getBlobsEventProperty } from '../blobs/blobs.js'
 import type { ServerSettings } from '../../utils/types.js'
@@ -175,7 +175,7 @@ export default class NetlifyFunction<BuildResult extends BaseBuildResult> {
     const buildFunction = await this.runtime.getBuildFunction({
       config: this.config,
       directory: this.directory,
-      errorExit,
+      errorExit: logAndThrowError,
       func: this,
       projectRoot: this.projectRoot,
     })

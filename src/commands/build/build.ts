@@ -2,19 +2,19 @@ import type { OptionValues } from 'commander'
 
 import { type RunBuildOptions, getRunBuildOptions, runBuild } from '../../lib/build.js'
 import { detectFrameworkSettings, getDefaultConfig } from '../../utils/build-info.js'
-import { error, exit, getToken } from '../../utils/command-helpers.js'
+import { logAndThrowError, exit, getToken } from '../../utils/command-helpers.js'
 import { getEnvelopeEnv } from '../../utils/env/index.js'
 import type BaseCommand from '../base-command.js'
 
 export const checkOptions = ({ cachedConfig: { siteInfo }, token }: RunBuildOptions) => {
   if (!siteInfo.id) {
-    error(
+    return logAndThrowError(
       'Could not find the site ID. If your site is not on Netlify, please run `netlify init` or `netlify deploy` first. If it is, please run `netlify link`.',
     )
   }
 
   if (!token) {
-    error('Could not find the access token. Please run netlify login.')
+    return logAndThrowError('Could not find the access token. Please run netlify login.')
   }
 }
 

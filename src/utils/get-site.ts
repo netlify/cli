@@ -1,6 +1,6 @@
 import type { NetlifyAPI } from 'netlify'
 
-import { type APIError, error } from './command-helpers.js'
+import { type APIError, logAndThrowError } from './command-helpers.js'
 import type { SiteInfo } from './types.js'
 
 export const getSiteByName = async (api: NetlifyAPI, siteName: string): Promise<SiteInfo> => {
@@ -16,11 +16,9 @@ export const getSiteByName = async (api: NetlifyAPI, siteName: string): Promise<
     return siteFoundByName as SiteInfo
   } catch (error_) {
     if ((error_ as APIError).status === 401) {
-      error(`${(error_ as APIError).message}: could not retrieve site`)
+      return logAndThrowError(`${(error_ as APIError).message}: could not retrieve site`)
     } else {
-      error('Site not found. Please rerun "netlify link"')
+      return logAndThrowError('Site not found. Please rerun "netlify link"')
     }
-    // TODO(serhalp) Remove after updating `error()` type to refine to `never` when exiting
-    process.exit(1)
   }
 }

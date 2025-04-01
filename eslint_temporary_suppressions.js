@@ -1287,15 +1287,6 @@ export default [
     },
   },
   {
-    files: ['src/utils/hooks/requires-site-info.ts'],
-    rules: {
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/no-unsafe-call': 'off',
-      '@typescript-eslint/restrict-template-expressions': 'off',
-    },
-  },
-  {
     files: ['src/utils/init/config-github.ts'],
     rules: {
       '@typescript-eslint/no-unsafe-assignment': 'off',

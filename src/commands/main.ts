@@ -5,7 +5,17 @@ import envinfo from 'envinfo'
 import { closest } from 'fastest-levenshtein'
 import inquirer from 'inquirer'
 
-import { BANG, chalk, error, exit, log, NETLIFY_CYAN, USER_AGENT, warn } from '../utils/command-helpers.js'
+import {
+  BANG,
+  chalk,
+  logAndThrowError,
+  exit,
+  log,
+  NETLIFY_CYAN,
+  USER_AGENT,
+  warn,
+  logError,
+} from '../utils/command-helpers.js'
 import execa from '../utils/execa.js'
 import getGlobalConfigStore from '../utils/get-global-config-store.js'
 import getPackageJson from '../utils/get-package-json.js'
@@ -50,7 +60,7 @@ export const CI_FORCED_COMMANDS = {
 
 process.on('uncaughtException', async (err: AddressInUseError | Error) => {
   if ('code' in err && err.code === 'EADDRINUSE') {
-    error(
+    logError(
       `${chalk.red(`Port ${err.port} is already in use`)}\n\n` +
         `Your serverless functions might be initializing a server\n` +
         `to listen on specific port without properly closing it.\n\n` +
@@ -60,10 +70,9 @@ process.on('uncaughtException', async (err: AddressInUseError | Error) => {
         `use a randomly assigned port as we do not officially support this.\n` +
         `2. Review your serverless functions for lingering server connections, close them\n` +
         `3. Check if any other applications are using port ${err.port}\n`,
-      { exit: false },
     )
   } else {
-    error(
+    logError(
       `${chalk.red(
         'Netlify CLI has terminated unexpectedly',
       )}\nThis is a problem with the Netlify CLI, not with your application.\nIf you recently updated the CLI, consider reverting to an older version by running:\n\n${chalk.bold(
@@ -73,7 +82,6 @@ process.on('uncaughtException', async (err: AddressInUseError | Error) => {
       )}.\n\nPlease report this problem at ${chalk.underline(
         'https://ntl.fyi/cli-error',
       )} including the error details below.\n`,
-      { exit: false },
     )
 
     const systemInfo = await getSystemInfo()
@@ -160,7 +168,7 @@ const mainCommand = async function (options, command) {
       // @ts-expect-error TS(7006) FIXME: Parameter 'cmd' implicitly has an 'any' type.
       const subCommand = command.commands.find((cmd) => cmd.name() === command.args[1])
       if (!subCommand) {
-        error(`command ${command.args[1]} not found`)
+        return logAndThrowError(`command ${command.args[1]} not found`)
       }
       subCommand.help()
     }
@@ -195,7 +203,7 @@ const mainCommand = async function (options, command) {
   log()
 
   if (!applySuggestion) {
-    error(`Run ${NETLIFY_CYAN(`${command.name()} help`)} for a list of available commands.`)
+    return logAndThrowError(`Run ${NETLIFY_CYAN(`${command.name()} help`)} for a list of available commands.`)
   }
 
   await execa(process.argv[0], [process.argv[1], suggestion], { stdio: 'inherit' })

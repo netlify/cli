@@ -4,7 +4,7 @@ import process from 'process'
 import { fetchLatest, fetchVersion, newerVersion, updateAvailable } from 'gh-release-fetch'
 import { isexe } from 'isexe'
 
-import { NETLIFYDEVWARN, error, getTerminalLink, log } from '../utils/command-helpers.js'
+import { NETLIFYDEVWARN, logAndThrowError, getTerminalLink, log } from '../utils/command-helpers.js'
 import execa from '../utils/execa.js'
 
 const isWindows = () => process.platform === 'win32'
@@ -148,11 +148,11 @@ export const fetchLatestVersion = async ({
 
       const issueLink = getTerminalLink('Create a new CLI issue', createIssueLink.href)
 
-      error(`The operating system ${platform} with the CPU architecture ${arch} is currently not supported!
+      return logAndThrowError(`The operating system ${platform} with the CPU architecture ${arch} is currently not supported!
 
 Please open up an issue on our CLI repository so that we can support it:
 ${issueLink}`)
     }
-    error(error_)
+    return logAndThrowError(error_)
   }
 }

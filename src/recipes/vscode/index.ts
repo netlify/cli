@@ -4,7 +4,7 @@ import { DenoBridge } from '@netlify/edge-bundler'
 import execa from 'execa'
 import inquirer from 'inquirer'
 
-import { NETLIFYDEVLOG, NETLIFYDEVWARN, chalk, error, log } from '../../utils/command-helpers.js'
+import { NETLIFYDEVLOG, NETLIFYDEVWARN, chalk, logAndThrowError, log } from '../../utils/command-helpers.js'
 
 import { applySettings, getSettings, writeSettings } from './settings.js'
 
@@ -107,6 +107,6 @@ export const run = async ({ config, repositoryRoot }) => {
 
     log(`${NETLIFYDEVLOG} VS Code settings file ${fileExists ? 'updated' : 'created'}.`)
   } catch {
-    error('Could not write VS Code settings file.')
+    return logAndThrowError('Could not write VS Code settings file.')
   }
 }

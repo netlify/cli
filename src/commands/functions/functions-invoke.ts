@@ -6,7 +6,7 @@ import { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 import fetch from 'node-fetch'
 
-import { APIError, NETLIFYDEVWARN, chalk, error, exit } from '../../utils/command-helpers.js'
+import { APIError, NETLIFYDEVWARN, chalk, logAndThrowError, exit } from '../../utils/command-helpers.js'
 import { BACKGROUND, CLOCKWORK_USERAGENT, getFunctions } from '../../utils/functions/index.js'
 import BaseCommand from '../base-command.js'
 
@@ -149,7 +149,7 @@ export const functionsInvoke = async (nameArgument: string, options: OptionValue
 
   const functionsDir = options.functions || config.dev?.functions || config.functionsDirectory
   if (typeof functionsDir === 'undefined') {
-    error(`Functions directory is undefined, did you forget to set it in ${relConfigFilePath}?`)
+    return logAndThrowError(`Functions directory is undefined, did you forget to set it in ${relConfigFilePath}?`)
   }
 
   if (!options.port)
@@ -234,6 +234,6 @@ export const functionsInvoke = async (nameArgument: string, options: OptionValue
     const data = await response.text()
     console.log(data)
   } catch (error_) {
-    error(`Ran into an error invoking your function: ${(error_ as APIError).message}`)
+    return logAndThrowError(`Ran into an error invoking your function: ${(error_ as APIError).message}`)
   }
 }

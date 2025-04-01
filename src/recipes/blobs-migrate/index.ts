@@ -3,7 +3,7 @@ import inquirer from 'inquirer'
 import pMap from 'p-map'
 
 import BaseCommand from '../../commands/base-command.js'
-import { error, log } from '../../utils/command-helpers.js'
+import { logAndThrowError, log } from '../../utils/command-helpers.js'
 
 export const description = 'Migrate legacy Netlify Blobs stores'
 
@@ -16,8 +16,7 @@ interface Options {
 
 export const run = async ({ args, command }: Options) => {
   if (args.length !== 1) {
-    error(`Usage: netlify recipes blobs-migrate <name of store>`)
-    return
+    return logAndThrowError(`Usage: netlify recipes blobs-migrate <name of store>`)
   }
 
   const [storeName] = args
@@ -97,15 +96,13 @@ export const run = async ({ args, command }: Options) => {
   // Before deleting anything, let's first verify that all entries that exist
   // in the old store are now also on the new store, with the same etag.
   if (!blobs.every((blob) => blobsMap.get(blob.key) === blob.etag)) {
-    error(`Failed to migrate some blobs. Try running the command again.`)
-    return
+    return logAndThrowError(`Failed to migrate some blobs. Try running the command again.`)
   }
 
   try {
     await pMap(blobs, (blob) => oldStore.delete(blob.key), { concurrency: BLOB_OPS_CONCURRENCY })
   } catch {
-    error('Failed to remove legacy store after migration. Try running the command again.')
-    return
+    return logAndThrowError('Failed to remove legacy store after migration. Try running the command again.')
   }
 
   log(`Store '${storeName}' has been migrated successfully.`)

@@ -2,7 +2,7 @@ import AsciiTable from 'ascii-table'
 import type { OptionValues } from 'commander'
 import { methods, type NetlifyAPI } from 'netlify'
 
-import { chalk, error, exit, log, logJson } from '../../utils/command-helpers.js'
+import { chalk, logAndThrowError, exit, log, logJson } from '../../utils/command-helpers.js'
 import type BaseCommand from '../base-command.js'
 
 type ApiMethodName = keyof NetlifyAPI
@@ -28,12 +28,13 @@ export const apiCommand = async (apiMethodName: string, options: OptionValues, c
   }
 
   if (!apiMethodName) {
-    error(`You must provide an API method. Run "netlify api --list" to see available methods`)
+    return logAndThrowError(`You must provide an API method. Run "netlify api --list" to see available methods`)
   }
 
   if (!(isValidApiMethod(api, apiMethodName) && typeof api[apiMethodName] === 'function')) {
-    error(`"${apiMethodName}"" is not a valid api method. Run "netlify api --list" to see available methods`)
-    return
+    return logAndThrowError(
+      `"${apiMethodName}"" is not a valid api method. Run "netlify api --list" to see available methods`,
+    )
   }
   const apiMethod = api[apiMethodName].bind(api)
 
@@ -47,6 +48,6 @@ export const apiCommand = async (apiMethodName: string, options: OptionValues, c
     const apiResponse = await apiMethod(payload)
     logJson(apiResponse)
   } catch (error_) {
-    error(error_)
+    return logAndThrowError(error_)
   }
 }

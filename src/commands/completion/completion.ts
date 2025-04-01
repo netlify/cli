@@ -9,7 +9,7 @@ import { install, uninstall } from '@pnpm/tabtab'
 
 import { generateAutocompletion } from '../../lib/completion/index.js'
 import {
-  error,
+  logAndThrowError,
   log,
   chalk,
   checkFileForLine,
@@ -24,8 +24,7 @@ export const completionGenerate = async (_options: OptionValues, command: BaseCo
   const { parent } = command
 
   if (!parent) {
-    error(`There has been an error generating the completion script.`)
-    return
+    return logAndThrowError(`There has been an error generating the completion script.`)
   }
 
   generateAutocompletion(parent)
@@ -89,8 +88,7 @@ export const completionGenerate = async (_options: OptionValues, command: BaseCo
 
 export const completionUninstall = async (_options: OptionValues, command: BaseCommand) => {
   if (!command.parent) {
-    error(`There has been an error deleting the completion script.`)
-    return
+    return logAndThrowError(`There has been an error deleting the completion script.`)
   }
   await uninstall({
     name: command.parent.name(),

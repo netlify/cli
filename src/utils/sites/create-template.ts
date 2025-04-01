@@ -68,5 +68,5 @@ export const deployedSiteExists = async (name: string): Promise<boolean> => {
   return resp.status === 200
 }
 
-export const getGitHubLink = ({ options, templateName }: { options: OptionValues; templateName: string }) =>
-  options.url || `https://github.com/${templateName}`
+export const getGitHubLink = ({ options, templateName }: { options: OptionValues; templateName: string }): string =>
+  (options.url as string | undefined) || `https://github.com/${templateName}`

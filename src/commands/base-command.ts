@@ -20,7 +20,7 @@ import {
   NETLIFY_CYAN,
   USER_AGENT,
   chalk,
-  error,
+  logAndThrowError,
   exit,
   getToken,
   log,
@@ -30,6 +30,7 @@ import {
   pollForToken,
   sortOptions,
   warn,
+  logError,
 } from '../utils/command-helpers.js'
 import type { FeatureFlags } from '../utils/feature-flags.js'
 import { getFrameworksAPIPaths } from '../utils/frameworks-api.js'
@@ -380,7 +381,7 @@ export default class BaseCommand extends Command {
     } catch {}
 
     if (error_ !== undefined) {
-      error(error_ instanceof Error ? error_ : format(error_), { exit: false })
+      logError(error_ instanceof Error ? error_ : format(error_))
       exit(1)
     }
   }
@@ -592,8 +593,7 @@ export default class BaseCommand extends Command {
     if (!siteData.url && flags.site) {
       const result = await getSiteByName(api, flags.site)
       if (result == null) {
-        error(`Site with name "${flags.site}" not found`, { exit: true })
-        return
+        return logAndThrowError(`Site with name "${flags.site}" not found`)
       }
       siteData = result
     }
@@ -713,7 +713,7 @@ export default class BaseCommand extends Command {
       // the option to say that we don't need API data.)
       if (isUserError && !offline && token) {
         if (flags.debug) {
-          error(error_, { exit: false })
+          logError(error_)
           warn('Failed to resolve config, falling back to offline resolution')
         }
         // recursive call with trying to resolve offline
@@ -722,9 +722,7 @@ export default class BaseCommand extends Command {
 
       // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
       const message = isUserError ? error_.message : error_.stack
-      error(message, { exit: true })
-      // TODO(serhalp) Remove after updating `error()` type to refine to `never` when exiting
-      process.exit(1)
+      return logAndThrowError(message)
     }
   }
 

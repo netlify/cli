@@ -2,7 +2,7 @@ import clean from 'clean-deep'
 import { OptionValues } from 'commander'
 import prettyjson from 'prettyjson'
 
-import { chalk, error, exit, getToken, log, logJson, warn, APIError } from '../../utils/command-helpers.js'
+import { chalk, logAndThrowError, exit, getToken, log, logJson, warn, APIError } from '../../utils/command-helpers.js'
 import BaseCommand from '../base-command.js'
 
 export const status = async (options: OptionValues, command: BaseCommand) => {
@@ -29,16 +29,18 @@ export const status = async (options: OptionValues, command: BaseCommand) => {
     user = await api.getCurrentUser()
   } catch (error_) {
     if ((error_ as APIError).status === 401) {
-      error('Your session has expired. Please try to re-authenticate by running `netlify logout` and `netlify login`.')
+      return logAndThrowError(
+        'Your session has expired. Please try to re-authenticate by running `netlify logout` and `netlify login`.',
+      )
     } else {
-      error(error_)
+      return logAndThrowError(error_)
     }
   }
 
   const ghuser = command.netlify.globalConfig.get(`users.${current}.auth.github.user`)
   const accountData = {
-    Name: user?.full_name,
-    Email: user?.email,
+    Name: user.full_name,
+    Email: user.email,
     GitHub: ghuser,
   }
   const teamsData = {}
@@ -58,12 +60,12 @@ export const status = async (options: OptionValues, command: BaseCommand) => {
 
   if (!siteId) {
     warn('Did you run `netlify link` yet?')
-    error(`You don't appear to be in a folder that is linked to a site`)
+    return logAndThrowError(`You don't appear to be in a folder that is linked to a site`)
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- XXX(serhalp) fixed in stacked PR.
   if (!siteInfo) {
-    error(`No site info found for site ${siteId}`)
+    return logAndThrowError(`No site info found for site ${siteId}`)
   }
 
   // Json only logs out if --json flag is passed

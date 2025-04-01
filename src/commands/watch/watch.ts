@@ -3,7 +3,7 @@ import prettyjson from 'prettyjson'
 import type { NetlifyAPI } from 'netlify'
 
 import { type Spinner, startSpinner, stopSpinner } from '../../lib/spinner.js'
-import { chalk, error, log } from '../../utils/command-helpers.js'
+import { chalk, logAndThrowError, log } from '../../utils/command-helpers.js'
 import type BaseCommand from '../base-command.js'
 import { init } from '../init/init.js'
 
@@ -105,6 +105,6 @@ export const watch = async (_options: unknown, command: BaseCommand) => {
     )
     console.timeEnd('Deploy time')
   } catch (error_) {
-    error(error_)
+    return logAndThrowError(error_)
   }
 }

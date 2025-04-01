@@ -1,8 +1,8 @@
-import { OptionValues } from 'commander'
+import type { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 
-import { chalk, error, exit, log, APIError } from '../../utils/command-helpers.js'
-import BaseCommand from '../base-command.js'
+import { chalk, logAndThrowError, exit, log, type APIError } from '../../utils/command-helpers.js'
+import type BaseCommand from '../base-command.js'
 
 export const sitesDelete = async (siteId: string, options: OptionValues, command: BaseCommand) => {
   command.setAnalyticsPayload({ force: options.force })
@@ -18,21 +18,17 @@ export const sitesDelete = async (siteId: string, options: OptionValues, command
     siteData = await api.getSite({ siteId })
   } catch (error_) {
     if ((error_ as APIError).status === 404) {
-      error(`No site with id ${siteId} found. Please verify the siteId & try again.`)
+      return logAndThrowError(`No site with id ${siteId} found. Please verify the siteId & try again.`)
     } else {
-      error(error_)
+      return logAndThrowError(error_)
     }
-  }
-
-  if (!siteData) {
-    error(`Unable to process site`)
   }
 
   const noForce = options.force !== true
 
   /* Verify the user wants to delete the site */
   if (noForce) {
-    log(`${chalk.redBright('Warning')}: You are about to permanently delete "${chalk.bold(siteData?.name)}"`)
+    log(`${chalk.redBright('Warning')}: You are about to permanently delete "${chalk.bold(siteData.name)}"`)
     log(`         Verify this siteID "${siteId}" supplied is correct and proceed.`)
     log('         To skip this prompt, pass a --force flag to the delete command')
     log()
@@ -41,7 +37,7 @@ export const sitesDelete = async (siteId: string, options: OptionValues, command
     const { wantsToDelete } = await inquirer.prompt({
       type: 'confirm',
       name: 'wantsToDelete',
-      message: `WARNING: Are you sure you want to delete the "${siteData?.name}" site?`,
+      message: `WARNING: Are you sure you want to delete the "${siteData.name}" site?`,
       default: false,
     })
     log()
@@ -76,9 +72,9 @@ export const sitesDelete = async (siteId: string, options: OptionValues, command
     await api.deleteSite({ site_id: siteId })
   } catch (error_) {
     if ((error_ as APIError).status === 404) {
-      error(`No site with id ${siteId} found. Please verify the siteId & try again.`)
+      return logAndThrowError(`No site with id ${siteId} found. Please verify the siteId & try again.`)
     } else {
-      error(`Delete Site error: ${(error_ as APIError).status}: ${(error_ as APIError).message}`)
+      return logAndThrowError(`Delete Site error: ${(error_ as APIError).status}: ${(error_ as APIError).message}`)
     }
   }
   log(`Site "${siteId}" successfully deleted!`)

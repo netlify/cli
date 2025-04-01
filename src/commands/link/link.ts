@@ -5,7 +5,7 @@ import inquirer from 'inquirer'
 import isEmpty from 'lodash/isEmpty.js'
 
 import { listSites } from '../../lib/api.js'
-import { chalk, error, exit, log, APIError } from '../../utils/command-helpers.js'
+import { chalk, logAndThrowError, exit, log, APIError } from '../../utils/command-helpers.js'
 import getRepoData from '../../utils/get-repo-data.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import { track } from '../../utils/telemetry/index.js'
@@ -57,7 +57,9 @@ const linkPrompt = async (command: BaseCommand, options: OptionValues) => {
       const sites = await listSites({ api, options: { filter: 'all' } })
 
       if (sites.length === 0) {
-        error(`You don't have any sites yet. Run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
+        return logAndThrowError(
+          `You don't have any sites yet. Run ${chalk.cyanBright('netlify sites:create')} to create a site.`,
+        )
       }
 
       const matchingSites = sites.filter(
@@ -98,7 +100,7 @@ Run ${chalk.cyanBright('git remote -v')} to see a list of your git remotes.`)
           },
         ])
         if (!selectedSite) {
-          error('No site selected')
+          return logAndThrowError('No site selected')
         }
         site = selectedSite
       }
@@ -124,14 +126,14 @@ Run ${chalk.cyanBright('git remote -v')} to see a list of your git remotes.`)
         })
       } catch (error_) {
         if ((error_ as APIError).status === 404) {
-          error(`'${searchTerm}' not found`)
+          return logAndThrowError(`'${searchTerm}' not found`)
         } else {
-          error(error_)
+          return logAndThrowError(error_)
         }
       }
 
       if (!matchingSites || matchingSites.length === 0) {
-        error(`No site names found containing '${searchTerm}'.
+        return logAndThrowError(`No site names found containing '${searchTerm}'.
 
 Run ${chalk.cyanBright('netlify link')} again to try a new search,
 or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
@@ -149,7 +151,7 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
           },
         ])
         if (!selectedSite) {
-          error('No site selected')
+          return logAndThrowError('No site selected')
         }
         site = selectedSite
       } else {
@@ -167,13 +169,13 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
       try {
         sites = await listSites({ api, options: { maxPages: 1, filter: 'all' } })
       } catch (error_) {
-        error(error_)
-        // TODO(serhalp) Remove after updating `error()` type to refine to `never` when exiting
-        process.exit(1)
+        return logAndThrowError(error_)
       }
 
       if (!sites || sites.length === 0) {
-        error(`You don't have any sites yet. Run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
+        return logAndThrowError(
+          `You don't have any sites yet. Run ${chalk.cyanBright('netlify sites:create')} to create a site.`,
+        )
       }
 
       const { selectedSite } = await inquirer.prompt([
@@ -186,7 +188,7 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
         },
       ])
       if (!selectedSite) {
-        error('No site selected')
+        return logAndThrowError('No site selected')
       }
       site = selectedSite
       break
@@ -205,9 +207,9 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
         site = await api.getSite({ siteId })
       } catch (error_) {
         if ((error_ as APIError).status === 404) {
-          error(`Site ID '${siteId}' not found`)
+          return logAndThrowError(`Site ID '${siteId}' not found`)
         } else {
-          error(error_)
+          return logAndThrowError(error_)
         }
       }
       break
@@ -217,7 +219,7 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
   }
 
   if (!site) {
-    error(new Error(`No site found`))
+    return logAndThrowError(new Error(`No site found`))
   }
 
   // Save site ID to config
@@ -278,9 +280,9 @@ export const link = async (options: OptionValues, command: BaseCommand) => {
       newSiteData = await api.getSite({ site_id: options.id })
     } catch (error_) {
       if ((error_ as APIError).status === 404) {
-        error(new Error(`Site id ${options.id} not found`))
+        return logAndThrowError(new Error(`Site id ${options.id} not found`))
       } else {
-        error(error_)
+        return logAndThrowError(error_)
       }
     }
 
@@ -305,14 +307,14 @@ export const link = async (options: OptionValues, command: BaseCommand) => {
       })
     } catch (error_) {
       if ((error_ as APIError).status === 404) {
-        error(new Error(`${options.name} not found`))
+        return logAndThrowError(new Error(`${options.name} not found`))
       } else {
-        error(error_)
+        return logAndThrowError(error_)
       }
     }
 
     if (results.length === 0) {
-      error(new Error(`No sites found named ${options.name}`))
+      return logAndThrowError(new Error(`No sites found named ${options.name}`))
     }
 
     const matchingSiteData = results.find((site: SiteInfo) => site.name === options.name) || results[0]

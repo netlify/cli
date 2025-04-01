@@ -10,7 +10,7 @@ import type BaseCommand from '../../commands/base-command.js'
 import { fileExistsAsync } from '../../lib/fs.js'
 import { normalizeBackslash } from '../../lib/path.js'
 import { detectBuildSettings } from '../build-info.js'
-import { chalk, error as failAndExit, log, type NormalizedCachedConfigConfig, warn } from '../command-helpers.js'
+import { chalk, logAndThrowError, log, type NormalizedCachedConfigConfig, warn } from '../command-helpers.js'
 import type { Plugin } from '../types.js'
 
 import { getRecommendPlugins, getUIPlugins } from './plugins.js'
@@ -214,9 +214,7 @@ export const createDeployKey = async ({ api }: { api: NetlifyAPI }): Promise<Dep
     return deployKey
   } catch (error) {
     const message = formatErrorMessage({ message: 'Failed creating deploy key', error })
-    failAndExit(message)
-    // TODO(serhalp) Remove after updating `failAndExit` type to refine to `never` when exiting
-    process.exit(1)
+    return logAndThrowError(message)
   }
 }
 
@@ -237,9 +235,7 @@ export const updateSite = async ({
     return updatedSite
   } catch (error) {
     const message = formatErrorMessage({ message: 'Failed updating site with repo information', error })
-    failAndExit(message)
-    // TODO(serhalp) Remove after updating `failAndExit` type to refine to `never` when exiting
-    process.exit(1)
+    return logAndThrowError(message)
   }
 }
 

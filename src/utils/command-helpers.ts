@@ -100,13 +100,13 @@ export const pollForToken = async ({
   try {
     const accessToken = await api.getAccessToken(ticket, { timeout: TOKEN_TIMEOUT })
     if (!accessToken) {
-      error('Could not retrieve access token')
+      return logAndThrowError('Could not retrieve access token')
     }
     return accessToken
   } catch (error_) {
     // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
     if (error_.name === 'TimeoutError') {
-      error(
+      return logAndThrowError(
         `Timed out waiting for authorization. If you do not have a ${chalk.bold.greenBright(
           'Netlify',
         )} account, please create one at ${chalk.magenta(
@@ -114,7 +114,7 @@ export const pollForToken = async ({
         )}, then run ${chalk.cyanBright('netlify login')} again.`,
       )
     } else {
-      error(error_)
+      return logAndThrowError(error_)
     }
   } finally {
     clearSpinner({ spinner })
@@ -184,27 +184,28 @@ export const warn = (message = '') => {
   log(` ${bang}   Warning: ${message}`)
 }
 
-/** Throws an error or logs it */
-export const error = (message: unknown | Error | string = '', options: { exit?: boolean } = {}) => {
-  const err =
-    message instanceof Error
-      ? message
-      : typeof message === 'string'
-      ? new Error(message)
-      : { message, stack: undefined, name: 'Error' }
+const toError = (val: unknown): Error => {
+  if (val instanceof Error) return val
+  if (typeof val === 'string') return new Error(val)
+  const err = new Error(inspect(val))
+  err.stack = undefined
+  return err
+}
 
-  if (options.exit === false) {
-    const bang = chalk.red(BANG)
-    if (process.env.DEBUG) {
-      process.stderr.write(` ${bang}   Warning: ${err.stack?.split('\n').join(`\n ${bang}   `)}\n`)
-    } else {
-      process.stderr.write(` ${bang}   ${chalk.red(`${err.name}:`)} ${err.message}\n`)
-    }
+export const logAndThrowError = (message: unknown): never => {
+  const err = toError(message)
+  void reportError(err, { severity: 'error' })
+  throw err
+}
+
+export const logError = (message: unknown): void => {
+  const err = toError(message)
+
+  const bang = chalk.red(BANG)
+  if (process.env.DEBUG) {
+    process.stderr.write(` ${bang}   Warning: ${err.stack?.split('\n').join(`\n ${bang}   `)}\n`)
   } else {
-    reportError(err, { severity: 'error' })
-    // TODO(serhalp) Type this function to let TS know that when `exit: true` this function never returns.
-    // This will help with typing upstream code.
-    throw err
+    process.stderr.write(` ${bang}   ${chalk.red(`${err.name}:`)} ${err.message}\n`)
   }
 }
 
@@ -293,10 +294,10 @@ export const watchDebounced = async (
   return watcher
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
-export const getTerminalLink = (text, url) => terminalLink(text, url, { fallback: () => `${text} (${url})` })
+export const getTerminalLink = (text: string, url: string): string =>
+  terminalLink(text, url, { fallback: () => `${text} (${url})` })
 
-export const isNodeError = (err: unknown): err is NodeJS.ErrnoException => error instanceof Error
+export const isNodeError = (err: unknown): err is NodeJS.ErrnoException => err instanceof Error
 
 export const nonNullable = <T>(value: T): value is NonNullable<T> => value !== null && value !== undefined
 
@@ -337,7 +338,7 @@ export const checkFileForLine = (filename: string, line: string) => {
   try {
     filecontent = fs.readFileSync(filename, 'utf8')
   } catch (error_) {
-    error(error_)
+    return logAndThrowError(error_)
   }
   return !!filecontent.match(line)
 }

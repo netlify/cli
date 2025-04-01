@@ -1,5 +1,5 @@
 import { $TSFixMe } from '../../commands/types.js'
-import { error } from '../command-helpers.js'
+import { logAndThrowError } from '../command-helpers.js'
 
 export const AVAILABLE_CONTEXTS = ['all', 'production', 'deploy-preview', 'branch-deploy', 'dev']
 export const AVAILABLE_SCOPES = ['builds', 'functions', 'runtime', 'post_processing']
@@ -24,7 +24,7 @@ export const normalizeContext = (context) => {
   }
   const forbiddenContexts = AVAILABLE_CONTEXTS.map((ctx) => `branch:${ctx}`)
   if (forbiddenContexts.includes(context)) {
-    error(`The context ${context} includes a reserved keyword and is not allowed`)
+    return logAndThrowError(`The context ${context} includes a reserved keyword and is not allowed`)
   }
   context = context.replace(/^branch:/, '')
   return context

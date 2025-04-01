@@ -24,7 +24,7 @@ import {
   NETLIFYDEVERR,
   NETLIFYDEVLOG,
   chalk,
-  error,
+  logAndThrowError,
   exit,
   getToken,
   log,
@@ -61,9 +61,11 @@ const triggerDeploy = async ({ api, options, siteData, siteId }) => {
     }
   } catch (error_) {
     if ((error_ as APIError).status === 404) {
-      error('Site not found. Please rerun "netlify link" and make sure that your site has CI configured.')
+      return logAndThrowError(
+        'Site not found. Please rerun "netlify link" and make sure that your site has CI configured.',
+      )
     } else {
-      error((error_ as APIError).message)
+      return logAndThrowError((error_ as APIError).message)
     }
   }
 }
@@ -120,22 +122,21 @@ const validateDeployFolder = async (deployFolder: string) => {
   } catch (error_) {
     if (error_ && typeof error_ === 'object' && 'code' in error_) {
       if (error_.code === 'ENOENT') {
-        error(`The deploy directory "${deployFolder}" has not been found. Did you forget to run 'netlify build'?`)
-        return
+        return logAndThrowError(
+          `The deploy directory "${deployFolder}" has not been found. Did you forget to run 'netlify build'?`,
+        )
       }
 
       // Improve the message of permission errors
       if (error_.code === 'EACCES') {
-        error('Permission error when trying to access deploy folder')
-        return
+        return logAndThrowError('Permission error when trying to access deploy folder')
       }
     }
     throw error_
   }
 
   if (!stats.isDirectory()) {
-    error('Deploy target must be a path to a directory')
-    return
+    return logAndThrowError('Deploy target must be a path to a directory')
   }
   return stats
 }
@@ -184,14 +185,14 @@ const validateFunctionsFolder = async (functionsFolder: string | undefined) => {
         }
         // Improve the message of permission errors
         if (error_.code === 'EACCES') {
-          error('Permission error when trying to access functions folder')
+          return logAndThrowError('Permission error when trying to access functions folder')
         }
       }
     }
   }
 
   if (stats && !stats.isDirectory()) {
-    error('Functions folder must be a path to a directory')
+    return logAndThrowError('Functions folder must be a path to a directory')
   }
 
   return stats
@@ -380,7 +381,7 @@ const uploadDeployBlobs = async ({
       phase: 'error',
     })
 
-    error('Error while uploading blobs to deploy store')
+    return logAndThrowError('Error while uploading blobs to deploy store')
   }
 
   statusCb({
@@ -512,7 +513,7 @@ const runDeploy = async ({
     if (deployId) {
       await cancelDeploy({ api, deployId })
     }
-    reportDeployError({ error_, failAndExit: error })
+    reportDeployError({ error_, failAndExit: logAndThrowError })
   }
 
   const siteUrl = results.deploy.ssl_url || results.deploy.url
@@ -794,8 +795,7 @@ export const deploy = async (options: OptionValues, command: BaseCommand) => {
   }
 
   if (options.context && !options.build) {
-    error('--context flag is only available when using the --build flag')
-    return
+    return logAndThrowError('--context flag is only available when using the --build flag')
   }
 
   await command.authenticate(options.auth)

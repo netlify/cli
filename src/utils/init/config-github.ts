@@ -1,7 +1,7 @@
 import { Octokit } from '@octokit/rest'
 import type { NetlifyAPI } from 'netlify'
 
-import { chalk, error as failAndExit, log } from '../command-helpers.js'
+import { chalk, logAndThrowError, log } from '../command-helpers.js'
 import { getGitHubToken as ghauth, type Token } from '../gh-auth.js'
 import type { GlobalConfigStore } from '../types.js'
 import type { BaseCommand } from '../../commands/index.js'
@@ -76,9 +76,7 @@ const addDeployKey = async ({
       const { name, owner } = formatRepoAndOwner({ repoName, repoOwner })
       message = `${message}. Does the repository ${name} exist and do ${owner} has the correct permissions to set up deploy keys?`
     }
-    failAndExit(message)
-    // TODO(serhalp) Remove after updating `failAndExit` type to refine to `never` when exiting
-    process.exit(1)
+    return logAndThrowError(message)
   }
 }
 
@@ -104,9 +102,7 @@ const getGitHubRepo = async ({
       const { name, owner } = formatRepoAndOwner({ repoName, repoOwner })
       message = `${message}. Does the repository ${name} exist and accessible by ${owner}`
     }
-    failAndExit(message)
-    // TODO(serhalp) Remove after updating `failAndExit` type to refine to `never` when exiting
-    process.exit(1)
+    return logAndThrowError(message)
   }
 }
 
@@ -153,7 +149,7 @@ const addDeployHook = async ({ deployHook, octokit, repoName, repoOwner }) => {
           const { name, owner } = formatRepoAndOwner({ repoName, repoOwner })
           message = `${message}. Does the repository ${name} and do ${owner} has the correct permissions to set up hooks`
         }
-        failAndExit(message)
+        return logAndThrowError(message)
       }
     }
   }
@@ -194,22 +190,20 @@ const upsertHook = async ({ api, event, ntlHooks, siteId, token }) => {
 const addNotificationHooks = async ({ api, siteId, token }) => {
   log(`Creating Netlify GitHub Notification Hooks...`)
 
-  // @ts-expect-error TS(7034) FIXME: Variable 'ntlHooks' implicitly has type 'any' in s... Remove this comment to see the full error message
   let ntlHooks
   try {
     ntlHooks = await api.listHooksBySiteId({ siteId })
   } catch (error) {
     const message = formatErrorMessage({ message: 'Failed retrieving Netlify hooks', error })
-    failAndExit(message)
+    return logAndThrowError(message)
   }
   await Promise.all(
     GITHUB_HOOK_EVENTS.map(async (event) => {
       try {
-        // @ts-expect-error TS(7005) FIXME: Variable 'ntlHooks' implicitly has an 'any' type.
         await upsertHook({ ntlHooks, event, api, siteId, token })
       } catch (error) {
         const message = formatErrorMessage({ message: `Failed settings Netlify hook ${chalk.magenta(event)}`, error })
-        failAndExit(message)
+        return logAndThrowError(message)
       }
     }),
   )

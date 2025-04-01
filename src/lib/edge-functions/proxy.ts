@@ -12,7 +12,7 @@ import {
   NETLIFYDEVERR,
   type NormalizedCachedConfigConfig,
   chalk,
-  error as printError,
+  logAndThrowError,
 } from '../../utils/command-helpers.js'
 import { FeatureFlags, getFeatureFlagsFromSiteInfo } from '../../utils/feature-flags.js'
 import { BlobsContextWithEdgeAccess } from '../blobs/blobs.js'
@@ -259,6 +259,6 @@ const prepareServer = async ({
 
     return registry
   } catch (error) {
-    printError(error instanceof Error ? error.message : error?.toString(), { exit: false })
+    return logAndThrowError(error instanceof Error ? error.message : error?.toString())
   }
 }

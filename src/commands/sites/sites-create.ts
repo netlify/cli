@@ -3,7 +3,7 @@ import inquirer from 'inquirer'
 import pick from 'lodash/pick.js'
 import prettyjson from 'prettyjson'
 
-import { chalk, error, log, logJson, warn, type APIError } from '../../utils/command-helpers.js'
+import { chalk, logAndThrowError, log, logJson, warn, type APIError } from '../../utils/command-helpers.js'
 import getRepoData from '../../utils/get-repo-data.js'
 import { configureRepo } from '../../utils/init/config.js'
 import { track } from '../../utils/telemetry/index.js'
@@ -72,7 +72,9 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand) =
         warn(`${siteName}.netlify.app already exists. Please try a different slug.`)
         await inputSiteName()
       } else {
-        error(`createSiteInTeam error: ${(error_ as APIError).status}: ${(error_ as APIError).message}`)
+        return logAndThrowError(
+          `createSiteInTeam error: ${(error_ as APIError).status}: ${(error_ as APIError).message}`,
+        )
       }
     }
   }
@@ -102,9 +104,7 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand) =
     const repoData = await getRepoData({ workingDir: command.workingDir })
 
     if ('error' in repoData) {
-      error('Failed to get repo data', { exit: true })
-      // TODO(serhalp) Remove after updating `error()` type to refine to `never` when exiting
-      process.exit(1)
+      return logAndThrowError('Failed to get repo data')
     }
 
     await configureRepo({ command, siteId: site.id, repoData, manual: options.manual })
