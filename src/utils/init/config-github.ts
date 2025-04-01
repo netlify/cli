@@ -229,16 +229,11 @@ export const configGithub = async ({
     config,
     globalConfig,
     repositoryRoot,
-    site: { root: siteRoot },
   } = netlify
 
   const token = await getGitHubToken({ globalConfig })
 
   const { baseDir, buildCmd, buildDir, functionsDir, pluginsToInstall } = await getBuildSettings({
-    // @ts-expect-error -- XXX(serhalp): unused - removed in stacked PR
-    repositoryRoot,
-    // XXX(serhalp): unused - removed in stacked PR
-    siteRoot,
     config,
     command,
   })
