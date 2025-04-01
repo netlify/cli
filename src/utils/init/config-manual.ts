@@ -71,14 +71,9 @@ export default async function configManual({
     cachedConfig: { configPath },
     config,
     repositoryRoot,
-    site: { root: siteRoot },
   } = netlify
 
   const { baseDir, buildCmd, buildDir, functionsDir, pluginsToInstall } = await getBuildSettings({
-    // @ts-expect-error -- XXX(serhalp): unused - removed in stacked PR
-    repositoryRoot,
-    // XXX(serhalp): unused - removed in stacked PR
-    siteRoot,
     config,
     command,
   })
