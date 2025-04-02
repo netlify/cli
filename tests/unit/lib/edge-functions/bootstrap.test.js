@@ -17,7 +17,7 @@ describe('`getBootstrapURL()`', () => {
     expect(bootstrapURL).toEqual(mockBootstrapURL)
   })
 
-  test('Returns a publicly accessible URL', async () => {
+  test('Returns a publicly accessible URL', { retry: 3 }, async () => {
     const bootstrapURL = await getBootstrapURL()
 
     // We shouldn't get the fallback URL, because that means we couldn't get

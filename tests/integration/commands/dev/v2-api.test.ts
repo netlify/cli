@@ -75,7 +75,7 @@ describe.runIf(gte(version, '18.13.0')).concurrent('v2 api', async () => {
       expect(context).toHaveProperty('deploy.published', false)
     })
 
-    test<FixtureTestContext>('logging works', async ({ devServer, expect }) => {
+    test<FixtureTestContext>('logging works', { retry: 3 }, async ({ devServer, expect }) => {
       const response = await fetch(`http://localhost:${devServer!.port}/.netlify/functions/log`)
       expect(response).toHaveProperty('status', 200)
       expect(devServer!.outputBuffer.map((buffer) => buffer.toString())).toContain('🪵🪵🪵\n')

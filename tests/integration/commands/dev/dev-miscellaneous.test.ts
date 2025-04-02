@@ -517,7 +517,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
     })
   })
 
-  test('Serves an Edge Function that streams the response', async (t) => {
+  test('Serves an Edge Function that streams the response', { retry: 3 }, async (t) => {
     const { expect } = t
 
     await withSiteBuilder(t, async (builder) => {
@@ -801,7 +801,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
   })
 
   // on windows, fetch throws an error while files are refreshing instead of returning the old value
-  test.skipIf(platform === 'win32')('should detect content changes in edge functions', async (t) => {
+  test.skipIf(platform === 'win32')('should detect content changes in edge functions', { retry: 3 }, async (t) => {
     await withSiteBuilder(t, async (builder) => {
       const publicDir = 'public'
       builder

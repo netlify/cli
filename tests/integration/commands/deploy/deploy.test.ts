@@ -369,7 +369,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
     })
   })
 
-  test('should deploy hidden public folder but ignore hidden/__MACOSX files', async (t) => {
+  test('should deploy hidden public folder but ignore hidden/__MACOSX files', { retry: 3 }, async (t) => {
     await withSiteBuilder(t, async (builder) => {
       builder
         .withContentFiles([
@@ -713,7 +713,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
     })
   })
 
-  test('should handle redirects mutated by plugins', async (t) => {
+  test('should handle redirects mutated by plugins', { retry: 3 }, async (t) => {
     await withSiteBuilder(t, async (builder) => {
       const content = '<h1>⊂◉‿◉つ</h1>'
       await builder

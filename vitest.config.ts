@@ -5,6 +5,15 @@ export default defineConfig({
     include: ['tests/**/*.test.js', 'tests/**/*.test.ts'],
     testTimeout: 90_000,
     hookTimeout: 90_000,
+    server: {
+      deps: {
+        inline: [
+          // Force Vitest to preprocess write-file-atomic via Vite, which lets us mock its `fs`
+          // import.
+          'write-file-atomic',
+        ],
+      },
+    },
     deps: {
       external: ['**/fixtures/**', '**/node_modules/**'],
       interopDefault: false,
