@@ -1,9 +1,76 @@
-import { readFile } from 'fs/promises'
+import fs from 'node:fs/promises'
+import fss from 'node:fs'
+import path from 'node:path'
+import * as dot from 'dot-prop'
 
-import Configstore from 'configstore'
 import { v4 as uuidv4 } from 'uuid'
+import { sync as writeFileAtomicSync } from 'write-file-atomic'
 
 import { getLegacyPathInHome, getPathInHome } from '../lib/settings.js'
+
+type ConfigStoreOptions<
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  T extends Record<string, any>,
+> = {
+  defaults?: T | undefined
+}
+
+export class ConfigStore<
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  T extends Record<string, any> = Record<string, any>,
+> {
+  #storagePath: string
+
+  public constructor(options: ConfigStoreOptions<T> = {}) {
+    this.#storagePath = getPathInHome(['config.json'])
+
+    if (options.defaults) {
+      const config = this.getConfig()
+      this.writeConfig({ ...options.defaults, ...config })
+    }
+  }
+
+  public get all(): T {
+    return this.getConfig()
+  }
+
+  public set(key: string, value: unknown): void {
+    const config = this.getConfig()
+    const updatedConfig = dot.setProperty(config, key, value)
+    this.writeConfig(updatedConfig)
+  }
+
+  public get(key: string): T[typeof key] {
+    return dot.getProperty(this.getConfig(), key)
+  }
+
+  private getConfig(): T {
+    let raw: string
+    try {
+      raw = fss.readFileSync(this.#storagePath, 'utf8')
+    } catch (err) {
+      if (err instanceof Error && 'code' in err) {
+        if (err.code === 'ENOENT') {
+          // File or parent directory does not exist
+          return {} as T
+        }
+      }
+      throw err
+    }
+
+    try {
+      return JSON.parse(raw)
+    } catch {
+      writeFileAtomicSync(this.#storagePath, '', { mode: 0o0600 })
+      return {} as T
+    }
+  }
+
+  private writeConfig(value: T) {
+    fss.mkdirSync(path.dirname(this.#storagePath), { mode: 0o0700, recursive: true })
+    writeFileAtomicSync(this.#storagePath, JSON.stringify(value, undefined, '\t'), { mode: 0o0600 })
+  }
+}
 
 const globalConfigDefaults = {
   /* disable stats from being sent to Netlify */
@@ -13,35 +80,30 @@ const globalConfigDefaults = {
 }
 
 // Memoise config result so that we only load it once
-// @ts-expect-error TS(7034) FIXME: Variable 'configStore' implicitly has type 'any' i... Remove this comment to see the full error message
-let configStore
+let configStore: ConfigStore | undefined
 
-/**
- * @returns {Promise<Configstore>}
- */
-const getGlobalConfig = async function () {
-  // @ts-expect-error TS(7005) FIXME: Variable 'configStore' implicitly has an 'any' typ... Remove this comment to see the full error message
+const getGlobalConfig = async (): Promise<ConfigStore> => {
   if (!configStore) {
-    const configPath = getPathInHome(['config.json'])
     // Legacy config file in home ~/.netlify/config.json
     const legacyPath = getLegacyPathInHome(['config.json'])
-    let legacyConfig
     // Read legacy config if exists
+    let legacyConfig: Record<string, unknown> | undefined
     try {
-      // @ts-expect-error TS(2345) FIXME: Argument of type 'Buffer' is not assignable to par... Remove this comment to see the full error message
-      legacyConfig = JSON.parse(await readFile(legacyPath))
-    } catch {}
+      legacyConfig = JSON.parse(await fs.readFile(legacyPath, 'utf8'))
+    } catch {
+      // ignore error
+    }
     // Use legacy config as default values
     const defaults = { ...globalConfigDefaults, ...legacyConfig }
     // The id param is only used when not passing `configPath` but the type def requires it
-    configStore = new Configstore('unused-id', defaults, { configPath })
+    configStore = new ConfigStore({ defaults })
   }
 
   return configStore
 }
 
+export default getGlobalConfig
+
 export const resetConfigCache = () => {
   configStore = undefined
 }
-
-export default getGlobalConfig

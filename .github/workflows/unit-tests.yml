@@ -40,9 +40,4 @@ jobs:
         run: npm run build
 
       - name: Run unit tests
-        uses: nick-fields/retry@v3
-        with:
-          timeout_minutes: 15
-          max_attempts: 3
-          retry_on: error
-          command: npm run test:unit -- --coverage
+        run: npm run test:unit -- --coverage
