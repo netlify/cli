@@ -26,15 +26,18 @@ export const getFormHandler = function ({
     .map(({ name }) => name)
 
   if (handlers.length === 0) {
-    logWarning && warn(`Missing form submission function handler`)
+    if (logWarning) {
+      warn(`Missing form submission function handler`)
+    }
     return
   }
 
   if (handlers.length === 2) {
-    logWarning &&
+    if (logWarning) {
       warn(
         `Detected both '${handlers[0]}' and '${handlers[1]}' form submission functions handlers, using ${handlers[0]}`,
       )
+    }
   }
 
   return handlers[0]
@@ -103,7 +106,7 @@ export const createFormSubmissionHandler = function ({
                 [name]: values.map((value) => ({
                   filename: value.originalFilename,
                   size: value.size,
-                  type: value.headers && value.headers['content-type'],
+                  type: value.headers?.['content-type'],
                   url: value.path,
                 })),
               }),

@@ -147,6 +147,7 @@ const clearFunctionsCache = (functionsPath: string) => {
   Object.keys(require.cache)
     .filter((key) => key.startsWith(functionsPath))
     // @ts-expect-error(serhalp) -- `decache` is typed but TS thinks it isn't callable. Investigate.
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return -- What in the world is going on?
     .forEach((key) => decache(key))
 }
 

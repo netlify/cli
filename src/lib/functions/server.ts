@@ -116,7 +116,8 @@ export const createHandler = function (options: GetFunctionsServerOptions): Requ
       return
     }
 
-    if (!func.hasValidName()) {
+    // Technically the second condition guarantees the first is true, but TS doesn't know that.
+    if (functionName == null || !func.hasValidName()) {
       response.statusCode = 400
       response.end('Function name should consist only of alphanumeric characters, hyphen & underscores.')
       return
@@ -163,10 +164,11 @@ export const createHandler = function (options: GetFunctionsServerOptions): Requ
       'client-ip': [remoteAddress],
       'x-nf-client-connection-ip': [remoteAddress],
       'x-nf-account-id': [options.accountId],
-      'x-nf-site-id': [options?.siteInfo?.id ?? UNLINKED_SITE_MOCK_ID],
+      'x-nf-site-id': [options.siteInfo?.id ?? UNLINKED_SITE_MOCK_ID],
       [efHeaders.Geo]: Buffer.from(JSON.stringify(geoLocation)).toString('base64'),
     }).reduce((prev, [key, value]) => ({ ...prev, [key]: Array.isArray(value) ? value : [value] }), {})
     const rawQuery = new URL(request.originalUrl, 'http://example.com').search.slice(1)
+    // TODO(serhalp) Update several tests to pass realistic `config` objects and remove nullish coalescing.
     const protocol = options.config?.dev?.https ? 'https' : 'http'
     const url = new URL(requestPath, `${protocol}://${request.get('host') || 'localhost'}`)
     url.search = rawQuery
@@ -409,7 +411,7 @@ const startWebServer = async ({
   await new Promise<void>((resolve) => {
     server.listen(settings.functionsPort, () => {
       if (debug) {
-        log(`${NETLIFYDEVLOG} Functions server is listening on ${settings.functionsPort}`)
+        log(`${NETLIFYDEVLOG} Functions server is listening on ${settings.functionsPort.toString()}`)
       }
       resolve()
     })

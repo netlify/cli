@@ -30,7 +30,7 @@ export const detectNetlifyLambda = async ({ packageJson }: { packageJson: Normal
   for (const [key, script] of matchingScripts) {
     // E.g. ["netlify-lambda", "build", "functions/folder"]
     // these are all valid options for netlify-lambda
-    program.parse(script.split(' ') ?? [])
+    program.parse(script.split(' '))
 
     // We are not interested in 'netlify-lambda' and 'build' commands
     const functionDirectories = program.args.filter((arg) => !['netlify-lambda', 'build'].includes(arg))

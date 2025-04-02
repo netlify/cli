@@ -11,8 +11,18 @@ import { BACKGROUND } from '../../utils/functions/get-functions.js'
 import { type BlobsContextWithEdgeAccess, getBlobsEventProperty } from '../blobs/blobs.js'
 import type { ServerSettings } from '../../utils/types.js'
 
-import type { BaseBuildResult, Runtime } from './runtimes/index.js'
+import type { BaseBuildResult, InvokeFunctionResult, Runtime } from './runtimes/index.js'
 import type { BuildCommandCache } from './memoized-build.js'
+
+export interface InvocationError {
+  errorMessage: string
+  errorType: string
+  stackTrace: string[]
+}
+
+export type InvokeFunctionResultWithError = { error: Error | InvocationError; result: null }
+export type InvokeFunctionResultWithSuccess = { error: null; result: InvokeFunctionResult }
+export type InvokeResult = InvokeFunctionResultWithError | InvokeFunctionResultWithSuccess
 
 const TYPESCRIPT_EXTENSIONS = new Set(['.cts', '.mts', '.ts'])
 const V2_MIN_NODE_VERSION = '18.14.0'
@@ -118,8 +128,8 @@ export default class NetlifyFunction<BuildResult extends BaseBuildResult> {
       return
     }
 
-    const extension = this.buildData?.mainFile ? extname(this.buildData.mainFile) : undefined
-    const moduleFormat = this.buildData?.outputModuleFormat
+    const extension = this.buildData.mainFile ? extname(this.buildData.mainFile) : undefined
+    const moduleFormat = this.buildData.outputModuleFormat
 
     if (moduleFormat === 'esm') {
       return
@@ -229,11 +239,12 @@ export default class NetlifyFunction<BuildResult extends BaseBuildResult> {
   }
 
   // Invokes the function and returns its response object.
-  async invoke(event = {}, context = {}) {
+  async invoke(event: Record<string, unknown> = {}, context: Record<string, unknown> = {}): Promise<InvokeResult> {
     await this.buildQueue
 
     if (this.buildError) {
-      return { result: null, error: { errorMessage: this.buildError.message } }
+      // TODO(serhalp) I don't think this error handling works as expected. Investigate.
+      return { result: null, error: { errorType: '', stackTrace: [], errorMessage: this.buildError.message } }
     }
 
     const timeout = this.isBackground ? this.timeoutBackground : this.timeoutSynchronous
@@ -246,7 +257,6 @@ export default class NetlifyFunction<BuildResult extends BaseBuildResult> {
     if (this.blobsContext) {
       const payload = JSON.stringify(getBlobsEventProperty(this.blobsContext))
 
-      // @ts-expect-error TS(2339) FIXME: Property 'blobs' does not exist on type '{}'.
       event.blobs = Buffer.from(payload).toString('base64')
     }
 
@@ -260,7 +270,7 @@ export default class NetlifyFunction<BuildResult extends BaseBuildResult> {
       })
       return { result, error: null }
     } catch (error) {
-      return { result: null, error }
+      return { result: null, error: error as Error | InvocationError }
     }
   }
 

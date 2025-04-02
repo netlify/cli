@@ -158,7 +158,7 @@ export class FunctionsRegistry {
     try {
       require.resolve(TYPES_PACKAGE, { paths: [this.projectRoot] })
     } catch (error) {
-      if (error != null && typeof error === 'object' && 'code' in error && error?.code === 'MODULE_NOT_FOUND') {
+      if (error != null && typeof error === 'object' && 'code' in error && error.code === 'MODULE_NOT_FOUND') {
         this.logEvent('missing-types-package', {})
       }
     }
@@ -278,7 +278,7 @@ export class FunctionsRegistry {
     // the incoming URL. It doesn't really matter that we don't have the actual
     // local URL with the correct port.
     const url = new URL(`http://localhost${urlPath}`)
-    const defaultURLMatch = url.pathname.match(DEFAULT_FUNCTION_URL_EXPRESSION)
+    const defaultURLMatch = DEFAULT_FUNCTION_URL_EXPRESSION.exec(url.pathname)
 
     if (defaultURLMatch) {
       const func = this.get(defaultURLMatch[2])
@@ -329,7 +329,7 @@ export class FunctionsRegistry {
     if (event === 'buildError') {
       log(
         `${NETLIFYDEVERR} ${chalk.red('Failed to load')} function ${chalk.yellow(func?.displayName)}: ${
-          func?.buildError?.message
+          func?.buildError?.message ?? ''
         }`,
       )
     }
@@ -337,7 +337,7 @@ export class FunctionsRegistry {
     if (event === 'extracted') {
       log(
         `${NETLIFYDEVLOG} ${chalk.green('Extracted')} function ${chalk.yellow(func?.displayName)} from ${
-          func?.mainFile
+          func?.mainFile ?? ''
         }.`,
       )
 
@@ -430,8 +430,8 @@ export class FunctionsRegistry {
       }
 
       func.buildData = {
-        ...manifestEntry?.buildData,
-        routes: manifestEntry?.routes,
+        ...manifestEntry.buildData,
+        routes: manifestEntry.routes,
       }
 
       // When we look at an unzipped function, we don't know whether it uses

@@ -1,6 +1,7 @@
 import { dirname, extname } from 'path'
 import { platform } from 'process'
 
+import type { LambdaEvent } from 'lambda-local'
 import { temporaryFile } from 'tempy'
 
 import type {
@@ -20,6 +21,8 @@ export const name = 'go'
 export type GoBuildResult = BaseBuildResult & {
   binaryPath: string
 }
+
+export type GoInvokeFunctionResult = LambdaEvent
 
 const build = async ({
   binaryPath,
@@ -79,7 +82,7 @@ export const invokeFunction: InvokeFunction<GoBuildResult> = async ({ context, e
   })
 
   try {
-    const { body, headers, multiValueHeaders, statusCode } = JSON.parse(stdout)
+    const { body, headers, multiValueHeaders, statusCode } = JSON.parse(stdout) as LambdaEvent
 
     return {
       body,

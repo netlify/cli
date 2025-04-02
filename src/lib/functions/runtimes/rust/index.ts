@@ -3,6 +3,7 @@ import { dirname, extname, join, resolve } from 'path'
 import { platform } from 'process'
 
 import { findUp } from 'find-up'
+import type { LambdaEvent } from 'lambda-local'
 import toml from 'toml'
 
 import type {
@@ -25,6 +26,8 @@ export const name = 'rs'
 export type RustBuildResult = BaseBuildResult & {
   binaryPath: string
 }
+
+export type RustInvokeFunctionResult = LambdaEvent
 
 const build = async ({ func }: { func: NetlifyFunction<RustBuildResult> }): Promise<RustBuildResult> => {
   const functionDirectory = dirname(func.mainFile)
@@ -57,8 +60,9 @@ const getCrateName = async (cwd: string): Promise<string> => {
     throw new Error('Cargo.toml not found')
   }
 
-  const parsedManifest = toml.parse(await readFile(manifestPath, 'utf-8'))
-  if (!parsedManifest?.package) {
+  const parsedManifest = toml.parse(await readFile(manifestPath, 'utf-8')) as unknown
+  // TODO(serhalp) Also validate `.package.name`?
+  if (parsedManifest == null || typeof parsedManifest !== 'object' || !('package' in parsedManifest)) {
     throw new Error('Cargo.toml is missing or invalid')
   }
   const { package: CargoPackage } = parsedManifest as { package: { name: string } }
@@ -80,7 +84,7 @@ export const invokeFunction: InvokeFunction<RustBuildResult> = async ({ context,
   })
 
   try {
-    const { body, headers, multiValueHeaders, statusCode } = JSON.parse(stdout)
+    const { body, headers, multiValueHeaders, statusCode } = JSON.parse(stdout) as LambdaEvent
 
     return {
       body,

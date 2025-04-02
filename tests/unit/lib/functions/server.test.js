@@ -36,7 +36,12 @@ describe('createHandler', () => {
     })
     await functionsRegistry.scan([functionsDirectory])
     const app = express()
-    app.all('*', createHandler({ functionsRegistry, geo: 'mock', state: new StateConfig(projectRoot) }))
+
+    // TODO(serhalp) Lazy test type. Create a config factory and use it here.
+    app.all(
+      '*',
+      createHandler({ functionsRegistry, config: { dev: {} }, geo: 'mock', state: new StateConfig(projectRoot) }),
+    )
 
     return await new Promise((resolve) => {
       server = app.listen(resolve)

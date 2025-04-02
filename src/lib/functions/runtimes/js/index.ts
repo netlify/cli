@@ -3,7 +3,7 @@ import { dirname } from 'path'
 import { pathToFileURL } from 'url'
 import { Worker } from 'worker_threads'
 
-import lambdaLocal from 'lambda-local'
+import lambdaLocal, { type LambdaEvent } from 'lambda-local'
 
 import type { BuildFunction, GetBuildFunction, InvokeFunction, OnDirectoryScanFunction } from '../index.js'
 import { BLOBS_CONTEXT_VARIABLE } from '../../../blobs/blobs.js'
@@ -15,10 +15,15 @@ import detectNetlifyLambdaBuilder, {
 } from './builders/netlify-lambda.js'
 import detectZisiBuilder, { getFunctionMetadata, ZisiBuildResult } from './builders/zisi.js'
 import { SECONDS_TO_MILLISECONDS } from './constants.js'
+import type { WorkerMessage } from './worker.js'
 
 export const name = 'js'
 
 export type JsBuildResult = ZisiBuildResult | NetlifyLambdaBuildResult
+
+// TODO(serhalp) Unify these. This is bonkers that the two underlying invocation mechanisms are encapsulated but we
+// return slightly different shapes for them.
+export type JsInvokeFunctionResult = WorkerMessage | LambdaEvent
 
 let netlifyLambdaDetectorCache: undefined | NetlifyLambdaBuilder
 
@@ -74,7 +79,7 @@ export const invokeFunction = async ({
   event,
   func,
   timeout,
-}: Parameters<InvokeFunction<JsBuildResult>>[0]) => {
+}: Parameters<InvokeFunction<JsBuildResult>>[0]): Promise<JsInvokeFunctionResult> => {
   const { buildData } = func
 
   if (buildData != null && 'runtimeAPIVersion' in buildData && buildData.runtimeAPIVersion !== 2) {
@@ -96,8 +101,11 @@ export const invokeFunction = async ({
 
   const worker = new Worker(workerURL, { workerData })
   return await new Promise((resolve, reject) => {
-    worker.on('message', (result) => {
-      if (result?.streamPort) {
+    worker.on('message', (result: WorkerMessage): void => {
+      // TODO(serhalp) Improve `WorkerMessage` type. It sure would be nice to keep it simple as it
+      // is now, but technically this is an arbitrary type from the user function return...
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (result?.streamPort != null) {
         const client = createConnection(
           {
             port: result.streamPort,
@@ -128,7 +136,7 @@ export const invokeFunctionDirectly = async <BuildResult extends JsBuildResult>(
   event: Record<string, unknown>
   func: NetlifyFunction<BuildResult>
   timeout: number
-}) => {
+}): Promise<LambdaEvent> => {
   const buildData = await func.getBuildData()
   if (buildData == null) {
     throw new Error('Cannot invoke a function that has not been built')

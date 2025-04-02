@@ -5,8 +5,11 @@ import type NetlifyFunction from '../netlify-function.js'
 import type { NormalizedCachedConfigConfig } from '../../../utils/command-helpers.js'
 
 import * as go from './go/index.js'
+import type { GoInvokeFunctionResult } from './go/index.js'
 import * as js from './js/index.js'
+import type { JsInvokeFunctionResult } from './js/index.js'
 import * as rust from './rust/index.js'
+import type { RustInvokeFunctionResult } from './rust/index.js'
 
 export type BaseBuildResult = {
   includedFiles?: undefined | string[]
@@ -40,13 +43,16 @@ export type GetBuildFunction<
   CacheEntry extends Record<string, unknown> = Record<string, unknown>,
 > = (params: GetBuildFunctionOpts<BuildResult>) => Promise<BuildFunction<BuildResult, CacheEntry>>
 
+// TODO(serhalp) It's inconsistent that this uses a union but `BuildResult` uses generics. Consider refactoring.
+// eslint-disable-next-line @typescript-eslint/no-duplicate-type-constituents
+export type InvokeFunctionResult = JsInvokeFunctionResult | GoInvokeFunctionResult | RustInvokeFunctionResult
 export type InvokeFunction<BuildResult extends BaseBuildResult> = (params: {
   context: Record<string, unknown>
   environment: Record<string, unknown>
   event: Record<string, unknown>
   func: NetlifyFunction<BuildResult>
   timeout: number
-}) => Promise<{ body?: unknown; statusCode: number }>
+}) => Promise<InvokeFunctionResult>
 
 export type OnDirectoryScanFunction = (params: { directory: string }) => Promise<void>
 

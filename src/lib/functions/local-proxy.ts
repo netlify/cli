@@ -48,7 +48,7 @@ export const runFunctionsProxy = async ({
     '--name',
     name,
     '--timeout',
-    `${timeout}s`,
+    `${timeout.toString()}s`,
   ]
   const proxyProcess = execa(functionsProxyPath, parameters)
 
