@@ -58,13 +58,16 @@ export const fileNormalizerCtor = ({
 export const manifestCollectorCtor = (
   filesObj: Record<string, unknown>,
   shaMap: Record<string, unknown[]>,
-  { assetType, statusCb }: { assetType: string; statusCb: Function },
+  {
+    assetType,
+    statusCb,
+  }: { assetType: string; statusCb: (status: { type: string; msg: string; phase: string }) => unknown },
 ) => {
   if (!statusCb || !assetType) throw new Error('Missing required options')
 
   return new Writable({
     objectMode: true,
-    write(fileObj, encoding, callback) {
+    write(fileObj, _, callback) {
       filesObj[fileObj.normalizedPath] = fileObj.hash
 
       // Maintain hash to fileObj mapping
@@ -92,7 +95,6 @@ export const fileFilterCtor = () =>
       if (fileObj.type === 'file') {
         this.push(fileObj)
       }
-      // eslint-disable-next-line promise/prefer-await-to-callbacks
       callback()
     },
   })
