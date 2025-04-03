@@ -63,6 +63,7 @@ export const manifestCollectorCtor = (
     statusCb,
   }: { assetType: string; statusCb: (status: { type: string; msg: string; phase: string }) => unknown },
 ) => {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (!statusCb || !assetType) throw new Error('Missing required options')
 
   return new Writable({
