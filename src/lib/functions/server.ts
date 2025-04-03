@@ -77,7 +77,7 @@ const buildClientContext = function (headers: IncomingHttpHeaders) {
 
 const hasBody = (req: Request) =>
   // copied from is-type package
-  (req.header('transfer-encoding') !== undefined || !Number.isNaN(req.header('content-length'))) &&
+  (req.header('transfer-encoding') !== undefined || !Number.isNaN(Number(req.header('content-length')))) &&
   // we expect a string or a buffer, because we use the two bodyParsers(text, raw) from express
   (typeof req.body === 'string' || Buffer.isBuffer(req.body))
 
