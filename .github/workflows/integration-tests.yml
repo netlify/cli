@@ -70,6 +70,12 @@ jobs:
       - name: Prepare tests
         run: npm run test:init
 
+      - name: Phil debugs
+        run: |-
+          ls -l node_modules/@netlify/local-functions-proxy/
+          cat node_modules/@netlify/local-functions-proxy/package.json
+          jq . node_modules/@netlify/local-functions-proxy/package.json
+
       - name: Tests
         uses: nick-fields/retry@v3
         with:
