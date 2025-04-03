@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, test, vi } from 'vitest'
 import { readPackageUp } from 'read-package-up'
 
-import getPackageJson from '../../../dist/utils/get-package-json.js'
+import getPackageJson from '../../../src/utils/get-package-json.js'
 
 vi.mock('read-package-up')
 
