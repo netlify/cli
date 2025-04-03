@@ -14,8 +14,7 @@ export type NetlifySite = {
   root?: string
   configPath?: string
   siteId?: string
-  get id(): string | undefined
-  set id(id: string): void
+  id?: string | undefined
 }
 
 type PatchedConfig = NetlifyTOML &

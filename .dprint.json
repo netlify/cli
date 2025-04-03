@@ -1,0 +1,15 @@
+{
+  "indentWidth": 2,
+  "excludes": ["**/.git", "**/node_modules", "dist", "coverage"],
+  "typescript": {
+    "importDeclaration.sortNamedImports": "maintain",
+    "jsx.quoteStyle": "preferDouble",
+    "exportDeclaration.sortNamedExports": "maintain",
+    "module.sortExportDeclarations": "maintain",
+    "module.sortImportDeclarations": "maintain",
+    "quoteStyle": "preferSingle",
+    "semiColons": "asi",
+    "trailingCommas": "onlyMultiLine"
+  },
+  "plugins": ["https://plugins.dprint.dev/typescript-0.94.0.wasm"]
+}
