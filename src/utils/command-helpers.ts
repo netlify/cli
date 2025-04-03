@@ -200,8 +200,8 @@ export const error = (message: unknown | Error | string = '', options: { exit?: 
     message instanceof Error
       ? message
       : typeof message === 'string'
-      ? new Error(message)
-      : { message, stack: undefined, name: 'Error' }
+        ? new Error(message)
+        : { message, stack: undefined, name: 'Error' }
 
   if (options.exit === false) {
     const bang = chalk.red(BANG)

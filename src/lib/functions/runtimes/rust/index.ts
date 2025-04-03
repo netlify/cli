@@ -36,8 +36,7 @@ const build = async ({ func }) => {
 export const getBuildFunction =
   // @ts-expect-error TS(7031) FIXME: Binding element 'func' implicitly has an 'any' typ... Remove this comment to see the full error message
 
-
-    ({ func }) =>
+  ({ func }) =>
     () =>
       build({ func })
 

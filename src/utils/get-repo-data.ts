@@ -61,7 +61,7 @@ const getRepoData = async function ({ remoteName, workingDir }: { remoteName?: s
       repo,
       url,
       branch,
-      provider: host != null ? PROVIDERS[host] ?? host : host,
+      provider: host != null ? (PROVIDERS[host] ?? host) : host,
       httpsUrl: `https://${host}/${repo}`,
     }
   } catch (error) {
