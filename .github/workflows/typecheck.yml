@@ -24,9 +24,5 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit
 
-      # Unfortunately unit tests import built source files, so we need to build until we change this.
-      - name: Build project
-        run: npm run build
-
       - name: Typecheck
         run: npm run typecheck
