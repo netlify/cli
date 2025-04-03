@@ -1,3 +1,5 @@
+import { arch, platform } from 'node:process'
+
 import fetch from 'node-fetch'
 import { test } from 'vitest'
 
@@ -7,6 +9,8 @@ import { pause } from '../utils/pause.js'
 import { withSiteBuilder } from '../utils/site-builder.ts'
 
 const WAIT_WRITE = 1000
+
+console.log({ arch, platform })
 
 test('Updates a Rust function when a file is modified', async (t) => {
   await withSiteBuilder(t, async (builder) => {
