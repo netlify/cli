@@ -96,12 +96,9 @@ export const transformImageParams = function (query: QueryParams): string {
   const height = query.h || query.height || null
 
   if (width && height) {
-    // eslint-disable-next-line id-length
     params.s = `${width}x${height}`
   } else {
-    // eslint-disable-next-line id-length
     params.w = width
-    // eslint-disable-next-line id-length
     params.h = height
   }
 

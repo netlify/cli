@@ -15,7 +15,6 @@ test('nodeModuleFormat: esm v1 functions should work', async (t) => {
         name: 'setup-functions',
         plugin: {
           onBuild: async () => {
-            // eslint-disable-next-line @typescript-eslint/no-var-requires, n/global-require
             const { mkdir, writeFile } = require('node:fs/promises')
             await mkdir('.netlify/functions-internal', { recursive: true })
             await writeFile(

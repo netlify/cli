@@ -75,7 +75,6 @@ const buildClientContext = function (headers) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
 const hasBody = (req) =>
   // copied from is-type package
-  // eslint-disable-next-line unicorn/prefer-number-properties
   (req.header('transfer-encoding') !== undefined || !isNaN(req.header('content-length'))) &&
   // we expect a string or a buffer, because we use the two bodyParsers(text, raw) from express
   (typeof req.body === 'string' || Buffer.isBuffer(req.body))
@@ -337,7 +336,6 @@ export const startFunctionsServer = async (
       // extract metadata such as routes and API version.
       try {
         const manifestPath = path.join(distPath, 'manifest.json')
-        // eslint-disable-next-line unicorn/prefer-json-parse-buffer
         const data = await fs.readFile(manifestPath, 'utf8')
 
         manifest = JSON.parse(data)

@@ -196,16 +196,14 @@ export class EdgeFunctionsRegistry {
       // functionsConfig therefore contains first all internal functionConfigs and then user functionConfigs
       let index = 0
 
-      const internalFunctionConfigs = this.internalFunctions.reduce(
-        // eslint-disable-next-line no-plusplus
+      const internalFunctionConfigs = this.internalFunctions.reduce<Record<string, FunctionConfig>>(
         (acc, func) => ({ ...acc, [func.name]: functionsConfig[index++] }),
-        {} as Record<string, FunctionConfig>,
+        {},
       )
 
-      const userFunctionConfigs = this.userFunctions.reduce(
-        // eslint-disable-next-line no-plusplus
+      const userFunctionConfigs = this.userFunctions.reduce<Record<string, FunctionConfig>>(
         (acc, func) => ({ ...acc, [func.name]: functionsConfig[index++] }),
-        {} as Record<string, FunctionConfig>,
+        {},
       )
 
       const { manifest, routes, unroutedFunctions } = this.buildRoutes(internalFunctionConfigs, userFunctionConfigs)
@@ -370,7 +368,7 @@ export class EdgeFunctionsRegistry {
   }
 
   async initialize() {
-    return await this.initialScan
+    await this.initialScan
   }
 
   /**
@@ -605,7 +603,6 @@ export class EdgeFunctionsRegistry {
     this.internalFunctions = internalFunctions
     this.userFunctions = userFunctions
 
-    // eslint-disable-next-line unicorn/prefer-spread
     this.functionPaths = new Map(Array.from(this.functions, (func) => [func.path, func.name]))
 
     return { all: functions, new: newFunctions, deleted: deletedFunctions }

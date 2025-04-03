@@ -1,10 +1,14 @@
+---
 name: Verify Docs
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   pull_request:
-    branches: [main]
+    branches:
+      - '**'
+      - '!release-please--**'
 
 jobs:
   verify-docs:
@@ -22,7 +26,7 @@ jobs:
         run: npm ci --no-audit
 
       - name: Install ./site dependencies
-        run: npm ci  --prefix=site --no-audit
+        run: npm ci --prefix=site --no-audit
 
       - name: Generate docs
         run: npm run --prefix=site build

@@ -27,11 +27,13 @@ export const blobsList = async (storeName: string, options: Options, command: Ba
     })
 
     if (options.json) {
-      return logJson({ blobs, directories })
+      logJson({ blobs, directories })
+      return
     }
 
     if (blobs.length === 0 && directories.length === 0) {
-      return log(`Netlify Blobs store ${chalk.yellow(storeName)} is empty`)
+      log(`Netlify Blobs store ${chalk.yellow(storeName)} is empty`)
+      return
     }
 
     const table = new AsciiTable(`Netlify Blobs (${storeName})`)
@@ -48,6 +50,7 @@ export const blobsList = async (storeName: string, options: Options, command: Ba
 
     log(table.toString())
   } catch {
-    return printError(`Could not list blobs from store ${chalk.yellow(storeName)}`)
+    printError(`Could not list blobs from store ${chalk.yellow(storeName)}`)
+    return
   }
 }

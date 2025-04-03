@@ -65,8 +65,9 @@ export const recipesCommand = async (recipeName: string, options: OptionValues, 
         resolve(false)
       }, SUGGESTION_TIMEOUT)
 
-      // eslint-disable-next-line promise/catch-or-return
-      prompt.then((value) => resolve(value.suggestion))
+      prompt.then((value) => {
+        resolve(value.suggestion)
+      })
     })
 
     if (applySuggestion) {

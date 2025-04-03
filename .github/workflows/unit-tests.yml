@@ -1,10 +1,14 @@
+---
 name: Unit Tests
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   pull_request:
-    branches: [main]
+    branches:
+      - '**'
+      - '!release-please--**'
 
 jobs:
   unit:
@@ -19,32 +23,26 @@ jobs:
             node-version: '22.x'
       fail-fast: false
     steps:
-      # Sets an output parameter if this is a release PR
-      - name: Check for release
-        id: release-check
-        # For windows we have to use $env:
-        run: |-
-          echo "IS_RELEASE=true" >> $GITHUB_OUTPUT
-          echo "IS_RELEASE=true" >> $env:GITHUB_OUTPUT
-        if: "${{ startsWith(github.head_ref, 'release-') }}"
       - name: Git checkout
         uses: actions/checkout@v4
-        if: '${{!steps.release-check.outputs.IS_RELEASE}}'
+
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm
           check-latest: true
-        if: '${{!steps.release-check.outputs.IS_RELEASE}}'
+
       - name: Install core dependencies
         run: npm ci --no-audit
-        if: '${{!steps.release-check.outputs.IS_RELEASE}}'
+
+      - name: Build project
+        run: npm run build
+
       - name: Run unit tests
         uses: nick-fields/retry@v3
         with:
           timeout_minutes: 15
           max_attempts: 3
           retry_on: error
-          command: npm run test:ci:vitest:unit
-        if: '${{!steps.release-check.outputs.IS_RELEASE}}'
+          command: npm run test:unit -- --coverage

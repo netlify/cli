@@ -88,8 +88,6 @@ const getNameFromArgs = async function (argumentName, options, defaultName) {
 const filterRegistry = function (registry, input) {
   // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
   const temp = registry.map((value) => value.name + value.description)
-  // TODO: remove once https://github.com/sindresorhus/eslint-plugin-unicorn/issues/1394 is fixed
-  // eslint-disable-next-line unicorn/no-array-method-this-argument
   const filteredTemplates = fuzzy.filter(input, temp)
   const filteredTemplateNames = new Set(
     filteredTemplates.map((filteredTemplate) => (input ? filteredTemplate.string : filteredTemplate)),

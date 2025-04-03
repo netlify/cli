@@ -93,6 +93,7 @@ export default class StateConfig {
       // TODO figure out cleaner way of grabbing ENV vars
       return process.env.NETLIFY_SITE_ID
     }
+    // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
     return getProperty(this.all, key)
   }
 

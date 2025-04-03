@@ -16,7 +16,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@astrojs/starlight": "0.31.1",
+    "@astrojs/starlight": "0.32.4",
     "@bugsnag/js": "8.2.0",
     "astro": "5.2.5",
     "markdown-magic": "2.6.1",
@@ -24,7 +24,7 @@
     "strip-ansi": "7.1.0"
   },
   "devDependencies": {
-    "@netlify/functions": "3.0.1",
+    "@netlify/functions": "3.0.4",
     "tsx": "4.19.3"
   }
 }

@@ -74,7 +74,7 @@ describe('logs:deploy command', () => {
 
   test('should setup the deploy stream correctly', async () => {
     const { apiUrl } = await startMockApi({ routes })
-    const spyWebsocket = getWebSocket as unknown as Mock<any, any>
+    const spyWebsocket = getWebSocket as unknown as Mock
     const spyOn = vi.fn()
     const spySend = vi.fn()
     spyWebsocket.mockReturnValue({
@@ -93,7 +93,7 @@ describe('logs:deploy command', () => {
 
   test('should send the correct payload to the websocket', async () => {
     const { apiUrl } = await startMockApi({ routes })
-    const spyWebsocket = getWebSocket as unknown as Mock<any, any>
+    const spyWebsocket = getWebSocket as unknown as Mock
     const spyOn = vi.fn()
     const spySend = vi.fn()
     spyWebsocket.mockReturnValue({

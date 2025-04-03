@@ -36,25 +36,29 @@ export const blobsSet = async (
       value = await fs.readFile(inputPath, 'utf8')
     } catch (error) {
       if (isNodeError(error) && error.code === 'ENOENT') {
-        return printError(
+        printError(
           `Could not set blob ${chalk.yellow(key)} because the file ${chalk.underline(inputPath)} does not exist`,
         )
+        return
       }
 
       if (isNodeError(error) && error.code === 'EISDIR') {
-        return printError(
+        printError(
           `Could not set blob ${chalk.yellow(key)} because the path ${chalk.underline(inputPath)} is a directory`,
         )
+        return
       }
 
-      return printError(
+      printError(
         `Could not set blob ${chalk.yellow(key)} because the path ${chalk.underline(inputPath)} could not be read`,
       )
+      return
     }
   } else if (!value) {
-    return printError(
+    printError(
       `You must provide a value as a command-line parameter (e.g. 'netlify blobs:set my-store my-key my value') or specify the path to a file from where the value should be read (e.g. 'netlify blobs:set my-store my-key --input ./my-file.txt')`,
     )
+    return
   }
 
   if (force === undefined) {
@@ -69,6 +73,7 @@ export const blobsSet = async (
     await store.set(key, value)
     log(`${chalk.greenBright('Success')}: Blob ${chalk.yellow(key)} set in store ${chalk.yellow(storeName)}`)
   } catch {
-    return printError(`Could not set blob ${chalk.yellow(key)} in store ${chalk.yellow(storeName)}`)
+    printError(`Could not set blob ${chalk.yellow(key)} in store ${chalk.yellow(storeName)}`)
+    return
   }
 }

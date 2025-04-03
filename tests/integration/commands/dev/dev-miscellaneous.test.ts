@@ -1190,7 +1190,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
         .withEdgeFunction({
           handler: () => {
             // @ts-expect-error: We can't import Deno types without polluting the global environment
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             const fromDenoGlobal = Deno.env.toObject() as Record<string, string>
             const fromNetlifyGlobal = Netlify.env.toObject()
 
