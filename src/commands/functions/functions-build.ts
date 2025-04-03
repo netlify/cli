@@ -20,14 +20,16 @@ export const functionsBuild = async (options: OptionValues, command: BaseCommand
   }
 
   if (!src || !dst) {
-    if (!src)
+    if (!src) {
       log(
         `${NETLIFYDEVERR} Error: You must specify a source folder with a --src flag or a functionsSource field in your config`,
       )
-    if (!dst)
+    }
+    if (!dst) {
       log(
         `${NETLIFYDEVERR} Error: You must specify a destination functions folder with a --functions flag or a functions field in your config`,
       )
+    }
     exit(1)
   }
 

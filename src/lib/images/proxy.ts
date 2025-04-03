@@ -33,7 +33,7 @@ interface IpxParams {
 }
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'config' implicitly has an 'any' type.
-export const parseAllRemoteImages = function (config): { errors: ErrorObject[]; remotePatterns: RegExp[] } {
+export const parseAllRemoteImages = function(config): { errors: ErrorObject[]; remotePatterns: RegExp[] } {
   const remotePatterns = [] as RegExp[]
   const errors = [] as ErrorObject[]
   const remoteImages = config?.images?.remote_images
@@ -60,11 +60,11 @@ interface ErrorObject {
   message: string
 }
 
-const getErrorMessage = function ({ message }: { message: string }): string {
+const getErrorMessage = function({ message }: { message: string }): string {
   return message
 }
 
-export const handleRemoteImagesErrors = async function (errors: ErrorObject[]) {
+export const handleRemoteImagesErrors = async function(errors: ErrorObject[]) {
   if (errors.length === 0) {
     return
   }
@@ -74,7 +74,7 @@ export const handleRemoteImagesErrors = async function (errors: ErrorObject[]) {
 }
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'any' t... Remove this comment to see the full error message
-export const parseRemoteImages = async function ({ config }) {
+export const parseRemoteImages = async function({ config }) {
   if (!config) {
     return []
   }
@@ -85,11 +85,11 @@ export const parseRemoteImages = async function ({ config }) {
   return remotePatterns
 }
 
-export const isImageRequest = function (req: IncomingMessage): boolean {
+export const isImageRequest = function(req: IncomingMessage): boolean {
   return req.url?.startsWith(IMAGE_URL_PATTERN) ?? false
 }
 
-export const transformImageParams = function (query: QueryParams): string {
+export const transformImageParams = function(query: QueryParams): string {
   const params: IpxParams = {}
 
   const width = query.w || query.width || null
@@ -116,7 +116,7 @@ export const transformImageParams = function (query: QueryParams): string {
     .join(',')
 }
 
-export const initializeProxy = async function ({
+export const initializeProxy = async function({
   config,
   settings,
 }: {
@@ -160,9 +160,11 @@ export const initializeProxy = async function ({
             `${remoteImageNotAllowedLogMessage}\n\n${
               remoteImages.length === 0
                 ? 'Currently no remote images are allowed.'
-                : `Currently allowed remote images configuration details:\n${remoteImages
+                : `Currently allowed remote images configuration details:\n${
+                  remoteImages
                     .map((pattern) => ` - ${pattern}`)
-                    .join('\n')}`
+                    .join('\n')
+                }`
             }\n\nRefer to https://ntl.fyi/remote-images for information about how to configure allowed remote images.`,
           )
           lastTimeRemoteImagesConfigurationDetailsMessageWasLogged = Date.now()

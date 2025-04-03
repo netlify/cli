@@ -72,7 +72,6 @@ export const createBlobsCommand = (program: BaseCommand) => {
     .option('-i, --input <path>', 'Defines the filesystem path where the blob data should be read from')
     .alias('blob:set')
     .hook('preAction', requiresSiteInfo)
-
     .action(
       async (storeName: string, key: string, valueParts: string[], options: OptionValues, command: BaseCommand) => {
         const { blobsSet } = await import('./blobs-set.js')

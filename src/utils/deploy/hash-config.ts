@@ -18,13 +18,13 @@ export const hashConfig = ({ config }) => {
 }
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'object' implicitly has an 'any' type.
-export const serializeToml = function (object) {
+export const serializeToml = function(object) {
   return tomlify.toToml(object, { space: 2, replace: replaceTomlValue })
 }
 
 // `tomlify-j0.4` serializes integers as floats, e.g. `200.0`.
 // This is a problem with `redirects[*].status`.
 // @ts-expect-error TS(7006) FIXME: Parameter 'key' implicitly has an 'any' type.
-const replaceTomlValue = function (key, value) {
+const replaceTomlValue = function(key, value) {
   return Number.isInteger(value) ? String(value) : false
 }

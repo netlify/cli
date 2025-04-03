@@ -34,7 +34,7 @@ const DEFAULT_PORT = 8888
 
 // https://stackoverflow.com/questions/3710204/how-to-check-if-a-string-is-a-valid-json-string-in-javascript-without-using-try
 // @ts-expect-error TS(7006) FIXME: Parameter 'jsonString' implicitly has an 'any' typ... Remove this comment to see the full error message
-const tryParseJSON = function (jsonString) {
+const tryParseJSON = function(jsonString) {
   try {
     const parsedValue = JSON.parse(jsonString)
 
@@ -51,7 +51,7 @@ const tryParseJSON = function (jsonString) {
 }
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'querystring' implicitly has an 'any' ty... Remove this comment to see the full error message
-const formatQstring = function (querystring) {
+const formatQstring = function(querystring) {
   if (querystring) {
     return `?${querystring}`
   }
@@ -64,7 +64,7 @@ const formatQstring = function (querystring) {
  * @param {string} workingDir
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'payloadString' implicitly has an 'any' ... Remove this comment to see the full error message
-const processPayloadFromFlag = function (payloadString, workingDir) {
+const processPayloadFromFlag = function(payloadString, workingDir) {
   if (payloadString) {
     // case 1: jsonstring
     let payload = tryParseJSON(payloadString)
@@ -96,7 +96,7 @@ const processPayloadFromFlag = function (payloadString, workingDir) {
  * @returns {Promise<string>}
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'functions' implicitly has an 'any' type... Remove this comment to see the full error message
-const getNameFromArgs = async function (functions, options, argumentName) {
+const getNameFromArgs = async function(functions, options, argumentName) {
   const functionToTrigger = getFunctionToTrigger(options, argumentName)
   // @ts-expect-error TS(7031) FIXME: Binding element 'name' implicitly has an 'any' typ... Remove this comment to see the full error message
   const functionNames = functions.map(({ name }) => name)
@@ -107,9 +107,11 @@ const getNameFromArgs = async function (functions, options, argumentName) {
     }
 
     console.warn(
-      `Function name ${chalk.yellow(
-        functionToTrigger,
-      )} supplied but no matching function found in your functions folder, forcing you to pick a valid one...`,
+      `Function name ${
+        chalk.yellow(
+          functionToTrigger,
+        )
+      } supplied but no matching function found in your functions folder, forcing you to pick a valid one...`,
     )
   }
 
@@ -131,7 +133,7 @@ const getNameFromArgs = async function (functions, options, argumentName) {
  * @returns {string}
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
-const getFunctionToTrigger = function (options, argumentName) {
+const getFunctionToTrigger = function(options, argumentName) {
   if (options.name) {
     if (argumentName) {
       console.error('function name specified in both flag and arg format, pick one')
@@ -152,8 +154,9 @@ export const functionsInvoke = async (nameArgument: string, options: OptionValue
     error(`Functions directory is undefined, did you forget to set it in ${relConfigFilePath}?`)
   }
 
-  if (!options.port)
+  if (!options.port) {
     console.warn(`${NETLIFYDEVWARN} "port" flag was not specified. Attempting to connect to localhost:8888 by default`)
+  }
   const port = options.port || DEFAULT_PORT
 
   const functions = await getFunctions(functionsDir, config)

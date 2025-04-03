@@ -36,7 +36,7 @@ const unsetInEnvelope = async ({ api, context, force, key, siteInfo }) => {
       // if context(s) are passed, delete the matching contexts / branches, and the `all` context
       // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
       const values = variable.values.filter((val) =>
-        [...contexts, 'all'].includes(val.context_parameter || val.context),
+        [...contexts, 'all'].includes(val.context_parameter || val.context)
       )
       if (values) {
         // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.

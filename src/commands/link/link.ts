@@ -11,7 +11,6 @@ import type { SiteInfo } from '../../utils/types.js'
 import BaseCommand from '../base-command.js'
 
 /**
- *
  * @param {import('../base-command.js').default} command
  * @param {import('commander').OptionValues} options
  */

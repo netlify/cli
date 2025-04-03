@@ -8,7 +8,7 @@ import { isFileAsync } from '../lib/fs.js'
 import { warn } from './command-helpers.js'
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'envFiles' implicitly has an 'any'... Remove this comment to see the full error message
-export const loadDotEnvFiles = async function ({ envFiles, projectDir }) {
+export const loadDotEnvFiles = async function({ envFiles, projectDir }) {
   const response = await tryLoadDotEnvFiles({ projectDir, dotenvFiles: envFiles })
 
   // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.

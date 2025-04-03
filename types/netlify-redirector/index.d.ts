@@ -11,8 +11,9 @@ declare module 'netlify-redirector' {
     getHeader: (name: string) => string
     getCookie: (name: string) => string
   }
-  export type Match = (
-    | {
+  export type Match =
+    & (
+      | {
         from: string
         to: string
         host: string
@@ -23,14 +24,15 @@ declare module 'netlify-redirector' {
         proxyHeaders?: Record<string, string>
         signingSecret?: string
       }
-    | {
+      | {
         force404: true
       }
-  ) & {
-    force404?: boolean
-    conditions: Record<string, string>
-    exceptions: Record<string, string>
-  }
+    )
+    & {
+      force404?: boolean
+      conditions: Record<string, string>
+      exceptions: Record<string, string>
+    }
   export interface RedirectMatcher {
     match(req: Request): Match | null
   }

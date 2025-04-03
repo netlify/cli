@@ -8,7 +8,7 @@ import { fileExistsAsync } from '../../../../fs.js'
 import { memoizedBuild } from '../../../memoized-build.js'
 
 // @ts-expect-error TS(2525) FIXME: Initializer provides no value for this binding ele... Remove this comment to see the full error message
-export const detectNetlifyLambda = async function ({ packageJson } = {}) {
+export const detectNetlifyLambda = async function({ packageJson } = {}) {
   const { dependencies, devDependencies, scripts } = packageJson || {}
   if (!((dependencies && dependencies['netlify-lambda']) || (devDependencies && devDependencies['netlify-lambda']))) {
     return false

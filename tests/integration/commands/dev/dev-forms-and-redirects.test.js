@@ -502,7 +502,7 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
             await t.expect(response2).toEqual('Hello world')
           },
           { message: /Error: Something went wrong/ },
-        ),
+        )
       ).rejects.toThrowError()
     })
   })

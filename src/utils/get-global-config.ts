@@ -19,7 +19,7 @@ let configStore
 /**
  * @returns {Promise<Configstore>}
  */
-const getGlobalConfig = async function () {
+const getGlobalConfig = async function() {
   // @ts-expect-error TS(7005) FIXME: Variable 'configStore' implicitly has an 'any' typ... Remove this comment to see the full error message
   if (!configStore) {
     const configPath = getPathInHome(['config.json'])

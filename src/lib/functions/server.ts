@@ -31,7 +31,7 @@ import { handleSynchronousFunction } from './synchronous.js'
 import { shouldBase64Encode } from './utils.js'
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'headers' implicitly has an 'any' type.
-const buildClientContext = function (headers) {
+const buildClientContext = function(headers) {
   // inject a client context based on auth header, ported over from netlify-lambda (https://github.com/netlify/netlify-lambda/pull/57)
   if (!headers.authorization) return
 
@@ -75,11 +75,11 @@ const buildClientContext = function (headers) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
 const hasBody = (req) =>
   // copied from is-type package
-  (req.header('transfer-encoding') !== undefined || !isNaN(req.header('content-length'))) &&
+  (req.header('transfer-encoding') !== undefined || !isNaN(req.header('content-length')))
   // we expect a string or a buffer, because we use the two bodyParsers(text, raw) from express
-  (typeof req.body === 'string' || Buffer.isBuffer(req.body))
+  && (typeof req.body === 'string' || Buffer.isBuffer(req.body))
 
-export const createHandler = function (options: GetFunctionsServerOptions): RequestHandler {
+export const createHandler = function(options: GetFunctionsServerOptions): RequestHandler {
   const { functionsRegistry } = options
 
   return async function handler(request, response) {
@@ -127,11 +127,10 @@ export const createHandler = function (options: GetFunctionsServerOptions): Requ
     }
 
     let remoteAddress = request.header('x-forwarded-for') || request.connection.remoteAddress || ''
-    remoteAddress =
-      remoteAddress
-        .split(remoteAddress.includes('.') ? ':' : ',')
-        .pop()
-        ?.trim() ?? ''
+    remoteAddress = remoteAddress
+      .split(remoteAddress.includes('.') ? ':' : ',')
+      .pop()
+      ?.trim() ?? ''
 
     const requestPath = request.header('x-netlify-original-pathname') ?? request.path
     delete request.headers['x-netlify-original-pathname']

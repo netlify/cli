@@ -21,7 +21,7 @@ const defaultEnvs = {
  *  - its exit code is `exitCode`
  *  - that its output contains `output`
  */
-const runBuildCommand = async function (
+const runBuildCommand = async function(
   t: TaskContext & TestContext,
   cwd: string,
   options: Partial<{
@@ -311,10 +311,9 @@ describe.concurrent('command/build', () => {
         .withNetlifyToml({
           config: {
             build: {
-              command:
-                process.platform === 'win32'
-                  ? 'echo NETLIFY_CLI_VERSION=%NETLIFY_CLI_VERSION%'
-                  : 'echo NETLIFY_CLI_VERSION=$NETLIFY_CLI_VERSION',
+              command: process.platform === 'win32'
+                ? 'echo NETLIFY_CLI_VERSION=%NETLIFY_CLI_VERSION%'
+                : 'echo NETLIFY_CLI_VERSION=$NETLIFY_CLI_VERSION',
             },
           },
         })
@@ -328,16 +327,19 @@ describe.concurrent('command/build', () => {
   })
 
   setupFixtureTests('next-app-without-config', () => {
-    test<FixtureTestContext>('should run build without any netlify specific configuration and install auto detected plugins', async ({
-      fixture,
-    }) => {
-      const output = await callCli(['build', '--offline'], { cwd: fixture.directory })
+    test<FixtureTestContext>(
+      'should run build without any netlify specific configuration and install auto detected plugins',
+      async ({
+        fixture,
+      }) => {
+        const output = await callCli(['build', '--offline'], { cwd: fixture.directory })
 
-      // expect on the output that it installed the next runtime (auto detected the plugin + the build command and therefore had functions to bundle)
-      expect(output).toMatch(/❯ Using Next.js Runtime -/)
-      expect(output).toMatch(/\$ npm run build/)
-      expect(output).toMatch(/Functions bundling completed/)
-    })
+        // expect on the output that it installed the next runtime (auto detected the plugin + the build command and therefore had functions to bundle)
+        expect(output).toMatch(/❯ Using Next.js Runtime -/)
+        expect(output).toMatch(/\$ npm run build/)
+        expect(output).toMatch(/Functions bundling completed/)
+      },
+    )
   })
 })
 

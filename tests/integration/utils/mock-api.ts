@@ -41,7 +41,6 @@ const addRequest = (requests: MockApi['requests'], request: express.Request) => 
 }
 
 /**
- *
  * @param {*} param0
  * @returns
  */
@@ -171,7 +170,6 @@ export const setCI = (value: string) => {
 }
 
 /**
- *
  * @param {*} param0
  * @returns {import('execa').Options<string>}
  */

@@ -16,10 +16,10 @@ const BUILD_FINISH_INTERVAL = 1e3
 // 20 minutes
 const BUILD_FINISH_TIMEOUT = 12e5
 
-const waitForBuildFinish = async function (api: NetlifyAPI, siteId: string, spinner: Spinner) {
+const waitForBuildFinish = async function(api: NetlifyAPI, siteId: string, spinner: Spinner) {
   let firstPass = true
 
-  const waitForBuildToFinish = async function () {
+  const waitForBuildToFinish = async function() {
     const builds = await api.listSiteBuilds({ siteId })
     // build.error
     const currentBuilds = builds.filter((build) => !build.done)

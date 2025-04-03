@@ -83,7 +83,7 @@ describe.concurrent('serve/functions-go', () => {
           async ({ outputBuffer, port, waitForLogMatching }) => {
             await tryAndLogOutput(async () => {
               const response = await fetch(`http://localhost:${port}/.netlify/functions/go-func`).then((res) =>
-                res.text(),
+                res.text()
               )
               t.expect(response).toEqual(originalBody)
             }, outputBuffer)
@@ -97,7 +97,7 @@ describe.concurrent('serve/functions-go', () => {
             await waitForLogMatching('Reloaded function go-func')
 
             const response = await fetch(`http://localhost:${port}/.netlify/functions/go-func`).then((res) =>
-              res.text(),
+              res.text()
             )
 
             t.expect(response).toEqual(updatedBody)

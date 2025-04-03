@@ -6,7 +6,7 @@ const SEC_TO_MILLISEC = 1e3
 // 6 MiB
 const DEFAULT_BYTES_LIMIT = 6e6
 
-const createStreamPromise = function (
+const createStreamPromise = function(
   stream: IncomingMessage,
   timeoutSeconds: number,
   bytesLimit = DEFAULT_BYTES_LIMIT,

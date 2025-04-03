@@ -68,7 +68,7 @@ const config = {
 }
 
 /* Start - Docs Templating logic */
-const commandExamples = function (examples) {
+const commandExamples = function(examples) {
   if (!examples || examples.length === 0) {
     return ''
   }
@@ -83,17 +83,17 @@ const commandExamples = function (examples) {
 }
 
 /* Start - Docs Templating logic */
-const commandListTitle = function (command) {
+const commandListTitle = function(command) {
   const url = `/commands/${command}`
   return `### [${command}](${url})${newLine}`
 }
 
-const commandListDescription = function (desc) {
+const commandListDescription = function(desc) {
   const [cleanDescription] = desc.split('\n')
   return `${cleanDescription}${newLine}`
 }
 
-const commandListSubCommandDisplay = function (commands) {
+const commandListSubCommandDisplay = function(commands) {
   if (commands.length === 0) {
     return ''
   }
@@ -108,7 +108,7 @@ const commandListSubCommandDisplay = function (commands) {
   return `${table}${newLine}`
 }
 
-const formatUsage = function (commandName, info) {
+const formatUsage = function(commandName, info) {
   const defaultUsage = `netlify ${commandName}`
   const usageString = info.usage || defaultUsage
   return `**Usage**
@@ -118,15 +118,15 @@ ${usageString}
 \`\`\`\n\n`
 }
 
-const formatSubCommandTitle = function (cmdName) {
+const formatSubCommandTitle = function(cmdName) {
   return `## \`${cmdName}\`\n\n`
 }
 
-const formatDescription = function (desc) {
+const formatDescription = function(desc) {
   return `${desc}\n\n`
 }
 
-const formatFlags = function (cmdFlags, command) {
+const formatFlags = function(cmdFlags, command) {
   if (!cmdFlags) {
     return ''
   }
@@ -152,7 +152,7 @@ const formatFlags = function (cmdFlags, command) {
   return renderFlags
 }
 
-const formatArgs = function (cmdArgs) {
+const formatArgs = function(cmdArgs) {
   if (!cmdArgs) {
     return ''
   }

@@ -135,7 +135,6 @@ const clearFunctionsCache = (functionsPath) => {
 }
 
 /**
- *
  * @param {object} config
  * @param {string} config.projectRoot
  * @param {(msg: string) => void} config.errorExit
@@ -159,7 +158,6 @@ const netlifyConfigToZisiConfig = ({ config, projectRoot }) =>
   addFunctionsConfigDefaults(normalizeFunctionsConfig({ functionsConfig: config.functions, projectRoot }))
 
 /**
- *
  * @param {object} param0
  * @param {*} param0.config
  * @param {*} param0.directory

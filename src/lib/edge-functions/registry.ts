@@ -71,9 +71,9 @@ function traverseLocalDependencies(
     // We're interested in tracking local dependencies, so we only look at
     // specifiers with the `file:` protocol.
     if (
-      dependency.code === undefined ||
-      typeof dependency.code.specifier !== 'string' ||
-      !dependency.code.specifier.startsWith('file://')
+      dependency.code === undefined
+      || typeof dependency.code.specifier !== 'string'
+      || !dependency.code.specifier.startsWith('file://')
     ) {
       return []
     }
@@ -316,11 +316,11 @@ export class EdgeFunctionsRegistry {
 
     Object.entries(envConfig).forEach(([key, variable]) => {
       if (
-        variable.sources.includes('ui') ||
-        variable.sources.includes('account') ||
-        variable.sources.includes('addons') ||
-        variable.sources.includes('internal') ||
-        variable.sources.some((source) => source.startsWith('.env'))
+        variable.sources.includes('ui')
+        || variable.sources.includes('account')
+        || variable.sources.includes('addons')
+        || variable.sources.includes('internal')
+        || variable.sources.some((source) => source.startsWith('.env'))
       ) {
         env[key] = variable.value
       }
@@ -379,8 +379,9 @@ export class EdgeFunctionsRegistry {
     { buildError, functionName, warnings = [] }: { buildError?: Error; functionName?: string; warnings?: string[] },
   ) {
     const subject = functionName ? `edge function ${chalk.yellow(this.getDisplayName(functionName))}` : 'edge functions'
-    const warningsText =
-      warnings.length === 0 ? '' : ` with warnings:\n${warnings.map((warning) => `  - ${warning}`).join('\n')}`
+    const warningsText = warnings.length === 0
+      ? ''
+      : ` with warnings:\n${warnings.map((warning) => `  - ${warning}`).join('\n')}`
 
     if (event === 'buildError') {
       log(`${NETLIFYDEVERR} ${chalk.red('Failed to load')} ${subject}: ${buildError}`)
@@ -435,7 +436,7 @@ export class EdgeFunctionsRegistry {
       }
 
       const isExcludedForFunction = this.manifest?.function_config[route.function]?.excluded_patterns?.some((pattern) =>
-        new RegExp(pattern).test(urlPath),
+        new RegExp(pattern).test(urlPath)
       )
       if (isExcludedForFunction) {
         return

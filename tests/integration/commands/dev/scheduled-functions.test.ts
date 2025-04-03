@@ -16,7 +16,7 @@ describe('scheduled functions', async () => {
   await setupFixtureTests('dev-server-with-functions', { devServer: true }, () => {
     test<FixtureTestContext>('should detect file changes to scheduled function', async ({ devServer, fixture }) => {
       const body = await fetch(`http://localhost:${devServer!.port}/.netlify/functions/ping`, {}).then((res) =>
-        res.text(),
+        res.text()
       )
 
       expect(body).toBe('ping')
@@ -40,7 +40,7 @@ describe('scheduled functions', async () => {
       await pause(DETECT_FILE_CHANGE_DELAY)
 
       const warning = await fetch(`http://localhost:${devServer!.port}/.netlify/functions/ping`, {}).then((res) =>
-        res.text(),
+        res.text()
       )
 
       expect(warning).toContain('Your function returned `body`')

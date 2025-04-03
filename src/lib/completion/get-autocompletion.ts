@@ -3,13 +3,12 @@
  * @type import('tabtab').CompletionItem
  */
 /**
- *
  * @param {import('tabtab').TabtabEnv} env
  * @param {Record<string, CompletionItem & {options: CompletionItem[]}>} program
  * @returns {CompletionItem[]|void}
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'env' implicitly has an 'any' type.
-const getAutocompletion = function (env, program) {
+const getAutocompletion = function(env, program) {
   if (!env.complete) {
     return
   }

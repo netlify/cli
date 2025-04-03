@@ -25,7 +25,7 @@ const addHeaders = (headers, response) => {
   })
 }
 
-export const handleSynchronousFunction = function ({
+export const handleSynchronousFunction = function({
   // @ts-expect-error TS(7031) FIXME: Binding element 'invocationError' implicitly has a... Remove this comment to see the full error message
   error: invocationError,
   // @ts-expect-error TS(7031) FIXME: Binding element 'functionName' implicitly has an '... Remove this comment to see the full error message
@@ -41,9 +41,9 @@ export const handleSynchronousFunction = function ({
     const error = getNormalizedError(invocationError)
 
     logPadded(
-      `${NETLIFYDEVERR} Function ${chalk.yellow(functionName)} has returned an error: ${
-        error.errorMessage
-      }\n${chalk.dim(error.stackTrace.join('\n'))}`,
+      `${NETLIFYDEVERR} Function ${chalk.yellow(functionName)} has returned an error: ${error.errorMessage}\n${
+        chalk.dim(error.stackTrace.join('\n'))
+      }`,
     )
 
     return handleErr(invocationError, request, response)
@@ -65,9 +65,9 @@ export const handleSynchronousFunction = function ({
     const normalizedError = getNormalizedError(headersError)
 
     logPadded(
-      `${NETLIFYDEVERR} Failed to set header in function ${chalk.yellow(functionName)}: ${
-        normalizedError.errorMessage
-      }`,
+      `${NETLIFYDEVERR} Failed to set header in function ${
+        chalk.yellow(functionName)
+      }: ${normalizedError.errorMessage}`,
     )
 
     return handleErr(headersError, request, response)

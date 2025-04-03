@@ -29,9 +29,11 @@ describe('env:clone command', () => {
     const envVarsList = generateEnvVarsList(sharedEnvVars)
     const warningMessage = generateWarning(siteIdTwo)
 
-    const successMessage = `Successfully cloned environment variables from ${chalk.green('site-name')} to ${chalk.green(
-      'site-name-2',
-    )}`
+    const successMessage = `Successfully cloned environment variables from ${chalk.green('site-name')} to ${
+      chalk.green(
+        'site-name-2',
+      )
+    }`
 
     beforeEach(() => {
       vi.resetModules()
@@ -128,9 +130,11 @@ describe('env:clone command', () => {
       test('should not run prompts if sites have no enviroment variables in common', async () => {
         await withMockApi(routes, async ({ apiUrl }) => {
           Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
-          const successMessageSite3 = `Successfully cloned environment variables from ${chalk.green(
-            'site-name',
-          )} to ${chalk.green('site-name-3')}`
+          const successMessageSite3 = `Successfully cloned environment variables from ${
+            chalk.green(
+              'site-name',
+            )
+          } to ${chalk.green('site-name-3')}`
 
           const promptSpy = spyOnMockPrompt()
 

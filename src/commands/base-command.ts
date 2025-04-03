@@ -95,9 +95,9 @@ async function selectWorkspace(project: Project, filter?: string): Promise<strin
 
   const selected = project.workspace?.packages.find((pkg) => {
     if (
-      project.relativeBaseDirectory &&
-      project.relativeBaseDirectory.length !== 0 &&
-      pkg.path.startsWith(project.relativeBaseDirectory)
+      project.relativeBaseDirectory
+      && project.relativeBaseDirectory.length !== 0
+      && pkg.path.startsWith(project.relativeBaseDirectory)
     ) {
       return true
     }
@@ -110,11 +110,13 @@ async function selectWorkspace(project: Project, filter?: string): Promise<strin
 
     if (isCI) {
       throw new Error(
-        `Sites detected: ${(project.workspace?.packages || [])
-          .map((pkg) => pkg.name || pkg.path)
-          .join(
-            ', ',
-          )}. Configure the site you want to work with and try again. Refer to https://ntl.fyi/configure-site for more information.`,
+        `Sites detected: ${
+          (project.workspace?.packages || [])
+            .map((pkg) => pkg.name || pkg.path)
+            .join(
+              ', ',
+            )
+        }. Configure the site you want to work with and try again. Refer to https://ntl.fyi/configure-site for more information.`,
       )
     }
 
@@ -128,9 +130,11 @@ async function selectWorkspace(project: Project, filter?: string): Promise<strin
         (project.workspace?.packages || [])
           .filter((pkg) => pkg.path.includes(input))
           .map((pkg) => ({
-            name: `${pkg.name ? `${chalk.bold(pkg.name)}  ` : ''}${pkg.path}  ${chalk.dim(
-              `--filter ${pkg.name || pkg.path}`,
-            )}`,
+            name: `${pkg.name ? `${chalk.bold(pkg.name)}  ` : ''}${pkg.path}  ${
+              chalk.dim(
+                `--filter ${pkg.name || pkg.path}`,
+              )
+            }`,
             value: pkg.path,
           })),
     })
@@ -240,10 +244,9 @@ export default class BaseCommand extends Command {
     const help = super.createHelp()
 
     help.commandUsage = (command) => {
-      const term =
-        this.name() === 'netlify'
-          ? `${HELP_$} ${command.name()} [COMMAND]`
-          : `${HELP_$} ${command.parent?.name()} ${command.name()} ${command.usage()}`
+      const term = this.name() === 'netlify'
+        ? `${HELP_$} ${command.name()} [COMMAND]`
+        : `${HELP_$} ${command.parent?.name()} ${command.name()} ${command.usage()}`
 
       return padLeft(term, HELP_INDENT_WIDTH)
     }
@@ -271,9 +274,9 @@ export default class BaseCommand extends Command {
     /** override the longestOptionTermLength to react on hide options flag */
     help.longestOptionTermLength = (command: BaseCommand, helper: Help): number =>
       // @ts-expect-error TS(2551) FIXME: Property 'noBaseOptions' does not exist on type 'C... Remove this comment to see the full error message
-      (command.noBaseOptions === false &&
-        helper.visibleOptions(command).reduce((max, option) => Math.max(max, helper.optionTerm(option).length), 0)) ||
-      0
+      (command.noBaseOptions === false
+        && helper.visibleOptions(command).reduce((max, option) => Math.max(max, helper.optionTerm(option).length), 0))
+      || 0
 
     help.formatHelp = (command: BaseCommand, helper: Help): string => {
       const parentCommand = this.name() === 'netlify' ? command : command.parent
@@ -351,7 +354,7 @@ export default class BaseCommand extends Command {
       }
 
       const commandList = getCommands(command).map((cmd) =>
-        formatItem(cmd.name(), helper.subcommandDescription(cmd).split('\n')[0], true),
+        formatItem(cmd.name(), helper.subcommandDescription(cmd).split('\n')[0], true)
       )
       if (commandList.length !== 0) {
         output = [...output, chalk.bold('COMMANDS'), formatHelpList(commandList), '']
@@ -498,10 +501,10 @@ export default class BaseCommand extends Command {
     // check if we have detected multiple projects inside which one we have to perform our operations.
     // only ask to select one if on the workspace root and no --cwd was provided
     if (
-      !flags.cwd &&
-      !COMMANDS_WITHOUT_WORKSPACE_OPTIONS.has(actionCommand.name()) &&
-      this.project.workspace?.packages.length &&
-      this.project.workspace.isRoot
+      !flags.cwd
+      && !COMMANDS_WITHOUT_WORKSPACE_OPTIONS.has(actionCommand.name())
+      && this.project.workspace?.packages.length
+      && this.project.workspace.isRoot
     ) {
       this.workspacePackage = await selectWorkspace(this.project, actionCommand.opts().filter)
       this.workingDir = join(this.project.jsWorkspaceRoot, this.workspacePackage)
@@ -539,8 +542,9 @@ export default class BaseCommand extends Command {
       const apiUrl = new URL(process.env.NETLIFY_API_URL)
       apiUrlOpts.scheme = apiUrl.protocol.slice(0, -1)
       apiUrlOpts.host = apiUrl.host
-      apiUrlOpts.pathPrefix =
-        process.env.NETLIFY_API_URL === `${apiUrl.protocol}//${apiUrl.host}` ? '/api/v1' : apiUrl.pathname
+      apiUrlOpts.pathPrefix = process.env.NETLIFY_API_URL === `${apiUrl.protocol}//${apiUrl.host}`
+        ? '/api/v1'
+        : apiUrl.pathname
     }
 
     const agent = await getAgent({

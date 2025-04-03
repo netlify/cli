@@ -30,8 +30,8 @@ const TYPES_PACKAGE = '@netlify/functions'
 const ZIP_EXTENSION = '.zip'
 
 const isInternalFunction = (func: ListedFunction | NetlifyFunction, frameworksAPIFunctionsPath: string) =>
-  func.mainFile.includes(getPathInProject([INTERNAL_FUNCTIONS_FOLDER])) ||
-  func.mainFile.includes(frameworksAPIFunctionsPath)
+  func.mainFile.includes(getPathInProject([INTERNAL_FUNCTIONS_FOLDER]))
+  || func.mainFile.includes(frameworksAPIFunctionsPath)
 
 /**
  * @typedef {"buildError" | "extracted" | "loaded" | "missing-types-package" | "reloaded" | "reloading" | "removed"} FunctionEvent
@@ -208,9 +208,11 @@ export class FunctionsRegistry {
         const { filename } = func
         const newFilename = filename ? `${basename(filename, extname(filename))}${recommendedExtension}` : null
         const action = newFilename
-          ? `rename the function file to ${chalk.underline(
+          ? `rename the function file to ${
+            chalk.underline(
               newFilename,
-            )}. Refer to https://ntl.fyi/functions-runtime for more information`
+            )
+          }. Refer to https://ntl.fyi/functions-runtime for more information`
           : `refer to https://ntl.fyi/functions-runtime`
         const warning = `The function is using the legacy CommonJS format. To start using ES modules, ${action}.`
 
@@ -295,9 +297,11 @@ export class FunctionsRegistry {
         const paths = routes.map((route) => chalk.underline(route.pattern)).join(', ')
 
         warn(
-          `Function ${chalk.yellow(func.name)} cannot be invoked on ${chalk.underline(
-            url.pathname,
-          )}, because the function has the following URL paths defined: ${paths}`,
+          `Function ${chalk.yellow(func.name)} cannot be invoked on ${
+            chalk.underline(
+              url.pathname,
+            )
+          }, because the function has the following URL paths defined: ${paths}`,
         )
 
         return
@@ -330,17 +334,17 @@ export class FunctionsRegistry {
 
     if (event === 'buildError') {
       log(
-        `${NETLIFYDEVERR} ${chalk.red('Failed to load')} function ${chalk.yellow(func?.displayName)}: ${
-          func?.buildError?.message
-        }`,
+        `${NETLIFYDEVERR} ${chalk.red('Failed to load')} function ${
+          chalk.yellow(func?.displayName)
+        }: ${func?.buildError?.message}`,
       )
     }
 
     if (event === 'extracted') {
       log(
-        `${NETLIFYDEVLOG} ${chalk.green('Extracted')} function ${chalk.yellow(func?.displayName)} from ${
-          func?.mainFile
-        }.`,
+        `${NETLIFYDEVLOG} ${chalk.green('Extracted')} function ${
+          chalk.yellow(func?.displayName)
+        } from ${func?.mainFile}.`,
       )
 
       return
@@ -362,9 +366,11 @@ export class FunctionsRegistry {
 
     if (event === 'missing-types-package') {
       log(
-        `${NETLIFYDEVWARN} For a better experience with TypeScript functions, consider installing the ${chalk.underline(
-          TYPES_PACKAGE,
-        )} package. Refer to https://ntl.fyi/function-types for more information.`,
+        `${NETLIFYDEVWARN} For a better experience with TypeScript functions, consider installing the ${
+          chalk.underline(
+            TYPES_PACKAGE,
+          )
+        } package. Refer to https://ntl.fyi/function-types for more information.`,
       )
     }
 
@@ -501,9 +507,9 @@ export class FunctionsRegistry {
       functions
         .filter(
           (func) =>
-            isInternalFunction(func, this.frameworksAPIPaths.functions.path) &&
-            this.functions.has(func.name) &&
-            !isInternalFunction(this.functions.get(func.name)!, this.frameworksAPIPaths.functions.path),
+            isInternalFunction(func, this.frameworksAPIPaths.functions.path)
+            && this.functions.has(func.name)
+            && !isInternalFunction(this.functions.get(func.name)!, this.frameworksAPIPaths.functions.path),
         )
         .map((func) => func.name),
     )
@@ -513,8 +519,8 @@ export class FunctionsRegistry {
     const deletedFunctions = [...this.functions.values()].filter((oldFunc) => {
       const isFound = functions.some(
         (newFunc) =>
-          ignoredFunctions.has(newFunc.name) ||
-          (newFunc.name === oldFunc.name && newFunc.mainFile === oldFunc.mainFile),
+          ignoredFunctions.has(newFunc.name)
+          || (newFunc.name === oldFunc.name && newFunc.mainFile === oldFunc.mainFile),
       )
 
       return !isFound

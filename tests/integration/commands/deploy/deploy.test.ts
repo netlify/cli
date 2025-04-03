@@ -237,7 +237,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
 
       await callCli(['build', '--cwd', pathPrefix], options)
       const deploy = await callCli(['deploy', '--json', '--cwd', pathPrefix], options).then((output) =>
-        JSON.parse(output),
+        JSON.parse(output)
       )
 
       // give edge functions manifest a couple ticks to propagate

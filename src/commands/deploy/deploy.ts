@@ -234,14 +234,13 @@ const getDeployFilesFilter = ({ deployFolder, site }) => {
     }
 
     const base = basename(filename)
-    const skipFile =
-      (skipNodeModules && base === 'node_modules') ||
-      (base.startsWith('.') && base !== '.well-known') ||
-      base.startsWith('__MACOSX') ||
-      base.includes('/.') ||
+    const skipFile = (skipNodeModules && base === 'node_modules')
+      || (base.startsWith('.') && base !== '.well-known')
+      || base.startsWith('__MACOSX')
+      || base.includes('/.')
       // headers and redirects are bundled in the config
-      base === '_redirects' ||
-      base === '_headers'
+      || base === '_redirects'
+      || base === '_headers'
 
     return !skipFile
   }
@@ -309,7 +308,7 @@ const reportDeployError = ({ error_, failAndExit }) => {
   }
 }
 
-const deployProgressCb = function () {
+const deployProgressCb = function() {
   const spinnersByType: Record<DeployEvent['type'], Spinner> = {}
   return (event: DeployEvent) => {
     switch (event.phase) {
@@ -542,7 +541,6 @@ const runDeploy = async ({
 }
 
 /**
- *
  * @param {object} config
  * @param {*} config.cachedConfig
  * @param {string} [config.packagePath]
@@ -574,15 +572,15 @@ const handleBuild = async ({ cachedConfig, currentDir, defaultConfig, deployHand
 }
 
 /**
- *
  * @param {*} options Bundling options
  * @returns
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
 const bundleEdgeFunctions = async (options, command: BaseCommand) => {
   const argv = process.argv.slice(2)
-  const statusCb =
-    options.silent || argv.includes('--json') || argv.includes('--silent') ? () => {} : deployProgressCb()
+  const statusCb = options.silent || argv.includes('--json') || argv.includes('--silent')
+    ? () => {}
+    : deployProgressCb()
 
   statusCb({
     type: 'edge-functions-bundling',

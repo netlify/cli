@@ -5,7 +5,7 @@ import { NETLIFYDEVERR, log } from './command-helpers.js'
 // Parse, normalize and validate all redirects from `_redirects` files
 // and `netlify.toml`
 // @ts-expect-error TS(7031) FIXME: Binding element 'configPath' implicitly has an 'an... Remove this comment to see the full error message
-export const parseRedirects = async function ({ config, configPath, redirectsFiles }) {
+export const parseRedirects = async function({ config, configPath, redirectsFiles }) {
   const { errors, redirects } = await parseAllRedirects({
     redirectsFiles,
     netlifyConfigPath: configPath,
@@ -18,7 +18,7 @@ export const parseRedirects = async function ({ config, configPath, redirectsFil
 }
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'errors' implicitly has an 'any' type.
-const handleRedirectParsingErrors = function (errors) {
+const handleRedirectParsingErrors = function(errors) {
   if (errors.length === 0) {
     return
   }
@@ -28,7 +28,7 @@ const handleRedirectParsingErrors = function (errors) {
 }
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'message' implicitly has an 'any' ... Remove this comment to see the full error message
-const getErrorMessage = function ({ message }) {
+const getErrorMessage = function({ message }) {
   return message
 }
 
@@ -36,7 +36,7 @@ const getErrorMessage = function ({ message }) {
 //  - `from` is called `origin`
 //  - `query` is called `params`
 //  - `conditions.role|country|language` are capitalized
-const normalizeRedirect = function ({
+const normalizeRedirect = function({
   // @ts-expect-error TS(7031) FIXME: Binding element 'country' implicitly has an 'any' ... Remove this comment to see the full error message
   conditions: { country, language, role, ...conditions },
   // @ts-expect-error TS(7031) FIXME: Binding element 'from' implicitly has an 'any' typ... Remove this comment to see the full error message

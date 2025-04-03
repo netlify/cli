@@ -6,7 +6,7 @@ import { join } from 'node:path'
 import { docs } from '../config.js'
 import { copyDirRecursiveAsync } from './util/fs.js'
 
-const readDir = async function (dir, allFiles = []) {
+const readDir = async function(dir, allFiles = []) {
   const filenames = await fs.readdir(dir)
   const files = filenames.map((file) => join(dir, file))
   allFiles.push(...files)
@@ -19,7 +19,7 @@ const readDir = async function (dir, allFiles = []) {
   return allFiles
 }
 
-const syncLocalContent = async function () {
+const syncLocalContent = async function() {
   const src = join(docs.srcPath)
   const destination = join(docs.outputPath)
 
@@ -33,7 +33,7 @@ const syncLocalContent = async function () {
   console.log('Synced!')
 }
 
-const removeMarkDownLinks = async function (filePath) {
+const removeMarkDownLinks = async function(filePath) {
   const content = await fs.readFile(filePath, 'utf-8')
   const newContent = content.replace(/(\w+)\.md/gm, '$1').replace(/\/docs\/commands\//gm, '/commands/')
   await fs.writeFile(filePath, newContent)

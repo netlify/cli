@@ -52,7 +52,8 @@ export const run = async ({ args, command }: Options) => {
     const { confirmExistingStore } = await inquirer.prompt({
       type: 'confirm',
       name: 'confirmExistingStore',
-      message: `The store '${storeName}' already exists in the new format, which means it has already been migrated or it has been used with a newer version of the Netlify Blobs client. If you continue with the migration, any blobs from the legacy store will overwrite newer entries that have the same key. Do you want to proceed?`,
+      message:
+        `The store '${storeName}' already exists in the new format, which means it has already been migrated or it has been used with a newer version of the Netlify Blobs client. If you continue with the migration, any blobs from the legacy store will overwrite newer entries that have the same key. Do you want to proceed?`,
       default: false,
     })
 

@@ -81,7 +81,8 @@ const addDeployKey = async ({ api, octokit, repoName, repoOwner }) => {
     // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
     if (error.status === 404) {
       const { name, owner } = formatRepoAndOwner({ repoName, repoOwner })
-      message = `${message}. Does the repository ${name} exist and do ${owner} has the correct permissions to set up deploy keys?`
+      message =
+        `${message}. Does the repository ${name} exist and do ${owner} has the correct permissions to set up deploy keys?`
     }
     failAndExit(message)
   }
@@ -147,7 +148,8 @@ const addDeployHook = async ({ deployHook, octokit, repoName, repoOwner }) => {
         // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         if (error.status === 404) {
           const { name, owner } = formatRepoAndOwner({ repoName, repoOwner })
-          message = `${message}. Does the repository ${name} and do ${owner} has the correct permissions to set up hooks`
+          message =
+            `${message}. Does the repository ${name} and do ${owner} has the correct permissions to set up hooks`
         }
         failAndExit(message)
       }

@@ -10,7 +10,7 @@ type BrowserUnableMessage = {
   url: string
 }
 
-const unableToOpenBrowserMessage = function ({ message, url }: BrowserUnableMessage) {
+const unableToOpenBrowserMessage = function({ message, url }: BrowserUnableMessage) {
   log('---------------------------')
   log(chalk.redBright(`Error: Unable to open browser automatically: ${message}`))
   log(chalk.cyan('Please open your browser and open the URL below:'))
@@ -23,7 +23,7 @@ type OpenBrowsrProps = {
   url: string
 }
 
-const openBrowser = async function ({ silentBrowserNoneError, url }: OpenBrowsrProps) {
+const openBrowser = async function({ silentBrowserNoneError, url }: OpenBrowsrProps) {
   if (isDockerContainer()) {
     unableToOpenBrowserMessage({ url, message: 'Running inside a docker container' })
     return

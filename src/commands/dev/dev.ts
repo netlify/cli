@@ -33,7 +33,6 @@ import { createDevExecCommand } from './dev-exec.js'
 import { type DevConfig } from './types.js'
 
 /**
- *
  * @param {object} config
  * @param {*} config.api
  * @param {import('commander').OptionValues} config.options

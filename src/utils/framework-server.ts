@@ -19,7 +19,7 @@ interface StartReturnObject {
 /**
  * Start a static server if the `useStaticServer` is provided or a framework specific server
  */
-export const startFrameworkServer = async function ({
+export const startFrameworkServer = async function({
   cwd,
   settings,
 }: {
@@ -37,7 +37,8 @@ export const startFrameworkServer = async function ({
   log(`${NETLIFYDEVLOG} Starting Netlify Dev with ${settings.framework || 'custom config'}`)
 
   const spinner = startSpinner({
-    text: `Waiting for framework port ${settings.frameworkPort}. This can be configured using the 'targetPort' property in the netlify.toml`,
+    text:
+      `Waiting for framework port ${settings.frameworkPort}. This can be configured using the 'targetPort' property in the netlify.toml`,
   })
 
   if (settings.clearPublishDirectory && settings.dist) {

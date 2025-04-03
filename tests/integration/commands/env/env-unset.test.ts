@@ -83,9 +83,11 @@ describe('env:unset command', async () => {
     // already exists as value in withMockApi
     const existingVar = 'EXISTING_VAR'
     const warningMessage = generateWarning(existingVar)
-    const expectedSuccessMessage = `Unset environment variable ${chalk.yellow(existingVar)} in the ${chalk.magenta(
-      'all',
-    )} context`
+    const expectedSuccessMessage = `Unset environment variable ${chalk.yellow(existingVar)} in the ${
+      chalk.magenta(
+        'all',
+      )
+    } context`
 
     beforeEach(() => {
       vi.resetModules()

@@ -24,9 +24,11 @@ const readHttpsSettings = async (options: {
 }): Promise<{ key: string; cert: string; keyFilePath: string; certFilePath: string }> => {
   if (typeof options !== 'object' || !options.keyFile || !options.certFile) {
     throw new TypeError(
-      `https options should be an object with ${formatProperty('keyFile')} and ${formatProperty(
-        'certFile',
-      )} string properties`,
+      `https options should be an object with ${formatProperty('keyFile')} and ${
+        formatProperty(
+          'certFile',
+        )
+      } string properties`,
     )
   }
 
@@ -69,9 +71,11 @@ const validateFrameworkConfig = ({ devConfig }: { devConfig: DevConfig }) => {
 
   if (devConfig.targetPort && devConfig.targetPort === devConfig.port) {
     throw new Error(
-      `${formatProperty('port')} and ${formatProperty(
-        'targetPort',
-      )} options cannot have same values. Please consult the documentation for more details: https://ntl.fyi/ports-and-netlify-dev`,
+      `${formatProperty('port')} and ${
+        formatProperty(
+          'targetPort',
+        )
+      } options cannot have same values. Please consult the documentation for more details: https://ntl.fyi/ports-and-netlify-dev`,
     )
   }
 }
@@ -123,17 +127,21 @@ const handleStaticServer = async ({
     log(`${NETLIFYDEVWARN} Using simple static server because ${formatProperty('--dir')} flag was specified`)
   } else if (devConfig.framework === '#static') {
     log(
-      `${NETLIFYDEVWARN} Using simple static server because ${formatProperty(
-        '[dev.framework]',
-      )} was set to ${formatValue('#static')}`,
+      `${NETLIFYDEVWARN} Using simple static server because ${
+        formatProperty(
+          '[dev.framework]',
+        )
+      } was set to ${formatValue('#static')}`,
     )
   }
 
   if (devConfig.targetPort) {
     log(
-      `${NETLIFYDEVWARN} Ignoring ${formatProperty(
-        'targetPort',
-      )} setting since using a simple static server.${EOL}${NETLIFYDEVWARN} Use --staticServerPort or [dev.staticServerPort] to configure the static server port`,
+      `${NETLIFYDEVWARN} Ignoring ${
+        formatProperty(
+          'targetPort',
+        )
+      } setting since using a simple static server.${EOL}${NETLIFYDEVWARN} Use --staticServerPort or [dev.staticServerPort] to configure the static server port`,
     )
   }
 
@@ -183,9 +191,11 @@ const handleCustomFramework = ({
 }): BaseServerSettings => {
   if (!hasCommandAndTargetPort(devConfig)) {
     throw new Error(
-      `${formatProperty('command')} and ${formatProperty('targetPort')} properties are required when ${formatProperty(
-        'framework',
-      )} is set to ${formatValue('#custom')}`,
+      `${formatProperty('command')} and ${formatProperty('targetPort')} properties are required when ${
+        formatProperty(
+          'framework',
+        )
+      } is set to ${formatValue('#custom')}`,
     )
   }
   return {

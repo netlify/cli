@@ -100,8 +100,8 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
         .build()
 
       await withDevServer({ cwd: builder.directory, args }, async (server) => {
-        const [fromFunction, queryPassthrough, queryInRedirect, withParamMatching, functionWithSplat] =
-          await Promise.all([
+        const [fromFunction, queryPassthrough, queryInRedirect, withParamMatching, functionWithSplat] = await Promise
+          .all([
             nodeFetch(`${server.url}/api/test?foo=1&foo=2&bar=1&bar=2`).then((res) => res.json()),
             nodeFetch(`${server.url}/foo?foo=1&foo=2&bar=1&bar=2`, { redirect: 'manual' }),
             nodeFetch(`${server.url}/bar?foo=1&foo=2&bar=1&bar=2`, { redirect: 'manual' }),
@@ -325,7 +325,7 @@ export const handler = async function () {
         ).toEqual('origin')
 
         const hello = await nodeFetch(`https://localhost:${port.toString()}/api/hello`, options).then((res) =>
-          res.json(),
+          res.json()
         )
 
         expect(hello).toHaveProperty('rawUrl', `https://localhost:${port.toString()}/api/hello`)

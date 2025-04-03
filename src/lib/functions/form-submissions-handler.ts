@@ -12,7 +12,7 @@ import { capitalize } from '../string.js'
 import type NetlifyFunction from './netlify-function.js'
 import type { FunctionsRegistry } from './registry.js'
 
-export const getFormHandler = function ({
+export const getFormHandler = function({
   functionsRegistry,
   logWarning = true,
 }: {
@@ -30,8 +30,8 @@ export const getFormHandler = function ({
   }
 
   if (handlers.length === 2) {
-    logWarning &&
-      warn(
+    logWarning
+      && warn(
         `Detected both '${handlers[0]}' and '${handlers[1]}' form submission functions handlers, using ${handlers[0]}`,
       )
   }
@@ -39,7 +39,7 @@ export const getFormHandler = function ({
   return handlers[0]
 }
 
-export const createFormSubmissionHandler = function ({
+export const createFormSubmissionHandler = function({
   functionsRegistry,
   siteUrl,
 }: {
@@ -48,9 +48,9 @@ export const createFormSubmissionHandler = function ({
 }): RequestHandler {
   return async function formSubmissionHandler(req, res, next) {
     if (
-      req.url.startsWith('/.netlify/') ||
-      req.method !== 'POST' ||
-      (await functionsRegistry.getFunctionForURLPath(req.url, req.method, () => Promise.resolve(false)))
+      req.url.startsWith('/.netlify/')
+      || req.method !== 'POST'
+      || (await functionsRegistry.getFunctionForURLPath(req.url, req.method, () => Promise.resolve(false)))
     ) {
       next()
       return
@@ -141,20 +141,18 @@ export const createFormSubmissionHandler = function ({
         last_name:
           // @ts-expect-error TS(2538) FIXME: Type 'undefined' cannot be used as an index type.
           fields[Object.keys(fields).find((name) => ['lastname', 'surname', 'byname'].includes(name.toLowerCase()))],
-        first_name:
-          fields[
-            // @ts-expect-error TS(2538) FIXME: Type 'undefined' cannot be used as an index type.
-            Object.keys(fields).find((name) => ['firstname', 'givenname', 'forename'].includes(name.toLowerCase()))
-          ],
+        first_name: fields[
+          // @ts-expect-error TS(2538) FIXME: Type 'undefined' cannot be used as an index type.
+          Object.keys(fields).find((name) => ['firstname', 'givenname', 'forename'].includes(name.toLowerCase()))
+        ],
         // @ts-expect-error TS(2538) FIXME: Type 'undefined' cannot be used as an index type.
         name: fields[Object.keys(fields).find((name) => ['name', 'fullname'].includes(name.toLowerCase()))],
-        email:
-          fields[
-            // @ts-expect-error TS(2538) FIXME: Type 'undefined' cannot be used as an index type.
-            Object.keys(fields).find((name) =>
-              ['email', 'mail', 'from', 'twitter', 'sender'].includes(name.toLowerCase()),
-            )
-          ],
+        email: fields[
+          // @ts-expect-error TS(2538) FIXME: Type 'undefined' cannot be used as an index type.
+          Object.keys(fields).find((name) =>
+            ['email', 'mail', 'from', 'twitter', 'sender'].includes(name.toLowerCase())
+          )
+        ],
         // @ts-expect-error TS(2538) FIXME: Type 'undefined' cannot be used as an index type.
         title: fields[Object.keys(fields).find((name) => ['title', 'subject'].includes(name.toLowerCase()))],
         data: {

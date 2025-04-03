@@ -17,8 +17,10 @@ export type NetlifySite = {
   id?: string | undefined
 }
 
-type PatchedConfig = NetlifyTOML &
-  Pick<NetlifyConfig, 'images'> & {
+type PatchedConfig =
+  & NetlifyTOML
+  & Pick<NetlifyConfig, 'images'>
+  & {
     functionsDirectory?: string
     build: NetlifyTOML['build'] & {
       functionsSource?: string

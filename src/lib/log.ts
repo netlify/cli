@@ -8,9 +8,11 @@ To be able to deploy this function successfully either:
   - change the function name to remove \`${RED_BACKGROUND}\` and execute it synchronously
   - upgrade your team plan to a level that supports Background Functions (${PRO}, ${BUSINESS}, or ${ENTERPRISE})
 `
-export const MISSING_AWS_SDK_WARNING = `A function has thrown an error due to a missing dependency: ${chalk.yellow(
-  'aws-sdk',
-)}.
+export const MISSING_AWS_SDK_WARNING = `A function has thrown an error due to a missing dependency: ${
+  chalk.yellow(
+    'aws-sdk',
+  )
+}.
 You should add this module to the project's dependencies, using your package manager of choice:
 
 ${chalk.yellow('npm install aws-sdk --save')} or ${chalk.yellow('yarn add aws-sdk')}

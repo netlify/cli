@@ -14,7 +14,7 @@ import { NETLIFYDEVERR, log } from './command-helpers.js'
  * @returns {Object<string,string[]>}
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'headers' implicitly has an 'any' type.
-export const headersForPath = function (headers, path) {
+export const headersForPath = function(headers, path) {
   // @ts-expect-error TS(7031) FIXME: Binding element 'forRegExp' implicitly has an 'any... Remove this comment to see the full error message
   const matchingHeaders = headers.filter(({ forRegExp }) => forRegExp.test(path)).map(getHeaderValues)
   const headersRules = Object.assign({}, ...matchingHeaders)
@@ -22,12 +22,12 @@ export const headersForPath = function (headers, path) {
 }
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'values' implicitly has an 'any' t... Remove this comment to see the full error message
-const getHeaderValues = function ({ values }) {
+const getHeaderValues = function({ values }) {
   return values
 }
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'configPath' implicitly has an 'an... Remove this comment to see the full error message
-export const parseHeaders = async function ({ config, configPath, headersFiles }): Promise<Header[]> {
+export const parseHeaders = async function({ config, configPath, headersFiles }): Promise<Header[]> {
   const { errors, headers } = await parseAllHeaders({
     headersFiles,
     netlifyConfigPath: configPath,
@@ -39,7 +39,7 @@ export const parseHeaders = async function ({ config, configPath, headersFiles }
 }
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'errors' implicitly has an 'any' type.
-const handleHeadersErrors = function (errors) {
+const handleHeadersErrors = function(errors) {
   if (errors.length === 0) {
     return
   }
@@ -49,7 +49,7 @@ const handleHeadersErrors = function (errors) {
 }
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'message' implicitly has an 'any' ... Remove this comment to see the full error message
-const getErrorMessage = function ({ message }) {
+const getErrorMessage = function({ message }) {
   return message
 }
 

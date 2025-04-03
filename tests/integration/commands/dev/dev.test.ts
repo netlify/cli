@@ -315,7 +315,6 @@ describe.concurrent('command/dev', () => {
             ])
             const getBody = await getResponse.json()
             const postBody = await postResponse.json()
-
             ;[getBody, postBody].forEach((response) => {
               const signature = (response as { headers: Record<string, string> }).headers['x-nf-sign']
               const payload = jwt.verify(signature, mockSigningSecret) as JwtPayload

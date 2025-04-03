@@ -64,9 +64,11 @@ At the moment, Netlify does nothing about that. In the future, there might be a 
 
     if (ignoredKeys.length !== 0) {
       message += paragraph(
-        `Your function returned ${ignoredKeys
-          .map((key) => `<code>${key}</code>`)
-          .join(', ')}. Is this an accident? It won't be interpreted by Netlify.`,
+        `Your function returned ${
+          ignoredKeys
+            .map((key) => `<code>${key}</code>`)
+            .join(', ')
+        }. Is this an accident? It won't be interpreted by Netlify.`,
       )
     }
   }
@@ -74,16 +76,16 @@ At the moment, Netlify does nothing about that. In the future, there might be a 
   const statusCode = error ? 500 : 200
   return acceptsHtml
     ? {
-        statusCode,
-        contentType: 'text/html',
-        message: `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css">\n
+      statusCode,
+      contentType: 'text/html',
+      message: `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css">\n
                 ${message}`,
-      }
+    }
     : {
-        statusCode,
-        contentType: 'text/plain',
-        message,
-      }
+      statusCode,
+      contentType: 'text/plain',
+      message,
+    }
 }
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'error' implicitly has an 'any' ty... Remove this comment to see the full error message

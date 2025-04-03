@@ -7,13 +7,13 @@ import { fileExistsAsync } from '../lib/fs.js'
 
 import { log } from './command-helpers.js'
 
-const hasGitIgnore = async function (dir: string) {
+const hasGitIgnore = async function(dir: string) {
   const gitIgnorePath = path.join(dir, '.gitignore')
   const hasIgnore = await fileExistsAsync(gitIgnorePath)
   return hasIgnore
 }
 
-export const ensureNetlifyIgnore = async function (dir: string) {
+export const ensureNetlifyIgnore = async function(dir: string) {
   const gitIgnorePath = path.join(dir, '.gitignore')
   const ignoreContent = '# Local Netlify folder\n.netlify\n'
 

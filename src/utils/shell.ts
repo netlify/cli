@@ -86,14 +86,16 @@ export const runCommand = (
     const [commandWithoutArgs] = command.split(' ')
     if (result.failed && isNonExistingCommandError({ command: commandWithoutArgs, error: result })) {
       log(
-        `${NETLIFYDEVERR} Failed running command: ${command}. Please verify ${chalk.magenta(
-          `'${commandWithoutArgs}'`,
-        )} exists`,
+        `${NETLIFYDEVERR} Failed running command: ${command}. Please verify ${
+          chalk.magenta(
+            `'${commandWithoutArgs}'`,
+          )
+        } exists`,
       )
     } else {
       const errorMessage = result.failed
-        ? // @ts-expect-error TS(2339) FIXME: Property 'shortMessage' does not exist on type 'Ex... Remove this comment to see the full error message
-          `${NETLIFYDEVERR} ${result.shortMessage}`
+        // @ts-expect-error TS(2339) FIXME: Property 'shortMessage' does not exist on type 'Ex... Remove this comment to see the full error message
+        ? `${NETLIFYDEVERR} ${result.shortMessage}`
         : `${NETLIFYDEVWARN} "${command}" exited with code ${result.exitCode}`
 
       log(`${errorMessage}. Shutting down Netlify Dev server`)
@@ -109,7 +111,6 @@ export const runCommand = (
 }
 
 /**
- *
  * @param {object} config
  * @param {string} config.command
  * @param {*} config.error
@@ -130,7 +131,7 @@ const isNonExistingCommandError = ({ command, error: commandError }) => {
 
   // this only works on English versions of Windows
   return (
-    typeof commandError.message === 'string' &&
-    commandError.message.includes('is not recognized as an internal or external command')
+    typeof commandError.message === 'string'
+    && commandError.message.includes('is not recognized as an internal or external command')
   )
 }

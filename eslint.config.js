@@ -21,10 +21,8 @@ export default tseslint.config(
       reportUnusedDisableDirectives: true,
     },
   },
-
   // JavaScript-specific rules
   eslint.configs.recommended,
-
   // Typescript-specific rules
   tseslint.configs.strictTypeChecked,
   tseslint.configs.stylisticTypeChecked,
@@ -36,7 +34,6 @@ export default tseslint.config(
       },
     },
   },
-
   {
     files: ['**/*.?(c|m)js?(x)'],
     ...tseslint.configs.disableTypeChecked,
@@ -52,7 +49,6 @@ export default tseslint.config(
       'n/no-unpublished-require': 'off',
     },
   },
-
   // Project-specific rules
   {
     ignores: ['.github/styles/', '**/__fixtures__/'],
@@ -113,7 +109,6 @@ export default tseslint.config(
       ],
     },
   },
-
   // Tests
   {
     files: ['**/*.test.?(c|m)[jt]s?(x)'],
@@ -141,9 +136,7 @@ export default tseslint.config(
       ],
     },
   },
-
   ...cliTemporarySuppressions,
-
   // Must be last
   prettier,
 )

@@ -70,9 +70,11 @@ export const run = async ({ args, command }: RunRecipeOptions) => {
 
   if (minimumCLIVersion && semver.lt(version, minimumCLIVersion)) {
     error(
-      `This command requires version ${minimumCLIVersion} or above of the Netlify CLI. Refer to ${chalk.underline(
-        'https://ntl.fyi/update-cli',
-      )} for information on how to update.`,
+      `This command requires version ${minimumCLIVersion} or above of the Netlify CLI. Refer to ${
+        chalk.underline(
+          'https://ntl.fyi/update-cli',
+        )
+      } for information on how to update.`,
     )
 
     return
@@ -91,9 +93,11 @@ export const run = async ({ args, command }: RunRecipeOptions) => {
     if (existing.provider?.toLowerCase() === NETLIFY_PROVIDER) {
       if (remote?.version === existing.version) {
         log(
-          `You're all up to date! ${chalk.underline(
-            absoluteFilePath,
-          )} contains the latest version of the context files.`,
+          `You're all up to date! ${
+            chalk.underline(
+              absoluteFilePath,
+            )
+          } contains the latest version of the context files.`,
         )
 
         return
@@ -107,9 +111,11 @@ export const run = async ({ args, command }: RunRecipeOptions) => {
       const { confirm } = await inquirer.prompt({
         type: 'confirm',
         name: 'confirm',
-        message: `A context file already exists at ${chalk.underline(
-          absoluteFilePath,
-        )}. It has not been created by the Netlify CLI, but we can update it while preserving its existing content. Can we proceed?`,
+        message: `A context file already exists at ${
+          chalk.underline(
+            absoluteFilePath,
+          )
+        }. It has not been created by the Netlify CLI, but we can update it while preserving its existing content. Can we proceed?`,
         default: true,
       })
 

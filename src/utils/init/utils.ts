@@ -37,8 +37,7 @@ export const getPluginsToAutoInstall = (
   const nextRuntime = '@netlify/plugin-nextjs'
   const pluginsToAlwaysInstall = new Set([nextRuntime])
   return pluginsRecommended.reduce<string[]>(
-    (acc, plugin) =>
-      pluginsInstalled.includes(plugin) && !pluginsToAlwaysInstall.has(plugin) ? acc : [...acc, plugin],
+    (acc, plugin) => pluginsInstalled.includes(plugin) && !pluginsToAlwaysInstall.has(plugin) ? acc : [...acc, plugin],
     [],
   )
 }
@@ -58,7 +57,6 @@ const normalizeSettings = (settings: Partial<Settings>, config: NetlifyConfig, c
 }
 
 /**
- *
  * @param {object} param0
  * @param {string} param0.defaultBaseDir
  * @param {string} param0.defaultBuildCmd
@@ -68,13 +66,13 @@ const normalizeSettings = (settings: Partial<Settings>, config: NetlifyConfig, c
 // @ts-expect-error TS(7031) FIXME: Binding element 'defaultBaseDir' implicitly has an... Remove this comment to see the full error message
 const getPromptInputs = ({ defaultBaseDir, defaultBuildCmd, defaultBuildDir }) => {
   const inputs = [
-    defaultBaseDir !== undefined &&
-      defaultBaseDir !== '' && {
-        type: 'input',
-        name: 'baseDir',
-        message: 'Base directory `(blank for current dir):',
-        default: defaultBaseDir,
-      },
+    defaultBaseDir !== undefined
+    && defaultBaseDir !== '' && {
+      type: 'input',
+      name: 'baseDir',
+      message: 'Base directory `(blank for current dir):',
+      default: defaultBaseDir,
+    },
     {
       type: 'input',
       name: 'buildCmd',
@@ -125,7 +123,8 @@ const getNetlifyToml = ({
   command = '# no build command',
   functions = 'functions',
   publish = '.',
-}) => `# example netlify.toml
+}) =>
+  `# example netlify.toml
 [build]
   command = "${command}"
   functions = "${functions}"

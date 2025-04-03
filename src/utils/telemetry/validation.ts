@@ -33,7 +33,7 @@ export default function isValidEventName(eventName, config) {
 }
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'eventName' implicitly has an 'any' type... Remove this comment to see the full error message
-const containsSeparators = function (eventName) {
+const containsSeparators = function(eventName) {
   const underscores = (eventName.match(/_/g) || []).length
   if (underscores !== 1) {
     log(`Event name must have single underscore. "${eventName}" contains ${underscores}`)
@@ -48,7 +48,7 @@ const containsSeparators = function (eventName) {
 }
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'eventName' implicitly has an 'any' type... Remove this comment to see the full error message
-const formattingWarning = function (eventName, errorMsg) {
+const formattingWarning = function(eventName, errorMsg) {
   log('-----------------------------')
   log('Tracking Error:')
   log(`Incorrect tracking event format: "${eventName}"`)

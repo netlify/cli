@@ -16,7 +16,7 @@ const V2_MIN_NODE_VERSION = '18.14.0'
 // Returns a new set with all elements of `setA` that don't exist in `setB`.
 const difference = (setA: Set<string>, setB: Set<string>) => new Set([...setA].filter((item) => !setB.has(item)))
 
-const getNextRun = function (schedule: string) {
+const getNextRun = function(schedule: string) {
   const cron = CronParser.parseExpression(schedule, {
     tz: 'Etc/UTC',
   })
@@ -191,9 +191,11 @@ export default class NetlifyFunction {
 
       if (!this.isSupported()) {
         throw new Error(
-          `Function requires Node.js version ${V2_MIN_NODE_VERSION} or above, but ${nodeVersion.slice(
-            1,
-          )} is installed. Refer to https://ntl.fyi/functions-runtime for information on how to update.`,
+          `Function requires Node.js version ${V2_MIN_NODE_VERSION} or above, but ${
+            nodeVersion.slice(
+              1,
+            )
+          } is installed. Refer to https://ntl.fyi/functions-runtime for information on how to update.`,
         )
       }
 

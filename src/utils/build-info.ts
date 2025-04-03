@@ -11,7 +11,7 @@ import { chalk, log } from './command-helpers.js'
 /**
  * Filters the inquirer settings based on the input
  */
-const filterSettings = function (
+const filterSettings = function(
   scriptInquirerOptions: ReturnType<typeof formatSettingsArrForInquirer>,
   input: string,
 ) {
@@ -27,7 +27,7 @@ const filterSettings = function (
 /**
  * Formats the settings to present it as an array for the inquirer input so that it can choose one
  */
-const formatSettingsArrForInquirer = function (settings: Settings[], type = 'dev') {
+const formatSettingsArrForInquirer = function(settings: Settings[], type = 'dev') {
   return settings.map((setting) => {
     const cmd = type === 'dev' ? setting.devCommand : setting.buildCommand
     return {
@@ -87,11 +87,13 @@ export const detectFrameworkSettings = async (
     if (isCI) {
       log(`Multiple possible ${type} commands found`)
       throw new Error(
-        `Detected commands for: ${settings
-          .map((setting) => setting.framework.name)
-          .join(
-            ', ',
-          )}. Update your settings to specify which to use. Refer to https://ntl.fyi/dev-monorepo for more information.`,
+        `Detected commands for: ${
+          settings
+            .map((setting) => setting.framework.name)
+            .join(
+              ', ',
+            )
+        }. Update your settings to specify which to use. Refer to https://ntl.fyi/dev-monorepo for more information.`,
       )
     }
 

@@ -5,7 +5,7 @@ import BaseCommand from '../base-command.js'
 const MAX_SITE_NAME_LENGTH = 63
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
-const validateName = function (value) {
+const validateName = function(value) {
   // netlify sites:create --name <A string of more than 63 words>
   if (typeof value === 'string' && value.length > MAX_SITE_NAME_LENGTH) {
     throw new InvalidArgumentError(`--name should be less than 64 characters, input length: ${value.length}`)

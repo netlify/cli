@@ -55,7 +55,7 @@ const deflate = util.promisify(zlib.deflate)
 const inflate = util.promisify(zlib.inflate)
 const shouldGenerateETag = Symbol('Internal: response should generate ETag')
 
-const decompressResponseBody = async function (body: Buffer, contentEncoding = ''): Promise<Buffer> {
+const decompressResponseBody = async function(body: Buffer, contentEncoding = ''): Promise<Buffer> {
   switch (contentEncoding) {
     case 'gzip':
       return await gunzip(body)
@@ -68,7 +68,7 @@ const decompressResponseBody = async function (body: Buffer, contentEncoding = '
   }
 }
 
-const compressResponseBody = async function (body: string, contentEncoding = ''): Promise<Buffer> {
+const compressResponseBody = async function(body: string, contentEncoding = ''): Promise<Buffer> {
   switch (contentEncoding) {
     case 'gzip':
       return await gzip(body)
@@ -83,7 +83,7 @@ const compressResponseBody = async function (body: string, contentEncoding = '')
 
 type HTMLInjections = NonNullable<NonNullable<NetlifyOptions['config']['dev']['processing']>['html']>['injections']
 
-const injectHtml = async function (
+const injectHtml = async function(
   responseBody: Buffer,
   proxyRes: http.IncomingMessage,
   htmlInjections: HTMLInjections,
@@ -135,9 +135,9 @@ function getAddonUrl(addonsUrls: Record<string, string>, req: http.IncomingMessa
   return addonUrl ? `${addonUrl}${matches[2]}` : null
 }
 
-const getStatic = async function (pathname: string, publicFolder: string) {
+const getStatic = async function(pathname: string, publicFolder: string) {
   const alternatives = [pathname, ...alternativePathsFor(pathname)].map((filePath) =>
-    path.resolve(publicFolder, filePath.slice(1)),
+    path.resolve(publicFolder, filePath.slice(1))
   )
 
   const file = await locatePath(alternatives)
@@ -148,7 +148,7 @@ const getStatic = async function (pathname: string, publicFolder: string) {
   return `/${path.relative(publicFolder, file)}`
 }
 
-const isEndpointExists = async function (endpoint: string, origin: string) {
+const isEndpointExists = async function(endpoint: string, origin: string) {
   const url = new URL(endpoint, origin)
   try {
     const res = await fetch(url, { method: 'HEAD' })
@@ -159,16 +159,16 @@ const isEndpointExists = async function (endpoint: string, origin: string) {
 }
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'match' implicitly has an 'any' type.
-const isExternal = function (match) {
+const isExternal = function(match) {
   return match.to && match.to.match(/^https?:\/\//)
 }
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'hash' implicitly has an 'any' typ... Remove this comment to see the full error message
-const stripOrigin = function ({ hash, pathname, search }) {
+const stripOrigin = function({ hash, pathname, search }) {
   return `${pathname}${search}${hash}`
 }
 
-const proxyToExternalUrl = function ({
+const proxyToExternalUrl = function({
   dest,
   destURL,
   req,
@@ -192,7 +192,7 @@ const proxyToExternalUrl = function ({
 }
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'addonUrl' implicitly has an 'any'... Remove this comment to see the full error message
-const handleAddonUrl = function ({ addonUrl, req, res }) {
+const handleAddonUrl = function({ addonUrl, req, res }) {
   const dest = new URL(addonUrl)
   const destURL = stripOrigin(dest)
 
@@ -200,12 +200,12 @@ const handleAddonUrl = function ({ addonUrl, req, res }) {
 }
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'match' implicitly has an 'any' type.
-const isRedirect = function (match) {
+const isRedirect = function(match) {
   return match.status && match.status >= 300 && match.status <= 400
 }
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'publicFolder' implicitly has an 'any' t... Remove this comment to see the full error message
-const render404 = async function (publicFolder) {
+const render404 = async function(publicFolder) {
   const maybe404Page = path.resolve(publicFolder, '404.html')
   try {
     const isFile = await isFileAsync(maybe404Page)
@@ -222,7 +222,7 @@ const render404 = async function (publicFolder) {
 const assetExtensionRegExp = /\.(html?|png|jpg|js|css|svg|gif|ico|woff|woff2)$/
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'url' implicitly has an 'any' type.
-const alternativePathsFor = function (url) {
+const alternativePathsFor = function(url) {
   if (isFunction(true, url)) {
     return []
   }
@@ -247,7 +247,7 @@ const notifyActivity = throttle((api: NetlifyOptions['api'], siteId: string, dev
   })
 }, 30 * 1000)
 
-const serveRedirect = async function ({
+const serveRedirect = async function({
   env,
   functionsRegistry,
   imageProxy,
@@ -351,16 +351,16 @@ const serveRedirect = async function ({
   }
 
   const reqUrl = reqToURL(req, req.url)
-  const isHiddenProxy =
-    match.proxyHeaders &&
-    Object.entries(match.proxyHeaders).some(([key, val]) => key.toLowerCase() === 'x-nf-hidden-proxy' && val === 'true')
+  const isHiddenProxy = match.proxyHeaders
+    && Object.entries(match.proxyHeaders).some(([key, val]) =>
+      key.toLowerCase() === 'x-nf-hidden-proxy' && val === 'true'
+    )
 
   const staticFile = await getStatic(decodeURIComponent(reqUrl.pathname), options.publicFolder)
-  const endpointExists =
-    !staticFile &&
-    !isHiddenProxy &&
-    process.env.NETLIFY_DEV_SERVER_CHECK_SSG_ENDPOINTS &&
-    (await isEndpointExists(decodeURIComponent(reqUrl.pathname), options.target))
+  const endpointExists = !staticFile
+    && !isHiddenProxy
+    && process.env.NETLIFY_DEV_SERVER_CHECK_SSG_ENDPOINTS
+    && (await isEndpointExists(decodeURIComponent(reqUrl.pathname), options.target))
   if (staticFile || endpointExists) {
     const pathname = staticFile || reqUrl.pathname
     req.url = encodeURI(pathname) + reqUrl.search
@@ -415,22 +415,21 @@ const serveRedirect = async function ({
 
     const ct = req.headers['content-type'] ? contentType.parse(req).type : ''
     if (
-      req.method === 'POST' &&
-      !isInternal(req.url) &&
-      !isInternal(destURL) &&
-      (ct.endsWith('/x-www-form-urlencoded') || ct === 'multipart/form-data')
+      req.method === 'POST'
+      && !isInternal(req.url)
+      && !isInternal(destURL)
+      && (ct.endsWith('/x-www-form-urlencoded') || ct === 'multipart/form-data')
     ) {
       return proxy.web(req, res, { target: options.functionsServer })
     }
 
     const destStaticFile = await getStatic(dest.pathname, options.publicFolder)
-    const matchingFunction =
-      functionsRegistry &&
-      (await functionsRegistry.getFunctionForURLPath(destURL, req.method, () => Boolean(destStaticFile)))
+    const matchingFunction = functionsRegistry
+      && (await functionsRegistry.getFunctionForURLPath(destURL, req.method, () => Boolean(destStaticFile)))
     let statusValue
     if (
-      match.force ||
-      (!staticFile && ((!options.framework && destStaticFile) || isInternal(destURL) || matchingFunction))
+      match.force
+      || (!staticFile && ((!options.framework && destStaticFile) || isInternal(destURL) || matchingFunction))
     ) {
       req.url = destStaticFile ? destStaticFile + dest.search : destURL
       const { status } = match
@@ -441,9 +440,9 @@ const serveRedirect = async function ({
     if (matchingFunction) {
       const functionHeaders = matchingFunction.func
         ? {
-            [NFFunctionName]: matchingFunction.func?.name,
-            [NFFunctionRoute]: matchingFunction.route,
-          }
+          [NFFunctionName]: matchingFunction.func?.name,
+          [NFFunctionRoute]: matchingFunction.route,
+        }
         : {}
       const url = reqToURL(req, originalURL)
       req.headers['x-netlify-original-pathname'] = url.pathname
@@ -467,7 +466,7 @@ const serveRedirect = async function ({
 }
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
-const reqToURL = function (req, pathname) {
+const reqToURL = function(req, pathname) {
   return new URL(
     pathname,
     `${req.protocol || (req.headers.scheme && `${req.headers.scheme}:`) || 'http:'}//${
@@ -478,7 +477,7 @@ const reqToURL = function (req, pathname) {
 
 const MILLISEC_TO_SEC = 1e3
 
-const initializeProxy = async function ({
+const initializeProxy = async function({
   config,
   configPath,
   distDir,
@@ -660,12 +659,11 @@ const initializeProxy = async function ({
     const requestURL = new URL(req.url, `http://${req.headers.host || '127.0.0.1'}`)
     const headersRules = headersForPath(headers, requestURL.pathname)
 
-    const htmlInjections =
-      config.dev?.processing?.html?.injections &&
-      config.dev.processing.html.injections.length !== 0 &&
-      proxyRes.headers?.['content-type']?.startsWith('text/html')
-        ? config.dev.processing.html.injections
-        : undefined
+    const htmlInjections = config.dev?.processing?.html?.injections
+        && config.dev.processing.html.injections.length !== 0
+        && proxyRes.headers?.['content-type']?.startsWith('text/html')
+      ? config.dev.processing.html.injections
+      : undefined
 
     // for streamed responses, we can't do etag generation nor error templates.
     // we'll just stream them through!
@@ -703,9 +701,9 @@ const initializeProxy = async function ({
       // whether the response should have an ETag header.
       if (
         // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        typeof req[shouldGenerateETag] === 'function' &&
+        typeof req[shouldGenerateETag] === 'function'
         // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        req[shouldGenerateETag]({ statusCode: responseStatus }) === true
+        && req[shouldGenerateETag]({ statusCode: responseStatus }) === true
       ) {
         const etag = generateETag(responseBody, { weak: true })
 
@@ -791,15 +789,18 @@ const onRequest = async (
     rewriter,
     settings,
     siteInfo,
-  }: { rewriter: Rewriter; settings: ServerSettings; edgeFunctionsProxy?: EdgeFunctionsProxy } & Record<
-    string,
-    $TSFixMe
-  >,
+  }:
+    & { rewriter: Rewriter; settings: ServerSettings; edgeFunctionsProxy?: EdgeFunctionsProxy }
+    & Record<
+      string,
+      $TSFixMe
+    >,
   req: Request,
   res: ServerResponse,
 ) => {
-  req.originalBody =
-    req.method && ['GET', 'OPTIONS', 'HEAD'].includes(req.method) ? null : await createStreamPromise(req, BYTES_LIMIT)
+  req.originalBody = req.method && ['GET', 'OPTIONS', 'HEAD'].includes(req.method)
+    ? null
+    : await createStreamPromise(req, BYTES_LIMIT)
 
   if (isImageRequest(req)) {
     return imageProxy(req, res)
@@ -811,10 +812,11 @@ const onRequest = async (
     return proxy.web(req, res, { target: edgeFunctionsProxyURL })
   }
 
-  const functionMatch =
-    functionsRegistry &&
-    (await functionsRegistry.getFunctionForURLPath(req.url, req.method, () =>
-      getStatic(decodeURIComponent(reqToURL(req, req.url).pathname), settings.dist ?? ''),
+  const functionMatch = functionsRegistry
+    && (await functionsRegistry.getFunctionForURLPath(
+      req.url,
+      req.method,
+      () => getStatic(decodeURIComponent(reqToURL(req, req.url).pathname), settings.dist ?? ''),
     ))
   if (functionMatch) {
     // Setting an internal header with the function name so that we don't
@@ -874,16 +876,16 @@ const onRequest = async (
   // @ts-expect-error TS(7031) FIXME: Binding element 'statusCode' implicitly has an 'an... Remove this comment to see the full error message
   req[shouldGenerateETag] = ({ statusCode }) => statusCode >= 200 && statusCode < 300
 
-  const hasFormSubmissionHandler: boolean =
-    functionsRegistry && getFormHandler({ functionsRegistry, logWarning: false })
+  const hasFormSubmissionHandler: boolean = functionsRegistry
+    && getFormHandler({ functionsRegistry, logWarning: false })
 
   const ct = req.headers['content-type'] ? contentType.parse(req).type : ''
   if (
-    hasFormSubmissionHandler &&
-    functionsServer &&
-    req.method === 'POST' &&
-    !isInternal(req.url) &&
-    (ct.endsWith('/x-www-form-urlencoded') || ct === 'multipart/form-data')
+    hasFormSubmissionHandler
+    && functionsServer
+    && req.method === 'POST'
+    && !isInternal(req.url)
+    && (ct.endsWith('/x-www-form-urlencoded') || ct === 'multipart/form-data')
   ) {
     return proxy.web(req, res, { target: functionsServer })
   }
@@ -895,14 +897,14 @@ const onRequest = async (
   proxy.web(req, res, options)
 }
 
-export const getProxyUrl = function (settings: Pick<ServerSettings, 'https' | 'port'>) {
+export const getProxyUrl = function(settings: Pick<ServerSettings, 'https' | 'port'>) {
   const scheme = settings.https ? 'https' : 'http'
   return `${scheme}://localhost:${settings.port}`
 }
 
 type EdgeFunctionsProxy = Awaited<ReturnType<typeof initializeEdgeFunctionsProxy>>
 
-export const startProxy = async function ({
+export const startProxy = async function({
   accountId,
   addonsUrls,
   api,

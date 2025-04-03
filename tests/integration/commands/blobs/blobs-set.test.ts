@@ -60,9 +60,11 @@ describe('blobs:set command', () => {
 
     const warningMessage = generateWarning(key, storeName)
 
-    const successMessage = `${chalk.greenBright('Success')}: Blob ${chalk.yellow(key)} set in store ${chalk.yellow(
-      storeName,
-    )}`
+    const successMessage = `${chalk.greenBright('Success')}: Blob ${chalk.yellow(key)} set in store ${
+      chalk.yellow(
+        storeName,
+      )
+    }`
 
     beforeEach(() => {
       vi.resetModules()
@@ -91,7 +93,6 @@ describe('blobs:set command', () => {
 
           const mockGet = vi.fn().mockResolvedValue('')
           const mockSet = vi.fn().mockResolvedValue('true')
-
           ;(getStore as any).mockReturnValue({
             get: mockGet,
             set: mockSet,
@@ -115,7 +116,6 @@ describe('blobs:set command', () => {
           // Mocking the store.get method to return a value (simulating that the key already exists)
           const mockGet = vi.fn().mockResolvedValue(value)
           const mockSet = vi.fn().mockResolvedValue('true')
-
           ;(getStore as any).mockReturnValue({
             get: mockGet,
             set: mockSet,
@@ -145,7 +145,6 @@ describe('blobs:set command', () => {
           // Mocking the store.get method to return a value (simulating that the key already exists)
           const mockGet = vi.fn().mockResolvedValue('my-value')
           const mockSet = vi.fn().mockResolvedValue('true')
-
           ;(getStore as any).mockReturnValue({
             get: mockGet,
             set: mockSet,
@@ -181,7 +180,6 @@ describe('blobs:set command', () => {
           // Mocking the store.get method to return a value (simulating that the key already exists)
           const mockGet = vi.fn().mockResolvedValue('my-value')
           const mockSet = vi.fn().mockResolvedValue('true')
-
           ;(getStore as any).mockReturnValue({
             get: mockGet,
             set: mockSet,
@@ -239,7 +237,6 @@ describe('blobs:set command', () => {
           // Mocking the store.get method to return a value (simulating that the key already exists)
           const mockGet = vi.fn().mockResolvedValue('my-value')
           const mockSet = vi.fn().mockResolvedValue('true')
-
           ;(getStore as any).mockReturnValue({
             get: mockGet,
             set: mockSet,
@@ -265,7 +262,6 @@ describe('blobs:set command', () => {
           // Mocking the store.get method to return a value (simulating that the key already exists)
           const mockGet = vi.fn().mockResolvedValue('my-value')
           const mockSet = vi.fn().mockResolvedValue('true')
-
           ;(getStore as any).mockReturnValue({
             get: mockGet,
             set: mockSet,

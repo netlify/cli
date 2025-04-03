@@ -27,7 +27,7 @@ const getApiUrl = () => {
 }
 
 // Make telemetry call
-const makeRequest = async function () {
+const makeRequest = async function() {
   try {
     await fetch(getApiUrl(), {
       method: 'POST',

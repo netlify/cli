@@ -9,14 +9,13 @@ import parseGithubUrl from 'parse-github-url'
 import { log } from './command-helpers.js'
 
 /**
- *
  * @param {object} config
  * @param {string} [config.remoteName]
  * @param {string} config.workingDir
  * @returns
  */
 
-const getRepoData = async function ({ remoteName, workingDir }: { remoteName?: string; workingDir: string }) {
+const getRepoData = async function({ remoteName, workingDir }: { remoteName?: string; workingDir: string }) {
   try {
     const [gitConfig, gitDirectory] = await Promise.all([
       util.promisify(gitconfiglocal)(workingDir),
@@ -39,9 +38,9 @@ const getRepoData = async function ({ remoteName, workingDir }: { remoteName?: s
     }
 
     if (
-      !Object.prototype.hasOwnProperty.call(gitConfig.remote, remoteName) ||
-      !gitConfig.remote[remoteName] ||
-      Object.keys(gitConfig.remote[remoteName]).length === 0
+      !Object.prototype.hasOwnProperty.call(gitConfig.remote, remoteName)
+      || !gitConfig.remote[remoteName]
+      || Object.keys(gitConfig.remote[remoteName]).length === 0
     ) {
       throw new Error(
         `The specified remote "${remoteName}" is not defined in Git repo. Please use --git-remote-name flag to specify a remote.`,

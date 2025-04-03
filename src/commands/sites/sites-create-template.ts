@@ -41,10 +41,12 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
   if (!exists) {
     const githubLink = getGitHubLink({ options, templateName })
     error(
-      `Could not find template ${chalk.bold(templateName)}. Please verify it exists and you can ${getTerminalLink(
-        'access to it on GitHub',
-        githubLink,
-      )}`,
+      `Could not find template ${chalk.bold(templateName)}. Please verify it exists and you can ${
+        getTerminalLink(
+          'access to it on GitHub',
+          githubLink,
+        )
+      }`,
     )
     return
   }
@@ -156,7 +158,6 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
     }
     return [site, repoResp]
   }
-
   ;[site, repoResp] = await inputSiteName(nameFlag)
 
   log()
@@ -229,11 +230,15 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
           log(`\nThis directory appears to be linked to ${chalk.cyanBright(linkedSiteNameMatch)}`)
           log('This can happen if you cloned the template into a subdirectory of an existing Netlify project.')
           log(
-            `You may need to move the ${chalk.cyanBright(
-              repoResp.name,
-            )} directory out of its parent directory and then re-run the ${chalk.cyanBright(
-              'link',
-            )} command manually\n`,
+            `You may need to move the ${
+              chalk.cyanBright(
+                repoResp.name,
+              )
+            } directory out of its parent directory and then re-run the ${
+              chalk.cyanBright(
+                'link',
+              )
+            } command manually\n`,
           )
         } else {
           log('A problem occurred linking the site')

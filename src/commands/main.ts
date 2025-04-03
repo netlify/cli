@@ -51,28 +51,36 @@ export const CI_FORCED_COMMANDS = {
 process.on('uncaughtException', async (err: AddressInUseError | Error) => {
   if ('code' in err && err.code === 'EADDRINUSE') {
     error(
-      `${chalk.red(`Port ${err.port} is already in use`)}\n\n` +
-        `Your serverless functions might be initializing a server\n` +
-        `to listen on specific port without properly closing it.\n\n` +
-        `This behavior is generally not advised\n` +
-        `To resolve this issue, try the following:\n` +
-        `1. If you NEED your serverless function to listen on a specific port,\n` +
-        `use a randomly assigned port as we do not officially support this.\n` +
-        `2. Review your serverless functions for lingering server connections, close them\n` +
-        `3. Check if any other applications are using port ${err.port}\n`,
+      `${chalk.red(`Port ${err.port} is already in use`)}\n\n`
+        + `Your serverless functions might be initializing a server\n`
+        + `to listen on specific port without properly closing it.\n\n`
+        + `This behavior is generally not advised\n`
+        + `To resolve this issue, try the following:\n`
+        + `1. If you NEED your serverless function to listen on a specific port,\n`
+        + `use a randomly assigned port as we do not officially support this.\n`
+        + `2. Review your serverless functions for lingering server connections, close them\n`
+        + `3. Check if any other applications are using port ${err.port}\n`,
       { exit: false },
     )
   } else {
     error(
-      `${chalk.red(
-        'Netlify CLI has terminated unexpectedly',
-      )}\nThis is a problem with the Netlify CLI, not with your application.\nIf you recently updated the CLI, consider reverting to an older version by running:\n\n${chalk.bold(
-        'npm install -g netlify-cli@VERSION',
-      )}\n\nYou can use any version from ${chalk.underline(
-        'https://ntl.fyi/cli-versions',
-      )}.\n\nPlease report this problem at ${chalk.underline(
-        'https://ntl.fyi/cli-error',
-      )} including the error details below.\n`,
+      `${
+        chalk.red(
+          'Netlify CLI has terminated unexpectedly',
+        )
+      }\nThis is a problem with the Netlify CLI, not with your application.\nIf you recently updated the CLI, consider reverting to an older version by running:\n\n${
+        chalk.bold(
+          'npm install -g netlify-cli@VERSION',
+        )
+      }\n\nYou can use any version from ${
+        chalk.underline(
+          'https://ntl.fyi/cli-versions',
+        )
+      }.\n\nPlease report this problem at ${
+        chalk.underline(
+          'https://ntl.fyi/cli-error',
+        )
+      } including the error details below.\n`,
       { exit: false },
     )
 
@@ -112,7 +120,7 @@ ${USER_AGENT}
  * @param {import('./base-command.js').default} command
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
-const mainCommand = async function (options, command) {
+const mainCommand = async function(options, command) {
   const globalConfig = await getGlobalConfig()
 
   if (options.telemetryDisable) {

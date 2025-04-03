@@ -11,15 +11,18 @@ import { getFrameworksAPIPaths } from '../../../../dist/utils/frameworks-api.js'
 const duplicateFunctions = [
   {
     filename: 'hello.js',
-    content: `exports.handler = async (event) => ({ statusCode: 200, body: JSON.stringify({ message: 'Hello World from .js' }) })`,
+    content:
+      `exports.handler = async (event) => ({ statusCode: 200, body: JSON.stringify({ message: 'Hello World from .js' }) })`,
   },
   {
     filename: 'hello.ts',
-    content: `exports.handler = async (event) => ({ statusCode: 200, body: JSON.stringify({ message: 'Hello World from .ts' }) })`,
+    content:
+      `exports.handler = async (event) => ({ statusCode: 200, body: JSON.stringify({ message: 'Hello World from .ts' }) })`,
   },
   {
     filename: 'hello2.js',
-    content: `exports.handler = async (event) => ({ statusCode: 200, body: JSON.stringify({ message: 'Hello World from .ts' }) })`,
+    content:
+      `exports.handler = async (event) => ({ statusCode: 200, body: JSON.stringify({ message: 'Hello World from .ts' }) })`,
   },
   {
     filename: 'hello2/main.go',

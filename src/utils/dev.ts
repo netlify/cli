@@ -99,7 +99,6 @@ const SYNCHRONOUS_FUNCTION_TIMEOUT = 30
 const BACKGROUND_FUNCTION_TIMEOUT = 900
 
 /**
- *
  * @param {object} config
  * @param {boolean} config.offline
  * @param {*} config.api
@@ -199,9 +198,11 @@ export const injectEnvVariables = (env) => {
 
       log(
         chalk.dim(
-          `${NETLIFYDEVLOG} Ignored ${chalk.bold(sourceName)} env var: ${chalk.yellow(
-            key,
-          )} (defined in ${usedSourceName})`,
+          `${NETLIFYDEVLOG} Ignored ${chalk.bold(sourceName)} env var: ${
+            chalk.yellow(
+              key,
+            )
+          } (defined in ${usedSourceName})`,
         ),
       )
     })

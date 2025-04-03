@@ -164,7 +164,8 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
           { path: 'functions/lib/util.js', content: `exports.bark = () => 'WOOF!'` },
           {
             path: 'functions/hello.js',
-            content: `const { bark } = require('./lib/util'); exports.handler = async () => ({ statusCode: 200, body: bark() })`,
+            content:
+              `const { bark } = require('./lib/util'); exports.handler = async () => ({ statusCode: 200, body: bark() })`,
           },
         ])
         .build()
@@ -782,7 +783,7 @@ describe.concurrent('serving functions', () => {
 
       await withDevServer({ cwd: builder.directory }, async ({ port }) => {
         const responseWithTrace = await fetch(`http://localhost:${port}/.netlify/functions/hello`).then((res) =>
-          res.text(),
+          res.text()
         )
         t.expect(responseWithTrace.includes(path.join(builder.directory, 'functions', 'hello.js'))).toBe(true)
         t.expect(responseWithTrace.includes(path.join('.netlify', 'functions-serve'))).toBe(false)
@@ -816,7 +817,7 @@ describe.concurrent('serving functions', () => {
             rawQuery,
             rawUrl,
           } = await fetch(`http://localhost:${port}/.netlify/functions/hello?net=lify&jam=stack`).then((res) =>
-            res.json(),
+            res.json()
           )
 
           t.expect(httpMethod).toEqual('GET')

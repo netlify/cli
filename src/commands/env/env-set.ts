@@ -43,7 +43,7 @@ const setInEnvelope = async ({ api, context, force, key, scope, secret, siteInfo
   // if the passed context is unknown, it is actually a branch name
   // @ts-expect-error TS(7006) FIXME: Parameter 'ctx' implicitly has an 'any' type.
   let values = contexts.map((ctx) =>
-    AVAILABLE_CONTEXTS.includes(ctx) ? { context: ctx, value } : { context: 'branch', context_parameter: ctx, value },
+    AVAILABLE_CONTEXTS.includes(ctx) ? { context: ctx, value } : { context: 'branch', context_parameter: ctx, value }
   )
 
   // @ts-expect-error TS(7006) FIXME: Parameter 'envVar' implicitly has an 'any' type.
@@ -137,8 +137,10 @@ export const envSet = async (key: string, value: string, options: OptionValues, 
   const withSecret = secret ? ` as a ${chalk.blue('secret')}` : ''
   const contextType = AVAILABLE_CONTEXTS.includes(context || 'all') ? 'context' : 'branch'
   log(
-    `Set environment variable ${chalk.yellow(
-      `${key}${value && !secret ? `=${value}` : ''}`,
-    )}${withScope}${withSecret} in the ${chalk.magenta(context || 'all')} ${contextType}`,
+    `Set environment variable ${
+      chalk.yellow(
+        `${key}${value && !secret ? `=${value}` : ''}`,
+      )
+    }${withScope}${withSecret} in the ${chalk.magenta(context || 'all')} ${contextType}`,
   )
 }

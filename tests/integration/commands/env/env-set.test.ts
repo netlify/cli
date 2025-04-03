@@ -281,9 +281,11 @@ describe('env:set command', async () => {
 
     const warningMessage = generateWarning(existingVar)
 
-    const successMessage = `Set environment variable ${chalk.yellow(
-      `${existingVar}=${newEnvValue}`,
-    )} in the ${chalk.magenta('all')} context`
+    const successMessage = `Set environment variable ${
+      chalk.yellow(
+        `${existingVar}=${newEnvValue}`,
+      )
+    } in the ${chalk.magenta('all')} context`
 
     beforeEach(() => {
       vi.resetModules()

@@ -51,9 +51,9 @@ export const completionGenerate = async (_options: OptionValues, command: BaseCo
   const zshConfigFilepath = join(process.env.HOME || homedir(), '.zshrc')
 
   if (
-    fs.existsSync(zshConfigFilepath) &&
-    checkFileForLine(zshConfigFilepath, TABTAB_CONFIG_LINE) &&
-    !checkFileForLine(zshConfigFilepath, AUTOLOAD_COMPINIT)
+    fs.existsSync(zshConfigFilepath)
+    && checkFileForLine(zshConfigFilepath, TABTAB_CONFIG_LINE)
+    && !checkFileForLine(zshConfigFilepath, AUTOLOAD_COMPINIT)
   ) {
     log(`To enable Tabtab autocompletion with zsh, the following line may need to be added to your ~/.zshrc:`)
     log(chalk.bold.cyan(`\n${AUTOLOAD_COMPINIT}\n`))

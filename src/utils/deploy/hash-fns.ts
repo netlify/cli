@@ -187,7 +187,7 @@ const hashFns = async (
     .filter((func) =>
       Boolean(
         func.displayName || func.generator || func.routes || func.buildData || func.priority || func.trafficRules,
-      ),
+      )
     )
     .reduce(
       (funcs, curr) => ({

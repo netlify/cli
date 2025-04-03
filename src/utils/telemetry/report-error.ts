@@ -13,7 +13,6 @@ import { cliVersion } from './utils.js'
 const dirPath = dirname(fileURLToPath(import.meta.url))
 
 /**
- *
  * @param {import('@bugsnag/js').NotifiableError} error
  * @param {object} config
  * @param {import('@bugsnag/js').Event['severity']} config.severity
@@ -21,7 +20,7 @@ const dirPath = dirname(fileURLToPath(import.meta.url))
  * @returns {Promise<void>}
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'error' implicitly has an 'any' type.
-export const reportError = async function (error, config = {}) {
+export const reportError = async function(error, config = {}) {
   if (isCI) {
     return
   }

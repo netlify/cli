@@ -59,7 +59,7 @@ export const filterEnvBySource = (env, source) =>
   Object.fromEntries(Object.entries(env).filter(([, variable]) => variable.sources[0] === source))
 
 // Fetches data from Envelope
-const fetchEnvelopeItems = async function ({
+const fetchEnvelopeItems = async function({
   accountId,
   api,
   key,

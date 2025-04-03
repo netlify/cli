@@ -146,15 +146,18 @@ describe.runIf(gte(version, '18.13.0')).concurrent('v2 api', async () => {
       expect(await response.text()).toBe(`this is a static page\n`)
     })
 
-    test<FixtureTestContext>('should serve the custom path ath the / route as specified in the in source config', async ({
-      devServer,
-      expect,
-    }) => {
-      const url = `http://localhost:${devServer!.port}/`
-      const response = await fetch(url)
-      expect(response.status).toBe(200)
-      expect(await response.text()).toBe(`With literal path: http://localhost:${devServer!.port}/`)
-    })
+    test<FixtureTestContext>(
+      'should serve the custom path ath the / route as specified in the in source config',
+      async ({
+        devServer,
+        expect,
+      }) => {
+        const url = `http://localhost:${devServer!.port}/`
+        const response = await fetch(url)
+        expect(response.status).toBe(200)
+        expect(await response.text()).toBe(`With literal path: http://localhost:${devServer!.port}/`)
+      },
+    )
 
     test<FixtureTestContext>('catchall path applies to root path', async ({ devServer, expect }) => {
       const response = await fetch(`http://localhost:${devServer!.port}/`, { method: 'PATCH' })
@@ -168,14 +171,17 @@ describe.runIf(gte(version, '18.13.0')).concurrent('v2 api', async () => {
       expect(await response.text()).toBe('custom-generated favicon')
     })
 
-    test<FixtureTestContext>('returns 404 when using the default function URL to access a function with custom routes', async ({
-      devServer,
-      expect,
-    }) => {
-      const url = `http://localhost:${devServer!.port}/.netlify/functions/custom-path-literal`
-      const response = await fetch(url)
-      expect(response.status).toBe(404)
-    })
+    test<FixtureTestContext>(
+      'returns 404 when using the default function URL to access a function with custom routes',
+      async ({
+        devServer,
+        expect,
+      }) => {
+        const url = `http://localhost:${devServer!.port}/.netlify/functions/custom-path-literal`
+        const response = await fetch(url)
+        expect(response.status).toBe(404)
+      },
+    )
 
     test<FixtureTestContext>('respects excluded paths', async ({ devServer, expect }) => {
       const url1 = `http://localhost:${devServer!.port}/custom-path-excluded/t-shirt`

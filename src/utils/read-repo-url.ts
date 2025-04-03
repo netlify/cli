@@ -11,7 +11,7 @@ const GITHUB = 'GitHub'
  * and returns https://api.github.com/repos/netlify-labs/all-the-functions/contents/functions/9-using-middleware
  */
 // @ts-expect-error TS(7006) FIXME: Parameter '_url' implicitly has an 'any' type.
-export const readRepoURL = async function (_url) {
+export const readRepoURL = async function(_url) {
   // TODO: use `url.URL()` instead
   // eslint-disable-next-line n/no-deprecated-api
   const URL = url.parse(_url)
@@ -23,7 +23,7 @@ export const readRepoURL = async function (_url) {
 }
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'repoHost' implicitly has an 'any' type.
-const getRepoURLContents = async function (repoHost, ownerAndRepo, contentsPath) {
+const getRepoURLContents = async function(repoHost, ownerAndRepo, contentsPath) {
   // naive joining strategy for now
   if (repoHost === GITHUB) {
     // https://developer.github.com/v3/repos/contents/#get-contents
@@ -42,7 +42,7 @@ const getRepoURLContents = async function (repoHost, ownerAndRepo, contentsPath)
  * @param {string} _url
  */
 // @ts-expect-error TS(7006) FIXME: Parameter '_url' implicitly has an 'any' type.
-export const validateRepoURL = function (_url) {
+export const validateRepoURL = function(_url) {
   // TODO: use `url.URL()` instead
   // eslint-disable-next-line n/no-deprecated-api
   const URL = url.parse(_url)
@@ -52,7 +52,7 @@ export const validateRepoURL = function (_url) {
 }
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'repoHost' implicitly has an 'any' type.
-export const parseRepoURL = function (repoHost, URL) {
+export const parseRepoURL = function(repoHost, URL) {
   // naive splitting strategy for now
   if (repoHost === GITHUB) {
     // https://developer.github.com/v3/repos/contents/#get-contents

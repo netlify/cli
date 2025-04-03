@@ -58,9 +58,11 @@ describe('blobs:delete command', () => {
 
     const warningMessage = generateWarning(key, storeName)
 
-    const successMessage = `${chalk.greenBright('Success')}: Blob ${chalk.yellow(
-      key,
-    )} deleted from store ${chalk.yellow(storeName)}`
+    const successMessage = `${chalk.greenBright('Success')}: Blob ${
+      chalk.yellow(
+        key,
+      )
+    } deleted from store ${chalk.yellow(storeName)}`
 
     beforeEach(() => {
       vi.resetModules()
@@ -87,7 +89,6 @@ describe('blobs:delete command', () => {
           Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
           const mockDelete = vi.fn().mockResolvedValue('true')
-
           ;(getStore as any).mockReturnValue({
             delete: mockDelete,
           })
@@ -114,7 +115,6 @@ describe('blobs:delete command', () => {
           Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
           const mockDelete = vi.fn().mockResolvedValue('true')
-
           ;(getStore as any).mockReturnValue({
             delete: mockDelete,
           })
@@ -147,7 +147,6 @@ describe('blobs:delete command', () => {
           Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
           const mockDelete = vi.fn().mockResolvedValue('true')
-
           ;(getStore as any).mockReturnValue({
             delete: mockDelete,
           })
@@ -172,7 +171,6 @@ describe('blobs:delete command', () => {
             vi.mocked(reportError).mockResolvedValue()
 
             const mockDelete = vi.fn().mockRejectedValue(new Error('Could not delete blob'))
-
             ;(getStore as any).mockReturnValue({
               delete: mockDelete,
             })
@@ -208,7 +206,6 @@ describe('blobs:delete command', () => {
           Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
           const mockDelete = vi.fn().mockResolvedValue('true')
-
           ;(getStore as any).mockReturnValue({
             delete: mockDelete,
           })
@@ -230,7 +227,6 @@ describe('blobs:delete command', () => {
           Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
 
           const mockDelete = vi.fn().mockResolvedValue('true')
-
           ;(getStore as any).mockReturnValue({
             delete: mockDelete,
           })

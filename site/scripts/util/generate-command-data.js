@@ -8,10 +8,9 @@ const program = createMainCommand()
 const commands = program.commands.sort((cmdA, cmdB) => cmdA.name().localeCompare(cmdB.name()))
 
 /**
- *
  * @param {import('../../../src/commands/base-command.js').default} command
  */
-const parseCommand = function (command) {
+const parseCommand = function(command) {
   const args = command._args.map(({ _name: name, description }) => ({
     name,
     description,
@@ -38,7 +37,6 @@ const parseCommand = function (command) {
     name: command.name(),
     description: command.description(),
     commands: commands
-
       .filter((cmd) => cmd.name().startsWith(`${command.name()}:`) && !cmd._hidden)
       .map((cmd) => parseCommand(cmd)),
     examples: command.examples.length !== 0 && command.examples,
@@ -47,7 +45,7 @@ const parseCommand = function (command) {
   }
 }
 
-export const generateCommandData = function () {
+export const generateCommandData = function() {
   return (
     commands
       // filter out sub commands

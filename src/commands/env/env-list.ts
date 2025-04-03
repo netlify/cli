@@ -34,7 +34,7 @@ const getTable = ({
         hideValues ? MASK : variable.value || ' ',
         // Scope
         scopesColumn && getHumanReadableScopes(variable.scopes),
-      ].filter(Boolean),
+      ].filter(Boolean)
     ),
   )
   return table.toString()

@@ -16,7 +16,7 @@ import { Request, Rewriter } from './types.js'
 const watchers = []
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'files' implicitly has an 'any' type.
-export const onChanges = function (files, listener) {
+export const onChanges = function(files, listener) {
   // @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
   files.forEach((file) => {
     const watcher = chokidar.watch(file)
@@ -26,20 +26,20 @@ export const onChanges = function (files, listener) {
   })
 }
 
-export const getWatchers = function () {
+export const getWatchers = function() {
   // @ts-expect-error TS(7005) FIXME: Variable 'watchers' implicitly has an 'any[]' type... Remove this comment to see the full error message
   return watchers
 }
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'headers' implicitly has an 'any' type.
-export const getLanguage = function (headers) {
+export const getLanguage = function(headers) {
   if (headers['accept-language']) {
     return headers['accept-language'].split(',')[0].slice(0, 2)
   }
   return 'en'
 }
 
-export const createRewriter = async function ({
+export const createRewriter = async function({
   // @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'an... Remove this comment to see the full error message
   config,
   // @ts-expect-error TS(7031) FIXME: Binding element 'configPath' implicitly has an 'an... Remove this comment to see the full error message

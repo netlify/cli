@@ -96,9 +96,11 @@ export const run = async ({ config, repositoryRoot }) => {
     }
   } catch {
     log(
-      `${NETLIFYDEVWARN} Unable to install Deno VS Code extension. To install it manually, visit ${chalk.blue(
-        'https://ntl.fyi/deno-vscode',
-      )}.`,
+      `${NETLIFYDEVWARN} Unable to install Deno VS Code extension. To install it manually, visit ${
+        chalk.blue(
+          'https://ntl.fyi/deno-vscode',
+        )
+      }.`,
     )
   }
 

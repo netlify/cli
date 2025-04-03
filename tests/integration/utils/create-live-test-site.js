@@ -2,7 +2,7 @@ import { NETLIFY_TEST_ACCOUNT_SLUG } from 'process'
 
 import { callCli } from './call-cli.js'
 
-export const generateSiteName = function (prefix) {
+export const generateSiteName = function(prefix) {
   const randomString = Math.random()
     .toString(BASE_36)
     .replace(/[^a-z]+/g, '')
@@ -13,11 +13,11 @@ export const generateSiteName = function (prefix) {
 const BASE_36 = 36
 const RANDOM_SITE_LENGTH = 8
 
-const listAccounts = async function () {
+const listAccounts = async function() {
   return JSON.parse(await callCli(['api', 'listAccountsForUser']))
 }
 
-export const createLiveTestSite = async function (siteName) {
+export const createLiveTestSite = async function(siteName) {
   console.log(`Creating new site for tests: ${siteName}`)
   const accounts = await listAccounts()
   if (!Array.isArray(accounts) || accounts.length <= 0) {

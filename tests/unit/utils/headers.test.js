@@ -45,13 +45,13 @@ const headers = [
   },
 ]
 
-const parseHeadersFile = async function (context, fixtureName) {
+const parseHeadersFile = async function(context, fixtureName) {
   const normalizedHeadersFile = resolve(context.builder.directory, fixtureName)
   return await parseHeaders({ headersFiles: [normalizedHeadersFile] })
 }
 
 // Ignore added properties like `forRegExp`
-const normalizeHeader = function ({ for: forPath, values }) {
+const normalizeHeader = function({ for: forPath, values }) {
   return { for: forPath, values }
 }
 

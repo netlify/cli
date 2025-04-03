@@ -32,9 +32,11 @@ export const promptEditorHelper = async ({ NETLIFYDEVLOG, chalk, config, log, re
 
   if (!confirm) {
     log(
-      `${NETLIFYDEVLOG} You can start this configuration manually by running ${chalk.magenta.bold(
-        'netlify recipes vscode',
-      )}.`,
+      `${NETLIFYDEVLOG} You can start this configuration manually by running ${
+        chalk.magenta.bold(
+          'netlify recipes vscode',
+        )
+      }.`,
     )
 
     return

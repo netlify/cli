@@ -15,7 +15,6 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const identity = (message) => message
 
 /**
- *
  * @param {string} message
  * @param {Array<chalk['Color'] | chalk['Modifiers']>} styles
  * @returns

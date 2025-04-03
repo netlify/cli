@@ -20,14 +20,16 @@ const TUNNEL_POLL_INTERVAL = 1e3
 const TUNNEL_POLL_TIMEOUT = 3e5
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'netlifyApiToken' implicitly has a... Remove this comment to see the full error message
-const createTunnel = async function ({ netlifyApiToken, siteId, slug }) {
+const createTunnel = async function({ netlifyApiToken, siteId, slug }) {
   await installTunnelClient()
 
   if (!siteId) {
     console.error(
-      `${NETLIFYDEVERR} Error: no siteId defined, did you forget to run ${chalk.yellow(
-        'netlify init',
-      )} or ${chalk.yellow('netlify link')}?`,
+      `${NETLIFYDEVERR} Error: no siteId defined, did you forget to run ${
+        chalk.yellow(
+          'netlify init',
+        )
+      } or ${chalk.yellow('netlify link')}?`,
     )
     process.exit(1)
   }
@@ -53,7 +55,7 @@ const createTunnel = async function ({ netlifyApiToken, siteId, slug }) {
 }
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'localPort' implicitly has an 'any... Remove this comment to see the full error message
-const connectTunnel = function ({ localPort, netlifyApiToken, session }) {
+const connectTunnel = function({ localPort, netlifyApiToken, session }) {
   const execPath = getPathInHome(['tunnel', 'bin', EXEC_NAME])
   const args = ['connect', '-s', session.id, '-t', netlifyApiToken, '-l', localPort]
   if (process.env.DEBUG) {
@@ -67,7 +69,7 @@ const connectTunnel = function ({ localPort, netlifyApiToken, session }) {
   ps.on('SIGTERM', process.exit)
 }
 
-const installTunnelClient = async function () {
+const installTunnelClient = async function() {
   const binPath = getPathInHome(['tunnel', 'bin'])
   // @ts-expect-error TS(2345) FIXME: Argument of type '{ binPath: string; packageName: ... Remove this comment to see the full error message
   const shouldFetch = await shouldFetchLatestVersion({
@@ -100,7 +102,7 @@ export const startLiveTunnel = async ({ localPort, netlifyApiToken, siteId, slug
     slug,
   })
 
-  const isLiveTunnelReady = async function () {
+  const isLiveTunnelReady = async function() {
     // @ts-expect-error TS(18046) - 'session' is of type 'unknown'
     const url = `https://api.netlify.com/api/v1/live_sessions/${session.id}`
     const response = await fetch(url, {

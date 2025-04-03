@@ -28,7 +28,7 @@ const argv = process.argv.slice(2)
  * @return {import('chalk').ChalkInstance} - default or custom chalk instance
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'noColors' implicitly has an 'any' type.
-const safeChalk = function (noColors) {
+const safeChalk = function(noColors) {
   if (noColors) {
     const colorlessChalk = new Chalk({ level: 0 })
     return colorlessChalk
@@ -89,7 +89,6 @@ export const sortOptions = (optionA, optionB) => {
 const TOKEN_TIMEOUT = 3e5
 
 /**
- *
  * @param {object} config
  * @param {import('netlify').NetlifyAPI} config.api
  * @param {object} config.ticket
@@ -114,11 +113,15 @@ export const pollForToken = async ({
     // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
     if (error_.name === 'TimeoutError') {
       error(
-        `Timed out waiting for authorization. If you do not have a ${chalk.bold.greenBright(
-          'Netlify',
-        )} account, please create one at ${chalk.magenta(
-          'https://app.netlify.com/signup',
-        )}, then run ${chalk.cyanBright('netlify login')} again.`,
+        `Timed out waiting for authorization. If you do not have a ${
+          chalk.bold.greenBright(
+            'Netlify',
+          )
+        } account, please create one at ${
+          chalk.magenta(
+            'https://app.netlify.com/signup',
+          )
+        }, then run ${chalk.cyanBright('netlify login')} again.`,
       )
     } else {
       error(error_)
@@ -196,12 +199,11 @@ export const warn = (message = '') => {
 
 /** Throws an error or logs it */
 export const error = (message: unknown | Error | string = '', options: { exit?: boolean } = {}) => {
-  const err =
-    message instanceof Error
-      ? message
-      : typeof message === 'string'
-        ? new Error(message)
-        : { message, stack: undefined, name: 'Error' }
+  const err = message instanceof Error
+    ? message
+    : typeof message === 'string'
+    ? new Error(message)
+    : { message, stack: undefined, name: 'Error' }
 
   if (options.exit === false) {
     const bang = chalk.red(BANG)
