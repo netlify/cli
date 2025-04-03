@@ -1,3 +1,4 @@
+---
 name: prerelease
 on:
   push:
@@ -12,13 +13,19 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
           cache: npm
           registry-url: 'https://registry.npmjs.org'
+
       - name: Install core dependencies
         run: npm ci --no-audit
+
+      - name: Build project
+        run: npm run build
+
       - name: Extract tag and version
         id: extract
         run: |-
@@ -33,14 +40,18 @@ jobs:
         run: |-
           echo tag=${{ steps.extract.outputs.tag }}
           echo version=${{ steps.extract.outputs.version }}
-      - name: Setup git user
-        run: git config --global user.name github-actions
-      - name: Setup git email
-        run: git config --global user.email github-actions@github.com
+
+      - name: Configure Git user
+        run: |
+          git config --global user.name "Netlify"
+          git config --global user.email "82042599+token-generator-app[bot]@users.noreply.github.com"
+
       - name: Run npm version
         run: npm version ${{ steps.extract.outputs.version }}-${{ steps.extract.outputs.tag }} --allow-same-version
+
       - name: Push changes
         run: git push --follow-tags
+
       - name: Run npm publish
         run: npm publish --tag=${{ steps.extract.outputs.tag }} --provenance
         env:

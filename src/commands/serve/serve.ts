@@ -37,7 +37,7 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
   const { api, cachedConfig, config, frameworksAPIPaths, repositoryRoot, site, siteInfo, state } = command.netlify
   config.dev = { ...config.dev }
   config.build = { ...config.build }
-  const devConfig = {
+  const devConfig: DevConfig = {
     ...(config.functionsDirectory && { functions: config.functionsDirectory }),
     ...(config.build.publish && { publish: config.build.publish }),
 
@@ -46,7 +46,7 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
     // Override the `framework` value so that we start a static server and not
     // the framework's development server.
     framework: '#static',
-  } as DevConfig
+  }
 
   let { env } = cachedConfig
 

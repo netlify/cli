@@ -4,7 +4,7 @@ import execa from 'execa'
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'stri... Remove this comment to see the full error message
 import stripAnsiCc from 'strip-ansi-control-characters'
 
-import type { Spinner } from '../lib/spinner.js'
+import { stopSpinner, type Spinner } from '../lib/spinner.js'
 import { chalk, log, NETLIFYDEVERR, NETLIFYDEVWARN } from './command-helpers.js'
 import { processOnExit } from './dev.js'
 
@@ -20,8 +20,7 @@ let cleanupStarted = false
  * @param {object} input
  * @param {number=} input.exitCode The exit code to return when exiting the process after cleanup
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'exitCode' implicitly has an 'any'... Remove this comment to see the full error message
-const cleanupBeforeExit = async ({ exitCode }) => {
+const cleanupBeforeExit = async ({ exitCode }: { exitCode?: number | undefined } = {}) => {
   // If cleanup has started, then wherever started it will be responsible for exiting
   if (!cleanupStarted) {
     cleanupStarted = true
@@ -57,16 +56,19 @@ export const runCommand = (
     cwd,
   })
 
-  // This ensures that an active spinner stays at the bottom of the commandline
+  // Ensure that an active spinner stays at the bottom of the commandline
   // even though the actual framework command might be outputting stuff
+  if (spinner?.isSpinning) {
+    // The spinner is initially "started" in the usual sense (rendering frames on an interval).
+    // In this case, we want to manually control when to clear and when to render a frame, so we turn this off.
+    stopSpinner({ error: false, spinner })
+  }
   const pipeDataWithSpinner = (writeStream: NodeJS.WriteStream, chunk: any) => {
     if (spinner?.isSpinning) {
       spinner.clear()
     }
     writeStream.write(chunk, () => {
-      if (spinner?.isSpinning) {
-        spinner.start()
-      }
+      spinner?.spin()
     })
   }
 
@@ -79,31 +81,29 @@ export const runCommand = (
 
   // we can't try->await->catch since we don't want to block on the framework server which
   // is a long running process
-  // eslint-disable-next-line promise/catch-or-return
-  commandProcess
-    // eslint-disable-next-line promise/prefer-await-to-then
-    .then(async () => {
-      const result = await commandProcess
-      const [commandWithoutArgs] = command.split(' ')
-      if (result.failed && isNonExistingCommandError({ command: commandWithoutArgs, error: result })) {
-        log(
-          `${NETLIFYDEVERR} Failed running command: ${command}. Please verify ${chalk.magenta(
-            `'${commandWithoutArgs}'`,
-          )} exists`,
-        )
-      } else {
-        const errorMessage = result.failed
-          ? // @ts-expect-error TS(2339) FIXME: Property 'shortMessage' does not exist on type 'Ex... Remove this comment to see the full error message
-            `${NETLIFYDEVERR} ${result.shortMessage}`
-          : `${NETLIFYDEVWARN} "${command}" exited with code ${result.exitCode}`
+  commandProcess.then(async () => {
+    const result = await commandProcess
+    const [commandWithoutArgs] = command.split(' ')
+    if (result.failed && isNonExistingCommandError({ command: commandWithoutArgs, error: result })) {
+      log(
+        `${NETLIFYDEVERR} Failed running command: ${command}. Please verify ${chalk.magenta(
+          `'${commandWithoutArgs}'`,
+        )} exists`,
+      )
+    } else {
+      const errorMessage = result.failed
+        ? // @ts-expect-error TS(2339) FIXME: Property 'shortMessage' does not exist on type 'Ex... Remove this comment to see the full error message
+          `${NETLIFYDEVERR} ${result.shortMessage}`
+        : `${NETLIFYDEVWARN} "${command}" exited with code ${result.exitCode}`
 
-        log(`${errorMessage}. Shutting down Netlify Dev server`)
-      }
+      log(`${errorMessage}. Shutting down Netlify Dev server`)
+    }
 
-      return await cleanupBeforeExit({ exitCode: 1 })
-    })
-  // @ts-expect-error TS(2345) FIXME: Argument of type '{}' is not assignable to paramet... Remove this comment to see the full error message
-  processOnExit(async () => await cleanupBeforeExit({}))
+    await cleanupBeforeExit({ exitCode: 1 })
+  })
+  processOnExit(async () => {
+    await cleanupBeforeExit({})
+  })
 
   return commandProcess
 }

@@ -19,7 +19,6 @@ const hashFile = async (filePath: string, algorithm: string) => {
 
 // a parallel transform stream segment ctor that hashes fileObj's created by folder-walker
 // TODO: use promises instead of callbacks
-/* eslint-disable promise/prefer-await-to-callbacks */
 // @ts-expect-error TS(7031) FIXME: Binding element 'concurrentHash' implicitly has an... Remove this comment to see the full error message
 export const hasherCtor = ({ concurrentHash, hashAlgorithm }) => {
   if (!concurrentHash) throw new Error('Missing required opts')
@@ -27,9 +26,11 @@ export const hasherCtor = ({ concurrentHash, hashAlgorithm }) => {
     try {
       const hash = await hashFile(fileObj.filepath, hashAlgorithm)
       // insert hash and asset type to file obj
-      return cb(null, { ...fileObj, hash })
+      cb(null, { ...fileObj, hash })
+      return
     } catch (error) {
-      return cb(error as Error)
+      cb(error as Error)
+      return
     }
   })
 }
@@ -70,7 +71,6 @@ export const manifestCollectorCtor = (filesObj, shaMap, { assetType, statusCb })
     cb()
   })
 }
-/* eslint-enable promise/prefer-await-to-callbacks */
 
 // transform stream ctor that filters folder-walker results for only files
 // @ts-expect-error TS(7006) FIXME: Parameter 'fileObj' implicitly has an 'any' type.

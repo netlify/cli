@@ -248,7 +248,6 @@ export default class BaseCommand extends Command {
       return padLeft(term, HELP_INDENT_WIDTH)
     }
 
-    // eslint-disable-next-line unicorn/consistent-function-scoping
     const getCommands = (command: BaseCommand) => {
       const parentCommand = this.name() === 'netlify' ? command : command.parent
       return (
@@ -262,7 +261,6 @@ export default class BaseCommand extends Command {
             }
             return cmd.name().startsWith(`${command.name()}:`)
           })
-          // eslint-disable-next-line id-length
           .sort((a, b) => a.name().localeCompare(b.name())) || []
       )
     }
@@ -448,7 +446,7 @@ export default class BaseCommand extends Command {
 
     // Log success
     log()
-    log(`${chalk.greenBright('You are now logged into your Netlify account!')}`)
+    log(chalk.greenBright('You are now logged into your Netlify account!'))
     log()
     log(`Run ${chalk.cyanBright('netlify status')} for account details`)
     log()
@@ -489,7 +487,6 @@ export default class BaseCommand extends Command {
     this.project = new Project(fs, this.workingDir, rootDir)
       .setEnvironment(process.env)
       .setNodeVersion(process.version)
-      // eslint-disable-next-line promise/prefer-await-to-callbacks
       .setReportFn((err, reportConfig) => {
         reportError(err, {
           severity: reportConfig?.severity || 'error',

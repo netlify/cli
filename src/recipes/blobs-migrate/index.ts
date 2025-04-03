@@ -16,7 +16,8 @@ interface Options {
 
 export const run = async ({ args, command }: Options) => {
   if (args.length !== 1) {
-    return error(`Usage: netlify recipes blobs-migrate <name of store>`)
+    error(`Usage: netlify recipes blobs-migrate <name of store>`)
+    return
   }
 
   const [storeName] = args
@@ -41,7 +42,8 @@ export const run = async ({ args, command }: Options) => {
   const { blobs } = await oldStore.list()
 
   if (blobs.length === 0) {
-    return log(`Store '${storeName}' does not exist or is empty, so there's nothing to migrate.`)
+    log(`Store '${storeName}' does not exist or is empty, so there's nothing to migrate.`)
+    return
   }
 
   const { stores } = await listStores(clientOptions)
@@ -94,13 +96,15 @@ export const run = async ({ args, command }: Options) => {
   // Before deleting anything, let's first verify that all entries that exist
   // in the old store are now also on the new store, with the same etag.
   if (!blobs.every((blob) => blobsMap.get(blob.key) === blob.etag)) {
-    return error(`Failed to migrate some blobs. Try running the command again.`)
+    error(`Failed to migrate some blobs. Try running the command again.`)
+    return
   }
 
   try {
     await pMap(blobs, (blob) => oldStore.delete(blob.key), { concurrency: BLOB_OPS_CONCURRENCY })
   } catch {
-    return error('Failed to remove legacy store after migration. Try running the command again.')
+    error('Failed to remove legacy store after migration. Try running the command again.')
+    return
   }
 
   log(`Store '${storeName}' has been migrated successfully.`)

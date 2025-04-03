@@ -16,7 +16,7 @@ const setInEnvelope = async ({ api, context, force, key, scope, secret, siteInfo
 
   // secret values may not be used in the post-processing scope
   // @ts-expect-error TS(7006) FIXME: Parameter 'sco' implicitly has an 'any' type.
-  if (secret && scope && scope.some((sco) => /post[-_]processing/.test(sco))) {
+  if (secret && scope?.some((sco) => /post[-_]processing/.test(sco))) {
     error(`Secret values cannot be used within the post-processing scope.`)
     return false
   }
@@ -57,10 +57,8 @@ const setInEnvelope = async ({ api, context, force, key, scope, secret, siteInfo
   try {
     if (existing) {
       if (!value) {
-        // eslint-disable-next-line prefer-destructuring
         values = existing.values
         if (!scope) {
-          // eslint-disable-next-line prefer-destructuring
           scopes = existing.scopes
         }
       }

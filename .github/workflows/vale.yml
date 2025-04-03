@@ -1,10 +1,14 @@
+---
 name: Lint Docs
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   pull_request:
-    branches: [main]
+    branches:
+      - '**'
+      - '!release-please--**'
 
 permissions:
   checks: write

@@ -193,7 +193,7 @@ const handleCustomFramework = ({
     frameworkPort: devConfig.targetPort,
     dist: devConfig.publish || getDefaultDist(workingDir),
     framework: '#custom',
-    pollingStrategies: devConfig.pollingStrategies?.map((s) => s.name) ?? [],
+    pollingStrategies: devConfig.pollingStrategies ?? [],
   }
 }
 

@@ -33,6 +33,7 @@ Run:
 
 ```bash
 npm install
+npm run build
 ```
 
 Tests are run with:
@@ -67,14 +68,13 @@ npm run watch
 
 Make sure everything is correctly set up by running those tests first.
 
-ESLint and Prettier have performed automatically on `git push`. However, we recommend you set up your IDE or text editor
-to run ESLint and Prettier automatically on file save. Otherwise, you should run them manually using:
+We recommend you set up your IDE or text editor to run ESLint and Prettier automatically on file save. Otherwise, you
+can run them manually using:
 
 ```bash
 npm run format
+npm run lint:fix
 ```
-
-Alternatively, you can set up your IDE to integrate with Prettier and ESLint for JavaScript and Markdown files.
 
 To run the CLI locally:
 

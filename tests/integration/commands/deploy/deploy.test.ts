@@ -13,7 +13,6 @@ import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
 import { pause } from '../../utils/pause.js'
 import { withSiteBuilder } from '../../utils/site-builder.js'
 
-// eslint-disable-next-line no-underscore-dangle
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const SITE_NAME = generateSiteName('netlify-test-deploy-')
@@ -271,7 +270,6 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
           name: 'log-env',
           plugin: {
             async onSuccess() {
-              // eslint-disable-next-line n/global-require, @typescript-eslint/no-var-requires
               const { DEPLOY_ID, DEPLOY_URL } = require('process').env
               console.log(`DEPLOY_ID: ${DEPLOY_ID}`)
               console.log(`DEPLOY_URL: ${DEPLOY_URL}`)
@@ -527,7 +525,6 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
           name: 'mutator',
           plugin: {
             onPreBuild: async ({ netlifyConfig }) => {
-              // eslint-disable-next-line n/global-require, @typescript-eslint/no-var-requires
               const { mkdir, writeFile } = require('node:fs/promises') as typeof import('node:fs/promises')
 
               const generatedFunctionsDir = 'new_functions'
@@ -1055,7 +1052,6 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         )) as unknown as { deploy_url: string }
 
         const html = await fetch(deployUrl).then((res) => res.text())
-        // eslint-disable-next-line id-length
         const $ = load(html)
 
         expect($('title').text()).toEqual('Create Next App')

@@ -188,7 +188,7 @@ const proxyToExternalUrl = function ({
     ...(Buffer.isBuffer(req.originalBody) && { buffer: Readable.from(req.originalBody) }),
   })
   // @ts-expect-error TS(2345) FIXME: Argument of type 'Request' is not assignable to parameter of type 'Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
-  return handler(req, res, () => {})
+  handler(req, res, () => {})
 }
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'addonUrl' implicitly has an 'any'... Remove this comment to see the full error message
@@ -196,7 +196,7 @@ const handleAddonUrl = function ({ addonUrl, req, res }) {
   const dest = new URL(addonUrl)
   const destURL = stripOrigin(dest)
 
-  return proxyToExternalUrl({ req, res, dest, destURL })
+  proxyToExternalUrl({ req, res, dest, destURL })
 }
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'match' implicitly has an 'any' type.
@@ -242,7 +242,6 @@ const alternativePathsFor = function (url) {
 }
 
 const notifyActivity = throttle((api: NetlifyOptions['api'], siteId: string, devServerId: string) => {
-  // eslint-disable-next-line promise/prefer-await-to-callbacks, promise/prefer-await-to-then
   api.markDevServerActivity({ siteId, devServerId }).catch((error) => {
     console.error(`${NETLIFYDEVWARN} Failed to notify activity`, error)
   })
@@ -302,7 +301,8 @@ const serveRedirect = async function ({
 
   const urlForAddons = getAddonUrl(options.addonsUrls, req)
   if (urlForAddons) {
-    return handleAddonUrl({ req, res, addonUrl: urlForAddons })
+    handleAddonUrl({ req, res, addonUrl: urlForAddons })
+    return
   }
 
   const originalURL = req.url
@@ -397,7 +397,8 @@ const serveRedirect = async function ({
         if (!isHiddenProxy) {
           console.log(`${NETLIFYDEVLOG} Proxying to ${dest}`)
         }
-        return proxyToExternalUrl({ req, res, dest, destURL })
+        proxyToExternalUrl({ req, res, dest, destURL })
+        return
       }
     }
 
@@ -455,7 +456,8 @@ const serveRedirect = async function ({
     }
     const addonUrl = getAddonUrl(options.addonsUrls, req)
     if (addonUrl) {
-      return handleAddonUrl({ req, res, addonUrl })
+      handleAddonUrl({ req, res, addonUrl })
+      return
     }
 
     return proxy.web(req, res, { ...options, status: statusValue })
@@ -535,7 +537,8 @@ const initializeProxy = async function ({
         options.target = `http://${isIPv6(newHost) ? `[${newHost}]` : newHost}:${targetUrl.port}`
         options.targetHostname = newHost
         options.isChangingTarget = true
-        return proxy.web(req, res, options)
+        proxy.web(req, res, options)
+        return
       }
     }
 
@@ -608,7 +611,8 @@ const initializeProxy = async function ({
         // @ts-expect-error TS(2339) FIXME: Property 'alternativePaths' does not exist on type... Remove this comment to see the full error message
         req.url = req.alternativePaths.shift()
         // @ts-expect-error TS(2339) FIXME: Property 'proxyOptions' does not exist on type 'In... Remove this comment to see the full error message
-        return proxy.web(req, res, req.proxyOptions)
+        proxy.web(req, res, req.proxyOptions)
+        return
       }
 
       // The request has failed but we might still have a matching redirect
@@ -763,10 +767,12 @@ const initializeProxy = async function ({
       req.alternativePaths = alternativePathsFor(requestURL.pathname).map((filePath) => filePath + requestURL.search)
       // Ref: https://nodejs.org/api/net.html#net_socket_remoteaddress
       req.headers['x-forwarded-for'] = req.connection.remoteAddress || ''
-      return proxy.web(req, res, options)
+      proxy.web(req, res, options)
     },
     // @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
-    ws: (req, socket, head, options) => proxy.ws(req, socket, head, options),
+    ws: (req, socket, head, options) => {
+      proxy.ws(req, socket, head, options)
+    },
   }
 
   return handlers
@@ -831,7 +837,8 @@ const onRequest = async (
 
   const addonUrl = getAddonUrl(addonsUrls, req)
   if (addonUrl) {
-    return handleAddonUrl({ req, res, addonUrl })
+    handleAddonUrl({ req, res, addonUrl })
+    return
   }
 
   const match = await rewriter(req)
@@ -999,9 +1006,10 @@ export const startProxy = async function ({
       const reqUrl = reqToURL(req, req.url)
       const dest = new URL(match.to, `${reqUrl.protocol}//${reqUrl.host}`)
       const destURL = stripOrigin(dest)
-      return proxy.ws(req, socket, head, { target: dest.origin, changeOrigin: true, pathRewrite: () => destURL })
+      proxy.ws(req, socket, head, { target: dest.origin, changeOrigin: true, pathRewrite: () => destURL })
+      return
     }
-    return proxy.ws(req, socket, head, {})
+    proxy.ws(req, socket, head, {})
   }
 
   primaryServer.on('upgrade', onUpgrade)
