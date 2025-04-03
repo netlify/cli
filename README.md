@@ -52,7 +52,7 @@ Netlify CLI requires [Node.js](https://nodejs.org) version 18.14.0 or above. To 
 directory in your terminal:
 
 ```bash
-npm install netlify-cli -g
+npm install -g netlify-cli
 ```
 
 When using the CLI in a CI environment we recommend installing it locally as a development dependency, instead of
