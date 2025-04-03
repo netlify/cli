@@ -152,8 +152,29 @@ describe.concurrent('commands/dev-miscellaneous', () => {
     })
   })
 
-  // XXX(serhalp) - Unskip and fix before merging.
-  test.skip('given a background function, context should have empty `clientContext` and null `identity`', async (t) => {
+  test('should print logs emitted to `console` from user function handler', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      await builder
+        .withNetlifyToml({ config: { functions: { directory: 'functions' } } })
+        .withFunction({
+          path: 'hello.js',
+          handler: () => {
+            console.log('Hello from the user function handler')
+            return Response.json({})
+          },
+        })
+        .build()
+
+      await withDevServer({ cwd: builder.directory }, async ({ outputBuffer, url }) => {
+        await fetch(`${url}/.netlify/functions/hello`)
+
+        const output = outputBuffer.toString()
+        t.expect(output).toMatch(/Hello from the user function handler/)
+      })
+    })
+  })
+
+  test('given a background function, context should have empty `clientContext` and null `identity`', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       await builder
         .withNetlifyToml({ config: { functions: { directory: 'functions' } } })

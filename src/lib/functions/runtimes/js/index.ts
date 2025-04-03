@@ -81,8 +81,13 @@ export const invokeFunction = async ({
   timeout,
 }: Parameters<InvokeFunction<JsBuildResult>>[0]): Promise<JsInvokeFunctionResult> => {
   const { buildData } = func
-
-  if (buildData != null && 'runtimeAPIVersion' in buildData && buildData.runtimeAPIVersion !== 2) {
+  // I have no idea why, but it appears that treating the case of a missing `buildData` or missing
+  // `buildData.runtimeAPIVersion` as V1 is important.
+  const runtimeAPIVersion =
+    buildData != null && 'runtimeAPIVersion' in buildData && typeof buildData.runtimeAPIVersion === 'number'
+      ? buildData.runtimeAPIVersion
+      : null
+  if (runtimeAPIVersion == null || runtimeAPIVersion !== 2) {
     return await invokeFunctionDirectly({ context, event, func, timeout })
   }
 
