@@ -2,7 +2,7 @@ import { readFile } from 'fs/promises'
 import { dirname, extname, join, resolve } from 'path'
 import { platform } from 'process'
 
-import { findUp } from 'find-up'
+import { up } from 'empathic/find'
 import toml from 'toml'
 
 import execa from '../../../../utils/execa.js'
@@ -41,10 +41,8 @@ export const getBuildFunction =
     () =>
       build({ func })
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'cwd' implicitly has an 'any' type.
-const getCrateName = async (cwd) => {
-  const manifestPath = await findUp('Cargo.toml', { cwd, type: 'file' })
-  // @ts-expect-error TS(2769) FIXME: No overload matches this call.
+const getCrateName = async (cwd: string) => {
+  const manifestPath = up('Cargo.toml', { cwd })!
   const manifest = await readFile(manifestPath, 'utf-8')
   const { package: CargoPackage } = toml.parse(manifest)
 
