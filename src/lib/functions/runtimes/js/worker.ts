@@ -2,9 +2,10 @@ import { createServer } from 'net'
 import process from 'process'
 import { isMainThread, workerData, parentPort } from 'worker_threads'
 
-import { isStream } from 'is-stream'
 import lambdaLocal from 'lambda-local'
 import sourceMapSupport from 'source-map-support'
+
+import { isStream } from '../../../../utils/is-stream.js'
 
 if (isMainThread) {
   throw new Error(`Do not import "${import.meta.url}" in the main thread.`)
