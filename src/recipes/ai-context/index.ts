@@ -4,7 +4,7 @@ import inquirer from 'inquirer'
 import semver from 'semver'
 
 import type { RunRecipeOptions } from '../../commands/recipes/recipes.js'
-import { chalk, error, log, version } from '../../utils/command-helpers.js'
+import { chalk, logAndThrowError, log, version } from '../../utils/command-helpers.js'
 
 import {
   applyOverrides,
@@ -63,19 +63,15 @@ export const run = async ({ args, command }: RunRecipeOptions) => {
   const { contents: downloadedFile, minimumCLIVersion } = (await download) ?? {}
 
   if (!downloadedFile) {
-    error('An error occurred when pulling the latest context files. Please try again.')
-
-    return
+    return logAndThrowError('An error occurred when pulling the latest context files. Please try again.')
   }
 
   if (minimumCLIVersion && semver.lt(version, minimumCLIVersion)) {
-    error(
+    return logAndThrowError(
       `This command requires version ${minimumCLIVersion} or above of the Netlify CLI. Refer to ${chalk.underline(
         'https://ntl.fyi/update-cli',
       )} for information on how to update.`,
     )
-
-    return
   }
 
   const absoluteFilePath = resolve(command?.workingDir ?? '', filePath, FILE_NAME)

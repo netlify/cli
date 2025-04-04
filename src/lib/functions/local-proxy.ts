@@ -1,18 +1,30 @@
 import { stdout } from 'process'
 
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module '@net... Remove this comment to see the full error message
 import { getBinaryPath as getFunctionsProxyPath } from '@netlify/local-functions-proxy'
 
 import execa from '../../utils/execa.js'
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'binaryPath' implicitly has an 'an... Remove this comment to see the full error message
-export const runFunctionsProxy = ({ binaryPath, context, directory, event, name, timeout }) => {
-  const functionsProxyPath = getFunctionsProxyPath()
+export const runFunctionsProxy = async ({
+  binaryPath,
+  context,
+  directory,
+  event,
+  name,
+  timeout,
+}: {
+  binaryPath: string
+  context: Record<string, unknown>
+  directory: string
+  event: Record<string, unknown>
+  name: string
+  timeout: number
+}) => {
+  const functionsProxyPath = await getFunctionsProxyPath()
   const requestData = {
     resource: '',
     ...event,
     headers: {
-      ...event.headers,
+      ...(typeof event.headers === 'object' ? event.headers : {}),
       'X-Amzn-Trace-Id': '1a2b3c4d5e6f',
     },
     requestContext: {
@@ -36,7 +48,7 @@ export const runFunctionsProxy = ({ binaryPath, context, directory, event, name,
     '--name',
     name,
     '--timeout',
-    `${timeout}s`,
+    `${timeout.toString()}s`,
   ]
   const proxyProcess = execa(functionsProxyPath, parameters)
 

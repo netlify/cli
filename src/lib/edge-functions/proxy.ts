@@ -1,28 +1,38 @@
 import { Buffer } from 'buffer'
 import { rm } from 'fs/promises'
-import type { IncomingMessage } from 'http'
+import type { IncomingMessage, ClientRequest } from 'http'
 import { join, resolve } from 'path'
 
 import * as bundler from '@netlify/edge-bundler'
 import getAvailablePort from 'get-port'
 
-import BaseCommand from '../../commands/base-command.js'
-import { $TSFixMe } from '../../commands/types.js'
-import { NETLIFYDEVERR, chalk, error as printError } from '../../utils/command-helpers.js'
+import type BaseCommand from '../../commands/base-command.js'
+import type { $TSFixMe } from '../../commands/types.js'
+import {
+  NETLIFYDEVERR,
+  type NormalizedCachedConfigConfig,
+  chalk,
+  logAndThrowError,
+} from '../../utils/command-helpers.js'
 import { FeatureFlags, getFeatureFlagsFromSiteInfo } from '../../utils/feature-flags.js'
 import { BlobsContextWithEdgeAccess } from '../blobs/blobs.js'
 import { getGeoLocation } from '../geo-location.js'
 import { getPathInProject } from '../settings.js'
 import { type Spinner, startSpinner, stopSpinner } from '../spinner.js'
+import type { CLIState, ServerSettings, SiteInfo } from '../../utils/types.js'
 
 import { getBootstrapURL } from './bootstrap.js'
 import { DIST_IMPORT_MAP_PATH, EDGE_FUNCTIONS_SERVE_FOLDER } from './consts.js'
 import { getFeatureFlagsHeader, getInvocationMetadataHeader, headers } from './headers.js'
-import { EdgeFunctionsRegistry, type Config } from './registry.js'
+import { EdgeFunctionsRegistry } from './registry.js'
+
+export type EdgeFunctionDeclaration = bundler.Declaration
 
 const headersSymbol = Symbol('Edge Functions Headers')
 
 const LOCAL_HOST = '127.0.0.1'
+
+type ExtendedIncomingMessage = IncomingMessage & { [headersSymbol]: Record<string, string> }
 
 const getDownloadUpdateFunctions = () => {
   let spinner: Spinner
@@ -41,20 +51,10 @@ const getDownloadUpdateFunctions = () => {
   }
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
-export const handleProxyRequest = (req, proxyReq) => {
+export const handleProxyRequest = (req: ExtendedIncomingMessage, proxyReq: ClientRequest) => {
   Object.entries(req[headersSymbol]).forEach(([header, value]) => {
     proxyReq.setHeader(header, value)
   })
-}
-
-// TODO: This should be replaced with a proper type for the entire API response
-// for the site endpoint.
-// See https://github.com/netlify/build/pull/5308.
-interface SiteInfo {
-  id: string
-  name: string
-  url: string
 }
 
 export const createSiteInfoHeader = (siteInfo: SiteInfo, localURL: string) => {
@@ -64,9 +64,7 @@ export const createSiteInfoHeader = (siteInfo: SiteInfo, localURL: string) => {
   return Buffer.from(siteString).toString('base64')
 }
 
-export const createAccountInfoHeader = (accountInfo = {}) => {
-  // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type '{}'.
-  const { id } = accountInfo
+const createAccountInfoHeader = ({ id }: { id: string }) => {
   const account = { id }
   const accountString = JSON.stringify(account)
   return Buffer.from(accountString).toString('base64')
@@ -96,22 +94,22 @@ export const initializeProxy = async ({
   accountId: string
   blobsContext: BlobsContextWithEdgeAccess
   command: BaseCommand
-  config: $TSFixMe
+  config: NormalizedCachedConfigConfig
   configPath: string
   debug: boolean
   env: $TSFixMe
   offline: $TSFixMe
   geoCountry: $TSFixMe
   geolocationMode: $TSFixMe
-  getUpdatedConfig: $TSFixMe
+  getUpdatedConfig: () => Promise<NormalizedCachedConfigConfig>
   inspectSettings: $TSFixMe
   mainPort: $TSFixMe
   passthroughPort: $TSFixMe
   projectDir: string
   repositoryRoot?: string
-  settings: $TSFixMe
+  settings: ServerSettings
   siteInfo: $TSFixMe
-  state: $TSFixMe
+  state: CLIState
 }) => {
   const userFunctionsPath = config.build.edge_functions
   const isolatePort = await getAvailablePort()
@@ -136,7 +134,7 @@ export const initializeProxy = async ({
     projectDir,
     repositoryRoot,
   })
-  return async (req: IncomingMessage & { [headersSymbol]: Record<string, string> }) => {
+  return async (req: ExtendedIncomingMessage) => {
     if (req.headers[headers.Passthrough] !== undefined) {
       return
     }
@@ -189,8 +187,8 @@ export const initializeProxy = async ({
   }
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
-export const isEdgeFunctionsRequest = (req) => req[headersSymbol] !== undefined
+export const isEdgeFunctionsRequest = (req: IncomingMessage): req is ExtendedIncomingMessage =>
+  Object.hasOwn(req, headersSymbol)
 
 const prepareServer = async ({
   command,
@@ -207,13 +205,13 @@ const prepareServer = async ({
   repositoryRoot,
 }: {
   command: BaseCommand
-  config: $TSFixMe
+  config: NormalizedCachedConfigConfig
   configPath: string
   debug: boolean
   directory?: string
   env: Record<string, { sources: string[]; value: string }>
   featureFlags: FeatureFlags
-  getUpdatedConfig: () => Promise<Config>
+  getUpdatedConfig: () => Promise<NormalizedCachedConfigConfig>
   inspectSettings: Parameters<typeof bundler.serve>[0]['inspectSettings']
   port: number
   projectDir: string
@@ -249,11 +247,11 @@ const prepareServer = async ({
       config,
       configPath,
       debug,
-      directories: [directory].filter(Boolean) as string[],
+      directories: directory ? [directory] : [],
       env: configEnv,
       featureFlags,
       getUpdatedConfig,
-      importMapFromTOML: config.functions['*'].deno_import_map,
+      importMapFromTOML: config.functions?.['*'].deno_import_map,
       projectDir,
       runIsolate,
       servePath,
@@ -261,7 +259,6 @@ const prepareServer = async ({
 
     return registry
   } catch (error) {
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    printError(error.message, { exit: false })
+    return logAndThrowError(error instanceof Error ? error.message : error?.toString())
   }
 }

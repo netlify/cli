@@ -1,11 +1,10 @@
-import { OptionValues } from 'commander'
 import pWaitFor from 'p-wait-for'
 import prettyjson from 'prettyjson'
 import type { NetlifyAPI } from 'netlify'
 
 import { type Spinner, startSpinner, stopSpinner } from '../../lib/spinner.js'
-import { chalk, error, log } from '../../utils/command-helpers.js'
-import BaseCommand from '../base-command.js'
+import { chalk, logAndThrowError, log } from '../../utils/command-helpers.js'
+import type BaseCommand from '../base-command.js'
 import { init } from '../init/init.js'
 
 // 1 second
@@ -47,7 +46,7 @@ const waitForBuildFinish = async function (api: NetlifyAPI, siteId: string, spin
   return firstPass
 }
 
-export const watch = async (options: OptionValues, command: BaseCommand) => {
+export const watch = async (_options: unknown, command: BaseCommand) => {
   await command.authenticate()
   const client = command.netlify.api
   let siteId = command.netlify.site.id
@@ -55,7 +54,7 @@ export const watch = async (options: OptionValues, command: BaseCommand) => {
   if (!siteId) {
     // TODO: build init command
     const siteData = await init({}, command)
-    siteId = siteData.id as string
+    siteId = siteData.id
   }
 
   // wait for 1 sec for everything to kickoff
@@ -106,6 +105,6 @@ export const watch = async (options: OptionValues, command: BaseCommand) => {
     )
     console.timeEnd('Deploy time')
   } catch (error_) {
-    error(error_)
+    return logAndThrowError(error_)
   }
 }

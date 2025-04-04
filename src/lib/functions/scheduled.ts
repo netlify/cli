@@ -1,17 +1,30 @@
+import type { IncomingHttpHeaders } from 'node:http'
+
 import AnsiToHtml from 'ansi-to-html'
+import express from 'express'
+import type { LambdaEvent } from 'lambda-local'
 
 import { CLOCKWORK_USERAGENT } from '../../utils/functions/index.js'
 
 import { formatLambdaError } from './utils.js'
+import type { InvocationError } from './netlify-function.js'
 
 const ansiToHtml = new AnsiToHtml()
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'error' implicitly has an 'any' ty... Remove this comment to see the full error message
-export const buildHelpResponse = ({ error, headers, path, result }) => {
-  const acceptsHtml = headers.accept && headers.accept.includes('text/html')
+export const buildHelpResponse = ({
+  error,
+  headers,
+  path,
+  result,
+}: {
+  error: null | Error | InvocationError
+  headers: IncomingHttpHeaders
+  path: string
+  result: null | LambdaEvent
+}): { contentType: string; message: string; statusCode: number } => {
+  const acceptsHtml = headers.accept?.includes('text/html') ?? false
 
-  // @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
-  const paragraph = (text) => {
+  const paragraph = (text: string) => {
     text = text.trim()
 
     if (acceptsHtml) {
@@ -47,13 +60,12 @@ There was an error during execution of your scheduled function:
 
   if (result) {
     // lambda emulator adds level field, which isn't user-provided
-    const returnValue = { ...result }
-    delete returnValue.level
+    const { level, ...returnValue } = { ...result }
 
     const { statusCode } = returnValue
-    if (statusCode >= 500) {
+    if (statusCode != null && statusCode >= 500) {
       message += paragraph(`
-Your function returned a status code of <code>${statusCode}</code>.
+Your function returned a status code of <code>${statusCode.toString()}</code>.
 At the moment, Netlify does nothing about that. In the future, there might be a retry mechanism based on this.
 `)
     }
@@ -86,8 +98,17 @@ At the moment, Netlify does nothing about that. In the future, there might be a 
       }
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'error' implicitly has an 'any' ty... Remove this comment to see the full error message
-export const handleScheduledFunction = ({ error, request, response, result }) => {
+export const handleScheduledFunction = ({
+  error,
+  request,
+  response,
+  result,
+}: {
+  error: null | Error | InvocationError
+  request: express.Request
+  response: express.Response
+  result: null | LambdaEvent
+}): void => {
   const { contentType, message, statusCode } = buildHelpResponse({
     error,
     headers: request.headers,

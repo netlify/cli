@@ -23,11 +23,11 @@ import { createProxyMiddleware } from 'http-proxy-middleware'
 import { jwtDecode } from 'jwt-decode'
 import { locatePath } from 'locate-path'
 import throttle from 'lodash/throttle.js'
-import { Match } from 'netlify-redirector'
+import type { Match } from 'netlify-redirector'
 import pFilter from 'p-filter'
 
-import { BaseCommand } from '../commands/index.js'
-import { $TSFixMe, NetlifyOptions } from '../commands/types.js'
+import type { BaseCommand } from '../commands/index.js'
+import type { $TSFixMe, NetlifyOptions } from '../commands/types.js'
 import {
   handleProxyRequest,
   initializeProxy as initializeEdgeFunctionsProxy,
@@ -39,13 +39,13 @@ import { DEFAULT_FUNCTION_URL_EXPRESSION } from '../lib/functions/registry.js'
 import { initializeProxy as initializeImageProxy, isImageRequest } from '../lib/images/proxy.js'
 import renderErrorTemplate from '../lib/render-error-template.js'
 
-import { NETLIFYDEVLOG, NETLIFYDEVWARN, chalk, log } from './command-helpers.js'
+import { NETLIFYDEVLOG, NETLIFYDEVWARN, type NormalizedCachedConfigConfig, chalk, log } from './command-helpers.js'
 import createStreamPromise from './create-stream-promise.js'
 import { NFFunctionName, NFFunctionRoute, NFRequestID, headersForPath, parseHeaders } from './headers.js'
 import { generateRequestID } from './request-id.js'
 import { createRewriter, onChanges } from './rules-proxy.js'
 import { signRedirect } from './sign-redirect.js'
-import { Request, Rewriter, ServerSettings } from './types.js'
+import type { Request, Rewriter, ServerSettings } from './types.js'
 
 const gunzip = util.promisify(zlib.gunzip)
 const gzip = util.promisify(zlib.gzip)
@@ -81,7 +81,9 @@ const compressResponseBody = async function (body: string, contentEncoding = '')
   }
 }
 
-type HTMLInjections = NonNullable<NonNullable<NetlifyOptions['config']['dev']['processing']>['html']>['injections']
+type HTMLInjections = NonNullable<
+  NonNullable<NonNullable<NormalizedCachedConfigConfig['dev']>['processing']>['html']
+>['injections']
 
 const injectHtml = async function (
   responseBody: Buffer,
@@ -104,8 +106,7 @@ const injectHtml = async function (
   return await compressResponseBody(bodyWithInjections, proxyRes.headers['content-encoding'])
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'errorBuffer' implicitly has an 'any' ty... Remove this comment to see the full error message
-const formatEdgeFunctionError = (errorBuffer, acceptsHtml) => {
+const formatEdgeFunctionError = (errorBuffer: Buffer, acceptsHtml: boolean): string => {
   const {
     error: { message, name, stack },
   } = JSON.parse(errorBuffer.toString())
@@ -158,13 +159,11 @@ const isEndpointExists = async function (endpoint: string, origin: string) {
   }
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'match' implicitly has an 'any' type.
-const isExternal = function (match) {
-  return match.to && match.to.match(/^https?:\/\//)
+const isExternal = function (match: Match): boolean {
+  return 'to' in match && /^https?:\/\//.exec(match.to) != null
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'hash' implicitly has an 'any' typ... Remove this comment to see the full error message
-const stripOrigin = function ({ hash, pathname, search }) {
+const stripOrigin = function ({ hash, pathname, search }: URL): string {
   return `${pathname}${search}${hash}`
 }
 
@@ -199,20 +198,21 @@ const handleAddonUrl = function ({ addonUrl, req, res }) {
   proxyToExternalUrl({ req, res, dest, destURL })
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'match' implicitly has an 'any' type.
-const isRedirect = function (match) {
-  return match.status && match.status >= 300 && match.status <= 400
+const isRedirect = function (match: Match | { status?: number | undefined }): boolean {
+  return 'status' in match && match.status != null && match.status >= 300 && match.status <= 400
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'publicFolder' implicitly has an 'any' t... Remove this comment to see the full error message
-const render404 = async function (publicFolder) {
+const render404 = async function (publicFolder: string): Promise<string> {
   const maybe404Page = path.resolve(publicFolder, '404.html')
   try {
     const isFile = await isFileAsync(maybe404Page)
     if (isFile) return await readFile(maybe404Page, 'utf-8')
   } catch (error) {
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    console.warn(NETLIFYDEVWARN, 'Error while serving 404.html file', error.message)
+    console.warn(
+      NETLIFYDEVWARN,
+      'Error while serving 404.html file',
+      error instanceof Error ? error.message : error?.toString(),
+    )
   }
 
   return 'Not Found'
@@ -242,7 +242,9 @@ const alternativePathsFor = function (url) {
 }
 
 const notifyActivity = throttle((api: NetlifyOptions['api'], siteId: string, devServerId: string) => {
-  api.markDevServerActivity({ siteId, devServerId }).catch((error) => {
+  // @ts-expect-error(serhalp) -- It looks like the generated API types don't include "internal" methods
+  // (https://github.com/netlify/open-api/blob/66813d46e47f207443b7aebce2c22c4a4c8ca867/swagger.yml#L2642). Fix?
+  api.markDevServerActivity({ siteId, devServerId }).catch((error: unknown) => {
     console.error(`${NETLIFYDEVWARN} Failed to notify activity`, error)
   })
 }, 30 * 1000)
@@ -488,7 +490,7 @@ const initializeProxy = async function ({
   port,
   projectDir,
   siteInfo,
-}: { config: NetlifyOptions['config'] } & Record<string, $TSFixMe>) {
+}: { config: NormalizedCachedConfigConfig } & Record<string, $TSFixMe>) {
   const proxy = httpProxy.createProxyServer({
     selfHandleResponse: true,
     target: {
@@ -660,11 +662,10 @@ const initializeProxy = async function ({
     const requestURL = new URL(req.url, `http://${req.headers.host || '127.0.0.1'}`)
     const headersRules = headersForPath(headers, requestURL.pathname)
 
+    const configInjections = config.dev?.processing?.html?.injections ?? []
     const htmlInjections =
-      config.dev?.processing?.html?.injections &&
-      config.dev.processing.html.injections.length !== 0 &&
-      proxyRes.headers?.['content-type']?.startsWith('text/html')
-        ? config.dev.processing.html.injections
+      configInjections.length > 0 && proxyRes.headers?.['content-type']?.startsWith('text/html')
+        ? configInjections
         : undefined
 
     // for streamed responses, we can't do etag generation nor error templates.
@@ -724,7 +725,7 @@ const initializeProxy = async function ({
       const isUncaughtError = proxyRes.headers['x-nf-uncaught-error'] === '1'
 
       if (isEdgeFunctionsRequest(req) && isUncaughtError) {
-        const acceptsHtml = req.headers && req.headers.accept && req.headers.accept.includes('text/html')
+        const acceptsHtml = req.headers.accept?.includes('text/html') ?? false
         const decompressedBody = await decompressResponseBody(responseBody, proxyRes.headers['content-encoding'])
         const formattedBody = formatEdgeFunctionError(decompressedBody, acceptsHtml)
         const errorResponse = acceptsHtml
@@ -819,16 +820,13 @@ const onRequest = async (
   if (functionMatch) {
     // Setting an internal header with the function name so that we don't
     // have to match the URL again in the functions server.
-    /** @type {Record<string, string>} */
-    const headers = {}
+    const headers: Record<string, string> = {}
 
     if (functionMatch.func) {
-      // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
       headers[NFFunctionName] = functionMatch.func.name
     }
 
     if (functionMatch.route) {
-      // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
       headers[NFFunctionRoute] = functionMatch.route.pattern
     }
 
@@ -924,7 +922,13 @@ export const startProxy = async function ({
   settings,
   siteInfo,
   state,
-}: { command: BaseCommand; settings: ServerSettings; disableEdgeFunctions: boolean } & Record<string, $TSFixMe>) {
+}: {
+  command: BaseCommand
+  config: NormalizedCachedConfigConfig
+  settings: ServerSettings
+  disableEdgeFunctions: boolean
+  getUpdatedConfig: () => Promise<NormalizedCachedConfigConfig>
+} & Record<string, $TSFixMe>) {
   const secondaryServerPort = settings.https ? await getAvailablePort() : null
   const functionsServer = settings.functionsPort ? `http://127.0.0.1:${settings.functionsPort}` : null
 
@@ -958,7 +962,7 @@ export const startProxy = async function ({
     })
   }
 
-  const imageProxy = await initializeImageProxy({
+  const imageProxy = initializeImageProxy({
     config,
     settings,
   })
@@ -976,12 +980,12 @@ export const startProxy = async function ({
 
   const rewriter = await createRewriter({
     config,
+    configPath,
     distDir: settings.dist,
-    projectDir,
+    geoCountry,
     jwtSecret: settings.jwtSecret,
     jwtRoleClaim: settings.jwtRolePath,
-    configPath,
-    geoCountry,
+    projectDir,
   })
 
   const onRequestWithOptions = onRequest.bind(undefined, {

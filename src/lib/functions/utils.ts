@@ -1,17 +1,25 @@
 import { chalk, warn } from '../../utils/command-helpers.js'
 import { MISSING_AWS_SDK_WARNING } from '../log.js'
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'error' implicitly has an 'any' ty... Remove this comment to see the full error message
-export const detectAwsSdkError = ({ error }) => {
-  const isAwsSdkError = error && error.errorMessage && error.errorMessage.includes("Cannot find module 'aws-sdk'")
+import type { InvocationError } from './netlify-function.js'
+
+// TODO(serhalp) Rename? This doesn't "detect", it maybe logs a warning.
+export const detectAwsSdkError = ({ error }: { error: Error | InvocationError | string }): void => {
+  const isAwsSdkError =
+    typeof error === 'object' &&
+    'errorMessage' in error &&
+    typeof error.errorMessage === 'string' &&
+    error.errorMessage.includes("Cannot find module 'aws-sdk'")
 
   if (isAwsSdkError) {
     warn(MISSING_AWS_SDK_WARNING)
   }
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'err' implicitly has an 'any' type.
-export const formatLambdaError = (err) => chalk.red(`${err.errorType}: ${err.errorMessage}`)
+// XXX(serhalp) This appears to be a bug? In the background and scheduled function code paths this can receive plain
+// errors, but this is assuming normalized `InvocationError`s only.
+export const formatLambdaError = (err: Error | InvocationError): string =>
+  chalk.red(`${'errorType' in err ? err.errorType : ''}: ${'errorMessage' in err ? err.errorMessage : ''}`)
 
 // should be equivalent to https://github.com/netlify/proxy/blob/main/pkg/functions/request.go#L105
 const exceptionsList = new Set([
@@ -24,12 +32,7 @@ const exceptionsList = new Set([
   'application/xml',
 ])
 
-/**
- * @param {string | undefined} contentType
- * @returns {boolean}
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'contentType' implicitly has an 'any' ty... Remove this comment to see the full error message
-export const shouldBase64Encode = function (contentType) {
+export const shouldBase64Encode = function (contentType?: string): boolean {
   if (!contentType) {
     return true
   }
@@ -53,5 +56,4 @@ export const shouldBase64Encode = function (contentType) {
   return true
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-export const styleFunctionName = (name) => chalk.magenta(name)
+export const styleFunctionName = (name: string): string => chalk.magenta(name)

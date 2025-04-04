@@ -1,5 +1,6 @@
 import process from 'process'
 
+import type { NetlifyAPI } from 'netlify'
 import { applyMutations } from '@netlify/config'
 import { Option, OptionValues } from 'commander'
 
@@ -13,6 +14,7 @@ import {
   NETLIFYDEVERR,
   NETLIFYDEVLOG,
   NETLIFYDEVWARN,
+  type NormalizedCachedConfigConfig,
   chalk,
   log,
   normalizeConfig,
@@ -26,24 +28,27 @@ import openBrowser from '../../utils/open-browser.js'
 import { generateInspectSettings, startProxyServer } from '../../utils/proxy-server.js'
 import { getProxyUrl } from '../../utils/proxy.js'
 import { runDevTimeline } from '../../utils/run-build.js'
+import type { CLIState, ServerSettings } from '../../utils/types.js'
 import { getGeoCountryArgParser } from '../../utils/validation.js'
-import BaseCommand from '../base-command.js'
+import type BaseCommand from '../base-command.js'
+import type { NetlifySite } from '../types.js'
 
 import { createDevExecCommand } from './dev-exec.js'
-import { type DevConfig } from './types.js'
+import type { DevConfig } from './types.js'
 
-/**
- *
- * @param {object} config
- * @param {*} config.api
- * @param {import('commander').OptionValues} config.options
- * @param {import('../../utils/types.js').ServerSettings} config.settings
- * @param {*} config.site
- * @param {*} config.state
- * @returns
- */
-// @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-const handleLiveTunnel = async ({ api, options, settings, site, state }) => {
+const handleLiveTunnel = async ({
+  api,
+  options,
+  settings,
+  site,
+  state,
+}: {
+  api: NetlifyAPI
+  options: OptionValues
+  settings: ServerSettings
+  site: NetlifySite
+  state: CLIState
+}) => {
   const { live } = options
 
   if (live) {
@@ -90,17 +95,17 @@ const validateShortFlagArgs = (args: string) => {
 export const dev = async (options: OptionValues, command: BaseCommand) => {
   log(NETLIFYDEV)
   const { api, cachedConfig, config, repositoryRoot, site, siteInfo, state } = command.netlify
-  config.dev = { ...config.dev }
+  config.dev = config.dev != null ? { ...config.dev } : undefined
   config.build = { ...config.build }
   const devConfig: DevConfig = {
     framework: '#auto',
     autoLaunch: Boolean(options.open),
-    ...(cachedConfig.siteInfo?.dev_server_settings && {
+    ...(cachedConfig.siteInfo.dev_server_settings && {
       command: cachedConfig.siteInfo.dev_server_settings.cmd,
       targetPort: cachedConfig.siteInfo.dev_server_settings.target_port,
     }),
     ...(config.functionsDirectory && { functions: config.functionsDirectory }),
-    ...(config.build.publish && { publish: config.build.publish }),
+    ...('publish' in config.build && config.build.publish && { publish: config.build.publish }),
     ...(config.build.base && { base: config.build.base }),
     ...config.dev,
     ...options,
@@ -135,8 +140,7 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
     siteInfo,
   })
 
-  /** @type {import('../../utils/types.js').ServerSettings} */
-  let settings
+  let settings: ServerSettings
   try {
     settings = await detectServerSettings(devConfig, options, command)
 
@@ -147,13 +151,15 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
       if (options.debug) {
         log(`${NETLIFYDEVLOG} Including dev server plugins: ${NETLIFY_INCLUDE_DEV_SERVER_PLUGIN}`)
       }
-      settings.plugins = [...(settings.plugins || []), ...plugins]
+      settings.plugins = [...(settings.plugins ?? []), ...plugins]
     }
 
+    // TODO(serhalp) Doing this as a side effect inside `BaseCommand` like this is WILD.
+    // Refactor this to be more explicit and less brittle.
     cachedConfig.config = getConfigWithPlugins(cachedConfig.config, settings)
-  } catch (error_) {
-    if (error_ && typeof error_ === 'object' && 'message' in error_) {
-      log(NETLIFYDEVERR, error_.message)
+  } catch (error) {
+    if (error instanceof Error) {
+      log(NETLIFYDEVERR, error.message)
     }
     process.exit(1)
   }
@@ -178,6 +184,7 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
     },
   })
 
+  // FIXME(serhalp) `applyMutations` is `(any, any) => any)`. Add types in `@netlify/config`.
   const mutatedConfig: typeof config = applyMutations(config, configMutations)
 
   const functionsRegistry = await startFunctionsServer({
@@ -206,14 +213,12 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
   }
 
   // TODO: We should consolidate this with the existing config watcher.
-  const getUpdatedConfig = async () => {
+  const getUpdatedConfig = async (): Promise<NormalizedCachedConfigConfig> => {
     const { config: newConfig } = await command.getConfig({
       cwd: command.workingDir,
       offline: true,
     })
-    const normalizedNewConfig = normalizeConfig(newConfig)
-
-    return normalizedNewConfig
+    return normalizeConfig(newConfig)
   }
 
   const inspectSettings = generateInspectSettings(options.edgeInspect, options.edgeInspectBrk)

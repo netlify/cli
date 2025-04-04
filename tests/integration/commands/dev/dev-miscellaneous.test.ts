@@ -152,7 +152,29 @@ describe.concurrent('commands/dev-miscellaneous', () => {
     })
   })
 
-  test('background function clientContext,identity should be null', async (t) => {
+  test('should print logs emitted to `console` from user function handler', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      await builder
+        .withNetlifyToml({ config: { functions: { directory: 'functions' } } })
+        .withFunction({
+          path: 'hello.js',
+          handler: () => {
+            console.log('Hello from the user function handler')
+            return Response.json({})
+          },
+        })
+        .build()
+
+      await withDevServer({ cwd: builder.directory }, async ({ outputBuffer, url }) => {
+        await fetch(`${url}/.netlify/functions/hello`)
+
+        const output = outputBuffer.toString()
+        t.expect(output).toMatch(/Hello from the user function handler/)
+      })
+    })
+  })
+
+  test('given a background function, context should have empty `clientContext` and null `identity`', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       await builder
         .withNetlifyToml({ config: { functions: { directory: 'functions' } } })
@@ -168,7 +190,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
         await fetch(`${url}/.netlify/functions/hello-background`)
 
         const output = outputBuffer.toString()
-        const context = JSON.parse(output.match(/__CLIENT_CONTEXT__START__(.*)__CLIENT_CONTEXT__END__/)![1])
+        const context = JSON.parse(output.match(/__CLIENT_CONTEXT__START__(.*)__CLIENT_CONTEXT__END__/)?.[1] ?? '""')
         t.expect(context).toHaveProperty('clientContext', {})
         t.expect(context).toHaveProperty('identity', null)
       })

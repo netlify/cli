@@ -1,8 +1,8 @@
 import fetch from 'node-fetch'
 import execa from 'execa'
 
-import { log, GitHubRepoResponse, error } from '../command-helpers.js'
-import { GitHubRepo, Template } from '../types.js'
+import { GitHubRepoResponse, logAndThrowError } from '../command-helpers.js'
+import { GitHubRepo } from '../types.js'
 
 export const getTemplatesFromGitHub = async (token: string): Promise<GitHubRepo[]> => {
   const getPublicGitHubReposFromOrg = new URL(`https://api.github.com/orgs/netlify-templates/repos`)
@@ -25,7 +25,7 @@ export const getTemplatesFromGitHub = async (token: string): Promise<GitHubRepo[
     })
     allTemplates = (await templates.json()) as GitHubRepo[]
   } catch (error_) {
-    error(error_)
+    return logAndThrowError(error_)
   }
   return allTemplates
 }

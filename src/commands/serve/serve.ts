@@ -1,6 +1,6 @@
 import process from 'process'
 
-import { OptionValues } from 'commander'
+import type { OptionValues } from 'commander'
 
 import {
   BLOBS_CONTEXT_VARIABLE,
@@ -23,23 +23,23 @@ import {
 import detectServerSettings, { getConfigWithPlugins } from '../../utils/detect-server-settings.js'
 import { UNLINKED_SITE_MOCK_ID, getDotEnvVariables, getSiteInformation, injectEnvVariables } from '../../utils/dev.js'
 import { getEnvelopeEnv } from '../../utils/env/index.js'
-import { getFrameworksAPIPaths, getFrameworksAPIConfig } from '../../utils/frameworks-api.js'
+import { getFrameworksAPIConfig } from '../../utils/frameworks-api.js'
 import { getInternalFunctionsDir } from '../../utils/functions/functions.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import openBrowser from '../../utils/open-browser.js'
 import { generateInspectSettings, startProxyServer } from '../../utils/proxy-server.js'
 import { runBuildTimeline } from '../../utils/run-build.js'
 import type { ServerSettings } from '../../utils/types.js'
-import BaseCommand from '../base-command.js'
+import type BaseCommand from '../base-command.js'
 import { type DevConfig } from '../dev/types.js'
 
 export const serve = async (options: OptionValues, command: BaseCommand) => {
   const { api, cachedConfig, config, frameworksAPIPaths, repositoryRoot, site, siteInfo, state } = command.netlify
-  config.dev = { ...config.dev }
+  config.dev = config.dev != null ? { ...config.dev } : undefined
   config.build = { ...config.build }
   const devConfig: DevConfig = {
     ...(config.functionsDirectory && { functions: config.functionsDirectory }),
-    ...(config.build.publish && { publish: config.build.publish }),
+    ...('publish' in config.build && config.build.publish && { publish: config.build.publish }),
 
     ...config.dev,
     ...options,

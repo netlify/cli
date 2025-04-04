@@ -5,7 +5,10 @@ import { describe, beforeEach, expect, it, vi } from 'vitest'
 import { vol } from 'memfs'
 
 import { getLegacyPathInHome, getPathInHome } from '../../../src/lib/settings.js'
-import getGlobalConfig, { ConfigStore, resetConfigCache } from '../../../src/utils/get-global-config.js'
+import getGlobalConfigStore, {
+  GlobalConfigStore,
+  resetConfigCache,
+} from '../../../src/utils/get-global-config-store.js'
 
 // Mock filesystem calls
 vi.mock('fs')
@@ -32,7 +35,7 @@ describe('getGlobalConfig', () => {
   it('returns an empty object when the legacy configuration file is not valid JSON', async () => {
     await fs.writeFile(legacyConfigFilePath, 'NotJson')
 
-    await expect(getGlobalConfig()).resolves.not.toThrowError()
+    await expect(getGlobalConfigStore()).resolves.not.toThrowError()
   })
 
   it('merges legacy configuration options with new configuration options (preferring new config options)', async () => {
@@ -41,7 +44,7 @@ describe('getGlobalConfig', () => {
     await fs.writeFile(legacyConfigFilePath, JSON.stringify(legacyConfig))
     await fs.writeFile(configFilePath, JSON.stringify(newConfig))
 
-    const globalConfig = await getGlobalConfig()
+    const globalConfig = await getGlobalConfigStore()
 
     expect(globalConfig.get('someOldKey')).toBe(legacyConfig.someOldKey)
     expect(globalConfig.get('overrideMe')).toBe(newConfig.overrideMe)
@@ -53,7 +56,7 @@ describe('getGlobalConfig', () => {
 
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     await fs.rm(getLegacyPathInHome([]), { force: true, recursive: true })
-    const globalConfig = await getGlobalConfig()
+    const globalConfig = await getGlobalConfigStore()
     globalConfig.set('newProp', 'newValue')
     const configFile = JSON.parse(await fs.readFile(configFilePath, 'utf-8')) as Record<string, unknown>
 
@@ -76,7 +79,7 @@ describe('ConfigStore', () => {
     const before: unknown = JSON.parse(await fs.readFile(configFilePath, 'utf8'))
     expect(before).toEqual(config)
 
-    new ConfigStore({ defaults })
+    new GlobalConfigStore({ defaults })
 
     const after: unknown = JSON.parse(await fs.readFile(configFilePath, 'utf8'))
     expect(after).toEqual({
@@ -92,7 +95,7 @@ describe('ConfigStore', () => {
       const config = { a: 'value' }
       await fs.writeFile(configFilePath, JSON.stringify(config))
 
-      const store = new ConfigStore()
+      const store = new GlobalConfigStore()
 
       expect(store.all).toEqual(config)
     })
@@ -100,13 +103,13 @@ describe('ConfigStore', () => {
     it('works when no configuration file exists', async () => {
       await fs.mkdir(configPath, { recursive: true })
 
-      const store = new ConfigStore()
+      const store = new GlobalConfigStore()
 
       expect(store.all).toEqual({})
     })
 
     it('works when no configuration directory exists', () => {
-      const store = new ConfigStore()
+      const store = new GlobalConfigStore()
 
       expect(store.all).toEqual({})
     })
@@ -119,7 +122,7 @@ describe('ConfigStore', () => {
       const config = { a: 'value' }
       await fs.writeFile(configFilePath, JSON.stringify(config))
 
-      const store = new ConfigStore()
+      const store = new GlobalConfigStore()
 
       expect(store.get('a')).toBe('value')
     })
@@ -127,13 +130,13 @@ describe('ConfigStore', () => {
     it('returns undefined when no configuration file exists', async () => {
       await fs.mkdir(configPath, { recursive: true })
 
-      const store = new ConfigStore()
+      const store = new GlobalConfigStore()
 
       expect(store.get('a')).toBe(undefined)
     })
 
     it('returns undefined when no configuration directory exists', () => {
-      const store = new ConfigStore()
+      const store = new GlobalConfigStore()
 
       expect(store.get('a')).toBe(undefined)
     })
@@ -144,7 +147,7 @@ describe('ConfigStore', () => {
       await fs.mkdir(configPath, { recursive: true })
       await fs.writeFile(configFilePath, JSON.stringify({ a: 'value' }))
 
-      const store = new ConfigStore()
+      const store = new GlobalConfigStore()
       store.set('b', 'another value')
       const data: unknown = JSON.parse(await fs.readFile(configFilePath, 'utf8'))
 
@@ -154,7 +157,7 @@ describe('ConfigStore', () => {
     it('creates a configuration file when one does not exist', async () => {
       await fs.mkdir(configPath, { recursive: true })
 
-      const store = new ConfigStore()
+      const store = new GlobalConfigStore()
       store.set('a', 'fresh start')
       const data: unknown = JSON.parse(await fs.readFile(configFilePath, 'utf8'))
 
@@ -164,7 +167,7 @@ describe('ConfigStore', () => {
     it('sets nested values', async () => {
       await fs.mkdir(configPath, { recursive: true })
 
-      const store = new ConfigStore()
+      const store = new GlobalConfigStore()
       store.set('a.new', 'hope')
       const data: unknown = JSON.parse(await fs.readFile(configFilePath, 'utf8'))
 
@@ -174,7 +177,7 @@ describe('ConfigStore', () => {
     it('succeeds when no configuration directory exists', async () => {
       await fs.mkdir(configPath, { recursive: true })
 
-      const store = new ConfigStore()
+      const store = new GlobalConfigStore()
       store.set('a.new', 'hope')
       const data: unknown = JSON.parse(await fs.readFile(configFilePath, 'utf8'))
 

@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url'
 import { isCI } from 'ci-info'
 
 import execa from '../execa.js'
-import getGlobalConfig from '../get-global-config.js'
+import getGlobalConfigStore from '../get-global-config-store.js'
 
 import { cliVersion } from './utils.js'
 
@@ -29,7 +29,7 @@ export const reportError = async function (error, config = {}) {
   // convert a NotifiableError to an error class
   const err = error instanceof Error ? error : typeof error === 'string' ? new Error(error) : error
 
-  const globalConfig = await getGlobalConfig()
+  const globalConfig = await getGlobalConfigStore()
 
   const options = JSON.stringify({
     type: 'error',

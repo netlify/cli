@@ -1,6 +1,6 @@
 import { OptionValues } from 'commander'
 
-import { chalk, log, error as logError } from '../../utils/command-helpers.js'
+import { chalk, log, logAndThrowError } from '../../utils/command-helpers.js'
 import { promptEnvCloneOverwrite } from '../../utils/prompts/env-clone-prompt.js'
 import BaseCommand from '../base-command.js'
 
@@ -85,13 +85,11 @@ export const envClone = async (options: OptionValues, command: BaseCommand) => {
   ])
 
   if (errorFrom) {
-    logError(`Can't find site with id ${chalk.bold(siteId.from)}. Please make sure the site exists.`)
-    return false
+    return logAndThrowError(`Can't find site with id ${chalk.bold(siteId.from)}. Please make sure the site exists.`)
   }
 
   if (errorTo) {
-    logError(`Can't find site with id ${chalk.bold(siteId.to)}. Please make sure the site exists.`)
-    return false
+    return logAndThrowError(`Can't find site with id ${chalk.bold(siteId.to)}. Please make sure the site exists.`)
   }
 
   const success = await cloneEnvVars({ api, siteFrom, siteTo, force })

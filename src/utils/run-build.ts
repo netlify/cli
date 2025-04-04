@@ -9,7 +9,7 @@ import { getBootstrapURL } from '../lib/edge-functions/bootstrap.js'
 import { INTERNAL_EDGE_FUNCTIONS_FOLDER } from '../lib/edge-functions/consts.js'
 import { getPathInProject } from '../lib/settings.js'
 
-import { error } from './command-helpers.js'
+import { logAndThrowError } from './command-helpers.js'
 import { getFeatureFlagsFromSiteInfo } from './feature-flags.js'
 import { startFrameworkServer } from './framework-server.js'
 import { INTERNAL_FUNCTIONS_FOLDER } from './functions/index.js'
@@ -20,11 +20,8 @@ const netlifyBuildPromise = import('@netlify/build')
 /**
  * Copies `netlify.toml`, if one is defined, into the `.netlify` internal
  * directory and returns the path to its new location.
- * @param {string} configPath
- * @param {string} destinationFolder The folder where it should be copied to. Either the root of the repo or a package inside a monorepo
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'configPath' implicitly has an 'any' typ... Remove this comment to see the full error message
-const copyConfig = async (configPath, destinationFolder) => {
+const copyConfig = async (configPath: string, destinationFolder: string): Promise<string> => {
   const newConfigPath = path.resolve(destinationFolder, getPathInProject(['netlify.toml']))
 
   try {
@@ -124,7 +121,7 @@ export const runNetlifyBuild = async ({
 
     // Copy `netlify.toml` into the internal directory. This will be the new
     // location of the config file for the duration of the command.
-    const tempConfigPath = await copyConfig(cachedConfig.configPath, command.workingDir)
+    const tempConfigPath = await copyConfig(cachedConfig.configPath ?? '', command.workingDir)
     const buildSiteOptions = {
       ...sharedOptions,
       outputConfigPath: tempConfigPath,
@@ -136,9 +133,7 @@ export const runNetlifyBuild = async ({
     const { netlifyConfig, success } = await buildSite(buildSiteOptions)
 
     if (!success) {
-      error('Could not start local server due to a build error')
-
-      return {}
+      return logAndThrowError('Could not start local server due to a build error')
     }
 
     // Start the dev server, forcing the usage of a static server as opposed to
@@ -169,7 +164,9 @@ export const runNetlifyBuild = async ({
   const { configMutations, error: startDevError, success } = await startDev(devCommand, startDevOptions)
 
   if (!success && startDevError) {
-    error(`Could not start local development server\n\n${startDevError.message}\n\n${startDevError.stack}`)
+    return logAndThrowError(
+      `Could not start local development server\n\n${startDevError.message}\n\n${startDevError.stack}`,
+    )
   }
 
   return { configMutations }

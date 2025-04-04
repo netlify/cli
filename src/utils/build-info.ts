@@ -1,10 +1,10 @@
-import { Settings } from '@netlify/build-info'
+import type { Settings } from '@netlify/build-info'
 import { isCI } from 'ci-info'
 import fuzzy from 'fuzzy'
 import inquirer from 'inquirer'
 
-import BaseCommand from '../commands/base-command.js'
-import { $TSFixMe } from '../commands/types.js'
+import type BaseCommand from '../commands/base-command.js'
+import type { DefaultConfig } from '../lib/build.js'
 
 import { chalk, log } from './command-helpers.js'
 
@@ -128,13 +128,12 @@ command = "${chosenSettings.devCommand}"
  * Returns the defaultConfig in the format that @netlify/build expects (json version of toml)
  * @param settings The settings from the heuristics
  */
-export const getDefaultConfig = (settings?: Settings): $TSFixMe | undefined => {
+export const getDefaultConfig = (settings?: Settings): DefaultConfig | undefined => {
   if (!settings) {
     return undefined
   }
 
-  // TODO: We need proper types for the netlify configuration
-  const config: $TSFixMe = { build: {} }
+  const config: DefaultConfig = { build: {} }
 
   if (settings.buildCommand) {
     config.build.command = settings.buildCommand

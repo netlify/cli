@@ -4,10 +4,10 @@ import waitPort from 'wait-port'
 
 import { startSpinner, stopSpinner } from '../lib/spinner.js'
 
-import { error, exit, log, NETLIFYDEVERR, NETLIFYDEVLOG } from './command-helpers.js'
+import { logAndThrowError, log, NETLIFYDEVERR, NETLIFYDEVLOG } from './command-helpers.js'
 import { runCommand } from './shell.js'
 import { startStaticServer } from './static-server.js'
-import { ServerSettings } from './types.js'
+import type { ServerSettings } from './types.js'
 
 // 10 minutes
 const FRAMEWORK_PORT_TIMEOUT = 6e5
@@ -73,9 +73,8 @@ export const startFrameworkServer = async function ({
     stopSpinner({ error: true, spinner })
     log(NETLIFYDEVERR, `Netlify Dev could not start or connect to localhost:${settings.frameworkPort}.`)
     log(NETLIFYDEVERR, `Please make sure your framework server is running on port ${settings.frameworkPort}`)
-    error(error_)
-    exit(1)
+    return logAndThrowError(error_)
   }
 
-  return { ipVersion: port?.ipVersion }
+  return { ipVersion: port.ipVersion }
 }

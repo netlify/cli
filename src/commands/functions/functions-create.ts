@@ -21,7 +21,7 @@ import {
   NETLIFYDEVLOG,
   NETLIFYDEVWARN,
   chalk,
-  error,
+  logAndThrowError,
   log,
 } from '../../utils/command-helpers.js'
 import { copyTemplateDir } from '../../utils/copy-template-dir/copy-template-dir.js'
@@ -203,7 +203,7 @@ const pickTemplate = async function ({ language: languageFromFlag }, funcType) {
   try {
     templatesForLanguage = await formatRegistryArrayForInquirer(language, funcType)
   } catch {
-    throw error(`Invalid language: ${language}`)
+    return logAndThrowError(`Invalid language: ${language}`)
   }
 
   const { chosenTemplate } = await inquirer.prompt({
@@ -211,8 +211,7 @@ const pickTemplate = async function ({ language: languageFromFlag }, funcType) {
     message: 'Pick a template',
     // @ts-expect-error TS(2769) FIXME: No overload matches this call.
     type: 'autocomplete',
-    // @ts-expect-error TS(7006) FIXME: Parameter 'answersSoFar' implicitly has an 'any' t... Remove this comment to see the full error message
-    source(answersSoFar, input) {
+    source(_answersSoFar: unknown, input: string | undefined) {
       // if Edge Functions template, don't show url option
       // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'Separator... Remove this comment to see the full error message
       const edgeCommands = specialCommands.filter((val) => val.value !== 'url')
@@ -234,8 +233,7 @@ const pickTemplate = async function ({ language: languageFromFlag }, funcType) {
 
 const DEFAULT_PRIORITY = 999
 
-/** @returns {Promise<'edge' | 'serverless'>} */
-const selectTypeOfFunc = async () => {
+const selectTypeOfFunc = async (): Promise<'edge' | 'serverless'> => {
   const functionTypes = [
     { name: 'Edge function (Deno)', value: 'edge' },
     { name: 'Serverless function (Node/Go/Rust)', value: 'serverless' },
@@ -261,7 +259,7 @@ const ensureEdgeFuncDirExists = function (command) {
   const siteId = site.id
 
   if (!siteId) {
-    error(`${NETLIFYDEVERR} No site id found, please run inside a site directory or \`netlify link\``)
+    return logAndThrowError(`${NETLIFYDEVERR} No site id found, please run inside a site directory or \`netlify link\``)
   }
 
   const functionsDir = config.build?.edge_functions ?? join(command.workingDir, 'netlify/edge-functions')
@@ -293,7 +291,7 @@ const promptFunctionsDirectory = async (command) => {
   log(`\n${NETLIFYDEVLOG} functions directory not specified in ${relConfigFilePath} or UI settings`)
 
   if (!site.id) {
-    error(`${NETLIFYDEVERR} No site id found, please run inside a site directory or \`netlify link\``)
+    return logAndThrowError(`${NETLIFYDEVERR} No site id found, please run inside a site directory or \`netlify link\``)
   }
 
   const { functionsDir } = await inquirer.prompt([
@@ -319,7 +317,7 @@ const promptFunctionsDirectory = async (command) => {
 
     log(`${NETLIFYDEVLOG} functions directory ${chalk.magenta.inverse(functionsDir)} updated in site settings`)
   } catch {
-    throw error('Error updating site settings')
+    return logAndThrowError('Error updating site settings')
   }
   return functionsDir
 }
@@ -499,9 +497,7 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
     try {
       await downloadFromURL(command, options, argumentName, functionsDir)
     } catch (error_) {
-      error(`$${NETLIFYDEVERR} Error downloading from URL: ${options.url}`)
-      error(error_)
-      process.exit(1)
+      return logAndThrowError(`$${NETLIFYDEVERR} Error downloading from URL: ${options.url}`)
     }
   } else if (chosenTemplate === 'report') {
     log(`${NETLIFYDEVLOG} Open in browser: https://github.com/netlify/cli/issues/new`)
@@ -587,7 +583,7 @@ const createFunctionAddon = async function ({ addonName, addons, api, siteData, 
     log(`Add-on "${addonName}" created for ${siteData.name}`)
     return true
   } catch (error_) {
-    error((error_ as APIError).message)
+    return logAndThrowError((error_ as APIError).message)
   }
 }
 
@@ -685,7 +681,7 @@ const installAddons = async function (command, functionAddons, fnPath) {
 
       await handleAddonDidInstall({ addonCreated, addonDidInstall, command, fnPath })
     } catch (error_) {
-      error(`${NETLIFYDEVERR} Error installing addon: ${error_}`)
+      return logAndThrowError(`${NETLIFYDEVERR} Error installing addon: ${error_}`)
     }
   })
   return Promise.all(arr)
@@ -728,7 +724,9 @@ const registerEFInToml = async (funcName, options) => {
       `${NETLIFYDEVLOG} Function '${funcName}' registered for route \`${funcPath}\`. To change, edit your \`${relConfigFilePath}\` file.`,
     )
   } catch {
-    error(`${NETLIFYDEVERR} Unable to register function. Please check your \`${relConfigFilePath}\` file.`)
+    return logAndThrowError(
+      `${NETLIFYDEVERR} Unable to register function. Please check your \`${relConfigFilePath}\` file.`,
+    )
   }
 }
 

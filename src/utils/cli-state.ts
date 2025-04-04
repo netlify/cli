@@ -13,11 +13,8 @@ const permissionError = "You don't have access to this file."
 
 /**
  * Finds location of `.netlify/state.json`
- * @param {string} cwd
- * @returns {string}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'cwd' implicitly has an 'any' type.
-const findStatePath = (cwd) => {
+const findStatePath = (cwd: string): string => {
   const statePath = findUpSync([STATE_PATH], { cwd })
 
   if (!statePath) {
@@ -27,10 +24,10 @@ const findStatePath = (cwd) => {
   return statePath
 }
 
-export default class StateConfig {
-  // @ts-expect-error TS(7006) FIXME: Parameter 'cwd' implicitly has an 'any' type.
-  constructor(cwd) {
-    // @ts-expect-error TS(2339) FIXME: Property 'path' does not exist on type 'StateConfi... Remove this comment to see the full error message
+export default class CLIState {
+  private path: string
+
+  constructor(cwd: string) {
     this.path = findStatePath(cwd)
   }
 
@@ -55,7 +52,6 @@ export default class StateConfig {
       // Empty the file if it encounters invalid JSON
       // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
       if (error.name === 'SyntaxError') {
-        // @ts-expect-error TS(2339) FIXME: Property 'path' does not exist on type 'StateConfi... Remove this comment to see the full error message
         writeFileAtomic.sync(this.path, '')
         return {}
       }
@@ -67,9 +63,7 @@ export default class StateConfig {
   set all(val) {
     try {
       // Make sure the folder exists as it could have been deleted in the meantime
-      // @ts-expect-error TS(2339) FIXME: Property 'path' does not exist on type 'StateConfi... Remove this comment to see the full error message
       fs.mkdirSync(path.dirname(this.path), { recursive: true })
-      // @ts-expect-error TS(2339) FIXME: Property 'path' does not exist on type 'StateConfi... Remove this comment to see the full error message
       writeFileAtomic.sync(this.path, JSON.stringify(val, null, '\t'))
     } catch (error) {
       // Improve the message of permission errors

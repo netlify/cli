@@ -866,7 +866,7 @@ describe.concurrent('serving functions', () => {
           path: 'hello.js',
           handler: async () => ({
             statusCode: null,
-            body: 42,
+            body: 'hello',
           }),
         })
         .withNetlifyToml({

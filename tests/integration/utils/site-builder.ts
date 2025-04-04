@@ -84,7 +84,6 @@ export class SiteBuilder {
   }: {
     config?: object
     esm?: boolean
-    // handler: Handler | string
     handler: Handler | ((req: Request, context: Context) => Response | Promise<Response>) | string
     path: string
     pathPrefix?: string

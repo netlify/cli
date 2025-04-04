@@ -40,29 +40,11 @@ export default [
     },
   },
   {
-    files: ['site/netlify/functions/error-reporting.ts'],
-    rules: {
-      '@typescript-eslint/restrict-template-expressions': 'off',
-      '@typescript-eslint/require-await': 'off',
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-argument': 'off',
-      '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-    },
-  },
-  {
-    files: ['site/scripts/util/generate-command-data.js'],
-    rules: {
-      '@typescript-eslint/ban-ts-comment': 'off',
-    },
-  },
-  {
     files: ['src/commands/api/api.ts'],
     rules: {
       '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/no-unsafe-argument': 'off',
       '@typescript-eslint/restrict-template-expressions': 'off',
-      '@typescript-eslint/no-unnecessary-condition': 'off',
     },
   },
   {
@@ -77,16 +59,15 @@ export default [
       '@typescript-eslint/prefer-nullish-coalescing': 'off',
       '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/no-unsafe-return': 'off',
+      '@typescript-eslint/no-unnecessary-condition': 'off',
       '@typescript-eslint/restrict-template-expressions': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unnecessary-boolean-literal-compare': 'off',
       '@typescript-eslint/no-unsafe-call': 'off',
       '@typescript-eslint/no-unsafe-argument': 'off',
       '@typescript-eslint/no-floating-promises': 'off',
       '@typescript-eslint/no-unnecessary-type-parameters': 'off',
-      '@typescript-eslint/no-unnecessary-condition': 'off',
-      '@typescript-eslint/no-unnecessary-boolean-literal-compare': 'off',
-      '@typescript-eslint/no-unnecessary-template-expression': 'off',
     },
   },
   {
@@ -101,23 +82,7 @@ export default [
   {
     files: ['src/commands/blobs/blobs-get.ts'],
     rules: {
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/no-unnecessary-condition': 'off',
-    },
-  },
-  {
-    files: ['src/commands/blobs/blobs-list.ts'],
-    rules: {
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-    },
-  },
-  {
-    files: ['src/commands/blobs/blobs-set.ts'],
-    rules: {
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
     },
   },
   {
@@ -147,12 +112,6 @@ export default [
     },
   },
   {
-    files: ['src/lib/completion/script.ts'],
-    rules: {
-      'n/hashbang': 'off',
-    },
-  },
-  {
     files: ['src/commands/deploy/deploy.ts'],
     rules: {
       '@typescript-eslint/no-unsafe-assignment': 'off',
@@ -161,28 +120,24 @@ export default [
       '@typescript-eslint/restrict-template-expressions': 'off',
       '@typescript-eslint/no-unsafe-argument': 'off',
       '@typescript-eslint/prefer-nullish-coalescing': 'off',
-      '@typescript-eslint/no-unsafe-return': 'off',
       '@typescript-eslint/no-unnecessary-condition': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
       '@typescript-eslint/no-dynamic-delete': 'off',
       '@typescript-eslint/ban-ts-comment': 'off',
-      '@typescript-eslint/no-confusing-void-expression': 'off',
     },
   },
   {
     files: ['src/commands/dev/dev-exec.ts'],
     rules: {
       '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
     },
   },
   {
     files: ['src/commands/dev/dev.ts'],
     rules: {
       '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/no-unsafe-return': 'off',
-      '@typescript-eslint/prefer-nullish-coalescing': 'off',
       'n/no-process-exit': 'off',
+      '@typescript-eslint/prefer-nullish-coalescing': 'off',
       '@typescript-eslint/no-unsafe-argument': 'off',
     },
   },
@@ -193,8 +148,8 @@ export default [
       '@typescript-eslint/no-unsafe-call': 'off',
       '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/no-unsafe-return': 'off',
-      '@typescript-eslint/no-unsafe-argument': 'off',
       '@typescript-eslint/no-unnecessary-boolean-literal-compare': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'off',
     },
   },
   {
@@ -213,7 +168,6 @@ export default [
       '@typescript-eslint/no-unsafe-argument': 'off',
       '@typescript-eslint/no-unsafe-call': 'off',
       '@typescript-eslint/no-unsafe-return': 'off',
-      '@typescript-eslint/restrict-template-expressions': 'off',
     },
   },
   {
@@ -233,10 +187,10 @@ export default [
       '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/no-unsafe-call': 'off',
       '@typescript-eslint/no-unsafe-argument': 'off',
+      '@typescript-eslint/no-unnecessary-boolean-literal-compare': 'off',
       '@typescript-eslint/no-unsafe-return': 'off',
       '@typescript-eslint/restrict-template-expressions': 'off',
       '@typescript-eslint/no-unnecessary-condition': 'off',
-      '@typescript-eslint/no-unnecessary-boolean-literal-compare': 'off',
     },
   },
   {
@@ -247,9 +201,9 @@ export default [
       '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/no-unsafe-call': 'off',
       '@typescript-eslint/no-unsafe-argument': 'off',
+      '@typescript-eslint/no-unnecessary-boolean-literal-compare': 'off',
       '@typescript-eslint/no-unsafe-return': 'off',
       '@typescript-eslint/no-dynamic-delete': 'off',
-      '@typescript-eslint/no-unnecessary-boolean-literal-compare': 'off',
     },
   },
   {
@@ -275,15 +229,14 @@ export default [
       '@typescript-eslint/no-unsafe-argument': 'off',
       '@typescript-eslint/no-unsafe-call': 'off',
       '@typescript-eslint/restrict-plus-operands': 'off',
-      '@typescript-eslint/restrict-template-expressions': 'off',
-      '@typescript-eslint/only-throw-error': 'off',
-      '@typescript-eslint/no-confusing-void-expression': 'off',
-      '@typescript-eslint/no-unused-vars': 'off',
-      'n/no-process-exit': 'off',
       '@typescript-eslint/no-unnecessary-condition': 'off',
-      '@typescript-eslint/await-thenable': 'off',
-      '@typescript-eslint/no-floating-promises': 'off',
+      '@typescript-eslint/restrict-template-expressions': 'off',
+      'n/no-process-exit': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
       '@typescript-eslint/prefer-optional-chain': 'off',
+      '@typescript-eslint/await-thenable': 'off',
+      '@typescript-eslint/no-confusing-void-expression': 'off',
+      '@typescript-eslint/no-floating-promises': 'off',
     },
   },
   {
@@ -302,17 +255,13 @@ export default [
     files: ['src/commands/functions/functions-list.ts'],
     rules: {
       '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-call': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/restrict-template-expressions': 'off',
-      '@typescript-eslint/no-unsafe-argument': 'off',
     },
   },
   {
     files: ['src/commands/functions/functions-serve.ts'],
     rules: {
       '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/no-unnecessary-condition': 'off',
     },
   },
@@ -325,13 +274,7 @@ export default [
   {
     files: ['src/commands/init/init.ts'],
     rules: {
-      '@typescript-eslint/no-unsafe-call': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/no-unsafe-return': 'off',
       '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-confusing-void-expression': 'off',
-      '@typescript-eslint/no-unsafe-argument': 'off',
-      '@typescript-eslint/restrict-template-expressions': 'off',
     },
   },
   {
@@ -344,10 +287,9 @@ export default [
     files: ['src/commands/link/link.ts'],
     rules: {
       '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/restrict-template-expressions': 'off',
       '@typescript-eslint/no-unnecessary-condition': 'off',
-      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/no-unsafe-return': 'off',
       '@typescript-eslint/prefer-nullish-coalescing': 'off',
       '@typescript-eslint/prefer-optional-chain': 'off',
@@ -357,8 +299,6 @@ export default [
     files: ['src/commands/logout/logout.ts'],
     rules: {
       '@typescript-eslint/no-unused-vars': 'off',
-      '@typescript-eslint/no-unsafe-call': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
     },
   },
   {
@@ -402,29 +342,17 @@ export default [
       '@typescript-eslint/prefer-nullish-coalescing': 'off',
       '@typescript-eslint/no-floating-promises': 'off',
       'n/no-process-exit': 'off',
-      '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/no-unsafe-return': 'off',
       '@typescript-eslint/no-unsafe-argument': 'off',
-    },
-  },
-  {
-    files: ['src/commands/open/open-admin.ts'],
-    rules: {
-      '@typescript-eslint/no-unused-vars': 'off',
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/restrict-template-expressions': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
     },
   },
   {
     files: ['src/commands/open/open-site.ts'],
     rules: {
       '@typescript-eslint/no-unused-vars': 'off',
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/restrict-template-expressions': 'off',
     },
   },
   {
@@ -455,10 +383,7 @@ export default [
   {
     files: ['src/commands/serve/serve.ts'],
     rules: {
-      '@typescript-eslint/no-unused-vars': 'off',
       '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/no-unsafe-return': 'off',
       '@typescript-eslint/no-unsafe-argument': 'off',
     },
   },
@@ -468,24 +393,19 @@ export default [
       '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/return-await': 'off',
       '@typescript-eslint/no-unsafe-argument': 'off',
+      '@typescript-eslint/prefer-optional-chain': 'off',
       '@typescript-eslint/restrict-plus-operands': 'off',
       '@typescript-eslint/restrict-template-expressions': 'off',
-      '@typescript-eslint/no-unsafe-call': 'off',
-      '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/no-floating-promises': 'off',
-      '@typescript-eslint/prefer-optional-chain': 'off',
     },
   },
   {
     files: ['src/commands/sites/sites-create.ts'],
     rules: {
-      '@typescript-eslint/no-unused-vars': 'off',
       '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/no-unsafe-argument': 'off',
       '@typescript-eslint/restrict-template-expressions': 'off',
       '@typescript-eslint/no-floating-promises': 'off',
-      '@typescript-eslint/no-confusing-void-expression': 'off',
     },
   },
   {
@@ -516,7 +436,6 @@ export default [
     files: ['src/commands/status/status-hooks.ts'],
     rules: {
       '@typescript-eslint/no-unused-vars': 'off',
-      '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/no-unsafe-member-access': 'off',
     },
   },
@@ -524,8 +443,6 @@ export default [
     files: ['src/commands/status/status.ts'],
     rules: {
       '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-call': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/restrict-template-expressions': 'off',
       '@typescript-eslint/ban-ts-comment': 'off',
     },
@@ -535,8 +452,6 @@ export default [
     rules: {
       '@typescript-eslint/no-unused-vars': 'off',
       '@typescript-eslint/no-unsafe-argument': 'off',
-      '@typescript-eslint/no-unsafe-call': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/restrict-template-expressions': 'off',
     },
@@ -551,9 +466,6 @@ export default [
     files: ['src/commands/unlink/unlink.ts'],
     rules: {
       '@typescript-eslint/no-unused-vars': 'off',
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/restrict-template-expressions': 'off',
       '@typescript-eslint/no-unnecessary-condition': 'off',
       '@typescript-eslint/prefer-optional-chain': 'off',
     },
@@ -562,9 +474,6 @@ export default [
     files: ['src/commands/watch/watch.ts'],
     rules: {
       '@typescript-eslint/no-unnecessary-condition': 'off',
-      '@typescript-eslint/no-unused-vars': 'off',
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/prefer-nullish-coalescing': 'off',
     },
   },
@@ -572,17 +481,6 @@ export default [
     files: ['src/lib/account.ts'],
     rules: {
       '@typescript-eslint/no-unsafe-member-access': 'off',
-    },
-  },
-  {
-    files: ['src/lib/api.ts'],
-    rules: {
-      '@typescript-eslint/no-unsafe-call': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/restrict-template-expressions': 'off',
-      '@typescript-eslint/restrict-plus-operands': 'off',
-      '@typescript-eslint/no-unsafe-return': 'off',
     },
   },
   {
@@ -621,6 +519,7 @@ export default [
   {
     files: ['src/lib/completion/script.ts'],
     rules: {
+      'n/hashbang': 'off',
       '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/no-unsafe-argument': 'off',
@@ -656,12 +555,12 @@ export default [
   {
     files: ['src/lib/edge-functions/proxy.ts'],
     rules: {
-      '@typescript-eslint/no-unsafe-argument': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/no-unsafe-call': 'off',
       '@typescript-eslint/no-unnecessary-condition': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'off',
       '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/restrict-template-expressions': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/no-non-null-assertion': 'off',
     },
   },
@@ -682,211 +581,47 @@ export default [
   {
     files: ['src/lib/exec-fetcher.ts'],
     rules: {
-      '@typescript-eslint/restrict-template-expressions': 'off',
-      '@typescript-eslint/no-unsafe-return': 'off',
-      '@typescript-eslint/no-unsafe-argument': 'off',
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unnecessary-condition': 'off',
       '@typescript-eslint/prefer-regexp-exec': 'off',
-    },
-  },
-  {
-    files: ['src/lib/fs.ts'],
-    rules: {
-      '@typescript-eslint/no-unsafe-argument': 'off',
-      '@typescript-eslint/no-unsafe-return': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/no-unsafe-call': 'off',
-    },
-  },
-  {
-    files: ['src/lib/functions/background.ts'],
-    rules: {
-      '@typescript-eslint/no-unsafe-call': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-    },
-  },
-  {
-    files: ['src/lib/functions/config.ts'],
-    rules: {
-      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unnecessary-condition': 'off',
     },
   },
   {
     files: ['src/lib/functions/form-submissions-handler.ts'],
     rules: {
-      '@typescript-eslint/no-unused-expressions': 'off',
       '@typescript-eslint/no-misused-promises': 'off',
-      '@typescript-eslint/no-unused-vars': 'off',
       '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/no-deprecated': 'off',
-      '@typescript-eslint/prefer-optional-chain': 'off',
-    },
-  },
-  {
-    files: ['src/lib/functions/local-proxy.ts'],
-    rules: {
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-call': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/restrict-template-expressions': 'off',
-      '@typescript-eslint/no-unsafe-argument': 'off',
-    },
-  },
-  {
-    files: ['src/lib/functions/memoized-build.ts'],
-    rules: {
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-call': 'off',
-      '@typescript-eslint/restrict-plus-operands': 'off',
-      '@typescript-eslint/no-unsafe-return': 'off',
     },
   },
   {
     files: ['src/lib/functions/netlify-function.ts'],
     rules: {
       '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-call': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/no-unsafe-argument': 'off',
-      '@typescript-eslint/no-unsafe-return': 'off',
       '@typescript-eslint/no-unnecessary-condition': 'off',
       '@typescript-eslint/restrict-template-expressions': 'off',
-      '@typescript-eslint/prefer-optional-chain': 'off',
     },
   },
   {
     files: ['src/lib/functions/registry.ts'],
     rules: {
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-return': 'off',
-      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unnecessary-condition': 'off',
       '@typescript-eslint/no-floating-promises': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/restrict-template-expressions': 'off',
-      '@typescript-eslint/ban-ts-comment': 'off',
-      '@typescript-eslint/no-unsafe-argument': 'off',
-      '@typescript-eslint/no-non-null-assertion': 'off',
-      '@typescript-eslint/no-unnecessary-condition': 'off',
       '@typescript-eslint/prefer-regexp-exec': 'off',
-    },
-  },
-  {
-    files: ['src/lib/functions/runtimes/go/index.ts'],
-    rules: {
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-argument': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/no-unsafe-return': 'off',
-    },
-  },
-  {
-    files: ['src/lib/functions/runtimes/index.ts'],
-    rules: {
-      '@typescript-eslint/ban-types': 'off',
-      '@typescript-eslint/no-unsafe-function-type': 'off',
-    },
-  },
-  {
-    files: ['src/lib/functions/runtimes/js/builders/netlify-lambda.ts'],
-    rules: {
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/no-unsafe-argument': 'off',
-      '@typescript-eslint/no-unsafe-call': 'off',
-      '@typescript-eslint/no-unnecessary-condition': 'off',
-      '@typescript-eslint/prefer-optional-chain': 'off',
-    },
-  },
-  {
-    files: ['src/lib/functions/runtimes/js/builders/zisi.ts'],
-    rules: {
-      '@typescript-eslint/no-unsafe-return': 'off',
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/no-unsafe-argument': 'off',
-      '@typescript-eslint/restrict-template-expressions': 'off',
-      '@typescript-eslint/no-unsafe-call': 'off',
-      '@typescript-eslint/ban-ts-comment': 'off',
-      '@typescript-eslint/prefer-nullish-coalescing': 'off',
-    },
-  },
-  {
-    files: ['src/lib/functions/runtimes/js/index.ts'],
-    rules: {
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/no-unsafe-return': 'off',
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-argument': 'off',
-      '@typescript-eslint/no-unsafe-call': 'off',
-    },
-  },
-  {
-    files: ['src/lib/functions/runtimes/js/worker.ts'],
-    rules: {
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-    },
-  },
-  {
-    files: ['src/lib/functions/runtimes/rust/index.ts'],
-    rules: {
-      '@typescript-eslint/no-unsafe-argument': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/restrict-template-expressions': 'off',
-      '@typescript-eslint/no-unsafe-return': 'off',
-    },
-  },
-  {
-    files: ['src/lib/functions/scheduled.ts'],
-    rules: {
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-call': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/restrict-template-expressions': 'off',
-      '@typescript-eslint/no-unsafe-argument': 'off',
-      '@typescript-eslint/prefer-optional-chain': 'off',
+      '@typescript-eslint/no-non-null-assertion': 'off',
     },
   },
   {
     files: ['src/lib/functions/server.ts'],
     rules: {
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-call': 'off',
-      '@typescript-eslint/no-unsafe-argument': 'off',
       '@typescript-eslint/no-misused-promises': 'off',
       '@typescript-eslint/no-dynamic-delete': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/prefer-nullish-coalescing': 'off',
       '@typescript-eslint/no-deprecated': 'off',
-      '@typescript-eslint/no-floating-promises': 'off',
-      '@typescript-eslint/restrict-template-expressions': 'off',
       '@typescript-eslint/no-unnecessary-condition': 'off',
-    },
-  },
-  {
-    files: ['src/lib/functions/synchronous.ts'],
-    rules: {
-      '@typescript-eslint/no-unsafe-argument': 'off',
-      '@typescript-eslint/no-unsafe-call': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/restrict-template-expressions': 'off',
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/prefer-optional-chain': 'off',
-    },
-  },
-  {
-    files: ['src/lib/functions/utils.ts'],
-    rules: {
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-call': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/restrict-template-expressions': 'off',
-      '@typescript-eslint/no-unsafe-argument': 'off',
-      '@typescript-eslint/prefer-optional-chain': 'off',
     },
   },
   {
@@ -912,22 +647,9 @@ export default [
   {
     files: ['src/lib/images/proxy.ts'],
     rules: {
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/no-unsafe-argument': 'off',
-      '@typescript-eslint/await-thenable': 'off',
+      '@typescript-eslint/no-unnecessary-condition': 'off',
       '@typescript-eslint/prefer-nullish-coalescing': 'off',
       '@typescript-eslint/restrict-template-expressions': 'off',
-      '@typescript-eslint/no-unnecessary-condition': 'off',
-      '@typescript-eslint/no-misused-promises': 'off',
-    },
-  },
-  {
-    files: ['src/lib/path.ts'],
-    rules: {
-      '@typescript-eslint/no-unsafe-return': 'off',
-      '@typescript-eslint/no-unsafe-call': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
     },
   },
   {
@@ -955,26 +677,23 @@ export default [
     },
   },
   {
-    files: ['src/recipes/ai-context/index.ts'],
-    rules: {
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-return': 'off',
-      '@typescript-eslint/no-unsafe-argument': 'off',
-      '@typescript-eslint/prefer-regexp-exec': 'off',
-      '@typescript-eslint/no-unnecessary-condition': 'off',
-    },
-  },
-  {
     files: ['src/recipes/ai-context/context.ts'],
     rules: {
       '@typescript-eslint/prefer-regexp-exec': 'off',
     },
   },
   {
+    files: ['src/recipes/ai-context/index.ts'],
+    rules: {
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
+      '@typescript-eslint/no-unnecessary-condition': 'off',
+    },
+  },
+  {
     files: ['src/recipes/blobs-migrate/index.ts'],
     rules: {
       '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/restrict-template-expressions': 'off',
     },
   },
@@ -1012,9 +731,16 @@ export default [
     files: ['src/utils/build-info.ts'],
     rules: {
       '@typescript-eslint/restrict-template-expressions': 'off',
-      '@typescript-eslint/no-redundant-type-constituents': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/no-unnecessary-condition': 'off',
+    },
+  },
+  {
+    files: ['src/utils/cli-state.ts'],
+    rules: {
+      '@typescript-eslint/no-unsafe-return': 'off',
+      '@typescript-eslint/restrict-template-expressions': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
     },
   },
   {
@@ -1025,12 +751,9 @@ export default [
       '@typescript-eslint/no-unsafe-call': 'off',
       '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/restrict-plus-operands': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'off',
       '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/restrict-template-expressions': 'off',
-      '@typescript-eslint/no-unsafe-argument': 'off',
-      '@typescript-eslint/no-redundant-type-constituents': 'off',
-      '@typescript-eslint/no-floating-promises': 'off',
-      '@typescript-eslint/only-throw-error': 'off',
       'n/no-process-exit': 'off',
       '@typescript-eslint/ban-ts-comment': 'off',
     },
@@ -1135,9 +858,8 @@ export default [
       '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/no-unsafe-argument': 'off',
       '@typescript-eslint/prefer-nullish-coalescing': 'off',
-      '@typescript-eslint/no-unsafe-return': 'off',
-      '@typescript-eslint/no-unsafe-call': 'off',
       '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
     },
   },
   {
@@ -1176,14 +898,7 @@ export default [
   {
     files: ['src/utils/execa.ts'],
     rules: {
-      'import/no-mutable-exports': 'off',
       '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-    },
-  },
-  {
-    files: ['src/utils/feature-flags.ts'],
-    rules: {
       '@typescript-eslint/no-unsafe-member-access': 'off',
     },
   },
@@ -1206,8 +921,6 @@ export default [
     files: ['src/utils/functions/functions.ts'],
     rules: {
       '@typescript-eslint/no-unsafe-return': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/no-unsafe-assignment': 'off',
     },
   },
   {
@@ -1221,40 +934,22 @@ export default [
     },
   },
   {
-    files: ['src/utils/get-global-config.ts'],
+    files: ['src/utils/get-global-config-store.ts'],
     rules: {
       '@typescript-eslint/no-deprecated': 'off',
       '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-return': 'off',
-    },
-  },
-  {
-    files: ['src/utils/get-package-json.ts'],
-    rules: {
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-return': 'off',
     },
   },
   {
     files: ['src/utils/get-repo-data.ts'],
     rules: {
+      '@typescript-eslint/prefer-optional-chain': 'off',
+      '@typescript-eslint/no-unnecessary-condition': 'off',
       '@typescript-eslint/no-unsafe-argument': 'off',
       '@typescript-eslint/prefer-nullish-coalescing': 'off',
       '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/restrict-template-expressions': 'off',
-      '@typescript-eslint/no-unnecessary-condition': 'off',
-      '@typescript-eslint/prefer-optional-chain': 'off',
-    },
-  },
-  {
-    files: ['src/utils/get-site.ts'],
-    rules: {
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-call': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/only-throw-error': 'off',
-      '@typescript-eslint/no-unsafe-return': 'off',
     },
   },
   {
@@ -1271,96 +966,61 @@ export default [
   {
     files: ['src/utils/gitignore.ts'],
     rules: {
-      '@typescript-eslint/restrict-template-expressions': 'off',
       '@typescript-eslint/prefer-optional-chain': 'off',
+      '@typescript-eslint/restrict-template-expressions': 'off',
     },
   },
   {
     files: ['src/utils/headers.ts'],
     rules: {
       '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-call': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/no-unsafe-return': 'off',
-      '@typescript-eslint/no-unsafe-argument': 'off',
-      '@typescript-eslint/restrict-template-expressions': 'off',
-    },
-  },
-  {
-    files: ['src/utils/hooks/requires-site-info.ts'],
-    rules: {
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/no-unsafe-call': 'off',
-      '@typescript-eslint/restrict-template-expressions': 'off',
     },
   },
   {
     files: ['src/utils/init/config-github.ts'],
     rules: {
       '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/restrict-template-expressions': 'off',
+      '@typescript-eslint/prefer-optional-chain': 'off',
+      '@typescript-eslint/no-unnecessary-condition': 'off',
       '@typescript-eslint/no-unsafe-call': 'off',
       '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/restrict-template-expressions': 'off',
-      '@typescript-eslint/no-unnecessary-condition': 'off',
       '@typescript-eslint/no-unsafe-return': 'off',
-      '@typescript-eslint/prefer-optional-chain': 'off',
     },
   },
   {
     files: ['src/utils/init/config-manual.ts'],
     rules: {
       '@typescript-eslint/restrict-template-expressions': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-argument': 'off',
-      '@typescript-eslint/no-unsafe-return': 'off',
     },
   },
   {
     files: ['src/utils/init/config.ts'],
     rules: {
       '@typescript-eslint/restrict-template-expressions': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-    },
-  },
-  {
-    files: ['src/utils/init/plugins.ts'],
-    rules: {
-      '@typescript-eslint/no-unsafe-return': 'off',
-      '@typescript-eslint/no-unsafe-call': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/no-unsafe-assignment': 'off',
     },
   },
   {
     files: ['src/utils/init/utils.ts'],
     rules: {
-      '@typescript-eslint/no-unused-vars': 'off',
-      '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/prefer-nullish-coalescing': 'off',
-      '@typescript-eslint/no-unsafe-return': 'off',
-      '@typescript-eslint/await-thenable': 'off',
-      '@typescript-eslint/no-unsafe-argument': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/no-unsafe-call': 'off',
       '@typescript-eslint/ban-ts-comment': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/restrict-template-expressions': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
     },
   },
   {
     files: ['src/utils/live-tunnel.ts'],
     rules: {
-      'n/no-process-exit': 'off',
-      '@typescript-eslint/restrict-template-expressions': 'off',
       '@typescript-eslint/no-unsafe-argument': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/no-floating-promises': 'off',
+      'n/no-process-exit': 'off',
       '@typescript-eslint/unbound-method': 'off',
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-return': 'off',
-      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/restrict-template-expressions': 'off',
     },
   },
   {
@@ -1394,19 +1054,17 @@ export default [
     rules: {
       '@typescript-eslint/no-unnecessary-condition': 'off',
       '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-argument': 'off',
+      '@typescript-eslint/restrict-template-expressions': 'off',
       '@typescript-eslint/no-unsafe-call': 'off',
       '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/restrict-template-expressions': 'off',
       '@typescript-eslint/no-unused-vars': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'off',
       '@typescript-eslint/no-unsafe-return': 'off',
-      '@typescript-eslint/use-unknown-in-catch-callback-variable': 'off',
       '@typescript-eslint/prefer-optional-chain': 'off',
       '@typescript-eslint/no-deprecated': 'off',
       '@typescript-eslint/no-misused-promises': 'off',
       '@typescript-eslint/prefer-nullish-coalescing': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/await-thenable': 'off',
     },
   },
   {
@@ -1434,19 +1092,17 @@ export default [
   {
     files: ['src/utils/rules-proxy.ts'],
     rules: {
-      '@typescript-eslint/no-unsafe-call': 'off',
       '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/no-unsafe-argument': 'off',
       '@typescript-eslint/no-unsafe-return': 'off',
-      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
       '@typescript-eslint/prefer-nullish-coalescing': 'off',
       '@typescript-eslint/restrict-template-expressions': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
     },
   },
   {
     files: ['src/utils/run-build.ts'],
     rules: {
-      '@typescript-eslint/no-unsafe-argument': 'off',
       '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/prefer-nullish-coalescing': 'off',
@@ -1458,8 +1114,8 @@ export default [
       '@typescript-eslint/no-unsafe-return': 'off',
       '@typescript-eslint/no-unsafe-call': 'off',
       'n/no-process-exit': 'off',
-      '@typescript-eslint/no-unsafe-argument': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'off',
       '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/no-floating-promises': 'off',
       '@typescript-eslint/restrict-template-expressions': 'off',
@@ -1482,21 +1138,6 @@ export default [
     },
   },
   {
-    files: ['src/utils/sites/utils.ts'],
-    rules: {
-      '@typescript-eslint/no-unused-vars': 'off',
-    },
-  },
-  {
-    files: ['src/utils/state-config.ts'],
-    rules: {
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-argument': 'off',
-      '@typescript-eslint/no-unsafe-return': 'off',
-      '@typescript-eslint/restrict-template-expressions': 'off',
-    },
-  },
-  {
     files: ['src/utils/static-server.ts'],
     rules: {
       '@typescript-eslint/no-unsafe-argument': 'off',
@@ -1509,7 +1150,6 @@ export default [
     rules: {
       '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/no-unsafe-call': 'off',
     },
   },
   {
@@ -1518,7 +1158,6 @@ export default [
       '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/prefer-nullish-coalescing': 'off',
       '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/restrict-template-expressions': 'off',
       'n/no-process-exit': 'off',
       '@typescript-eslint/no-floating-promises': 'off',
     },
@@ -1527,14 +1166,11 @@ export default [
     files: ['src/utils/telemetry/telemetry.ts'],
     rules: {
       '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-call': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
     },
   },
   {
     files: ['src/utils/telemetry/utils.ts'],
     rules: {
-      '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/no-unsafe-return': 'off',
       '@typescript-eslint/no-unsafe-call': 'off',
       '@typescript-eslint/no-unsafe-member-access': 'off',
@@ -1553,7 +1189,6 @@ export default [
   {
     files: ['src/utils/types.ts'],
     rules: {
-      '@typescript-eslint/no-unused-vars': 'off',
       '@typescript-eslint/no-redundant-type-constituents': 'off',
     },
   },
@@ -1597,8 +1232,6 @@ export default [
   {
     files: ['tests/integration/commands/build/build-program.test.ts'],
     rules: {
-      '@typescript-eslint/no-unsafe-return': 'off',
-      '@typescript-eslint/no-unsafe-call': 'off',
       '@typescript-eslint/unbound-method': 'off',
     },
   },
@@ -1621,10 +1254,10 @@ export default [
       '@typescript-eslint/no-require-imports': 'off',
       '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/restrict-template-expressions': 'off',
+      '@typescript-eslint/prefer-regexp-exec': 'off',
       '@typescript-eslint/ban-ts-comment': 'off',
       '@typescript-eslint/no-non-null-assertion': 'off',
       '@typescript-eslint/no-floating-promises': 'off',
-      '@typescript-eslint/prefer-regexp-exec': 'off',
     },
   },
   {
@@ -1632,11 +1265,11 @@ export default [
     rules: {
       '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/no-non-null-assertion': 'off',
+      '@typescript-eslint/prefer-regexp-exec': 'off',
       '@typescript-eslint/no-deprecated': 'off',
       '@typescript-eslint/require-await': 'off',
       '@typescript-eslint/restrict-template-expressions': 'off',
       '@typescript-eslint/unbound-method': 'off',
-      '@typescript-eslint/prefer-regexp-exec': 'off',
     },
   },
   {
@@ -1730,7 +1363,6 @@ export default [
     rules: {
       'no-restricted-imports': 'off',
       '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/prefer-optional-chain': 'off',
     },
   },
   {
@@ -1792,12 +1424,6 @@ export default [
     },
   },
   {
-    files: ['tests/integration/commands/sites/sites.test.ts'],
-    rules: {
-      '@typescript-eslint/no-unsafe-return': 'off',
-    },
-  },
-  {
     files: ['tests/integration/frameworks/hugo.test.ts'],
     rules: {
       '@typescript-eslint/no-floating-promises': 'off',
@@ -1808,10 +1434,6 @@ export default [
     files: ['tests/integration/rules-proxy.test.ts'],
     rules: {
       '@typescript-eslint/no-misused-promises': 'off',
-      '@typescript-eslint/await-thenable': 'off',
-      '@typescript-eslint/no-unsafe-return': 'off',
-      '@typescript-eslint/no-unsafe-call': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/restrict-template-expressions': 'off',
       '@typescript-eslint/no-unnecessary-condition': 'off',
     },
