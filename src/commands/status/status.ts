@@ -42,16 +42,8 @@ export const status = async (options: OptionValues, command: BaseCommand) => {
     Name: user.full_name,
     Email: user.email,
     GitHub: ghuser,
+    Teams: accounts.map(({ name }) => name),
   }
-  const teamsData = {}
-
-  accounts.forEach((team) => {
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    teamsData[team.name] = team.roles_allowed.join(' ')
-  })
-
-  // @ts-expect-error TS(2339) FIXME: Property 'Teams' does not exist on type '{ Name: a... Remove this comment to see the full error message
-  accountData.Teams = teamsData
 
   // @ts-expect-error
   const cleanAccountData = clean(accountData)

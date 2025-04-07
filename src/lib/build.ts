@@ -7,14 +7,14 @@ import tomlify from 'tomlify-j0.4'
 import type { OptionValues } from 'commander'
 
 import { getFeatureFlagsFromSiteInfo } from '../utils/feature-flags.js'
-import type { Account, EnvironmentVariables, Plugin, SiteInfo } from '../utils/types.js'
+import type { MinimalAccount, EnvironmentVariables, Plugin, SiteInfo } from '../utils/types.js'
 
 import { getBootstrapURL } from './edge-functions/bootstrap.js'
 import { featureFlags as edgeFunctionsFeatureFlags } from './edge-functions/consts.js'
 import type { EdgeFunctionDeclaration } from './edge-functions/proxy.js'
 
 export interface CachedConfig {
-  accounts: Account[]
+  accounts: MinimalAccount[] | undefined
   buildDir: string
   env: EnvironmentVariables
   repositoryRoot: string
