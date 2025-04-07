@@ -1,7 +1,8 @@
+import { readFile } from 'fs/promises'
 import { resolve } from 'path'
 
 import { Command } from 'commander'
-import { type NormalizedPackageJson, readPackage } from 'read-pkg'
+import normalizePackageData, { type Package } from 'normalize-package-data'
 
 import execa from '../../../../../utils/execa.js'
 import { fileExistsAsync } from '../../../../fs.js'
@@ -10,7 +11,7 @@ import type { BaseBuildResult } from '../../index.js'
 
 export type NetlifyLambdaBuildResult = BaseBuildResult
 
-export const detectNetlifyLambda = async ({ packageJson }: { packageJson: NormalizedPackageJson }) => {
+export const detectNetlifyLambda = async ({ packageJson }: { packageJson: Package }) => {
   const { dependencies, devDependencies, scripts } = packageJson
   if (!(dependencies?.['netlify-lambda'] || devDependencies?.['netlify-lambda'])) {
     return false
@@ -70,13 +71,13 @@ export const detectNetlifyLambda = async ({ packageJson }: { packageJson: Normal
 }
 
 export default async function detectNetlifyLambdaBuilder() {
-  let result
   try {
-    result = await readPackage({ normalize: true })
+    const packageData = JSON.parse(await readFile('package.json', 'utf-8')) as Record<string, unknown>
+    normalizePackageData(packageData)
+    return await detectNetlifyLambda({ packageJson: packageData as Package })
   } catch {
     return false
   }
-  return detectNetlifyLambda({ packageJson: result })
 }
 
 export type NetlifyLambdaBuilder = Awaited<ReturnType<typeof detectNetlifyLambda>>

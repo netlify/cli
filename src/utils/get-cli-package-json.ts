@@ -1,23 +1,24 @@
+import { readFile } from 'fs/promises'
 import { dirname, join } from 'path'
 import { fileURLToPath } from 'url'
 
-import { type NormalizedPackageJson, readPackage } from 'read-pkg'
+import normalizePackageData, { type Package } from 'normalize-package-data'
 
-let packageJson: NormalizedPackageJson | undefined
+let packageJson: Package | undefined
 
-const getCLIPackageJson = async (): Promise<NormalizedPackageJson> => {
+const getPackageJson = async (): Promise<Package> => {
   if (!packageJson) {
-    const cliProjectRoot = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
-    let result
+    const packageJsonPath = join(dirname(fileURLToPath(import.meta.url)), '../../package.json')
+    const packageData = JSON.parse(await readFile(packageJsonPath, 'utf-8')) as Record<string, unknown>
     try {
-      result = await readPackage({ cwd: cliProjectRoot, normalize: true })
+      normalizePackageData(packageData)
+      packageJson = packageData as Package
+      return packageJson
     } catch (error) {
       throw new Error('Could not find package.json', { cause: error })
     }
-    packageJson = result
   }
-
   return packageJson
 }
 
-export default getCLIPackageJson
+export default getPackageJson
