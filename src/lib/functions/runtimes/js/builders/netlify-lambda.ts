@@ -1,7 +1,7 @@
 import { resolve } from 'path'
 
 import { Command } from 'commander'
-import { type NormalizedPackageJson, readPackageUp } from 'read-package-up'
+import { type NormalizedPackageJson, readPackage } from 'read-pkg'
 
 import execa from '../../../../../utils/execa.js'
 import { fileExistsAsync } from '../../../../fs.js'
@@ -70,9 +70,13 @@ export const detectNetlifyLambda = async ({ packageJson }: { packageJson: Normal
 }
 
 export default async function detectNetlifyLambdaBuilder() {
-  const result = await readPackageUp({ normalize: true })
-  if (!result?.packageJson) return false
-  return detectNetlifyLambda({ packageJson: result.packageJson })
+  let result
+  try {
+    result = await readPackage({ normalize: true })
+  } catch {
+    return false
+  }
+  return detectNetlifyLambda({ packageJson: result })
 }
 
 export type NetlifyLambdaBuilder = Awaited<ReturnType<typeof detectNetlifyLambda>>

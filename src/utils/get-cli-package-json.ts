@@ -1,18 +1,20 @@
 import { dirname, join } from 'path'
 import { fileURLToPath } from 'url'
 
-import { type NormalizedPackageJson, readPackageUp } from 'read-package-up'
+import { type NormalizedPackageJson, readPackage } from 'read-pkg'
 
 let packageJson: NormalizedPackageJson | undefined
 
 const getCLIPackageJson = async (): Promise<NormalizedPackageJson> => {
   if (!packageJson) {
     const cliProjectRoot = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
-    const result = await readPackageUp({ cwd: cliProjectRoot, normalize: true })
-    if (result?.packageJson == null) {
-      throw new Error('Could not find package.json')
+    let result
+    try {
+      result = await readPackage({ cwd: cliProjectRoot, normalize: true })
+    } catch (error) {
+      throw new Error('Could not find package.json', { cause: error })
     }
-    packageJson = result.packageJson
+    packageJson = result
   }
 
   return packageJson

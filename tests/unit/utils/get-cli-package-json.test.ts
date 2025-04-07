@@ -1,15 +1,14 @@
 import { beforeAll, describe, expect, test, vi } from 'vitest'
-import { readPackageUp } from 'read-package-up'
+import { readPackage } from 'read-pkg'
 
 import getCLIPackageJson from '../../../src/utils/get-cli-package-json.js'
 
-vi.mock('read-package-up')
+vi.mock('read-pkg')
 
 describe('getPackageJson', () => {
   beforeAll(() => {
-    vi.mocked(readPackageUp).mockResolvedValue({
-      path: '/foo',
-      packageJson: { name: 'mocked-netlify-cli' },
+    vi.mocked(readPackage).mockResolvedValue({
+      name: 'mocked-netlify-cli',
     })
   })
 
@@ -23,9 +22,9 @@ describe('getPackageJson', () => {
   test('should not re-read package.json', async () => {
     // first call reads from file-system
     await getCLIPackageJson()
-    expect(readPackageUp).toHaveBeenCalledOnce()
+    expect(readPackage).toHaveBeenCalledOnce()
 
-    vi.mocked(readPackageUp).mockClear()
+    vi.mocked(readPackage).mockClear()
 
     // second call should cache and not read from file-system
     const packageJson = await getCLIPackageJson()
@@ -33,6 +32,6 @@ describe('getPackageJson', () => {
     expect(packageJson).not.toBeUndefined()
     expect(packageJson.name).toBe('mocked-netlify-cli')
 
-    expect(readPackageUp).not.toHaveBeenCalled()
+    expect(readPackage).not.toHaveBeenCalled()
   })
 })
