@@ -1,7 +1,7 @@
 import { dirname } from 'path'
 import util from 'util'
 
-import { findUp } from 'find-up'
+import { up } from 'empathic/find'
 import gitRepoInfo from 'git-repo-info'
 import gitconfiglocal from 'gitconfiglocal'
 import parseGithubUrl from 'parse-github-url'
@@ -20,7 +20,7 @@ const getRepoData = async function ({ remoteName, workingDir }: { remoteName?: s
   try {
     const [gitConfig, gitDirectory] = await Promise.all([
       util.promisify(gitconfiglocal)(workingDir),
-      findUp('.git', { cwd: workingDir, type: 'directory' }),
+      Promise.resolve(up('.git', { cwd: workingDir })),
     ])
 
     if (!gitDirectory || !gitConfig || !gitConfig.remote || Object.keys(gitConfig.remote).length === 0) {

@@ -9,7 +9,7 @@ import { resolveConfig } from '@netlify/config'
 import { isCI } from 'ci-info'
 import { Command, Help, Option } from 'commander'
 import debug from 'debug'
-import { findUp } from 'find-up'
+import { up } from 'empathic/find'
 import inquirer from 'inquirer'
 import inquirerAutocompletePrompt from 'inquirer-autocomplete-prompt'
 import merge from 'lodash/merge.js'
@@ -141,7 +141,7 @@ async function selectWorkspace(project: Project, filter?: string): Promise<strin
 }
 
 async function getRepositoryRoot(cwd?: string): Promise<string | undefined> {
-  const res = await findUp('.git', { cwd, type: 'directory' })
+  const res = up('.git', { cwd })
   if (res) {
     return join(res, '..')
   }
