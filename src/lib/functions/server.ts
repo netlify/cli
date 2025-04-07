@@ -116,8 +116,8 @@ export const createHandler = function (options: GetFunctionsServerOptions): Requ
       return
     }
 
-    // Technically the second condition guarantees the first is true, but TS doesn't know that.
-    if (functionName == null || !func.hasValidName()) {
+    // Technically it follows from `func.hasValidName()` that `functionName != null`, but TS doesn't know that.
+    if (!func.hasValidName() || functionName == null) {
       response.statusCode = 400
       response.end('Function name should consist only of alphanumeric characters, hyphen & underscores.')
       return
