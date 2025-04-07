@@ -339,9 +339,9 @@ export const getConfigWithPlugins = (config: CachedConfig['config'], settings: S
         return
       }
 
-      return { package: pluginName, origin: 'config' }
+      return { package: pluginName, origin: 'config', inputs: {} }
     })
-    .filter((plugin): plugin is { package: string; origin: 'config' } => plugin != null)
+    .filter((plugin): plugin is { package: string; origin: 'config'; inputs: Record<never, never> } => plugin != null)
 
   return {
     ...config,
