@@ -32,6 +32,9 @@ export const DEFAULT_FUNCTION_URL_EXPRESSION = /^\/.netlify\/(functions|builders
 const TYPES_PACKAGE = '@netlify/functions'
 const ZIP_EXTENSION = '.zip'
 
+const isErrnoException = (value: unknown): value is NodeJS.ErrnoException =>
+  value instanceof Error && Object.hasOwn(value, 'code')
+
 const isInternalFunction = (
   func: ListedFunction | NetlifyFunction<BaseBuildResult>,
   frameworksAPIFunctionsPath: string,
@@ -158,7 +161,7 @@ export class FunctionsRegistry {
     try {
       require.resolve(TYPES_PACKAGE, { paths: [this.projectRoot] })
     } catch (error) {
-      if (error != null && typeof error === 'object' && 'code' in error && error.code === 'MODULE_NOT_FOUND') {
+      if (isErrnoException(error) && error.code === 'MODULE_NOT_FOUND') {
         this.logEvent('missing-types-package', {})
       }
     }
