@@ -18,7 +18,7 @@ import {
 } from '../utils/command-helpers.js'
 import execa from '../utils/execa.js'
 import getGlobalConfigStore from '../utils/get-global-config-store.js'
-import getPackageJson from '../utils/get-package-json.js'
+import getCLIPackageJson from '../utils/get-cli-package-json.js'
 import { track, reportError } from '../utils/telemetry/index.js'
 
 import { createApiCommand } from './api/index.js'
@@ -148,7 +148,7 @@ const mainCommand = async function (options, command) {
 
   // if no command show the header and the help
   if (command.args.length === 0) {
-    const pkg = await getPackageJson()
+    const pkg = await getCLIPackageJson()
 
     const title = chalk.bgBlack.cyan('⬥ Netlify CLI')
     const docsMsg = `${chalk.greenBright('Read the docs:')} https://ntl.fyi/get-started-with-netlify-cli`

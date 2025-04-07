@@ -5,7 +5,7 @@ import updateNotifier from 'update-notifier'
 
 import { createMainCommand } from '../dist/commands/main.js'
 import { logError } from '../dist/utils/command-helpers.js'
-import getPackageJson from '../dist/utils/get-package-json.js'
+import getPackageJson from '../dist/utils/get-cli-package-json.js'
 import { runProgram } from '../dist/utils/run-program.js'
 
 // 12 hours

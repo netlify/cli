@@ -15,7 +15,7 @@ import terminalLink from 'terminal-link'
 import { clearSpinner, startSpinner } from '../lib/spinner.js'
 
 import getGlobalConfigStore from './get-global-config-store.js'
-import getPackageJson from './get-package-json.js'
+import getCLIPackageJson from './get-cli-package-json.js'
 import { reportError } from './telemetry/report-error.js'
 import type { TokenLocation } from './types.js'
 import type { CachedConfig } from '../lib/build.js'
@@ -52,7 +52,7 @@ export const padLeft = (str, count, filler = ' ') => str.padStart(str.length + c
 const platform = WSL ? 'wsl' : os.platform()
 const arch = os.arch() === 'ia32' ? 'x86' : os.arch()
 
-const { name, version: packageVersion } = await getPackageJson()
+const { name, version: packageVersion } = await getCLIPackageJson()
 
 export const version = packageVersion
 export const USER_AGENT = `${name}/${version} ${platform}-${arch} node-${process.version}`

@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, test, vi } from 'vitest'
 import { readPackageUp } from 'read-package-up'
 
-import getPackageJson from '../../../src/utils/get-package-json.js'
+import getCLIPackageJson from '../../../src/utils/get-cli-package-json.js'
 
 vi.mock('read-package-up')
 
@@ -14,7 +14,7 @@ describe('getPackageJson', () => {
   })
 
   test('should return the package.json of netlify-cli', async () => {
-    const packageJson = await getPackageJson()
+    const packageJson = await getCLIPackageJson()
 
     expect(packageJson).not.toBeUndefined()
     expect(packageJson.name).toBe('mocked-netlify-cli')
@@ -22,13 +22,13 @@ describe('getPackageJson', () => {
 
   test('should not re-read package.json', async () => {
     // first call reads from file-system
-    await getPackageJson()
+    await getCLIPackageJson()
     expect(readPackageUp).toHaveBeenCalledOnce()
 
     vi.mocked(readPackageUp).mockClear()
 
     // second call should cache and not read from file-system
-    const packageJson = await getPackageJson()
+    const packageJson = await getCLIPackageJson()
 
     expect(packageJson).not.toBeUndefined()
     expect(packageJson.name).toBe('mocked-netlify-cli')

@@ -5,9 +5,7 @@ import { type NormalizedPackageJson, readPackageUp } from 'read-package-up'
 
 let packageJson: NormalizedPackageJson | undefined
 
-// TODO(serhalp) Consider renaming. We read all sorts of different `package.json` files in this repo for all sorts of
-// different reasons, and this one is only for reading our OWN package.json.
-const getPackageJson = async (): Promise<NormalizedPackageJson> => {
+const getCLIPackageJson = async (): Promise<NormalizedPackageJson> => {
   if (!packageJson) {
     const cliProjectRoot = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
     const result = await readPackageUp({ cwd: cliProjectRoot, normalize: true })
@@ -20,4 +18,4 @@ const getPackageJson = async (): Promise<NormalizedPackageJson> => {
   return packageJson
 }
 
-export default getPackageJson
+export default getCLIPackageJson
