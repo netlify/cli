@@ -58,15 +58,15 @@ const checkGoInstallation = async ({ cwd }: { cwd: string }): Promise<boolean> =
   }
 }
 
-export const getBuildFunction = async ({
+export const getBuildFunction = ({
   func,
-}: // eslint-disable-next-line @typescript-eslint/require-await -- Must be async to match the interface
-GetBuildFunctionOpts<GoBuildResult>): Promise<BuildFunction<GoBuildResult>> => {
-  const functionDirectory = dirname(func.mainFile)
-  const binaryPath = temporaryFile(isWindows ? { extension: 'exe' } : undefined)
-
-  return async () => build({ binaryPath, functionDirectory })
-}
+}: GetBuildFunctionOpts<GoBuildResult>): Promise<BuildFunction<GoBuildResult>> =>
+  Promise.resolve(async () =>
+    build({
+      binaryPath: temporaryFile(isWindows ? { extension: 'exe' } : undefined),
+      functionDirectory: dirname(func.mainFile),
+    }),
+  )
 
 export const invokeFunction: InvokeFunction<GoBuildResult> = async ({ context, event, func, timeout }) => {
   if (func.buildData == null) {

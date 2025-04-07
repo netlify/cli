@@ -66,8 +66,7 @@ export async function getBuildFunction({
   const functionDirectory = dirname(func.mainFile)
   const srcFiles = functionDirectory === directory ? [func.mainFile] : [functionDirectory]
 
-  // eslint-disable-next-line @typescript-eslint/require-await -- Must be async to match the interface
-  const build: BuildFunction<JsBuildResult> = async () => ({ schedule: metadata?.schedule, srcFiles })
+  const build: BuildFunction<JsBuildResult> = () => Promise.resolve({ schedule: metadata?.schedule, srcFiles })
   return build
 }
 

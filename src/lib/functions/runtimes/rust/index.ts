@@ -47,12 +47,10 @@ const build = async ({ func }: { func: NetlifyFunction<RustBuildResult> }): Prom
   }
 }
 
-/* eslint-disable @typescript-eslint/require-await -- Must be async to match the interface */
-export const getBuildFunction =
-  async ({ func }: GetBuildFunctionOpts<RustBuildResult>): Promise<BuildFunction<RustBuildResult>> =>
-  async () =>
-    build({ func })
-/* eslint-enable @typescript-eslint/require-await -- Can't use `eslint-disable-next-line` due to prettier bug 😅 */
+export const getBuildFunction = ({
+  func,
+}: GetBuildFunctionOpts<RustBuildResult>): Promise<BuildFunction<RustBuildResult>> =>
+  Promise.resolve(async () => build({ func }))
 
 const getCrateName = async (cwd: string): Promise<string> => {
   const manifestPath = await findUp('Cargo.toml', { cwd, type: 'file' })
