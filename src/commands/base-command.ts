@@ -546,7 +546,7 @@ export default class BaseCommand extends Command {
       certificateFile: flags.httpProxyCertificateFilename,
     })
     const apiOpts = { ...apiUrlOpts, agent }
-    const api = new NetlifyAPI(token || '', apiOpts)
+    const api = new NetlifyAPI(token ?? '', apiOpts)
 
     actionCommand.siteId = flags.siteId || (typeof flags.site === 'string' && flags.site) || state.get('siteId')
 
