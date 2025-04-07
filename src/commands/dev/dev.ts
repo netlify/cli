@@ -154,7 +154,7 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
       settings.plugins = [...(settings.plugins ?? []), ...plugins]
     }
 
-    // TODO(serhalp) Doing this as a side effect inside `BaseCommand` like this is WILD.
+    // TODO(serhalp): Doing this as a side effect inside `BaseCommand` like this is WILD.
     // Refactor this to be more explicit and less brittle.
     cachedConfig.config = getConfigWithPlugins(cachedConfig.config, settings)
   } catch (error) {
@@ -184,7 +184,7 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
     },
   })
 
-  // FIXME(serhalp) `applyMutations` is `(any, any) => any)`. Add types in `@netlify/config`.
+  // FIXME(serhalp): `applyMutations` is `(any, any) => any)`. Add types in `@netlify/config`.
   const mutatedConfig: typeof config = applyMutations(config, configMutations)
 
   const functionsRegistry = await startFunctionsServer({

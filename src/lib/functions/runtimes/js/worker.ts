@@ -42,7 +42,7 @@ let streamPort: number | null = null
 
 // When the result body is a StreamResponse
 // we open up a http server that proxies back to the main thread.
-// TODO(serhalp) Improve `LambdaEvent` type. It sure would be nice to keep it simple as it
+// TODO(serhalp): Improve `LambdaEvent` type. It sure would be nice to keep it simple as it
 // is now, but technically this is an arbitrary type from the user function return...
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 if (lambdaEvent != null && isStream(lambdaEvent.body)) {

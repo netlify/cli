@@ -47,7 +47,7 @@ const linkPrompt = async (command: BaseCommand, options: OptionValues) => {
   let kind
   switch (linkType) {
     case GIT_REMOTE_PROMPT: {
-      // TODO(serhalp) Refactor function to avoid this. We can only be here if `repoData` is not an error.
+      // TODO(serhalp): Refactor function to avoid this. We can only be here if `repoData` is not an error.
       assert(!('error' in repoData))
 
       kind = 'gitRemote'
@@ -330,7 +330,7 @@ export const link = async (options: OptionValues, command: BaseCommand) => {
   } else {
     newSiteData = await linkPrompt(command, options)
   }
-  // FIXME(serhalp) All the cases above except one (look up by site name) end up *returning*
+  // FIXME(serhalp): All the cases above except one (look up by site name) end up *returning*
   // the site data. This is probably not intentional and may result in bugs in deploy/init. Investigate.
   return initialSiteData || newSiteData
 }

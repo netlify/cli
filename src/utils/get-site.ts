@@ -12,7 +12,7 @@ export const getSiteByName = async (api: NetlifyAPI, siteName: string): Promise<
       throw new Error(`Site "${siteName}" cannot be found`)
     }
 
-    // FIXME(serhalp) `id` and `name` should be required in `netlify` package type
+    // FIXME(serhalp): `id` and `name` should be required in `netlify` package type
     return siteFoundByName as SiteInfo
   } catch (error_) {
     if ((error_ as APIError).status === 401) {

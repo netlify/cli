@@ -218,7 +218,7 @@ export const createDeployKey = async ({ api }: { api: NetlifyAPI }): Promise<Dep
   }
 }
 
-// TODO(serhalp) Export convenient named types from `netlify` package to avoid needing bizarre type patterns.
+// TODO(serhalp): Export convenient named types from `netlify` package to avoid needing bizarre type patterns.
 type UpdateSiteRequestBody = Exclude<Parameters<NetlifyAPI['updateSite']>[0]['body'], () => unknown>
 
 export const updateSite = async ({

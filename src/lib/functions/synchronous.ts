@@ -43,7 +43,7 @@ export const handleSynchronousFunction = function ({
       }\n${chalk.dim(error.stackTrace.join('\n'))}`,
     )
 
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises -- XXX(serhalp) real bug, fixed in stacked PR.
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises -- XXX(serhalp): real bug, fixed in stacked PR.
     handleErr(invocationError, request, response)
     return
   }
@@ -52,7 +52,7 @@ export const handleSynchronousFunction = function ({
   if (error) {
     logPadded(`${NETLIFYDEVERR} ${error}`)
 
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises -- XXX(serhalp) real bug, fixed in stacked PR.
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises -- XXX(serhalp): real bug, fixed in stacked PR.
     handleErr(error, request, response)
     return
   }
@@ -61,7 +61,7 @@ export const handleSynchronousFunction = function ({
   if (result == null) {
     logPadded(`${NETLIFYDEVERR} Unexpected empty function response`)
 
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises -- XXX(serhalp) real bug, fixed in stacked PR.
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises -- XXX(serhalp): real bug, fixed in stacked PR.
     handleErr('Unexpected empty function response', request, response)
     return
   }
@@ -83,7 +83,7 @@ export const handleSynchronousFunction = function ({
       }`,
     )
 
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises -- XXX(serhalp) real bug, fixed in stacked PR.
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises -- XXX(serhalp): real bug, fixed in stacked PR.
     handleErr(wrappedHeadersError, request, response)
     return
   }
@@ -154,7 +154,7 @@ const handleErr = async (
   request: express.Request,
   response: express.Response,
 ) => {
-  // @ts-expect-error -- XXX(serhalp) Expects `error` but passes `err`, so it has never worked. Fixed in stacked PR.
+  // @ts-expect-error -- XXX(serhalp): Expects `error` but passes `err`, so it has never worked. Fixed in stacked PR.
   detectAwsSdkError({ err })
 
   const acceptsHtml = request.headers.accept?.includes('text/html') ?? false

@@ -19,7 +19,7 @@ export type NetlifySite = {
 
 /**
  * The netlify object inside each command with the state
- * TODO(serhalp) Rename. These aren't options. They're more like context.
+ * TODO(serhalp): Rename. These aren't options. They're more like context.
  */
 export type NetlifyOptions = {
   accounts: Account[]

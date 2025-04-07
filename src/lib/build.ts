@@ -20,7 +20,7 @@ export interface CachedConfig {
   repositoryRoot: string
   siteInfo: SiteInfo
 
-  // TODO(serhalp) Type these properties:
+  // TODO(serhalp): Type these properties:
   addons?: unknown
   api?: unknown
   branch?: unknown
@@ -29,7 +29,7 @@ export interface CachedConfig {
       base: string
       command?: string | undefined
       functions?: string | undefined
-      // TODO(serhalp) I'm fairly certain this is not real. Confirm and remove from here and `ntl functions:build`.
+      // TODO(serhalp): I'm fairly certain this is not real. Confirm and remove from here and `ntl functions:build`.
       functionsSource?: string | undefined
       edge_functions?: string | undefined
       environment: Record<string, unknown>
@@ -43,7 +43,7 @@ export interface CachedConfig {
       publishOrigin: string
       services: Record<string, unknown>
     }
-    // TODO(serhalp) Verify if this should actually be required? If so, update several
+    // TODO(serhalp): Verify if this should actually be required? If so, update several
     // unrealistic integration test objects.
     dev?:
       | undefined
@@ -57,7 +57,7 @@ export interface CachedConfig {
                 keyFile: string
               }
             | undefined
-          // FIXME(serhalp) There is absolutely no trace of this in the `netlify/build` codebase yet
+          // FIXME(serhalp): There is absolutely no trace of this in the `netlify/build` codebase yet
           // it appears to be real functionality. Fix this upstream.
           processing: {
             html?: {
@@ -103,7 +103,7 @@ export interface DefaultConfig {
   plugins?: { package: unknown; origin: 'default' }[]
 }
 
-// TODO(serhalp) This is patching weak or missing properties from @netlify/build. Fix there instead.
+// TODO(serhalp): This is patching weak or missing properties from @netlify/build. Fix there instead.
 export type RunBuildOptions = Omit<NonNullable<Parameters<typeof build>[0]>, 'cachedConfig'> & {
   cachedConfig: CachedConfig
   defaultConfig: DefaultConfig | Record<never, never>
@@ -189,7 +189,7 @@ export const getRunBuildOptions = async ({
       ...getFeatureFlagsFromSiteInfo(cachedConfig.siteInfo),
       functionsBundlingManifest: true,
     },
-    // @ts-expect-error(serhalp) -- TODO(serhalp) Upstream the type fixes above into @netlify/build
+    // @ts-expect-error(serhalp) -- TODO(serhalp): Upstream the type fixes above into @netlify/build
     eventHandlers,
     edgeFunctionsBootstrapURL: await getBootstrapURL(),
   }
@@ -205,7 +205,7 @@ export const runBuild = async (options: RunBuildOptions) => {
       host: apiUrl.host,
     }
     // @ts-expect-error(serhalp) -- I don't know what's going on here and I can't convince myself it even works as
-    // intended. TODO(serhalp) Investigate and fix types.
+    // intended. TODO(serhalp): Investigate and fix types.
     options = { ...options, testOpts }
   }
 
@@ -213,7 +213,7 @@ export const runBuild = async (options: RunBuildOptions) => {
     configMutations,
     netlifyConfig: newConfig,
     severityCode: exitCode,
-    // TODO(serhalp) Upstream the type fixes above into @netlify/build and remove this type assertion
+    // TODO(serhalp): Upstream the type fixes above into @netlify/build and remove this type assertion
   } = await (build as unknown as (opts: RunBuildOptions) => Promise<ReturnType<typeof build>>)(options)
   return { exitCode, newConfig, configMutations }
 }

@@ -28,7 +28,7 @@ const buildStatsString = (possibleParts: (string | false | undefined)[]) => {
   return parts.length > 1 ? `${message} and ${parts[parts.length - 1]}` : message
 }
 
-// TODO(serhalp) This is alternatingly called "event", "status", and "progress". Standardize.
+// TODO(serhalp): This is alternatingly called "event", "status", and "progress". Standardize.
 export interface DeployEvent {
   type: string
   msg: string

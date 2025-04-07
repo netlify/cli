@@ -3,7 +3,7 @@ import { createRequire } from 'module'
 import path from 'path'
 
 import { ARCHIVE_FORMAT, zipFunction, listFunction, type FunctionResult } from '@netlify/zip-it-and-ship-it'
-// TODO(serhalp) Export this type from zisi
+// TODO(serhalp): Export this type from zisi
 import type { FeatureFlags } from '@netlify/zip-it-and-ship-it/dist/feature_flags.js'
 import decache from 'decache'
 import { readPackageUp } from 'read-package-up'
@@ -133,7 +133,7 @@ export const getFunctionMetadata = async ({
   mainFile: string
   projectRoot: string
 }) =>
-  // TODO(serhalp) Throw if this returns `undefined`? It doesn't seem like this is expected.
+  // TODO(serhalp): Throw if this returns `undefined`? It doesn't seem like this is expected.
   await listFunction(mainFile, {
     config: netlifyConfigToZisiConfig({ config, projectRoot }),
     featureFlags: {},

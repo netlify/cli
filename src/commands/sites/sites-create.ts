@@ -62,7 +62,7 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand) =
       body.name = siteName.trim()
     }
     try {
-      // FIXME(serhalp) `id` and `name` should be required in `netlify` package type
+      // FIXME(serhalp): `id` and `name` should be required in `netlify` package type
       site = (await api.createSiteInTeam({
         accountSlug: accountSlug,
         body,

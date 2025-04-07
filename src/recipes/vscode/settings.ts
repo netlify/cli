@@ -7,7 +7,7 @@ const toUnixPath = (path: string): string => path.replace(/\\/g, '/')
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'existingSettings' implicitly has an 'an... Remove this comment to see the full error message
 export const applySettings = (existingSettings, { denoBinary, edgeFunctionsPath, repositoryRoot }) => {
-  // TODO(serhalp) I'm not convinced we want to convert to Unix paths on Windows? Does this even work? Was this a
+  // TODO(serhalp): I'm not convinced we want to convert to Unix paths on Windows? Does this even work? Was this a
   // workaround for something, perhaps https://github.com/denoland/vscode_deno/pull/745?
   const relativeEdgeFunctionsPath = toUnixPath(posix.normalize(relative(repositoryRoot, edgeFunctionsPath)))
   const settings = JSONC.assign(existingSettings, {

@@ -24,19 +24,19 @@ export const listSites = async ({
   options,
 }: {
   api: NetlifyAPI
-  // FIXME(serhalp) `page` and `maxPages` are missing from `netlify` package types
+  // FIXME(serhalp): `page` and `maxPages` are missing from `netlify` package types
   options: Parameters<typeof api.listSites>[0] & { page?: number; maxPages?: number }
 }): Promise<SiteInfo[]> => {
   const { maxPages = MAX_PAGES, page = FIRST_PAGE, ...rest } = options
   const sites = await api.listSites({ page, per_page: MAX_PER_PAGE, ...rest })
   // TODO: use pagination headers when js-client returns them
   if (sites.length === MAX_PER_PAGE && page + 1 <= maxPages) {
-    // FIXME(serhalp) `id` and `name` should be required in `netlify` package type
+    // FIXME(serhalp): `id` and `name` should be required in `netlify` package type
     return [
       ...sites,
       ...(await listSites({ api, options: { page: page + 1, maxPages, ...rest } })),
     ] as unknown[] as SiteInfo[]
   }
-  // FIXME(serhalp) See above
+  // FIXME(serhalp): See above
   return sites as unknown[] as SiteInfo[]
 }

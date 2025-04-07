@@ -69,7 +69,7 @@ export interface Request extends IncomingMessage {
 
 export type Rewriter = (req: Request) => Promise<Match | null>
 
-// FIXME(serhalp) Much of this appears to be wrong? Most of these should be optional, or at
+// FIXME(serhalp): Much of this appears to be wrong? Most of these should be optional, or at
 // the very least `siteInfo` should be optional on `CachedConfig` when no site is linked...
 // Delete all of this and replace with generated Netlify API type.
 export interface SiteInfo {
@@ -77,7 +77,7 @@ export interface SiteInfo {
   account_name: string
   account_slug: string
   admin_url: string
-  // TODO(serhalp) Investigate this. It seems like this should be required but there appear to
+  // TODO(serhalp): Investigate this. It seems like this should be required but there appear to
   // be cases where it is missing.
   build_settings?:
     | {

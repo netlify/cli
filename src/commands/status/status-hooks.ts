@@ -24,7 +24,7 @@ export const statusHooks = async (_options: OptionValues, command: BaseCommand):
   }
 
   ntlHooks.forEach((hook) => {
-    // TODO(serhalp) Surely the `listHooksBySiteId` type is wrong about `id` being optional. Fix.
+    // TODO(serhalp): Surely the `listHooksBySiteId` type is wrong about `id` being optional. Fix.
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const id = hook.id!
     data.hooks[id] = {

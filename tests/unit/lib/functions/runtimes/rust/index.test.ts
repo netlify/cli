@@ -11,10 +11,10 @@ test.each([
   ['multiValueHeaders', { 'X-Multi': ['B', 'C'] }] as const,
   ['statusCode', 200] as const,
 ])('should return %s', async (prop, expected) => {
-  // @ts-expect-error -- TODO(serhalp) Lazy test type. Create a factory and use it here.
+  // @ts-expect-error -- TODO(serhalp): Lazy test type. Create a factory and use it here.
   vi.mocked(runFunctionsProxy).mockResolvedValue({ stdout: JSON.stringify({ [prop]: expected }) })
 
-  // @ts-expect-error -- TODO(serhalp) Lazy test type. Create a factory and use it here.
+  // @ts-expect-error -- TODO(serhalp): Lazy test type. Create a factory and use it here.
   const match = await invokeFunction({ func: { mainFile: '', buildData: { binaryPath: 'foo' } } })
   expect(match[prop]).toEqual(expected)
 })

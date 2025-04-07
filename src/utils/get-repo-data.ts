@@ -58,7 +58,7 @@ const getRepoData = async ({
 
     const { url } = gitConfig.remote[remoteName]
     const parsedUrl = parseGithubUrl(url)
-    // TODO(serhalp) Validate more aggressively? We should probably require `owner`, `repo`, `host`?
+    // TODO(serhalp): Validate more aggressively? We should probably require `owner`, `repo`, `host`?
     if (parsedUrl == null) {
       throw new Error(`The specified Git remote ${remoteName} is not a valid URL: ${url}`)
     }

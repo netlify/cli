@@ -553,7 +553,7 @@ export default class BaseCommand extends Command {
     const needsFeatureFlagsToResolveConfig = COMMANDS_WITH_FEATURE_FLAGS.has(actionCommand.name())
     if (api.accessToken && !flags.offline && needsFeatureFlagsToResolveConfig && actionCommand.siteId) {
       try {
-        // FIXME(serhalp) Remove `any` and fix errors. API types exist now.
+        // FIXME(serhalp): Remove `any` and fix errors. API types exist now.
         const site = await (api as any).getSite({ siteId: actionCommand.siteId, feature_flags: 'cli' })
         actionCommand.featureFlags = site.feature_flags
         actionCommand.accountId = site.account_id
@@ -654,10 +654,10 @@ export default class BaseCommand extends Command {
         env,
       },
       // global cli config
-      // TODO(serhalp) Rename to `globalConfigStore`
+      // TODO(serhalp): Rename to `globalConfigStore`
       globalConfig,
       // state of current site dir
-      // TODO(serhalp) Rename to `cliState`
+      // TODO(serhalp): Rename to `cliState`
       state,
       frameworksAPIPaths: getFrameworksAPIPaths(buildDir, this.workspacePackage),
     }
@@ -682,7 +682,7 @@ export default class BaseCommand extends Command {
     const flags = this.opts()
 
     try {
-      // FIXME(serhalp) Type this in `netlify/build`! This is blocking a ton of proper types across the CLI.
+      // FIXME(serhalp): Type this in `netlify/build`! This is blocking a ton of proper types across the CLI.
       return await resolveConfig({
         accountId: this.accountId,
         config: configFilePath,
@@ -746,7 +746,7 @@ export default class BaseCommand extends Command {
    * Retrieve feature flags for this site
    */
   getFeatureFlag<T extends null | boolean | string>(flagName: string): T {
-    // @ts-expect-error(serhalp) -- FIXME(serhalp) This probably isn't what we intend.
+    // @ts-expect-error(serhalp) -- FIXME(serhalp): This probably isn't what we intend.
     // We should return `false` feature flags as `false` and not `null`. Carefully fix.
     return this.netlify.siteInfo.feature_flags?.[flagName] || null
   }

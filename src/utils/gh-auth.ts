@@ -47,7 +47,7 @@ export const authWithNetlify = async (): Promise<Token> => {
   const server = http.createServer(function onRequest(req, res) {
     const parameters = new URLSearchParams((req.url ?? '').slice((req.url ?? '').indexOf('?') + 1))
     if (parameters.get('token')) {
-      // TODO(serhalp) Parse payload to validate type actually conforms
+      // TODO(serhalp): Parse payload to validate type actually conforms
       deferredResolve(Object.fromEntries(parameters) as unknown as Token)
       res.end(
         `${
@@ -105,7 +105,7 @@ const authWithToken = async (): Promise<Token> => {
   }
 
   const octokit = new Octokit({ auth: `token ${token}` })
-  // @ts-expect-error -- XXX(serhalp) actual bug - fixed in stacked PR
+  // @ts-expect-error -- XXX(serhalp): actual bug - fixed in stacked PR
   const { login: user } = await octokit.users.getAuthenticated()
 
   return { token, user, provider: 'github' }

@@ -78,7 +78,7 @@ export class FunctionsRegistry {
   private logLambdaCompat: boolean
   private manifest?: Manifest
   private projectRoot: string
-  // TODO(serhalp) This is confusing. Refactor to accept entire settings or rename or something?
+  // TODO(serhalp): This is confusing. Refactor to accept entire settings or rename or something?
   private settings: Pick<ServerSettings, 'functions' | 'functionsPort'>
   private timeouts: { backgroundFunctions: number; syncFunctions: number }
 
@@ -107,7 +107,7 @@ export class FunctionsRegistry {
     logLambdaCompat: boolean
     manifest?: Manifest
     projectRoot: string
-    // TODO(serhalp) This is confusing. Refactor to accept entire settings or rename or something?
+    // TODO(serhalp): This is confusing. Refactor to accept entire settings or rename or something?
     settings: Pick<ServerSettings, 'functions' | 'functionsPort'>
     timeouts: { backgroundFunctions: number; syncFunctions: number }
   }) {
@@ -487,7 +487,7 @@ export class FunctionsRegistry {
         buildRustSource: env.NETLIFY_EXPERIMENTAL_BUILD_RUST_SOURCE === 'true',
       },
       configFileDirectories: [getPathInProject([INTERNAL_FUNCTIONS_FOLDER])],
-      // @ts-expect-error -- TODO(serhalp) Function config types do not match. Investigate and fix.
+      // @ts-expect-error -- TODO(serhalp): Function config types do not match. Investigate and fix.
       config: this.config.functions,
     })
 

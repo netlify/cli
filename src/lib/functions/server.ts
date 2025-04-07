@@ -168,7 +168,7 @@ export const createHandler = function (options: GetFunctionsServerOptions): Requ
       [efHeaders.Geo]: Buffer.from(JSON.stringify(geoLocation)).toString('base64'),
     }).reduce((prev, [key, value]) => ({ ...prev, [key]: Array.isArray(value) ? value : [value] }), {})
     const rawQuery = new URL(request.originalUrl, 'http://example.com').search.slice(1)
-    // TODO(serhalp) Update several tests to pass realistic `config` objects and remove nullish coalescing.
+    // TODO(serhalp): Update several tests to pass realistic `config` objects and remove nullish coalescing.
     const protocol = options.config?.dev?.https ? 'https' : 'http'
     const url = new URL(requestPath, `${protocol}://${request.get('host') || 'localhost'}`)
     url.search = rawQuery
@@ -307,7 +307,7 @@ export const startFunctionsServer = async (
     }
     debug: boolean
     loadDistFunctions?: boolean
-    // TODO(serhalp) This is confusing. Refactor to accept entire settings or rename or something?
+    // TODO(serhalp): This is confusing. Refactor to accept entire settings or rename or something?
     settings: Pick<ServerSettings, 'functions' | 'functionsPort'>
     site: NetlifySite
     siteInfo: SiteInfo

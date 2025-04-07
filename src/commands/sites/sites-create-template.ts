@@ -131,17 +131,17 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
     }
 
     try {
-      // FIXME(serhalp) `id` and `name` should be required in `netlify` package type
+      // FIXME(serhalp): `id` and `name` should be required in `netlify` package type
       site = (await api.createSiteInTeam({
         accountSlug,
         body: {
           repo: {
             provider: 'github',
-            // @ts-expect-error -- FIXME(serhalp) Supposedly this is does not exist. Investigate.
+            // @ts-expect-error -- FIXME(serhalp): Supposedly this is does not exist. Investigate.
             repo: repoResp.full_name,
-            // FIXME(serhalp) Supposedly this should be `public_repo`. Investigate.
+            // FIXME(serhalp): Supposedly this should be `public_repo`. Investigate.
             private: repoResp.private,
-            // FIXME(serhalp) Supposedly this should be `repo_branch`. Investigate.
+            // FIXME(serhalp): Supposedly this should be `repo_branch`. Investigate.
             branch: repoResp.default_branch,
           },
           name: siteName,
@@ -208,7 +208,7 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
       const cliPath = path.resolve(__dirname, '../../../bin/run.js')
 
       let stdout
-      // TODO(serhalp) Why is this condition here? We've asked the user multiple prompts, but we already knew we had
+      // TODO(serhalp): Why is this condition here? We've asked the user multiple prompts, but we already knew we had
       // invalid repo data. Move upstream.
       if (repoResp.name) {
         stdout = await callLinkSite(cliPath, repoResp.name, '\n')

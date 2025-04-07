@@ -21,7 +21,7 @@ export const name = 'js'
 
 export type JsBuildResult = ZisiBuildResult | NetlifyLambdaBuildResult
 
-// TODO(serhalp) Unify these. This is bonkers that the two underlying invocation mechanisms are encapsulated but we
+// TODO(serhalp): Unify these. This is bonkers that the two underlying invocation mechanisms are encapsulated but we
 // return slightly different shapes for them.
 export type JsInvokeFunctionResult = WorkerMessage | LambdaEvent
 
@@ -106,7 +106,7 @@ export const invokeFunction = async ({
   const worker = new Worker(workerURL, { workerData })
   return await new Promise((resolve, reject) => {
     worker.on('message', (result: WorkerMessage): void => {
-      // TODO(serhalp) Improve `WorkerMessage` type. It sure would be nice to keep it simple as it
+      // TODO(serhalp): Improve `WorkerMessage` type. It sure would be nice to keep it simple as it
       // is now, but technically this is an arbitrary type from the user function return...
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (result?.streamPort != null) {

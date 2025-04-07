@@ -145,7 +145,7 @@ const createOrLinkSiteToRepo = async (command: BaseCommand) => {
       message: 'What would you like to do?',
       choices: initializeOpts,
     },
-    // TODO(serhalp) inquirer should infer the choice type here, but doesn't. Fix.
+    // TODO(serhalp): inquirer should infer the choice type here, but doesn't. Fix.
   ])) as { initChoice: typeof initializeOpts[number] }
 
   // create site or search for one

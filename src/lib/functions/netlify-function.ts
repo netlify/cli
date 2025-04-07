@@ -89,7 +89,7 @@ export default class NetlifyFunction<BuildResult extends BaseBuildResult> {
     name: string
     projectRoot: string
     runtime: Runtime<BuildResult>
-    // TODO(serhalp) This is confusing. Refactor to accept entire settings or rename or something?
+    // TODO(serhalp): This is confusing. Refactor to accept entire settings or rename or something?
     settings: Pick<ServerSettings, 'functions' | 'functionsPort'>
     timeoutBackground?: number
     timeoutSynchronous?: number
@@ -243,7 +243,7 @@ export default class NetlifyFunction<BuildResult extends BaseBuildResult> {
     await this.buildQueue
 
     if (this.buildError) {
-      // TODO(serhalp) I don't think this error handling works as expected. Investigate.
+      // TODO(serhalp): I don't think this error handling works as expected. Investigate.
       return { result: null, error: { errorType: '', stackTrace: [], errorMessage: this.buildError.message } }
     }
 

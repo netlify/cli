@@ -124,7 +124,7 @@ export const startLiveTunnel = async ({
 
   const session = await createTunnel({
     siteId,
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- XXX(serhalp) removed in favor of runtime user feedback in stacked PR
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- XXX(serhalp): removed in favor of runtime user feedback in stacked PR
     netlifyApiToken: netlifyApiToken!,
     slug,
   })
@@ -148,7 +148,7 @@ export const startLiveTunnel = async ({
     return (data as LiveSession).state === 'online'
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- XXX(serhalp) removed in favor of runtime user feedback in stacked PR
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- XXX(serhalp): removed in favor of runtime user feedback in stacked PR
   connectTunnel({ session, netlifyApiToken: netlifyApiToken!, localPort })
 
   // Waiting for the live session to have a state of `online`.

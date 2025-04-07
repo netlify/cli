@@ -63,7 +63,7 @@ export const status = async (options: OptionValues, command: BaseCommand) => {
     return logAndThrowError(`You don't appear to be in a folder that is linked to a site`)
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- XXX(serhalp) fixed in stacked PR.
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- XXX(serhalp): fixed in stacked PR.
   if (!siteInfo) {
     return logAndThrowError(`No site info found for site ${siteId}`)
   }

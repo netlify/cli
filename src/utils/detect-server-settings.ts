@@ -241,7 +241,7 @@ const handleForcedFramework = async (options: {
   const framework = await getFramework(options.devConfig.framework, options.project)
   const settings = await getSettings(framework, options.project, options.workspacePackage || '')
   const frameworkSettings = getSettingsFromDetectedSettings(options.command, settings)
-  // TODO(serhalp) Remove and update `getSettingsFromDetectedSettings` type to return non-nullable
+  // TODO(serhalp): Remove and update `getSettingsFromDetectedSettings` type to return non-nullable
   // when given non-nullable second arg
   if (frameworkSettings == null) {
     throw new Error(`Could not get settings for framework ${options.devConfig.framework}`)
@@ -259,7 +259,7 @@ const detectServerSettings = async (
 ): Promise<ServerSettings> => {
   validateProperty(devConfig, 'framework', 'string')
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO(serhalp) Set to `BaseServerSettings`. Good luck!
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO(serhalp): Set to `BaseServerSettings`. Good luck!
   let settings: any = {}
 
   if (flags.dir || devConfig.framework === '#static') {

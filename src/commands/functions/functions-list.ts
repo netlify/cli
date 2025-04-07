@@ -26,7 +26,7 @@ const normalizeFunction = function (
 export const functionsList = async (options: OptionValues, command: BaseCommand) => {
   const { config, relConfigFilePath, siteInfo } = command.netlify
 
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- XXX(serhalp) fixed in stacked PR.
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- XXX(serhalp): fixed in stacked PR.
   const deploy = siteInfo.published_deploy ?? {}
   // @ts-expect-error(serhalp) Investigate. Either dead code or a type error in the API client package.
   const deployedFunctions = deploy.available_functions || []

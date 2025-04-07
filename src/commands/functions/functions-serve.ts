@@ -18,7 +18,7 @@ import BaseCommand from '../base-command.js'
 
 const DEFAULT_PORT = 9999
 
-// FIXME(serhalp) Replace `OptionValues` with more specific type. This is full of implicit `any`s.
+// FIXME(serhalp): Replace `OptionValues` with more specific type. This is full of implicit `any`s.
 export const functionsServe = async (options: OptionValues, command: BaseCommand) => {
   const { api, config, site, siteInfo, state } = command.netlify
 

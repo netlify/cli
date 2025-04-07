@@ -28,11 +28,11 @@ export const parseHeaders = async function ({
     headersFiles,
     netlifyConfigPath: configPath,
     minimal: false,
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- XXX(serhalp) fixed in stacked PR.
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- XXX(serhalp): fixed in stacked PR.
     configHeaders: config.headers ?? [],
   })
   handleHeadersErrors(errors)
-  // TODO(serhalp) Make `parseAllHeaders()` smart enough to conditionally return a refined type based on `minimal`
+  // TODO(serhalp): Make `parseAllHeaders()` smart enough to conditionally return a refined type based on `minimal`
   return headers as Header[]
 }
 

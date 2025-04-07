@@ -18,7 +18,7 @@ export type BaseBuildResult = {
   schedule?: undefined | string
   srcFiles: string[]
 
-  // TODO(serhalp) This module and type shouldn't know about these zisi types. Refactor to allow the JS runtime's zisi
+  // TODO(serhalp): This module and type shouldn't know about these zisi types. Refactor to allow the JS runtime's zisi
   // builder to define this on its extended base build result type.
   excludedRoutes?: Route[] | undefined
   routes?: ExtendedRoute[] | undefined
@@ -43,7 +43,7 @@ export type GetBuildFunction<
   CacheEntry extends Record<string, unknown> = Record<string, unknown>,
 > = (params: GetBuildFunctionOpts<BuildResult>) => Promise<BuildFunction<BuildResult, CacheEntry>>
 
-// TODO(serhalp) It's inconsistent that this uses a union but `BuildResult` uses generics. Consider refactoring.
+// TODO(serhalp): It's inconsistent that this uses a union but `BuildResult` uses generics. Consider refactoring.
 // eslint-disable-next-line @typescript-eslint/no-duplicate-type-constituents
 export type InvokeFunctionResult = JsInvokeFunctionResult | GoInvokeFunctionResult | RustInvokeFunctionResult
 export type InvokeFunction<BuildResult extends BaseBuildResult> = (params: {

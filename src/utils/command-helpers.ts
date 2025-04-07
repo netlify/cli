@@ -218,7 +218,7 @@ export const exit = (code = 0): never => {
  * several ways. It detects it by checking if `build.publish` is `undefined`.
  * However, `@netlify/config` adds a default value to `build.publish`.
  * This removes 'publish' and 'publishOrigin' in this case.
- * TODO(serhalp) Come up with a better name (or kill it?). This sucks but it's descriptive.
+ * TODO(serhalp): Come up with a better name (or kill it?). This sucks but it's descriptive.
  */
 export type NormalizedCachedConfigConfig =
   | CachedConfig['config']
