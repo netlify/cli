@@ -109,8 +109,8 @@ describe('logs:deploy command', () => {
     const setupCall = spyOn.mock.calls.find((args) => args[0] === 'open')
     expect(setupCall).toBeDefined()
 
-    const openCallback = setupCall[1]
-    openCallback()
+    const openCallback = setupCall?.[1]
+    openCallback?.()
 
     expect(spySend).toHaveBeenCalledOnce()
     const call = spySend.mock.calls[0]

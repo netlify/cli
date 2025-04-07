@@ -490,20 +490,22 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
 
       await builder.build()
 
-      t.expect(() =>
-        withDevServer(
-          { cwd: builder.directory },
-          async (server) => {
-            const [response1, response2] = await Promise.all([
-              fetch(`${server.url}/foo`).then((res) => res.text()),
-              fetch(`http://localhost:${userServerPort}`).then((res) => res.text()),
-            ])
-            await t.expect(response1).toEqual('<html><h1>foo')
-            await t.expect(response2).toEqual('Hello world')
-          },
-          { message: /Error: Something went wrong/ },
-        ),
-      ).rejects.toThrowError()
+      await t
+        .expect(() =>
+          withDevServer(
+            { cwd: builder.directory },
+            async (server) => {
+              const [response1, response2] = await Promise.all([
+                fetch(`${server.url}/foo`).then((res) => res.text()),
+                fetch(`http://localhost:${userServerPort}`).then((res) => res.text()),
+              ])
+              await t.expect(response1).toEqual('<html><h1>foo')
+              await t.expect(response2).toEqual('Hello world')
+            },
+            { message: /Error: Something went wrong/ },
+          ),
+        )
+        .rejects.toThrowError()
     })
   })
 })

@@ -13,7 +13,7 @@ import serializeJS from 'serialize-javascript'
 import tempDirectory from 'temp-dir'
 import tomlify from 'tomlify-j0.4'
 import { v4 as uuidv4 } from 'uuid'
-import type { TaskContext } from 'vitest'
+import type { TestContext } from 'vitest'
 
 const ensureDir = (directory: string) => mkdir(directory, { recursive: true })
 
@@ -333,7 +333,7 @@ export const createSiteBuilder = ({ siteName }: { siteName: string }) => {
  * @param taskContext used to infer directory name from test name
  */
 export async function withSiteBuilder<T>(
-  taskContext: TaskContext,
+  taskContext: TestContext,
   testHandler: (builder: SiteBuilder) => Promise<T>,
 ): Promise<T> {
   let builder: SiteBuilder | undefined

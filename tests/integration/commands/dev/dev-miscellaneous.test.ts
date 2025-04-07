@@ -9,7 +9,7 @@ import execa, { ExecaError } from 'execa'
 import getAvailablePort from 'get-port'
 import jwt from 'jsonwebtoken'
 import fetch from 'node-fetch'
-import { type TestContext, type TaskContext, describe, test } from 'vitest'
+import { type TestContext, describe, test } from 'vitest'
 import type { HandlerEvent, HandlerContext } from '@netlify/functions'
 import type { Context as EdgeHandlerContext } from '@netlify/edge-functions'
 
@@ -66,7 +66,7 @@ const validateRoleBasedRedirectsSite = async ({
   builder: SiteBuilder
   jwtRolePath?: string | undefined
   jwtSecret?: string | undefined
-  t: TaskContext & TestContext
+  t: TestContext
 }) => {
   const [adminToken, editorToken] = await Promise.all([
     getToken({ jwtSecret, jwtRolePath, roles: ['admin'] }),
