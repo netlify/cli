@@ -74,7 +74,8 @@ export const handleSynchronousFunction = function ({
     addHeaders(result.headers, response)
     addHeaders(result.multiValueHeaders, response)
   } catch (headersError) {
-    const normalizedError = getNormalizedError(headersError as Error)
+    const wrappedHeadersError = headersError instanceof Error ? headersError : new Error(headersError?.toString())
+    const normalizedError = getNormalizedError(wrappedHeadersError)
 
     logPadded(
       `${NETLIFYDEVERR} Failed to set header in function ${chalk.yellow(functionName)}: ${
@@ -83,7 +84,7 @@ export const handleSynchronousFunction = function ({
     )
 
     // eslint-disable-next-line @typescript-eslint/no-floating-promises -- XXX(serhalp) real bug, fixed in stacked PR.
-    handleErr(headersError as Error, request, response)
+    handleErr(wrappedHeadersError, request, response)
     return
   }
 
