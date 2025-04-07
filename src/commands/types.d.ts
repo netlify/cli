@@ -2,7 +2,7 @@ import type { NetlifyAPI } from 'netlify'
 
 import type { FrameworksAPIPaths } from '../utils/frameworks-api.ts'
 import type CLIState from '../utils/cli-state.js'
-import type { Account, GlobalConfigStore, SiteInfo } from '../utils/types.ts'
+import type { MinimalAccount, GlobalConfigStore, SiteInfo } from '../utils/types.ts'
 import type { NormalizedCachedConfigConfig } from '../utils/command-helpers.js'
 import type { CachedConfig } from '../lib/build.js'
 
@@ -22,7 +22,7 @@ export type NetlifySite = {
  * TODO(serhalp): Rename. These aren't options. They're more like context.
  */
 export type NetlifyOptions = {
-  accounts: Account[]
+  accounts: MinimalAccount[]
   api: NetlifyAPI
   apiOpts: {
     userAgent: string

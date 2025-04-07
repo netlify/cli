@@ -25,7 +25,7 @@ import { configureRepo } from '../../utils/init/config.js'
 import { deployedSiteExists, getGitHubLink, getTemplateName } from '../../utils/sites/create-template.js'
 import { callLinkSite, createRepo, validateTemplate } from '../../utils/sites/utils.js'
 import { track } from '../../utils/telemetry/index.js'
-import type { Account, SiteInfo } from '../../utils/types.js'
+import type { SiteInfo } from '../../utils/types.js'
 import type BaseCommand from '../base-command.js'
 
 import { getSiteNameInput } from './sites-create.js'
@@ -60,7 +60,7 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
         type: 'list',
         name: 'accountSlug',
         message: 'Team:',
-        choices: accounts.map((account: Account) => ({
+        choices: accounts.map((account) => ({
           value: account.slug,
           name: account.name,
         })),

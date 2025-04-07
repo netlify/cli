@@ -2,6 +2,7 @@ import { expect, test } from 'vitest'
 
 import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
 import { getCLIOptions, withMockApi } from '../../utils/mock-api.js'
+import type { MinimalAccount } from '../../../../src/utils/types.js'
 
 const siteInfo = {
   account_slug: 'test-account',
@@ -13,7 +14,20 @@ const siteInfo = {
 
 const user = { full_name: 'Test User', email: 'test@netlify.com' }
 
-const accounts = [{ slug: siteInfo.account_slug, name: user.full_name, roles_allowed: [] }]
+const accounts: MinimalAccount[] = [
+  {
+    id: 'user-id',
+    name: user.full_name,
+    slug: siteInfo.account_slug,
+    default: true,
+    team_logo_url: null,
+    on_pro_trial: false,
+    organization_id: null,
+    type_name: 'placeholder',
+    type_slug: 'placeholder',
+    members_count: 1,
+  },
+]
 
 const routes = [
   { path: 'sites/site_id', response: siteInfo },

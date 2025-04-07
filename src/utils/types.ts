@@ -184,23 +184,17 @@ type EnvVarValue = {
   context: string
 }
 
-export interface Account {
+export type MinimalAccount = {
   id: string
   name: string
   slug: string
-  type: string
-  capabilities: Record<string, { included: string; used: string }>
-  billing_name: string
-  billing_email: string
-  billing_details: string
-  billing_period: string
-  payment_method_id: string
+  default: boolean
+  team_logo_url: string | null
+  on_pro_trial: boolean
+  organization_id: string | null
   type_name: string
-  type_id: string
-  owner_ids: string[]
-  roles_allowed: string[]
-  created_at: string
-  updated_at: string
+  type_slug: string
+  members_count: number
 }
 
 export interface GitHubRepo {

@@ -13,5 +13,8 @@ exports[`fixture: empty-project > should print status for a linked site 2`] = `
 {
   "Email": "test@netlify.com",
   "Name": "Test User",
+  "Teams": [
+    "Test User",
+  ],
 }
 `;
