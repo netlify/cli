@@ -11,6 +11,7 @@ import { capitalize } from '../string.js'
 
 import type NetlifyFunction from './netlify-function.js'
 import type { FunctionsRegistry } from './registry.js'
+import type { BaseBuildResult } from './runtimes/index.js'
 
 export const getFormHandler = function ({
   functionsRegistry,
@@ -21,19 +22,22 @@ export const getFormHandler = function ({
 }) {
   const handlers = ['submission-created', `submission-created${BACKGROUND}`]
     .map((name) => functionsRegistry.get(name))
-    .filter((func): func is NetlifyFunction => Boolean(func))
+    .filter((func): func is NetlifyFunction<BaseBuildResult> => func != null)
     .map(({ name }) => name)
 
   if (handlers.length === 0) {
-    logWarning && warn(`Missing form submission function handler`)
+    if (logWarning) {
+      warn(`Missing form submission function handler`)
+    }
     return
   }
 
   if (handlers.length === 2) {
-    logWarning &&
+    if (logWarning) {
       warn(
         `Detected both '${handlers[0]}' and '${handlers[1]}' form submission functions handlers, using ${handlers[0]}`,
       )
+    }
   }
 
   return handlers[0]
@@ -46,7 +50,7 @@ export const createFormSubmissionHandler = function ({
   functionsRegistry: FunctionsRegistry
   siteUrl: string
 }): RequestHandler {
-  return async function formSubmissionHandler(req, res, next) {
+  return async function formSubmissionHandler(req, _res, next) {
     if (
       req.url.startsWith('/.netlify/') ||
       req.method !== 'POST' ||
@@ -102,7 +106,7 @@ export const createFormSubmissionHandler = function ({
                 [name]: values.map((value) => ({
                   filename: value.originalFilename,
                   size: value.size,
-                  type: value.headers && value.headers['content-type'],
+                  type: value.headers?.['content-type'],
                   url: value.path,
                 })),
               }),

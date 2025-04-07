@@ -1,16 +1,15 @@
 import inquirer from 'inquirer'
 
 import { exit, log } from '../command-helpers.js'
+import type BaseCommand from '../../commands/base-command.js'
+import type { RepoData } from '../get-repo-data.js'
 
-import { createDeployKey, getBuildSettings, saveNetlifyToml, setupSite } from './utils.js'
+import { createDeployKey, type DeployKey, getBuildSettings, saveNetlifyToml, setupSite } from './utils.js'
 
 /**
  * Prompts for granting the netlify ssh public key access to your repo
- * @param {object} deployKey
- * @param {string} deployKey.public_key
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'deployKey' implicitly has an 'any' type... Remove this comment to see the full error message
-const addDeployKey = async (deployKey) => {
+const addDeployKey = async (deployKey: DeployKey) => {
   log('\nGive this Netlify SSH public key access to your repository:\n')
   log(`\n${deployKey.public_key}\n\n`)
 
@@ -28,57 +27,44 @@ const addDeployKey = async (deployKey) => {
   }
 }
 
-/**
- * @param {object} config
- * @param {Awaited<ReturnType<import('../../utils/get-repo-data.js').default>>} config.repoData
- * @returns {Promise<string>}
- */
-// @ts-expect-error TS(7031) FIXME: Binding element 'repoData' implicitly has an 'any'... Remove this comment to see the full error message
-const getRepoPath = async ({ repoData }) => {
-  const { repoPath } = await inquirer.prompt([
+const getRepoPath = async ({ repoData }: { repoData: RepoData }): Promise<string> => {
+  const { repoPath } = (await inquirer.prompt([
     {
       type: 'input',
       name: 'repoPath',
       message: 'The SSH URL of the remote git repo:',
       default: repoData.url,
-      /**
-       * @param {string} url
-       */
-      validate: (url) => SSH_URL_REGEXP.test(url) || 'The URL provided does not use the SSH protocol',
+      validate: (url: string) => (SSH_URL_REGEXP.test(url) ? true : 'The URL provided does not use the SSH protocol'),
     },
-  ])
+  ])) as { repoPath: string }
 
   return repoPath
 }
 
-/**
- * @param {string} deployHook
- * @returns
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'deployHook' implicitly has an 'any' typ... Remove this comment to see the full error message
-const addDeployHook = async (deployHook) => {
+const addDeployHook = async (deployHook: string | undefined): Promise<boolean> => {
   log('\nConfigure the following webhook for your repository:\n')
   log(`\n${deployHook}\n\n`)
-  const { deployHookAdded } = await inquirer.prompt([
+  const { deployHookAdded } = (await inquirer.prompt([
     {
       type: 'confirm',
       name: 'deployHookAdded',
       message: 'Continue?',
       default: true,
     },
-  ])
+  ])) as { deployHookAdded: boolean }
 
   return deployHookAdded
 }
 
-/**
- * @param {object} config
- * @param {import('../../commands/base-command.js').default} config.command
- * @param {Awaited<ReturnType<import('../../utils/get-repo-data.js').default>>} config.repoData
- * @param {string} config.siteId
- */
-// @ts-expect-error TS(7031) FIXME: Binding element 'command' implicitly has an 'any' ... Remove this comment to see the full error message
-export default async function configManual({ command, repoData, siteId }) {
+export default async function configManual({
+  command,
+  repoData,
+  siteId,
+}: {
+  command: BaseCommand
+  repoData: RepoData
+  siteId: string
+}) {
   const { netlify } = command
   const {
     api,
@@ -89,8 +75,9 @@ export default async function configManual({ command, repoData, siteId }) {
   } = netlify
 
   const { baseDir, buildCmd, buildDir, functionsDir, pluginsToInstall } = await getBuildSettings({
-    // @ts-expect-error TS(2345) FIXME: Argument of type '{ repositoryRoot: any; siteRoot:... Remove this comment to see the full error message
+    // @ts-expect-error -- XXX(serhalp): unused - removed in stacked PR
     repositoryRoot,
+    // XXX(serhalp): unused - removed in stacked PR
     siteRoot,
     config,
     command,
@@ -117,7 +104,7 @@ export default async function configManual({ command, repoData, siteId }) {
     api,
     siteId,
     repo,
-    configPlugins: config.plugins,
+    configPlugins: config.plugins ?? [],
     pluginsToInstall,
   })
   const deployHookAdded = await addDeployHook(updatedSite.deploy_hook)

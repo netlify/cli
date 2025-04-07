@@ -8,15 +8,23 @@ import parseGithubUrl from 'parse-github-url'
 
 import { log } from './command-helpers.js'
 
-/**
- *
- * @param {object} config
- * @param {string} [config.remoteName]
- * @param {string} config.workingDir
- * @returns
- */
+export interface RepoData {
+  name: string | null
+  owner: string | null
+  repo: string | null
+  url: string
+  branch: string
+  provider: string | null
+  httpsUrl: string
+}
 
-const getRepoData = async function ({ remoteName, workingDir }: { remoteName?: string; workingDir: string }) {
+const getRepoData = async ({
+  remoteName,
+  workingDir,
+}: {
+  remoteName?: string
+  workingDir: string
+}): Promise<RepoData | { error: string }> => {
   try {
     const [gitConfig, gitDirectory] = await Promise.all([
       util.promisify(gitconfiglocal)(workingDir),
@@ -50,6 +58,7 @@ const getRepoData = async function ({ remoteName, workingDir }: { remoteName?: s
 
     const { url } = gitConfig.remote[remoteName]
     const parsedUrl = parseGithubUrl(url)
+    // TODO(serhalp): Validate more aggressively? We should probably require `owner`, `repo`, `host`?
     if (parsedUrl == null) {
       throw new Error(`The specified Git remote ${remoteName} is not a valid URL: ${url}`)
     }
@@ -66,8 +75,7 @@ const getRepoData = async function ({ remoteName, workingDir }: { remoteName?: s
     }
   } catch (error) {
     return {
-      // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-      error: error.message,
+      error: error instanceof Error ? error.message : error?.toString() ?? 'Failed to get repo data',
     }
   }
 }

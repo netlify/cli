@@ -1,17 +1,17 @@
 import { writeFile } from 'fs/promises'
 import path from 'path'
 
-import { NetlifyConfig } from '@netlify/build'
-import { Settings } from '@netlify/build-info'
+import type { Settings } from '@netlify/build-info'
 import cleanDeep from 'clean-deep'
 import inquirer from 'inquirer'
+import type { NetlifyAPI } from 'netlify'
 
-import BaseCommand from '../../commands/base-command.js'
-import { $TSFixMe } from '../../commands/types.js'
+import type BaseCommand from '../../commands/base-command.js'
 import { fileExistsAsync } from '../../lib/fs.js'
 import { normalizeBackslash } from '../../lib/path.js'
 import { detectBuildSettings } from '../build-info.js'
-import { chalk, error as failAndExit, log, warn } from '../command-helpers.js'
+import { chalk, logAndThrowError, log, type NormalizedCachedConfigConfig, warn } from '../command-helpers.js'
+import type { Plugin } from '../types.js'
 
 import { getRecommendPlugins, getUIPlugins } from './plugins.js'
 
@@ -25,12 +25,9 @@ const formatTitle = (title: string) => chalk.cyan(title)
  * want them installed in the site settings. When installed
  * there our build will automatically install the latest without
  * user management of the versioning.
- * @param pluginsInstalled
- * @param pluginsRecommended
- * @returns
  */
 export const getPluginsToAutoInstall = (
-  command: BaseCommand,
+  _command: BaseCommand,
   pluginsInstalled: string[] = [],
   pluginsRecommended: string[] = [],
 ) => {
@@ -43,7 +40,7 @@ export const getPluginsToAutoInstall = (
   )
 }
 
-const normalizeSettings = (settings: Partial<Settings>, config: NetlifyConfig, command: BaseCommand) => {
+const normalizeSettings = (settings: Partial<Settings>, config: NormalizedCachedConfigConfig, command: BaseCommand) => {
   const plugins = getPluginsToAutoInstall(command, settings.plugins_from_config_file, settings.plugins_recommended)
   const recommendedPlugins = getRecommendPlugins(plugins, config)
 
@@ -51,36 +48,32 @@ const normalizeSettings = (settings: Partial<Settings>, config: NetlifyConfig, c
     defaultBaseDir: settings.baseDirectory ?? command.project.relativeBaseDirectory ?? '',
     defaultBuildCmd: config.build.command || settings.buildCommand,
     defaultBuildDir: settings.dist,
-    // @ts-expect-error types need to be fixed on @netlify/build
     defaultFunctionsDir: config.build.functions || 'netlify/functions',
     recommendedPlugins,
   }
 }
 
-/**
- *
- * @param {object} param0
- * @param {string} param0.defaultBaseDir
- * @param {string} param0.defaultBuildCmd
- * @param {string=} param0.defaultBuildDir
- * @returns
- */
-// @ts-expect-error TS(7031) FIXME: Binding element 'defaultBaseDir' implicitly has an... Remove this comment to see the full error message
-const getPromptInputs = ({ defaultBaseDir, defaultBuildCmd, defaultBuildDir }) => {
+const getPromptInputs = ({
+  defaultBaseDir,
+  defaultBuildCmd,
+  defaultBuildDir,
+}: {
+  defaultBaseDir: string
+  defaultBuildCmd?: string | undefined
+  defaultBuildDir?: string | undefined
+}) => {
   const inputs = [
-    defaultBaseDir !== undefined &&
-      defaultBaseDir !== '' && {
-        type: 'input',
-        name: 'baseDir',
-        message: 'Base directory `(blank for current dir):',
-        default: defaultBaseDir,
-      },
+    defaultBaseDir !== '' && {
+      type: 'input',
+      name: 'baseDir',
+      message: 'Base directory `(blank for current dir):',
+      default: defaultBaseDir,
+    },
     {
       type: 'input',
       name: 'buildCmd',
       message: 'Your build command (hugo build/yarn run build/etc):',
-      // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-      filter: (val) => (val === '' ? '# no build command' : val),
+      filter: (val: string) => (val === '' ? '# no build command' : val),
       default: defaultBuildCmd,
     },
     {
@@ -94,27 +87,32 @@ const getPromptInputs = ({ defaultBaseDir, defaultBuildCmd, defaultBuildDir }) =
   return inputs.filter(Boolean)
 }
 
-export const getBuildSettings = async ({ command, config }: { command: BaseCommand; config: $TSFixMe }) => {
+export const getBuildSettings = async ({
+  command,
+  config,
+}: {
+  command: BaseCommand
+  config: NormalizedCachedConfigConfig
+}) => {
   const settings = await detectBuildSettings(command)
   // TODO: add prompt for asking to choose the build command
   const setting: Partial<Settings> = settings.length > 0 ? settings[0] : {}
   const { defaultBaseDir, defaultBuildCmd, defaultBuildDir, defaultFunctionsDir, recommendedPlugins } =
-    await normalizeSettings(setting, config, command)
+    normalizeSettings(setting, config, command)
 
   if (recommendedPlugins.length !== 0 && setting.framework?.name) {
     log(`Configuring ${formatTitle(setting.framework.name)} runtime...`)
     log()
   }
 
-  const { baseDir, buildCmd, buildDir } = await inquirer.prompt(
+  const { baseDir, buildCmd, buildDir } = (await inquirer.prompt(
     getPromptInputs({
       defaultBaseDir,
       defaultBuildCmd,
       defaultBuildDir,
     }),
-  )
+  )) as { baseDir?: string | undefined; buildCmd: string; buildDir: string }
 
-  // @ts-expect-error TS(7006) FIXME: Parameter 'plugin' implicitly has an 'any' type.
   const pluginsToInstall = recommendedPlugins.map((plugin) => ({ package: plugin }))
   const normalizedBaseDir = baseDir ? normalizeBackslash(baseDir) : undefined
 
@@ -149,22 +147,25 @@ const getNetlifyToml = ({
 `
 
 export const saveNetlifyToml = async ({
-  // @ts-expect-error TS(7031) FIXME: Binding element 'baseDir' implicitly has an 'any' ... Remove this comment to see the full error message
   baseDir,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'buildCmd' implicitly has an 'any'... Remove this comment to see the full error message
   buildCmd,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'buildDir' implicitly has an 'any'... Remove this comment to see the full error message
   buildDir,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'any' t... Remove this comment to see the full error message
   config,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'configPath' implicitly has an 'an... Remove this comment to see the full error message
   configPath,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'functionsDir' implicitly has an '... Remove this comment to see the full error message
   functionsDir,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'repositoryRoot' implicitly has an... Remove this comment to see the full error message
   repositoryRoot,
+}: {
+  baseDir: string | undefined
+  buildCmd: string
+  buildDir: string
+  config: NormalizedCachedConfigConfig
+  configPath: string | undefined
+  functionsDir: string | undefined
+  repositoryRoot: string
 }) => {
-  const tomlPathParts = [repositoryRoot, baseDir, 'netlify.toml'].filter(Boolean)
+  const tomlPathParts = [repositoryRoot, baseDir, 'netlify.toml'].filter(
+    (part): part is string => part != null && part.length > 0,
+  )
   const tomlPath = path.join(...tomlPathParts)
   if (await fileExistsAsync(tomlPath)) {
     return
@@ -194,8 +195,7 @@ export const saveNetlifyToml = async ({
         'utf-8',
       )
     } catch (error) {
-      // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-      warn(`Failed saving Netlify toml file: ${error.message}`)
+      warn(`Failed saving Netlify toml file: ${error instanceof Error ? error.message : error?.toString()}`)
     }
   }
 }
@@ -206,34 +206,57 @@ export const formatErrorMessage = ({ error, message }) => {
   return `${message} with error: ${chalk.red(errorMessage)}`
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-export const createDeployKey = async ({ api }) => {
+export type DeployKey = Awaited<ReturnType<NetlifyAPI['createDeployKey']>>
+
+export const createDeployKey = async ({ api }: { api: NetlifyAPI }): Promise<DeployKey> => {
   try {
     const deployKey = await api.createDeployKey()
     return deployKey
   } catch (error) {
     const message = formatErrorMessage({ message: 'Failed creating deploy key', error })
-    failAndExit(message)
+    return logAndThrowError(message)
   }
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-export const updateSite = async ({ api, options, siteId }) => {
+// TODO(serhalp): Export convenient named types from `netlify` package to avoid needing bizarre type patterns.
+type UpdateSiteRequestBody = Exclude<Parameters<NetlifyAPI['updateSite']>[0]['body'], () => unknown>
+
+export const updateSite = async ({
+  api,
+  options,
+  siteId,
+}: {
+  api: NetlifyAPI
+  options: UpdateSiteRequestBody
+  siteId: string
+}) => {
   try {
     const updatedSite = await api.updateSite({ siteId, body: options })
     return updatedSite
   } catch (error) {
     const message = formatErrorMessage({ message: 'Failed updating site with repo information', error })
-    failAndExit(message)
+    return logAndThrowError(message)
   }
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-export const setupSite = async ({ api, configPlugins, pluginsToInstall, repo, siteId }) => {
+export const setupSite = async ({
+  api,
+  configPlugins,
+  pluginsToInstall,
+  repo,
+  siteId,
+}: {
+  api: NetlifyAPI
+  configPlugins: Plugin[]
+  pluginsToInstall: { package: string }[]
+  repo: NonNullable<UpdateSiteRequestBody>['repo']
+  siteId: string
+}) => {
   const updatedSite = await updateSite({
     siteId,
     api,
     // merge existing plugins with new ones
+    // @ts-expect-error(serhalp) -- `plugins` is missing from `api.updateSite()` req body type
     options: { repo, plugins: [...getUIPlugins(configPlugins), ...pluginsToInstall] },
   })
 

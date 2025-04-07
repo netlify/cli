@@ -1,14 +1,15 @@
+import BaseCommand from '../../commands/base-command.js'
 import { chalk, log } from '../command-helpers.js'
+import type { RepoData } from '../get-repo-data.js'
 
 import { configGithub } from './config-github.js'
 import configManual from './config-manual.js'
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'repoData' implicitly has an 'any' type.
-const logSuccess = (repoData) => {
+const logSuccess = ({ provider }: RepoData): void => {
   log()
   log(chalk.greenBright.bold.underline(`Success! Netlify CI/CD Configured!`))
   log()
-  log(`This site is now configured to automatically deploy from ${repoData.provider} branches & pull requests`)
+  log(`This site is now configured to automatically deploy from ${provider} branches & pull requests`)
   log()
   log(`Next steps:
 
@@ -17,19 +18,21 @@ const logSuccess = (repoData) => {
   `)
 }
 
-/**
- * @param {object} config
- * @param {import('../../commands/base-command.js').default} config.command
- * @param {boolean} config.manual
- * @param {*} config.repoData
- * @param {string} config.siteId
- */
-// @ts-expect-error TS(7031) FIXME: Binding element 'command' implicitly has an 'any' ... Remove this comment to see the full error message
-export const configureRepo = async ({ command, manual, repoData, siteId }) => {
+export const configureRepo = async ({
+  command,
+  manual,
+  repoData,
+  siteId,
+}: {
+  command: BaseCommand
+  manual: boolean
+  repoData: RepoData
+  siteId: string
+}) => {
   if (manual) {
     await configManual({ command, siteId, repoData })
   } else if (repoData.provider === 'github') {
-    await configGithub({ command, siteId, repoName: repoData.name, repoOwner: repoData.owner })
+    await configGithub({ command, siteId, repoName: repoData.name ?? '', repoOwner: repoData.owner ?? '' })
   } else {
     log(`No configurator found for the provided git remote. Configuring manually...`)
     await configManual({ command, siteId, repoData })

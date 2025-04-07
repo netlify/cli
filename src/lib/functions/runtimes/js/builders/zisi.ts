@@ -2,21 +2,33 @@ import { mkdir, writeFile } from 'fs/promises'
 import { createRequire } from 'module'
 import path from 'path'
 
-import { zipFunction, listFunction } from '@netlify/zip-it-and-ship-it'
+import { ARCHIVE_FORMAT, zipFunction, listFunction, type FunctionResult } from '@netlify/zip-it-and-ship-it'
+// TODO(serhalp): Export this type from zisi
+import type { FeatureFlags } from '@netlify/zip-it-and-ship-it/dist/feature_flags.js'
 import decache from 'decache'
 import { readPackageUp } from 'read-package-up'
 import sourceMapSupport from 'source-map-support'
 
-import { NETLIFYDEVERR } from '../../../../../utils/command-helpers.js'
+import { NETLIFYDEVERR, type NormalizedCachedConfigConfig } from '../../../../../utils/command-helpers.js'
 import { SERVE_FUNCTIONS_FOLDER } from '../../../../../utils/functions/functions.js'
 import { getPathInProject } from '../../../../settings.js'
-import { normalizeFunctionsConfig } from '../../../config.js'
-import { memoizedBuild } from '../../../memoized-build.js'
+import { type NormalizedFunctionsConfig, normalizeFunctionsConfig } from '../../../config.js'
+import { type BuildCommandCache, memoizedBuild } from '../../../memoized-build.js'
+import type NetlifyFunction from '../../../netlify-function.js'
+import type { BaseBuildResult } from '../../index.js'
+import type { JsBuildResult } from '../index.js'
 
 const require = createRequire(import.meta.url)
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'config' implicitly has an 'any' type.
-const addFunctionsConfigDefaults = (config) => ({
+export type ZisiBuildResult = BaseBuildResult & {
+  buildPath: string
+  includedFiles: FunctionResult['includedFiles']
+  outputModuleFormat: FunctionResult['outputModuleFormat']
+  mainFile: FunctionResult['mainFile']
+  runtimeAPIVersion: FunctionResult['runtimeAPIVersion']
+}
+
+const addFunctionsConfigDefaults = (config: NormalizedFunctionsConfig) => ({
   ...config,
   '*': {
     nodeSourcemap: true,
@@ -24,30 +36,29 @@ const addFunctionsConfigDefaults = (config) => ({
   },
 })
 
-/**
- * @param {object} params
- * @param {import("@netlify/zip-it-and-ship-it/dist/feature_flags.js").FeatureFlags} params.featureFlags
- */
 const buildFunction = async ({
-  // @ts-expect-error TS(7031) FIXME: Binding element 'cache' implicitly has an 'any' ty... Remove this comment to see the full error message
   cache,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'any' t... Remove this comment to see the full error message
   config,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'directory' implicitly has an 'any... Remove this comment to see the full error message
   directory,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'featureFlags' implicitly has an '... Remove this comment to see the full error message
   featureFlags,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'func' implicitly has an 'any' typ... Remove this comment to see the full error message
   func,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'hasTypeModule' implicitly has an ... Remove this comment to see the full error message
   hasTypeModule,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'projectRoot' implicitly has an 'a... Remove this comment to see the full error message
   projectRoot,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'targetDirectory' implicitly has a... Remove this comment to see the full error message
   targetDirectory,
-}) => {
+}: {
+  cache: BuildCommandCache<FunctionResult>
+  config: NormalizedFunctionsConfig
+  directory?: string | undefined
+  featureFlags: FeatureFlags
+  // This seems like it should be `ZisiBuildResult` but it's technically referenced from `detectZisiBuilder` so TS
+  // can't know at that point that we'll only end up calling it with a `ZisiBuildResult`... Consider refactoring?
+  func: NetlifyFunction<JsBuildResult>
+  hasTypeModule: boolean
+  projectRoot: string
+  targetDirectory: string
+}): Promise<ZisiBuildResult> => {
   const zipOptions = {
-    archiveFormat: 'none',
+    archiveFormat: ARCHIVE_FORMAT.NONE,
     basePath: projectRoot,
     config,
     featureFlags: { ...featureFlags, zisi_functions_api_v2: true },
@@ -76,18 +87,22 @@ const buildFunction = async ({
   } = await memoizedBuild({
     cache,
     cacheKey: `zisi-${entryPath}`,
-    // @ts-expect-error TS(2345) FIXME: Argument of type '{ archiveFormat: string; basePat... Remove this comment to see the full error message
-    command: () => zipFunction(entryPath, targetDirectory, zipOptions),
+    command: async () => {
+      const result = await zipFunction(entryPath, targetDirectory, zipOptions)
+      if (result == null) {
+        throw new Error('Failed to build function')
+      }
+      return result
+    },
   })
-  // @ts-expect-error TS(7006) FIXME: Parameter 'inputPath' implicitly has an 'any' type... Remove this comment to see the full error message
-  const srcFiles = inputs.filter((inputPath) => !inputPath.includes(`${path.sep}node_modules${path.sep}`))
+  const srcFiles = (inputs ?? []).filter((inputPath) => !inputPath.includes(`${path.sep}node_modules${path.sep}`))
   const buildPath = path.join(functionPath, entryFilename)
 
   // some projects include a package.json with "type=module", forcing Node to interpret every descending file
   // as ESM. ZISI outputs CJS, so we emit an overriding directive into the output directory.
   if (hasTypeModule) {
     await writeFile(
-      path.join(functionPath, `package.json`),
+      path.join(functionPath, 'package.json'),
       JSON.stringify({
         type: 'commonjs',
       }),
@@ -109,40 +124,40 @@ const buildFunction = async ({
   }
 }
 
-/**
- * @param {object} params
- * @param {unknown} params.config
- * @param {string} params.mainFile
- * @param {string} params.projectRoot
- */
-// @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'any' t... Remove this comment to see the full error message
-export const parseFunctionForMetadata = async ({ config, mainFile, projectRoot }) =>
+export const getFunctionMetadata = async ({
+  config,
+  mainFile,
+  projectRoot,
+}: {
+  config: NormalizedCachedConfigConfig
+  mainFile: string
+  projectRoot: string
+}) =>
+  // TODO(serhalp): Throw if this returns `undefined`? It doesn't seem like this is expected.
   await listFunction(mainFile, {
     config: netlifyConfigToZisiConfig({ config, projectRoot }),
-    // @ts-expect-error TS(2322) FIXME: Type '{ zisi_functions_api_v2: true; }' is not ass... Remove this comment to see the full error message
-    featureFlags: { zisi_functions_api_v2: true },
+    featureFlags: {},
     parseISC: true,
   })
 
-// Clears the cache for any files inside the directory from which functions are
-// served.
-// @ts-expect-error TS(7006) FIXME: Parameter 'functionsPath' implicitly has an 'any' ... Remove this comment to see the full error message
-const clearFunctionsCache = (functionsPath) => {
+type FunctionMetadata = NonNullable<Awaited<ReturnType<typeof getFunctionMetadata>>>
+
+// Clears the cache for any files inside the directory from which functions are served.
+const clearFunctionsCache = (functionsPath: string) => {
   Object.keys(require.cache)
     .filter((key) => key.startsWith(functionsPath))
-    // @ts-expect-error
-    .forEach(decache)
+    // @ts-expect-error(serhalp) -- `decache` is typed but TS thinks it isn't callable. Investigate.
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return -- What in the world is going on?
+    .forEach((key) => decache(key))
 }
 
-/**
- *
- * @param {object} config
- * @param {string} config.projectRoot
- * @param {(msg: string) => void} config.errorExit
- * @returns
- */
-// @ts-expect-error TS(7031) FIXME: Binding element 'errorExit' implicitly has an 'any... Remove this comment to see the full error message
-const getTargetDirectory = async ({ errorExit, projectRoot }) => {
+const getTargetDirectory = async ({
+  errorExit,
+  projectRoot,
+}: {
+  errorExit: (msg: string) => void
+  projectRoot: string
+}): Promise<string> => {
   const targetDirectory = path.resolve(projectRoot, getPathInProject([SERVE_FUNCTIONS_FOLDER]))
 
   try {
@@ -154,34 +169,41 @@ const getTargetDirectory = async ({ errorExit, projectRoot }) => {
   return targetDirectory
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'any' t... Remove this comment to see the full error message
-const netlifyConfigToZisiConfig = ({ config, projectRoot }) =>
-  addFunctionsConfigDefaults(normalizeFunctionsConfig({ functionsConfig: config.functions, projectRoot }))
+const netlifyConfigToZisiConfig = ({
+  config,
+  projectRoot,
+}: {
+  config: NormalizedCachedConfigConfig
+  projectRoot: string
+}) => addFunctionsConfigDefaults(normalizeFunctionsConfig({ functionsConfig: config.functions, projectRoot }))
 
-/**
- *
- * @param {object} param0
- * @param {*} param0.config
- * @param {*} param0.directory
- * @param {*} param0.errorExit
- * @param {*} param0.func
- * @param {*} param0.metadata
- * @param {string} param0.projectRoot
- */
-// @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'any' t... Remove this comment to see the full error message
-export default async function handler({ config, directory, errorExit, func, metadata, projectRoot }) {
+export default async function detectZisiBuilder({
+  config,
+  directory,
+  errorExit,
+  func,
+  metadata,
+  projectRoot,
+}: {
+  config: NormalizedCachedConfigConfig
+  directory?: string | undefined
+  errorExit: (msg: string) => void
+  // This seems like it should be `ZisiBuildResult` but since we're "detecting" which builder to use here TS can't know
+  // at that point that we'll only end up calling it with a `ZisiBuildResult`... Consider refactoring?
+  func: NetlifyFunction<JsBuildResult>
+  metadata?: FunctionMetadata | undefined
+  projectRoot: string
+}) {
   const functionsConfig = netlifyConfigToZisiConfig({ config, projectRoot })
 
+  // @ts-expect-error(serhalp) -- We seem to be incorrectly using this function, but it seems to work... Investigate.
   const packageJson = await readPackageUp(func.mainFile)
-  const hasTypeModule = packageJson && packageJson.packageJson.type === 'module'
+  const hasTypeModule = packageJson?.packageJson.type === 'module'
 
-  /** @type {import("@netlify/zip-it-and-ship-it/dist/feature_flags.js").FeatureFlags} */
-  const featureFlags = {}
+  const featureFlags: FeatureFlags = {}
 
-  if (metadata.runtimeAPIVersion === 2) {
-    // @ts-expect-error TS(2339) FIXME: Property 'zisi_pure_esm' does not exist on type '{... Remove this comment to see the full error message
+  if (metadata?.runtimeAPIVersion === 2) {
     featureFlags.zisi_pure_esm = true
-    // @ts-expect-error TS(2339) FIXME: Property 'zisi_pure_esm_mjs' does not exist on typ... Remove this comment to see the full error message
     featureFlags.zisi_pure_esm_mjs = true
   } else {
     // We must use esbuild for certain file extensions.
@@ -194,7 +216,8 @@ export default async function handler({ config, directory, errorExit, func, meta
 
     // TODO: Resolve functions config globs so that we can check for the bundler
     // on a per-function basis.
-    const isUsingEsbuild = ['esbuild_zisi', 'esbuild'].includes(functionsConfig['*'].nodeBundler)
+    const isUsingEsbuild =
+      functionsConfig['*'].nodeBundler != null && ['esbuild_zisi', 'esbuild'].includes(functionsConfig['*'].nodeBundler)
 
     if (!isUsingEsbuild) {
       return false
@@ -206,18 +229,20 @@ export default async function handler({ config, directory, errorExit, func, meta
 
   const targetDirectory = await getTargetDirectory({ projectRoot, errorExit })
 
+  const build = async ({ cache = {} }: { cache?: BuildCommandCache<FunctionResult> }) =>
+    buildFunction({
+      cache,
+      config: functionsConfig,
+      directory,
+      func,
+      projectRoot,
+      targetDirectory,
+      hasTypeModule,
+      featureFlags,
+    })
+
   return {
-    build: ({ cache = {} }) =>
-      buildFunction({
-        cache,
-        config: functionsConfig,
-        directory,
-        func,
-        projectRoot,
-        targetDirectory,
-        hasTypeModule,
-        featureFlags,
-      }),
+    build,
     builderName: 'zip-it-and-ship-it',
     target: targetDirectory,
   }

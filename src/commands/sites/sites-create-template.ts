@@ -1,7 +1,7 @@
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { OptionValues } from 'commander'
+import type { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 import pick from 'lodash/pick.js'
 import { render } from 'prettyjson'
@@ -9,14 +9,14 @@ import { v4 as uuid } from 'uuid'
 
 import {
   chalk,
-  error,
+  logAndThrowError,
   getTerminalLink,
   log,
   logJson,
   warn,
-  APIError,
+  type APIError,
   GitHubAPIError,
-  GitHubRepoResponse,
+  type GitHubRepoResponse,
 } from '../../utils/command-helpers.js'
 import execa from '../../utils/execa.js'
 import getRepoData from '../../utils/get-repo-data.js'
@@ -25,8 +25,8 @@ import { configureRepo } from '../../utils/init/config.js'
 import { deployedSiteExists, getGitHubLink, getTemplateName } from '../../utils/sites/create-template.js'
 import { callLinkSite, createRepo, validateTemplate } from '../../utils/sites/utils.js'
 import { track } from '../../utils/telemetry/index.js'
-import { Account, SiteInfo } from '../../utils/types.js'
-import BaseCommand from '../base-command.js'
+import type { Account, SiteInfo } from '../../utils/types.js'
+import type BaseCommand from '../base-command.js'
 
 import { getSiteNameInput } from './sites-create.js'
 
@@ -40,18 +40,16 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
   const { exists, isTemplate } = await validateTemplate({ templateName, ghToken })
   if (!exists) {
     const githubLink = getGitHubLink({ options, templateName })
-    error(
+    return logAndThrowError(
       `Could not find template ${chalk.bold(templateName)}. Please verify it exists and you can ${getTerminalLink(
         'access to it on GitHub',
         githubLink,
       )}`,
     )
-    return
   }
   if (!isTemplate) {
     const githubLink = getGitHubLink({ options, templateName })
-    error(`${getTerminalLink(chalk.bold(templateName), githubLink)} is not a valid GitHub template`)
-    return
+    return logAndThrowError(`${getTerminalLink(chalk.bold(templateName), githubLink)} is not a valid GitHub template`)
   }
 
   let { accountSlug } = options
@@ -94,7 +92,7 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
         return inputSiteName()
       }
     } catch (error_) {
-      error(error_)
+      return logAndThrowError(error_)
     }
 
     if (!hasExistingRepo) {
@@ -117,13 +115,13 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
         hasExistingRepo = true
       } catch (error_) {
         if ((error_ as GitHubAPIError).status === '404') {
-          error(
+          return logAndThrowError(
             `Could not create repository: ${
               (error_ as GitHubAPIError).message
             }. Ensure that your GitHub personal access token grants permission to create repositories`,
           )
         } else {
-          error(
+          return logAndThrowError(
             `Something went wrong trying to create the repository. We're getting the following error: '${
               (error_ as GitHubAPIError).message
             }'. You can try to re-run this command again or open an issue in our repository: https://github.com/netlify/cli/issues`,
@@ -133,26 +131,29 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
     }
 
     try {
-      // TODO: Update type once the open api spec is updated https://open-api.netlify.com/#tag/site/operation/createSiteInTeam
-      site = await (api as any).createSiteInTeam({
+      // FIXME(serhalp): `id` and `name` should be required in `netlify` package type
+      site = (await api.createSiteInTeam({
         accountSlug,
         body: {
           repo: {
             provider: 'github',
+            // @ts-expect-error -- FIXME(serhalp): Supposedly this is does not exist. Investigate.
             repo: repoResp.full_name,
+            // FIXME(serhalp): Supposedly this should be `public_repo`. Investigate.
             private: repoResp.private,
+            // FIXME(serhalp): Supposedly this should be `repo_branch`. Investigate.
             branch: repoResp.default_branch,
           },
           name: siteName,
         },
-      })
+      })) as unknown as SiteInfo
     } catch (error_) {
       if ((error_ as APIError).status === 422) {
         log(`createSiteInTeam error: ${(error_ as APIError).status}: ${(error_ as APIError).message}`)
         log('Cannot create a site with that name. Site name may already exist. Please try a new name.')
         return inputSiteName(undefined, hasExistingRepo)
       }
-      error(`createSiteInTeam error: ${(error_ as APIError).status}: ${(error_ as APIError).message}`)
+      return logAndThrowError(`createSiteInTeam error: ${(error_ as APIError).status}: ${(error_ as APIError).message}`)
     }
     return [site, repoResp]
   }
@@ -169,7 +170,7 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
       'Admin URL': site.admin_url,
       URL: siteUrl,
       'Site ID': site.id,
-      'Repo URL': site.build_settings.repo_url,
+      'Repo URL': site.build_settings?.repo_url ?? '',
     }),
   )
 
@@ -207,11 +208,12 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
       const cliPath = path.resolve(__dirname, '../../../bin/run.js')
 
       let stdout
+      // TODO(serhalp): Why is this condition here? We've asked the user multiple prompts, but we already knew we had
+      // invalid repo data. Move upstream.
       if (repoResp.name) {
         stdout = await callLinkSite(cliPath, repoResp.name, '\n')
       } else {
-        error()
-        return
+        return logAndThrowError('Failed to fetch the repo')
       }
 
       const linkedSiteUrlRegex = /Site url:\s+(\S+)/
@@ -250,6 +252,11 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
   if (options.withCi) {
     log('Configuring CI')
     const repoData = await getRepoData({ workingDir: command.workingDir })
+
+    if ('error' in repoData) {
+      return logAndThrowError('Failed to get repo data')
+    }
+
     await configureRepo({ command, siteId: site.id, repoData, manual: options.manual })
   }
 

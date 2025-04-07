@@ -1,23 +1,28 @@
 import { promises as fs } from 'fs'
 import { resolve } from 'path'
 
+import type { OptionValues } from 'commander'
+
 import { isDirectoryAsync, isFileAsync } from '../../lib/fs.js'
 import { getPathInProject } from '../../lib/settings.js'
+import type { NormalizedCachedConfigConfig } from '../command-helpers.js'
 
 export const INTERNAL_FUNCTIONS_FOLDER = 'functions-internal'
 export const SERVE_FUNCTIONS_FOLDER = 'functions-serve'
 
 /**
  * retrieves the function directory out of the flags or config
- * @param {object} param
- * @param {object} param.config
- * @param {import('commander').OptionValues} param.options The options from the commander
- * @param {string} [defaultValue]
- * @returns {string}
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'any' t... Remove this comment to see the full error message
-export const getFunctionsDir = ({ config, options }, defaultValue) =>
-  options.functions || config.dev?.functions || config.functionsDirectory || config.dev?.Functions || defaultValue
+export const getFunctionsDir = (
+  {
+    config,
+    options,
+  }: {
+    config: NormalizedCachedConfigConfig
+    options: OptionValues
+  },
+  defaultValue?: string,
+) => options.functions || config.dev?.functions || config.functionsDirectory || defaultValue
 
 export const getFunctionsManifestPath = async ({ base, packagePath = '' }: { base: string; packagePath?: string }) => {
   const path = resolve(base, packagePath, getPathInProject(['functions', 'manifest.json']))
@@ -26,15 +31,27 @@ export const getFunctionsManifestPath = async ({ base, packagePath = '' }: { bas
   return isFile ? path : null
 }
 
-export const getFunctionsDistPath = async ({ base, packagePath = '' }: { base: string; packagePath?: string }) => {
-  const path = resolve(base, packagePath, getPathInProject(['functions']))
+export const getFunctionsDistPath = async ({
+  base,
+  packagePath = '',
+}: {
+  base?: undefined | string
+  packagePath?: string
+}) => {
+  const path = resolve(base ?? '', packagePath, getPathInProject(['functions']))
   const isDirectory = await isDirectoryAsync(path)
 
   return isDirectory ? path : null
 }
 
-export const getFunctionsServePath = ({ base, packagePath = '' }: { base: string; packagePath?: string }) => {
-  const path = resolve(base, packagePath, getPathInProject([SERVE_FUNCTIONS_FOLDER]))
+export const getFunctionsServePath = ({
+  base,
+  packagePath = '',
+}: {
+  base?: undefined | string
+  packagePath?: string
+}) => {
+  const path = resolve(base ?? '', packagePath, getPathInProject([SERVE_FUNCTIONS_FOLDER]))
 
   return path
 }
@@ -47,11 +64,11 @@ export const getInternalFunctionsDir = async ({
   ensureExists,
   packagePath = '',
 }: {
-  base: string
+  base?: undefined | string
   ensureExists?: boolean
   packagePath?: string
 }) => {
-  const path = resolve(base, packagePath, getPathInProject([INTERNAL_FUNCTIONS_FOLDER]))
+  const path = resolve(base ?? '', packagePath, getPathInProject([INTERNAL_FUNCTIONS_FOLDER]))
 
   if (ensureExists) {
     await fs.mkdir(path, { recursive: true })

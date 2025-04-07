@@ -18,6 +18,7 @@ import BaseCommand from '../base-command.js'
 
 const DEFAULT_PORT = 9999
 
+// FIXME(serhalp): Replace `OptionValues` with more specific type. This is full of implicit `any`s.
 export const functionsServe = async (options: OptionValues, command: BaseCommand) => {
   const { api, config, site, siteInfo, state } = command.netlify
 
@@ -37,7 +38,7 @@ export const functionsServe = async (options: OptionValues, command: BaseCommand
   })
 
   const functionsPort = await acquirePort({
-    configuredPort: options.port || (config.dev && config.dev.functionsPort),
+    configuredPort: options.port || config.dev?.functionsPort,
     defaultPort: DEFAULT_PORT,
     errorMessage: 'Could not acquire configured functions port',
   })

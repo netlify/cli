@@ -1,15 +1,16 @@
 import { Buffer } from 'buffer'
 import { promises as fs } from 'fs'
+import type { IncomingHttpHeaders } from 'http'
 import path from 'path'
 
-import express, { type RequestHandler } from 'express'
+import express, { type Request, type RequestHandler } from 'express'
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'expr... Remove this comment to see the full error message
 import expressLogging from 'express-logging'
 import { jwtDecode } from 'jwt-decode'
 
 import type BaseCommand from '../../commands/base-command.js'
-import type { $TSFixMe } from '../../commands/types.js'
-import { NETLIFYDEVERR, NETLIFYDEVLOG, error as errorExit, log } from '../../utils/command-helpers.js'
+import type { NetlifySite } from '../../commands/types.js'
+import { NETLIFYDEVLOG, type NormalizedCachedConfigConfig, log } from '../../utils/command-helpers.js'
 import { UNLINKED_SITE_MOCK_ID } from '../../utils/dev.js'
 import { isFeatureFlagEnabled } from '../../utils/feature-flags.js'
 import {
@@ -19,9 +20,10 @@ import {
   getInternalFunctionsDir,
 } from '../../utils/functions/index.js'
 import { NFFunctionName, NFFunctionRoute } from '../../utils/headers.js'
-import type { BlobsContext } from '../blobs/blobs.js'
+import type { BlobsContextWithEdgeAccess } from '../blobs/blobs.js'
 import { headers as efHeaders } from '../edge-functions/headers.js'
 import { getGeoLocation } from '../geo-location.js'
+import type { CLIState, ServerSettings, SiteInfo } from '../../utils/types.js'
 
 import { handleBackgroundFunction, handleBackgroundFunctionResult } from './background.js'
 import { createFormSubmissionHandler } from './form-submissions-handler.js'
@@ -30,8 +32,9 @@ import { handleScheduledFunction } from './scheduled.js'
 import { handleSynchronousFunction } from './synchronous.js'
 import { shouldBase64Encode } from './utils.js'
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'headers' implicitly has an 'any' type.
-const buildClientContext = function (headers) {
+type FunctionsSettings = Pick<ServerSettings, 'functions' | 'functionsPort'>
+
+const buildClientContext = function (headers: IncomingHttpHeaders) {
   // inject a client context based on auth header, ported over from netlify-lambda (https://github.com/netlify/netlify-lambda/pull/57)
   if (!headers.authorization) return
 
@@ -72,10 +75,9 @@ const buildClientContext = function (headers) {
   }
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
-const hasBody = (req) =>
+const hasBody = (req: Request) =>
   // copied from is-type package
-  (req.header('transfer-encoding') !== undefined || !isNaN(req.header('content-length'))) &&
+  (req.header('transfer-encoding') !== undefined || !Number.isNaN(Number(req.header('content-length')))) &&
   // we expect a string or a buffer, because we use the two bodyParsers(text, raw) from express
   (typeof req.body === 'string' || Buffer.isBuffer(req.body))
 
@@ -114,7 +116,8 @@ export const createHandler = function (options: GetFunctionsServerOptions): Requ
       return
     }
 
-    if (!func.hasValidName()) {
+    // Technically it follows from `func.hasValidName()` that `functionName != null`, but TS doesn't know that.
+    if (!func.hasValidName() || functionName == null) {
       response.statusCode = 400
       response.end('Function name should consist only of alphanumeric characters, hyphen & underscores.')
       return
@@ -138,11 +141,10 @@ export const createHandler = function (options: GetFunctionsServerOptions): Requ
 
     let requestQuery = request.query
     if (request.header('x-netlify-original-search')) {
-      const newRequestQuery = {}
+      const newRequestQuery: Record<string, string[]> = {}
       const searchParams = new URLSearchParams(request.header('x-netlify-original-search'))
 
       for (const key of searchParams.keys()) {
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         newRequestQuery[key] = searchParams.getAll(key)
       }
 
@@ -150,22 +152,23 @@ export const createHandler = function (options: GetFunctionsServerOptions): Requ
       delete request.headers['x-netlify-original-search']
     }
 
-    const queryParams = Object.entries(requestQuery).reduce(
+    const queryParamsAsMultiValue: Record<string, string[]> = Object.entries(requestQuery).reduce(
       (prev, [key, value]) => ({ ...prev, [key]: Array.isArray(value) ? value : [value] }),
       {},
     )
 
     const geoLocation = await getGeoLocation({ ...options, mode: options.geolocationMode })
 
-    const headers = Object.entries({
+    const multiValueHeaders: Record<string, string[]> = Object.entries({
       ...request.headers,
       'client-ip': [remoteAddress],
       'x-nf-client-connection-ip': [remoteAddress],
       'x-nf-account-id': [options.accountId],
-      'x-nf-site-id': [options?.siteInfo?.id ?? UNLINKED_SITE_MOCK_ID],
+      'x-nf-site-id': [options.siteInfo?.id ?? UNLINKED_SITE_MOCK_ID],
       [efHeaders.Geo]: Buffer.from(JSON.stringify(geoLocation)).toString('base64'),
     }).reduce((prev, [key, value]) => ({ ...prev, [key]: Array.isArray(value) ? value : [value] }), {})
     const rawQuery = new URL(request.originalUrl, 'http://example.com').search.slice(1)
+    // TODO(serhalp): Update several tests to pass realistic `config` objects and remove nullish coalescing.
     const protocol = options.config?.dev?.https ? 'https' : 'http'
     const url = new URL(requestPath, `${protocol}://${request.get('host') || 'localhost'}`)
     url.search = rawQuery
@@ -173,15 +176,16 @@ export const createHandler = function (options: GetFunctionsServerOptions): Requ
     const event = {
       path: requestPath,
       httpMethod: request.method,
-      queryStringParameters: Object.entries(queryParams).reduce(
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+      queryStringParameters: Object.entries(queryParamsAsMultiValue).reduce(
         (prev, [key, value]) => ({ ...prev, [key]: value.join(', ') }),
         {},
       ),
-      multiValueQueryStringParameters: queryParams,
-      // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-      headers: Object.entries(headers).reduce((prev, [key, value]) => ({ ...prev, [key]: value.join(', ') }), {}),
-      multiValueHeaders: headers,
+      multiValueQueryStringParameters: queryParamsAsMultiValue,
+      headers: Object.entries(multiValueHeaders).reduce(
+        (prev, [key, value]) => ({ ...prev, [key]: value.join(', ') }),
+        {},
+      ),
+      multiValueHeaders,
       body,
       isBase64Encoded,
       rawUrl,
@@ -240,6 +244,7 @@ export const createHandler = function (options: GetFunctionsServerOptions): Requ
       const { error, result } = await func.invoke(event, clientContext)
 
       // check for existence of metadata if this is a builder function
+      // @ts-expect-error(serhalp) -- Investigate. There doesn't appear to be such a thing as `metadata`?
       if (/^\/.netlify\/(builders)/.test(request.path) && !result?.metadata?.builder_function) {
         response.status(400).send({
           message:
@@ -257,12 +262,12 @@ export const createHandler = function (options: GetFunctionsServerOptions): Requ
 interface GetFunctionsServerOptions {
   functionsRegistry: FunctionsRegistry
   siteUrl: string
-  siteInfo?: $TSFixMe
+  siteInfo?: SiteInfo
   accountId: string
   geoCountry: string
   offline: boolean
-  state: $TSFixMe
-  config: $TSFixMe
+  state: CLIState
+  config: NormalizedCachedConfigConfig
   geolocationMode: 'cache' | 'update' | 'mock'
 }
 
@@ -294,16 +299,19 @@ const getFunctionsServer = (options: GetFunctionsServerOptions) => {
 
 export const startFunctionsServer = async (
   options: {
-    blobsContext: BlobsContext
+    blobsContext: BlobsContextWithEdgeAccess
     command: BaseCommand
-    config: $TSFixMe
-    capabilities: $TSFixMe
+    config: NormalizedCachedConfigConfig
+    capabilities: {
+      backgroundFunctions?: boolean
+    }
     debug: boolean
     loadDistFunctions?: boolean
-    settings: $TSFixMe
-    site: $TSFixMe
-    siteInfo: $TSFixMe
-    timeouts: $TSFixMe
+    // TODO(serhalp): This is confusing. Refactor to accept entire settings or rename or something?
+    settings: Pick<ServerSettings, 'functions' | 'functionsPort'>
+    site: NetlifySite
+    siteInfo: SiteInfo
+    timeouts: { backgroundFunctions: number; syncFunctions: number }
   } & Omit<GetFunctionsServerOptions, 'functionsRegistry'>,
 ): Promise<FunctionsRegistry | undefined> => {
   const {
@@ -350,7 +358,7 @@ export const startFunctionsServer = async (
       internalFunctionsDir,
       command.netlify.frameworksAPIPaths.functions.path,
       settings.functions,
-    ].filter(Boolean)
+    ].filter((x): x is string => x != null)
 
     functionsDirectories.push(...sourceDirectories)
   }
@@ -369,7 +377,6 @@ export const startFunctionsServer = async (
 
   const functionsRegistry = new FunctionsRegistry({
     blobsContext,
-    // @ts-expect-error TS(7031) FIXME
     capabilities,
     config,
     debug,
@@ -399,15 +406,12 @@ const startWebServer = async ({
 }: {
   debug: boolean
   server: ReturnType<Awaited<typeof getFunctionsServer>>
-  settings: $TSFixMe
+  settings: FunctionsSettings
 }) => {
   await new Promise<void>((resolve) => {
-    // @ts-expect-error TS(7006) FIXME: Parameter 'err' implicitly has an 'any' type.
-    server.listen(settings.functionsPort, (err) => {
-      if (err) {
-        errorExit(`${NETLIFYDEVERR} Unable to start functions server: ${err}`)
-      } else if (debug) {
-        log(`${NETLIFYDEVLOG} Functions server is listening on ${settings.functionsPort}`)
+    server.listen(settings.functionsPort, () => {
+      if (debug) {
+        log(`${NETLIFYDEVLOG} Functions server is listening on ${settings.functionsPort.toString()}`)
       }
       resolve()
     })

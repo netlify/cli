@@ -1,20 +1,14 @@
 import { Octokit } from '@octokit/rest'
+import type { NetlifyAPI } from 'netlify'
 
-import { chalk, error as failAndExit, log } from '../command-helpers.js'
-import { getGitHubToken as ghauth } from '../gh-auth.js'
+import { chalk, logAndThrowError, log } from '../command-helpers.js'
+import { getGitHubToken as ghauth, type Token } from '../gh-auth.js'
+import type { GlobalConfigStore } from '../types.js'
+import type { BaseCommand } from '../../commands/index.js'
 
 import { createDeployKey, formatErrorMessage, getBuildSettings, saveNetlifyToml, setupSite } from './utils.js'
 
-/**
- * @typedef Token
- * @type {object}
- * @property {string} user - The username that is associated with the token
- * @property {string} token - The actual token value.
- * @property {string} provider - The Provider where the token is associated with ('github').
- */
-
-// @ts-expect-error TS(7031) FIXME: Binding element 'repoName' implicitly has an 'any'... Remove this comment to see the full error message
-const formatRepoAndOwner = ({ repoName, repoOwner }) => ({
+const formatRepoAndOwner = ({ repoName, repoOwner }: { repoName: string; repoOwner: string }) => ({
   name: chalk.magenta(repoName),
   owner: chalk.magenta(repoOwner),
 })
@@ -23,14 +17,11 @@ const PAGE_SIZE = 100
 
 /**
  * Get a valid GitHub token
- * @returns {Promise<string>}
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'globalConfig' implicitly has an '... Remove this comment to see the full error message
-export const getGitHubToken = async ({ globalConfig }) => {
+export const getGitHubToken = async ({ globalConfig }: { globalConfig: GlobalConfigStore }): Promise<string> => {
   const userId = globalConfig.get('userId')
 
-  /** @type {Token} */
-  const githubToken = globalConfig.get(`users.${userId}.auth.github`)
+  const githubToken: Token = globalConfig.get(`users.${userId}.auth.github`)
 
   if (githubToken && githubToken.user && githubToken.token) {
     try {
@@ -47,29 +38,31 @@ export const getGitHubToken = async ({ globalConfig }) => {
 
   const newToken = await ghauth()
   globalConfig.set(`users.${userId}.auth.github`, newToken)
-  // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
   return newToken.token
 }
 
-/**
- * Retrieves the GitHub octokit client
- * @param {string} token
- * @returns {Octokit}
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'token' implicitly has an 'any' type.
-const getGitHubClient = (token) =>
+const getGitHubClient = (token: string): Octokit =>
   new Octokit({
     auth: `token ${token}`,
   })
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-const addDeployKey = async ({ api, octokit, repoName, repoOwner }) => {
+const addDeployKey = async ({
+  api,
+  octokit,
+  repoName,
+  repoOwner,
+}: {
+  api: NetlifyAPI
+  octokit: Octokit
+  repoName: string
+  repoOwner: string
+}) => {
   log('Adding deploy key to repository...')
   const key = await createDeployKey({ api })
   try {
     await octokit.repos.createDeployKey({
       title: 'Netlify Deploy Key',
-      key: key.public_key,
+      key: key.public_key ?? '',
       owner: repoOwner,
       repo: repoName,
       read_only: true,
@@ -83,12 +76,19 @@ const addDeployKey = async ({ api, octokit, repoName, repoOwner }) => {
       const { name, owner } = formatRepoAndOwner({ repoName, repoOwner })
       message = `${message}. Does the repository ${name} exist and do ${owner} has the correct permissions to set up deploy keys?`
     }
-    failAndExit(message)
+    return logAndThrowError(message)
   }
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'octokit' implicitly has an 'any' ... Remove this comment to see the full error message
-const getGitHubRepo = async ({ octokit, repoName, repoOwner }) => {
+const getGitHubRepo = async ({
+  octokit,
+  repoName,
+  repoOwner,
+}: {
+  octokit: Octokit
+  repoName: string
+  repoOwner: string
+}) => {
   try {
     const { data } = await octokit.repos.get({
       owner: repoOwner,
@@ -102,7 +102,7 @@ const getGitHubRepo = async ({ octokit, repoName, repoOwner }) => {
       const { name, owner } = formatRepoAndOwner({ repoName, repoOwner })
       message = `${message}. Does the repository ${name} exist and accessible by ${owner}`
     }
-    failAndExit(message)
+    return logAndThrowError(message)
   }
 }
 
@@ -149,7 +149,7 @@ const addDeployHook = async ({ deployHook, octokit, repoName, repoOwner }) => {
           const { name, owner } = formatRepoAndOwner({ repoName, repoOwner })
           message = `${message}. Does the repository ${name} and do ${owner} has the correct permissions to set up hooks`
         }
-        failAndExit(message)
+        return logAndThrowError(message)
       }
     }
   }
@@ -190,22 +190,20 @@ const upsertHook = async ({ api, event, ntlHooks, siteId, token }) => {
 const addNotificationHooks = async ({ api, siteId, token }) => {
   log(`Creating Netlify GitHub Notification Hooks...`)
 
-  // @ts-expect-error TS(7034) FIXME: Variable 'ntlHooks' implicitly has type 'any' in s... Remove this comment to see the full error message
   let ntlHooks
   try {
     ntlHooks = await api.listHooksBySiteId({ siteId })
   } catch (error) {
     const message = formatErrorMessage({ message: 'Failed retrieving Netlify hooks', error })
-    failAndExit(message)
+    return logAndThrowError(message)
   }
   await Promise.all(
     GITHUB_HOOK_EVENTS.map(async (event) => {
       try {
-        // @ts-expect-error TS(7005) FIXME: Variable 'ntlHooks' implicitly has an 'any' type.
         await upsertHook({ ntlHooks, event, api, siteId, token })
       } catch (error) {
         const message = formatErrorMessage({ message: `Failed settings Netlify hook ${chalk.magenta(event)}`, error })
-        failAndExit(message)
+        return logAndThrowError(message)
       }
     }),
   )
@@ -213,15 +211,17 @@ const addNotificationHooks = async ({ api, siteId, token }) => {
   log(`Netlify Notification Hooks configured!`)
 }
 
-/**
- * @param {object} config
- * @param {import('../../commands/base-command.js').default} config.command
- * @param {string} config.repoName
- * @param {string} config.repoOwner
- * @param {string} config.siteId
- */
-// @ts-expect-error TS(7031) FIXME: Binding element 'command' implicitly has an 'any' ... Remove this comment to see the full error message
-export const configGithub = async ({ command, repoName, repoOwner, siteId }) => {
+export const configGithub = async ({
+  command,
+  repoName,
+  repoOwner,
+  siteId,
+}: {
+  command: BaseCommand
+  repoName: string
+  repoOwner: string
+  siteId: string
+}) => {
   const { netlify } = command
   const {
     api,
@@ -235,8 +235,9 @@ export const configGithub = async ({ command, repoName, repoOwner, siteId }) => 
   const token = await getGitHubToken({ globalConfig })
 
   const { baseDir, buildCmd, buildDir, functionsDir, pluginsToInstall } = await getBuildSettings({
-    // @ts-expect-error TS(2345) FIXME: Argument of type '{ repositoryRoot: any; siteRoot:... Remove this comment to see the full error message
+    // @ts-expect-error -- XXX(serhalp): unused - removed in stacked PR
     repositoryRoot,
+    // XXX(serhalp): unused - removed in stacked PR
     siteRoot,
     config,
     command,
@@ -268,7 +269,7 @@ export const configGithub = async ({ command, repoName, repoOwner, siteId }) => 
     api,
     siteId,
     repo,
-    configPlugins: config.plugins,
+    configPlugins: config.plugins ?? [],
     pluginsToInstall,
   })
   await addDeployHook({ deployHook: updatedSite.deploy_hook, octokit, repoOwner, repoName })

@@ -1,22 +1,18 @@
+import assert from 'node:assert'
+
 import { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 import isEmpty from 'lodash/isEmpty.js'
 
 import { listSites } from '../../lib/api.js'
-import { chalk, error, exit, log, APIError } from '../../utils/command-helpers.js'
+import { chalk, logAndThrowError, exit, log, APIError } from '../../utils/command-helpers.js'
 import getRepoData from '../../utils/get-repo-data.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import { track } from '../../utils/telemetry/index.js'
 import type { SiteInfo } from '../../utils/types.js'
 import BaseCommand from '../base-command.js'
 
-/**
- *
- * @param {import('../base-command.js').default} command
- * @param {import('commander').OptionValues} options
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'command' implicitly has an 'any' type.
-const linkPrompt = async (command, options) => {
+const linkPrompt = async (command: BaseCommand, options: OptionValues) => {
   const { api, state } = command.netlify
 
   const SITE_NAME_PROMPT = 'Search by full or partial site name'
@@ -30,7 +26,7 @@ const linkPrompt = async (command, options) => {
 
   let linkChoices = [SITE_NAME_PROMPT, SITE_LIST_PROMPT, SITE_ID_PROMPT]
 
-  if (!repoData.error) {
+  if (!('error' in repoData)) {
     // Add git GIT_REMOTE_PROMPT if in a repo
     GIT_REMOTE_PROMPT = `Use current git remote origin (${repoData.httpsUrl})`
     linkChoices = [GIT_REMOTE_PROMPT, ...linkChoices]
@@ -51,6 +47,9 @@ const linkPrompt = async (command, options) => {
   let kind
   switch (linkType) {
     case GIT_REMOTE_PROMPT: {
+      // TODO(serhalp): Refactor function to avoid this. We can only be here if `repoData` is not an error.
+      assert(!('error' in repoData))
+
       kind = 'gitRemote'
       log()
       log(`Looking for sites connected to '${repoData.httpsUrl}'...`)
@@ -58,7 +57,9 @@ const linkPrompt = async (command, options) => {
       const sites = await listSites({ api, options: { filter: 'all' } })
 
       if (sites.length === 0) {
-        error(`You don't have any sites yet. Run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
+        return logAndThrowError(
+          `You don't have any sites yet. Run ${chalk.cyanBright('netlify sites:create')} to create a site.`,
+        )
       }
 
       const matchingSites = sites.filter(
@@ -99,7 +100,7 @@ Run ${chalk.cyanBright('git remote -v')} to see a list of your git remotes.`)
           },
         ])
         if (!selectedSite) {
-          error('No site selected')
+          return logAndThrowError('No site selected')
         }
         site = selectedSite
       }
@@ -125,14 +126,14 @@ Run ${chalk.cyanBright('git remote -v')} to see a list of your git remotes.`)
         })
       } catch (error_) {
         if ((error_ as APIError).status === 404) {
-          error(`'${searchTerm}' not found`)
+          return logAndThrowError(`'${searchTerm}' not found`)
         } else {
-          error(error_)
+          return logAndThrowError(error_)
         }
       }
 
       if (!matchingSites || matchingSites.length === 0) {
-        error(`No site names found containing '${searchTerm}'.
+        return logAndThrowError(`No site names found containing '${searchTerm}'.
 
 Run ${chalk.cyanBright('netlify link')} again to try a new search,
 or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
@@ -150,7 +151,7 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
           },
         ])
         if (!selectedSite) {
-          error('No site selected')
+          return logAndThrowError('No site selected')
         }
         site = selectedSite
       } else {
@@ -168,11 +169,13 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
       try {
         sites = await listSites({ api, options: { maxPages: 1, filter: 'all' } })
       } catch (error_) {
-        error(error_)
+        return logAndThrowError(error_)
       }
 
       if (!sites || sites.length === 0) {
-        error(`You don't have any sites yet. Run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
+        return logAndThrowError(
+          `You don't have any sites yet. Run ${chalk.cyanBright('netlify sites:create')} to create a site.`,
+        )
       }
 
       const { selectedSite } = await inquirer.prompt([
@@ -181,12 +184,11 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
           name: 'selectedSite',
           message: 'Which site do you want to link?',
           paginated: true,
-          // @ts-expect-error TS(7006) FIXME: Parameter 'matchingSite' implicitly has an 'any' t... Remove this comment to see the full error message
           choices: sites.map((matchingSite) => ({ name: matchingSite.name, value: matchingSite })),
         },
       ])
       if (!selectedSite) {
-        error('No site selected')
+        return logAndThrowError('No site selected')
       }
       site = selectedSite
       break
@@ -205,9 +207,9 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
         site = await api.getSite({ siteId })
       } catch (error_) {
         if ((error_ as APIError).status === 404) {
-          error(`Site ID '${siteId}' not found`)
+          return logAndThrowError(`Site ID '${siteId}' not found`)
         } else {
-          error(error_)
+          return logAndThrowError(error_)
         }
       }
       break
@@ -217,7 +219,7 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
   }
 
   if (!site) {
-    error(new Error(`No site found`))
+    return logAndThrowError(new Error(`No site found`))
   }
 
   // Save site ID to config
@@ -252,41 +254,44 @@ export const link = async (options: OptionValues, command: BaseCommand) => {
     state,
   } = command.netlify
 
-  let siteData = siteInfo
+  let initialSiteData: SiteInfo | undefined
+  let newSiteData!: SiteInfo
 
   // Add .netlify to .gitignore file
   await ensureNetlifyIgnore(repositoryRoot)
 
   // Site id is incorrect
-  if (siteId && isEmpty(siteData)) {
+  if (siteId && isEmpty(siteInfo)) {
     log(`"${siteId}" was not found in your Netlify account.`)
     log(`Please double check your siteID and which account you are logged into via \`netlify status\`.`)
     return exit()
   }
 
   if (!isEmpty(siteInfo)) {
-    // If already linked to site. exit and prompt for unlink
-    log(`Site already linked to "${siteData.name}"`)
-    log(`Admin url: ${siteData.admin_url}`)
+    // If already linked to site, exit and prompt for unlink
+    initialSiteData = siteInfo
+    log(`Site already linked to "${initialSiteData.name}"`)
+    log(`Admin url: ${initialSiteData.admin_url}`)
     log()
     log(`To unlink this site, run: ${chalk.cyanBright('netlify unlink')}`)
   } else if (options.id) {
     try {
-      siteData = await api.getSite({ site_id: options.id })
+      // @ts-expect-error(serhalp) -- Mismatch between hardcoded `SiteInfo` and new generated Netlify API types.
+      newSiteData = await api.getSite({ site_id: options.id })
     } catch (error_) {
       if ((error_ as APIError).status === 404) {
-        error(new Error(`Site id ${options.id} not found`))
+        return logAndThrowError(new Error(`Site id ${options.id} not found`))
       } else {
-        error(error_)
+        return logAndThrowError(error_)
       }
     }
 
     // Save site ID
-    state.set('siteId', siteData.id)
-    log(`Linked to ${siteData.name}`)
+    state.set('siteId', newSiteData.id)
+    log(`Linked to ${newSiteData.name}`)
 
     await track('sites_linked', {
-      siteId: siteData.id,
+      siteId: newSiteData.id,
       linkType: 'manual',
       kind: 'byId',
     })
@@ -302,14 +307,14 @@ export const link = async (options: OptionValues, command: BaseCommand) => {
       })
     } catch (error_) {
       if ((error_ as APIError).status === 404) {
-        error(new Error(`${options.name} not found`))
+        return logAndThrowError(new Error(`${options.name} not found`))
       } else {
-        error(error_)
+        return logAndThrowError(error_)
       }
     }
 
     if (results.length === 0) {
-      error(new Error(`No sites found named ${options.name}`))
+      return logAndThrowError(new Error(`No sites found named ${options.name}`))
     }
 
     const matchingSiteData = results.find((site: SiteInfo) => site.name === options.name) || results[0]
@@ -323,7 +328,9 @@ export const link = async (options: OptionValues, command: BaseCommand) => {
       kind: 'byName',
     })
   } else {
-    siteData = await linkPrompt(command, options)
+    newSiteData = await linkPrompt(command, options)
   }
-  return siteData
+  // FIXME(serhalp): All the cases above except one (look up by site name) end up *returning*
+  // the site data. This is probably not intentional and may result in bugs in deploy/init. Investigate.
+  return initialSiteData || newSiteData
 }

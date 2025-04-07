@@ -114,10 +114,10 @@ describe.concurrent('commands/dev/config', () => {
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const response = await fetch(`${server.url}/.netlify/functions/env`)
-        const resposeBody = await response.text()
+        const responseBody = await response.text()
 
         t.expect(response.status).toBe(500)
-        t.expect(resposeBody.startsWith('no lambda response.')).toBe(true)
+        t.expect(responseBody.startsWith('no lambda response.')).toBe(true)
       })
     })
   })

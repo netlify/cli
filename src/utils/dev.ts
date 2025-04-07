@@ -5,7 +5,7 @@ import isEmpty from 'lodash/isEmpty.js'
 
 import { supportsBackgroundFunctions } from '../lib/account.js'
 
-import { NETLIFYDEVLOG, chalk, error, log, warn, APIError } from './command-helpers.js'
+import { NETLIFYDEVLOG, chalk, logAndThrowError, log, warn, APIError } from './command-helpers.js'
 import { loadDotEnvFiles } from './dot-env.js'
 
 // Possible sources of environment variables. For the purpose of printing log messages only. Order does not matter.
@@ -42,7 +42,9 @@ const ERROR_CALL_TO_ACTION =
 // @ts-expect-error TS(7031) FIXME: Binding element 'site' implicitly has an 'any' typ... Remove this comment to see the full error message
 const validateSiteInfo = ({ site, siteInfo }) => {
   if (isEmpty(siteInfo)) {
-    error(`Failed retrieving site information for site ${chalk.yellow(site.id)}. ${ERROR_CALL_TO_ACTION}`)
+    return logAndThrowError(
+      `Failed retrieving site information for site ${chalk.yellow(site.id)}. ${ERROR_CALL_TO_ACTION}`,
+    )
   }
 }
 
@@ -52,7 +54,7 @@ const getAccounts = async ({ api }) => {
     const accounts = await api.listAccountsForUser()
     return accounts
   } catch (error_) {
-    error(`Failed retrieving user account: ${(error_ as APIError).message}. ${ERROR_CALL_TO_ACTION}`)
+    return logAndThrowError(`Failed retrieving user account: ${(error_ as APIError).message}. ${ERROR_CALL_TO_ACTION}`)
   }
 }
 
@@ -62,7 +64,7 @@ const getAddons = async ({ api, site }) => {
     const addons = await api.listServiceInstancesForSite({ siteId: site.id })
     return addons
   } catch (error_) {
-    error(
+    return logAndThrowError(
       `Failed retrieving addons for site ${chalk.yellow(site.id)}: ${
         (error_ as APIError).message
       }. ${ERROR_CALL_TO_ACTION}`,

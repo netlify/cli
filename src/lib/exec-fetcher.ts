@@ -4,16 +4,14 @@ import process from 'process'
 import { fetchLatest, fetchVersion, newerVersion, updateAvailable } from 'gh-release-fetch'
 import { isexe } from 'isexe'
 
-import { NETLIFYDEVWARN, error, getTerminalLink, log } from '../utils/command-helpers.js'
+import { NETLIFYDEVWARN, logAndThrowError, getTerminalLink, log } from '../utils/command-helpers.js'
 import execa from '../utils/execa.js'
 
 const isWindows = () => process.platform === 'win32'
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'packageName' implicitly has an 'a... Remove this comment to see the full error message
-const getRepository = ({ packageName }) => `netlify/${packageName}`
+const getRepository = ({ packageName }: { packageName: string }) => `netlify/${packageName}`
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'execName' implicitly has an 'any'... Remove this comment to see the full error message
-export const getExecName = ({ execName }) => (isWindows() ? `${execName}.exe` : execName)
+export const getExecName = ({ execName }: { execName: string }) => (isWindows() ? `${execName}.exe` : execName)
 
 const getOptions = () => {
   // this is used in out CI tests to avoid hitting GitHub API limit
@@ -25,8 +23,15 @@ const getOptions = () => {
   }
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'currentVersion' implicitly has an... Remove this comment to see the full error message
-const isVersionOutdated = async ({ currentVersion, latestVersion, packageName }) => {
+const isVersionOutdated = async ({
+  currentVersion,
+  latestVersion,
+  packageName,
+}: {
+  currentVersion: string
+  latestVersion?: string | undefined
+  packageName: string
+}): Promise<boolean> => {
   if (latestVersion) {
     return newerVersion(latestVersion, currentVersion)
   }
@@ -36,19 +41,20 @@ const isVersionOutdated = async ({ currentVersion, latestVersion, packageName })
 }
 
 export const shouldFetchLatestVersion = async ({
-  // @ts-expect-error TS(7031) FIXME: Binding element 'binPath' implicitly has an 'any' ... Remove this comment to see the full error message
   binPath,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'execArgs' implicitly has an 'any'... Remove this comment to see the full error message
   execArgs,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'execName' implicitly has an 'any'... Remove this comment to see the full error message
   execName,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'latestVersion' implicitly has an ... Remove this comment to see the full error message
   latestVersion,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'packageName' implicitly has an 'a... Remove this comment to see the full error message
   packageName,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'pattern' implicitly has an 'any' ... Remove this comment to see the full error message
   pattern,
-}) => {
+}: {
+  binPath: string
+  execArgs: string[]
+  execName: string
+  latestVersion?: string | undefined
+  packageName: string
+  pattern: string
+}): Promise<boolean> => {
   const execPath = path.join(binPath, getExecName({ execName }))
 
   const exists = await isexe(execPath, { ignoreErrors: true })
@@ -95,19 +101,19 @@ export const getArch = () => {
   }
 }
 
-/**
- * Tries to get the latest release from the github releases to download the binary.
- * Is throwing an error if there is no binary that matches the system os or arch
- * @param {object} config
- * @param {string} config.destination
- * @param {string} config.execName
- * @param {string} config.destination
- * @param {string} config.extension
- * @param {string} config.packageName
- * @param {string} [config.latestVersion ]
- */
-// @ts-expect-error TS(7031) FIXME: Binding element 'destination' implicitly has an 'a... Remove this comment to see the full error message
-export const fetchLatestVersion = async ({ destination, execName, extension, latestVersion, packageName }) => {
+export const fetchLatestVersion = async ({
+  destination,
+  execName,
+  extension,
+  latestVersion,
+  packageName,
+}: {
+  destination: string
+  execName: string
+  extension: string
+  latestVersion?: string | undefined
+  packageName: string
+}): Promise<void> => {
   const win = isWindows()
   const arch = getArch()
   const platform = win ? 'windows' : process.platform
@@ -122,16 +128,15 @@ export const fetchLatestVersion = async ({ destination, execName, extension, lat
 
   const options = getOptions()
   const fetch = latestVersion
-    ? // @ts-expect-error TS(2345) FIXME: Argument of type '{ headers: { Authorization: stri... Remove this comment to see the full error message
+    ? // @ts-expect-error(serhalp) -- Either `gh-release-fetch` is not typed correctly or `options.headers` is useless
       fetchVersion({ ...release, version: latestVersion }, options)
-    : // @ts-expect-error TS(2345) FIXME: Argument of type '{ repository: string; package: s... Remove this comment to see the full error message
+    : // @ts-expect-error(serhalp) -- Either `gh-release-fetch` is not typed correctly or `options.version` should be passed
       fetchLatest(release, options)
 
   try {
     await fetch
   } catch (error_) {
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    if (typeof error_ === 'object' && 'statusCode' in error_ && error_.statusCode === 404) {
+    if (error_ != null && typeof error_ === 'object' && 'statusCode' in error_ && error_.statusCode === 404) {
       const createIssueLink = new URL('https://github.com/netlify/cli/issues/new')
       createIssueLink.searchParams.set('assignees', '')
       createIssueLink.searchParams.set('labels', 'type: bug')
@@ -143,11 +148,11 @@ export const fetchLatestVersion = async ({ destination, execName, extension, lat
 
       const issueLink = getTerminalLink('Create a new CLI issue', createIssueLink.href)
 
-      error(`The operating system ${platform} with the CPU architecture ${arch} is currently not supported!
+      return logAndThrowError(`The operating system ${platform} with the CPU architecture ${arch} is currently not supported!
 
 Please open up an issue on our CLI repository so that we can support it:
 ${issueLink}`)
     }
-    error(error_)
+    return logAndThrowError(error_)
   }
 }

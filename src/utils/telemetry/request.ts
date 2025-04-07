@@ -4,7 +4,7 @@ import process from 'process'
 
 import fetch from 'node-fetch'
 
-import getPackageJson from '../get-package-json.js'
+import getPackageJson from '../get-cli-package-json.js'
 
 const { name, version } = await getPackageJson()
 

@@ -1,4 +1,4 @@
-import { APIError, error } from '../command-helpers.js'
+import { APIError, logAndThrowError } from '../command-helpers.js'
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'addonName' implicitly has an 'any... Remove this comment to see the full error message
 export const getCurrentAddon = ({ addonName, addons }) => addons.find((addon) => addon.service_slug === addonName)
@@ -9,7 +9,7 @@ export const getSiteData = async ({ api, siteId }) => {
   try {
     siteData = await api.getSite({ siteId })
   } catch (error_) {
-    error(`Failed getting list of site data: ${(error_ as APIError).message}`)
+    return logAndThrowError(`Failed getting list of site data: ${(error_ as APIError).message}`)
   }
   return siteData
 }
@@ -20,7 +20,7 @@ export const getAddons = async ({ api, siteId }) => {
   try {
     addons = await api.listServiceInstancesForSite({ siteId })
   } catch (error_) {
-    error(`Failed getting list of addons: ${(error_ as APIError).message}`)
+    return logAndThrowError(`Failed getting list of addons: ${(error_ as APIError).message}`)
   }
   return addons
 }

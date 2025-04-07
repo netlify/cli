@@ -39,7 +39,7 @@ export const mockLocation = {
  * @param {"cache"|"update"|"mock"} params.mode
  * @param {string} params.geoCountry
  * @param {boolean} params.offline
- * @param {import('../utils/state-config.js').default} params.state
+ * @param {import('../utils/cli-state.js').default} params.state
  * @returns {Promise<GeoLocation>}
  */
 // @ts-expect-error TS(7031) FIXME: Binding element 'geoCountry' implicitly has an 'an... Remove this comment to see the full error message

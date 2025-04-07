@@ -1,10 +1,9 @@
-import { IncomingMessage } from 'http'
+import type { IncomingMessage } from 'http'
 
-import { NetlifyConfig } from '@netlify/build'
 import express from 'express'
 import { createIPX, ipxFSStorage, ipxHttpStorage, createIPXNodeServer } from 'ipx'
 
-import { log, NETLIFYDEVERR } from '../../utils/command-helpers.js'
+import { log, NETLIFYDEVERR, type NormalizedCachedConfigConfig } from '../../utils/command-helpers.js'
 import { getProxyUrl } from '../../utils/proxy.js'
 import type { ServerSettings } from '../../utils/types.d.ts'
 
@@ -32,8 +31,10 @@ interface IpxParams {
   position?: string | null
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'config' implicitly has an 'any' type.
-export const parseAllRemoteImages = function (config): { errors: ErrorObject[]; remotePatterns: RegExp[] } {
+export const parseAllRemoteImages = function (config: NormalizedCachedConfigConfig): {
+  errors: ErrorObject[]
+  remotePatterns: RegExp[]
+} {
   const remotePatterns = [] as RegExp[]
   const errors = [] as ErrorObject[]
   const remoteImages = config?.images?.remote_images
@@ -64,23 +65,22 @@ const getErrorMessage = function ({ message }: { message: string }): string {
   return message
 }
 
-export const handleRemoteImagesErrors = async function (errors: ErrorObject[]) {
+const handleRemoteImagesErrors = function (errors: ErrorObject[]) {
   if (errors.length === 0) {
     return
   }
 
-  const errorMessage = await errors.map(getErrorMessage).join('\n\n')
+  const errorMessage = errors.map(getErrorMessage).join('\n\n')
   log(NETLIFYDEVERR, `Remote images syntax errors:\n${errorMessage}`)
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'any' t... Remove this comment to see the full error message
-export const parseRemoteImages = async function ({ config }) {
+const parseRemoteImages = function ({ config }: { config: NormalizedCachedConfigConfig }) {
   if (!config) {
     return []
   }
 
-  const { errors, remotePatterns } = await parseAllRemoteImages(config)
-  await handleRemoteImagesErrors(errors)
+  const { errors, remotePatterns } = parseAllRemoteImages(config)
+  handleRemoteImagesErrors(errors)
 
   return remotePatterns
 }
@@ -116,18 +116,18 @@ export const transformImageParams = function (query: QueryParams): string {
     .join(',')
 }
 
-export const initializeProxy = async function ({
+export const initializeProxy = function ({
   config,
   settings,
 }: {
-  config: NetlifyConfig
+  config: NormalizedCachedConfigConfig
   settings: ServerSettings
 }) {
-  const remoteImages = await parseRemoteImages({ config })
+  const remoteImages = parseRemoteImages({ config })
   const devServerUrl = getProxyUrl(settings)
 
   const ipx = createIPX({
-    storage: ipxFSStorage({ dir: config?.build?.publish ?? './public' }),
+    storage: ipxFSStorage({ dir: ('publish' in config.build ? config.build.publish : undefined) ?? './public' }),
     httpStorage: ipxHttpStorage({
       allowAllDomains: true,
     }),
@@ -138,10 +138,10 @@ export const initializeProxy = async function ({
 
   let lastTimeRemoteImagesConfigurationDetailsMessageWasLogged = 0
 
-  app.use(IMAGE_URL_PATTERN, async (req, res) => {
+  app.use(IMAGE_URL_PATTERN, (req, res) => {
     const { url, ...query } = req.query
     const sourceImagePath = url as string
-    const modifiers = (await transformImageParams(query)) || `_`
+    const modifiers = transformImageParams(query) || `_`
     if (!sourceImagePath.startsWith('http://') && !sourceImagePath.startsWith('https://')) {
       // Construct the full URL for relative paths to request from development server
       const sourceImagePathWithLeadingSlash = sourceImagePath.startsWith('/') ? sourceImagePath : `/${sourceImagePath}`

@@ -2,15 +2,18 @@ import { readFile } from 'fs/promises'
 import { resolve } from 'path'
 
 import { Command } from 'commander'
+import normalizePackageData, { type Package } from 'normalize-package-data'
 
 import execa from '../../../../../utils/execa.js'
 import { fileExistsAsync } from '../../../../fs.js'
 import { memoizedBuild } from '../../../memoized-build.js'
+import type { BaseBuildResult } from '../../index.js'
 
-// @ts-expect-error TS(2525) FIXME: Initializer provides no value for this binding ele... Remove this comment to see the full error message
-export const detectNetlifyLambda = async function ({ packageJson } = {}) {
-  const { dependencies, devDependencies, scripts } = packageJson || {}
-  if (!((dependencies && dependencies['netlify-lambda']) || (devDependencies && devDependencies['netlify-lambda']))) {
+export type NetlifyLambdaBuildResult = BaseBuildResult
+
+export const detectNetlifyLambda = async ({ packageJson }: { packageJson: Package }) => {
+  const { dependencies, devDependencies, scripts } = packageJson
+  if (!(dependencies?.['netlify-lambda'] || devDependencies?.['netlify-lambda'])) {
     return false
   }
 
@@ -23,13 +26,12 @@ export const detectNetlifyLambda = async function ({ packageJson } = {}) {
 
   program.allowExcessArguments()
 
-  // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-  const matchingScripts = Object.entries(scripts).filter(([, script]) => script.match(/netlify-lambda\s+build/))
+  const matchingScripts = Object.entries(scripts ?? []).filter(([, script]) => /netlify-lambda\s+build/.exec(script))
 
   for (const [key, script] of matchingScripts) {
     // E.g. ["netlify-lambda", "build", "functions/folder"]
     // these are all valid options for netlify-lambda
-    program.parse((script as string).split(' ') ?? [])
+    program.parse(script.split(' '))
 
     // We are not interested in 'netlify-lambda' and 'build' commands
     const functionDirectories = program.args.filter((arg) => !['netlify-lambda', 'build'].includes(arg))
@@ -37,10 +39,13 @@ export const detectNetlifyLambda = async function ({ packageJson } = {}) {
       const srcFiles = [resolve(functionDirectories[0])]
 
       const yarnExists = await fileExistsAsync('yarn.lock')
-      const buildCommand = () => execa(yarnExists ? 'yarn' : 'npm', ['run', key])
+      const buildCommand = async (): Promise<undefined> => {
+        await execa(yarnExists ? 'yarn' : 'npm', ['run', key])
+        return
+      }
 
       return {
-        build: async ({ cache = {} } = {}) => {
+        build: async ({ cache = {} } = {}): Promise<NetlifyLambdaBuildResult> => {
           await memoizedBuild({ cache, cacheKey: `netlify-lambda-${key}`, command: buildCommand })
 
           return {
@@ -65,13 +70,14 @@ export const detectNetlifyLambda = async function ({ packageJson } = {}) {
   return false
 }
 
-export default async function handler() {
-  const exists = await fileExistsAsync('package.json')
-  if (!exists) {
+export default async function detectNetlifyLambdaBuilder() {
+  try {
+    const packageData = JSON.parse(await readFile('package.json', 'utf-8')) as Record<string, unknown>
+    normalizePackageData(packageData)
+    return await detectNetlifyLambda({ packageJson: packageData as Package })
+  } catch {
     return false
   }
-
-  const content = await readFile('package.json', 'utf-8')
-  const packageJson = JSON.parse(content)
-  return detectNetlifyLambda({ packageJson })
 }
+
+export type NetlifyLambdaBuilder = Awaited<ReturnType<typeof detectNetlifyLambda>>

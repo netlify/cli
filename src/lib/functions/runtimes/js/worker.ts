@@ -3,8 +3,14 @@ import process from 'process'
 import { isMainThread, workerData, parentPort } from 'worker_threads'
 
 import { isStream } from 'is-stream'
-import lambdaLocal from 'lambda-local'
+import lambdaLocal, { type LambdaEvent, type Options as LambdaLocalOptions } from 'lambda-local'
 import sourceMapSupport from 'source-map-support'
+
+export type WorkerData = LambdaLocalOptions & { entryFilePath: string }
+
+export interface WorkerMessage extends LambdaEvent {
+  streamPort?: number
+}
 
 if (isMainThread) {
   throw new Error(`Do not import "${import.meta.url}" in the main thread.`)
@@ -14,16 +20,17 @@ sourceMapSupport.install()
 
 lambdaLocal.getLogger().level = 'alert'
 
-const { clientContext, entryFilePath, environment = {}, event, timeoutMs } = workerData
+const { clientContext, entryFilePath, environment = {}, event, timeoutMs } = workerData as WorkerData
 
 // Injecting into the environment any properties passed in by the parent.
 for (const key in environment) {
   process.env[key] = environment[key]
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const lambdaFunc = await import(entryFilePath)
 
-const result = await lambdaLocal.execute({
+const lambdaEvent = await lambdaLocal.execute({
   clientContext,
   event,
   lambdaFunc,
@@ -31,15 +38,16 @@ const result = await lambdaLocal.execute({
   timeoutMs,
   verboseLevel: 3,
 })
+let streamPort: number | null = null
 
 // When the result body is a StreamResponse
 // we open up a http server that proxies back to the main thread.
-// @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-if (result && isStream(result.body)) {
-  // @ts-expect-error TS(2339) FIXME: Property 'body' does not exist on type 'unknown'.
-  const { body } = result
-  // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-  delete result.body
+// TODO(serhalp): Improve `LambdaEvent` type. It sure would be nice to keep it simple as it
+// is now, but technically this is an arbitrary type from the user function return...
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+if (lambdaEvent != null && isStream(lambdaEvent.body)) {
+  const { body } = lambdaEvent
+  delete lambdaEvent.body
   await new Promise((resolve, reject) => {
     const server = createServer((socket) => {
       body.pipe(socket).on('end', () => server.close())
@@ -48,15 +56,23 @@ if (result && isStream(result.body)) {
       reject(error)
     })
     server.listen({ port: 0, host: 'localhost' }, () => {
-      // @ts-expect-error TS(2339) FIXME: Property 'port' does not exist on type 'string | A... Remove this comment to see the full error message
-      const { port } = server.address()
-      // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-      result.streamPort = port
-      // @ts-expect-error TS(2794) FIXME: Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
-      resolve()
+      const address = server.address()
+      if (address == null || typeof address !== 'object') {
+        throw new Error('Expected server.address() to return an object')
+      }
+      streamPort = address.port
+      resolve(undefined)
     })
   })
 }
 
-// @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-parentPort.postMessage(result)
+// See TODO above.
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+if (lambdaEvent == null) {
+  parentPort?.postMessage(lambdaEvent)
+} else {
+  //  Looks like some sort of eslint bug...? It thinks `streamPort` can't be null here
+  //  eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  const message: WorkerMessage = { ...lambdaEvent, ...(streamPort != null ? { streamPort } : {}) }
+  parentPort?.postMessage(message)
+}

@@ -15,7 +15,7 @@ type ConfigStoreOptions<
   defaults?: T | undefined
 }
 
-export class ConfigStore<
+export class GlobalConfigStore<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   T extends Record<string, any> = Record<string, any>,
 > {
@@ -41,6 +41,7 @@ export class ConfigStore<
   }
 
   public get(key: string): T[typeof key] {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return dot.getProperty(this.getConfig(), key)
   }
 
@@ -59,7 +60,7 @@ export class ConfigStore<
     }
 
     try {
-      return JSON.parse(raw)
+      return JSON.parse(raw) as T
     } catch {
       writeFileAtomicSync(this.#storagePath, '', { mode: 0o0600 })
       return {} as T
@@ -80,9 +81,9 @@ const globalConfigDefaults = {
 }
 
 // Memoise config result so that we only load it once
-let configStore: ConfigStore | undefined
+let configStore: GlobalConfigStore | undefined
 
-const getGlobalConfig = async (): Promise<ConfigStore> => {
+const getGlobalConfigStore = async (): Promise<GlobalConfigStore> => {
   if (!configStore) {
     // Legacy config file in home ~/.netlify/config.json
     const legacyPath = getLegacyPathInHome(['config.json'])
@@ -96,13 +97,13 @@ const getGlobalConfig = async (): Promise<ConfigStore> => {
     // Use legacy config as default values
     const defaults = { ...globalConfigDefaults, ...legacyConfig }
     // The id param is only used when not passing `configPath` but the type def requires it
-    configStore = new ConfigStore({ defaults })
+    configStore = new GlobalConfigStore({ defaults })
   }
 
   return configStore
 }
 
-export default getGlobalConfig
+export default getGlobalConfigStore
 
 export const resetConfigCache = () => {
   configStore = undefined

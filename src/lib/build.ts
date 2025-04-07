@@ -1,36 +1,112 @@
 import fs from 'fs'
 import process from 'process'
 
-import build, { type OnEnd, type OnPostBuild } from '@netlify/build'
+import build, { type NetlifyConfig, type OnEnd, type OnPostBuild } from '@netlify/build'
+import type { MinimalHeader } from '@netlify/headers-parser'
 import tomlify from 'tomlify-j0.4'
 import type { OptionValues } from 'commander'
 
 import { getFeatureFlagsFromSiteInfo } from '../utils/feature-flags.js'
-import type { EnvironmentVariables } from '../utils/types.js'
+import type { Account, EnvironmentVariables, Plugin, SiteInfo } from '../utils/types.js'
 
 import { getBootstrapURL } from './edge-functions/bootstrap.js'
 import { featureFlags as edgeFunctionsFeatureFlags } from './edge-functions/consts.js'
+import type { EdgeFunctionDeclaration } from './edge-functions/proxy.js'
 
 export interface CachedConfig {
+  accounts: Account[]
+  buildDir: string
   env: EnvironmentVariables
-  siteInfo: {
-    id?: string
-    account_id?: string
-    feature_flags?: Record<string, boolean | number>
+  repositoryRoot: string
+  siteInfo: SiteInfo
+
+  // TODO(serhalp): Type these properties:
+  addons?: unknown
+  api?: unknown
+  branch?: unknown
+  config: {
+    build: {
+      base: string
+      command?: string | undefined
+      functions?: string | undefined
+      // TODO(serhalp): I'm fairly certain this is not real. Confirm and remove from here and `ntl functions:build`.
+      functionsSource?: string | undefined
+      edge_functions?: string | undefined
+      environment: Record<string, unknown>
+      processing: {
+        css: Record<string, unknown>
+        html: Record<string, unknown>
+        images: Record<string, unknown>
+        js: Record<string, unknown>
+      }
+      publish: string
+      publishOrigin: string
+      services: Record<string, unknown>
+    }
+    // TODO(serhalp): Verify if this should actually be required? If so, update several
+    // unrealistic integration test objects.
+    dev?:
+      | undefined
+      | {
+          command?: string | undefined
+          functions?: string | undefined
+          functionsPort?: number | undefined
+          https?:
+            | {
+                certFile: string
+                keyFile: string
+              }
+            | undefined
+          // FIXME(serhalp): There is absolutely no trace of this in the `netlify/build` codebase yet
+          // it appears to be real functionality. Fix this upstream.
+          processing: {
+            html?: {
+              injections?: {
+                /**
+                 * The location at which the `html` will be injected.
+                 * Defaults to `before_closing_head_tag` which will inject the HTML before the </head> tag.
+                 */
+                location?: 'before_closing_head_tag' | 'before_closing_body_tag'
+                /**
+                 * The injected HTML code.
+                 */
+                html: string
+              }[]
+            }
+          }
+        }
+    edge_functions?: EdgeFunctionDeclaration[]
+    functions?: NetlifyConfig['functions']
+    functionsDirectory?: undefined | string
+    headers: MinimalHeader[]
+    images: {
+      remote_images: string[]
+    }
+    plugins?: Plugin[]
+    redirects: undefined | NetlifyConfig['redirects']
   }
-  // TODO(serhalp) Add remaining properties
-  [k: string]: unknown
+  configPath?: undefined | string
+  context: string
+  headersPath?: unknown
+  logs?: unknown
+  redirectsPath?: unknown
+  token?: unknown
 }
 
-// TODO(serhalp) Add remaining properties
-type DefaultConfig = Record<string, unknown>
+export interface DefaultConfig {
+  build: {
+    command?: string | undefined
+    commandOrigin?: 'default' | undefined
+    publish?: string | undefined
+    publishOrigin?: 'default' | undefined
+  }
+  plugins?: { package: unknown; origin: 'default' }[]
+}
 
-// TODO(serhalp) This is patching weak or missing properties from @netlify/build. Fix there instead.
-export type BuildConfig = Parameters<typeof build>[0] & {
+// TODO(serhalp): This is patching weak or missing properties from @netlify/build. Fix there instead.
+export type RunBuildOptions = Omit<NonNullable<Parameters<typeof build>[0]>, 'cachedConfig'> & {
   cachedConfig: CachedConfig
-  defaultConfig: DefaultConfig
-  // It's possible this one is correct in @netlify/build. Remove and stop passing it if so.
-  accountId?: string
+  defaultConfig: DefaultConfig | Record<never, never>
   edgeFunctionsBootstrapURL: string
 }
 
@@ -52,7 +128,7 @@ type EventHandler<T extends (opts: any) => void | Promise<void>> = {
 // We have already resolved the configuration using `@netlify/config`
 // This is stored as `netlify.cachedConfig` and can be passed to
 // `@netlify/build --cachedConfig`.
-export const getBuildOptions = async ({
+export const getRunBuildOptions = async ({
   cachedConfig,
   currentDir,
   defaultConfig,
@@ -63,12 +139,12 @@ export const getBuildOptions = async ({
 }: {
   cachedConfig: CachedConfig
   currentDir: string
-  defaultConfig?: DefaultConfig
+  defaultConfig?: undefined | DefaultConfig
   deployHandler?: PatchedHandlerType<OnPostBuild>
   options: OptionValues
   packagePath?: string
   token?: null | string
-}): Promise<BuildConfig> => {
+}): Promise<RunBuildOptions> => {
   const eventHandlers: { onEnd: EventHandler<OnEnd>; onPostBuild?: EventHandler<OnPostBuild> } = {
     onEnd: {
       handler: ({ netlifyConfig }) => {
@@ -113,13 +189,13 @@ export const getBuildOptions = async ({
       ...getFeatureFlagsFromSiteInfo(cachedConfig.siteInfo),
       functionsBundlingManifest: true,
     },
-    // @ts-expect-error(serhalp) -- TODO(serhalp) Upstream the type fixes above into @netlify/build
+    // @ts-expect-error(serhalp) -- TODO(serhalp): Upstream the type fixes above into @netlify/build
     eventHandlers,
     edgeFunctionsBootstrapURL: await getBootstrapURL(),
   }
 }
 
-export const runBuild = async (options: BuildConfig) => {
+export const runBuild = async (options: RunBuildOptions) => {
   // If netlify NETLIFY_API_URL is set we need to pass this information to @netlify/build
   // TODO don't use testOpts, but add real properties to do this.
   if (process.env.NETLIFY_API_URL) {
@@ -129,10 +205,15 @@ export const runBuild = async (options: BuildConfig) => {
       host: apiUrl.host,
     }
     // @ts-expect-error(serhalp) -- I don't know what's going on here and I can't convince myself it even works as
-    // intended. TODO(serhalp) Investigate and fix types.
+    // intended. TODO(serhalp): Investigate and fix types.
     options = { ...options, testOpts }
   }
 
-  const { configMutations, netlifyConfig: newConfig, severityCode: exitCode } = await build(options)
+  const {
+    configMutations,
+    netlifyConfig: newConfig,
+    severityCode: exitCode,
+    // TODO(serhalp): Upstream the type fixes above into @netlify/build and remove this type assertion
+  } = await (build as unknown as (opts: RunBuildOptions) => Promise<ReturnType<typeof build>>)(options)
   return { exitCode, newConfig, configMutations }
 }
