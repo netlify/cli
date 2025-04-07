@@ -1,4 +1,4 @@
-import dedent from 'dedent'
+import js from 'dedent'
 import execa from 'execa'
 import getPort from 'get-port'
 import fetch from 'node-fetch'
@@ -59,7 +59,7 @@ describe.concurrent('functions:serve command', () => {
         .withNetlifyToml({ config: { functions: { directory: 'functions' } } })
         .withFunction({
           path: 'ping.js',
-          handler: dedent/* js */ `async () => ({
+          handler: js`async () => ({
             statusCode: 200,
             body: 'ping',
           })`,
@@ -79,7 +79,7 @@ describe.concurrent('functions:serve command', () => {
         .withNetlifyToml({ config: { functions: { directory: 'functions' } } })
         .withFunction({
           path: 'ping.js',
-          handler: dedent/* js */ `async () => ({
+          handler: js`async () => ({
             statusCode: 200,
             body: 'ping',
           })`,
@@ -104,7 +104,7 @@ describe.concurrent('functions:serve command', () => {
         .withFunction({
           pathPrefix: 'other',
           path: 'ping.js',
-          handler: dedent/* js */ `async () => ({
+          handler: js`async () => ({
             statusCode: 200,
             body: 'ping',
           })`,
@@ -153,7 +153,7 @@ describe.concurrent('functions:serve command', () => {
         })
         .withFunction({
           path: 'echo-event.js',
-          handler: dedent/* js */ `
+          handler: js`
           async (event) => ({
             statusCode: 200,
             body: JSON.stringify(event),
