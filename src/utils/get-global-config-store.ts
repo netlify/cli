@@ -41,6 +41,7 @@ export class GlobalConfigStore<
   }
 
   public get(key: string): T[typeof key] {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return dot.getProperty(this.getConfig(), key)
   }
 
@@ -59,7 +60,7 @@ export class GlobalConfigStore<
     }
 
     try {
-      return JSON.parse(raw)
+      return JSON.parse(raw) as T
     } catch {
       writeFileAtomicSync(this.#storagePath, '', { mode: 0o0600 })
       return {} as T
