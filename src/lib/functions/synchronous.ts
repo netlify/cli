@@ -62,7 +62,7 @@ export const handleSynchronousFunction = function ({
     logPadded(`${NETLIFYDEVERR} Unexpected empty function response`)
 
     // eslint-disable-next-line @typescript-eslint/no-floating-promises -- XXX(serhalp) real bug, fixed in stacked PR.
-    handleErr('Unexpected empty function response`)', request, response)
+    handleErr('Unexpected empty function response', request, response)
     return
   }
 
