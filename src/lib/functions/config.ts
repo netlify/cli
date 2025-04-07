@@ -42,7 +42,7 @@ export const normalizeFunctionsConfig = ({
         nodeVersion: siteEnv.AWS_LAMBDA_JS_RUNTIME,
         processDynamicNodeImports: true,
         zipGo: true,
-        // XXX remove after bumping netlify/build
+        // XXX(serhalp): Unnecessary check -- fixed in stack PR (bumps to https://github.com/netlify/build/pull/6165)
         schedule: 'schedule' in value ? (value.schedule as undefined | string) : undefined,
       },
     }),
