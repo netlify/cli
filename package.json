@@ -192,7 +192,7 @@
     "@types/source-map-support": "0.5.10",
     "@types/through2-map": "3.0.4",
     "@types/write-file-atomic": "4.0.3",
-    "@types/ws": "8.18.0",
+    "@types/ws": "8.18.1",
     "@vitest/coverage-v8": "1.6.1",
     "@vitest/eslint-plugin": "^1.1.36",
     "c8": "10.1.3",
