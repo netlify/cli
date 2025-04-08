@@ -74,7 +74,7 @@ const connectTunnel = function ({
   }
 
   const ps = execa(execPath, args, { stdio: 'inherit' })
-  ps.on('close', (code) => process.exit(code))
+  ps.on('close', (code) => process.exit(code ?? undefined))
   ps.on('SIGINT', process.exit)
   ps.on('SIGTERM', process.exit)
 }
