@@ -380,7 +380,11 @@ export default class BaseCommand extends Command {
         duration,
         status,
       })
-    } catch {}
+    } catch (err) {
+      debug(`${this.name()}:onEnd`)(
+        `Command: ${command}. Telemetry tracking failed: ${err instanceof Error ? err.message : err?.toString()}`,
+      )
+    }
 
     if (error_ !== undefined) {
       logError(error_ instanceof Error ? error_ : format(error_))
