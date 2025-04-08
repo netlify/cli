@@ -2,7 +2,6 @@ import { env as _env, version as nodejsVersion } from 'process'
 
 import type { Options } from 'execa'
 import execa from 'execa'
-import { version as uuidVersion } from 'uuid'
 import { expect, test } from 'vitest'
 
 import pkg from '../../package.json'
@@ -58,7 +57,7 @@ await withMockApi(routes, () => {
     expect(userAgent!.startsWith(`${pkg.name}/${pkg.version}`)).toBe(true)
   })
 
-  test<MockApiTestContext>('should send correct command on success', async ({ apiUrl, requests }) => {
+  test<MockApiTestContext>('should send invoked command on success', async ({ apiUrl, requests }) => {
     await callCli(['api', 'listSites'], getCLIOptions(apiUrl))
     const request = requests.find(({ path }) => path === '/api/v1/track')
     expect(request).toBeDefined()
@@ -71,6 +70,8 @@ await withMockApi(routes, () => {
       buildSystem: [],
       cliVersion: pkg.version,
       command: 'api',
+      // Varies depending on node.js version tested
+      didEnableCompileCache: expect.any(Boolean),
       monorepo: false,
       nodejsVersion,
       // TODO: this should be NPM however some CI tests are using pnpm which changes the value
@@ -78,7 +79,7 @@ await withMockApi(routes, () => {
     })
   })
 
-  test<MockApiTestContext>('should send correct command on failure', async ({ apiUrl, requests }) => {
+  test<MockApiTestContext>('should send invoked command on failure', async ({ apiUrl, requests }) => {
     await expect(callCli(['dev:exec', 'exit 1'], getCLIOptions(apiUrl))).rejects.toThrowError()
     const request = requests.find(({ path }) => path === '/api/v1/track')
     expect(request).toBeDefined()
@@ -91,6 +92,8 @@ await withMockApi(routes, () => {
       buildSystem: [],
       cliVersion: pkg.version,
       command: 'dev:exec',
+      // Varies depending on node.js version tested
+      didEnableCompileCache: expect.any(Boolean),
       monorepo: false,
       nodejsVersion,
       // TODO: this should be NPM however some CI tests are using pnpm which changes the value
@@ -110,20 +113,15 @@ await withMockApi(routes, () => {
       const request = t.requests.find(({ path }) => path === '/api/v1/track')
       expect(request).toBeDefined()
 
-      expect(request!.body).toHaveProperty('anonymousId', expect.any(String))
-      expect(request!.body).toHaveProperty('duration', expect.any(Number))
-      expect(request!.body).toHaveProperty('event', 'cli:command')
-      expect(request!.body).toHaveProperty('status', 'success')
-      expect(request!.body).toHaveProperty('properties', {
-        frameworks: ['next'],
-        buildSystem: [],
-        cliVersion: pkg.version,
-        command: 'api',
-        monorepo: false,
-        nodejsVersion,
-        // TODO: this should be NPM however some CI tests are using pnpm which changes the value
-        packageManager: expect.stringMatching(/npm|pnpm/),
-      })
+      expect(request!.body).toHaveProperty(
+        'properties',
+        expect.objectContaining({
+          frameworks: ['next'],
+          buildSystem: [],
+          // TODO: this should be NPM however some CI tests are using pnpm which changes the value
+          packageManager: expect.stringMatching(/npm|pnpm/),
+        }),
+      )
     })
   })
 })

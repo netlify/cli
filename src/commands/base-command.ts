@@ -152,6 +152,8 @@ async function getRepositoryRoot(cwd?: string): Promise<string | undefined> {
 export default class BaseCommand extends Command {
   /** The netlify object inside each command with the state */
   netlify!: NetlifyOptions
+  // TODO(serhalp) We set `startTime` here and then overwrite it in a `preAction` hook. This is
+  // just asking for latent bugs. Remove this one?
   analytics: Analytics = { startTime: process.hrtime.bigint() }
   project!: Project
 
@@ -213,7 +215,7 @@ export default class BaseCommand extends Command {
         process.env.DEBUG = '*'
       }
       debug(`${name}:preAction`)('start')
-      this.analytics = { startTime: process.hrtime.bigint() }
+      this.analytics.startTime = process.hrtime.bigint()
       await this.init(actionCommand as BaseCommand)
       debug(`${name}:preAction`)('end')
     })
@@ -378,7 +380,11 @@ export default class BaseCommand extends Command {
         duration,
         status,
       })
-    } catch {}
+    } catch (err) {
+      debug(`${this.name()}:onEnd`)(
+        `Command: ${command}. Telemetry tracking failed: ${err instanceof Error ? err.message : err?.toString()}`,
+      )
+    }
 
     if (error_ !== undefined) {
       logError(error_ instanceof Error ? error_ : format(error_))
