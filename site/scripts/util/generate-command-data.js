@@ -1,7 +1,7 @@
 import { createMainCommand } from '../../../src/commands/index.js'
 import { sortOptions } from '../../../src/utils/command-helpers.js'
 
-const program = createMainCommand()
+const program = createMainCommand(false)
 
 /** @type {Array<import('../../../src/commands/base-command.js').default>} */
 // @ts-ignore typecast needed

@@ -1441,7 +1441,6 @@ export default [
   {
     files: ['tests/integration/telemetry.test.ts'],
     rules: {
-      '@typescript-eslint/no-unused-vars': 'off',
       '@typescript-eslint/no-non-null-assertion': 'off',
       '@typescript-eslint/no-unsafe-assignment': 'off',
     },

@@ -211,11 +211,10 @@ const mainCommand = async function (options, command) {
 
 /**
  * Creates the `netlify-cli` command
- * Promise is needed as the envinfo is a promise
- * @returns {import('./base-command.js').default}
  */
-export const createMainCommand = () => {
+export const createMainCommand = (didEnableCompileCache: boolean): BaseCommand => {
   const program = new BaseCommand('netlify')
+
   // register all the commands
   createApiCommand(program)
   createBlobsCommand(program)
@@ -238,6 +237,8 @@ export const createMainCommand = () => {
   createUnlinkCommand(program)
   createWatchCommand(program)
   createLogsCommand(program)
+
+  program.setAnalyticsPayload({ didEnableCompileCache })
 
   program
     .version(USER_AGENT, '-V')
