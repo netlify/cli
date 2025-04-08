@@ -10,23 +10,28 @@ import { runProgram } from '../dist/utils/run-program.js'
 
 // 12 hours
 const UPDATE_CHECK_INTERVAL = 432e5
-const pkg = await getPackageJson()
 
-try {
-  updateNotifier({
-    pkg,
-    updateCheckInterval: UPDATE_CHECK_INTERVAL,
-  }).notify()
-} catch (error) {
-  logError(`Error checking for updates: ${error?.toString()}`)
+const main = async () => {
+  const pkg = await getPackageJson()
+
+  try {
+    updateNotifier({
+      pkg,
+      updateCheckInterval: UPDATE_CHECK_INTERVAL,
+    }).notify()
+  } catch (error) {
+    logError(`Error checking for updates: ${error?.toString()}`)
+  }
+
+  const program = createMainCommand()
+
+  try {
+    await runProgram(program, argv)
+
+    program.onEnd()
+  } catch (error) {
+    program.onEnd(error)
+  }
 }
 
-const program = createMainCommand()
-
-try {
-  await runProgram(program, argv)
-
-  program.onEnd()
-} catch (error) {
-  program.onEnd(error)
-}
+await main()
