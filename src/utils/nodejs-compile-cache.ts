@@ -13,6 +13,9 @@ export let didEnableCompileCache = false
  * subsequent (warm) runs get performance savings. As the CLI is generally run hundreds of times, it is worth a small
  * overhead on the occasional cold run to shave tens to hundreds of milliseconds on several subsequent warm runs.
  *
+ * Keep in mind that the cache is specific to a version of netlify-cli and a version of node.js and it is stored on the
+ * user's disk in a temp dir. If any of these changes or the temp dir is cleared, the next run is a cold run.
+ *
  * The programmatic API to enable this (`enableCompileCache()`) was added in node 22.8.0, but we currently support
  * >=18.14.0, hence the conditional below. (For completeness, note that support via the env var was added in 22.1.0.)
  *
