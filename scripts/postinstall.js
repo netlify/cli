@@ -40,7 +40,7 @@ const postInstall = async () => {
   // yarn pnp executes it out of a .yarn folder .yarn/unplugged/netlify-cli-file-fb026a3a6d/node_modules/netlify-cli/scripts/postinstall.js
   if (!process.argv[1].includes('.yarn')) {
     // create or update the autocompletion definition
-    const program = createMainCommand(false)
+    const program = createMainCommand()
     generateAutocompletion(program)
   }
 
