@@ -29,6 +29,7 @@ import { createBuildCommand } from './build/index.js'
 import { createCompletionCommand } from './completion/index.js'
 import { createDeployCommand } from './deploy/index.js'
 import { createDevCommand } from './dev/index.js'
+import { createDevExecCommand } from './dev-exec/index.js'
 import { createEnvCommand } from './env/index.js'
 import { createFunctionsCommand } from './functions/index.js'
 import { createInitCommand } from './init/index.js'
@@ -222,6 +223,7 @@ export const createMainCommand = (): BaseCommand => {
   createBuildCommand(program)
   createCompletionCommand(program)
   createDeployCommand(program)
+  createDevExecCommand(program)
   createDevCommand(program)
   createEnvCommand(program)
   createFunctionsCommand(program)
