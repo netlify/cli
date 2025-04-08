@@ -24,6 +24,8 @@ export let didEnableCompileCache = false
  */
 export const maybeEnableCompileCache = (): void => {
   if (isCI) return
+  // The docs recommend turning this off when running tests to generate precise coverage
+  if (process.env.NODE_ENV === 'test') return
 
   // eslint-disable-next-line n/no-unsupported-features/node-builtins
   if ('enableCompileCache' in module && typeof module.enableCompileCache === 'function') {
