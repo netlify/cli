@@ -8,7 +8,7 @@ import type { LambdaEvent } from 'lambda-local'
 import { chalk, logPadded, NETLIFYDEVERR } from '../../utils/command-helpers.js'
 import renderErrorTemplate from '../render-error-template.js'
 
-import { detectAwsSdkError } from './utils.js'
+import { warnIfAwsSdkError } from './utils.js'
 import type { InvocationError } from './netlify-function.js'
 
 // Annoyingly, `isReadableStream` refines to the `Readable` interface rather than the
@@ -156,7 +156,7 @@ const handleErr = async (
   request: express.Request,
   response: express.Response,
 ) => {
-  detectAwsSdkError({ error: err })
+  warnIfAwsSdkError({ error: err })
 
   const acceptsHtml = request.headers.accept?.includes('text/html') ?? false
   const errorString = typeof err === 'string' ? err : formatLambdaLocalError(err, acceptsHtml)

@@ -3,8 +3,7 @@ import { MISSING_AWS_SDK_WARNING } from '../log.js'
 
 import type { InvocationError } from './netlify-function.js'
 
-// TODO(serhalp): Rename? This doesn't "detect", it maybe logs a warning.
-export const detectAwsSdkError = ({ error }: { error: Error | InvocationError | string }): void => {
+export const warnIfAwsSdkError = ({ error }: { error: Error | InvocationError | string }): void => {
   const isAwsSdkError =
     typeof error === 'object' &&
     'errorMessage' in error &&
