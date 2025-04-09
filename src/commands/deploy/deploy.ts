@@ -841,7 +841,7 @@ export const deploy = async (options: OptionValues, command: BaseCommand) => {
     return triggerDeploy({ api, options, siteData, siteId })
   }
 
-  const deployToProduction = options.prod || (options.prodIfUnlocked && !siteData.published_deploy.locked)
+  const deployToProduction = options.prod || (options.prodIfUnlocked && siteData.published_deploy?.locked !== true)
 
   let results = {} as Awaited<ReturnType<typeof prepAndRunDeploy>>
 

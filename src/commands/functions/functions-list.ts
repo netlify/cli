@@ -26,10 +26,8 @@ const normalizeFunction = function (
 export const functionsList = async (options: OptionValues, command: BaseCommand) => {
   const { config, relConfigFilePath, siteInfo } = command.netlify
 
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- XXX(serhalp): fixed in stacked PR.
-  const deploy = siteInfo.published_deploy ?? {}
-  // @ts-expect-error(serhalp) Investigate. Either dead code or a type error in the API client package.
-  const deployedFunctions = deploy.available_functions || []
+  // @ts-expect-error FIXME(serhalp): Investigate. This is either dead code or a type error in the API client package.
+  const deployedFunctions = (siteInfo.published_deploy?.available_functions as DeployedFunction[] | undefined) ?? []
 
   const functionsDir = getFunctionsDir({ options, config })
 
