@@ -252,13 +252,6 @@ export default [
     },
   },
   {
-    files: ['src/commands/functions/functions-list.ts'],
-    rules: {
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/restrict-template-expressions': 'off',
-    },
-  },
-  {
     files: ['src/commands/functions/functions-serve.ts'],
     rules: {
       '@typescript-eslint/no-unsafe-assignment': 'off',
@@ -437,14 +430,6 @@ export default [
     rules: {
       '@typescript-eslint/no-unused-vars': 'off',
       '@typescript-eslint/no-unsafe-member-access': 'off',
-    },
-  },
-  {
-    files: ['src/commands/status/status.ts'],
-    rules: {
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/restrict-template-expressions': 'off',
-      '@typescript-eslint/ban-ts-comment': 'off',
     },
   },
   {

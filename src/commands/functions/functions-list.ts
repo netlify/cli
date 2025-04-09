@@ -35,7 +35,7 @@ export const functionsList = async (options: OptionValues, command: BaseCommand)
     log('Functions directory is undefined')
     log(`Please verify that 'functions.directory' is set in your Netlify configuration file ${relConfigFilePath}`)
     log('Refer to https://ntl.fyi/file-based-build-config for more information')
-    exit(1)
+    return exit(1)
   }
 
   const functions = await getFunctions(functionsDir)
@@ -43,12 +43,12 @@ export const functionsList = async (options: OptionValues, command: BaseCommand)
 
   if (normalizedFunctions.length === 0) {
     log(`No functions found in ${functionsDir}`)
-    exit()
+    return exit()
   }
 
   if (options.json) {
     logJson(normalizedFunctions)
-    exit()
+    return exit()
   }
 
   // Make table
