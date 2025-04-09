@@ -1,4 +1,4 @@
-import process from 'process'
+import { platform } from 'process'
 
 import fetch from 'node-fetch'
 import pWaitFor from 'p-wait-for'
@@ -7,7 +7,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { fetchLatestVersion, shouldFetchLatestVersion } from '../lib/exec-fetcher.js'
 import { getPathInHome } from '../lib/settings.js'
 
-import { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, log } from './command-helpers.js'
+import { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, exit, log } from './command-helpers.js'
 import execa from './execa.js'
 import type CLIState from './cli-state.js'
 
@@ -50,8 +50,12 @@ const createTunnel = async function ({
   const data = await response.json()
 
   if (response.status !== 201) {
-    // @ts-expect-error(serhalp) -- Use typed `netlify` API client?
-    throw new Error(data.message)
+    // TODO(serhalp): Use typed `netlify` API client?
+    throw new Error(
+      data != null && typeof data === 'object' && 'message' in data && typeof data.message === 'string'
+        ? data.message
+        : '',
+    )
   }
 
   return data as LiveSession
@@ -74,9 +78,9 @@ const connectTunnel = function ({
   }
 
   const ps = execa(execPath, args, { stdio: 'inherit' })
-  ps.on('close', (code) => process.exit(code ?? undefined))
-  ps.on('SIGINT', process.exit)
-  ps.on('SIGTERM', process.exit)
+  void ps.on('close', (code) => exit(code ?? undefined))
+  void ps.on('SIGINT', () => exit())
+  void ps.on('SIGTERM', () => exit())
 }
 
 const installTunnelClient = async function () {
@@ -98,7 +102,7 @@ const installTunnelClient = async function () {
     packageName: PACKAGE_NAME,
     execName: EXEC_NAME,
     destination: binPath,
-    extension: process.platform === 'win32' ? 'zip' : 'tar.gz',
+    extension: platform === 'win32' ? 'zip' : 'tar.gz',
   })
 }
 
@@ -119,13 +123,20 @@ export const startLiveTunnel = async ({
         'netlify init',
       )} or ${chalk.yellow('netlify link')}?`,
     )
-    process.exit(1)
+    return exit(1)
+  }
+  if (!netlifyApiToken) {
+    console.error(
+      `${NETLIFYDEVERR} Error: no Netlify auth token defined, did you forget to run ${chalk.yellow(
+        'netlify login',
+      )} or define 'NETLIFY_AUTH_TOKEN'?`,
+    )
+    return exit(1)
   }
 
   const session = await createTunnel({
     siteId,
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- XXX(serhalp): removed in favor of runtime user feedback in stacked PR
-    netlifyApiToken: netlifyApiToken!,
+    netlifyApiToken,
     slug,
   })
 
@@ -141,15 +152,18 @@ export const startLiveTunnel = async ({
     const data = await response.json()
 
     if (response.status !== 200) {
-      // @ts-expect-error(serhalp) -- Use typed `netlify` API client?
-      throw new Error(data.message)
+      // TODO(serhalp): Use typed `netlify` API client?
+      throw new Error(
+        data != null && typeof data === 'object' && 'message' in data && typeof data.message === 'string'
+          ? data.message
+          : '',
+      )
     }
 
     return (data as LiveSession).state === 'online'
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- XXX(serhalp): removed in favor of runtime user feedback in stacked PR
-  connectTunnel({ session, netlifyApiToken: netlifyApiToken!, localPort })
+  connectTunnel({ session, netlifyApiToken, localPort })
 
   // Waiting for the live session to have a state of `online`.
   await pWaitFor(isLiveTunnelReady, {

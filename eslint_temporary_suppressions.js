@@ -1014,16 +1014,6 @@ export default [
     },
   },
   {
-    files: ['src/utils/live-tunnel.ts'],
-    rules: {
-      '@typescript-eslint/no-unsafe-argument': 'off',
-      '@typescript-eslint/no-floating-promises': 'off',
-      'n/no-process-exit': 'off',
-      '@typescript-eslint/unbound-method': 'off',
-      '@typescript-eslint/restrict-template-expressions': 'off',
-    },
-  },
-  {
     files: ['src/utils/parse-raw-flags.ts'],
     rules: {
       '@typescript-eslint/no-unsafe-assignment': 'off',
