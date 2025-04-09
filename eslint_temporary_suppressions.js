@@ -213,14 +213,6 @@ export default [
     },
   },
   {
-    files: ['src/commands/functions/functions-build.ts'],
-    rules: {
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-argument': 'off',
-      '@typescript-eslint/no-floating-promises': 'off',
-    },
-  },
-  {
     files: ['src/commands/functions/functions-create.ts'],
     rules: {
       '@typescript-eslint/no-unsafe-member-access': 'off',

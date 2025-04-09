@@ -22,7 +22,11 @@ export const getFunctionsDir = (
     options: OptionValues
   },
   defaultValue?: string,
-) => options.functions || config.dev?.functions || config.functionsDirectory || defaultValue
+): string | undefined =>
+  ('functions' in options && typeof options.functions === 'string' ? options.functions : null) ??
+  config.dev?.functions ??
+  config.functionsDirectory ??
+  defaultValue
 
 export const getFunctionsManifestPath = async ({ base, packagePath = '' }: { base: string; packagePath?: string }) => {
   const path = resolve(base, packagePath, getPathInProject(['functions', 'manifest.json']))
