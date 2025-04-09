@@ -156,8 +156,7 @@ const handleErr = async (
   request: express.Request,
   response: express.Response,
 ) => {
-  // @ts-expect-error -- XXX(serhalp): Expects `error` but passes `err`, so it has never worked. Fixed in stacked PR.
-  detectAwsSdkError({ err })
+  detectAwsSdkError({ error: err })
 
   const acceptsHtml = request.headers.accept?.includes('text/html') ?? false
   const errorString = typeof err === 'string' ? err : formatLambdaLocalError(err, acceptsHtml)
