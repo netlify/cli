@@ -21,9 +21,9 @@ export interface Token {
 const promptForAuthMethod = async () => {
   const authChoiceNetlify = 'Authorize with GitHub through app.netlify.com'
   const authChoiceToken = 'Authorize with a GitHub personal access token'
-  const authChoices = [authChoiceNetlify, authChoiceToken]
+  const authChoices = [authChoiceNetlify, authChoiceToken] as const
 
-  const { authMethod } = await inquirer.prompt([
+  const { authMethod } = (await inquirer.prompt([
     {
       type: 'list',
       name: 'authMethod',
@@ -32,7 +32,7 @@ const promptForAuthMethod = async () => {
         'What would you like to do?',
       choices: authChoices,
     },
-  ])
+  ])) as { authMethod: typeof authChoices[number] }
 
   return authMethod === authChoiceNetlify
 }
@@ -53,7 +53,7 @@ export const authWithNetlify = async (): Promise<Token> => {
         `${
           "<html><head><title>Logged in</title><script>if(history.replaceState){history.replaceState({},'','/')}</script><style>html{font-family:system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';line-height:1.5;background:rgb(18 24 31)}body{overflow:hidden;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;width:100vw;}h3{margin:0}p{margin: 1rem 0 0.5rem}.card{position:relative;display:flex;flex-direction:column;width:75%;max-width:364px;padding:24px;background:white;color:rgb(18 24 31);border-radius:8px;box-shadow:rgb(6 11 16 / 20%) 0px 16px 24px, rgb(6 11 16 / 30%) 0px 6px 30px, rgb(6 11 16 / 40%) 0px 8px 10px;}</style></head>" +
           "<body><div class=card><h3>Logged in</h3><p>You're now logged into Netlify CLI with your "
-        }${parameters.get('provider')} credentials. Please close this window.</p></div>`,
+        }${parameters.get('provider') ?? ''} credentials. Please close this window.</p></div>`,
       )
       server.close()
       return
@@ -70,9 +70,9 @@ export const authWithNetlify = async (): Promise<Token> => {
     })
   })
 
-  const webUI = process.env.NETLIFY_WEB_UI || 'https://app.netlify.com'
+  const webUI = process.env.NETLIFY_WEB_UI ?? 'https://app.netlify.com'
   const urlParams = new URLSearchParams({
-    host: `http://localhost:${port}`,
+    host: `http://localhost:${port.toString()}`,
     provider: 'github',
   })
   const url = `${webUI}/cli?${urlParams.toString()}`
@@ -82,15 +82,15 @@ export const authWithNetlify = async (): Promise<Token> => {
   return deferredPromise
 }
 
-const getPersonalAccessToken = async () => {
-  const { token } = await inquirer.prompt([
+const getPersonalAccessToken = async (): Promise<{ token: string }> => {
+  const { token } = (await inquirer.prompt([
     {
       type: 'password',
       name: 'token',
       message: 'Your GitHub personal access token:',
-      filter: (input) => input.trim(),
+      filter: (input: string) => input.trim(),
     },
-  ])
+  ])) as { token: string }
 
   return { token }
 }
