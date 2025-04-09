@@ -254,7 +254,7 @@ export const createHandler = function (options: GetFunctionsServerOptions): Requ
         return
       }
 
-      handleSynchronousFunction({ error, functionName: func.name, result, request, response })
+      await handleSynchronousFunction({ error, functionName: func.name, result, request, response })
     }
   }
 }
