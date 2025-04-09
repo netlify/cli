@@ -1,13 +1,22 @@
 import clean from 'clean-deep'
-import { OptionValues } from 'commander'
+import type { OptionValues } from 'commander'
 import prettyjson from 'prettyjson'
 
-import { chalk, logAndThrowError, exit, getToken, log, logJson, warn, APIError } from '../../utils/command-helpers.js'
-import BaseCommand from '../base-command.js'
+import {
+  chalk,
+  logAndThrowError,
+  exit,
+  getToken,
+  log,
+  logJson,
+  warn,
+  type APIError,
+} from '../../utils/command-helpers.js'
+import type BaseCommand from '../base-command.js'
 
 export const status = async (options: OptionValues, command: BaseCommand) => {
   const { accounts, api, globalConfig, site, siteInfo } = command.netlify
-  const current = globalConfig.get('userId')
+  const current = globalConfig.get('userId') as string
   const [accessToken] = await getToken()
 
   if (!accessToken) {
@@ -37,7 +46,7 @@ export const status = async (options: OptionValues, command: BaseCommand) => {
     }
   }
 
-  const ghuser = command.netlify.globalConfig.get(`users.${current}.auth.github.user`)
+  const ghuser = command.netlify.globalConfig.get(`users.${current}.auth.github.user`) as string
   const accountData = {
     Name: user.full_name,
     Email: user.email,
@@ -45,8 +54,10 @@ export const status = async (options: OptionValues, command: BaseCommand) => {
     Teams: accounts.map(({ name }) => name),
   }
 
-  // @ts-expect-error
-  const cleanAccountData = clean(accountData)
+  const cleanAccountData =
+    // TODO(serhalp) `deep-clean` type declaration is invalid (this is obscured by `skipLibCheck`). Open a PR or use
+    // another lib.
+    (clean as unknown as <T extends Record<string | number | symbol, unknown>>(obj: T) => Partial<T>)(accountData)
 
   log(prettyjson.render(cleanAccountData))
 
