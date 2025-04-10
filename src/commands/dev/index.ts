@@ -51,11 +51,6 @@ export const createDevCommand = (program: BaseCommand) => {
         "disables edge functions. use this if your environment doesn't support Deno. This option is internal and should not be used by end users.",
       ).hideHelp(true),
     )
-    .option(
-      '-l, --live [subdomain]',
-      'start a public live session; optionally, supply a subdomain to generate a custom URL',
-      false,
-    )
     .option('--functions-port <port>', 'port of functions server', (value) => Number.parseInt(value))
     .addOption(
       new Option(
