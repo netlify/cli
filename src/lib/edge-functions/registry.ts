@@ -179,7 +179,7 @@ export class EdgeFunctionsRegistry {
     const warnings: Record<string, string[]> = {}
 
     try {
-      const { functionsConfig, graph, npmSpecifiersWithExtraneousFiles, success } = await this.runBuild()
+      const { functionsConfig, graph, success } = await this.runBuild()
 
       if (!success) {
         throw new Error('Build error')
@@ -221,14 +221,6 @@ export class EdgeFunctionsRegistry {
       }
 
       this.processGraph(graph)
-
-      if (npmSpecifiersWithExtraneousFiles.length !== 0) {
-        const modules = npmSpecifiersWithExtraneousFiles.map((name) => chalk.yellow(name)).join(', ')
-
-        log(
-          `${NETLIFYDEVWARN} The following npm modules, which are directly or indirectly imported by an edge function, may not be supported: ${modules}. For more information, visit https://ntl.fyi/edge-functions-npm.`,
-        )
-      }
 
       return { warnings }
     } catch (error) {
@@ -530,16 +522,12 @@ export class EdgeFunctionsRegistry {
       }
     }
 
-    const { functionsConfig, graph, npmSpecifiersWithExtraneousFiles, success } = await this.runIsolate(
-      this.functions,
-      this.env,
-      {
-        getFunctionsConfig: true,
-        importMapPaths: importMapPaths.filter(nonNullable),
-      },
-    )
+    const { functionsConfig, graph, success } = await this.runIsolate(this.functions, this.env, {
+      getFunctionsConfig: true,
+      importMapPaths: importMapPaths.filter(nonNullable),
+    })
 
-    return { functionsConfig, graph, npmSpecifiersWithExtraneousFiles, success }
+    return { functionsConfig, graph, success }
   }
 
   private get internalDirectory() {
