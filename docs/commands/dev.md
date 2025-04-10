@@ -30,7 +30,6 @@ netlify dev
 - `functions` (*string*) - specify a functions folder to serve
 - `functions-port` (*string*) - port of functions server
 - `geo` (*cache | mock | update*) - force geolocation data to be updated, use cached data from the last 24h if found, or use a mock location
-- `live` (*string*) - start a public live session; optionally, supply a subdomain to generate a custom URL
 - `no-open` (*boolean*) - disables the automatic opening of a browser window
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
