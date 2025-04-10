@@ -21,7 +21,6 @@ export interface CachedConfig {
   siteInfo: SiteInfo
 
   // TODO(serhalp): Type these properties:
-  addons?: unknown
   api?: unknown
   branch?: unknown
   config: {
