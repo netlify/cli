@@ -109,7 +109,7 @@ Support for package.json's main field, and intrinsic index.js entrypoints are co
         'build',
       ),
     )
-    .option('--build', 'Run build command before deploying', false)
+    .option('--build', 'Run build command before deploying', true)
     .option('--context <context>', 'Context to use when resolving build configuration')
     .option(
       '--skip-functions-cache',
