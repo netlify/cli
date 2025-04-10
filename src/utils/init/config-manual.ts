@@ -11,19 +11,21 @@ import { createDeployKey, type DeployKey, getBuildSettings, saveNetlifyToml, set
  */
 const addDeployKey = async (deployKey: DeployKey) => {
   log('\nGive this Netlify SSH public key access to your repository:\n')
+  // FIXME(serhalp): Handle nullish `deployKey.public_key` by throwing user-facing error or fixing upstream type.
+  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
   log(`\n${deployKey.public_key}\n\n`)
 
-  const { sshKeyAdded } = await inquirer.prompt([
+  const { sshKeyAdded } = (await inquirer.prompt([
     {
       type: 'confirm',
       name: 'sshKeyAdded',
       message: 'Continue?',
       default: true,
     },
-  ])
+  ])) as { sshKeyAdded: boolean }
 
   if (!sshKeyAdded) {
-    exit()
+    return exit()
   }
 }
 
@@ -43,6 +45,8 @@ const getRepoPath = async ({ repoData }: { repoData: RepoData }): Promise<string
 
 const addDeployHook = async (deployHook: string | undefined): Promise<boolean> => {
   log('\nConfigure the following webhook for your repository:\n')
+  // FIXME(serhalp): Handle nullish `deployHook` by throwing user-facing error or fixing upstream type.
+  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
   log(`\n${deployHook}\n\n`)
   const { deployHookAdded } = (await inquirer.prompt([
     {
@@ -71,14 +75,9 @@ export default async function configManual({
     cachedConfig: { configPath },
     config,
     repositoryRoot,
-    site: { root: siteRoot },
   } = netlify
 
   const { baseDir, buildCmd, buildDir, functionsDir, pluginsToInstall } = await getBuildSettings({
-    // @ts-expect-error -- XXX(serhalp): unused - removed in stacked PR
-    repositoryRoot,
-    // XXX(serhalp): unused - removed in stacked PR
-    siteRoot,
     config,
     command,
   })
