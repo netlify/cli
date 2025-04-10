@@ -86,13 +86,13 @@ netlify deploy
 
 - `alias` (*string*) - Specifies the alias for deployment, the string at the beginning of the deploy subdomain. Useful for creating predictable deployment URLs. Avoid setting an alias string to the same value as a deployed branch. `alias` doesn’t create a branch deploy and can’t be used in conjunction with the branch subdomain feature. Maximum 37 characters.
 - `branch` (*string*) - Serves the same functionality as --alias. Deprecated and will be removed in future versions
-- `build` (*boolean*) - Run build command before deploying
 - `context` (*string*) - Specify a deploy context for environment variables read during the build (”production”, ”deploy-preview”, ”branch-deploy”, ”dev”) or `branch:your-branch` where `your-branch` is the name of a branch (default: dev)
 - `dir` (*string*) - Specify a folder to deploy
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `functions` (*string*) - Specify a functions folder to deploy
 - `json` (*boolean*) - Output deployment data as JSON
 - `message` (*string*) - A short message to include in the deploy log
+- `no-build` (*boolean*) - Do not run build command before deploying. Only use this if you have no need for a build or your site has already been built.
 - `prod-if-unlocked` (*boolean*) - Deploy to production if unlocked, create a draft otherwise
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
@@ -108,13 +108,14 @@ netlify deploy
 ```bash
 netlify deploy
 netlify deploy --site my-first-site
+netlify deploy --no-build # Deploy without running a build first
 netlify deploy --prod
 netlify deploy --prod --open
 netlify deploy --prod-if-unlocked
 netlify deploy --message "A message with an $ENV_VAR"
 netlify deploy --auth $NETLIFY_AUTH_TOKEN
 netlify deploy --trigger
-netlify deploy --build --context deploy-preview
+netlify deploy --context deploy-preview
 ```
 
 
