@@ -12,7 +12,7 @@ import { track } from '../../utils/telemetry/index.js'
 import type { SiteInfo } from '../../utils/types.js'
 import BaseCommand from '../base-command.js'
 
-const linkPrompt = async (command: BaseCommand, options: OptionValues) => {
+const linkPrompt = async (command: BaseCommand, options: OptionValues): Promise<SiteInfo> => {
   const { api, state } = command.netlify
 
   const SITE_NAME_PROMPT = 'Search by full or partial site name'
@@ -20,7 +20,7 @@ const linkPrompt = async (command: BaseCommand, options: OptionValues) => {
   const SITE_ID_PROMPT = 'Enter a site ID'
 
   let GIT_REMOTE_PROMPT = 'Use the current git remote origin URL'
-  let site
+  let site!: SiteInfo
   // Get git remote data if exists
   const repoData = await getRepoData({ workingDir: command.workingDir, remoteName: options.gitRemoteName })
 
@@ -35,16 +35,16 @@ const linkPrompt = async (command: BaseCommand, options: OptionValues) => {
   log()
   log(`${chalk.cyanBright('netlify link')} will connect this folder to a site on Netlify`)
   log()
-  const { linkType } = await inquirer.prompt([
+  const { linkType } = (await inquirer.prompt([
     {
       type: 'list',
       name: 'linkType',
       message: 'How do you want to link this folder to a site?',
       choices: linkChoices,
     },
-  ])
+  ])) as { linkType: typeof linkChoices[number] }
 
-  let kind
+  let kind: 'byName' | 'bySiteId' | 'fromList' | 'gitRemote'
   switch (linkType) {
     case GIT_REMOTE_PROMPT: {
       // TODO(serhalp): Refactor function to avoid this. We can only be here if `repoData` is not an error.
@@ -88,7 +88,7 @@ Run ${chalk.cyanBright('git remote -v')} to see a list of your git remotes.`)
         log(`Found ${matchingSites.length} matching sites!`)
 
         // Prompt which options
-        const { selectedSite } = await inquirer.prompt([
+        const { selectedSite } = (await inquirer.prompt([
           {
             type: 'list',
             name: 'selectedSite',
@@ -98,7 +98,7 @@ Run ${chalk.cyanBright('git remote -v')} to see a list of your git remotes.`)
               value: matchingSite,
             })),
           },
-        ])
+        ])) as { selectedSite: SiteInfo | undefined }
         if (!selectedSite) {
           return logAndThrowError('No site selected')
         }
@@ -165,7 +165,7 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
       log(`Fetching recently updated sites...`)
       log()
 
-      let sites
+      let sites: SiteInfo[]
       try {
         sites = await listSites({ api, options: { maxPages: 1, filter: 'all' } })
       } catch (error_) {
@@ -204,6 +204,7 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
       ])
 
       try {
+        // @ts-expect-error(serhalp) -- Mismatch between hardcoded `SiteInfo` and generated Netlify API types.
         site = await api.getSite({ siteId })
       } catch (error_) {
         if ((error_ as APIError).status === 404) {
@@ -215,7 +216,9 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
       break
     }
     default:
-      return
+      // This is not possible, but since the fixed set of choices contains one dynamically interpolated string,
+      // we can't tell TS that these are exhaustive values
+      return logAndThrowError(new Error('Invalid link type selected'))
   }
 
   if (!site) {
