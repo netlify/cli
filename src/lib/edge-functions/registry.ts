@@ -507,7 +507,6 @@ export class EdgeFunctionsRegistry {
     if (this.functions.length === 0) {
       return {
         functionsConfig: [],
-        npmSpecifiersWithExtraneousFiles: [],
         success: true,
       }
     }
