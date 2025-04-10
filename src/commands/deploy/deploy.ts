@@ -2,17 +2,23 @@ import { type Stats } from 'fs'
 import { stat } from 'fs/promises'
 import { basename, resolve } from 'path'
 
-import { type NetlifyConfig, runCoreSteps } from '@netlify/build'
-import { type OptionValues } from 'commander'
+import { type NetlifyConfig, type OnPostBuild, runCoreSteps } from '@netlify/build'
 import inquirer from 'inquirer'
 import isEmpty from 'lodash/isEmpty.js'
 import isObject from 'lodash/isObject.js'
 import { parseAllHeaders } from '@netlify/headers-parser'
 import { parseAllRedirects } from '@netlify/redirect-parser'
+import type { NetlifyAPI } from 'netlify'
 import prettyjson from 'prettyjson'
 
 import { cancelDeploy } from '../../lib/api.js'
-import { type CachedConfig, getRunBuildOptions, runBuild } from '../../lib/build.js'
+import {
+  type CachedConfig,
+  type DefaultConfig,
+  type PatchedHandlerType,
+  getRunBuildOptions,
+  runBuild,
+} from '../../lib/build.js'
 import { getBootstrapURL } from '../../lib/edge-functions/bootstrap.js'
 import { featureFlags as edgeFunctionsFeatureFlags } from '../../lib/edge-functions/consts.js'
 import { normalizeFunctionsConfig } from '../../lib/functions/config.js'
@@ -42,9 +48,19 @@ import { link } from '../link/link.js'
 import { sitesCreate } from '../sites/sites-create.js'
 import type { $TSFixMe } from '../types.js'
 import { SiteInfo } from '../../utils/types.js'
+import type { DeployOptionValues } from './option_values.js'
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-const triggerDeploy = async ({ api, options, siteData, siteId }) => {
+const triggerDeploy = async ({
+  api,
+  options,
+  siteData,
+  siteId,
+}: {
+  api: NetlifyAPI
+  options: DeployOptionValues
+  siteData: { name: string }
+  siteId: string
+}) => {
   try {
     const siteBuild = await api.createSiteBuild({ siteId })
     if (options.json) {
@@ -80,7 +96,7 @@ const getDeployFolder = async ({
 }: {
   command: BaseCommand
   config: $TSFixMe
-  options: OptionValues
+  options: DeployOptionValues
   site: $TSFixMe
   siteData: $TSFixMe
 }): Promise<string> => {
@@ -150,7 +166,7 @@ const getFunctionsFolder = ({
   workingDir,
 }: {
   config: $TSFixMe
-  options: OptionValues
+  options: DeployOptionValues
   site: $TSFixMe
   siteData: $TSFixMe
   /** The process working directory where the build command is executed  */
@@ -347,7 +363,7 @@ const uploadDeployBlobs = async ({
 }: {
   cachedConfig: CachedConfig
   deployId: string
-  options: OptionValues
+  options: DeployOptionValues
   packagePath?: string
   silent: boolean
   siteId: string
@@ -540,18 +556,21 @@ const runDeploy = async ({
   }
 }
 
-/**
- *
- * @param {object} config
- * @param {*} config.cachedConfig
- * @param {string} [config.packagePath]
- * @param {*} config.deployHandler
- * @param {string} config.currentDir
- * @param {import('commander').OptionValues} config.options The options of the command
- * @returns
- */
-// @ts-expect-error TS(7031) FIXME: Binding element 'cachedConfig' implicitly has an '... Remove this comment to see the full error message
-const handleBuild = async ({ cachedConfig, currentDir, defaultConfig, deployHandler, options, packagePath }) => {
+const handleBuild = async ({
+  cachedConfig,
+  currentDir,
+  defaultConfig,
+  deployHandler,
+  options,
+  packagePath,
+}: {
+  cachedConfig: CachedConfig
+  currentDir: string
+  defaultConfig?: DefaultConfig | undefined
+  deployHandler?: PatchedHandlerType<OnPostBuild> | undefined
+  options: DeployOptionValues
+  packagePath: string | undefined
+}) => {
   if (!options.build) {
     return {}
   }
@@ -782,7 +801,7 @@ const prepAndRunDeploy = async ({
   return results
 }
 
-export const deploy = async (options: OptionValues, command: BaseCommand) => {
+export const deploy = async (options: DeployOptionValues, command: BaseCommand) => {
   const { workingDir } = command
   const { api, site, siteInfo } = command.netlify
   const alias = options.alias || options.branch
@@ -832,6 +851,12 @@ export const deploy = async (options: OptionValues, command: BaseCommand) => {
       site.id = newSiteData?.id
       siteId = site.id
     }
+  }
+
+  if (!siteId) {
+    return logAndThrowError(
+      "Unable to determine which site to deploy to. Make sure you've run 'netlify link' or that you're specifying your desired site using the '--site' option.",
+    )
   }
 
   // This is the best I could come up with to make TS happy with the complexities above.

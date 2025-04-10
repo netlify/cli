@@ -115,7 +115,7 @@ interface HandlerResult {
   status?: string
 }
 // The @netlify/build type incorrectly states a `void | Promise<void>` return type.
-type PatchedHandlerType<T extends (opts: any) => void | Promise<void>> = (
+export type PatchedHandlerType<T extends (opts: any) => void | Promise<void>> = (
   opts: Parameters<T>[0],
 ) => HandlerResult | Promise<HandlerResult>
 
