@@ -148,6 +148,15 @@ async function getRepositoryRoot(cwd?: string): Promise<string | undefined> {
   }
 }
 
+export type BaseOptionValues = {
+  auth?: string
+  cwd?: string
+  debug?: boolean
+  filter?: string
+  httpProxy?: string
+  silent?: string
+}
+
 /** Base command class that provides tracking and config initialization */
 export default class BaseCommand extends Command {
   /** The netlify object inside each command with the state */
