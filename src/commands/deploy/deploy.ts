@@ -809,14 +809,6 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
 
   command.setAnalyticsPayload({ open: options.open, prod: options.prod, json: options.json, alias: Boolean(alias) })
 
-  if (options.branch) {
-    warn('--branch flag has been renamed to --alias and will be removed in future versions')
-  }
-
-  if (options.context && !options.build) {
-    return logAndThrowError('--context flag is only available when using the --build flag')
-  }
-
   await command.authenticate(options.auth)
 
   let siteId = site.id || options.site
