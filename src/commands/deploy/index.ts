@@ -1,8 +1,10 @@
 import { env } from 'process'
 
-import { Option, OptionValues } from 'commander'
+import { Option } from 'commander'
 
 import BaseCommand from '../base-command.js'
+import { logAndThrowError, warn } from '../../utils/command-helpers.js'
+import type { DeployOptionValues } from './option_values.js'
 
 export const createDeployCommand = (program: BaseCommand) =>
   program
@@ -107,7 +109,7 @@ Support for package.json's main field, and intrinsic index.js entrypoints are co
         'build',
       ),
     )
-    .option('--build', 'Run build command before deploying')
+    .option('--build', 'Run build command before deploying', false)
     .option('--context <context>', 'Context to use when resolving build configuration')
     .option(
       '--skip-functions-cache',
@@ -125,7 +127,15 @@ Support for package.json's main field, and intrinsic index.js entrypoints are co
       'netlify deploy --trigger',
       'netlify deploy --build --context deploy-preview',
     ])
-    .action(async (options: OptionValues, command: BaseCommand) => {
+    .action(async (options: DeployOptionValues, command: BaseCommand) => {
+      if (options.branch) {
+        warn('--branch flag has been renamed to --alias and will be removed in future versions')
+      }
+
+      if (options.context && !options.build) {
+        return logAndThrowError('--context flag is only available when using the --build flag')
+      }
+
       const { deploy } = await import('./deploy.js')
       await deploy(options, command)
     })
