@@ -1,9 +1,14 @@
+import { statSync } from 'fs'
 import path from 'path'
+import { fileURLToPath } from 'url'
 
 import fastifyStatic from '@fastify/static'
 import Fastify from 'fastify'
 
 import { log, NETLIFYDEVLOG } from './command-helpers.js'
+
+const cwd = path.dirname(fileURLToPath(import.meta.url))
+const default404Template = path.resolve(cwd, '../lib/templates/404.html')
 
 /**
  * @param {object} config
@@ -21,7 +26,20 @@ export const startStaticServer = async ({ settings }) => {
   })
 
   server.setNotFoundHandler((_req, res) => {
-    res.code(404).sendFile('404.html', rootPath)
+    let pagePath = default404Template
+
+    try {
+      const custom404Path = path.join(settings.dist, '404.html')
+      const stats = statSync(custom404Path)
+
+      if (stats.isFile()) {
+        pagePath = custom404Path
+      }
+    } catch {
+      // no-op
+    }
+
+    res.code(404).sendFile(path.basename(pagePath), path.dirname(pagePath))
   })
 
   server.addHook('onRequest', (req, reply, done) => {

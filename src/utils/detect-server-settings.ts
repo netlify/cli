@@ -1,3 +1,4 @@
+import { statSync } from 'fs'
 import { readFile } from 'fs/promises'
 import { EOL } from 'os'
 import { dirname, relative, resolve } from 'path'
@@ -92,9 +93,26 @@ const DEFAULT_STATIC_PORT = 3999
  * Logs a message that it was unable to determine the dist directory and falls back to the workingDir
  */
 const getDefaultDist = (workingDir: string) => {
+  const netlifyPublishPath = resolve(workingDir, 'netlify', 'publish')
+
+  try {
+    const stat = statSync(netlifyPublishPath)
+
+    if (stat.isDirectory()) {
+      log(`${NETLIFYDEVWARN} Unable to determine public folder to serve files from. Using current working directory`)
+      log(`  Setup a netlify.toml file with a [dev] section to specify your dev server settings.`)
+      log(`  https://docs.netlify.com/cli/local-development/#project-detection`)
+
+      return netlifyPublishPath
+    }
+  } catch {
+    // no-op
+  }
+
   log(`${NETLIFYDEVWARN} Unable to determine public folder to serve files from. Using current working directory`)
-  log(`${NETLIFYDEVWARN} Setup a netlify.toml file with a [dev] section to specify your dev server settings.`)
-  log(`${NETLIFYDEVWARN} See docs at: https://docs.netlify.com/cli/local-development/#project-detection`)
+  log(`  Setup a netlify.toml file with a [dev] section to specify your dev server settings.`)
+  log(`  https://docs.netlify.com/cli/local-development/#project-detection`)
+
   return workingDir
 }
 

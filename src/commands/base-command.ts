@@ -16,9 +16,10 @@ import inquirer from 'inquirer'
 // @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'inqu... Remove this comment to see the full error message
 import inquirerAutocompletePrompt from 'inquirer-autocomplete-prompt'
 import merge from 'lodash/merge.js'
-import { NetlifyAPI } from 'netlify'
+import { NetlifyAPI, APICache } from 'netlify'
 
 import { getAgent } from '../lib/http-agent.js'
+import { getPathInHome } from '../lib/settings.js'
 import {
   NETLIFY_CYAN,
   USER_AGENT,
@@ -76,6 +77,13 @@ const COMMANDS_WITHOUT_WORKSPACE_OPTIONS = new Set(['api', 'recipes', 'completio
  * A list of commands where we need to fetch featureflags for config resolution
  */
 const COMMANDS_WITH_FEATURE_FLAGS = new Set(['build', 'dev', 'deploy'])
+
+const apiCache = new APICache({
+  fsPath: getPathInHome(['api-cache']),
+  ttl: 30_000,
+  // swr: 3_600_000,
+  swr: Infinity,
+})
 
 /** Formats a help list correctly with the correct indent */
 const formatHelpList = (textArray: string[]) => textArray.join('\n').replace(/^/gm, ' '.repeat(HELP_INDENT_WIDTH))
@@ -566,7 +574,7 @@ export default class BaseCommand extends Command {
       httpProxy: flags.httpProxy,
       certificateFile: flags.httpProxyCertificateFilename,
     })
-    const apiOpts = { ...apiUrlOpts, agent }
+    const apiOpts = { ...apiUrlOpts, agent, cache: apiCache }
     // TODO: remove typecast once we have proper types for the API
     const api = new NetlifyAPI(token || '', apiOpts) as NetlifyOptions['api']
 
@@ -697,6 +705,7 @@ export default class BaseCommand extends Command {
     try {
       return await resolveConfig({
         accountId: this.accountId,
+        apiCache,
         config: config.configFilePath,
         packagePath: config.packagePath,
         repositoryRoot: config.repositoryRoot,
