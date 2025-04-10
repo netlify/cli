@@ -31,7 +31,7 @@
     "url": "https://github.com/netlify/cli/issues"
   },
   "scripts": {
-    "_format": "prettier --loglevel=warn \"{src,tools,scripts,tests,e2e,.github}/**/*.{mjs,cjs,js,mts,md,yml,json,html,ts}\" \"*.{mjs,cjs,js,mts,yml,json,html,ts}\" \".*.{mjs,cjs,js,yml,json,html,ts}\" \"!CHANGELOG.md\" \"!**/*/package-lock.json\" \"!.github/**/*.md\"",
+    "_format": "prettier --loglevel=warn \"{src,scripts,tests,e2e,.github}/**/*.{mjs,cjs,js,mts,md,yml,json,html,ts}\" \"*.{mjs,cjs,js,mts,yml,json,html,ts}\" \".*.{mjs,cjs,js,yml,json,html,ts}\" \"!CHANGELOG.md\" \"!**/*/package-lock.json\" \"!.github/**/*.md\"",
     "build": "tsc --project tsconfig.build.json",
     "clean": "rm -rf dist/",
     "dev": "tsc --project tsconfig.build.json --watch",
@@ -217,11 +217,5 @@
     "typescript-eslint": "^8.26.0",
     "verdaccio": "6.0.5",
     "vitest": "1.6.1"
-  },
-  "ava": {
-    "files": [
-      "tools/**/*.test.js",
-      "tests/**/*.test.cjs"
-    ]
   }
 }
