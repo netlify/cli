@@ -26,10 +26,8 @@ const normalizeFunction = function (
 export const functionsList = async (options: OptionValues, command: BaseCommand) => {
   const { config, relConfigFilePath, siteInfo } = command.netlify
 
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- XXX(serhalp): fixed in stacked PR.
-  const deploy = siteInfo.published_deploy ?? {}
-  // @ts-expect-error(serhalp) Investigate. Either dead code or a type error in the API client package.
-  const deployedFunctions = deploy.available_functions || []
+  // @ts-expect-error FIXME(serhalp): Investigate. This is either dead code or a type error in the API client package.
+  const deployedFunctions = (siteInfo.published_deploy?.available_functions as DeployedFunction[] | undefined) ?? []
 
   const functionsDir = getFunctionsDir({ options, config })
 
@@ -37,7 +35,7 @@ export const functionsList = async (options: OptionValues, command: BaseCommand)
     log('Functions directory is undefined')
     log(`Please verify that 'functions.directory' is set in your Netlify configuration file ${relConfigFilePath}`)
     log('Refer to https://ntl.fyi/file-based-build-config for more information')
-    exit(1)
+    return exit(1)
   }
 
   const functions = await getFunctions(functionsDir)
@@ -45,12 +43,12 @@ export const functionsList = async (options: OptionValues, command: BaseCommand)
 
   if (normalizedFunctions.length === 0) {
     log(`No functions found in ${functionsDir}`)
-    exit()
+    return exit()
   }
 
   if (options.json) {
     logJson(normalizedFunctions)
-    exit()
+    return exit()
   }
 
   // Make table
