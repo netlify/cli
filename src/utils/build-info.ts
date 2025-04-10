@@ -4,9 +4,8 @@ import fuzzy from 'fuzzy'
 import inquirer from 'inquirer'
 
 import type BaseCommand from '../commands/base-command.js'
-import type { DefaultConfig } from '../lib/build.js'
-
 import { chalk, log } from './command-helpers.js'
+import type { DefaultConfig } from '../lib/build.js'
 
 /**
  * Filters the inquirer settings based on the input
