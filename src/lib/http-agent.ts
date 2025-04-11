@@ -31,8 +31,23 @@ const DEFAULT_HTTPS_PORT = 443
 // 50 seconds
 const AGENT_PORT_TIMEOUT = 50
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'certificateFile' implicitly has a... Remove this comment to see the full error message
-export const tryGetAgent = async ({ certificateFile, httpProxy }) => {
+export const tryGetAgent = async ({
+  certificateFile,
+  httpProxy,
+}: {
+  httpProxy?: string | undefined
+  certificateFile?: string | undefined
+}): Promise<
+  | {
+      error?: string | undefined
+      warning?: string | undefined
+      message?: string | undefined
+    }
+  | {
+      agent: HttpsProxyAgentWithCA
+      response: unknown
+    }
+> => {
   if (!httpProxy) {
     return {}
   }

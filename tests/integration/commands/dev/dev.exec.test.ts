@@ -14,10 +14,10 @@ test('should pass .env variables to exec command', async (t) => {
 
     await withMockApi(routes, async ({ apiUrl }) => {
       const cmd = process.platform === 'win32' ? 'set' : 'printenv'
-      const output = await callCli(['dev:exec', cmd], getCLIOptions({ builder, apiUrl }))
+      const output = (await callCli(['dev:exec', cmd], getCLIOptions({ builder, apiUrl }))) as string
 
-      t.expect(output.includes('Injected .env file env var: MY_SUPER_SECRET')).toBe(true)
-      t.expect(output.includes('MY_SUPER_SECRET=SECRET')).toBe(true)
+      t.expect(output).toContain('Injected .env file env var: MY_SUPER_SECRET')
+      t.expect(output).toContain('MY_SUPER_SECRET=SECRET')
     })
   })
 })

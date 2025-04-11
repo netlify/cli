@@ -27,10 +27,13 @@ export const getWatchers = function (): FSWatcher[] {
   return watchers
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'headers' implicitly has an 'any' type.
-export const getLanguage = function (headers) {
+export const getLanguage = function (headers: Record<string, string | string[] | undefined>) {
   if (headers['accept-language']) {
-    return headers['accept-language'].split(',')[0].slice(0, 2)
+    return (
+      Array.isArray(headers['accept-language']) ? headers['accept-language'].join(', ') : headers['accept-language']
+    )
+      .split(',')[0]
+      .slice(0, 2)
   }
   return 'en'
 }

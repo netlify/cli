@@ -121,13 +121,12 @@ export const withMockApi = async (
   }) => Promise<void>,
   silent = false,
 ) => {
-  let mockApi: Awaited<ReturnType<typeof startMockApi>>
+  let mockApi: Awaited<ReturnType<typeof startMockApi>> | undefined
   try {
     mockApi = await startMockApi({ routes, silent })
     await testHandler({ apiUrl: mockApi.apiUrl, requests: mockApi.requests })
   } finally {
-    // @ts-expect-error Not worth fixing, this file is deprecated in favor of mock-api-vitest
-    mockApi.server.close()
+    mockApi?.server.close()
   }
 }
 

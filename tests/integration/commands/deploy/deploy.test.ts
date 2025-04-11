@@ -110,7 +110,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
       const deploy = await callCli(['deploy', '--json', '--dir', 'public'], {
         cwd: builder.directory,
         env: { NETLIFY_SITE_ID: context.siteId },
-      }).then((output) => JSON.parse(output))
+      }).then((output) => JSON.parse(output as string))
 
       await validateDeploy({ deploy, siteName: SITE_NAME, content })
     })
@@ -134,7 +134,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
 
       const deploy = await callCli(['deploy', '--json', '--site', SITE_NAME], {
         cwd: builder.directory,
-      }).then((output) => JSON.parse(output))
+      }).then((output) => JSON.parse(output as string))
 
       await validateDeploy({ deploy, siteName: SITE_NAME, content })
     })
@@ -159,7 +159,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
       const deploy = await callCli(['deploy', '--json'], {
         cwd: builder.directory,
         env: { NETLIFY_SITE_ID: context.siteId },
-      }).then((output) => JSON.parse(output))
+      }).then((output) => JSON.parse(output as string))
 
       await validateDeploy({ deploy, siteName: SITE_NAME, content })
     })
@@ -192,7 +192,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
       }
 
       await callCli(['build'], options)
-      const deploy = await callCli(['deploy', '--json'], options).then((output) => JSON.parse(output))
+      const deploy = await callCli(['deploy', '--json'], options).then((output) => JSON.parse(output as string))
 
       // give edge functions manifest a couple ticks to propagate
       await pause(500)
@@ -237,7 +237,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
 
       await callCli(['build', '--cwd', pathPrefix], options)
       const deploy = await callCli(['deploy', '--json', '--cwd', pathPrefix], options).then((output) =>
-        JSON.parse(output),
+        JSON.parse(output as string),
       )
 
       // give edge functions manifest a couple ticks to propagate
@@ -279,12 +279,12 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
 
       await builder.build()
 
-      const output = await callCli(['deploy', '--build'], {
+      const output = (await callCli(['deploy', '--build'], {
         cwd: builder.directory,
         env: { NETLIFY_SITE_ID: context.siteId },
-      })
+      })) as string
 
-      t.expect(output.includes('Netlify Build completed in')).toBe(true)
+      t.expect(output).toContain('Netlify Build completed in')
       const [, deployId] = output.match(/DEPLOY_ID: (\w+)/) ?? []
       const [, deployURL] = output.match(/DEPLOY_URL: (.+)/) ?? []
 
@@ -305,7 +305,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
       const deploy = await callCli(['deploy', '--json', '--dir', 'public'], {
         cwd: builder.directory,
         env: { NETLIFY_SITE_ID: context.siteId },
-      }).then((output) => JSON.parse(output))
+      }).then((output) => JSON.parse(output as string))
 
       await validateDeploy({ deploy, siteName: SITE_NAME, content })
       expect(deploy).toHaveProperty('logs', `https://app.netlify.com/sites/${SITE_NAME}/deploys/${deploy.deploy_id}`)
@@ -332,7 +332,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
       const deploy = await callCli(['deploy', '--json', '--dir', 'public', '--prod'], {
         cwd: builder.directory,
         env: { NETLIFY_SITE_ID: context.siteId },
-      }).then((output) => JSON.parse(output))
+      }).then((output) => JSON.parse(output as string))
 
       await validateDeploy({ deploy, siteName: SITE_NAME, content })
       expect(deploy).toHaveProperty('logs', `https://app.netlify.com/sites/${SITE_NAME}/deploys/${deploy.deploy_id}`)
@@ -365,7 +365,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         env: { NETLIFY_SITE_ID: context.siteId },
       })
 
-      JSON.parse(output)
+      JSON.parse(output as string)
     })
   })
 
@@ -401,7 +401,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
       const deploy = await callCli(['deploy', '--json'], {
         cwd: builder.directory,
         env: { NETLIFY_SITE_ID: context.siteId },
-      }).then((output) => JSON.parse(output))
+      }).then((output) => JSON.parse(output as string))
 
       await validateDeploy({ deploy, siteName: SITE_NAME, content: 'index' })
       await validateContent({
@@ -446,7 +446,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
       const deploy = await callCli(['deploy', '--json'], {
         cwd: builder.directory,
         env: { NETLIFY_SITE_ID: context.siteId },
-      }).then((output) => JSON.parse(output))
+      }).then((output) => JSON.parse(output as string))
 
       await validateDeploy({ deploy, siteName: SITE_NAME, content: 'index' })
       await validateContent({
@@ -481,7 +481,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
       const deploy = await callCli(['deploy', '--json'], {
         cwd: builder.directory,
         env: { NETLIFY_SITE_ID: context.siteId },
-      }).then((output) => JSON.parse(output))
+      }).then((output) => JSON.parse(output as string))
 
       await validateDeploy({ deploy, siteName: SITE_NAME, content: 'index' })
       await validateContent({
@@ -528,7 +528,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
               const { mkdir, writeFile } = require('node:fs/promises') as typeof import('node:fs/promises')
 
               const generatedFunctionsDir = 'new_functions'
-              // @ts-expect-error
+              // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'Functions... Remove this comment to see the full error message
               netlifyConfig.functions.directory = generatedFunctionsDir
 
               await mkdir(generatedFunctionsDir)

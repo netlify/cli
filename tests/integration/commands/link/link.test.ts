@@ -72,10 +72,10 @@ describe('link command with multiple sites', () => {
       await withMockApi(
         routes,
         async ({ apiUrl }) => {
-          const stdout = await callCli(
+          const stdout = (await callCli(
             ['link', '--name', 'app'],
             getCLIOptions({ builder, apiUrl, env: { NETLIFY_SITE_ID: '' } }),
-          )
+          )) as string
 
           expect(stdout).toContain('Linked to app')
         },
@@ -91,10 +91,10 @@ describe('link command with multiple sites', () => {
       await withMockApi(
         routes,
         async ({ apiUrl }) => {
-          const stdout = await callCli(
+          const stdout = (await callCli(
             ['link', '--name', 'ap'],
             getCLIOptions({ builder, apiUrl, env: { NETLIFY_SITE_ID: '' } }),
-          )
+          )) as string
 
           expect(stdout).toContain('Linked to next-app-playground')
         },

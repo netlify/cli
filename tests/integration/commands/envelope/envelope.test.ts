@@ -137,7 +137,11 @@ describe.concurrent('command/envelope', () => {
         .build()
 
       await withMockApi(routes, async ({ apiUrl }) => {
-        const cliResponse = await callCli(['env:import', '--json', '.env'], getCLIOptions({ builder, apiUrl }), true)
+        const cliResponse = (await callCli(
+          ['env:import', '--json', '.env'],
+          getCLIOptions({ builder, apiUrl }),
+          true,
+        )) as Record<string, unknown>
 
         t.expect(cliResponse).toStrictEqual(finalEnv)
       })
@@ -162,11 +166,11 @@ describe.concurrent('command/envelope', () => {
         .build()
 
       await withMockApi(routes, async ({ apiUrl }) => {
-        const cliResponse = await callCli(
+        const cliResponse = (await callCli(
           ['env:import', '--replace-existing', '--json', '.env'],
           getCLIOptions({ builder, apiUrl }),
           true,
-        )
+        )) as Record<string, unknown>
 
         t.expect(cliResponse).toStrictEqual(finalEnv)
       })
@@ -219,10 +223,10 @@ describe.concurrent('command/envelope', () => {
     await withSiteBuilder(t, async (builder) => {
       await builder.build()
       await withMockApi(cloneRoutes, async ({ apiUrl, requests }) => {
-        const cliResponse = await callCli(
+        const cliResponse = (await callCli(
           ['env:clone', '--from', 'site_id_a', '--to', 'site_id_b', '--force'],
           getCLIOptions({ apiUrl, builder }),
-        )
+        )) as string
 
         t.expect(normalize(cliResponse)).toMatchSnapshot()
 

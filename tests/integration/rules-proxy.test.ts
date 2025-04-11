@@ -21,7 +21,7 @@ describe('rules-proxy', () => {
     await builder.build()
 
     const rewriter = await createRewriter({
-      // @ts-expect-error(serhalp) -- Lazy test type. Create a factory and use it here.
+      // @ts-expect-error TS(2322) FIXME: Type '{}' is not assignable to type 'NormalizedCac... Remove this comment to see the full error message
       config: {},
       distDir: builder.directory,
       projectDir: builder.directory,

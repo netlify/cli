@@ -94,9 +94,6 @@ export class Fixture {
   /**
    * Calls the CLI with a max timeout inside the fixture directory.
    * If the `parseJson` argument is specified then the result will be converted into an object.
-   * @param {string[]} args
-   * @param {any} options
-   * @returns {Promise<string|object>}
    */
   async callCli(
     args: string[],
@@ -107,13 +104,14 @@ export class Fixture {
       cliOptions = getCLIOptions({ apiUrl: this.options.apiUrl, env: execOptions.env })
     }
 
-    // @ts-expect-error we do not care it is readonly here
+    // @ts-expect-error: Intentionally ignoring read-only property annotation
     cliOptions.cwd = this.directory
 
     if (offline) {
       args.push('--offline')
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return callCli(args, cliOptions, parseJson)
   }
 }
