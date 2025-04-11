@@ -26,10 +26,10 @@ const getFunctionZips = async ({
 }: {
   command: BaseCommand
   directories: string[]
-  functionsConfig: $TSFixMe
+  functionsConfig?: $TSFixMe
   manifestPath: $TSFixMe
   rootDir: $TSFixMe
-  skipFunctionsCache: $TSFixMe
+  skipFunctionsCache?: boolean | undefined
   statusCb: $TSFixMe
   tmpDir: $TSFixMe
 }): Promise<(FunctionResult & { buildData?: unknown })[]> => {
@@ -107,19 +107,7 @@ const trafficRulesConfig = (trafficRules?: TrafficRules) => {
 const hashFns = async (
   command: BaseCommand,
   directories: string[],
-  config: {
-    concurrentHash?: number
-    functionsConfig: $TSFixMe
-    /** @default 'sha256' */
-    hashAlgorithm?: string
-    manifestPath: $TSFixMe
-    rootDir: $TSFixMe
-    skipFunctionsCache: $TSFixMe
-    statusCb: $TSFixMe
-    tmpDir: $TSFixMe
-  },
-): Promise<$TSFixMe> => {
-  const {
+  {
     concurrentHash,
     functionsConfig,
     hashAlgorithm = 'sha256',
@@ -128,8 +116,25 @@ const hashFns = async (
     skipFunctionsCache,
     statusCb,
     tmpDir,
-  } = config || {}
-  // Early out if no functions directories are configured.
+  }: {
+    concurrentHash?: number
+    functionsConfig?: $TSFixMe
+    hashAlgorithm?: string | undefined
+    manifestPath?: string | undefined
+    rootDir?: string | undefined
+    skipFunctionsCache?: boolean | undefined
+    statusCb: $TSFixMe
+    tmpDir: $TSFixMe
+  },
+): Promise<{
+  functionSchedules?: { name: string; cron: string }[] | undefined
+  functions: Record<string, string>
+  functionsWithNativeModules: $TSFixMe[]
+  shaMap?: Record<string, $TSFixMe> | undefined
+  fnShaMap?: Record<string, $TSFixMe[]> | undefined
+  fnConfig?: Record<string, $TSFixMe> | undefined
+}> => {
+  // Exit early if no functions directories are configured.
   if (directories.length === 0) {
     return { functions: {}, functionsWithNativeModules: [], shaMap: {} }
   }
@@ -202,7 +207,7 @@ const hashFns = async (
     )
   const functionSchedules = functionZips
     .map(({ name, schedule }) => schedule && { name, cron: schedule })
-    .filter(Boolean)
+    .filter((schedule) => schedule !== '' && schedule !== undefined)
   const functionsWithNativeModules = functionZips.filter(
     ({ nativeNodeModules }) => nativeNodeModules !== undefined && Object.keys(nativeNodeModules).length !== 0,
   )

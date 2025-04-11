@@ -331,7 +331,7 @@ describe.concurrent('command/build', () => {
     test<FixtureTestContext>('should run build without any netlify specific configuration and install auto detected plugins', async ({
       fixture,
     }) => {
-      const output = await callCli(['build', '--offline'], { cwd: fixture.directory })
+      const output = (await callCli(['build', '--offline'], { cwd: fixture.directory })) as string
 
       // expect on the output that it installed the next runtime (auto detected the plugin + the build command and therefore had functions to bundle)
       expect(output).toMatch(/❯ Using Next.js Runtime -/)

@@ -48,7 +48,9 @@ const withFunctionsServer = async (
     }
     return await testHandler()
   } finally {
-    await killProcess(ps)
+    if (ps !== undefined) {
+      await killProcess(ps)
+    }
   }
 }
 

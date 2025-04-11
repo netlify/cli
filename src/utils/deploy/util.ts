@@ -5,8 +5,7 @@ import pWaitFor from 'p-wait-for'
 import { DEPLOY_POLL } from './constants.js'
 
 // normalize windows paths to unix paths
-// @ts-expect-error TS(7006) FIXME: Parameter 'relname' implicitly has an 'any' type.
-export const normalizePath = (relname) => {
+export const normalizePath = (relname: string): string => {
   if (relname.includes('#') || relname.includes('?')) {
     throw new Error(`Invalid filename ${relname}. Deployed filenames cannot contain # or ? characters`)
   }

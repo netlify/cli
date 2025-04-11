@@ -214,7 +214,7 @@ export interface Template {
 }
 
 type EnvironmentVariableScope = 'builds' | 'functions' | 'runtime' | 'post_processing'
-type EnvironmentVariableSource = 'account' | 'addons' | 'configFile' | 'general' | 'internal' | 'ui'
+export type EnvironmentVariableSource = 'account' | 'addons' | 'configFile' | 'general' | 'internal' | 'ui'
 
 export type EnvironmentVariables = Record<
   string,

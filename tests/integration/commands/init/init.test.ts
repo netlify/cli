@@ -21,7 +21,7 @@ const assertNetlifyToml = async (
   // assert netlify.toml was created with user inputs
   const netlifyToml: unknown = toml.parse(await readFile(path.join(tomlDir, '/netlify.toml'), 'utf8'))
   t.expect(netlifyToml).toEqual(
-    // @ts-expect-error The types on this package are wrong/unusable
+    // @ts-expect-error(ndhoule): Don't know what's wrong with this typedef
     cleanDeep({
       build: { command, functions, publish },
     }),

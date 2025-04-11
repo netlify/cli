@@ -8,21 +8,27 @@ const CACHE_TTL = 8.64e7
 // 10 seconds
 const REQUEST_TIMEOUT = 1e4
 
-/**
- * @typedef GeoLocation
- * @type {object}
- * @property {string} city
- * @property {object} country
- * @property {string} country.code
- * @property {string} country.name
- * @property {object} subdivision
- * @property {string} subdivision.code
- * @property {string} subdivision.name
- * @property {number} longitude
- * @property {number} latitude
- * @property {string} timezone
- */
-export const mockLocation = {
+export type Geolocation = {
+  city: string
+  country: {
+    code: string
+    name: string
+  }
+  subdivision: {
+    code: string
+    name: string
+  }
+  longitude: number
+  latitude: number
+  timezone: string
+}
+
+interface State {
+  get(key: string): unknown
+  set(key: string, value: unknown): void
+}
+
+export const mockLocation: Geolocation = {
   city: 'San Francisco',
   country: { code: 'US', name: 'United States' },
   subdivision: { code: 'CA', name: 'California' },
@@ -32,19 +38,21 @@ export const mockLocation = {
 }
 
 /**
- * Returns geolocation data from a remote API, the local cache, or a mock
- * location, depending on the mode selected.
- *
- * @param {object} params
- * @param {"cache"|"update"|"mock"} params.mode
- * @param {string} params.geoCountry
- * @param {boolean} params.offline
- * @param {import('../utils/cli-state.js').default} params.state
- * @returns {Promise<GeoLocation>}
+ * Returns geolocation data from a remote API, the local cache, or a mock location, depending on the
+ * specified mode.
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'geoCountry' implicitly has an 'an... Remove this comment to see the full error message
-export const getGeoLocation = async ({ geoCountry, mode, offline, state }) => {
-  const cacheObject = state.get(STATE_GEO_PROPERTY)
+export const getGeoLocation = async ({
+  geoCountry,
+  mode,
+  offline = false,
+  state,
+}: {
+  mode: 'cache' | 'update' | 'mock'
+  geoCountry?: string | undefined
+  offline?: boolean | undefined
+  state: State
+}): Promise<Geolocation> => {
+  const cacheObject = state.get(STATE_GEO_PROPERTY) as { data: Geolocation; timestamp: number } | undefined
 
   // If `--country` was used, we also set `--mode=mock`.
   if (geoCountry) {
@@ -103,11 +111,9 @@ export const getGeoLocation = async ({ geoCountry, mode, offline, state }) => {
 }
 
 /**
- * Returns geolocation data from a remote API
- *
- * @returns {Promise<GeoLocation>}
+ * Returns geolocation data from a remote API.
  */
-const getGeoLocationFromAPI = async () => {
+const getGeoLocationFromAPI = async (): Promise<Geolocation> => {
   const res = await fetch(API_URL, {
     method: 'GET',
     signal: AbortSignal.timeout(REQUEST_TIMEOUT),

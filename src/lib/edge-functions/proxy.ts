@@ -19,7 +19,7 @@ import { BlobsContextWithEdgeAccess } from '../blobs/blobs.js'
 import { getGeoLocation } from '../geo-location.js'
 import { getPathInProject } from '../settings.js'
 import { type Spinner, startSpinner, stopSpinner } from '../spinner.js'
-import type { CLIState, ServerSettings, SiteInfo } from '../../utils/types.js'
+import type { CLIState, ServerSettings } from '../../utils/types.js'
 
 import { getBootstrapURL } from './bootstrap.js'
 import { DIST_IMPORT_MAP_PATH, EDGE_FUNCTIONS_SERVE_FOLDER } from './consts.js'
@@ -51,13 +51,16 @@ const getDownloadUpdateFunctions = () => {
   }
 }
 
-export const handleProxyRequest = (req: ExtendedIncomingMessage, proxyReq: ClientRequest) => {
+export const handleProxyRequest = (req: ExtendedIncomingMessage, proxyReq: ClientRequest): void => {
   Object.entries(req[headersSymbol]).forEach(([header, value]) => {
     proxyReq.setHeader(header, value)
   })
 }
 
-export const createSiteInfoHeader = (siteInfo: SiteInfo, localURL: string) => {
+export const createSiteInfoHeader = (
+  siteInfo: { id?: string | undefined; name?: string | undefined; url?: string | undefined },
+  localURL?: string,
+): string => {
   const { id, name, url } = siteInfo
   const site = { id, name, url: localURL ?? url }
   const siteString = JSON.stringify(site)

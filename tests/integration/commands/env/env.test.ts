@@ -223,7 +223,10 @@ describe('commands/env', () => {
         const listRoutes = [...routes, { path: 'accounts/test-account/env', response: [existingVar, otherVar] }]
 
         await withMockApi(listRoutes, async ({ apiUrl }) => {
-          const cliResponse = await callCli(['env:list'], getCLIOptions({ builder, apiUrl, env: { CI: 'true' } }))
+          const cliResponse = (await callCli(
+            ['env:list'],
+            getCLIOptions({ builder, apiUrl, env: { CI: 'true' } }),
+          )) as string
 
           t.expect(normalize(cliResponse)).toMatchSnapshot()
         })
@@ -396,10 +399,10 @@ describe('commands/env', () => {
           { path: 'sites/site_id_a', response: { ...siteInfo, build_settings: { env: {} } } },
         ]
         await withMockApi(createRoutes, async ({ apiUrl }) => {
-          const cliResponse = await callCli(
+          const cliResponse = (await callCli(
             ['env:clone', '--to', 'site_id_a', '--force'],
             getCLIOptions({ builder, apiUrl }),
-          )
+          )) as string
 
           t.expect(normalize(cliResponse)).toMatchSnapshot()
         })
@@ -443,13 +446,13 @@ describe('commands/env', () => {
       await withSiteBuilder(t, async (builder) => {
         await builder.build()
 
-        const cliResponse = await callCli(['env:clone', '--to', 'site_id_a', '--force'], {
+        const cliResponse = (await callCli(['env:clone', '--to', 'site_id_a', '--force'], {
           cwd: builder.directory,
           extendEnv: false,
           env: {
             PATH: process.env.PATH,
           },
-        })
+        })) as string
 
         t.expect(normalize(cliResponse)).toMatchSnapshot()
       })
@@ -477,10 +480,10 @@ describe('commands/env', () => {
       await withSiteBuilder(t, async (builder) => {
         await builder.build()
         await withMockApi(cloneRoutes, async ({ apiUrl, requests }) => {
-          const cliResponse = await callCli(
+          const cliResponse = (await callCli(
             ['env:clone', '--to', 'site_id_a', '--force'],
             getCLIOptions({ apiUrl, builder }),
-          )
+          )) as string
 
           t.expect(normalize(cliResponse)).toMatchSnapshot()
 

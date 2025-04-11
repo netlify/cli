@@ -1,5 +1,5 @@
-import path from 'path'
-import process from 'process'
+import path from 'node:path'
+import process from 'node:process'
 
 import execa from 'execa'
 import getPort from 'get-port'
@@ -26,8 +26,8 @@ export interface DevServer {
   url: string
   host: string
   port: number
-  errorBuffer: any[]
-  outputBuffer: any[]
+  errorBuffer: Buffer[]
+  outputBuffer: Buffer[]
   waitForLogMatching(match: string): Promise<void>
   output: string
   error: string
@@ -39,7 +39,7 @@ type $FIXME = any
 
 interface DevServerOptions {
   args?: string[]
-  context?: string
+  context?: string | null | undefined
   cwd: string
   framework?: string
   command?: string
@@ -81,16 +81,16 @@ const startServer = async ({
     baseCommand,
     offline ? '--offline' : '',
     '-p',
-    port,
+    port.toString(),
     debug ? '--debug' : '',
     skipWaitPort ? '--skip-wait-port' : '',
   ]
 
   if (targetPort) {
-    baseArgs.push('--target-port', targetPort)
+    baseArgs.push('--target-port', targetPort.toString())
   } else {
     const staticPort = await getPort()
-    baseArgs.push('--staticServerPort', staticPort)
+    baseArgs.push('--staticServerPort', staticPort.toString())
   }
 
   if (framework) {
@@ -107,7 +107,6 @@ const startServer = async ({
     baseArgs.push('--context', context)
   }
 
-  // @ts-expect-error FIXME
   const ps = execa(cliPath, [...baseArgs, ...args], getExecaOptions({ cwd, env }))
 
   if (process.env.DEBUG_TESTS) {
@@ -121,14 +120,14 @@ const startServer = async ({
     handleQuestions(ps, prompt, promptHistory)
   }
 
-  const outputBuffer: any[] = []
-  const errorBuffer: any[] = []
+  const outputBuffer: Buffer[] = []
+  const errorBuffer: Buffer[] = []
   const serverPromise = new Promise<DevServer>((resolve, reject) => {
     let selfKilled = false
-    ps.stderr!.on('data', (data) => {
+    ps.stderr!.on('data', (data: Buffer) => {
       errorBuffer.push(data)
     })
-    ps.stdout!.on('data', (data) => {
+    ps.stdout!.on('data', (data: Buffer) => {
       outputBuffer.push(data)
       if (!expectFailure && data.includes('Server now ready on')) {
         setImmediate(() => {
@@ -182,11 +181,11 @@ export const startDevServer = async (options: DevServerOptions, expectFailure?: 
     try {
       // do not use destruction, as we use getters which otherwise would be evaluated here
       const devServer = await startServer({ ...options, expectFailure })
-      // @ts-expect-error FIXME
+      // @ts-expect-error TS(2339) FIXME: Property 'timeout' does not exist on type 'DevServ... Remove this comment to see the full error message
       if (devServer.timeout) {
         throw new Error(`Timed out starting dev server.\nServer Output:\n${devServer.output}`)
       }
-      // @ts-expect-error FIXME
+      // @ts-expect-error TS(2322) FIXME: Type 'DevServer | { timeout: boolean; output: stri... Remove this comment to see the full error message
       return devServer
     } catch (error) {
       if (attempt === maxAttempts || expectFailure) {

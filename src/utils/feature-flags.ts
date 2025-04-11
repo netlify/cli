@@ -1,5 +1,3 @@
-import type { SiteInfo } from './types.js'
-
 /**
  * Allows us to check if a feature flag is enabled for a site.
  * Due to versioning of the cli, and the desire to remove flags from
@@ -9,13 +7,17 @@ import type { SiteInfo } from './types.js'
  * Instead, we return that the feature flag is enabled if it isn't
  * specifically set to false in the response
  */
-export const isFeatureFlagEnabled = (flagName: string, siteInfo: SiteInfo): boolean =>
-  Boolean(siteInfo.feature_flags && siteInfo.feature_flags[flagName] !== false)
+export const isFeatureFlagEnabled = (
+  flagName: string,
+  siteInfo: { feature_flags?: Record<string, string | boolean> | undefined },
+): boolean => Boolean(siteInfo.feature_flags && siteInfo.feature_flags[flagName] !== false)
 
 /**
  * Retrieves all Feature flags from the siteInfo
  */
-export const getFeatureFlagsFromSiteInfo = (siteInfo: SiteInfo): FeatureFlags => ({
+export const getFeatureFlagsFromSiteInfo = (siteInfo: {
+  feature_flags?: Record<string, string | boolean> | undefined
+}): FeatureFlags => ({
   ...siteInfo.feature_flags,
   // see https://github.com/netlify/pod-dev-foundations/issues/581#issuecomment-1731022753
   zisi_golang_use_al2: isFeatureFlagEnabled('cli_golang_use_al2', siteInfo),

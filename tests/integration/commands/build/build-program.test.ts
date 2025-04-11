@@ -61,10 +61,12 @@ describe('command/build', () => {
 
   test('should pass feature flags to @netlify/config', async (t) => {
     // this ensures that the process.exit does not exit the test process
-    // @ts-expect-error(ndhoule): Cannot mark the return value on this as as `never`
-    vi.spyOn(process, 'exit').mockImplementation((code) => {
-      expect(code).toBe(0)
-    })
+    vi.spyOn(process, 'exit').mockImplementation(
+      // @ts-expect-error(ndhoule): This cannot return `never`, but it doesn't matter in the context of this test.
+      (code) => {
+        expect(code).toBe(0)
+      },
+    )
     await withSiteBuilder(t, async (builder) => {
       // eslint-disable-next-line no-restricted-properties
       process.cwd = () => builder.directory

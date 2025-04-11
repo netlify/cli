@@ -178,7 +178,7 @@ export class SiteBuilder {
     return this
   }
 
-  withContentFile({ content, path: filePath }: { content: string; path: string }) {
+  withContentFile({ content, path: filePath }: { content: Buffer | string; path: string }) {
     const dest = path.join(this.directory, filePath)
     this.tasks.push(async () => {
       await ensureDir(path.dirname(dest))
