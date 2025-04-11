@@ -1,8 +1,11 @@
 import js from 'dedent'
+// @ts-expect-error TS(1259) FIXME: Module '"/home/ndhoule/dev/src/github.com/netlify/... Remove this comment to see the full error message
 import execa from 'execa'
+// @ts-expect-error TS(1259) FIXME: Module '"/home/ndhoule/dev/src/github.com/netlify/... Remove this comment to see the full error message
 import getPort from 'get-port'
 import fetch from 'node-fetch'
 import { describe, test } from 'vitest'
+// @ts-expect-error TS(1259) FIXME: Module '"/home/ndhoule/dev/src/github.com/netlify/... Remove this comment to see the full error message
 import waitPort from 'wait-port'
 
 import { cliPath } from '../../utils/cli-path.js'

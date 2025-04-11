@@ -1,9 +1,11 @@
 import { env as _env, version as nodejsVersion } from 'process'
 
 import type { Options } from 'execa'
+// @ts-expect-error TS(1259) FIXME: Module '"/home/ndhoule/dev/src/github.com/netlify/... Remove this comment to see the full error message
 import execa from 'execa'
 import { expect, test } from 'vitest'
 
+// @ts-expect-error TS(1259) FIXME: Module '"/home/ndhoule/dev/src/github.com/netlify/... Remove this comment to see the full error message
 import pkg from '../../package.json'
 
 import { callCli } from './utils/call-cli.js'
@@ -30,6 +32,7 @@ const routes = [
   { path: 'accounts', response: [] },
 ]
 
+// @ts-expect-error TS(1378) FIXME: Top-level 'await' expressions are only allowed whe... Remove this comment to see the full error message
 await withMockApi(routes, () => {
   test<MockApiTestContext>('should not track --telemetry-disable', async ({ apiUrl, requests }) => {
     await callCli(['--telemetry-disable'], getCLIOptions(apiUrl))

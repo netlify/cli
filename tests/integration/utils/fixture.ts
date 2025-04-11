@@ -11,6 +11,7 @@ import { DevServer, startDevServer } from './dev-server.js'
 import { MockApi, Route, getCLIOptions, startMockApi } from './mock-api-vitest.js'
 import { SiteBuilder } from './site-builder.js'
 
+// @ts-expect-error TS(1343) FIXME: The 'import.meta' meta-property is only allowed wh... Remove this comment to see the full error message
 const FIXTURES_DIRECTORY = fileURLToPath(new URL('../__fixtures__/', import.meta.url))
 const HOOK_TIMEOUT = 30_000
 
@@ -108,7 +109,7 @@ export class Fixture {
       cliOptions = getCLIOptions({ apiUrl: this.options.apiUrl, env: execOptions.env })
     }
 
-    // @ts-expect-error we do not care it is readonly here
+    // @ts-expect-error TS(2540) FIXME: Cannot assign to 'cwd' because it is a read-only p... Remove this comment to see the full error message
     cliOptions.cwd = this.directory
 
     if (offline) {

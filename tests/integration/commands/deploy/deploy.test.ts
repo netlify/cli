@@ -3,6 +3,7 @@ import process from 'process'
 import { fileURLToPath } from 'url'
 
 import { load } from 'cheerio'
+// @ts-expect-error TS(1259) FIXME: Module '"/home/ndhoule/dev/src/github.com/netlify/... Remove this comment to see the full error message
 import execa from 'execa'
 import fetch from 'node-fetch'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
@@ -13,6 +14,7 @@ import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
 import { pause } from '../../utils/pause.js'
 import { withSiteBuilder } from '../../utils/site-builder.js'
 
+// @ts-expect-error TS(1343) FIXME: The 'import.meta' meta-property is only allowed wh... Remove this comment to see the full error message
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const SITE_NAME = generateSiteName('netlify-test-deploy-')
@@ -528,7 +530,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
               const { mkdir, writeFile } = require('node:fs/promises') as typeof import('node:fs/promises')
 
               const generatedFunctionsDir = 'new_functions'
-              // @ts-expect-error
+              // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'Functions... Remove this comment to see the full error message
               netlifyConfig.functions.directory = generatedFunctionsDir
 
               await mkdir(generatedFunctionsDir)

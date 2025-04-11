@@ -4,6 +4,7 @@ import { type AddressInfo } from 'node:net'
 import path from 'node:path'
 import process from 'process'
 
+// @ts-expect-error TS(1192) FIXME: Module '"/home/ndhoule/dev/src/github.com/netlify/... Remove this comment to see the full error message
 import jwt, { type JwtPayload } from 'jsonwebtoken'
 import fetch from 'node-fetch'
 import { describe, test } from 'vitest'

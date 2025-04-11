@@ -61,7 +61,6 @@ describe('command/build', () => {
 
   test('should pass feature flags to @netlify/config', async (t) => {
     // this ensures that the process.exit does not exit the test process
-    // @ts-expect-error(ndhoule): Cannot mark the return value on this as as `never`
     vi.spyOn(process, 'exit').mockImplementation((code) => {
       expect(code).toBe(0)
     })

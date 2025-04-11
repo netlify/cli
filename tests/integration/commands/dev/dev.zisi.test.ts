@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url'
 import type { HandlerEvent } from '@netlify/functions'
 import { describe, test } from 'vitest'
 import nodeFetch from 'node-fetch'
+// @ts-expect-error TS(1259) FIXME: Module '"/home/ndhoule/dev/src/github.com/netlify/... Remove this comment to see the full error message
 import execa from 'execa'
 import dedent from 'dedent'
 
@@ -17,6 +18,7 @@ import { withDevServer } from '../../utils/dev-server.js'
 import { withMockApi } from '../../utils/mock-api.js'
 import { withSiteBuilder } from '../../utils/site-builder.js'
 
+// @ts-expect-error TS(1343) FIXME: The 'import.meta' meta-property is only allowed wh... Remove this comment to see the full error message
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const testMatrix = [{ args: [] }]
@@ -281,7 +283,6 @@ export const handler = async function () {
             }),
         })
         .withEdgeFunction({
-          // @ts-expect-error Types on EdgeFunction are incorrect
           handler: async (req, { next }) => {
             if (req.url.includes('?ef=true')) {
               const res = await next()

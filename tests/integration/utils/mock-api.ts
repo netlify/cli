@@ -4,6 +4,7 @@ import process from 'process'
 import { isDeepStrictEqual, promisify } from 'util'
 
 import type { CommonOptions, NodeOptions } from 'execa'
+// @ts-expect-error TS(1259) FIXME: Module '"/home/ndhoule/dev/src/github.com/netlify/... Remove this comment to see the full error message
 import express from 'express'
 
 export interface Route {
@@ -126,7 +127,6 @@ export const withMockApi = async (
     mockApi = await startMockApi({ routes, silent })
     await testHandler({ apiUrl: mockApi.apiUrl, requests: mockApi.requests })
   } finally {
-    // @ts-expect-error Not worth fixing, this file is deprecated in favor of mock-api-vitest
     mockApi.server.close()
   }
 }

@@ -3,6 +3,7 @@ import fs from 'fs'
 import { rm } from 'fs/promises'
 import { temporaryDirectory } from 'tempy'
 import { handleQuestions, CONFIRM, DOWN, NO, answerWithValue } from '../../utils/handle-questions.js'
+// @ts-expect-error TS(1259) FIXME: Module '"/home/ndhoule/dev/src/github.com/netlify/... Remove this comment to see the full error message
 import execa from 'execa'
 import { cliPath } from '../../utils/cli-path.js'
 import { join } from 'path'

@@ -1,3 +1,4 @@
+// @ts-expect-error TS(1259) FIXME: Module '"node:events"' can only be default-importe... Remove this comment to see the full error message
 import events from 'node:events'
 import { Buffer } from 'buffer'
 import path from 'path'
@@ -5,8 +6,11 @@ import { platform } from 'process'
 import { fileURLToPath } from 'url'
 
 import { setProperty } from 'dot-prop'
+// @ts-expect-error TS(1259) FIXME: Module '"/home/ndhoule/dev/src/github.com/netlify/... Remove this comment to see the full error message
 import execa, { ExecaError } from 'execa'
+// @ts-expect-error TS(1259) FIXME: Module '"/home/ndhoule/dev/src/github.com/netlify/... Remove this comment to see the full error message
 import getAvailablePort from 'get-port'
+// @ts-expect-error TS(1192) FIXME: Module '"/home/ndhoule/dev/src/github.com/netlify/... Remove this comment to see the full error message
 import jwt from 'jsonwebtoken'
 import fetch from 'node-fetch'
 import { type TestContext, type TaskContext, describe, test } from 'vitest'
@@ -20,6 +24,7 @@ import { pause } from '../../utils/pause.js'
 import { withSiteBuilder, type SiteBuilder } from '../../utils/site-builder.js'
 import { normalize } from '../../utils/snapshots.js'
 
+// @ts-expect-error TS(1343) FIXME: The 'import.meta' meta-property is only allowed wh... Remove this comment to see the full error message
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const JWT_EXPIRY = 1_893_456_000
@@ -160,6 +165,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
           path: 'hello.js',
           handler: () => {
             console.log('Hello from the user function handler')
+            // @ts-expect-error TS(2339) FIXME: Property 'json' does not exist on type '{ new (bod... Remove this comment to see the full error message
             return Response.json({})
           },
         })
@@ -290,6 +296,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
         ])
         .withEdgeFunction({
           handler: (req, context) =>
+            // @ts-expect-error TS(2339) FIXME: Property 'json' does not exist on type '{ new (bod... Remove this comment to see the full error message
             Response.json({
               requestID: req.headers.get('x-nf-request-id'),
               deploy: (context as EdgeHandlerContext & { deploy: { context: string; id: string; published: boolean } })
@@ -446,6 +453,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
         .withEdgeFunction({
           handler: async (_, context) => {
             const { deploy, site } = context
+            // @ts-expect-error TS(2339) FIXME: Property 'json' does not exist on type '{ new (bod... Remove this comment to see the full error message
             return Promise.resolve(Response.json({ deploy, site }))
           },
           name: 'siteContext',
@@ -633,7 +641,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
         .withEdgeFunction({
           config: { onError: 'bypass', path: '/hello-1' },
           handler: () => {
-            // @ts-expect-error: Intentionally referencing an undefined global
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'ermThisWillFail'.
             // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             ermThisWillFail()
 
@@ -644,7 +652,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
         .withEdgeFunction({
           config: { onError: '/error-page', path: '/hello-2' },
           handler: () => {
-            // @ts-expect-error: Intentionally referencing an undefined global
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'ermThisWillFail'.
             // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             ermThisWillFail()
 
@@ -1211,7 +1219,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
         })
         .withEdgeFunction({
           handler: () => {
-            // @ts-expect-error: We can't import Deno types without polluting the global environment
+            // @ts-expect-error TS(2304) FIXME: Cannot find name 'Deno'.
             // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             const fromDenoGlobal = Deno.env.toObject() as Record<string, string>
             const fromNetlifyGlobal = Netlify.env.toObject()

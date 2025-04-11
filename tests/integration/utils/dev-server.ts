@@ -1,7 +1,9 @@
 import path from 'path'
 import process from 'process'
 
+// @ts-expect-error TS(1259) FIXME: Module '"/home/ndhoule/dev/src/github.com/netlify/... Remove this comment to see the full error message
 import execa from 'execa'
+// @ts-expect-error TS(1259) FIXME: Module '"/home/ndhoule/dev/src/github.com/netlify/... Remove this comment to see the full error message
 import getPort from 'get-port'
 import pTimeout from 'p-timeout'
 
@@ -107,7 +109,6 @@ const startServer = async ({
     baseArgs.push('--context', context)
   }
 
-  // @ts-expect-error FIXME
   const ps = execa(cliPath, [...baseArgs, ...args], getExecaOptions({ cwd, env }))
 
   if (process.env.DEBUG_TESTS) {
@@ -149,11 +150,13 @@ const startServer = async ({
                 ps.stdout!.on('data', listener)
               })
             },
+            // @ts-expect-error TS(1056) FIXME: Accessors are only available when targeting ECMASc... Remove this comment to see the full error message
             get output() {
               // these are getters so we do the actual joining as late as possible as the array might still get
               // populated after we resolve here
               return outputBuffer.join('')
             },
+            // @ts-expect-error TS(1056) FIXME: Accessors are only available when targeting ECMASc... Remove this comment to see the full error message
             get error() {
               return errorBuffer.join('')
             },
@@ -182,11 +185,11 @@ export const startDevServer = async (options: DevServerOptions, expectFailure?: 
     try {
       // do not use destruction, as we use getters which otherwise would be evaluated here
       const devServer = await startServer({ ...options, expectFailure })
-      // @ts-expect-error FIXME
+      // @ts-expect-error TS(2339) FIXME: Property 'timeout' does not exist on type 'DevServ... Remove this comment to see the full error message
       if (devServer.timeout) {
         throw new Error(`Timed out starting dev server.\nServer Output:\n${devServer.output}`)
       }
-      // @ts-expect-error FIXME
+      // @ts-expect-error TS(2322) FIXME: Type 'DevServer | { timeout: boolean; output: stri... Remove this comment to see the full error message
       return devServer
     } catch (error) {
       if (attempt === maxAttempts || expectFailure) {

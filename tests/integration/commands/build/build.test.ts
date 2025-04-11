@@ -1,6 +1,7 @@
 import path, { join } from 'path'
 import process from 'process'
 
+// @ts-expect-error TS(1259) FIXME: Module '"/home/ndhoule/dev/src/github.com/netlify/... Remove this comment to see the full error message
 import execa from 'execa'
 import { describe, expect, test, type TaskContext, type TestContext } from 'vitest'
 

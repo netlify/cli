@@ -2,6 +2,7 @@ import path from 'node:path'
 import { readFile } from 'node:fs/promises'
 
 import cleanDeep from 'clean-deep'
+// @ts-expect-error TS(1259) FIXME: Module '"/home/ndhoule/dev/src/github.com/netlify/... Remove this comment to see the full error message
 import execa from 'execa'
 import toml from 'toml'
 import { describe, test, type TaskContext, type TestContext } from 'vitest'
@@ -21,7 +22,6 @@ const assertNetlifyToml = async (
   // assert netlify.toml was created with user inputs
   const netlifyToml: unknown = toml.parse(await readFile(path.join(tomlDir, '/netlify.toml'), 'utf8'))
   t.expect(netlifyToml).toEqual(
-    // @ts-expect-error The types on this package are wrong/unusable
     cleanDeep({
       build: { command, functions, publish },
     }),

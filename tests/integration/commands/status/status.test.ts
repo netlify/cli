@@ -39,6 +39,7 @@ const routes = [
   { path: 'user', response: user },
 ]
 
+// @ts-expect-error TS(1378) FIXME: Top-level 'await' expressions are only allowed whe... Remove this comment to see the full error message
 await setupFixtureTests('empty-project', () => {
   test<FixtureTestContext>('should print status for a linked site', async ({ fixture }) => {
     await withMockApi(routes, async ({ apiUrl }: { apiUrl: string }) => {
@@ -49,6 +50,7 @@ await setupFixtureTests('empty-project', () => {
       })
 
       if (account && typeof account === 'object' && 'GitHub' in account) {
+        // @ts-expect-error TS(2339) FIXME: Property 'GitHub' does not exist on type 'object'.
         delete account.GitHub
       }
 
