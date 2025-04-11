@@ -5,34 +5,34 @@ import isEmpty from 'lodash/isEmpty.js'
 
 import { supportsBackgroundFunctions } from '../lib/account.js'
 
-import { NETLIFYDEVLOG, chalk, logAndThrowError, log, warn, APIError } from './command-helpers.js'
+import { NETLIFYDEVLOG, ansis, logAndThrowError, log, warn, APIError } from './command-helpers.js'
 import { loadDotEnvFiles } from './dot-env.js'
 
 // Possible sources of environment variables. For the purpose of printing log messages only. Order does not matter.
 const ENV_VAR_SOURCES = {
   account: {
     name: 'shared',
-    printFn: chalk.magenta,
+    printFn: ansis.magenta,
   },
   addons: {
     name: 'addon',
-    printFn: chalk.yellow,
+    printFn: ansis.yellow,
   },
   configFile: {
     name: 'netlify.toml file',
-    printFn: chalk.green,
+    printFn: ansis.green,
   },
   general: {
     name: 'general context',
-    printFn: chalk.italic,
+    printFn: ansis.italic,
   },
   process: {
     name: 'process',
-    printFn: chalk.red,
+    printFn: ansis.red,
   },
   ui: {
     name: 'site settings',
-    printFn: chalk.blue,
+    printFn: ansis.blue,
   },
 }
 
@@ -43,7 +43,7 @@ const ERROR_CALL_TO_ACTION =
 const validateSiteInfo = ({ site, siteInfo }) => {
   if (isEmpty(siteInfo)) {
     return logAndThrowError(
-      `Failed retrieving site information for site ${chalk.yellow(site.id)}. ${ERROR_CALL_TO_ACTION}`,
+      `Failed retrieving site information for site ${ansis.yellow(site.id)}. ${ERROR_CALL_TO_ACTION}`,
     )
   }
 }
@@ -65,7 +65,7 @@ const getAddons = async ({ api, site }) => {
     return addons
   } catch (error_) {
     return logAndThrowError(
-      `Failed retrieving addons for site ${chalk.yellow(site.id)}: ${
+      `Failed retrieving addons for site ${ansis.yellow(site.id)}: ${
         (error_ as APIError).message
       }. ${ERROR_CALL_TO_ACTION}`,
     )
@@ -147,7 +147,7 @@ export const getSiteInformation = async ({ api, offline, site, siteInfo }) => {
 // @ts-expect-error TS(7006) FIXME: Parameter 'source' implicitly has an 'any' type.
 const getEnvSourceName = (source) => {
   // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-  const { name = source, printFn = chalk.green } = ENV_VAR_SOURCES[source] || {}
+  const { name = source, printFn = ansis.green } = ENV_VAR_SOURCES[source] || {}
 
   return printFn(name)
 }
@@ -200,8 +200,8 @@ export const injectEnvVariables = (env) => {
       const sourceName = getEnvSourceName(source)
 
       log(
-        chalk.dim(
-          `${NETLIFYDEVLOG} Ignored ${chalk.bold(sourceName)} env var: ${chalk.yellow(
+        ansis.dim(
+          `${NETLIFYDEVLOG} Ignored ${ansis.bold(sourceName)} env var: ${ansis.yellow(
             key,
           )} (defined in ${usedSourceName})`,
         ),
@@ -211,7 +211,7 @@ export const injectEnvVariables = (env) => {
     if (!existsInProcess || isInternal) {
       // Omitting `general` and `internal` env vars to reduce noise in the logs.
       if (usedSource !== 'general' && !isInternal) {
-        log(`${NETLIFYDEVLOG} Injected ${usedSourceName} env var: ${chalk.yellow(key)}`)
+        log(`${NETLIFYDEVLOG} Injected ${usedSourceName} env var: ${ansis.yellow(key)}`)
       }
 
       // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.

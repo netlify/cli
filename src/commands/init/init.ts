@@ -2,7 +2,7 @@ import { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 import isEmpty from 'lodash/isEmpty.js'
 
-import { chalk, exit, log } from '../../utils/command-helpers.js'
+import { ansis, exit, log } from '../../utils/command-helpers.js'
 import getRepoData from '../../utils/get-repo-data.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import { configureRepo } from '../../utils/init/config.js'
@@ -23,15 +23,15 @@ const logExistingAndExit = ({ siteInfo }: { siteInfo: SiteInfo }): never => {
   log()
   log(`This site has been initialized`)
   log()
-  log(`Site Name:  ${chalk.cyan(siteInfo.name)}`)
-  log(`Site Url:   ${chalk.cyan(siteInfo.ssl_url || siteInfo.url)}`)
-  log(`Site Repo:  ${chalk.cyan(getRepoUrl(siteInfo))}`)
-  log(`Site Id:    ${chalk.cyan(siteInfo.id)}`)
-  log(`Admin URL:  ${chalk.cyan(siteInfo.admin_url)}`)
+  log(`Site Name:  ${ansis.cyan(siteInfo.name)}`)
+  log(`Site Url:   ${ansis.cyan(siteInfo.ssl_url || siteInfo.url)}`)
+  log(`Site Repo:  ${ansis.cyan(getRepoUrl(siteInfo))}`)
+  log(`Site Id:    ${ansis.cyan(siteInfo.id)}`)
+  log(`Admin URL:  ${ansis.cyan(siteInfo.admin_url)}`)
   log()
   log(`To disconnect this directory and create a new site (or link to another siteId)`)
-  log(`1. Run ${chalk.cyanBright.bold('netlify unlink')}`)
-  log(`2. Then run ${chalk.cyanBright.bold('netlify init')} again`)
+  log(`1. Run ${ansis.cyanBright.bold('netlify unlink')}`)
+  log(`2. Then run ${ansis.cyanBright.bold('netlify init')} again`)
   return exit()
 }
 
@@ -43,7 +43,7 @@ const createNewSiteAndExit = async ({ command, state }: { command: BaseCommand; 
 
   log(`"${siteInfo.name}" site was created`)
   log()
-  log(`To deploy to this site. Run your site build and then ${chalk.cyanBright.bold('netlify deploy')}`)
+  log(`To deploy to this site. Run your site build and then ${ansis.cyanBright(ansis.bold('netlify deploy'))}`)
 
   persistState({ state, siteInfo })
 
@@ -52,33 +52,33 @@ const createNewSiteAndExit = async ({ command, state }: { command: BaseCommand; 
 
 const logGitSetupInstructionsAndExit = (): never => {
   log()
-  log(`${chalk.bold('To initialize a new git repo follow the steps below.')}
+  log(`${ansis.bold('To initialize a new git repo follow the steps below.')}
 
 1. Initialize a new repo:
 
-   ${chalk.cyanBright.bold('git init')}
+   ${ansis.cyanBright(ansis.bold('git init'))}
 
 2. Add your files
 
-   ${chalk.cyanBright.bold('git add .')}
+   ${ansis.cyanBright(ansis.bold('git add .'))}
 
 3. Commit your files
 
-   ${chalk.cyanBright.bold("git commit -m 'initial commit'")}
+   ${ansis.cyanBright(ansis.bold("git commit -m 'initial commit'"))}
 
-4. Create a new repo in GitHub ${chalk.cyanBright.bold('https://github.com/new')}
+4. Create a new repo in GitHub ${ansis.cyanBright(ansis.bold('https://github.com/new'))}
 
 5. Link the remote repo with this local directory
 
-   ${chalk.cyanBright.bold('git remote add origin git@github.com:YourGithubName/your-repo-slug.git')}
+   ${ansis.cyanBright(ansis.bold('git remote add origin git@github.com:YourGithubName/your-repo-slug.git'))}
 
 6. Push up your files
 
-   ${chalk.cyanBright.bold('git push -u origin main')}
+   ${ansis.cyanBright(ansis.bold('git push -u origin main'))}
 
 7. Initialize your Netlify Site
 
-   ${chalk.cyanBright.bold('netlify init')}
+   ${ansis.cyanBright(ansis.bold('netlify init'))}
 `)
   return exit()
 }
@@ -96,7 +96,7 @@ const handleNoGitRemoteAndExit = async ({
   state: CLIState
 }): Promise<never> => {
   log()
-  log(chalk.yellow('No git remote was found, would you like to set one up?'))
+  log(ansis.yellow('No git remote was found, would you like to set one up?'))
   log(`
 It is recommended that you initialize a site that has a remote repository in GitHub.
 
@@ -162,7 +162,7 @@ const createOrLinkSiteToRepo = async (command: BaseCommand) => {
 
 const logExistingRepoSetupAndExit = ({ repoUrl, siteName }: { repoUrl: string; siteName: string }): void => {
   log()
-  log(chalk.underline.bold(`Success`))
+  log(ansis.underline(ansis.bold(`Success`)))
   log(`This site "${siteName}" is configured to automatically deploy via ${repoUrl}`)
   // TODO add support for changing GitHub repo in site:config command
   exit()

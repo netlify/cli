@@ -5,14 +5,14 @@ import inquirer from 'inquirer'
 import isEmpty from 'lodash/isEmpty.js'
 
 import { listSites } from '../../lib/api.js'
-import { chalk, logAndThrowError, exit, log, APIError } from '../../utils/command-helpers.js'
+import { ansis, logAndThrowError, exit, log, APIError } from '../../utils/command-helpers.js'
 import getRepoData from '../../utils/get-repo-data.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import { track } from '../../utils/telemetry/index.js'
 import type { SiteInfo } from '../../utils/types.js'
 import BaseCommand from '../base-command.js'
 
-const linkPrompt = async (command: BaseCommand, options: OptionValues) => {
+const linkPrompt = async (command: BaseCommand, options: OptionValues): Promise<SiteInfo> => {
   const { api, state } = command.netlify
 
   const SITE_NAME_PROMPT = 'Search by full or partial site name'
@@ -20,7 +20,7 @@ const linkPrompt = async (command: BaseCommand, options: OptionValues) => {
   const SITE_ID_PROMPT = 'Enter a site ID'
 
   let GIT_REMOTE_PROMPT = 'Use the current git remote origin URL'
-  let site
+  let site!: SiteInfo
   // Get git remote data if exists
   const repoData = await getRepoData({ workingDir: command.workingDir, remoteName: options.gitRemoteName })
 
@@ -33,18 +33,18 @@ const linkPrompt = async (command: BaseCommand, options: OptionValues) => {
   }
 
   log()
-  log(`${chalk.cyanBright('netlify link')} will connect this folder to a site on Netlify`)
+  log(`${ansis.cyanBright('netlify link')} will connect this folder to a site on Netlify`)
   log()
-  const { linkType } = await inquirer.prompt([
+  const { linkType } = (await inquirer.prompt([
     {
       type: 'list',
       name: 'linkType',
       message: 'How do you want to link this folder to a site?',
       choices: linkChoices,
     },
-  ])
+  ])) as { linkType: typeof linkChoices[number] }
 
-  let kind
+  let kind: 'byName' | 'bySiteId' | 'fromList' | 'gitRemote'
   switch (linkType) {
     case GIT_REMOTE_PROMPT: {
       // TODO(serhalp): Refactor function to avoid this. We can only be here if `repoData` is not an error.
@@ -58,7 +58,7 @@ const linkPrompt = async (command: BaseCommand, options: OptionValues) => {
 
       if (sites.length === 0) {
         return logAndThrowError(
-          `You don't have any sites yet. Run ${chalk.cyanBright('netlify sites:create')} to create a site.`,
+          `You don't have any sites yet. Run ${ansis.cyanBright('netlify sites:create')} to create a site.`,
         )
       }
 
@@ -68,13 +68,13 @@ const linkPrompt = async (command: BaseCommand, options: OptionValues) => {
 
       // If no remote matches. Throw error
       if (matchingSites.length === 0) {
-        log(chalk.redBright.bold.underline(`No Matching Site Found`))
+        log(ansis.redBright.bold.underline('No Matching Site Found'))
         log()
         log(`No site found with the remote ${repoData.httpsUrl}.
 
 Double check you are in the correct working directory and a remote origin repo is configured.
 
-Run ${chalk.cyanBright('git remote -v')} to see a list of your git remotes.`)
+Run ${ansis.cyanBright('git remote -v')} to see a list of your git remotes.`)
 
         exit()
       }
@@ -88,7 +88,7 @@ Run ${chalk.cyanBright('git remote -v')} to see a list of your git remotes.`)
         log(`Found ${matchingSites.length} matching sites!`)
 
         // Prompt which options
-        const { selectedSite } = await inquirer.prompt([
+        const { selectedSite } = (await inquirer.prompt([
           {
             type: 'list',
             name: 'selectedSite',
@@ -98,7 +98,7 @@ Run ${chalk.cyanBright('git remote -v')} to see a list of your git remotes.`)
               value: matchingSite,
             })),
           },
-        ])
+        ])) as { selectedSite: SiteInfo | undefined }
         if (!selectedSite) {
           return logAndThrowError('No site selected')
         }
@@ -135,8 +135,8 @@ Run ${chalk.cyanBright('git remote -v')} to see a list of your git remotes.`)
       if (!matchingSites || matchingSites.length === 0) {
         return logAndThrowError(`No site names found containing '${searchTerm}'.
 
-Run ${chalk.cyanBright('netlify link')} again to try a new search,
-or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
+Run ${ansis.cyanBright('netlify link')} again to try a new search,
+or run ${ansis.cyanBright('netlify sites:create')} to create a site.`)
       }
 
       if (matchingSites.length > 1) {
@@ -165,7 +165,7 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
       log(`Fetching recently updated sites...`)
       log()
 
-      let sites
+      let sites: SiteInfo[]
       try {
         sites = await listSites({ api, options: { maxPages: 1, filter: 'all' } })
       } catch (error_) {
@@ -174,7 +174,7 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
 
       if (!sites || sites.length === 0) {
         return logAndThrowError(
-          `You don't have any sites yet. Run ${chalk.cyanBright('netlify sites:create')} to create a site.`,
+          `You don't have any sites yet. Run ${ansis.cyanBright('netlify sites:create')} to create a site.`,
         )
       }
 
@@ -204,6 +204,7 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
       ])
 
       try {
+        // @ts-expect-error(serhalp) -- Mismatch between hardcoded `SiteInfo` and generated Netlify API types.
         site = await api.getSite({ siteId })
       } catch (error_) {
         if ((error_ as APIError).status === 404) {
@@ -215,7 +216,9 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
       break
     }
     default:
-      return
+      // This is not possible, but since the fixed set of choices contains one dynamically interpolated string,
+      // we can't tell TS that these are exhaustive values
+      return logAndThrowError(new Error('Invalid link type selected'))
   }
 
   if (!site) {
@@ -233,10 +236,10 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
 
   // Log output
   log()
-  log(chalk.greenBright.bold.underline(`Directory Linked`))
+  log(ansis.greenBright.bold.underline('Directory Linked'))
   log()
-  log(`Admin url: ${chalk.magentaBright(site.admin_url)}`)
-  log(`Site url:  ${chalk.cyanBright(site.ssl_url || site.url)}`)
+  log(`Admin url: ${ansis.magentaBright(site.admin_url)}`)
+  log(`Site url:  ${ansis.cyanBright(site.ssl_url || site.url)}`)
   log()
   log(`You can now run other \`netlify\` cli commands in this directory`)
 
@@ -273,7 +276,7 @@ export const link = async (options: OptionValues, command: BaseCommand) => {
     log(`Site already linked to "${initialSiteData.name}"`)
     log(`Admin url: ${initialSiteData.admin_url}`)
     log()
-    log(`To unlink this site, run: ${chalk.cyanBright('netlify unlink')}`)
+    log(`To unlink this site, run: ${ansis.cyanBright('netlify unlink')}`)
   } else if (options.id) {
     try {
       // @ts-expect-error(serhalp) -- Mismatch between hardcoded `SiteInfo` and new generated Netlify API types.

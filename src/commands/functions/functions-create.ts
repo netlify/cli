@@ -20,7 +20,7 @@ import {
   NETLIFYDEVERR,
   NETLIFYDEVLOG,
   NETLIFYDEVWARN,
-  chalk,
+  ansis,
   logAndThrowError,
   log,
 } from '../../utils/command-helpers.js'
@@ -267,14 +267,14 @@ const ensureEdgeFuncDirExists = function (command) {
 
   if (!fs.existsSync(functionsDir)) {
     log(
-      `${NETLIFYDEVLOG} Edge Functions directory ${chalk.magenta.inverse(
-        relFunctionsDir,
+      `${NETLIFYDEVLOG} Edge Functions directory ${ansis.inverse(
+        ansis.magenta(relFunctionsDir),
       )} does not exist yet, creating it...`,
     )
 
     fs.mkdirSync(functionsDir, { recursive: true })
 
-    log(`${NETLIFYDEVLOG} Edge Functions directory ${chalk.magenta.inverse(relFunctionsDir)} created.`)
+    log(`${NETLIFYDEVLOG} Edge Functions directory ${ansis.inverse(ansis.magenta(relFunctionsDir))} created.`)
   }
 
   return functionsDir
@@ -304,7 +304,7 @@ const promptFunctionsDirectory = async (command) => {
   ])
 
   try {
-    log(`${NETLIFYDEVLOG} updating site settings with ${chalk.magenta.inverse(functionsDir)}`)
+    log(`${NETLIFYDEVLOG} updating site settings with ${ansis.inverse(ansis.magenta(functionsDir))}`)
 
     await api.updateSite({
       siteId: site.id,
@@ -315,7 +315,7 @@ const promptFunctionsDirectory = async (command) => {
       },
     })
 
-    log(`${NETLIFYDEVLOG} functions directory ${chalk.magenta.inverse(functionsDir)} updated in site settings`)
+    log(`${NETLIFYDEVLOG} functions directory ${ansis.inverse(ansis.magenta(functionsDir))} updated in site settings`)
   } catch {
     return logAndThrowError('Error updating site settings')
   }
@@ -336,14 +336,14 @@ const ensureFunctionDirExists = async function (command) {
 
   if (!fs.existsSync(functionsDirHolder)) {
     log(
-      `${NETLIFYDEVLOG} functions directory ${chalk.magenta.inverse(
-        relFunctionsDirHolder,
+      `${NETLIFYDEVLOG} functions directory ${ansis.inverse(
+        ansis.magenta(relFunctionsDirHolder),
       )} does not exist yet, creating it...`,
     )
 
     await mkdir(functionsDirHolder, { recursive: true })
 
-    log(`${NETLIFYDEVLOG} functions directory ${chalk.magenta.inverse(relFunctionsDirHolder)} created`)
+    log(`${NETLIFYDEVLOG} functions directory ${ansis.inverse(ansis.magenta(relFunctionsDirHolder))} created`)
   }
 
   return functionsDirHolder
@@ -512,7 +512,7 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
 
     const name = await getNameFromArgs(argumentName, options, templateName)
 
-    log(`${NETLIFYDEVLOG} Creating function ${chalk.cyan.inverse(name)}`)
+    log(`${NETLIFYDEVLOG} Creating function ${ansis.inverse(ansis.cyan(name))}`)
     const functionPath = ensureFunctionPathIsOk(functionsDir, name)
 
     const vars = { name }
@@ -526,7 +526,7 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
       const filename = path.basename(filePath)
 
       if (!omittedFromOutput.has(filename)) {
-        log(`${NETLIFYDEVLOG} ${chalk.greenBright('Created')} ${filePath}`)
+        log(`${NETLIFYDEVLOG} ${ansis.greenBright('Created')} ${filePath}`)
       }
 
       fs.chmodSync(path.resolve(filePath), TEMPLATE_PERMISSIONS)
@@ -553,11 +553,11 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
     await handleOnComplete({ command, onComplete })
 
     log()
-    log(chalk.greenBright(`Function created!`))
+    log(ansis.greenBright(`Function created!`))
 
     if (lang == 'rust') {
       log(
-        chalk.green(
+        ansis.green(
           `Please note that Rust functions require setting the NETLIFY_EXPERIMENTAL_BUILD_RUST_SOURCE environment variable to 'true' on your site.`,
         ),
       )
@@ -669,7 +669,7 @@ const installAddons = async function (command, functionAddons, fnPath) {
 
   // @ts-expect-error TS(7031) FIXME: Binding element 'addonDidInstall' implicitly has a... Remove this comment to see the full error message
   const arr = functionAddons.map(async ({ addonDidInstall, addonName }) => {
-    log(`${NETLIFYDEVLOG} installing addon: ${chalk.yellow.inverse(addonName)}`)
+    log(`${NETLIFYDEVLOG} installing addon: ${ansis.inverse(ansis.yellow(addonName))}`)
     try {
       const addonCreated = await createFunctionAddon({
         api,

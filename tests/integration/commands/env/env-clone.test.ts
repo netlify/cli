@@ -2,7 +2,7 @@ import process from 'process'
 
 import { describe, expect, test, vi, beforeEach, afterAll } from 'vitest'
 
-import { chalk, log } from '../../../../src/utils/command-helpers.js'
+import { ansis, log } from '../../../../src/utils/command-helpers.js'
 import { generateEnvVarsList } from '../.././../../src/utils/prompts/env-clone-prompt.js'
 import { destructiveCommandMessages } from '../.././../../src/utils/prompts/prompt-messages.js'
 import { getEnvironmentVariables, withMockApi, setTTYMode, setCI, setTestingPrompts } from '../../utils/mock-api.js'
@@ -29,7 +29,7 @@ describe('env:clone command', () => {
     const envVarsList = generateEnvVarsList(sharedEnvVars)
     const warningMessage = generateWarning(siteIdTwo)
 
-    const successMessage = `Successfully cloned environment variables from ${chalk.green('site-name')} to ${chalk.green(
+    const successMessage = `Successfully cloned environment variables from ${ansis.green('site-name')} to ${ansis.green(
       'site-name-2',
     )}`
 
@@ -128,9 +128,9 @@ describe('env:clone command', () => {
       test('should not run prompts if sites have no enviroment variables in common', async () => {
         await withMockApi(routes, async ({ apiUrl }) => {
           Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
-          const successMessageSite3 = `Successfully cloned environment variables from ${chalk.green(
+          const successMessageSite3 = `Successfully cloned environment variables from ${ansis.green(
             'site-name',
-          )} to ${chalk.green('site-name-3')}`
+          )} to ${ansis.green('site-name-3')}`
 
           const promptSpy = spyOnMockPrompt()
 

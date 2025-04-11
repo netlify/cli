@@ -23,7 +23,7 @@ import {
   NETLIFYDEV,
   NETLIFYDEVERR,
   NETLIFYDEVLOG,
-  chalk,
+  ansis,
   logAndThrowError,
   exit,
   getToken,
@@ -678,7 +678,7 @@ const printResults = ({
       log()
       log('If everything looks good on your draft URL, deploy it to your main site URL with the --prod flag.')
       log(
-        chalk.cyanBright.bold(
+        ansis.cyanBright.bold(
           `netlify ${isIntegrationDeploy ? 'integration:' : ''}deploy${runBuildCommand ? ' --build' : ''} --prod`,
         ),
       )

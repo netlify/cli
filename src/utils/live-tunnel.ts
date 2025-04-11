@@ -7,7 +7,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { fetchLatestVersion, shouldFetchLatestVersion } from '../lib/exec-fetcher.js'
 import { getPathInHome } from '../lib/settings.js'
 
-import { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, exit, log } from './command-helpers.js'
+import { NETLIFYDEVERR, NETLIFYDEVLOG, ansis, exit, log } from './command-helpers.js'
 import execa from './execa.js'
 import type CLIState from './cli-state.js'
 
@@ -119,15 +119,15 @@ export const startLiveTunnel = async ({
 }) => {
   if (!siteId) {
     console.error(
-      `${NETLIFYDEVERR} Error: no siteId defined, did you forget to run ${chalk.yellow(
+      `${NETLIFYDEVERR} Error: no siteId defined, did you forget to run ${ansis.yellow(
         'netlify init',
-      )} or ${chalk.yellow('netlify link')}?`,
+      )} or ${ansis.yellow('netlify link')}?`,
     )
     return exit(1)
   }
   if (!netlifyApiToken) {
     console.error(
-      `${NETLIFYDEVERR} Error: no Netlify auth token defined, did you forget to run ${chalk.yellow(
+      `${NETLIFYDEVERR} Error: no Netlify auth token defined, did you forget to run ${ansis.yellow(
         'netlify login',
       )} or define 'NETLIFY_AUTH_TOKEN'?`,
     )

@@ -1,11 +1,11 @@
 import { once } from 'events'
-import os from 'os'
 import fs from 'fs'
+import os from 'os'
 import process from 'process'
 import { format, inspect } from 'util'
 
-import { Chalk } from 'chalk'
 import chokidar from 'chokidar'
+import type { Option } from 'commander'
 import decache from 'decache'
 import WSL from 'is-wsl'
 import debounce from 'lodash/debounce.js'
@@ -22,32 +22,21 @@ import type { CachedConfig } from '../lib/build.js'
 
 /** The parsed process argv without the binary only arguments and flags */
 const argv = process.argv.slice(2)
-/**
- * Chalk instance for CLI that can be initialized with no colors mode
- * needed for json outputs where we don't want to have colors
- * @param  {boolean} noColors - disable chalk colors
- * @return {import('chalk').ChalkInstance} - default or custom chalk instance
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'noColors' implicitly has an 'any' type.
-const safeChalk = function (noColors) {
-  if (noColors) {
-    const colorlessChalk = new Chalk({ level: 0 })
-    return colorlessChalk
-  }
-  return new Chalk()
-}
 
-export const chalk = safeChalk(argv.includes('--json'))
+/**
+ * ansis instance for CLI that can be initialized with no colors mode
+ * needed for json outputs where we don't want to have colors
+ * Strangely, mutating `process.env` seems to be the recommended approach.
+ * TODO(serhalp) Move this into `bin/run.js` maybe?
+ */
+if (argv.includes('--json')) process.env.NO_COLOR = '1'
+const { default: ansisModule } = await import('ansis')
+export const ansis = ansisModule
 
 /**
  * Adds the filler to the start of the string
- * @param {string} str
- * @param {number} count
- * @param {string} [filler]
- * @returns {string}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'str' implicitly has an 'any' type.
-export const padLeft = (str, count, filler = ' ') => str.padStart(str.length + count, filler)
+export const padLeft = (str: string, count: number, filler = ' ') => str.padStart(str.length + count, filler)
 
 const platform = WSL ? 'wsl' : os.platform()
 const arch = os.arch() === 'ia32' ? 'x86' : os.arch()
@@ -60,30 +49,29 @@ export const USER_AGENT = `${name}/${version} ${platform}-${arch} node-${process
 /** A list of base command flags that needs to be sorted down on documentation and on help pages */
 const BASE_FLAGS = new Set(['--debug', '--http-proxy', '--http-proxy-certificate-filename'])
 
-export const NETLIFY_CYAN = chalk.rgb(40, 180, 170)
+export const NETLIFY_CYAN = ansis.rgb(40, 180, 170)
 
-export const NETLIFYDEV = `${chalk.greenBright('◈')} ${NETLIFY_CYAN('Netlify Dev')} ${chalk.greenBright('◈')}`
-export const NETLIFYDEVLOG = chalk.greenBright('◈')
-export const NETLIFYDEVWARN = chalk.yellowBright('◈')
-export const NETLIFYDEVERR = chalk.redBright('◈')
+export const NETLIFYDEV = `${ansis.greenBright('◈')} ${NETLIFY_CYAN('Netlify Dev')} ${ansis.greenBright('◈')}`
+export const NETLIFYDEVLOG = ansis.greenBright('◈')
+export const NETLIFYDEVWARN = ansis.yellowBright('◈')
+export const NETLIFYDEVERR = ansis.redBright('◈')
 
 export const BANG = process.platform === 'win32' ? '»' : '›'
 
 /**
  * Sorts two options so that the base flags are at the bottom of the list
- * @param {import('commander').Option} optionA
- * @param {import('commander').Option} optionB
- * @returns {number}
  * @example
- * options.sort(sortOptions)
+ * options.sort(compareOptions)
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'optionA' implicitly has an 'any' type.
-export const sortOptions = (optionA, optionB) => {
+export const compareOptions = (optionA: Option, optionB: Option): number => {
+  const longOptionA = optionA.long ?? ''
+  const longOptionB = optionB.long ?? ''
   // base flags should be always at the bottom
-  if (BASE_FLAGS.has(optionA.long) || BASE_FLAGS.has(optionB.long)) {
+  // FIXME(serhalp) This logic can't be right? Look at it... This must only happen to work.
+  if (BASE_FLAGS.has(longOptionA) || BASE_FLAGS.has(longOptionB)) {
     return -1
   }
-  return optionA.long.localeCompare(optionB.long)
+  return longOptionA.localeCompare(longOptionB)
 }
 
 // Poll Token timeout 5 Minutes
@@ -94,11 +82,18 @@ export const pollForToken = async ({
   ticket,
 }: {
   api: NetlifyAPI
-  ticket: { id?: string; client_id?: string; authorized?: boolean; created_at?: string }
+  ticket: {
+    id?: string
+    client_id?: string
+    authorized?: boolean
+    created_at?: string
+  }
 }) => {
   const spinner = startSpinner({ text: 'Waiting for authorization...' })
   try {
-    const accessToken = await api.getAccessToken(ticket, { timeout: TOKEN_TIMEOUT })
+    const accessToken = await api.getAccessToken(ticket, {
+      timeout: TOKEN_TIMEOUT,
+    })
     if (!accessToken) {
       return logAndThrowError('Could not retrieve access token')
     }
@@ -107,11 +102,11 @@ export const pollForToken = async ({
     // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
     if (error_.name === 'TimeoutError') {
       return logAndThrowError(
-        `Timed out waiting for authorization. If you do not have a ${chalk.bold.greenBright(
+        `Timed out waiting for authorization. If you do not have a ${ansis.bold.greenBright(
           'Netlify',
-        )} account, please create one at ${chalk.magenta(
+        )} account, please create one at ${ansis.magenta(
           'https://app.netlify.com/signup',
-        )}, then run ${chalk.cyanBright('netlify login')} again.`,
+        )}, then run ${ansis.cyanBright('netlify login')} again.`,
       )
     } else {
       return logAndThrowError(error_)
@@ -180,7 +175,7 @@ export const logPadded = (message = '', ...args: string[]) => {
  * logs a warning message
  */
 export const warn = (message = '') => {
-  const bang = chalk.yellow(BANG)
+  const bang = ansis.yellow(BANG)
   log(` ${bang}   Warning: ${message}`)
 }
 
@@ -201,11 +196,11 @@ export const logAndThrowError = (message: unknown): never => {
 export const logError = (message: unknown): void => {
   const err = toError(message)
 
-  const bang = chalk.red(BANG)
+  const bang = ansis.red(BANG)
   if (process.env.DEBUG) {
     process.stderr.write(` ${bang}   Warning: ${err.stack?.split('\n').join(`\n ${bang}   `)}\n`)
   } else {
-    process.stderr.write(` ${bang}   ${chalk.red(`${err.name}:`)} ${err.message}\n`)
+    process.stderr.write(` ${bang}   ${ansis.red(`${err.name}:`)} ${err.message}\n`)
   }
 }
 
@@ -250,7 +245,11 @@ export const watchDebounced = async (
   { depth, ignored = [], onAdd = noOp, onChange = noOp, onUnlink = noOp }: WatchDebouncedOptions,
 ) => {
   const baseIgnores = [/\/(node_modules|.git)\//]
-  const watcher = chokidar.watch(target, { depth, ignored: [...baseIgnores, ...ignored], ignoreInitial: true })
+  const watcher = chokidar.watch(target, {
+    depth,
+    ignored: [...baseIgnores, ...ignored],
+    ignoreInitial: true,
+  })
 
   await once(watcher, 'ready')
 
@@ -333,14 +332,14 @@ export interface GitHubRepoResponse {
   is_template?: boolean
 }
 
-export const checkFileForLine = (filename: string, line: string) => {
-  let filecontent = ''
+export const checkFileForLine = (filename: string, line: string): boolean => {
+  let fileContent = ''
   try {
-    filecontent = fs.readFileSync(filename, 'utf8')
+    fileContent = fs.readFileSync(filename, 'utf8')
   } catch (error_) {
     return logAndThrowError(error_)
   }
-  return !!filecontent.match(line)
+  return fileContent.includes(line)
 }
 
 export const TABTAB_CONFIG_LINE = '[[ -f ~/.config/tabtab/__tabtab.zsh ]] && . ~/.config/tabtab/__tabtab.zsh || true'

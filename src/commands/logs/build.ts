@@ -1,7 +1,7 @@
 import type { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 
-import { log, chalk } from '../../utils/command-helpers.js'
+import { log, ansis } from '../../utils/command-helpers.js'
 import { getWebSocket } from '../../utils/websockets/index.js'
 import type BaseCommand from '../base-command.js'
 
@@ -26,7 +26,7 @@ export function getName({ deploy, userId }: { deploy: any; userId: string }) {
   }
 
   if (isUserDeploy) {
-    normalisedName += chalk.yellow('*')
+    normalisedName += ansis.yellow('*')
   }
 
   return `(${deploy.id.slice(0, 7)}) ${normalisedName}`
@@ -56,7 +56,7 @@ export const logsBuild = async (options: OptionValues, command: BaseCommand) => 
     const { result } = await inquirer.prompt({
       name: 'result',
       type: 'list',
-      message: `Select a deploy\n\n${chalk.yellow('*')} indicates a deploy created by you`,
+      message: `Select a deploy\n\n${ansis.yellow('*')} indicates a deploy created by you`,
       choices: deploys.map((dep: any) => ({
         name: getName({ deploy: dep, userId }),
         value: dep.id,

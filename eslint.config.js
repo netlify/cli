@@ -79,6 +79,7 @@ export default tseslint.config(
     },
   },
   {
+    files: ['src/**/*'],
     rules: {
       'no-restricted-imports': [
         'error',
@@ -96,9 +97,9 @@ export default tseslint.config(
             },
 
             {
-              name: 'chalk',
+              name: 'ansis',
               message:
-                'Use the safe chalk import that handles colors for json output: `import { chalk } from "src/utils/command-helpers.js"`',
+                'Use the configured ansis import that handles colors for json output: `import { ansis } from "src/utils/command-helpers.js"`',
             },
           ],
         },

@@ -7,7 +7,7 @@ import { type ListedFunction, listFunctions, type Manifest } from '@netlify/zip-
 import extractZip from 'extract-zip'
 
 import {
-  chalk,
+  ansis,
   log,
   getTerminalLink,
   NETLIFYDEVERR,
@@ -210,7 +210,7 @@ export class FunctionsRegistry {
         const { filename } = func
         const newFilename = filename ? `${basename(filename, extname(filename))}${recommendedExtension}` : null
         const action = newFilename
-          ? `rename the function file to ${chalk.underline(
+          ? `rename the function file to ${ansis.underline(
               newFilename,
             )}. Refer to https://ntl.fyi/functions-runtime for more information`
           : `refer to https://ntl.fyi/functions-runtime`
@@ -293,10 +293,10 @@ export class FunctionsRegistry {
       const { routes = [] } = (await func.getBuildData()) ?? {}
 
       if (routes.length !== 0) {
-        const paths = routes.map((route) => chalk.underline(route.pattern)).join(', ')
+        const paths = routes.map((route) => ansis.underline(route.pattern)).join(', ')
 
         warn(
-          `Function ${chalk.yellow(func.name)} cannot be invoked on ${chalk.underline(
+          `Function ${ansis.yellow(func.name)} cannot be invoked on ${ansis.underline(
             url.pathname,
           )}, because the function has the following URL paths defined: ${paths}`,
         )
@@ -331,7 +331,7 @@ export class FunctionsRegistry {
 
     if (event === 'buildError') {
       log(
-        `${NETLIFYDEVERR} ${chalk.red('Failed to load')} function ${chalk.yellow(func?.displayName)}: ${
+        `${NETLIFYDEVERR} ${ansis.red('Failed to load')} function ${ansis.yellow(func?.displayName)}: ${
           func?.buildError?.message ?? ''
         }`,
       )
@@ -339,7 +339,7 @@ export class FunctionsRegistry {
 
     if (event === 'extracted') {
       log(
-        `${NETLIFYDEVLOG} ${chalk.green('Extracted')} function ${chalk.yellow(func?.displayName)} from ${
+        `${NETLIFYDEVLOG} ${ansis.green('Extracted')} function ${ansis.yellow(func?.displayName)} from ${
           func?.mainFile ?? ''
         }.`,
       )
@@ -349,20 +349,20 @@ export class FunctionsRegistry {
 
     if (event === 'loaded') {
       const icon = warningsText ? NETLIFYDEVWARN : NETLIFYDEVLOG
-      const color = warningsText ? chalk.yellow : chalk.green
+      const color = warningsText ? ansis.yellow : ansis.green
       const mode =
         func?.runtimeAPIVersion === 1 && this.logLambdaCompat
           ? ` in ${getTerminalLink('Lambda compatibility mode', 'https://ntl.fyi/lambda-compat')}`
           : ''
 
-      log(`${icon} ${color('Loaded')} function ${chalk.yellow(func?.displayName)}${mode}${warningsText}`)
+      log(`${icon} ${color('Loaded')} function ${ansis.yellow(func?.displayName)}${mode}${warningsText}`)
 
       return
     }
 
     if (event === 'missing-types-package') {
       log(
-        `${NETLIFYDEVWARN} For a better experience with TypeScript functions, consider installing the ${chalk.underline(
+        `${NETLIFYDEVWARN} For a better experience with TypeScript functions, consider installing the ${ansis.underline(
           TYPES_PACKAGE,
         )} package. Refer to https://ntl.fyi/function-types for more information.`,
       )
@@ -370,21 +370,21 @@ export class FunctionsRegistry {
 
     if (event === 'reloaded') {
       const icon = warningsText ? NETLIFYDEVWARN : NETLIFYDEVLOG
-      const color = warningsText ? chalk.yellow : chalk.green
+      const color = warningsText ? ansis.yellow : ansis.green
 
-      log(`${icon} ${color('Reloaded')} function ${chalk.yellow(func?.displayName)}${warningsText}`)
+      log(`${icon} ${color('Reloaded')} function ${ansis.yellow(func?.displayName)}${warningsText}`)
 
       return
     }
 
     if (event === 'reloading') {
-      log(`${NETLIFYDEVLOG} ${chalk.magenta('Reloading')} function ${chalk.yellow(func?.displayName)}...`)
+      log(`${NETLIFYDEVLOG} ${ansis.magenta('Reloading')} function ${ansis.yellow(func?.displayName)}...`)
 
       return
     }
 
     if (event === 'removed') {
-      log(`${NETLIFYDEVLOG} ${chalk.magenta('Removed')} function ${chalk.yellow(func?.displayName)}`)
+      log(`${NETLIFYDEVLOG} ${ansis.magenta('Removed')} function ${ansis.yellow(func?.displayName)}`)
     }
   }
 

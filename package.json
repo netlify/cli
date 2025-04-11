@@ -31,7 +31,7 @@
     "url": "https://github.com/netlify/cli/issues"
   },
   "scripts": {
-    "_format": "prettier --loglevel=warn \"{src,tools,scripts,tests,e2e,.github}/**/*.{mjs,cjs,js,mts,md,yml,json,html,ts}\" \"*.{mjs,cjs,js,mts,yml,json,html,ts}\" \".*.{mjs,cjs,js,yml,json,html,ts}\" \"!CHANGELOG.md\" \"!**/*/package-lock.json\" \"!.github/**/*.md\"",
+    "_format": "prettier --loglevel=warn \"{src,scripts,tests,e2e,.github}/**/*.{mjs,cjs,js,mts,md,yml,json,html,ts}\" \"*.{mjs,cjs,js,mts,yml,json,html,ts}\" \".*.{mjs,cjs,js,yml,json,html,ts}\" \"!CHANGELOG.md\" \"!**/*/package-lock.json\" \"!.github/**/*.md\"",
     "build": "tsc --project tsconfig.build.json",
     "clean": "rm -rf dist/",
     "dev": "tsc --project tsconfig.build.json --watch",
@@ -74,10 +74,10 @@
     "@pnpm/tabtab": "0.5.4",
     "ansi-escapes": "7.0.0",
     "ansi-to-html": "0.7.2",
+    "ansis": "^3.17.0",
     "ascii-table": "0.0.9",
     "backoff": "2.5.0",
     "boxen": "8.0.1",
-    "chalk": "5.4.1",
     "chokidar": "3.6.0",
     "ci-info": "4.1.0",
     "clean-deep": "3.4.0",
@@ -217,11 +217,5 @@
     "typescript-eslint": "^8.26.0",
     "verdaccio": "6.0.5",
     "vitest": "1.6.1"
-  },
-  "ava": {
-    "files": [
-      "tools/**/*.test.js",
-      "tests/**/*.test.cjs"
-    ]
   }
 }

@@ -6,7 +6,7 @@ import inquirer from 'inquirer'
 import type BaseCommand from '../commands/base-command.js'
 import type { DefaultConfig } from '../lib/build.js'
 
-import { chalk, log } from './command-helpers.js'
+import { ansis, log } from './command-helpers.js'
 
 /**
  * Filters the inquirer settings based on the input
@@ -31,7 +31,7 @@ const formatSettingsArrForInquirer = function (settings: Settings[], type = 'dev
   return settings.map((setting) => {
     const cmd = type === 'dev' ? setting.devCommand : setting.buildCommand
     return {
-      name: `[${chalk.yellow(setting.framework.name)}] '${cmd}'`,
+      name: `[${ansis.yellow(setting.framework.name)}] '${cmd}'`,
       value: { ...setting, commands: [cmd] },
       short: `${setting.name}-${cmd}`,
     }

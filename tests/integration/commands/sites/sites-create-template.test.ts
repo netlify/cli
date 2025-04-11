@@ -6,6 +6,7 @@ import { beforeEach, afterEach, describe, expect, test, vi, afterAll } from 'vit
 import BaseCommand from '../../../../src/commands/base-command.js'
 import { createSitesFromTemplateCommand } from '../../../../src/commands/sites/sites.js'
 import { deployedSiteExists, fetchTemplates, getTemplateName } from '../../../../src/utils/sites/create-template.js'
+import { ansis } from '../../../../src/utils/command-helpers.js'
 import {
   getTemplatesFromGitHub,
   validateTemplate,
@@ -13,7 +14,6 @@ import {
   callLinkSite,
 } from '../../../../src/utils/sites/utils.js'
 import { getEnvironmentVariables, withMockApi } from '../../utils/mock-api.js'
-import { chalk } from '../../../../src/utils/command-helpers.js'
 
 vi.mock('../../../../src/utils/init/config-github.ts')
 vi.mock('../../../../src/utils/sites/utils.ts')
@@ -197,7 +197,7 @@ describe('sites:create-template', () => {
     })
 
     expect(stdoutwriteSpy).toHaveBeenCalledWith(
-      `\nDirectory ${chalk.cyanBright('repoName')} linked to site ${chalk.cyanBright(
+      `\nDirectory ${ansis.cyanBright('repoName')} linked to site ${ansis.cyanBright(
         'https://site-name.netlify.app',
       )}\n\n`,
     )
@@ -243,7 +243,7 @@ describe('sites:create-template', () => {
     })
 
     expect(stdoutwriteSpy).toHaveBeenCalledWith(
-      `\nThis directory appears to be linked to ${chalk.cyanBright(`"site-name"`)}\n`,
+      `\nThis directory appears to be linked to ${ansis.cyanBright(`"site-name"`)}\n`,
     )
   })
 })
