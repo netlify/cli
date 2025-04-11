@@ -35,3 +35,8 @@ _test_out/**
 
 # Used in local dev by tsc: https://www.typescriptlang.org/tsconfig/#tsBuildInfoFile
 tsconfig.tsbuildinfo
+
+# vectorized docs context for interactive help LLM
+/.vector_store
+
+.env
