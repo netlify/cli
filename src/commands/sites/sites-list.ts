@@ -2,7 +2,7 @@ import { OptionValues } from 'commander'
 
 import { listSites } from '../../lib/api.js'
 import { startSpinner, stopSpinner } from '../../lib/spinner.js'
-import { chalk, log, logJson } from '../../utils/command-helpers.js'
+import { ansis, log, logJson } from '../../utils/command-helpers.js'
 import { SiteInfo } from '../../utils/types.js'
 import BaseCommand from '../base-command.js'
 
@@ -56,13 +56,13 @@ Count: ${logSites.length}
 `)
 
     logSites.forEach((logSite) => {
-      log(`${chalk.greenBright(logSite.name)} - ${logSite.id}`)
-      log(`  ${chalk.whiteBright.bold('url:')}  ${chalk.yellowBright(logSite.ssl_url)}`)
+      log(`${ansis.greenBright(logSite.name)} - ${logSite.id}`)
+      log(`  ${ansis.whiteBright(ansis.bold('url:'))}  ${ansis.yellowBright(logSite.ssl_url)}`)
       if (logSite.repo_url) {
-        log(`  ${chalk.whiteBright.bold('repo:')} ${chalk.white(logSite.repo_url)}`)
+        log(`  ${ansis.whiteBright(ansis.bold('repo:'))} ${ansis.white(logSite.repo_url)}`)
       }
       if (logSite.account_name) {
-        log(`  ${chalk.whiteBright.bold('account:')} ${chalk.white(logSite.account_name)}`)
+        log(`  ${ansis.whiteBright(ansis.bold('account:'))} ${ansis.white(logSite.account_name)}`)
       }
       log(`─────────────────────────────────────────────────`)
     })

@@ -1,4 +1,9 @@
+import ansis from 'ansis'
+
 const baseNormalizers = [
+  // Strip ansis color control characters
+  // TODO(serhalp) Why not exercise colorization in integration tests? Remove and update snapshots?
+  { pattern: /^.+$/g, value: ansis.strip },
   // Information about the package and the OS
   { pattern: /netlify-cli\/.+node-.+/g, value: 'netlify-cli/test-version test-os test-node-version' },
   { pattern: /@netlify\/build (\d+\.\d+\.\d+)/g, value: '@netlify/build 0.0.0' },

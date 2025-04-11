@@ -4,7 +4,7 @@ import { resolve } from 'path'
 import { getStore } from '@netlify/blobs'
 import { OptionValues } from 'commander'
 
-import { chalk, logAndThrowError } from '../../utils/command-helpers.js'
+import { ansis, logAndThrowError } from '../../utils/command-helpers.js'
 import BaseCommand from '../base-command.js'
 
 interface Options extends OptionValues {
@@ -21,16 +21,16 @@ export const blobsGet = async (storeName: string, key: string, options: Options,
     token: api.accessToken ?? '',
   })
 
-  let blob
+  let blob: undefined | Awaited<ReturnType<typeof store.get>>
 
   try {
     blob = await store.get(key)
   } catch {
-    return logAndThrowError(`Could not retrieve blob ${chalk.yellow(key)} from store ${chalk.yellow(storeName)}`)
+    return logAndThrowError(`Could not retrieve blob ${ansis.yellow(key)} from store ${ansis.yellow(storeName)}`)
   }
 
   if (blob === null) {
-    return logAndThrowError(`Blob ${chalk.yellow(key)} does not exist in store ${chalk.yellow(storeName)}`)
+    return logAndThrowError(`Blob ${ansis.yellow(key)} does not exist in store ${ansis.yellow(storeName)}`)
   }
 
   if (output) {

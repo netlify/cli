@@ -17,7 +17,8 @@ export const getExecaOptions = ({ cwd, env }: { cwd: string; env: NodeJS.Process
   return {
     cwd,
     extendEnv: false,
-    env: { ...baseEnv, BROWSER: 'none', ...env },
+    // TODO(serhalp) Why not exercise colorization in integration tests? Remove and update snapshots?
+    env: { ...baseEnv, BROWSER: 'none', NO_COLOR: '1', ...env },
     encoding: 'utf8',
   }
 }

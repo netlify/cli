@@ -1,13 +1,13 @@
 import { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 
-import { chalk, log } from '../../utils/command-helpers.js'
+import { ansis, log } from '../../utils/command-helpers.js'
 import BaseCommand from '../base-command.js'
 import { login } from '../login/login.js'
 
 const LOGIN_NEW = 'I would like to login to a new account'
 
-export const switchCommand = async (options: OptionValues, command: BaseCommand) => {
+export const switchCommand = async (_options: OptionValues, command: BaseCommand) => {
   const availableUsersChoices = Object.values(command.netlify.globalConfig.get('users') || {}).reduce(
     (prev, current) =>
       // @ts-expect-error TS(2769) FIXME: No overload matches this call.
@@ -36,6 +36,6 @@ export const switchCommand = async (options: OptionValues, command: BaseCommand)
     command.netlify.globalConfig.set('userId', selectedAccount[0])
     log('')
     // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-    log(`You're now using ${chalk.bold(selectedAccount[1])}.`)
+    log(`You're now using ${ansis.bold(selectedAccount[1])}.`)
   }
 }

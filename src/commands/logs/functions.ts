@@ -1,7 +1,7 @@
 import { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 
-import { chalk, log } from '../../utils/command-helpers.js'
+import { ansis, log } from '../../utils/command-helpers.js'
 import { getWebSocket } from '../../utils/websockets/index.js'
 import type BaseCommand from '../base-command.js'
 
@@ -11,13 +11,13 @@ function getLog(logData: { level: string; message: string }) {
   let logString = ''
   switch (logData.level) {
     case LOG_LEVELS.INFO:
-      logString += chalk.blueBright(logData.level)
+      logString += ansis.blueBright(logData.level)
       break
     case LOG_LEVELS.WARN:
-      logString += chalk.yellowBright(logData.level)
+      logString += ansis.yellowBright(logData.level)
       break
     case LOG_LEVELS.ERROR:
-      logString += chalk.redBright(logData.level)
+      logString += ansis.redBright(logData.level)
       break
     default:
       logString += logData.level

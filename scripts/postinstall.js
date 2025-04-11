@@ -7,29 +7,10 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import process from 'node:process'
-// eslint-disable-next-line no-restricted-imports
-import chalk from 'chalk'
+
+import ansis from 'ansis'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-
-const identity = (message) => message
-
-/**
- *
- * @param {string} message
- * @param {Array<chalk['Color'] | chalk['Modifiers']>} styles
- * @returns
- */
-const format = (message, styles) => {
-  let func = identity
-  try {
-    func = chalk
-    styles.forEach((style) => {
-      func = func[style]
-    })
-  } catch {}
-  return func(message)
-}
 
 const postInstall = async () => {
   const { createMainCommand } = await import('../dist/commands/index.js')
@@ -45,24 +26,17 @@ const postInstall = async () => {
   }
 
   console.log('')
-  console.log(await format('Success! Netlify CLI has been installed!', ['greenBright', 'bold', 'underline']))
+  console.log(ansis.greenBright.bold.underline('Success! Netlify CLI has been installed!'))
   console.log('')
   console.log('Your device is now configured to use Netlify CLI to deploy and manage your Netlify sites.')
   console.log('')
   console.log('Next steps:')
   console.log('')
-  console.log(
-    `  ${await format('netlify init', [
-      'cyanBright',
-      'bold',
-    ])}     Connect or create a Netlify site from current directory`,
-  )
-  console.log(
-    `  ${await format('netlify deploy', ['cyanBright', 'bold'])}   Deploy the latest changes to your Netlify site`,
-  )
+  console.log(`  ${ansis.cyanBright.bold('netlify init')}     Connect or create a Netlify site from current directory`)
+  console.log(`  ${ansis.cyan.bold('netlify deploy')}   Deploy the latest changes to your Netlify site`)
   console.log('')
-  console.log(`For more information on the CLI run ${await format('netlify help', ['cyanBright', 'bold'])}`)
-  console.log(`Or visit the docs at ${await format('https://cli.netlify.com', ['cyanBright', 'bold'])}`)
+  console.log(`For more information on the CLI run ${ansis.cyanBright.bold('netlify help')}`)
+  console.log(`Or visit the docs at ${ansis.cyanBright.bold('https://cli.netlify.com')}`)
   console.log('')
 }
 

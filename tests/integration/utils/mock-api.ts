@@ -145,6 +145,8 @@ export const getEnvironmentVariables = ({ apiUrl }: { apiUrl?: string }) => ({
  * This function is used to establish flexible testing environments.
  * Falsey value is for noninteractive shell (-force flags overide user prompts)
  * Truthy value is for interactive shell
+ *
+ * TODO(serhalp) This has nothing to do with mocking the Netlify API. Move elsewhere.
  */
 export const setTTYMode = (bool: boolean) => {
   process.stdin.isTTY = bool
@@ -156,6 +158,8 @@ export const setTTYMode = (bool: boolean) => {
  * If this is set to 'true', then prompts will be shown in for destructive commands even in non-interactive shells
  * or CI/CD enviroment
  *
+ * TODO(serhalp) This has nothing to do with mocking the Netlify API. Move elsewhere.
+ *
  * @param {string} value - The value to set for the `TESTING_PROMPTS` environment variable.
  */
 export const setTestingPrompts = (value: string) => {
@@ -165,6 +169,8 @@ export const setTestingPrompts = (value: string) => {
 /**
  * Simulates a Continuous Integration environment by toggling the `CI`
  * environment variable. Truthy value is
+ *
+ * TODO(serhalp) This has nothing to do with mocking the Netlify API. Move elsewhere.
  */
 export const setCI = (value: string) => {
   process.env.CI = value

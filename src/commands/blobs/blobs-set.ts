@@ -4,7 +4,7 @@ import { resolve } from 'path'
 import { getStore } from '@netlify/blobs'
 import { OptionValues } from 'commander'
 
-import { chalk, logAndThrowError, isNodeError, log } from '../../utils/command-helpers.js'
+import { ansis, logAndThrowError, isNodeError, log } from '../../utils/command-helpers.js'
 import { promptBlobSetOverwrite } from '../../utils/prompts/blob-set-prompt.js'
 import BaseCommand from '../base-command.js'
 
@@ -37,18 +37,18 @@ export const blobsSet = async (
     } catch (error) {
       if (isNodeError(error) && error.code === 'ENOENT') {
         return logAndThrowError(
-          `Could not set blob ${chalk.yellow(key)} because the file ${chalk.underline(inputPath)} does not exist`,
+          `Could not set blob ${ansis.yellow(key)} because the file ${ansis.underline(inputPath)} does not exist`,
         )
       }
 
       if (isNodeError(error) && error.code === 'EISDIR') {
         return logAndThrowError(
-          `Could not set blob ${chalk.yellow(key)} because the path ${chalk.underline(inputPath)} is a directory`,
+          `Could not set blob ${ansis.yellow(key)} because the path ${ansis.underline(inputPath)} is a directory`,
         )
       }
 
       return logAndThrowError(
-        `Could not set blob ${chalk.yellow(key)} because the path ${chalk.underline(inputPath)} could not be read`,
+        `Could not set blob ${ansis.yellow(key)} because the path ${ansis.underline(inputPath)} could not be read`,
       )
     }
   } else if (!value) {
@@ -67,8 +67,8 @@ export const blobsSet = async (
 
   try {
     await store.set(key, value)
-    log(`${chalk.greenBright('Success')}: Blob ${chalk.yellow(key)} set in store ${chalk.yellow(storeName)}`)
+    log(`${ansis.greenBright('Success')}: Blob ${ansis.yellow(key)} set in store ${ansis.yellow(storeName)}`)
   } catch {
-    return logAndThrowError(`Could not set blob ${chalk.yellow(key)} in store ${chalk.yellow(storeName)}`)
+    return logAndThrowError(`Could not set blob ${ansis.yellow(key)} in store ${ansis.yellow(storeName)}`)
   }
 }

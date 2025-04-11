@@ -2,14 +2,14 @@ import process from 'process'
 
 import { describe, expect, test, vi, beforeEach, afterAll } from 'vitest'
 
-import { chalk, log } from '../../../../src/utils/command-helpers.js'
+import { ansis, log } from '../../../../src/utils/command-helpers.js'
 import { destructiveCommandMessages } from '../.././../../src/utils/prompts/prompt-messages.js'
 import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
+import { mockPrompt, spyOnMockPrompt } from '../../utils/inquirer-mock-prompt.js'
 import { getEnvironmentVariables, withMockApi, setTTYMode, setCI, setTestingPrompts } from '../../utils/mock-api.js'
+import { runMockProgram } from '../../utils/mock-program.js'
 
 import { routes } from './api-routes.js'
-import { runMockProgram } from '../../utils/mock-program.js'
-import { mockPrompt, spyOnMockPrompt } from '../../utils/inquirer-mock-prompt.js'
 
 vi.mock('../../../../src/utils/command-helpers.js', async () => ({
   ...(await vi.importActual('../../../../src/utils/command-helpers.js')),
@@ -83,7 +83,7 @@ describe('env:unset command', async () => {
     // already exists as value in withMockApi
     const existingVar = 'EXISTING_VAR'
     const warningMessage = generateWarning(existingVar)
-    const expectedSuccessMessage = `Unset environment variable ${chalk.yellow(existingVar)} in the ${chalk.magenta(
+    const expectedSuccessMessage = `Unset environment variable ${ansis.yellow(existingVar)} in the ${ansis.magenta(
       'all',
     )} context`
 
