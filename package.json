@@ -147,7 +147,7 @@
     "source-map-support": "0.5.21",
     "strip-ansi-control-characters": "2.0.0",
     "tempy": "3.1.0",
-    "terminal-link": "3.0.0",
+    "terminal-link": "4.0.0",
     "through2-filter": "4.0.0",
     "through2-map": "4.0.0",
     "toml": "3.0.0",
