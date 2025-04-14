@@ -4,6 +4,7 @@ import inquirer from 'inquirer'
 
 import { JIGSAW_URL, NETLIFY_WEB_UI } from './constants.js'
 import BaseCommand from '../base-command.js'
+import { Extension } from './database.js'
 
 export const getExtension = async ({ accountId, token, slug }: { accountId: string; token: string; slug: string }) => {
   const url = new URL('/.netlify/functions/fetch-extension', NETLIFY_WEB_UI)
@@ -15,13 +16,7 @@ export const getExtension = async ({ accountId, token, slug }: { accountId: stri
       Cookie: `_nf-auth=${token}`,
     },
   })
-  const extension = (await extensionReq.json()) as
-    | {
-        name: string
-        hostSiteUrl: string
-        installedOnTeam: boolean
-      }
-    | undefined
+  const extension = (await extensionReq.json()) as Extension | undefined
 
   return extension
 }

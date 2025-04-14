@@ -11,16 +11,29 @@ export const initDrizzle = async (command: BaseCommand) => {
   }
   const opts = command.opts<{
     overwrite?: true | undefined
+    devBranchUri?: string | undefined
   }>()
-  const drizzleConfigFilePath = path.resolve(command.project.root, 'drizzle.config.ts')
+  const devBranchUri = opts.devBranchUri
+  const drizzleDevConfigFilePath = path.resolve(command.project.root, 'drizzle-dev.config.ts')
+  const drizzleConfigFilePath = path.resolve(command.project.root, 'drizzle-prod.config.ts')
   const schemaFilePath = path.resolve(command.project.root, 'db/schema.ts')
   const dbIndexFilePath = path.resolve(command.project.root, 'db/index.ts')
   if (opts.overwrite) {
+    if (devBranchUri) {
+      await fs.writeFile(drizzleDevConfigFilePath, createDrizzleDevConfigContent(devBranchUri))
+    }
     await fs.writeFile(drizzleConfigFilePath, drizzleConfig)
     await fs.mkdir(path.resolve(command.project.root, 'db'), { recursive: true })
     await fs.writeFile(schemaFilePath, exampleDrizzleSchema)
     await fs.writeFile(dbIndexFilePath, exampleDbIndex)
   } else {
+    if (devBranchUri) {
+      await carefullyWriteFile(
+        drizzleDevConfigFilePath,
+        createDrizzleDevConfigContent(devBranchUri),
+        command.project.root,
+      )
+    }
     await carefullyWriteFile(drizzleConfigFilePath, drizzleConfig, command.project.root)
     await fs.mkdir(path.resolve(command.project.root, 'db'), { recursive: true })
     await carefullyWriteFile(schemaFilePath, exampleDrizzleSchema, command.project.root)
@@ -28,6 +41,20 @@ export const initDrizzle = async (command: BaseCommand) => {
   }
 
   const packageJsonPath = path.resolve(command.project.root, 'package.json')
+
+  if (devBranchUri) {
+    const gitignorePath = path.resolve(command.project.root, '.gitignore')
+    try {
+      const gitignoreContent = (await fs.readFile(gitignorePath)).toString()
+      if (!gitignoreContent.includes('drizzle-dev.config.ts')) {
+        await fs.writeFile(gitignorePath, `${gitignoreContent}\ndrizzle-dev.config.ts\n`, {
+          flag: 'a',
+        })
+      }
+    } catch {
+      await fs.writeFile(gitignorePath, 'drizzle-dev.config.ts\n')
+    }
+  }
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf-8'))
@@ -41,10 +68,23 @@ export const initDrizzle = async (command: BaseCommand) => {
     await fs.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2))
   }
 
+  type Answers = {
+    updatePackageJson: boolean
+    localDevBranch: boolean
+  }
+  const answers = await inquirer.prompt<Answers>([
+    {
+      type: 'confirm',
+      name: 'localDevBranch',
+      message: `Add a development database branch?`,
+    },
+  ])
+  if (answers.localDevBranch) {
+    console.log('cool')
+    return
+  }
+
   if (!opts.overwrite) {
-    type Answers = {
-      updatePackageJson: boolean
-    }
     const answers = await inquirer.prompt<Answers>([
       {
         type: 'confirm',
@@ -79,6 +119,17 @@ export default defineConfig({
     dialect: 'postgresql',
     dbCredentials: {
         url: process.env.NETLIFY_DATABASE_URL!
+    },
+    schema: './db/schema.ts',
+    out: './migrations'
+});`
+
+const createDrizzleDevConfigContent = (devBranchUri: string) => `import { defineConfig } from 'drizzle-kit';
+
+export default defineConfig({
+    dialect: 'postgresql',
+    dbCredentials: {
+        url: '${devBranchUri}'
     },
     schema: './db/schema.ts',
     out: './migrations'
@@ -121,4 +172,17 @@ const spawnAsync = (command: string, args: string[], options: Parameters<typeof 
       reject(new Error(errorMessage))
     })
   })
+}
+
+export const createDrizzleDevConfig = async (command: BaseCommand, opts: { devBranchUri: string }) => {
+  if (!command.project.root) {
+    throw new Error('Failed to initialize Drizzle in project. Project root not found.')
+  }
+
+  const drizzleDevConfigFilePath = path.resolve(command.project.root, 'drizzle-dev.config.ts')
+  await carefullyWriteFile(
+    drizzleDevConfigFilePath,
+    createDrizzleDevConfigContent(opts.devBranchUri),
+    command.project.root,
+  )
 }
