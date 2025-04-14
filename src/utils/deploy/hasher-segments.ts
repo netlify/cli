@@ -6,6 +6,7 @@ import { pipeline } from 'node:stream/promises'
 import transform from 'parallel-transform'
 
 import { normalizePath } from './util.js'
+import { StatusCallback } from './status-cb.js'
 
 const hashFile = async (filePath: string, algorithm: string) => {
   const hasher = createHash(algorithm)
@@ -58,13 +59,11 @@ export const fileNormalizerCtor = ({
 export const manifestCollectorCtor = (
   filesObj: Record<string, unknown>,
   shaMap: Record<string, unknown[]>,
-  { assetType, statusCb }: { assetType: string; statusCb: Function },
+  { statusCb }: { statusCb: StatusCallback },
 ) => {
-  if (!statusCb || !assetType) throw new Error('Missing required options')
-
   return new Writable({
     objectMode: true,
-    write(fileObj, encoding, callback) {
+    write(fileObj, _encoding, callback) {
       filesObj[fileObj.normalizedPath] = fileObj.hash
 
       // Maintain hash to fileObj mapping
@@ -84,7 +83,6 @@ export const manifestCollectorCtor = (
     },
   })
 }
-/* eslint-enable promise/prefer-await-to-callbacks */
 
 export const fileFilterCtor = () =>
   new Transform({
@@ -93,7 +91,6 @@ export const fileFilterCtor = () =>
       if (fileObj.type === 'file') {
         this.push(fileObj)
       }
-      // eslint-disable-next-line promise/prefer-await-to-callbacks
       callback()
     },
   })

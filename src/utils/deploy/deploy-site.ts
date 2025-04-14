@@ -20,19 +20,15 @@ import hashFiles from './hash-files.js'
 import hashFns from './hash-fns.js'
 import uploadFiles from './upload-files.js'
 import { getUploadList, waitForDeploy, waitForDiff } from './util.js'
+import type { DeployEvent } from './status-cb.js'
+
+export type { DeployEvent }
 
 const buildStatsString = (possibleParts: (string | false | undefined)[]) => {
   const parts = possibleParts.filter(Boolean)
   const message = parts.slice(0, -1).join(', ')
 
   return parts.length > 1 ? `${message} and ${parts[parts.length - 1]}` : message
-}
-
-// TODO(serhalp): This is alternatingly called "event", "status", and "progress". Standardize.
-export interface DeployEvent {
-  type: string
-  msg: string
-  phase: 'start' | 'progress' | 'error' | 'stop'
 }
 
 export const deploySite = async (
@@ -115,7 +111,6 @@ export const deploySite = async (
       concurrentHash,
       hashAlgorithm,
       statusCb,
-      assetType,
       manifestPath,
       skipFunctionsCache,
       rootDir: siteRoot,

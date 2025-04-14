@@ -30,7 +30,7 @@ const hashFiles = async ({
   const files = {}
   // hash: [fileObj, fileObj, fileObj]
   const filesShaMap = {}
-  const manifestCollector = manifestCollectorCtor(files, filesShaMap, { statusCb, assetType })
+  const manifestCollector = manifestCollectorCtor(files, filesShaMap, { statusCb })
 
   await pipeline([fileStream, fileFilter, hasher, fileNormalizer, manifestCollector])
 

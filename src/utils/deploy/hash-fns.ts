@@ -108,8 +108,6 @@ const hashFns = async (
   command: BaseCommand,
   directories: string[],
   config: {
-    /** @default 'function' */
-    assetType?: string
     concurrentHash?: number
     functionsConfig: $TSFixMe
     /** @default 'sha256' */
@@ -122,7 +120,6 @@ const hashFns = async (
   },
 ): Promise<$TSFixMe> => {
   const {
-    assetType = 'function',
     concurrentHash,
     functionsConfig,
     hashAlgorithm = 'sha256',
@@ -219,7 +216,7 @@ const hashFns = async (
   const functions = {}
   // hash: [fileObj, fileObj, fileObj]
   const fnShaMap = {}
-  const manifestCollector = manifestCollectorCtor(functions, fnShaMap, { statusCb, assetType })
+  const manifestCollector = manifestCollectorCtor(functions, fnShaMap, { statusCb })
 
   await pipeline([functionStream, hasher, manifestCollector])
   return { functionSchedules, functions, functionsWithNativeModules, fnShaMap, fnConfig }
