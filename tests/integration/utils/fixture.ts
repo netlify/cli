@@ -12,7 +12,6 @@ import { MockApi, Route, getCLIOptions, startMockApi } from './mock-api-vitest.j
 import { SiteBuilder } from './site-builder.js'
 
 const FIXTURES_DIRECTORY = fileURLToPath(new URL('../__fixtures__/', import.meta.url))
-const HOOK_TIMEOUT = 30_000
 
 interface MockApiOptions {
   routes: Route[]
@@ -175,7 +174,7 @@ export async function setupFixtureTests(
 
         await options.setupAfterDev?.({ fixture, mockApi, devServer })
       }
-    }, HOOK_TIMEOUT)
+    })
 
     beforeEach<FixtureTestContext>((context) => {
       if (fixture) context.fixture = fixture
@@ -200,6 +199,6 @@ export async function setupFixtureTests(
       if (devServer) await devServer.close()
       if (mockApi) await mockApi.close()
       if (fixture) await fixture.cleanup()
-    }, HOOK_TIMEOUT)
+    })
   })
 }
