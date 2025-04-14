@@ -401,7 +401,7 @@ export default class BaseCommand extends Command {
   }
 
   async expensivelyAuthenticate() {
-    const webUI = process.env.NETLIFY_WEB_UI ?? 'https://app.netlify.com'
+    const webUI = process.env.NETLIFY_WEB_UI || 'https://app.netlify.com'
     log(`Logging into your Netlify account...`)
 
     // Create ticket for auth
