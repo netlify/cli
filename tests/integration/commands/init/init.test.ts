@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises'
 import cleanDeep from 'clean-deep'
 import execa from 'execa'
 import toml from 'toml'
-import { describe, test, type TaskContext, type TestContext } from 'vitest'
+import { describe, test, type TestContext } from 'vitest'
 
 import { cliPath } from '../../utils/cli-path.js'
 import { CONFIRM, DOWN, answerWithValue, handleQuestions } from '../../utils/handle-questions.js'
@@ -14,7 +14,7 @@ import { withSiteBuilder } from '../../utils/site-builder.js'
 const defaultFunctionsDirectory = 'netlify/functions'
 
 const assertNetlifyToml = async (
-  t: TaskContext & TestContext,
+  t: TestContext,
   tomlDir: string,
   { command, functions, publish }: { command: string; functions: string; publish: string },
 ) => {

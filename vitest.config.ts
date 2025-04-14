@@ -21,6 +21,9 @@ export default defineConfig({
     snapshotFormat: {
       escapeString: true,
     },
+    // Pin to vitest@1 behavior: https://vitest.dev/guide/migration.html#default-pool-is-forks.
+    // TODO(serhalp) Remove this and fix hanging `next-app-without-config` fixture on Windows.
+    pool: 'threads',
     poolOptions: {
       threads: {
         singleThread: true,

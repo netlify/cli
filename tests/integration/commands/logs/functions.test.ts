@@ -124,8 +124,8 @@ describe('logs:function command', () => {
     const setupCall = spyOn.mock.calls.find((args) => args[0] === 'open')
     expect(setupCall).toBeDefined()
 
-    const openCallback = setupCall[1]
-    openCallback()
+    const openCallback = setupCall?.[1]
+    openCallback?.()
 
     expect(spySend).toHaveBeenCalledOnce()
     const call = spySend.mock.calls[0]
@@ -154,7 +154,7 @@ describe('logs:function command', () => {
 
     await program.parseAsync(['', '', 'logs:function', '--level', 'info'])
     const messageCallback = spyOn.mock.calls.find((args) => args[0] === 'message')
-    const messageCallbackFunc = messageCallback[1]
+    const messageCallbackFunc = messageCallback?.[1]
     const mockInfoData = {
       level: LOG_LEVELS.INFO,
       message: 'Hello World',
@@ -164,8 +164,8 @@ describe('logs:function command', () => {
       message: 'There was a warning',
     }
 
-    messageCallbackFunc(JSON.stringify(mockInfoData))
-    messageCallbackFunc(JSON.stringify(mockWarnData))
+    messageCallbackFunc?.(JSON.stringify(mockInfoData))
+    messageCallbackFunc?.(JSON.stringify(mockWarnData))
 
     expect(spyLog).toHaveBeenCalledTimes(1)
   })
@@ -186,7 +186,7 @@ describe('logs:function command', () => {
 
     await program.parseAsync(['', '', 'logs:function'])
     const messageCallback = spyOn.mock.calls.find((args) => args[0] === 'message')
-    const messageCallbackFunc = messageCallback[1]
+    const messageCallbackFunc = messageCallback?.[1]
     const mockInfoData = {
       level: LOG_LEVELS.INFO,
       message: 'Hello World',
@@ -196,8 +196,8 @@ describe('logs:function command', () => {
       message: 'There was a warning',
     }
 
-    messageCallbackFunc(JSON.stringify(mockInfoData))
-    messageCallbackFunc(JSON.stringify(mockWarnData))
+    messageCallbackFunc?.(JSON.stringify(mockInfoData))
+    messageCallbackFunc?.(JSON.stringify(mockWarnData))
 
     expect(spyLog).toHaveBeenCalledTimes(2)
   })

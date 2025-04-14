@@ -2,7 +2,7 @@ import path, { join } from 'path'
 import process from 'process'
 
 import execa from 'execa'
-import { describe, expect, test, type TaskContext, type TestContext } from 'vitest'
+import { describe, expect, test, type TestContext } from 'vitest'
 
 import { callCli } from '../../utils/call-cli.js'
 import { cliPath } from '../../utils/cli-path.js'
@@ -22,7 +22,7 @@ const defaultEnvs = {
  *  - that its output contains `output`
  */
 const runBuildCommand = async function (
-  t: TaskContext & TestContext,
+  t: TestContext,
   cwd: string,
   options: Partial<{
     exitCode: number

@@ -113,7 +113,7 @@ describe.concurrent('command/envelope', () => {
       await builder.build()
 
       await withMockApi(routes, async ({ apiUrl }) => {
-        t.expect(callCli(['env:import', '.env'], getCLIOptions({ builder, apiUrl }))).rejects.toThrow()
+        await t.expect(callCli(['env:import', '.env'], getCLIOptions({ builder, apiUrl }))).rejects.toThrow()
       })
     })
   })
