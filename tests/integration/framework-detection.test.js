@@ -10,6 +10,12 @@ import { normalize } from './utils/snapshots.js'
 
 const content = 'Hello World!'
 
+// Normalize random ports
+const normalizeSnapshot = (output, opts) =>
+  normalize(output, opts)
+    .replaceAll(/localhost:\d+/g, 'localhost:88888')
+    .replaceAll(/listening to \d+/g, 'listening to 88888')
+
 describe.concurrent('frameworks/framework-detection', () => {
   test('should default to process.cwd() and static server', async (t) => {
     await withSiteBuilder(t, async (builder) => {
@@ -25,7 +31,7 @@ describe.concurrent('frameworks/framework-detection', () => {
         const responseContent = await response.text()
 
         t.expect(responseContent).toEqual(content)
-        t.expect(normalize(output, { duration: true, filePath: true })).toMatchSnapshot()
+        t.expect(normalizeSnapshot(output, { duration: true, filePath: true })).toMatchSnapshot()
       })
     })
   })
@@ -44,7 +50,7 @@ describe.concurrent('frameworks/framework-detection', () => {
         const responseContent = await response.text()
 
         t.expect(responseContent).toEqual(content)
-        t.expect(normalize(output, { duration: true, filePath: true })).toMatchSnapshot()
+        t.expect(normalizeSnapshot(output, { duration: true, filePath: true })).toMatchSnapshot()
       })
     })
   })
@@ -64,7 +70,7 @@ describe.concurrent('frameworks/framework-detection', () => {
         const responseContent = await response.text()
 
         t.expect(responseContent).toEqual(content)
-        t.expect(normalize(output, { duration: true, filePath: true })).toMatchSnapshot()
+        t.expect(normalizeSnapshot(output, { duration: true, filePath: true })).toMatchSnapshot()
       })
     })
   })
@@ -85,7 +91,7 @@ describe.concurrent('frameworks/framework-detection', () => {
           const responseContent = await response.text()
 
           t.expect(responseContent).toEqual(content)
-          t.expect(normalize(output, { duration: true, filePath: true })).toMatchSnapshot()
+          t.expect(normalizeSnapshot(output, { duration: true, filePath: true })).toMatchSnapshot()
         },
       )
     })
@@ -102,7 +108,7 @@ describe.concurrent('frameworks/framework-detection', () => {
         true,
       ).catch((error_) => error_)
 
-      t.expect(normalize(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
+      t.expect(normalizeSnapshot(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
     })
   })
 
@@ -112,7 +118,7 @@ describe.concurrent('frameworks/framework-detection', () => {
 
       // a failure is expected since this is not a true create-react-app project
       const error = await withDevServer({ cwd: builder.directory }, () => {}, true).catch((error_) => error_)
-      t.expect(normalize(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
+      t.expect(normalizeSnapshot(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
     })
   })
 
@@ -121,7 +127,7 @@ describe.concurrent('frameworks/framework-detection', () => {
       await builder.withNetlifyToml({ config: { dev: { framework: 'to-infinity-and-beyond-js' } } }).build()
 
       const error = await withDevServer({ cwd: builder.directory }, () => {}, true).catch((error_) => error_)
-      t.expect(normalize(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
+      t.expect(normalizeSnapshot(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
     })
   })
 
@@ -135,7 +141,7 @@ describe.concurrent('frameworks/framework-detection', () => {
 
       // a failure is expected since this is not a true create-react-app project
       const error = await withDevServer({ cwd: builder.directory }, () => {}, true).catch((error_) => error_)
-      t.expect(normalize(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
+      t.expect(normalizeSnapshot(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
     })
   })
 
@@ -148,7 +154,7 @@ describe.concurrent('frameworks/framework-detection', () => {
         () => {},
         true,
       ).catch((error_) => error_)
-      t.expect(normalize(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
+      t.expect(normalizeSnapshot(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
     })
   })
 
@@ -161,7 +167,7 @@ describe.concurrent('frameworks/framework-detection', () => {
         () => {},
         true,
       ).catch((error_) => error_)
-      t.expect(normalize(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
+      t.expect(normalizeSnapshot(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
     })
   })
 
@@ -174,7 +180,7 @@ describe.concurrent('frameworks/framework-detection', () => {
         () => {},
         true,
       ).catch((error_) => error_)
-      t.expect(normalize(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
+      t.expect(normalizeSnapshot(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
     })
   })
 
@@ -198,7 +204,7 @@ describe.concurrent('frameworks/framework-detection', () => {
         true,
       ).catch((error_) => error_)
 
-      t.expect(normalize(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
+      t.expect(normalizeSnapshot(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
     })
   })
 
@@ -232,7 +238,7 @@ describe.concurrent('frameworks/framework-detection', () => {
         await childProcess
       }
       const error = await asyncErrorBlock().catch((error_) => error_)
-      t.expect(normalize(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
+      t.expect(normalizeSnapshot(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
     })
   })
 
@@ -259,7 +265,7 @@ describe.concurrent('frameworks/framework-detection', () => {
       }
       const error = await asyncErrorBlock().catch((error_) => error_)
       t.expect(
-        normalize(error.stdout, { duration: true, filePath: true }).includes(
+        normalizeSnapshot(error.stdout, { duration: true, filePath: true }).includes(
           'Detected commands for: Gatsby, Create React App. Update your settings to specify which to use. Refer to https://ntl.fyi/dev-monorepo for more information.',
         ),
       )
@@ -278,7 +284,7 @@ describe.concurrent('frameworks/framework-detection', () => {
         true,
       ).catch((error_) => error_)
 
-      t.expect(normalize(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
+      t.expect(normalizeSnapshot(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
     })
   })
 
@@ -299,7 +305,7 @@ describe.concurrent('frameworks/framework-detection', () => {
         const responseContent = await response.text()
 
         t.expect(responseContent).toEqual(content)
-        t.expect(normalize(output, { duration: true, filePath: true })).toMatchSnapshot()
+        t.expect(normalizeSnapshot(output, { duration: true, filePath: true })).toMatchSnapshot()
       })
     })
   })
@@ -317,7 +323,7 @@ describe.concurrent('frameworks/framework-detection', () => {
 
       // a failure is expected since this is not a true Gatsby project
       const error = await withDevServer({ cwd: builder.directory }, () => {}, true).catch((error_) => error_)
-      t.expect(normalize(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
+      t.expect(normalizeSnapshot(error.stdout, { duration: true, filePath: true })).toMatchSnapshot()
     })
   })
 
@@ -395,7 +401,7 @@ describe.concurrent('frameworks/framework-detection', () => {
           const responseJson = await response.json()
           t.expect(responseJson).toStrictEqual({ CONTEXT_CHECK: 'PRODUCTION' })
 
-          const normalizedText = normalize(output, { duration: true, filePath: true })
+          const normalizedText = normalizeSnapshot(output, { duration: true, filePath: true })
           t.expect(
             normalizedText.includes(
               `Changes will not be hot-reloaded, so if you need to rebuild your site you must exit and run 'netlify serve' again`,
