@@ -10,11 +10,19 @@ import { normalize } from './utils/snapshots.js'
 
 const content = 'Hello World!'
 
-// Normalize random ports
+// Normalize random ports. Not only are these ports random, but since the number of digits
+// in the port can vary, the formatting of the ASCII box drawn around it also varies.
 const normalizeSnapshot = (output, opts) =>
-  normalize(output, opts)
-    .replaceAll(/localhost:\d+/g, 'localhost:<SNAPSHOT_PORT_NORMALIZED>')
-    .replaceAll(/listening to \d+/g, 'listening to <SNAPSHOT_PORT_NORMALIZED>')
+  normalize(output, opts).replace(
+    /◈ Static server listening to \d+[\s┌─│─└┐┘]+ ◈ Server now ready on http:\/\/localhost:\d+ [\s┌─│─└┐┘]+/m,
+    `◈ Static server listening to <SNAPSHOT_PORT_NORMALIZED>
+
+   ┌───────────────────────────────────────────────────────────────────────┐
+   │                                                                       │
+   │   ◈ Server now ready on http://localhost:<SNAPSHOT_PORT_NORMALIZED>   │
+   │                                                                       │
+   └───────────────────────────────────────────────────────────────────────┘`,
+  )
 
 describe.concurrent('frameworks/framework-detection', () => {
   test('should default to process.cwd() and static server', async (t) => {
