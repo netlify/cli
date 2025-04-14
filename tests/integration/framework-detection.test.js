@@ -13,8 +13,8 @@ const content = 'Hello World!'
 // Normalize random ports
 const normalizeSnapshot = (output, opts) =>
   normalize(output, opts)
-    .replaceAll(/localhost:\d+/g, 'localhost:88888')
-    .replaceAll(/listening to \d+/g, 'listening to 88888')
+    .replaceAll(/localhost:\d+/g, 'localhost:<SNAPSHOT_PORT_NORMALIZED>')
+    .replaceAll(/listening to \d+/g, 'listening to <SNAPSHOT_PORT_NORMALIZED>')
 
 describe.concurrent('frameworks/framework-detection', () => {
   test('should default to process.cwd() and static server', async (t) => {
