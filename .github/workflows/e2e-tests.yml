@@ -24,6 +24,12 @@ jobs:
         node-version: ['18.14.0', '20.12.2', '22']
       fail-fast: false
     steps:
+      # This improves Windows network performance. We need this since we open many ports in our tests.
+      - name: Increase Windows port limit and reduce time wait delay
+        run: |
+          netsh int ipv4 set dynamicport tcp start=1025 num=64511
+          REG ADD HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\TCPIP\Parameters /v TcpTimedWaitDelay /t REG_DWORD /d 30 /f
+
       - name: Git checkout
         uses: actions/checkout@v4
         with:
