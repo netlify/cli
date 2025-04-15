@@ -6,7 +6,7 @@ import { pipeline } from 'node:stream/promises'
 import transform from 'parallel-transform'
 
 import { normalizePath } from './util.js'
-import { StatusCallback } from './status-cb.js'
+import type { StatusCallback } from './status-cb.js'
 
 const hashFile = async (filePath: string, algorithm: string) => {
   const hasher = createHash(algorithm)
