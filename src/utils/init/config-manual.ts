@@ -28,7 +28,7 @@ const addDeployKey = async (deployKey: DeployKey) => {
 }
 
 const getRepoPath = async ({ repoData }: { repoData: RepoData }): Promise<string> => {
-  const { repoPath } = (await inquirer.prompt([
+  const { repoPath } = await inquirer.prompt<{ repoPath: string }>([
     {
       type: 'input',
       name: 'repoPath',
@@ -36,7 +36,7 @@ const getRepoPath = async ({ repoData }: { repoData: RepoData }): Promise<string
       default: repoData.url,
       validate: (url: string) => (SSH_URL_REGEXP.test(url) ? true : 'The URL provided does not use the SSH protocol'),
     },
-  ])) as { repoPath: string }
+  ])
 
   return repoPath
 }
@@ -44,14 +44,14 @@ const getRepoPath = async ({ repoData }: { repoData: RepoData }): Promise<string
 const addDeployHook = async (deployHook: string | undefined): Promise<boolean> => {
   log('\nConfigure the following webhook for your repository:\n')
   log(`\n${deployHook}\n\n`)
-  const { deployHookAdded } = (await inquirer.prompt([
+  const { deployHookAdded } = await inquirer.prompt<{ deployHookAdded: boolean }>([
     {
       type: 'confirm',
       name: 'deployHookAdded',
       message: 'Continue?',
       default: true,
     },
-  ])) as { deployHookAdded: boolean }
+  ])
 
   return deployHookAdded
 }

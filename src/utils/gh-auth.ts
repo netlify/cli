@@ -23,7 +23,7 @@ const promptForAuthMethod = async () => {
   const authChoiceToken = 'Authorize with a GitHub personal access token'
   const authChoices = [authChoiceNetlify, authChoiceToken] as const
 
-  const { authMethod } = (await inquirer.prompt([
+  const { authMethod } = await inquirer.prompt<{ authMethod: typeof authChoices[number] }>([
     {
       type: 'list',
       name: 'authMethod',
@@ -32,7 +32,7 @@ const promptForAuthMethod = async () => {
         'What would you like to do?',
       choices: authChoices,
     },
-  ])) as { authMethod: typeof authChoices[number] }
+  ])
 
   return authMethod === authChoiceNetlify
 }
@@ -83,14 +83,14 @@ export const authWithNetlify = async (): Promise<Token> => {
 }
 
 const getPersonalAccessToken = async (): Promise<{ token: string }> => {
-  const { token } = (await inquirer.prompt([
+  const { token } = await inquirer.prompt<{ token: string }>([
     {
       type: 'password',
       name: 'token',
       message: 'Your GitHub personal access token:',
       filter: (input: string) => input.trim(),
     },
-  ])) as { token: string }
+  ])
 
   return { token }
 }

@@ -114,14 +114,14 @@ git remote add origin https://github.com/YourUserName/RepoName.git
   const NEW_SITE_NO_GIT = 'Yes, create and deploy site manually'
   const NO_ABORT = 'No, I will connect this directory with GitHub first'
 
-  const { noGitRemoteChoice } = (await inquirer.prompt([
+  const { noGitRemoteChoice } = await inquirer.prompt<{ noGitRemoteChoice: typeof NEW_SITE_NO_GIT | typeof NO_ABORT }>([
     {
       type: 'list',
       name: 'noGitRemoteChoice',
       message: 'Do you want to create a Netlify site without a git repository?',
       choices: [NEW_SITE_NO_GIT, NO_ABORT],
     },
-  ])) as { noGitRemoteChoice: typeof NEW_SITE_NO_GIT | typeof NO_ABORT }
+  ])
 
   if (noGitRemoteChoice === NEW_SITE_NO_GIT) {
     return await createNewSiteAndExit({ state, command })
@@ -138,15 +138,15 @@ const createOrLinkSiteToRepo = async (command: BaseCommand) => {
 
   const initializeOpts = [EXISTING_SITE, NEW_SITE] as const
 
-  const { initChoice } = (await inquirer.prompt([
+  // TODO(serhalp): inquirer should infer the choice type here, but doesn't. Fix.
+  const { initChoice } = await inquirer.prompt<{ initChoice: typeof initializeOpts[number] }>([
     {
       type: 'list',
       name: 'initChoice',
       message: 'What would you like to do?',
       choices: initializeOpts,
     },
-    // TODO(serhalp): inquirer should infer the choice type here, but doesn't. Fix.
-  ])) as { initChoice: typeof initializeOpts[number] }
+  ])
 
   // create site or search for one
   if (initChoice === NEW_SITE) {
