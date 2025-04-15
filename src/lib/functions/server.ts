@@ -4,7 +4,6 @@ import type { IncomingHttpHeaders } from 'http'
 import path from 'path'
 
 import express, { type Request, type RequestHandler } from 'express'
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'expr... Remove this comment to see the full error message
 import expressLogging from 'express-logging'
 import { jwtDecode } from 'jwt-decode'
 
