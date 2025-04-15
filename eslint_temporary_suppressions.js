@@ -213,14 +213,6 @@ export default [
     },
   },
   {
-    files: ['src/commands/functions/functions-build.ts'],
-    rules: {
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-argument': 'off',
-      '@typescript-eslint/no-floating-promises': 'off',
-    },
-  },
-  {
     files: ['src/commands/functions/functions-create.ts'],
     rules: {
       '@typescript-eslint/no-unsafe-member-access': 'off',
@@ -953,17 +945,6 @@ export default [
     },
   },
   {
-    files: ['src/utils/gh-auth.ts'],
-    rules: {
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/restrict-template-expressions': 'off',
-      '@typescript-eslint/prefer-nullish-coalescing': 'off',
-      '@typescript-eslint/no-unsafe-return': 'off',
-      '@typescript-eslint/no-unsafe-call': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-    },
-  },
-  {
     files: ['src/utils/gitignore.ts'],
     rules: {
       '@typescript-eslint/prefer-optional-chain': 'off',
@@ -981,19 +962,11 @@ export default [
     files: ['src/utils/init/config-github.ts'],
     rules: {
       '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/restrict-template-expressions': 'off',
       '@typescript-eslint/prefer-optional-chain': 'off',
       '@typescript-eslint/no-unnecessary-condition': 'off',
       '@typescript-eslint/no-unsafe-call': 'off',
       '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/no-unsafe-return': 'off',
-    },
-  },
-  {
-    files: ['src/utils/init/config-manual.ts'],
-    rules: {
-      '@typescript-eslint/restrict-template-expressions': 'off',
-      '@typescript-eslint/no-unsafe-assignment': 'off',
     },
   },
   {

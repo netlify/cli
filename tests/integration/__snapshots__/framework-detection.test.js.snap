@@ -11,11 +11,11 @@ exports[`frameworks/framework-detection > should default to process.cwd() and st
 
 ◈ Static server listening to <SNAPSHOT_PORT_NORMALIZED>
 
-   ┌──────────────────────────────────────────────────┐
-   │                                                  │
+   ┌───────────────────────────────────────────────────────────────────────┐
+   │                                                                       │
    │   ◈ Server now ready on http://localhost:<SNAPSHOT_PORT_NORMALIZED>   │
-   │                                                  │
-   └──────────────────────────────────────────────────┘"
+   │                                                                       │
+   └───────────────────────────────────────────────────────────────────────┘"
 `;
 
 exports[`frameworks/framework-detection > should detect a known framework 1`] = `
@@ -40,11 +40,11 @@ exports[`frameworks/framework-detection > should filter frameworks with no dev c
 
 ◈ Static server listening to <SNAPSHOT_PORT_NORMALIZED>
 
-   ┌──────────────────────────────────────────────────┐
-   │                                                  │
+   ┌───────────────────────────────────────────────────────────────────────┐
+   │                                                                       │
    │   ◈ Server now ready on http://localhost:<SNAPSHOT_PORT_NORMALIZED>   │
-   │                                                  │
-   └──────────────────────────────────────────────────┘"
+   │                                                                       │
+   └───────────────────────────────────────────────────────────────────────┘"
 `;
 
 exports[`frameworks/framework-detection > should force a specific framework when configured 1`] = `
@@ -152,11 +152,11 @@ exports[`frameworks/framework-detection > should use static server when --dir fl
 
 ◈ Static server listening to <SNAPSHOT_PORT_NORMALIZED>
 
-   ┌──────────────────────────────────────────────────┐
-   │                                                  │
+   ┌───────────────────────────────────────────────────────────────────────┐
+   │                                                                       │
    │   ◈ Server now ready on http://localhost:<SNAPSHOT_PORT_NORMALIZED>   │
-   │                                                  │
-   └──────────────────────────────────────────────────┘"
+   │                                                                       │
+   └───────────────────────────────────────────────────────────────────────┘"
 `;
 
 exports[`frameworks/framework-detection > should use static server when framework is set to #static 1`] = `
@@ -170,11 +170,11 @@ exports[`frameworks/framework-detection > should use static server when framewor
 
 ◈ Static server listening to <SNAPSHOT_PORT_NORMALIZED>
 
-   ┌──────────────────────────────────────────────────┐
-   │                                                  │
+   ┌───────────────────────────────────────────────────────────────────────┐
+   │                                                                       │
    │   ◈ Server now ready on http://localhost:<SNAPSHOT_PORT_NORMALIZED>   │
-   │                                                  │
-   └──────────────────────────────────────────────────┘"
+   │                                                                       │
+   └───────────────────────────────────────────────────────────────────────┘"
 `;
 
 exports[`frameworks/framework-detection > should warn if using static server and \`targetPort\` is configured 1`] = `
@@ -187,9 +187,9 @@ exports[`frameworks/framework-detection > should warn if using static server and
 
 ◈ Static server listening to <SNAPSHOT_PORT_NORMALIZED>
 
-   ┌──────────────────────────────────────────────────┐
-   │                                                  │
+   ┌───────────────────────────────────────────────────────────────────────┐
+   │                                                                       │
    │   ◈ Server now ready on http://localhost:<SNAPSHOT_PORT_NORMALIZED>   │
-   │                                                  │
-   └──────────────────────────────────────────────────┘"
+   │                                                                       │
+   └───────────────────────────────────────────────────────────────────────┘"
 `;

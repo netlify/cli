@@ -19,11 +19,11 @@ const PAGE_SIZE = 100
  * Get a valid GitHub token
  */
 export const getGitHubToken = async ({ globalConfig }: { globalConfig: GlobalConfigStore }): Promise<string> => {
-  const userId = globalConfig.get('userId')
+  const userId: string = globalConfig.get('userId')
 
-  const githubToken: Token = globalConfig.get(`users.${userId}.auth.github`)
+  const githubToken: Token | undefined = globalConfig.get(`users.${userId}.auth.github`)
 
-  if (githubToken && githubToken.user && githubToken.token) {
+  if (githubToken?.user && githubToken.token) {
     try {
       const octokit = getGitHubClient(githubToken.token)
       const { status } = await octokit.rest.users.getAuthenticated()
@@ -229,16 +229,11 @@ export const configGithub = async ({
     config,
     globalConfig,
     repositoryRoot,
-    site: { root: siteRoot },
   } = netlify
 
   const token = await getGitHubToken({ globalConfig })
 
   const { baseDir, buildCmd, buildDir, functionsDir, pluginsToInstall } = await getBuildSettings({
-    // @ts-expect-error -- XXX(serhalp): unused - removed in stacked PR
-    repositoryRoot,
-    // XXX(serhalp): unused - removed in stacked PR
-    siteRoot,
     config,
     command,
   })

@@ -10,7 +10,9 @@ import type BaseCommand from '../base-command.js'
 export const functionsBuild = async (options: OptionValues, command: BaseCommand) => {
   const { config } = command.netlify
 
-  const src = options.src || config.build.functionsSource
+  const src =
+    ('src' in options && typeof options.src === 'string' && options.src.trim().length > 0 ? options.src : null) ??
+    config.build.functionsSource
   const dst = getFunctionsDir({ options, config })
 
   if (src === dst) {
@@ -27,13 +29,13 @@ export const functionsBuild = async (options: OptionValues, command: BaseCommand
       log(
         `${NETLIFYDEVERR} Error: You must specify a destination functions folder with a --functions flag or a functions field in your config`,
       )
-    exit(1)
+    return exit(1)
   }
 
   await mkdir(dst, { recursive: true })
 
   log(`${NETLIFYDEVLOG} Building functions`)
 
-  zipFunctions(src, dst)
+  await zipFunctions(src, dst)
   log(`${NETLIFYDEVLOG} Functions built to `, dst)
 }
