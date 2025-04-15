@@ -5,11 +5,15 @@ import express from 'express'
 import type { LambdaEvent } from 'lambda-local'
 
 import { chalk, logPadded, NETLIFYDEVERR } from '../../utils/command-helpers.js'
+import { isStream as baseIsReadableStream } from '../../utils/is-stream.js'
 import renderErrorTemplate from '../render-error-template.js'
 
 import { detectAwsSdkError } from './utils.js'
 import type { InvocationError } from './netlify-function.js'
-import { isReadable } from 'stream'
+
+// Annoyingly, `isReadableStream` refines to the `Readable` interface rather than the
+// `ReadableStream` class. Refining to the class makes further refinements work as expected.
+const isReadableStream = (value: unknown): value is NodeJS.ReadableStream => baseIsReadableStream(value)
 
 const addHeaders = (headers: undefined | Record<string, string | string[]>, response: express.Response): void => {
   if (!headers) {
@@ -85,12 +89,13 @@ export const handleSynchronousFunction = async function ({
   }
 
   if (result.body) {
-    if (isReadable(result.body as NodeJS.ReadableStream)) {
-      (result.body as NodeJS.ReadableStream).pipe(response)
+    if (isReadableStream(result.body)) {
+      result.body.pipe(response)
 
       return
     }
-    response.write(result.isBase64Encoded ? Buffer.from(result.body as string, 'base64') : result.body)
+
+    response.write(result.isBase64Encoded ? Buffer.from(result.body, 'base64') : result.body)
   }
   response.end()
 }
@@ -177,7 +182,7 @@ const validateLambdaResponse = (lambdaResponse: undefined | null | LambdaEvent):
       error: `Your function response must have a numerical statusCode. You gave: ${inspect(lambdaResponse.statusCode)}`,
     }
   }
-  if (lambdaResponse.body && typeof lambdaResponse.body !== 'string' && !isReadable(lambdaResponse.body)) {
+  if (lambdaResponse.body && typeof lambdaResponse.body !== 'string' && !isReadableStream(lambdaResponse.body)) {
     return {
       error: `Your function response must have a string or a stream body. You gave: ${inspect(lambdaResponse.body)}`,
     }
