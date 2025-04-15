@@ -12,10 +12,10 @@ export default defineConfig({
           // import.
           'write-file-atomic',
         ],
+        external: ['**/fixtures/**', '**/node_modules/**'],
       },
     },
     deps: {
-      external: ['**/fixtures/**', '**/node_modules/**'],
       interopDefault: false,
     },
     snapshotFormat: {
