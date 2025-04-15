@@ -105,13 +105,17 @@ export const getBuildSettings = async ({
     log()
   }
 
-  const { baseDir, buildCmd, buildDir } = (await inquirer.prompt(
+  const { baseDir, buildCmd, buildDir } = await inquirer.prompt<{
+    baseDir?: string | undefined
+    buildCmd: string
+    buildDir: string
+  }>(
     getPromptInputs({
       defaultBaseDir,
       defaultBuildCmd,
       defaultBuildDir,
     }),
-  )) as { baseDir?: string | undefined; buildCmd: string; buildDir: string }
+  )
 
   const pluginsToInstall = recommendedPlugins.map((plugin) => ({ package: plugin }))
   const normalizedBaseDir = baseDir ? normalizeBackslash(baseDir) : undefined
