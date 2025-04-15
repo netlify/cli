@@ -973,19 +973,11 @@ export default [
     files: ['src/utils/init/config-github.ts'],
     rules: {
       '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/restrict-template-expressions': 'off',
       '@typescript-eslint/prefer-optional-chain': 'off',
       '@typescript-eslint/no-unnecessary-condition': 'off',
       '@typescript-eslint/no-unsafe-call': 'off',
       '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/no-unsafe-return': 'off',
-    },
-  },
-  {
-    files: ['src/utils/init/config-manual.ts'],
-    rules: {
-      '@typescript-eslint/restrict-template-expressions': 'off',
-      '@typescript-eslint/no-unsafe-assignment': 'off',
     },
   },
   {
