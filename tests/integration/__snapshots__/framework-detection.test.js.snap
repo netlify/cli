@@ -9,13 +9,13 @@ exports[`frameworks/framework-detection > should default to process.cwd() and st
 ◈ Running static server from \\"should-default-to-process-cwd-and-static-server\\"
 ◈ Setting up local development server
 
-◈ Static server listening to 88888
+◈ Static server listening to <SNAPSHOT_PORT_NORMALIZED>
 
-   ┌──────────────────────────────────────────────────┐
-   │                                                  │
-   │   ◈ Server now ready on http://localhost:88888   │
-   │                                                  │
-   └──────────────────────────────────────────────────┘"
+   ┌───────────────────────────────────────────────────────────────────────┐
+   │                                                                       │
+   │   ◈ Server now ready on http://localhost:<SNAPSHOT_PORT_NORMALIZED>   │
+   │                                                                       │
+   └───────────────────────────────────────────────────────────────────────┘"
 `;
 
 exports[`frameworks/framework-detection > should detect a known framework 1`] = `
@@ -38,13 +38,13 @@ exports[`frameworks/framework-detection > should filter frameworks with no dev c
 ◈ Running static server from \\"should-filter-frameworks-with-no-dev-command\\"
 ◈ Setting up local development server
 
-◈ Static server listening to 88888
+◈ Static server listening to <SNAPSHOT_PORT_NORMALIZED>
 
-   ┌──────────────────────────────────────────────────┐
-   │                                                  │
-   │   ◈ Server now ready on http://localhost:88888   │
-   │                                                  │
-   └──────────────────────────────────────────────────┘"
+   ┌───────────────────────────────────────────────────────────────────────┐
+   │                                                                       │
+   │   ◈ Server now ready on http://localhost:<SNAPSHOT_PORT_NORMALIZED>   │
+   │                                                                       │
+   └───────────────────────────────────────────────────────────────────────┘"
 `;
 
 exports[`frameworks/framework-detection > should force a specific framework when configured 1`] = `
@@ -150,13 +150,13 @@ exports[`frameworks/framework-detection > should use static server when --dir fl
 ◈ Running static server from \\"should-use-static-server-when-dir-flag-is-passed/public\\"
 ◈ Setting up local development server
 
-◈ Static server listening to 88888
+◈ Static server listening to <SNAPSHOT_PORT_NORMALIZED>
 
-   ┌──────────────────────────────────────────────────┐
-   │                                                  │
-   │   ◈ Server now ready on http://localhost:88888   │
-   │                                                  │
-   └──────────────────────────────────────────────────┘"
+   ┌───────────────────────────────────────────────────────────────────────┐
+   │                                                                       │
+   │   ◈ Server now ready on http://localhost:<SNAPSHOT_PORT_NORMALIZED>   │
+   │                                                                       │
+   └───────────────────────────────────────────────────────────────────────┘"
 `;
 
 exports[`frameworks/framework-detection > should use static server when framework is set to #static 1`] = `
@@ -168,13 +168,13 @@ exports[`frameworks/framework-detection > should use static server when framewor
 ◈ Running static server from \\"should-use-static-server-when-framework-is-set-to-static\\"
 ◈ Setting up local development server
 
-◈ Static server listening to 88888
+◈ Static server listening to <SNAPSHOT_PORT_NORMALIZED>
 
-   ┌──────────────────────────────────────────────────┐
-   │                                                  │
-   │   ◈ Server now ready on http://localhost:88888   │
-   │                                                  │
-   └──────────────────────────────────────────────────┘"
+   ┌───────────────────────────────────────────────────────────────────────┐
+   │                                                                       │
+   │   ◈ Server now ready on http://localhost:<SNAPSHOT_PORT_NORMALIZED>   │
+   │                                                                       │
+   └───────────────────────────────────────────────────────────────────────┘"
 `;
 
 exports[`frameworks/framework-detection > should warn if using static server and \`targetPort\` is configured 1`] = `
@@ -185,11 +185,11 @@ exports[`frameworks/framework-detection > should warn if using static server and
 ◈ Running static server from \\"should-warn-if-using-static-server-and-target-port-is-configured/public\\"
 ◈ Setting up local development server
 
-◈ Static server listening to 88888
+◈ Static server listening to <SNAPSHOT_PORT_NORMALIZED>
 
-   ┌──────────────────────────────────────────────────┐
-   │                                                  │
-   │   ◈ Server now ready on http://localhost:88888   │
-   │                                                  │
-   └──────────────────────────────────────────────────┘"
+   ┌───────────────────────────────────────────────────────────────────────┐
+   │                                                                       │
+   │   ◈ Server now ready on http://localhost:<SNAPSHOT_PORT_NORMALIZED>   │
+   │                                                                       │
+   └───────────────────────────────────────────────────────────────────────┘"
 `;

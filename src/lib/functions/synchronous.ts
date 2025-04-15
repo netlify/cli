@@ -8,7 +8,7 @@ import type { LambdaEvent } from 'lambda-local'
 import { chalk, logPadded, NETLIFYDEVERR } from '../../utils/command-helpers.js'
 import renderErrorTemplate from '../render-error-template.js'
 
-import { detectAwsSdkError } from './utils.js'
+import { warnIfAwsSdkError } from './utils.js'
 import type { InvocationError } from './netlify-function.js'
 
 // Annoyingly, `isReadableStream` refines to the `Readable` interface rather than the
@@ -25,7 +25,7 @@ const addHeaders = (headers: undefined | Record<string, string | string[]>, resp
   })
 }
 
-export const handleSynchronousFunction = function ({
+export const handleSynchronousFunction = async function ({
   error: invocationError,
   functionName,
   request,
@@ -37,7 +37,7 @@ export const handleSynchronousFunction = function ({
   request: express.Request
   response: express.Response
   result: null | LambdaEvent
-}): void {
+}): Promise<void> {
   if (invocationError) {
     const error = getNormalizedError(invocationError)
 
@@ -47,8 +47,7 @@ export const handleSynchronousFunction = function ({
       }\n${chalk.dim(error.stackTrace.join('\n'))}`,
     )
 
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises -- XXX(serhalp): real bug, fixed in stacked PR.
-    handleErr(invocationError, request, response)
+    await handleErr(invocationError, request, response)
     return
   }
 
@@ -56,8 +55,7 @@ export const handleSynchronousFunction = function ({
   if (error) {
     logPadded(`${NETLIFYDEVERR} ${error}`)
 
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises -- XXX(serhalp): real bug, fixed in stacked PR.
-    handleErr(error, request, response)
+    await handleErr(error, request, response)
     return
   }
 
@@ -65,8 +63,7 @@ export const handleSynchronousFunction = function ({
   if (result == null) {
     logPadded(`${NETLIFYDEVERR} Unexpected empty function response`)
 
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises -- XXX(serhalp): real bug, fixed in stacked PR.
-    handleErr('Unexpected empty function response', request, response)
+    await handleErr('Unexpected empty function response', request, response)
     return
   }
 
@@ -87,8 +84,7 @@ export const handleSynchronousFunction = function ({
       }`,
     )
 
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises -- XXX(serhalp): real bug, fixed in stacked PR.
-    handleErr(wrappedHeadersError, request, response)
+    await handleErr(wrappedHeadersError, request, response)
     return
   }
 
@@ -156,8 +152,7 @@ const handleErr = async (
   request: express.Request,
   response: express.Response,
 ) => {
-  // @ts-expect-error -- XXX(serhalp): Expects `error` but passes `err`, so it has never worked. Fixed in stacked PR.
-  detectAwsSdkError({ err })
+  warnIfAwsSdkError({ error: err })
 
   const acceptsHtml = request.headers.accept?.includes('text/html') ?? false
   const errorString = typeof err === 'string' ? err : formatLambdaLocalError(err, acceptsHtml)

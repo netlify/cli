@@ -60,10 +60,10 @@
   "dependencies": {
     "@fastify/static": "7.0.4",
     "@netlify/blobs": "8.1.2",
-    "@netlify/build": "30.1.1",
+    "@netlify/build": "32.0.0",
     "@netlify/build-info": "9.0.2",
-    "@netlify/config": "21.0.7",
-    "@netlify/edge-bundler": "12.4.0",
+    "@netlify/config": "22.0.0",
+    "@netlify/edge-bundler": "13.0.2",
     "@netlify/edge-functions": "2.11.1",
     "@netlify/headers-parser": "8.0.0",
     "@netlify/local-functions-proxy": "2.0.3",
@@ -194,7 +194,7 @@
     "@types/through2-map": "3.0.4",
     "@types/write-file-atomic": "4.0.3",
     "@types/ws": "8.18.1",
-    "@vitest/coverage-v8": "1.6.1",
+    "@vitest/coverage-v8": "3.1.1",
     "@vitest/eslint-plugin": "^1.1.36",
     "c8": "10.1.3",
     "cheerio": "1.0.0",
@@ -216,7 +216,7 @@
     "typescript": "5.7.3",
     "typescript-eslint": "^8.26.0",
     "verdaccio": "6.0.5",
-    "vitest": "1.6.1"
+    "vitest": "3.1.1"
   },
   "ava": {
     "files": [

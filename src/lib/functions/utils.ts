@@ -3,8 +3,7 @@ import { MISSING_AWS_SDK_WARNING } from '../log.js'
 
 import type { InvocationError } from './netlify-function.js'
 
-// TODO(serhalp): Rename? This doesn't "detect", it maybe logs a warning.
-export const detectAwsSdkError = ({ error }: { error: Error | InvocationError | string }): void => {
+export const warnIfAwsSdkError = ({ error }: { error: Error | InvocationError | string }): void => {
   const isAwsSdkError =
     typeof error === 'object' &&
     'errorMessage' in error &&
@@ -16,10 +15,10 @@ export const detectAwsSdkError = ({ error }: { error: Error | InvocationError | 
   }
 }
 
-// XXX(serhalp): This appears to be a bug? In the background and scheduled function code paths this can receive plain
-// errors, but this is assuming normalized `InvocationError`s only.
 export const formatLambdaError = (err: Error | InvocationError): string =>
-  chalk.red(`${'errorType' in err ? err.errorType : ''}: ${'errorMessage' in err ? err.errorMessage : ''}`)
+  chalk.red(
+    `${'errorType' in err ? err.errorType : 'Error'}: ${'errorMessage' in err ? err.errorMessage : err.message}`,
+  )
 
 // should be equivalent to https://github.com/netlify/proxy/blob/main/pkg/functions/request.go#L105
 const exceptionsList = new Set([

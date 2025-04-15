@@ -10,6 +10,8 @@ import type { NormalizedCachedConfigConfig } from '../command-helpers.js'
 export const INTERNAL_FUNCTIONS_FOLDER = 'functions-internal'
 export const SERVE_FUNCTIONS_FOLDER = 'functions-serve'
 
+const isNonEmptyString = (s: unknown): s is string => typeof s === 'string' && s.length > 0
+
 /**
  * retrieves the function directory out of the flags or config
  */
@@ -22,7 +24,11 @@ export const getFunctionsDir = (
     options: OptionValues
   },
   defaultValue?: string,
-) => options.functions || config.dev?.functions || config.functionsDirectory || defaultValue
+): string | undefined =>
+  ('functions' in options && isNonEmptyString(options.functions) ? options.functions : null) ??
+  (isNonEmptyString(config.dev?.functions) ? config.dev.functions : null) ??
+  (isNonEmptyString(config.functionsDirectory) ? config.functionsDirectory : null) ??
+  defaultValue
 
 export const getFunctionsManifestPath = async ({ base, packagePath = '' }: { base: string; packagePath?: string }) => {
   const path = resolve(base, packagePath, getPathInProject(['functions', 'manifest.json']))
