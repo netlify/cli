@@ -1,18 +1,25 @@
 import process from 'process'
+import { Transform } from 'stream'
+import { stripVTControlCharacters } from 'util'
 
 import execa from 'execa'
-// @ts-expect-error TS(7016) FIXME: Could not find a declaration file for module 'stri... Remove this comment to see the full error message
-import stripAnsiCc from 'strip-ansi-control-characters'
 
 import { stopSpinner, type Spinner } from '../lib/spinner.js'
+
 import { chalk, log, NETLIFYDEVERR, NETLIFYDEVWARN } from './command-helpers.js'
 import { processOnExit } from './dev.js'
 
-/**
- * @type {(() => Promise<void>)[]} - array of functions to run before the process exits
- */
-// @ts-expect-error TS(7034) FIXME: Variable 'cleanupWork' implicitly has type 'any[]'... Remove this comment to see the full error message
-const cleanupWork = []
+const isErrnoException = (value: unknown): value is NodeJS.ErrnoException =>
+  value instanceof Error && Object.hasOwn(value, 'code')
+
+const createStripAnsiControlCharsStream = (): Transform => new Transform({
+  transform(chunk, _encoding, callback) {
+    const text = typeof chunk === 'string' ? chunk : chunk.toString()
+    callback(null, stripVTControlCharacters(text))
+  }
+})
+
+const cleanupWork: (() => Promise<void>)[] = []
 
 let cleanupStarted = false
 
@@ -72,12 +79,11 @@ export const runCommand = (
     })
   }
 
-  // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-  commandProcess.stdout.pipe(stripAnsiCc.stream()).on('data', pipeDataWithSpinner.bind(null, process.stdout))
-  // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-  commandProcess.stderr.pipe(stripAnsiCc.stream()).on('data', pipeDataWithSpinner.bind(null, process.stderr))
-  // @ts-expect-error TS(2345) FIXME: Argument of type 'Writable | null' is not assignab... Remove this comment to see the full error message
-  process.stdin.pipe(commandProcess.stdin)
+  commandProcess.stdout?.pipe(createStripAnsiControlCharsStream()).on('data', pipeDataWithSpinner.bind(null, process.stdout))
+  commandProcess.stderr?.pipe(createStripAnsiControlCharsStream()).on('data', pipeDataWithSpinner.bind(null, process.stderr))
+  if (commandProcess.stdin != null) {
+    process.stdin?.pipe(commandProcess.stdin)
+  }
 
   // we can't try->await->catch since we don't want to block on the framework server which
   // is a long running process
