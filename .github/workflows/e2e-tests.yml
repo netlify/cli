@@ -17,8 +17,6 @@ jobs:
     name: E2E Windows tests
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
-    env:
-      DEBUG: true
     strategy:
       matrix:
         os: [windows-latest]
@@ -72,8 +70,6 @@ jobs:
     name: E2E
     runs-on: ${{ matrix.os }}
     timeout-minutes: 10
-    env:
-      DEBUG: true
     strategy:
       matrix:
         os: [ubuntu-latest, macOS-latest]
