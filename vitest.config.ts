@@ -14,10 +14,6 @@ export default defineConfig({
         ],
       },
     },
-    deps: {
-      external: ['**/fixtures/**', '**/node_modules/**'],
-      interopDefault: false,
-    },
     snapshotFormat: {
       escapeString: true,
     },
