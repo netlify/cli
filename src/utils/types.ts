@@ -129,36 +129,38 @@ export interface SiteInfo {
     }
     skip: boolean
   }
-  published_deploy: {
-    admin_url: string
-    branch: string
-    build_id: string
-    commit_ref: string
-    commit_url: string
-    context: string
-    created_at: string
-    deploy_ssl_url: string
-    deploy_url: string
-    draft: boolean
-    error_message: string
-    id: string
-    locked: boolean
-    name: string
-    published_at: string
-    required: string[]
-    required_functions: string[]
-    review_id: number
-    review_url: string
-    screenshot_url: string
-    site_id: string
-    skipped: boolean
-    ssl_url: string
-    state: string
-    title: string
-    updated_at: string
-    url: string
-    user_id: string
-  }
+  published_deploy:
+    | {
+        admin_url: string
+        branch: string
+        build_id: string
+        commit_ref: string
+        commit_url: string
+        context: string
+        created_at: string
+        deploy_ssl_url: string
+        deploy_url: string
+        draft: boolean
+        error_message: string
+        id: string
+        locked: boolean
+        name: string
+        published_at: string
+        required: string[]
+        required_functions: string[]
+        review_id: number
+        review_url: string
+        screenshot_url: string
+        site_id: string
+        skipped: boolean
+        ssl_url: string
+        state: string
+        title: string
+        updated_at: string
+        url: string
+        user_id: string
+      }
+    | undefined
   screenshot_url: string
   session_id: string
   ssl: boolean
