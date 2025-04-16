@@ -4,7 +4,6 @@ import { supportsBackgroundFunctions } from '../../../src/lib/account.js'
 
 describe('supportsBackgroundFunctions', () => {
   test(`should return false if no account`, () => {
-    // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
     expect(supportsBackgroundFunctions()).toEqual(false)
   })
 
@@ -25,6 +24,7 @@ describe('supportsBackgroundFunctions', () => {
   })
 
   test(`should return true if included property is truthy`, () => {
+    // @ts-expect-error Intentional incorrect type. TODO(serhalp): Remove this test? Can this happen?
     expect(supportsBackgroundFunctions({ capabilities: { background_functions: { included: 'string' } } })).toEqual(
       true,
     )
