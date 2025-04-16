@@ -1057,19 +1057,6 @@ export default [
     },
   },
   {
-    files: ['src/utils/shell.ts'],
-    rules: {
-      '@typescript-eslint/no-unsafe-return': 'off',
-      '@typescript-eslint/no-unsafe-call': 'off',
-      'n/no-process-exit': 'off',
-      '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/no-unsafe-argument': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/no-floating-promises': 'off',
-      '@typescript-eslint/restrict-template-expressions': 'off',
-    },
-  },
-  {
     files: ['src/utils/sign-redirect.ts'],
     rules: {
       '@typescript-eslint/no-unsafe-assignment': 'off',
