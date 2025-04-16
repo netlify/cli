@@ -62,7 +62,7 @@ jobs:
           deno-version: v1.44.4
 
       - name: Install core dependencies
-        run: npm ci --no-audit
+        run: npm ci --ignore-scripts --no-audit
 
       - name: Build project
         run: npm run build

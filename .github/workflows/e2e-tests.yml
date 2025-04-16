@@ -46,7 +46,7 @@ jobs:
           version: 10
 
       - name: Install dependencies
-        run: npm ci --no-audit
+        run: npm ci --ignore-scripts --no-audit
 
       - name: Build project
         run: npm run build
@@ -98,7 +98,7 @@ jobs:
           version: 10
 
       - name: Install dependencies
-        run: npm ci --no-audit
+        run: npm ci --ignore-scripts --no-audit
 
       - name: Build project
         run: npm run build
