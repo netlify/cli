@@ -262,7 +262,7 @@ interface GetFunctionsServerOptions {
   functionsRegistry: FunctionsRegistry
   siteUrl: string
   siteInfo?: SiteInfo
-  accountId: string
+  accountId?: string | undefined
   geoCountry: string
   offline: boolean
   state: CLIState

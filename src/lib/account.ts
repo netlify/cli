@@ -1,14 +1,7 @@
-/**
- * @param {any} account
- * @param {string} capability
- * @returns {boolean}
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'account' implicitly has an 'any' type.
-const supportsBooleanCapability = (account, capability) => Boolean(account?.capabilities?.[capability]?.included)
+import type { Account, Capability } from '../utils/dev.js'
 
-/**
- * @param {any} account
- * @returns {boolean}
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'account' implicitly has an 'any' type.
-export const supportsBackgroundFunctions = (account) => supportsBooleanCapability(account, 'background_functions')
+const supportsBooleanCapability = (account: Account | undefined, capability: Capability) =>
+  Boolean(account?.capabilities?.[capability]?.included)
+
+export const supportsBackgroundFunctions = (account?: Account): boolean =>
+  supportsBooleanCapability(account, 'background_functions')
