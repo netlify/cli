@@ -11,14 +11,6 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 describe('copyTemplateDir', () => {
-  test('should assert input values', async () => {
-    // @ts-expect-error TS(2554) FIXME: Expected 3 arguments, but got 0.
-    await expect(copyTemplateDir()).rejects.toThrow(/string/)
-    // @ts-expect-error TS(2554) FIXME: Expected 3 arguments, but got 1.
-    await expect(copyTemplateDir('foo')).rejects.toThrow(/string/)
-    await expect(copyTemplateDir('foo', 'bar', 'err')).rejects.toThrow(/object/)
-  })
-
   test('should write a bunch of files', async () => {
     const checkCreatedFileNames = (names: string[]) => {
       expect(names).toContain('.a')

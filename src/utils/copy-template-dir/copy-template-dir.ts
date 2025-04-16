@@ -18,7 +18,6 @@
 // COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import assert from 'assert'
 import fs from 'fs'
 import path from 'path'
 import { pipeline } from 'stream'
@@ -53,10 +52,6 @@ async function writeFile(outDir: string, vars: Record<string, string>, file: Ent
 
 // High throughput template dir writes
 export async function copyTemplateDir(srcDir: string, outDir: string, vars: Record<string, string>): Promise<string[]> {
-  assert.strictEqual(typeof srcDir, 'string')
-  assert.strictEqual(typeof outDir, 'string')
-  assert.strictEqual(typeof vars, 'object')
-
   await fs.promises.mkdir(outDir, { recursive: true })
 
   const rs: ReaddirpStream = readdirp(srcDir)
