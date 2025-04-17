@@ -2,7 +2,6 @@ import { dirname, extname } from 'path'
 import { platform } from 'process'
 
 import type { LambdaEvent } from 'lambda-local'
-import { temporaryFile } from 'tempy'
 
 import type {
   BaseBuildResult,
@@ -13,6 +12,7 @@ import type {
 } from '../index.js'
 import execa from '../../../../utils/execa.js'
 import { runFunctionsProxy } from '../../local-proxy.js'
+import { temporaryFile } from '../../../../utils/temporary-file.js'
 
 const isWindows = platform === 'win32'
 

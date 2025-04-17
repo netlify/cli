@@ -11,6 +11,7 @@ import { describe, test } from 'vitest'
 
 import { withDevServer } from '../../utils/dev-server.js'
 import { withSiteBuilder } from '../../utils/site-builder.js'
+import { temporaryDirectory } from '../../../../src/utils/temporary-file.js'
 
 describe.concurrent('commands/dev-forms-and-redirects', () => {
   test('should return 404 when redirecting to a non existing function', async (t) => {
@@ -427,7 +428,6 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
     };
   `
 
-    const { temporaryDirectory } = await import('tempy')
     const pluginDirectory = temporaryDirectory()
 
     await fs.writeFile(path.join(pluginDirectory, 'manifest.yml'), pluginManifest)
@@ -486,7 +486,6 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
     };
   `
 
-    const { temporaryDirectory } = await import('tempy')
     const pluginDirectory = temporaryDirectory()
 
     await fs.writeFile(path.join(pluginDirectory, 'manifest.yml'), pluginManifest)

@@ -1,12 +1,12 @@
 import path from 'node:path'
 
-import { temporaryDirectory } from 'tempy'
 import { expect, test } from 'vitest'
 
 import BaseCommand from '../../../../src/commands/base-command.js'
 import { DEFAULT_CONCURRENT_HASH } from '../../../../src/utils/deploy/constants.js'
 import hashFns from '../../../../src/utils/deploy/hash-fns.js'
 import { withSiteBuilder } from '../../../integration/utils/site-builder.js'
+import { temporaryDirectory } from '../../../../src/utils/temporary-file.js'
 
 test('Hashes files in a folder', async (t) => {
   await withSiteBuilder(t, async (builder) => {
