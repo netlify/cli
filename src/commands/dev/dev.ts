@@ -1,6 +1,5 @@
 import process from 'process'
 
-import type { NetlifyAPI } from 'netlify'
 import { applyMutations } from '@netlify/config'
 import { OptionValues } from 'commander'
 
@@ -22,56 +21,14 @@ import detectServerSettings, { getConfigWithPlugins } from '../../utils/detect-s
 import { UNLINKED_SITE_MOCK_ID, getDotEnvVariables, getSiteInformation, injectEnvVariables } from '../../utils/dev.js'
 import { getEnvelopeEnv } from '../../utils/env/index.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
-import { getLiveTunnelSlug, startLiveTunnel } from '../../utils/live-tunnel.js'
 import openBrowser from '../../utils/open-browser.js'
 import { generateInspectSettings, startProxyServer } from '../../utils/proxy-server.js'
 import { getProxyUrl } from '../../utils/proxy.js'
 import { runDevTimeline } from '../../utils/run-build.js'
-import type { CLIState, ServerSettings } from '../../utils/types.js'
+import type { ServerSettings } from '../../utils/types.js'
 import type BaseCommand from '../base-command.js'
-import type { NetlifySite } from '../types.js'
 
 import type { DevConfig } from './types.js'
-
-const handleLiveTunnel = async ({
-  api,
-  options,
-  settings,
-  site,
-  state,
-}: {
-  api: NetlifyAPI
-  options: OptionValues
-  settings: ServerSettings
-  site: NetlifySite
-  state: CLIState
-}) => {
-  const { live } = options
-
-  if (live) {
-    const customSlug = typeof live === 'string' && live.length !== 0 ? live : undefined
-    const slug = getLiveTunnelSlug(state, customSlug)
-
-    let message = `${NETLIFYDEVWARN} Creating live URL with ID ${chalk.yellow(slug)}`
-
-    if (!customSlug) {
-      message += ` (to generate a custom URL, use ${chalk.magenta('--live=<subdomain>')})`
-    }
-
-    log(message)
-
-    const sessionUrl = await startLiveTunnel({
-      siteId: site.id,
-      netlifyApiToken: api.accessToken,
-      localPort: settings.port,
-      slug,
-    })
-
-    process.env.BASE_URL = sessionUrl
-
-    return sessionUrl
-  }
-}
 
 export const dev = async (options: OptionValues, command: BaseCommand) => {
   log(NETLIFYDEV)
@@ -147,11 +104,7 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
     process.exit(1)
   }
 
-  command.setAnalyticsPayload({ live: options.live })
-
-  const liveTunnelUrl = await handleLiveTunnel({ options, site, api, settings, state })
-
-  const url = liveTunnelUrl || getProxyUrl(settings)
+  const url = getProxyUrl(settings)
 
   process.env.URL = url
   process.env.DEPLOY_URL = url

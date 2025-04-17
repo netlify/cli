@@ -93,8 +93,6 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
     return exit(1)
   }
 
-  command.setAnalyticsPayload({ live: options.live })
-
   log(`${NETLIFYDEVLOG} Building site for production`)
   log(
     `${NETLIFYDEVWARN} Changes will not be hot-reloaded, so if you need to rebuild your site you must exit and run 'netlify serve' again`,
