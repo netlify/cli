@@ -8,7 +8,6 @@ test('should parse all remote images correctly', () => {
       remote_images: ['https://example.com/*', 'https://test.com/*'],
     },
   }
-  // @ts-expect-error TS(2345) FIXME: Argument of type '{ images: { remote_images: strin... Remove this comment to see the full error message
   const { errors, remotePatterns } = parseAllRemoteImages(config)
   expect(errors).toEqual([])
   expect(remotePatterns).toEqual([/https:\/\/example.com\/*/, /https:\/\/test.com\/*/])
@@ -20,7 +19,6 @@ test('should report invalid remote images', () => {
       remote_images: ['*'],
     },
   }
-  // @ts-expect-error TS(2345) FIXME: Argument of type '{ images: { remote_images: strin... Remove this comment to see the full error message
   const { errors, remotePatterns } = parseAllRemoteImages(config)
   expect(errors).toEqual([
     {
