@@ -1,4 +1,4 @@
-import path, { join } from 'path'
+import path from 'path'
 import process from 'process'
 
 import execa from 'execa'
@@ -7,7 +7,6 @@ import { describe, expect, test, type TestContext } from 'vitest'
 import { callCli } from '../../utils/call-cli.js'
 import { cliPath } from '../../utils/cli-path.js'
 import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
-import { CONFIRM, handleQuestions } from '../../utils/handle-questions.js'
 import { withMockApi } from '../../utils/mock-api.js'
 import { withSiteBuilder } from '../../utils/site-builder.js'
 
@@ -338,44 +337,5 @@ describe.concurrent('command/build', () => {
       expect(output).toMatch(/\$ npm run build/)
       expect(output).toMatch(/Functions bundling completed/)
     })
-  })
-})
-
-// Monorepo tests are commented out because they are all failing
-setupFixtureTests('monorepo', () => {
-  // This and the following tests are failing on all environments
-  test.skip<FixtureTestContext>('should set the PACKAGE_PATH constant when selecting a pkg', async ({ fixture }) => {
-    const childProcess = execa(cliPath, ['build', '--offline'], {
-      cwd: join(fixture.directory),
-    })
-
-    handleQuestions(childProcess, [
-      {
-        question: 'Select the site you want to work with',
-        answer: CONFIRM,
-      },
-    ])
-    const { stdout } = await childProcess
-    expect(stdout).toContain('@@ packagePath: packages/app-1')
-    expect(stdout).toContain(`@@ cwd: ${fixture.directory}`)
-  })
-
-  test.skip<FixtureTestContext>('should set the PACKAGE_PATH constant when run not from the monorepo root', async ({
-    fixture,
-  }) => {
-    const { stdout } = await execa(cliPath, ['build', '--offline'], {
-      cwd: join(fixture.directory, 'packages/app-1'),
-    })
-    expect(stdout).toContain('@@ packagePath: packages/app-1')
-    expect(stdout).toContain(`@@ cwd: ${fixture.directory}`)
-  })
-
-  // This test is consistently failing on windows @ latest
-  test.skip<FixtureTestContext>('should set the PACKAGE_PATH constant when run from repo root', async ({ fixture }) => {
-    const { stdout } = await execa(cliPath, ['build', '--offline', '--filter', 'packages/app-1'], {
-      cwd: join(fixture.directory),
-    })
-    expect(stdout).toContain('@@ packagePath: packages/app-1')
-    expect(stdout).toContain(`@@ cwd: ${fixture.directory}`)
   })
 })
