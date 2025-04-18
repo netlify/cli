@@ -1,6 +1,6 @@
 import { rm, writeFile } from 'fs/promises'
 import { pathToFileURL } from 'url'
-import { temporaryFile } from '../../../src/utils/temporary-file'
+import { temporaryFile } from '../../../src/utils/temporary-file.js'
 
 // Saves to disk a JavaScript file with the contents provided and returns
 // an environment variable that replaces the `execa` module implementation.

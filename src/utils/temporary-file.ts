@@ -9,7 +9,7 @@ const tempDir = os.tmpdir()
 
 export function temporaryFile({ name, extension }: { name?: string; extension?: string } = {}): string {
   if (name) {
-    if (extension !== undefined && extension !== null) {
+    if (typeof extension  === 'string') {
       throw new Error('The `name` and `extension` options are mutually exclusive')
     }
     return path.join(tempDir, name)
