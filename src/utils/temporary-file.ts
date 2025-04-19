@@ -7,21 +7,13 @@ const uniqueString = () => crypto.randomBytes(8).toString('hex')
 
 const tempDir = os.tmpdir()
 
-export function temporaryFile({ name, extension }: { name?: string; extension?: string } = {}): string {
-  if (name) {
-    if (typeof extension === 'string') {
-      throw new Error('The `name` and `extension` options are mutually exclusive')
-    }
-    return path.join(tempDir, name)
-  }
-
+export function temporaryFile({ extension }: { extension?: string } = {}): string {
   const baseName = uniqueString()
   const ext = extension ? '.' + extension.replace(/^\./, '') : ''
   return path.join(tempDir, baseName + ext)
 }
 
 export function temporaryDirectory({ prefix = '' } = {}): string {
-  const directory = path.join(tempDir, prefix + uniqueString())
-  fs.mkdirSync(directory)
+  const directory = fs.mkdtempSync(`${tempDir}${path.sep}${prefix}`)
   return directory
 }
