@@ -1,7 +1,6 @@
 import { rm } from 'fs/promises'
 
 import cleanDeep from 'clean-deep'
-import { temporaryDirectory } from 'tempy'
 
 import BaseCommand from '../../commands/base-command.js'
 import { type $TSFixMe } from '../../commands/types.js'
@@ -21,6 +20,7 @@ import hashFns from './hash-fns.js'
 import uploadFiles from './upload-files.js'
 import { getUploadList, waitForDeploy, waitForDiff } from './util.js'
 import type { DeployEvent } from './status-cb.js'
+import { temporaryDirectory } from '../temporary-file.js'
 
 export type { DeployEvent }
 
