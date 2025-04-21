@@ -2,7 +2,7 @@ import { Octokit } from '@octokit/rest'
 import type { NetlifyAPI } from 'netlify'
 
 import { chalk, logAndThrowError, log } from '../command-helpers.js'
-import { getGitHubToken as ghauth, type Token } from '../gh-auth.js'
+import { getGitHubToken as ghauth } from '../gh-auth.js'
 import type { GlobalConfigStore } from '../types.js'
 import type { BaseCommand } from '../../commands/index.js'
 
@@ -19,9 +19,11 @@ const PAGE_SIZE = 100
  * Get a valid GitHub token
  */
 export const getGitHubToken = async ({ globalConfig }: { globalConfig: GlobalConfigStore }): Promise<string> => {
-  const userId: string = globalConfig.get('userId')
-
-  const githubToken: Token | undefined = globalConfig.get(`users.${userId}.auth.github`)
+  const userId = globalConfig.get('userId')
+  if (!userId) {
+    return logAndThrowError('You must be authentiated to access the GitHub API.')
+  }
+  const githubToken = globalConfig.get(`users.${userId}.auth.github`)
 
   if (githubToken?.user && githubToken.token) {
     try {

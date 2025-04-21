@@ -16,7 +16,7 @@ import type BaseCommand from '../base-command.js'
 
 export const status = async (options: OptionValues, command: BaseCommand) => {
   const { accounts, api, globalConfig, site, siteInfo } = command.netlify
-  const currentUserId = globalConfig.get('userId') as string | undefined
+  const currentUserId = globalConfig.get('userId')
   const [accessToken] = await getToken()
 
   if (!accessToken) {
@@ -48,7 +48,7 @@ export const status = async (options: OptionValues, command: BaseCommand) => {
 
   const ghuser =
     currentUserId != null
-      ? (globalConfig.get(`users.${currentUserId}.auth.github.user`) as string | undefined)
+      ? (globalConfig.get(`users.${currentUserId}.auth.github.user`))
       : undefined
   const accountData = {
     Name: user.full_name,

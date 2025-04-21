@@ -1,6 +1,7 @@
 import { Octokit } from '@octokit/rest'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
-import type { GlobalConfigStore } from '../../../../src/utils/get-global-config-store.js'
+import { GlobalConfigStore } from '../../../../src/utils/global-config/store.js'
+import { MemoryStorageAdapter } from '../../../../src/utils/global-config/storage-adapter-memory.js'
 
 import { getGitHubToken } from '../../../../src/utils/init/config-github.js'
 
@@ -37,15 +38,11 @@ describe('getGitHubToken', () => {
   let globalConfig: GlobalConfigStore
 
   beforeEach(() => {
-    const values = new Map<string, unknown>()
-    // @ts-expect-error FIXME(ndhoule): mock is not full, make it more realistic
-    globalConfig = {
-      get: (key) => values.get(key),
-      set: (key, value) => {
-        values.set(key, value)
-      },
-    }
+    globalConfig = new GlobalConfigStore({
+      store: new MemoryStorageAdapter(),
+    })
     globalConfig.set('userId', 'spongebob')
+    globalConfig.set('users.spongebob.id', 'spongebob')
     globalConfig.set(`users.spongebob.auth.github`, {
       provider: 'github',
       token: 'old_token',
