@@ -1,6 +1,5 @@
 import type { NetlifyAPI } from 'netlify'
 
-import { $TSFixMe } from '../../commands/types.js'
 import { logAndThrowError } from '../command-helpers.js'
 import type { SiteInfo, EnvironmentVariableSource } from '../../utils/types.js'
 
@@ -22,12 +21,16 @@ const SUPPORTED_CONTEXT_ALIASES = {
  * These exactly match possible `scope` values returned by the Envelope API.
  * Note that `any` is also supported.
  */
-export const SUPPORTED_SCOPES = ['builds', 'functions', 'runtime', 'post_processing']
+export const ALL_ENVELOPE_SCOPES = ['builds', 'functions', 'runtime', 'post_processing'] as const
 
-type EnvelopeEnvVarContext = 'all' | 'production' | 'deploy-preview' | 'branch-deploy' | 'dev'
-
-type EnvelopeEnvVarScope = 'builds' | 'functions' | 'runtime' | 'post_processing'
-
+// TODO(serhalp) Netlify API is incorrect - the returned scope is `post_processing`, not `post-processing`
+type EnvelopeEnvVarScope =
+  | Exclude<NonNullable<Awaited<ReturnType<NetlifyAPI['getEnvVars']>>[number]['scopes']>[number], 'post-processing'>
+  | 'post_processing'
+type EnvelopeEnvVar = Awaited<ReturnType<NetlifyAPI['getEnvVars']>>[number] & {
+  scopes: EnvelopeEnvVarScope[]
+}
+type EnvelopeEnvVarContext = NonNullable<EnvelopeEnvVar['values']>[number]['context']
 type EnvelopeEnvVarValue = {
   /**
    * The deploy context of the this env var value
@@ -41,8 +44,22 @@ type EnvelopeEnvVarValue = {
    * The value of the environment variable for this context. Note that this appears to be an empty string
    * when the env var is not set for this context.
    */
-  value: string
+  value?: string | undefined
 }
+
+type EnvelopeItem = {
+  // FIXME(serhalp) Netlify API types claim this is optional. Investigate and fix here or there.
+  key: string
+  scopes: EnvelopeEnvVarScope[]
+  values: EnvelopeEnvVarValue[]
+}
+
+// AFAICT, Envelope uses only `post_processing` on returned env vars; the CLI documents and expects
+// only `post-processing` as a valid user-provided scope; the code handles both everywhere. Consider
+// explicitly normalizing and dropping undocumented support for user-provided `post_processing`.
+type SupportedScope = EnvelopeEnvVarScope | 'post_processing' | 'any'
+
+type ContextOrBranch = string
 
 /**
  * Normalizes a user-provided "context". Note that this may be the special `branch:my-branch-name` format.
@@ -55,7 +72,7 @@ type EnvelopeEnvVarValue = {
  *
  * @returns The normalized context name or just the branch name
  */
-export const normalizeContext = (context: string): string => {
+export const normalizeContext = (context: string): ContextOrBranch => {
   if (!context) {
     return context
   }
@@ -86,11 +103,11 @@ export const getValueForContext = (
   context: string,
 ): EnvelopeEnvVarValue | undefined =>
   values.find((val) => {
-    if (!SUPPORTED_CONTEXTS.includes(context)) {
+    if (!(SUPPORTED_CONTEXTS as readonly string[]).includes(context)) {
       // the "context" option passed in is actually the name of a branch
       return val.context === 'all' || val.context_parameter === context
     }
-    return [context, 'all'].includes(val.context)
+    return val.context === 'all' || val.context === context
   })
 
 /**
@@ -112,7 +129,7 @@ const fetchEnvelopeItems = async function ({
   api: NetlifyAPI
   key: string
   siteId?: string | undefined
-}): Promise<Awaited<ReturnType<NetlifyAPI['getEnvVar']>>[]> {
+}): Promise<EnvelopeItem[]> {
   if (accountId === undefined) {
     return []
   }
@@ -120,11 +137,13 @@ const fetchEnvelopeItems = async function ({
     // if a single key is passed, fetch that single env var
     if (key) {
       const envelopeItem = await api.getEnvVar({ accountId, key, siteId })
-      return [envelopeItem]
+      // See FIXME(serhalp) above
+      return [envelopeItem as EnvelopeItem]
     }
     // otherwise, fetch the entire list of env vars
     const envelopeItems = await api.getEnvVars({ accountId, siteId })
-    return envelopeItems
+    // See FIXME(serhalp) above
+    return envelopeItems as EnvelopeItem[]
   } catch {
     // Collaborators aren't allowed to read shared env vars,
     // so return an empty array silently in that case
@@ -161,15 +180,15 @@ export const formatEnvelopeData = ({
   scope = 'any',
   source,
 }: {
-  context?: string
-  envelopeItems: $TSFixMe[]
-  scope?: string
+  context?: ContextOrBranch
+  envelopeItems: EnvelopeItem[]
+  scope?: SupportedScope
   source: string
 }): Record<
   string,
   {
-    context: string
-    branch: string
+    context: ContextOrBranch
+    branch: string | undefined
     scopes: string[]
     sources: string[]
     value: string
@@ -222,14 +241,11 @@ export const getEnvelopeEnv = async ({
   siteInfo,
 }: {
   api: NetlifyAPI
-  /**
-   * User-provided, normalized env context OR a branch name
-   */
-  context?: string | undefined
+  context?: ContextOrBranch | undefined
   env: object
   key?: string | undefined
   raw?: boolean | undefined
-  scope?: string | undefined
+  scope?: SupportedScope | undefined
   siteInfo: SiteInfo
 }) => {
   const { account_slug: accountId, id: siteId } = siteInfo
@@ -277,13 +293,15 @@ export const getEnvelopeEnv = async ({
  * @param scopes An array of scopes
  * @returns A human-readable, comma-separated list of scopes
  */
-export const getHumanReadableScopes = (scopes?: (EnvelopeEnvVarScope | 'post-processing')[]): string => {
+export const getHumanReadableScopes = (scopes?: EnvelopeEnvVarScope[]): string => {
   const HUMAN_SCOPES = ['Builds', 'Functions', 'Runtime', 'Post processing']
   const SCOPES_MAP = {
     builds: HUMAN_SCOPES[0],
     functions: HUMAN_SCOPES[1],
     runtime: HUMAN_SCOPES[2],
     post_processing: HUMAN_SCOPES[3],
+    // TODO(serhalp) I believe this isn't needed, as `post-processing` is a user-provided
+    // CLI option, not a scope returned by the Envelope API.
     'post-processing': HUMAN_SCOPES[3],
   }
   if (!scopes) {
@@ -309,7 +327,7 @@ export const translateFromMongoToEnvelope = (env: Record<string, string> = {}) =
     scopes: ALL_ENVELOPE_SCOPES,
     values: [
       {
-        context: 'all',
+        context: 'all' as const,
         value,
       },
     ],

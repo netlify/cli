@@ -65,24 +65,24 @@ test("should filter, sort, and format Envelope's response correctly", () => {
   const envelopeItems = [
     {
       key: 'FOO',
-      scopes: ['functions'],
+      scopes: ['functions' as const],
       values: [
         {
-          context: 'all',
+          context: 'all' as const,
           value: 'bar',
         },
       ],
     },
     {
       key: 'BAZ',
-      scopes: ['builds', 'functions', 'runtime', 'post_processing'],
+      scopes: ['builds' as const, 'functions' as const, 'runtime' as const, 'post_processing' as const],
       values: [
         {
-          context: 'production',
+          context: 'production' as const,
           value: 'bang',
         },
         {
-          context: 'branch',
+          context: 'branch' as const,
           context_parameter: 'staging',
           value: 'blah',
         },
@@ -118,10 +118,8 @@ test('should convert scope keys into a human-readable list', () => {
   expect(getHumanReadableScopes([])).toBe('')
   expect(getHumanReadableScopes()).toBe('Builds, Post processing')
   expect(getHumanReadableScopes(['post_processing'])).toBe('Post processing')
-  expect(getHumanReadableScopes(['post-processing'])).toBe('Post processing')
   expect(getHumanReadableScopes(['builds', 'functions'])).toBe('Builds, Functions')
   expect(getHumanReadableScopes(['builds', 'functions', 'runtime', 'post_processing'])).toBe('All')
-  expect(getHumanReadableScopes(['builds', 'functions', 'runtime', 'post-processing'])).toBe('All')
 })
 
 test('should normalize a branch name or context', () => {
