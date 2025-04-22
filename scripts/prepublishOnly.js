@@ -2,7 +2,7 @@ import * as cp from 'node:child_process'
 import * as fs from 'node:fs/promises'
 import * as path from 'node:path'
 
-const main = async () => {
+const createShrinkwrap = async () => {
   // It's best practice to include a shrinkwrap when shipping a CLI. npm has a bug that makes it
   // not ignore development dependencies in an installed package's shrinkwrap, though:
   //
@@ -30,6 +30,11 @@ const main = async () => {
     // environment, it's purely to minimize how destructive this script is.)
     await fs.writeFile(packageJSONPath, rawPackageJSON)
   }
+}
+
+const main = async () => {
+  await createShrinkwrap()
+  await import('../dist/scripts/vectorize-docs.js')
 }
 
 await main()

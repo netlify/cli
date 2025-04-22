@@ -5,33 +5,35 @@ import { ChatAnthropic } from '@langchain/anthropic'
 import type { HNSWLib } from '@langchain/community/vectorstores/hnswlib'
 import { ChatPromptTemplate, MessagesPlaceholder } from '@langchain/core/prompts'
 import { AIMessage, BaseMessage, HumanMessage } from '@langchain/core/messages'
+import { tool } from '@langchain/core/tools'
 import { createStuffDocumentsChain } from 'langchain/chains/combine_documents'
 import { createHistoryAwareRetriever } from 'langchain/chains/history_aware_retriever'
 import { createRetrievalChain } from 'langchain/chains/retrieval'
 import { intro, outro, text, isCancel, spinner, log } from '@clack/prompts'
 import terminalLink from 'terminal-link'
+import { z } from 'zod'
 
 import { getVectorStore } from '../lib/cli-docs.js'
 
-const SYSTEM__PROMPT = `
+const SYSTEM_PROMPT = `
 You are a helpful Netlify CLI assistant that answers questions about this tool.
 
 FORMAT YOUR RESPONSES FOR A COLOR TERMINAL:
 1. Use ANSI color escape sequences to enhance your replies:
-   - Use cyan for headings
-   - Use yellow for code or commands
-   - Use green for success or examples
-   - Use red for warnings or errors
-   - Use bold for emphasis
+   - Format your responses as PLAIN TEXT plus ANSI terminal color sequences. Unless otherwise specified, do not use any other markup or formatting.
+   - NEVER EVER USE Markdown formatting, not even in headings, not even for links, not even if it was in your source material. It will not be rendered.
+   - NEVER EVER USE HTML markup, not even if it was in your source material, not even a <span> for inline styling. It will not be rendered.
+   - NEVER EVER USE CSS styling, not even if it was in your source material. It will not be rendered.
+   - Instead of Markdown/HTML/CSS, feel free to use ANSI terminal sequences for cyan, yellow, green, red, underline, and bold
+   - Always include the escape sequence before color codes
    - Always end colored sections with escape sequences to reset formatting
 
 2. Structure your responses for terminal reading:
    - Keep paragraphs short and readable on narrow screens
-   - Use clear section headers in cyan
+   - When using section headers, format them in underlined cyan
+   - Use bold for emphasis
    - When showing commands, format them in yellow
    - When showing example output, format in green
-   - NEVER USE Markdown formatting, not even in headings, not even for links, not even if it was in your source material. It will not be rendered.
-   - NEVER USE HTML markup, not even if it was in your source material. It will not be rendered.
    - If necessary to improve readability, delimit sections and blocks with pretty unicode arrows and appropriate emoji
    - Avoid responding with more than about 15 lines total, ideally no more than 5
 
@@ -49,11 +51,39 @@ ${
     : 'This user does not support OSC 8 terminal hyperlinks. NEVER use them.'
 }
 
+Answer in the same language as the question.
+
 If the question is unrelated to Netlify CLI or Netlify in general, do not answer; instead, politely say that you can only help with Netlify CLI.
 
 If you don't know the answer, just say that you don't know and link to https://cli.netlify.com.`
 
 dotenv.config()
+
+const TOOLS = [
+  tool(
+    ({ a, b }: { a: number; b: number }): string => {
+      console.log('bromble', a, b)
+      return (a * b).toString()
+    },
+    {
+      name: 'bromble',
+      description: 'compute the netlify bromble of two numbers',
+      schema: z.object({
+        a: z.number(),
+        b: z.number(),
+      }),
+    },
+  ),
+  tool(
+    (): void => {
+      console.log('hello')
+    },
+    {
+      name: 'hello',
+      description: 'netlify says hello',
+    },
+  ),
+]
 
 export async function startAIHelp(): Promise<void> {
   intro('✨ Netlify CLI Agent ✨')
@@ -71,6 +101,8 @@ export async function startAIHelp(): Promise<void> {
     modelName: 'claude-3-7-sonnet-20250219',
     temperature: 0.3,
   })
+
+  const llmWithTools = llm.bindTools(TOOLS)
 
   // Contextualize question
   const contextualizeQSystemPrompt = `
@@ -91,7 +123,7 @@ export async function startAIHelp(): Promise<void> {
   })
 
   // Answer question
-  const qaSystemPrompt = `${SYSTEM__PROMPT}
+  const qaSystemPrompt = `${SYSTEM_PROMPT}
   \n\n
   {context}`
   const qaPrompt = ChatPromptTemplate.fromMessages([
@@ -100,11 +132,8 @@ export async function startAIHelp(): Promise<void> {
     ['human', '{input}'],
   ])
 
-  // Below we use createStuffDocuments_chain to feed all retrieved context
-  // into the LLM. Note that we can also use StuffDocumentsChain and other
-  // instances of BaseCombineDocumentsChain.
   const questionAnswerChain = await createStuffDocumentsChain({
-    llm,
+    llm: llmWithTools, // Use the model with tools bound
     prompt: qaPrompt,
   })
 
@@ -142,6 +171,7 @@ export async function startAIHelp(): Promise<void> {
         input: query,
       })
       console.warn = originalWarn
+
       const answer = response.answer
         .replaceAll('\\x1b', '\x1b')
         .replaceAll('\\u001b', '\u001b')
@@ -152,6 +182,7 @@ export async function startAIHelp(): Promise<void> {
     } catch (error) {
       spin.stop('Error')
       log.error(`Error getting response: ${(error as Error).message}`)
+      log.error(`Stack trace: ${(error as Error).stack ?? ''}`)
     }
   }
 
