@@ -805,7 +805,6 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
   const { workingDir } = command
   const { api, site, siteInfo } = command.netlify
   const alias = options.alias || options.branch
-  const settings = await detectFrameworkSettings(command, 'build')
 
   command.setAnalyticsPayload({ open: options.open, prod: options.prod, json: options.json, alias: Boolean(alias) })
 
@@ -863,6 +862,7 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
   let results = {} as Awaited<ReturnType<typeof prepAndRunDeploy>>
 
   if (options.build) {
+    const settings = await detectFrameworkSettings(command, 'build')
     await handleBuild({
       packagePath: command.workspacePackage,
       cachedConfig: command.netlify.cachedConfig,
