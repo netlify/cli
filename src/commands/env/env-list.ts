@@ -6,7 +6,7 @@ import inquirer from 'inquirer'
 import logUpdate from 'log-update'
 
 import { chalk, log, logJson } from '../../utils/command-helpers.js'
-import { AVAILABLE_CONTEXTS, getEnvelopeEnv, getHumanReadableScopes } from '../../utils/env/index.js'
+import { SUPPORTED_CONTEXTS, getEnvelopeEnv, getHumanReadableScopes } from '../../utils/env/index.js'
 import type BaseCommand from '../base-command.js'
 import { EnvironmentVariables } from '../../utils/types.js'
 
@@ -81,7 +81,7 @@ export const envList = async (options: OptionValues, command: BaseCommand) => {
   }
 
   const forSite = `for site ${chalk.green(siteInfo.name)}`
-  const contextType = AVAILABLE_CONTEXTS.includes(context) ? 'context' : 'branch'
+  const contextType = SUPPORTED_CONTEXTS.includes(context) ? 'context' : 'branch'
   const withContext = `in the ${chalk.magenta(options.context)} ${contextType}`
   const withScope = scope === 'any' ? '' : `and ${chalk.yellow(options.scope)} scope`
   if (Object.keys(environment).length === 0) {

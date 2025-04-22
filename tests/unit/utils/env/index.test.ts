@@ -2,7 +2,7 @@ import { expect, test } from 'vitest'
 
 import {
   filterEnvBySource,
-  findValueInValues,
+  getValueForContext,
   formatEnvelopeData,
   getHumanReadableScopes,
   normalizeContext,
@@ -21,7 +21,7 @@ test('should find a value from a given context', () => {
       value: 'bar',
     },
   ]
-  const result = findValueInValues(values, 'dev')
+  const result = getValueForContext(values, 'dev')
   expect(result).toHaveProperty('value', 'bar')
 })
 
@@ -37,7 +37,7 @@ test('should find a value from a given branch', () => {
       value: 'bar',
     },
   ]
-  const result = findValueInValues(values, 'staging')
+  const result = getValueForContext(values, 'staging')
   expect(result).toHaveProperty('value', 'foo')
 })
 
