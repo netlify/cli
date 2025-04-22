@@ -4,6 +4,7 @@ import { type AddressInfo } from 'node:net'
 import path from 'node:path'
 import process from 'process'
 
+import js from 'dedent'
 import jwt, { type JwtPayload } from 'jsonwebtoken'
 import fetch from 'node-fetch'
 import { describe, test } from 'vitest'
@@ -785,6 +786,91 @@ describe.concurrent('command/dev', () => {
             },
           )
         })
+      })
+    })
+  })
+
+  test('should inject `branch-deploy` and `branch` context env vars when given context matches `branch:*`', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      await builder
+        .withContentFile({
+          path: 'netlify/functions/get-foo.mjs',
+          content: js`
+            export default async () => Response.json({
+              WITH_BRANCH_OVERRIDE: process.env.WITH_BRANCH_OVERRIDE ?? "WITH_BRANCH_OVERRIDE not defined",
+              WITHOUT_OVERRIDE: process.env.WITHOUT_OVERRIDE ?? "WITHOUT_OVERRIDE not defined",
+            })`,
+        })
+        .build()
+
+      const siteInfo = {
+        id: 'site_id',
+        name: 'site-name',
+        account_slug: 'test-account',
+        build_settings: { env: {} },
+      }
+      const routes = [
+        { path: 'sites/site_id', response: siteInfo },
+        { path: 'sites/site_id/service-instances', response: [] },
+        {
+          path: 'accounts',
+          response: [{ slug: siteInfo.account_slug }],
+        },
+        {
+          path: 'accounts/test-account/env',
+          response: [
+            {
+              key: 'WITH_BRANCH_OVERRIDE',
+              scopes: ['builds', 'functions', 'runtime'],
+              values: [
+                { context: 'branch-deploy' as const, value: 'value from branch-deploy context' },
+                {
+                  context: 'branch' as const,
+                  context_parameter: 'feat/make-it-pop',
+                  value: 'value from branch context',
+                },
+                { context: 'dev' as const, value: 'value from dev context' },
+                { context: 'production' as const, value: 'value from production context' },
+                {
+                  context: 'deploy-preview' as const,
+                  context_parameter: '12345',
+                  value: 'value from deploy-preview context',
+                },
+                { context: 'all' as const, value: 'value from all context' },
+              ],
+            },
+            {
+              key: 'WITHOUT_OVERRIDE',
+              scopes: ['builds', 'functions', 'runtime'],
+              values: [
+                { context: 'branch-deploy' as const, value: 'value from branch-deploy context' },
+                { context: 'all' as const, value: 'value from all context' },
+              ],
+            },
+          ],
+        },
+      ]
+
+      await withMockApi(routes, async ({ apiUrl }) => {
+        await withDevServer(
+          {
+            cwd: builder.directory,
+            offline: false,
+            context: 'branch:feat/make-it-pop',
+            env: {
+              NETLIFY_API_URL: apiUrl,
+              NETLIFY_SITE_ID: siteInfo.id,
+            },
+          },
+          async (server) => {
+            const response = await fetch(`${server.url}/.netlify/functions/get-foo`)
+            const data = (await response.json()) as { WITH_BRANCH_OVERRIDE: string; WITHOUT_OVERRIDE: string }
+
+            t.expect(response).toHaveProperty('status', 200)
+            t.expect(data).toHaveProperty('WITH_BRANCH_OVERRIDE', 'value from branch context')
+            t.expect(data).toHaveProperty('WITHOUT_OVERRIDE', 'value from branch-deploy context')
+          },
+        )
       })
     })
   })

@@ -1,4 +1,5 @@
 import { expect, test } from 'vitest'
+import shuffle from 'lodash.shuffle'
 
 import {
   filterEnvBySource,
@@ -8,12 +9,12 @@ import {
   normalizeContext,
   translateFromEnvelopeToMongo,
   translateFromMongoToEnvelope,
-  type EnvelopeItem,
   type EnvelopeEnvVarValue,
+  type EnvelopeItem,
 } from '../../../../src/utils/env/index.js'
 
-test('should find a value from a given context', () => {
-  const values: EnvelopeEnvVarValue[] = [
+test('should return a matching value from a given context', () => {
+  const values: EnvelopeEnvVarValue[] = shuffle([
     {
       context: 'production',
       value: 'foo',
@@ -22,15 +23,15 @@ test('should find a value from a given context', () => {
       context: 'dev',
       value: 'bar',
     },
-  ]
+  ])
   const result = getValueForContext(values, 'dev')
   expect(result).toHaveProperty('value', 'bar')
 })
 
-test('should find a value from a given branch', () => {
-  const values: EnvelopeEnvVarValue[] = [
+test('should return a value from the `branch` context with a matching `context_parameter` given a branch', () => {
+  const values: EnvelopeEnvVarValue[] = shuffle([
     {
-      context: 'branch-deploy',
+      context: 'branch',
       context_parameter: 'staging',
       value: 'foo',
     },
@@ -38,9 +39,60 @@ test('should find a value from a given branch', () => {
       context: 'dev',
       value: 'bar',
     },
-  ]
+  ])
   const result = getValueForContext(values, 'staging')
   expect(result).toHaveProperty('value', 'foo')
+})
+
+test('should not return a value from the `branch` context with a non-matching `context_parameter` given a branch', () => {
+  const values: EnvelopeEnvVarValue[] = shuffle([
+    {
+      context: 'branch',
+      context_parameter: 'staging',
+      value: 'foo',
+    },
+    {
+      context: 'dev',
+      value: 'bar',
+    },
+  ])
+  const result = getValueForContext(values, 'feat/make-it-pop')
+  expect(result).toBeUndefined()
+})
+
+test('should return a matching value from the `branch-deploy` context given a branch and no `branch` context value', () => {
+  const values: EnvelopeEnvVarValue[] = shuffle([
+    {
+      context: 'branch-deploy',
+      value: 'foo',
+    },
+    {
+      context: 'dev',
+      value: 'bar',
+    },
+  ])
+  const result = getValueForContext(values, 'feat/make-it-pop')
+  expect(result).toHaveProperty('value', 'foo')
+})
+
+test('should return a matching value with the `branch` context given a branch and a `branch-deploy` value', () => {
+  const values: EnvelopeEnvVarValue[] = shuffle([
+    {
+      context: 'branch-deploy',
+      value: 'val from branch-deploy context',
+    },
+    {
+      context: 'branch',
+      context_parameter: 'feat/make-it-pop',
+      value: 'val from branch context',
+    },
+    {
+      context: 'dev',
+      value: 'bar',
+    },
+  ])
+  const result = getValueForContext(values, 'feat/make-it-pop')
+  expect(result).toHaveProperty('value', 'val from branch context')
 })
 
 test('should filter an env from a given source', () => {
@@ -133,6 +185,7 @@ test('should normalize a branch name or context', () => {
   expect(normalizeContext('prod')).toBe('production')
   expect(normalizeContext('qa')).toBe('qa')
   expect(normalizeContext('staging')).toBe('staging')
+  expect(normalizeContext('branch-deploy')).toBe('branch-deploy')
 })
 
 test('should translate from Mongo format to Envelope format when undefined', () => {
