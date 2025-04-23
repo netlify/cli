@@ -1,7 +1,7 @@
 {
   "name": "netlify-cli",
   "description": "Netlify command line tool",
-  "version": "20.0.2",
+  "version": "20.0.3",
   "author": "Netlify Inc.",
   "type": "module",
   "engines": {
@@ -46,7 +46,6 @@
     "test:init": "run-s test:init:*",
     "test:init:cli-help": "npm run start -- --help",
     "test:init:cli-version": "npm run start -- --version",
-    "test:init:eleventy-deps": "cd tests/integration/__fixtures__/eleventy-site && pnpm install --frozen-lockfile",
     "test:init:hugo-deps": "npm ci --prefix tests/integration/__fixtures__/hugo-site --no-audit",
     "test:init:monorepo-deps": "cd tests/integration/__fixtures__/monorepo && pnpm install --frozen-lockfile",
     "test:init:next-deps": "npm ci --prefix tests/integration/__fixtures__/next-app-without-config --no-audit && npm ci --prefix tests/integration/__fixtures__/next-app --no-audit",
@@ -60,7 +59,7 @@
   "dependencies": {
     "@fastify/static": "7.0.4",
     "@netlify/blobs": "8.1.2",
-    "@netlify/build": "32.0.0",
+    "@netlify/build": "32.0.1",
     "@netlify/build-info": "9.0.3",
     "@netlify/config": "22.0.0",
     "@netlify/edge-bundler": "13.0.2",
@@ -68,7 +67,7 @@
     "@netlify/headers-parser": "8.0.0",
     "@netlify/local-functions-proxy": "2.0.3",
     "@netlify/redirect-parser": "14.5.1",
-    "@netlify/zip-it-and-ship-it": "10.0.6",
+    "@netlify/zip-it-and-ship-it": "10.0.7",
     "@octokit/rest": "21.1.1",
     "@opentelemetry/api": "1.8.0",
     "@pnpm/tabtab": "0.5.4",
@@ -197,7 +196,7 @@
     "eslint-plugin-n": "17.17.0",
     "form-data": "4.0.2",
     "memfs": "^4.17.0",
-    "nock": "14.0.1",
+    "nock": "14.0.4",
     "npm-run-all2": "^7.0.2",
     "p-timeout": "6.1.4",
     "picomatch": "^4.0.2",
