@@ -100,15 +100,18 @@ export const getValueForContext = (
   /**
    * The deploy context or branch of the environment variable value
    */
-  context: string,
-): EnvelopeEnvVarValue | undefined =>
-  values.find((val) => {
-    if (!(SUPPORTED_CONTEXTS as readonly string[]).includes(context)) {
+  contextOrBranch: ContextOrBranch,
+): EnvelopeEnvVarValue | undefined => {
+  const valueForContext = values.find((val) => {
+    const isSupportedContext = (SUPPORTED_CONTEXTS as readonly string[]).includes(contextOrBranch)
+    if (!isSupportedContext) {
       // the "context" option passed in is actually the name of a branch
-      return val.context === 'all' || val.context_parameter === context
+      return val.context === 'all' || val.context_parameter === contextOrBranch
     }
-    return val.context === 'all' || val.context === context
+    return val.context === 'all' || val.context === contextOrBranch
   })
+  return valueForContext ?? undefined
+}
 
 /**
  * Finds environment variables that match a given source
