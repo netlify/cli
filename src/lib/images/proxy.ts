@@ -31,7 +31,7 @@ interface IpxParams {
   position?: string | null
 }
 
-export const parseAllRemoteImages = function (config: NormalizedCachedConfigConfig): {
+export const parseAllRemoteImages = function (config: Pick<NormalizedCachedConfigConfig, 'images'>): {
   errors: ErrorObject[]
   remotePatterns: RegExp[]
 } {

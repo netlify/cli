@@ -810,21 +810,21 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
 
   await command.authenticate(options.auth)
 
-  let siteId = site.id || options.site
-
   let initialSiteData: SiteInfo | undefined
   let newSiteData!: SiteInfo
-  if (siteId && !isEmpty(siteInfo)) {
+
+  const hasSiteData = (site.id || options.site) && !isEmpty(siteInfo)
+
+  if (hasSiteData) {
     initialSiteData = siteInfo
-    siteId = initialSiteData.id
   } else {
     log("This folder isn't linked to a site yet")
     const NEW_SITE = '+  Create & configure a new site'
     const EXISTING_SITE = 'Link this directory to an existing site'
 
-    const initializeOpts = [EXISTING_SITE, NEW_SITE]
+    const initializeOpts = [EXISTING_SITE, NEW_SITE] as const
 
-    const { initChoice } = await inquirer.prompt([
+    const { initChoice } = await inquirer.prompt<{ initChoice: typeof initializeOpts[number] }>([
       {
         type: 'list',
         name: 'initChoice',
@@ -833,25 +833,21 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
       },
     ])
     // create site or search for one
-    if (initChoice === NEW_SITE) {
-      newSiteData = await sitesCreate({}, command)
-      site.id = newSiteData.id
-      siteId = site.id
-    } else if (initChoice === EXISTING_SITE) {
-      newSiteData = await link({}, command)
-      site.id = newSiteData?.id
-      siteId = site.id
+    switch (initChoice) {
+      case NEW_SITE:
+        newSiteData = await sitesCreate({}, command)
+        site.id = newSiteData.id
+        break
+      case EXISTING_SITE:
+        newSiteData = await link({}, command)
+        site.id = newSiteData.id
+        break
     }
-  }
-
-  if (!siteId) {
-    return logAndThrowError(
-      "Unable to determine which site to deploy to. Make sure you've run 'netlify link' or that you're specifying your desired site using the '--site' option.",
-    )
   }
 
   // This is the best I could come up with to make TS happy with the complexities above.
   const siteData = initialSiteData ?? newSiteData
+  const siteId = siteData.id
 
   if (options.trigger) {
     return triggerDeploy({ api, options, siteData, siteId })
