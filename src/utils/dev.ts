@@ -2,11 +2,13 @@ import process from 'process'
 
 import getPort from 'get-port'
 import isEmpty from 'lodash/isEmpty.js'
+import type { NetlifyAPI } from 'netlify'
 
 import { supportsBackgroundFunctions } from '../lib/account.js'
 
 import { NETLIFYDEVLOG, chalk, logAndThrowError, log, warn, APIError } from './command-helpers.js'
 import { loadDotEnvFiles } from './dot-env.js'
+import type { SiteInfo } from './types.js'
 
 // Possible sources of environment variables. For the purpose of printing log messages only. Order does not matter.
 const ENV_VAR_SOURCES = {
@@ -48,8 +50,21 @@ const validateSiteInfo = ({ site, siteInfo }) => {
   }
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-const getAccounts = async ({ api }) => {
+type ApiAccount = Awaited<ReturnType<NetlifyAPI['listAccountsForUser']>>[number]
+type Capabilities = NonNullable<ApiAccount['capabilities']> & {
+  // FIXME(serhalp): `background_functions` is missing from Netlify API account capabilities type
+  background_functions?:
+    | {
+        included?: boolean | undefined
+      }
+    | undefined
+}
+export type Capability = keyof Capabilities
+export type Account = ApiAccount & {
+  capabilities?: Capabilities
+}
+
+const getAccounts = async ({ api }: { api: NetlifyAPI }) => {
   try {
     const accounts = await api.listAccountsForUser()
     return accounts
@@ -83,13 +98,11 @@ const getAddonsInformation = ({ addons, siteInfo }) => {
   return { urls, env }
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'accounts' implicitly has an 'any'... Remove this comment to see the full error message
-const getSiteAccount = ({ accounts, siteInfo }) => {
-  // @ts-expect-error TS(7006) FIXME: Parameter 'account' implicitly has an 'any' type.
+const getSiteAccount = ({ accounts, siteInfo }: { accounts: Account[]; siteInfo: SiteInfo }): Account | undefined => {
   const siteAccount = accounts.find((account) => account.slug === siteInfo.account_slug)
   if (!siteAccount) {
     warn(`Could not find account for site '${siteInfo.name}' with account slug '${siteInfo.account_slug}'`)
-    return {}
+    return undefined
   }
   return siteAccount
 }
@@ -121,7 +134,7 @@ export const getSiteInformation = async ({ api, offline, site, siteInfo }) => {
     return {
       addonsUrls,
       siteUrl: siteInfo.ssl_url,
-      accountId: account.id,
+      accountId: account?.id,
       capabilities: {
         backgroundFunctions: supportsBackgroundFunctions(account),
       },
