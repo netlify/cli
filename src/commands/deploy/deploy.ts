@@ -834,12 +834,15 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
       },
     ])
     // create site or search for one
-    if (initChoice === NEW_SITE) {
-      newSiteData = await sitesCreate({}, command)
-      site.id = newSiteData.id
-    } else if (initChoice === EXISTING_SITE) {
-      newSiteData = await link({}, command)
-      site.id = newSiteData.id
+    switch (initChoice) {
+      case NEW_SITE:
+        newSiteData = await sitesCreate({}, command)
+        site.id = newSiteData.id
+        break
+      case EXISTING_SITE:
+        newSiteData = await link({}, command)
+        site.id = newSiteData.id
+        break
     }
   }
 
