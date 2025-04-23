@@ -87,7 +87,7 @@ netlify deploy
 - `alias` (*string*) - Specifies the alias for deployment, the string at the beginning of the deploy subdomain. Useful for creating predictable deployment URLs. Avoid setting an alias string to the same value as a deployed branch. `alias` doesn’t create a branch deploy and can’t be used in conjunction with the branch subdomain feature. Maximum 37 characters.
 - `branch` (*string*) - Serves the same functionality as --alias. Deprecated and will be removed in future versions
 - `build` (*boolean*) - Run build command before deploying
-- `context` (*string*) - Context to use when resolving build configuration
+- `context` (*string*) - Context to use when resolving build configuration Specify a deploy context for environment variables (”production”, ”deploy-preview”, ”branch-deploy”, ”dev”) or `branch:your-branch` where `your-branch` is the name of a branch (default: dev)
 - `dir` (*string*) - Specify a folder to deploy
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `functions` (*string*) - Specify a functions folder to deploy

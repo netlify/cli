@@ -13,7 +13,7 @@ export const createEnvCommand = (program: BaseCommand) => {
     .argument('<name>', 'Environment variable name')
     .option(
       '-c, --context <context>',
-      'Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev")',
+      'Specify a deploy context for environment variables (”production”, ”deploy-preview”, ”branch-deploy”, ”dev”) or `branch:your-branch` where `your-branch` is the name of a branch',
       normalizeContext,
       'dev',
     )
@@ -26,7 +26,7 @@ export const createEnvCommand = (program: BaseCommand) => {
     .addExamples([
       'netlify env:get MY_VAR # get value for MY_VAR in dev context',
       'netlify env:get MY_VAR --context production',
-      'netlify env:get MY_VAR --context branch:staging',
+      'netlify env:get MY_VAR --context branch:feat/make-it-pop # get value in the feat/make-it-pop branch context or branch-deploy context',
       'netlify env:get MY_VAR --scope functions',
     ])
     .description('Get resolved value of specified environment variable (includes netlify.toml)')
@@ -54,7 +54,7 @@ export const createEnvCommand = (program: BaseCommand) => {
     .command('env:list')
     .option(
       '-c, --context <context>',
-      'Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev")',
+      'Specify a deploy context for environment variables (”production”, ”deploy-preview”, ”branch-deploy”, ”dev”) or `branch:your-branch` where `your-branch` is the name of a branch (default: all contexts)',
       normalizeContext,
       'dev',
     )
@@ -68,7 +68,7 @@ export const createEnvCommand = (program: BaseCommand) => {
     .addExamples([
       'netlify env:list # list variables with values in the dev context and with any scope',
       'netlify env:list --context production',
-      'netlify env:list --context branch:staging',
+      'netlify env:list --context branch:feat/make-it-pop # list variables with values in the feat/make-it-pop branch context or branch-deploy context',
       'netlify env:list --scope functions',
       'netlify env:list --plain',
     ])
@@ -84,10 +84,9 @@ export const createEnvCommand = (program: BaseCommand) => {
     .argument('[value]', 'Value to set to', '')
     .option(
       '-c, --context <context...>',
-      'Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev") (default: all contexts)',
+      'Specify a deploy context for environment variables (”production”, ”deploy-preview”, ”branch-deploy”, ”dev”) or `branch:your-branch` where `your-branch` is the name of a branch (default: all contexts)',
       // spread over an array for variadic options
-      // @ts-expect-error TS(7006) FIXME: Parameter 'context' implicitly has an 'any' type.
-      (context, previous = []) => [...previous, normalizeContext(context)],
+      (context: string, previous: string[] = []) => [...previous, normalizeContext(context)],
     )
     .option('--json', 'Output environment variables as JSON')
     .addOption(
@@ -103,7 +102,8 @@ export const createEnvCommand = (program: BaseCommand) => {
     .addExamples([
       'netlify env:set VAR_NAME value # set in all contexts and scopes',
       'netlify env:set VAR_NAME value --context production',
-      'netlify env:set VAR_NAME value --context production deploy-preview',
+      'netlify env:set VAR_NAME value --context production deploy-preview # set in the production and deploy-preview contexts',
+      'netlify env:set VAR_NAME value --context branch:feat/make-it-pop # set in the feat/make-it-pop branch context',
       'netlify env:set VAR_NAME value --context production --secret',
       'netlify env:set VAR_NAME value --scope builds',
       'netlify env:set VAR_NAME value --scope builds functions',
@@ -120,16 +120,16 @@ export const createEnvCommand = (program: BaseCommand) => {
     .argument('<key>', 'Environment variable key')
     .option(
       '-c, --context <context...>',
-      'Specify a deploy context or branch (contexts: "production", "deploy-preview", "branch-deploy", "dev") (default: all contexts)',
+      'Specify a deploy context for environment variables (”production”, ”deploy-preview”, ”branch-deploy”, ”dev”) or `branch:your-branch` where `your-branch` is the name of a branch (default: all contexts)',
       // spread over an array for variadic options
-      // @ts-expect-error TS(7006) FIXME: Parameter 'context' implicitly has an 'any' type.
-      (context, previous = []) => [...previous, normalizeContext(context)],
+      (context: string, previous: string[] = []) => [...previous, normalizeContext(context)],
     )
     .option('--json', 'Output environment variables as JSON')
     .addExamples([
       'netlify env:unset VAR_NAME # unset in all contexts',
       'netlify env:unset VAR_NAME --context production',
       'netlify env:unset VAR_NAME --context production deploy-preview',
+      'netlify env:unset VAR_NAME --context branch:feat/make-it-pop # unset in the feat/make-it-pop branch context',
     ])
     .description('Unset an environment variable which removes it from the UI')
     .action(async (key: string, options: OptionValues, command: BaseCommand) => {

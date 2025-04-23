@@ -9,7 +9,7 @@ export const createDevExecCommand = (program: BaseCommand) =>
     .argument('<...cmd>', `the command that should be executed`)
     .option(
       '--context <context>',
-      'Specify a deploy context or branch for environment variables (contexts: "production", "deploy-preview", "branch-deploy", "dev")',
+      'Specify a deploy context for environment variables (”production”, ”deploy-preview”, ”branch-deploy”, ”dev”) or `branch:your-branch` where `your-branch` is the name of a branch (default: dev)',
       normalizeContext,
       'dev',
     )
@@ -17,7 +17,11 @@ export const createDevExecCommand = (program: BaseCommand) =>
       'Runs a command within the netlify dev environment. For example, with environment variables from any installed add-ons',
     )
     .allowExcessArguments(true)
-    .addExamples(['netlify dev:exec npm run bootstrap'])
+    .addExamples([
+      'netlify dev:exec npm run bootstrap',
+      'netlify dev:exec --context deploy-preview npm run bootstrap # Run with env var values from deploy-preview context',
+      'netlify dev:exec --context branch:feat/make-it-pop npm run bootstrap # Run with env var values from the feat/make-it-pop branch context or branch-deploy context',
+    ])
     .action(async (cmd: string, options: OptionValues, command: BaseCommand) => {
       const { devExec } = await import('./dev-exec.js')
       await devExec(cmd, options, command)
