@@ -1,12 +1,12 @@
 import { describe, test, beforeAll, afterAll } from 'vitest'
 import fs from 'fs'
 import { rm } from 'fs/promises'
-import { temporaryDirectory } from 'tempy'
 import { handleQuestions, CONFIRM, DOWN, NO, answerWithValue } from '../../utils/handle-questions.js'
 import execa from 'execa'
 import { cliPath } from '../../utils/cli-path.js'
 import { join } from 'path'
 import { TABTAB_CONFIG_LINE, AUTOLOAD_COMPINIT } from '../../../../src/utils/command-helpers.js'
+import { temporaryDirectory } from '../../../../src/utils/temporary-file.js'
 
 describe('completion:install command', () => {
   let tempDir: string
