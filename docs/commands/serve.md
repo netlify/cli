@@ -20,7 +20,7 @@ netlify serve
 
 **Flags**
 
-- `context` (*string*) - Specify a deploy context or branch for environment variables (contexts: "production", "deploy-preview", "branch-deploy", "dev")
+- `context` (*string*) - Specify a deploy context for environment variables (”production”, ”deploy-preview”, ”branch-deploy”, ”dev”) or `branch:your-branch` where `your-branch` is the name of a branch (default: dev)
 - `country` (*string*) - Two-letter country code (https://ntl.fyi/country-codes) to use as mock geolocation (enables --geo=mock automatically)
 - `dir` (*string*) - dir with static files
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
@@ -37,6 +37,9 @@ netlify serve
 ```bash
 netlify serve
 BROWSER=none netlify serve # disable browser auto opening
+netlify serve --context production # Use env var values from production context
+netlify serve --context deploy-preview # Use env var values from deploy-preview context
+netlify serve --context branch:feat/make-it-pop # Use env var values from the feat/make-it-pop branch context or branch-deploy context
 ```
 
 

@@ -102,15 +102,18 @@ export const getValueForContext = (
    */
   contextOrBranch: ContextOrBranch,
 ): EnvelopeEnvVarValue | undefined => {
-  const valueForContext = values.find((val) => {
-    const isSupportedContext = (SUPPORTED_CONTEXTS as readonly string[]).includes(contextOrBranch)
-    if (!isSupportedContext) {
-      // the "context" option passed in is actually the name of a branch
-      return val.context === 'all' || val.context_parameter === contextOrBranch
+  const isSupportedContext = (SUPPORTED_CONTEXTS as readonly string[]).includes(contextOrBranch)
+  if (!isSupportedContext) {
+    const valueMatchingAsBranch = values.find((val) => val.context_parameter === contextOrBranch)
+    // This is a `branch` context, which is an override, so it takes precedence
+    if (valueMatchingAsBranch != null) {
+      return valueMatchingAsBranch
     }
-    return val.context === 'all' || val.context === contextOrBranch
-  })
-  return valueForContext ?? undefined
+    const valueMatchingContext = values.find((val) => val.context === 'all' || val.context === 'branch-deploy')
+    return valueMatchingContext ?? undefined
+  }
+  const valueMatchingAsContext = values.find((val) => val.context === 'all' || val.context === contextOrBranch)
+  return valueMatchingAsContext ?? undefined
 }
 
 /**

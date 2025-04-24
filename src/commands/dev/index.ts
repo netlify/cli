@@ -31,7 +31,7 @@ export const createDevCommand = (program: BaseCommand) => {
     .option('-c ,--command <command>', 'command to run')
     .option(
       '--context <context>',
-      'Specify a deploy context or branch for environment variables (contexts: "production", "deploy-preview", "branch-deploy", "dev")',
+      'Specify a deploy context for environment variables (”production”, ”deploy-preview”, ”branch-deploy”, ”dev”) or `branch:your-branch` where `your-branch` is the name of a branch (default: dev)',
       normalizeContext,
     )
     .option('-p ,--port <port>', 'port of netlify dev', (value) => Number.parseInt(value))
@@ -96,7 +96,9 @@ export const createDevCommand = (program: BaseCommand) => {
       'netlify dev',
       'netlify dev -d public',
       'netlify dev -c "hugo server -w" --target-port 1313',
-      'netlify dev --context production',
+      'netlify dev --context production # Use env var values from production context',
+      'netlify dev --context deploy-preview # Use env var values from deploy-preview context',
+      'netlify dev --context branch:feat/make-it-pop # Use env var values from the feat/make-it-pop branch context or branch-deploy context',
       'netlify dev --edge-inspect',
       'netlify dev --edge-inspect=127.0.0.1:9229',
       'netlify dev --edge-inspect-brk',

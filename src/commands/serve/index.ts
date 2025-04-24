@@ -12,7 +12,7 @@ export const createServeCommand = (program: BaseCommand) =>
     )
     .option(
       '--context <context>',
-      'Specify a deploy context or branch for environment variables (contexts: "production", "deploy-preview", "branch-deploy", "dev")',
+      'Specify a deploy context for environment variables (”production”, ”deploy-preview”, ”branch-deploy”, ”dev”) or `branch:your-branch` where `your-branch` is the name of a branch (default: dev)',
       normalizeContext,
     )
     .option('-p ,--port <port>', 'port of netlify dev', (value) => Number.parseInt(value))
@@ -45,7 +45,13 @@ export const createServeCommand = (program: BaseCommand) =>
         .argParser((value) => Number.parseInt(value))
         .hideHelp(),
     )
-    .addExamples(['netlify serve', 'BROWSER=none netlify serve # disable browser auto opening'])
+    .addExamples([
+      'netlify serve',
+      'BROWSER=none netlify serve # disable browser auto opening',
+      'netlify serve --context production # Use env var values from production context',
+      'netlify serve --context deploy-preview # Use env var values from deploy-preview context',
+      'netlify serve --context branch:feat/make-it-pop # Use env var values from the feat/make-it-pop branch context or branch-deploy context',
+    ])
     .action(async (options: Option, command: BaseCommand) => {
       const { serve } = await import('./serve.js')
       await serve(options, command)

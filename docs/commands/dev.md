@@ -20,7 +20,7 @@ netlify dev
 **Flags**
 
 - `command` (*string*) - command to run
-- `context` (*string*) - Specify a deploy context or branch for environment variables (contexts: "production", "deploy-preview", "branch-deploy", "dev")
+- `context` (*string*) - Specify a deploy context for environment variables (”production”, ”deploy-preview”, ”branch-deploy”, ”dev”) or `branch:your-branch` where `your-branch` is the name of a branch (default: dev)
 - `country` (*string*) - Two-letter country code (https://ntl.fyi/country-codes) to use as mock geolocation (enables --geo=mock automatically)
 - `dir` (*string*) - dir with static files
 - `edge-inspect` (*string*) - enable the V8 Inspector Protocol for Edge Functions, with an optional address in the host:port format
@@ -49,7 +49,9 @@ netlify dev
 netlify dev
 netlify dev -d public
 netlify dev -c "hugo server -w" --target-port 1313
-netlify dev --context production
+netlify dev --context production # Use env var values from production context
+netlify dev --context deploy-preview # Use env var values from deploy-preview context
+netlify dev --context branch:feat/make-it-pop # Use env var values from the feat/make-it-pop branch context or branch-deploy context
 netlify dev --edge-inspect
 netlify dev --edge-inspect=127.0.0.1:9229
 netlify dev --edge-inspect-brk
@@ -74,7 +76,7 @@ netlify dev:exec
 
 **Flags**
 
-- `context` (*string*) - Specify a deploy context or branch for environment variables (contexts: "production", "deploy-preview", "branch-deploy", "dev")
+- `context` (*string*) - Specify a deploy context for environment variables (”production”, ”deploy-preview”, ”branch-deploy”, ”dev”) or `branch:your-branch` where `your-branch` is the name of a branch (default: dev)
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
@@ -83,6 +85,8 @@ netlify dev:exec
 
 ```bash
 netlify dev:exec npm run bootstrap
+netlify dev:exec --context deploy-preview npm run bootstrap # Run with env var values from deploy-preview context
+netlify dev:exec --context branch:feat/make-it-pop npm run bootstrap # Run with env var values from the feat/make-it-pop branch context or branch-deploy context
 ```
 
 ---
