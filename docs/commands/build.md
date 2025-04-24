@@ -17,7 +17,7 @@ netlify build
 
 **Flags**
 
-- `context` (*string*) - Specify a deploy context for environment variables read during the build (”production”, ”deploy-preview”, ”branch-deploy”, ”dev”) or `branch:your-branch` where `your-branch` is the name of a branch (default: value of CONTEXT or "production")
+- `context` (*string*) - Specify a deploy context for environment variables read during the build (”production”, ”deploy-preview”, ”branch-deploy”, ”dev”) or `branch:your-branch` where `your-branch` is the name of a branch (default: value of CONTEXT or ”production”)
 - `dry` (*boolean*) - Dry run: show instructions without running them
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information

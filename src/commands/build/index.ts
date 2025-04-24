@@ -9,7 +9,7 @@ export const createBuildCommand = (program: BaseCommand) =>
     .description('Build on your local machine')
     .option(
       '--context <context>',
-      'Specify a deploy context for environment variables read during the build (”production”, ”deploy-preview”, ”branch-deploy”, ”dev”) or `branch:your-branch` where `your-branch` is the name of a branch (default: value of CONTEXT or "production")',
+      'Specify a deploy context for environment variables read during the build (”production”, ”deploy-preview”, ”branch-deploy”, ”dev”) or `branch:your-branch` where `your-branch` is the name of a branch (default: value of CONTEXT or ”production”)',
       normalizeContext,
       process.env.CONTEXT || 'production',
     )
