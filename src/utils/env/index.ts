@@ -30,12 +30,12 @@ type EnvelopeEnvVarScope =
 type EnvelopeEnvVar = Awaited<ReturnType<NetlifyAPI['getEnvVars']>>[number] & {
   scopes: EnvelopeEnvVarScope[]
 }
-type EnvelopeEnvVarContext = NonNullable<EnvelopeEnvVar['values']>[number]['context']
+type EnvelopeEnvVarContext = NonNullable<NonNullable<EnvelopeEnvVar['values']>[number]['context']>
 export type EnvelopeEnvVarValue = {
   /**
    * The deploy context of the this env var value
    */
-  context: EnvelopeEnvVarContext
+  context?: EnvelopeEnvVarContext
   /**
    * For parameterized contexts (i.e. only `branch`), context parameter (i.e. the branch name)
    */
