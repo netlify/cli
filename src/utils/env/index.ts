@@ -31,7 +31,7 @@ type EnvelopeEnvVar = Awaited<ReturnType<NetlifyAPI['getEnvVars']>>[number] & {
   scopes: EnvelopeEnvVarScope[]
 }
 type EnvelopeEnvVarContext = NonNullable<EnvelopeEnvVar['values']>[number]['context']
-type EnvelopeEnvVarValue = {
+export type EnvelopeEnvVarValue = {
   /**
    * The deploy context of the this env var value
    */
@@ -47,7 +47,7 @@ type EnvelopeEnvVarValue = {
   value?: string | undefined
 }
 
-type EnvelopeItem = {
+export type EnvelopeItem = {
   // FIXME(serhalp) Netlify API types claim this is optional. Investigate and fix here or there.
   key: string
   scopes: EnvelopeEnvVarScope[]

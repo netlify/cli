@@ -8,16 +8,18 @@ import {
   normalizeContext,
   translateFromEnvelopeToMongo,
   translateFromMongoToEnvelope,
+  type EnvelopeItem,
+  type EnvelopeEnvVarValue,
 } from '../../../../src/utils/env/index.js'
 
 test('should find a value from a given context', () => {
-  const values = [
+  const values: EnvelopeEnvVarValue[] = [
     {
-      context: 'production' as const,
+      context: 'production',
       value: 'foo',
     },
     {
-      context: 'dev' as const,
+      context: 'dev',
       value: 'bar',
     },
   ]
@@ -26,14 +28,14 @@ test('should find a value from a given context', () => {
 })
 
 test('should find a value from a given branch', () => {
-  const values = [
+  const values: EnvelopeEnvVarValue[] = [
     {
-      context: 'branch-deploy' as const,
+      context: 'branch-deploy',
       context_parameter: 'staging',
       value: 'foo',
     },
     {
-      context: 'dev' as const,
+      context: 'dev',
       value: 'bar',
     },
   ]
@@ -62,27 +64,27 @@ test('should filter an env from a given source', () => {
 })
 
 test("should filter, sort, and format Envelope's response correctly", () => {
-  const envelopeItems = [
+  const envelopeItems: EnvelopeItem[] = [
     {
       key: 'FOO',
-      scopes: ['functions' as const],
+      scopes: ['functions'],
       values: [
         {
-          context: 'all' as const,
+          context: 'all',
           value: 'bar',
         },
       ],
     },
     {
       key: 'BAZ',
-      scopes: ['builds' as const, 'functions' as const, 'runtime' as const, 'post_processing' as const],
+      scopes: ['builds', 'functions', 'runtime', 'post_processing'],
       values: [
         {
-          context: 'production' as const,
+          context: 'production',
           value: 'bang',
         },
         {
-          context: 'branch' as const,
+          context: 'branch',
           context_parameter: 'staging',
           value: 'blah',
         },
