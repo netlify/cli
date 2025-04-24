@@ -32,7 +32,7 @@ Build binaries of your Go language functions into the functions folder as part o
 Single file Node.js functions:
 -----------------------------
 
-Build dependency bundled Node.js lambda functions with tools like netlify-lambda, webpack or browserify into the function folder as part of your build process.
+Build dependency bundled Node.js lambda functions with tools like webpack or browserify into the function folder as part of your build process.
 
 ```
 functions/

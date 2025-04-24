@@ -1,4 +1,4 @@
-import { mkdir, stat } from 'fs/promises'
+import { stat } from 'fs/promises'
 import { createRequire } from 'module'
 import { basename, extname, isAbsolute, join, resolve } from 'path'
 import { env } from 'process'
@@ -165,28 +165,6 @@ export class FunctionsRegistry {
         this.logEvent('missing-types-package', {})
       }
     }
-  }
-
-  /**
-   * Runs before `scan` and calls any `onDirectoryScan` hooks defined by the
-   * runtime before the directory is read. This gives runtime the opportunity
-   * to run additional logic when a directory is scanned.
-   */
-  static async prepareDirectoryScan(directory: string) {
-    await mkdir(directory, { recursive: true })
-
-    // We give runtimes the opportunity to react to a directory scan and run
-    // additional logic before the directory is read. So if they implement a
-    // `onDirectoryScan` hook, we run it.
-    await Promise.all(
-      Object.values(runtimes).map((runtime) => {
-        if (!('onDirectoryScan' in runtime)) {
-          return null
-        }
-
-        return runtime.onDirectoryScan({ directory })
-      }),
-    )
   }
 
   /**
@@ -479,8 +457,6 @@ export class FunctionsRegistry {
     if (directories.length === 0) {
       return
     }
-
-    await Promise.all(directories.map((path) => FunctionsRegistry.prepareDirectoryScan(path)))
 
     const functions = await this.listFunctions(directories, {
       featureFlags: {

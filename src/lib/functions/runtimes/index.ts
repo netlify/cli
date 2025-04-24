@@ -54,8 +54,6 @@ export type InvokeFunction<BuildResult extends BaseBuildResult> = (params: {
   timeout: number
 }) => Promise<InvokeFunctionResult>
 
-export type OnDirectoryScanFunction = (params: { directory: string }) => Promise<void>
-
 export type OnRegisterFunction<BuildResult extends BaseBuildResult> = (
   func: NetlifyFunction<BuildResult>,
 ) => NetlifyFunction<BuildResult> | null
@@ -63,7 +61,6 @@ export type OnRegisterFunction<BuildResult extends BaseBuildResult> = (
 export interface Runtime<BuildResult extends BaseBuildResult> {
   getBuildFunction: GetBuildFunction<BuildResult>
   invokeFunction: InvokeFunction<BuildResult>
-  onDirectoryScan?: OnDirectoryScanFunction
   onRegister?: OnRegisterFunction<BuildResult>
   name: string
 }
