@@ -1,4 +1,4 @@
-import { stat } from 'fs/promises'
+import { mkdir, stat } from 'fs/promises'
 import { createRequire } from 'module'
 import { basename, extname, isAbsolute, join, resolve } from 'path'
 import { env } from 'process'
@@ -165,6 +165,14 @@ export class FunctionsRegistry {
         this.logEvent('missing-types-package', {})
       }
     }
+  }
+
+  /**
+   * TODO(serhalp): Is this really the right place to do this mutation? Should
+   * we do this at all?
+   */
+  static async prepareDirectory(directory: string) {
+    await mkdir(directory, { recursive: true })
   }
 
   /**
@@ -457,6 +465,8 @@ export class FunctionsRegistry {
     if (directories.length === 0) {
       return
     }
+
+    await Promise.all(directories.map((path) => FunctionsRegistry.prepareDirectory(path)))
 
     const functions = await this.listFunctions(directories, {
       featureFlags: {
