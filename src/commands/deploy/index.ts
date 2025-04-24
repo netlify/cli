@@ -112,7 +112,7 @@ Support for package.json's main field, and intrinsic index.js entrypoints are co
     .option('--build', 'Run build command before deploying', false)
     .option(
       '--context <context>',
-      'Context to use when resolving build configuration Specify a deploy context for environment variables (”production”, ”deploy-preview”, ”branch-deploy”, ”dev”) or `branch:your-branch` where `your-branch` is the name of a branch (default: dev)',
+      'Specify a deploy context for environment variables read during the build (”production”, ”deploy-preview”, ”branch-deploy”, ”dev”) or `branch:your-branch` where `your-branch` is the name of a branch (default: dev)',
     )
     .option(
       '--skip-functions-cache',
