@@ -2,42 +2,44 @@ import { expect, test } from 'vitest'
 
 import {
   filterEnvBySource,
-  findValueInValues,
+  getValueForContext,
   formatEnvelopeData,
   getHumanReadableScopes,
   normalizeContext,
   translateFromEnvelopeToMongo,
   translateFromMongoToEnvelope,
+  type EnvelopeItem,
+  type EnvelopeEnvVarValue,
 } from '../../../../src/utils/env/index.js'
 
 test('should find a value from a given context', () => {
-  const values = [
+  const values: EnvelopeEnvVarValue[] = [
     {
-      context: 'production' as const,
+      context: 'production',
       value: 'foo',
     },
     {
-      context: 'dev' as const,
+      context: 'dev',
       value: 'bar',
     },
   ]
-  const result = findValueInValues(values, 'dev')
+  const result = getValueForContext(values, 'dev')
   expect(result).toHaveProperty('value', 'bar')
 })
 
 test('should find a value from a given branch', () => {
-  const values = [
+  const values: EnvelopeEnvVarValue[] = [
     {
-      context: 'branch-deploy' as const,
+      context: 'branch-deploy',
       context_parameter: 'staging',
       value: 'foo',
     },
     {
-      context: 'dev' as const,
+      context: 'dev',
       value: 'bar',
     },
   ]
-  const result = findValueInValues(values, 'staging')
+  const result = getValueForContext(values, 'staging')
   expect(result).toHaveProperty('value', 'foo')
 })
 
@@ -62,7 +64,7 @@ test('should filter an env from a given source', () => {
 })
 
 test("should filter, sort, and format Envelope's response correctly", () => {
-  const envelopeItems = [
+  const envelopeItems: EnvelopeItem[] = [
     {
       key: 'FOO',
       scopes: ['functions'],
@@ -118,10 +120,8 @@ test('should convert scope keys into a human-readable list', () => {
   expect(getHumanReadableScopes([])).toBe('')
   expect(getHumanReadableScopes()).toBe('Builds, Post processing')
   expect(getHumanReadableScopes(['post_processing'])).toBe('Post processing')
-  expect(getHumanReadableScopes(['post-processing'])).toBe('Post processing')
   expect(getHumanReadableScopes(['builds', 'functions'])).toBe('Builds, Functions')
   expect(getHumanReadableScopes(['builds', 'functions', 'runtime', 'post_processing'])).toBe('All')
-  expect(getHumanReadableScopes(['builds', 'functions', 'runtime', 'post-processing'])).toBe('All')
 })
 
 test('should normalize a branch name or context', () => {

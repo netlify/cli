@@ -1,7 +1,7 @@
 import { OptionValues } from 'commander'
 
 import { chalk, logAndThrowError, log, logJson } from '../../utils/command-helpers.js'
-import { AVAILABLE_CONTEXTS, AVAILABLE_SCOPES, translateFromEnvelopeToMongo } from '../../utils/env/index.js'
+import { SUPPORTED_CONTEXTS, ALL_ENVELOPE_SCOPES, translateFromEnvelopeToMongo } from '../../utils/env/index.js'
 import { promptOverwriteEnvVariable } from '../../utils/prompts/env-set-prompts.js'
 import BaseCommand from '../base-command.js'
 
@@ -30,7 +30,7 @@ const setInEnvelope = async ({ api, context, force, key, scope, secret, siteInfo
   // fetch envelope env vars
   const envelopeVariables = await api.getEnvVars({ accountId, siteId })
   const contexts = context || ['all']
-  let scopes = scope || AVAILABLE_SCOPES
+  let scopes = scope || ALL_ENVELOPE_SCOPES
 
   if (secret) {
     // post_processing (aka post-processing) scope is not allowed with secrets
@@ -41,7 +41,7 @@ const setInEnvelope = async ({ api, context, force, key, scope, secret, siteInfo
   // if the passed context is unknown, it is actually a branch name
   // @ts-expect-error TS(7006) FIXME: Parameter 'ctx' implicitly has an 'any' type.
   let values = contexts.map((ctx) =>
-    AVAILABLE_CONTEXTS.includes(ctx) ? { context: ctx, value } : { context: 'branch', context_parameter: ctx, value },
+    SUPPORTED_CONTEXTS.includes(ctx) ? { context: ctx, value } : { context: 'branch', context_parameter: ctx, value },
   )
 
   // @ts-expect-error TS(7006) FIXME: Parameter 'envVar' implicitly has an 'any' type.
@@ -78,7 +78,7 @@ const setInEnvelope = async ({ api, context, force, key, scope, secret, siteInfo
           if (values.some((val) => val.context === 'all')) {
             log(`This secret's value will be empty in the dev context.`)
             log(`Run \`netlify env:set ${key} <value> --context dev\` to set a new value for the dev context.`)
-            values = AVAILABLE_CONTEXTS.filter((ctx) => ctx !== 'all').map((ctx) => ({
+            values = SUPPORTED_CONTEXTS.filter((ctx) => ctx !== 'all').map((ctx) => ({
               context: ctx,
               // empty out dev value so that secret is indeed secret
               // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
@@ -132,7 +132,7 @@ export const envSet = async (key: string, value: string, options: OptionValues, 
 
   const withScope = scope ? ` scoped to ${chalk.white(scope)}` : ''
   const withSecret = secret ? ` as a ${chalk.blue('secret')}` : ''
-  const contextType = AVAILABLE_CONTEXTS.includes(context || 'all') ? 'context' : 'branch'
+  const contextType = SUPPORTED_CONTEXTS.includes(context || 'all') ? 'context' : 'branch'
   log(
     `Set environment variable ${chalk.yellow(
       `${key}${value && !secret ? `=${value}` : ''}`,
