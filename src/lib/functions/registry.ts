@@ -167,26 +167,9 @@ export class FunctionsRegistry {
     }
   }
 
-  /**
-   * Runs before `scan` and calls any `onDirectoryScan` hooks defined by the
-   * runtime before the directory is read. This gives runtime the opportunity
-   * to run additional logic when a directory is scanned.
-   */
-  static async prepareDirectoryScan(directory: string) {
+  // TODO(serhalp): Is this really the right place to do this mutation? Should we do this at all?
+  static async prepareDirectory(directory: string) {
     await mkdir(directory, { recursive: true })
-
-    // We give runtimes the opportunity to react to a directory scan and run
-    // additional logic before the directory is read. So if they implement a
-    // `onDirectoryScan` hook, we run it.
-    await Promise.all(
-      Object.values(runtimes).map((runtime) => {
-        if (!('onDirectoryScan' in runtime)) {
-          return null
-        }
-
-        return runtime.onDirectoryScan({ directory })
-      }),
-    )
   }
 
   /**
@@ -480,7 +463,7 @@ export class FunctionsRegistry {
       return
     }
 
-    await Promise.all(directories.map((path) => FunctionsRegistry.prepareDirectoryScan(path)))
+    await Promise.all(directories.map((path) => FunctionsRegistry.prepareDirectory(path)))
 
     const functions = await this.listFunctions(directories, {
       featureFlags: {

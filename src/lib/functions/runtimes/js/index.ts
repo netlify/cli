@@ -5,40 +5,28 @@ import { Worker } from 'worker_threads'
 
 import lambdaLocal, { type LambdaEvent } from 'lambda-local'
 
-import type { BuildFunction, GetBuildFunction, InvokeFunction, OnDirectoryScanFunction } from '../index.js'
+import type { BuildFunction, GetBuildFunction, InvokeFunction } from '../index.js'
 import { BLOBS_CONTEXT_VARIABLE } from '../../../blobs/blobs.js'
 import type NetlifyFunction from '../../netlify-function.js'
 
-import detectNetlifyLambdaBuilder, {
-  type NetlifyLambdaBuildResult,
-  type NetlifyLambdaBuilder,
-} from './builders/netlify-lambda.js'
 import detectZisiBuilder, { getFunctionMetadata, ZisiBuildResult } from './builders/zisi.js'
 import { SECONDS_TO_MILLISECONDS } from './constants.js'
 import type { WorkerMessage } from './worker.js'
 
 export const name = 'js'
 
-export type JsBuildResult = ZisiBuildResult | NetlifyLambdaBuildResult
+type SimpleJsBuildResult = {
+  schedule?: string
+  srcFiles: string[]
+}
+
+export type JsBuildResult = ZisiBuildResult | SimpleJsBuildResult
 
 // TODO(serhalp): Unify these. This is bonkers that the two underlying invocation mechanisms are encapsulated but we
 // return slightly different shapes for them.
 export type JsInvokeFunctionResult = WorkerMessage | LambdaEvent
 
-let netlifyLambdaDetectorCache: undefined | NetlifyLambdaBuilder
-
 lambdaLocal.getLogger().level = 'alert'
-
-// The netlify-lambda builder can't be enabled or disabled on a per-function
-// basis and its detection mechanism is also quite expensive, so we detect
-// it once and cache the result.
-const detectNetlifyLambdaWithCache = async () => {
-  if (netlifyLambdaDetectorCache === undefined) {
-    netlifyLambdaDetectorCache = await detectNetlifyLambdaBuilder()
-  }
-
-  return netlifyLambdaDetectorCache
-}
 
 export async function getBuildFunction({
   config,
@@ -47,12 +35,6 @@ export async function getBuildFunction({
   func,
   projectRoot,
 }: Parameters<GetBuildFunction<JsBuildResult>>[0]) {
-  const netlifyLambdaBuilder = await detectNetlifyLambdaWithCache()
-
-  if (netlifyLambdaBuilder) {
-    return netlifyLambdaBuilder.build
-  }
-
   const metadata = await getFunctionMetadata({ mainFile: func.mainFile, config, projectRoot })
   const zisiBuilder = await detectZisiBuilder({ config, directory, errorExit, func, metadata, projectRoot })
 
@@ -167,15 +149,4 @@ export const invokeFunctionDirectly = async <BuildResult extends JsBuildResult>(
   })
 
   return result
-}
-
-export const onDirectoryScan: OnDirectoryScanFunction = async () => {
-  const netlifyLambdaBuilder = await detectNetlifyLambdaWithCache()
-
-  // Before we start a directory scan, we check whether netlify-lambda is being
-  // used. If it is, we run it, so that the functions directory is populated
-  // with the compiled files before the scan begins.
-  if (netlifyLambdaBuilder) {
-    await netlifyLambdaBuilder.build()
-  }
 }

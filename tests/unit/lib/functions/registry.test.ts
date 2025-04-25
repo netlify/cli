@@ -57,9 +57,7 @@ test('registry should only pass functions config to zip-it-and-ship-it', async (
       plugins: ['test'],
     },
   })
-  const prepareDirectoryScanStub = vi
-    .spyOn(FunctionsRegistry, 'prepareDirectoryScan')
-    .mockImplementation(async () => {})
+  const prepareDirectoryStub = vi.spyOn(FunctionsRegistry, 'prepareDirectory').mockImplementation(async () => {})
   const setupDirectoryWatcherStub = vi
     .spyOn(functionsRegistry, 'setupDirectoryWatcher')
     .mockImplementation(async () => {})
@@ -69,7 +67,7 @@ test('registry should only pass functions config to zip-it-and-ship-it', async (
   t.onTestFinished(() => {
     listFunctionsStub.mockRestore()
     setupDirectoryWatcherStub.mockRestore()
-    prepareDirectoryScanStub.mockRestore()
+    prepareDirectoryStub.mockRestore()
   })
 
   await functionsRegistry.scan([
@@ -112,16 +110,14 @@ describe('the registry handles duplicate functions based on extension precedence
       },
       frameworksAPIPaths: getFrameworksAPIPaths(projectRoot),
     })
-    const prepareDirectoryScanStub = vi
-      .spyOn(FunctionsRegistry, 'prepareDirectoryScan')
-      .mockImplementation(async () => {})
+    const prepareDirectoryStub = vi.spyOn(FunctionsRegistry, 'prepareDirectory').mockImplementation(async () => {})
     const setupDirectoryWatcherStub = vi
       .spyOn(functionsRegistry, 'setupDirectoryWatcher')
       .mockImplementation(async () => {})
 
     t.onTestFinished(() => {
       setupDirectoryWatcherStub.mockRestore()
-      prepareDirectoryScanStub.mockRestore()
+      prepareDirectoryStub.mockRestore()
     })
 
     await functionsRegistry.scan([functionsDirectory])
