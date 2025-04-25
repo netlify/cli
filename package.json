@@ -185,6 +185,7 @@
     "@types/semver": "7.7.0",
     "@types/serialize-javascript": "^5.0.4",
     "@types/source-map-support": "0.5.10",
+    "@types/update-notifier": "^6.0.8",
     "@types/write-file-atomic": "4.0.3",
     "@types/ws": "8.18.1",
     "@vitest/coverage-v8": "3.1.1",
