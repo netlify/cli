@@ -167,10 +167,7 @@ export class FunctionsRegistry {
     }
   }
 
-  /**
-   * TODO(serhalp): Is this really the right place to do this mutation? Should
-   * we do this at all?
-   */
+  // TODO(serhalp): Is this really the right place to do this mutation? Should we do this at all?
   static async prepareDirectory(directory: string) {
     await mkdir(directory, { recursive: true })
   }
