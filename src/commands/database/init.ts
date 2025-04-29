@@ -108,30 +108,16 @@ export const init = async (_options: OptionValues, command: BaseCommand) => {
 
   log(`Initializing a new database...`)
 
-  try {
-    const siteEnv = await command.netlify.api.getEnvVar({
-      accountId: siteInfo.account_id,
-      siteId: command.siteId,
-      key: 'NETLIFY_DATABASE_URL',
-    })
-
-    if (siteEnv.key === 'NETLIFY_DATABASE_URL') {
-      log(`Environment variable "NETLIFY_DATABASE_URL" already exists on site: ${siteInfo.name}`)
-      log(`You can run "netlify db status" to check the status for this site`)
-      return
-    }
-  } catch {
-    // no op, env var does not exist, so we just continue
-  }
-
   const hostSiteUrl = process.env.NEON_DATABASE_EXTENSION_HOST_SITE_URL ?? extension.hostSiteUrl
-  const initEndpoint = new URL('/cli-db-init', hostSiteUrl).toString()
+  const initEndpoint = new URL('/api/cli-db-init', hostSiteUrl).toString()
 
+  const currentUser = await command.netlify.api.getCurrentUser()
   const headers = {
     'Content-Type': 'application/json',
     'nf-db-token': netlifyToken,
-    'nf-db-site-id': command.siteId,
     'nf-db-account-id': siteInfo.account_id,
+    'nf-db-site-id': command.siteId ?? '',
+    'nf-db-user-id': currentUser.id ?? '',
   }
   const req = await fetch(initEndpoint, {
     method: 'POST',
@@ -139,7 +125,11 @@ export const init = async (_options: OptionValues, command: BaseCommand) => {
   })
 
   if (!req.ok) {
-    throw new Error(`Failed to initialize DB: ${await req.text()}`)
+    const error = (await req.json()) as {
+      code?: string
+      message?: string
+    }
+    throw new Error(`Failed to initialize DB: ${error.message ?? 'Unknown error occurred'}`)
   }
 
   const res = (await req.json()) as {
@@ -171,9 +161,11 @@ export const init = async (_options: OptionValues, command: BaseCommand) => {
     prettyjson.render({
       'Current team': account.name,
       'Current site': siteInfo.name,
-      [`${extension.name} extension`]: 'installed',
-      Database: 'connected',
-      'Site environment variable': 'NETLIFY_DATABASE_URL',
+      [`${extension.name} extension`]: 'installed on team',
+      ['Database status']: 'connected to site',
+      ['Environment variables']: '',
+      ['  NETLIFY_DATABASE_URL']: 'saved',
+      ['  NETLIFY_DATABASE_URL_POOLED']: 'saved',
     }),
   )
   return
