@@ -21,12 +21,23 @@ export const status = async (_options: OptionValues, command: BaseCommand) => {
 
   const account = await getAccount(command, { accountId: siteInfo.account_id })
 
-  let siteEnv: Awaited<ReturnType<typeof command.netlify.api.getEnvVar>> | undefined
+  let databaseUrlEnv: Awaited<ReturnType<typeof command.netlify.api.getEnvVar>> | undefined
+  let unpooledDatabaseUrlEnv: Awaited<ReturnType<typeof command.netlify.api.getEnvVar>> | undefined
+
   try {
-    siteEnv = await command.netlify.api.getEnvVar({
+    databaseUrlEnv = await command.netlify.api.getEnvVar({
       accountId: siteInfo.account_id,
       siteId: command.siteId,
       key: 'NETLIFY_DATABASE_URL',
+    })
+  } catch {
+    // no-op, env var does not exist, so we just continue
+  }
+  try {
+    unpooledDatabaseUrlEnv = await command.netlify.api.getEnvVar({
+      accountId: siteInfo.account_id,
+      siteId: command.siteId,
+      key: 'NETLIFY_DATABASE_URL_UNPOOLED',
     })
   } catch {
     // no-op, env var does not exist, so we just continue
@@ -54,13 +65,15 @@ export const status = async (_options: OptionValues, command: BaseCommand) => {
       'Current team': account.name,
       'Current site': siteInfo.name,
       [extension?.name ? `${extension.name} extension` : 'Database extension']: extension?.installedOnTeam
-        ? 'installed'
-        : chalk.red('not installed'),
+        ? 'installed on team'
+        : chalk.red('not installed on team'),
       // @ts-expect-error -- siteConfig is not typed
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      Database: siteConfig?.config?.neonProjectId ? 'connected' : chalk.red('not connected'),
-      'Site environment variable':
-        siteEnv?.key === 'NETLIFY_DATABASE_URL' ? 'NETLIFY_DATABASE_URL' : chalk.red('NETLIFY_DATABASE_URL not set'),
+      ['Database status']: siteConfig?.config?.connectedDatabase ? 'connected to site' : chalk.red('not connected'),
+      ['Environment variables']: '',
+      ['  NETLIFY_DATABASE_URL']: databaseUrlEnv?.key === 'NETLIFY_DATABASE_URL' ? 'saved' : chalk.red('not set'),
+      ['  NETLIFY_DATABASE_URL_POOLED']:
+        unpooledDatabaseUrlEnv?.key === 'NETLIFY_DATABASE_URL_UNPOOLED' ? 'saved' : chalk.red('not set'),
     }),
   )
 }
