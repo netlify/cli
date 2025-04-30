@@ -165,7 +165,7 @@ export const init = async (_options: OptionValues, command: BaseCommand) => {
       ['Database status']: 'connected to site',
       ['Environment variables']: '',
       ['  NETLIFY_DATABASE_URL']: 'saved',
-      ['  NETLIFY_DATABASE_URL_POOLED']: 'saved',
+      ['  NETLIFY_DATABASE_URL_UNPOOLED']: 'saved',
     }),
   )
   return

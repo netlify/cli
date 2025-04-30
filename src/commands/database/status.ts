@@ -72,7 +72,7 @@ export const status = async (_options: OptionValues, command: BaseCommand) => {
       ['Database status']: siteConfig?.config?.connectedDatabase ? 'connected to site' : chalk.red('not connected'),
       ['Environment variables']: '',
       ['  NETLIFY_DATABASE_URL']: databaseUrlEnv?.key === 'NETLIFY_DATABASE_URL' ? 'saved' : chalk.red('not set'),
-      ['  NETLIFY_DATABASE_URL_POOLED']:
+      ['  NETLIFY_DATABASE_URL_UNPOOLED']:
         unpooledDatabaseUrlEnv?.key === 'NETLIFY_DATABASE_URL_UNPOOLED' ? 'saved' : chalk.red('not set'),
     }),
   )
