@@ -12,25 +12,6 @@ import chalk from 'chalk'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-const identity = (message) => message
-
-/**
- *
- * @param {string} message
- * @param {Array<chalk['Color'] | chalk['Modifiers']>} styles
- * @returns
- */
-const format = (message, styles) => {
-  let func = identity
-  try {
-    func = chalk
-    styles.forEach((style) => {
-      func = func[style]
-    })
-  } catch {}
-  return func(message)
-}
-
 const postInstall = async () => {
   const { createMainCommand } = await import('../dist/commands/index.js')
   const { generateAutocompletion } = await import('../dist/lib/completion/index.js')
@@ -45,24 +26,21 @@ const postInstall = async () => {
   }
 
   console.log('')
-  console.log(await format('Success! Netlify CLI has been installed!', ['greenBright', 'bold', 'underline']))
+  console.log(chalk.greenBright.bold.underline('Success! Netlify CLI has been installed!'))
   console.log('')
   console.log('Your device is now configured to use Netlify CLI to deploy and manage your Netlify sites.')
   console.log('')
   console.log('Next steps:')
   console.log('')
   console.log(
-    `  ${await format('netlify init', [
-      'cyanBright',
-      'bold',
-    ])}     Connect or create a Netlify site from current directory`,
+    `  ${chalk.cyanBright.bold('netlify init')}     Connect or create a Netlify site from current directory`,
   )
   console.log(
-    `  ${await format('netlify deploy', ['cyanBright', 'bold'])}   Deploy the latest changes to your Netlify site`,
+    `  ${chalk.cyanBright.bold('netlify deploy')}   Deploy the latest changes to your Netlify site`,
   )
   console.log('')
-  console.log(`For more information on the CLI run ${await format('netlify help', ['cyanBright', 'bold'])}`)
-  console.log(`Or visit the docs at ${await format('https://cli.netlify.com', ['cyanBright', 'bold'])}`)
+  console.log(`For more information on the CLI run ${chalk.cyanBright.bold('netlify help')}`)
+  console.log(`Or visit the docs at ${chalk.cyanBright.bold('https://cli.netlify.com')}`)
   console.log('')
 }
 
@@ -73,7 +51,7 @@ const main = async () => {
   try {
     await fs.stat(path.resolve(__dirname, '../.git'))
   } catch (err) {
-    if (err.code === 'ENOENT') {
+    if (err instanceof Error && 'code' in err && err.code === 'ENOENT') {
       isEndUserInstall = true
     }
   }
