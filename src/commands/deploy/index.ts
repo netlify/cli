@@ -3,7 +3,7 @@ import { env } from 'process'
 import { Option } from 'commander'
 
 import BaseCommand from '../base-command.js'
-import { logAndThrowError, warn } from '../../utils/command-helpers.js'
+import { chalk, logAndThrowError, warn } from '../../utils/command-helpers.js'
 import type { DeployOptionValues } from './option_values.js'
 
 export const createDeployCommand = (program: BaseCommand) =>
@@ -109,7 +109,19 @@ Support for package.json's main field, and intrinsic index.js entrypoints are co
         'build',
       ),
     )
-    .option('--build', 'Run build command before deploying', false)
+    .addOption(
+      new Option('--build', 'Do not use - this is now the default. Will be removed in future versions.')
+        .default(true)
+        .hideHelp(true),
+    )
+    /**
+     * Note that this has special meaning to commander. It negates the above `build` option.
+     * @see https://github.com/tj/commander.js/tree/83c3f4e391754d2f80b179acc4bccc2d4d0c863d?tab=readme-ov-file#other-option-types-negatable-boolean-and-booleanvalue
+     */
+    .option(
+      '--no-build',
+      'Do not run build command before deploying. Only use this if you have no need for a build or your site has already been built.',
+    )
     .option(
       '--context <context>',
       'Specify a deploy context for environment variables read during the build (”production”, ”deploy-preview”, ”branch-deploy”, ”dev”) or `branch:your-branch` where `your-branch` is the name of a branch (default: dev)',
@@ -122,15 +134,24 @@ Support for package.json's main field, and intrinsic index.js entrypoints are co
     .addExamples([
       'netlify deploy',
       'netlify deploy --site my-first-site',
+      'netlify deploy --no-build # Deploy without running a build first',
       'netlify deploy --prod',
       'netlify deploy --prod --open',
       'netlify deploy --prod-if-unlocked',
       'netlify deploy --message "A message with an $ENV_VAR"',
       'netlify deploy --auth $NETLIFY_AUTH_TOKEN',
       'netlify deploy --trigger',
-      'netlify deploy --build --context deploy-preview',
+      'netlify deploy --context deploy-preview',
     ])
     .action(async (options: DeployOptionValues, command: BaseCommand) => {
+      if (options.build && command.getOptionValueSource('build') === 'cli') {
+        warn(
+          `${chalk.cyanBright(
+            '--build',
+          )} is now the default and can safely be omitted. This will fail in a future version.`,
+        )
+      }
+
       if (options.branch) {
         warn('--branch flag has been renamed to --alias and will be removed in future versions')
       }

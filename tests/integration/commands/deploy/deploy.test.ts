@@ -107,10 +107,10 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
 
       await builder.build()
 
-      const deploy = await callCli(['deploy', '--json', '--dir', 'public'], {
+      const deploy = await callCli(['deploy', '--json', '--no-build', '--dir', 'public'], {
         cwd: builder.directory,
         env: { NETLIFY_SITE_ID: context.siteId },
-      }).then((output) => JSON.parse(output as string))
+      }).then((output: string) => JSON.parse(output))
 
       await validateDeploy({ deploy, siteName: SITE_NAME, content })
     })
@@ -132,9 +132,9 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
 
       await builder.build()
 
-      const deploy = await callCli(['deploy', '--json', '--site', SITE_NAME], {
+      const deploy = await callCli(['deploy', '--json', '--no-build', '--site', SITE_NAME], {
         cwd: builder.directory,
-      }).then((output) => JSON.parse(output as string))
+      }).then((output: string) => JSON.parse(output))
 
       await validateDeploy({ deploy, siteName: SITE_NAME, content })
     })
@@ -156,10 +156,10 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
 
       await builder.build()
 
-      const deploy = await callCli(['deploy', '--json'], {
+      const deploy = await callCli(['deploy', '--json', '--no-build'], {
         cwd: builder.directory,
         env: { NETLIFY_SITE_ID: context.siteId },
-      }).then((output) => JSON.parse(output as string))
+      }).then((output: string) => JSON.parse(output))
 
       await validateDeploy({ deploy, siteName: SITE_NAME, content })
     })
@@ -192,7 +192,9 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
       }
 
       await callCli(['build'], options)
-      const deploy = await callCli(['deploy', '--json'], options).then((output) => JSON.parse(output as string))
+      const deploy = await callCli(['deploy', '--json', '--no-build'], options).then((output: string) =>
+        JSON.parse(output),
+      )
 
       // give edge functions manifest a couple ticks to propagate
       await pause(500)
@@ -236,8 +238,8 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
       }
 
       await callCli(['build', '--cwd', pathPrefix], options)
-      const deploy = await callCli(['deploy', '--json', '--cwd', pathPrefix], options).then((output) =>
-        JSON.parse(output as string),
+      const deploy = await callCli(['deploy', '--json', '--no-build', '--cwd', pathPrefix], options).then(
+        (output: string) => JSON.parse(output),
       )
 
       // give edge functions manifest a couple ticks to propagate
@@ -252,7 +254,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
     })
   })
 
-  test('should run build command before deploy when build flag is passed', async (t) => {
+  test('runs build command before deploy by default', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       const content = '<h1>⊂◉‿◉つ</h1>'
       builder
@@ -279,10 +281,10 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
 
       await builder.build()
 
-      const output = (await callCli(['deploy', '--build'], {
+      const output: string = await callCli(['deploy'], {
         cwd: builder.directory,
         env: { NETLIFY_SITE_ID: context.siteId },
-      })) as string
+      })
 
       t.expect(output).toContain('Netlify Build completed in')
       const [, deployId] = output.match(/DEPLOY_ID: (\w+)/) ?? []
@@ -290,6 +292,111 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
 
       t.expect(deployId).not.toEqual('0')
       t.expect(deployURL).toContain(`https://${deployId}--`)
+    })
+  })
+
+  test('warns and proceeds if extraneous `--build` is explicitly passed', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      const content = '<h1>⊂◉‿◉つ</h1>'
+      builder
+        .withContentFile({
+          path: 'public/index.html',
+          content,
+        })
+        .withNetlifyToml({
+          config: {
+            build: { publish: 'public' },
+            plugins: [{ package: './plugins/log-env' }],
+          },
+        })
+        .withBuildPlugin({
+          name: 'log-env',
+          plugin: {
+            async onSuccess() {
+              const { DEPLOY_ID, DEPLOY_URL } = require('process').env
+              console.log(`DEPLOY_ID: ${DEPLOY_ID}`)
+              console.log(`DEPLOY_URL: ${DEPLOY_URL}`)
+            },
+          },
+        })
+
+      await builder.build()
+
+      const output: string = await callCli(['deploy', '--build'], {
+        cwd: builder.directory,
+        env: { NETLIFY_SITE_ID: context.siteId },
+      })
+
+      t.expect(output).toMatch(
+        /--build.+is now the default and can safely be omitted. This will fail in a future version./,
+      )
+
+      t.expect(output).toContain('Netlify Build completed in')
+      const [, deployId] = output.match(/DEPLOY_ID: (\w+)/) ?? []
+      const [, deployURL] = output.match(/DEPLOY_URL: (.+)/) ?? []
+
+      t.expect(deployId).not.toEqual('0')
+      t.expect(deployURL).toContain(`https://${deployId}--`)
+    })
+  })
+
+  test('should return valid json when --json is passed', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      const content = '<h1>⊂◉‿◉つ</h1>'
+      builder
+        .withContentFile({
+          path: 'public/index.html',
+          content,
+        })
+        .withNetlifyToml({
+          config: {
+            build: { publish: 'public' },
+          },
+        })
+
+      await builder.build()
+
+      const output: string = await callCli(['deploy', '--json'], {
+        cwd: builder.directory,
+        env: { NETLIFY_SITE_ID: context.siteId },
+      })
+
+      expect(() => JSON.parse(output)).not.toThrowError()
+    })
+  })
+
+  test('does not run build command and build plugins before deploy when --no-build flag is passed', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      const content = '<h1>⊂◉‿◉つ</h1>'
+      builder
+        .withContentFile({
+          path: 'public/index.html',
+          content,
+        })
+        .withNetlifyToml({
+          config: {
+            build: { publish: 'public' },
+            plugins: [{ package: './plugins/log-hello' }],
+          },
+        })
+        .withBuildPlugin({
+          name: 'log-hello',
+          plugin: {
+            async onSuccess() {
+              console.log('Hello from a build plugin')
+            },
+          },
+        })
+
+      await builder.build()
+
+      const output: string = await callCli(['deploy', '--no-build'], {
+        cwd: builder.directory,
+        env: { NETLIFY_SITE_ID: context.siteId },
+      })
+
+      t.expect(output).not.toContain('Netlify Build completed in')
+      t.expect(output).not.toContain('Hello from a build plugin')
     })
   })
 
@@ -302,10 +409,10 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
       })
       await builder.build()
 
-      const deploy = await callCli(['deploy', '--json', '--dir', 'public'], {
+      const deploy = await callCli(['deploy', '--json', '--no-build', '--dir', 'public'], {
         cwd: builder.directory,
         env: { NETLIFY_SITE_ID: context.siteId },
-      }).then((output) => JSON.parse(output as string))
+      }).then((output: string) => JSON.parse(output))
 
       await validateDeploy({ deploy, siteName: SITE_NAME, content })
       expect(deploy).toHaveProperty('logs', `https://app.netlify.com/sites/${SITE_NAME}/deploys/${deploy.deploy_id}`)
@@ -329,10 +436,10 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
       })
       await builder.build()
 
-      const deploy = await callCli(['deploy', '--json', '--dir', 'public', '--prod'], {
+      const deploy = await callCli(['deploy', '--json', '--no-build', '--dir', 'public', '--prod'], {
         cwd: builder.directory,
         env: { NETLIFY_SITE_ID: context.siteId },
-      }).then((output) => JSON.parse(output as string))
+      }).then((output: string) => JSON.parse(output))
 
       await validateDeploy({ deploy, siteName: SITE_NAME, content })
       expect(deploy).toHaveProperty('logs', `https://app.netlify.com/sites/${SITE_NAME}/deploys/${deploy.deploy_id}`)
@@ -341,31 +448,6 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         'edge_function_logs',
         `https://app.netlify.com/sites/${SITE_NAME}/logs/edge-functions`,
       )
-    })
-  })
-
-  test('should return valid json when both --build and --json are passed', async (t) => {
-    await withSiteBuilder(t, async (builder) => {
-      const content = '<h1>⊂◉‿◉つ</h1>'
-      builder
-        .withContentFile({
-          path: 'public/index.html',
-          content,
-        })
-        .withNetlifyToml({
-          config: {
-            build: { publish: 'public' },
-          },
-        })
-
-      await builder.build()
-
-      const output = await callCli(['deploy', '--build', '--json'], {
-        cwd: builder.directory,
-        env: { NETLIFY_SITE_ID: context.siteId },
-      })
-
-      JSON.parse(output as string)
     })
   })
 
@@ -398,10 +480,10 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
 
       await builder.build()
 
-      const deploy = await callCli(['deploy', '--json'], {
+      const deploy = await callCli(['deploy', '--json', '--no-build'], {
         cwd: builder.directory,
         env: { NETLIFY_SITE_ID: context.siteId },
-      }).then((output) => JSON.parse(output as string))
+      }).then((output: string) => JSON.parse(output))
 
       await validateDeploy({ deploy, siteName: SITE_NAME, content: 'index' })
       await validateContent({
@@ -443,10 +525,10 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
 
       await builder.build()
 
-      const deploy = await callCli(['deploy', '--json'], {
+      const deploy = await callCli(['deploy', '--json', '--no-build'], {
         cwd: builder.directory,
         env: { NETLIFY_SITE_ID: context.siteId },
-      }).then((output) => JSON.parse(output as string))
+      }).then((output: string) => JSON.parse(output))
 
       await validateDeploy({ deploy, siteName: SITE_NAME, content: 'index' })
       await validateContent({
@@ -478,10 +560,10 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
 
       await builder.build()
 
-      const deploy = await callCli(['deploy', '--json'], {
+      const deploy = await callCli(['deploy', '--json', '--no-build'], {
         cwd: builder.directory,
         env: { NETLIFY_SITE_ID: context.siteId },
-      }).then((output) => JSON.parse(output as string))
+      }).then((output: string) => JSON.parse(output))
 
       await validateDeploy({ deploy, siteName: SITE_NAME, content: 'index' })
       await validateContent({
@@ -497,7 +579,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
       await builder.build()
 
       try {
-        await callCli(['deploy', '--dir', '.'], {
+        await callCli(['deploy', '--no-build', '--dir', '.'], {
           cwd: builder.directory,
           env: { NETLIFY_SITE_ID: context.siteId },
         })
@@ -507,7 +589,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
     })
   })
 
-  test('should refresh configuration when --build is passed', async (t) => {
+  test('refreshes configuration when building before deployment', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       await builder
         .withContentFile({
@@ -528,7 +610,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
               const { mkdir, writeFile } = require('node:fs/promises') as typeof import('node:fs/promises')
 
               const generatedFunctionsDir = 'new_functions'
-              // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'Functions... Remove this comment to see the full error message
+              // @ts-expect-error
               netlifyConfig.functions.directory = generatedFunctionsDir
 
               await mkdir(generatedFunctionsDir)
@@ -542,7 +624,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         .build()
 
       const { deploy_url: deployUrl } = (await callCli(
-        ['deploy', '--build', '--json'],
+        ['deploy', '--json'],
         {
           cwd: builder.directory,
           env: { NETLIFY_SITE_ID: context.siteId },
@@ -652,7 +734,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         .build()
 
       const { deploy_url: deployUrl } = (await callCli(
-        ['deploy', '--build', '--json'],
+        ['deploy', '--json'],
         {
           cwd: builder.directory,
           env: { NETLIFY_SITE_ID: context.siteId },
@@ -700,7 +782,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         .build()
 
       const { deploy_url: deployUrl } = (await callCli(
-        ['deploy', '--build', '--json'],
+        ['deploy', '--json'],
         {
           cwd: builder.directory,
           env: { NETLIFY_SITE_ID: context.siteId },
@@ -758,7 +840,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         .build()
 
       const deploy = (await callCli(
-        ['deploy', '--json', '--build'],
+        ['deploy', '--json'],
         {
           cwd: builder.directory,
           env: { NETLIFY_SITE_ID: context.siteId },
@@ -843,7 +925,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         .build()
 
       const { deploy_url: deployUrl } = (await callCli(
-        ['deploy', '--json'],
+        ['deploy', '--json', '--no-build'],
         {
           cwd: builder.directory,
           env: { NETLIFY_SITE_ID: context.siteId },
@@ -902,7 +984,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         .build()
 
       const { deploy_url: deployUrl } = (await callCli(
-        ['deploy', '--json', '--skip-functions-cache'],
+        ['deploy', '--json', '--no-build', '--skip-functions-cache'],
         {
           cwd: builder.directory,
           env: { NETLIFY_SITE_ID: context.siteId },
@@ -963,7 +1045,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         .build()
 
       const { deploy_url: deployUrl } = (await callCli(
-        ['deploy', '--json'],
+        ['deploy', '--json', '--no-build'],
         {
           cwd: builder.directory,
           env: { NETLIFY_SITE_ID: context.siteId },
@@ -1022,7 +1104,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
 
       await execa.command('npm install', { cwd: builder.directory })
       const { deploy_url: deployUrl } = (await callCli(
-        ['deploy', '--json'],
+        ['deploy', '--json', '--no-build'],
         {
           cwd: builder.directory,
           env: { NETLIFY_SITE_ID: context.siteId },
@@ -1037,13 +1119,13 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
 
   setupFixtureTests('next-app-without-config', () => {
     test<FixtureTestContext>(
-      'should run deploy with --build without any netlify specific configuration',
+      'build without error without any netlify specific configuration',
       {
         timeout: 300_000,
       },
       async ({ fixture }) => {
         const { deploy_url: deployUrl } = (await callCli(
-          ['deploy', '--build', '--json'],
+          ['deploy', '--json'],
           {
             cwd: fixture.directory,
             env: { NETLIFY_SITE_ID: context.siteId },
@@ -1064,7 +1146,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
     await withSiteBuilder(t, async (builder) => {
       await builder.build()
       try {
-        await callCli(['deploy', '--prod-if-unlocked', '--prod'], {
+        await callCli(['deploy', '--no-build', '--prod-if-unlocked', '--prod'], {
           cwd: builder.directory,
           env: { NETLIFY_SITE_ID: context.siteId },
         })
