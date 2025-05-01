@@ -609,6 +609,9 @@ const bundleEdgeFunctions = async (options: DeployOptionValues, command: BaseCom
     packagePath: command.workspacePackage,
     buffer: true,
     featureFlags: edgeFunctionsFeatureFlags,
+    // We log our own progress so we don't want this as well. Plus, this logs much of the same
+    // information as the build that (likely) came before this as part of the deploy build.
+    quiet: options.debug ?? true,
     // @ts-expect-error FIXME(serhalp): This is missing from the `runCoreSteps` type in @netlify/build
     edgeFunctionsBootstrapURL: await getBootstrapURL(),
   })
