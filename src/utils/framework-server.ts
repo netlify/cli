@@ -46,7 +46,7 @@ export const startFrameworkServer = async function ({
   }
 
   if (settings.command) {
-    runCommand(settings.command, { env: settings.env, spinner, cwd, outputPrefix: settings.framework || 'framework' })
+    runCommand(settings.command, { env: settings.env, spinner, cwd })
   }
 
   let port: { open: boolean; ipVersion?: 4 | 6 } | undefined
