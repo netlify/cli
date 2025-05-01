@@ -736,6 +736,7 @@ const prepAndRunDeploy = async ({
     await bundleEdgeFunctions(options, command)
   }
 
+  log('')
   log(
     prettyjson.render({
       'Deploy path': deployFolder,
@@ -743,6 +744,7 @@ const prepAndRunDeploy = async ({
       'Configuration path': configPath,
     }),
   )
+  log()
 
   const { functionsFolderStat } = await validateFolders({
     deployFolder,
