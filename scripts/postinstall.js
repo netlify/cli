@@ -9,27 +9,11 @@ import { fileURLToPath } from 'node:url'
 import process from 'node:process'
 // eslint-disable-next-line no-restricted-imports
 import chalk from 'chalk'
+import boxen from 'boxen'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-const identity = (message) => message
-
-/**
- *
- * @param {string} message
- * @param {Array<chalk['Color'] | chalk['Modifiers']>} styles
- * @returns
- */
-const format = (message, styles) => {
-  let func = identity
-  try {
-    func = chalk
-    styles.forEach((style) => {
-      func = func[style]
-    })
-  } catch {}
-  return func(message)
-}
+const NETLIFY_CYAN_HEX = '#28b5ac'
 
 const postInstall = async () => {
   const { createMainCommand } = await import('../dist/commands/index.js')
@@ -45,24 +29,36 @@ const postInstall = async () => {
   }
 
   console.log('')
-  console.log(await format('Success! Netlify CLI has been installed!', ['greenBright', 'bold', 'underline']))
-  console.log('')
-  console.log('Your device is now configured to use Netlify CLI to deploy and manage your Netlify sites.')
-  console.log('')
+  console.log(
+    boxen(
+      `Success! Netlify CLI has been installed!
+
+      You can now use Netlify CLI to develop, deploy, and manage your Netlify sites.
+
+      🚀 Now get building!`,
+      {
+        padding: 1,
+        margin: 1,
+        textAlignment: 'center',
+        borderStyle: 'round',
+        borderColor: NETLIFY_CYAN_HEX,
+        // This is an intentional half-width space to work around a unicode padding math bug in boxen
+        title: '⬥ ',
+        titleAlignment: 'center',
+      },
+    ),
+  )
   console.log('Next steps:')
-  console.log('')
+  console.log(`  ${chalk.cyanBright.bold('netlify login')}    Log in to your Netlify account`)
   console.log(
-    `  ${await format('netlify init', [
-      'cyanBright',
-      'bold',
-    ])}     Connect or create a Netlify site from current directory`,
+    `  ${chalk.cyanBright.bold('netlify init')}     Connect or create a Netlify site from the current directory`,
   )
-  console.log(
-    `  ${await format('netlify deploy', ['cyanBright', 'bold'])}   Deploy the latest changes to your Netlify site`,
-  )
+  console.log(`  ${chalk.cyanBright.bold('netlify deploy')}   Deploy the latest changes to your Netlify site`)
+  console.log(`  ${chalk.cyanBright.bold('netlify help')}     Find out what else you can do 👀`)
   console.log('')
-  console.log(`For more information on the CLI run ${await format('netlify help', ['cyanBright', 'bold'])}`)
-  console.log(`Or visit the docs at ${await format('https://cli.netlify.com', ['cyanBright', 'bold'])}`)
+  console.log(`For more help with the CLI, visit ${chalk.cyanBright.bold('https://developers.netlify.com/cli')}`)
+  console.log('')
+  console.log(`For help with Netlify, visit ${chalk.cyanBright.bold('https://docs.netlify.com')}`)
   console.log('')
 }
 
@@ -73,7 +69,7 @@ const main = async () => {
   try {
     await fs.stat(path.resolve(__dirname, '../.git'))
   } catch (err) {
-    if (err.code === 'ENOENT') {
+    if (err instanceof Error && 'code' in err && err.code === 'ENOENT') {
       isEndUserInstall = true
     }
   }
