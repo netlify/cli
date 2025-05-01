@@ -9,8 +9,11 @@ import { fileURLToPath } from 'node:url'
 import process from 'node:process'
 // eslint-disable-next-line no-restricted-imports
 import chalk from 'chalk'
+import boxen from 'boxen'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
+
+const NETLIFY_CYAN_HEX = '#28b5ac'
 
 const postInstall = async () => {
   const { createMainCommand } = await import('../dist/commands/index.js')
@@ -26,21 +29,36 @@ const postInstall = async () => {
   }
 
   console.log('')
-  console.log(chalk.greenBright.bold.underline('Success! Netlify CLI has been installed!'))
-  console.log('')
-  console.log('Your device is now configured to use Netlify CLI to deploy and manage your Netlify sites.')
-  console.log('')
+  console.log(
+    boxen(
+      `Success! Netlify CLI has been installed!
+
+      You can now use Netlify CLI to develop, deploy, and manage your Netlify sites.
+
+      🚀 Now get building!`,
+      {
+        padding: 1,
+        margin: 1,
+        textAlignment: 'center',
+        borderStyle: 'round',
+        borderColor: NETLIFY_CYAN_HEX,
+        // This is an intentional half-width space to work around a unicode padding math bug in boxen
+        title: '⬥ ',
+        titleAlignment: 'center',
+      },
+    ),
+  )
   console.log('Next steps:')
-  console.log('')
+  console.log(`  ${chalk.cyanBright.bold('netlify login')}    Log in to your Netlify account`)
   console.log(
-    `  ${chalk.cyanBright.bold('netlify init')}     Connect or create a Netlify site from current directory`,
+    `  ${chalk.cyanBright.bold('netlify init')}     Connect or create a Netlify site from the current directory`,
   )
-  console.log(
-    `  ${chalk.cyanBright.bold('netlify deploy')}   Deploy the latest changes to your Netlify site`,
-  )
+  console.log(`  ${chalk.cyanBright.bold('netlify deploy')}   Deploy the latest changes to your Netlify site`)
+  console.log(`  ${chalk.cyanBright.bold('netlify help')}     Find out what else you can do 👀`)
   console.log('')
-  console.log(`For more information on the CLI run ${chalk.cyanBright.bold('netlify help')}`)
-  console.log(`Or visit the docs at ${chalk.cyanBright.bold('https://cli.netlify.com')}`)
+  console.log(`For more help with the CLI, visit ${chalk.cyanBright.bold('https://developers.netlify.com/cli')}`)
+  console.log('')
+  console.log(`For help with Netlify, visit ${chalk.cyanBright.bold('https://docs.netlify.com')}`)
   console.log('')
 }
 
