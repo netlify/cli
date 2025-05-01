@@ -653,12 +653,14 @@ const printResults = ({
   runBuildCommand: boolean
 }): void => {
   const msgData: Record<string, string> = {
-    'Build logs': results.logsUrl,
-    'Function logs': results.functionLogsUrl,
-    'Edge function Logs': results.edgeFunctionLogsUrl,
+    'Build logs': terminalLink(results.logsUrl, results.logsUrl),
+    'Function logs': terminalLink(results.functionLogsUrl, results.functionLogsUrl),
+    'Edge function Logs': terminalLink(results.edgeFunctionLogsUrl, results.edgeFunctionLogsUrl),
   }
 
-  log()
+  log('')
+  // Note: this is leakily mimicking the @netlify/build heading style
+  log(chalk.cyanBright.bold(`🚀 Deploy complete\n${'─'.repeat(64)}`))
 
   // Json response for piping commands
   if (json) {
@@ -678,8 +680,6 @@ const printResults = ({
     logJson(jsonData)
     exit(0)
   } else {
-    log(prettyjson.render(msgData))
-
     const message = deployToProduction
       ? `Deployed to production URL: ${terminalLink(results.siteUrl, results.siteUrl)}\n
     Unique deploy URL: ${terminalLink(results.deployUrl, results.deployUrl)}`
@@ -694,10 +694,12 @@ const printResults = ({
         borderColor: NETLIFY_CYAN_HEX,
         // This is an intentional half-width space to work around a unicode padding math bug in boxen
         // eslint-disable-next-line no-irregular-whitespace
-        title: `⬥ ${deployToProduction ? 'Production deploy' : 'Draft deploy'} is live ⬥`,
+        title: `⬥  ${deployToProduction ? 'Production deploy' : 'Draft deploy'} is live ⬥ `,
         titleAlignment: 'center',
       }),
     )
+
+    log(prettyjson.render(msgData))
 
     if (!deployToProduction) {
       log()
@@ -746,6 +748,10 @@ const prepAndRunDeploy = async ({
   if (!options.build && edgeFunctionsConfig && edgeFunctionsConfig.length !== 0) {
     await bundleEdgeFunctions(options, command)
   }
+
+  log('')
+  // Note: this is leakily mimicking the @netlify/build heading style
+  log(chalk.cyanBright.bold(`Deploying to Netlify\n${'─'.repeat(64)}`))
 
   log('')
   log(
