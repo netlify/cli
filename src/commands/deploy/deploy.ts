@@ -645,13 +645,11 @@ interface JsonData {
 
 const printResults = ({
   deployToProduction,
-  isIntegrationDeploy,
   json,
   results,
   runBuildCommand,
 }: {
   deployToProduction: boolean
-  isIntegrationDeploy: boolean
   json: boolean
   results: Awaited<ReturnType<typeof prepAndRunDeploy>>
   runBuildCommand: boolean
@@ -697,7 +695,7 @@ const printResults = ({
       log('If everything looks good on your draft URL, deploy it to your main site URL with the --prod flag.')
       log(
         chalk.cyanBright.bold(
-          `netlify ${isIntegrationDeploy ? 'integration:' : ''}deploy${runBuildCommand ? ' --build' : ''} --prod`,
+          `netlify deploy${runBuildCommand ? ' --build' : ''} --prod`,
         ),
       )
       log()
@@ -893,11 +891,8 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
       deployToProduction,
     })
   }
-  const isIntegrationDeploy = command.name() === 'integration:deploy'
-
   printResults({
     runBuildCommand: options.build,
-    isIntegrationDeploy,
     json: options.json,
     results,
     deployToProduction,
