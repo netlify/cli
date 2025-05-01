@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { argv } from 'process'
+import EventEmitter from 'events'
 
 import { maybeEnableCompileCache } from '../dist/utils/nodejs-compile-cache.js'
 
@@ -20,6 +21,12 @@ const UPDATE_BOXEN_OPTIONS = {
 }
 
 const main = async () => {
+  // TODO(serhalp) Investigate and fix this at the root instead.
+  // This avoids `MaxListenersExceededWarning` warnings during Edge Functions bundling,
+  // from somewhere around here:
+  // https://github.com/netlify/build/blob/ca0bb348b3d7437d2418526f49b803a3db4e5ac2/packages/build/src/steps/run_step.ts.
+  EventEmitter.defaultMaxListeners = 25
+
   const { default: chalk } = await import('chalk')
   const { default: updateNotifier } = await import('update-notifier')
   const { default: terminalLink } = await import('terminal-link')
