@@ -345,7 +345,7 @@ const deployProgressCb = function () {
         return
       case 'stop':
       default: {
-        stopSpinner({ spinner: spinnersByType[event.type], text: event.msg })
+        spinnersByType[event.type].success(event.msg)
         delete spinnersByType[event.type]
       }
     }
