@@ -280,7 +280,6 @@ const prepareProductionDeploy = async ({ api, siteData }) => {
     await api.unlockDeploy({ deploy_id: siteData.published_deploy.id })
     log(`\n${NETLIFYDEVLOG} "Auto publishing" has been enabled for production context\n`)
   }
-  log('Deploying to main site URL...')
 }
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'actual' implicitly has an 'any' type.
@@ -460,8 +459,6 @@ const runDeploy = async ({
   try {
     if (deployToProduction) {
       await prepareProductionDeploy({ siteData, api })
-    } else {
-      log('Deploying to draft URL...')
     }
 
     const draft = !deployToProduction && !alias
