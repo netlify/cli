@@ -10,7 +10,7 @@ import {
 } from '../../lib/blobs/blobs.js'
 import { promptEditorHelper } from '../../lib/edge-functions/editor-helper.js'
 import { startFunctionsServer } from '../../lib/functions/server.js'
-import { printBanner } from '../../utils/banner.js'
+import { printBanner } from '../../utils/dev-server-banner.js'
 import {
   NETLIFYDEVERR,
   NETLIFYDEVLOG,

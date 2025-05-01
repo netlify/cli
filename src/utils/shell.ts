@@ -36,15 +36,18 @@ const cleanupBeforeExit = async ({ exitCode }: { exitCode?: number | undefined }
   }
 }
 
+// TODO(serhalp): Move (or at least rename). This sounds like a generic shell util but it's specific
+// to `netlify dev`...
 export const runCommand = (
   command: string,
   options: {
     spinner?: Spinner
     env?: NodeJS.ProcessEnv
     cwd: string
+    outputPrefix?: string
   },
 ) => {
-  const { cwd, env = {}, spinner } = options
+  const { cwd, env = {}, spinner, outputPrefix } = options
   const commandProcess = execa.command(command, {
     preferLocal: true,
     // we use reject=false to avoid rejecting synchronously when the command doesn't exist
@@ -61,10 +64,12 @@ export const runCommand = (
 
   // Ensure that an active spinner stays at the bottom of the commandline
   // even though the actual framework command might be outputting stuff
-  const pipeDataWithSpinner = (writeStream: NodeJS.WriteStream, chunk: string | Uint8Array) => {
+  const pipeDataWithSpinner = (writeStream: NodeJS.WriteStream, inChunk: string | Uint8Array) => {
     // Clear the spinner, write the framework command line, then resume spinning
     spinner?.clear()
-    writeStream.write(chunk, () => {
+    const outChunk =
+      outputPrefix != null ? inChunk.toString().replaceAll('\n', `\n${chalk.dim(`[${outputPrefix}] `)}`) : inChunk
+    writeStream.write(outChunk, () => {
       spinner?.spin()
     })
   }

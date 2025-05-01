@@ -8,7 +8,7 @@ import { supportsBackgroundFunctions } from '../lib/account.js'
 
 import { NETLIFYDEVLOG, chalk, logAndThrowError, log, warn, APIError } from './command-helpers.js'
 import { loadDotEnvFiles } from './dot-env.js'
-import type { SiteInfo } from './types.js'
+import type { EnvironmentVariables, SiteInfo } from './types.js'
 
 // Possible sources of environment variables. For the purpose of printing log messages only. Order does not matter.
 const ENV_VAR_SOURCES = {
@@ -167,10 +167,9 @@ const getEnvSourceName = (source) => {
 
 /**
  * @param {{devConfig: any, env: Record<string, { sources: string[], value: string}>, site: any}} param0
- * @returns {Promise<Record<string, { sources: string[], value: string}>>}
  */
 // @ts-expect-error TS(7031) FIXME: Binding element 'devConfig' implicitly has an 'any... Remove this comment to see the full error message
-export const getDotEnvVariables = async ({ devConfig, env, site }) => {
+export const getDotEnvVariables = async ({ devConfig, env, site }): Promise<EnvironmentVariables> => {
   const dotEnvFiles = await loadDotEnvFiles({ envFiles: devConfig.envFiles, projectDir: site.root })
   // @ts-expect-error TS(2339) FIXME: Property 'env' does not exist on type '{ warning: ... Remove this comment to see the full error message
   dotEnvFiles.forEach(({ env: fileEnv, file }) => {
@@ -195,20 +194,15 @@ export const getDotEnvVariables = async ({ devConfig, env, site }) => {
 
 /**
  * Takes a set of environment variables in the format provided by @netlify/config and injects them into `process.env`
- * @param {Record<string, { sources: string[], value: string}>} env
- * @return {void}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'env' implicitly has an 'any' type.
-export const injectEnvVariables = (env) => {
+export const injectEnvVariables = (env: EnvironmentVariables): void => {
+  const envVarsToLogByUsedSource: Record<string, string[]> = {}
   for (const [key, variable] of Object.entries(env)) {
     const existsInProcess = process.env[key] !== undefined
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
     const [usedSource, ...overriddenSources] = existsInProcess ? ['process', ...variable.sources] : variable.sources
     const usedSourceName = getEnvSourceName(usedSource)
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
     const isInternal = variable.sources.includes('internal')
 
-    // @ts-expect-error TS(7006) FIXME: Parameter 'source' implicitly has an 'any' type.
     overriddenSources.forEach((source) => {
       const sourceName = getEnvSourceName(source)
 
@@ -224,12 +218,17 @@ export const injectEnvVariables = (env) => {
     if (!existsInProcess || isInternal) {
       // Omitting `general` and `internal` env vars to reduce noise in the logs.
       if (usedSource !== 'general' && !isInternal) {
-        log(`${NETLIFYDEVLOG} Injected ${usedSourceName} env var: ${chalk.yellow(key)}`)
+        envVarsToLogByUsedSource[usedSource] ??= []
+        envVarsToLogByUsedSource[usedSource].push(key)
       }
 
-      // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
       process.env[key] = variable.value
     }
+  }
+
+  for (const [source, keys] of Object.entries(envVarsToLogByUsedSource)) {
+    const sourceName = getEnvSourceName(source)
+    log(`${NETLIFYDEVLOG} Injected ${sourceName} env vars: ${keys.map((key) => chalk.yellow(key)).join(', ')}`)
   }
 }
 

@@ -13,6 +13,6 @@ exports[`commands/recipes > Shows a list of all the available recipes 1`] = `
 `;
 
 exports[`commands/recipes > Suggests closest matching recipe on typo 1`] = `
-"◈ vsc is not a valid recipe name.
+"⬥ vsc is not a valid recipe name.
 ? Did you mean vscode (y/N) [28D[28C"
 `;

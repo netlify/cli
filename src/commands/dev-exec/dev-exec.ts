@@ -10,7 +10,6 @@ export const devExec = async (cmd: string, options: OptionValues, command: BaseC
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const withEnvelopeEnvVars = await getEnvelopeEnv({ api, context: options.context, env: cachedConfig.env, siteInfo })
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const withDotEnvVars = await getDotEnvVariables({ devConfig: { ...config.dev }, env: withEnvelopeEnvVars, site })
 
   injectEnvVariables(withDotEnvVars)

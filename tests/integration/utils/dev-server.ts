@@ -129,7 +129,7 @@ const startServer = async ({
     })
     ps.stdout!.on('data', (data: Buffer) => {
       outputBuffer.push(data)
-      if (!expectFailure && data.includes('Server now ready on')) {
+      if (!expectFailure && data.includes('Local dev server ready')) {
         setImmediate(() => {
           resolve({
             url,

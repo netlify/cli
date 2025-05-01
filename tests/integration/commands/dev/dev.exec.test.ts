@@ -16,7 +16,7 @@ test('should pass .env variables to exec command', async (t) => {
       const cmd = process.platform === 'win32' ? 'set' : 'printenv'
       const output = (await callCli(['dev:exec', cmd], getCLIOptions({ builder, apiUrl }))) as string
 
-      t.expect(output).toContain('Injected .env file env var: MY_SUPER_SECRET')
+      t.expect(output).toContain('Injected .env file env vars: MY_SUPER_SECRET')
       t.expect(output).toContain('MY_SUPER_SECRET=SECRET')
     })
   })

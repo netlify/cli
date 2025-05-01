@@ -61,11 +61,13 @@ export const USER_AGENT = `${name}/${version} ${platform}-${arch} node-${process
 const BASE_FLAGS = new Set(['--debug', '--http-proxy', '--http-proxy-certificate-filename'])
 
 export const NETLIFY_CYAN = chalk.rgb(40, 180, 170)
+export const NETLIFY_CYAN_HEX = '#28b5ac'
 
-export const NETLIFYDEV = `${chalk.greenBright('◈')} ${NETLIFY_CYAN('Netlify Dev')} ${chalk.greenBright('◈')}`
-export const NETLIFYDEVLOG = chalk.greenBright('◈')
-export const NETLIFYDEVWARN = chalk.yellowBright('◈')
-export const NETLIFYDEVERR = chalk.redBright('◈')
+// TODO(serhalp) I *think* this "dev" naming is a vestige of the predecessor of the CLI? Rename to avoid
+// confusion with `netlify dev` command?
+export const NETLIFYDEVLOG = chalk.greenBright('⬥')
+export const NETLIFYDEVWARN = chalk.yellowBright('⬥')
+export const NETLIFYDEVERR = chalk.redBright('⬥')
 
 export const BANG = process.platform === 'win32' ? '»' : '›'
 

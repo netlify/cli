@@ -725,7 +725,7 @@ describe.concurrent('command/dev', () => {
             },
             async (server) => {
               const output = server.outputBuffer.map((buf: Buffer) => buf.toString()).join('\n')
-              t.expect(output).toContain('Server now ready')
+              t.expect(output).toContain('Local dev server ready')
               // With node 23 we might be getting some warnings from one of our dependencies
               // which should go away once this is merged: https://github.com/debug-js/debug/pull/977
               const errorOutput = server.errorBuffer.map((buf: Buffer) => buf.toString()).join('\n')
@@ -778,7 +778,7 @@ describe.concurrent('command/dev', () => {
             async (server) => {
               const output = server.outputBuffer.map((buf: Buffer) => buf.toString()).join('\n')
               t.expect(output).toContain('Netlify configuration property "build.environment.SOME_ENV" value changed.')
-              t.expect(output).toContain('Server now ready')
+              t.expect(output).toContain('Local dev server ready')
 
               const res = await fetch(new URL('/', server.url))
               t.expect(res.status).toBe(200)
