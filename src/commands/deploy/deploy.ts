@@ -26,6 +26,7 @@ import { BACKGROUND_FUNCTIONS_WARNING } from '../../lib/log.js'
 import { type Spinner, startSpinner, stopSpinner } from '../../lib/spinner.js'
 import { detectFrameworkSettings, getDefaultConfig } from '../../utils/build-info.js'
 import {
+  NETLIFY_CYAN_HEX,
   NETLIFYDEVERR,
   NETLIFYDEVLOG,
   chalk,
@@ -50,8 +51,6 @@ import { SiteInfo } from '../../utils/types.js'
 import type { DeployOptionValues } from './option_values.js'
 import boxen from 'boxen'
 import terminalLink from 'terminal-link'
-
-const NETLIFY_CYAN_HEX = '#28b5ac'
 
 const triggerDeploy = async ({
   api,
