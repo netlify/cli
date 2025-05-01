@@ -589,13 +589,7 @@ const handleBuild = async ({
   return { newConfig, configMutations }
 }
 
-/**
- *
- * @param {*} options Bundling options
- * @returns
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
-const bundleEdgeFunctions = async (options, command: BaseCommand) => {
+const bundleEdgeFunctions = async (options: DeployOptionValues, command: BaseCommand): Promise<void> => {
   const argv = process.argv.slice(2)
   const statusCb =
     options.silent || argv.includes('--json') || argv.includes('--silent') ? () => {} : deployProgressCb()
@@ -611,6 +605,7 @@ const bundleEdgeFunctions = async (options, command: BaseCommand) => {
     packagePath: command.workspacePackage,
     buffer: true,
     featureFlags: edgeFunctionsFeatureFlags,
+    // @ts-expect-error FIXME(serhalp): This is missing from the `runCoreSteps` type in @netlify/build
     edgeFunctionsBootstrapURL: await getBootstrapURL(),
   })
 
@@ -703,24 +698,21 @@ const printResults = ({
 }
 
 const prepAndRunDeploy = async ({
-  // @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
   api,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'command' implicitly has an 'any' ... Remove this comment to see the full error message
   command,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'any' t... Remove this comment to see the full error message
   config,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'deployToProduction' implicitly ha... Remove this comment to see the full error message
   deployToProduction,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'options' implicitly has an 'any' ... Remove this comment to see the full error message
   options,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'site' implicitly has an 'any' typ... Remove this comment to see the full error message
   site,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'siteData' implicitly has an 'any'... Remove this comment to see the full error message
   siteData,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'siteId' implicitly has an 'any' t... Remove this comment to see the full error message
   siteId,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'workingDir' implicitly has an 'an... Remove this comment to see the full error message
   workingDir,
+}: {
+  options: DeployOptionValues
+  command: BaseCommand
+  workingDir: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- FIXME(serhalp)
+  [key: string]: any
 }) => {
   const alias = options.alias || options.branch
   // if a context is passed besides dev, we need to pull env vars from that specific context
@@ -779,7 +771,7 @@ const prepAndRunDeploy = async ({
     command,
     config,
     deployFolder,
-    deployTimeout: options.timeout * SEC_TO_MILLISEC || DEFAULT_DEPLOY_TIMEOUT,
+    deployTimeout: options.timeout ? options.timeout * SEC_TO_MILLISEC : DEFAULT_DEPLOY_TIMEOUT,
     deployToProduction,
     functionsConfig,
     // pass undefined functionsFolder if doesn't exist
