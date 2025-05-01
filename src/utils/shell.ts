@@ -4,7 +4,7 @@ import { stripVTControlCharacters } from 'util'
 
 import execa from 'execa'
 
-import { stopSpinner, type Spinner } from '../lib/spinner.js'
+import { type Spinner } from '../lib/spinner.js'
 
 import { chalk, log, NETLIFYDEVERR, NETLIFYDEVWARN } from './command-helpers.js'
 import { processOnExit } from './dev.js'
@@ -61,15 +61,9 @@ export const runCommand = (
 
   // Ensure that an active spinner stays at the bottom of the commandline
   // even though the actual framework command might be outputting stuff
-  if (spinner?.isSpinning) {
-    // The spinner is initially "started" in the usual sense (rendering frames on an interval).
-    // In this case, we want to manually control when to clear and when to render a frame, so we turn this off.
-    stopSpinner({ error: false, spinner })
-  }
   const pipeDataWithSpinner = (writeStream: NodeJS.WriteStream, chunk: string | Uint8Array) => {
-    if (spinner?.isSpinning) {
-      spinner.clear()
-    }
+    // Clear the spinner, write the framework command line, then resume spinning
+    spinner?.clear()
     writeStream.write(chunk, () => {
       spinner?.spin()
     })

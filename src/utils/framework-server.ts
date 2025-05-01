@@ -68,7 +68,7 @@ export const startFrameworkServer = async function ({
         throw new Error(`Timed out waiting for port '${settings.frameworkPort}' to be open`)
       }
     }
-    stopSpinner({ error: false, spinner })
+    spinner.success()
   } catch (error_) {
     stopSpinner({ error: true, spinner })
     log(NETLIFYDEVERR, `Netlify Dev could not start or connect to localhost:${settings.frameworkPort}.`)
