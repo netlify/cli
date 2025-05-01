@@ -48,6 +48,10 @@ import { sitesCreate } from '../sites/sites-create.js'
 import type { $TSFixMe } from '../types.js'
 import { SiteInfo } from '../../utils/types.js'
 import type { DeployOptionValues } from './option_values.js'
+import boxen from 'boxen'
+import terminalLink from 'terminal-link'
+
+const NETLIFY_CYAN_HEX = '#28b5ac'
 
 const triggerDeploy = async ({
   api,
@@ -654,14 +658,6 @@ const printResults = ({
     'Edge function Logs': results.edgeFunctionLogsUrl,
   }
 
-  if (deployToProduction) {
-    msgData['Unique deploy URL'] = results.deployUrl
-    msgData['Website URL'] = results.siteUrl
-  } else {
-    msgData['Website draft URL'] = results.deployUrl
-  }
-
-  // Spacer
   log()
 
   // Json response for piping commands
@@ -684,14 +680,29 @@ const printResults = ({
   } else {
     log(prettyjson.render(msgData))
 
+    const message = deployToProduction
+      ? `Deployed to production URL: ${terminalLink(results.siteUrl, results.siteUrl)}\n
+    Unique deploy URL: ${terminalLink(results.deployUrl, results.deployUrl)}`
+      : `Deployed draft to ${terminalLink(results.deployUrl, results.deployUrl)}`
+
+    log(
+      boxen(message, {
+        padding: 1,
+        margin: 1,
+        textAlignment: 'center',
+        borderStyle: 'round',
+        borderColor: NETLIFY_CYAN_HEX,
+        // This is an intentional half-width space to work around a unicode padding math bug in boxen
+        // eslint-disable-next-line no-irregular-whitespace
+        title: `⬥ ${deployToProduction ? 'Production deploy' : 'Draft deploy'} is live ⬥`,
+        titleAlignment: 'center',
+      }),
+    )
+
     if (!deployToProduction) {
       log()
-      log('If everything looks good on your draft URL, deploy it to your main site URL with the --prod flag.')
-      log(
-        chalk.cyanBright.bold(
-          `netlify deploy${runBuildCommand ? ' --build' : ''} --prod`,
-        ),
-      )
+      log('If everything looks good on your draft URL, deploy it to your main site URL with the --prod flag:')
+      log(chalk.cyanBright.bold(`netlify deploy${runBuildCommand ? ' --build' : ''} --prod`))
       log()
     }
   }
