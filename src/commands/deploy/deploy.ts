@@ -26,7 +26,6 @@ import { BACKGROUND_FUNCTIONS_WARNING } from '../../lib/log.js'
 import { type Spinner, startSpinner, stopSpinner } from '../../lib/spinner.js'
 import { detectFrameworkSettings, getDefaultConfig } from '../../utils/build-info.js'
 import {
-  NETLIFYDEV,
   NETLIFYDEVERR,
   NETLIFYDEVLOG,
   chalk,
@@ -72,7 +71,7 @@ const triggerDeploy = async ({
       })
     } else {
       log(
-        `${NETLIFYDEV} A new deployment was triggered successfully. Visit https://app.netlify.com/sites/${siteData.name}/deploys/${siteBuild.deploy_id} to see the logs.`,
+        `${NETLIFYDEVLOG} A new deployment was triggered successfully. Visit https://app.netlify.com/sites/${siteData.name}/deploys/${siteBuild.deploy_id} to see the logs.`,
       )
     }
   } catch (error_) {
