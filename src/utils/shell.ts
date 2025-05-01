@@ -36,6 +36,8 @@ const cleanupBeforeExit = async ({ exitCode }: { exitCode?: number | undefined }
   }
 }
 
+// TODO(serhalp): Move (or at least rename). This sounds like a generic shell util but it's specific
+// to `netlify dev`...
 export const runCommand = (
   command: string,
   options: {

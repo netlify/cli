@@ -4,13 +4,13 @@ import waitPort from 'wait-port'
 
 import { startSpinner, stopSpinner } from '../lib/spinner.js'
 
-import { logAndThrowError, log, NETLIFYDEVERR, NETLIFYDEVLOG } from './command-helpers.js'
+import { logAndThrowError, log, NETLIFYDEVERR, NETLIFYDEVLOG, chalk } from './command-helpers.js'
 import { runCommand } from './shell.js'
 import { startStaticServer } from './static-server.js'
 import type { ServerSettings } from './types.js'
 
-// 10 minutes
-const FRAMEWORK_PORT_TIMEOUT = 6e5
+const FRAMEWORK_PORT_TIMEOUT_MS = 10 * 60 * 1000
+const FRAMEWORK_PORT_WARN_TIMEOUT_MS = 5 * 1000
 
 interface StartReturnObject {
   ipVersion?: 4 | 6
@@ -34,10 +34,11 @@ export const startFrameworkServer = async function ({
     return { ipVersion: family === 'IPv6' ? 6 : 4 }
   }
 
-  log(`${NETLIFYDEVLOG} Starting Netlify Dev with ${settings.framework || 'custom config'}`)
+  log('')
+  log(`${NETLIFYDEVLOG} Starting ${settings.framework || 'framework'} dev server`)
 
   const spinner = startSpinner({
-    text: `Waiting for framework port ${settings.frameworkPort}. This can be configured using the 'targetPort' property in the netlify.toml`,
+    text: `Waiting for ${settings.framework || 'framework'} dev server to be ready on port ${settings.frameworkPort}`,
   })
 
   if (settings.clearPublishDirectory && settings.dist) {
@@ -55,24 +56,45 @@ export const startFrameworkServer = async function ({
       const ipVersion = parseInt(process.versions.node.split('.')[0]) >= 18 ? 6 : 4
       port = { open: true, ipVersion }
     } else {
-      port = await waitPort({
+      const waitPortPromise = waitPort({
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         port: settings.frameworkPort!,
         host: 'localhost',
         output: 'silent',
-        timeout: FRAMEWORK_PORT_TIMEOUT,
+        timeout: FRAMEWORK_PORT_TIMEOUT_MS,
         ...(settings.pollingStrategies?.includes('HTTP') && { protocol: 'http' }),
       })
+
+      const timerId = setTimeout(() => {
+        if (!port?.open) {
+          spinner.update({
+            text: `Still waiting for server on port ${
+              settings.frameworkPort
+            } to be ready. Are you sure this is the correct port${
+              settings.framework ? ` for ${settings.framework}` : ''
+            }? Change this with the ${chalk.yellow('targetPort')} option in your ${chalk.yellow('netlify.toml')}.`,
+          })
+        }
+      }, FRAMEWORK_PORT_WARN_TIMEOUT_MS)
+
+      port = await waitPortPromise
+      clearTimeout(timerId)
 
       if (!port.open) {
         throw new Error(`Timed out waiting for port '${settings.frameworkPort}' to be open`)
       }
     }
-    spinner.success()
+    spinner.success(`${settings.framework || 'framework'} dev server ready on port ${settings.frameworkPort}`)
   } catch (error_) {
     stopSpinner({ error: true, spinner })
     log(NETLIFYDEVERR, `Netlify Dev could not start or connect to localhost:${settings.frameworkPort}.`)
     log(NETLIFYDEVERR, `Please make sure your framework server is running on port ${settings.frameworkPort}`)
+    log(
+      NETLIFYDEVERR,
+      `If not, you can configure it using the ${chalk.yellow('targetPort')} option in your ${chalk.yellow(
+        'netlify.toml',
+      )}.`,
+    )
     return logAndThrowError(error_)
   }
 

@@ -7,9 +7,8 @@ import { OptionValues } from 'commander'
 import { BLOBS_CONTEXT_VARIABLE, encodeBlobsContext, getBlobsContextWithEdgeAccess } from '../../lib/blobs/blobs.js'
 import { promptEditorHelper } from '../../lib/edge-functions/editor-helper.js'
 import { startFunctionsServer } from '../../lib/functions/server.js'
-import { printBanner } from '../../utils/banner.js'
+import { printBanner } from '../../utils/dev-server-banner.js'
 import {
-  NETLIFYDEV,
   NETLIFYDEVERR,
   NETLIFYDEVLOG,
   NETLIFYDEVWARN,
@@ -74,7 +73,6 @@ const handleLiveTunnel = async ({
 }
 
 export const dev = async (options: OptionValues, command: BaseCommand) => {
-  log(NETLIFYDEV)
   const { api, cachedConfig, config, repositoryRoot, site, siteInfo, state } = command.netlify
   config.dev = config.dev != null ? { ...config.dev } : undefined
   config.build = { ...config.build }
@@ -156,7 +154,7 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
   process.env.URL = url
   process.env.DEPLOY_URL = url
 
-  log(`${NETLIFYDEVWARN} Setting up local development server`)
+  log(`${NETLIFYDEVLOG} Setting up local dev server`)
 
   const { configMutations, configPath: configPathOverride } = await runDevTimeline({
     command,
@@ -169,7 +167,6 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
   })
 
   // FIXME(serhalp): `applyMutations` is `(any, any) => any)`. Add types in `@netlify/config`.
-
   const mutatedConfig: typeof config = applyMutations(config, configMutations)
 
   const functionsRegistry = await startFunctionsServer({
