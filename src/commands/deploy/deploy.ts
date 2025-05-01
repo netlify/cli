@@ -380,7 +380,9 @@ const uploadDeployBlobs = async ({
   const blobsToken = token || undefined
   const { success } = await runCoreSteps(['blobs_upload'], {
     ...options,
-    quiet: silent,
+    // We log our own progress so we don't want this as well. Plus, this logs much of the same
+    // information as the build that (likely) came before this as part of the deploy build.
+    quiet: options.debug ?? true,
     // @ts-expect-error(serhalp) -- Untyped in `@netlify/build`
     cachedConfig,
     packagePath,
