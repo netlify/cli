@@ -14,6 +14,7 @@ const UPDATE_BOXEN_OPTIONS = {
   borderStyle: 'round', 
   borderColor: NETLIFY_CYAN_HEX,
   float: 'center',
+  // This is an intentional half-width space to work around a unicode padding math bug in boxen
   title: '⬥ ',
   titleAlignment: 'center',
 }
