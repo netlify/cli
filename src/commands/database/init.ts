@@ -17,21 +17,18 @@ export const init = async (_options: OptionValues, command: BaseCommand) => {
 
   const initialOpts = command.opts()
 
-  type Answers = {
-    drizzle: boolean
-    installExtension: boolean
-  }
-
   const opts = command.opts<{
     drizzle?: boolean | undefined
-    /**
-     * Skip prompts and use default values (answer yes to all prompts)
-     */
-    yes?: true | undefined
+    overwrite?: boolean | undefined
+    minimal?: boolean | undefined
   }>()
 
   if (!command.netlify.api.accessToken || !siteInfo.account_id || !siteInfo.name) {
     throw new Error(`Please login with netlify login before running this command`)
+  }
+
+  if (opts.minimal === true) {
+    command.setOptionValue('drizzle', false)
   }
 
   const account = await getAccount(command, { accountId: siteInfo.account_id })
@@ -63,28 +60,17 @@ export const init = async (_options: OptionValues, command: BaseCommand) => {
     log(`Extension "${extension.name}" successfully installed on team "${account.name}"`)
   }
 
-  if (!extension.installedOnTeam && !opts.yes) {
-    const answers = await inquirer.prompt<Answers>([
-      {
-        type: 'confirm',
-        name: 'installExtension',
-        message: `The required extension "${extension.name}" is not installed on team "${account.name}", would you like to install it now?`,
-      },
-    ])
-    if (answers.installExtension) {
-      await installNeonExtension()
-    } else {
-      return
-    }
-  }
-  if (!extension.installedOnTeam && opts.yes) {
+  if (!extension.installedOnTeam) {
     await installNeonExtension()
   }
+
   /**
    * Only prompt for drizzle if the user did not pass in the `--drizzle` or `--no-drizzle` option
    */
-  if (initialOpts.drizzle !== false && initialOpts.drizzle !== true && !initialOpts.yes) {
-    const answers = await inquirer.prompt<Answers>([
+  if (initialOpts.drizzle !== false && initialOpts.drizzle !== true) {
+    const answers = await inquirer.prompt<{
+      drizzle: boolean
+    }>([
       {
         type: 'confirm',
         name: 'drizzle',
@@ -93,8 +79,7 @@ export const init = async (_options: OptionValues, command: BaseCommand) => {
     ])
     command.setOptionValue('drizzle', answers.drizzle)
   }
-
-  if (opts.drizzle || (opts.yes && opts.drizzle !== false)) {
+  if (opts.drizzle) {
     log(`Initializing drizzle...`)
     await initDrizzle(command)
   }
