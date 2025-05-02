@@ -24,23 +24,20 @@ export const createDatabaseCommand = (program: BaseCommand) => {
     .command('db')
     .alias('database')
     .description(`Provision a production ready Postgres database with a single command`)
-    .addExamples([
-      'netlify db status',
-      'netlify db init',
-      'netlify db init --drizzle',
-      'netlify db init --drizzle --overwrite',
-    ])
+    .addExamples(['netlify db status', 'netlify db init', 'netlify db init --help'])
 
   dbCommand
     .command('init')
     .description(`Initialize a new database for the current site`)
     .option(`--drizzle`, 'Initialize basic drizzle config and schema boilerplate')
-    .option('--no-drizzle', 'Skips drizzle')
-    .option('-y, --yes', 'Skip prompts and use default values')
+    .option('--no-drizzle', 'Does not initialize drizzle and skips any related prompts')
+    .option(
+      '--minimal',
+      'Minimal non-interactive setup. Does not initialize drizzle or any boilerplate. Ideal for CI or AI tools.',
+    )
     .option('-o, --overwrite', 'Overwrites existing files that would be created when setting up drizzle')
     .action(init)
+    .addExamples([`netlify db init --minimal`, `netlify db init --drizzle --overwrite`])
 
   dbCommand.command('status').description(`Check the status of the database`).action(status)
-
-  return dbCommand
 }
