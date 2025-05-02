@@ -45,7 +45,7 @@ export const status = async (_options: OptionValues, command: BaseCommand) => {
 
   const extension = await getExtension({
     accountId: account.id,
-    token: netlifyToken,
+    netlifyToken: netlifyToken,
     slug: NEON_DATABASE_EXTENSION_SLUG,
   })
   let siteConfig
@@ -54,7 +54,7 @@ export const status = async (_options: OptionValues, command: BaseCommand) => {
       siteId: command.siteId,
       accountId: siteInfo.account_id,
       slug: NEON_DATABASE_EXTENSION_SLUG,
-      token: netlifyToken,
+      netlifyToken: netlifyToken,
     })
   } catch {
     // no-op, site config does not exist or extension not installed
