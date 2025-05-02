@@ -12,7 +12,7 @@ export const createLinkCommand = (program: BaseCommand) =>
     .option('--git-remote-name <name>', 'Name of Git remote to use. e.g. "origin"')
     .addExamples(['netlify link', 'netlify link --id 123-123-123-123', 'netlify link --name my-site-name'])
     .addHelpText('after', () => {
-      const docsUrl = 'https://docs.netlify.com/cli/site-management/#link-a-site'
+      const docsUrl = 'https://docs.netlify.com/cli/get-started/#link-and-unlink-sites'
       return `
 For more information about linking sites, see ${terminalLink(docsUrl, docsUrl)}
 `

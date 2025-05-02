@@ -8,7 +8,7 @@ export const createUnlinkCommand = (program: BaseCommand) =>
     .command('unlink')
     .description('Unlink a local folder from a Netlify site')
     .addHelpText('after', () => {
-      const docsUrl = 'https://docs.netlify.com/cli/site-management/#unlink-a-site'
+      const docsUrl = 'https://docs.netlify.com/cli/get-started/#link-and-unlink-sites'
       return `
 For more information about linking sites, see ${terminalLink(docsUrl, docsUrl)}
 `

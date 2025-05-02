@@ -1,7 +1,9 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`help command > netlify help 1`] = `
-"VERSION
+"⬥ Netlify CLI
+
+VERSION
   netlify-cli/test-version test-os test-node-version
 
 USAGE
@@ -32,7 +34,11 @@ COMMANDS
   $ status       Print status information
   $ switch       Switch your active Netlify account
   $ unlink       Unlink a local folder from a Netlify site
-  $ watch        Watch for site deploy to finish"
+  $ watch        Watch for site deploy to finish
+
+→ For more help with the CLI, visit https://developers.netlify.com/cli (​https://developers.netlify.com/cli​)
+→ For help with Netlify, visit https://docs.netlify.com (​https://docs.netlify.com​)
+→ To report a CLI bug, visit https://github.com/netlify/cli/issues (​https://github.com/netlify/cli/issues​)"
 `;
 
 exports[`help command > netlify help completion 1`] = `
