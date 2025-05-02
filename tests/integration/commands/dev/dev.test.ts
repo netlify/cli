@@ -40,7 +40,7 @@ const withServeBlobsFunction = (builder: SiteBuilder): SiteBuilder =>
       path: 'package.json',
       content: JSON.stringify({
         dependencies: {
-          '@netlify/blobs': '*',
+          '@netlify/blobs': '^8.0.0',
         },
       }),
     })
