@@ -1,4 +1,5 @@
 import type { OptionValues } from 'commander'
+import terminalLink from 'terminal-link'
 
 import { chalk } from '../../utils/command-helpers.js'
 import requiresSiteInfo from '../../utils/hooks/requires-site-info.js'
@@ -119,5 +120,11 @@ The ${name} command will help you manage the functions in this site`,
       'netlify functions:create --name function-xyz',
       'netlify functions:build --functions build/to/directory --src source/directory',
     ])
+    .addHelpText('afterAll', () => {
+      const docsUrl = 'https://docs.netlify.com/functions/overview/'
+      return `
+For more information about Netlify Functions, see ${terminalLink(docsUrl, docsUrl)}
+`
+    })
     .action(functions)
 }

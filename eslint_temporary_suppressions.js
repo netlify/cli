@@ -251,12 +251,6 @@ export default [
     },
   },
   {
-    files: ['src/commands/init/index.ts'],
-    rules: {
-      '@typescript-eslint/no-unused-vars': 'off',
-    },
-  },
-  {
     files: ['src/commands/init/init.ts'],
     rules: {
       '@typescript-eslint/no-unsafe-assignment': 'off',

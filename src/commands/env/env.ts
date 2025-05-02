@@ -1,4 +1,5 @@
 import { OptionValues, Option } from 'commander'
+import terminalLink from 'terminal-link'
 
 import { normalizeContext } from '../../utils/env/index.js'
 import BaseCommand from '../base-command.js'
@@ -160,5 +161,11 @@ export const createEnvCommand = (program: BaseCommand) => {
       'netlify env:import fileName',
       'netlify env:clone --to <to-site-id>',
     ])
+    .addHelpText('afterAll', () => {
+      const docsUrl = 'https://docs.netlify.com/configure-builds/environment-variables/'
+      return `
+For more information about environment variables on Netlify, see ${terminalLink(docsUrl, docsUrl)}
+`
+    })
     .action(env)
 }
