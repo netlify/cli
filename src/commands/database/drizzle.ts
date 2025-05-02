@@ -12,19 +12,20 @@ export const initDrizzle = async (command: BaseCommand) => {
   const opts = command.opts<{
     overwrite?: true | undefined
   }>()
+
   const drizzleConfigFilePath = path.resolve(command.project.root, 'drizzle.config.ts')
   const schemaFilePath = path.resolve(command.project.root, 'db/schema.ts')
   const dbIndexFilePath = path.resolve(command.project.root, 'db/index.ts')
   if (opts.overwrite) {
     await fs.writeFile(drizzleConfigFilePath, drizzleConfig)
     await fs.mkdir(path.resolve(command.project.root, 'db'), { recursive: true })
-    await fs.writeFile(schemaFilePath, exampleDrizzleSchema)
-    await fs.writeFile(dbIndexFilePath, exampleDbIndex)
+    await fs.writeFile(schemaFilePath, drizzleSchema)
+    await fs.writeFile(dbIndexFilePath, dbIndex)
   } else {
     await carefullyWriteFile(drizzleConfigFilePath, drizzleConfig, command.project.root)
     await fs.mkdir(path.resolve(command.project.root, 'db'), { recursive: true })
-    await carefullyWriteFile(schemaFilePath, exampleDrizzleSchema, command.project.root)
-    await carefullyWriteFile(dbIndexFilePath, exampleDbIndex, command.project.root)
+    await carefullyWriteFile(schemaFilePath, drizzleSchema, command.project.root)
+    await carefullyWriteFile(dbIndexFilePath, dbIndex, command.project.root)
   }
 
   const packageJsonPath = path.resolve(command.project.root, 'package.json')
@@ -41,10 +42,11 @@ export const initDrizzle = async (command: BaseCommand) => {
     await fs.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2))
   }
 
+  type Answers = {
+    updatePackageJson: boolean
+  }
+
   if (!opts.overwrite) {
-    type Answers = {
-      updatePackageJson: boolean
-    }
     const answers = await inquirer.prompt<Answers>([
       {
         type: 'confirm',
@@ -84,7 +86,7 @@ export default defineConfig({
     out: './migrations'
 });`
 
-const exampleDrizzleSchema = `import { integer, pgTable, varchar, text } from 'drizzle-orm/pg-core';
+const drizzleSchema = `import { integer, pgTable, varchar, text } from 'drizzle-orm/pg-core';
 
 export const posts = pgTable('posts', {
     id: integer().primaryKey().generatedAlwaysAsIdentity(),
@@ -92,10 +94,10 @@ export const posts = pgTable('posts', {
     content: text().notNull().default('')
 });`
 
-const exampleDbIndex = `import { neon } from '@netlify/neon';
+const dbIndex = `import { neon } from '@netlify/neon';
 import { drizzle } from 'drizzle-orm/neon-http';
 
-import * as schema from 'db/schema';
+import * as schema from './schema';
 
 export const db = drizzle({
     schema,
@@ -103,10 +105,9 @@ export const db = drizzle({
 });`
 
 const packageJsonScripts = {
-  'db:generate': 'netlify dev:exec --context dev drizzle-kit generate',
-  'db:migrate': 'netlify dev:exec --context dev drizzle-kit migrate',
-  'db:studio': 'netlify dev:exec --context dev drizzle-kit studio',
-  'db:push': 'netlify dev:exec --context dev drizzle-kit push',
+  'db:generate': 'drizzle-kit generate',
+  'db:migrate': 'netlify dev:exec drizzle-kit migrate',
+  'db:studio': 'netlify dev:exec drizzle-kit studio',
 }
 
 const spawnAsync = (command: string, args: string[], options: Parameters<typeof spawn>[2]): Promise<number> => {
