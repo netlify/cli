@@ -12,7 +12,7 @@ import isValidEventName from './validation.js'
 
 const dirPath = dirname(fileURLToPath(import.meta.url))
 
-function send(type: 'track' | 'identify', payload: object) {
+function send(type: 'track' | 'identify', payload: Record<string, unknown>) {
   const requestFile = join(dirPath, 'request.js')
   const options = JSON.stringify({
     data: payload,
