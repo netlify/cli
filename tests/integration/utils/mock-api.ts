@@ -56,6 +56,9 @@ export const startMockApi = ({ routes, silent }: MockApiOptions): Promise<MockAp
     app[method.toLowerCase() as 'all' | 'get' | 'post' | 'put' | 'delete' | 'patch' | 'options' | 'head'](
       `/api/v1/${path}`,
       function onRequest(req, res) {
+        if (process.env.DEBUG_TESTS) {
+          console.debug('[mock-api] ', req.method, req.path, req.body)
+        }
         // validate request body
         if (requestBody !== undefined && !isDeepStrictEqual(requestBody, req.body)) {
           res.status(500)
@@ -70,18 +73,27 @@ export const startMockApi = ({ routes, silent }: MockApiOptions): Promise<MockAp
   })
 
   app.get('/site/site_id/integrations/safe', function onRequest(req, res) {
+    if (process.env.DEBUG_TESTS) {
+      console.debug('[mock-api] ', req.method, req.path, req.body)
+    }
     addRequest(requests, req)
     res.status(200)
     res.json({ site_id: 'site_id', integrations: [] })
   })
 
   app.get('/team/account_id/integrations/installations/meta/site_id', function onRequest(req, res) {
+    if (process.env.DEBUG_TESTS) {
+      console.debug('[mock-api] ', req.method, req.path, req.body)
+    }
     addRequest(requests, req)
     res.status(200)
     res.json({ site_id: 'site_id', integrations: [] })
   })
 
   app.all('*', function onRequest(req, res) {
+    if (process.env.DEBUG_TESTS) {
+      console.debug('[mock-api] ', req.method, req.path, req.body)
+    }
     addRequest(requests, req)
     if (!silent) {
       console.warn(`Route not found: (${req.method.toUpperCase()}) ${req.url}`)
