@@ -138,7 +138,7 @@ describe.concurrent('commands/init', () => {
         answer: answerWithValue(publish),
       },
       {
-        question: 'No netlify.toml detected',
+        question: 'No netlify.toml detected. Would you like to create one with these build settings?',
         answer: CONFIRM,
       },
       { question: 'Give this Netlify SSH public key access to your repository', answer: CONFIRM },
@@ -209,6 +209,89 @@ describe.concurrent('commands/init', () => {
         await childProcess
 
         await assertNetlifyToml(t, builder.directory, { command, functions: defaultFunctionsDirectory, publish })
+      })
+    })
+  })
+
+  test('prompts to configure build settings when no git remote is found', async (t) => {
+    const publish = 'custom-publish'
+    const initQuestions = [
+      {
+        question: 'Yes, create and deploy site manually',
+        answer: answerWithValue(CONFIRM),
+      },
+      { question: 'Team: (Use arrow keys)', answer: CONFIRM },
+      {
+        question: 'Site name (leave blank for a random name; you can change it later)',
+        answer: answerWithValue('test-site-name'),
+      },
+      {
+        question: `Do you want to configure build settings? We'll suggest settings for your project automatically`,
+        answer: answerWithValue(CONFIRM),
+      },
+      {
+        question: 'Your build command (hugo build/yarn run build/etc)',
+        answer: CONFIRM,
+      },
+      {
+        question: 'Directory to deploy (blank for current dir)',
+        answer: answerWithValue(publish),
+      },
+      {
+        question: 'No netlify.toml detected. Would you like to create one with these build settings?',
+        answer: CONFIRM,
+      },
+    ]
+
+    const routes = [
+      {
+        path: 'accounts',
+        response: [{ slug: 'test-account' }],
+      },
+      {
+        path: 'sites',
+        response: [],
+      },
+      {
+        path: 'sites/site_id',
+        response: {
+          admin_url: 'https://app.netlify.com/sites/site-name/overview',
+          ssl_url: 'https://site-name.netlify.app/',
+          id: 'site_id',
+          name: 'site-name',
+          build_settings: {},
+        },
+      },
+      {
+        path: 'user',
+        response: { name: 'test user', slug: 'test-user', email: 'user@test.com' },
+      },
+      {
+        path: 'test-account/sites',
+        method: 'POST' as const,
+        response: { id: 'site_id', name: 'test-site-name' },
+      },
+    ]
+
+    await withSiteBuilder(t, async (builder) => {
+      await builder.build()
+
+      await withMockApi(routes, async ({ apiUrl }) => {
+        const childProcess = execa(cliPath, ['init'], {
+          cwd: builder.directory,
+          env: { NETLIFY_API_URL: apiUrl, NETLIFY_AUTH_TOKEN: 'fake-token' },
+          encoding: 'utf8',
+        })
+
+        handleQuestions(childProcess, initQuestions)
+
+        await childProcess
+
+        await assertNetlifyToml(t, builder.directory, {
+          command: '# no build command',
+          functions: defaultFunctionsDirectory,
+          publish,
+        })
       })
     })
   })
