@@ -47,6 +47,16 @@ Generate shell completion script
 | [`completion:install`](/commands/completion#completioninstall) | Generates completion script for your preferred shell  |
 
 
+### [db](/commands/db)
+
+Provision a production ready Postgres database with a single command
+
+| Subcommand | description  |
+|:--------------------------- |:-----|
+| [`init`](/commands/db#init) | Initialize a new database for the current site  |
+| [`status`](/commands/db#status) | Check the status of the database  |
+
+
 ### [deploy](/commands/deploy)
 
 Create a new deploy from the contents of a folder
