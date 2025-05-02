@@ -78,7 +78,7 @@ const createNewSiteAndExit = async ({
   }
 
   log()
-  log(`To deploy to this site, run your site build and then ${chalk.cyanBright.bold('netlify deploy')}`)
+  log(`To deploy to this site, run ${chalk.cyanBright.bold('netlify deploy')}`)
 
   return exit()
 }
