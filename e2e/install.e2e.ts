@@ -176,7 +176,9 @@ describe.each(tests)('%s → installs the cli and runs the help command without 
     const binary = path.resolve(path.join(cwd, `./node_modules/.bin/netlify${platform() === 'win32' ? '.cmd' : ''}`))
     const { stdout } = await execa(binary, ['help'], { cwd })
 
-    expect(stdout.trim(), `Help command does not start with 'VERSION':\n\n${stdout}`).toMatch(/^VERSION/)
+    expect(stdout.trim(), `Help command does not start with '⬥ Netlify CLI'\\n\\nVERSION: ${stdout}`).toMatch(
+      /^⬥ Netlify CLI\n\nVERSION/,
+    )
     expect(stdout, `Help command does not include 'netlify-cli/${pkg.version}':\n\n${stdout}`).toContain(
       `netlify-cli/${pkg.version}`,
     )
