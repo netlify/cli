@@ -32,7 +32,7 @@ export function getName({ deploy, userId }: { deploy: any; userId: string }) {
   return `(${deploy.id.slice(0, 7)}) ${normalisedName}`
 }
 
-export const logsBuild = async (options: OptionValues, command: BaseCommand) => {
+export const logsBuild = async (_options: OptionValues, command: BaseCommand) => {
   await command.authenticate()
   const client = command.netlify.api
   const { site } = command.netlify

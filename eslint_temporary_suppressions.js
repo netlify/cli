@@ -106,12 +106,6 @@ export default [
     },
   },
   {
-    files: ['src/commands/completion/index.ts'],
-    rules: {
-      '@typescript-eslint/no-unused-vars': 'off',
-    },
-  },
-  {
     files: ['src/commands/deploy/deploy.ts'],
     rules: {
       '@typescript-eslint/no-unsafe-assignment': 'off',
@@ -196,7 +190,6 @@ export default [
   {
     files: ['src/commands/env/env-unset.ts'],
     rules: {
-      '@typescript-eslint/no-unused-vars': 'off',
       '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/no-unsafe-call': 'off',
@@ -224,7 +217,6 @@ export default [
       '@typescript-eslint/no-unnecessary-condition': 'off',
       '@typescript-eslint/restrict-template-expressions': 'off',
       'n/no-process-exit': 'off',
-      '@typescript-eslint/no-unused-vars': 'off',
       '@typescript-eslint/prefer-optional-chain': 'off',
       '@typescript-eslint/await-thenable': 'off',
       '@typescript-eslint/no-confusing-void-expression': 'off',
@@ -257,12 +249,6 @@ export default [
     },
   },
   {
-    files: ['src/commands/link/index.ts'],
-    rules: {
-      '@typescript-eslint/no-unused-vars': 'off',
-    },
-  },
-  {
     files: ['src/commands/link/link.ts'],
     rules: {
       '@typescript-eslint/no-unsafe-assignment': 'off',
@@ -275,12 +261,6 @@ export default [
     },
   },
   {
-    files: ['src/commands/logout/logout.ts'],
-    rules: {
-      '@typescript-eslint/no-unused-vars': 'off',
-    },
-  },
-  {
     files: ['src/commands/logs/build.ts'],
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
@@ -288,7 +268,6 @@ export default [
       '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/restrict-template-expressions': 'off',
       '@typescript-eslint/no-unsafe-call': 'off',
-      '@typescript-eslint/no-unused-vars': 'off',
       '@typescript-eslint/prefer-nullish-coalescing': 'off',
       '@typescript-eslint/no-unsafe-argument': 'off',
     },
@@ -326,12 +305,6 @@ export default [
       '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/no-unsafe-return': 'off',
       '@typescript-eslint/no-unsafe-argument': 'off',
-    },
-  },
-  {
-    files: ['src/commands/open/open-site.ts'],
-    rules: {
-      '@typescript-eslint/no-unused-vars': 'off',
     },
   },
   {
@@ -408,20 +381,17 @@ export default [
     rules: {
       '@typescript-eslint/restrict-template-expressions': 'off',
       '@typescript-eslint/no-unsafe-return': 'off',
-      '@typescript-eslint/no-unused-vars': 'off',
     },
   },
   {
     files: ['src/commands/status/status-hooks.ts'],
     rules: {
-      '@typescript-eslint/no-unused-vars': 'off',
       '@typescript-eslint/no-unsafe-member-access': 'off',
     },
   },
   {
     files: ['src/commands/switch/switch.ts'],
     rules: {
-      '@typescript-eslint/no-unused-vars': 'off',
       '@typescript-eslint/no-unsafe-argument': 'off',
       '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/restrict-template-expressions': 'off',
@@ -436,7 +406,6 @@ export default [
   {
     files: ['src/commands/unlink/unlink.ts'],
     rules: {
-      '@typescript-eslint/no-unused-vars': 'off',
       '@typescript-eslint/no-unnecessary-condition': 'off',
       '@typescript-eslint/prefer-optional-chain': 'off',
     },

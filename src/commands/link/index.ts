@@ -1,4 +1,4 @@
-import { Option, OptionValues } from 'commander'
+import { OptionValues } from 'commander'
 import terminalLink from 'terminal-link'
 
 import BaseCommand from '../base-command.js'
