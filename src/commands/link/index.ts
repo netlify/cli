@@ -1,4 +1,5 @@
-import { Option, OptionValues } from 'commander'
+import { OptionValues } from 'commander'
+import terminalLink from 'terminal-link'
 
 import BaseCommand from '../base-command.js'
 
@@ -10,6 +11,12 @@ export const createLinkCommand = (program: BaseCommand) =>
     .option('--name <name>', 'Name of site to link to')
     .option('--git-remote-name <name>', 'Name of Git remote to use. e.g. "origin"')
     .addExamples(['netlify link', 'netlify link --id 123-123-123-123', 'netlify link --name my-site-name'])
+    .addHelpText('after', () => {
+      const docsUrl = 'https://docs.netlify.com/cli/get-started/#link-and-unlink-sites'
+      return `
+For more information about linking sites, see ${terminalLink(docsUrl, docsUrl)}
+`
+    })
     .action(async (options: OptionValues, command: BaseCommand) => {
       const { link } = await import('./link.js')
       await link(options, command)

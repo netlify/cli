@@ -46,6 +46,7 @@ import { createSwitchCommand } from './switch/index.js'
 import { AddressInUseError } from './types.js'
 import { createUnlinkCommand } from './unlink/index.js'
 import { createWatchCommand } from './watch/index.js'
+import terminalLink from 'terminal-link'
 
 const SUGGESTION_TIMEOUT = 1e4
 
@@ -95,6 +96,8 @@ process.on('uncaughtException', async (err: AddressInUseError | Error) => {
 
   process.exit(1)
 })
+
+const pkg = await getCLIPackageJson()
 
 const getSystemInfo = () =>
   envinfo.run({
@@ -148,20 +151,8 @@ const mainCommand = async function (options, command) {
     exit()
   }
 
-  // if no command show the header and the help
+  // if no command show help
   if (command.args.length === 0) {
-    const pkg = await getCLIPackageJson()
-
-    const title = chalk.bgBlack.cyan('⬥ Netlify CLI')
-    const docsMsg = `${chalk.greenBright('Read the docs:')} https://ntl.fyi/get-started-with-netlify-cli`
-    const supportMsg = `${chalk.magentaBright('Support and bugs:')} ${pkg.bugs?.url}`
-
-    console.log()
-    console.log(title)
-    console.log(docsMsg)
-    console.log(supportMsg)
-    console.log()
-
     command.help()
   }
 
@@ -253,6 +244,17 @@ export const createMainCommand = (): BaseCommand => {
     .addOption(new Option('-v, --version').hideHelp())
     .addOption(new Option('--verbose').hideHelp())
     .noHelpOptions()
+    .addHelpText('before', () => NETLIFY_CYAN('\n⬥ Netlify CLI\n'))
+    .addHelpText('after', () => {
+      const cliDocsEntrypointUrl = 'https://developers.netlify.com/cli'
+      const docsUrl = 'https://docs.netlify.com'
+      const bugsUrl = pkg.bugs?.url ?? ''
+      return `→ For more help with the CLI, visit ${NETLIFY_CYAN(
+        terminalLink(cliDocsEntrypointUrl, cliDocsEntrypointUrl),
+      )}
+→ For help with Netlify, visit ${NETLIFY_CYAN(terminalLink(docsUrl, docsUrl))}
+→ To report a CLI bug, visit ${NETLIFY_CYAN(terminalLink(bugsUrl, bugsUrl))}\n`
+    })
     .configureOutput({
       outputError: (message, write) => {
         write(` ${chalk.red(BANG)}   Error: ${message.replace(/^error:\s/g, '')}`)

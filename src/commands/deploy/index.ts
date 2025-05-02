@@ -1,6 +1,7 @@
 import { env } from 'process'
 
 import { Option } from 'commander'
+import terminalLink from 'terminal-link'
 
 import BaseCommand from '../base-command.js'
 import { chalk, logAndThrowError, warn } from '../../utils/command-helpers.js'
@@ -143,6 +144,12 @@ Support for package.json's main field, and intrinsic index.js entrypoints are co
       'netlify deploy --trigger',
       'netlify deploy --context deploy-preview',
     ])
+    .addHelpText('after', () => {
+      const docsUrl = 'https://docs.netlify.com/site-deploys/overview/'
+      return `
+For more information about Netlify deploys, see ${terminalLink(docsUrl, docsUrl)}
+`
+    })
     .action(async (options: DeployOptionValues, command: BaseCommand) => {
       if (options.build && command.getOptionValueSource('build') === 'cli') {
         warn(

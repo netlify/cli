@@ -1,4 +1,5 @@
 import { OptionValues } from 'commander'
+import terminalLink from 'terminal-link'
 
 import requiresSiteInfo from '../../utils/hooks/requires-site-info.js'
 import BaseCommand from '../base-command.js'
@@ -84,6 +85,12 @@ export const createBlobsCommand = (program: BaseCommand) => {
     .command('blobs')
     .alias('blob')
     .description(`Manage objects in Netlify Blobs`)
+    .addHelpText('after', () => {
+      const docsUrl = 'https://docs.netlify.com/blobs/overview/'
+      return `
+For more information about Netlify Blobs, see ${terminalLink(docsUrl, docsUrl)}
+`
+    })
     .addExamples([
       'netlify blobs:get my-store my-key',
       'netlify blobs:set my-store my-key This will go in a blob',

@@ -14,7 +14,7 @@ const validateName = function (value) {
   return value
 }
 
-const sites = (options: OptionValues, command: BaseCommand) => {
+const sites = (_options: OptionValues, command: BaseCommand) => {
   command.help()
 }
 
