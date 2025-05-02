@@ -20,7 +20,10 @@ export type SiteInfo = {
 }
 
 export const createDatabaseCommand = (program: BaseCommand) => {
-  const dbCommand = program.command('db').alias('database').description(`TODO: write description for database command`)
+  const dbCommand = program
+    .command('db')
+    .alias('database')
+    .description(`Provision a production ready Postgres database with a single command`)
 
   dbCommand
     .command('init')
