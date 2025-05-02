@@ -44,7 +44,6 @@ export const initDrizzle = async (command: BaseCommand) => {
 
   type Answers = {
     updatePackageJson: boolean
-    localDevBranch: boolean
   }
 
   if (!opts.overwrite) {
