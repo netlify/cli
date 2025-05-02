@@ -102,7 +102,7 @@ It is recommended that you initialize a site that has a remote repository in Git
 
 This will allow for Netlify Continuous deployment to build branch & PR previews.
 
-For more details on Netlify CI checkout the docs: http://bit.ly/2N0Jhy5
+For more details on Netlify CI check out the docs: http://bit.ly/2N0Jhy5
 `)
   if (error === "Couldn't find origin url") {
     log(`Unable to find a remote origin URL. Please add a git remote.
