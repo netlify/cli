@@ -14,6 +14,8 @@ COMMANDS
   $ blobs        Manage objects in Netlify Blobs
   $ build        Build on your local machine
   $ completion   Generate shell completion script
+  $ db           Provision a production ready Postgres database with a single
+                 command
   $ deploy       Create a new deploy from the contents of a folder
   $ dev          Local dev server
   $ env          Control environment variables for the current site
