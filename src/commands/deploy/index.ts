@@ -152,11 +152,7 @@ For more information about Netlify deploys, see ${terminalLink(docsUrl, docsUrl)
     })
     .action(async (options: DeployOptionValues, command: BaseCommand) => {
       if (options.build && command.getOptionValueSource('build') === 'cli') {
-        warn(
-          `${chalk.cyanBright(
-            '--build',
-          )} is now the default and can safely be omitted. This will fail in a future version.`,
-        )
+        warn(`${chalk.cyanBright('--build')} is now the default and can safely be omitted.`)
       }
 
       if (options.branch) {
