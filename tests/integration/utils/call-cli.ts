@@ -17,11 +17,16 @@ export const callCli = async function (
   parseJson = false,
 ): // eslint-disable-next-line @typescript-eslint/no-explicit-any
 Promise<any> {
-  const { stdout } = await execa.node(cliPath, args, {
+  const { stdout, stderr } = await execa.node(cliPath, args, {
     timeout: CLI_TIMEOUT,
     nodeOptions: [],
     ...execOptions,
   })
+  if (process.env.DEBUG_TESTS) {
+    process.stdout.write(stdout)
+    process.stderr.write(stderr)
+  }
+
   if (parseJson) {
     return JSON.parse(stdout)
   }
