@@ -11,50 +11,24 @@ export const initDrizzle = async (command: BaseCommand) => {
   }
   const opts = command.opts<{
     overwrite?: true | undefined
-    devBranchUri?: string | undefined
   }>()
-  const devBranchUri = opts.devBranchUri
-  const drizzleDevConfigFilePath = path.resolve(command.project.root, 'drizzle-dev.config.ts')
-  const drizzleConfigFilePath = path.resolve(command.project.root, 'drizzle-prod.config.ts')
+
+  const drizzleConfigFilePath = path.resolve(command.project.root, 'drizzle.config.ts')
   const schemaFilePath = path.resolve(command.project.root, 'db/schema.ts')
   const dbIndexFilePath = path.resolve(command.project.root, 'db/index.ts')
   if (opts.overwrite) {
-    if (devBranchUri) {
-      await fs.writeFile(drizzleDevConfigFilePath, createDrizzleDevConfigContent(devBranchUri))
-    }
     await fs.writeFile(drizzleConfigFilePath, drizzleConfig)
     await fs.mkdir(path.resolve(command.project.root, 'db'), { recursive: true })
-    await fs.writeFile(schemaFilePath, exampleDrizzleSchema)
-    await fs.writeFile(dbIndexFilePath, exampleDbIndex)
+    await fs.writeFile(schemaFilePath, drizzleSchema)
+    await fs.writeFile(dbIndexFilePath, dbIndex)
   } else {
-    if (devBranchUri) {
-      await carefullyWriteFile(
-        drizzleDevConfigFilePath,
-        createDrizzleDevConfigContent(devBranchUri),
-        command.project.root,
-      )
-    }
     await carefullyWriteFile(drizzleConfigFilePath, drizzleConfig, command.project.root)
     await fs.mkdir(path.resolve(command.project.root, 'db'), { recursive: true })
-    await carefullyWriteFile(schemaFilePath, exampleDrizzleSchema, command.project.root)
-    await carefullyWriteFile(dbIndexFilePath, exampleDbIndex, command.project.root)
+    await carefullyWriteFile(schemaFilePath, drizzleSchema, command.project.root)
+    await carefullyWriteFile(dbIndexFilePath, dbIndex, command.project.root)
   }
 
   const packageJsonPath = path.resolve(command.project.root, 'package.json')
-
-  if (devBranchUri) {
-    const gitignorePath = path.resolve(command.project.root, '.gitignore')
-    try {
-      const gitignoreContent = (await fs.readFile(gitignorePath)).toString()
-      if (!gitignoreContent.includes('drizzle-dev.config.ts')) {
-        await fs.writeFile(gitignorePath, `${gitignoreContent}\ndrizzle-dev.config.ts\n`, {
-          flag: 'a',
-        })
-      }
-    } catch {
-      await fs.writeFile(gitignorePath, 'drizzle-dev.config.ts\n')
-    }
-  }
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf-8'))
@@ -71,17 +45,6 @@ export const initDrizzle = async (command: BaseCommand) => {
   type Answers = {
     updatePackageJson: boolean
     localDevBranch: boolean
-  }
-  const answers = await inquirer.prompt<Answers>([
-    {
-      type: 'confirm',
-      name: 'localDevBranch',
-      message: `Add a development database branch?`,
-    },
-  ])
-  if (answers.localDevBranch) {
-    console.log('cool')
-    return
   }
 
   if (!opts.overwrite) {
@@ -124,18 +87,7 @@ export default defineConfig({
     out: './migrations'
 });`
 
-const createDrizzleDevConfigContent = (devBranchUri: string) => `import { defineConfig } from 'drizzle-kit';
-
-export default defineConfig({
-    dialect: 'postgresql',
-    dbCredentials: {
-        url: '${devBranchUri}'
-    },
-    schema: './db/schema.ts',
-    out: './migrations'
-});`
-
-const exampleDrizzleSchema = `import { integer, pgTable, varchar, text } from 'drizzle-orm/pg-core';
+const drizzleSchema = `import { integer, pgTable, varchar, text } from 'drizzle-orm/pg-core';
 
 export const posts = pgTable('posts', {
     id: integer().primaryKey().generatedAlwaysAsIdentity(),
@@ -143,10 +95,10 @@ export const posts = pgTable('posts', {
     content: text().notNull().default('')
 });`
 
-const exampleDbIndex = `import { neon } from '@netlify/neon';
+const dbIndex = `import { neon } from '@netlify/neon';
 import { drizzle } from 'drizzle-orm/neon-http';
 
-import * as schema from 'db/schema';
+import * as schema from './schema';
 
 export const db = drizzle({
     schema,
@@ -154,10 +106,9 @@ export const db = drizzle({
 });`
 
 const packageJsonScripts = {
-  'db:generate': 'netlify dev:exec --context dev drizzle-kit generate',
-  'db:migrate': 'netlify dev:exec --context dev drizzle-kit migrate',
-  'db:studio': 'netlify dev:exec --context dev drizzle-kit studio',
-  'db:push': 'netlify dev:exec --context dev drizzle-kit push',
+  'db:generate': 'drizzle-kit generate',
+  'db:migrate': 'netlify dev:exec drizzle-kit migrate',
+  'db:studio': 'netlify dev:exec drizzle-kit studio',
 }
 
 const spawnAsync = (command: string, args: string[], options: Parameters<typeof spawn>[2]): Promise<number> => {
@@ -172,17 +123,4 @@ const spawnAsync = (command: string, args: string[], options: Parameters<typeof 
       reject(new Error(errorMessage))
     })
   })
-}
-
-export const createDrizzleDevConfig = async (command: BaseCommand, opts: { devBranchUri: string }) => {
-  if (!command.project.root) {
-    throw new Error('Failed to initialize Drizzle in project. Project root not found.')
-  }
-
-  const drizzleDevConfigFilePath = path.resolve(command.project.root, 'drizzle-dev.config.ts')
-  await carefullyWriteFile(
-    drizzleDevConfigFilePath,
-    createDrizzleDevConfigContent(opts.devBranchUri),
-    command.project.root,
-  )
 }
