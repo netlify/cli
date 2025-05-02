@@ -2,84 +2,96 @@ import fsPromises from 'fs/promises'
 import fs from 'fs'
 import inquirer from 'inquirer'
 
-import { JIGSAW_URL, NETLIFY_WEB_UI } from './constants.js'
+import { JIGSAW_URL } from './constants.js'
 import BaseCommand from '../base-command.js'
+import { Extension } from './database.js'
 
-export const getExtension = async ({ accountId, token, slug }: { accountId: string; token: string; slug: string }) => {
-  const url = new URL('/.netlify/functions/fetch-extension', NETLIFY_WEB_UI)
-  url.searchParams.append('teamId', accountId)
-  url.searchParams.append('slug', slug)
-
-  const extensionReq = await fetch(url.toString(), {
-    headers: {
-      Cookie: `_nf-auth=${token}`,
+export const getExtension = async ({
+  accountId,
+  netlifyToken,
+  slug,
+}: {
+  accountId: string
+  netlifyToken: string
+  slug: string
+}) => {
+  const extensionResponse = await fetch(
+    `${JIGSAW_URL}/${encodeURIComponent(accountId)}/integrations/${encodeURIComponent(slug)}`,
+    {
+      headers: {
+        'netlify-token': netlifyToken,
+        'Api-Version': '2',
+      },
     },
-  })
-  const extension = (await extensionReq.json()) as
-    | {
-        name: string
-        hostSiteUrl: string
-        installedOnTeam: boolean
-      }
-    | undefined
+  )
+  if (!extensionResponse.ok) {
+    throw new Error(`Failed to fetch extension: ${slug}`)
+  }
+
+  const extension = (await extensionResponse.json()) as Extension | undefined
 
   return extension
 }
 
 export const installExtension = async ({
-  token,
+  netlifyToken,
   accountId,
   slug,
   hostSiteUrl,
 }: {
-  token: string
+  netlifyToken: string
   accountId: string
   slug: string
   hostSiteUrl: string
 }) => {
-  const url = new URL('/.netlify/functions/install-extension', NETLIFY_WEB_UI)
-  const installExtensionResponse = await fetch(url.toString(), {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Cookie: `_nf-auth=${token}`,
-    },
-    body: JSON.stringify({
-      teamId: accountId,
-      slug,
-      hostSiteUrl,
-    }),
+  const { data: jigsawToken, error } = await getJigsawToken({
+    netlifyToken: netlifyToken,
+    accountId,
+    integrationSlug: slug,
+    isEnable: true,
   })
-
-  if (!installExtensionResponse.ok) {
-    throw new Error(`Failed to install extension: ${slug}`)
+  if (error || !jigsawToken) {
+    throw new Error(`Failed to get Jigsaw token: ${error?.message ?? 'Unknown error'}`)
   }
 
-  const installExtensionData = await installExtensionResponse.json()
-  return installExtensionData
+  const extensionOnInstallUrl = new URL('/.netlify/functions/handler/on-install', hostSiteUrl)
+  const installedResponse = await fetch(extensionOnInstallUrl, {
+    method: 'POST',
+    body: JSON.stringify({
+      teamId: accountId,
+    }),
+    headers: {
+      'netlify-token': jigsawToken,
+    },
+  })
+
+  if (!installedResponse.ok && installedResponse.status !== 409) {
+    const text = await installedResponse.text()
+    throw new Error(`Failed to install extension '${slug}': ${text}`)
+  }
+  return true
 }
 
 export const getSiteConfiguration = async ({
   siteId,
   accountId,
-  token,
+  netlifyToken,
   slug,
 }: {
   siteId: string
   accountId: string
-  token: string
+  netlifyToken: string
   slug: string
 }) => {
   const url = new URL(`/team/${accountId}/integrations/${slug}/configuration/site/${siteId}`, JIGSAW_URL)
   const siteConfigurationResponse = await fetch(url.toString(), {
     headers: {
-      'netlify-token': token,
+      'netlify-token': netlifyToken,
     },
   })
   if (!siteConfigurationResponse.ok) {
     throw new Error(`Failed to fetch extension site configuration for ${siteId}. Is the extension installed?`)
   }
-
   const siteConfiguration = await siteConfigurationResponse.json()
   return siteConfiguration
 }
@@ -128,4 +140,80 @@ export const getAccount = async (
     Awaited<ReturnType<typeof command.netlify.api.getAccount>>[number],
     'id' | 'name'
   >
+}
+
+type JigsawTokenResult =
+  | {
+      data: string
+      error: null
+    }
+  | {
+      data: null
+      error: { code: number; message: string }
+    }
+
+export const getJigsawToken = async ({
+  netlifyToken,
+  accountId,
+  integrationSlug,
+  isEnable,
+}: {
+  netlifyToken: string
+  accountId: string
+  integrationSlug?: string
+  /**
+   * isEnable will make a token that can install the extension
+   */
+  isEnable?: boolean
+}): Promise<JigsawTokenResult> => {
+  try {
+    const tokenResponse = await fetch(`${JIGSAW_URL}/generate-token`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Cookie: `_nf-auth=${netlifyToken}`,
+        'Api-Version': '2',
+      },
+      body: JSON.stringify({
+        ownerId: accountId,
+        integrationSlug,
+        isEnable,
+      }),
+    })
+
+    if (!tokenResponse.ok) {
+      return {
+        data: null,
+        error: {
+          code: 401,
+          message: `Unauthorized`,
+        },
+      }
+    }
+
+    const tokenData = (await tokenResponse.json()) as { token?: string } | undefined
+
+    if (!tokenData?.token) {
+      return {
+        data: null,
+        error: {
+          code: 401,
+          message: `Unauthorized`,
+        },
+      }
+    }
+    return {
+      data: tokenData.token,
+      error: null,
+    }
+  } catch (e) {
+    console.error('Failed to get Jigsaw token', e)
+    return {
+      data: null,
+      error: {
+        code: 401,
+        message: `Unauthorized`,
+      },
+    }
+  }
 }
