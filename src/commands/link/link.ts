@@ -296,7 +296,7 @@ export const link = async (options: LinkOptionValues, command: BaseCommand) => {
 
     // Save site ID
     state.set('siteId', newSiteData.id)
-    log(`Linked to ${newSiteData.name}`)
+    log(`${chalk.green('✔')} Linked to ${newSiteData.name}`)
 
     await track('sites_linked', {
       siteId: newSiteData.id,
@@ -328,12 +328,22 @@ export const link = async (options: LinkOptionValues, command: BaseCommand) => {
     const matchingSiteData = results.find((site: SiteInfo) => site.name === options.name) || results[0]
     state.set('siteId', matchingSiteData.id)
 
-    log(`Linked to ${matchingSiteData.name}`)
+    log(`${chalk.green('✔')} Linked to ${matchingSiteData.name}`)
 
     await track('sites_linked', {
       siteId: (matchingSiteData && matchingSiteData.id) || siteId,
       linkType: 'manual',
       kind: 'byName',
+    })
+  } else if (options.gitRemoteUrl) {
+    newSiteData = await findSiteByRepoUrl(api, options.gitRemoteUrl)
+    state.set('siteId', newSiteData.id)
+    log(`${chalk.green('✔')} Linked to ${newSiteData.name}`)
+
+    await track('sites_linked', {
+      siteId: newSiteData.id,
+      linkType: 'clone',
+      kind: 'byRepoUrl',
     })
   } else {
     newSiteData = await linkPrompt(command, options)

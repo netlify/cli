@@ -38,6 +38,10 @@ Manage objects in Netlify Blobs
 
 Build on your local machine
 
+### [clone](/commands/clone)
+
+Clone a remote repository and link it to an existing site on Netlify
+
 ### [completion](/commands/completion)
 
 Generate shell completion script

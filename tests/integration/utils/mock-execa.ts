@@ -1,5 +1,6 @@
 import { rm, writeFile } from 'fs/promises'
 import { pathToFileURL } from 'url'
+
 import { temporaryFile } from '../../../src/utils/temporary-file.js'
 
 // Saves to disk a JavaScript file with the contents provided and returns
@@ -20,5 +21,5 @@ export const createMock = async (contents: string) => {
       // no-op
     })
 
-  return [env, cleanup]
+  return [env, cleanup] as const
 }
