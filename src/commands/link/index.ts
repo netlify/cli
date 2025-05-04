@@ -1,7 +1,7 @@
-import { OptionValues } from 'commander'
 import terminalLink from 'terminal-link'
 
 import BaseCommand from '../base-command.js'
+import type { LinkOptionValues } from './option_values.js'
 
 export const createLinkCommand = (program: BaseCommand) =>
   program
@@ -17,7 +17,7 @@ export const createLinkCommand = (program: BaseCommand) =>
 For more information about linking sites, see ${terminalLink(docsUrl, docsUrl)}
 `
     })
-    .action(async (options: OptionValues, command: BaseCommand) => {
+    .action(async (options: LinkOptionValues, command: BaseCommand) => {
       const { link } = await import('./link.js')
       await link(options, command)
     })
