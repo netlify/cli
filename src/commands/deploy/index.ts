@@ -96,10 +96,7 @@ Support for package.json's main field, and intrinsic index.js entrypoints are co
       '--alias <name>',
       'Specifies the alias for deployment, the string at the beginning of the deploy subdomain. Useful for creating predictable deployment URLs. Avoid setting an alias string to the same value as a deployed branch. `alias` doesn’t create a branch deploy and can’t be used in conjunction with the branch subdomain feature. Maximum 37 characters.',
     )
-    .option(
-      '-b, --branch <name>',
-      'Serves the same functionality as --alias. Deprecated and will be removed in future versions',
-    )
+    .addOption(new Option('-b, --branch <name>', 'Do not use - renamed to --alias.').hideHelp(true))
     .option('-O, --open', 'Open site after deploy', false)
     .option('-m, --message <message>', 'A short message to include in the deploy log')
     .option('-s, --site <name-or-id>', 'A site name or ID to deploy to', env.NETLIFY_SITE_ID)
@@ -152,15 +149,11 @@ For more information about Netlify deploys, see ${terminalLink(docsUrl, docsUrl)
     })
     .action(async (options: DeployOptionValues, command: BaseCommand) => {
       if (options.build && command.getOptionValueSource('build') === 'cli') {
-        warn(
-          `${chalk.cyanBright(
-            '--build',
-          )} is now the default and can safely be omitted. This will fail in a future version.`,
-        )
+        warn(`${chalk.cyanBright('--build')} is now the default and can safely be omitted.`)
       }
 
       if (options.branch) {
-        warn('--branch flag has been renamed to --alias and will be removed in future versions')
+        warn('--branch flag has been renamed to --alias')
       }
 
       if (options.context && !options.build) {
