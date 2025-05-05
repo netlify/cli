@@ -327,9 +327,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         env: { NETLIFY_SITE_ID: context.siteId },
       })
 
-      t.expect(output).toMatch(
-        /--build.+is now the default and can safely be omitted. This will fail in a future version./,
-      )
+      t.expect(output).toMatch(/--build.+is now the default and can safely be omitted./)
 
       t.expect(output).toContain('Netlify Build completed in')
       const [, deployId] = output.match(/DEPLOY_ID: (\w+)/) ?? []

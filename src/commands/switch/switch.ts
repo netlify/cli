@@ -7,7 +7,7 @@ import { login } from '../login/login.js'
 
 const LOGIN_NEW = 'I would like to login to a new account'
 
-export const switchCommand = async (options: OptionValues, command: BaseCommand) => {
+export const switchCommand = async (_options: OptionValues, command: BaseCommand) => {
   const availableUsersChoices = Object.values(command.netlify.globalConfig.get('users') || {}).reduce(
     (prev, current) =>
       // @ts-expect-error TS(2769) FIXME: No overload matches this call.

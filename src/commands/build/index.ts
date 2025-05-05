@@ -1,5 +1,7 @@
 import process from 'process'
 
+import terminalLink from 'terminal-link'
+
 import { normalizeContext } from '../../utils/env/index.js'
 import BaseCommand from '../base-command.js'
 
@@ -20,6 +22,12 @@ export const createBuildCommand = (program: BaseCommand) =>
       'netlify build --context deploy-preview # Build with env var values from deploy-preview context',
       'netlify build --context branch:feat/make-it-pop # Build with env var values from the feat/make-it-pop branch context or branch-deploy context',
     ])
+    .addHelpText('after', () => {
+      const docsUrl = 'https://docs.netlify.com/configure-builds/overview/'
+      return `
+For more information about Netlify builds, see ${terminalLink(docsUrl, docsUrl)}
+`
+    })
     .action(async (options, command) => {
       const { build } = await import('./build.js')
       await build(options, command)

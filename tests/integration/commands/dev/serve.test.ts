@@ -90,7 +90,7 @@ test.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true')(
           path: 'package.json',
           content: JSON.stringify({
             dependencies: {
-              '@netlify/blobs': '*',
+              '@netlify/blobs': '^8.0.0',
             },
           }),
         })

@@ -85,7 +85,6 @@ netlify deploy
 **Flags**
 
 - `alias` (*string*) - Specifies the alias for deployment, the string at the beginning of the deploy subdomain. Useful for creating predictable deployment URLs. Avoid setting an alias string to the same value as a deployed branch. `alias` doesn’t create a branch deploy and can’t be used in conjunction with the branch subdomain feature. Maximum 37 characters.
-- `branch` (*string*) - Serves the same functionality as --alias. Deprecated and will be removed in future versions
 - `context` (*string*) - Specify a deploy context for environment variables read during the build (”production”, ”deploy-preview”, ”branch-deploy”, ”dev”) or `branch:your-branch` where `your-branch` is the name of a branch (default: dev)
 - `dir` (*string*) - Specify a folder to deploy
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
@@ -93,10 +92,10 @@ netlify deploy
 - `json` (*boolean*) - Output deployment data as JSON
 - `message` (*string*) - A short message to include in the deploy log
 - `no-build` (*boolean*) - Do not run build command before deploying. Only use this if you have no need for a build or your site has already been built.
+- `open` (*boolean*) - Open site after deploy
 - `prod-if-unlocked` (*boolean*) - Deploy to production if unlocked, create a draft otherwise
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
-- `open` (*boolean*) - Open site after deploy
 - `prod` (*boolean*) - Deploy to production
 - `site` (*string*) - A site name or ID to deploy to
 - `skip-functions-cache` (*boolean*) - Ignore any functions created as part of a previous `build` or `deploy` commands, forcing them to be bundled again as part of the deployment
