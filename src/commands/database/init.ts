@@ -118,16 +118,33 @@ export const init = async (_options: OptionValues, command: BaseCommand) => {
       code?: string
       message?: string
     }
-    throw new Error(`Failed to initialize DB: ${error.message ?? 'Unknown error occurred'}`)
+    if (error.code === 'CONFLICT') {
+      log(`Database already connected to this site. Skipping initialization.`)
+    } else {
+      throw new Error(`Failed to initialize DB: ${error.message ?? 'Unknown error occurred'}`)
+    }
   }
 
-  const res = (await req.json()) as {
-    code?: string
-    message?: string
-  }
+  let status
 
-  if (res.code !== 'DATABASE_INITIALIZED') {
-    throw new Error(`Failed to initialize DB: ${res.message ?? 'Unknown error'}`)
+  try {
+    const statusEndpoint = new URL('/api/cli-db-status', hostSiteUrl).toString()
+    const statusRes = await fetch(statusEndpoint, {
+      headers,
+    })
+    if (!statusRes.ok) {
+      throw new Error(`Failed to get database status`, { cause: statusRes })
+    }
+    status = (await statusRes.json()) as {
+      siteConfiguration?: {
+        connectedDatabase?: {
+          isConnected: boolean
+        }
+      }
+      existingManagedEnvs?: string[]
+    }
+  } catch (e) {
+    console.error('Failed to get database status', e)
   }
 
   log(
@@ -135,10 +152,14 @@ export const init = async (_options: OptionValues, command: BaseCommand) => {
       'Current team': account.name,
       'Current site': siteInfo.name,
       [`${extension.name} extension`]: 'installed on team',
-      ['Database status']: 'connected to site',
+      ['Database status']: status?.siteConfiguration?.connectedDatabase?.isConnected
+        ? 'connected to site'
+        : 'not connected',
       ['Environment variables']: '',
-      ['  NETLIFY_DATABASE_URL']: 'saved',
-      ['  NETLIFY_DATABASE_URL_UNPOOLED']: 'saved',
+      ['  NETLIFY_DATABASE_URL']: status?.existingManagedEnvs?.includes('NETLIFY_DATABASE_URL') ? 'saved' : 'not set',
+      ['  NETLIFY_DATABASE_URL_UNPOOLED']: status?.existingManagedEnvs?.includes('NETLIFY_DATABASE_URL_UNPOOLED')
+        ? 'saved'
+        : 'not set',
     }),
   )
   return
