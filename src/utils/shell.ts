@@ -65,9 +65,13 @@ export const runCommand = (
   // even though the actual framework command might be outputting stuff
   const pipeDataWithSpinner = (writeStream: NodeJS.WriteStream, chunk: string | Uint8Array) => {
     // Clear the spinner, write the framework command line, then resume spinning
-    spinner?.clear()
+    if (spinner?.isSpinning()) {
+      spinner.clear()
+    }
     writeStream.write(chunk, () => {
-      spinner?.spin()
+      if (spinner?.isSpinning()) {
+        spinner.spin()
+      }
     })
   }
 
