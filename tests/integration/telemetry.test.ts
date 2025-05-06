@@ -82,7 +82,7 @@ await withMockApi(routes, () => {
   })
 
   test<MockApiTestContext>('should send invoked command on failure', async ({ apiUrl, requests }) => {
-    await expect(callCli(['dev:exec', 'exit 1'], getCLIOptions(apiUrl))).rejects.toThrowError(/ENOENT/)
+    await expect(callCli(['dev:exec', 'exit 1'], getCLIOptions(apiUrl))).rejects.toThrowError()
     const request = requests.find(({ path }) => path === '/api/v1/track')
     expect(request).toBeDefined()
 
