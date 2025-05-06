@@ -95,7 +95,6 @@ export const getBuildSettings = async ({
   config: NormalizedCachedConfigConfig
 }) => {
   const settings = await detectBuildSettings(command)
-  // TODO: add prompt for asking to choose the build command
   const setting: Partial<Settings> = settings.length > 0 ? settings[0] : {}
   const { defaultBaseDir, defaultBuildCmd, defaultBuildDir, defaultFunctionsDir, recommendedPlugins } =
     normalizeSettings(setting, config, command)

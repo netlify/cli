@@ -11,6 +11,7 @@ import type BaseCommand from '../base-command.js'
 import { link } from '../link/link.js'
 import { sitesCreate } from '../sites/sites-create.js'
 import type { CLIState, SiteInfo } from '../../utils/types.js'
+import { getBuildSettings, saveNetlifyToml } from '../../utils/init/utils.js'
 
 const persistState = ({ siteInfo, state }: { siteInfo: SiteInfo; state: CLIState }): void => {
   // Save to .netlify/state.json file
@@ -38,14 +39,46 @@ const logExistingAndExit = ({ siteInfo }: { siteInfo: SiteInfo }): never => {
 /**
  * Creates and new site and exits the process
  */
-const createNewSiteAndExit = async ({ command, state }: { command: BaseCommand; state: CLIState }): Promise<never> => {
+const createNewSiteAndExit = async ({
+  command,
+  state,
+  disableLinking,
+}: {
+  command: BaseCommand
+  state: CLIState
+  disableLinking: boolean
+}): Promise<never> => {
   const siteInfo = await sitesCreate({}, command)
 
   log(`"${siteInfo.name}" site was created`)
   log()
-  log(`To deploy to this site. Run your site build and then ${chalk.cyanBright.bold('netlify deploy')}`)
 
   persistState({ state, siteInfo })
+
+  if (!disableLinking) {
+    const { shouldConfigureBuild } = await inquirer.prompt<{ shouldConfigureBuild: boolean }>([
+      {
+        type: 'confirm',
+        name: 'shouldConfigureBuild',
+        message: `Do you want to configure build settings? We'll suggest settings for your project automatically`,
+      },
+    ])
+    if (shouldConfigureBuild) {
+      const {
+        cachedConfig: { configPath },
+        config,
+        repositoryRoot,
+      } = command.netlify
+      const { baseDir, buildCmd, buildDir, functionsDir } = await getBuildSettings({
+        config,
+        command,
+      })
+      await saveNetlifyToml({ repositoryRoot, config, configPath, baseDir, buildCmd, buildDir, functionsDir })
+    }
+  }
+
+  log()
+  log(`To deploy to this site, run ${chalk.cyanBright.bold('netlify deploy')}`)
 
   return exit()
 }
@@ -90,10 +123,12 @@ const handleNoGitRemoteAndExit = async ({
   command,
   error,
   state,
+  disableLinking,
 }: {
   command: BaseCommand
   error?: unknown
   state: CLIState
+  disableLinking: boolean
 }): Promise<never> => {
   log()
   log(chalk.yellow('No git remote was found, would you like to set one up?'))
@@ -124,7 +159,7 @@ git remote add origin https://github.com/YourUserName/RepoName.git
   ])
 
   if (noGitRemoteChoice === NEW_SITE_NO_GIT) {
-    return await createNewSiteAndExit({ state, command })
+    return createNewSiteAndExit({ state, command, disableLinking })
   }
   return logGitSetupInstructionsAndExit()
 }
@@ -153,7 +188,6 @@ const createOrLinkSiteToRepo = async (command: BaseCommand) => {
     await track('sites_initStarted', {
       type: 'new site',
     })
-    // run site:create command
     return await sitesCreate({}, command)
   }
   // run link command
@@ -188,7 +222,12 @@ export const init = async (options: OptionValues, command: BaseCommand): Promise
   // Look for local repo
   const repoData = await getRepoData({ workingDir: command.workingDir, remoteName: options.gitRemoteName })
   if ('error' in repoData) {
-    return await handleNoGitRemoteAndExit({ command, error: repoData.error, state })
+    return await handleNoGitRemoteAndExit({
+      command,
+      error: repoData.error,
+      state,
+      disableLinking: options.disableLinking,
+    })
   }
 
   const siteInfo = isEmpty(existingSiteInfo) ? await createOrLinkSiteToRepo(command) : existingSiteInfo
