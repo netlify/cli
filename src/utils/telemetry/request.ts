@@ -1,5 +1,5 @@
 // This file is being called by `src/utils/telemetry/telemetry.js` as a child process
-// to run a s a detached process
+// to run as a detached process
 import process from 'process'
 
 import fetch from 'node-fetch'
