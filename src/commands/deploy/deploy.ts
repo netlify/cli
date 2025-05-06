@@ -26,6 +26,7 @@ import { BACKGROUND_FUNCTIONS_WARNING } from '../../lib/log.js'
 import { type Spinner, startSpinner, stopSpinner } from '../../lib/spinner.js'
 import { detectFrameworkSettings, getDefaultConfig } from '../../utils/build-info.js'
 import {
+  NETLIFY_CYAN_HEX,
   NETLIFYDEVERR,
   NETLIFYDEVLOG,
   chalk,
@@ -48,6 +49,8 @@ import { sitesCreate } from '../sites/sites-create.js'
 import type { $TSFixMe } from '../types.js'
 import { SiteInfo } from '../../utils/types.js'
 import type { DeployOptionValues } from './option_values.js'
+import boxen from 'boxen'
+import terminalLink from 'terminal-link'
 
 const triggerDeploy = async ({
   api,
@@ -280,7 +283,6 @@ const prepareProductionDeploy = async ({ api, siteData }) => {
     await api.unlockDeploy({ deploy_id: siteData.published_deploy.id })
     log(`\n${NETLIFYDEVLOG} "Auto publishing" has been enabled for production context\n`)
   }
-  log('Deploying to main site URL...')
 }
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'actual' implicitly has an 'any' type.
@@ -345,7 +347,7 @@ const deployProgressCb = function () {
         return
       case 'stop':
       default: {
-        stopSpinner({ spinner: spinnersByType[event.type], text: event.msg })
+        spinnersByType[event.type].success(event.msg)
         delete spinnersByType[event.type]
       }
     }
@@ -380,7 +382,9 @@ const uploadDeployBlobs = async ({
   const blobsToken = token || undefined
   const { success } = await runCoreSteps(['blobs_upload'], {
     ...options,
-    quiet: silent,
+    // We log our own progress so we don't want this as well. Plus, this logs much of the same
+    // information as the build that (likely) came before this as part of the deploy build.
+    quiet: options.debug ?? true,
     // @ts-expect-error(serhalp) -- Untyped in `@netlify/build`
     cachedConfig,
     packagePath,
@@ -458,8 +462,6 @@ const runDeploy = async ({
   try {
     if (deployToProduction) {
       await prepareProductionDeploy({ siteData, api })
-    } else {
-      log('Deploying to draft URL...')
     }
 
     const draft = !deployToProduction && !alias
@@ -590,13 +592,7 @@ const handleBuild = async ({
   return { newConfig, configMutations }
 }
 
-/**
- *
- * @param {*} options Bundling options
- * @returns
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
-const bundleEdgeFunctions = async (options, command: BaseCommand) => {
+const bundleEdgeFunctions = async (options: DeployOptionValues, command: BaseCommand): Promise<void> => {
   const argv = process.argv.slice(2)
   const statusCb =
     options.silent || argv.includes('--json') || argv.includes('--silent') ? () => {} : deployProgressCb()
@@ -612,6 +608,10 @@ const bundleEdgeFunctions = async (options, command: BaseCommand) => {
     packagePath: command.workspacePackage,
     buffer: true,
     featureFlags: edgeFunctionsFeatureFlags,
+    // We log our own progress so we don't want this as well. Plus, this logs much of the same
+    // information as the build that (likely) came before this as part of the deploy build.
+    quiet: options.debug ?? true,
+    // @ts-expect-error FIXME(serhalp): This is missing from the `runCoreSteps` type in @netlify/build
     edgeFunctionsBootstrapURL: await getBootstrapURL(),
   })
 
@@ -645,32 +645,24 @@ interface JsonData {
 
 const printResults = ({
   deployToProduction,
-  isIntegrationDeploy,
   json,
   results,
   runBuildCommand,
 }: {
   deployToProduction: boolean
-  isIntegrationDeploy: boolean
   json: boolean
   results: Awaited<ReturnType<typeof prepAndRunDeploy>>
   runBuildCommand: boolean
 }): void => {
   const msgData: Record<string, string> = {
-    'Build logs': results.logsUrl,
-    'Function logs': results.functionLogsUrl,
-    'Edge function Logs': results.edgeFunctionLogsUrl,
+    'Build logs': terminalLink(results.logsUrl, results.logsUrl),
+    'Function logs': terminalLink(results.functionLogsUrl, results.functionLogsUrl),
+    'Edge function Logs': terminalLink(results.edgeFunctionLogsUrl, results.edgeFunctionLogsUrl),
   }
 
-  if (deployToProduction) {
-    msgData['Unique deploy URL'] = results.deployUrl
-    msgData['Website URL'] = results.siteUrl
-  } else {
-    msgData['Website draft URL'] = results.deployUrl
-  }
-
-  // Spacer
-  log()
+  log('')
+  // Note: this is leakily mimicking the @netlify/build heading style
+  log(chalk.cyanBright.bold(`🚀 Deploy complete\n${'─'.repeat(64)}`))
 
   // Json response for piping commands
   if (json) {
@@ -690,40 +682,52 @@ const printResults = ({
     logJson(jsonData)
     exit(0)
   } else {
+    const message = deployToProduction
+      ? `Deployed to production URL: ${terminalLink(results.siteUrl, results.siteUrl)}\n
+    Unique deploy URL: ${terminalLink(results.deployUrl, results.deployUrl)}`
+      : `Deployed draft to ${terminalLink(results.deployUrl, results.deployUrl)}`
+
+    log(
+      boxen(message, {
+        padding: 1,
+        margin: 1,
+        textAlignment: 'center',
+        borderStyle: 'round',
+        borderColor: NETLIFY_CYAN_HEX,
+        // This is an intentional half-width space to work around a unicode padding math bug in boxen
+        // eslint-disable-next-line no-irregular-whitespace
+        title: `⬥  ${deployToProduction ? 'Production deploy' : 'Draft deploy'} is live ⬥ `,
+        titleAlignment: 'center',
+      }),
+    )
+
     log(prettyjson.render(msgData))
 
     if (!deployToProduction) {
       log()
-      log('If everything looks good on your draft URL, deploy it to your main site URL with the --prod flag.')
-      log(
-        chalk.cyanBright.bold(
-          `netlify ${isIntegrationDeploy ? 'integration:' : ''}deploy${runBuildCommand ? ' --build' : ''} --prod`,
-        ),
-      )
+      log('If everything looks good on your draft URL, deploy it to your main site URL with the --prod flag:')
+      log(chalk.cyanBright.bold(`netlify deploy${runBuildCommand ? '' : '--no-build'} --prod`))
       log()
     }
   }
 }
 
 const prepAndRunDeploy = async ({
-  // @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
   api,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'command' implicitly has an 'any' ... Remove this comment to see the full error message
   command,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'any' t... Remove this comment to see the full error message
   config,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'deployToProduction' implicitly ha... Remove this comment to see the full error message
   deployToProduction,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'options' implicitly has an 'any' ... Remove this comment to see the full error message
   options,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'site' implicitly has an 'any' typ... Remove this comment to see the full error message
   site,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'siteData' implicitly has an 'any'... Remove this comment to see the full error message
   siteData,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'siteId' implicitly has an 'any' t... Remove this comment to see the full error message
   siteId,
-  // @ts-expect-error TS(7031) FIXME: Binding element 'workingDir' implicitly has an 'an... Remove this comment to see the full error message
   workingDir,
+}: {
+  options: DeployOptionValues
+  command: BaseCommand
+  workingDir: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- FIXME(serhalp)
+  [key: string]: any
 }) => {
   const alias = options.alias || options.branch
   // if a context is passed besides dev, we need to pull env vars from that specific context
@@ -747,6 +751,11 @@ const prepAndRunDeploy = async ({
     await bundleEdgeFunctions(options, command)
   }
 
+  log('')
+  // Note: this is leakily mimicking the @netlify/build heading style
+  log(chalk.cyanBright.bold(`Deploying to Netlify\n${'─'.repeat(64)}`))
+
+  log('')
   log(
     prettyjson.render({
       'Deploy path': deployFolder,
@@ -754,6 +763,7 @@ const prepAndRunDeploy = async ({
       'Configuration path': configPath,
     }),
   )
+  log()
 
   const { functionsFolderStat } = await validateFolders({
     deployFolder,
@@ -782,7 +792,7 @@ const prepAndRunDeploy = async ({
     command,
     config,
     deployFolder,
-    deployTimeout: options.timeout * SEC_TO_MILLISEC || DEFAULT_DEPLOY_TIMEOUT,
+    deployTimeout: options.timeout ? options.timeout * SEC_TO_MILLISEC : DEFAULT_DEPLOY_TIMEOUT,
     deployToProduction,
     functionsConfig,
     // pass undefined functionsFolder if doesn't exist
@@ -893,11 +903,8 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
       deployToProduction,
     })
   }
-  const isIntegrationDeploy = command.name() === 'integration:deploy'
-
   printResults({
     runBuildCommand: options.build,
-    isIntegrationDeploy,
     json: options.json,
     results,
     deployToProduction,

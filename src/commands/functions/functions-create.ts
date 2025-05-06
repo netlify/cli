@@ -496,7 +496,7 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
     options.url = chosenUrl.trim()
     try {
       await downloadFromURL(command, options, argumentName, functionsDir)
-    } catch (error_) {
+    } catch {
       return logAndThrowError(`$${NETLIFYDEVERR} Error downloading from URL: ${options.url}`)
     }
   } else if (chosenTemplate === 'report') {

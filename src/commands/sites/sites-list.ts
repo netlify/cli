@@ -1,7 +1,7 @@
 import { OptionValues } from 'commander'
 
 import { listSites } from '../../lib/api.js'
-import { startSpinner, stopSpinner } from '../../lib/spinner.js'
+import { startSpinner } from '../../lib/spinner.js'
 import { chalk, log, logJson } from '../../utils/command-helpers.js'
 import { SiteInfo } from '../../utils/types.js'
 import BaseCommand from '../base-command.js'
@@ -16,7 +16,7 @@ export const sitesList = async (options: OptionValues, command: BaseCommand) => 
 
   const sites = await listSites({ api, options: { filter: 'all' } })
   if (spinner) {
-    stopSpinner({ spinner })
+    spinner.success()
   }
 
   if (sites && sites.length !== 0) {

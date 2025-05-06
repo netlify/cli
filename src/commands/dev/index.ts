@@ -1,4 +1,5 @@
 import { Option, type OptionValues } from 'commander'
+import terminalLink from 'terminal-link'
 
 import { BANG, chalk } from '../../utils/command-helpers.js'
 import { normalizeContext } from '../../utils/env/index.js'
@@ -105,6 +106,12 @@ export const createDevCommand = (program: BaseCommand) => {
       'netlify dev --edge-inspect-brk=127.0.0.1:9229',
       'BROWSER=none netlify dev # disable browser auto opening',
     ])
+    .addHelpText('after', () => {
+      const docsUrl = 'https://docs.netlify.com/cli/local-development/'
+      return `
+For more information about Netlify local development, see ${terminalLink(docsUrl, docsUrl)}
+`
+    })
     .action(async (options: OptionValues, command: BaseCommand) => {
       const { dev } = await import('./dev.js')
       await dev(options, command)

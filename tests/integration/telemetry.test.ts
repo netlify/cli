@@ -74,6 +74,8 @@ await withMockApi(routes, () => {
       didEnableCompileCache: expect.any(Boolean),
       monorepo: false,
       nodejsVersion,
+      opts: expect.any(Object),
+      args: expect.any(Array),
       // TODO: this should be NPM however some CI tests are using pnpm which changes the value
       packageManager: expect.stringMatching(/npm|pnpm/),
     })
@@ -96,6 +98,8 @@ await withMockApi(routes, () => {
       didEnableCompileCache: expect.any(Boolean),
       monorepo: false,
       nodejsVersion,
+      opts: expect.any(Object),
+      args: expect.any(Array),
       // TODO: this should be NPM however some CI tests are using pnpm which changes the value
       packageManager: expect.stringMatching(/npm|pnpm/),
     })
@@ -123,5 +127,48 @@ await withMockApi(routes, () => {
         }),
       )
     })
+  })
+
+  test<MockApiTestContext>('should attach user options as `opts` and positional args as `args`', async ({
+    apiUrl,
+    requests,
+  }) => {
+    await expect(
+      callCli(['blobs:get', '--filter', 'web', '-O', './output_dir', 'my-store', 'my-key'], getCLIOptions(apiUrl)),
+    ).rejects.toThrowError(/You don't appear to be in a folder that is linked to a site/)
+    const request = requests.find(({ path }) => path === '/api/v1/track')
+    expect(request).toBeDefined()
+
+    expect(request!.body).toHaveProperty('event', 'cli:command')
+    expect(request!.body).toHaveProperty(
+      'properties',
+      expect.objectContaining({
+        command: 'blobs:get',
+        opts: {
+          filter: { source: 'cli', value: 'web' },
+          output: { source: 'cli', value: './output_dir' },
+        },
+        args: ['my-store', 'my-key'],
+      }),
+    )
+  })
+
+  test<MockApiTestContext>('should scrub values of sensitive `opts`', async ({ apiUrl, requests }) => {
+    await callCli(['api', 'listSites', '--auth', 'my-sensitive-token'], getCLIOptions(apiUrl))
+    const request = requests.find(({ path }) => path === '/api/v1/track')
+    expect(request).toBeDefined()
+
+    expect(request!.body).toHaveProperty('event', 'cli:command')
+    expect(request!.body).toHaveProperty(
+      'properties',
+      expect.objectContaining({
+        command: 'api',
+        opts: {
+          auth: { source: 'cli', value: '********' },
+          list: { source: 'default', value: false },
+        },
+        args: ['listSites'],
+      }),
+    )
   })
 })
