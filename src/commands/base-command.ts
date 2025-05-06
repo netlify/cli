@@ -7,7 +7,7 @@ import { DefaultLogger, Project } from '@netlify/build-info'
 import { NodeFS, NoopLogger } from '@netlify/build-info/node'
 import { resolveConfig } from '@netlify/config'
 import { isCI } from 'ci-info'
-import { Command, Help, Option } from 'commander'
+import { Command, Help, Option, type OptionValues } from 'commander'
 import debug from 'debug'
 import { findUp } from 'find-up'
 import inquirer from 'inquirer'
@@ -74,6 +74,23 @@ const COMMANDS_WITHOUT_WORKSPACE_OPTIONS = new Set(['api', 'recipes', 'completio
  * A list of commands where we need to fetch featureflags for config resolution
  */
 const COMMANDS_WITH_FEATURE_FLAGS = new Set(['build', 'dev', 'deploy'])
+
+/**
+ * Names of options whose values should be scrubbed
+ */
+const SCRUBBED_OPTIONS = new Set(['auth'])
+
+const getScrubbedOptions = (command: BaseCommand): Record<string, { source: OptionValues['source']; value: unknown }> =>
+  Object.entries(command.optsWithGlobals()).reduce(
+    (acc: Record<string, { source: OptionValues['source']; value: unknown }>, [key, value]) => ({
+      ...acc,
+      [key]: {
+        source: command.getOptionValueSourceWithGlobals(key),
+        value: SCRUBBED_OPTIONS.has(key) ? '********' : value,
+      },
+    }),
+    {},
+  )
 
 /** Formats a help list correctly with the correct indent */
 const formatHelpList = (textArray: string[]) => textArray.join('\n').replace(/^/gm, ' '.repeat(HELP_INDENT_WIDTH))
@@ -626,6 +643,8 @@ export default class BaseCommand extends Command {
       monorepo: Boolean(this.project.workspace),
       packageManager: this.project.packageManager?.name,
       buildSystem: this.project.buildSystems.map(({ id }) => id),
+      opts: getScrubbedOptions(actionCommand),
+      args: actionCommand.args,
     })
 
     // set the project and the netlify api object on the command,
