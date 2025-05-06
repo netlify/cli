@@ -9,6 +9,53 @@ import { getCLIOptions, withMockApi } from '../../utils/mock-api.js'
 import { withSiteBuilder } from '../../utils/site-builder.js'
 
 describe('link command', () => {
+  test.todo('should link to matching site given `--site-id`')
+  test.todo('should print an error and exit when no site with given `--site-id` is found')
+
+  test.todo('should link to matching site given `--site-name`')
+  test.todo('should print an error and exit when no site with given `--site-name` is found')
+
+  test('should link to matching site given `--git-remote-url`', async (t) => {
+    const siteInfo = {
+      id: 'site_id',
+      name: 'test-site',
+      ssl_url: 'https://test-site.netlify.app',
+      admin_url: 'https://app.netlify.com/sites/test-site',
+      build_settings: {
+        repo_url: 'https://github.com/vibecoder/my-unicorn',
+      },
+    }
+    const routes = [
+      {
+        path: 'sites',
+        response: [siteInfo],
+      },
+      {
+        path: 'sites/site_id',
+        response: siteInfo,
+      },
+    ]
+    await withSiteBuilder(t, async (builder) => {
+      await builder.build()
+
+      await withMockApi(
+        routes,
+        async ({ apiUrl }) => {
+          const stdout = (await callCli(
+            ['link', '--git-remote-url', 'https://github.com/vibecoder/my-unicorn'],
+            getCLIOptions({ builder, apiUrl, env: { NETLIFY_SITE_ID: '' } }),
+          )) as string
+
+          expect(stdout).toContain('Linked to test-site')
+        },
+        true,
+      )
+    })
+  })
+  test.todo('should print an error and exit when no site with given `--git-remote-url` is found')
+
+  test.todo("should prompt user when a site matching the local git repo's remote origin HTTPS URL is found")
+
   test('should create gitignore in repository root when is root', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       await builder.withGit().build()

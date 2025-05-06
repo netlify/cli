@@ -26,6 +26,7 @@ import { createApiCommand } from './api/index.js'
 import BaseCommand from './base-command.js'
 import { createBlobsCommand } from './blobs/blobs.js'
 import { createBuildCommand } from './build/index.js'
+import { createCloneCommand } from './clone/index.js'
 import { createCompletionCommand } from './completion/index.js'
 import { createDeployCommand } from './deploy/index.js'
 import { createDevCommand } from './dev/index.js'
@@ -220,6 +221,7 @@ export const createMainCommand = (): BaseCommand => {
   createFunctionsCommand(program)
   createRecipesCommand(program)
   createInitCommand(program)
+  createCloneCommand(program)
   createLinkCommand(program)
   createLoginCommand(program)
   createLogoutCommand(program)

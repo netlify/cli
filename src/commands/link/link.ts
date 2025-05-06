@@ -1,18 +1,77 @@
 import assert from 'node:assert'
 
-import { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 import isEmpty from 'lodash/isEmpty.js'
+import type { NetlifyAPI } from 'netlify'
 
 import { listSites } from '../../lib/api.js'
+import { startSpinner } from '../../lib/spinner.js'
 import { chalk, logAndThrowError, exit, log, APIError } from '../../utils/command-helpers.js'
 import getRepoData from '../../utils/get-repo-data.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import { track } from '../../utils/telemetry/index.js'
 import type { SiteInfo } from '../../utils/types.js'
 import BaseCommand from '../base-command.js'
+import type { LinkOptionValues } from './option_values.js'
 
-const linkPrompt = async (command: BaseCommand, options: OptionValues) => {
+const findSiteByRepoUrl = async (api: NetlifyAPI, repoUrl: string): Promise<SiteInfo> => {
+  log()
+  const spinner = startSpinner({ text: `Looking for sites connected to '${repoUrl}'` })
+
+  const sites = await listSites({ api, options: { filter: 'all' } })
+
+  if (sites.length === 0) {
+    spinner.error()
+    return logAndThrowError(
+      `You don't have any sites yet. Run ${chalk.cyanBright('netlify sites:create')} to create a site.`,
+    )
+  }
+
+  const matchingSites = sites.filter(({ build_settings: buildSettings = {} }) => repoUrl === buildSettings.repo_url)
+
+  if (matchingSites.length === 0) {
+    spinner.error()
+    log(chalk.redBright.bold.underline(`No matching site found`))
+    log()
+    log(`No site found with the remote ${repoUrl}.
+
+Double check you are in the correct working directory and a remote origin repo is configured.
+
+Run ${chalk.cyanBright('git remote -v')} to see a list of your git remotes.`)
+
+    return exit(1)
+  }
+
+  if (matchingSites.length === 1) {
+    spinner.success({ text: `Found 1 site connected to ${repoUrl}` })
+    const [firstSite] = matchingSites
+    return firstSite
+  }
+
+  spinner.warn({ text: `Found ${matchingSites.length} sites connected to ${repoUrl}` })
+
+  const { selectedSite } = await inquirer.prompt<{
+    selectedSite: SiteInfo | undefined
+  }>([
+    {
+      type: 'list',
+      name: 'selectedSite',
+      message: 'Which site do you want to link?',
+      choices: matchingSites.map((matchingSite) => ({
+        name: `${matchingSite.name} - ${matchingSite.ssl_url}`,
+        value: matchingSite,
+      })),
+    },
+  ])
+
+  if (!selectedSite) {
+    return logAndThrowError('No site selected')
+  }
+
+  return selectedSite
+}
+
+const linkPrompt = async (command: BaseCommand, options: LinkOptionValues): Promise<SiteInfo> => {
   const { api, state } = command.netlify
 
   const SITE_NAME_PROMPT = 'Search by full or partial site name'
@@ -35,7 +94,7 @@ const linkPrompt = async (command: BaseCommand, options: OptionValues) => {
   log()
   log(`${chalk.cyanBright('netlify link')} will connect this folder to a site on Netlify`)
   log()
-  const { linkType } = await inquirer.prompt([
+  const { linkType } = await inquirer.prompt<{ linkType: string | undefined }>([
     {
       type: 'list',
       name: 'linkType',
@@ -51,64 +110,12 @@ const linkPrompt = async (command: BaseCommand, options: OptionValues) => {
       assert(!('error' in repoData))
 
       kind = 'gitRemote'
-      log()
-      log(`Looking for sites connected to '${repoData.httpsUrl}'...`)
-      log()
-      const sites = await listSites({ api, options: { filter: 'all' } })
-
-      if (sites.length === 0) {
-        return logAndThrowError(
-          `You don't have any sites yet. Run ${chalk.cyanBright('netlify sites:create')} to create a site.`,
-        )
-      }
-
-      const matchingSites = sites.filter(
-        ({ build_settings: buildSettings = {} }) => repoData.httpsUrl === buildSettings.repo_url,
-      )
-
-      // If no remote matches. Throw error
-      if (matchingSites.length === 0) {
-        log(chalk.redBright.bold.underline(`No Matching Site Found`))
-        log()
-        log(`No site found with the remote ${repoData.httpsUrl}.
-
-Double check you are in the correct working directory and a remote origin repo is configured.
-
-Run ${chalk.cyanBright('git remote -v')} to see a list of your git remotes.`)
-
-        exit()
-      }
-
-      // Matches a single site hooray!
-      if (matchingSites.length === 1) {
-        const [firstSite] = matchingSites
-        site = firstSite
-      } else if (matchingSites.length > 1) {
-        // Matches multiple sites. Users must choose which to link.
-        log(`Found ${matchingSites.length} matching sites!`)
-
-        // Prompt which options
-        const { selectedSite } = await inquirer.prompt([
-          {
-            type: 'list',
-            name: 'selectedSite',
-            message: 'Which site do you want to link?',
-            choices: matchingSites.map((matchingSite) => ({
-              name: `${matchingSite.name} - ${matchingSite.ssl_url}`,
-              value: matchingSite,
-            })),
-          },
-        ])
-        if (!selectedSite) {
-          return logAndThrowError('No site selected')
-        }
-        site = selectedSite
-      }
+      site = await findSiteByRepoUrl(api, repoData.httpsUrl)
       break
     }
     case SITE_NAME_PROMPT: {
       kind = 'byName'
-      const { searchTerm } = await inquirer.prompt([
+      const { searchTerm } = await inquirer.prompt<{ searchTerm: string }>([
         {
           type: 'input',
           name: 'searchTerm',
@@ -141,7 +148,9 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
 
       if (matchingSites.length > 1) {
         log(`Found ${matchingSites.length} matching sites!`)
-        const { selectedSite } = await inquirer.prompt([
+        const { selectedSite } = await inquirer.prompt<{
+          selectedSite: SiteInfo | undefined
+        }>([
           {
             type: 'list',
             name: 'selectedSite',
@@ -178,7 +187,7 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
         )
       }
 
-      const { selectedSite } = await inquirer.prompt([
+      const { selectedSite } = await inquirer.prompt<{ selectedSite: SiteInfo | undefined }>([
         {
           type: 'list',
           name: 'selectedSite',
@@ -195,7 +204,7 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
     }
     case SITE_ID_PROMPT: {
       kind = 'bySiteId'
-      const { siteId } = await inquirer.prompt([
+      const { siteId } = await inquirer.prompt<{ siteId: string }>([
         {
           type: 'input',
           name: 'siteId',
@@ -214,8 +223,6 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
       }
       break
     }
-    default:
-      return
   }
 
   if (!site) {
@@ -240,10 +247,11 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a site.`)
   log()
   log(`You can now run other \`netlify\` cli commands in this directory`)
 
-  return site
+  // FIXME(serhalp): Mismatch between hardcoded `SiteInfo` and generated Netlify API types.
+  return site as SiteInfo
 }
 
-export const link = async (options: OptionValues, command: BaseCommand) => {
+export const link = async (options: LinkOptionValues, command: BaseCommand) => {
   await command.authenticate()
 
   const {
@@ -276,7 +284,7 @@ export const link = async (options: OptionValues, command: BaseCommand) => {
     log(`To unlink this site, run: ${chalk.cyanBright('netlify unlink')}`)
   } else if (options.id) {
     try {
-      // @ts-expect-error(serhalp) -- Mismatch between hardcoded `SiteInfo` and new generated Netlify API types.
+      // @ts-expect-error FIXME(serhalp): Mismatch between hardcoded `SiteInfo` and new generated Netlify API types.
       newSiteData = await api.getSite({ site_id: options.id })
     } catch (error_) {
       if ((error_ as APIError).status === 404) {
@@ -288,7 +296,7 @@ export const link = async (options: OptionValues, command: BaseCommand) => {
 
     // Save site ID
     state.set('siteId', newSiteData.id)
-    log(`Linked to ${newSiteData.name}`)
+    log(`${chalk.green('✔')} Linked to ${newSiteData.name}`)
 
     await track('sites_linked', {
       siteId: newSiteData.id,
@@ -320,12 +328,22 @@ export const link = async (options: OptionValues, command: BaseCommand) => {
     const matchingSiteData = results.find((site: SiteInfo) => site.name === options.name) || results[0]
     state.set('siteId', matchingSiteData.id)
 
-    log(`Linked to ${matchingSiteData.name}`)
+    log(`${chalk.green('✔')} Linked to ${matchingSiteData.name}`)
 
     await track('sites_linked', {
       siteId: (matchingSiteData && matchingSiteData.id) || siteId,
       linkType: 'manual',
       kind: 'byName',
+    })
+  } else if (options.gitRemoteUrl) {
+    newSiteData = await findSiteByRepoUrl(api, options.gitRemoteUrl)
+    state.set('siteId', newSiteData.id)
+    log(`${chalk.green('✔')} Linked to ${newSiteData.name}`)
+
+    await track('sites_linked', {
+      siteId: newSiteData.id,
+      linkType: 'clone',
+      kind: 'byRepoUrl',
     })
   } else {
     newSiteData = await linkPrompt(command, options)

@@ -20,6 +20,7 @@ netlify link
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `git-remote-name` (*string*) - Name of Git remote to use. e.g. "origin"
+- `git-remote-url` (*string*) - URL of the repository (or Github `owner/repo`) to link to
 - `id` (*string*) - ID of site to link to
 - `name` (*string*) - Name of site to link to
 - `debug` (*boolean*) - Print debugging information
@@ -31,6 +32,7 @@ netlify link
 netlify link
 netlify link --id 123-123-123-123
 netlify link --name my-site-name
+netlify link --git-remote-url https://github.com/vibecoder/my-unicorn.git
 ```
 
 
