@@ -3,7 +3,7 @@ import {
   Extension,
   getExtension,
   //  getExtensionsMeta,
-  getInstalledExtensionsForTeam,
+  getInstalledExtensionsForSite,
   installExtension,
 } from './utils.js'
 
@@ -48,6 +48,7 @@ async function getRequiredExtensions(command: BaseCommand) {
 
   const netlifyToken = command.netlify.api.accessToken.replace('Bearer ', '')
   const accountId = command.netlify.siteInfo.account_id
+  const siteId = command.netlify.siteInfo.id
 
   const extensionsMeta = [{ slug: 'neon', packages: ['@netlify/neon'] }]
   const [
@@ -57,8 +58,9 @@ async function getRequiredExtensions(command: BaseCommand) {
   ] = await Promise.all([
     // getExtensionsMeta(), // todo: uncomment when jigsaw /meta endpoint is deployed
     command.project.getPackageJSON(),
-    getInstalledExtensionsForTeam({
+    getInstalledExtensionsForSite({
       accountId: accountId,
+      siteId: siteId,
       netlifyToken: netlifyToken,
     }),
   ])
@@ -70,7 +72,7 @@ async function getRequiredExtensions(command: BaseCommand) {
   })
 
   const requiredExtensionsMeta = autoInstallExtensions.filter((extension) => {
-    return !installedExtensions.find((installedExtension) => installedExtension.slug === extension.slug)
+    return !installedExtensions.find((installedExtension) => installedExtension.integrationSlug === extension.slug)
   })
 
   const requiredExtensions = await Promise.all(

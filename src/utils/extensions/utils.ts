@@ -8,14 +8,20 @@ export type Extension = {
   installedOnTeam: boolean
 }
 
-export const getInstalledExtensionsForTeam = async ({
+export const getInstalledExtensionsForSite = async ({
   accountId,
+  siteId,
   netlifyToken,
 }: {
   accountId: string
+  siteId: string
   netlifyToken: string
 }) => {
-  const extensionsResponse = await fetch(`${JIGSAW_URL}/${encodeURIComponent(accountId)}/integrations`, {
+  const url = new URL(
+    `${JIGSAW_URL}/team/${encodeURIComponent(accountId)}/integrations/installations/${encodeURIComponent(siteId)}`,
+    JIGSAW_URL,
+  )
+  const extensionsResponse = await fetch(url.toString(), {
     headers: {
       'netlify-token': netlifyToken,
       'Api-Version': '2',
@@ -25,7 +31,12 @@ export const getInstalledExtensionsForTeam = async ({
     throw new Error(`Failed to fetch extensions`)
   }
 
-  const extensions = (await extensionsResponse.json()) as Extension[]
+  const extensions = (await extensionsResponse.json()) as {
+    id: number
+    name: string
+    integrationId: number
+    integrationSlug: string
+  }[]
 
   return extensions
 }
