@@ -1,31 +1,35 @@
 import BaseCommand from '../../commands/base-command.js'
+import { getAccount } from '../../commands/database/utils.js'
 import {
   Extension,
+  ExtensionMeta,
   getExtension,
   //  getExtensionsMeta,
   getInstalledExtensionsForSite,
   installExtension,
 } from './utils.js'
 
-export async function handleRequiredExtensions(command: BaseCommand) {
-  const requiredExtensions = await getRequiredExtensions(command)
-  await installRequiredExtensions(command, requiredExtensions)
-}
+export async function installRequiredExtensions(command: BaseCommand) {
+  const [requiredExtensions, extensionsMeta] = await getRequiredExtensions(command)
 
-async function installRequiredExtensions(command: BaseCommand, requiredExtensions: (Extension | undefined)[]) {
   if (!command.netlify.api.accessToken || !command.netlify.siteInfo.account_id) {
     // skip installing extensions if not logged in
     return
   }
+  if (requiredExtensions.length === 0) {
+    return
+  }
+  console.log(`Detected package(s) that require extension(s) to be installed on your team.`)
+
   const netlifyToken = command.netlify.api.accessToken.replace('Bearer ', '')
   const accountId = command.netlify.siteInfo.account_id
+  const account = await getAccount(command, { accountId })
 
   for (const extension of requiredExtensions) {
-    if (!extension) {
-      continue
+    const meta = extensionsMeta.find((meta) => meta.slug === extension.slug)
+    if (meta) {
+      console.log(`Extension: "${extension.name}" required by "${meta.packages.join('",')}"`)
     }
-
-    console.log(`Installing extension ${extension.name}...`)
     const installed = await installExtension({
       accountId: accountId,
       netlifyToken: netlifyToken,
@@ -33,17 +37,17 @@ async function installRequiredExtensions(command: BaseCommand, requiredExtension
       hostSiteUrl: extension.hostSiteUrl,
     })
     if (installed) {
-      console.log(`Installed extension ${extension.name}`)
+      console.log(`Installed ${extension.name} extension on team ${account.name}`)
     } else {
-      console.warn(`Failed to install extension ${extension.name}`)
+      console.warn(`Failed to install ${extension.name} extension on team ${account.name}`)
     }
   }
 }
 
-async function getRequiredExtensions(command: BaseCommand) {
+async function getRequiredExtensions(command: BaseCommand): Promise<[Extension[], ExtensionMeta[]]> {
   if (!command.netlify.api.accessToken || !command.netlify.siteInfo.account_id) {
-    console.warn('Not logged in, skipping required extension handling')
-    return []
+    // skip installing extensions if not logged in
+    return [[], []]
   }
 
   const netlifyToken = command.netlify.api.accessToken.replace('Bearer ', '')
@@ -75,15 +79,17 @@ async function getRequiredExtensions(command: BaseCommand) {
     return !installedExtensions.find((installedExtension) => installedExtension.integrationSlug === extension.slug)
   })
 
-  const requiredExtensions = await Promise.all(
-    requiredExtensionsMeta.map((extMeta) =>
-      getExtension({
-        accountId: accountId,
-        netlifyToken: netlifyToken,
-        slug: extMeta.slug,
-      }),
-    ),
-  )
+  const requiredExtensions = (
+    await Promise.all(
+      requiredExtensionsMeta.map((extMeta) =>
+        getExtension({
+          accountId: accountId,
+          netlifyToken: netlifyToken,
+          slug: extMeta.slug,
+        }),
+      ),
+    )
+  ).filter(Boolean)
 
-  return requiredExtensions
+  return [requiredExtensions as Extension[], extensionsMeta]
 }

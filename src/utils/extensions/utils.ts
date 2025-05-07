@@ -207,7 +207,7 @@ export const getSiteConfiguration = async ({
   return siteConfiguration
 }
 
-type ExtensionMeta = {
+export type ExtensionMeta = {
   slug: string
   packages: string[]
 }
