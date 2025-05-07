@@ -14,7 +14,7 @@ export async function handleRequiredExtensions(command: BaseCommand) {
 
 async function installRequiredExtensions(command: BaseCommand, requiredExtensions: (Extension | undefined)[]) {
   if (!command.netlify.api.accessToken || !command.netlify.siteInfo.account_id) {
-    console.warn('Not logged in, skipping required extension handling')
+    // skip installing extensions if not logged in
     return
   }
   const netlifyToken = command.netlify.api.accessToken.replace('Bearer ', '')
