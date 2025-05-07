@@ -19,29 +19,38 @@ export async function installRequiredExtensions(command: BaseCommand) {
   if (requiredExtensions.length === 0) {
     return
   }
-  console.log(`Detected package(s) that require extension(s) to be installed on your team.`)
 
   const netlifyToken = command.netlify.api.accessToken.replace('Bearer ', '')
   const accountId = command.netlify.siteInfo.account_id
   const account = await getAccount(command, { accountId })
 
-  for (const extension of requiredExtensions) {
-    const meta = extensionsMeta.find((meta) => meta.slug === extension.slug)
-    if (meta) {
-      console.log(`Extension: "${extension.name}" required by "${meta.packages.join('",')}"`)
-    }
-    const installed = await installExtension({
-      accountId: accountId,
-      netlifyToken: netlifyToken,
-      slug: extension.slug,
-      hostSiteUrl: extension.hostSiteUrl,
-    })
-    if (installed) {
-      console.log(`Installed ${extension.name} extension on team ${account.name}`)
+  const results = await Promise.all(
+    requiredExtensions.map((extension) => {
+      const meta = extensionsMeta.find((meta) => meta.slug === extension.slug)
+      if (meta) {
+        console.log(
+          `Installing extension "${extension.name}" on team "${
+            account.name
+          }" required by package(s): "${meta.packages.join('",')}"`,
+        )
+      }
+      return installExtension({
+        accountId: accountId,
+        netlifyToken: netlifyToken,
+        slug: extension.slug,
+        hostSiteUrl: extension.hostSiteUrl,
+      })
+    }),
+  )
+
+  results.forEach((install) => {
+    const ext = requiredExtensions.find((ext) => ext.slug === install.slug)
+    if (install.success) {
+      console.log(`Installed${ext?.name ? ` "${ext.name}" ` : ' '}extension on team ${account.name}`)
     } else {
-      console.warn(`Failed to install ${extension.name} extension on team ${account.name}`)
+      console.warn(`Failed to install ${ext?.name ?? ''} extension on team ${account.name}`)
     }
-  }
+  })
 }
 
 async function getRequiredExtensions(command: BaseCommand): Promise<[Extension[], ExtensionMeta[]]> {
