@@ -17,10 +17,11 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macOS-latest, windows-latest]
-        node-version: ['18.14.0', '22.x']
+        node-version: ['18.14.0', '22', '24']
+        # TODO(serhalp): Why is this excluded? Document, fix, or remove.
         exclude:
           - os: windows-latest
-            node-version: '22.x'
+            node-version: '22'
       fail-fast: false
     steps:
       - name: Git checkout
