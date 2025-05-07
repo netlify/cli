@@ -55,7 +55,7 @@ export const init = async (_options: OptionValues, command: BaseCommand) => {
       slug: NEON_DATABASE_EXTENSION_SLUG,
       hostSiteUrl: extension.hostSiteUrl,
     })
-    if (!installed) {
+    if (!installed.success) {
       throw new Error(`Failed to install extension on team "${account.name}": "${extension.name}"`)
     }
     log(`Extension "${extension.name}" successfully installed on team "${account.name}"`)

@@ -77,7 +77,10 @@ export const installExtension = async ({
     const text = await installedResponse.text()
     throw new Error(`Failed to install extension '${slug}': ${text}`)
   }
-  return true
+  return {
+    slug,
+    success: installedResponse.ok,
+  }
 }
 
 type JigsawTokenResult =
