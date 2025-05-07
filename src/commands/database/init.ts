@@ -1,12 +1,13 @@
 import { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 import BaseCommand from '../base-command.js'
-import { getAccount, getExtension, getJigsawToken, installExtension } from './utils.js'
+import { getAccount } from './utils.js'
 import { initDrizzle } from './drizzle.js'
-import { NEON_DATABASE_EXTENSION_SLUG } from './constants.js'
 import prettyjson from 'prettyjson'
 import { log } from '../../utils/command-helpers.js'
 import { SiteInfo } from './database.js'
+import { NEON_DATABASE_EXTENSION_SLUG } from '../../utils/extensions/constants.js'
+import { getExtension, getJigsawToken, installExtension } from '../../utils/extensions/utils.js'
 
 export const init = async (_options: OptionValues, command: BaseCommand) => {
   const siteInfo = command.netlify.siteInfo as SiteInfo

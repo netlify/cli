@@ -2,14 +2,6 @@ import BaseCommand from '../base-command.js'
 import { status } from './status.js'
 import { init } from './init.js'
 
-export type Extension = {
-  id: string
-  name: string
-  slug: string
-  hostSiteUrl: string
-  installedOnTeam: boolean
-}
-
 export type SiteInfo = {
   id: string
   name: string

@@ -1,0 +1,75 @@
+import BaseCommand from '../../commands/base-command.js'
+import { Extension, getExtension, getInstalledExtensionsForTeam, installExtension } from './utils.js'
+
+export async function handleRequiredExtensions(command: BaseCommand) {
+  const requiredExtensions = await getRequiredExtensions(command)
+  console.log('requiredExtensions', requiredExtensions)
+  await installRequiredExtensions(command, requiredExtensions)
+}
+
+async function installRequiredExtensions(command: BaseCommand, requiredExtensions: (Extension | undefined)[]) {
+  if (!command.netlify.api.accessToken || !command.netlify.siteInfo.account_id) {
+    console.warn('Not logged in, skipping required extension handling')
+    return
+  }
+  const netlifyToken = command.netlify.api.accessToken.replace('Bearer ', '')
+  const accountId = command.netlify.siteInfo.account_id
+
+  for (const extension of requiredExtensions) {
+    if (!extension) {
+      console.warn('Failed to get extension, skipping')
+      continue
+    }
+
+    console.log('Installing extension', extension.slug)
+
+    const installed = await installExtension({
+      accountId: accountId,
+      netlifyToken: netlifyToken,
+      slug: extension.slug,
+      hostSiteUrl: extension.hostSiteUrl,
+    })
+    console.log('installed', installed)
+  }
+}
+
+async function getRequiredExtensions(command: BaseCommand) {
+  if (!command.netlify.api.accessToken || !command.netlify.siteInfo.account_id) {
+    console.warn('Not logged in, skipping required extension handling')
+    return []
+  }
+
+  const netlifyToken = command.netlify.api.accessToken.replace('Bearer ', '')
+  const accountId = command.netlify.siteInfo.account_id
+  const extensionsMeta = [{ slug: 'neon', packages: ['@netlify/neon'] }]
+
+  const [packageJson, installedExtensions] = await Promise.all([
+    command.project.getPackageJSON(),
+    getInstalledExtensionsForTeam({
+      accountId: accountId,
+      netlifyToken: netlifyToken,
+    }),
+  ])
+
+  const autoInstallExtensions = extensionsMeta.filter((extension) => {
+    return extension.packages.some((pkg) => {
+      return packageJson.dependencies?.[pkg]
+    })
+  })
+
+  const requiredExtensionsMeta = autoInstallExtensions.filter((extension) => {
+    return !installedExtensions.find((installedExtension) => installedExtension.slug === extension.slug)
+  })
+
+  const requiredExtensions = await Promise.all(
+    requiredExtensionsMeta.map((extMeta) =>
+      getExtension({
+        accountId: accountId,
+        netlifyToken: netlifyToken,
+        slug: extMeta.slug,
+      }),
+    ),
+  )
+
+  return requiredExtensions
+}

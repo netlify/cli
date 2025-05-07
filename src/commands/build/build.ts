@@ -5,6 +5,7 @@ import { detectFrameworkSettings, getDefaultConfig } from '../../utils/build-inf
 import { logAndThrowError, exit, getToken } from '../../utils/command-helpers.js'
 import { getEnvelopeEnv } from '../../utils/env/index.js'
 import type BaseCommand from '../base-command.js'
+import { handleRequiredExtensions } from '../../utils/extensions/required-extensions.js'
 
 export const checkOptions = ({ cachedConfig: { siteInfo }, token }: RunBuildOptions) => {
   if (!siteInfo.id) {
@@ -43,6 +44,10 @@ export const build = async (options: OptionValues, command: BaseCommand) => {
       env: buildOptions.cachedConfig.env,
       siteInfo,
     })
+  }
+
+  if (command.featureFlags.auto_install_required_extensions) {
+    await handleRequiredExtensions(command)
   }
 
   const { exitCode } = await runBuild(buildOptions)
