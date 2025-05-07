@@ -19,6 +19,7 @@ import {
 export const description = 'Manage context files for AI tools'
 
 const presets = [
+  { name: 'Windsurf rules (.windsurf/rules/)', value: '.windsurf/rules' },
   { name: 'Cursor rules (.cursor/rules/)', value: '.cursor/rules' },
   { name: 'Custom location', value: '' },
 ]
