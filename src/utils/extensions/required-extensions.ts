@@ -1,9 +1,14 @@
 import BaseCommand from '../../commands/base-command.js'
-import { Extension, getExtension, getExtensionsMeta, getInstalledExtensionsForTeam, installExtension } from './utils.js'
+import {
+  Extension,
+  getExtension,
+  //  getExtensionsMeta,
+  getInstalledExtensionsForTeam,
+  installExtension,
+} from './utils.js'
 
 export async function handleRequiredExtensions(command: BaseCommand) {
   const requiredExtensions = await getRequiredExtensions(command)
-  console.log('requiredExtensions', requiredExtensions)
   await installRequiredExtensions(command, requiredExtensions)
 }
 
@@ -17,19 +22,21 @@ async function installRequiredExtensions(command: BaseCommand, requiredExtension
 
   for (const extension of requiredExtensions) {
     if (!extension) {
-      console.warn('Failed to get extension, skipping')
       continue
     }
 
-    console.log('Installing extension', extension.slug)
-
+    console.log(`Installing extension ${extension.name}...`)
     const installed = await installExtension({
       accountId: accountId,
       netlifyToken: netlifyToken,
       slug: extension.slug,
       hostSiteUrl: extension.hostSiteUrl,
     })
-    console.log('installed', installed)
+    if (installed) {
+      console.log(`Installed extension ${extension.name}`)
+    } else {
+      console.warn(`Failed to install extension ${extension.name}`)
+    }
   }
 }
 
@@ -55,7 +62,6 @@ async function getRequiredExtensions(command: BaseCommand) {
       netlifyToken: netlifyToken,
     }),
   ])
-  console.log('extensionsMeta', extensionsMeta)
 
   const autoInstallExtensions = extensionsMeta.filter((extension) => {
     return extension.packages.some((pkg) => {
