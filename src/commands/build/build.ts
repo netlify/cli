@@ -47,7 +47,11 @@ export const build = async (options: OptionValues, command: BaseCommand) => {
   }
 
   if (command.featureFlags.auto_install_required_extensions) {
-    await installRequiredExtensions(command)
+    try {
+      await installRequiredExtensions(command)
+    } catch (e) {
+      console.warn(`Failed to install required extensions:`, e)
+    }
   }
 
   const { exitCode } = await runBuild(buildOptions)
