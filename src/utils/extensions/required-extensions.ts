@@ -10,12 +10,12 @@ import {
 } from './utils.js'
 
 export async function installRequiredExtensions(command: BaseCommand) {
-  const [requiredExtensions, extensionsMeta] = await getRequiredExtensions(command)
-
   if (!command.netlify.api.accessToken || !command.netlify.siteInfo.account_id) {
     // skip installing extensions if not logged in
     return
   }
+  const [requiredExtensions, extensionsMeta] = await getRequiredExtensions(command)
+
   if (requiredExtensions.length === 0) {
     return
   }
