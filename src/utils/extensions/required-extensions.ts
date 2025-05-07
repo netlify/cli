@@ -1,5 +1,5 @@
 import BaseCommand from '../../commands/base-command.js'
-import { Extension, getExtension, getInstalledExtensionsForTeam, installExtension } from './utils.js'
+import { Extension, getExtension, getExtensionsMeta, getInstalledExtensionsForTeam, installExtension } from './utils.js'
 
 export async function handleRequiredExtensions(command: BaseCommand) {
   const requiredExtensions = await getRequiredExtensions(command)
@@ -41,15 +41,21 @@ async function getRequiredExtensions(command: BaseCommand) {
 
   const netlifyToken = command.netlify.api.accessToken.replace('Bearer ', '')
   const accountId = command.netlify.siteInfo.account_id
-  const extensionsMeta = [{ slug: 'neon', packages: ['@netlify/neon'] }]
 
-  const [packageJson, installedExtensions] = await Promise.all([
+  const extensionsMeta = [{ slug: 'neon', packages: ['@netlify/neon'] }]
+  const [
+    // extensionsMeta,
+    packageJson,
+    installedExtensions,
+  ] = await Promise.all([
+    // getExtensionsMeta(), // todo: uncomment when jigsaw /meta endpoint is deployed
     command.project.getPackageJSON(),
     getInstalledExtensionsForTeam({
       accountId: accountId,
       netlifyToken: netlifyToken,
     }),
   ])
+  console.log('extensionsMeta', extensionsMeta)
 
   const autoInstallExtensions = extensionsMeta.filter((extension) => {
     return extension.packages.some((pkg) => {
