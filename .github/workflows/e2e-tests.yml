@@ -79,7 +79,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macOS-latest]
-        node-version: ['18.14.0', '*']
+        node-version: ['18.14.0', '22']
       fail-fast: false
     steps:
       - name: Git checkout
