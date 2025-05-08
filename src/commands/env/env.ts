@@ -73,7 +73,7 @@ export const createEnvCommand = (program: BaseCommand) => {
       'netlify env:list --scope functions',
       'netlify env:list --plain',
     ])
-    .description('Lists resolved environment variables for site (includes netlify.toml)')
+    .description('Lists resolved environment variables for project (includes netlify.toml)')
     .action(async (options: OptionValues, command: BaseCommand) => {
       const { envList } = await import('./env-list.js')
       await envList(options, command)
@@ -141,10 +141,10 @@ export const createEnvCommand = (program: BaseCommand) => {
   program
     .command('env:clone')
     .alias('env:migrate')
-    .option('-f, --from <from>', 'Site ID (From)')
-    .requiredOption('-t, --to <to>', 'Site ID (To)')
-    .description(`Clone environment variables from one site to another`)
-    .addExamples(['netlify env:clone --to <to-site-id>', 'netlify env:clone --to <to-site-id> --from <from-site-id>'])
+    .option('-f, --from <from>', 'Project ID (From)')
+    .requiredOption('-t, --to <to>', 'Project ID (To)')
+    .description(`Clone environment variables from one project to another`)
+    .addExamples(['netlify env:clone --to <to-project-id>', 'netlify env:clone --to <to-project-id> --from <from-project-id>'])
     .action(async (options: OptionValues, command: BaseCommand) => {
       const { envClone } = await import('./env-clone.js')
       await envClone(options, command)
@@ -152,14 +152,14 @@ export const createEnvCommand = (program: BaseCommand) => {
 
   return program
     .command('env')
-    .description('Control environment variables for the current site')
+    .description('Control environment variables for the current project')
     .addExamples([
       'netlify env:list',
       'netlify env:get VAR_NAME',
       'netlify env:set VAR_NAME value',
       'netlify env:unset VAR_NAME',
       'netlify env:import fileName',
-      'netlify env:clone --to <to-site-id>',
+      'netlify env:clone --to <to-project-id>',
     ])
     .addHelpText('afterAll', () => {
       const docsUrl = 'https://docs.netlify.com/configure-builds/environment-variables/'

@@ -2,13 +2,13 @@
 title: Netlify CLI env command
 sidebar:
   label: env
-description: Control environment variables for the current site
+description: Control environment variables for the current project
 ---
 
 # `env`
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
-Control environment variables for the current site
+Control environment variables for the current project
 
 **Usage**
 
@@ -24,10 +24,10 @@ netlify env
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`env:clone`](/commands/env#envclone) | Clone environment variables from one site to another  |
+| [`env:clone`](/commands/env#envclone) | Clone environment variables from one project to another  |
 | [`env:get`](/commands/env#envget) | Get resolved value of specified environment variable (includes netlify.toml)  |
 | [`env:import`](/commands/env#envimport) | Import and set environment variables from .env file  |
-| [`env:list`](/commands/env#envlist) | Lists resolved environment variables for site (includes netlify.toml)  |
+| [`env:list`](/commands/env#envlist) | Lists resolved environment variables for project (includes netlify.toml)  |
 | [`env:set`](/commands/env#envset) | Set value of environment variable  |
 | [`env:unset`](/commands/env#envunset) | Unset an environment variable which removes it from the UI  |
 
@@ -40,13 +40,13 @@ netlify env:get VAR_NAME
 netlify env:set VAR_NAME value
 netlify env:unset VAR_NAME
 netlify env:import fileName
-netlify env:clone --to <to-site-id>
+netlify env:clone --to <to-project-id>
 ```
 
 ---
 ## `env:clone`
 
-Clone environment variables from one site to another
+Clone environment variables from one project to another
 
 **Usage**
 
@@ -58,16 +58,16 @@ netlify env:clone
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `force` (*boolean*) - Bypasses prompts & Force the command to run.
-- `from` (*string*) - Site ID (From)
-- `to` (*string*) - Site ID (To)
+- `from` (*string*) - Project ID (From)
+- `to` (*string*) - Project ID (To)
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 **Examples**
 
 ```bash
-netlify env:clone --to <to-site-id>
-netlify env:clone --to <to-site-id> --from <from-site-id>
+netlify env:clone --to <to-project-id>
+netlify env:clone --to <to-project-id> --from <from-project-id>
 ```
 
 ---
@@ -129,7 +129,7 @@ netlify env:import
 ---
 ## `env:list`
 
-Lists resolved environment variables for site (includes netlify.toml)
+Lists resolved environment variables for project (includes netlify.toml)
 
 **Usage**
 

@@ -73,7 +73,7 @@ export const envUnset = async (key: string, options: OptionValues, command: Base
   const siteId = site.id
 
   if (!siteId) {
-    log('No site id found, please run inside a site folder or `netlify link`')
+    log('No project id found, please run inside a project folder or `netlify link`')
     return false
   }
 

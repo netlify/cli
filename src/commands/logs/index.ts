@@ -43,7 +43,7 @@ export const createLogsCommand = (program: BaseCommand) => {
   return program
     .command('logs')
     .alias('log')
-    .description('Stream logs from your site')
+    .description('Stream logs from your project')
     .addExamples(['netlify logs:deploy', 'netlify logs:function', 'netlify logs:function my-function'])
     .action((_, command: BaseCommand) => command.help())
 }

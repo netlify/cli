@@ -73,14 +73,14 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
   let site: SiteInfo
   let repoResp: Awaited<ReturnType<typeof createRepo>>
 
-  // Allow the user to reenter site name if selected one isn't available
+  // Allow the user to reenter project name if selected one isn't available
   const inputSiteName = async (name?: string, hasExistingRepo?: boolean): Promise<[SiteInfo, GitHubRepoResponse]> => {
     const { name: inputName } = await getSiteNameInput(name)
 
     const siteName = inputName.trim()
 
     if (siteName && (await deployedSiteExists(siteName))) {
-      log('A site with that name already exists')
+      log('A project with that name already exists')
       return inputSiteName()
     }
 
@@ -88,7 +88,7 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
       const sites = await api.listSites({ name: siteName, filter: 'all' })
       const siteFoundByName = sites.find((filteredSite) => filteredSite.name === siteName)
       if (siteFoundByName) {
-        log('A site with that name already exists on your account')
+        log('A project with that name already exists on your account')
         return inputSiteName()
       }
     } catch (error_) {
@@ -150,7 +150,7 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
     } catch (error_) {
       if ((error_ as APIError).status === 422) {
         log(`createSiteInTeam error: ${(error_ as APIError).status}: ${(error_ as APIError).message}`)
-        log('Cannot create a site with that name. Site name may already exist. Please try a new name.')
+        log('Cannot create a project with that name. Project name may already exist. Please try a new name.')
         return inputSiteName(undefined, hasExistingRepo)
       }
       return logAndThrowError(`createSiteInTeam error: ${(error_ as APIError).status}: ${(error_ as APIError).message}`)
@@ -161,7 +161,7 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
   ;[site, repoResp] = await inputSiteName(nameFlag)
 
   log()
-  log(chalk.greenBright.bold.underline(`Site Created`))
+  log(chalk.greenBright.bold.underline(`Project Created`))
   log()
 
   const siteUrl = site.ssl_url || site.url
@@ -169,7 +169,7 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
     render({
       'Admin URL': site.admin_url,
       URL: siteUrl,
-      'Site ID': site.id,
+      'Project ID': site.id,
       'Repo URL': site.build_settings?.repo_url ?? '',
     }),
   )
@@ -198,7 +198,7 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
     const { linkConfirm } = await inquirer.prompt({
       type: 'confirm',
       name: 'linkConfirm',
-      message: `Do you want to link the cloned directory to the site?`,
+      message: `Do you want to link the cloned directory to the project?`,
       default: true,
     })
 
@@ -216,19 +216,19 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
         return logAndThrowError('Failed to fetch the repo')
       }
 
-      const linkedSiteUrlRegex = /Site url:\s+(\S+)/
+      const linkedSiteUrlRegex = /Project url:\s+(\S+)/
       const lineMatch = linkedSiteUrlRegex.exec(stdout)
       const urlMatch = lineMatch ? lineMatch[1] : undefined
       if (urlMatch) {
-        log(`\nDirectory ${chalk.cyanBright(repoResp.name)} linked to site ${chalk.cyanBright(urlMatch)}\n`)
+        log(`\nDirectory ${chalk.cyanBright(repoResp.name)} linked to project ${chalk.cyanBright(urlMatch)}\n`)
         log(
           `${chalk.cyanBright.bold('cd', repoResp.name)} to use other netlify cli commands in the cloned directory.\n`,
         )
       } else {
-        const linkedSiteMatch = /Site already linked to\s+(\S+)/.exec(stdout)
+        const linkedSiteMatch = /Project already linked to\s+(\S+)/.exec(stdout)
         const linkedSiteNameMatch = linkedSiteMatch ? linkedSiteMatch[1] : undefined
         if (linkedSiteNameMatch) {
-          log(`\nThis directory appears to be linked to ${chalk.cyanBright(linkedSiteNameMatch)}`)
+          log(`\nThis directory appears to be linked to project ${chalk.cyanBright(linkedSiteNameMatch)}`)
           log('This can happen if you cloned the template into a subdirectory of an existing Netlify project.')
           log(
             `You may need to move the ${chalk.cyanBright(
@@ -238,7 +238,7 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
             )} command manually\n`,
           )
         } else {
-          log('A problem occurred linking the site')
+          log('A problem occurred linking the project')
           log('You can try again manually by running:')
           log(chalk.cyanBright(`cd ${repoResp.name} && netlify link\n`))
         }

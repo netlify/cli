@@ -25,13 +25,13 @@ netlify status
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
-| [`status:hooks`](/commands/status#statushooks) | Print hook information of the linked site  |
+| [`status:hooks`](/commands/status#statushooks) | Print hook information of the linked project  |
 
 
 ---
 ## `status:hooks`
 
-Print hook information of the linked site
+Print hook information of the linked project
 
 **Usage**
 

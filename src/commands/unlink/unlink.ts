@@ -9,7 +9,7 @@ export const unlink = async (_options: OptionValues, command: BaseCommand) => {
   const siteId = site.id
 
   if (!siteId) {
-    log(`Folder is not linked to a Netlify site. Run 'netlify link' to link it`)
+    log(`Folder is not linked to a Netlify project. Run 'netlify link' to link it`)
     return exit()
   }
 

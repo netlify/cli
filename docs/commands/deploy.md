@@ -13,7 +13,7 @@ Deploys from the build settings found in the netlify.toml file, or settings from
 The following environment variables can be used to override configuration file lookups and prompts:
 
 - `NETLIFY_AUTH_TOKEN` - an access token to use when authenticating commands. Keep this value private.
-- `NETLIFY_SITE_ID` - override any linked site in the current working directory.
+- `NETLIFY_SITE_ID` - override any linked project in the current working directory.
 
 Lambda functions in the function folder can be in the following configurations for deployment:
 
@@ -91,22 +91,22 @@ netlify deploy
 - `functions` (*string*) - Specify a functions folder to deploy
 - `json` (*boolean*) - Output deployment data as JSON
 - `message` (*string*) - A short message to include in the deploy log
-- `no-build` (*boolean*) - Do not run build command before deploying. Only use this if you have no need for a build or your site has already been built.
-- `open` (*boolean*) - Open site after deploy
+- `no-build` (*boolean*) - Do not run build command before deploying. Only use this if you have no need for a build or your project has already been built.
+- `open` (*boolean*) - Open project after deploy
 - `prod-if-unlocked` (*boolean*) - Deploy to production if unlocked, create a draft otherwise
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 - `prod` (*boolean*) - Deploy to production
-- `site` (*string*) - A site name or ID to deploy to
+- `site` (*string*) - A project name or ID to deploy to
 - `skip-functions-cache` (*boolean*) - Ignore any functions created as part of a previous `build` or `deploy` commands, forcing them to be bundled again as part of the deployment
 - `timeout` (*string*) - Timeout to wait for deployment to finish
-- `trigger` (*boolean*) - Trigger a new build of your site on Netlify without uploading local files
+- `trigger` (*boolean*) - Trigger a new build of your project on Netlify without uploading local files
 
 **Examples**
 
 ```bash
 netlify deploy
-netlify deploy --site my-first-site
+netlify deploy --site my-first-project
 netlify deploy --no-build # Deploy without running a build first
 netlify deploy --prod
 netlify deploy --prod --open

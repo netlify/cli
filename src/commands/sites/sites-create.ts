@@ -17,7 +17,7 @@ export const getSiteNameInput = async (name: string | undefined): Promise<{ name
       {
         type: 'input',
         name: 'name',
-        message: 'Site name (leave blank for a random name; you can change it later):',
+        message: 'Project name (leave blank for a random name; you can change it later):',
         validate: (input) =>
           /^[a-zA-Z\d-]+$/.test(input || undefined) || 'Only alphanumeric characters and hyphens are allowed',
       },
@@ -81,7 +81,7 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand) =
   await inputSiteName(options.name)
 
   log()
-  log(chalk.greenBright.bold.underline(`Site Created`))
+  log(chalk.greenBright.bold.underline(`Project Created`))
   log()
 
   const siteUrl = site.ssl_url || site.url
@@ -89,7 +89,7 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand) =
     prettyjson.render({
       'Admin URL': site.admin_url,
       URL: siteUrl,
-      'Site ID': site.id,
+      'Project ID': site.id,
     }),
   )
 

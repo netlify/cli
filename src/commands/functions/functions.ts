@@ -114,7 +114,7 @@ NOT the same as listing the functions that have been deployed. For that info you
     .alias('function')
     .description(
       `Manage netlify functions
-The ${name} command will help you manage the functions in this site`,
+The ${name} command will help you manage the functions in this project`,
     )
     .addExamples([
       'netlify functions:create --name function-xyz',
