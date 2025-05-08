@@ -214,8 +214,8 @@ export type ExtensionMeta = {
   slug: string
   packages: string[]
 }
-export async function getExtensionsMeta() {
-  const url = new URL(`/meta`, JIGSAW_URL)
+export async function getAutoInstallableExtensions() {
+  const url = new URL(`/meta/auto-installable`, JIGSAW_URL)
   const metaResponse = await fetch(url.toString())
   if (!metaResponse.ok) {
     throw new Error(`Failed to fetch extensions meta`)
