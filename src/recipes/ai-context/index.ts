@@ -65,18 +65,18 @@ const promptForPath = async (): Promise<string> => {
 type IDE = {
   name: string
   command: string
-  path: string
+  rulesPath: string
 }
 const IDE: IDE[] = [
   {
     name: 'Windsurf',
     command: 'windsurf',
-    path: IDE_RULES_PATH_MAP.windsurf,
+    rulesPath: IDE_RULES_PATH_MAP.windsurf,
   },
   {
     name: 'Cursor',
     command: 'cursor',
-    path: IDE_RULES_PATH_MAP.cursor,
+    rulesPath: IDE_RULES_PATH_MAP.cursor,
   },
 ]
 
@@ -116,28 +116,15 @@ const getPathByDetectingIDE = async (): Promise<string | null> => {
     // perhaps we are on a machine that doesn't support it.
     return null
   }
-
-  if (result.ide) {
-    const { saveToPath } = await inquirer.prompt([
-      {
-        name: 'saveToPath',
-        message: `We detected that you're using ${result.ide.name}. Would you like us to store the context files in ${result.ide.path}?`,
-        type: 'confirm',
-        default: true,
-      },
-    ])
-    if (saveToPath) {
-      return result.ide.path
-    }
-  }
-  return null
+  return result.ide ? result.ide.rulesPath : null
 }
 
-export const run = async ({ args, command }: RunRecipeOptions) => {
+export const run = async ({ args, command, options }: RunRecipeOptions) => {
   // Start the download in the background while we wait for the prompts.
   const download = downloadFile(version).catch(() => null)
 
-  const filePath = args[0] || ((await getPathByDetectingIDE()) ?? (await promptForPath()))
+  const filePath =
+    args[0] || ((options?.skipDetection ? null : await getPathByDetectingIDE()) ?? (await promptForPath()))
   const { contents: downloadedFile, minimumCLIVersion } = (await download) ?? {}
 
   if (!downloadedFile) {
