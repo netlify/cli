@@ -14,16 +14,15 @@ const SUGGESTION_TIMEOUT = 1e4
 export interface RunRecipeOptions {
   args: string[]
   command?: BaseCommand
-  options?: OptionValues
   config: unknown
   recipeName: string
   repositoryRoot: string
 }
 
-export const runRecipe = async ({ args, command, options, config, recipeName, repositoryRoot }: RunRecipeOptions) => {
+export const runRecipe = async ({ args, command, config, recipeName, repositoryRoot }: RunRecipeOptions) => {
   const recipe = await getRecipe(recipeName)
 
-  return recipe.run({ args, command, options, config, repositoryRoot })
+  return recipe.run({ args, command, config, recipeName, repositoryRoot })
 }
 
 export const recipesCommand = async (recipeName: string, options: OptionValues, command: BaseCommand): Promise<any> => {
@@ -37,7 +36,7 @@ export const recipesCommand = async (recipeName: string, options: OptionValues, 
   const args = command.args.slice(1)
 
   try {
-    return await runRecipe({ args, command, options, config, recipeName: sanitizedRecipeName, repositoryRoot })
+    return await runRecipe({ args, command, config, recipeName: sanitizedRecipeName, repositoryRoot })
   } catch (error) {
     if (
       // The ESM loader throws this instead of MODULE_NOT_FOUND
