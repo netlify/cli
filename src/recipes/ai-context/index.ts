@@ -80,29 +80,39 @@ const IDE: IDE[] = [
   },
 ]
 
+/**
+ * Checks if a command belongs to a known IDEs by checking if it includes a specific string.
+ * For example, the command that starts windsurf looks something like "/applications/windsurf.app/contents/...".
+ */
+const getIDEFromCommand = (command: string): IDE | null => {
+  // The actual command is something like "/applications/windsurf.app/contents/...", but we are only looking for windsurf
+  const match = IDE.find((ide) => command.includes(ide.command))
+  return match ?? null
+}
+
+/**
+ * Receives a process ID (pid) and returns both the command that the process was run with and its parent process ID. If the process is a known IDE, also returns information about that IDE.
+ */
+const getCommandAndParentPID = async (
+  pid: number,
+): Promise<{
+  parentPID: number
+  command: string
+  ide: IDE | null
+}> => {
+  const { stdout } = await execa('ps', ['-p', String(pid), '-o', 'ppid=,comm='])
+  const output = stdout.trim()
+  const spaceIndex = output.indexOf(' ')
+  const parentPID = output.substring(0, spaceIndex)
+  const command = output.substring(spaceIndex + 1).toLowerCase()
+  return {
+    parentPID: parseInt(parentPID, 10),
+    command: command,
+    ide: getIDEFromCommand(command),
+  }
+}
+
 const getPathByDetectingIDE = async (): Promise<string | null> => {
-  const getIDEFromCommand = (command: string): IDE | null => {
-    const match = IDE.find((ide) => command.includes(ide.command))
-    return match ?? null
-  }
-
-  async function getCommandAndParentPID(pid: number): Promise<{
-    parentPID: number
-    command: string
-    ide: IDE | null
-  }> {
-    const { stdout } = await execa('ps', ['-p', String(pid), '-o', 'ppid=,comm='])
-    const output = stdout.trim()
-    const spaceIndex = output.indexOf(' ')
-    const parentPID = output.substring(0, spaceIndex)
-    const command = output.substring(spaceIndex + 1).toLowerCase()
-    return {
-      parentPID: parseInt(parentPID, 10),
-      command: command,
-      ide: getIDEFromCommand(command),
-    }
-  }
-
   // Go up the chain of ancestor process IDs and find if one of their commands matches an IDE.
   const ppid = process.ppid
   let result: Awaited<ReturnType<typeof getCommandAndParentPID>>
@@ -111,7 +121,7 @@ const getPathByDetectingIDE = async (): Promise<string | null> => {
     while (result.parentPID !== 1 && !result.ide) {
       result = await getCommandAndParentPID(result.parentPID)
     }
-  } catch (_) {
+  } catch {
     // The command "ps -p {pid} -o ppid=,comm=" didn't work,
     // perhaps we are on a machine that doesn't support it.
     return null
