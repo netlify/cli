@@ -2,7 +2,7 @@ import assert from 'node:assert'
 
 import inquirer from 'inquirer'
 import isEmpty from 'lodash/isEmpty.js'
-import type { NetlifyAPI } from 'netlify'
+import type { NetlifyAPI } from '@netlify/api'
 
 import { listSites } from '../../lib/api.js'
 import { startSpinner } from '../../lib/spinner.js'

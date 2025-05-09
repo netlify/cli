@@ -4,12 +4,12 @@ import fs from 'fs'
 import process from 'process'
 import { format, inspect } from 'util'
 
+import type { NetlifyAPI } from '@netlify/api'
 import { Chalk } from 'chalk'
 import chokidar from 'chokidar'
 import decache from 'decache'
 import WSL from 'is-wsl'
 import debounce from 'lodash/debounce.js'
-import type { NetlifyAPI } from 'netlify'
 import terminalLink from 'terminal-link'
 
 import { clearSpinner, startSpinner } from '../lib/spinner.js'

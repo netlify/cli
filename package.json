@@ -58,6 +58,7 @@
   },
   "dependencies": {
     "@fastify/static": "7.0.4",
+    "@netlify/api": "^13.4.0",
     "@netlify/blobs": "8.2.0",
     "@netlify/build": "32.1.1",
     "@netlify/build-info": "9.0.4",
@@ -125,7 +126,6 @@
     "maxstache-stream": "1.0.4",
     "multiparty": "4.2.3",
     "nanospinner": "^1.2.2",
-    "netlify": "13.3.5",
     "netlify-redirector": "0.5.0",
     "node-fetch": "3.3.2",
     "normalize-package-data": "6.0.2",

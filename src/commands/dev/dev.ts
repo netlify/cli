@@ -1,6 +1,6 @@
 import process from 'process'
 
-import type { NetlifyAPI } from 'netlify'
+import type { NetlifyAPI } from '@netlify/api'
 import { applyMutations } from '@netlify/config'
 import { OptionValues } from 'commander'
 

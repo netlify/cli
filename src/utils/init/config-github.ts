@@ -1,5 +1,5 @@
+import type { NetlifyAPI } from '@netlify/api'
 import { Octokit } from '@octokit/rest'
-import type { NetlifyAPI } from 'netlify'
 
 import { chalk, logAndThrowError, log } from '../command-helpers.js'
 import { getGitHubToken as ghauth, type Token } from '../gh-auth.js'

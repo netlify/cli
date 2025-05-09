@@ -1,4 +1,4 @@
-import type { NetlifyAPI } from 'netlify'
+import type { NetlifyAPI } from '@netlify/api'
 
 import { warn } from '../utils/command-helpers.js'
 import type { SiteInfo } from '../utils/types.js'
