@@ -22,7 +22,7 @@ export interface RunRecipeOptions {
 export const runRecipe = async ({ args, command, config, recipeName, repositoryRoot }: RunRecipeOptions) => {
   const recipe = await getRecipe(recipeName)
 
-  return recipe.run({ args, command, config, recipeName, repositoryRoot })
+  return recipe.run({ args, command, config, repositoryRoot })
 }
 
 export const recipesCommand = async (recipeName: string, options: OptionValues, command: BaseCommand): Promise<any> => {
