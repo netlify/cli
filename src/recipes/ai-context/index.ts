@@ -134,7 +134,9 @@ export const run = async ({ args, command }: RunRecipeOptions) => {
   const download = downloadFile(version).catch(() => null)
 
   const filePath =
-    args[0] || ((process.env.AI_CONTEXT_SKIP_DETECTION === 'true' ? null : await getPathByDetectingIDE()) ?? (await promptForPath()))
+    args[0] ||
+    ((process.env.AI_CONTEXT_SKIP_DETECTION === 'true' ? null : await getPathByDetectingIDE()) ??
+      (await promptForPath()))
   const { contents: downloadedFile, minimumCLIVersion } = (await download) ?? {}
 
   if (!downloadedFile) {
