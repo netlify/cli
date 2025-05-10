@@ -45,8 +45,17 @@ export const getContextConsumers = async (cliVersion: string) => {
       'user-agent': `NetlifyCLI ${cliVersion}`,
     },
   })
-  const data = (await res.json()) as { consumers: ConsumerConfig[] }
-  contextConsumers = data?.consumers || []
+
+  if (!res.ok) {
+    return []
+  }
+
+  try {
+    const data = (await res.json()) as { consumers: ConsumerConfig[] }
+    contextConsumers = data?.consumers || []
+  } catch {
+    return []
+  }
 
   return contextConsumers
 }
