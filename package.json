@@ -58,7 +58,7 @@
   },
   "dependencies": {
     "@fastify/static": "7.0.4",
-    "@netlify/blobs": "8.2.0",
+    "@netlify/blobs": "9.1.0",
     "@netlify/build": "32.1.1",
     "@netlify/build-info": "9.0.4",
     "@netlify/config": "22.0.1",
