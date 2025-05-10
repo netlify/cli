@@ -2,7 +2,7 @@ import { promises as fs } from 'node:fs'
 import { dirname } from 'node:path'
 
 const ATTRIBUTES_REGEX = /(\S*)="([^\s"]*)"/gim
-const BASE_URL = process.env.AI_CONTEXT_BASE_URL || 'https://docs.netlify.com/ai-context'
+const BASE_URL = process.env.AI_CONTEXT_BASE_URL ?? 'https://docs.netlify.com/ai-context'
 export const NTL_DEV_MCP_FILE_NAME = 'netlify-development.mdc'
 const MINIMUM_CLI_VERSION_HEADER = 'x-cli-min-ver'
 export const NETLIFY_PROVIDER = 'netlify'
@@ -51,8 +51,8 @@ export const getContextConsumers = async (cliVersion: string) => {
   }
 
   try {
-    const data = (await res.json()) as { consumers: ConsumerConfig[] }
-    contextConsumers = data?.consumers || []
+    const data = (await res.json()) as { consumers: ConsumerConfig[] } | undefined
+    contextConsumers = data?.consumers ?? []
   } catch {
     return []
   }

@@ -28,7 +28,7 @@ export const description = 'Manage context files for AI tools'
 const allContextConsumers = (await getContextConsumers(version)).filter((consumer) => !consumer.hideFromCLI)
 const cliContextConsumers = allContextConsumers.filter((consumer) => !consumer.hideFromCLI)
 
-const rulesForDefaultConsumer = allContextConsumers.find((consumer) => consumer.key === 'catchall-consumer') || {
+const rulesForDefaultConsumer = allContextConsumers.find((consumer) => consumer.key === 'catchall-consumer') ?? {
   key: 'catchall-consumer',
   path: './ai-context',
   presentedName: '',
