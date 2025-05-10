@@ -13,35 +13,51 @@ import {
   getExistingContext,
   parseContextFile,
   writeFile,
-  FILE_NAME,
+  NTL_DEV_MCP_FILE_NAME,
   NETLIFY_PROVIDER,
+  getContextConsumers,
+  ConsumerConfig,
+  deleteFile,
 } from './context.js'
 
 export const description = 'Manage context files for AI tools'
 
-const IDE_RULES_PATH_MAP = {
-  windsurf: '.windsurf/rules',
-  cursor: '.cursor/rules',
+// context consumers endpoints returns all supported IDEs and other consumers
+// that can be used to pull context files. It also includes a catchall consumer
+// for outlining all context that an unspecified consumer would handle.
+const allContextConsumers = (await getContextConsumers(version)).filter((consumer) => !consumer.hideFromCLI)
+const cliContextConsumers = allContextConsumers.filter((consumer) => !consumer.hideFromCLI)
+
+const rulesForDefaultConsumer = allContextConsumers.find((consumer) => consumer.key === 'catchall-consumer') || {
+  key: 'catchall-consumer',
+  path: './ai-context',
+  presentedName: '',
+  ext: 'mdc',
+  contextScopes: {},
+  hideFromCLI: true,
 }
 
-const presets = [
-  { name: 'Windsurf rules (.windsurf/rules/)', value: IDE_RULES_PATH_MAP.windsurf },
-  { name: 'Cursor rules (.cursor/rules/)', value: IDE_RULES_PATH_MAP.cursor },
-  { name: 'Custom location', value: '' },
-]
+const presets = cliContextConsumers.map((consumer) => ({
+  name: consumer.presentedName,
+  value: consumer.key,
+}))
 
-const promptForPath = async (): Promise<string> => {
-  const { presetPath } = await inquirer.prompt([
+// always add the custom location option (not preset from API)
+presets.push({ name: 'Custom location', value: rulesForDefaultConsumer.key })
+
+const promptForContextConsumerSelection = async (): Promise<ConsumerConfig> => {
+  const { consumerKey } = await inquirer.prompt([
     {
-      name: 'presetPath',
+      name: 'consumerKey',
       message: 'Where should we put the context files?',
       type: 'list',
       choices: presets,
     },
   ])
 
-  if (presetPath) {
-    return presetPath
+  const contextConsumer = consumerKey ? cliContextConsumers.find((consumer) => consumer.key === consumerKey) : null
+  if (contextConsumer) {
+    return contextConsumer
   }
 
   const { customPath } = await inquirer.prompt([
@@ -54,40 +70,24 @@ const promptForPath = async (): Promise<string> => {
   ])
 
   if (customPath) {
-    return customPath
+    return { ...rulesForDefaultConsumer, path: customPath || rulesForDefaultConsumer.path }
   }
 
   log('You must select a path.')
 
-  return promptForPath()
+  return promptForContextConsumerSelection()
 }
-
-type IDE = {
-  name: string
-  command: string
-  rulesPath: string
-}
-const IDE: IDE[] = [
-  {
-    name: 'Windsurf',
-    command: 'windsurf',
-    rulesPath: IDE_RULES_PATH_MAP.windsurf,
-  },
-  {
-    name: 'Cursor',
-    command: 'cursor',
-    rulesPath: IDE_RULES_PATH_MAP.cursor,
-  },
-]
 
 /**
  * Checks if a command belongs to a known IDEs by checking if it includes a specific string.
  * For example, the command that starts windsurf looks something like "/applications/windsurf.app/contents/...".
  */
-const getIDEFromCommand = (command: string): IDE | null => {
+const getConsumerKeyFromCommand = (command: string): string | null => {
   // The actual command is something like "/applications/windsurf.app/contents/...", but we are only looking for windsurf
-  const match = IDE.find((ide) => command.includes(ide.command))
-  return match ?? null
+  const match = cliContextConsumers.find(
+    (consumer) => consumer.consumerProcessCmd && command.includes(consumer.consumerProcessCmd),
+  )
+  return match ? match.key : null
 }
 
 /**
@@ -98,7 +98,7 @@ const getCommandAndParentPID = async (
 ): Promise<{
   parentPID: number
   command: string
-  ide: IDE | null
+  consumerKey: string | null
 }> => {
   const { stdout } = await execa('ps', ['-p', String(pid), '-o', 'ppid=,comm='])
   const output = stdout.trim()
@@ -108,17 +108,17 @@ const getCommandAndParentPID = async (
   return {
     parentPID: parseInt(parentPID, 10),
     command: command,
-    ide: getIDEFromCommand(command),
+    consumerKey: getConsumerKeyFromCommand(command),
   }
 }
 
-const getPathByDetectingIDE = async (): Promise<string | null> => {
+const getPathByDetectingIDE = async (): Promise<ConsumerConfig | null> => {
   // Go up the chain of ancestor process IDs and find if one of their commands matches an IDE.
   const ppid = process.ppid
   let result: Awaited<ReturnType<typeof getCommandAndParentPID>>
   try {
     result = await getCommandAndParentPID(ppid)
-    while (result.parentPID !== 1 && !result.ide) {
+    while (result.parentPID !== 1 && !result.consumerKey) {
       result = await getCommandAndParentPID(result.parentPID)
     }
   } catch {
@@ -126,76 +126,115 @@ const getPathByDetectingIDE = async (): Promise<string | null> => {
     // perhaps we are on a machine that doesn't support it.
     return null
   }
-  return result.ide ? result.ide.rulesPath : null
-}
 
-export const run = async ({ args, command }: RunRecipeOptions) => {
-  // Start the download in the background while we wait for the prompts.
-  const download = downloadFile(version).catch(() => null)
-
-  const filePath =
-    args[0] ||
-    ((process.env.AI_CONTEXT_SKIP_DETECTION === 'true' ? null : await getPathByDetectingIDE()) ??
-      (await promptForPath()))
-  const { contents: downloadedFile, minimumCLIVersion } = (await download) ?? {}
-
-  if (!downloadedFile) {
-    return logAndThrowError('An error occurred when pulling the latest context files. Please try again.')
-  }
-
-  if (minimumCLIVersion && semver.lt(version, minimumCLIVersion)) {
-    return logAndThrowError(
-      `This command requires version ${minimumCLIVersion} or above of the Netlify CLI. Refer to ${chalk.underline(
-        'https://ntl.fyi/update-cli',
-      )} for information on how to update.`,
-    )
-  }
-
-  const absoluteFilePath = resolve(command?.workingDir ?? '', filePath, FILE_NAME)
-  const existing = await getExistingContext(absoluteFilePath)
-  const remote = parseContextFile(downloadedFile)
-
-  let { contents } = remote
-
-  // Does a file already exist at this path?
-  if (existing) {
-    // If it's a file we've created, let's check the version and bail if we're
-    // already on the latest, otherwise rewrite it with the latest version.
-    if (existing.provider?.toLowerCase() === NETLIFY_PROVIDER) {
-      if (remote?.version === existing.version) {
-        log(
-          `You're all up to date! ${chalk.underline(
-            absoluteFilePath,
-          )} contains the latest version of the context files.`,
-        )
-
-        return
-      }
-
-      // We must preserve any overrides found in the existing file.
-      contents = applyOverrides(remote.contents, existing.overrides?.innerContents)
-    } else {
-      // If this is not a file we've created, we can offer to overwrite it and
-      // preserve the existing contents by moving it to the overrides slot.
-      const { confirm } = await inquirer.prompt({
-        type: 'confirm',
-        name: 'confirm',
-        message: `A context file already exists at ${chalk.underline(
-          absoluteFilePath,
-        )}. It has not been created by the Netlify CLI, but we can update it while preserving its existing content. Can we proceed?`,
-        default: true,
-      })
-
-      if (!confirm) {
-        return
-      }
-
-      // Whatever exists in the file goes in the overrides block.
-      contents = applyOverrides(remote.contents, existing.contents)
+  if (result?.consumerKey) {
+    const contextConsumer = cliContextConsumers.find((consumer) => consumer.key === result.consumerKey)
+    if (contextConsumer) {
+      return contextConsumer
     }
   }
 
-  await writeFile(absoluteFilePath, contents)
+  return null
+}
 
-  log(`${existing ? 'Updated' : 'Created'} context files at ${chalk.underline(absoluteFilePath)}`)
+export const run = async ({ args, command }: RunRecipeOptions) => {
+  let consumer: ConsumerConfig | null = null
+  const filePath: string | null = args[0]
+
+  if (filePath) {
+    consumer = { ...rulesForDefaultConsumer, path: filePath }
+  }
+
+  if (!consumer && process.env.AI_CONTEXT_SKIP_DETECTION !== 'true') {
+    consumer = await getPathByDetectingIDE()
+  }
+
+  if (!consumer) {
+    consumer = await promptForContextConsumerSelection()
+  }
+
+  if (!consumer?.contextScopes) {
+    log('No context files found for this consumer. Try again or let us know if this happens again.')
+    return
+  }
+
+  await Promise.allSettled(
+    Object.keys(consumer?.contextScopes ?? {}).map(async (contextKey) => {
+      const contextConfig = consumer?.contextScopes[contextKey]
+
+      const { contents: downloadedFile, minimumCLIVersion } =
+        (await downloadFile(version, contextConfig, consumer).catch(() => null)) ?? {}
+
+      if (!downloadedFile) {
+        return logAndThrowError(
+          `An error occurred when pulling the latest context file for scope ${contextConfig.scope}. Please try again.`,
+        )
+      }
+
+      if (minimumCLIVersion && semver.lt(version, minimumCLIVersion)) {
+        return logAndThrowError(
+          `This command requires version ${minimumCLIVersion} or above of the Netlify CLI. Refer to ${chalk.underline(
+            'https://ntl.fyi/update-cli',
+          )} for information on how to update.`,
+        )
+      }
+
+      const absoluteFilePath = resolve(
+        command?.workingDir ?? '',
+        consumer.path,
+        `netlify-${contextKey}.${consumer.ext || 'mdc'}`,
+      )
+      const existing = await getExistingContext(absoluteFilePath)
+      const remote = parseContextFile(downloadedFile)
+
+      let { contents } = remote
+
+      // Does a file already exist at this path?
+      if (existing) {
+        // If it's a file we've created, let's check the version and bail if we're
+        // already on the latest, otherwise rewrite it with the latest version.
+        if (existing.provider?.toLowerCase() === NETLIFY_PROVIDER) {
+          if (remote?.version === existing.version) {
+            log(
+              `You're all up to date! ${chalk.underline(
+                absoluteFilePath,
+              )} contains the latest version of the context files.`,
+            )
+            return
+          }
+
+          // We must preserve any overrides found in the existing file.
+          contents = applyOverrides(remote.contents, existing.overrides?.innerContents)
+        } else {
+          // Whatever exists in the file goes in the overrides block.
+          contents = applyOverrides(remote.contents, existing.contents)
+        }
+      }
+
+      // we don't want to cut off content, but if we _have_ to
+      // then we need to do so before writing or the user's
+      // context gets in a bad state. Note, this can result in
+      // a file that's not parsable next time. This will be
+      // fine because the file will simply be replaced. Not ideal
+      // but solves the issue of a truncated file in a bad state
+      // being updated.
+      if (consumer.truncationLimit && contents.length > consumer.truncationLimit) {
+        contents = contents.slice(0, consumer.truncationLimit)
+      }
+
+      await writeFile(absoluteFilePath, contents)
+
+      log(`${existing ? 'Updated' : 'Created'} context files at ${chalk.underline(absoluteFilePath)}`)
+    }),
+  )
+
+  // the deprecated MCP file path
+  // let's remove that file if it exists.
+  const priorContextFilePath = resolve(command?.workingDir ?? '', consumer.path, NTL_DEV_MCP_FILE_NAME)
+  const priorExists = await getExistingContext(priorContextFilePath)
+  if (priorExists) {
+    await deleteFile(priorContextFilePath)
+  }
+
+  log('All context files have been added!')
 }
