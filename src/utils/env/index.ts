@@ -1,4 +1,4 @@
-import type { NetlifyAPI } from 'netlify'
+import type { NetlifyAPI } from '@netlify/api'
 
 import { logAndThrowError } from '../command-helpers.js'
 import type { SiteInfo, EnvironmentVariableSource } from '../../utils/types.js'

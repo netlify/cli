@@ -1,10 +1,10 @@
 import { writeFile } from 'fs/promises'
 import path from 'path'
 
+import type { NetlifyAPI } from '@netlify/api'
 import type { Settings } from '@netlify/build-info'
 import cleanDeep from 'clean-deep'
 import inquirer from 'inquirer'
-import type { NetlifyAPI } from 'netlify'
 
 import type BaseCommand from '../../commands/base-command.js'
 import { fileExistsAsync } from '../../lib/fs.js'

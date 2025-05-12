@@ -1,6 +1,6 @@
+import { methods, type NetlifyAPI } from '@netlify/api'
 import AsciiTable from 'ascii-table'
 import type { OptionValues } from 'commander'
-import { methods, type NetlifyAPI } from 'netlify'
 
 import { chalk, logAndThrowError, exit, log, logJson } from '../../utils/command-helpers.js'
 import type BaseCommand from '../base-command.js'
