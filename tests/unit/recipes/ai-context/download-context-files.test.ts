@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 
 import { vi, describe, test, expect, beforeEach, afterEach } from 'vitest'
+import { join, resolve } from 'node:path'
 import type { ConsumerConfig } from '../../../../src/recipes/ai-context/context.js'
 import type { RunRecipeOptions } from '../../../../src/commands/recipes/recipes.js'
 
@@ -104,8 +105,14 @@ describe('downloadAndWriteContextFiles', () => {
     expect(fs.writeFile).toHaveBeenCalledTimes(2) // Once for each scope
 
     // Verify file paths and content
-    expect(fs.writeFile).toHaveBeenCalledWith('/test/dir/test-path/netlify-serverless.mdc', mockProviderContent)
-    expect(fs.writeFile).toHaveBeenCalledWith('/test/dir/test-path/netlify-edge-functions.mdc', mockProviderContent)
+    expect(fs.writeFile).toHaveBeenCalledWith(
+      join(mockRunOptions.command?.workingDir ?? '', 'test-path', 'netlify-serverless.mdc'),
+      mockProviderContent
+    )
+    expect(fs.writeFile).toHaveBeenCalledWith(
+      join(mockRunOptions.command?.workingDir ?? '', 'test-path', 'netlify-edge-functions.mdc'),
+      mockProviderContent
+    )
   })
 
   test('handles existing files with same version', async () => {
@@ -182,8 +189,14 @@ describe('downloadAndWriteContextFiles', () => {
     await downloadAndWriteContextFiles(consumerWithCustomExt, mockRunOptions)
 
     // Verify file paths have the custom extension
-    expect(fs.writeFile).toHaveBeenCalledWith('/test/dir/test-path/netlify-serverless.json', mockProviderContent)
-    expect(fs.writeFile).toHaveBeenCalledWith('/test/dir/test-path/netlify-edge-functions.json', mockProviderContent)
+    expect(fs.writeFile).toHaveBeenCalledWith(
+      join(mockRunOptions.command?.workingDir ?? '', 'test-path', 'netlify-serverless.json'),
+      mockProviderContent
+    )
+    expect(fs.writeFile).toHaveBeenCalledWith(
+      join(mockRunOptions.command?.workingDir ?? '', 'test-path', 'netlify-edge-functions.json'),
+      mockProviderContent
+    )
   })
 
   test('handles download errors gracefully', async () => {
