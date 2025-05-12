@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 
-import { vi, describe, test, expect, beforeEach } from 'vitest'
+import { vi, describe, test, expect, beforeEach, afterEach } from 'vitest'
 import type { ConsumerConfig } from '../../../../src/recipes/ai-context/context.js'
 import type { RunRecipeOptions } from '../../../../src/commands/recipes/recipes.js'
 
@@ -23,7 +23,7 @@ vi.mock('node:fs', () => {
 
 // Set up global fetch mock
 const mockFetch = vi.fn()
-globalThis.fetch = mockFetch
+const originalFetch = globalThis.fetch;
 
 // Mock command helpers
 vi.mock('../../../../src/utils/command-helpers.js', () => {
@@ -82,11 +82,17 @@ describe('downloadAndWriteContextFiles', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    globalThis.fetch = mockFetch
     mockFetch.mockResolvedValue({
       ...fetchRespImpl,
       text: () => Promise.resolve(mockProviderContent),
       json: () => Promise.resolve({ consumers: [] }),
     })
+  })
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch
+    vi.clearAllMocks()
   })
 
   test('downloads and writes context files for all scopes', async () => {
