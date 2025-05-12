@@ -1,5 +1,4 @@
-import { describe, expect, test } from 'vitest'
-
+import { describe, test, expect } from 'vitest'
 import { applyOverrides, parseContextFile } from '../../../../src/recipes/ai-context/context.js'
 
 describe('applyOverrides', () => {
@@ -93,12 +92,4 @@ Something there
       },
     })
   })
-})
-
-
-describe('downloading and writing context files', () => {
-
-
-
-
 })

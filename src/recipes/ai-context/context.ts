@@ -235,7 +235,6 @@ export const downloadAndWriteContextFiles = async (consumer: ConsumerConfig, { c
             `An error occurred when pulling the latest context file for scope ${contextConfig.scope}. Please try again.`,
           )
         }
-
         if (minimumCLIVersion && semver.lt(version, minimumCLIVersion)) {
           return logAndThrowError(
             `This command requires version ${minimumCLIVersion} or above of the Netlify CLI. Refer to ${chalk.underline(
@@ -249,6 +248,7 @@ export const downloadAndWriteContextFiles = async (consumer: ConsumerConfig, { c
           consumer.path,
           `netlify-${contextKey}.${consumer.ext || 'mdc'}`,
         )
+
         const existing = await getExistingContext(absoluteFilePath)
         const remote = parseContextFile(downloadedFile)
 
