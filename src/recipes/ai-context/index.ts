@@ -1,20 +1,14 @@
 import { resolve } from 'node:path'
 
 import inquirer from 'inquirer'
-import semver from 'semver'
 import execa from 'execa'
 
 import type { RunRecipeOptions } from '../../commands/recipes/recipes.js'
-import { chalk, logAndThrowError, log, version } from '../../utils/command-helpers.js'
+import { logAndThrowError, log, version } from '../../utils/command-helpers.js'
 
 import {
-  applyOverrides,
-  downloadFile,
   getExistingContext,
-  parseContextFile,
-  writeFile,
   NTL_DEV_MCP_FILE_NAME,
-  NETLIFY_PROVIDER,
   getContextConsumers,
   ConsumerConfig,
   deleteFile,
@@ -23,7 +17,7 @@ import {
 
 export const description = 'Manage context files for AI tools'
 
-// context consumers endpoints returns all supported IDEs and other consumers
+// context consumers endpoints returns all supported IDE and other consumers
 // that can be used to pull context files. It also includes a catchall consumer
 // for outlining all context that an unspecified consumer would handle.
 const allContextConsumers = (await getContextConsumers(version)).filter((consumer) => !consumer.hideFromCLI)
@@ -107,8 +101,8 @@ const getCommandAndParentPID = async (
   const parentPID = output.substring(0, spaceIndex)
   const command = output.substring(spaceIndex + 1).toLowerCase()
   return {
-    parentPID: parseInt(parentPID, 10),
-    command: command,
+    parentPID: Number(parentPID),
+    command,
     consumerKey: getConsumerKeyFromCommand(command),
   }
 }
@@ -139,7 +133,7 @@ const getPathByDetectingIDE = async (): Promise<ConsumerConfig | null> => {
 }
 
 export const run = async (runOptions: RunRecipeOptions) => {
-  const { args, command } = runOptions;
+  const { args, command } = runOptions
   let consumer: ConsumerConfig | null = null
   const filePath: string | null = args[0]
 
@@ -156,12 +150,14 @@ export const run = async (runOptions: RunRecipeOptions) => {
   }
 
   if (!consumer?.contextScopes) {
-    log('No context files found for this consumer. Try again or let us know if this happens again via our support channels.')
+    log(
+      'No context files found for this consumer. Try again or let us know if this happens again via our support channels.',
+    )
     return
   }
 
   try {
-    await downloadAndWriteContextFiles(consumer, runOptions);
+    await downloadAndWriteContextFiles(consumer, runOptions)
 
     // the deprecated MCP file path
     // let's remove that file if it exists.
@@ -173,6 +169,6 @@ export const run = async (runOptions: RunRecipeOptions) => {
 
     log('All context files have been added!')
   } catch (error) {
-    logAndThrowError(error);
+    logAndThrowError(error)
   }
 }

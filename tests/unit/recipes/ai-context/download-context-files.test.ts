@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+
 import { vi, describe, test, expect, beforeEach } from 'vitest'
 import type { ConsumerConfig } from '../../../../src/recipes/ai-context/context.js'
 import type { RunRecipeOptions } from '../../../../src/commands/recipes/recipes.js'
@@ -102,8 +104,9 @@ describe('downloadAndWriteContextFiles', () => {
 
   test('handles existing files with same version', async () => {
     // Mock existing file with same version
+    //
     // @ts-expect-error mocking is not 100% consistent with full API and types for
-    fs.stat.mockResolvedValue({ isFile: () => true } as any)
+    fs.stat.mockResolvedValue({ isFile: () => true } as () => boolean)
     // @ts-expect-error mocking is not 100% consistent with full API and types for
     fs.readFile.mockResolvedValue(mockProviderContent)
 
@@ -119,7 +122,7 @@ describe('downloadAndWriteContextFiles', () => {
     const existingContent =
       '<ProviderContext version="0.9" provider="Netlify">Old content<ProviderContextOverrides>Custom overrides</ProviderContextOverrides></ProviderContext>'
     // @ts-expect-error mocking is not 100% consistent with full API and types for
-    fs.stat.mockResolvedValue({ isFile: () => true } as any)
+    fs.stat.mockResolvedValue({ isFile: () => true } as () => boolean)
     // @ts-expect-error mocking is not 100% consistent with full API and types for
     fs.readFile.mockResolvedValue(existingContent)
 
@@ -182,7 +185,7 @@ describe('downloadAndWriteContextFiles', () => {
     // @ts-expect-error mocking is not 100% consistent with full API and types for
     fetch.mockResolvedValue({
       ok: false,
-    } as any)
+    } as Response)
 
     // Execute the actual function and expect error
     await expect(downloadAndWriteContextFiles(mockConsumer, mockRunOptions)).resolves.toBeUndefined()
@@ -199,7 +202,7 @@ describe('downloadAndWriteContextFiles', () => {
           return null
         },
       },
-    } as any)
+    } as Response)
 
     // Execute the actual function and expect error
     await expect(downloadAndWriteContextFiles(mockConsumer, mockRunOptions)).resolves.toBeUndefined()

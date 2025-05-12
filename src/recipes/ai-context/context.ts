@@ -5,7 +5,9 @@ import { chalk, logAndThrowError, log, version } from '../../utils/command-helpe
 import type { RunRecipeOptions } from '../../commands/recipes/recipes.js'
 
 const ATTRIBUTES_REGEX = /(\S*)="([^\s"]*)"/gim
-const BASE_URL = process.env.AI_CONTEXT_BASE_URL ?? 'https://docs.netlify.com/ai-context'
+// AI_CONTEXT_BASE_URL is used to help with local testing at non-production
+// versions of the context apis.
+const BASE_URL = new URL(process.env.AI_CONTEXT_BASE_URL ?? 'https://docs.netlify.com/ai-context').toString()
 export const NTL_DEV_MCP_FILE_NAME = 'netlify-development.mdc'
 const MINIMUM_CLI_VERSION_HEADER = 'x-cli-min-ver'
 export const NETLIFY_PROVIDER = 'netlify'
@@ -43,22 +45,20 @@ export const getContextConsumers = async (cliVersion: string) => {
   if (contextConsumers.length > 0) {
     return contextConsumers
   }
-  const res = await fetch(`${BASE_URL}/context-consumers`, {
-    headers: {
-      'user-agent': `NetlifyCLI ${cliVersion}`,
-    },
-  })
-
-  if (!res.ok) {
-    return []
-  }
-
   try {
+    const res = await fetch(`${BASE_URL}/context-consumers`, {
+      headers: {
+        'user-agent': `NetlifyCLI ${cliVersion}`,
+      },
+    })
+
+    if (!res.ok) {
+      return []
+    }
+
     const data = (await res.json()) as { consumers: ConsumerConfig[] } | undefined
     contextConsumers = data?.consumers ?? []
-  } catch {
-    return []
-  }
+  } catch {}
 
   return contextConsumers
 }
@@ -79,7 +79,7 @@ export const downloadFile = async (cliVersion: string, contextConfig: ContextCon
       url.protocol = overridingUrl.protocol
     }
 
-    const res = await fetch(url.toString(), {
+    const res = await fetch(url, {
       headers: {
         'user-agent': `NetlifyCLI ${cliVersion}`,
       },
@@ -221,76 +221,74 @@ export const deleteFile = async (path: string) => {
   }
 }
 
-
 export const downloadAndWriteContextFiles = async (consumer: ConsumerConfig, { command }: RunRecipeOptions) => {
   await Promise.allSettled(
-      Object.keys(consumer?.contextScopes ?? {}).map(async (contextKey) => {
-        const contextConfig = consumer?.contextScopes[contextKey]
+    Object.keys(consumer.contextScopes).map(async (contextKey) => {
+      const contextConfig = consumer.contextScopes[contextKey]
 
-        const { contents: downloadedFile, minimumCLIVersion } =
-          (await downloadFile(version, contextConfig, consumer).catch(() => null)) ?? {}
+      const { contents: downloadedFile, minimumCLIVersion } =
+        (await downloadFile(version, contextConfig, consumer).catch(() => null)) ?? {}
 
-        if (!downloadedFile) {
-          return logAndThrowError(
-            `An error occurred when pulling the latest context file for scope ${contextConfig.scope}. Please try again.`,
-          )
-        }
-        if (minimumCLIVersion && semver.lt(version, minimumCLIVersion)) {
-          return logAndThrowError(
-            `This command requires version ${minimumCLIVersion} or above of the Netlify CLI. Refer to ${chalk.underline(
-              'https://ntl.fyi/update-cli',
-            )} for information on how to update.`,
-          )
-        }
-
-        const absoluteFilePath = resolve(
-          command?.workingDir ?? '',
-          consumer.path,
-          `netlify-${contextKey}.${consumer.ext || 'mdc'}`,
+      if (!downloadedFile) {
+        return logAndThrowError(
+          `An error occurred when pulling the latest context file for scope ${contextConfig.scope}. Please try again.`,
         )
+      }
+      if (minimumCLIVersion && semver.lt(version, minimumCLIVersion)) {
+        return logAndThrowError(
+          `This command requires version ${minimumCLIVersion} or above of the Netlify CLI. Refer to ${chalk.underline(
+            'https://ntl.fyi/update-cli',
+          )} for information on how to update.`,
+        )
+      }
 
-        const existing = await getExistingContext(absoluteFilePath)
-        const remote = parseContextFile(downloadedFile)
+      const absoluteFilePath = resolve(
+        command?.workingDir ?? '',
+        consumer.path,
+        `netlify-${contextKey}.${consumer.ext || 'mdc'}`,
+      )
 
-        let { contents } = remote
+      const existing = await getExistingContext(absoluteFilePath)
+      const remote = parseContextFile(downloadedFile)
 
-        // Does a file already exist at this path?
-        if (existing) {
-          // If it's a file we've created, let's check the version and bail if we're
-          // already on the latest, otherwise rewrite it with the latest version.
-          if (existing.provider?.toLowerCase() === NETLIFY_PROVIDER) {
-            if (remote?.version === existing.version) {
-              log(
-                `You're all up to date! ${chalk.underline(
-                  absoluteFilePath,
-                )} contains the latest version of the context files.`,
-              )
-              return
-            }
+      let { contents } = remote
 
-            // We must preserve any overrides found in the existing file.
-            contents = applyOverrides(remote.contents, existing.overrides?.innerContents)
-          } else {
-            // Whatever exists in the file goes in the overrides block.
-            contents = applyOverrides(remote.contents, existing.contents)
+      // Does a file already exist at this path?
+      if (existing) {
+        // If it's a file we've created, let's check the version and bail if we're
+        // already on the latest, otherwise rewrite it with the latest version.
+        if (existing.provider?.toLowerCase() === NETLIFY_PROVIDER) {
+          if (remote.version === existing.version) {
+            log(
+              `You're all up to date! ${chalk.underline(
+                absoluteFilePath,
+              )} contains the latest version of the context files.`,
+            )
+            return
           }
+
+          // We must preserve any overrides found in the existing file.
+          contents = applyOverrides(remote.contents, existing.overrides?.innerContents)
+        } else {
+          // Whatever exists in the file goes in the overrides block.
+          contents = applyOverrides(remote.contents, existing.contents)
         }
+      }
 
-        // we don't want to cut off content, but if we _have_ to
-        // then we need to do so before writing or the user's
-        // context gets in a bad state. Note, this can result in
-        // a file that's not parsable next time. This will be
-        // fine because the file will simply be replaced. Not ideal
-        // but solves the issue of a truncated file in a bad state
-        // being updated.
-        if (consumer.truncationLimit && contents.length > consumer.truncationLimit) {
-          contents = contents.slice(0, consumer.truncationLimit)
-        }
+      // we don't want to cut off content, but if we _have_ to
+      // then we need to do so before writing or the user's
+      // context gets in a bad state. Note, this can result in
+      // a file that's not parsable next time. This will be
+      // fine because the file will simply be replaced. Not ideal
+      // but solves the issue of a truncated file in a bad state
+      // being updated.
+      if (consumer.truncationLimit && contents.length > consumer.truncationLimit) {
+        contents = contents.slice(0, consumer.truncationLimit)
+      }
 
-        await writeFile(absoluteFilePath, contents)
+      await writeFile(absoluteFilePath, contents)
 
-        log(`${existing ? 'Updated' : 'Created'} context files at ${chalk.underline(absoluteFilePath)}`)
-      }),
-    )
-
+      log(`${existing ? 'Updated' : 'Created'} context files at ${chalk.underline(absoluteFilePath)}`)
+    }),
+  )
 }
