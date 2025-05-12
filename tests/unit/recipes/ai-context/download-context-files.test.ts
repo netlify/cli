@@ -23,7 +23,7 @@ vi.mock('node:fs', () => {
 
 // Set up global fetch mock
 const mockFetch = vi.fn()
-const originalFetch = globalThis.fetch;
+const originalFetch = globalThis.fetch
 
 // Mock command helpers
 vi.mock('../../../../src/utils/command-helpers.js', () => {

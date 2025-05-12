@@ -74,8 +74,8 @@ describe('parseContextFile', () => {
     const file = `
 ${overrides}
 <ProviderContext version="1.0" provider="Netlify">This is the contents
-  Something here
-  Something there
+Something here
+Something there
 </ProviderContext>`
 
     expect(parseContextFile(file)).toStrictEqual({
@@ -85,7 +85,7 @@ ${overrides}
       innerContents: `This is the contents
 Something here
 Something there
-      `,
+`,
       overrides: {
         contents: overrides,
         innerContents: 'This will be kept',
