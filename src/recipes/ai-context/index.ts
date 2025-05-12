@@ -18,6 +18,7 @@ import {
   getContextConsumers,
   ConsumerConfig,
   deleteFile,
+  downloadAndWriteContextFiles,
 } from './context.js'
 
 export const description = 'Manage context files for AI tools'
@@ -137,7 +138,8 @@ const getPathByDetectingIDE = async (): Promise<ConsumerConfig | null> => {
   return null
 }
 
-export const run = async ({ args, command }: RunRecipeOptions) => {
+export const run = async (runOptions: RunRecipeOptions) => {
+  const { args, command } = runOptions;
   let consumer: ConsumerConfig | null = null
   const filePath: string | null = args[0]
 
@@ -154,87 +156,23 @@ export const run = async ({ args, command }: RunRecipeOptions) => {
   }
 
   if (!consumer?.contextScopes) {
-    log('No context files found for this consumer. Try again or let us know if this happens again.')
+    log('No context files found for this consumer. Try again or let us know if this happens again via our support channels.')
     return
   }
 
-  await Promise.allSettled(
-    Object.keys(consumer?.contextScopes ?? {}).map(async (contextKey) => {
-      const contextConfig = consumer?.contextScopes[contextKey]
+  try {
+    await downloadAndWriteContextFiles(consumer, runOptions);
 
-      const { contents: downloadedFile, minimumCLIVersion } =
-        (await downloadFile(version, contextConfig, consumer).catch(() => null)) ?? {}
+    // the deprecated MCP file path
+    // let's remove that file if it exists.
+    const priorContextFilePath = resolve(command?.workingDir ?? '', consumer.path, NTL_DEV_MCP_FILE_NAME)
+    const priorExists = await getExistingContext(priorContextFilePath)
+    if (priorExists) {
+      await deleteFile(priorContextFilePath)
+    }
 
-      if (!downloadedFile) {
-        return logAndThrowError(
-          `An error occurred when pulling the latest context file for scope ${contextConfig.scope}. Please try again.`,
-        )
-      }
-
-      if (minimumCLIVersion && semver.lt(version, minimumCLIVersion)) {
-        return logAndThrowError(
-          `This command requires version ${minimumCLIVersion} or above of the Netlify CLI. Refer to ${chalk.underline(
-            'https://ntl.fyi/update-cli',
-          )} for information on how to update.`,
-        )
-      }
-
-      const absoluteFilePath = resolve(
-        command?.workingDir ?? '',
-        consumer.path,
-        `netlify-${contextKey}.${consumer.ext || 'mdc'}`,
-      )
-      const existing = await getExistingContext(absoluteFilePath)
-      const remote = parseContextFile(downloadedFile)
-
-      let { contents } = remote
-
-      // Does a file already exist at this path?
-      if (existing) {
-        // If it's a file we've created, let's check the version and bail if we're
-        // already on the latest, otherwise rewrite it with the latest version.
-        if (existing.provider?.toLowerCase() === NETLIFY_PROVIDER) {
-          if (remote?.version === existing.version) {
-            log(
-              `You're all up to date! ${chalk.underline(
-                absoluteFilePath,
-              )} contains the latest version of the context files.`,
-            )
-            return
-          }
-
-          // We must preserve any overrides found in the existing file.
-          contents = applyOverrides(remote.contents, existing.overrides?.innerContents)
-        } else {
-          // Whatever exists in the file goes in the overrides block.
-          contents = applyOverrides(remote.contents, existing.contents)
-        }
-      }
-
-      // we don't want to cut off content, but if we _have_ to
-      // then we need to do so before writing or the user's
-      // context gets in a bad state. Note, this can result in
-      // a file that's not parsable next time. This will be
-      // fine because the file will simply be replaced. Not ideal
-      // but solves the issue of a truncated file in a bad state
-      // being updated.
-      if (consumer.truncationLimit && contents.length > consumer.truncationLimit) {
-        contents = contents.slice(0, consumer.truncationLimit)
-      }
-
-      await writeFile(absoluteFilePath, contents)
-
-      log(`${existing ? 'Updated' : 'Created'} context files at ${chalk.underline(absoluteFilePath)}`)
-    }),
-  )
-
-  // the deprecated MCP file path
-  // let's remove that file if it exists.
-  const priorContextFilePath = resolve(command?.workingDir ?? '', consumer.path, NTL_DEV_MCP_FILE_NAME)
-  const priorExists = await getExistingContext(priorContextFilePath)
-  if (priorExists) {
-    await deleteFile(priorContextFilePath)
+    log('All context files have been added!')
+  } catch (error) {
+    logAndThrowError(error);
   }
-
-  log('All context files have been added!')
 }
