@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 
 import { vi, describe, test, expect, beforeEach, afterEach } from 'vitest'
-import { join, resolve } from 'node:path'
+import { resolve } from 'node:path'
 import type { ConsumerConfig } from '../../../../src/recipes/ai-context/context.js'
 import type { RunRecipeOptions } from '../../../../src/commands/recipes/recipes.js'
 
@@ -106,12 +106,12 @@ describe('downloadAndWriteContextFiles', () => {
 
     // Verify file paths and content
     expect(fs.writeFile).toHaveBeenCalledWith(
-      join(mockRunOptions.command?.workingDir ?? '', 'test-path', 'netlify-serverless.mdc'),
-      mockProviderContent
+      resolve(mockRunOptions.command?.workingDir ?? '', 'test-path', 'netlify-serverless.mdc'),
+      mockProviderContent,
     )
     expect(fs.writeFile).toHaveBeenCalledWith(
-      join(mockRunOptions.command?.workingDir ?? '', 'test-path', 'netlify-edge-functions.mdc'),
-      mockProviderContent
+      resolve(mockRunOptions.command?.workingDir ?? '', 'test-path', 'netlify-edge-functions.mdc'),
+      mockProviderContent,
     )
   })
 
@@ -190,12 +190,12 @@ describe('downloadAndWriteContextFiles', () => {
 
     // Verify file paths have the custom extension
     expect(fs.writeFile).toHaveBeenCalledWith(
-      join(mockRunOptions.command?.workingDir ?? '', 'test-path', 'netlify-serverless.json'),
-      mockProviderContent
+      resolve(mockRunOptions.command?.workingDir ?? '', 'test-path', 'netlify-serverless.json'),
+      mockProviderContent,
     )
     expect(fs.writeFile).toHaveBeenCalledWith(
-      join(mockRunOptions.command?.workingDir ?? '', 'test-path', 'netlify-edge-functions.json'),
-      mockProviderContent
+      resolve(mockRunOptions.command?.workingDir ?? '', 'test-path', 'netlify-edge-functions.json'),
+      mockProviderContent,
     )
   })
 
