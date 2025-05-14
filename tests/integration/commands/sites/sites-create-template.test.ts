@@ -197,7 +197,7 @@ describe('sites:create-template', () => {
     })
 
     expect(stdoutwriteSpy).toHaveBeenCalledWith(
-      `\nDirectory ${chalk.cyanBright('repoName')} linked to site ${chalk.cyanBright(
+      `\nDirectory ${chalk.cyanBright('repoName')} linked to project ${chalk.cyanBright(
         'https://site-name.netlify.app',
       )}\n\n`,
     )
