@@ -28,7 +28,7 @@ To specify a site, use --id or --name. By default, the Netlify site to link will
     ])
     .addHelpText('after', () => {
       const docsUrl = 'https://docs.netlify.com/cli/get-started/#link-and-unlink-sites'
-      return `For more information about linking sites, see ${terminalLink(docsUrl, docsUrl)}\n`
+      return `For more information about linking sites, see ${terminalLink(docsUrl, docsUrl, { fallback: false })}\n`
     })
     .action(async (repo: string, targetDir: string | undefined, options: CloneOptionValues, command: BaseCommand) => {
       const { clone } = await import('./clone.js')

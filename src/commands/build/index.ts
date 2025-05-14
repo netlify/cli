@@ -25,7 +25,7 @@ export const createBuildCommand = (program: BaseCommand) =>
     .addHelpText('after', () => {
       const docsUrl = 'https://docs.netlify.com/configure-builds/overview/'
       return `
-For more information about Netlify builds, see ${terminalLink(docsUrl, docsUrl)}
+For more information about Netlify builds, see ${terminalLink(docsUrl, docsUrl, { fallback: false })}
 `
     })
     .action(async (options, command) => {
