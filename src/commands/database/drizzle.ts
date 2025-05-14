@@ -1,9 +1,9 @@
-import { spawn } from 'child_process'
-import { carefullyWriteFile } from './utils.js'
+import { carefullyWriteFile, getPackageJSON, spawnAsync } from './utils.js'
 import BaseCommand from '../base-command.js'
 import path from 'path'
 import fs from 'fs/promises'
 import inquirer from 'inquirer'
+import { NETLIFY_NEON_PACKAGE_NAME } from './constants.js'
 
 export const initDrizzle = async (command: BaseCommand) => {
   if (!command.project.root) {
@@ -29,12 +29,9 @@ export const initDrizzle = async (command: BaseCommand) => {
   }
 
   const packageJsonPath = path.resolve(command.project.root, 'package.json')
+  const packageJson = getPackageJSON(command.workingDir)
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf-8'))
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
   packageJson.scripts = {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     ...(packageJson.scripts ?? {}),
     ...packageJsonScripts,
   }
@@ -59,15 +56,14 @@ export const initDrizzle = async (command: BaseCommand) => {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-  if (!Object.keys(packageJson?.devDependencies ?? {}).includes('drizzle-kit')) {
+  if (!Object.keys(packageJson.devDependencies ?? {}).includes('drizzle-kit')) {
     await spawnAsync(command.project.packageManager?.installCommand ?? 'npm install', ['drizzle-kit@latest', '-D'], {
       stdio: 'inherit',
       shell: true,
     })
   }
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-  if (!Object.keys(packageJson?.dependencies ?? {}).includes('drizzle-orm')) {
+
+  if (!Object.keys(packageJson.dependencies ?? {}).includes('drizzle-orm')) {
     await spawnAsync(command.project.packageManager?.installCommand ?? 'npm install', ['drizzle-orm@latest'], {
       stdio: 'inherit',
       shell: true,
@@ -94,7 +90,7 @@ export const posts = pgTable('posts', {
     content: text().notNull().default('')
 });`
 
-const dbIndex = `import { neon } from '@netlify/neon';
+const dbIndex = `import { neon } from '${NETLIFY_NEON_PACKAGE_NAME}';
 import { drizzle } from 'drizzle-orm/neon-http';
 
 import * as schema from './schema';
@@ -108,18 +104,4 @@ const packageJsonScripts = {
   'db:generate': 'drizzle-kit generate',
   'db:migrate': 'netlify dev:exec drizzle-kit migrate',
   'db:studio': 'netlify dev:exec drizzle-kit studio',
-}
-
-const spawnAsync = (command: string, args: string[], options: Parameters<typeof spawn>[2]): Promise<number> => {
-  return new Promise((resolve, reject) => {
-    const child = spawn(command, args, options)
-    child.on('error', reject)
-    child.on('exit', (code) => {
-      if (code === 0) {
-        resolve(code)
-      }
-      const errorMessage = code ? `Process exited with code ${code.toString()}` : 'Process exited with no code'
-      reject(new Error(errorMessage))
-    })
-  })
 }

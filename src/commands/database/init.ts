@@ -1,14 +1,26 @@
 import { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 import BaseCommand from '../base-command.js'
-import { getAccount, getExtension, getJigsawToken, installExtension } from './utils.js'
+import { getAccount, getExtension, getJigsawToken, getPackageJSON, installExtension, spawnAsync } from './utils.js'
 import { initDrizzle } from './drizzle.js'
-import { NEON_DATABASE_EXTENSION_SLUG } from './constants.js'
+import { NEON_DATABASE_EXTENSION_SLUG, NETLIFY_NEON_PACKAGE_NAME } from './constants.js'
 import prettyjson from 'prettyjson'
 import { log } from '../../utils/command-helpers.js'
 import { SiteInfo } from './database.js'
 
 export const init = async (_options: OptionValues, command: BaseCommand) => {
+  try {
+    const packageJson = getPackageJSON(command.workingDir)
+    if (packageJson.dependencies && !Object.keys(packageJson.dependencies).includes(NETLIFY_NEON_PACKAGE_NAME)) {
+      await spawnAsync(command.project.packageManager?.installCommand ?? 'npm install', ['@netlify/neon@latest'], {
+        stdio: 'inherit',
+        shell: true,
+      })
+    }
+  } catch (e) {
+    console.error(`Failed to install @netlify/neon in ${command.workingDir}:`, e)
+  }
+
   const siteInfo = command.netlify.siteInfo as SiteInfo
   if (!command.siteId) {
     console.error(`The project must be linked with netlify link before initializing a database.`)

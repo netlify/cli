@@ -1,3 +1,6 @@
+import { createRequire } from 'module'
+import { join } from 'path'
+
 import fsPromises from 'fs/promises'
 import fs from 'fs'
 import inquirer from 'inquirer'
@@ -5,6 +8,45 @@ import inquirer from 'inquirer'
 import { JIGSAW_URL } from './constants.js'
 import BaseCommand from '../base-command.js'
 import { Extension } from './database.js'
+import { spawn } from 'child_process'
+
+type PackageJSON = {
+  dependencies?: Record<string, string>
+  devDependencies?: Record<string, string>
+  scripts?: Record<string, string>
+}
+
+export function getPackageJSON(directory: string) {
+  const require = createRequire(join(directory, 'package.json'))
+  const packageJson = require('./package.json') as unknown
+  if (typeof packageJson !== 'object' || packageJson === null) {
+    throw new Error('Failed to load package.json')
+  }
+  if ('dependencies' in packageJson && typeof packageJson.dependencies !== 'object') {
+    throw new Error(`Expected object at package.json#dependencies, got ${typeof packageJson.dependencies}`)
+  }
+  if ('devDependencies' in packageJson && typeof packageJson.devDependencies !== 'object') {
+    throw new Error(`Expected object at package.json#devDependencies, got ${typeof packageJson.devDependencies}`)
+  }
+  if ('scripts' in packageJson && typeof packageJson.scripts !== 'object') {
+    throw new Error(`Expected object at package.json#scripts, got ${typeof packageJson.scripts}`)
+  }
+  return packageJson as PackageJSON
+}
+
+export const spawnAsync = (command: string, args: string[], options: Parameters<typeof spawn>[2]): Promise<number> => {
+  return new Promise((resolve, reject) => {
+    const child = spawn(command, args, options)
+    child.on('error', reject)
+    child.on('exit', (code) => {
+      if (code === 0) {
+        resolve(code)
+      }
+      const errorMessage = code ? `Process exited with code ${code.toString()}` : 'Process exited with no code'
+      reject(new Error(errorMessage))
+    })
+  })
+}
 
 export const getExtension = async ({
   accountId,
