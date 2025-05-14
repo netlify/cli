@@ -5,7 +5,7 @@ import { promptEnvCloneOverwrite } from '../../utils/prompts/env-clone-prompt.js
 import BaseCommand from '../base-command.js'
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'api' implicitly has an 'any' type.
-const safeGetProject = async (api, siteId) => {
+const safeGetSite = async (api, siteId) => {
   try {
     const data = await api.getSite({ siteId })
     return { data }
@@ -80,8 +80,8 @@ export const envClone = async (options: OptionValues, command: BaseCommand) => {
   }
 
   const [{ data: siteFrom, error: errorFrom }, { data: siteTo, error: errorTo }] = await Promise.all([
-    safeGetProject(api, siteId.from),
-    safeGetProject(api, siteId.to),
+    safeGetSite(api, siteId.from),
+    safeGetSite(api, siteId.to),
   ])
 
   if (errorFrom) {

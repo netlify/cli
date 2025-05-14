@@ -73,12 +73,12 @@ export const status = async (options: OptionValues, command: BaseCommand) => {
   if (options.json) {
     logJson({
       account: cleanAccountData,
-      projectData: {
-        'project-name': siteInfo.name,
+      siteData: {
+        'site-name': siteInfo.name,
         'config-path': site.configPath,
         'admin-url': siteInfo.admin_url,
-        'project-url': siteInfo.ssl_url || siteInfo.url,
-        'project-id': siteInfo.id,
+        'site-url': siteInfo.ssl_url || siteInfo.url,
+        'site-id': siteInfo.id,
       },
     })
   }

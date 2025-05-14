@@ -18,7 +18,7 @@ export const sitesDelete = async (siteId: string, options: OptionValues, command
     siteData = await api.getSite({ siteId })
   } catch (error_) {
     if ((error_ as APIError).status === 404) {
-      return logAndThrowError(`No project with id ${siteId} found. Please verify the siteId & try again.`)
+      return logAndThrowError(`No project with id ${siteId} found. Please verify the project ID & try again.`)
     } else {
       return logAndThrowError(error_)
     }
@@ -48,7 +48,7 @@ export const sitesDelete = async (siteId: string, options: OptionValues, command
 
   /* Validation logic if siteId passed in does not match current project ID */
   if (noForce && cwdSiteId && cwdSiteId !== siteId) {
-    log(`${chalk.redBright('Warning')}: The siteId supplied does not match the current working directory siteId`)
+    log(`${chalk.redBright('Warning')}: The project ID supplied does not match the current working directory project ID`)
     log()
     log(`Supplied:       "${siteId}"`)
     log(`Current Project: "${cwdSiteId}"`)
@@ -72,7 +72,7 @@ export const sitesDelete = async (siteId: string, options: OptionValues, command
     await api.deleteSite({ site_id: siteId })
   } catch (error_) {
     if ((error_ as APIError).status === 404) {
-      return logAndThrowError(`No project with id ${siteId} found. Please verify the siteId & try again.`)
+      return logAndThrowError(`No project with id ${siteId} found. Please verify the project ID & try again.`)
     } else {
       return logAndThrowError(`Delete Project error: ${(error_ as APIError).status}: ${(error_ as APIError).message}`)
     }

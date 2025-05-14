@@ -8,7 +8,7 @@ export const createLinkCommand = (program: BaseCommand) =>
     .command('link')
     .description('Link a local repo or project folder to an existing project on Netlify')
     .option('--id <id>', 'ID of project to link to')
-    .option('--name <n>', 'Name of project to link to')
+    .option('--name <name>', 'Name of project to link to')
     .option('--git-remote-name <name>', 'Name of Git remote to use. e.g. "origin"')
     .option('--git-remote-url <name>', 'URL of the repository (or Github `owner/repo`) to link to')
     .addExamples([
