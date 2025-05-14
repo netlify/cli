@@ -58,7 +58,10 @@ export const CI_FORCED_COMMANDS = {
   'env:clone': { options: '--force', description: 'Bypasses prompts & Force the command to run.' },
   'blobs:set': { options: '--force', description: 'Bypasses prompts & Force the command to run.' },
   'blobs:delete': { options: '--force', description: 'Bypasses prompts & Force the command to run.' },
-  init: { options: '--force', description: 'Reinitialize CI hooks if the linked project is already configured to use CI' },
+  init: {
+    options: '--force',
+    description: 'Reinitialize CI hooks if the linked project is already configured to use CI',
+  },
   'sites:delete': { options: '-f, --force', description: 'Delete without prompting (useful for CI).' },
 }
 

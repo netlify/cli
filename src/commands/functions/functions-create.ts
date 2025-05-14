@@ -259,7 +259,9 @@ const ensureEdgeFuncDirExists = function (command) {
   const siteId = site.id
 
   if (!siteId) {
-    return logAndThrowError(`${NETLIFYDEVERR} No project id found, please run inside a project directory or \`netlify link\``)
+    return logAndThrowError(
+      `${NETLIFYDEVERR} No project id found, please run inside a project directory or \`netlify link\``,
+    )
   }
 
   const functionsDir = config.build?.edge_functions ?? join(command.workingDir, 'netlify/edge-functions')
@@ -291,7 +293,9 @@ const promptFunctionsDirectory = async (command) => {
   log(`\n${NETLIFYDEVLOG} functions directory not specified in ${relConfigFilePath} or UI settings`)
 
   if (!site.id) {
-    return logAndThrowError(`${NETLIFYDEVERR} No project id found, please run inside a project directory or \`netlify link\``)
+    return logAndThrowError(
+      `${NETLIFYDEVERR} No project id found, please run inside a project directory or \`netlify link\``,
+    )
   }
 
   const { functionsDir } = await inquirer.prompt([

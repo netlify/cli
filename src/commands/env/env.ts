@@ -144,7 +144,10 @@ export const createEnvCommand = (program: BaseCommand) => {
     .option('-f, --from <from>', 'Project ID (From)')
     .requiredOption('-t, --to <to>', 'Project ID (To)')
     .description(`Clone environment variables from one project to another`)
-    .addExamples(['netlify env:clone --to <to-project-id>', 'netlify env:clone --to <to-project-id> --from <from-project-id>'])
+    .addExamples([
+      'netlify env:clone --to <to-project-id>',
+      'netlify env:clone --to <to-project-id> --from <from-project-id>',
+    ])
     .action(async (options: OptionValues, command: BaseCommand) => {
       const { envClone } = await import('./env-clone.js')
       await envClone(options, command)

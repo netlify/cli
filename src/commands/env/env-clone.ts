@@ -85,7 +85,9 @@ export const envClone = async (options: OptionValues, command: BaseCommand) => {
   ])
 
   if (errorFrom) {
-    return logAndThrowError(`Can't find project with id ${chalk.bold(siteId.from)}. Please make sure the project exists.`)
+    return logAndThrowError(
+      `Can't find project with id ${chalk.bold(siteId.from)}. Please make sure the project exists.`,
+    )
   }
 
   if (errorTo) {
