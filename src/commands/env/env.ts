@@ -164,7 +164,7 @@ export const createEnvCommand = (program: BaseCommand) => {
     .addHelpText('afterAll', () => {
       const docsUrl = 'https://docs.netlify.com/configure-builds/environment-variables/'
       return `
-For more information about environment variables on Netlify, see ${terminalLink(docsUrl, docsUrl)}
+For more information about environment variables on Netlify, see ${terminalLink(docsUrl, docsUrl, { fallback: false })}
 `
     })
     .action(env)

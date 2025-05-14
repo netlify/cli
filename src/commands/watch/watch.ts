@@ -1,6 +1,6 @@
+import type { NetlifyAPI } from '@netlify/api'
 import pWaitFor from 'p-wait-for'
 import prettyjson from 'prettyjson'
-import type { NetlifyAPI } from 'netlify'
 
 import { type Spinner, startSpinner, stopSpinner } from '../../lib/spinner.js'
 import { chalk, logAndThrowError, log } from '../../utils/command-helpers.js'

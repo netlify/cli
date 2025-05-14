@@ -123,7 +123,7 @@ The ${name} command will help you manage the functions in this project`,
     .addHelpText('afterAll', () => {
       const docsUrl = 'https://docs.netlify.com/functions/overview/'
       return `
-For more information about Netlify Functions, see ${terminalLink(docsUrl, docsUrl)}
+For more information about Netlify Functions, see ${terminalLink(docsUrl, docsUrl, { fallback: false })}
 `
     })
     .action(functions)

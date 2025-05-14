@@ -4,15 +4,15 @@ import fs from 'fs'
 import process from 'process'
 import { format, inspect } from 'util'
 
+import type { NetlifyAPI } from '@netlify/api'
 import { Chalk } from 'chalk'
 import chokidar from 'chokidar'
 import decache from 'decache'
 import WSL from 'is-wsl'
 import debounce from 'lodash/debounce.js'
-import type { NetlifyAPI } from 'netlify'
 import terminalLink from 'terminal-link'
 
-import { clearSpinner, startSpinner } from '../lib/spinner.js'
+import { startSpinner } from '../lib/spinner.js'
 
 import getGlobalConfigStore from './get-global-config-store.js'
 import getCLIPackageJson from './get-cli-package-json.js'
@@ -119,7 +119,8 @@ export const pollForToken = async ({
       return logAndThrowError(error_)
     }
   } finally {
-    clearSpinner({ spinner })
+    spinner.stop()
+    spinner.clear()
   }
 }
 /**

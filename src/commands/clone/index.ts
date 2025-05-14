@@ -28,7 +28,7 @@ To specify a project, use --id or --name. By default, the Netlify project to lin
     ])
     .addHelpText('after', () => {
       const docsUrl = 'https://docs.netlify.com/cli/get-started/#link-and-unlink-sites'
-      return `For more information about linking projects, see ${terminalLink(docsUrl, docsUrl)}\n`
+      return `For more information about linking projects, see ${terminalLink(docsUrl, docsUrl, { fallback: false })}\n`
     })
     .action(async (repo: string, targetDir: string | undefined, options: CloneOptionValues, command: BaseCommand) => {
       const { clone } = await import('./clone.js')

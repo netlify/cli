@@ -3,6 +3,7 @@ import { join, relative, resolve } from 'path'
 import process from 'process'
 import { format } from 'util'
 
+import { NetlifyAPI } from '@netlify/api'
 import { DefaultLogger, Project } from '@netlify/build-info'
 import { NodeFS, NoopLogger } from '@netlify/build-info/node'
 import { resolveConfig } from '@netlify/config'
@@ -13,7 +14,6 @@ import { findUp } from 'find-up'
 import inquirer from 'inquirer'
 import inquirerAutocompletePrompt from 'inquirer-autocomplete-prompt'
 import merge from 'lodash/merge.js'
-import { NetlifyAPI } from 'netlify'
 
 import { getAgent } from '../lib/http-agent.js'
 import {
