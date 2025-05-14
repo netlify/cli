@@ -54,7 +54,18 @@ jobs:
       - name: Run E2E tests
         run: npm run test:e2e
 
-      - name: Publish package
+      - name: Publish netlify-cli package
         run: npm publish --provenance
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+
+      - name: Prepare netlify package
+        run: node scripts/netlifyPackage.js prepare
+
+      - name: Publish netlify package
+        run: npm publish --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+
+      - name: Verify netlify package
+        run: node scripts/netlifyPackage.js verify
