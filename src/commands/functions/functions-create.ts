@@ -7,7 +7,8 @@ import process from 'process'
 import { fileURLToPath, pathToFileURL } from 'url'
 
 import { OptionValues } from 'commander'
-import { findUp } from 'find-up'
+import escalade from 'escalade'
+
 import fuzzy from 'fuzzy'
 import inquirer from 'inquirer'
 import fetch from 'node-fetch'
@@ -430,7 +431,12 @@ const getNpmInstallPackages = (existingPackages = {}, neededPackages = {}) =>
 // @ts-expect-error TS(7031) FIXME: Binding element 'functionPackageJson' implicitly h... Remove this comment to see the full error message
 const installDeps = async ({ functionPackageJson, functionPath, functionsDir }) => {
   const { dependencies: functionDependencies, devDependencies: functionDevDependencies } = require(functionPackageJson)
-  const sitePackageJson = await findUp('package.json', { cwd: functionsDir })
+  const pkg = 'package.json'
+  const sitePackageJson = await escalade(functionsDir, (_dir, names) => {
+    if (names.includes(pkg)) {
+      return pkg
+    }
+  })
   const npmInstallFlags = ['--no-audit', '--no-fund']
 
   // If there is no site-level `package.json`, we fall back to the old behavior

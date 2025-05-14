@@ -1,12 +1,13 @@
-import { dirname } from 'path'
+import { dirname, join } from 'path'
 import util from 'util'
 
-import { findUp } from 'find-up'
+import escalade from 'escalade'
 import gitRepoInfo from 'git-repo-info'
 import gitconfiglocal from 'gitconfiglocal'
 import parseGithubUrl from 'parse-github-url'
 
 import { log } from './command-helpers.js'
+import { existsSync } from 'fs'
 
 export interface RepoData {
   name: string | null
@@ -28,7 +29,12 @@ const getRepoData = async ({
   try {
     const [gitConfig, gitDirectory] = await Promise.all([
       util.promisify(gitconfiglocal)(workingDir),
-      findUp('.git', { cwd: workingDir, type: 'directory' }),
+      escalade(workingDir, (dir, _names) => {
+        const gitDir = join(dir, '.git')
+        if (existsSync(gitDir)) {
+          return gitDir
+        }
+      }),
     ])
 
     if (!gitDirectory || !gitConfig || !gitConfig.remote || Object.keys(gitConfig.remote).length === 0) {
