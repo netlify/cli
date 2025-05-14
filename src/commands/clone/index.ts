@@ -27,7 +27,7 @@ To specify a project, use --id or --name. By default, the Netlify project to lin
       'netlify clone --name my-project-name vibecoder/next-unicorn',
     ])
     .addHelpText('after', () => {
-      const docsUrl = 'https://docs.netlify.com/cli/get-started/#link-and-unlink-projects'
+      const docsUrl = 'https://docs.netlify.com/cli/get-started/#link-and-unlink-sites'
       return `For more information about linking projects, see ${terminalLink(docsUrl, docsUrl)}\n`
     })
     .action(async (repo: string, targetDir: string | undefined, options: CloneOptionValues, command: BaseCommand) => {

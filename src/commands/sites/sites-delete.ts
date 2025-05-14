@@ -48,7 +48,7 @@ export const sitesDelete = async (siteId: string, options: OptionValues, command
 
   /* Validation logic if siteId passed in does not match current project ID */
   if (noForce && cwdSiteId && cwdSiteId !== siteId) {
-    log(`${chalk.redBright('Warning')}: The siteId supplied does not match the current working directory projectId`)
+    log(`${chalk.redBright('Warning')}: The siteId supplied does not match the current working directory siteId`)
     log()
     log(`Supplied:       "${siteId}"`)
     log(`Current Project: "${cwdSiteId}"`)

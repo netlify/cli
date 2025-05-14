@@ -33,7 +33,7 @@ const ENV_VAR_SOURCES = {
     printFn: chalk.red,
   },
   ui: {
-    name: 'site settings',
+    name: 'project settings',
     printFn: chalk.blue,
   },
 }
