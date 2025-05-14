@@ -14,7 +14,7 @@ import { withSiteBuilder } from '../../utils/site-builder.js'
 
 describe.concurrent('functions:create command', async () => {
   const siteInfo = {
-    admin_url: 'https://app.netlify.com/sites/site-name/overview',
+    admin_url: 'https://app.netlify.com/projects/site-name/overview',
     ssl_url: 'https://site-name.netlify.app/',
     id: 'site_id',
     name: 'site-name',
@@ -47,7 +47,7 @@ describe.concurrent('functions:create command', async () => {
             answer: answerWithValue(DOWN),
           },
           {
-            question: 'Enter the path, relative to your site',
+            question: 'Enter the path, relative to your project',
             answer: answerWithValue('test/functions'),
           },
           {
@@ -191,7 +191,7 @@ describe.concurrent('functions:create command', async () => {
             answer: answerWithValue(DOWN),
           },
           {
-            question: 'Enter the path, relative to your site',
+            question: 'Enter the path, relative to your project',
             answer: answerWithValue('test/functions'),
           },
           {
@@ -234,7 +234,7 @@ describe.concurrent('functions:create command', async () => {
           answer: answerWithValue(DOWN),
         },
         {
-          question: 'Enter the path, relative to your site',
+          question: 'Enter the path, relative to your project',
           answer: answerWithValue('test/functions'),
         },
         {
@@ -332,7 +332,7 @@ describe.concurrent('functions:create command', async () => {
             answer: answerWithValue(DOWN),
           },
           {
-            question: 'Enter the path, relative to your site',
+            question: 'Enter the path, relative to your project',
             answer: answerWithValue('my-dir/functions'),
           },
           {

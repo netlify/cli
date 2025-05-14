@@ -15,7 +15,7 @@ vi.mock('../../../../src/utils/websockets/index.js', () => ({
 }))
 
 const siteInfo = {
-  admin_url: 'https://app.netlify.com/sites/site-name/overview',
+  admin_url: 'https://app.netlify.com/projects/site-name/overview',
   ssl_url: 'https://site-name.netlify.app/',
   id: 'site_id',
   name: 'site-name',
@@ -122,7 +122,7 @@ describe('logs:deploy command', () => {
     expect(body.access_token).toEqual(env.NETLIFY_AUTH_TOKEN)
   })
 
-  test('should instruct user to link a site if one is not linked', async (t) => {
+  test('should instruct user to link a project if one is not linked', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       const projectPath = join('projects', 'project1')
       await builder.withNetlifyToml({ config: {}, pathPrefix: projectPath }).build()
@@ -132,7 +132,7 @@ describe('logs:deploy command', () => {
         async ({ apiUrl }) => {
           const options = getCLIOptions({ builder, apiUrl, env: { NETLIFY_SITE_ID: '' } })
           const stdout = await callCli(['logs:deploy'], { ...options, cwd: join(builder.directory, projectPath) })
-          expect(stdout).toContain('You must link a site before attempting to view deploy logs')
+          expect(stdout).toContain('You must link a project before attempting to view deploy logs')
         },
         true,
       )

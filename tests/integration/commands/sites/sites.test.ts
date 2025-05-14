@@ -60,7 +60,7 @@ vi.mock('prettyjson', async () => {
 vi.spyOn(inquirer, 'prompt').mockImplementation(() => Promise.resolve({ accountSlug: 'test-account' }))
 
 const siteInfo = {
-  admin_url: 'https://app.netlify.com/sites/site-name/overview',
+  admin_url: 'https://app.netlify.com/projects/site-name/overview',
   ssl_url: 'https://site-name.netlify.app/',
   id: 'site_id',
   name: 'site-name',
@@ -126,7 +126,7 @@ describe('sites command', () => {
       expect(render).toHaveBeenCalledWith({
         'Admin URL': siteInfo.admin_url,
         URL: siteInfo.ssl_url,
-        'Site ID': siteInfo.id,
+        'Project ID': siteInfo.id,
         'Repo URL': siteInfo.build_settings.repo_url,
       })
     })

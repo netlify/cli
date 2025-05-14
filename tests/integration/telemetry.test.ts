@@ -135,7 +135,7 @@ await withMockApi(routes, () => {
   }) => {
     await expect(
       callCli(['blobs:get', '--filter', 'web', '-O', './output_dir', 'my-store', 'my-key'], getCLIOptions(apiUrl)),
-    ).rejects.toThrowError(/You don't appear to be in a folder that is linked to a site/)
+    ).rejects.toThrowError(/You don't appear to be in a folder that is linked to a project/)
     const request = requests.find(({ path }) => path === '/api/v1/track')
     expect(request).toBeDefined()
 

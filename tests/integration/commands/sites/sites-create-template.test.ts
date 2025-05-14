@@ -24,7 +24,7 @@ inquirer.registerPrompt = vi.fn()
 inquirer.prompt.registerPrompt = vi.fn()
 
 const siteInfo = {
-  admin_url: 'https://app.netlify.com/sites/site-name/overview',
+  admin_url: 'https://app.netlify.com/projects/site-name/overview',
   ssl_url: 'https://site-name.netlify.app/',
   id: 'site_id',
   name: 'site-name',
@@ -108,7 +108,7 @@ describe('sites:create-template', () => {
     })
   })
 
-  test('it should ask for a new site name if site with that name already exists on a globally deployed site', async (t) => {
+  test('it should ask for a new project name if project with that name already exists on a globally deployed project', async (t) => {
     const stdoutwriteSpy = vi.spyOn(process.stdout, 'write')
     await withMockApi(routes, async ({ apiUrl }) => {
       Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
@@ -129,10 +129,10 @@ describe('sites:create-template', () => {
         'test-name',
       ])
     })
-    expect(stdoutwriteSpy).toHaveBeenCalledWith('A site with that name already exists\n')
+    expect(stdoutwriteSpy).toHaveBeenCalledWith('A project with that name already exists\n')
   })
 
-  test('it should ask for a new site name if site with that name already exists on account', async (t) => {
+  test('it should ask for a new project name if project with that name already exists on account', async (t) => {
     const stdoutwriteSpy = vi.spyOn(process.stdout, 'write')
     await withMockApi(routes, async ({ apiUrl }) => {
       Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
@@ -153,15 +153,15 @@ describe('sites:create-template', () => {
         'test-name',
       ])
     })
-    expect(stdoutwriteSpy).toHaveBeenCalledWith('A site with that name already exists on your account\n')
+    expect(stdoutwriteSpy).toHaveBeenCalledWith('A project with that name already exists on your account\n')
   })
 
-  test('it should automatically link to the site when the user clones the template repo', async (t) => {
+  test('it should automatically link to the project when the user clones the template repo', async (t) => {
     const mockSuccessfulLinkOutput = `
       Directory Linked
 
-      Admin url: https://app.netlify.com/sites/site-name
-      Site url:  https://site-name.netlify.app
+      Admin url: https://app.netlify.com/projects/site-name
+      Project url:  https://site-name.netlify.app
 
       You can now run other \`netlify\` cli commands in this directory
       `
@@ -203,12 +203,12 @@ describe('sites:create-template', () => {
     )
   })
 
-  test('it should output instructions if a site is already linked', async (t) => {
+  test('it should output instructions if a project is already linked', async (t) => {
     const mockUnsuccessfulLinkOutput = `
-      Site already linked to \"site-name\"
-      Admin url: https://app.netlify.com/sites/site-name
+      Project already linked to \"site-name\"
+      Admin url: https://app.netlify.com/projects/site-name
 
-      To unlink this site, run: netlify unlink
+      To unlink this project, run: netlify unlink
       `
 
     vi.mocked(callLinkSite).mockImplementationOnce(() => Promise.resolve(mockUnsuccessfulLinkOutput))

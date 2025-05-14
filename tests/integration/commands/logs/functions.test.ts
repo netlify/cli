@@ -28,7 +28,7 @@ vi.mock('inquirer', () => ({
 }))
 
 const siteInfo = {
-  admin_url: 'https://app.netlify.com/sites/site-name/overview',
+  admin_url: 'https://app.netlify.com/projects/site-name/overview',
   ssl_url: 'https://site-name.netlify.app/',
   id: 'site_id',
   name: 'site-name',
