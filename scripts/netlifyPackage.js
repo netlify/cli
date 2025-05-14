@@ -48,7 +48,7 @@ const commands = {
 }
 
 if (typeof commands[argv[2]] === 'function') {
-  commands[argv[2]]()
+  await commands[argv[2]]()
 } else {
   console.error(`Usage: node ${basename(argv[1])} <command> (available commands: ${Object.keys(commands).join(', ')})`)
 }
