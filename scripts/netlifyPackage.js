@@ -1,7 +1,7 @@
 // @ts-check
 import assert from 'node:assert'
 import { dirname, resolve } from 'node:path'
-import { readFile, stat, writeFile } from 'node:fs/promises'
+import { readdir, readFile, stat, writeFile } from 'node:fs/promises'
 
 import execa from 'execa'
 
@@ -26,6 +26,11 @@ async function getPackageJSON() {
 }
 
 async function preparePackageJSON() {
+  const binPath = Object.values(packageJSON.contents.bin ?? {})[0]
+  if (!binPath) {
+    throw new Error('Did not find a non-empty binary entry in `package.json`, so the `npx` flow will not work.')
+  }
+
   const newPackageJSON = {
     ...packageJSON.contents,
     main: './dist/index.js',
@@ -38,6 +43,9 @@ async function preparePackageJSON() {
       // ensure this is the case by throwing if a shrinkwrap file isn't found.
       prepublishOnly: undefined,
     },
+    bin: {
+      'npx-netlify': binPath,
+    },
   }
 
   try {
@@ -45,6 +53,7 @@ async function preparePackageJSON() {
 
     assert.ok(shrinkwrap.isFile())
   } catch {
+    console.log('Files:', await readdir(dirname(packageJSON.path)))
     throw new Error('Failed to find npm-shrinkwrap.json file. Did you run the pre-publish script?')
   }
 
