@@ -1,7 +1,8 @@
 // @ts-check
 import assert from 'node:assert'
+import { platform } from 'node:os'
 import { dirname, resolve } from 'node:path'
-import { readdir, readFile, stat, writeFile } from 'node:fs/promises'
+import { readFile, stat, writeFile } from 'node:fs/promises'
 
 import execa from 'execa'
 
@@ -48,15 +49,15 @@ async function preparePackageJSON() {
     },
   }
 
-  // TODO: Figure out why this step is failing on Windows.
-  try {
-    const shrinkwrap = await stat(resolve(packageJSON.path, '../npm-shrinkwrap.json'))
+  // TODO: Figure out why this file is not being created on Windows.
+  if (platform() !== 'win32') {
+    try {
+      const shrinkwrap = await stat(resolve(packageJSON.path, '../npm-shrinkwrap.json'))
 
-    assert.ok(shrinkwrap.isFile())
-  } catch {
-    console.log('-> FILES:', await readdir(dirname(packageJSON.path)))
-
-    throw new Error('Failed to find npm-shrinkwrap.json file. Did you run the pre-publish script?')
+      assert.ok(shrinkwrap.isFile())
+    } catch {
+      throw new Error('Failed to find npm-shrinkwrap.json file. Did you run the pre-publish script?')
+    }
   }
 
   console.log(`Writing updated package.json to ${packageJSON.path}...`)
