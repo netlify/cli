@@ -70,6 +70,10 @@ const itWithMockNpmRegistry = it.extend<{ registry: { address: string; cwd: stri
             access: '$all',
             publish: '$all',
           },
+          netlify: {
+            access: '$all',
+            publish: '$all',
+          },
           '**': {
             access: '$all',
             publish: 'noone',
@@ -116,6 +120,14 @@ const itWithMockNpmRegistry = it.extend<{ registry: { address: string; cwd: stri
       cwd: publishWorkspace,
       stdio: debug.enabled ? 'inherit' : 'ignore',
     })
+
+    // Publishing `netlify` package
+    await execa('node', [path.resolve(projectRoot, 'scripts/netlifyPackage.js'), publishWorkspace])
+    await execa('npm', ['publish', `--registry=${registryURL.toString()}`, '--tag=testing'], {
+      cwd: publishWorkspace,
+      stdio: debug.enabled ? 'inherit' : 'ignore',
+    })
+
     await fs.rm(publishWorkspace, { force: true, recursive: true })
 
     const testWorkspace = await fs.mkdtemp(path.join(os.tmpdir(), tempdirPrefix))
@@ -135,10 +147,15 @@ const itWithMockNpmRegistry = it.extend<{ registry: { address: string; cwd: stri
   },
 })
 
-const tests: [packageManager: string, config: { install: [cmd: string, args: string[]]; lockfile: string }][] = [
+type Test = { packageName: string }
+type InstallTest = Test & { install: [cmd: string, args: string[]]; lockfile: string }
+type RunTest = Test & { run: [cmd: string, args: string[]] }
+
+const tests: [packageManager: string, config: InstallTest | RunTest][] = [
   [
     'npm',
     {
+      packageName: 'netlify-cli',
       install: ['npm', ['install', 'netlify-cli@testing']],
       lockfile: 'package-lock.json',
     },
@@ -146,6 +163,7 @@ const tests: [packageManager: string, config: { install: [cmd: string, args: str
   [
     'pnpm',
     {
+      packageName: 'netlify-cli',
       install: ['pnpm', ['add', 'netlify-cli@testing']],
       lockfile: 'pnpm-lock.yaml',
     },
@@ -153,8 +171,16 @@ const tests: [packageManager: string, config: { install: [cmd: string, args: str
   [
     'yarn',
     {
+      packageName: 'netlify-cli',
       install: ['yarn', ['add', 'netlify-cli@testing']],
       lockfile: 'yarn.lock',
+    },
+  ],
+  [
+    'npx',
+    {
+      packageName: 'netlify',
+      run: ['npx', ['-y', 'netlify@testing']],
     },
   ],
 ]
@@ -162,25 +188,41 @@ const tests: [packageManager: string, config: { install: [cmd: string, args: str
 describe.each(tests)('%s → installs the cli and runs the help command without error', (_, config) => {
   itWithMockNpmRegistry('installs the cli and runs the help command without error', async ({ registry }) => {
     const cwd = registry.cwd
-    await execa(...config.install, {
-      cwd,
-      env: { npm_config_registry: registry.address },
-      stdio: debug.enabled ? 'inherit' : 'ignore',
-    })
 
-    expect(
-      existsSync(path.join(cwd, config.lockfile)),
-      `Generated lock file ${config.lockfile} does not exist in ${cwd}`,
-    ).toBe(true)
+    let stdout: string
 
-    const binary = path.resolve(path.join(cwd, `./node_modules/.bin/netlify${platform() === 'win32' ? '.cmd' : ''}`))
-    const { stdout } = await execa(binary, ['help'], { cwd })
+    if ('install' in config) {
+      await execa(...config.install, {
+        cwd,
+        env: { npm_config_registry: registry.address },
+        stdio: debug.enabled ? 'inherit' : 'ignore',
+      })
+
+      expect(
+        existsSync(path.join(cwd, config.lockfile)),
+        `Generated lock file ${config.lockfile} does not exist in ${cwd}`,
+      ).toBe(true)
+
+      const binary = path.resolve(path.join(cwd, `./node_modules/.bin/netlify${platform() === 'win32' ? '.cmd' : ''}`))
+      const result = await execa(binary, ['help'], { cwd })
+
+      stdout = result.stdout
+    } else {
+      const [cmd, args] = config.run
+      const result = await execa(cmd, args, {
+        env: {
+          npm_config_registry: registry.address,
+        },
+      })
+
+      stdout = result.stdout
+    }
 
     expect(stdout.trim(), `Help command does not start with '⬥ Netlify CLI'\\n\\nVERSION: ${stdout}`).toMatch(
       /^⬥ Netlify CLI\n\nVERSION/,
     )
-    expect(stdout, `Help command does not include 'netlify-cli/${pkg.version}':\n\n${stdout}`).toContain(
-      `netlify-cli/${pkg.version}`,
+    expect(stdout, `Help command does not include '${config.packageName}/${pkg.version}':\n\n${stdout}`).toContain(
+      `${config.packageName}/${pkg.version}`,
     )
     expect(stdout, `Help command does not include '$ netlify [COMMAND]':\n\n${stdout}`).toMatch('$ netlify [COMMAND]')
   })
