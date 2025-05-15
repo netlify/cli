@@ -124,8 +124,7 @@ const itWithMockNpmRegistry = it.extend<{ registry: { address: string; cwd: stri
     // Publishing `netlify` package
     await execa.node(path.resolve(projectRoot, 'scripts/netlifyPackage.js'), {
       cwd: publishWorkspace,
-      // stdio: debug.enabled ? 'inherit' : 'ignore',
-      stdio: 'inherit',
+      stdio: debug.enabled ? 'inherit' : 'ignore',
     })
     await execa('npm', ['publish', `--registry=${registryURL.toString()}`, '--tag=testing'], {
       cwd: publishWorkspace,
