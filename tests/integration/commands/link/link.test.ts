@@ -15,7 +15,7 @@ describe('link command', () => {
   test.todo('should link to matching site given `--site-name`')
   test.todo('should print an error and exit when no site with given `--site-name` is found')
 
-  test('should link to matching site given `--git-remote-url`', async (t) => {
+  test('should link to matching project given `--git-remote-url`', async (t) => {
     const siteInfo = {
       id: 'site_id',
       name: 'test-site',
@@ -94,7 +94,7 @@ describe('link command', () => {
   )
 })
 
-describe('link command with multiple sites', () => {
+describe('link command with multiple projects', () => {
   const siteInfo1 = {
     id: 'site_id1',
     name: 'next-app-playground',
@@ -131,7 +131,7 @@ describe('link command with multiple sites', () => {
     })
   })
 
-  test('should use first site when name flag is not an exact match', async (t) => {
+  test('should use first project when name flag is not an exact match', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       await builder.build()
 

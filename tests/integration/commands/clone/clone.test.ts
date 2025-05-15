@@ -366,7 +366,7 @@ To unlink this project, run: netlify unlink`)
     })
   })
 
-  it('prompts user when multiple sites match git repo HTTPS URL', async (t) => {
+  it('prompts user when multiple projects match git repo HTTPS URL', async (t) => {
     const otherSiteInfo = {
       id: 'other-site-id',
       name: 'other-site',

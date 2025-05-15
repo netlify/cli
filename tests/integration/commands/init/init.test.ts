@@ -29,7 +29,7 @@ const assertNetlifyToml = async (
 }
 
 describe.concurrent('commands/init', () => {
-  test('netlify init existing site', async (t) => {
+  test('netlify init existing project', async (t) => {
     const [command, publish] = ['custom-build-command', 'custom-publish']
     const initQuestions = [
       {
@@ -117,7 +117,7 @@ describe.concurrent('commands/init', () => {
     })
   })
 
-  test('netlify init new site', async (t) => {
+  test('netlify init new project', async (t) => {
     const [command, publish] = ['custom-build-command', 'custom-publish']
     const initQuestions = [
       {
@@ -296,7 +296,7 @@ describe.concurrent('commands/init', () => {
     })
   })
 
-  test('netlify init new Next.js site', async (t) => {
+  test('netlify init new Next.js project', async (t) => {
     const [command, publish] = ['custom-build-command', 'custom-publish']
     const initQuestions = [
       {
@@ -399,7 +399,7 @@ describe.concurrent('commands/init', () => {
     })
   })
 
-  test('netlify init new Next.js site with correct default build directory and build command', async (t) => {
+  test('netlify init new Next.js project with correct default build directory and build command', async (t) => {
     const [command, publish] = ['next build', '.next']
     const initQuestions = [
       {
@@ -503,7 +503,7 @@ describe.concurrent('commands/init', () => {
   })
 
   // eslint-disable-next-line vitest/expect-expect
-  test('netlify init existing Next.js site with existing plugins', async (t) => {
+  test('netlify init existing Next.js project with existing plugins', async (t) => {
     const [command, publish] = ['custom-build-command', 'custom-publish', 'custom-functions']
     const initQuestions = [
       {
@@ -592,7 +592,7 @@ describe.concurrent('commands/init', () => {
     })
   })
 
-  test('netlify init new Gatsby site with correct default build directory and build command', async (t) => {
+  test('netlify init new Gatsby project with correct default build directory and build command', async (t) => {
     const [command, publish] = ['gatsby build', 'public']
     const initQuestions = [
       {
