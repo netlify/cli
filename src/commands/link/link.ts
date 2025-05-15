@@ -271,7 +271,7 @@ export const link = async (options: LinkOptionValues, command: BaseCommand) => {
   // Site id is incorrect
   if (siteId && isEmpty(siteInfo)) {
     log(`"${siteId}" was not found in your Netlify account.`)
-    log(`Please double check your siteID and which account you are logged into via \`netlify status\`.`)
+    log(`Please double check your project ID and which account you are logged into via \`netlify status\`.`)
     return exit()
   }
 

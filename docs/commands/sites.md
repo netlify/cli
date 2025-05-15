@@ -109,7 +109,7 @@ netlify sites:delete
 
 **Arguments**
 
-- siteId - Project ID to delete.
+- id - Project ID to delete.
 
 **Flags**
 

@@ -80,7 +80,7 @@ export const createSitesCommand = (program: BaseCommand) => {
   program
     .command('sites:delete')
     .description('Delete a project\nThis command will permanently delete the project on Netlify. Use with caution.')
-    .argument('<siteId>', 'Project ID to delete.')
+    .argument('<id>', 'Project ID to delete.')
     .addExamples(['netlify sites:delete 1234-3262-1211'])
     .action(async (siteId: string, options: OptionValues, command: BaseCommand) => {
       const { sitesDelete } = await import('./sites-delete.js')
