@@ -60,12 +60,9 @@ jobs:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
       - name: Prepare netlify package
-        run: node scripts/netlifyPackage.js prepare
+        run: node scripts/netlifyPackage.js
 
       - name: Publish netlify package
         run: npm publish --provenance
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
-
-      - name: Verify netlify package
-        run: node scripts/netlifyPackage.js verify
