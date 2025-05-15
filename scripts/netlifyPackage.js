@@ -1,16 +1,34 @@
 // @ts-check
-import assert from 'node:assert'
-import { basename, dirname, resolve } from 'node:path'
-import { argv } from 'node:process'
+import { dirname, resolve } from 'node:path'
+import process from 'node:process'
 import { fileURLToPath } from 'node:url'
-import { readFile, writeFile } from 'node:fs/promises'
+import { readFile, stat,writeFile } from 'node:fs/promises'
 
 import execa from 'execa'
+
+/**
+ * @import {Package} from "normalize-package-data"
+ */
+
+/**
+ * Logs an error message and exits with status 1.
+ *
+ * @param {string} message 
+ */
+function errorAndExit(message) {
+  console.error(message)
+
+  process.exit(1)
+}
 
 const packageJSON = await getPackageJSON()
 
 async function getPackageJSON() {
   const packageJSONPath = resolve(fileURLToPath(import.meta.url), '../../package.json')
+
+  /**
+   * @type {Package}
+   */
   const contents = JSON.parse(await readFile(packageJSONPath, 'utf8'))
 
   return {
@@ -19,36 +37,25 @@ async function getPackageJSON() {
   }
 }
 
-/**
- * @type {Record<string, function>}
- */
-const commands = {
-  prepare: async () => {
-    const newPackageJSON = {
-      ...packageJSON.contents,
-      main: './dist/index.js',
-      name: 'netlify',
-    }
+async function preparePackageJSON() {
+  const newPackageJSON = {
+    ...packageJSON.contents,
+    main: './dist/index.js',
+    name: 'netlify',
+  }
 
-    console.log(`Writing updated package.json to ${packageJSON.path}...`)
-    await writeFile(packageJSON.path, `${JSON.stringify(newPackageJSON, null, 2)}\n`)
+  const shrinkwrap = await stat(resolve(packageJSON.path, "../npm-shrinkwrap.json"))
+  if (!shrinkwrap.isFile()) {
+    errorAndExit('Failed to find npm-shrinkwrap.json file. Did you run the pre-publish script?')
+  }
 
-    console.log('Re-installing dependencies to update lockfile...')
-    await execa('npm', ['install'], {
-      cwd: dirname(packageJSON.path),
-    })
-  },
+  console.log(`Writing updated package.json to ${packageJSON.path}...`)
+  await writeFile(packageJSON.path, `${JSON.stringify(newPackageJSON, null, 2)}\n`)
 
-  verify: async () => {
-    const { stdout } = await execa('npx', ['-y', 'netlify', '--version'])
-    const version = stdout.match(/netlify-cli\/(\d+\.\d+\.\d+)/)
-
-    assert.equal(version, packageJSON.contents.version, 'Version installed via npx matches latest version')
-  },
+  console.log('Regenerating shrinkwrap file with updated package name...')
+  await execa('npm', ['shrinkwrap'], {
+    cwd: dirname(packageJSON.path),
+  })
 }
 
-if (typeof commands[argv[2]] === 'function') {
-  await commands[argv[2]]()
-} else {
-  console.error(`Usage: node ${basename(argv[1])} <command> (available commands: ${Object.keys(commands).join(', ')})`)
-}
+await preparePackageJSON()
