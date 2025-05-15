@@ -1,7 +1,7 @@
 // @ts-check
 import assert from 'node:assert'
 import { dirname, resolve } from 'node:path'
-import { readdir, readFile, stat, writeFile } from 'node:fs/promises'
+import { readFile, stat, writeFile } from 'node:fs/promises'
 
 import execa from 'execa'
 
@@ -53,7 +53,6 @@ async function preparePackageJSON() {
 
     assert.ok(shrinkwrap.isFile())
   } catch {
-    console.log('Files:', await readdir(dirname(packageJSON.path)))
     throw new Error('Failed to find npm-shrinkwrap.json file. Did you run the pre-publish script?')
   }
 
