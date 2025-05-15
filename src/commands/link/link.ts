@@ -229,7 +229,7 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a project.`)
     return logAndThrowError(new Error(`No project found`))
   }
 
-  // Save project ID to config
+  // Save site ID to config
   state.set('siteId', site.id)
 
   await track('sites_linked', {

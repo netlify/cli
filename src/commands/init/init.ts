@@ -186,7 +186,7 @@ const createOrLinkSiteToRepo = async (command: BaseCommand) => {
   // create site or search for one
   if (initChoice === NEW_SITE) {
     await track('sites_initStarted', {
-      type: 'new project',
+      type: 'new site',
     })
     return await sitesCreate({}, command)
   }
