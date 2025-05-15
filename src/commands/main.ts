@@ -252,10 +252,10 @@ export const createMainCommand = (): BaseCommand => {
       const docsUrl = 'https://docs.netlify.com'
       const bugsUrl = pkg.bugs?.url ?? ''
       return `→ For more help with the CLI, visit ${NETLIFY_CYAN(
-        terminalLink(cliDocsEntrypointUrl, cliDocsEntrypointUrl),
+        terminalLink(cliDocsEntrypointUrl, cliDocsEntrypointUrl, { fallback: false }),
       )}
-→ For help with Netlify, visit ${NETLIFY_CYAN(terminalLink(docsUrl, docsUrl))}
-→ To report a CLI bug, visit ${NETLIFY_CYAN(terminalLink(bugsUrl, bugsUrl))}\n`
+→ For help with Netlify, visit ${NETLIFY_CYAN(terminalLink(docsUrl, docsUrl, { fallback: false }))}
+→ To report a CLI bug, visit ${NETLIFY_CYAN(terminalLink(bugsUrl, bugsUrl, { fallback: false }))}\n`
     })
     .configureOutput({
       outputError: (message, write) => {

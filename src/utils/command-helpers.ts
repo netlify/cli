@@ -12,7 +12,7 @@ import WSL from 'is-wsl'
 import debounce from 'lodash/debounce.js'
 import terminalLink from 'terminal-link'
 
-import { clearSpinner, startSpinner } from '../lib/spinner.js'
+import { startSpinner } from '../lib/spinner.js'
 
 import getGlobalConfigStore from './get-global-config-store.js'
 import getCLIPackageJson from './get-cli-package-json.js'
@@ -119,7 +119,8 @@ export const pollForToken = async ({
       return logAndThrowError(error_)
     }
   } finally {
-    clearSpinner({ spinner })
+    spinner.stop()
+    spinner.clear()
   }
 }
 /**
