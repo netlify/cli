@@ -1,7 +1,6 @@
 // @ts-check
+import assert from 'node:assert'
 import { dirname, resolve } from 'node:path'
-import process from 'node:process'
-import { fileURLToPath } from 'node:url'
 import { readFile, stat, writeFile } from 'node:fs/promises'
 
 import execa from 'execa'
@@ -10,11 +9,10 @@ import execa from 'execa'
  * @import {Package} from "normalize-package-data"
  */
 
-const packagePath = process.argv[2] ?? resolve(fileURLToPath(import.meta.url), '../..')
 const packageJSON = await getPackageJSON()
 
 async function getPackageJSON() {
-  const packageJSONPath = resolve(packagePath, 'package.json')
+  const packageJSONPath = resolve('package.json')
 
   /**
    * @type {Package}
@@ -42,8 +40,11 @@ async function preparePackageJSON() {
     },
   }
 
-  const shrinkwrap = await stat(resolve(packageJSON.path, '../npm-shrinkwrap.json'))
-  if (!shrinkwrap.isFile()) {
+  try {
+    const shrinkwrap = await stat(resolve(packageJSON.path, '../npm-shrinkwrap.json'))
+
+    assert.ok(shrinkwrap.isFile())
+  } catch {
     throw new Error('Failed to find npm-shrinkwrap.json file. Did you run the pre-publish script?')
   }
 
