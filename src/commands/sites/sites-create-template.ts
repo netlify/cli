@@ -228,7 +228,7 @@ export const sitesCreateTemplate = async (repository: string, options: OptionVal
         const linkedSiteMatch = /Project already linked to\s+(\S+)/.exec(stdout)
         const linkedSiteNameMatch = linkedSiteMatch ? linkedSiteMatch[1] : undefined
         if (linkedSiteNameMatch) {
-          log(`\nThis directory appears to be linked to project ${chalk.cyanBright(linkedSiteNameMatch)}`)
+          log(`\nThis directory appears to be linked to ${chalk.cyanBright(linkedSiteNameMatch)}`)
           log('This can happen if you cloned the template into a subdirectory of an existing Netlify project.')
           log(
             `You may need to move the ${chalk.cyanBright(
