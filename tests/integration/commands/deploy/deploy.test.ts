@@ -413,14 +413,14 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
       }).then((output: string) => JSON.parse(output))
 
       await validateDeploy({ deploy, siteName: SITE_NAME, content })
-      expect(deploy).toHaveProperty('logs', `https://app.netlify.com/sites/${SITE_NAME}/deploys/${deploy.deploy_id}`)
+      expect(deploy).toHaveProperty('logs', `https://app.netlify.com/projects/${SITE_NAME}/deploys/${deploy.deploy_id}`)
       expect(deploy).toHaveProperty(
         'function_logs',
-        `https://app.netlify.com/sites/${SITE_NAME}/logs/functions?scope=deploy:${deploy.deploy_id}`,
+        `https://app.netlify.com/projects/${SITE_NAME}/logs/functions?scope=deploy:${deploy.deploy_id}`,
       )
       expect(deploy).toHaveProperty(
         'edge_function_logs',
-        `https://app.netlify.com/sites/${SITE_NAME}/logs/edge-functions?scope=deployid:${deploy.deploy_id}`,
+        `https://app.netlify.com/projects/${SITE_NAME}/logs/edge-functions?scope=deployid:${deploy.deploy_id}`,
       )
     })
   })
@@ -440,11 +440,11 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
       }).then((output: string) => JSON.parse(output))
 
       await validateDeploy({ deploy, siteName: SITE_NAME, content })
-      expect(deploy).toHaveProperty('logs', `https://app.netlify.com/sites/${SITE_NAME}/deploys/${deploy.deploy_id}`)
-      expect(deploy).toHaveProperty('function_logs', `https://app.netlify.com/sites/${SITE_NAME}/logs/functions`)
+      expect(deploy).toHaveProperty('logs', `https://app.netlify.com/projects/${SITE_NAME}/deploys/${deploy.deploy_id}`)
+      expect(deploy).toHaveProperty('function_logs', `https://app.netlify.com/projects/${SITE_NAME}/logs/functions`)
       expect(deploy).toHaveProperty(
         'edge_function_logs',
-        `https://app.netlify.com/sites/${SITE_NAME}/logs/edge-functions`,
+        `https://app.netlify.com/projects/${SITE_NAME}/logs/edge-functions`,
       )
     })
   })

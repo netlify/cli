@@ -144,7 +144,7 @@ Support for package.json's main field, and intrinsic index.js entrypoints are co
     .addHelpText('after', () => {
       const docsUrl = 'https://docs.netlify.com/site-deploys/overview/'
       return `
-For more information about Netlify deploys, see ${terminalLink(docsUrl, docsUrl)}
+For more information about Netlify deploys, see ${terminalLink(docsUrl, docsUrl, { fallback: false })}
 `
     })
     .action(async (options: DeployOptionValues, command: BaseCommand) => {

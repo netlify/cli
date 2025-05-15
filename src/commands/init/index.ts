@@ -14,7 +14,7 @@ export const createInitCommand = (program: BaseCommand) =>
     .addHelpText('after', () => {
       const docsUrl = 'https://docs.netlify.com/cli/get-started/'
       return `
-For more information about getting started with Netlify CLI, see ${terminalLink(docsUrl, docsUrl)}
+For more information about getting started with Netlify CLI, see ${terminalLink(docsUrl, docsUrl, { fallback: false })}
 `
     })
     .action(async (options: OptionValues, command: BaseCommand) => {

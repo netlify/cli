@@ -655,9 +655,9 @@ const printResults = ({
   runBuildCommand: boolean
 }): void => {
   const msgData: Record<string, string> = {
-    'Build logs': terminalLink(results.logsUrl, results.logsUrl),
-    'Function logs': terminalLink(results.functionLogsUrl, results.functionLogsUrl),
-    'Edge function Logs': terminalLink(results.edgeFunctionLogsUrl, results.edgeFunctionLogsUrl),
+    'Build logs': terminalLink(results.logsUrl, results.logsUrl, { fallback: false }),
+    'Function logs': terminalLink(results.functionLogsUrl, results.functionLogsUrl, { fallback: false }),
+    'Edge function Logs': terminalLink(results.edgeFunctionLogsUrl, results.edgeFunctionLogsUrl, { fallback: false }),
   }
 
   log('')
@@ -683,9 +683,9 @@ const printResults = ({
     exit(0)
   } else {
     const message = deployToProduction
-      ? `Deployed to production URL: ${terminalLink(results.siteUrl, results.siteUrl)}\n
-    Unique deploy URL: ${terminalLink(results.deployUrl, results.deployUrl)}`
-      : `Deployed draft to ${terminalLink(results.deployUrl, results.deployUrl)}`
+      ? `Deployed to production URL: ${terminalLink(results.siteUrl, results.siteUrl, { fallback: false })}\n
+    Unique deploy URL: ${terminalLink(results.deployUrl, results.deployUrl, { fallback: false })}`
+      : `Deployed draft to ${terminalLink(results.deployUrl, results.deployUrl, { fallback: false })}`
 
     log(
       boxen(message, {

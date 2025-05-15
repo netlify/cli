@@ -10,7 +10,7 @@ export const createUnlinkCommand = (program: BaseCommand) =>
     .addHelpText('after', () => {
       const docsUrl = 'https://docs.netlify.com/cli/get-started/#link-and-unlink-sites'
       return `
-For more information about linking sites, see ${terminalLink(docsUrl, docsUrl)}
+For more information about linking sites, see ${terminalLink(docsUrl, docsUrl, { fallback: false })}
 `
     })
     .action(async (options: OptionValues, command: BaseCommand) => {
