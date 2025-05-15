@@ -365,7 +365,7 @@ const serveRedirect = async function ({
     (await isEndpointExists(decodeURIComponent(reqUrl.pathname), options.target))
   if (staticFile || endpointExists) {
     const pathname = staticFile || reqUrl.pathname
-    req.url = encodeURI(pathname) + reqUrl.search
+    req.url = encodeURI(decodeURI(pathname)) + reqUrl.search
     // if there is an existing static file and it is not a forced redirect, return the file
     if (!match.force) {
       return proxy.web(req, res, { ...options, staticFile })
@@ -858,7 +858,17 @@ const onRequest = async (
     },
   }
 
+  const maybeNotifyActivity = () => {
+    if (req.method === 'GET' && api && process.env.NETLIFY_DEV_SERVER_ID) {
+      notifyActivity(api, siteInfo.id, process.env.NETLIFY_DEV_SERVER_ID)
+    }
+  }
+
   if (match) {
+    if (!isExternal(match)) {
+      maybeNotifyActivity()
+    }
+
     // We don't want to generate an ETag for 3xx redirects.
     // @ts-expect-error TS(7031) FIXME: Binding element 'statusCode' implicitly has an 'an... Remove this comment to see the full error message
     req[shouldGenerateETag] = ({ statusCode }) => statusCode < 300 || statusCode >= 400
@@ -886,9 +896,7 @@ const onRequest = async (
     return proxy.web(req, res, { target: functionsServer })
   }
 
-  if (req.method === 'GET' && api && process.env.NETLIFY_DEV_SERVER_ID) {
-    notifyActivity(api, siteInfo.id, process.env.NETLIFY_DEV_SERVER_ID)
-  }
+  maybeNotifyActivity()
 
   proxy.web(req, res, options)
 }
