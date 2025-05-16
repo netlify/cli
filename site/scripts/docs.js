@@ -100,7 +100,11 @@ const commandListSubCommandDisplay = function (commands) {
   let table = '| Subcommand | description  |\n'
   table += '|:--------------------------- |:-----|\n'
   commands.forEach((cmd) => {
-    const [commandBase] = cmd.name.split(':')
+    let commandBase
+    commandBase = cmd.name.split(':')[0]
+    if (cmd.parent) {
+      commandBase = cmd.parent
+    }
     const baseUrl = `/commands/${commandBase}`
     const slug = cmd.name.replace(/:/g, '')
     table += `| [\`${cmd.name}\`](${baseUrl}#${slug}) | ${cmd.description.split('\n')[0]}  |\n`
