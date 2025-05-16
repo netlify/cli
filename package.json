@@ -60,7 +60,7 @@
     "@fastify/static": "7.0.4",
     "@netlify/api": "13.4.0",
     "@netlify/blobs": "8.2.0",
-    "@netlify/build": "32.1.4",
+    "@netlify/build": "32.2.0",
     "@netlify/build-info": "9.0.4",
     "@netlify/config": "22.2.0",
     "@netlify/edge-bundler": "13.0.3",
