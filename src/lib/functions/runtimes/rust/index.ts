@@ -2,7 +2,7 @@ import { readFile } from 'fs/promises'
 import { dirname, extname, join, resolve } from 'path'
 import { platform } from 'process'
 
-import { findUp } from 'find-up'
+import escalade from 'escalade'
 import type { LambdaEvent } from 'lambda-local'
 import toml from 'toml'
 
@@ -53,7 +53,12 @@ export const getBuildFunction = ({
   Promise.resolve(async () => build({ func }))
 
 const getCrateName = async (cwd: string): Promise<string> => {
-  const manifestPath = await findUp('Cargo.toml', { cwd, type: 'file' })
+  const manifestPath = await escalade(cwd, (_dir, names) => {
+    if (names.includes('Cargo.toml')) {
+      return 'Cargo.toml'
+    }
+  })
+
   if (!manifestPath) {
     throw new Error('Cargo.toml not found')
   }

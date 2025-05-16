@@ -3,10 +3,10 @@ import path from 'path'
 import process from 'process'
 
 import { deleteProperty, getProperty, hasProperty, setProperty } from 'dot-prop'
-import { findUpSync } from 'find-up'
 import writeFileAtomic from 'write-file-atomic'
 
 import { getPathInProject } from '../lib/settings.js'
+import escalade from 'escalade/sync'
 
 const STATE_PATH = getPathInProject(['state.json'])
 const permissionError = "You don't have access to this file."
@@ -15,7 +15,11 @@ const permissionError = "You don't have access to this file."
  * Finds location of `.netlify/state.json`
  */
 const findStatePath = (cwd: string): string => {
-  const statePath = findUpSync([STATE_PATH], { cwd })
+  const statePath = escalade(cwd, (dir, _names) => {
+    if (dir === STATE_PATH) {
+      return dir
+    }
+  })
 
   if (!statePath) {
     return path.join(cwd, STATE_PATH)
