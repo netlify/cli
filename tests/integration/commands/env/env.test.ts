@@ -388,7 +388,7 @@ describe('commands/env', () => {
   })
 
   describe('env:clone', () => {
-    test("should return without clone if there's no env in source site", async (t) => {
+    test("should return without clone if there's no env in source project", async (t) => {
       await withSiteBuilder(t, async (builder) => {
         await builder.build()
         const createRoutes = [
@@ -409,7 +409,7 @@ describe('commands/env', () => {
       })
     })
 
-    test("should print error if --to site doesn't exist", async (t) => {
+    test("should print error if --to project doesn't exist", async (t) => {
       await withSiteBuilder(t, async (builder) => {
         await builder.build()
         const createRoutes = [{ path: 'sites/site_id', response: { ...siteInfo, build_settings: { env: {} } } }]
@@ -420,13 +420,13 @@ describe('commands/env', () => {
           ).catch((error) => error)
 
           t.expect(
-            cliResponse.stderr.includes(`Can't find site with id to-site. Please make sure the site exists`),
+            cliResponse.stderr.includes(`Can't find project with id to-site. Please make sure the project exists`),
           ).toBe(true)
         })
       })
     })
 
-    test("should print error if --from site doesn't exist", async (t) => {
+    test("should print error if --from project doesn't exist", async (t) => {
       await withSiteBuilder(t, async (builder) => {
         await builder.build()
         await withMockApi([], async ({ apiUrl }) => {
@@ -436,13 +436,13 @@ describe('commands/env', () => {
           ).catch((error) => error)
 
           t.expect(
-            cliResponse.stderr.includes(`Can't find site with id from-site. Please make sure the site exists`),
+            cliResponse.stderr.includes(`Can't find project with id from-site. Please make sure the project exists`),
           ).toBe(true)
         })
       })
     })
 
-    test('should exit if the folder is not linked to a site, and --from is not provided', async (t) => {
+    test('should exit if the folder is not linked to a project, and --from is not provided', async (t) => {
       await withSiteBuilder(t, async (builder) => {
         await builder.build()
 

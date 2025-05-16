@@ -17,7 +17,7 @@ Deploys from the build settings found in the netlify.toml file, or settings from
 The following environment variables can be used to override configuration file lookups and prompts:
 
 - \`NETLIFY_AUTH_TOKEN\` - an access token to use when authenticating commands. Keep this value private.
-- \`NETLIFY_SITE_ID\` - override any linked site in the current working directory.
+- \`NETLIFY_SITE_ID\` - override any linked project in the current working directory.
 
 Lambda functions in the function folder can be in the following configurations for deployment:
 
@@ -97,13 +97,13 @@ Support for package.json's main field, and intrinsic index.js entrypoints are co
       'Specifies the alias for deployment, the string at the beginning of the deploy subdomain. Useful for creating predictable deployment URLs. Avoid setting an alias string to the same value as a deployed branch. `alias` doesn’t create a branch deploy and can’t be used in conjunction with the branch subdomain feature. Maximum 37 characters.',
     )
     .addOption(new Option('-b, --branch <name>', 'Do not use - renamed to --alias.').hideHelp(true))
-    .option('-O, --open', 'Open site after deploy', false)
+    .option('-O, --open', 'Open project after deploy', false)
     .option('-m, --message <message>', 'A short message to include in the deploy log')
-    .option('-s, --site <name-or-id>', 'A site name or ID to deploy to', env.NETLIFY_SITE_ID)
+    .option('-s, --site <name-or-id>', 'A project name or ID to deploy to', env.NETLIFY_SITE_ID)
     .option('--json', 'Output deployment data as JSON')
     .option('--timeout <number>', 'Timeout to wait for deployment to finish', (value) => Number.parseInt(value))
     .addOption(
-      new Option('--trigger', 'Trigger a new build of your site on Netlify without uploading local files').conflicts(
+      new Option('--trigger', 'Trigger a new build of your project on Netlify without uploading local files').conflicts(
         'build',
       ),
     )
@@ -118,7 +118,7 @@ Support for package.json's main field, and intrinsic index.js entrypoints are co
      */
     .option(
       '--no-build',
-      'Do not run build command before deploying. Only use this if you have no need for a build or your site has already been built.',
+      'Do not run build command before deploying. Only use this if you have no need for a build or your project has already been built.',
     )
     .option(
       '--context <context>',
@@ -131,7 +131,7 @@ Support for package.json's main field, and intrinsic index.js entrypoints are co
     )
     .addExamples([
       'netlify deploy',
-      'netlify deploy --site my-first-site',
+      'netlify deploy --site my-first-project',
       'netlify deploy --no-build # Deploy without running a build first',
       'netlify deploy --prod',
       'netlify deploy --prod --open',

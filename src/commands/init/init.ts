@@ -22,15 +22,15 @@ const getRepoUrl = (siteInfo: SiteInfo): string => siteInfo.build_settings?.repo
 
 const logExistingAndExit = ({ siteInfo }: { siteInfo: SiteInfo }): never => {
   log()
-  log(`This site has been initialized`)
+  log(`This project has been initialized`)
   log()
-  log(`Site Name:  ${chalk.cyan(siteInfo.name)}`)
-  log(`Site Url:   ${chalk.cyan(siteInfo.ssl_url || siteInfo.url)}`)
-  log(`Site Repo:  ${chalk.cyan(getRepoUrl(siteInfo))}`)
-  log(`Site Id:    ${chalk.cyan(siteInfo.id)}`)
+  log(`Project Name:  ${chalk.cyan(siteInfo.name)}`)
+  log(`Project Url:   ${chalk.cyan(siteInfo.ssl_url || siteInfo.url)}`)
+  log(`Project Repo:  ${chalk.cyan(getRepoUrl(siteInfo))}`)
+  log(`Project Id:    ${chalk.cyan(siteInfo.id)}`)
   log(`Admin URL:  ${chalk.cyan(siteInfo.admin_url)}`)
   log()
-  log(`To disconnect this directory and create a new site (or link to another siteId)`)
+  log(`To disconnect this directory and create a new project (or link to another project ID)`)
   log(`1. Run ${chalk.cyanBright.bold('netlify unlink')}`)
   log(`2. Then run ${chalk.cyanBright.bold('netlify init')} again`)
   return exit()
@@ -50,7 +50,7 @@ const createNewSiteAndExit = async ({
 }): Promise<never> => {
   const siteInfo = await sitesCreate({}, command)
 
-  log(`"${siteInfo.name}" site was created`)
+  log(`"${siteInfo.name}" project was created`)
   log()
 
   persistState({ state, siteInfo })
@@ -78,7 +78,7 @@ const createNewSiteAndExit = async ({
   }
 
   log()
-  log(`To deploy to this site, run ${chalk.cyanBright.bold('netlify deploy')}`)
+  log(`To deploy to this project, run ${chalk.cyanBright.bold('netlify deploy')}`)
 
   return exit()
 }
@@ -133,7 +133,7 @@ const handleNoGitRemoteAndExit = async ({
   log()
   log(chalk.yellow('No git remote was found, would you like to set one up?'))
   log(`
-It is recommended that you initialize a site that has a remote repository in GitHub.
+It is recommended that you initialize a project that has a remote repository in GitHub.
 
 This will allow for Netlify Continuous deployment to build branch & PR previews.
 
@@ -146,14 +146,14 @@ git remote add origin https://github.com/YourUserName/RepoName.git
 `)
   }
 
-  const NEW_SITE_NO_GIT = 'Yes, create and deploy site manually'
+  const NEW_SITE_NO_GIT = 'Yes, create and deploy project manually'
   const NO_ABORT = 'No, I will connect this directory with GitHub first'
 
   const { noGitRemoteChoice } = await inquirer.prompt<{ noGitRemoteChoice: typeof NEW_SITE_NO_GIT | typeof NO_ABORT }>([
     {
       type: 'list',
       name: 'noGitRemoteChoice',
-      message: 'Do you want to create a Netlify site without a git repository?',
+      message: 'Do you want to create a Netlify project without a git repository?',
       choices: [NEW_SITE_NO_GIT, NO_ABORT],
     },
   ])
@@ -168,8 +168,8 @@ git remote add origin https://github.com/YourUserName/RepoName.git
  * Creates a new site or links an existing one to the repository
  */
 const createOrLinkSiteToRepo = async (command: BaseCommand) => {
-  const NEW_SITE = '+  Create & configure a new site'
-  const EXISTING_SITE = '⇄  Connect this directory to an existing Netlify site'
+  const NEW_SITE = '+  Create & configure a new project'
+  const EXISTING_SITE = '⇄  Connect this directory to an existing Netlify project'
 
   const initializeOpts = [EXISTING_SITE, NEW_SITE] as const
 
@@ -197,7 +197,7 @@ const createOrLinkSiteToRepo = async (command: BaseCommand) => {
 const logExistingRepoSetupAndExit = ({ repoUrl, siteName }: { repoUrl: string; siteName: string }): void => {
   log()
   log(chalk.underline.bold(`Success`))
-  log(`This site "${siteName}" is configured to automatically deploy via ${repoUrl}`)
+  log(`This project "${siteName}" is configured to automatically deploy via ${repoUrl}`)
   // TODO add support for changing GitHub repo in site:config command
   exit()
 }

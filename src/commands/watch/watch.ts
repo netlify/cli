@@ -80,7 +80,7 @@ export const watch = async (_options: unknown, command: BaseCommand) => {
   //     "created_at": "2018-07-17T17:14:03.423Z"
   // }
   //
-  const spinner = startSpinner({ text: 'Waiting for active site deploys to complete' })
+  const spinner = startSpinner({ text: 'Waiting for active project deploys to complete' })
   try {
     // Fetch all builds!
     // const builds = await client.listSiteBuilds({siteId})

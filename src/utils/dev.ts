@@ -33,7 +33,7 @@ const ENV_VAR_SOURCES = {
     printFn: chalk.red,
   },
   ui: {
-    name: 'site settings',
+    name: 'project settings',
     printFn: chalk.blue,
   },
 }
@@ -45,7 +45,7 @@ const ERROR_CALL_TO_ACTION =
 const validateSiteInfo = ({ site, siteInfo }) => {
   if (isEmpty(siteInfo)) {
     return logAndThrowError(
-      `Failed retrieving site information for site ${chalk.yellow(site.id)}. ${ERROR_CALL_TO_ACTION}`,
+      `Failed to retrieve project information for project ${chalk.yellow(site.id)}. ${ERROR_CALL_TO_ACTION}`,
     )
   }
 }
@@ -101,7 +101,7 @@ const getAddonsInformation = ({ addons, siteInfo }) => {
 const getSiteAccount = ({ accounts, siteInfo }: { accounts: Account[]; siteInfo: SiteInfo }): Account | undefined => {
   const siteAccount = accounts.find((account) => account.slug === siteInfo.account_slug)
   if (!siteAccount) {
-    warn(`Could not find account for site '${siteInfo.name}' with account slug '${siteInfo.account_slug}'`)
+    warn(`Could not find account for project '${siteInfo.name}' with account slug '${siteInfo.account_slug}'`)
     return undefined
   }
   return siteAccount

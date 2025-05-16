@@ -42,7 +42,7 @@ export const logsFunction = async (functionName: string | undefined, options: Op
   const { functions = [] } = (await client.searchSiteFunctions({ siteId: siteId! })) as any
 
   if (functions.length === 0) {
-    log(`No functions found for the site`)
+    log(`No functions found for the project`)
     return
   }
 

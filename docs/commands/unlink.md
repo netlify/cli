@@ -2,13 +2,13 @@
 title: Netlify CLI unlink command
 sidebar:
   label: unlink
-description: Link an existing site to a local site directory
+description: Unlink a local project directory from an existing project
 ---
 
 # `unlink`
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
-Unlink a local folder from a Netlify site
+Unlink a local folder from a Netlify project
 
 **Usage**
 

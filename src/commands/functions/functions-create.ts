@@ -259,7 +259,9 @@ const ensureEdgeFuncDirExists = function (command) {
   const siteId = site.id
 
   if (!siteId) {
-    return logAndThrowError(`${NETLIFYDEVERR} No site id found, please run inside a site directory or \`netlify link\``)
+    return logAndThrowError(
+      `${NETLIFYDEVERR} No project id found, please run inside a project directory or \`netlify link\``,
+    )
   }
 
   const functionsDir = config.build?.edge_functions ?? join(command.workingDir, 'netlify/edge-functions')
@@ -291,20 +293,22 @@ const promptFunctionsDirectory = async (command) => {
   log(`\n${NETLIFYDEVLOG} functions directory not specified in ${relConfigFilePath} or UI settings`)
 
   if (!site.id) {
-    return logAndThrowError(`${NETLIFYDEVERR} No site id found, please run inside a site directory or \`netlify link\``)
+    return logAndThrowError(
+      `${NETLIFYDEVERR} No project id found, please run inside a project directory or \`netlify link\``,
+    )
   }
 
   const { functionsDir } = await inquirer.prompt([
     {
       type: 'input',
       name: 'functionsDir',
-      message: 'Enter the path, relative to your site, where your functions should live:',
+      message: 'Enter the path, relative to your project, where your functions should live:',
       default: 'netlify/functions',
     },
   ])
 
   try {
-    log(`${NETLIFYDEVLOG} updating site settings with ${chalk.magenta.inverse(functionsDir)}`)
+    log(`${NETLIFYDEVLOG} updating project settings with ${chalk.magenta.inverse(functionsDir)}`)
 
     await api.updateSite({
       siteId: site.id,
@@ -315,9 +319,9 @@ const promptFunctionsDirectory = async (command) => {
       },
     })
 
-    log(`${NETLIFYDEVLOG} functions directory ${chalk.magenta.inverse(functionsDir)} updated in site settings`)
+    log(`${NETLIFYDEVLOG} functions directory ${chalk.magenta.inverse(functionsDir)} updated in project settings`)
   } catch {
-    return logAndThrowError('Error updating site settings')
+    return logAndThrowError('Error updating project settings')
   }
   return functionsDir
 }
@@ -421,9 +425,9 @@ const getNpmInstallPackages = (existingPackages = {}, neededPackages = {}) =>
     .map(([name, version]) => `${name}@${version}`)
 
 /**
- * When installing a function's dependencies, we first try to find a site-level
- * `package.json` file. If we do, we look for any dependencies of the function
- * that aren't already listed as dependencies of the site and install them. If
+ * When installing a function's dependencies, we first try to find a project-level
+ * `package.json` file. If we find one, we identify the function's dependencies
+ * that aren't already listed as dependencies of the project and install them. If
  * we don't do this check, we may be upgrading the version of a module used in
  * another part of the project, which we don't want to do.
  */
@@ -433,7 +437,7 @@ const installDeps = async ({ functionPackageJson, functionPath, functionsDir }) 
   const sitePackageJson = await findUp('package.json', { cwd: functionsDir })
   const npmInstallFlags = ['--no-audit', '--no-fund']
 
-  // If there is no site-level `package.json`, we fall back to the old behavior
+  // If there is no project-level `package.json`, we fall back to the old behavior
   // of keeping that file in the function directory and running `npm install`
   // from there.
   if (!sitePackageJson) {
@@ -455,7 +459,7 @@ const installDeps = async ({ functionPackageJson, functionPath, functionsDir }) 
     await execa('npm', ['i', ...devDependencies, '--save-dev', ...npmInstallFlags], { cwd: npmInstallPath })
   }
 
-  // We installed the function's dependencies in the site-level `package.json`,
+  // We installed the function's dependencies in the project-level `package.json`,
   // so there's no reason to keep the one copied over from the template.
   fs.unlinkSync(functionPackageJson)
 
@@ -558,7 +562,7 @@ const scaffoldFromTemplate = async function (command, options, argumentName, fun
     if (lang == 'rust') {
       log(
         chalk.green(
-          `Please note that Rust functions require setting the NETLIFY_EXPERIMENTAL_BUILD_RUST_SOURCE environment variable to 'true' on your site.`,
+          `Please note that Rust functions require setting the NETLIFY_EXPERIMENTAL_BUILD_RUST_SOURCE environment variable to 'true' on your project.`,
         ),
       )
     }
@@ -660,7 +664,7 @@ const installAddons = async function (command, functionAddons, fnPath) {
   const { api, site } = command.netlify
   const siteId = site.id
   if (!siteId) {
-    log('No site id found, please run inside a site directory or `netlify link`')
+    log('No project id found, please run inside a project directory or `netlify link`')
     return false
   }
   log(`${NETLIFYDEVLOG} checking Netlify APIs...`)

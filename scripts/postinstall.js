@@ -33,7 +33,7 @@ const postInstall = async () => {
     boxen(
       `Success! Netlify CLI has been installed!
 
-      You can now use Netlify CLI to develop, deploy, and manage your Netlify sites.
+      You can now use Netlify CLI to develop, deploy, and manage your Netlify projects.
 
       🚀 Now get building!`,
       {
@@ -51,9 +51,9 @@ const postInstall = async () => {
   console.log('Next steps:')
   console.log(`  ${chalk.cyanBright.bold('netlify login')}    Log in to your Netlify account`)
   console.log(
-    `  ${chalk.cyanBright.bold('netlify init')}     Connect or create a Netlify site from the current directory`,
+    `  ${chalk.cyanBright.bold('netlify init')}     Connect or create a Netlify project from the current directory`,
   )
-  console.log(`  ${chalk.cyanBright.bold('netlify deploy')}   Deploy the latest changes to your Netlify site`)
+  console.log(`  ${chalk.cyanBright.bold('netlify deploy')}   Deploy the latest changes to your Netlify project`)
   console.log(`  ${chalk.cyanBright.bold('netlify help')}     Find out what else you can do 👀`)
   console.log('')
   console.log(`For more help with the CLI, visit ${chalk.cyanBright.bold('https://developers.netlify.com/cli')}`)

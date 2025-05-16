@@ -29,15 +29,15 @@ const assertNetlifyToml = async (
 }
 
 describe.concurrent('commands/init', () => {
-  test('netlify init existing site', async (t) => {
+  test('netlify init existing project', async (t) => {
     const [command, publish] = ['custom-build-command', 'custom-publish']
     const initQuestions = [
       {
-        question: 'Create & configure a new site',
+        question: 'Create & configure a new project',
         answer: CONFIRM,
       },
       {
-        question: 'How do you want to link this folder to a site',
+        question: 'How do you want to link this folder to a project',
         answer: CONFIRM,
       },
       {
@@ -58,7 +58,7 @@ describe.concurrent('commands/init', () => {
     ]
 
     const siteInfo = {
-      admin_url: 'https://app.netlify.com/sites/site-name/overview',
+      admin_url: 'https://app.netlify.com/projects/site-name/overview',
       ssl_url: 'https://site-name.netlify.app/',
       id: 'site_id',
       name: 'site-name',
@@ -117,16 +117,16 @@ describe.concurrent('commands/init', () => {
     })
   })
 
-  test('netlify init new site', async (t) => {
+  test('netlify init new project', async (t) => {
     const [command, publish] = ['custom-build-command', 'custom-publish']
     const initQuestions = [
       {
-        question: 'Create & configure a new site',
+        question: 'Create & configure a new project',
         answer: answerWithValue(DOWN),
       },
       { question: 'Team: (Use arrow keys)', answer: CONFIRM },
       {
-        question: 'Site name (leave blank for a random name; you can change it later)',
+        question: 'Project name (leave blank for a random name; you can change it later)',
         answer: answerWithValue('test-site-name'),
       },
       {
@@ -147,7 +147,7 @@ describe.concurrent('commands/init', () => {
     ]
 
     const siteInfo = {
-      admin_url: 'https://app.netlify.com/sites/site-name/overview',
+      admin_url: 'https://app.netlify.com/projects/site-name/overview',
       ssl_url: 'https://site-name.netlify.app/',
       id: 'site_id',
       name: 'site-name',
@@ -217,12 +217,12 @@ describe.concurrent('commands/init', () => {
     const publish = 'custom-publish'
     const initQuestions = [
       {
-        question: 'Yes, create and deploy site manually',
+        question: 'Yes, create and deploy project manually',
         answer: answerWithValue(CONFIRM),
       },
       { question: 'Team: (Use arrow keys)', answer: CONFIRM },
       {
-        question: 'Site name (leave blank for a random name; you can change it later)',
+        question: 'Project name (leave blank for a random name; you can change it later)',
         answer: answerWithValue('test-site-name'),
       },
       {
@@ -255,7 +255,7 @@ describe.concurrent('commands/init', () => {
       {
         path: 'sites/site_id',
         response: {
-          admin_url: 'https://app.netlify.com/sites/site-name/overview',
+          admin_url: 'https://app.netlify.com/projects/site-name/overview',
           ssl_url: 'https://site-name.netlify.app/',
           id: 'site_id',
           name: 'site-name',
@@ -296,16 +296,16 @@ describe.concurrent('commands/init', () => {
     })
   })
 
-  test('netlify init new Next.js site', async (t) => {
+  test('netlify init new Next.js project', async (t) => {
     const [command, publish] = ['custom-build-command', 'custom-publish']
     const initQuestions = [
       {
-        question: 'Create & configure a new site',
+        question: 'Create & configure a new project',
         answer: answerWithValue(DOWN),
       },
       { question: 'Team: (Use arrow keys)', answer: CONFIRM },
       {
-        question: 'Site name (leave blank for a random name; you can change it later)',
+        question: 'Project name (leave blank for a random name; you can change it later)',
         answer: answerWithValue('test-site-name'),
       },
       {
@@ -330,7 +330,7 @@ describe.concurrent('commands/init', () => {
     ]
 
     const siteInfo = {
-      admin_url: 'https://app.netlify.com/sites/site-name/overview',
+      admin_url: 'https://app.netlify.com/projects/site-name/overview',
       ssl_url: 'https://site-name.netlify.app/',
       id: 'site_id',
       name: 'site-name',
@@ -399,16 +399,16 @@ describe.concurrent('commands/init', () => {
     })
   })
 
-  test('netlify init new Next.js site with correct default build directory and build command', async (t) => {
+  test('netlify init new Next.js project with correct default build directory and build command', async (t) => {
     const [command, publish] = ['next build', '.next']
     const initQuestions = [
       {
-        question: 'Create & configure a new site',
+        question: 'Create & configure a new project',
         answer: answerWithValue(DOWN),
       },
       { question: 'Team: (Use arrow keys)', answer: CONFIRM },
       {
-        question: 'Site name (leave blank for a random name; you can change it later)',
+        question: 'Project name (leave blank for a random name; you can change it later)',
         answer: answerWithValue('test-site-name'),
       },
       {
@@ -433,7 +433,7 @@ describe.concurrent('commands/init', () => {
     ]
 
     const siteInfo = {
-      admin_url: 'https://app.netlify.com/sites/site-name/overview',
+      admin_url: 'https://app.netlify.com/projects/site-name/overview',
       ssl_url: 'https://site-name.netlify.app/',
       id: 'site_id',
       name: 'site-name',
@@ -503,15 +503,15 @@ describe.concurrent('commands/init', () => {
   })
 
   // eslint-disable-next-line vitest/expect-expect
-  test('netlify init existing Next.js site with existing plugins', async (t) => {
+  test('netlify init existing Next.js project with existing plugins', async (t) => {
     const [command, publish] = ['custom-build-command', 'custom-publish', 'custom-functions']
     const initQuestions = [
       {
-        question: 'Create & configure a new site',
+        question: 'Create & configure a new project',
         answer: CONFIRM,
       },
       {
-        question: 'How do you want to link this folder to a site',
+        question: 'How do you want to link this folder to a project',
         answer: CONFIRM,
       },
       {
@@ -532,7 +532,7 @@ describe.concurrent('commands/init', () => {
     ]
 
     const siteInfo = {
-      admin_url: 'https://app.netlify.com/sites/site-name/overview',
+      admin_url: 'https://app.netlify.com/projects/site-name/overview',
       ssl_url: 'https://site-name.netlify.app/',
       id: 'site_id',
       name: 'site-name',
@@ -592,16 +592,16 @@ describe.concurrent('commands/init', () => {
     })
   })
 
-  test('netlify init new Gatsby site with correct default build directory and build command', async (t) => {
+  test('netlify init new Gatsby project with correct default build directory and build command', async (t) => {
     const [command, publish] = ['gatsby build', 'public']
     const initQuestions = [
       {
-        question: 'Create & configure a new site',
+        question: 'Create & configure a new project',
         answer: answerWithValue(DOWN),
       },
       { question: 'Team: (Use arrow keys)', answer: CONFIRM },
       {
-        question: 'Site name (leave blank for a random name; you can change it later)',
+        question: 'Project name (leave blank for a random name; you can change it later)',
         answer: answerWithValue('test-site-name'),
       },
       {
@@ -626,7 +626,7 @@ describe.concurrent('commands/init', () => {
     ]
 
     const siteInfo = {
-      admin_url: 'https://app.netlify.com/sites/site-name/overview',
+      admin_url: 'https://app.netlify.com/projects/site-name/overview',
       ssl_url: 'https://site-name.netlify.app/',
       id: 'site_id',
       name: 'site-name',

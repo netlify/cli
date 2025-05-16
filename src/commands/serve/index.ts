@@ -8,7 +8,7 @@ export const createServeCommand = (program: BaseCommand) =>
   program
     .command('serve')
     .description(
-      'Build the site for production and serve locally. This does not watch the code for changes, so if you need to rebuild your site then you must exit and run `serve` again.',
+      'Build the project for production and serve locally. This does not watch the code for changes, so if you need to rebuild your project then you must exit and run `serve` again.',
     )
     .option(
       '--context <context>',

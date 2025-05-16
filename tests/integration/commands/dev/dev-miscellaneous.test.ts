@@ -426,7 +426,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
     })
   })
 
-  test('Serves an Edge Function that includes context with site and deploy information', async (t) => {
+  test('Serves an Edge Function that includes context with project and deploy information', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       const publicDir = 'public'
       builder
@@ -1458,7 +1458,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
 
         expect(normalize(err.stderr, { duration: true, filePath: true })).toEqual(
           expect.stringContaining(
-            'Sites detected: package1, package2. Configure the site you want to work with and try again. Refer to https://ntl.fyi/configure-site for more information.',
+            'Projects detected: package1, package2. Configure the project you want to work with and try again. Refer to https://ntl.fyi/configure-site for more information.',
           ),
         )
         expect(err.exitCode).toBe(1)

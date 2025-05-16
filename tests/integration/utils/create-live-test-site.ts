@@ -18,10 +18,10 @@ const listAccounts = async () => {
 }
 
 export const createLiveTestSite = async function (siteName: string) {
-  console.log(`Creating new site for tests: ${siteName}`)
+  console.log(`Creating new project for tests: ${siteName}`)
   const accounts = await listAccounts()
   if (!Array.isArray(accounts) || accounts.length <= 0) {
-    throw new Error(`Can't find suitable account to create a site`)
+    throw new Error(`Can't find suitable account to create a project`)
   }
   const testAccountSlug = process.env.NETLIFY_TEST_ACCOUNT_SLUG ?? ''
   const account = testAccountSlug !== '' ? accounts.find(({ slug }) => slug === testAccountSlug) : accounts[0]
@@ -33,22 +33,22 @@ export const createLiveTestSite = async function (siteName: string) {
     )
   }
   const accountSlug = account.slug
-  console.log(`Using account ${accountSlug} to create site: ${siteName}`)
+  console.log(`Using account ${accountSlug} to create project: ${siteName}`)
   const cliResponse = (await callCli(['sites:create', '--name', siteName, '--account-slug', accountSlug])) as string
 
-  const isSiteCreated = cliResponse.includes('Site Created')
-  if (!isSiteCreated) {
-    throw new Error(`Failed creating site: ${cliResponse}`)
+  const isProjectCreated = cliResponse.includes('Project Created')
+  if (!isProjectCreated) {
+    throw new Error(`Failed creating project: ${cliResponse}`)
   }
 
   const { default: stripAnsi } = await import('strip-ansi')
 
-  const matches = /Site ID:\s+([a-zA-Z\d-]+)/m.exec(stripAnsi(cliResponse))
+  const matches = /Project ID:\s+([a-zA-Z\d-]+)/m.exec(stripAnsi(cliResponse))
   if (matches && Object.prototype.hasOwnProperty.call(matches, 1) && matches[1]) {
     const [, siteId] = matches
-    console.log(`Done creating site ${siteName} for account '${accountSlug}'. Site Id: ${siteId}`)
+    console.log(`Done creating project ${siteName} for account '${accountSlug}'. Project Id: ${siteId}`)
     return { siteId, account }
   }
 
-  throw new Error(`Failed creating site: ${cliResponse}`)
+  throw new Error(`Failed creating project: ${cliResponse}`)
 }

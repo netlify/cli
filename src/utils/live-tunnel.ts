@@ -119,7 +119,7 @@ export const startLiveTunnel = async ({
 }) => {
   if (!siteId) {
     console.error(
-      `${NETLIFYDEVERR} Error: no siteId defined, did you forget to run ${chalk.yellow(
+      `${NETLIFYDEVERR} Error: no project ID defined, did you forget to run ${chalk.yellow(
         'netlify init',
       )} or ${chalk.yellow('netlify link')}?`,
     )
