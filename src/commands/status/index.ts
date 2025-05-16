@@ -6,7 +6,7 @@ import BaseCommand from '../base-command.js'
 export const createStatusCommand = (program: BaseCommand) => {
   program
     .command('status:hooks')
-    .description('Print hook information of the linked site')
+    .description('Print hook information of the linked project')
     .hook('preAction', requiresSiteInfo)
     .action(async (options: OptionValues, command: BaseCommand) => {
       const { statusHooks } = await import('./status-hooks.js')

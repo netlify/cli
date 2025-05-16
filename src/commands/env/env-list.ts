@@ -46,7 +46,7 @@ export const envList = async (options: OptionValues, command: BaseCommand) => {
   const siteId = site.id
 
   if (!siteId) {
-    log('No site id found, please run inside a site folder or `netlify link`')
+    log('No project id found, please run inside a project folder or `netlify link`')
     return false
   }
 
@@ -80,7 +80,7 @@ export const envList = async (options: OptionValues, command: BaseCommand) => {
     return false
   }
 
-  const forSite = `for site ${chalk.green(siteInfo.name)}`
+  const forSite = `for project ${chalk.green(siteInfo.name)}`
   const contextType = SUPPORTED_CONTEXTS.includes(context) ? 'context' : 'branch'
   const withContext = `in the ${chalk.magenta(options.context)} ${contextType}`
   const withScope = scope === 'any' ? '' : `and ${chalk.yellow(options.scope)} scope`

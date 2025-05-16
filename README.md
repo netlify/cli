@@ -84,7 +84,7 @@ netlify [command] help
 
 ## Documentation
 
-To learn how to log in to Netlify and start deploying sites, visit the
+To learn how to log in to Netlify and start deploying projects, visit the
 [documentation on Netlify](https://docs.netlify.com/cli/get-started/).
 
 
@@ -121,4 +121,4 @@ MIT. See [LICENSE](LICENSE) for more details.
 [snyk-img]: https://snyk.io/test/npm/netlify-cli/badge.svg
 [snyk]: https://snyk.io/test/npm/netlify-cli
 [netlify-img]: https://api.netlify.com/api/v1/badges/d3807379-2dcf-4a43-9c00-e7e8d90ecf70/deploy-status
-[netlify]: https://app.netlify.com/sites/cli/deploys
+[netlify]: https://app.netlify.com/projects/cli/deploys

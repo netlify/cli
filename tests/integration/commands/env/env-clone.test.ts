@@ -125,7 +125,7 @@ describe('env:clone command', () => {
         })
       })
 
-      test('should not run prompts if sites have no enviroment variables in common', async () => {
+      test('should not run prompts if projects have no enviroment variables in common', async () => {
         await withMockApi(routes, async ({ apiUrl }) => {
           Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
           const successMessageSite3 = `Successfully cloned environment variables from ${chalk.green(

@@ -37,7 +37,7 @@ export const destructiveCommandMessages = {
     generateWarning: (siteId: string) =>
       `${chalk.redBright(
         'Warning',
-      )}: The following environment variables are already set on the site with ID ${chalk.bgBlueBright(
+      )}: The following environment variables are already set on the project with ID ${chalk.bgBlueBright(
         siteId,
       )}. They will be overwritten!`,
     noticeEnvVars: `${chalk.yellowBright('Notice')}: The following variables will be overwritten:`,

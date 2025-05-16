@@ -237,7 +237,7 @@ export const updateSite = async ({
     const updatedSite = await api.updateSite({ siteId, body: options })
     return updatedSite
   } catch (error) {
-    const message = formatErrorMessage({ message: 'Failed updating site with repo information', error })
+    const message = formatErrorMessage({ message: 'Failed updating project with repo information', error })
     return logAndThrowError(message)
   }
 }

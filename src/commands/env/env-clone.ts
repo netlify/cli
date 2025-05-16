@@ -15,7 +15,7 @@ const safeGetSite = async (api, siteId) => {
 }
 
 /**
- * Copies the env from a site configured with Envelope to a different site configured with Envelope
+ * Copies the env from a project configured with Envelope to a different project configured with Envelope
  * @returns {Promise<boolean>}
  */
 // @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
@@ -61,7 +61,7 @@ export const envClone = async (options: OptionValues, command: BaseCommand) => {
 
   if (!site.id && !options.from) {
     log(
-      'Please include the source site Id as the `--from` option, or run `netlify link` to link this folder to a Netlify site',
+      'Please include the source project ID as the `--from` option, or run `netlify link` to link this folder to a Netlify project',
     )
     return false
   }
@@ -70,7 +70,7 @@ export const envClone = async (options: OptionValues, command: BaseCommand) => {
 
   if (!sourceId) {
     log(
-      'Please include the source site Id as the `--from` option, or run `netlify link` to link this folder to a Netlify site',
+      'Please include the source project ID as the `--from` option, or run `netlify link` to link this folder to a Netlify project',
     )
   }
 
@@ -85,11 +85,13 @@ export const envClone = async (options: OptionValues, command: BaseCommand) => {
   ])
 
   if (errorFrom) {
-    return logAndThrowError(`Can't find site with id ${chalk.bold(siteId.from)}. Please make sure the site exists.`)
+    return logAndThrowError(
+      `Can't find project with id ${chalk.bold(siteId.from)}. Please make sure the project exists.`,
+    )
   }
 
   if (errorTo) {
-    return logAndThrowError(`Can't find site with id ${chalk.bold(siteId.to)}. Please make sure the site exists.`)
+    return logAndThrowError(`Can't find project with id ${chalk.bold(siteId.to)}. Please make sure the project exists.`)
   }
 
   const success = await cloneEnvVars({ api, siteFrom, siteTo, force })

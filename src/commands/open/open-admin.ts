@@ -7,7 +7,7 @@ export const openAdmin = async (_options: unknown, command: BaseCommand) => {
 
   await command.authenticate()
 
-  log(`Opening "${siteInfo.name}" site admin UI:`)
+  log(`Opening "${siteInfo.name}" project admin UI:`)
   log(`> ${siteInfo.admin_url}`)
 
   await openBrowser({ url: siteInfo.admin_url })

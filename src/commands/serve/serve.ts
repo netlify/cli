@@ -95,9 +95,9 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
 
   command.setAnalyticsPayload({ live: options.live })
 
-  log(`${NETLIFYDEVLOG} Building site for production`)
+  log(`${NETLIFYDEVLOG} Building project for production`)
   log(
-    `${NETLIFYDEVWARN} Changes will not be hot-reloaded, so if you need to rebuild your site you must exit and run 'netlify serve' again`,
+    `${NETLIFYDEVWARN} Changes will not be hot-reloaded, so if you need to rebuild your project you must exit and run 'netlify serve' again`,
   )
 
   const blobsOptions = {

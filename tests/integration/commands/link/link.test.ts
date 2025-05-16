@@ -15,12 +15,12 @@ describe('link command', () => {
   test.todo('should link to matching site given `--site-name`')
   test.todo('should print an error and exit when no site with given `--site-name` is found')
 
-  test('should link to matching site given `--git-remote-url`', async (t) => {
+  test('should link to matching project given `--git-remote-url`', async (t) => {
     const siteInfo = {
       id: 'site_id',
       name: 'test-site',
       ssl_url: 'https://test-site.netlify.app',
-      admin_url: 'https://app.netlify.com/sites/test-site',
+      admin_url: 'https://app.netlify.com/projects/test-site',
       build_settings: {
         repo_url: 'https://github.com/vibecoder/my-unicorn',
       },
@@ -52,9 +52,9 @@ describe('link command', () => {
       )
     })
   })
-  test.todo('should print an error and exit when no site with given `--git-remote-url` is found')
+  test.todo('should print an error and exit when no project with given `--git-remote-url` is found')
 
-  test.todo("should prompt user when a site matching the local git repo's remote origin HTTPS URL is found")
+  test.todo("should prompt user when a project matching the local git repo's remote origin HTTPS URL is found")
 
   test('should create gitignore in repository root when is root', async (t) => {
     await withSiteBuilder(t, async (builder) => {
@@ -94,7 +94,7 @@ describe('link command', () => {
   )
 })
 
-describe('link command with multiple sites', () => {
+describe('link command with multiple projects', () => {
   const siteInfo1 = {
     id: 'site_id1',
     name: 'next-app-playground',
@@ -131,7 +131,7 @@ describe('link command with multiple sites', () => {
     })
   })
 
-  test('should use first site when name flag is not an exact match', async (t) => {
+  test('should use first project when name flag is not an exact match', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       await builder.build()
 

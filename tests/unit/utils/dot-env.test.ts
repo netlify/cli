@@ -5,7 +5,7 @@ import { expect, test } from 'vitest'
 import { tryLoadDotEnvFiles } from '../../../src/utils/dot-env.js'
 import { withSiteBuilder } from '../../integration/utils/site-builder.js'
 
-test('should return an empty array for a site with no .env file', async (t) => {
+test('should return an empty array for a project with no .env file', async (t) => {
   await withSiteBuilder(t, async (builder) => {
     await builder.build()
 
