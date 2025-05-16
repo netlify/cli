@@ -45,7 +45,7 @@ async function preparePackageJSON() {
       prepublishOnly: undefined,
     },
     bin: {
-      'npx-netlify': binPath,
+      npxnetlify: binPath,
     },
   }
 
