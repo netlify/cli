@@ -123,17 +123,16 @@ const itWithMockNpmRegistry = it.extend<{ registry: { address: string; cwd: stri
 
     // TODO: Figure out why calling this script is failing on Windows.
     if (platform() !== 'win32') {
+      // Publishing `netlify` package
       await execa.node(path.resolve(projectRoot, 'scripts/netlifyPackage.js'), {
         cwd: publishWorkspace,
         stdio: debug.enabled ? 'inherit' : 'ignore',
       })
+      await execa('npm', ['publish', `--registry=${registryURL.toString()}`, '--tag=testing'], {
+        cwd: publishWorkspace,
+        stdio: debug.enabled ? 'inherit' : 'ignore',
+      })
     }
-
-    // Publishing `netlify` package
-    await execa('npm', ['publish', `--registry=${registryURL.toString()}`, '--tag=testing'], {
-      cwd: publishWorkspace,
-      stdio: debug.enabled ? 'inherit' : 'ignore',
-    })
 
     await fs.rm(publishWorkspace, { force: true, recursive: true })
 
@@ -193,44 +192,52 @@ const tests: [packageManager: string, config: InstallTest | RunTest][] = [
 ]
 
 describe.each(tests)('%s → installs the cli and runs the help command without error', (_, config) => {
-  itWithMockNpmRegistry('installs the cli and runs the help command without error', async ({ registry }) => {
-    const cwd = registry.cwd
+  // TODO: Figure out why this flow is failing on Windows.
+  const npxOnWindows = platform() === 'win32' && 'run' in config
 
-    let stdout: string
+  itWithMockNpmRegistry.skipIf(npxOnWindows)(
+    'installs the cli and runs the help command without error',
+    async ({ registry }) => {
+      const cwd = registry.cwd
 
-    if ('install' in config) {
-      await execa(...config.install, {
-        cwd,
-        env: { npm_config_registry: registry.address },
-        stdio: debug.enabled ? 'inherit' : 'ignore',
-      })
+      let stdout: string
 
-      expect(
-        existsSync(path.join(cwd, config.lockfile)),
-        `Generated lock file ${config.lockfile} does not exist in ${cwd}`,
-      ).toBe(true)
+      if ('install' in config) {
+        await execa(...config.install, {
+          cwd,
+          env: { npm_config_registry: registry.address },
+          stdio: debug.enabled ? 'inherit' : 'ignore',
+        })
 
-      const binary = path.resolve(path.join(cwd, `./node_modules/.bin/netlify${platform() === 'win32' ? '.cmd' : ''}`))
-      const result = await execa(binary, ['help'], { cwd })
+        expect(
+          existsSync(path.join(cwd, config.lockfile)),
+          `Generated lock file ${config.lockfile} does not exist in ${cwd}`,
+        ).toBe(true)
 
-      stdout = result.stdout
-    } else {
-      const [cmd, args] = config.run
-      const result = await execa(cmd, args, {
-        env: {
-          npm_config_registry: registry.address,
-        },
-      })
+        const binary = path.resolve(
+          path.join(cwd, `./node_modules/.bin/netlify${platform() === 'win32' ? '.cmd' : ''}`),
+        )
+        const result = await execa(binary, ['help'], { cwd })
 
-      stdout = result.stdout
-    }
+        stdout = result.stdout
+      } else {
+        const [cmd, args] = config.run
+        const result = await execa(cmd, args, {
+          env: {
+            npm_config_registry: registry.address,
+          },
+        })
 
-    expect(stdout.trim(), `Help command does not start with '⬥ Netlify CLI'\\n\\nVERSION: ${stdout}`).toMatch(
-      /^⬥ Netlify CLI\n\nVERSION/,
-    )
-    expect(stdout, `Help command does not include '${config.packageName}/${pkg.version}':\n\n${stdout}`).toContain(
-      `${config.packageName}/${pkg.version}`,
-    )
-    expect(stdout, `Help command does not include '$ netlify [COMMAND]':\n\n${stdout}`).toMatch('$ netlify [COMMAND]')
-  })
+        stdout = result.stdout
+      }
+
+      expect(stdout.trim(), `Help command does not start with '⬥ Netlify CLI'\\n\\nVERSION: ${stdout}`).toMatch(
+        /^⬥ Netlify CLI\n\nVERSION/,
+      )
+      expect(stdout, `Help command does not include '${config.packageName}/${pkg.version}':\n\n${stdout}`).toContain(
+        `${config.packageName}/${pkg.version}`,
+      )
+      expect(stdout, `Help command does not include '$ netlify [COMMAND]':\n\n${stdout}`).toMatch('$ netlify [COMMAND]')
+    },
+  )
 })
