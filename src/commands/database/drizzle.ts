@@ -28,7 +28,7 @@ export const initDrizzle = async (command: BaseCommand) => {
     await carefullyWriteFile(dbIndexFilePath, dbIndex, command.project.root)
   }
 
-  const packageJsonPath = path.resolve(command.project.root, 'package.json')
+  const packageJsonPath = path.resolve(command.workingDir, 'package.json')
   const packageJson = getPackageJSON(command.workingDir)
 
   packageJson.scripts = {
