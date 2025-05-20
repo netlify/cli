@@ -9,18 +9,6 @@ import { log } from '../../utils/command-helpers.js'
 import { SiteInfo } from './database.js'
 
 export const init = async (_options: OptionValues, command: BaseCommand) => {
-  try {
-    const packageJson = getPackageJSON(command.workingDir)
-    if (packageJson.dependencies && !Object.keys(packageJson.dependencies).includes(NETLIFY_NEON_PACKAGE_NAME)) {
-      await spawnAsync(command.project.packageManager?.installCommand ?? 'npm install', ['@netlify/neon@latest'], {
-        stdio: 'inherit',
-        shell: true,
-      })
-    }
-  } catch (e) {
-    console.error(`Failed to install @netlify/neon in ${command.workingDir}:`, e)
-  }
-
   const siteInfo = command.netlify.siteInfo as SiteInfo
   if (!command.siteId) {
     console.error(`The project must be linked with netlify link before initializing a database.`)
@@ -157,6 +145,21 @@ export const init = async (_options: OptionValues, command: BaseCommand) => {
     }
   } catch (e) {
     console.error('Failed to get database status', e)
+  }
+
+  try {
+    const packageJson = getPackageJSON(command.workingDir)
+    if (
+      (packageJson.dependencies && !Object.keys(packageJson.dependencies).includes(NETLIFY_NEON_PACKAGE_NAME)) ||
+      !packageJson.dependencies
+    ) {
+      await spawnAsync(command.project.packageManager?.installCommand ?? 'npm install', ['@netlify/neon@latest'], {
+        stdio: 'inherit',
+        shell: true,
+      })
+    }
+  } catch (e) {
+    console.error(`Failed to install @netlify/neon in ${command.workingDir}:`, e)
   }
 
   log(
