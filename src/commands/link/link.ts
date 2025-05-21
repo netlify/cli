@@ -6,7 +6,7 @@ import type { NetlifyAPI } from '@netlify/api'
 
 import { listSites } from '../../lib/api.js'
 import { startSpinner } from '../../lib/spinner.js'
-import { chalk, logAndThrowError, exit, log, APIError } from '../../utils/command-helpers.js'
+import { chalk, logAndThrowError, exit, log, APIError, netlifyCommand } from '../../utils/command-helpers.js'
 import getRepoData from '../../utils/get-repo-data.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import { track } from '../../utils/telemetry/index.js'
@@ -23,7 +23,9 @@ const findSiteByRepoUrl = async (api: NetlifyAPI, repoUrl: string): Promise<Site
   if (sites.length === 0) {
     spinner.error()
     return logAndThrowError(
-      `You don't have any projects yet. Run ${chalk.cyanBright('netlify sites:create')} to create a project.`,
+      `You don't have any projects yet. Run ${chalk.cyanBright(
+        `${netlifyCommand()} sites:create`,
+      )} to create a project.`,
     )
   }
 
@@ -92,7 +94,7 @@ const linkPrompt = async (command: BaseCommand, options: LinkOptionValues): Prom
   }
 
   log()
-  log(`${chalk.cyanBright('netlify link')} will connect this folder to a project on Netlify`)
+  log(`${chalk.cyanBright(`${netlifyCommand()} link`)} will connect this folder to a project on Netlify`)
   log()
   const { linkType } = await inquirer.prompt<{ linkType: string | undefined }>([
     {
@@ -142,8 +144,8 @@ const linkPrompt = async (command: BaseCommand, options: LinkOptionValues): Prom
       if (!matchingSites || matchingSites.length === 0) {
         return logAndThrowError(`No project names found containing '${searchTerm}'.
 
-Run ${chalk.cyanBright('netlify link')} again to try a new search,
-or run ${chalk.cyanBright('netlify sites:create')} to create a project.`)
+Run ${chalk.cyanBright(`${netlifyCommand()} link`)} again to try a new search,
+or run ${chalk.cyanBright(`npx ${netlifyCommand()} sites:create`)} to create a project.`)
       }
 
       if (matchingSites.length > 1) {
@@ -183,7 +185,9 @@ or run ${chalk.cyanBright('netlify sites:create')} to create a project.`)
 
       if (!sites || sites.length === 0) {
         return logAndThrowError(
-          `You don't have any projects yet. Run ${chalk.cyanBright('netlify sites:create')} to create a project.`,
+          `You don't have any projects yet. Run ${chalk.cyanBright(
+            `${netlifyCommand()} sites:create`,
+          )} to create a project.`,
         )
       }
 
@@ -271,7 +275,7 @@ export const link = async (options: LinkOptionValues, command: BaseCommand) => {
   // Site id is incorrect
   if (siteId && isEmpty(siteInfo)) {
     log(`"${siteId}" was not found in your Netlify account.`)
-    log(`Please double check your project ID and which account you are logged into via \`netlify status\`.`)
+    log(`Please double check your project ID and which account you are logged into via \`${netlifyCommand()} status\`.`)
     return exit()
   }
 
@@ -281,7 +285,7 @@ export const link = async (options: LinkOptionValues, command: BaseCommand) => {
     log(`Project already linked to "${initialSiteData.name}"`)
     log(`Admin url: ${initialSiteData.admin_url}`)
     log()
-    log(`To unlink this project, run: ${chalk.cyanBright('netlify unlink')}`)
+    log(`To unlink this project, run: ${chalk.cyanBright(`${netlifyCommand()} unlink`)}`)
   } else if (options.id) {
     try {
       // @ts-expect-error FIXME(serhalp): Mismatch between hardcoded `SiteInfo` and new generated Netlify API types.
