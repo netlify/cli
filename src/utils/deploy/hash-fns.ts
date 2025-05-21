@@ -153,6 +153,16 @@ const hashFns = async (
     statusCb,
     tmpDir,
   })
+
+  for (const func of functionZips) {
+    if (!func.buildData) {
+      func.buildData = {
+        bootstrapVersion: func.bootstrapVersion,
+        runtimeAPIVersion: func.runtimeAPIVersion,
+      }
+    }
+  }
+
   const fileObjs = functionZips.map(
     ({
       buildData,
