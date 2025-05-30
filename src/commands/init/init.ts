@@ -2,7 +2,7 @@ import { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 import isEmpty from 'lodash/isEmpty.js'
 
-import { chalk, exit, log } from '../../utils/command-helpers.js'
+import { chalk, exit, log, netlifyCommand } from '../../utils/command-helpers.js'
 import getRepoData from '../../utils/get-repo-data.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import { configureRepo } from '../../utils/init/config.js'
@@ -31,8 +31,8 @@ const logExistingAndExit = ({ siteInfo }: { siteInfo: SiteInfo }): never => {
   log(`Admin URL:  ${chalk.cyan(siteInfo.admin_url)}`)
   log()
   log(`To disconnect this directory and create a new project (or link to another project ID)`)
-  log(`1. Run ${chalk.cyanBright.bold('netlify unlink')}`)
-  log(`2. Then run ${chalk.cyanBright.bold('netlify init')} again`)
+  log(`1. Run ${chalk.cyanBright.bold(`${netlifyCommand()} unlink`)}`)
+  log(`2. Then run ${chalk.cyanBright.bold(`${netlifyCommand()} init`)} again`)
   return exit()
 }
 
@@ -78,7 +78,7 @@ const createNewSiteAndExit = async ({
   }
 
   log()
-  log(`To deploy to this project, run ${chalk.cyanBright.bold('netlify deploy')}`)
+  log(`To deploy to this project, run ${chalk.cyanBright.bold(`${netlifyCommand()} deploy`)}`)
 
   return exit()
 }
@@ -111,7 +111,7 @@ const logGitSetupInstructionsAndExit = (): never => {
 
 7. Initialize your Netlify Site
 
-   ${chalk.cyanBright.bold('netlify init')}
+   ${chalk.cyanBright.bold(`${netlifyCommand()} init`)}
 `)
   return exit()
 }

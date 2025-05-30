@@ -348,3 +348,27 @@ export const checkFileForLine = (filename: string, line: string) => {
 
 export const TABTAB_CONFIG_LINE = '[[ -f ~/.config/tabtab/__tabtab.zsh ]] && . ~/.config/tabtab/__tabtab.zsh || true'
 export const AUTOLOAD_COMPINIT = 'autoload -U compinit; compinit'
+
+function pkgFromUserAgent(userAgent: string | undefined): string | undefined {
+  if (!userAgent) return undefined
+  const pkgSpec = userAgent.split(' ')[0]
+  const [pkgManagerName] = pkgSpec.split('/')
+  return pkgManagerName
+}
+
+export const netlifyCommand = () => {
+  const { npm_command, npm_config_user_agent, npm_lifecycle_event } = process.env
+
+  // Captures both `npx netlify ...` and `npm exec netlify ...`
+  if (npm_lifecycle_event === 'npx') {
+    return `npx netlify`
+  }
+
+  // Captures both `pnpx netlify ...` and `pnpm exec netlify ...`
+  if (pkgFromUserAgent(npm_config_user_agent) === 'pnpm' && npm_command === 'exec') {
+    return `pnpx netlify`
+  }
+
+  // Default
+  return 'netlify'
+}
