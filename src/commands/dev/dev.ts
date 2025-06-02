@@ -31,6 +31,7 @@ import type BaseCommand from '../base-command.js'
 import type { NetlifySite } from '../types.js'
 
 import type { DevConfig } from './types.js'
+import { handleExtensionRequirements } from '../../lib/extensions.js'
 
 const handleLiveTunnel = async ({
   api,
@@ -74,6 +75,7 @@ const handleLiveTunnel = async ({
 
 export const dev = async (options: OptionValues, command: BaseCommand) => {
   const { api, cachedConfig, config, repositoryRoot, site, siteInfo, state } = command.netlify
+  const { project } = command
   config.dev = config.dev != null ? { ...config.dev } : undefined
   config.build = { ...config.build }
   const devConfig: DevConfig = {
@@ -93,6 +95,8 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
   let { env } = cachedConfig
 
   env.NETLIFY_DEV = { sources: ['internal'], value: 'true' }
+
+  await handleExtensionRequirements(project)
 
   const blobsContext = await getBlobsContextWithEdgeAccess({
     debug: options.debug,
@@ -144,6 +148,10 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
 
     process.exit(1)
   }
+
+// REMOVE sarah
+    process.exit(1)
+
 
   command.setAnalyticsPayload({ live: options.live })
 
