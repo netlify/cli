@@ -20,7 +20,7 @@ export const description = 'Manage context files for AI tools'
 // context consumers endpoints returns all supported IDE and other consumers
 // that can be used to pull context files. It also includes a catchall consumer
 // for outlining all context that an unspecified consumer would handle.
-const allContextConsumers = (await getContextConsumers(version)).filter((consumer) => !consumer.hideFromCLI)
+const allContextConsumers = await getContextConsumers(version)
 const cliContextConsumers = allContextConsumers.filter((consumer) => !consumer.hideFromCLI)
 
 const rulesForDefaultConsumer = allContextConsumers.find((consumer) => consumer.key === 'catchall-consumer') ?? {
