@@ -69,7 +69,13 @@ export const invokeFunction = async ({
       ? buildData.runtimeAPIVersion
       : null
   if (runtimeAPIVersion == null || runtimeAPIVersion !== 2) {
-    return await invokeFunctionDirectly({ context, event, func, timeout })
+    return await invokeFunctionDirectly({
+      context,
+      environment: environment as Record<string, string>,
+      event,
+      func,
+      timeout,
+    })
   }
 
   const workerData = {
@@ -114,11 +120,13 @@ export const invokeFunction = async ({
 
 export const invokeFunctionDirectly = async <BuildResult extends JsBuildResult>({
   context,
+  environment,
   event,
   func,
   timeout,
 }: {
   context: Record<string, unknown>
+  environment: Record<string, string>
   event: Record<string, unknown>
   func: NetlifyFunction<BuildResult>
   timeout: number
@@ -134,6 +142,8 @@ export const invokeFunctionDirectly = async <BuildResult extends JsBuildResult>(
   const result = await lambdaLocal.execute({
     clientContext: JSON.stringify(context),
     environment: {
+      // Include environment variables from config
+      ...environment,
       // We've set the Blobs context on the parent process, which means it will
       // be available to the Lambda. This would be inconsistent with production
       // where only V2 functions get the context injected. To fix it, unset the
