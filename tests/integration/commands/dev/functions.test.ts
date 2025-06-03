@@ -65,7 +65,7 @@ test('should inject environment variables from config to functions', async (t) =
         handler: () => {
           return Promise.resolve({
             statusCode: 200,
-            body: process.env.MY_CONFIG_ENV || 'NOT_FOUND',
+            body: process.env.MY_CONFIG_ENV ?? 'NOT_FOUND',
           })
         },
       })
