@@ -1,3 +1,5 @@
+import { relative } from 'node:path'
+
 import type { NetlifyAPI } from '@netlify/api'
 import { Octokit } from '@octokit/rest'
 
@@ -256,7 +258,8 @@ export const configGithub = async ({
     deploy_key_id: deployKey.id,
     base: baseDir,
     dir: buildDir,
-    functions_dir: functionsDir,
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    functions_dir: relative(config.build.base ?? command.workingDir, functionsDir),
     ...(buildCmd && { cmd: buildCmd }),
   }
 
