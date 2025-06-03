@@ -10,12 +10,12 @@ export async function handleExtensionRequirements(options: OptionValues, command
   const { project } = command
   const { site, siteInfo } = command.netlify
 
-  const packageJson = await project.getPackageJSON()
-  const dependencies = packageJson.dependencies ?? {}
-
   // If we don't have a site, these extensions need one initialized
-  const hasSiteData = Boolean(site.id ?? options.site) && !isEmpty(siteInfo)
+  // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+  const hasSiteData = Boolean(site.id || options.site) && !isEmpty(siteInfo)
   if (!hasSiteData) {
+    const packageJson = await project.getPackageJSON()
+    const dependencies = packageJson.dependencies ?? {}
     for (const packageName of packagesThatNeedSites) {
       if (dependencies[packageName]) {
         log(`Found ${packageName} in package.json, initializing a site`)
