@@ -1,27 +1,31 @@
-import { OptionValues } from 'commander'
+import type { Project } from '@netlify/build-info'
 import isEmpty from 'lodash/isEmpty.js'
-import BaseCommand from '../commands/base-command.js'
-import { init } from '../commands/init/init.js'
-import { log } from '../utils/command-helpers.js'
+import type { NetlifySite } from '../commands/types.js'
+import type { SiteInfo } from '../utils/types.js'
 
-export const packagesThatNeedSites = ['@netlify/neon']
+export const packagesThatNeedSites = new Set(['@netlify/neon'])
 
-export async function handleExtensionRequirements(options: OptionValues, command: BaseCommand) {
-  const { project } = command
-  const { site, siteInfo } = command.netlify
+export type DoesProjectRequireLinkedSiteParams = {
+  project: Project
+  site: NetlifySite
+  siteInfo: SiteInfo
+  options: Record<string, unknown>
+}
 
+export const doesProjectRequireLinkedSite = async ({
+  options,
+  project,
+  site,
+  siteInfo,
+}: DoesProjectRequireLinkedSiteParams): Promise<[boolean, string[]]> => {
   // If we don't have a site, these extensions need one initialized
   // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
   const hasSiteData = Boolean(site.id || options.site) && !isEmpty(siteInfo)
-  if (!hasSiteData) {
-    const packageJson = await project.getPackageJSON()
-    const dependencies = packageJson.dependencies ?? {}
-    for (const packageName of packagesThatNeedSites) {
-      if (dependencies[packageName]) {
-        log(`Found ${packageName} in package.json, initializing a site`)
-        await init(options, command)
-        return
-      }
-    }
+  if (hasSiteData) {
+    return [false, []]
   }
+  const packageJson = await project.getPackageJSON()
+  const dependencies = packageJson.dependencies ?? {}
+  const packageNames = Object.keys(dependencies).filter((packageName) => packagesThatNeedSites.has(packageName))
+  return [packageNames.length > 0, packageNames]
 }
