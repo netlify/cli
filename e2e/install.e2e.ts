@@ -246,7 +246,7 @@ const runTests: [packageManager: string, config: RunTest][] = [
   ],
 ]
 
-describe.each(runTests)('%s → runs the cli and runs commands without errors', (_, config) => {
+describe.each(runTests)('%s → runs cli commands without errors', (_, config) => {
   // TODO: Figure out why this flow is failing on Windows.
   const npxOnWindows = platform() === 'win32' && 'run' in config
 
