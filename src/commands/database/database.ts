@@ -1,6 +1,4 @@
 import BaseCommand from '../base-command.js'
-import { status } from './status.js'
-import { init } from './init.js'
 
 export type Extension = {
   id: string
@@ -36,8 +34,19 @@ export const createDatabaseCommand = (program: BaseCommand) => {
       'Minimal non-interactive setup. Does not initialize drizzle or any boilerplate. Ideal for CI or AI tools.',
     )
     .option('-o, --overwrite', 'Overwrites existing files that would be created when setting up drizzle')
-    .action(init)
+    .action(async (options, command) => {
+      const { init } = await import('./init.js')
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      await init(options, command)
+    })
     .addExamples([`netlify db init --minimal`, `netlify db init --drizzle --overwrite`])
 
-  dbCommand.command('status').description(`Check the status of the database`).action(status)
+  dbCommand
+    .command('status')
+    .description(`Check the status of the database`)
+    .action(async (options, command) => {
+      const { status } = await import('./status.js')
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      await status(options, command)
+    })
 }
