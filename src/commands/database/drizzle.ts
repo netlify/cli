@@ -6,26 +6,27 @@ import inquirer from 'inquirer'
 import { NETLIFY_NEON_PACKAGE_NAME } from './constants.js'
 
 export const initDrizzle = async (command: BaseCommand) => {
-  if (!command.project.root) {
-    throw new Error('Failed to initialize Drizzle in project. Project root not found.')
+  const workingDirectory = command.project.root ?? command.project.baseDirectory
+  if (!workingDirectory) {
+    throw new Error('Failed to initialize Drizzle. Project root or base directory not found.')
   }
   const opts = command.opts<{
     overwrite?: true | undefined
   }>()
 
-  const drizzleConfigFilePath = path.resolve(command.project.root, 'drizzle.config.ts')
-  const schemaFilePath = path.resolve(command.project.root, 'db/schema.ts')
-  const dbIndexFilePath = path.resolve(command.project.root, 'db/index.ts')
+  const drizzleConfigFilePath = path.resolve(workingDirectory, 'drizzle.config.ts')
+  const schemaFilePath = path.resolve(workingDirectory, 'db/schema.ts')
+  const dbIndexFilePath = path.resolve(workingDirectory, 'db/index.ts')
   if (opts.overwrite) {
     await fs.writeFile(drizzleConfigFilePath, drizzleConfig)
-    await fs.mkdir(path.resolve(command.project.root, 'db'), { recursive: true })
+    await fs.mkdir(path.resolve(workingDirectory, 'db'), { recursive: true })
     await fs.writeFile(schemaFilePath, drizzleSchema)
     await fs.writeFile(dbIndexFilePath, dbIndex)
   } else {
-    await carefullyWriteFile(drizzleConfigFilePath, drizzleConfig, command.project.root)
-    await fs.mkdir(path.resolve(command.project.root, 'db'), { recursive: true })
-    await carefullyWriteFile(schemaFilePath, drizzleSchema, command.project.root)
-    await carefullyWriteFile(dbIndexFilePath, dbIndex, command.project.root)
+    await carefullyWriteFile(drizzleConfigFilePath, drizzleConfig, workingDirectory)
+    await fs.mkdir(path.resolve(workingDirectory, 'db'), { recursive: true })
+    await carefullyWriteFile(schemaFilePath, drizzleSchema, workingDirectory)
+    await carefullyWriteFile(dbIndexFilePath, dbIndex, workingDirectory)
   }
 
   const packageJsonPath = path.resolve(command.workingDir, 'package.json')
