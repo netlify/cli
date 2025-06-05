@@ -17,7 +17,7 @@ export let didEnableCompileCache = false
  * user's disk in a temp dir. If any of these changes or the temp dir is cleared, the next run is a cold run.
  *
  * The programmatic API to enable this (`enableCompileCache()`) was added in node 22.8.0, but we currently support
- * >=18.14.0, hence the conditional below. (For completeness, note that support via the env var was added in 22.1.0.)
+ * >=20.0.0, hence the conditional below. (For completeness, note that support via the env var was added in 22.1.0.)
  *
  * The Netlify CLI is often used in CI workflows. In this context, we wouldn't want the overhead of the first run
  * because we almost certainly would not get any benefits on "subsequent runs". Even if the user has configured caching
