@@ -70,7 +70,7 @@ export const createDatabaseCommand = (program: BaseCommand) => {
 
       await init(options, command)
     })
-    .addExamples([`netlify db init --minimal`, `netlify db init --boilerplate=drizzle --overwrite`])
+    .addExamples([`netlify db init --assume-no`, `netlify db init --boilerplate=drizzle --overwrite`])
 
   dbCommand
     .command('status')
