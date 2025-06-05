@@ -50,19 +50,19 @@ netlify init
 
 **Flags**
 
-- `drizzle` (*boolean*) - Initialize basic drizzle config and schema boilerplate
+- `assume-no` (*boolean*) - Non-interactive setup. Does not initialize any third-party tools/boilerplate. Ideal for CI environments or AI tools.
+- `boilerplate` (*drizzle*) - Type of boilerplate to add to your project.
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
-- `minimal` (*boolean*) - Minimal non-interactive setup. Does not initialize drizzle or any boilerplate. Ideal for CI or AI tools.
-- `no-drizzle` (*boolean*) - Does not initialize drizzle and skips any related prompts
+- `overwrite` (*boolean*) - Overwrites existing files that would be created when setting up boilerplate
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
-- `overwrite` (*boolean*) - Overwrites existing files that would be created when setting up drizzle
+- `no-boilerplate` (*boolean*) - Don't add any boilerplate to your project.
 
 **Examples**
 
 ```bash
 netlify db init --minimal
-netlify db init --drizzle --overwrite
+netlify db init --boilerplate=drizzle --overwrite
 ```
 
 ---
