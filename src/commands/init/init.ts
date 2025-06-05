@@ -12,6 +12,7 @@ import { link } from '../link/link.js'
 import { sitesCreate } from '../sites/sites-create.js'
 import type { CLIState, SiteInfo } from '../../utils/types.js'
 import { getBuildSettings, saveNetlifyToml } from '../../utils/init/utils.js'
+import { type InitExitCode, LINKED_EXISTING_SITE_EXIT_CODE, LINKED_NEW_SITE_EXIT_CODE } from './constants.js'
 
 const persistState = ({ siteInfo, state }: { siteInfo: SiteInfo; state: CLIState }): void => {
   // Save to .netlify/state.json file
@@ -43,10 +44,12 @@ const createNewSiteAndExit = async ({
   command,
   state,
   disableLinking,
+  customizeExitMessage,
 }: {
   command: BaseCommand
   state: CLIState
   disableLinking: boolean
+  customizeExitMessage: InitExitMessageCustomizer | undefined
 }): Promise<never> => {
   const siteInfo = await sitesCreate({}, command)
 
@@ -78,8 +81,8 @@ const createNewSiteAndExit = async ({
   }
 
   log()
-  log(`To deploy to this project, run ${chalk.cyanBright.bold(`${netlifyCommand()} deploy`)}`)
-
+  const defaultExitMesage = `To deploy to this project, run ${chalk.cyanBright.bold(`${netlifyCommand()} deploy`)}.`
+  log(customizeExitMessage?.(LINKED_NEW_SITE_EXIT_CODE, defaultExitMesage) ?? defaultExitMesage)
   return exit()
 }
 
@@ -124,11 +127,13 @@ const handleNoGitRemoteAndExit = async ({
   error,
   state,
   disableLinking,
+  customizeExitMessage,
 }: {
   command: BaseCommand
   error?: unknown
   state: CLIState
   disableLinking: boolean
+  customizeExitMessage: InitExitMessageCustomizer | undefined
 }): Promise<never> => {
   log()
   log(chalk.yellow('No git remote was found, would you like to set one up?'))
@@ -159,7 +164,8 @@ git remote add origin https://github.com/YourUserName/RepoName.git
   ])
 
   if (noGitRemoteChoice === NEW_SITE_NO_GIT) {
-    return createNewSiteAndExit({ state, command, disableLinking })
+    // TODO(ndhoule): Shove a custom error message in here
+    return createNewSiteAndExit({ state, command, disableLinking, customizeExitMessage })
   }
   return logGitSetupInstructionsAndExit()
 }
@@ -194,15 +200,36 @@ const createOrLinkSiteToRepo = async (command: BaseCommand) => {
   return await link({}, command)
 }
 
-const logExistingRepoSetupAndExit = ({ repoUrl, siteName }: { repoUrl: string; siteName: string }): void => {
+const logExistingRepoSetupAndExit = ({
+  repoUrl,
+  siteName,
+  customizeExitMessage,
+}: {
+  repoUrl: string
+  siteName: string
+  customizeExitMessage: InitExitMessageCustomizer | undefined
+}): void => {
   log()
   log(chalk.underline.bold(`Success`))
-  log(`This project "${siteName}" is configured to automatically deploy via ${repoUrl}`)
+
+  const defaultExitMessage = `This project "${siteName}" is configured to automatically deploy via ${repoUrl}.`
+  log(customizeExitMessage?.(LINKED_EXISTING_SITE_EXIT_CODE, defaultExitMessage) ?? defaultExitMessage)
   // TODO add support for changing GitHub repo in site:config command
   exit()
 }
 
-export const init = async (options: OptionValues, command: BaseCommand): Promise<SiteInfo> => {
+type InitExitMessageCustomizer = (code: InitExitCode, defaultMessage: string) => string | undefined
+
+type InitExtraOptions = {
+  customizeExitMessage?: InitExitMessageCustomizer | undefined
+  exitAfterConfiguringRepo?: boolean | undefined
+}
+
+export const init = async (
+  options: OptionValues,
+  command: BaseCommand,
+  { customizeExitMessage, exitAfterConfiguringRepo = false }: InitExtraOptions = {},
+): Promise<SiteInfo> => {
   command.setAnalyticsPayload({ manual: options.manual, force: options.force })
 
   const { repositoryRoot, state } = command.netlify
@@ -222,11 +249,13 @@ export const init = async (options: OptionValues, command: BaseCommand): Promise
   // Look for local repo
   const repoData = await getRepoData({ workingDir: command.workingDir, remoteName: options.gitRemoteName })
   if ('error' in repoData) {
+    // TODO(ndhoule): Custom error messaage here
     return await handleNoGitRemoteAndExit({
       command,
       error: repoData.error,
       state,
       disableLinking: options.disableLinking,
+      customizeExitMessage,
     })
   }
 
@@ -237,12 +266,19 @@ export const init = async (options: OptionValues, command: BaseCommand): Promise
   // Check for existing CI setup
   const remoteBuildRepo = getRepoUrl(siteInfo)
   if (remoteBuildRepo && !options.force) {
-    logExistingRepoSetupAndExit({ siteName: siteInfo.name, repoUrl: remoteBuildRepo })
+    logExistingRepoSetupAndExit({ siteName: siteInfo.name, repoUrl: remoteBuildRepo, customizeExitMessage })
   }
 
   persistState({ state, siteInfo })
 
   await configureRepo({ command, siteId: siteInfo.id, repoData, manual: options.manual })
+  if (exitAfterConfiguringRepo) {
+    const customErrorMessage = customizeExitMessage?.(LINKED_EXISTING_SITE_EXIT_CODE, '')
+    if (customErrorMessage) {
+      log(customErrorMessage)
+    }
+    return exit()
+  }
 
   return siteInfo
 }

@@ -16,6 +16,7 @@ import {
   chalk,
   log,
   normalizeConfig,
+  netlifyCommand,
 } from '../../utils/command-helpers.js'
 import detectServerSettings, { getConfigWithPlugins } from '../../utils/detect-server-settings.js'
 import { UNLINKED_SITE_MOCK_ID, getDotEnvVariables, getSiteInformation, injectEnvVariables } from '../../utils/dev.js'
@@ -111,7 +112,21 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
       } a linked project, but you don't have one linked yet. Let's do that first.`,
     )
     const { init } = await import('../init/init.js')
-    await init(getBaseOptionValues(options), command)
+    const { LINKED_NEW_SITE_EXIT_CODE, LINKED_EXISTING_SITE_EXIT_CODE } = await import('../init/constants.js')
+
+    await init(getBaseOptionValues(options), command, {
+      customizeExitMessage: (code, defaultMessage) => {
+        switch (code) {
+          case LINKED_NEW_SITE_EXIT_CODE:
+          // fallthrough
+          case LINKED_EXISTING_SITE_EXIT_CODE:
+            return `${defaultMessage !== '' ? `${defaultMessage}\n` : ''}You can run ${chalk.cyanBright.bold(
+              `${netlifyCommand()} dev`,
+            )} again to start the local development server.`
+        }
+      },
+      exitAfterConfiguringRepo: true,
+    })
   }
 
   const blobsContext = await getBlobsContextWithEdgeAccess({
