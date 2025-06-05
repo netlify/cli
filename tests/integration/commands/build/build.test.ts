@@ -334,7 +334,7 @@ describe.concurrent('command/build', () => {
       const output = (await callCli(['build', '--offline'], { cwd: fixture.directory })) as string
 
       // expect on the output that it installed the next runtime (auto detected the plugin + the build command and therefore had functions to bundle)
-      expect(output).toMatch(/❯ Using Next.js Runtime -/)
+      expect(output).toMatch(/Using Next.js Runtime -/)
       expect(output).toMatch(/\$ npm run build/)
       expect(output).toMatch(/Functions bundling completed/)
     })
