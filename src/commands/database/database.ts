@@ -1,4 +1,7 @@
+import { Option } from 'commander'
+import inquirer from 'inquirer'
 import BaseCommand from '../base-command.js'
+import type { DatabaseBoilerplateType, DatabaseInitOptions } from './init.js'
 
 export type Extension = {
   id: string
@@ -17,6 +20,8 @@ export type SiteInfo = {
   ssl_url: string
 }
 
+const supportedBoilerplates = new Set<DatabaseBoilerplateType>(['drizzle'])
+
 export const createDatabaseCommand = (program: BaseCommand) => {
   const dbCommand = program
     .command('db')
@@ -27,19 +32,45 @@ export const createDatabaseCommand = (program: BaseCommand) => {
   dbCommand
     .command('init')
     .description(`Initialize a new database for the current site`)
-    .option(`--drizzle`, 'Initialize basic drizzle config and schema boilerplate')
-    .option('--no-drizzle', 'Does not initialize drizzle and skips any related prompts')
     .option(
-      '--minimal',
-      'Minimal non-interactive setup. Does not initialize drizzle or any boilerplate. Ideal for CI or AI tools.',
+      '--assume-no',
+      'Non-interactive setup. Does not initialize any third-party tools/boilerplate. Ideal for CI environments or AI tools.',
+      false,
     )
-    .option('-o, --overwrite', 'Overwrites existing files that would be created when setting up drizzle')
-    .action(async (options, command) => {
+    .addOption(
+      new Option('--boilerplate <tool>', 'Type of boilerplate to add to your project.').choices(
+        Array.from(supportedBoilerplates).sort(),
+      ),
+    )
+    .option('--no-boilerplate', "Don't add any boilerplate to your project.")
+    .option('-o, --overwrite', 'Overwrites existing files that would be created when setting up boilerplate')
+    .action(async (_options: Record<string, unknown>, command: BaseCommand) => {
       const { init } = await import('./init.js')
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
+      // Only prompt for drizzle if the user did not specify a boilerplate option, and if we're in
+      // interactive mode
+      if (_options.boilerplate === undefined && !_options.assumeNo) {
+        const answers = await inquirer.prompt<{ useDrizzle: boolean }>([
+          {
+            type: 'confirm',
+            name: 'useDrizzle',
+            message: 'Set up Drizzle boilerplate?',
+          },
+        ])
+        if (answers.useDrizzle) {
+          command.setOptionValue('boilerplate', 'drizzle')
+        }
+      }
+
+      const options = _options as DatabaseInitOptions
+      if (options.assumeNo) {
+        options.boilerplate = false
+        options.overwrite = false
+      }
+
       await init(options, command)
     })
-    .addExamples([`netlify db init --minimal`, `netlify db init --drizzle --overwrite`])
+    .addExamples([`netlify db init --minimal`, `netlify db init --boilerplate=drizzle --overwrite`])
 
   dbCommand
     .command('status')

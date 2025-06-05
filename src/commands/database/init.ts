@@ -1,5 +1,3 @@
-import { OptionValues } from 'commander'
-import inquirer from 'inquirer'
 import BaseCommand from '../base-command.js'
 import { getAccount, getExtension, getJigsawToken, getPackageJSON, installExtension, spawnAsync } from './utils.js'
 import { initDrizzle } from './drizzle.js'
@@ -8,27 +6,23 @@ import prettyjson from 'prettyjson'
 import { log } from '../../utils/command-helpers.js'
 import { SiteInfo } from './database.js'
 
-export const init = async (_options: OptionValues, command: BaseCommand) => {
+export type DatabaseInitOptions = {
+  assumeNo: boolean
+  boilerplate: DatabaseBoilerplateType | false
+  overwrite: boolean
+}
+
+export type DatabaseBoilerplateType = 'drizzle'
+
+export const init = async (options: DatabaseInitOptions, command: BaseCommand) => {
   const siteInfo = command.netlify.siteInfo as SiteInfo
   if (!command.siteId) {
     console.error(`The project must be linked with netlify link before initializing a database.`)
     return
   }
 
-  const initialOpts = command.opts()
-
-  const opts = command.opts<{
-    drizzle?: boolean | undefined
-    overwrite?: boolean | undefined
-    minimal?: boolean | undefined
-  }>()
-
   if (!command.netlify.api.accessToken || !siteInfo.account_id || !siteInfo.name) {
     throw new Error(`Please login with netlify login before running this command`)
-  }
-
-  if (opts.minimal === true) {
-    command.setOptionValue('drizzle', false)
   }
 
   const account = await getAccount(command, { accountId: siteInfo.account_id })
@@ -64,23 +58,8 @@ export const init = async (_options: OptionValues, command: BaseCommand) => {
     await installNeonExtension()
   }
 
-  /**
-   * Only prompt for drizzle if the user did not pass in the `--drizzle` or `--no-drizzle` option
-   */
-  if (initialOpts.drizzle !== false && initialOpts.drizzle !== true) {
-    const answers = await inquirer.prompt<{
-      drizzle: boolean
-    }>([
-      {
-        type: 'confirm',
-        name: 'drizzle',
-        message: 'Use Drizzle?',
-      },
-    ])
-    command.setOptionValue('drizzle', answers.drizzle)
-  }
-  if (opts.drizzle) {
-    log(`Initializing drizzle...`)
+  if (typeof options.boilerplate === 'string') {
+    log(`Initializing ${options.boilerplate}...`)
     await initDrizzle(command)
   }
 
