@@ -25,7 +25,7 @@ export type InvokeFunctionResultWithSuccess = { error: null; result: InvokeFunct
 export type InvokeResult = InvokeFunctionResultWithError | InvokeFunctionResultWithSuccess
 
 const TYPESCRIPT_EXTENSIONS = new Set(['.cts', '.mts', '.ts'])
-const V2_MIN_NODE_VERSION = '20.0.0'
+const V2_MIN_NODE_VERSION = '20.12.2'
 
 // See https://github.com/microsoft/TypeScript/issues/54451.
 // Omit<A | B> does not work as you'd expect. This does.
