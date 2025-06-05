@@ -14,6 +14,7 @@ import { findUp } from 'find-up'
 import inquirer from 'inquirer'
 import inquirerAutocompletePrompt from 'inquirer-autocomplete-prompt'
 import merge from 'lodash/merge.js'
+import pick from 'lodash/pick.js'
 
 import { getAgent } from '../lib/http-agent.js'
 import {
@@ -785,3 +786,6 @@ export default class BaseCommand extends Command {
     return this.netlify.siteInfo.feature_flags?.[flagName] || null
   }
 }
+
+export const getBaseOptionValues = (options: OptionValues): BaseOptionValues =>
+  pick(options, ['auth', 'cwd', 'debug', 'filter', 'httpProxy', 'silent'])
