@@ -61,7 +61,7 @@ netlify init
 **Examples**
 
 ```bash
-netlify db init --minimal
+netlify db init --assume-no
 netlify db init --boilerplate=drizzle --overwrite
 ```
 
