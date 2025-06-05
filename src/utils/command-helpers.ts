@@ -364,8 +364,13 @@ export const netlifyCommand = () => {
     return `npx netlify`
   }
 
-  // Captures both `pnpx netlify ...` and `pnpm exec netlify ...`
+  // Captures `pnpm exec netlify ...`
   if (pkgFromUserAgent(npm_config_user_agent) === 'pnpm' && npm_command === 'exec') {
+    return `pnpm exec netlify`
+  }
+
+  // Captures `pnpx netlify ...`
+  if (pkgFromUserAgent(npm_config_user_agent) === 'pnpm' && npm_command === 'run-script') {
     return `pnpx netlify`
   }
 

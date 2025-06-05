@@ -28,9 +28,11 @@ import { getProxyUrl } from '../../utils/proxy.js'
 import { runDevTimeline } from '../../utils/run-build.js'
 import type { CLIState, ServerSettings } from '../../utils/types.js'
 import type BaseCommand from '../base-command.js'
+import { getBaseOptionValues } from '../base-command.js'
 import type { NetlifySite } from '../types.js'
 
 import type { DevConfig } from './types.js'
+import { doesProjectRequireLinkedSite } from '../../lib/extensions.js'
 
 const handleLiveTunnel = async ({
   api,
@@ -93,6 +95,24 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
   let { env } = cachedConfig
 
   env.NETLIFY_DEV = { sources: ['internal'], value: 'true' }
+
+  const [needsLinkedSite, packagesRequiringLinkedSite] = await doesProjectRequireLinkedSite({
+    options,
+    project: command.project,
+    site: command.netlify.site,
+    siteInfo: command.netlify.siteInfo,
+  })
+  if (needsLinkedSite) {
+    log(
+      `Dependenc${packagesRequiringLinkedSite.length > 1 ? 'ies' : 'y'} ${packagesRequiringLinkedSite.join(
+        ', ',
+      )} require${
+        packagesRequiringLinkedSite.length > 1 ? '' : 's'
+      } a linked project, but you don't have one linked yet. Let's do that first.`,
+    )
+    const { init } = await import('../init/init.js')
+    await init(getBaseOptionValues(options), command)
+  }
 
   const blobsContext = await getBlobsContextWithEdgeAccess({
     debug: options.debug,
