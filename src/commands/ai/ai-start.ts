@@ -166,9 +166,13 @@ export const aiStartCommand = async (options: OptionValues, command: BaseCommand
       log()
       log(chalk.green('✔ Your AI project is ready to go!'))
       log(`→ Project cloned to: ${chalk.cyanBright(targetDir)}`)
-      log(`→ Enter your project directory: ${chalk.cyanBright(`cd ${targetDir}`)}`)
+      log()
+      log(chalk.yellowBright(`📁 Next: Enter your project directory`))
+      log(`   ${chalk.cyanBright(`cd ${targetDir}`)}`)
+      log()
       log(`→ AI setup is processing in the background`)
       log(`→ Check progress at: ${chalk.cyanBright(response.dashboardUrl)}`)
+      log(`→ Then you can run: ${chalk.cyanBright('netlify dev')} or ${chalk.cyanBright('netlify deploy')}`)
       log()
 
     } else {
