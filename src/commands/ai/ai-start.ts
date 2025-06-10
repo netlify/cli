@@ -6,66 +6,94 @@ import { runGit } from '../../utils/run-git.js'
 import { startSpinner } from '../../lib/spinner.js'
 import BaseCommand from '../base-command.js'
 
-interface MockHashDecodeResult {
-  siteId?: string
-  repoUrl?: string
-  targetDir?: string
-  branch?: string
+// Decode hash to get the encoded URL
+const decodeHash = (hash: string): string => {
+  // In real implementation, this would decode the hash to get the actual URL
+  // For now, return a mock URL
+  return 'https://api.netlify.com/api/v1/ai/projects/mock-endpoint'
 }
 
-// Mock hash decoding - in real implementation this would decode the actual hash
-const mockDecodeHash = (hash: string): MockHashDecodeResult => {
-  // Mock: If hash starts with 'site_', treat it as a site ID
-  // Otherwise, treat it as a direct repo URL
-  if (hash.startsWith('site_')) {
+interface ProjectInfo {
+  success: boolean
+  projectId: string
+  aiInstructions: string
+}
+
+// Call the decoded URL to get project information
+const fetchProjectInfo = async (url: string, authToken: string): Promise<ProjectInfo> => {
+  try {
+    // Mock response for now - in real implementation, fetch from the decoded URL
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    
+    // Mock response with project ID and AI instructions (no repository URL)
     return {
-      siteId: hash.replace('site_', ''),
-      targetDir: `ai-project-${hash.substring(0, 8)}`,
-      branch: 'main'
+      success: true,
+      projectId: '4d6c8c75-2278-409e-bcb7-06e07b79e1bc',
+      aiInstructions: `# AI Project Instructions
+
+This is your AI-powered project setup guide.
+
+## Getting Started
+
+1. Review the project structure
+2. Install dependencies: \`npm install\`
+3. Start development: \`netlify dev\`
+4. Deploy your project: \`netlify deploy\`
+
+## AI Features
+
+- Automated code analysis
+- Smart deployment optimizations
+- Performance monitoring
+- Error detection and suggestions
+
+## Next Steps
+
+- Configure your build settings
+- Set up environment variables
+- Explore the AI dashboard for insights
+
+Happy coding! 🚀`
     }
-  } else {
-    return {
-      repoUrl: 'https://github.com/netlify/netlify-cli.git', // Mock repo
-      targetDir: `ai-project-${hash.substring(0, 8)}`,
-      branch: 'main'
-    }
+  } catch (error) {
+    throw new Error(`Failed to fetch project information: ${error instanceof Error ? error.message : 'Unknown error'}`)
   }
 }
 
-// Get repository URL from site ID using existing API functionality
-const getRepoUrlFromSiteId = async (api: any, siteId: string): Promise<string> => {
+// Get repository URL from project ID using existing site API functionality
+const getRepoUrlFromProjectId = async (api: any, projectId: string): Promise<string> => {
   try {
-    const siteData = await api.getSite({ siteId })
+    // Use project ID as site ID to get site data
+    const siteData = await api.getSite({ siteId: projectId })
     
     const repoUrl = siteData.build_settings?.repo_url
     
     if (!repoUrl) {
-      throw new Error(`No repository URL found for site ID: ${siteId}`)
+      throw new Error(`No repository URL found for project ID: ${projectId}`)
     }
     
     return repoUrl
     
   } catch (error: any) {
     if (error.status === 404) {
-      throw new Error(`Project with ID ${siteId} not found`)
+      throw new Error(`Project with ID ${projectId} not found`)
     }
     throw new Error(`Failed to fetch project data: ${error.message}`)
   }
 }
 
-// Mock server response for now
-const mockServerRequest = async (hash: string, _authToken: string) => {
-  // Simulate API call delay
-  await new Promise(resolve => setTimeout(resolve, 1500))
+// Save AI instructions to markdown file
+const saveAiInstructions = async (instructions: string, targetDir: string): Promise<void> => {
+  const fs = await import('node:fs/promises')
+  const path = await import('node:path')
   
-  // Mock successful response
-  return {
-    success: true,
-    message: 'AI project initialization started successfully',
-    projectId: '4d6c8c75-2278-409e-bcb7-06e07b79e1bc',
-    status: 'processing',
-    estimatedTime: '2-3 minutes',
-    dashboardUrl: `https://app.netlify.com/ai/projects/proj_${hash.substring(0, 8)}`
+  try {
+    const filePath = path.resolve(targetDir, 'AI-instructions.md')
+    await fs.writeFile(filePath, instructions, 'utf-8')
+    log(`${chalk.green('✅')} AI instructions saved to ${chalk.cyan('AI-instructions.md')}`)
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    log(`${chalk.yellow('⚠️')} Warning: Failed to save AI instructions: ${errorMessage}`)
   }
 }
 
@@ -96,43 +124,44 @@ export const aiStartCommand = async (options: OptionValues, command: BaseCommand
   log(`${chalk.gray('Hash:')} ${hash}`)
   log(`${chalk.gray('User:')} ${api.accessToken ? 'Authenticated ✅' : 'Not authenticated ❌'}`)
 
-  // Step 1: Decode hash to get repository information
+  // Step 1: Decode hash and fetch project information
   log('\n📋 Decoding project hash...')
-  const hashResult = mockDecodeHash(hash)
+  const decodedUrl = decodeHash(hash)
+  log(`${chalk.cyan('Decoded URL:')} ${decodedUrl}`)
   
-  let finalRepoUrl: string
-  
-  // Step 1a: If hash contains site ID, fetch repository URL from Netlify API
-  if (hashResult.siteId) {
-    log(`${chalk.cyan('Site ID:')} ${hashResult.siteId}`)
-    log('🔍 Fetching repository information from Netlify...')
-    
-    try {
-      finalRepoUrl = await getRepoUrlFromSiteId(api, hashResult.siteId)
-      log(`${chalk.cyan('Repository:')} ${finalRepoUrl}`)
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-      log(chalk.red('❌ Error:'), errorMessage)
-      return
-    }
-  } else if (hashResult.repoUrl) {
-    // Direct repository URL provided
-    finalRepoUrl = hashResult.repoUrl
-    log(`${chalk.cyan('Repository:')} ${finalRepoUrl}`)
-  } else {
-    log(chalk.red('❌ Error: No repository information found in hash'))
+  log('\n🔍 Fetching project information...')
+  let projectInfo: ProjectInfo
+  try {
+    projectInfo = await fetchProjectInfo(decodedUrl, api.accessToken ?? '')
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    log(chalk.red('❌ Error:'), errorMessage)
     return
   }
-  
-  log(`${chalk.cyan('Target Directory:')} ${hashResult.targetDir ?? 'auto-generated'}`)
-  if (hashResult.branch) {
-    log(`${chalk.cyan('Branch:')} ${hashResult.branch}`)
+
+  if (!projectInfo.success) {
+    log(chalk.red('❌ Failed to fetch project information'))
+    return
   }
 
-  // Step 2: Clone repository using existing functionality
+  log(`${chalk.cyan('Project ID:')} ${projectInfo.projectId}`)
+
+  // Step 2: Get repository URL from project ID via Netlify site API
+  log('\n🔗 Linking to Netlify site and fetching repository...')
+  let repositoryUrl: string
   try {
-    const { repoUrl, repoName } = normalizeRepoUrl(finalRepoUrl)
-    const targetDir = hashResult.targetDir ?? `ai-project-${repoName}-${hash.substring(0, 8)}`
+    repositoryUrl = await getRepoUrlFromProjectId(api, projectInfo.projectId)
+    log(`${chalk.cyan('Repository:')} ${repositoryUrl}`)
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    log(chalk.red('❌ Error:'), errorMessage)
+    return
+  }
+
+  // Step 3: Clone repository using existing functionality
+  try {
+    const { repoUrl, repoName } = normalizeRepoUrl(repositoryUrl)
+    const targetDir = `ai-project-${repoName}-${hash.substring(0, 8)}`
 
     const cloneSpinner = startSpinner({ text: `Cloning repository to ${chalk.cyan(targetDir)}` })
     
@@ -148,36 +177,37 @@ export const aiStartCommand = async (options: OptionValues, command: BaseCommand
     command.workingDir = targetDir
     process.chdir(targetDir)
 
-    // Step 3: Send request to AI server for project setup
-    log('\n🚀 Sending request to AI server...')
-    const response = await mockServerRequest(hash, api.accessToken ?? '')
-
-    if (response.success) {
-      log(`\n${chalk.green('✅ Success!')} ${response.message}`)
-      log(`${chalk.cyan('Project ID:')} ${response.projectId}`)
-      log(`${chalk.cyan('Status:')} ${response.status}`)
-      log(`${chalk.cyan('Estimated Time:')} ${response.estimatedTime}`)
-      
-      if (response.dashboardUrl) {
-        log(`${chalk.cyan('Dashboard:')} ${response.dashboardUrl}`)
-      }
-
-      // Success message with next steps
-      log()
-      log(chalk.green('✔ Your AI project is ready to go!'))
-      log(`→ Project cloned to: ${chalk.cyanBright(targetDir)}`)
-      log()
-      log(chalk.yellowBright(`📁 Next: Enter your project directory`))
-      log(`   ${chalk.cyanBright(`cd ${targetDir}`)}`)
-      log()
-      log(`→ AI setup is processing in the background`)
-      log(`→ Check progress at: ${chalk.cyanBright(response.dashboardUrl)}`)
-      log(`→ Then you can run: ${chalk.cyanBright('netlify dev')} or ${chalk.cyanBright('netlify deploy')}`)
-      log()
-
-    } else {
-      log(chalk.red('❌ Failed to start AI project'))
+    // Step 4: Save AI instructions to file
+    if (projectInfo.aiInstructions) {
+      log('\n📝 Saving AI instructions...')
+      // Use command working directory which is now set to the cloned repo
+      await saveAiInstructions(projectInfo.aiInstructions, command.workingDir)
     }
+
+    // Success message with next steps
+    log()
+    log(chalk.green('✔ Your AI project is ready to go!'))
+    log(`→ Project ID: ${chalk.cyanBright(projectInfo.projectId)}`)
+    log(`→ Project cloned to: ${chalk.cyanBright(targetDir)}`)
+    if (projectInfo.aiInstructions) {
+      log(`→ AI instructions saved: ${chalk.cyanBright('AI-instructions.md')}`)
+    }
+    log()
+    log(chalk.yellowBright(`📁 Step 1: Enter your project directory`))
+    log(`   ${chalk.cyanBright(`cd ${targetDir}`)}`)
+    log()
+    if (projectInfo.aiInstructions) {
+      log(chalk.yellowBright(`🤖 Step 2: Ask your AI assistant to process the instructions`))
+      log(`   ${chalk.gray('Tell your AI:')} ${chalk.cyanBright('"Please read and follow the AI-instructions.md file"')}`)
+      log()
+    }
+    log(chalk.yellowBright(`🚀 Step 3: Start development`))
+    log(`   ${chalk.cyanBright('netlify dev')} ${chalk.gray('- Start local development server')}`)
+    log(`   ${chalk.cyanBright('netlify deploy')} ${chalk.gray('- Deploy your project')}`)
+    log()
+    log(chalk.gray(`💡 Pro tip: Your AI assistant can help you understand and implement`))
+    log(chalk.gray(`   the project-specific instructions in AI-instructions.md`))
+    log()
 
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
