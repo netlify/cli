@@ -25,7 +25,7 @@ export type InvokeFunctionResultWithSuccess = { error: null; result: InvokeFunct
 export type InvokeResult = InvokeFunctionResultWithError | InvokeFunctionResultWithSuccess
 
 const TYPESCRIPT_EXTENSIONS = new Set(['.cts', '.mts', '.ts'])
-const V2_MIN_NODE_VERSION = '18.14.0'
+const V2_MIN_NODE_VERSION = '20.12.2'
 
 // See https://github.com/microsoft/TypeScript/issues/54451.
 // Omit<A | B> does not work as you'd expect. This does.
@@ -252,7 +252,23 @@ export default class NetlifyFunction<BuildResult extends BaseBuildResult> {
       throw new Error('Function timeout (`timeoutBackground` or `timeoutSynchronous`) not set')
     }
 
-    const environment = {}
+    // Get function environment variables from config.build.environment
+    // This allows build event handlers to add function-specific environment variables
+    // Only include config environment variables that are not already set in process.env
+    // to ensure process environment variables take precedence
+    const configEnvVars: Record<string, string> = {}
+    if (this.config.build?.environment) {
+      Object.entries(this.config.build.environment).forEach(([key, value]) => {
+        if (typeof value === 'string' && !(key in process.env)) {
+          configEnvVars[key] = value
+        }
+      })
+    }
+
+    const environment = {
+      // Include function-specific environment variables from config
+      ...configEnvVars,
+    }
 
     if (this.blobsContext) {
       const payload = JSON.stringify(getBlobsEventProperty(this.blobsContext))

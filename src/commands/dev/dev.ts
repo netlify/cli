@@ -16,6 +16,7 @@ import {
   chalk,
   log,
   normalizeConfig,
+  netlifyCommand,
 } from '../../utils/command-helpers.js'
 import detectServerSettings, { getConfigWithPlugins } from '../../utils/detect-server-settings.js'
 import { UNLINKED_SITE_MOCK_ID, getDotEnvVariables, getSiteInformation, injectEnvVariables } from '../../utils/dev.js'
@@ -28,9 +29,11 @@ import { getProxyUrl } from '../../utils/proxy.js'
 import { runDevTimeline } from '../../utils/run-build.js'
 import type { CLIState, ServerSettings } from '../../utils/types.js'
 import type BaseCommand from '../base-command.js'
+import { getBaseOptionValues } from '../base-command.js'
 import type { NetlifySite } from '../types.js'
 
 import type { DevConfig } from './types.js'
+import { doesProjectRequireLinkedSite } from '../../lib/extensions.js'
 
 const handleLiveTunnel = async ({
   api,
@@ -93,6 +96,38 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
   let { env } = cachedConfig
 
   env.NETLIFY_DEV = { sources: ['internal'], value: 'true' }
+
+  const [needsLinkedSite, packagesRequiringLinkedSite] = await doesProjectRequireLinkedSite({
+    options,
+    project: command.project,
+    site: command.netlify.site,
+    siteInfo: command.netlify.siteInfo,
+  })
+  if (needsLinkedSite) {
+    log(
+      `Dependenc${packagesRequiringLinkedSite.length > 1 ? 'ies' : 'y'} ${packagesRequiringLinkedSite.join(
+        ', ',
+      )} require${
+        packagesRequiringLinkedSite.length > 1 ? '' : 's'
+      } a linked project, but you don't have one linked yet. Let's do that first.`,
+    )
+    const { init } = await import('../init/init.js')
+    const { LINKED_NEW_SITE_EXIT_CODE, LINKED_EXISTING_SITE_EXIT_CODE } = await import('../init/constants.js')
+
+    await init(getBaseOptionValues(options), command, {
+      customizeExitMessage: (code, defaultMessage) => {
+        switch (code) {
+          case LINKED_NEW_SITE_EXIT_CODE:
+          // fallthrough
+          case LINKED_EXISTING_SITE_EXIT_CODE:
+            return `${defaultMessage !== '' ? `${defaultMessage}\n` : ''}You can run ${chalk.cyanBright.bold(
+              `${netlifyCommand()} dev`,
+            )} again to start the local development server.`
+        }
+      },
+      exitAfterConfiguringRepo: true,
+    })
+  }
 
   const blobsContext = await getBlobsContextWithEdgeAccess({
     debug: options.debug,

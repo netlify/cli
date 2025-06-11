@@ -290,7 +290,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
           },
         ])
         .withEdgeFunction({
-          handler: (req, context) =>
+          handler: async (req, context) =>
             Response.json({
               requestID: req.headers.get('x-nf-request-id'),
               deploy: (context as EdgeHandlerContext & { deploy: { context: string; id: string; published: boolean } })
@@ -364,7 +364,8 @@ describe.concurrent('commands/dev-miscellaneous', () => {
           name: 'hello-legacy',
         })
         .withEdgeFunction({
-          handler: (req) => new URL('/goodbye', req.url),
+          // return a URL instance from edge functions
+          handler: async (req) => new URL('/goodbye', req.url),
           name: 'hello',
         })
 
@@ -411,7 +412,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
           },
         ])
         .withEdgeFunction({
-          handler: () => new Response('Hello world'),
+          handler: async () => new Response('Hello world'),
           name: 'hello',
         })
 
@@ -680,7 +681,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
         })
         .withEdgeFunction({
           config: { path: '/hello' },
-          handler: () => {
+          handler: async () => {
             const url = new URL('/shouldve-provided-a-base')
             return new Response(url.toString())
           },
@@ -841,7 +842,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
           },
         })
         .withEdgeFunction({
-          handler: () => new Response('Hello world'),
+          handler: async () => new Response('Hello world'),
           name: 'hello',
         })
 
@@ -852,7 +853,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
 
         await builder
           .withEdgeFunction({
-            handler: () => new Response('Hello builder'),
+            handler: async () => new Response('Hello builder'),
             name: 'hello',
           })
           .build()
@@ -887,7 +888,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
           },
         })
         .withEdgeFunction({
-          handler: () => new Response('Auth response'),
+          handler: async () => new Response('Auth response'),
           name: 'auth',
         })
 
@@ -927,7 +928,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
         })
         .withEdgeFunction({
           config: { path: '/hello-1' },
-          handler: () => new Response('Hello world'),
+          handler: async () => new Response('Hello world'),
           name: 'hello',
         })
 
@@ -946,7 +947,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
         await builder
           .withEdgeFunction({
             config: { path: ['/hello-2', '/hello-3'] },
-            handler: () => new Response('Hello world'),
+            handler: async () => new Response('Hello world'),
             name: 'hello',
           })
           .build()
@@ -984,7 +985,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
         })
         .withEdgeFunction({
           config: { path: '/*', excludedPath: '/static/*' },
-          handler: () => new Response('Hello world'),
+          handler: async () => new Response('Hello world'),
           name: 'hello',
         })
 
@@ -1024,7 +1025,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
           },
         })
         .withEdgeFunction({
-          handler: () => new Response('Hello world'),
+          handler: async () => new Response('Hello world'),
           name: 'hello',
         })
 
@@ -1063,7 +1064,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
         await builder
           .withEdgeFunction({
             config: { path: '/internal-1' },
-            handler: () => new Response('Hello from an internal function'),
+            handler: async () => new Response('Hello from an internal function'),
             name: 'internal',
             path: '.netlify/edge-functions',
           })
@@ -1081,7 +1082,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
         await builder
           .withEdgeFunction({
             config: { path: '/internal-2' },
-            handler: () => new Response('Hello from an internal function'),
+            handler: async () => new Response('Hello from an internal function'),
             name: 'internal',
             path: '.netlify/edge-functions',
           })
@@ -1209,7 +1210,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
           },
         })
         .withEdgeFunction({
-          handler: () => {
+          handler: async () => {
             // @ts-expect-error TS(2304) FIXME: Cannot find name 'Deno'.
             // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             const fromDenoGlobal = Deno.env.toObject() as Record<string, string>
