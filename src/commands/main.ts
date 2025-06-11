@@ -22,7 +22,6 @@ import getCLIPackageJson from '../utils/get-cli-package-json.js'
 import { didEnableCompileCache } from '../utils/nodejs-compile-cache.js'
 import { track, reportError } from '../utils/telemetry/index.js'
 
-import { createAiCommand } from './ai/index.js'
 import { createApiCommand } from './api/index.js'
 import BaseCommand from './base-command.js'
 import { createBlobsCommand } from './blobs/blobs.js'
@@ -215,7 +214,6 @@ export const createMainCommand = (): BaseCommand => {
   const program = new BaseCommand('netlify')
 
   // register all the commands
-  createAiCommand(program)
   createApiCommand(program)
   createBlobsCommand(program)
   createBuildCommand(program)

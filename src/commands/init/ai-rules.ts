@@ -1,4 +1,3 @@
-import type { OptionValues } from 'commander'
 import { resolve } from 'node:path'
 import { promises as fs } from 'node:fs'
 import type { NetlifyAPI } from '@netlify/api'
@@ -7,21 +6,17 @@ import { chalk, log, logAndThrowError, type APIError } from '../../utils/command
 import { normalizeRepoUrl } from '../../utils/normalize-repo-url.js'
 import { runGit } from '../../utils/run-git.js'
 import { startSpinner } from '../../lib/spinner.js'
-import type BaseCommand from '../base-command.js'
-import type { SiteInfo } from '../../utils/types.js'
 import { getContextConsumers, type ConsumerConfig } from '../../recipes/ai-context/context.js'
 import execa from '../../utils/execa.js'
 import { version } from '../../utils/command-helpers.js'
+import type BaseCommand from '../base-command.js'
+import type { SiteInfo } from '../../utils/types.js'
 import inquirer from 'inquirer'
 
 interface ProjectInfo {
   success: boolean
   projectId: string
   prompt: string
-}
-
-interface AIStartOptions extends OptionValues {
-  debug?: boolean
 }
 
 // Check if a command belongs to a known IDE (reusing ai-context logic)
@@ -143,50 +138,6 @@ const generateMcpConfig = (ide: ConsumerConfig): string => {
   )
 }
 
-// Trigger IDE-specific MCP configuration
-const triggerMcpConfiguration = async (ide: ConsumerConfig, projectPath: string): Promise<boolean> => {
-  log(`\n${chalk.blue('🔧 MCP Configuration for')} ${chalk.cyan(ide.presentedName)}`)
-
-  const { shouldConfigure } = await inquirer.prompt<{ shouldConfigure: boolean }>([
-    {
-      type: 'confirm',
-      name: 'shouldConfigure',
-      message: `Would you like to automatically configure MCP server for ${ide.presentedName}?`,
-      default: true,
-    },
-  ])
-
-  if (!shouldConfigure) {
-    log(chalk.gray('Skipped MCP configuration. You can set it up manually later.'))
-    return false
-  }
-
-  try {
-    const config = generateMcpConfig(ide)
-
-    // IDE-specific configuration actions
-    switch (ide.key) {
-      case 'vscode':
-        await configureMcpForVSCode(config, projectPath)
-        break
-      case 'cursor':
-        await configureMcpForCursor(config, projectPath)
-        break
-      case 'windsurf':
-        await configureMcpForWindsurf(config, projectPath)
-        break
-      default:
-        showGenericMcpConfig(config, ide.presentedName)
-    }
-
-    log(`${chalk.green('✅')} MCP configuration completed for ${chalk.cyan(ide.presentedName)}`)
-    return true
-  } catch (error) {
-    log(`${chalk.red('❌')} Failed to configure MCP: ${error instanceof Error ? error.message : 'Unknown error'}`)
-    return false
-  }
-}
-
 // VS Code specific MCP configuration
 const configureMcpForVSCode = async (config: string, projectPath: string): Promise<void> => {
   const configPath = resolve(projectPath, '.vscode', 'mcp.json')
@@ -276,79 +227,51 @@ const showGenericMcpConfig = (config: string, ideName: string): void => {
   log(`${chalk.gray('--- End Configuration ---')}\n`)
 }
 
-// Try to automatically activate MCP in the detected IDE
-const tryActivateMcp = async (ide: ConsumerConfig, projectPath: string): Promise<boolean> => {
+// Trigger IDE-specific MCP configuration
+const triggerMcpConfiguration = async (ide: ConsumerConfig, projectPath: string): Promise<boolean> => {
+  log(`\n${chalk.blue('🔧 MCP Configuration for')} ${chalk.cyan(ide.presentedName)}`)
+
+  const { shouldConfigure } = await inquirer.prompt<{ shouldConfigure: boolean }>([
+    {
+      type: 'confirm',
+      name: 'shouldConfigure',
+      message: `Would you like to automatically configure MCP server for ${ide.presentedName}?`,
+      default: true,
+    },
+  ])
+
+  if (!shouldConfigure) {
+    log(chalk.gray('Skipped MCP configuration. You can set it up manually later.'))
+    return false
+  }
+
   try {
+    const config = generateMcpConfig(ide)
+
+    // IDE-specific configuration actions
     switch (ide.key) {
       case 'vscode':
-        return await activateMcpInVSCode(projectPath)
+        await configureMcpForVSCode(config, projectPath)
+        break
       case 'cursor':
-        return await activateMcpInCursor(projectPath)
+        await configureMcpForCursor(config, projectPath)
+        break
       case 'windsurf':
-        return await activateMcpInWindsurf(projectPath)
+        await configureMcpForWindsurf(config, projectPath)
+        break
       default:
-        return false
+        showGenericMcpConfig(config, ide.presentedName)
     }
-  } catch (_) {
-    // Silent fail - activation is best effort
+
+    log(`${chalk.green('✅')} MCP configuration completed for ${chalk.cyan(ide.presentedName)}`)
+    return true
+  } catch (error) {
+    log(`${chalk.red('❌')} Failed to configure MCP: ${error instanceof Error ? error.message : 'Unknown error'}`)
     return false
   }
 }
 
-// Activate MCP in VS Code
-const activateMcpInVSCode = async (projectPath: string): Promise<boolean> => {
-  try {
-    // Try to reload VS Code window via command palette
-    // This uses VS Code's command line interface
-    await execa('code', ['--command', 'workbench.action.reloadWindow'], {
-      cwd: projectPath,
-      timeout: 5000,
-    })
-    return true
-  } catch {
-    // Try alternative: send reload command via VS Code extension API
-    try {
-      await execa('code', ['--command', 'developer.reloadWindow'], {
-        cwd: projectPath,
-        timeout: 5000,
-      })
-      return true
-    } catch {
-      return false
-    }
-  }
-}
-
-// Activate MCP in Cursor
-const activateMcpInCursor = async (projectPath: string): Promise<boolean> => {
-  try {
-    // Cursor might support similar command line interface
-    await execa('cursor', ['--command', 'workbench.action.reloadWindow'], {
-      cwd: projectPath,
-      timeout: 5000,
-    })
-    return true
-  } catch {
-    return false
-  }
-}
-
-// Activate MCP in Windsurf
-const activateMcpInWindsurf = async (projectPath: string): Promise<boolean> => {
-  try {
-    // Windsurf-specific activation (placeholder - would need actual API)
-    // For now, try to signal the IDE to reload configuration
-    await execa('windsurf', ['--reload-config'], {
-      cwd: projectPath,
-      timeout: 5000,
-    })
-    return true
-  } catch {
-    return false
-  }
-}
-
-// Move helper functions to a separate utils file
+// Helper functions reused from ai-start.ts
 const decodeHash = (hash: string): string => {
   try {
     return atob(hash)
@@ -413,21 +336,16 @@ const cloneRepo = async (repoUrl: string, targetDir: string, debug: boolean): Pr
   }
 }
 
-export const aiStartCommand = async (options: AIStartOptions, command: BaseCommand): Promise<void> => {
-  const hash = command.args[0]
-
-  // Validate hash parameter
-  if (!hash) {
-    log(`${chalk.red('Error:')} Hash parameter is required`)
-    log(`${chalk.gray('Usage:')} netlify ai:start <hash>`)
-    return
-  }
-
+/**
+ * Handles AI rules initialization workflow
+ * This is the experimental --ai-rules functionality for the init command
+ */
+export const initWithAiRules = async (hash: string, command: BaseCommand): Promise<void> => {
   // Authenticate first before any API operations
   await command.authenticate()
   const { api } = command.netlify
 
-  log(`${chalk.blue('🤖 AI Start')} - Initializing AI project...`)
+  log(`${chalk.blue('🤖 Initializing AI project')} with rules...`)
   log(`${chalk.gray('Hash:')} ${hash}`)
   log(`${chalk.gray('User:')} ${api.accessToken ? 'Authenticated ✅' : 'Not authenticated ❌'}`)
 
@@ -453,7 +371,7 @@ export const aiStartCommand = async (options: AIStartOptions, command: BaseComma
 
     const cloneSpinner = startSpinner({ text: `Cloning repository to ${chalk.cyan(targetDir)}` })
 
-    await cloneRepo(repoUrl, targetDir, Boolean(options.debug))
+    await cloneRepo(repoUrl, targetDir, false)
     cloneSpinner.success({ text: `Cloned repository to ${chalk.cyan(targetDir)}` })
 
     // Step 4: Save AI instructions to file
@@ -475,6 +393,7 @@ export const aiStartCommand = async (options: AIStartOptions, command: BaseComma
     // Update working directory to cloned repo
     process.chdir(targetDir)
     command.workingDir = targetDir
+
     // Success message with next steps
     log()
     log(chalk.green('✔ Your AI project is ready to go!'))
@@ -486,18 +405,12 @@ export const aiStartCommand = async (options: AIStartOptions, command: BaseComma
     log()
     log(chalk.yellowBright(`📁 Step 1: Enter your project directory`))
     log(`   ${chalk.cyanBright(`cd ${targetDir}`)}`)
+    
     if (detectedIDE) {
       if (mcpConfigured) {
         log(chalk.yellowBright(`🔧 Step 2: MCP Server Configured`))
         log(`   ${chalk.green('✅')} ${chalk.cyan(detectedIDE.presentedName)} is ready with Netlify MCP server`)
-
-        // Try to automatically activate MCP in the IDE
-        const activated = await tryActivateMcp(detectedIDE, targetDir)
-        if (activated) {
-          log(`   ${chalk.green('🚀')} MCP server automatically activated`)
-        } else {
-          log(`   ${chalk.gray('💡 MCP will activate when you reload/restart your IDE window')}`)
-        }
+        log(`   ${chalk.gray('💡 MCP will activate when you reload/restart your IDE window')}`)
       } else {
         log(chalk.yellowBright(`🔧 Step 2: Manual MCP Configuration`))
         log(`   ${chalk.cyan(detectedIDE.presentedName)} detected - MCP setup was skipped`)
@@ -505,6 +418,7 @@ export const aiStartCommand = async (options: AIStartOptions, command: BaseComma
       }
       log()
     }
+    
     if (projectInfo.prompt) {
       const stepNumber = detectedIDE ? '3' : '2'
       log(chalk.yellowBright(`🤖 Step ${stepNumber}: Ask your AI assistant to process the instructions`))
