@@ -17,17 +17,13 @@ jobs:
     timeout-minutes: 40
     strategy:
       matrix:
-        os: [ubuntu-latest, macOS-latest, windows-latest]
+        os: [ubuntu-latest, macOS-latest, windows-2025]
         # Pinning 20.x version as a temporary workaround due to this https://github.com/nodejs/node/issues/52884
-        node-version: ['18.17.0', '20.12.2', '22']
+        node-version: ['20.12.2', '22']
         shard: ['1/4', '2/4', '3/4', '4/4']
 
         exclude:
-          - os: macOS-latest
-            node-version: '18.17.0'
-          - os: windows-latest
-            node-version: '18.17.0'
-          - os: windows-latest
+          - os: windows-2025
             node-version: '22'
       fail-fast: false
     steps:
@@ -36,7 +32,7 @@ jobs:
         run: |
           netsh int ipv4 set dynamicport tcp start=1025 num=64511
           REG ADD HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\TCPIP\Parameters /v TcpTimedWaitDelay /t REG_DWORD /d 30 /f
-        if: "${{ matrix.os == 'windows-latest' }}"
+        if: "${{ matrix.os == 'windows-2025' }}"
 
       - name: Git checkout
         uses: actions/checkout@v4
@@ -117,7 +113,7 @@ jobs:
   # Can be replaced with larger node 23 tests in the future.
   integration-win-node-23:
     name: Integration test windows latest node23 specific
-    runs-on: windows-latest
+    runs-on: windows-2025
     timeout-minutes: 40
     steps:
       # This improves Windows network performance, we need this since we open many ports in our tests
@@ -176,7 +172,7 @@ jobs:
         id: test-coverage-flags
         # For windows we have to use $env:
         run: |-
-          os=windows-latest
+          os=windows-2025
           node=$(node --version)
           echo "os=${os/-latest/}" >> $GITHUB_OUTPUT
           echo "os=${os/-latest/}" >> $env:GITHUB_OUTPUT
@@ -188,7 +184,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: npm-logs--windows-latest--23x
+          name: npm-logs--windows-2025--23x
           path: |
             ~/.npm/_logs/**/*
 

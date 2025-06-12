@@ -7,10 +7,10 @@ import { destructiveCommandMessages } from './prompt-messages.js'
 export const generateEnvVarsList = (envVarsToDelete: EnvVar[]) => envVarsToDelete.map((envVar) => envVar.key)
 
 /**
- * Prompts the user to confirm overwriting environment variables on a site.
+ * Prompts the user to confirm overwriting environment variables on a project.
  *
- * @param {string} siteId - The ID of the site.
- * @param {EnvVar[]} existingEnvVars - The environment variables that already exist on the site.
+ * @param {string} siteId - The ID of the project.
+ * @param {EnvVar[]} existingEnvVars - The environment variables that already exist on the project.
  * @returns {Promise<void>} A promise that resolves when the user has confirmed the overwriting of the variables.
  */
 export async function promptEnvCloneOverwrite(siteId: string, existingEnvVars: EnvVar[]): Promise<void> {

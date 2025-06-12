@@ -14,22 +14,16 @@ const main = async () => {
   const packageJSONPath = path.join(process.cwd(), 'package.json')
   const rawPackageJSON = await fs.readFile(packageJSONPath, 'utf8')
 
-  try {
-    // Remove dev dependencies from the package.json...
-    const packageJSON = JSON.parse(rawPackageJSON)
-    Reflect.deleteProperty(packageJSON, 'devDependencies')
-    await fs.writeFile(packageJSONPath, JSON.stringify(packageJSON, null, 2))
+  // Remove dev dependencies from the package.json...
+  const packageJSON = JSON.parse(rawPackageJSON)
+  Reflect.deleteProperty(packageJSON, 'devDependencies')
+  await fs.writeFile(packageJSONPath, JSON.stringify(packageJSON, null, 2))
 
-    // Prune out dev dependencies (this updates the `package-lock.json` lockfile)
-    cp.spawnSync('npm', ['prune'], { stdio: 'inherit' })
+  // Prune out dev dependencies (this updates the `package-lock.json` lockfile)
+  cp.spawnSync('npm', ['prune'], { stdio: 'inherit' })
 
-    // Convert `package-lock.json` lockfile to `npm-shrinkwrap.json`
-    cp.spawnSync('npm', ['shrinkwrap'], { stdio: 'inherit' })
-  } finally {
-    // Restore the original `package.json`. (This makes no functional difference in a publishing
-    // environment, it's purely to minimize how destructive this script is.)
-    await fs.writeFile(packageJSONPath, rawPackageJSON)
-  }
+  // Convert `package-lock.json` lockfile to `npm-shrinkwrap.json`
+  cp.spawnSync('npm', ['shrinkwrap'], { stdio: 'inherit' })
 }
 
 await main()

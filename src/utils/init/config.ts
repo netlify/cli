@@ -9,12 +9,12 @@ const logSuccess = ({ provider }: RepoData): void => {
   log()
   log(chalk.greenBright.bold.underline(`Success! Netlify CI/CD Configured!`))
   log()
-  log(`This site is now configured to automatically deploy from ${provider} branches & pull requests`)
+  log(`This project is now configured to automatically deploy from ${provider} branches & pull requests`)
   log()
   log(`Next steps:
 
-  ${chalk.cyanBright.bold('git push')}       Push to your git repository to trigger new site builds
-  ${chalk.cyanBright.bold('netlify open')}   Open the Netlify admin URL of your site
+  ${chalk.cyanBright.bold('git push')}       Push to your git repository to trigger new project builds
+  ${chalk.cyanBright.bold('netlify open')}   Open the Netlify admin URL of your project
   `)
 }
 

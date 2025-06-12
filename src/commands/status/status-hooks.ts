@@ -19,7 +19,7 @@ export const statusHooks = async (_options: OptionValues, command: BaseCommand):
 
   const ntlHooks = await api.listHooksBySiteId({ siteId: siteInfo.id })
   const data = {
-    site: siteInfo.name,
+    project: siteInfo.name,
     hooks: {} as Record<string, StatusHook>,
   }
 
@@ -38,7 +38,7 @@ export const statusHooks = async (_options: OptionValues, command: BaseCommand):
     }
   })
   log(`─────────────────┐
-Site Hook Status │
+Project Hook Status │
 ─────────────────┘`)
   log(prettyjson.render(data))
 }

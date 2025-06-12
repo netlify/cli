@@ -2,13 +2,13 @@ import { type Stats } from 'fs'
 import { stat } from 'fs/promises'
 import { basename, resolve } from 'path'
 
+import type { NetlifyAPI } from '@netlify/api'
 import { type NetlifyConfig, type OnPostBuild, runCoreSteps } from '@netlify/build'
 import inquirer from 'inquirer'
 import isEmpty from 'lodash/isEmpty.js'
 import isObject from 'lodash/isObject.js'
 import { parseAllHeaders } from '@netlify/headers-parser'
 import { parseAllRedirects } from '@netlify/redirect-parser'
-import type { NetlifyAPI } from 'netlify'
 import prettyjson from 'prettyjson'
 
 import { cancelDeploy } from '../../lib/api.js'
@@ -70,17 +70,17 @@ const triggerDeploy = async ({
         site_id: siteId,
         site_name: siteData.name,
         deploy_id: `${siteBuild.deploy_id}`,
-        logs: `https://app.netlify.com/sites/${siteData.name}/deploys/${siteBuild.deploy_id}`,
+        logs: `https://app.netlify.com/projects/${siteData.name}/deploys/${siteBuild.deploy_id}`,
       })
     } else {
       log(
-        `${NETLIFYDEVLOG} A new deployment was triggered successfully. Visit https://app.netlify.com/sites/${siteData.name}/deploys/${siteBuild.deploy_id} to see the logs.`,
+        `${NETLIFYDEVLOG} A new deployment was triggered successfully. Visit https://app.netlify.com/projects/${siteData.name}/deploys/${siteBuild.deploy_id} to see the logs.`,
       )
     }
   } catch (error_) {
     if ((error_ as APIError).status === 404) {
       return logAndThrowError(
-        'Site not found. Please rerun "netlify link" and make sure that your site has CI configured.',
+        'Project not found. Please rerun "netlify link" and make sure that your project has CI configured.',
       )
     } else {
       return logAndThrowError((error_ as APIError).message)
@@ -270,7 +270,7 @@ const SYNC_FILE_LIMIT = 1e2
 // @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
 const prepareProductionDeploy = async ({ api, siteData }) => {
   if (isObject(siteData.published_deploy) && siteData.published_deploy.locked) {
-    log(`\n${NETLIFYDEVERR} Deployments are "locked" for production context of this site\n`)
+    log(`\n${NETLIFYDEVERR} Deployments are "locked" for production context of this project\n`)
     const { unlockChoice } = await inquirer.prompt([
       {
         type: 'confirm',
@@ -655,9 +655,9 @@ const printResults = ({
   runBuildCommand: boolean
 }): void => {
   const msgData: Record<string, string> = {
-    'Build logs': terminalLink(results.logsUrl, results.logsUrl),
-    'Function logs': terminalLink(results.functionLogsUrl, results.functionLogsUrl),
-    'Edge function Logs': terminalLink(results.edgeFunctionLogsUrl, results.edgeFunctionLogsUrl),
+    'Build logs': terminalLink(results.logsUrl, results.logsUrl, { fallback: false }),
+    'Function logs': terminalLink(results.functionLogsUrl, results.functionLogsUrl, { fallback: false }),
+    'Edge function Logs': terminalLink(results.edgeFunctionLogsUrl, results.edgeFunctionLogsUrl, { fallback: false }),
   }
 
   log('')
@@ -683,9 +683,9 @@ const printResults = ({
     exit(0)
   } else {
     const message = deployToProduction
-      ? `Deployed to production URL: ${terminalLink(results.siteUrl, results.siteUrl)}\n
-    Unique deploy URL: ${terminalLink(results.deployUrl, results.deployUrl)}`
-      : `Deployed draft to ${terminalLink(results.deployUrl, results.deployUrl)}`
+      ? `Deployed to production URL: ${terminalLink(results.siteUrl, results.siteUrl, { fallback: false })}\n
+    Unique deploy URL: ${terminalLink(results.deployUrl, results.deployUrl, { fallback: false })}`
+      : `Deployed draft to ${terminalLink(results.deployUrl, results.deployUrl, { fallback: false })}`
 
     log(
       boxen(message, {
@@ -705,8 +705,8 @@ const printResults = ({
 
     if (!deployToProduction) {
       log()
-      log('If everything looks good on your draft URL, deploy it to your main site URL with the --prod flag:')
-      log(chalk.cyanBright.bold(`netlify deploy${runBuildCommand ? '' : '--no-build'} --prod`))
+      log('If everything looks good on your draft URL, deploy it to your main project URL with the --prod flag:')
+      log(chalk.cyanBright.bold(`netlify deploy${runBuildCommand ? '' : ' --no-build'} --prod`))
       log()
     }
   }
@@ -827,9 +827,9 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
   if (hasSiteData) {
     initialSiteData = siteInfo
   } else {
-    log("This folder isn't linked to a site yet")
-    const NEW_SITE = '+  Create & configure a new site'
-    const EXISTING_SITE = 'Link this directory to an existing site'
+    log("This folder isn't linked to a project yet")
+    const NEW_SITE = '+  Create & configure a new project'
+    const EXISTING_SITE = 'Link this directory to an existing project'
 
     const initializeOpts = [EXISTING_SITE, NEW_SITE] as const
 

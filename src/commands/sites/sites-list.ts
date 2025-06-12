@@ -10,7 +10,7 @@ export const sitesList = async (options: OptionValues, command: BaseCommand) => 
   const { api } = command.netlify
   let spinner
   if (!options.json) {
-    spinner = startSpinner({ text: 'Loading your sites' })
+    spinner = startSpinner({ text: 'Loading your projects' })
   }
   await command.authenticate()
 
@@ -49,7 +49,7 @@ export const sitesList = async (options: OptionValues, command: BaseCommand) => 
 
     log(`
 ────────────────────────────┐
- Current Netlify Sites    │
+ Current Netlify Projects │
 ────────────────────────────┘
 
 Count: ${logSites.length}

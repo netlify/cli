@@ -112,7 +112,7 @@ export const envSet = async (key: string, value: string, options: OptionValues, 
   const { api, cachedConfig, site } = command.netlify
   const siteId = site.id
   if (!siteId) {
-    log('No site id found, please run inside a site folder or `netlify link`')
+    log('No project id found, please run inside a project folder or `netlify link`')
     return false
   }
   const { siteInfo } = cachedConfig

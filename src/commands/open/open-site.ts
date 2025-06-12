@@ -10,7 +10,7 @@ export const openSite = async (_options: OptionValues, command: BaseCommand) => 
   await command.authenticate()
 
   const url = siteInfo.ssl_url || siteInfo.url
-  log(`Opening "${siteInfo.name}" site url:`)
+  log(`Opening "${siteInfo.name}" project url:`)
   log(`> ${url}`)
 
   await openBrowser({ url })

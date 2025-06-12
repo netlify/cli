@@ -48,6 +48,7 @@ import { AddressInUseError } from './types.js'
 import { createUnlinkCommand } from './unlink/index.js'
 import { createWatchCommand } from './watch/index.js'
 import terminalLink from 'terminal-link'
+import { createDatabaseCommand } from './database/index.js'
 
 const SUGGESTION_TIMEOUT = 1e4
 
@@ -58,7 +59,10 @@ export const CI_FORCED_COMMANDS = {
   'env:clone': { options: '--force', description: 'Bypasses prompts & Force the command to run.' },
   'blobs:set': { options: '--force', description: 'Bypasses prompts & Force the command to run.' },
   'blobs:delete': { options: '--force', description: 'Bypasses prompts & Force the command to run.' },
-  init: { options: '--force', description: 'Reinitialize CI hooks if the linked site is already configured to use CI' },
+  init: {
+    options: '--force',
+    description: 'Reinitialize CI hooks if the linked project is already configured to use CI',
+  },
   'sites:delete': { options: '-f, --force', description: 'Delete without prompting (useful for CI).' },
 }
 
@@ -233,6 +237,7 @@ export const createMainCommand = (): BaseCommand => {
   createUnlinkCommand(program)
   createWatchCommand(program)
   createLogsCommand(program)
+  createDatabaseCommand(program)
 
   program.setAnalyticsPayload({ didEnableCompileCache })
 
@@ -252,10 +257,10 @@ export const createMainCommand = (): BaseCommand => {
       const docsUrl = 'https://docs.netlify.com'
       const bugsUrl = pkg.bugs?.url ?? ''
       return `→ For more help with the CLI, visit ${NETLIFY_CYAN(
-        terminalLink(cliDocsEntrypointUrl, cliDocsEntrypointUrl),
+        terminalLink(cliDocsEntrypointUrl, cliDocsEntrypointUrl, { fallback: false }),
       )}
-→ For help with Netlify, visit ${NETLIFY_CYAN(terminalLink(docsUrl, docsUrl))}
-→ To report a CLI bug, visit ${NETLIFY_CYAN(terminalLink(bugsUrl, bugsUrl))}\n`
+→ For help with Netlify, visit ${NETLIFY_CYAN(terminalLink(docsUrl, docsUrl, { fallback: false }))}
+→ To report a CLI bug, visit ${NETLIFY_CYAN(terminalLink(bugsUrl, bugsUrl, { fallback: false }))}\n`
     })
     .configureOutput({
       outputError: (message, write) => {

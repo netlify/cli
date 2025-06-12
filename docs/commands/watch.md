@@ -2,13 +2,13 @@
 title: Netlify CLI watch command
 sidebar:
   label: watch
-description: Watch for site deploy to finish
+description: Watch for project deploy to finish
 ---
 
 # `watch`
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
-Watch for site deploy to finish
+Watch for project deploy to finish
 
 **Usage**
 

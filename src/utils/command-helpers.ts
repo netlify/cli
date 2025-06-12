@@ -4,15 +4,15 @@ import fs from 'fs'
 import process from 'process'
 import { format, inspect } from 'util'
 
+import type { NetlifyAPI } from '@netlify/api'
 import { Chalk } from 'chalk'
 import chokidar from 'chokidar'
 import decache from 'decache'
 import WSL from 'is-wsl'
 import debounce from 'lodash/debounce.js'
-import type { NetlifyAPI } from 'netlify'
 import terminalLink from 'terminal-link'
 
-import { clearSpinner, startSpinner } from '../lib/spinner.js'
+import { startSpinner } from '../lib/spinner.js'
 
 import getGlobalConfigStore from './get-global-config-store.js'
 import getCLIPackageJson from './get-cli-package-json.js'
@@ -119,7 +119,8 @@ export const pollForToken = async ({
       return logAndThrowError(error_)
     }
   } finally {
-    clearSpinner({ spinner })
+    spinner.stop()
+    spinner.clear()
   }
 }
 /**
@@ -347,3 +348,32 @@ export const checkFileForLine = (filename: string, line: string) => {
 
 export const TABTAB_CONFIG_LINE = '[[ -f ~/.config/tabtab/__tabtab.zsh ]] && . ~/.config/tabtab/__tabtab.zsh || true'
 export const AUTOLOAD_COMPINIT = 'autoload -U compinit; compinit'
+
+function pkgFromUserAgent(userAgent: string | undefined): string | undefined {
+  if (!userAgent) return undefined
+  const pkgSpec = userAgent.split(' ')[0]
+  const [pkgManagerName] = pkgSpec.split('/')
+  return pkgManagerName
+}
+
+export const netlifyCommand = () => {
+  const { npm_command, npm_config_user_agent, npm_lifecycle_event } = process.env
+
+  // Captures both `npx netlify ...` and `npm exec netlify ...`
+  if (npm_lifecycle_event === 'npx') {
+    return `npx netlify`
+  }
+
+  // Captures `pnpm exec netlify ...`
+  if (pkgFromUserAgent(npm_config_user_agent) === 'pnpm' && npm_command === 'exec') {
+    return `pnpm exec netlify`
+  }
+
+  // Captures `pnpx netlify ...`
+  if (pkgFromUserAgent(npm_config_user_agent) === 'pnpm' && npm_command === 'run-script') {
+    return `pnpx netlify`
+  }
+
+  // Default
+  return 'netlify'
+}

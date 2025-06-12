@@ -8,7 +8,7 @@ const siteInfo = {
   account_slug: 'test-account',
   id: 'site_id',
   name: 'site-name',
-  admin_url: 'https://app.netlify.com/sites/test-site/overview',
+  admin_url: 'https://app.netlify.com/projects/test-site/overview',
   url: 'https://test-site.netlify.app/',
 }
 
@@ -40,7 +40,7 @@ const routes = [
 ]
 
 await setupFixtureTests('empty-project', () => {
-  test<FixtureTestContext>('should print status for a linked site', async ({ fixture }) => {
+  test<FixtureTestContext>('should print status for a linked project', async ({ fixture }) => {
     await withMockApi(routes, async ({ apiUrl }: { apiUrl: string }) => {
       const { account, siteData } = await fixture.callCli(['status', '--json'], {
         execOptions: getCLIOptions({ apiUrl }),

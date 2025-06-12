@@ -7,7 +7,7 @@ sidebar:
 # `logs`
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
-Stream logs from your site
+Stream logs from your project
 
 **Usage**
 

@@ -88,7 +88,7 @@ export const createBlobsCommand = (program: BaseCommand) => {
     .addHelpText('after', () => {
       const docsUrl = 'https://docs.netlify.com/blobs/overview/'
       return `
-For more information about Netlify Blobs, see ${terminalLink(docsUrl, docsUrl)}
+For more information about Netlify Blobs, see ${terminalLink(docsUrl, docsUrl, { fallback: false })}
 `
     })
     .addExamples([

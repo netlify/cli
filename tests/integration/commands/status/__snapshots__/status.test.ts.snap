@@ -1,15 +1,15 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`fixture: empty-project > should print status for a linked site 1`] = `
+exports[`fixture: empty-project > should print status for a linked project 1`] = `
 {
-  "admin-url": "https://app.netlify.com/sites/test-site/overview",
+  "admin-url": "https://app.netlify.com/projects/test-site/overview",
   "site-id": "site_id",
   "site-name": "site-name",
   "site-url": "https://test-site.netlify.app/",
 }
 `;
 
-exports[`fixture: empty-project > should print status for a linked site 2`] = `
+exports[`fixture: empty-project > should print status for a linked project 2`] = `
 {
   "Email": "test@netlify.com",
   "Name": "Test User",

@@ -3,6 +3,7 @@ import { join, relative, resolve } from 'path'
 import process from 'process'
 import { format } from 'util'
 
+import { NetlifyAPI } from '@netlify/api'
 import { DefaultLogger, Project } from '@netlify/build-info'
 import { NodeFS, NoopLogger } from '@netlify/build-info/node'
 import { resolveConfig } from '@netlify/config'
@@ -13,7 +14,7 @@ import { findUp } from 'find-up'
 import inquirer from 'inquirer'
 import inquirerAutocompletePrompt from 'inquirer-autocomplete-prompt'
 import merge from 'lodash/merge.js'
-import { NetlifyAPI } from 'netlify'
+import pick from 'lodash/pick.js'
 
 import { getAgent } from '../lib/http-agent.js'
 import {
@@ -124,15 +125,15 @@ async function selectWorkspace(project: Project, filter?: string): Promise<strin
 
   if (!selected) {
     log()
-    log(chalk.cyan(`We've detected multiple sites inside your repository`))
+    log(chalk.cyan(`We've detected multiple projects inside your repository`))
 
     if (isCI) {
       throw new Error(
-        `Sites detected: ${(project.workspace?.packages || [])
+        `Projects detected: ${(project.workspace?.packages || [])
           .map((pkg) => pkg.name || pkg.path)
           .join(
             ', ',
-          )}. Configure the site you want to work with and try again. Refer to https://ntl.fyi/configure-site for more information.`,
+          )}. Configure the project you want to work with and try again. Refer to https://ntl.fyi/configure-site for more information.`,
       )
     }
 
@@ -141,7 +142,7 @@ async function selectWorkspace(project: Project, filter?: string): Promise<strin
       // @ts-expect-error(serhalp) -- I think this is because `inquirer-autocomplete-prompt` extends known
       // `type`s but TS doesn't know about it
       type: 'autocomplete',
-      message: 'Select the site you want to work with',
+      message: 'Select the project you want to work with',
       source: (_unused: unknown, input = '') =>
         (project.workspace?.packages || [])
           .filter((pkg) => pkg.path.includes(input))
@@ -625,7 +626,7 @@ export default class BaseCommand extends Command {
     if (!siteData.url && flags.site) {
       const result = await getSiteByName(api, flags.site)
       if (result == null) {
-        return logAndThrowError(`Site with name "${flags.site}" not found`)
+        return logAndThrowError(`Project with name "${flags.site}" not found`)
       }
       siteData = result
     }
@@ -785,3 +786,6 @@ export default class BaseCommand extends Command {
     return this.netlify.siteInfo.feature_flags?.[flagName] || null
   }
 }
+
+export const getBaseOptionValues = (options: OptionValues): BaseOptionValues =>
+  pick(options, ['auth', 'cwd', 'debug', 'filter', 'httpProxy', 'silent'])
