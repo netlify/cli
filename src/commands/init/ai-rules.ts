@@ -317,10 +317,10 @@ const getRepoUrlFromProjectId = async (api: NetlifyAPI, projectId: string): Prom
   }
 }
 
-const savePrompt = async (instructions: string, targetDir: string): Promise<void> => {
+const savePrompt = async (instructions: string, ntlContext: string | null, targetDir: string): Promise<void> => {
   try {
     const filePath = resolve(targetDir, 'AI-instructions.md')
-    await fs.writeFile(filePath, instructions, 'utf-8')
+    await fs.writeFile(filePath, `Context: ${ntlContext ?? ''}\n\n${instructions}`, 'utf-8')
     log(`${chalk.green('✅')} AI instructions saved to ${chalk.cyan('AI-instructions.md')}`)
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
@@ -376,8 +376,21 @@ export const initWithAiRules = async (hash: string, command: BaseCommand): Promi
 
     // Step 4: Save AI instructions to file
     if (projectInfo.prompt) {
+      const ntlContext = await fetch(
+        'https://docs.netlify.com/ai-context/scoped-context?scopes=serverless,blobs,forms',
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'text/plain',
+          },
+        },
+      )
+        .then((res) => res.text())
+        .catch(() => {
+          return null
+        })
       log('\n📝 Saving AI instructions...')
-      await savePrompt(projectInfo.prompt, targetDir)
+      await savePrompt(projectInfo.prompt, ntlContext, targetDir)
     }
 
     // Step 5: Detect IDE and configure MCP server
@@ -405,25 +418,27 @@ export const initWithAiRules = async (hash: string, command: BaseCommand): Promi
     log()
     log(chalk.yellowBright(`📁 Step 1: Enter your project directory`))
     log(`   ${chalk.cyanBright(`cd ${targetDir}`)}`)
-    
+
     if (detectedIDE) {
       if (mcpConfigured) {
         log(chalk.yellowBright(`🔧 Step 2: MCP Server Configured`))
-        log(`   ${chalk.green('✅')} ${chalk.cyan(detectedIDE.presentedName)} is ready with Netlify MCP server`)
+        log(`   ${chalk.green('✅')} ${chalk.cyan(detectedIDE.key)} is ready with Netlify MCP server`)
         log(`   ${chalk.gray('💡 MCP will activate when you reload/restart your IDE window')}`)
       } else {
         log(chalk.yellowBright(`🔧 Step 2: Manual MCP Configuration`))
-        log(`   ${chalk.cyan(detectedIDE.presentedName)} detected - MCP setup was skipped`)
+        log(`   ${chalk.cyan(detectedIDE.key)} detected - MCP setup was skipped`)
         log(`   ${chalk.gray('You can configure MCP manually later for enhanced AI capabilities')}`)
       }
       log()
     }
-    
+
     if (projectInfo.prompt) {
       const stepNumber = detectedIDE ? '3' : '2'
       log(chalk.yellowBright(`🤖 Step ${stepNumber}: Ask your AI assistant to process the instructions`))
       log()
-      log(chalk.bgGreen.black.bold(`  follow instructions in ${targetDir}/AI-instructions.md  `))
+      log(chalk.gray('*'.repeat(60)))
+      log(chalk.cyan(`Follow ${targetDir}/AI-instructions.md and create a new site`))
+      log(chalk.gray('*'.repeat(60)))
       log()
     }
   } catch (error) {
