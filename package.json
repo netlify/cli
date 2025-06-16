@@ -163,7 +163,7 @@
     "@tsconfig/node18": "18.2.4",
     "@tsconfig/recommended": "1.0.8",
     "@types/backoff": "2.5.5",
-    "@types/content-type": "1.1.8",
+    "@types/content-type": "1.1.9",
     "@types/debug": "4.1.12",
     "@types/envinfo": "7.8.4",
     "@types/eslint-config-prettier": "6.11.3",
