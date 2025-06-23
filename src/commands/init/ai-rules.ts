@@ -351,7 +351,7 @@ export const initWithAiRules = async (hash: string, command: BaseCommand): Promi
 
   try {
     // Step 1: Decode hash and fetch project information
-    log('\n📋 Decoding project hash...')
+    log('\n📋 Extracting project details...')
     const decodedUrl = decodeHash(hash)
     log(`${chalk.cyan('Decoded URL:')} ${decodedUrl}`)
 
