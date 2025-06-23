@@ -1,0 +1,131 @@
+import { resolve } from 'node:path';
+import { promises as fs } from 'node:fs';
+import { homedir } from 'node:os';
+import { chalk, log } from './command-helpers.js';
+/**
+ * Generate MCP configuration for the detected IDE or development environment
+ */
+export const generateMcpConfig = (ide) => {
+    const configs = {
+        vscode: {
+            servers: {
+                netlify: {
+                    type: 'stdio',
+                    command: 'npx',
+                    args: ['-y', '@netlify/mcp'],
+                },
+            },
+        },
+        cursor: {
+            mcpServers: {
+                netlify: {
+                    command: 'npx',
+                    args: ['-y', '@netlify/mcp'],
+                },
+            },
+        },
+        windsurf: {
+            mcpServers: {
+                netlify: {
+                    command: 'npx',
+                    args: ['-y', '@netlify/mcp'],
+                },
+            },
+        },
+    };
+    return (configs[ide.key] ?? {
+        mcpServers: {
+            netlify: {
+                command: 'npx',
+                args: ['-y', '@netlify/mcp'],
+            },
+        },
+    });
+};
+/**
+ * VS Code specific MCP configuration
+ */
+export const configureMcpForVSCode = async (config, projectPath) => {
+    const vscodeDirPath = resolve(projectPath, '.vscode');
+    const configPath = resolve(vscodeDirPath, 'mcp.json');
+    try {
+        // Create .vscode directory if it doesn't exist
+        await fs.mkdir(vscodeDirPath, { recursive: true });
+        // Write or update mcp.json
+        let existingConfig = {};
+        try {
+            const existingContent = await fs.readFile(configPath, 'utf-8');
+            existingConfig = JSON.parse(existingContent);
+        }
+        catch {
+            // File doesn't exist or is invalid JSON
+        }
+        const updatedConfig = { ...existingConfig, ...config };
+        await fs.writeFile(configPath, JSON.stringify(updatedConfig, null, 2), 'utf-8');
+        log(`${chalk.green('✅')} VS Code MCP configuration saved to ${chalk.cyan('.vscode/mcp.json')}`);
+    }
+    catch (error) {
+        throw new Error(`Failed to configure VS Code MCP: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+};
+/**
+ * Cursor specific MCP configuration
+ */
+export const configureMcpForCursor = async (config, projectPath) => {
+    const configPath = resolve(projectPath, '.cursor', 'mcp.json');
+    try {
+        await fs.mkdir(resolve(projectPath, '.cursor'), { recursive: true });
+        await fs.writeFile(configPath, JSON.stringify(config, null, 2), 'utf-8');
+        log(`${chalk.green('✅')} Cursor MCP configuration saved to ${chalk.cyan('.cursor/mcp.json')}`);
+    }
+    catch (error) {
+        throw new Error(`Failed to configure Cursor MCP: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+};
+/**
+ * Windsurf specific MCP configuration
+ */
+export const configureMcpForWindsurf = async (config, _projectPath) => {
+    const windsurfDirPath = resolve(homedir(), '.codeium', 'windsurf');
+    const configPath = resolve(windsurfDirPath, 'mcp_config.json');
+    try {
+        // Create .codeium/windsurf directory if it doesn't exist
+        await fs.mkdir(windsurfDirPath, { recursive: true });
+        // Read existing config or create new one
+        let existingConfig = {};
+        try {
+            const existingContent = await fs.readFile(configPath, 'utf-8');
+            existingConfig = JSON.parse(existingContent);
+        }
+        catch {
+            // File doesn't exist or is invalid JSON
+        }
+        // Merge mcpServers from both configs
+        const existingServers = existingConfig.mcpServers ?? {};
+        const newServers = config.mcpServers ?? {};
+        const updatedConfig = {
+            ...existingConfig,
+            mcpServers: {
+                ...existingServers,
+                ...newServers,
+            },
+        };
+        await fs.writeFile(configPath, JSON.stringify(updatedConfig, null, 2), 'utf-8');
+        log(`${chalk.green('✅')} Windsurf MCP configuration saved`);
+        log(`${chalk.gray('💡')} Restart Windsurf to activate the MCP server`);
+    }
+    catch (error) {
+        throw new Error(`Failed to configure Windsurf MCP: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+};
+/**
+ * Generic MCP configuration display
+ */
+export const showGenericMcpConfig = (config, ideName) => {
+    log(`\n${chalk.yellow('📋 Manual configuration required')}`);
+    log(`Please add the following configuration to your ${ideName} settings:`);
+    log(`\n${chalk.gray('--- Configuration ---')}`);
+    log(JSON.stringify(config, null, 2));
+    log(`${chalk.gray('--- End Configuration ---')}\n`);
+};
+//# sourceMappingURL=mcp-utils.js.map

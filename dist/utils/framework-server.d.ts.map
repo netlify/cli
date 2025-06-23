@@ -1,0 +1,1 @@
+{"version":3,"file":"framework-server.d.ts","sourceRoot":"","sources":["../../src/utils/framework-server.ts"],"names":[],"mappings":"AASA,OAAO,KAAK,EAAE,cAAc,EAAE,MAAM,YAAY,CAAA;AAKhD,UAAU,iBAAiB;IACzB,SAAS,CAAC,EAAE,CAAC,GAAG,CAAC,CAAA;CAClB;AAED;;GAEG;AACH,eAAO,MAAM,oBAAoB,GAAmB,oBAGjD;IACD,GAAG,EAAE,MAAM,CAAA;IACX,QAAQ,EAAE,cAAc,CAAA;CACzB,KAAG,OAAO,CAAC,iBAAiB,CA0E5B,CAAA"}

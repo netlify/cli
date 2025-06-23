@@ -1,0 +1,1 @@
+{"version":3,"file":"gh-auth.d.ts","sourceRoot":"","sources":["../../src/utils/gh-auth.ts"],"names":[],"mappings":"AAcA,MAAM,WAAW,KAAK;IACpB,IAAI,EAAE,MAAM,CAAA;IACZ,KAAK,EAAE,MAAM,CAAA;IACb,QAAQ,EAAE,MAAM,CAAA;CACjB;AAqBD;;GAEG;AACH,eAAO,MAAM,eAAe,QAAa,OAAO,CAAC,KAAK,CAwCrD,CAAA;AAgCD;;GAEG;AACH,eAAO,MAAM,cAAc,QAAa,OAAO,CAAC,KAAK,CAMpD,CAAA"}

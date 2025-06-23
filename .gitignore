@@ -1,6 +1,5 @@
 *-debug.log
 *-error.log
-/dist
 /tmp
 node_modules
 !**/__fixtures__/**/node_modules
