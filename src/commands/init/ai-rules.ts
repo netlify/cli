@@ -202,7 +202,7 @@ const configureMcpForWindsurf = async (config: Record<string, unknown>, _project
 
 // Generic MCP configuration display
 const showGenericMcpConfig = (config: Record<string, unknown>, ideName: string): void => {
-  log(`\n${chalk.yellow('📋 Manual Configuration Required')}`)
+  log(`\n${chalk.yellow('📋 Manual configuration required')}`)
   log(`Please add the following configuration to your ${ideName} settings:`)
   log(`\n${chalk.gray('--- Configuration ---')}`)
   log(JSON.stringify(config, null, 2))
@@ -217,7 +217,7 @@ const triggerMcpConfiguration = async (ide: ConsumerConfig, projectPath: string)
     {
       type: 'confirm',
       name: 'shouldConfigure',
-      message: `Would you like to automatically configure MCP server for ${ide.presentedName}?`,
+      message: `Would you like to automatically configure the MCP server for ${ide.presentedName}?`,
       default: true,
     },
   ])
@@ -285,7 +285,7 @@ const fetchProjectInfo = async (url: string): Promise<ProjectInfo> => {
 
 const getRepoUrlFromProjectId = async (api: NetlifyAPI, projectId: string): Promise<string> => {
   try {
-    const SiteInfo = (await api.getSite({ siteId: projectId })) as SiteInfo
+    const siteInfo = (await api.getSite({ siteId: projectId })) as SiteInfo
     const repoUrl = SiteInfo.build_settings?.repo_url
 
     if (!repoUrl) {
@@ -334,7 +334,7 @@ export const initWithAiRules = async (hash: string, command: BaseCommand): Promi
 
   try {
     // Step 1: Decode hash and fetch project information
-    log('\n📋 Decoding project hash...')
+    log('\n📋 Extracting project details...')
     const decodedUrl = decodeHash(hash)
     log(`${chalk.cyan('Decoded URL:')} ${decodedUrl}`)
 
@@ -344,7 +344,7 @@ export const initWithAiRules = async (hash: string, command: BaseCommand): Promi
     log(`${chalk.cyan('Project ID:')} ${projectInfo.projectId}`)
 
     // Step 2: Get repository URL from project ID via Netlify site API
-    log('\n🔗 Linking to Netlify site and fetching repository...')
+    log('\n🔗 Linking to Netlify project and fetching repository...')
     const repositoryUrl = await getRepoUrlFromProjectId(api, projectInfo.projectId)
     log(`${chalk.cyan('Repository:')} ${repositoryUrl}`)
 
