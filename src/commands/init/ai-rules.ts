@@ -361,7 +361,7 @@ export const initWithAiRules = async (hash: string, command: BaseCommand): Promi
     log(`${chalk.cyan('Project ID:')} ${projectInfo.projectId}`)
 
     // Step 2: Get repository URL from project ID via Netlify site API
-    log('\n🔗 Linking to Netlify site and fetching repository...')
+    log('\n🔗 Linking to Netlify project and fetching repository...')
     const repositoryUrl = await getRepoUrlFromProjectId(api, projectInfo.projectId)
     log(`${chalk.cyan('Repository:')} ${repositoryUrl}`)
 
