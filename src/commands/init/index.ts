@@ -22,7 +22,7 @@ For more information about getting started with Netlify CLI, see ${terminalLink(
       // Check for experimental AI rules flag
       if (options.aiRules) {
         const { initWithAiRules } = await import('./ai-rules.js')
-        await initWithAiRules(options.aiRules, command)
+        await initWithAiRules(options.aiRules as string, command)
         return
       }
 
