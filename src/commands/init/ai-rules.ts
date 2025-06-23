@@ -1,5 +1,6 @@
 import { resolve } from 'node:path'
 import { promises as fs } from 'node:fs'
+import { homedir } from 'node:os'
 import type { NetlifyAPI } from '@netlify/api'
 
 import { chalk, log, logAndThrowError, type APIError } from '../../utils/command-helpers.js'
@@ -80,71 +81,55 @@ const detectIDE = async (): Promise<ConsumerConfig | null> => {
 }
 
 // Generate MCP configuration for the detected IDE
-const generateMcpConfig = (ide: ConsumerConfig): string => {
-  const configs: Record<string, string> = {
-    vscode: JSON.stringify(
-      {
-        servers: {
-          netlify: {
-            type: 'stdio',
-            command: 'npx',
-            args: ['-y', '@netlify/mcp'],
-          },
+const generateMcpConfig = (ide: ConsumerConfig): Record<string, unknown> => {
+  const configs: Record<string, Record<string, unknown>> = {
+    vscode: {
+      servers: {
+        netlify: {
+          type: 'stdio',
+          command: 'npx',
+          args: ['-y', '@netlify/mcp'],
         },
       },
-      null,
-      2,
-    ),
-    cursor: JSON.stringify(
-      {
-        mcpServers: {
-          netlify: {
-            command: 'npx',
-            args: ['-y', '@netlify/mcp'],
-          },
+    },
+    cursor: {
+      mcpServers: {
+        netlify: {
+          command: 'npx',
+          args: ['-y', '@netlify/mcp'],
         },
       },
-      null,
-      2,
-    ),
-    windsurf: JSON.stringify(
-      {
-        mcpServers: {
-          netlify: {
-            command: 'npx',
-            args: ['-y', '@netlify/mcp'],
-          },
+    },
+    windsurf: {
+      mcpServers: {
+        netlify: {
+          command: 'npx',
+          args: ['-y', '@netlify/mcp'],
         },
       },
-      null,
-      2,
-    ),
+    },
   }
 
   return (
-    configs[ide.key] ||
-    JSON.stringify(
-      {
-        mcpServers: {
-          netlify: {
-            command: 'npx',
-            args: ['-y', '@netlify/mcp'],
-          },
+    configs[ide.key] ?? {
+      mcpServers: {
+        netlify: {
+          command: 'npx',
+          args: ['-y', '@netlify/mcp'],
         },
       },
-      null,
-      2,
-    )
+    }
   )
 }
 
 // VS Code specific MCP configuration
-const configureMcpForVSCode = async (config: string, projectPath: string): Promise<void> => {
-  const configPath = resolve(projectPath, '.vscode', 'mcp.json')
+const configureMcpForVSCode = async (config: Record<string, unknown>, projectPath: string): Promise<void> => {
+  const vscodeDirPath = resolve(projectPath, '.vscode')
+  const configPath = resolve(vscodeDirPath, 'mcp.json')
 
   try {
     // Create .vscode directory if it doesn't exist
-    await fs.mkdir(resolve(projectPath, '.vscode'), { recursive: true })
+    await fs.mkdir(vscodeDirPath, { recursive: true })
 
     // Write or update mcp.json
     let existingConfig: Record<string, unknown> = {}
@@ -155,8 +140,7 @@ const configureMcpForVSCode = async (config: string, projectPath: string): Promi
       // File doesn't exist or is invalid JSON
     }
 
-    const mcpConfig = JSON.parse(config) as Record<string, unknown>
-    const updatedConfig = { ...existingConfig, ...mcpConfig }
+    const updatedConfig = { ...existingConfig, ...config }
 
     await fs.writeFile(configPath, JSON.stringify(updatedConfig, null, 2), 'utf-8')
     log(`${chalk.green('✅')} VS Code MCP configuration saved to ${chalk.cyan('.vscode/mcp.json')}`)
@@ -166,12 +150,12 @@ const configureMcpForVSCode = async (config: string, projectPath: string): Promi
 }
 
 // Cursor specific MCP configuration
-const configureMcpForCursor = async (config: string, projectPath: string): Promise<void> => {
+const configureMcpForCursor = async (config: Record<string, unknown>, projectPath: string): Promise<void> => {
   const configPath = resolve(projectPath, '.cursor', 'mcp.json')
 
   try {
     await fs.mkdir(resolve(projectPath, '.cursor'), { recursive: true })
-    await fs.writeFile(configPath, config, 'utf-8')
+    await fs.writeFile(configPath, JSON.stringify(config, null, 2), 'utf-8')
     log(`${chalk.green('✅')} Cursor MCP configuration saved to ${chalk.cyan('.cursor/mcp.json')}`)
   } catch (error) {
     throw new Error(`Failed to configure Cursor MCP: ${error instanceof Error ? error.message : 'Unknown error'}`)
@@ -179,13 +163,13 @@ const configureMcpForCursor = async (config: string, projectPath: string): Promi
 }
 
 // Windsurf specific MCP configuration
-const configureMcpForWindsurf = async (config: string, _projectPath: string): Promise<void> => {
-  const { homedir } = await import('node:os')
-  const configPath = resolve(homedir(), '.codeium', 'windsurf', 'mcp_config.json')
+const configureMcpForWindsurf = async (config: Record<string, unknown>, _projectPath: string): Promise<void> => {
+  const windsurfDirPath = resolve(homedir(), '.codeium', 'windsurf')
+  const configPath = resolve(windsurfDirPath, 'mcp_config.json')
 
   try {
     // Create .codeium/windsurf directory if it doesn't exist
-    await fs.mkdir(resolve(homedir(), '.codeium', 'windsurf'), { recursive: true })
+    await fs.mkdir(windsurfDirPath, { recursive: true })
 
     // Read existing config or create new one
     let existingConfig: Record<string, unknown> = {}
@@ -196,11 +180,9 @@ const configureMcpForWindsurf = async (config: string, _projectPath: string): Pr
       // File doesn't exist or is invalid JSON
     }
 
-    const mcpConfig = JSON.parse(config) as Record<string, unknown>
-
     // Merge mcpServers from both configs
     const existingServers = (existingConfig.mcpServers as Record<string, unknown> | undefined) ?? {}
-    const newServers = (mcpConfig.mcpServers as Record<string, unknown> | undefined) ?? {}
+    const newServers = (config.mcpServers as Record<string, unknown> | undefined) ?? {}
 
     const updatedConfig = {
       ...existingConfig,
@@ -211,7 +193,7 @@ const configureMcpForWindsurf = async (config: string, _projectPath: string): Pr
     }
 
     await fs.writeFile(configPath, JSON.stringify(updatedConfig, null, 2), 'utf-8')
-    log(`${chalk.green('✅')} Windsurf MCP configuration saved to global config`)
+    log(`${chalk.green('✅')} Windsurf MCP configuration saved`)
     log(`${chalk.gray('💡')} Restart Windsurf to activate the MCP server`)
   } catch (error) {
     throw new Error(`Failed to configure Windsurf MCP: ${error instanceof Error ? error.message : 'Unknown error'}`)
@@ -219,11 +201,11 @@ const configureMcpForWindsurf = async (config: string, _projectPath: string): Pr
 }
 
 // Generic MCP configuration display
-const showGenericMcpConfig = (config: string, ideName: string): void => {
+const showGenericMcpConfig = (config: Record<string, unknown>, ideName: string): void => {
   log(`\n${chalk.yellow('📋 Manual Configuration Required')}`)
   log(`Please add the following configuration to your ${ideName} settings:`)
   log(`\n${chalk.gray('--- Configuration ---')}`)
-  log(config)
+  log(JSON.stringify(config, null, 2))
   log(`${chalk.gray('--- End Configuration ---')}\n`)
 }
 
@@ -241,7 +223,9 @@ const triggerMcpConfiguration = async (ide: ConsumerConfig, projectPath: string)
   ])
 
   if (!shouldConfigure) {
-    log(chalk.gray('Skipped MCP configuration. You can set it up manually later.'))
+    log(
+      chalk.gray('Skipped MCP configuration. You can set it up manually later by changing MCP settings in your editor'),
+    )
     return false
   }
 
@@ -289,7 +273,7 @@ const fetchProjectInfo = async (url: string): Promise<ProjectInfo> => {
     })
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${String(response.status)}`)
+      throw new Error(`Failed to fetch project information: ${response.statusText}`)
     }
     const data = (await response.text()) as unknown as string
     const parsedData = JSON.parse(data) as unknown as ProjectInfo
@@ -346,7 +330,6 @@ export const initWithAiRules = async (hash: string, command: BaseCommand): Promi
   const { api } = command.netlify
 
   log(`${chalk.blue('🤖 Initializing AI project')} with rules...`)
-  log(`${chalk.gray('Hash:')} ${hash}`)
   log(`${chalk.gray('User:')} ${api.accessToken ? 'Authenticated ✅' : 'Not authenticated ❌'}`)
 
   try {
@@ -399,7 +382,7 @@ export const initWithAiRules = async (hash: string, command: BaseCommand): Promi
     let mcpConfigured = false
 
     if (detectedIDE) {
-      log(`${chalk.green('✅')} Detected IDE: ${chalk.cyan(detectedIDE.presentedName)}`)
+      log(`${chalk.green('✅')} Detected development environment: ${chalk.cyan(detectedIDE.presentedName)}`)
       mcpConfigured = await triggerMcpConfiguration(detectedIDE, targetDir)
     }
 
@@ -423,7 +406,7 @@ export const initWithAiRules = async (hash: string, command: BaseCommand): Promi
       if (mcpConfigured) {
         log(chalk.yellowBright(`🔧 Step 2: MCP Server Configured`))
         log(`   ${chalk.green('✅')} ${chalk.cyan(detectedIDE.key)} is ready with Netlify MCP server`)
-        log(`   ${chalk.gray('💡 MCP will activate when you reload/restart your IDE window')}`)
+        log(`   ${chalk.gray('💡 MCP will activate when you reload/restart your development environment')}`)
       } else {
         log(chalk.yellowBright(`🔧 Step 2: Manual MCP Configuration`))
         log(`   ${chalk.cyan(detectedIDE.key)} detected - MCP setup was skipped`)
