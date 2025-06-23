@@ -2,7 +2,6 @@
 import fs from 'fs'
 import path from 'path'
 
-import fetch from 'node-fetch'
 import { describe, test } from 'vitest'
 
 import { withDevServer } from '../../utils/dev-server.js'

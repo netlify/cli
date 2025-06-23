@@ -1,4 +1,3 @@
-import fetch from 'node-fetch'
 import execa from 'execa'
 
 import { GitHubRepoResponse, logAndThrowError } from '../command-helpers.js'

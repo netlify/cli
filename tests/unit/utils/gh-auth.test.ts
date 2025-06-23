@@ -1,5 +1,5 @@
 import { fibonacci } from 'backoff'
-import fetch from 'node-fetch'
+
 import { afterAll, describe, expect, test, vi } from 'vitest'
 
 import { authWithNetlify } from '../../../src/utils/gh-auth.js'

@@ -1,11 +1,10 @@
 import { Buffer } from 'node:buffer'
 import { version } from 'node:process'
-import events from 'node:events'
 
 import type { HandlerEvent } from '@netlify/functions'
 import FormData from 'form-data'
 import getPort from 'get-port'
-import fetch from 'node-fetch'
+
 import { gte } from 'semver'
 import { describe, test } from 'vitest'
 
@@ -521,15 +520,12 @@ describe.concurrent('commands/dev/config', () => {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const body = res.body!
 
-        body.on('data', (chunk: Buffer) => {
+        for await (const chunk of body) {
           const now = Date.now()
-
           t.expect(now > lastTimestamp).toBe(true)
-
           lastTimestamp = now
-          chunks.push(chunk.toString())
-        })
-        await events.once(body, 'end')
+          chunks.push(Buffer.from(chunk).toString())
+        }
 
         t.expect(chunks).toStrictEqual(['one', 'two', 'three'])
       })

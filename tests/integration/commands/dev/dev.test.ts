@@ -6,7 +6,7 @@ import process from 'process'
 
 import js from 'dedent'
 import jwt, { type JwtPayload } from 'jsonwebtoken'
-import fetch from 'node-fetch'
+
 import { describe, test } from 'vitest'
 
 import { withDevServer } from '../../utils/dev-server.js'

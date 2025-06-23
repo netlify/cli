@@ -8,7 +8,7 @@ import { setProperty } from 'dot-prop'
 import execa, { ExecaError } from 'execa'
 import getAvailablePort from 'get-port'
 import jwt from 'jsonwebtoken'
-import fetch from 'node-fetch'
+
 import { type TestContext, describe, test } from 'vitest'
 import type { HandlerEvent, HandlerContext } from '@netlify/functions'
 import type { Context as EdgeHandlerContext } from '@netlify/edge-functions'
