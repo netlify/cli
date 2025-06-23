@@ -13,7 +13,7 @@ import {
   configureMcpForVSCode,
   configureMcpForCursor,
   configureMcpForWindsurf,
-  showGenericMcpConfig
+  showGenericMcpConfig,
 } from '../../utils/mcp-utils.js'
 import type BaseCommand from '../base-command.js'
 import type { SiteInfo } from '../../utils/types.js'
@@ -42,9 +42,13 @@ const triggerMcpConfiguration = async (ide: ConsumerConfig, projectPath: string)
   ])
 
   if (!shouldConfigure) {
+    log(`   ${chalk.gray('You can configure MCP manually later for enhanced AI capabilities:')}`)
     log(
-      chalk.gray('Skipped MCP configuration. You can set it up manually later by changing MCP settings in your editor'),
+      `   ${chalk.gray('Documentation:')} ${chalk.cyan(
+        'https://docs.netlify.com/welcome/build-with-ai/netlify-mcp-server/',
+      )}`,
     )
+
     return false
   }
 
@@ -227,8 +231,11 @@ export const initWithAiRules = async (hash: string, command: BaseCommand): Promi
         log(chalk.yellowBright(`🔧 Step 2: Manual MCP Configuration`))
         log(`   ${chalk.cyan(detectedIDE.key)} detected - MCP setup was skipped`)
         log(`   ${chalk.gray('You can configure MCP manually later for enhanced AI capabilities:')}`)
-        log(`   ${chalk.gray('Documentation:')} ${chalk.cyan('https://docs.netlify.com/welcome/build-with-ai/netlify-mcp-server/')}`)
-
+        log(
+          `   ${chalk.gray('Documentation:')} ${chalk.cyan(
+            'https://docs.netlify.com/welcome/build-with-ai/netlify-mcp-server/',
+          )}`,
+        )
       }
       log()
     }
