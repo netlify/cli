@@ -301,7 +301,7 @@ const fetchProjectInfo = async (url: string): Promise<ProjectInfo> => {
 
 const getRepoUrlFromProjectId = async (api: NetlifyAPI, projectId: string): Promise<string> => {
   try {
-    const SiteInfo = (await api.getSite({ siteId: projectId })) as SiteInfo
+    const siteInfo = (await api.getSite({ siteId: projectId })) as SiteInfo
     const repoUrl = SiteInfo.build_settings?.repo_url
 
     if (!repoUrl) {
