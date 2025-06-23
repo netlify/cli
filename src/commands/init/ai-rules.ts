@@ -220,7 +220,7 @@ const configureMcpForWindsurf = async (config: string, _projectPath: string): Pr
 
 // Generic MCP configuration display
 const showGenericMcpConfig = (config: string, ideName: string): void => {
-  log(`\n${chalk.yellow('📋 Manual Configuration Required')}`)
+  log(`\n${chalk.yellow('📋 Manual configuration required')}`)
   log(`Please add the following configuration to your ${ideName} settings:`)
   log(`\n${chalk.gray('--- Configuration ---')}`)
   log(config)
