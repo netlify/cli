@@ -859,7 +859,8 @@ const onRequest = async (
   }
 
   const maybeNotifyActivity = () => {
-    if (api && process.env.NETLIFY_DEV_SERVER_ID && (req.method === 'GET' || req.url?.startsWith('/.ntlfy-dev/'))) {
+    const isInternalRequest = req.url?.startsWith('/.ntlfy-dev/') && req.method !== 'HEAD'
+    if (api && process.env.NETLIFY_DEV_SERVER_ID && (req.method === 'GET' || isInternalRequest)) {
       notifyActivity(api, siteInfo.id, process.env.NETLIFY_DEV_SERVER_ID)
     }
   }
