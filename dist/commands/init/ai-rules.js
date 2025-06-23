@@ -5,7 +5,7 @@ import { normalizeRepoUrl } from '../../utils/normalize-repo-url.js';
 import { runGit } from '../../utils/run-git.js';
 import { startSpinner } from '../../lib/spinner.js';
 import { detectIDE } from '../../recipes/ai-context/index.js';
-import { generateMcpConfig, configureMcpForVSCode, configureMcpForCursor, configureMcpForWindsurf, showGenericMcpConfig } from '../../utils/mcp-utils.js';
+import { generateMcpConfig, configureMcpForVSCode, configureMcpForCursor, configureMcpForWindsurf, showGenericMcpConfig, } from '../../utils/mcp-utils.js';
 import inquirer from 'inquirer';
 // Trigger IDE-specific MCP configuration
 const triggerMcpConfiguration = async (ide, projectPath) => {
@@ -19,7 +19,8 @@ const triggerMcpConfiguration = async (ide, projectPath) => {
         },
     ]);
     if (!shouldConfigure) {
-        log(chalk.gray('Skipped MCP configuration. You can set it up manually later by changing MCP settings in your editor'));
+        log(`   ${chalk.gray('You can configure MCP manually later for enhanced AI capabilities:')}`);
+        log(`   ${chalk.gray('Documentation:')} ${chalk.cyan('https://docs.netlify.com/welcome/build-with-ai/netlify-mcp-server/')}`);
         return false;
     }
     try {
@@ -179,7 +180,8 @@ export const initWithAiRules = async (hash, command) => {
             else {
                 log(chalk.yellowBright(`🔧 Step 2: Manual MCP Configuration`));
                 log(`   ${chalk.cyan(detectedIDE.key)} detected - MCP setup was skipped`);
-                log(`   ${chalk.gray('You can configure MCP manually later for enhanced AI capabilities')}`);
+                log(`   ${chalk.gray('You can configure MCP manually later for enhanced AI capabilities:')}`);
+                log(`   ${chalk.gray('Documentation:')} ${chalk.cyan('https://docs.netlify.com/welcome/build-with-ai/netlify-mcp-server/')}`);
             }
             log();
         }

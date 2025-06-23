@@ -16,6 +16,5 @@ export const getFeatureFlagsFromSiteInfo = (siteInfo) => ({
     // see https://github.com/netlify/pod-dev-foundations/issues/581#issuecomment-1731022753
     zisi_golang_use_al2: isFeatureFlagEnabled('cli_golang_use_al2', siteInfo),
     netlify_build_frameworks_api: true,
-    project_ceruledge_ui: true,
 });
 //# sourceMappingURL=feature-flags.js.map

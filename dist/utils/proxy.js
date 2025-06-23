@@ -647,14 +647,12 @@ const onRequest = async ({ addonsUrls, api, edgeFunctionsProxy, env, functionsRe
         },
     };
     const maybeNotifyActivity = () => {
-        if (req.method === 'GET' && api && process.env.NETLIFY_DEV_SERVER_ID) {
+        if (api && process.env.NETLIFY_DEV_SERVER_ID && (req.method === 'GET' || req.url?.startsWith('/.ntlfy-dev/'))) {
             notifyActivity(api, siteInfo.id, process.env.NETLIFY_DEV_SERVER_ID);
         }
     };
     if (match) {
-        if (!isExternal(match)) {
-            maybeNotifyActivity();
-        }
+        maybeNotifyActivity();
         // We don't want to generate an ETag for 3xx redirects.
         // @ts-expect-error TS(7031) FIXME: Binding element 'statusCode' implicitly has an 'an... Remove this comment to see the full error message
         req[shouldGenerateETag] = ({ statusCode }) => statusCode < 300 || statusCode >= 400;

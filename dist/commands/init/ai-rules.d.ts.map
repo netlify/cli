@@ -1,1 +1,1 @@
-{"version":3,"file":"ai-rules.d.ts","sourceRoot":"","sources":["../../../src/commands/init/ai-rules.ts"],"names":[],"mappings":"AAiBA,OAAO,KAAK,WAAW,MAAM,oBAAoB,CAAA;AAyHjD;;;GAGG;AACH,eAAO,MAAM,eAAe,GAAU,MAAM,MAAM,EAAE,SAAS,WAAW,KAAG,OAAO,CAAC,IAAI,CAuGtF,CAAA"}
+{"version":3,"file":"ai-rules.d.ts","sourceRoot":"","sources":["../../../src/commands/init/ai-rules.ts"],"names":[],"mappings":"AAiBA,OAAO,KAAK,WAAW,MAAM,oBAAoB,CAAA;AA6HjD;;;GAGG;AACH,eAAO,MAAM,eAAe,GAAU,MAAM,MAAM,EAAE,SAAS,WAAW,KAAG,OAAO,CAAC,IAAI,CA4GtF,CAAA"}
