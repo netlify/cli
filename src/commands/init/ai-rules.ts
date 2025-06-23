@@ -1,212 +1,31 @@
 import { resolve } from 'node:path'
 import { promises as fs } from 'node:fs'
-import { homedir } from 'node:os'
 import type { NetlifyAPI } from '@netlify/api'
 
 import { chalk, log, logAndThrowError, type APIError } from '../../utils/command-helpers.js'
 import { normalizeRepoUrl } from '../../utils/normalize-repo-url.js'
 import { runGit } from '../../utils/run-git.js'
 import { startSpinner } from '../../lib/spinner.js'
-import { getContextConsumers, type ConsumerConfig } from '../../recipes/ai-context/context.js'
-import execa from '../../utils/execa.js'
-import { version } from '../../utils/command-helpers.js'
+import { detectIDE } from '../../recipes/ai-context/index.js'
+import { type ConsumerConfig } from '../../recipes/ai-context/context.js'
+import {
+  generateMcpConfig,
+  configureMcpForVSCode,
+  configureMcpForCursor,
+  configureMcpForWindsurf,
+  showGenericMcpConfig
+} from '../../utils/mcp-utils.js'
 import type BaseCommand from '../base-command.js'
 import type { SiteInfo } from '../../utils/types.js'
 import inquirer from 'inquirer'
 
+/**
+ * Project information interface for AI projects
+ */
 interface ProjectInfo {
   success: boolean
   projectId: string
   prompt: string
-}
-
-// Check if a command belongs to a known IDE (reusing ai-context logic)
-const getConsumerKeyFromCommand = (command: string, consumers: ConsumerConfig[]): string | null => {
-  const match = consumers.find(
-    (consumer) => consumer.consumerProcessCmd && command.includes(consumer.consumerProcessCmd),
-  )
-  return match ? match.key : null
-}
-
-// Get command and parent PID (same logic as ai-context)
-const getCommandAndParentPID = async (
-  pid: number,
-): Promise<{
-  parentPID: number
-  command: string
-  consumerKey: string | null
-}> => {
-  const { stdout } = await execa('ps', ['-p', String(pid), '-o', 'ppid=,comm='])
-  const output = stdout.trim()
-  const spaceIndex = output.indexOf(' ')
-  const parentPID = output.substring(0, spaceIndex)
-  const command = output.substring(spaceIndex + 1).toLowerCase()
-
-  const consumers = await getContextConsumers(version) // Use current CLI version
-
-  return {
-    parentPID: Number(parentPID),
-    command,
-    consumerKey: getConsumerKeyFromCommand(command, consumers),
-  }
-}
-
-// Detect IDE by walking up process tree (same logic as ai-context)
-const detectIDE = async (): Promise<ConsumerConfig | null> => {
-  if (process.env.AI_CONTEXT_SKIP_DETECTION === 'true') {
-    return null
-  }
-
-  const ppid = process.ppid
-  let result: Awaited<ReturnType<typeof getCommandAndParentPID>>
-  try {
-    result = await getCommandAndParentPID(ppid)
-    while (result.parentPID !== 1 && !result.consumerKey) {
-      result = await getCommandAndParentPID(result.parentPID)
-    }
-  } catch {
-    // Process detection failed
-    return null
-  }
-
-  if (result.consumerKey) {
-    const consumers = await getContextConsumers(version)
-    const contextConsumer = consumers.find((consumer) => consumer.key === result.consumerKey)
-    if (contextConsumer) {
-      return contextConsumer
-    }
-  }
-
-  return null
-}
-
-// Generate MCP configuration for the detected IDE
-const generateMcpConfig = (ide: ConsumerConfig): Record<string, unknown> => {
-  const configs: Record<string, Record<string, unknown>> = {
-    vscode: {
-      servers: {
-        netlify: {
-          type: 'stdio',
-          command: 'npx',
-          args: ['-y', '@netlify/mcp'],
-        },
-      },
-    },
-    cursor: {
-      mcpServers: {
-        netlify: {
-          command: 'npx',
-          args: ['-y', '@netlify/mcp'],
-        },
-      },
-    },
-    windsurf: {
-      mcpServers: {
-        netlify: {
-          command: 'npx',
-          args: ['-y', '@netlify/mcp'],
-        },
-      },
-    },
-  }
-
-  return (
-    configs[ide.key] ?? {
-      mcpServers: {
-        netlify: {
-          command: 'npx',
-          args: ['-y', '@netlify/mcp'],
-        },
-      },
-    }
-  )
-}
-
-// VS Code specific MCP configuration
-const configureMcpForVSCode = async (config: Record<string, unknown>, projectPath: string): Promise<void> => {
-  const vscodeDirPath = resolve(projectPath, '.vscode')
-  const configPath = resolve(vscodeDirPath, 'mcp.json')
-
-  try {
-    // Create .vscode directory if it doesn't exist
-    await fs.mkdir(vscodeDirPath, { recursive: true })
-
-    // Write or update mcp.json
-    let existingConfig: Record<string, unknown> = {}
-    try {
-      const existingContent = await fs.readFile(configPath, 'utf-8')
-      existingConfig = JSON.parse(existingContent) as Record<string, unknown>
-    } catch {
-      // File doesn't exist or is invalid JSON
-    }
-
-    const updatedConfig = { ...existingConfig, ...config }
-
-    await fs.writeFile(configPath, JSON.stringify(updatedConfig, null, 2), 'utf-8')
-    log(`${chalk.green('✅')} VS Code MCP configuration saved to ${chalk.cyan('.vscode/mcp.json')}`)
-  } catch (error) {
-    throw new Error(`Failed to configure VS Code MCP: ${error instanceof Error ? error.message : 'Unknown error'}`)
-  }
-}
-
-// Cursor specific MCP configuration
-const configureMcpForCursor = async (config: Record<string, unknown>, projectPath: string): Promise<void> => {
-  const configPath = resolve(projectPath, '.cursor', 'mcp.json')
-
-  try {
-    await fs.mkdir(resolve(projectPath, '.cursor'), { recursive: true })
-    await fs.writeFile(configPath, JSON.stringify(config, null, 2), 'utf-8')
-    log(`${chalk.green('✅')} Cursor MCP configuration saved to ${chalk.cyan('.cursor/mcp.json')}`)
-  } catch (error) {
-    throw new Error(`Failed to configure Cursor MCP: ${error instanceof Error ? error.message : 'Unknown error'}`)
-  }
-}
-
-// Windsurf specific MCP configuration
-const configureMcpForWindsurf = async (config: Record<string, unknown>, _projectPath: string): Promise<void> => {
-  const windsurfDirPath = resolve(homedir(), '.codeium', 'windsurf')
-  const configPath = resolve(windsurfDirPath, 'mcp_config.json')
-
-  try {
-    // Create .codeium/windsurf directory if it doesn't exist
-    await fs.mkdir(windsurfDirPath, { recursive: true })
-
-    // Read existing config or create new one
-    let existingConfig: Record<string, unknown> = {}
-    try {
-      const existingContent = await fs.readFile(configPath, 'utf-8')
-      existingConfig = JSON.parse(existingContent) as Record<string, unknown>
-    } catch {
-      // File doesn't exist or is invalid JSON
-    }
-
-    // Merge mcpServers from both configs
-    const existingServers = (existingConfig.mcpServers as Record<string, unknown> | undefined) ?? {}
-    const newServers = (config.mcpServers as Record<string, unknown> | undefined) ?? {}
-
-    const updatedConfig = {
-      ...existingConfig,
-      mcpServers: {
-        ...existingServers,
-        ...newServers,
-      },
-    }
-
-    await fs.writeFile(configPath, JSON.stringify(updatedConfig, null, 2), 'utf-8')
-    log(`${chalk.green('✅')} Windsurf MCP configuration saved`)
-    log(`${chalk.gray('💡')} Restart Windsurf to activate the MCP server`)
-  } catch (error) {
-    throw new Error(`Failed to configure Windsurf MCP: ${error instanceof Error ? error.message : 'Unknown error'}`)
-  }
-}
-
-// Generic MCP configuration display
-const showGenericMcpConfig = (config: Record<string, unknown>, ideName: string): void => {
-  log(`\n${chalk.yellow('📋 Manual configuration required')}`)
-  log(`Please add the following configuration to your ${ideName} settings:`)
-  log(`\n${chalk.gray('--- Configuration ---')}`)
-  log(JSON.stringify(config, null, 2))
-  log(`${chalk.gray('--- End Configuration ---')}\n`)
 }
 
 // Trigger IDE-specific MCP configuration
@@ -272,9 +91,6 @@ const fetchProjectInfo = async (url: string): Promise<ProjectInfo> => {
       },
     })
 
-    if (!response.ok) {
-      throw new Error(`Failed to fetch project information: ${response.statusText}`)
-    }
     const data = (await response.text()) as unknown as string
     const parsedData = JSON.parse(data) as unknown as ProjectInfo
     return parsedData
@@ -286,7 +102,7 @@ const fetchProjectInfo = async (url: string): Promise<ProjectInfo> => {
 const getRepoUrlFromProjectId = async (api: NetlifyAPI, projectId: string): Promise<string> => {
   try {
     const siteInfo = (await api.getSite({ siteId: projectId })) as SiteInfo
-    const repoUrl = SiteInfo.build_settings?.repo_url
+    const repoUrl = siteInfo.build_settings?.repo_url
 
     if (!repoUrl) {
       throw new Error(`No repository URL found for project ID: ${projectId}`)
@@ -410,7 +226,9 @@ export const initWithAiRules = async (hash: string, command: BaseCommand): Promi
       } else {
         log(chalk.yellowBright(`🔧 Step 2: Manual MCP Configuration`))
         log(`   ${chalk.cyan(detectedIDE.key)} detected - MCP setup was skipped`)
-        log(`   ${chalk.gray('You can configure MCP manually later for enhanced AI capabilities')}`)
+        log(`   ${chalk.gray('You can configure MCP manually later for enhanced AI capabilities:')}`)
+        log(`   ${chalk.gray('Documentation:')} ${chalk.cyan('https://docs.netlify.com/welcome/build-with-ai/netlify-mcp-server/')}`)
+
       }
       log()
     }

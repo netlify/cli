@@ -77,7 +77,7 @@ const promptForContextConsumerSelection = async (): Promise<ConsumerConfig> => {
  * Checks if a command belongs to a known IDEs by checking if it includes a specific string.
  * For example, the command that starts windsurf looks something like "/applications/windsurf.app/contents/...".
  */
-const getConsumerKeyFromCommand = (command: string): string | null => {
+export const getConsumerKeyFromCommand = (command: string): string | null => {
   // The actual command is something like "/applications/windsurf.app/contents/...", but we are only looking for windsurf
   const match = cliContextConsumers.find(
     (consumer) => consumer.consumerProcessCmd && command.includes(consumer.consumerProcessCmd),
@@ -88,7 +88,7 @@ const getConsumerKeyFromCommand = (command: string): string | null => {
 /**
  * Receives a process ID (pid) and returns both the command that the process was run with and its parent process ID. If the process is a known IDE, also returns information about that IDE.
  */
-const getCommandAndParentPID = async (
+export const getCommandAndParentPID = async (
   pid: number,
 ): Promise<{
   parentPID: number
@@ -107,7 +107,10 @@ const getCommandAndParentPID = async (
   }
 }
 
-const getPathByDetectingIDE = async (): Promise<ConsumerConfig | null> => {
+/**
+ * Detects the IDE by walking up the process tree and matching against known consumer processes
+ */
+export const detectIDE = async (): Promise<ConsumerConfig | null> => {
   // Go up the chain of ancestor process IDs and find if one of their commands matches an IDE.
   const ppid = process.ppid
   let result: Awaited<ReturnType<typeof getCommandAndParentPID>>
@@ -142,7 +145,7 @@ export const run = async (runOptions: RunRecipeOptions) => {
   }
 
   if (!consumer && process.env.AI_CONTEXT_SKIP_DETECTION !== 'true') {
-    consumer = await getPathByDetectingIDE()
+    consumer = await detectIDE()
   }
 
   if (!consumer) {
