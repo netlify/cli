@@ -235,7 +235,7 @@ const triggerMcpConfiguration = async (ide: ConsumerConfig, projectPath: string)
     {
       type: 'confirm',
       name: 'shouldConfigure',
-      message: `Would you like to automatically configure MCP server for ${ide.presentedName}?`,
+      message: `Would you like to automatically configure the MCP server for ${ide.presentedName}?`,
       default: true,
     },
   ])
