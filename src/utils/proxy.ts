@@ -859,8 +859,10 @@ const onRequest = async (
   }
 
   const maybeNotifyActivity = () => {
-    const isInternalRequest = req.url?.startsWith('/.ntlfy-dev/') && req.method !== 'HEAD'
-    if (api && process.env.NETLIFY_DEV_SERVER_ID && (req.method === 'GET' || isInternalRequest)) {
+    const skipInternalUrls = ['/.ntlfy-dev/up', '/.ntlfy-dev/health']
+    const isInternalRequest = req.url?.startsWith('/.ntlfy-dev/')
+    const trackRequest = isInternalRequest ? !skipInternalUrls.includes(req.url ?? '') : req.method === 'GET'
+    if (api && process.env.NETLIFY_DEV_SERVER_ID && trackRequest) {
       notifyActivity(api, siteInfo.id, process.env.NETLIFY_DEV_SERVER_ID)
     }
   }
