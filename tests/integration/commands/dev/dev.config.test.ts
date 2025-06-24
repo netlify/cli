@@ -2,7 +2,6 @@ import { Buffer } from 'node:buffer'
 import { version } from 'node:process'
 
 import type { HandlerEvent } from '@netlify/functions'
-import FormData from 'form-data'
 import getPort from 'get-port'
 
 import { gte } from 'semver'
@@ -436,9 +435,11 @@ describe.concurrent('commands/dev/config', () => {
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const form = new FormData()
         form.append('some', 'thing')
-
-        const expectedBoundary = form.getBoundary()
-        const expectedResponseBody = form.getBuffer().toString('base64')
+        const rsp = new Response(form);
+        const contentType = rsp.headers.get('Content-Type');
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/prefer-regexp-exec
+        const expectedBoundary = contentType!.match(/boundary=(\S+)/)![1];
+        const expectedResponseBody = await rsp.text();
 
         const response = await fetch(`${server.url}/api/echo?ding=dong`, {
           method: 'POST',
