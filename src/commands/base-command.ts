@@ -500,9 +500,21 @@ export default class BaseCommand extends Command {
   private async init(actionCommand: BaseCommand) {
     debug(`${actionCommand.name()}:init`)('start')
     const flags = actionCommand.opts()
+
     // here we actually want to use the process.cwd as we are setting the workingDir
     // eslint-disable-next-line no-restricted-properties
-    this.workingDir = flags.cwd ? resolve(flags.cwd) : process.cwd()
+    const processCwd = process.cwd()
+
+    if (flags.cwd) {
+      const resolvedCwd = resolve(flags.cwd)
+      this.workingDir = resolvedCwd
+
+      // if cwd matches process.cwd, act like cwd wasn't provided
+      if (resolvedCwd === processCwd) {
+        delete flags.cwd
+        this.workingDir = processCwd
+      }
+    }
 
     // ==================================================
     // Create a Project and run the Heuristics to detect
