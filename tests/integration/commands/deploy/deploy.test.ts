@@ -458,9 +458,9 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         })
         .withNetlifyToml({
           config: {
-            build: { 
+            build: {
               publish: 'public',
-              command: 'exit 1'
+              command: 'exit 1',
             },
           },
         })
@@ -471,7 +471,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         callCli(['deploy', '--json'], {
           cwd: builder.directory,
           env: { NETLIFY_SITE_ID: context.siteId },
-        })
+        }),
       ).rejects.toThrow('Error while running build')
     })
   })
