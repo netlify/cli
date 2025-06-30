@@ -161,7 +161,7 @@
     "@netlify/types": "2.0.2",
     "@sindresorhus/slugify": "2.2.1",
     "@tsconfig/node18": "18.2.4",
-    "@tsconfig/recommended": "1.0.8",
+    "@tsconfig/recommended": "1.0.10",
     "@types/backoff": "2.5.5",
     "@types/content-type": "1.1.9",
     "@types/debug": "4.1.12",
