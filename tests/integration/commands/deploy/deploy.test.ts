@@ -4,7 +4,7 @@ import { fileURLToPath } from 'url'
 
 import { load } from 'cheerio'
 import execa from 'execa'
-import fetch from 'node-fetch'
+
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 
 import { callCli } from '../../utils/call-cli.js'

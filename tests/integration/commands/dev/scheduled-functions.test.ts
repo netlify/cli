@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest'
 
 import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
-import fetch from 'node-fetch'
+
 import { pause } from '../../utils/pause.js'
 
 describe('scheduled functions', async () => {

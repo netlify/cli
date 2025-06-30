@@ -1,4 +1,3 @@
-import fetch from 'node-fetch'
 import { describe, test } from 'vitest'
 
 import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
