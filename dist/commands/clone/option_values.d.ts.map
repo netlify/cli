@@ -1,0 +1,1 @@
+{"version":3,"file":"option_values.d.ts","sourceRoot":"","sources":["../../../src/commands/clone/option_values.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,gBAAgB,EAAE,MAAM,oBAAoB,CAAA;AAE1D,MAAM,MAAM,iBAAiB,GAAG,gBAAgB,GAAG;IAIjD,EAAE,CAAC,EAAE,MAAM,GAAG,SAAS,CAAA;IACvB,IAAI,CAAC,EAAE,MAAM,GAAG,SAAS,CAAA;CAC1B,CAAA"}

@@ -1,0 +1,1 @@
+{"version":3,"file":"open-browser.d.ts","sourceRoot":"","sources":["../../src/utils/open-browser.ts"],"names":[],"mappings":"AAoBA,KAAK,eAAe,GAAG;IACrB,sBAAsB,CAAC,EAAE,OAAO,CAAA;IAChC,GAAG,EAAE,MAAM,CAAA;CACZ,CAAA;AAED,QAAA,MAAM,WAAW,GAAmB,iCAAiC,eAAe,kBAmBnF,CAAA;AAED,eAAe,WAAW,CAAA"}

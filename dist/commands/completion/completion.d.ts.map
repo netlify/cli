@@ -1,0 +1,1 @@
+{"version":3,"file":"completion.d.ts","sourceRoot":"","sources":["../../../src/commands/completion/completion.ts"],"names":[],"mappings":"AAMA,OAAO,KAAK,EAAE,YAAY,EAAE,MAAM,WAAW,CAAA;AAY7C,OAAO,KAAK,WAAW,MAAM,oBAAoB,CAAA;AAIjD,eAAO,MAAM,kBAAkB,GAAU,UAAU,YAAY,EAAE,SAAS,WAAW,uBAgEpF,CAAA;AAED,eAAO,MAAM,mBAAmB,GAAU,UAAU,YAAY,EAAE,SAAS,WAAW,uBAOrF,CAAA"}

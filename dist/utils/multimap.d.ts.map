@@ -1,0 +1,1 @@
+{"version":3,"file":"multimap.d.ts","sourceRoot":"","sources":["../../src/utils/multimap.ts"],"names":[],"mappings":"AAAA,qBAAa,QAAQ,CAAC,CAAC,EAAE,CAAC;IACxB,OAAO,CAAC,GAAG,CAAoB;IAE/B,GAAG,CAAC,GAAG,EAAE,CAAC,EAAE,KAAK,EAAE,CAAC;IAIpB,GAAG,CAAC,GAAG,EAAE,CAAC,GAAG,SAAS,CAAC,EAAE;CAG1B"}

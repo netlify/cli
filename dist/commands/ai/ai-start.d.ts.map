@@ -1,0 +1,1 @@
+{"version":3,"file":"ai-start.d.ts","sourceRoot":"","sources":["../../../src/commands/ai/ai-start.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,YAAY,EAAE,MAAM,WAAW,CAAA;AAS7C,OAAO,KAAK,WAAW,MAAM,oBAAoB,CAAA;AAajD,UAAU,cAAe,SAAQ,YAAY;IAC3C,KAAK,CAAC,EAAE,OAAO,CAAA;CAChB;AAuYD,eAAO,MAAM,cAAc,GAAU,SAAS,cAAc,EAAE,SAAS,WAAW,KAAG,OAAO,CAAC,IAAI,CAsGhG,CAAA"}
