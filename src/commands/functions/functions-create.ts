@@ -640,7 +640,7 @@ const handleAddonDidInstall = async ({ addonCreated, addonDidInstall, command, f
     return
   }
 
-  await injectEnvVariables({
+  injectEnvVariables({
     devConfig: { ...config.dev },
     env: command.netlify.cachedConfig.env,
     site: command.netlify.site,
