@@ -1,0 +1,1 @@
+{"version":3,"file":"create-stream-promise.d.ts","sourceRoot":"","sources":["../../src/utils/create-stream-promise.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,MAAM,EAAE,MAAM,QAAQ,CAAA;AAC/B,OAAO,EAAE,eAAe,EAAE,MAAM,MAAM,CAAA;AAOtC,QAAA,MAAM,mBAAmB,GACvB,QAAQ,eAAe,EACvB,gBAAgB,MAAM,EACtB,mBAAgC,KAC/B,OAAO,CAAC,MAAM,CAyChB,CAAA;AAED,eAAe,mBAAmB,CAAA"}

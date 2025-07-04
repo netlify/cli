@@ -1,0 +1,1 @@
+{"version":3,"file":"read-repo-url.d.ts","sourceRoot":"","sources":["../../src/utils/read-repo-url.ts"],"names":[],"mappings":"AAKA,QAAA,MAAM,MAAM,WAAW,CAAA;AAEvB;;;GAGG;AACH,eAAO,MAAM,WAAW,GAAmB,KAAK,MAAM,qBAWrD,CAAA;AAqBD,eAAO,MAAM,eAAe,GAAa,KAAK,MAAM,KAAG,OAAO,MAAM,GAAG,IAOtE,CAAA;AAED,eAAO,MAAM,YAAY,GAAa,UAAU,MAAM,EAAE,KAAK;IAAE,IAAI,EAAE,MAAM,GAAG,IAAI,CAAA;CAAE,aASnF,CAAA"}
