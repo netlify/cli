@@ -2,7 +2,7 @@
 import path from 'path'
 
 import type { HandlerEvent } from '@netlify/functions'
-import fetch from 'node-fetch'
+
 import { describe, test } from 'vitest'
 
 import { withDevServer } from '../../utils/dev-server.js'
