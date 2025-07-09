@@ -197,7 +197,7 @@
     "eslint": "9.24.0",
     "eslint-config-prettier": "10.1.5",
     "eslint-plugin-n": "17.17.0",
-    "form-data": "4.0.2",
+    "form-data": "4.0.3",
     "lodash.shuffle": "4.2.0",
     "memfs": "4.17.0",
     "nock": "14.0.4",
