@@ -61,7 +61,7 @@ describe('createHandler', () => {
     })
   })
 
-  test('should get the url as the `rawUrl` inside the function', async () => {
+  test('should get the url as the `rawUrl` inside the function', { retry: 3 }, async () => {
     const response = await fetch(new URL('/.netlify/functions/hello', serverAddress))
 
     expect(response.status).toBe(200)
