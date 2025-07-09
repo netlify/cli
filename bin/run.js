@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { argv } from 'process'
 import EventEmitter from 'events'
+import nf, { Request, Response, Headers } from 'node-fetch'
 
 import { maybeEnableCompileCache } from '../dist/utils/nodejs-compile-cache.js'
 
@@ -12,12 +13,21 @@ const UPDATE_BOXEN_OPTIONS = {
   padding: 1,
   margin: 1,
   textAlignment: 'center',
-  borderStyle: 'round', 
+  borderStyle: 'round',
   borderColor: NETLIFY_CYAN_HEX,
   float: 'center',
   // This is an intentional half-width space to work around a unicode padding math bug in boxen
   title: '⬥ ',
   titleAlignment: 'center',
+}
+
+// patch fetch for node < 18
+if (!globalThis.fetch) {
+  globalThis.fetch = nf;
+  globalThis.Request = Request;
+  globalThis.Response = Response;
+  // eslint-disable-next-line n/no-unsupported-features/node-builtins
+  globalThis.Headers = Headers;
 }
 
 const main = async () => {
