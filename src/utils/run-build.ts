@@ -1,7 +1,7 @@
 import { promises as fs } from 'fs'
 import path, { join } from 'path'
 
-import { NetlifyConfig } from '@netlify/build'
+import { NetlifyConfig, type GeneratedFunction } from '@netlify/build'
 
 import BaseCommand from '../commands/base-command.js'
 import { $TSFixMe } from '../commands/types.js'
@@ -47,7 +47,22 @@ const cleanInternalDirectory = async (basePath?: string) => {
   await Promise.all(ops)
 }
 
-export const runNetlifyBuild = async ({
+type RunNetlifyBuildOptions = {
+  command: BaseCommand
+  // The flags of the command
+  options: $TSFixMe
+  settings: ServerSettings
+  env: NodeJS.ProcessEnv
+  timeline: 'dev' | 'build'
+}
+
+export async function runNetlifyBuild(
+  opts: RunNetlifyBuildOptions & { timeline: 'dev' },
+): Promise<{ configMutations: unknown; generatedFunctions: GeneratedFunction[] }>
+export async function runNetlifyBuild(
+  opts: RunNetlifyBuildOptions & { timeline: 'build' },
+): Promise<{ configPath: string; generatedFunctions: GeneratedFunction[] }>
+export async function runNetlifyBuild({
   command,
   env = {},
   options,
@@ -60,7 +75,7 @@ export const runNetlifyBuild = async ({
   settings: ServerSettings
   env: NodeJS.ProcessEnv
   timeline: 'build' | 'dev'
-}) => {
+}) {
   const { apiOpts, cachedConfig, site } = command.netlify
 
   const { default: buildSite, startDev } = await netlifyBuildPromise
@@ -130,7 +145,7 @@ export const runNetlifyBuild = async ({
 
     // Run Netlify Build using the main entry point.
     // @ts-expect-error TS(2345) FIXME: Argument of type '{ outputConfigPath: string; save... Remove this comment to see the full error message
-    const { netlifyConfig, success } = await buildSite(buildSiteOptions)
+    const { netlifyConfig, success, generatedFunctions } = await buildSite(buildSiteOptions)
 
     if (!success) {
       return logAndThrowError('Could not start local server due to a build error')
@@ -148,7 +163,7 @@ export const runNetlifyBuild = async ({
     }
     await devCommand({ netlifyConfig, settingsOverrides })
 
-    return { configPath: tempConfigPath }
+    return { configPath: tempConfigPath, generatedFunctions }
   }
 
   const startDevOptions = {
@@ -161,7 +176,12 @@ export const runNetlifyBuild = async ({
   }
 
   // Run Netlify Build using the `startDev` entry point.
-  const { configMutations, error: startDevError, success } = await startDev(devCommand, startDevOptions)
+  const {
+    configMutations,
+    error: startDevError,
+    success,
+    generatedFunctions,
+  } = await startDev(devCommand, startDevOptions)
 
   if (!success && startDevError) {
     return logAndThrowError(
@@ -169,7 +189,7 @@ export const runNetlifyBuild = async ({
     )
   }
 
-  return { configMutations }
+  return { configMutations, generatedFunctions }
 }
 
 type RunTimelineOptions = Omit<Parameters<typeof runNetlifyBuild>[0], 'timeline'>

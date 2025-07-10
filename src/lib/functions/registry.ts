@@ -3,6 +3,7 @@ import { createRequire } from 'module'
 import { basename, extname, isAbsolute, join, resolve } from 'path'
 import { env } from 'process'
 
+import type { GeneratedFunction } from '@netlify/build'
 import { type ListedFunction, listFunctions, type Manifest } from '@netlify/zip-it-and-ship-it'
 import extractZip from 'extract-zip'
 
@@ -74,6 +75,7 @@ export class FunctionsRegistry {
   private config: NormalizedCachedConfigConfig
   private debug: boolean
   private frameworksAPIPaths: ReturnType<typeof getFrameworksAPIPaths>
+  private generatedFunctions: GeneratedFunction[]
   private isConnected: boolean
   private logLambdaCompat: boolean
   private manifest?: Manifest
@@ -88,6 +90,7 @@ export class FunctionsRegistry {
     config,
     debug = false,
     frameworksAPIPaths,
+    generatedFunctions,
     isConnected = false,
     logLambdaCompat,
     manifest,
@@ -103,6 +106,7 @@ export class FunctionsRegistry {
     config: NormalizedCachedConfigConfig
     debug?: boolean
     frameworksAPIPaths: ReturnType<typeof getFrameworksAPIPaths>
+    generatedFunctions: GeneratedFunction[]
     isConnected?: boolean
     logLambdaCompat: boolean
     manifest?: Manifest
@@ -115,6 +119,7 @@ export class FunctionsRegistry {
     this.config = config
     this.debug = debug
     this.frameworksAPIPaths = frameworksAPIPaths
+    this.generatedFunctions = generatedFunctions
     this.isConnected = isConnected
     this.projectRoot = projectRoot
     this.timeouts = timeouts
@@ -465,14 +470,24 @@ export class FunctionsRegistry {
 
     await Promise.all(directories.map((path) => FunctionsRegistry.prepareDirectory(path)))
 
-    const functions = await this.listFunctions(directories, {
-      featureFlags: {
-        buildRustSource: env.NETLIFY_EXPERIMENTAL_BUILD_RUST_SOURCE === 'true',
+    const functions = await this.listFunctions(
+      {
+        generated: {
+          functions: this.generatedFunctions.map((func) => func.path),
+        },
+        user: {
+          directories,
+        },
       },
-      configFileDirectories: [getPathInProject([INTERNAL_FUNCTIONS_FOLDER])],
-      // @ts-expect-error -- TODO(serhalp): Function config types do not match. Investigate and fix.
-      config: this.config.functions,
-    })
+      {
+        featureFlags: {
+          buildRustSource: env.NETLIFY_EXPERIMENTAL_BUILD_RUST_SOURCE === 'true',
+        },
+        configFileDirectories: [getPathInProject([INTERNAL_FUNCTIONS_FOLDER])],
+        // @ts-expect-error -- TODO(serhalp): Function config types do not match. Investigate and fix.
+        config: this.config.functions,
+      },
+    )
 
     // user-defined functions take precedence over internal functions,
     // so we want to ignore any internal functions where there's a user-defined one with the same name
@@ -506,7 +521,7 @@ export class FunctionsRegistry {
       // zip-it-and-ship-it returns an array sorted based on which extension should have precedence,
       // where the last ones precede the previous ones. This is why
       // we reverse the array so we get the right functions precedence in the CLI.
-      functions.reverse().map(async ({ displayName, mainFile, name, runtime: runtimeName }) => {
+      functions.reverse().map(async ({ displayName, mainFile, name, runtime: runtimeName, srcDir }) => {
         if (ignoredFunctions.has(name)) {
           return
         }
@@ -527,7 +542,7 @@ export class FunctionsRegistry {
         const func = new NetlifyFunction({
           blobsContext: this.blobsContext,
           config: this.config,
-          directory: directories.find((directory) => mainFile.startsWith(directory)),
+          directory: srcDir ?? directories.find((directory) => mainFile.startsWith(directory)),
           mainFile,
           name,
           displayName,

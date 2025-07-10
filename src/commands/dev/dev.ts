@@ -191,7 +191,7 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
 
   log(`${NETLIFYDEVLOG} Setting up local dev server`)
 
-  const { configMutations, configPath: configPathOverride } = await runDevTimeline({
+  const { configMutations, generatedFunctions } = await runDevTimeline({
     command,
     options,
     settings,
@@ -208,7 +208,7 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
     blobsContext,
     command,
     config: mutatedConfig,
-
+    generatedFunctions,
     debug: options.debug,
     settings,
     site,
@@ -247,7 +247,6 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
     blobsContext,
     command,
     config: mutatedConfig,
-    configPath: configPathOverride,
     debug: options.debug,
     disableEdgeFunctions: options.internalDisableEdgeFunctions,
     projectDir: command.workingDir,
