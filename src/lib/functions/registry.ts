@@ -119,7 +119,7 @@ export class FunctionsRegistry {
     this.config = config
     this.debug = debug
     this.frameworksAPIPaths = frameworksAPIPaths
-    this.generatedFunctions = generatedFunctions
+    this.generatedFunctions = generatedFunctions ?? []
     this.isConnected = isConnected
     this.projectRoot = projectRoot
     this.timeouts = timeouts
