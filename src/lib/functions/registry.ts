@@ -476,6 +476,14 @@ export class FunctionsRegistry {
           functions: this.generatedFunctions.map((func) => func.path),
         },
         user: {
+          // In reality, `directories` contains both directories with user and
+          // generated functions. The registry currently lacks knowledge about
+          // the contents of each directory, so we put them in the same bag and
+          // rely on the order of the directories to get the priority right.
+          // But now that zip-it-and-ship-it accepts an object with mixed paths
+          // that lets us specify exactly which paths contain user functions or
+          // generated functions, we should refactor this call so it encodes
+          // that distiction.
           directories,
         },
       },
@@ -539,7 +547,21 @@ export class FunctionsRegistry {
           return
         }
 
+        // This contains the top-level functions directory where this specific
+        // function is found (not the sub-directory where a function may live).
+        // Both `netlify/functions/foo/index.js` and `netlify/functions/bar.js`
+        // would have this value as `netlify/functions`, for example.
+        //  This value was undefined for any functions in `generatedFunctions`,
+        // because those functions don't usually live inside any of the regular
+        // function directories. For those cases we use the value of `srcDir`.
+        // I think this is in need of some refactoring though, because I'm not
+        // sure why we need to keep track of the parent functions directory and
+        // not just the directory where the function lives.
+        // I'm keeping this as is for now, where we're just adding `srcDir` as
+        // a fallback, to minimise the impact of this change, and then we'll
+        // revisit when possible.
         const directory = directories.find((directory) => mainFile.startsWith(directory)) ?? srcDir
+
         const func = new NetlifyFunction({
           blobsContext: this.blobsContext,
           config: this.config,
