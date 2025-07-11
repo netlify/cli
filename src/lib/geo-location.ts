@@ -1,5 +1,5 @@
 import fetch from 'node-fetch'
-import { Geolocation, mockLocation } from '@netlify/dev-utils';
+import { Geolocation, mockLocation } from '@netlify/dev-utils'
 
 const API_URL = 'https://netlifind.netlify.app'
 const STATE_GEO_PROPERTY = 'geolocation'
@@ -40,7 +40,7 @@ export const getGeoLocation = async ({
   // `cache`, let's try to use it.
   // Or, if the country we're trying to mock is the same one as we have in the
   // cache, let's use the cache instead of the mock.
-  if (cacheObject !== undefined && (mode === 'cache' || cacheObject?.data?.country?.code === geoCountry)) {
+  if (cacheObject !== undefined && (mode === 'cache' || cacheObject.data.country?.code === geoCountry)) {
     const age = Date.now() - cacheObject.timestamp
 
     // Let's use the cached data if it's not older than the TTL. Also, if the
