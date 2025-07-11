@@ -539,10 +539,11 @@ export class FunctionsRegistry {
           return
         }
 
+        const directory = directories.find((directory) => mainFile.startsWith(directory)) ?? srcDir
         const func = new NetlifyFunction({
           blobsContext: this.blobsContext,
           config: this.config,
-          directory: srcDir ?? directories.find((directory) => mainFile.startsWith(directory)),
+          directory,
           mainFile,
           name,
           displayName,
