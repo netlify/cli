@@ -1,3 +1,5 @@
+import { relative } from 'node:path'
+
 import inquirer from 'inquirer'
 
 import { exit, log } from '../command-helpers.js'
@@ -95,7 +97,8 @@ export default async function configManual({
     deploy_key_id: deployKey.id,
     base: baseDir,
     dir: buildDir,
-    functions_dir: functionsDir,
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    functions_dir: relative(config.build.base ?? command.workingDir, functionsDir),
     ...(buildCmd && { cmd: buildCmd }),
   }
 
