@@ -1,8 +1,8 @@
 import nock from 'nock'
 import { describe, expect, test } from 'vitest'
 
-import { Geolocation, mockLocation } from '@netlify/dev-utils'
-import { getGeoLocation } from '../../../src/lib/geo-location.js'
+import { mockLocation } from '@netlify/dev-utils'
+import { getGeoLocation, type Geolocation } from '../../../src/lib/geo-location.js'
 
 describe('getGeoLocation', () => {
   test('returns geolocation data from the API if `mode: "cache"`', async () => {

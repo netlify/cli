@@ -1,5 +1,5 @@
 import fetch from 'node-fetch'
-import { Geolocation, mockLocation } from '@netlify/dev-utils'
+import { type Geolocation, mockLocation } from '@netlify/dev-utils'
 
 const API_URL = 'https://netlifind.netlify.app'
 const STATE_GEO_PROPERTY = 'geolocation'
@@ -8,6 +8,8 @@ const CACHE_TTL = 8.64e7
 
 // 10 seconds
 const REQUEST_TIMEOUT = 1e4
+
+export { Geolocation }
 
 interface State {
   get(key: string): unknown
