@@ -3,6 +3,7 @@ import { createRequire } from 'module'
 import { basename, extname, isAbsolute, join, resolve } from 'path'
 import { env } from 'process'
 
+import type { GeneratedFunction } from '@netlify/build'
 import { type ListedFunction, listFunctions, type Manifest } from '@netlify/zip-it-and-ship-it'
 import extractZip from 'extract-zip'
 
@@ -74,6 +75,7 @@ export class FunctionsRegistry {
   private config: NormalizedCachedConfigConfig
   private debug: boolean
   private frameworksAPIPaths: ReturnType<typeof getFrameworksAPIPaths>
+  private generatedFunctions: GeneratedFunction[]
   private isConnected: boolean
   private logLambdaCompat: boolean
   private manifest?: Manifest
@@ -88,6 +90,7 @@ export class FunctionsRegistry {
     config,
     debug = false,
     frameworksAPIPaths,
+    generatedFunctions,
     isConnected = false,
     logLambdaCompat,
     manifest,
@@ -103,6 +106,7 @@ export class FunctionsRegistry {
     config: NormalizedCachedConfigConfig
     debug?: boolean
     frameworksAPIPaths: ReturnType<typeof getFrameworksAPIPaths>
+    generatedFunctions: GeneratedFunction[]
     isConnected?: boolean
     logLambdaCompat: boolean
     manifest?: Manifest
@@ -115,6 +119,7 @@ export class FunctionsRegistry {
     this.config = config
     this.debug = debug
     this.frameworksAPIPaths = frameworksAPIPaths
+    this.generatedFunctions = generatedFunctions ?? []
     this.isConnected = isConnected
     this.projectRoot = projectRoot
     this.timeouts = timeouts
@@ -465,14 +470,32 @@ export class FunctionsRegistry {
 
     await Promise.all(directories.map((path) => FunctionsRegistry.prepareDirectory(path)))
 
-    const functions = await this.listFunctions(directories, {
-      featureFlags: {
-        buildRustSource: env.NETLIFY_EXPERIMENTAL_BUILD_RUST_SOURCE === 'true',
+    const functions = await this.listFunctions(
+      {
+        generated: {
+          functions: this.generatedFunctions.map((func) => func.path),
+        },
+        user: {
+          // In reality, `directories` contains both directories with user and
+          // generated functions. The registry currently lacks knowledge about
+          // the contents of each directory, so we put them in the same bag and
+          // rely on the order of the directories to get the priority right.
+          // But now that zip-it-and-ship-it accepts an object with mixed paths
+          // that lets us specify exactly which paths contain user functions or
+          // generated functions, we should refactor this call so it encodes
+          // that distiction.
+          directories,
+        },
       },
-      configFileDirectories: [getPathInProject([INTERNAL_FUNCTIONS_FOLDER])],
-      // @ts-expect-error -- TODO(serhalp): Function config types do not match. Investigate and fix.
-      config: this.config.functions,
-    })
+      {
+        featureFlags: {
+          buildRustSource: env.NETLIFY_EXPERIMENTAL_BUILD_RUST_SOURCE === 'true',
+        },
+        configFileDirectories: [getPathInProject([INTERNAL_FUNCTIONS_FOLDER])],
+        // @ts-expect-error -- TODO(serhalp): Function config types do not match. Investigate and fix.
+        config: this.config.functions,
+      },
+    )
 
     // user-defined functions take precedence over internal functions,
     // so we want to ignore any internal functions where there's a user-defined one with the same name
@@ -506,7 +529,7 @@ export class FunctionsRegistry {
       // zip-it-and-ship-it returns an array sorted based on which extension should have precedence,
       // where the last ones precede the previous ones. This is why
       // we reverse the array so we get the right functions precedence in the CLI.
-      functions.reverse().map(async ({ displayName, mainFile, name, runtime: runtimeName }) => {
+      functions.reverse().map(async ({ displayName, mainFile, name, runtime: runtimeName, srcDir }) => {
         if (ignoredFunctions.has(name)) {
           return
         }
@@ -524,10 +547,25 @@ export class FunctionsRegistry {
           return
         }
 
+        // This contains the top-level functions directory where this specific
+        // function is found (not the sub-directory where a function may live).
+        // Both `netlify/functions/foo/index.js` and `netlify/functions/bar.js`
+        // would have this value as `netlify/functions`, for example.
+        //  This value was undefined for any functions in `generatedFunctions`,
+        // because those functions don't usually live inside any of the regular
+        // function directories. For those cases we use the value of `srcDir`.
+        // I think this is in need of some refactoring though, because I'm not
+        // sure why we need to keep track of the parent functions directory and
+        // not just the directory where the function lives.
+        // I'm keeping this as is for now, where we're just adding `srcDir` as
+        // a fallback, to minimise the impact of this change, and then we'll
+        // revisit when possible.
+        const directory = directories.find((directory) => mainFile.startsWith(directory)) ?? srcDir
+
         const func = new NetlifyFunction({
           blobsContext: this.blobsContext,
           config: this.config,
-          directory: directories.find((directory) => mainFile.startsWith(directory)),
+          directory,
           mainFile,
           name,
           displayName,
