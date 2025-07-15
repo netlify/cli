@@ -4,7 +4,10 @@ import type { IncomingMessage } from 'http'
 import type { PollingStrategy } from '@netlify/build-info'
 import type { Match } from 'netlify-redirector'
 
-export type { GlobalConfigStore } from './get-global-config-store.js'
+import { globalConfig } from '@netlify/dev-utils'
+export type GlobalConfigStore<T extends Record<string, any> = Record<string, any>> =
+  globalConfig.GlobalConfigStore<T>
+
 export { default as CLIState } from './cli-state.js'
 
 export type FrameworkNames = '#static' | '#auto' | '#custom' | string

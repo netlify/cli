@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url'
 import { isCI } from 'ci-info'
 
 import execa from '../execa.js'
-import getGlobalConfigStore from '../get-global-config-store.js'
+import { globalConfig } from '@netlify/dev-utils'
 
 import { cliVersion } from './utils.js'
 
@@ -29,7 +29,7 @@ export const reportError = async function (error, config = {}) {
   // convert a NotifiableError to an error class
   const err = error instanceof Error ? error : typeof error === 'string' ? new Error(error) : error
 
-  const globalConfig = await getGlobalConfigStore()
+  const globalConfigStore = await globalConfig.default()
 
   const options = JSON.stringify({
     type: 'error',
@@ -41,7 +41,7 @@ export const reportError = async function (error, config = {}) {
       // @ts-expect-error TS(2339) FIXME: Property 'severity' does not exist on type '{}'.
       severity: config.severity,
       user: {
-        id: globalConfig.get('userId'),
+        id: globalConfigStore.get('userId'),
       },
       // @ts-expect-error TS(2339) FIXME: Property 'metadata' does not exist on type '{}'.
       metadata: config.metadata,

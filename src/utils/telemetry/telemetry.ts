@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url'
 import { isCI } from 'ci-info'
 
 import execa from '../execa.js'
-import getGlobalConfigStore from '../get-global-config-store.js'
+import { globalConfig } from '@netlify/dev-utils'
 
 import { isTelemetryDisabled, cliVersion } from './utils.js'
 import isValidEventName from './validation.js'
@@ -56,12 +56,12 @@ export async function track(
     return
   }
 
-  const globalConfig = await getGlobalConfigStore()
-  if (isTelemetryDisabled(globalConfig)) {
+  const globalConfigStore = await globalConfig.default()
+  if (isTelemetryDisabled(globalConfigStore)) {
     return
   }
 
-  const [userId, cliId] = [globalConfig.get('userId'), globalConfig.get('cliId')]
+  const [userId, cliId] = [globalConfigStore.get('userId'), globalConfigStore.get('cliId')]
 
   // automatically add `cli:` prefix if missing
   if (!eventName.includes('cli:')) {
@@ -93,12 +93,12 @@ export async function identify(payload: { name?: string; email?: string; userId?
     return
   }
 
-  const globalConfig = await getGlobalConfigStore()
-  if (isTelemetryDisabled(globalConfig)) {
+  const globalConfigStore = await globalConfig.default()
+  if (isTelemetryDisabled(globalConfigStore)) {
     return
   }
 
-  const cliId = globalConfig.get('cliId')
+  const cliId = globalConfigStore.get('cliId')
   const { email, name, userId } = payload
 
   const defaultTraits = {

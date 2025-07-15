@@ -5,10 +5,7 @@ import { describe, beforeEach, expect, it, vi } from 'vitest'
 import { vol } from 'memfs'
 
 import { getLegacyPathInHome, getPathInHome } from '../../../src/lib/settings.js'
-import getGlobalConfigStore, {
-  GlobalConfigStore,
-  resetConfigCache,
-} from '../../../src/utils/get-global-config-store.js'
+import { globalConfig } from '@netlify/dev-utils'
 
 // Mock filesystem calls
 vi.mock('fs')
@@ -29,13 +26,13 @@ describe('getGlobalConfig', () => {
     vol.mkdirSync(legacyConfigPath, { recursive: true })
 
     // reset the memoized config for the tests
-    resetConfigCache()
+    globalConfig.resetConfigCache()
   })
 
   it('returns an empty object when the legacy configuration file is not valid JSON', async () => {
     await fs.writeFile(legacyConfigFilePath, 'NotJson')
 
-    await expect(getGlobalConfigStore()).resolves.not.toThrowError()
+    await expect(globalConfig.default()).resolves.not.toThrowError()
   })
 
   it('merges legacy configuration options with new configuration options (preferring new config options)', async () => {
@@ -44,10 +41,10 @@ describe('getGlobalConfig', () => {
     await fs.writeFile(legacyConfigFilePath, JSON.stringify(legacyConfig))
     await fs.writeFile(configFilePath, JSON.stringify(newConfig))
 
-    const globalConfig = await getGlobalConfigStore()
+    const globalConfigStore = await globalConfig.default()
 
-    expect(globalConfig.get('someOldKey')).toBe(legacyConfig.someOldKey)
-    expect(globalConfig.get('overrideMe')).toBe(newConfig.overrideMe)
+    expect(globalConfigStore.get('someOldKey')).toBe(legacyConfig.someOldKey)
+    expect(globalConfigStore.get('overrideMe')).toBe(newConfig.overrideMe)
   })
 
   it("creates a config store file in netlify's config dir if none exists and stores new values", async () => {
@@ -56,11 +53,11 @@ describe('getGlobalConfig', () => {
 
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     await fs.rm(getLegacyPathInHome([]), { force: true, recursive: true })
-    const globalConfig = await getGlobalConfigStore()
-    globalConfig.set('newProp', 'newValue')
+    const globalConfigStore = await globalConfig.default()
+    globalConfigStore.set('newProp', 'newValue')
     const configFile = JSON.parse(await fs.readFile(configFilePath, 'utf-8')) as Record<string, unknown>
 
-    expect(globalConfig.all).toEqual(configFile)
+    expect(globalConfigStore.all).toEqual(configFile)
   })
 })
 
@@ -79,7 +76,7 @@ describe('ConfigStore', () => {
     const before: unknown = JSON.parse(await fs.readFile(configFilePath, 'utf8'))
     expect(before).toEqual(config)
 
-    new GlobalConfigStore({ defaults })
+    new globalConfig.GlobalConfigStore({ defaults })
 
     const after: unknown = JSON.parse(await fs.readFile(configFilePath, 'utf8'))
     expect(after).toEqual({
@@ -95,7 +92,7 @@ describe('ConfigStore', () => {
       const config = { a: 'value' }
       await fs.writeFile(configFilePath, JSON.stringify(config))
 
-      const store = new GlobalConfigStore()
+      const store = new globalConfig.GlobalConfigStore()
 
       expect(store.all).toEqual(config)
     })
@@ -103,13 +100,13 @@ describe('ConfigStore', () => {
     it('works when no configuration file exists', async () => {
       await fs.mkdir(configPath, { recursive: true })
 
-      const store = new GlobalConfigStore()
+      const store = new globalConfig.GlobalConfigStore()
 
       expect(store.all).toEqual({})
     })
 
     it('works when no configuration directory exists', () => {
-      const store = new GlobalConfigStore()
+      const store = new globalConfig.GlobalConfigStore()
 
       expect(store.all).toEqual({})
     })
@@ -122,7 +119,7 @@ describe('ConfigStore', () => {
       const config = { a: 'value' }
       await fs.writeFile(configFilePath, JSON.stringify(config))
 
-      const store = new GlobalConfigStore()
+      const store = new globalConfig.GlobalConfigStore()
 
       expect(store.get('a')).toBe('value')
     })
@@ -130,13 +127,13 @@ describe('ConfigStore', () => {
     it('returns undefined when no configuration file exists', async () => {
       await fs.mkdir(configPath, { recursive: true })
 
-      const store = new GlobalConfigStore()
+      const store = new globalConfig.GlobalConfigStore()
 
       expect(store.get('a')).toBe(undefined)
     })
 
     it('returns undefined when no configuration directory exists', () => {
-      const store = new GlobalConfigStore()
+      const store = new globalConfig.GlobalConfigStore()
 
       expect(store.get('a')).toBe(undefined)
     })
@@ -147,7 +144,7 @@ describe('ConfigStore', () => {
       await fs.mkdir(configPath, { recursive: true })
       await fs.writeFile(configFilePath, JSON.stringify({ a: 'value' }))
 
-      const store = new GlobalConfigStore()
+      const store = new globalConfig.GlobalConfigStore()
       store.set('b', 'another value')
       const data: unknown = JSON.parse(await fs.readFile(configFilePath, 'utf8'))
 
@@ -157,7 +154,7 @@ describe('ConfigStore', () => {
     it('creates a configuration file when one does not exist', async () => {
       await fs.mkdir(configPath, { recursive: true })
 
-      const store = new GlobalConfigStore()
+      const store = new globalConfig.GlobalConfigStore()
       store.set('a', 'fresh start')
       const data: unknown = JSON.parse(await fs.readFile(configFilePath, 'utf8'))
 
@@ -167,7 +164,7 @@ describe('ConfigStore', () => {
     it('sets nested values', async () => {
       await fs.mkdir(configPath, { recursive: true })
 
-      const store = new GlobalConfigStore()
+      const store = new globalConfig.GlobalConfigStore()
       store.set('a.new', 'hope')
       const data: unknown = JSON.parse(await fs.readFile(configFilePath, 'utf8'))
 
@@ -177,7 +174,7 @@ describe('ConfigStore', () => {
     it('succeeds when no configuration directory exists', async () => {
       await fs.mkdir(configPath, { recursive: true })
 
-      const store = new GlobalConfigStore()
+      const store = new globalConfig.GlobalConfigStore()
       store.set('a.new', 'hope')
       const data: unknown = JSON.parse(await fs.readFile(configFilePath, 'utf8'))
 

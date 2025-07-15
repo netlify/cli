@@ -35,7 +35,7 @@ import {
 } from '../utils/command-helpers.js'
 import type { FeatureFlags } from '../utils/feature-flags.js'
 import { getFrameworksAPIPaths } from '../utils/frameworks-api.js'
-import getGlobalConfigStore from '../utils/get-global-config-store.js'
+import { globalConfig } from '@netlify/dev-utils'
 import { getSiteByName } from '../utils/get-site.js'
 import openBrowser from '../utils/open-browser.js'
 import CLIState from '../utils/cli-state.js'
@@ -449,7 +449,7 @@ export default class BaseCommand extends Command {
 
     const { email, full_name: name, id: userId } = await this.netlify.api.getCurrentUser()
 
-    const userData = merge(this.netlify.globalConfig.get(`users.${userId}`), {
+    const userData = merge(this.netlify.globalConfigStore.get(`users.${userId}`), {
       id: userId,
       name,
       email,
@@ -462,9 +462,9 @@ export default class BaseCommand extends Command {
       },
     })
     // Set current userId
-    this.netlify.globalConfig.set('userId', userId)
+    this.netlify.globalConfigStore.set('userId', userId)
     // Set user data
-    this.netlify.globalConfig.set(`users.${userId}`, userData)
+    this.netlify.globalConfigStore.set(`users.${userId}`, userData)
 
     await identify({
       name,
@@ -643,7 +643,7 @@ export default class BaseCommand extends Command {
       siteData = result
     }
 
-    const globalConfig = await getGlobalConfigStore()
+    const globalConfigStore = await globalConfig.default()
 
     // ==================================================
     // Perform analytics reporting
@@ -701,8 +701,7 @@ export default class BaseCommand extends Command {
         env,
       },
       // global cli config
-      // TODO(serhalp): Rename to `globalConfigStore`
-      globalConfig,
+      globalConfigStore,
       // state of current site dir
       // TODO(serhalp): Rename to `cliState`
       state,
