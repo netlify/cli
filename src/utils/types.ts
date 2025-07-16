@@ -5,8 +5,8 @@ import type { PollingStrategy } from '@netlify/build-info'
 import type { Match } from 'netlify-redirector'
 
 import { globalConfig } from '@netlify/dev-utils'
-export type GlobalConfigStore<T extends Record<string, any> = Record<string, any>> =
-  globalConfig.GlobalConfigStore<T>
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type GlobalConfigStore<T extends Record<string, any> = Record<string, any>> = globalConfig.GlobalConfigStore<T>
 
 export { default as CLIState } from './cli-state.js'
 
