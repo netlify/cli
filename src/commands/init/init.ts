@@ -4,7 +4,7 @@ import isEmpty from 'lodash/isEmpty.js'
 
 import { chalk, exit, log, netlifyCommand } from '../../utils/command-helpers.js'
 import getRepoData from '../../utils/get-repo-data.js'
-import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
+import { ensureNetlifyIgnore } from '@netlify/dev-utils'
 import { configureRepo } from '../../utils/init/config.js'
 import { track } from '../../utils/telemetry/index.js'
 import type BaseCommand from '../base-command.js'

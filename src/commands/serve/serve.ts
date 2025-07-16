@@ -25,7 +25,7 @@ import { UNLINKED_SITE_MOCK_ID, getDotEnvVariables, getSiteInformation, injectEn
 import { getEnvelopeEnv } from '../../utils/env/index.js'
 import { getFrameworksAPIConfig } from '../../utils/frameworks-api.js'
 import { getInternalFunctionsDir } from '../../utils/functions/functions.js'
-import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
+import { ensureNetlifyIgnore } from '@netlify/dev-utils'
 import openBrowser from '../../utils/open-browser.js'
 import { generateInspectSettings, startProxyServer } from '../../utils/proxy-server.js'
 import { runBuildTimeline } from '../../utils/run-build.js'

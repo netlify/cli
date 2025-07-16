@@ -21,7 +21,7 @@ import {
 import detectServerSettings, { getConfigWithPlugins } from '../../utils/detect-server-settings.js'
 import { UNLINKED_SITE_MOCK_ID, getDotEnvVariables, getSiteInformation, injectEnvVariables } from '../../utils/dev.js'
 import { getEnvelopeEnv } from '../../utils/env/index.js'
-import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
+import { ensureNetlifyIgnore } from '@netlify/dev-utils'
 import { getLiveTunnelSlug, startLiveTunnel } from '../../utils/live-tunnel.js'
 import openBrowser from '../../utils/open-browser.js'
 import { generateInspectSettings, startProxyServer } from '../../utils/proxy-server.js'
