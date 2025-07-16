@@ -14,7 +14,7 @@ import terminalLink from 'terminal-link'
 
 import { startSpinner } from '../lib/spinner.js'
 
-import { globalConfig } from '@netlify/dev-utils'
+import { globalConfig as globalConfigStore } from '@netlify/dev-utils'
 import getCLIPackageJson from './get-cli-package-json.js'
 import { reportError } from './telemetry/report-error.js'
 import type { TokenLocation } from './types.js'
@@ -142,9 +142,9 @@ export const getToken = async (tokenFromOptions?: string): Promise<TokenTuple> =
     return [NETLIFY_AUTH_TOKEN, 'env']
   }
   // 3. If no env var use global user setting
-  const globalConfigStore = await globalConfig.default()
-  const userId = globalConfigStore.get('userId')
-  const tokenFromConfig = globalConfigStore.get(`users.${userId}.auth.token`)
+  const globalConfig = await globalConfigStore.default()
+  const userId = globalConfig.get('userId')
+  const tokenFromConfig = globalConfig.get(`users.${userId}.auth.token`)
   if (tokenFromConfig) {
     return [tokenFromConfig, 'config']
   }

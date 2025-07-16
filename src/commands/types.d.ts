@@ -39,7 +39,7 @@ export type NetlifyOptions = {
   siteInfo: SiteInfo
   config: NormalizedCachedConfigConfig
   cachedConfig: CachedConfig
-  globalConfigStore: GlobalConfigStore
+  globalConfig: GlobalConfigStore
   state: CLIState
   frameworksAPIPaths: FrameworksAPIPaths
 }
