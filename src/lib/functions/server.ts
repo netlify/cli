@@ -29,7 +29,7 @@ import { createFormSubmissionHandler } from './form-submissions-handler.js'
 import { FunctionsRegistry } from './registry.js'
 import { handleScheduledFunction } from './scheduled.js'
 import { handleSynchronousFunction } from './synchronous.js'
-import { shouldBase64Encode } from './utils.js'
+import { shouldBase64Encode } from '@netlify/dev-utils'
 
 type FunctionsSettings = Pick<ServerSettings, 'functions' | 'functionsPort'>
 
@@ -122,7 +122,7 @@ export const createHandler = function (options: GetFunctionsServerOptions): Requ
       return
     }
 
-    const isBase64Encoded = shouldBase64Encode(request.header('content-type'))
+    const isBase64Encoded = shouldBase64Encode(request.header('content-type') ?? '')
     let body
     if (hasBody(request)) {
       body = request.body.toString(isBase64Encoded ? 'base64' : 'utf8')
