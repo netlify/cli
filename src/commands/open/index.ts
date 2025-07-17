@@ -6,7 +6,7 @@ import BaseCommand from '../base-command.js'
 export const createOpenCommand = (program: BaseCommand) => {
   program
     .command('open:admin')
-    .description('Opens current site admin UI in Netlify')
+    .description('Opens current project admin UI in Netlify')
     .addExamples(['netlify open:admin'])
     .hook('preAction', requiresSiteInfo)
     .action(async (options: OptionValues, command: BaseCommand) => {
@@ -16,7 +16,7 @@ export const createOpenCommand = (program: BaseCommand) => {
 
   program
     .command('open:site')
-    .description('Opens current site url in browser')
+    .description('Opens current project url in browser')
     .addExamples(['netlify open:site'])
     .hook('preAction', requiresSiteInfo)
     .action(async (options: OptionValues, command: BaseCommand) => {
@@ -26,9 +26,9 @@ export const createOpenCommand = (program: BaseCommand) => {
 
   return program
     .command('open')
-    .description(`Open settings for the site linked to the current folder`)
-    .option('--site', 'Open site')
-    .option('--admin', 'Open Netlify site')
+    .description(`Open settings for the project linked to the current folder`)
+    .option('--site', 'Open project')
+    .option('--admin', 'Open Netlify project')
     .addExamples(['netlify open --site', 'netlify open --admin', 'netlify open:admin', 'netlify open:site'])
     .action(async (options: OptionValues, command: BaseCommand) => {
       const { open } = await import('./open.js')

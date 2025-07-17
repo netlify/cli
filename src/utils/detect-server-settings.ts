@@ -327,7 +327,7 @@ export const getConfigWithPlugins = (config: CachedConfig['config'], settings: S
     return config
   }
 
-  // If there are plugins that we should be running for this site, add them
+  // If there are plugins that we should be running for this project, add them
   // to the config as if they were declared in netlify.toml. We must check
   // whether the plugin has already been added by another source (like the
   // TOML file or the UI), as we don't want to run the same plugin twice.

@@ -9,7 +9,7 @@ export const getSiteData = async ({ api, siteId }) => {
   try {
     siteData = await api.getSite({ siteId })
   } catch (error_) {
-    return logAndThrowError(`Failed getting list of site data: ${(error_ as APIError).message}`)
+    return logAndThrowError(`Failed getting list of project data: ${(error_ as APIError).message}`)
   }
   return siteData
 }

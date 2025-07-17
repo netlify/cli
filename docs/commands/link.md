@@ -2,13 +2,13 @@
 title: Netlify CLI link command
 sidebar:
   label: link
-description: Link an existing site to a local site directory
+description: Link an existing project to a local project directory
 ---
 
 # `link`
 
 <!-- AUTO-GENERATED-CONTENT:START (GENERATE_COMMANDS_DOCS) -->
-Link a local repo or project folder to an existing site on Netlify
+Link a local repo or project folder to an existing project on Netlify
 
 **Usage**
 
@@ -21,8 +21,8 @@ netlify link
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `git-remote-name` (*string*) - Name of Git remote to use. e.g. "origin"
 - `git-remote-url` (*string*) - URL of the repository (or Github `owner/repo`) to link to
-- `id` (*string*) - ID of site to link to
-- `name` (*string*) - Name of site to link to
+- `id` (*string*) - ID of project to link to
+- `name` (*string*) - Name of project to link to
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
@@ -31,7 +31,7 @@ netlify link
 ```bash
 netlify link
 netlify link --id 123-123-123-123
-netlify link --name my-site-name
+netlify link --name my-project-name
 netlify link --git-remote-url https://github.com/vibecoder/my-unicorn.git
 ```
 

@@ -20,7 +20,7 @@ export const status = async (options: OptionValues, command: BaseCommand) => {
   const [accessToken] = await getToken()
 
   if (!accessToken) {
-    log(`Not logged in. Please log in to see site status.`)
+    log(`Not logged in. Please log in to see project status.`)
     log()
     log('Login with "netlify login" command')
     return exit()
@@ -66,7 +66,7 @@ export const status = async (options: OptionValues, command: BaseCommand) => {
 
   if (!siteId) {
     warn('Did you run `netlify link` yet?')
-    return logAndThrowError(`You don't appear to be in a folder that is linked to a site`)
+    return logAndThrowError(`You don't appear to be in a folder that is linked to a project`)
   }
 
   // Json only logs out if --json flag is passed
@@ -84,15 +84,15 @@ export const status = async (options: OptionValues, command: BaseCommand) => {
   }
 
   log(`────────────────────┐
- Netlify Site Info  │
+ Netlify Project Info  │
 ────────────────────┘`)
   log(
     prettyjson.render({
-      'Current site': siteInfo.name,
+      'Current project': siteInfo.name,
       'Netlify TOML': site.configPath,
       'Admin URL': chalk.magentaBright(siteInfo.admin_url),
-      'Site URL': chalk.cyanBright(siteInfo.ssl_url || siteInfo.url),
-      'Site Id': chalk.yellowBright(siteInfo.id),
+      'Project URL': chalk.cyanBright(siteInfo.ssl_url || siteInfo.url),
+      'Project Id': chalk.yellowBright(siteInfo.id),
     }),
   )
   log()

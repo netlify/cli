@@ -97,7 +97,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
     await callCli(['sites:delete', siteId, '--force'])
   })
 
-  test('should deploy site when dir flag is passed', async (t) => {
+  test('should deploy project when dir flag is passed', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       const content = '<h1>⊂◉‿◉つ</h1>'
       builder.withContentFile({
@@ -116,7 +116,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
     })
   })
 
-  test('should deploy site by name', async (t) => {
+  test('should deploy project by name', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       const content = '<h1>⊂◉‿◉つ</h1>'
       builder
@@ -140,7 +140,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
     })
   })
 
-  test('should deploy site when publish directory set in netlify.toml', async (t) => {
+  test('should deploy project when publish directory set in netlify.toml', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       const content = '<h1>⊂◉‿◉つ</h1>'
       builder
@@ -413,14 +413,14 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
       }).then((output: string) => JSON.parse(output))
 
       await validateDeploy({ deploy, siteName: SITE_NAME, content })
-      expect(deploy).toHaveProperty('logs', `https://app.netlify.com/sites/${SITE_NAME}/deploys/${deploy.deploy_id}`)
+      expect(deploy).toHaveProperty('logs', `https://app.netlify.com/projects/${SITE_NAME}/deploys/${deploy.deploy_id}`)
       expect(deploy).toHaveProperty(
         'function_logs',
-        `https://app.netlify.com/sites/${SITE_NAME}/logs/functions?scope=deploy:${deploy.deploy_id}`,
+        `https://app.netlify.com/projects/${SITE_NAME}/logs/functions?scope=deploy:${deploy.deploy_id}`,
       )
       expect(deploy).toHaveProperty(
         'edge_function_logs',
-        `https://app.netlify.com/sites/${SITE_NAME}/logs/edge-functions?scope=deployid:${deploy.deploy_id}`,
+        `https://app.netlify.com/projects/${SITE_NAME}/logs/edge-functions?scope=deployid:${deploy.deploy_id}`,
       )
     })
   })
@@ -440,12 +440,39 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
       }).then((output: string) => JSON.parse(output))
 
       await validateDeploy({ deploy, siteName: SITE_NAME, content })
-      expect(deploy).toHaveProperty('logs', `https://app.netlify.com/sites/${SITE_NAME}/deploys/${deploy.deploy_id}`)
-      expect(deploy).toHaveProperty('function_logs', `https://app.netlify.com/sites/${SITE_NAME}/logs/functions`)
+      expect(deploy).toHaveProperty('logs', `https://app.netlify.com/projects/${SITE_NAME}/deploys/${deploy.deploy_id}`)
+      expect(deploy).toHaveProperty('function_logs', `https://app.netlify.com/projects/${SITE_NAME}/logs/functions`)
       expect(deploy).toHaveProperty(
         'edge_function_logs',
-        `https://app.netlify.com/sites/${SITE_NAME}/logs/edge-functions`,
+        `https://app.netlify.com/projects/${SITE_NAME}/logs/edge-functions`,
       )
+    })
+  })
+
+  test('should throw error when build fails with --json option', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      builder
+        .withContentFile({
+          path: 'public/index.html',
+          content: '<h1>Test content</h1>',
+        })
+        .withNetlifyToml({
+          config: {
+            build: {
+              publish: 'public',
+              command: 'exit 1',
+            },
+          },
+        })
+
+      await builder.build()
+
+      await expect(
+        callCli(['deploy', '--json'], {
+          cwd: builder.directory,
+          env: { NETLIFY_SITE_ID: context.siteId },
+        }),
+      ).rejects.toThrow('Error while running build')
     })
   })
 

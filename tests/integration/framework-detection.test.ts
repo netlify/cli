@@ -502,7 +502,7 @@ describe.concurrent('frameworks/framework-detection', () => {
           const normalizedText = normalizeSnapshot(output, { duration: true, filePath: true })
           t.expect(
             normalizedText.includes(
-              `Changes will not be hot-reloaded, so if you need to rebuild your site you must exit and run 'netlify serve' again`,
+              `Changes will not be hot-reloaded, so if you need to rebuild your project you must exit and run 'netlify serve' again`,
             ),
           ).toEqual(true)
         },

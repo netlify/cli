@@ -109,7 +109,7 @@ export const createDevCommand = (program: BaseCommand) => {
     .addHelpText('after', () => {
       const docsUrl = 'https://docs.netlify.com/cli/local-development/'
       return `
-For more information about Netlify local development, see ${terminalLink(docsUrl, docsUrl)}
+For more information about Netlify local development, see ${terminalLink(docsUrl, docsUrl, { fallback: false })}
 `
     })
     .action(async (options: OptionValues, command: BaseCommand) => {

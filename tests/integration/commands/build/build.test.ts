@@ -260,7 +260,7 @@ describe.concurrent('command/build', () => {
     })
   })
 
-  test('should error when a site id is missing', async (t) => {
+  test('should error when a project id is missing', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       builder.withNetlifyToml({ config: { build: { command: 'echo testCommand' } } })
 
@@ -270,14 +270,14 @@ describe.concurrent('command/build', () => {
         await runBuildCommand(t, builder.directory, {
           apiUrl,
           exitCode: 1,
-          output: 'Could not find the site ID',
+          output: 'Could not find the project ID',
           env: { ...defaultEnvs, NETLIFY_SITE_ID: '' },
         })
       })
     })
   })
 
-  test('should not require a linked site when offline flag is set', async (t) => {
+  test('should not require a linked project when offline flag is set', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       await builder.withNetlifyToml({ config: { build: { command: 'echo testCommand' } } }).build()
 
@@ -334,7 +334,7 @@ describe.concurrent('command/build', () => {
       const output = (await callCli(['build', '--offline'], { cwd: fixture.directory })) as string
 
       // expect on the output that it installed the next runtime (auto detected the plugin + the build command and therefore had functions to bundle)
-      expect(output).toMatch(/❯ Using Next.js Runtime -/)
+      expect(output).toMatch(/Using Next.js Runtime -/)
       expect(output).toMatch(/\$ npm run build/)
       expect(output).toMatch(/Functions bundling completed/)
     })
@@ -351,7 +351,7 @@ setupFixtureTests('monorepo', () => {
 
     handleQuestions(childProcess, [
       {
-        question: 'Select the site you want to work with',
+        question: 'Select the project you want to work with',
         answer: CONFIRM,
       },
     ])

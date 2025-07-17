@@ -16,10 +16,10 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macOS-latest, windows-latest]
-        node-version: ['18.14.0', '22.x']
+        os: [ubuntu-latest, macOS-latest, windows-2025]
+        node-version: ['20.12.2', '22.x']
         exclude:
-          - os: windows-latest
+          - os: windows-2025
             node-version: '22.x'
       fail-fast: false
     steps:

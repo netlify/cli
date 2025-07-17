@@ -9,7 +9,7 @@ import type BaseCommand from '../base-command.js'
 export const checkOptions = ({ cachedConfig: { siteInfo }, token }: RunBuildOptions) => {
   if (!siteInfo.id) {
     return logAndThrowError(
-      'Could not find the site ID. If your site is not on Netlify, please run `netlify init` or `netlify deploy` first. If it is, please run `netlify link`.',
+      'Could not find the project ID. If your project is not on Netlify, please run `netlify init` or `netlify deploy` first. If it is, please run `netlify link`.',
     )
   }
 

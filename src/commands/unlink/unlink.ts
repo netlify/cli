@@ -3,13 +3,14 @@ import { OptionValues } from 'commander'
 import { exit, log } from '../../utils/command-helpers.js'
 import { track } from '../../utils/telemetry/index.js'
 import BaseCommand from '../base-command.js'
+import { chalk, netlifyCommand } from '../../utils/command-helpers.js'
 
 export const unlink = async (_options: OptionValues, command: BaseCommand) => {
   const { site, siteInfo, state } = command.netlify
   const siteId = site.id
 
   if (!siteId) {
-    log(`Folder is not linked to a Netlify site. Run 'netlify link' to link it`)
+    log(`Folder is not linked to a Netlify project. Run ${chalk.cyanBright(`${netlifyCommand()} link`)} to link it`)
     return exit()
   }
 

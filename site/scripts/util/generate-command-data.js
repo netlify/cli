@@ -35,12 +35,13 @@ const parseCommand = function (command) {
     }, {})
 
   return {
+    parent: command.parent?.name() !== "netlify" ? command.parent?.name() : undefined,
     name: command.name(),
     description: command.description(),
-    commands: commands
-
-      .filter((cmd) => cmd.name().startsWith(`${command.name()}:`) && !cmd._hidden)
-      .map((cmd) => parseCommand(cmd)),
+    commands: [
+      ...command.commands.filter(cmd => !cmd._hidden).map(cmd => parseCommand(cmd)),
+      ...commands.filter((cmd) => cmd.name().startsWith(`${command.name()}:`) && !cmd._hidden).map(cmd => parseCommand(cmd))
+    ],
     examples: command.examples.length !== 0 && command.examples,
     args: args.length !== 0 && args,
     flags: Object.keys(flags).length !== 0 && flags,

@@ -18,7 +18,7 @@ export const sitesDelete = async (siteId: string, options: OptionValues, command
     siteData = await api.getSite({ siteId })
   } catch (error_) {
     if ((error_ as APIError).status === 404) {
-      return logAndThrowError(`No site with id ${siteId} found. Please verify the siteId & try again.`)
+      return logAndThrowError(`No project with id ${siteId} found. Please verify the project ID & try again.`)
     } else {
       return logAndThrowError(error_)
     }
@@ -26,10 +26,10 @@ export const sitesDelete = async (siteId: string, options: OptionValues, command
 
   const noForce = options.force !== true
 
-  /* Verify the user wants to delete the site */
+  /* Verify the user wants to delete the project */
   if (noForce) {
     log(`${chalk.redBright('Warning')}: You are about to permanently delete "${chalk.bold(siteData.name)}"`)
-    log(`         Verify this siteID "${siteId}" supplied is correct and proceed.`)
+    log(`         Verify this project ID "${siteId}" supplied is correct and proceed.`)
     log('         To skip this prompt, pass a --force flag to the delete command')
     log()
     log(chalk.bold('Be careful here. There is no undo!'))
@@ -37,7 +37,7 @@ export const sitesDelete = async (siteId: string, options: OptionValues, command
     const { wantsToDelete } = await inquirer.prompt({
       type: 'confirm',
       name: 'wantsToDelete',
-      message: `WARNING: Are you sure you want to delete the "${siteData.name}" site?`,
+      message: `WARNING: Are you sure you want to delete the "${siteData.name}" project?`,
       default: false,
     })
     log()
@@ -46,19 +46,21 @@ export const sitesDelete = async (siteId: string, options: OptionValues, command
     }
   }
 
-  /* Validation logic if siteId passed in does not match current site ID */
+  /* Validation logic if siteId passed in does not match current project ID */
   if (noForce && cwdSiteId && cwdSiteId !== siteId) {
-    log(`${chalk.redBright('Warning')}: The siteId supplied does not match the current working directory siteId`)
+    log(
+      `${chalk.redBright('Warning')}: The project ID supplied does not match the current working directory project ID`,
+    )
     log()
     log(`Supplied:       "${siteId}"`)
-    log(`Current Site:   "${cwdSiteId}"`)
+    log(`Current Project: "${cwdSiteId}"`)
     log()
-    log(`Verify this siteID "${siteId}" supplied is correct and proceed.`)
+    log(`Verify this project ID "${siteId}" supplied is correct and proceed.`)
     log('To skip this prompt, pass a --force flag to the delete command')
     const { wantsToDelete } = await inquirer.prompt({
       type: 'confirm',
       name: 'wantsToDelete',
-      message: `Verify & Proceed with deletion of site "${siteId}"?`,
+      message: `Verify & Proceed with deletion of project "${siteId}"?`,
       default: false,
     })
     if (!wantsToDelete) {
@@ -66,16 +68,16 @@ export const sitesDelete = async (siteId: string, options: OptionValues, command
     }
   }
 
-  log(`Deleting site "${siteId}"...`)
+  log(`Deleting project "${siteId}"...`)
 
   try {
     await api.deleteSite({ site_id: siteId })
   } catch (error_) {
     if ((error_ as APIError).status === 404) {
-      return logAndThrowError(`No site with id ${siteId} found. Please verify the siteId & try again.`)
+      return logAndThrowError(`No project with id ${siteId} found. Please verify the project ID & try again.`)
     } else {
-      return logAndThrowError(`Delete Site error: ${(error_ as APIError).status}: ${(error_ as APIError).message}`)
+      return logAndThrowError(`Delete Project error: ${(error_ as APIError).status}: ${(error_ as APIError).message}`)
     }
   }
-  log(`Site "${siteId}" successfully deleted!`)
+  log(`Project "${siteId}" successfully deleted!`)
 }

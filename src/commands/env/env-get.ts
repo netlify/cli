@@ -10,7 +10,7 @@ export const envGet = async (name: string, options: OptionValues, command: BaseC
   const siteId = site.id
 
   if (!siteId) {
-    log('No site id found, please run inside a site folder or `netlify link`')
+    log('No project id found, please run inside a project folder or `netlify link`')
     return false
   }
 

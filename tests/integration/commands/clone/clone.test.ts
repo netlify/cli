@@ -43,7 +43,7 @@ describe.concurrent('clone command', () => {
     name: 'test-site',
     account_slug: 'test-account',
     ssl_url: 'https://test-site.netlify.app',
-    admin_url: 'https://app.netlify.com/sites/test-site',
+    admin_url: 'https://app.netlify.com/projects/test-site',
     build_settings: {
       repo_url: 'https://github.com/vibecoder/my-unicorn',
     },
@@ -67,7 +67,7 @@ describe.concurrent('clone command', () => {
   // without authentication, and I can't seem to get it to work.
   it.todo('prints an error and exits if not authenticated')
 
-  it("clones a repo and links it to the one site connected to that repo's HTTPS URL", async (t) => {
+  it("clones a repo and links it to the one project connected to that repo's HTTPS URL", async (t) => {
     const routes = [...API_ROUTES_FIXTURE]
     const questions = [
       {
@@ -97,7 +97,7 @@ describe.concurrent('clone command', () => {
           // Honestly, I have no idea why these two are in stderr, but it's specific to
           // the integration test setup so we'll just live with it for now.
           expect(stripAnsi(stderr)).toContain('✔ Cloned repository to ./my-unicorn')
-          expect(stripAnsi(stderr)).toContain('✔ Found 1 site connected to https://github.com/vibecoder/my-unicorn')
+          expect(stripAnsi(stderr)).toContain('✔ Found 1 project connected to https://github.com/vibecoder/my-unicorn')
 
           expect(stdout).toContain('Mocked git clone received: git clone git@github.com:vibecoder/my-unicorn.git')
 
@@ -107,7 +107,7 @@ describe.concurrent('clone command', () => {
 → Next, enter your project directory using cd ./my-unicorn
 
 → You can now run other netlify CLI commands in this directory
-→ To build and deploy your site: netlify deploy
+→ To build and deploy your project: netlify deploy
 → To see all available commands: netlify help
 `)
 
@@ -121,10 +121,10 @@ describe.concurrent('clone command', () => {
             },
             reject: false,
           })
-          expect(stripAnsi(linkOutput)).toContain(`Site already linked to "test-site"
-Admin url: https://app.netlify.com/sites/test-site
+          expect(stripAnsi(linkOutput)).toContain(`Project already linked to "test-site"
+Admin url: https://app.netlify.com/projects/test-site
 
-To unlink this site, run: netlify unlink`)
+To unlink this project, run: netlify unlink`)
         },
         true,
       )
@@ -157,7 +157,7 @@ To unlink this site, run: netlify unlink`)
           // Honestly, I have no idea why these two are in stderr, but it's specific to
           // the integration test setup so we'll just live with it for now.
           expect(stripAnsi(stderr)).toContain('✔ Cloned repository to ./younicorn')
-          expect(stripAnsi(stderr)).toContain('✔ Found 1 site connected to https://github.com/vibecoder/my-unicorn')
+          expect(stripAnsi(stderr)).toContain('✔ Found 1 project connected to https://github.com/vibecoder/my-unicorn')
 
           expect(stdout).toContain(
             'Mocked git clone received: git clone git@github.com:vibecoder/my-unicorn.git ./younicorn',
@@ -177,7 +177,7 @@ To unlink this site, run: netlify unlink`)
               ...execaMock,
             },
           })
-          expect(linkOutput).toContain('Site already linked to "test-site"')
+          expect(linkOutput).toContain('Project already linked to "test-site"')
         },
         true,
       )
@@ -214,7 +214,7 @@ To unlink this site, run: netlify unlink`)
           // Honestly, I have no idea why these two are in stderr, but it's specific to
           // the integration test setup so we'll just live with it for now.
           expect(stripAnsi(stderr)).toContain('✔ Cloned repository to younicorn')
-          expect(stripAnsi(stderr)).toContain('✔ Found 1 site connected to https://github.com/vibecoder/my-unicorn')
+          expect(stripAnsi(stderr)).toContain('✔ Found 1 project connected to https://github.com/vibecoder/my-unicorn')
 
           expect(stdout).toContain('Mocked git clone received: git clone git@github.com:vibecoder/my-unicorn.git')
 
@@ -224,7 +224,7 @@ To unlink this site, run: netlify unlink`)
 → Next, enter your project directory using cd younicorn
 
 → You can now run other netlify CLI commands in this directory
-→ To build and deploy your site: netlify deploy
+→ To build and deploy your project: netlify deploy
 → To see all available commands: netlify help
 `)
 
@@ -238,23 +238,23 @@ To unlink this site, run: netlify unlink`)
             },
             reject: false,
           })
-          expect(stripAnsi(linkOutput)).toContain(`Site already linked to "test-site"
-Admin url: https://app.netlify.com/sites/test-site
+          expect(stripAnsi(linkOutput)).toContain(`Project already linked to "test-site"
+Admin url: https://app.netlify.com/projects/test-site
 
-To unlink this site, run: netlify unlink`)
+To unlink this project, run: netlify unlink`)
         },
         true,
       )
     })
   })
 
-  it('links to site with given `--id` when provided', async (t) => {
+  it('links to project with given `--id` when provided', async (t) => {
     const otherSiteInfo = {
       id: 'other-site-id',
       name: 'other-site',
       account_slug: 'other-account',
       ssl_url: 'https://other-site.netlify.app',
-      admin_url: 'https://app.netlify.com/sites/other-site',
+      admin_url: 'https://app.netlify.com/projects/other-site',
       build_settings: {
         repo_url: 'https://github.com/vibecoder/my-unicorn',
       },
@@ -305,13 +305,13 @@ To unlink this site, run: netlify unlink`)
     })
   })
 
-  it('links to site with given `--name` when provided', async (t) => {
+  it('links to project with given `--name` when provided', async (t) => {
     const otherSiteInfo = {
       id: 'other-site-id',
       name: 'other-site',
       account_slug: 'other-account',
       ssl_url: 'https://other-site.netlify.app',
-      admin_url: 'https://app.netlify.com/sites/other-site',
+      admin_url: 'https://app.netlify.com/projects/other-site',
       build_settings: {
         repo_url: 'https://github.com/vibecoder/my-unicorn',
       },
@@ -366,13 +366,13 @@ To unlink this site, run: netlify unlink`)
     })
   })
 
-  it('prompts user when multiple sites match git repo HTTPS URL', async (t) => {
+  it('prompts user when multiple projects match git repo HTTPS URL', async (t) => {
     const otherSiteInfo = {
       id: 'other-site-id',
       name: 'other-site',
       account_slug: 'other-account',
       ssl_url: 'https://other-site.netlify.app',
-      admin_url: 'https://app.netlify.com/sites/other-site',
+      admin_url: 'https://app.netlify.com/projects/other-site',
       build_settings: {
         repo_url: 'https://github.com/vibecoder/my-unicorn',
       },
@@ -396,7 +396,7 @@ To unlink this site, run: netlify unlink`)
         question: 'Where should we clone the repository?',
         answer: CONFIRM,
       },
-      { question: 'Which site do you want to link?', answer: answerWithValue(DOWN) },
+      { question: 'Which project do you want to link?', answer: answerWithValue(DOWN) },
     ]
 
     await withSiteBuilder(t, async (builder) => {
@@ -424,13 +424,13 @@ To unlink this site, run: netlify unlink`)
     })
   })
 
-  it('prints an error and exits when no site is connected to the git repo HTTPS URL', async (t) => {
+  it('prints an error and exits when no project is connected to the git repo HTTPS URL', async (t) => {
     const otherSiteInfo = {
       id: 'other-site-id',
       name: 'other-site',
       account_slug: 'other-account',
       ssl_url: 'https://other-site.netlify.app',
-      admin_url: 'https://app.netlify.com/sites/other-site',
+      admin_url: 'https://app.netlify.com/projects/other-site',
       build_settings: {
         repo_url: 'https://github.com/vibecoderking/my-failure',
       },
@@ -471,9 +471,9 @@ To unlink this site, run: netlify unlink`)
           handleQuestions(childProcess, questions)
           const { stdout } = await childProcess
 
-          expect(stripAnsi(stdout)).toContain(`No matching site found
+          expect(stripAnsi(stdout)).toContain(`No matching project found
 
-No site found with the remote https://github.com/vibecoder/my-unicorn.
+No project found with the remote https://github.com/vibecoder/my-unicorn.
 
 Double check you are in the correct working directory and a remote origin repo is configured.
 

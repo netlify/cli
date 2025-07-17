@@ -1,10 +1,10 @@
 import { writeFile } from 'fs/promises'
 import path from 'path'
 
+import type { NetlifyAPI } from '@netlify/api'
 import type { Settings } from '@netlify/build-info'
 import cleanDeep from 'clean-deep'
 import inquirer from 'inquirer'
-import type { NetlifyAPI } from 'netlify'
 
 import type BaseCommand from '../../commands/base-command.js'
 import { fileExistsAsync } from '../../lib/fs.js'
@@ -237,7 +237,7 @@ export const updateSite = async ({
     const updatedSite = await api.updateSite({ siteId, body: options })
     return updatedSite
   } catch (error) {
-    const message = formatErrorMessage({ message: 'Failed updating site with repo information', error })
+    const message = formatErrorMessage({ message: 'Failed updating project with repo information', error })
     return logAndThrowError(message)
   }
 }

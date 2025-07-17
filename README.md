@@ -48,8 +48,8 @@ See the [CLI command line reference](https://cli.netlify.com/commands/) to get s
 
 ## Installation
 
-Netlify CLI requires [Node.js](https://nodejs.org) version 18.14.0 or above. To install, run the following command from any
-directory in your terminal:
+Netlify CLI requires [Node.js](https://nodejs.org) version 20.12.2 or above. To install, run the following command from
+any directory in your terminal:
 
 ```bash
 npm install netlify-cli -g
@@ -84,9 +84,8 @@ netlify [command] help
 
 ## Documentation
 
-To learn how to log in to Netlify and start deploying sites, visit the
+To learn how to log in to Netlify and start deploying projects, visit the
 [documentation on Netlify](https://docs.netlify.com/cli/get-started/).
-
 
 ## Commands
 
@@ -121,4 +120,4 @@ MIT. See [LICENSE](LICENSE) for more details.
 [snyk-img]: https://snyk.io/test/npm/netlify-cli/badge.svg
 [snyk]: https://snyk.io/test/npm/netlify-cli
 [netlify-img]: https://api.netlify.com/api/v1/badges/d3807379-2dcf-4a43-9c00-e7e8d90ecf70/deploy-status
-[netlify]: https://app.netlify.com/sites/cli/deploys
+[netlify]: https://app.netlify.com/projects/cli/deploys

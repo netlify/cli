@@ -1,4 +1,4 @@
-import type { NetlifyAPI } from 'netlify'
+import type { NetlifyAPI } from '@netlify/api'
 
 import type { FrameworksAPIPaths } from '../utils/frameworks-api.ts'
 import type CLIState from '../utils/cli-state.js'

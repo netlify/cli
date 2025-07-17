@@ -114,7 +114,7 @@ NOT the same as listing the functions that have been deployed. For that info you
     .alias('function')
     .description(
       `Manage netlify functions
-The ${name} command will help you manage the functions in this site`,
+The ${name} command will help you manage the functions in this project`,
     )
     .addExamples([
       'netlify functions:create --name function-xyz',
@@ -123,7 +123,7 @@ The ${name} command will help you manage the functions in this site`,
     .addHelpText('afterAll', () => {
       const docsUrl = 'https://docs.netlify.com/functions/overview/'
       return `
-For more information about Netlify Functions, see ${terminalLink(docsUrl, docsUrl)}
+For more information about Netlify Functions, see ${terminalLink(docsUrl, docsUrl, { fallback: false })}
 `
     })
     .action(functions)

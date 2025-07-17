@@ -17,12 +17,16 @@ export default defineConfig({
       credits: true,
       title: 'Netlify CLI command reference',
       description: 'Full command reference for the Netlify CLI',
-      social: {
-        blueSky: 'https://bsky.app/profile/netlify.com',
-        github: 'https://github.com/netlify/cli',
-        twitter: 'https://x.com/Netlify',
-        youtube: 'https://www.youtube.com/@NetlifyApp',
-      },
+      social: [
+        {
+          icon: 'blueSky',
+          label: 'Bluesky',
+          href: 'https://bsky.app/profile/netlify.com',
+        },
+        { icon: 'github', label: 'GitHub', href: 'https://github.com/netlify/cli' },
+        { icon: 'twitter', label: 'Twitter', href: 'https://x.com/Netlify' },
+        { icon: 'youtube', label: 'YouTube', href: 'https://www.youtube.com/@NetlifyApp' },
+      ],
       favicon: 'favicon.svg',
       logo: {
         light: './src/assets/logo-light.svg',

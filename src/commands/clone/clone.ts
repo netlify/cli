@@ -59,7 +59,7 @@ export const clone = async (
     id,
     name,
     // Use the normalized HTTPS URL as the canonical git URL for linking to ensure
-    // we have a consistent URL format for looking up sites.
+    // we have a consistent URL format for looking up projects.
     gitRemoteUrl: httpsUrl,
   }
   await link(linkOptions, command)
@@ -69,7 +69,7 @@ export const clone = async (
   log(`→ Next, enter your project directory using ${chalk.cyanBright(`cd ${targetDir}`)}`)
   log()
   log(`→ You can now run other ${chalk.cyanBright('netlify')} CLI commands in this directory`)
-  log(`→ To build and deploy your site: ${chalk.cyanBright('netlify deploy')}`)
+  log(`→ To build and deploy your project: ${chalk.cyanBright('netlify deploy')}`)
   if (command.netlify.config.dev?.command) {
     log(`→ To run your dev server: ${chalk.cyanBright(command.netlify.config.dev.command)}`)
   }

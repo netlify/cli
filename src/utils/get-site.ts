@@ -1,4 +1,4 @@
-import type { NetlifyAPI } from 'netlify'
+import type { NetlifyAPI } from '@netlify/api'
 
 import { type APIError, logAndThrowError } from './command-helpers.js'
 import type { SiteInfo } from './types.js'
@@ -9,16 +9,16 @@ export const getSiteByName = async (api: NetlifyAPI, siteName: string): Promise<
     const siteFoundByName = sites.find((filteredSite) => filteredSite.name === siteName)
 
     if (!siteFoundByName) {
-      throw new Error(`Site "${siteName}" cannot be found`)
+      throw new Error(`Project "${siteName}" cannot be found`)
     }
 
     // FIXME(serhalp): `id` and `name` should be required in `netlify` package type
     return siteFoundByName as SiteInfo
   } catch (error_) {
     if ((error_ as APIError).status === 401) {
-      return logAndThrowError(`${(error_ as APIError).message}: could not retrieve site`)
+      return logAndThrowError(`${(error_ as APIError).message}: could not retrieve project`)
     } else {
-      return logAndThrowError('Site not found. Please rerun "netlify link"')
+      return logAndThrowError('Project not found. Please rerun "netlify link"')
     }
   }
 }
