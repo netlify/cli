@@ -204,7 +204,7 @@
     "nock": "14.0.5",
     "npm-run-all2": "7.0.2",
     "p-timeout": "6.1.4",
-    "picomatch": "4.0.2",
+    "picomatch": "4.0.3",
     "prettier": "2.6.2",
     "serialize-javascript": "6.0.2",
     "strip-ansi": "7.1.0",
