@@ -5,10 +5,7 @@ import type { PollingStrategy } from '@netlify/build-info'
 import type { Match } from 'netlify-redirector'
 
 import { globalConfig } from '@netlify/dev-utils'
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type GlobalConfigStore<T extends Record<string, any> = Record<string, any>> = globalConfig.GlobalConfigStore<T>
-
+export type GlobalConfigStore = InstanceType<typeof globalConfig.GlobalConfigStore>
 export { default as CLIState } from './cli-state.js'
 
 export type FrameworkNames = '#static' | '#auto' | '#custom' | string
