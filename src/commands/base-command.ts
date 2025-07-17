@@ -35,7 +35,7 @@ import {
 } from '../utils/command-helpers.js'
 import type { FeatureFlags } from '../utils/feature-flags.js'
 import { getFrameworksAPIPaths } from '../utils/frameworks-api.js'
-import { globalConfig as globalConfigStore } from '@netlify/dev-utils'
+import { getGlobalConfigStore } from '@netlify/dev-utils'
 import { getSiteByName } from '../utils/get-site.js'
 import openBrowser from '../utils/open-browser.js'
 import CLIState from '../utils/cli-state.js'
@@ -643,7 +643,7 @@ export default class BaseCommand extends Command {
       siteData = result
     }
 
-    const globalConfig = await globalConfigStore.default()
+    const globalConfig = await getGlobalConfigStore()
 
     // ==================================================
     // Perform analytics reporting

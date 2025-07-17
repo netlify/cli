@@ -17,7 +17,7 @@ import {
   logError,
 } from '../utils/command-helpers.js'
 import execa from '../utils/execa.js'
-import { globalConfig as globalConfigStore } from '@netlify/dev-utils'
+import { getGlobalConfigStore } from '@netlify/dev-utils'
 import getCLIPackageJson from '../utils/get-cli-package-json.js'
 import { didEnableCompileCache } from '../utils/nodejs-compile-cache.js'
 import { track, reportError } from '../utils/telemetry/index.js'
@@ -131,7 +131,7 @@ ${USER_AGENT}
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'options' implicitly has an 'any' type.
 const mainCommand = async function (options, command) {
-  const globalConfig = await globalConfigStore.default()
+  const globalConfig = await getGlobalConfigStore()
 
   if (options.telemetryDisable) {
     globalConfig.set('telemetryDisabled', true)

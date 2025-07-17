@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url'
 import { isCI } from 'ci-info'
 
 import execa from '../execa.js'
-import { globalConfig as globalConfigStore } from '@netlify/dev-utils'
+import { getGlobalConfigStore } from '@netlify/dev-utils'
 
 import { cliVersion } from './utils.js'
 
@@ -29,7 +29,7 @@ export const reportError = async function (error, config = {}) {
   // convert a NotifiableError to an error class
   const err = error instanceof Error ? error : typeof error === 'string' ? new Error(error) : error
 
-  const globalConfig = await globalConfigStore.default()
+  const globalConfig = await getGlobalConfigStore()
 
   const options = JSON.stringify({
     type: 'error',

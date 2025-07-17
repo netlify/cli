@@ -4,8 +4,8 @@ import type { IncomingMessage } from 'http'
 import type { PollingStrategy } from '@netlify/build-info'
 import type { Match } from 'netlify-redirector'
 
-import { globalConfig } from '@netlify/dev-utils'
-export type GlobalConfigStore = InstanceType<typeof globalConfig.GlobalConfigStore>
+import { GlobalConfigStore as GlobalConfigStoreClass } from '@netlify/dev-utils'
+export type GlobalConfigStore = InstanceType<typeof GlobalConfigStoreClass>
 export { default as CLIState } from './cli-state.js'
 
 export type FrameworkNames = '#static' | '#auto' | '#custom' | string
