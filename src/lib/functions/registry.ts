@@ -529,7 +529,7 @@ export class FunctionsRegistry {
       // zip-it-and-ship-it returns an array sorted based on which extension should have precedence,
       // where the last ones precede the previous ones. This is why
       // we reverse the array so we get the right functions precedence in the CLI.
-      functions.reverse().map(async ({ displayName, mainFile, name, runtime: runtimeName, srcDir }) => {
+      functions.reverse().map(async ({ displayName, mainFile, name, runtime: runtimeName, srcPath }) => {
         if (ignoredFunctions.has(name)) {
           return
         }
@@ -547,25 +547,9 @@ export class FunctionsRegistry {
           return
         }
 
-        // This contains the top-level functions directory where this specific
-        // function is found (not the sub-directory where a function may live).
-        // Both `netlify/functions/foo/index.js` and `netlify/functions/bar.js`
-        // would have this value as `netlify/functions`, for example.
-        //  This value was undefined for any functions in `generatedFunctions`,
-        // because those functions don't usually live inside any of the regular
-        // function directories. For those cases we use the value of `srcDir`.
-        // I think this is in need of some refactoring though, because I'm not
-        // sure why we need to keep track of the parent functions directory and
-        // not just the directory where the function lives.
-        // I'm keeping this as is for now, where we're just adding `srcDir` as
-        // a fallback, to minimise the impact of this change, and then we'll
-        // revisit when possible.
-        const directory = directories.find((directory) => mainFile.startsWith(directory)) ?? srcDir
-
         const func = new NetlifyFunction({
           blobsContext: this.blobsContext,
           config: this.config,
-          directory,
           mainFile,
           name,
           displayName,
@@ -577,6 +561,7 @@ export class FunctionsRegistry {
           timeoutBackground: this.timeouts.backgroundFunctions,
           timeoutSynchronous: this.timeouts.syncFunctions,
           settings: this.settings,
+          srcPath,
         })
 
         // If a function we're registering was also unregistered in this run,
