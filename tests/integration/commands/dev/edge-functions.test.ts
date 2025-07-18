@@ -299,7 +299,7 @@ describe.skipIf(isWindows)('edge functions', async () => {
 
         // Request with header - should match
         const responseWithHeader = await fetch(`http://localhost:${devServer!.port}/header-exists`, {
-          headers: { 'x-test-header': 'any-value' }
+          headers: { 'x-test-header': 'any-value' },
         })
         expect(responseWithHeader.status).toBe(200)
         expect(await responseWithHeader.text()).toBe('header-exists-matched')
@@ -313,7 +313,7 @@ describe.skipIf(isWindows)('edge functions', async () => {
 
         // Request with header - should not match
         const responseWithHeader = await fetch(`http://localhost:${devServer!.port}/header-missing`, {
-          headers: { 'x-forbidden-header': 'any-value' }
+          headers: { 'x-forbidden-header': 'any-value' },
         })
         expect(responseWithHeader.status).toBe(404)
       })
@@ -321,13 +321,13 @@ describe.skipIf(isWindows)('edge functions', async () => {
       test<FixtureTestContext>('should match edge functions with header regex condition', async ({ devServer }) => {
         // Request with non-matching header - should not match
         const responseWithBadHeader = await fetch(`http://localhost:${devServer!.port}/header-regex`, {
-          headers: { 'x-api-key': 'invalid-key' }
+          headers: { 'x-api-key': 'invalid-key' },
         })
         expect(responseWithBadHeader.status).toBe(404)
 
         // Request with matching header - should match
         const responseWithGoodHeader = await fetch(`http://localhost:${devServer!.port}/header-regex`, {
-          headers: { 'x-api-key': 'api-key-123' }
+          headers: { 'x-api-key': 'api-key-123' },
         })
         expect(responseWithGoodHeader.status).toBe(200)
         expect(await responseWithGoodHeader.text()).toBe('header-regex-matched')

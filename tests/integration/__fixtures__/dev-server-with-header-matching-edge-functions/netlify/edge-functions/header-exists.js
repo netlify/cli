@@ -2,9 +2,9 @@ export default async (request) => {
   return new Response('header-exists-matched')
 }
 
-export const config = { 
-  path: "/header-exists",
+export const config = {
+  path: '/header-exists',
   header: {
-    "x-test-header": true
-  }
+    'x-test-header': true,
+  },
 }
