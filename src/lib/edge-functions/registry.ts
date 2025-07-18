@@ -408,7 +408,7 @@ export class EdgeFunctionsRegistry {
    * Returns the functions in the registry that should run for a given URL path
    * and HTTP method, based on the routes registered for each function.
    */
-  matchURLPath(urlPath: string, method: string) {
+  matchURLPath(urlPath: string, method: string, headers?: Record<string, string | string[] | undefined>) {
     const functionNames: string[] = []
     const routeIndexes: number[] = []
 
@@ -419,6 +419,34 @@ export class EdgeFunctionsRegistry {
 
       if (!route.pattern.test(urlPath)) {
         return
+      }
+
+      if (route.headers && headers) {
+        const headerMatches = Object.entries(route.headers).every(([headerName, headerMatch]) => {
+          const headerValueString = Array.isArray(headers[headerName])
+            ? headers[headerName].join(',')
+            : headers[headerName]
+
+          if (headerMatch?.matcher === 'exists') {
+            return Boolean(headerValueString)
+          }
+
+          if (headerMatch?.matcher === 'missing') {
+            return !headerValueString
+          }
+
+          if (headerMatch?.matcher === 'regex') {
+            const pattern = new RegExp(headerMatch.pattern)
+
+            return headerValueString && pattern.test(headerValueString)
+          }
+
+          return false
+        })
+
+        if (!headerMatches) {
+          return
+        }
       }
 
       const isExcludedForFunction = this.manifest?.function_config[route.function]?.excluded_patterns?.some((pattern) =>
