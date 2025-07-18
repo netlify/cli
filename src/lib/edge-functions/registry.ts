@@ -408,7 +408,7 @@ export class EdgeFunctionsRegistry {
    * Returns the functions in the registry that should run for a given URL path
    * and HTTP method, based on the routes registered for each function.
    */
-  matchURLPath(urlPath: string, method: string, headers?: Record<string, string | string[] | undefined>) {
+  matchURLPath(urlPath: string, method: string, headers: Record<string, string | string[] | undefined>) {
     const functionNames: string[] = []
     const routeIndexes: number[] = []
 
@@ -421,7 +421,7 @@ export class EdgeFunctionsRegistry {
         return
       }
 
-      if (route.headers && headers) {
+      if (route.headers) {
         const headerMatches = Object.entries(route.headers).every(([headerName, headerMatch]) => {
           const headerValueString = Array.isArray(headers[headerName])
             ? headers[headerName].filter(Boolean).join(',')
