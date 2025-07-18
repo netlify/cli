@@ -50,6 +50,7 @@ export const functionsServe = async (options: OptionValues, command: BaseCommand
   })
 
   await startFunctionsServer({
+    loadDistFunctions: process.env.NETLIFY_FUNCTIONS_SERVE_LOAD_DIST_FUNCTIONS === 'true',
     blobsContext,
     config,
     debug: options.debug,
