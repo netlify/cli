@@ -21,7 +21,7 @@ import type { FeatureFlags } from '../../utils/feature-flags.js'
 import { MultiMap } from '../../utils/multimap.js'
 import { getPathInProject } from '../settings.js'
 
-import { INTERNAL_EDGE_FUNCTIONS_FOLDER } from './consts.js'
+import { DIST_IMPORT_MAP_PATH, INTERNAL_EDGE_FUNCTIONS_FOLDER } from './consts.js'
 
 type DependencyCache = Record<string, string[]>
 type EdgeFunctionEvent = 'buildError' | 'loaded' | 'reloaded' | 'reloading' | 'removed'
@@ -166,8 +166,8 @@ export class EdgeFunctionsRegistry {
       this.functions.forEach((func) => {
         this.logEvent('loaded', { functionName: func.name, warnings: warnings[func.name] })
       })
-    } catch {
-      // no-op
+    } catch (error) {
+      this.logEvent('buildError', { buildError: error as NodeJS.ErrnoException })
     }
   }
 
@@ -561,6 +561,10 @@ export class EdgeFunctionsRegistry {
     return join(this.projectDir, getPathInProject([INTERNAL_EDGE_FUNCTIONS_FOLDER]))
   }
 
+  private get internalImportMapPath() {
+    return join(this.projectDir, getPathInProject([DIST_IMPORT_MAP_PATH]))
+  }
+
   private async readDeployConfig() {
     const manifestPath = join(this.internalDirectory, 'manifest.json')
     try {
@@ -643,7 +647,7 @@ export class EdgeFunctionsRegistry {
   }
 
   private async setupWatcherForDirectory() {
-    const ignored = [`${this.servePath}/**`]
+    const ignored = [`${this.servePath}/**`, this.internalImportMapPath]
     const watcher = await watchDebounced(this.projectDir, {
       ignored,
       onAdd: () => this.checkForAddedOrDeletedFunctions(),
