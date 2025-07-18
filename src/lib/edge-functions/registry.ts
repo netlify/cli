@@ -424,21 +424,21 @@ export class EdgeFunctionsRegistry {
       if (route.headers && headers) {
         const headerMatches = Object.entries(route.headers).every(([headerName, headerMatch]) => {
           const headerValueString = Array.isArray(headers[headerName])
-            ? headers[headerName].join(',')
+            ? headers[headerName].filter(Boolean).join(',')
             : headers[headerName]
 
           if (headerMatch?.matcher === 'exists') {
-            return Boolean(headerValueString)
+            return headers[headerName] !== undefined
           }
 
           if (headerMatch?.matcher === 'missing') {
-            return !headerValueString
+            return headers[headerName] === undefined
           }
 
-          if (headerMatch?.matcher === 'regex') {
+          if (headerValueString && headerMatch?.matcher === 'regex') {
             const pattern = new RegExp(headerMatch.pattern)
 
-            return headerValueString && pattern.test(headerValueString)
+            return pattern.test(headerValueString)
           }
 
           return false
