@@ -4,6 +4,7 @@ import { basename, extname, isAbsolute, join, resolve } from 'path'
 import { env } from 'process'
 
 import { type ListedFunction, listFunctions, type Manifest } from '@netlify/zip-it-and-ship-it'
+import type { MemoizeCache } from '@netlify/dev-utils'
 import extractZip from 'extract-zip'
 
 import {
@@ -26,7 +27,6 @@ import type { ServerSettings } from '../../utils/types.js'
 
 import NetlifyFunction from './netlify-function.js'
 import runtimes, { type BaseBuildResult } from './runtimes/index.js'
-import type { MemoizeCache } from '@netlify/dev-utils'
 
 export const DEFAULT_FUNCTION_URL_EXPRESSION = /^\/.netlify\/(functions|builders)\/([^/]+).*/
 const TYPES_PACKAGE = '@netlify/functions'

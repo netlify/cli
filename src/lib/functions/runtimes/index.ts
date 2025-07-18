@@ -1,6 +1,6 @@
 import type { ExtendedRoute, Route } from '@netlify/zip-it-and-ship-it'
-
 import type { MemoizeCache } from '@netlify/dev-utils'
+
 import type NetlifyFunction from '../netlify-function.js'
 import type { NormalizedCachedConfigConfig } from '../../../utils/command-helpers.js'
 

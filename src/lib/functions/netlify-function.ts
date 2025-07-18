@@ -3,6 +3,7 @@ import { basename, extname } from 'path'
 import { version as nodeVersion } from 'process'
 
 import type { ExtendedRoute, Route } from '@netlify/zip-it-and-ship-it'
+import type { MemoizeCache } from '@netlify/dev-utils'
 import CronParser from 'cron-parser'
 import semver from 'semver'
 
@@ -12,7 +13,6 @@ import { type BlobsContextWithEdgeAccess, getBlobsEventProperty } from '../blobs
 import type { ServerSettings } from '../../utils/types.js'
 
 import type { BaseBuildResult, InvokeFunctionResult, Runtime } from './runtimes/index.js'
-import type { MemoizeCache } from '@netlify/dev-utils'
 
 export interface InvocationError {
   errorMessage: string
