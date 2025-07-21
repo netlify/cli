@@ -1,6 +1,6 @@
 import type { ExtendedRoute, Route } from '@netlify/zip-it-and-ship-it'
+import type { MemoizeCache } from '@netlify/dev-utils'
 
-import type { BuildCommandCache } from '../memoized-build.js'
 import type NetlifyFunction from '../netlify-function.js'
 import type { NormalizedCachedConfigConfig } from '../../../utils/command-helpers.js'
 
@@ -37,7 +37,7 @@ export type GetBuildFunctionOpts<BuildResult extends BaseBuildResult> = {
 export type BuildFunction<
   BuildResult extends BaseBuildResult,
   CacheEntry extends Record<string, unknown> = Record<string, unknown>,
-> = ({ cache }: { cache?: BuildCommandCache<CacheEntry> }) => Promise<BuildResult>
+> = ({ cache }: { cache?: MemoizeCache<CacheEntry> }) => Promise<BuildResult>
 export type GetBuildFunction<
   BuildResult extends BaseBuildResult,
   CacheEntry extends Record<string, unknown> = Record<string, unknown>,

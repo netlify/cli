@@ -5,6 +5,7 @@ import path from 'path'
 import { ARCHIVE_FORMAT, zipFunction, listFunction, type FunctionResult } from '@netlify/zip-it-and-ship-it'
 // TODO(serhalp): Export this type from zisi
 import type { FeatureFlags } from '@netlify/zip-it-and-ship-it/dist/feature_flags.js'
+import { type MemoizeCache, memoize } from '@netlify/dev-utils'
 import decache from 'decache'
 import { readPackageUp } from 'read-package-up'
 import sourceMapSupport from 'source-map-support'
@@ -13,7 +14,6 @@ import { NETLIFYDEVERR, type NormalizedCachedConfigConfig } from '../../../../..
 import { SERVE_FUNCTIONS_FOLDER } from '../../../../../utils/functions/functions.js'
 import { getPathInProject } from '../../../../settings.js'
 import { type NormalizedFunctionsConfig, normalizeFunctionsConfig } from '../../../config.js'
-import { type BuildCommandCache, memoizedBuild } from '../../../memoized-build.js'
 import type NetlifyFunction from '../../../netlify-function.js'
 import type { BaseBuildResult } from '../../index.js'
 import type { JsBuildResult } from '../index.js'
@@ -46,7 +46,7 @@ const buildFunction = async ({
   projectRoot,
   targetDirectory,
 }: {
-  cache: BuildCommandCache<FunctionResult>
+  cache: MemoizeCache<FunctionResult>
   config: NormalizedFunctionsConfig
   directory?: string | undefined
   featureFlags: FeatureFlags
@@ -84,7 +84,7 @@ const buildFunction = async ({
     routes,
     runtimeAPIVersion,
     schedule,
-  } = await memoizedBuild({
+  } = await memoize({
     cache,
     cacheKey: `zisi-${entryPath}`,
     command: async () => {
@@ -229,7 +229,7 @@ export default async function detectZisiBuilder({
 
   const targetDirectory = await getTargetDirectory({ projectRoot, errorExit })
 
-  const build = async ({ cache = {} }: { cache?: BuildCommandCache<FunctionResult> }) =>
+  const build = async ({ cache = {} }: { cache?: MemoizeCache<FunctionResult> }) =>
     buildFunction({
       cache,
       config: functionsConfig,
