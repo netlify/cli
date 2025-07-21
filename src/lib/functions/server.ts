@@ -3,6 +3,7 @@ import { promises as fs } from 'fs'
 import type { IncomingHttpHeaders } from 'http'
 import path from 'path'
 
+import { shouldBase64Encode } from '@netlify/dev-utils'
 import express, { type Request, type RequestHandler } from 'express'
 import expressLogging from 'express-logging'
 import { jwtDecode } from 'jwt-decode'
@@ -29,7 +30,6 @@ import { createFormSubmissionHandler } from './form-submissions-handler.js'
 import { FunctionsRegistry } from './registry.js'
 import { handleScheduledFunction } from './scheduled.js'
 import { handleSynchronousFunction } from './synchronous.js'
-import { shouldBase64Encode } from '@netlify/dev-utils'
 
 type FunctionsSettings = Pick<ServerSettings, 'functions' | 'functionsPort'>
 
