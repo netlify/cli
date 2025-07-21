@@ -110,7 +110,7 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
   // which is what build plugins use.
   process.env[BLOBS_CONTEXT_VARIABLE] = encodeBlobsContext(await getBlobsContextWithAPIAccess(blobsOptions))
 
-  const { configPath: configPathOverride } = await runBuildTimeline({
+  const { configPath: configPathOverride, generatedFunctions } = await runBuildTimeline({
     command,
     settings,
     options,
@@ -130,6 +130,7 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
     command,
     config: mergedConfig,
     debug: options.debug,
+    generatedFunctions,
     loadDistFunctions: true,
     settings,
     site,

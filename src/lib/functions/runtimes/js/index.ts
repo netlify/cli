@@ -1,5 +1,4 @@
 import { createConnection } from 'net'
-import { dirname } from 'path'
 import { pathToFileURL } from 'url'
 import { Worker } from 'worker_threads'
 
@@ -30,25 +29,19 @@ lambdaLocal.getLogger().level = 'alert'
 
 export async function getBuildFunction({
   config,
-  directory,
   errorExit,
   func,
   projectRoot,
 }: Parameters<GetBuildFunction<JsBuildResult>>[0]) {
   const metadata = await getFunctionMetadata({ mainFile: func.mainFile, config, projectRoot })
-  const zisiBuilder = await detectZisiBuilder({ config, directory, errorExit, func, metadata, projectRoot })
+  const zisiBuilder = await detectZisiBuilder({ config, errorExit, func, metadata, projectRoot })
 
   if (zisiBuilder) {
     return zisiBuilder.build
   }
 
-  // If there's no function builder, we create a simple one on-the-fly which
-  // returns as `srcFiles` the function directory, if there is one, or its
-  // main file otherwise.
-  const functionDirectory = dirname(func.mainFile)
-  const srcFiles = functionDirectory === directory ? [func.mainFile] : [functionDirectory]
-
-  const build: BuildFunction<JsBuildResult> = () => Promise.resolve({ schedule: metadata?.schedule, srcFiles })
+  const build: BuildFunction<JsBuildResult> = () =>
+    Promise.resolve({ schedule: metadata?.schedule, srcFiles: [func.srcPath] })
   return build
 }
 
