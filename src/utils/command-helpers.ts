@@ -5,6 +5,7 @@ import process from 'process'
 import { format, inspect } from 'util'
 
 import type { NetlifyAPI } from '@netlify/api'
+import { getGlobalConfigStore } from '@netlify/dev-utils'
 import { Chalk } from 'chalk'
 import chokidar from 'chokidar'
 import decache from 'decache'
@@ -14,7 +15,6 @@ import terminalLink from 'terminal-link'
 
 import { startSpinner } from '../lib/spinner.js'
 
-import getGlobalConfigStore from './get-global-config-store.js'
 import getCLIPackageJson from './get-cli-package-json.js'
 import { reportError } from './telemetry/report-error.js'
 import type { TokenLocation } from './types.js'

@@ -165,7 +165,7 @@ export const initializeProxy = async ({
     await registry.initialize()
 
     const url = new URL(req.url!, `http://${LOCAL_HOST}:${mainPort}`)
-    const { functionNames, invocationMetadata } = registry.matchURLPath(url.pathname, req.method!)
+    const { functionNames, invocationMetadata } = registry.matchURLPath(url.pathname, req.method!, req.headers)
 
     if (functionNames.length === 0) {
       return

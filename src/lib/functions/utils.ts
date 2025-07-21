@@ -20,39 +20,4 @@ export const formatLambdaError = (err: Error | InvocationError): string =>
     `${'errorType' in err ? err.errorType : 'Error'}: ${'errorMessage' in err ? err.errorMessage : err.message}`,
   )
 
-// should be equivalent to https://github.com/netlify/proxy/blob/main/pkg/functions/request.go#L105
-const exceptionsList = new Set([
-  'application/csp-report',
-  'application/graphql',
-  'application/json',
-  'application/javascript',
-  'application/x-www-form-urlencoded',
-  'application/x-ndjson',
-  'application/xml',
-])
-
-export const shouldBase64Encode = function (contentType?: string): boolean {
-  if (!contentType) {
-    return true
-  }
-
-  const [contentTypeSegment] = contentType.split(';')
-  contentType = contentTypeSegment
-  contentType = contentType.toLowerCase()
-
-  if (contentType.startsWith('text/')) {
-    return false
-  }
-
-  if (contentType.endsWith('+json') || contentType.endsWith('+xml')) {
-    return false
-  }
-
-  if (exceptionsList.has(contentType)) {
-    return false
-  }
-
-  return true
-}
-
 export const styleFunctionName = (name: string): string => chalk.magenta(name)
