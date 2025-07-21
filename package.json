@@ -182,7 +182,7 @@
     "@types/parallel-transform": "1.1.4",
     "@types/parse-github-url": "1.0.3",
     "@types/parse-gitignore": "1.0.2",
-    "@types/picomatch": "4.0.0",
+    "@types/picomatch": "4.0.1",
     "@types/prettyjson": "0.0.33",
     "@types/semver": "7.7.0",
     "@types/serialize-javascript": "5.0.4",
