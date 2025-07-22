@@ -9,7 +9,7 @@ import { getPathInHome } from '../lib/settings.js'
 
 import { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, exit, log } from './command-helpers.js'
 import execa from './execa.js'
-import type { LocalState } from '@netlify/dev-utils'
+import type { LocalState } from './types.js'
 
 const PACKAGE_NAME = 'live-tunnel-client'
 const EXEC_NAME = PACKAGE_NAME

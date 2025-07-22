@@ -5,7 +5,7 @@ import type { FunctionsRegistry } from '../lib/functions/registry.js'
 
 import { exit, log, NETLIFYDEVERR, type NormalizedCachedConfigConfig } from './command-helpers.js'
 import { startProxy } from './proxy.js'
-import type { LocalState } from '@netlify/dev-utils'
+import type { LocalState } from './types.js'
 import type { ServerSettings } from './types.js'
 
 interface InspectSettings {

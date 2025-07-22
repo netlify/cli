@@ -4,6 +4,7 @@ import { mkdir, mkdtemp, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
+import { LocalState } from '@netlify/dev-utils'
 import express from 'express'
 import fetch from 'node-fetch'
 import { afterAll, beforeAll, describe, expect, test, vi } from 'vitest'
@@ -11,7 +12,6 @@ import { afterAll, beforeAll, describe, expect, test, vi } from 'vitest'
 import { FunctionsRegistry } from '../../../../src/lib/functions/registry.js'
 import { createHandler } from '../../../../src/lib/functions/server.js'
 import { getFrameworksAPIPaths } from '../../../../src/utils/frameworks-api.js'
-import { LocalState } from '@netlify/dev-utils'
 
 vi.mock('../../../../src/utils/command-helpers.js', async () => ({
   ...(await vi.importActual('../../../../src/utils/command-helpers.js')),
