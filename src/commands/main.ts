@@ -5,6 +5,8 @@ import envinfo from 'envinfo'
 import { closest } from 'fastest-levenshtein'
 import inquirer from 'inquirer'
 
+import { getGlobalConfigStore } from '@netlify/dev-utils'
+
 import {
   BANG,
   chalk,
@@ -17,7 +19,6 @@ import {
   logError,
 } from '../utils/command-helpers.js'
 import execa from '../utils/execa.js'
-import getGlobalConfigStore from '../utils/get-global-config-store.js'
 import getCLIPackageJson from '../utils/get-cli-package-json.js'
 import { didEnableCompileCache } from '../utils/nodejs-compile-cache.js'
 import { track, reportError } from '../utils/telemetry/index.js'
