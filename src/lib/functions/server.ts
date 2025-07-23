@@ -3,6 +3,7 @@ import { promises as fs } from 'fs'
 import type { IncomingHttpHeaders } from 'http'
 import path from 'path'
 
+import { shouldBase64Encode } from '@netlify/dev-utils'
 import express, { type Request, type RequestHandler } from 'express'
 import expressLogging from 'express-logging'
 import { jwtDecode } from 'jwt-decode'
@@ -22,14 +23,13 @@ import { NFFunctionName, NFFunctionRoute } from '../../utils/headers.js'
 import type { BlobsContextWithEdgeAccess } from '../blobs/blobs.js'
 import { headers as efHeaders } from '../edge-functions/headers.js'
 import { getGeoLocation } from '../geo-location.js'
-import type { CLIState, ServerSettings, SiteInfo } from '../../utils/types.js'
+import type { LocalState, ServerSettings, SiteInfo } from '../../utils/types.js'
 
 import { handleBackgroundFunction, handleBackgroundFunctionResult } from './background.js'
 import { createFormSubmissionHandler } from './form-submissions-handler.js'
 import { FunctionsRegistry } from './registry.js'
 import { handleScheduledFunction } from './scheduled.js'
 import { handleSynchronousFunction } from './synchronous.js'
-import { shouldBase64Encode } from './utils.js'
 
 type FunctionsSettings = Pick<ServerSettings, 'functions' | 'functionsPort'>
 
@@ -122,7 +122,7 @@ export const createHandler = function (options: GetFunctionsServerOptions): Requ
       return
     }
 
-    const isBase64Encoded = shouldBase64Encode(request.header('content-type'))
+    const isBase64Encoded = shouldBase64Encode(request.header('content-type') ?? '')
     let body
     if (hasBody(request)) {
       body = request.body.toString(isBase64Encoded ? 'base64' : 'utf8')
@@ -265,7 +265,7 @@ interface GetFunctionsServerOptions {
   accountId?: string | undefined
   geoCountry: string
   offline: boolean
-  state: CLIState
+  state: LocalState
   config: NormalizedCachedConfigConfig
   geolocationMode: 'cache' | 'update' | 'mock'
 }

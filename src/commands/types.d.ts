@@ -1,7 +1,7 @@
 import type { NetlifyAPI } from '@netlify/api'
 
 import type { FrameworksAPIPaths } from '../utils/frameworks-api.ts'
-import type CLIState from '../utils/cli-state.js'
+import type { LocalState } from '../utils/types.ts'
 import type { MinimalAccount, GlobalConfigStore, SiteInfo } from '../utils/types.ts'
 import type { NormalizedCachedConfigConfig } from '../utils/command-helpers.js'
 import type { CachedConfig } from '../lib/build.js'
@@ -40,7 +40,7 @@ export type NetlifyOptions = {
   config: NormalizedCachedConfigConfig
   cachedConfig: CachedConfig
   globalConfig: GlobalConfigStore
-  state: CLIState
+  state: LocalState
   frameworksAPIPaths: FrameworksAPIPaths
 }
 
