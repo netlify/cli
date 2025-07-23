@@ -231,26 +231,12 @@ export const normalizeConfig = (config: CachedConfig['config']): NormalizedCache
   return publishOrigin === 'default' ? { ...config, build } : config
 }
 
-const DEBOUNCE_WAIT = 100
-
-interface WatchDebouncedOptions {
-  depth?: number
-  ignored?: (string | RegExp)[]
-  onAdd?: (paths: string[]) => void
-  onChange?: (paths: string[]) => void
-  onUnlink?: (paths: string[]) => void
-}
-
 export const getTerminalLink = (text: string, url: string): string =>
   terminalLink(text, url, { fallback: () => `${text} (${url})` })
 
 export const isNodeError = (err: unknown): err is NodeJS.ErrnoException => err instanceof Error
 
 export const nonNullable = <T>(value: T): value is NonNullable<T> => value !== null && value !== undefined
-
-export const noOp = () => {
-  // no-op
-}
 
 export interface APIError extends Error {
   status: number
