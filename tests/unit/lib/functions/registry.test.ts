@@ -2,10 +2,10 @@ import { mkdir, mkdtemp, writeFile } from 'fs/promises'
 import { tmpdir } from 'os'
 import { join } from 'path'
 
+import { watchDebounced } from '@netlify/dev-utils'
 import { describe, expect, test, vi } from 'vitest'
 
 import { FunctionsRegistry } from '../../../../src/lib/functions/registry.js'
-import { watchDebounced } from '../../../../src/utils/command-helpers.js'
 import { getFrameworksAPIPaths } from '../../../../src/utils/frameworks-api.js'
 
 const duplicateFunctions = [

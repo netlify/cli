@@ -245,58 +245,6 @@ interface WatchDebouncedOptions {
   onUnlink?: (paths: string[]) => void
 }
 
-/**
- * Adds a file watcher to a path or set of paths and debounces the events.
- */
-export const watchDebounced = async (
-  target: string | string[],
-  { depth, ignored = [], onAdd = noOp, onChange = noOp, onUnlink = noOp }: WatchDebouncedOptions,
-) => {
-  const baseIgnores = [/\/(node_modules|.git)\//]
-  const watcher = chokidar.watch(target, { depth, ignored: [...baseIgnores, ...ignored], ignoreInitial: true })
-
-  await once(watcher, 'ready')
-
-  let onChangeQueue: string[] = []
-  let onAddQueue: string[] = []
-  let onUnlinkQueue: string[] = []
-
-  const debouncedOnChange = debounce(() => {
-    onChange(onChangeQueue)
-    onChangeQueue = []
-  }, DEBOUNCE_WAIT)
-  const debouncedOnAdd = debounce(() => {
-    onAdd(onAddQueue)
-    onAddQueue = []
-  }, DEBOUNCE_WAIT)
-  const debouncedOnUnlink = debounce(() => {
-    onUnlink(onUnlinkQueue)
-    onUnlinkQueue = []
-  }, DEBOUNCE_WAIT)
-
-  watcher
-    .on('change', (path) => {
-      // @ts-expect-error
-      decache(path)
-      onChangeQueue.push(path)
-      debouncedOnChange()
-    })
-    .on('unlink', (path) => {
-      // @ts-expect-error
-      decache(path)
-      onUnlinkQueue.push(path)
-      debouncedOnUnlink()
-    })
-    .on('add', (path) => {
-      // @ts-expect-error
-      decache(path)
-      onAddQueue.push(path)
-      debouncedOnAdd()
-    })
-
-  return watcher
-}
-
 export const getTerminalLink = (text: string, url: string): string =>
   terminalLink(text, url, { fallback: () => `${text} (${url})` })
 
