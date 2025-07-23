@@ -23,7 +23,7 @@ import { NFFunctionName, NFFunctionRoute } from '../../utils/headers.js'
 import type { BlobsContextWithEdgeAccess } from '../blobs/blobs.js'
 import { headers as efHeaders } from '../edge-functions/headers.js'
 import { getGeoLocation } from '../geo-location.js'
-import type { CLIState, ServerSettings, SiteInfo } from '../../utils/types.js'
+import type { LocalState, ServerSettings, SiteInfo } from '../../utils/types.js'
 
 import { handleBackgroundFunction, handleBackgroundFunctionResult } from './background.js'
 import { createFormSubmissionHandler } from './form-submissions-handler.js'
@@ -265,7 +265,7 @@ interface GetFunctionsServerOptions {
   accountId?: string | undefined
   geoCountry: string
   offline: boolean
-  state: CLIState
+  state: LocalState
   config: NormalizedCachedConfigConfig
   geolocationMode: 'cache' | 'update' | 'mock'
 }
