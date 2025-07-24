@@ -5,7 +5,7 @@ import process from 'process'
 import { format, inspect } from 'util'
 
 import type { NetlifyAPI } from '@netlify/api'
-import { getGlobalConfigStore } from '@netlify/dev-utils'
+import { getAPIToken } from '@netlify/dev-utils'
 import { Chalk } from 'chalk'
 import chokidar from 'chokidar'
 import decache from 'decache'
@@ -142,9 +142,7 @@ export const getToken = async (tokenFromOptions?: string): Promise<TokenTuple> =
     return [NETLIFY_AUTH_TOKEN, 'env']
   }
   // 3. If no env var use global user setting
-  const globalConfig = await getGlobalConfigStore()
-  const userId = globalConfig.get('userId')
-  const tokenFromConfig = globalConfig.get(`users.${userId}.auth.token`)
+  const tokenFromConfig = await getAPIToken()
   if (tokenFromConfig) {
     return [tokenFromConfig, 'config']
   }
