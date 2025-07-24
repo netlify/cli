@@ -1,16 +1,12 @@
-import { once } from 'events'
 import os from 'os'
 import fs from 'fs'
 import process from 'process'
 import { format, inspect } from 'util'
 
 import type { NetlifyAPI } from '@netlify/api'
-import { getGlobalConfigStore } from '@netlify/dev-utils'
+import { getAPIToken } from '@netlify/dev-utils'
 import { Chalk } from 'chalk'
-import chokidar from 'chokidar'
-import decache from 'decache'
 import WSL from 'is-wsl'
-import debounce from 'lodash/debounce.js'
 import terminalLink from 'terminal-link'
 
 import { startSpinner } from '../lib/spinner.js'
@@ -142,9 +138,7 @@ export const getToken = async (tokenFromOptions?: string): Promise<TokenTuple> =
     return [NETLIFY_AUTH_TOKEN, 'env']
   }
   // 3. If no env var use global user setting
-  const globalConfig = await getGlobalConfigStore()
-  const userId = globalConfig.get('userId')
-  const tokenFromConfig = globalConfig.get(`users.${userId}.auth.token`)
+  const tokenFromConfig = await getAPIToken()
   if (tokenFromConfig) {
     return [tokenFromConfig, 'config']
   }
@@ -235,78 +229,12 @@ export const normalizeConfig = (config: CachedConfig['config']): NormalizedCache
   return publishOrigin === 'default' ? { ...config, build } : config
 }
 
-const DEBOUNCE_WAIT = 100
-
-interface WatchDebouncedOptions {
-  depth?: number
-  ignored?: (string | RegExp)[]
-  onAdd?: (paths: string[]) => void
-  onChange?: (paths: string[]) => void
-  onUnlink?: (paths: string[]) => void
-}
-
-/**
- * Adds a file watcher to a path or set of paths and debounces the events.
- */
-export const watchDebounced = async (
-  target: string | string[],
-  { depth, ignored = [], onAdd = noOp, onChange = noOp, onUnlink = noOp }: WatchDebouncedOptions,
-) => {
-  const baseIgnores = [/\/(node_modules|.git)\//]
-  const watcher = chokidar.watch(target, { depth, ignored: [...baseIgnores, ...ignored], ignoreInitial: true })
-
-  await once(watcher, 'ready')
-
-  let onChangeQueue: string[] = []
-  let onAddQueue: string[] = []
-  let onUnlinkQueue: string[] = []
-
-  const debouncedOnChange = debounce(() => {
-    onChange(onChangeQueue)
-    onChangeQueue = []
-  }, DEBOUNCE_WAIT)
-  const debouncedOnAdd = debounce(() => {
-    onAdd(onAddQueue)
-    onAddQueue = []
-  }, DEBOUNCE_WAIT)
-  const debouncedOnUnlink = debounce(() => {
-    onUnlink(onUnlinkQueue)
-    onUnlinkQueue = []
-  }, DEBOUNCE_WAIT)
-
-  watcher
-    .on('change', (path) => {
-      // @ts-expect-error
-      decache(path)
-      onChangeQueue.push(path)
-      debouncedOnChange()
-    })
-    .on('unlink', (path) => {
-      // @ts-expect-error
-      decache(path)
-      onUnlinkQueue.push(path)
-      debouncedOnUnlink()
-    })
-    .on('add', (path) => {
-      // @ts-expect-error
-      decache(path)
-      onAddQueue.push(path)
-      debouncedOnAdd()
-    })
-
-  return watcher
-}
-
 export const getTerminalLink = (text: string, url: string): string =>
   terminalLink(text, url, { fallback: () => `${text} (${url})` })
 
 export const isNodeError = (err: unknown): err is NodeJS.ErrnoException => err instanceof Error
 
 export const nonNullable = <T>(value: T): value is NonNullable<T> => value !== null && value !== undefined
-
-export const noOp = () => {
-  // no-op
-}
 
 export interface APIError extends Error {
   status: number
