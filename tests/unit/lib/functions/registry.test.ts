@@ -36,8 +36,8 @@ const duplicateFunctions = [
   },
 ]
 
-vi.mock('../../../../src/utils/command-helpers.js', async () => {
-  const helpers = await vi.importActual('../../../../src/utils/command-helpers.js')
+vi.mock('@netlify/dev-utils', async () => {
+  const helpers = await vi.importActual('@netlify/dev-utils')
 
   return {
     ...helpers,
