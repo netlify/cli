@@ -219,5 +219,10 @@
       "tools/**/*.test.js",
       "tests/**/*.test.cjs"
     ]
+  },
+  "overrides": {
+    "verdaccio": {
+      "compression": "^1.8.1"
+    }
   }
 }
