@@ -23,7 +23,7 @@ const promptForAuthMethod = async () => {
   const authChoiceToken = 'Authorize with a GitHub personal access token'
   const authChoices = [authChoiceNetlify, authChoiceToken] as const
 
-  const { authMethod } = await inquirer.prompt<{ authMethod: typeof authChoices[number] }>([
+  const { authMethod } = await inquirer.prompt<{ authMethod: (typeof authChoices)[number] }>([
     {
       type: 'list',
       name: 'authMethod',
