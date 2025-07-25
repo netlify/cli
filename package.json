@@ -195,7 +195,7 @@
     "dedent": "1.5.3",
     "eslint": "9.24.0",
     "eslint-config-prettier": "10.1.8",
-    "eslint-plugin-n": "17.17.0",
+    "eslint-plugin-n": "17.21.0",
     "form-data": "4.0.4",
     "lodash.shuffle": "4.2.0",
     "memfs": "4.17.2",
