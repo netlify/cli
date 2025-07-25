@@ -4,7 +4,7 @@ import { basename, extname, isAbsolute, join, resolve } from 'path'
 import { env } from 'process'
 
 import { type ListedFunction, listFunctions, type Manifest } from '@netlify/zip-it-and-ship-it'
-import type { MemoizeCache } from '@netlify/dev-utils'
+import { type MemoizeCache, watchDebounced } from '@netlify/dev-utils'
 import extractZip from 'extract-zip'
 
 import {
@@ -15,7 +15,6 @@ import {
   NETLIFYDEVLOG,
   NETLIFYDEVWARN,
   warn,
-  watchDebounced,
   type NormalizedCachedConfigConfig,
 } from '../../utils/command-helpers.js'
 import { getFrameworksAPIPaths } from '../../utils/frameworks-api.js'

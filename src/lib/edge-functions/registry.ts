@@ -3,6 +3,7 @@ import { join } from 'path'
 import { fileURLToPath } from 'url'
 
 import type { Declaration, EdgeFunction, FunctionConfig, Manifest, ModuleGraph } from '@netlify/edge-bundler'
+import { watchDebounced } from '@netlify/dev-utils'
 
 import BaseCommand from '../../commands/base-command.js'
 import {
@@ -13,7 +14,6 @@ import {
   chalk,
   log,
   warn,
-  watchDebounced,
   isNodeError,
   type NormalizedCachedConfigConfig,
 } from '../../utils/command-helpers.js'
