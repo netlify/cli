@@ -20,7 +20,7 @@
     "@bugsnag/js": "8.2.0",
     "astro": "5.12.3",
     "markdown-magic": "2.6.1",
-    "sharp": "0.32.6",
+    "sharp": "0.34.3",
     "strip-ansi": "7.1.0"
   },
   "devDependencies": {
