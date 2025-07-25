@@ -18,12 +18,12 @@ const unableToOpenBrowserMessage = function ({ message, url }: BrowserUnableMess
   log('---------------------------')
 }
 
-type OpenBrowsrProps = {
+type OpenBrowserProps = {
   silentBrowserNoneError?: boolean
   url: string
 }
 
-const openBrowser = async function ({ silentBrowserNoneError, url }: OpenBrowsrProps) {
+const openBrowser = async function ({ silentBrowserNoneError, url }: OpenBrowserProps) {
   if (isDockerContainer()) {
     unableToOpenBrowserMessage({ url, message: 'Running inside a docker container' })
     return
