@@ -1,13 +1,13 @@
 import path from 'node:path'
 import process from 'node:process'
 
+import { killProcess } from '@netlify/dev-utils'
 import execa from 'execa'
 import getPort from 'get-port'
 import pTimeout from 'p-timeout'
 
 import { cliPath } from './cli-path.js'
 import { handleQuestions } from './handle-questions.js'
-import { killProcess } from './process.js'
 
 export const getExecaOptions = ({ cwd, env }: { cwd: string; env: NodeJS.ProcessEnv }) => {
   // Unused vars here are in order to omit LANg and LC_ALL from envs
