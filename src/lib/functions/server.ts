@@ -3,6 +3,7 @@ import { promises as fs } from 'fs'
 import type { IncomingHttpHeaders } from 'http'
 import path from 'path'
 
+import type { GeneratedFunction } from '@netlify/build'
 import { shouldBase64Encode } from '@netlify/dev-utils'
 import express, { type Request, type RequestHandler } from 'express'
 import expressLogging from 'express-logging'
@@ -305,6 +306,7 @@ export const startFunctionsServer = async (
       backgroundFunctions?: boolean
     }
     debug: boolean
+    generatedFunctions: GeneratedFunction[]
     loadDistFunctions?: boolean
     // TODO(serhalp): This is confusing. Refactor to accept entire settings or rename or something?
     settings: Pick<ServerSettings, 'functions' | 'functionsPort'>
@@ -319,6 +321,7 @@ export const startFunctionsServer = async (
     command,
     config,
     debug,
+    generatedFunctions,
     loadDistFunctions,
     settings,
     site,
@@ -380,6 +383,7 @@ export const startFunctionsServer = async (
     config,
     debug,
     frameworksAPIPaths: command.netlify.frameworksAPIPaths,
+    generatedFunctions,
     isConnected: Boolean(siteUrl),
     logLambdaCompat: isFeatureFlagEnabled('cli_log_lambda_compat', siteInfo),
     manifest,
