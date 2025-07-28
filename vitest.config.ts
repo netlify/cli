@@ -17,14 +17,18 @@ export default defineConfig({
     snapshotFormat: {
       escapeString: true,
     },
-    // Pin to vitest@1 behavior: https://vitest.dev/guide/migration.html#default-pool-is-forks.
-    // TODO(serhalp) Remove this and fix hanging `next-app-without-config` fixture on Windows.
-    pool: 'threads',
+    // Use forks pool for better process isolation and prevent test interference
+    pool: 'forks',
     poolOptions: {
-      threads: {
-        singleThread: true,
+      forks: {
+        // Allow multiple forks for better performance while maintaining isolation
+        maxForks: 4,
+        minForks: 1,
+        isolate: true,
       },
     },
+    // Prevent flaky tests from concurrent execution
+    fileParallelism: false,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov'],

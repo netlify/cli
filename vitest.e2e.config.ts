@@ -4,13 +4,19 @@ export default defineConfig({
   test: {
     include: ['e2e/**/*.e2e.[jt]s'],
     testTimeout: 1200_000,
-    // Pin to vitest@1 behavior: https://vitest.dev/guide/migration.html#default-pool-is-forks.
-    // TODO(serhalp) Remove this and fix flaky hanging e2e tests on Windows.
-    pool: 'threads',
+    // Use forks pool for better process isolation and prevent hanging tests
+    pool: 'forks',
     poolOptions: {
-      threads: {
-        singleThread: true,
+      forks: {
+        singleFork: true,
+        isolate: true,
       },
     },
+    // Ensure proper cleanup between tests
+    sequence: {
+      concurrent: false,
+    },
+    // Add retry for network-dependent E2E tests
+    retry: 2,
   },
 })

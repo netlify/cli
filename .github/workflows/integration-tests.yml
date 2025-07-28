@@ -22,9 +22,6 @@ jobs:
         node-version: ['20.12.2', '22']
         shard: ['1/4', '2/4', '3/4', '4/4']
 
-        exclude:
-          - os: windows-2025
-            node-version: '22'
       fail-fast: false
     steps:
       # This improves Windows network performance, we need this since we open many ports in our tests

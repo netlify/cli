@@ -49,7 +49,7 @@
     "test:init:hugo-deps": "npm ci --prefix tests/integration/__fixtures__/hugo-site --no-audit",
     "test:init:monorepo-deps": "cd tests/integration/__fixtures__/monorepo && pnpm install --frozen-lockfile",
     "test:init:next-deps": "npm ci --prefix tests/integration/__fixtures__/next-app-without-config --no-audit && npm ci --prefix tests/integration/__fixtures__/next-app --no-audit",
-    "test:integration": "vitest run --retry=3 tests/integration/",
+    "test:integration": "vitest run tests/integration/",
     "test:unit": "vitest run tests/unit/",
     "postinstall": "node ./scripts/postinstall.js",
     "prepublishOnly": "node ./scripts/prepublishOnly.js",
