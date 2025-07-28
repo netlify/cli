@@ -482,7 +482,7 @@ export class FunctionsRegistry {
           // But now that zip-it-and-ship-it accepts an object with mixed paths
           // that lets us specify exactly which paths contain user functions or
           // generated functions, we should refactor this call so it encodes
-          // that distiction.
+          // that distinction.
           directories,
         },
       },
