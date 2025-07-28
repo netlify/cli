@@ -5,6 +5,7 @@ import { env } from 'process'
 
 import type { GeneratedFunction } from '@netlify/build'
 import { type ListedFunction, listFunctions, type Manifest } from '@netlify/zip-it-and-ship-it'
+import { type MemoizeCache, watchDebounced } from '@netlify/dev-utils'
 import extractZip from 'extract-zip'
 
 import {
@@ -15,7 +16,6 @@ import {
   NETLIFYDEVLOG,
   NETLIFYDEVWARN,
   warn,
-  watchDebounced,
   type NormalizedCachedConfigConfig,
 } from '../../utils/command-helpers.js'
 import { getFrameworksAPIPaths } from '../../utils/frameworks-api.js'
@@ -27,7 +27,6 @@ import type { ServerSettings } from '../../utils/types.js'
 
 import NetlifyFunction from './netlify-function.js'
 import runtimes, { type BaseBuildResult } from './runtimes/index.js'
-import type { BuildCommandCache } from './memoized-build.js'
 
 export const DEFAULT_FUNCTION_URL_EXPRESSION = /^\/.netlify\/(functions|builders)\/([^/]+).*/
 const TYPES_PACKAGE = '@netlify/functions'
@@ -68,7 +67,7 @@ export class FunctionsRegistry {
    */
   private blobsContext: BlobsContextWithEdgeAccess
 
-  private buildCommandCache?: BuildCommandCache<Record<string, unknown>>
+  private buildCommandCache?: MemoizeCache<Record<string, unknown>>
   private capabilities: {
     backgroundFunctions?: boolean
   }

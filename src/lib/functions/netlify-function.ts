@@ -3,6 +3,7 @@ import { basename, extname } from 'path'
 import { version as nodeVersion } from 'process'
 
 import type { ExtendedRoute, Route } from '@netlify/zip-it-and-ship-it'
+import type { MemoizeCache } from '@netlify/dev-utils'
 import CronParser from 'cron-parser'
 import semver from 'semver'
 
@@ -12,7 +13,6 @@ import { type BlobsContextWithEdgeAccess, getBlobsEventProperty } from '../blobs
 import type { ServerSettings } from '../../utils/types.js'
 
 import type { BaseBuildResult, InvokeFunctionResult, Runtime } from './runtimes/index.js'
-import type { BuildCommandCache } from './memoized-build.js'
 
 export interface InvocationError {
   errorMessage: string
@@ -189,7 +189,7 @@ export default class NetlifyFunction<BuildResult extends BaseBuildResult> {
   //
   // - `srcFilesDiff`: Files that were added and removed since the last time
   //    the function was built.
-  async build({ cache }: { cache?: BuildCommandCache<Record<string, unknown>> }) {
+  async build({ cache }: { cache?: MemoizeCache<Record<string, unknown>> }) {
     const buildFunction = await this.runtime.getBuildFunction({
       config: this.config,
       directory: this.directory,

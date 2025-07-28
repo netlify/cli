@@ -287,4 +287,51 @@ describe.skipIf(isWindows)('edge functions', async () => {
       })
     },
   )
+
+  await setupFixtureTests(
+    'dev-server-with-header-matching-edge-functions',
+    { devServer: true, mockApi: { routes } },
+    () => {
+      test<FixtureTestContext>('should match edge functions with header exists condition', async ({ devServer }) => {
+        // Request without header - should not match
+        const responseWithoutHeader = await fetch(`http://localhost:${devServer!.port}/header-exists`)
+        expect(responseWithoutHeader.status).toBe(404)
+
+        // Request with header - should match
+        const responseWithHeader = await fetch(`http://localhost:${devServer!.port}/header-exists`, {
+          headers: { 'x-test-header': 'any-value' },
+        })
+        expect(responseWithHeader.status).toBe(200)
+        expect(await responseWithHeader.text()).toBe('header-exists-matched')
+      })
+
+      test<FixtureTestContext>('should match edge functions with header missing condition', async ({ devServer }) => {
+        // Request without header - should match
+        const responseWithoutHeader = await fetch(`http://localhost:${devServer!.port}/header-missing`)
+        expect(responseWithoutHeader.status).toBe(200)
+        expect(await responseWithoutHeader.text()).toBe('header-missing-matched')
+
+        // Request with header - should not match
+        const responseWithHeader = await fetch(`http://localhost:${devServer!.port}/header-missing`, {
+          headers: { 'x-forbidden-header': 'any-value' },
+        })
+        expect(responseWithHeader.status).toBe(404)
+      })
+
+      test<FixtureTestContext>('should match edge functions with header regex condition', async ({ devServer }) => {
+        // Request with non-matching header - should not match
+        const responseWithBadHeader = await fetch(`http://localhost:${devServer!.port}/header-regex`, {
+          headers: { 'x-api-key': 'invalid-key' },
+        })
+        expect(responseWithBadHeader.status).toBe(404)
+
+        // Request with matching header - should match
+        const responseWithGoodHeader = await fetch(`http://localhost:${devServer!.port}/header-regex`, {
+          headers: { 'x-api-key': 'api-key-123' },
+        })
+        expect(responseWithGoodHeader.status).toBe(200)
+        expect(await responseWithGoodHeader.text()).toBe('header-regex-matched')
+      })
+    },
+  )
 })

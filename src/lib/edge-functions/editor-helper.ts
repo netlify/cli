@@ -1,4 +1,4 @@
-import { env } from 'process'
+import { env, stdin, stdout } from 'process'
 
 import inquirer from 'inquirer'
 
@@ -11,6 +11,8 @@ export const promptEditorHelper = async ({ NETLIFYDEVLOG, chalk, config, log, re
   // This prevents tests from hanging when running them inside the VS Code
   // terminal, as otherwise we'll show the prompt and wait for a response.
   if (env.NODE_ENV === 'test') return
+
+  if (!stdin.isTTY || !stdout.isTTY) return
 
   const isVSCode = env.TERM_PROGRAM === 'vscode'
   const hasShownPrompt = Boolean(state.get(STATE_PROMPT_PROPERTY))

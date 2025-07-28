@@ -27,7 +27,7 @@ import openBrowser from '../../utils/open-browser.js'
 import { generateInspectSettings, startProxyServer } from '../../utils/proxy-server.js'
 import { getProxyUrl } from '../../utils/proxy.js'
 import { runDevTimeline } from '../../utils/run-build.js'
-import type { CLIState, ServerSettings } from '../../utils/types.js'
+import type { LocalState, ServerSettings } from '../../utils/types.js'
 import type BaseCommand from '../base-command.js'
 import { getBaseOptionValues } from '../base-command.js'
 import type { NetlifySite } from '../types.js'
@@ -46,7 +46,7 @@ const handleLiveTunnel = async ({
   options: OptionValues
   settings: ServerSettings
   site: NetlifySite
-  state: CLIState
+  state: LocalState
 }) => {
   const { live } = options
 
