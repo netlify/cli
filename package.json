@@ -199,7 +199,7 @@
     "form-data": "4.0.4",
     "lodash.shuffle": "4.2.0",
     "memfs": "4.19.0",
-    "nock": "14.0.6",
+    "nock": "14.0.7",
     "npm-run-all2": "7.0.2",
     "p-timeout": "6.1.4",
     "picomatch": "4.0.3",
