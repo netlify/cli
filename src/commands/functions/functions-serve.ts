@@ -61,6 +61,7 @@ export const functionsServe = async (options: OptionValues, command: BaseCommand
     siteUrl,
     capabilities,
     timeouts,
+    generatedFunctions: [],
     geolocationMode: options.geo,
     geoCountry: options.country,
     offline: options.offline,

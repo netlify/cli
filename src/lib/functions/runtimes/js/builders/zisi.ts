@@ -39,7 +39,6 @@ const addFunctionsConfigDefaults = (config: NormalizedFunctionsConfig) => ({
 const buildFunction = async ({
   cache,
   config,
-  directory,
   featureFlags,
   func,
   hasTypeModule,
@@ -48,7 +47,6 @@ const buildFunction = async ({
 }: {
   cache: MemoizeCache<FunctionResult>
   config: NormalizedFunctionsConfig
-  directory?: string | undefined
   featureFlags: FeatureFlags
   // This seems like it should be `ZisiBuildResult` but it's technically referenced from `detectZisiBuilder` so TS
   // can't know at that point that we'll only end up calling it with a `ZisiBuildResult`... Consider refactoring?
@@ -63,16 +61,6 @@ const buildFunction = async ({
     config,
     featureFlags: { ...featureFlags, zisi_functions_api_v2: true },
   }
-  const functionDirectory = path.dirname(func.mainFile)
-
-  // If we have a function at `functions/my-func/index.js` and we pass
-  // that path to `zipFunction`, it will lack the context of the whole
-  // functions directory and will infer the name of the function to be
-  // `index`, not `my-func`. Instead, we need to pass the directory of
-  // the function. The exception is when the function is a file at the
-  // root of the functions directory (e.g. `functions/my-func.js`). In
-  // this case, we use `mainFile` as the function path of `zipFunction`.
-  const entryPath = functionDirectory === directory ? func.mainFile : functionDirectory
   const {
     entryFilename,
     excludedRoutes,
@@ -86,9 +74,9 @@ const buildFunction = async ({
     schedule,
   } = await memoize({
     cache,
-    cacheKey: `zisi-${entryPath}`,
+    cacheKey: `zisi-${func.srcPath}`,
     command: async () => {
-      const result = await zipFunction(entryPath, targetDirectory, zipOptions)
+      const result = await zipFunction(func.srcPath, targetDirectory, zipOptions)
       if (result == null) {
         throw new Error('Failed to build function')
       }
@@ -179,7 +167,6 @@ const netlifyConfigToZisiConfig = ({
 
 export default async function detectZisiBuilder({
   config,
-  directory,
   errorExit,
   func,
   metadata,
@@ -233,7 +220,6 @@ export default async function detectZisiBuilder({
     buildFunction({
       cache,
       config: functionsConfig,
-      directory,
       func,
       projectRoot,
       targetDirectory,
