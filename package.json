@@ -176,7 +176,7 @@
     "@types/lodash": "4.17.20",
     "@types/lodash.shuffle": "4.2.9",
     "@types/multiparty": "4.2.1",
-    "@types/node": "18.19.120",
+    "@types/node": "18.19.121",
     "@types/node-fetch": "2.6.12",
     "@types/parallel-transform": "1.1.4",
     "@types/parse-github-url": "1.0.3",
