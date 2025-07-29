@@ -10,11 +10,11 @@ import { track } from '../../utils/telemetry/index.js'
 import type BaseCommand from '../base-command.js'
 import { link } from '../link/link.js'
 import { sitesCreate } from '../sites/sites-create.js'
-import type { CLIState, SiteInfo } from '../../utils/types.js'
+import type { LocalState, SiteInfo } from '../../utils/types.js'
 import { getBuildSettings, saveNetlifyToml } from '../../utils/init/utils.js'
 import { type InitExitCode, LINKED_EXISTING_SITE_EXIT_CODE, LINKED_NEW_SITE_EXIT_CODE } from './constants.js'
 
-const persistState = ({ siteInfo, state }: { siteInfo: SiteInfo; state: CLIState }): void => {
+const persistState = ({ siteInfo, state }: { siteInfo: SiteInfo; state: LocalState }): void => {
   // Save to .netlify/state.json file
   state.set('siteId', siteInfo.id)
 }
@@ -47,7 +47,7 @@ const createNewSiteAndExit = async ({
   customizeExitMessage,
 }: {
   command: BaseCommand
-  state: CLIState
+  state: LocalState
   disableLinking: boolean
   customizeExitMessage: InitExitMessageCustomizer | undefined
 }): Promise<never> => {
@@ -131,7 +131,7 @@ const handleNoGitRemoteAndExit = async ({
 }: {
   command: BaseCommand
   error?: unknown
-  state: CLIState
+  state: LocalState
   disableLinking: boolean
   customizeExitMessage: InitExitMessageCustomizer | undefined
 }): Promise<never> => {
@@ -180,7 +180,7 @@ const createOrLinkSiteToRepo = async (command: BaseCommand) => {
   const initializeOpts = [EXISTING_SITE, NEW_SITE] as const
 
   // TODO(serhalp): inquirer should infer the choice type here, but doesn't. Fix.
-  const { initChoice } = await inquirer.prompt<{ initChoice: typeof initializeOpts[number] }>([
+  const { initChoice } = await inquirer.prompt<{ initChoice: (typeof initializeOpts)[number] }>([
     {
       type: 'list',
       name: 'initChoice',

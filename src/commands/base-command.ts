@@ -7,7 +7,7 @@ import { NetlifyAPI } from '@netlify/api'
 import { DefaultLogger, Project } from '@netlify/build-info'
 import { NodeFS, NoopLogger } from '@netlify/build-info/node'
 import { resolveConfig } from '@netlify/config'
-import { getGlobalConfigStore } from '@netlify/dev-utils'
+import { getGlobalConfigStore, LocalState } from '@netlify/dev-utils'
 import { isCI } from 'ci-info'
 import { Command, Help, Option, type OptionValues } from 'commander'
 import debug from 'debug'
@@ -38,7 +38,6 @@ import type { FeatureFlags } from '../utils/feature-flags.js'
 import { getFrameworksAPIPaths } from '../utils/frameworks-api.js'
 import { getSiteByName } from '../utils/get-site.js'
 import openBrowser from '../utils/open-browser.js'
-import CLIState from '../utils/cli-state.js'
 import { identify, reportError, track } from '../utils/telemetry/index.js'
 import type { NetlifyOptions } from './types.js'
 import type { CachedConfig } from '../lib/build.js'
@@ -566,7 +565,7 @@ export default class BaseCommand extends Command {
     // ==================================================
     // Retrieve Site id and build state from the state.json
     // ==================================================
-    const state = new CLIState(this.workingDir)
+    const state = new LocalState(this.workingDir)
     const [token] = await getToken(flags.auth)
 
     const apiUrlOpts: {
