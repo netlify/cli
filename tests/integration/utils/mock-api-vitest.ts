@@ -17,6 +17,7 @@ export interface Route {
 interface MockApiOptions {
   routes: Route[]
   silent?: boolean
+  failOnMissingRoutes?: boolean
 }
 
 export interface MockApi {
@@ -48,7 +49,7 @@ const clearRequests = (requests: unknown[]) => {
   requests.length = 0
 }
 
-export const startMockApi = ({ routes, silent }: MockApiOptions): Promise<MockApi> => {
+export const startMockApi = ({ routes, silent = false, failOnMissingRoutes = true }: MockApiOptions): Promise<MockApi> => {
   const requests: MockApi['requests'] = []
   const app = express()
   app.use(urlencoded({ extended: true }))
@@ -86,11 +87,26 @@ export const startMockApi = ({ routes, silent }: MockApiOptions): Promise<MockAp
 
   app.all('*', function onRequest(req, res) {
     addRequest(requests, req)
-    if (!silent) {
-      console.warn(`Route not found: (${req.method.toUpperCase()}) ${req.url}`)
+    
+    const errorMessage = `Unmocked API route accessed: ${req.method.toUpperCase()} ${req.url}`
+    
+    if (failOnMissingRoutes) {
+      // Fail the test by throwing an error instead of allowing the request to pass through
+      console.error(`❌ TEST FAILURE: ${errorMessage}`)
+      console.error('Add this route to your test\'s mock API routes to fix this error.')
+      res.status(500)
+      res.json({ 
+        error: 'Test Failed - Unmocked Route', 
+        message: errorMessage,
+        hint: 'Add this route to your test\'s mock API routes to fix this error.'
+      })
+    } else {
+      if (!silent) {
+        console.warn(`Route not found: (${req.method.toUpperCase()}) ${req.url}`)
+      }
+      res.status(404)
+      res.json({ message: 'Not found' })
     }
-    res.status(404)
-    res.json({ message: 'Not found' })
   })
 
   return new Promise((resolve, reject) => {
@@ -116,10 +132,18 @@ export const startMockApi = ({ routes, silent }: MockApiOptions): Promise<MockAp
   })
 }
 
-export const withMockApi = async (routes: Route[], factory: () => void, silent = false) => {
+export const withMockApi = async (
+  routes: Route[], 
+  factory: () => void, 
+  options: { silent?: boolean; failOnMissingRoutes?: boolean } | boolean = {}
+) => {
+  // Handle backward compatibility: if options is boolean, treat it as silent
+  const { silent = false, failOnMissingRoutes = true } = typeof options === 'boolean' 
+    ? { silent: options, failOnMissingRoutes: true }
+    : options
   let mockApi: MockApi
   beforeAll(async () => {
-    mockApi = await startMockApi({ routes, silent })
+    mockApi = await startMockApi({ routes, silent, failOnMissingRoutes })
   })
 
   beforeEach<MockApiTestContext>((context) => {
