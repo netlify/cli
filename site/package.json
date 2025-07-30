@@ -17,7 +17,7 @@
   "license": "MIT",
   "dependencies": {
     "@astrojs/starlight": "0.35.2",
-    "@bugsnag/js": "8.2.0",
+    "@bugsnag/js": "8.4.0",
     "astro": "5.12.5",
     "markdown-magic": "2.6.1",
     "sharp": "0.34.3",
