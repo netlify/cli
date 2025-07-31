@@ -14,7 +14,7 @@ jobs:
       - uses: haya14busa/action-workflow_run-status@v1
 
       - name: Download deltas
-        uses: dawidd6/action-download-artifact@v6
+        uses: dawidd6/action-download-artifact@v11
         with:
           # This is the workflow that triggered this run
           workflow: ${{ github.event.workflow.id }}
