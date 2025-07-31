@@ -1,12 +1,12 @@
 import { Buffer } from 'buffer'
 import { inspect } from 'util'
 
+import { renderFunctionErrorPage } from '@netlify/dev-utils'
 import express from 'express'
 import { isReadableStream as baseIsReadableStream } from 'is-stream'
 import type { LambdaEvent } from 'lambda-local'
 
 import { chalk, logPadded, NETLIFYDEVERR } from '../../utils/command-helpers.js'
-import renderErrorTemplate from '../render-error-template.js'
 
 import { warnIfAwsSdkError } from './utils.js'
 import type { InvocationError } from './netlify-function.js'
@@ -161,7 +161,7 @@ const handleErr = async (
 
   if (acceptsHtml) {
     response.setHeader('Content-Type', 'text/html')
-    response.end(await renderErrorTemplate(errorString, '../../src/lib/templates/function-error.html', 'function'))
+    response.end(await renderFunctionErrorPage(errorString, 'function'))
   } else {
     response.end(errorString)
   }
