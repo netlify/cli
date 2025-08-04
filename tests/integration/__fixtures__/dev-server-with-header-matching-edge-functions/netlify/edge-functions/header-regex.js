@@ -5,6 +5,6 @@ export default async (request) => {
 export const config = {
   path: '/header-regex',
   header: {
-    'x-api-key': '^api-key-\\d+$',
+    'X-API-Key': '^api-key-\\d+$',
   },
 }
