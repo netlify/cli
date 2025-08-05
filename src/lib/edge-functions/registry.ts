@@ -422,7 +422,8 @@ export class EdgeFunctionsRegistry {
       }
 
       if (route.headers) {
-        const headerMatches = Object.entries(route.headers).every(([headerName, headerMatch]) => {
+        const headerMatches = Object.entries(route.headers).every(([rawHeaderName, headerMatch]) => {
+          const headerName = rawHeaderName.toLowerCase()
           const headerValueString = Array.isArray(headers[headerName])
             ? headers[headerName].filter(Boolean).join(',')
             : headers[headerName]
