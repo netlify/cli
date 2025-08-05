@@ -522,6 +522,8 @@ const initializeProxy = async function ({
   })
 
   proxy.on('error', (err, req, res, proxyUrl) => {
+    console.error(`${NETLIFYDEVWARN} Got error while trying to proxy`, err)
+
     // @ts-expect-error TS(2339) FIXME: Property 'proxyOptions' does not exist on type 'In... Remove this comment to see the full error message
     const options = req.proxyOptions
 
