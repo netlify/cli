@@ -13,6 +13,7 @@ import url from 'url'
 import util from 'util'
 import zlib from 'zlib'
 
+import { renderFunctionErrorPage } from '@netlify/dev-utils'
 import contentType from 'content-type'
 import cookie from 'cookie'
 import { getProperty } from 'dot-prop'
@@ -37,7 +38,6 @@ import { fileExistsAsync, isFileAsync } from '../lib/fs.js'
 import { getFormHandler } from '../lib/functions/form-submissions-handler.js'
 import { DEFAULT_FUNCTION_URL_EXPRESSION } from '../lib/functions/registry.js'
 import { initializeProxy as initializeImageProxy, isImageRequest } from '../lib/images/proxy.js'
-import renderErrorTemplate from '../lib/render-error-template.js'
 
 import { NETLIFYDEVLOG, NETLIFYDEVWARN, type NormalizedCachedConfigConfig, chalk, log } from './command-helpers.js'
 import createStreamPromise from './create-stream-promise.js'
@@ -731,7 +731,7 @@ const initializeProxy = async function ({
         const decompressedBody = await decompressResponseBody(responseBody, proxyRes.headers['content-encoding'])
         const formattedBody = formatEdgeFunctionError(decompressedBody, acceptsHtml)
         const errorResponse = acceptsHtml
-          ? await renderErrorTemplate(formattedBody, '../../src/lib/templates/function-error.html', 'edge function')
+          ? await renderFunctionErrorPage(formattedBody, 'edge function')
           : formattedBody
         const contentLength = Buffer.from(errorResponse, 'utf8').byteLength
 
