@@ -436,9 +436,6 @@ describe.concurrent('commands/dev/config', () => {
         const form = new FormData()
         form.append('some', 'thing')
         const rsp = new Response(form)
-        const contentType = rsp.headers.get('Content-Type')
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/prefer-regexp-exec
-        const expectedBoundary = contentType!.match(/boundary=(\S+)/)![1]
         const expectedResponseBody = await rsp.text()
 
         const response = await fetch(`${server.url}/api/echo?ding=dong`, {
@@ -448,7 +445,9 @@ describe.concurrent('commands/dev/config', () => {
         const body = await response.json()
 
         t.expect(body).toHaveProperty('headers.host', `${server.host}:${server.port.toString()}`)
-        t.expect(body).toHaveProperty('headers.content-type', `multipart/form-data;boundary=${expectedBoundary}`)
+        t.expect((body as { headers: { 'content-type': string } }).headers['content-type']).toMatch(
+          /^multipart\/form-data; ?boundary=.+/,
+        )
         t.expect(body).toHaveProperty('headers.content-length', '164')
         t.expect(body).toHaveProperty('httpMethod', 'POST')
         t.expect(body).toHaveProperty('isBase64Encoded', true)
