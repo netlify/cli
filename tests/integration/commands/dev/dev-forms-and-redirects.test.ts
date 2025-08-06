@@ -112,7 +112,7 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
             data: {
               ip: '::ffff:127.0.0.1',
               some: 'thing',
-              user_agent: 'node-fetch',
+              user_agent: 'node',
             },
             human_fields: {
               Some: 'thing',
