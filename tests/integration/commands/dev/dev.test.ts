@@ -417,7 +417,7 @@ describe.concurrent('command/dev', () => {
         const response = await fetch(`${server.url}/api/echo`, {
           method: 'POST',
           body: 'param=value',
-          redirect: 'manual'
+          redirect: 'manual',
         })
 
         // Method Not Allowed

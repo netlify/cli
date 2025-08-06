@@ -435,11 +435,11 @@ describe.concurrent('commands/dev/config', () => {
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const form = new FormData()
         form.append('some', 'thing')
-        const rsp = new Response(form);
-        const contentType = rsp.headers.get('Content-Type');
+        const rsp = new Response(form)
+        const contentType = rsp.headers.get('Content-Type')
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/prefer-regexp-exec
-        const expectedBoundary = contentType!.match(/boundary=(\S+)/)![1];
-        const expectedResponseBody = await rsp.text();
+        const expectedBoundary = contentType!.match(/boundary=(\S+)/)![1]
+        const expectedResponseBody = await rsp.text()
 
         const response = await fetch(`${server.url}/api/echo?ding=dong`, {
           method: 'POST',

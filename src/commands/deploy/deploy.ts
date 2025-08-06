@@ -837,7 +837,7 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
 
     const initializeOpts = [EXISTING_SITE, NEW_SITE] as const
 
-    const { initChoice } = await inquirer.prompt<{ initChoice: (typeof initializeOpts)[number] }>([
+    const { initChoice } = await inquirer.prompt<{ initChoice: typeof initializeOpts[number] }>([
       {
         type: 'list',
         name: 'initChoice',
