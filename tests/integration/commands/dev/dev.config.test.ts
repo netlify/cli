@@ -448,7 +448,7 @@ describe.concurrent('commands/dev/config', () => {
         t.expect((body as { headers: { 'content-type': string } }).headers['content-type']).toMatch(
           /^multipart\/form-data; ?boundary=.+/,
         )
-        t.expect(body).toHaveProperty('headers.content-length', '164')
+        t.expect(body).toHaveProperty('headers.content-length', '126')
         t.expect(body).toHaveProperty('httpMethod', 'POST')
         t.expect(body).toHaveProperty('isBase64Encoded', true)
         t.expect(body).toHaveProperty('path', '/api/echo')
