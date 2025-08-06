@@ -3,7 +3,9 @@ import { createRequire } from 'module'
 import { basename, extname, isAbsolute, join, resolve } from 'path'
 import { env } from 'process'
 
+import type { GeneratedFunction } from '@netlify/build'
 import { type ListedFunction, listFunctions, type Manifest } from '@netlify/zip-it-and-ship-it'
+import { type MemoizeCache, watchDebounced } from '@netlify/dev-utils'
 import extractZip from 'extract-zip'
 
 import {
@@ -14,7 +16,6 @@ import {
   NETLIFYDEVLOG,
   NETLIFYDEVWARN,
   warn,
-  watchDebounced,
   type NormalizedCachedConfigConfig,
 } from '../../utils/command-helpers.js'
 import { getFrameworksAPIPaths } from '../../utils/frameworks-api.js'
@@ -26,7 +27,6 @@ import type { ServerSettings } from '../../utils/types.js'
 
 import NetlifyFunction from './netlify-function.js'
 import runtimes, { type BaseBuildResult } from './runtimes/index.js'
-import type { BuildCommandCache } from './memoized-build.js'
 
 export const DEFAULT_FUNCTION_URL_EXPRESSION = /^\/.netlify\/(functions|builders)\/([^/]+).*/
 const TYPES_PACKAGE = '@netlify/functions'
@@ -67,13 +67,14 @@ export class FunctionsRegistry {
    */
   private blobsContext: BlobsContextWithEdgeAccess
 
-  private buildCommandCache?: BuildCommandCache<Record<string, unknown>>
+  private buildCommandCache?: MemoizeCache<Record<string, unknown>>
   private capabilities: {
     backgroundFunctions?: boolean
   }
   private config: NormalizedCachedConfigConfig
   private debug: boolean
   private frameworksAPIPaths: ReturnType<typeof getFrameworksAPIPaths>
+  private generatedFunctions: GeneratedFunction[]
   private isConnected: boolean
   private logLambdaCompat: boolean
   private manifest?: Manifest
@@ -88,6 +89,7 @@ export class FunctionsRegistry {
     config,
     debug = false,
     frameworksAPIPaths,
+    generatedFunctions,
     isConnected = false,
     logLambdaCompat,
     manifest,
@@ -103,6 +105,7 @@ export class FunctionsRegistry {
     config: NormalizedCachedConfigConfig
     debug?: boolean
     frameworksAPIPaths: ReturnType<typeof getFrameworksAPIPaths>
+    generatedFunctions: GeneratedFunction[]
     isConnected?: boolean
     logLambdaCompat: boolean
     manifest?: Manifest
@@ -115,6 +118,7 @@ export class FunctionsRegistry {
     this.config = config
     this.debug = debug
     this.frameworksAPIPaths = frameworksAPIPaths
+    this.generatedFunctions = generatedFunctions ?? []
     this.isConnected = isConnected
     this.projectRoot = projectRoot
     this.timeouts = timeouts
@@ -465,14 +469,32 @@ export class FunctionsRegistry {
 
     await Promise.all(directories.map((path) => FunctionsRegistry.prepareDirectory(path)))
 
-    const functions = await this.listFunctions(directories, {
-      featureFlags: {
-        buildRustSource: env.NETLIFY_EXPERIMENTAL_BUILD_RUST_SOURCE === 'true',
+    const functions = await this.listFunctions(
+      {
+        generated: {
+          functions: this.generatedFunctions.map((func) => func.path),
+        },
+        user: {
+          // In reality, `directories` contains both directories with user and
+          // generated functions. The registry currently lacks knowledge about
+          // the contents of each directory, so we put them in the same bag and
+          // rely on the order of the directories to get the priority right.
+          // But now that zip-it-and-ship-it accepts an object with mixed paths
+          // that lets us specify exactly which paths contain user functions or
+          // generated functions, we should refactor this call so it encodes
+          // that distinction.
+          directories,
+        },
       },
-      configFileDirectories: [getPathInProject([INTERNAL_FUNCTIONS_FOLDER])],
-      // @ts-expect-error -- TODO(serhalp): Function config types do not match. Investigate and fix.
-      config: this.config.functions,
-    })
+      {
+        featureFlags: {
+          buildRustSource: env.NETLIFY_EXPERIMENTAL_BUILD_RUST_SOURCE === 'true',
+        },
+        configFileDirectories: [getPathInProject([INTERNAL_FUNCTIONS_FOLDER])],
+        // @ts-expect-error -- TODO(serhalp): Function config types do not match. Investigate and fix.
+        config: this.config.functions,
+      },
+    )
 
     // user-defined functions take precedence over internal functions,
     // so we want to ignore any internal functions where there's a user-defined one with the same name
@@ -506,7 +528,7 @@ export class FunctionsRegistry {
       // zip-it-and-ship-it returns an array sorted based on which extension should have precedence,
       // where the last ones precede the previous ones. This is why
       // we reverse the array so we get the right functions precedence in the CLI.
-      functions.reverse().map(async ({ displayName, mainFile, name, runtime: runtimeName }) => {
+      functions.reverse().map(async ({ displayName, mainFile, name, runtime: runtimeName, srcPath }) => {
         if (ignoredFunctions.has(name)) {
           return
         }
@@ -527,7 +549,6 @@ export class FunctionsRegistry {
         const func = new NetlifyFunction({
           blobsContext: this.blobsContext,
           config: this.config,
-          directory: directories.find((directory) => mainFile.startsWith(directory)),
           mainFile,
           name,
           displayName,
@@ -539,6 +560,7 @@ export class FunctionsRegistry {
           timeoutBackground: this.timeouts.backgroundFunctions,
           timeoutSynchronous: this.timeouts.syncFunctions,
           settings: this.settings,
+          srcPath,
         })
 
         // If a function we're registering was also unregistered in this run,

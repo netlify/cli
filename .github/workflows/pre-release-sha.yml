@@ -22,7 +22,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20.12.2'
+          node-version: '22.18.0'
           cache: npm
           registry-url: 'https://registry.npmjs.org'
 

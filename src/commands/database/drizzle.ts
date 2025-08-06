@@ -58,14 +58,14 @@ export const initDrizzle = async (command: BaseCommand) => {
   }
 
   if (!Object.keys(packageJson.devDependencies ?? {}).includes('drizzle-kit')) {
-    await spawnAsync(command.project.packageManager?.installCommand ?? 'npm install', ['drizzle-kit@latest', '-D'], {
+    await spawnAsync(command.project.packageManager?.name ?? 'npm', ['add', '-D', 'drizzle-kit@latest'], {
       stdio: 'inherit',
       shell: true,
     })
   }
 
   if (!Object.keys(packageJson.dependencies ?? {}).includes('drizzle-orm')) {
-    await spawnAsync(command.project.packageManager?.installCommand ?? 'npm install', ['drizzle-orm@latest'], {
+    await spawnAsync(command.project.packageManager?.name ?? 'npm', ['add', 'drizzle-orm@latest'], {
       stdio: 'inherit',
       shell: true,
     })

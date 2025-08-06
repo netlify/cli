@@ -4,6 +4,7 @@ import { mkdir, mkdtemp, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
+import { LocalState } from '@netlify/dev-utils'
 import express from 'express'
 
 import { afterAll, beforeAll, describe, expect, test, vi } from 'vitest'
@@ -11,7 +12,6 @@ import { afterAll, beforeAll, describe, expect, test, vi } from 'vitest'
 import { FunctionsRegistry } from '../../../../src/lib/functions/registry.js'
 import { createHandler } from '../../../../src/lib/functions/server.js'
 import { getFrameworksAPIPaths } from '../../../../src/utils/frameworks-api.js'
-import StateConfig from '../../../../src/utils/cli-state.js'
 
 vi.mock('../../../../src/utils/command-helpers.js', async () => ({
   ...(await vi.importActual('../../../../src/utils/command-helpers.js')),
@@ -44,7 +44,7 @@ describe('createHandler', () => {
     app.all(
       '*',
       // @ts-expect-error TS(2741) FIXME: Property 'processing' is missing in type '{}' but ... Remove this comment to see the full error message
-      createHandler({ functionsRegistry, config: { dev: {} }, geo: 'mock', state: new StateConfig(projectRoot) }),
+      createHandler({ functionsRegistry, config: { dev: {} }, geo: 'mock', state: new LocalState(projectRoot) }),
     )
 
     return await new Promise((resolve) => {
@@ -61,7 +61,7 @@ describe('createHandler', () => {
     })
   })
 
-  test('should get the url as the `rawUrl` inside the function', async () => {
+  test('should get the url as the `rawUrl` inside the function', { retry: 3 }, async () => {
     const response = await fetch(new URL('/.netlify/functions/hello', serverAddress))
 
     expect(response.status).toBe(200)

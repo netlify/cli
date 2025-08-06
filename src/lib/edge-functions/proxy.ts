@@ -19,7 +19,7 @@ import { BlobsContextWithEdgeAccess } from '../blobs/blobs.js'
 import { getGeoLocation } from '../geo-location.js'
 import { getPathInProject } from '../settings.js'
 import { type Spinner, startSpinner, stopSpinner } from '../spinner.js'
-import type { CLIState, ServerSettings } from '../../utils/types.js'
+import type { LocalState, ServerSettings } from '../../utils/types.js'
 
 import { getBootstrapURL } from './bootstrap.js'
 import { DIST_IMPORT_MAP_PATH, EDGE_FUNCTIONS_SERVE_FOLDER } from './consts.js'
@@ -112,7 +112,7 @@ export const initializeProxy = async ({
   repositoryRoot?: string
   settings: ServerSettings
   siteInfo: $TSFixMe
-  state: CLIState
+  state: LocalState
 }) => {
   const userFunctionsPath = config.build.edge_functions
   const isolatePort = await getAvailablePort()
@@ -165,7 +165,7 @@ export const initializeProxy = async ({
     await registry.initialize()
 
     const url = new URL(req.url!, `http://${LOCAL_HOST}:${mainPort}`)
-    const { functionNames, invocationMetadata } = registry.matchURLPath(url.pathname, req.method!)
+    const { functionNames, invocationMetadata } = registry.matchURLPath(url.pathname, req.method!, req.headers)
 
     if (functionNames.length === 0) {
       return

@@ -1,6 +1,6 @@
 import { Octokit } from '@octokit/rest'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
-import type { GlobalConfigStore } from '../../../../src/utils/get-global-config-store.js'
+import type { GlobalConfigStore } from '../../../../src/utils/types.js'
 
 import { getGitHubToken } from '../../../../src/utils/init/config-github.js'
 

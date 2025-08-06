@@ -3,6 +3,7 @@ import { join } from 'path'
 import { fileURLToPath } from 'url'
 
 import type { Declaration, EdgeFunction, FunctionConfig, Manifest, ModuleGraph } from '@netlify/edge-bundler'
+import { watchDebounced } from '@netlify/dev-utils'
 
 import BaseCommand from '../../commands/base-command.js'
 import {
@@ -13,7 +14,6 @@ import {
   chalk,
   log,
   warn,
-  watchDebounced,
   isNodeError,
   type NormalizedCachedConfigConfig,
 } from '../../utils/command-helpers.js'
@@ -21,7 +21,7 @@ import type { FeatureFlags } from '../../utils/feature-flags.js'
 import { MultiMap } from '../../utils/multimap.js'
 import { getPathInProject } from '../settings.js'
 
-import { INTERNAL_EDGE_FUNCTIONS_FOLDER } from './consts.js'
+import { DIST_IMPORT_MAP_PATH, INTERNAL_EDGE_FUNCTIONS_FOLDER } from './consts.js'
 
 type DependencyCache = Record<string, string[]>
 type EdgeFunctionEvent = 'buildError' | 'loaded' | 'reloaded' | 'reloading' | 'removed'
@@ -166,8 +166,8 @@ export class EdgeFunctionsRegistry {
       this.functions.forEach((func) => {
         this.logEvent('loaded', { functionName: func.name, warnings: warnings[func.name] })
       })
-    } catch {
-      // no-op
+    } catch (error) {
+      this.logEvent('buildError', { buildError: error as NodeJS.ErrnoException })
     }
   }
 
@@ -408,7 +408,7 @@ export class EdgeFunctionsRegistry {
    * Returns the functions in the registry that should run for a given URL path
    * and HTTP method, based on the routes registered for each function.
    */
-  matchURLPath(urlPath: string, method: string) {
+  matchURLPath(urlPath: string, method: string, headers: Record<string, string | string[] | undefined>) {
     const functionNames: string[] = []
     const routeIndexes: number[] = []
 
@@ -419,6 +419,35 @@ export class EdgeFunctionsRegistry {
 
       if (!route.pattern.test(urlPath)) {
         return
+      }
+
+      if (route.headers) {
+        const headerMatches = Object.entries(route.headers).every(([rawHeaderName, headerMatch]) => {
+          const headerName = rawHeaderName.toLowerCase()
+          const headerValueString = Array.isArray(headers[headerName])
+            ? headers[headerName].filter(Boolean).join(',')
+            : headers[headerName]
+
+          if (headerMatch?.matcher === 'exists') {
+            return headers[headerName] !== undefined
+          }
+
+          if (headerMatch?.matcher === 'missing') {
+            return headers[headerName] === undefined
+          }
+
+          if (headerValueString && headerMatch?.matcher === 'regex') {
+            const pattern = new RegExp(headerMatch.pattern)
+
+            return pattern.test(headerValueString)
+          }
+
+          return false
+        })
+
+        if (!headerMatches) {
+          return
+        }
       }
 
       const isExcludedForFunction = this.manifest?.function_config[route.function]?.excluded_patterns?.some((pattern) =>
@@ -533,6 +562,10 @@ export class EdgeFunctionsRegistry {
     return join(this.projectDir, getPathInProject([INTERNAL_EDGE_FUNCTIONS_FOLDER]))
   }
 
+  private get internalImportMapPath() {
+    return join(this.projectDir, getPathInProject([DIST_IMPORT_MAP_PATH]))
+  }
+
   private async readDeployConfig() {
     const manifestPath = join(this.internalDirectory, 'manifest.json')
     try {
@@ -615,7 +648,7 @@ export class EdgeFunctionsRegistry {
   }
 
   private async setupWatcherForDirectory() {
-    const ignored = [`${this.servePath}/**`]
+    const ignored = [`${this.servePath}/**`, this.internalImportMapPath]
     const watcher = await watchDebounced(this.projectDir, {
       ignored,
       onAdd: () => this.checkForAddedOrDeletedFunctions(),

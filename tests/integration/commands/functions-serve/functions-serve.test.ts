@@ -1,3 +1,4 @@
+import { killProcess } from '@netlify/dev-utils'
 import js from 'dedent'
 import execa from 'execa'
 import getPort from 'get-port'
@@ -6,7 +7,6 @@ import { describe, test } from 'vitest'
 import waitPort from 'wait-port'
 
 import { cliPath } from '../../utils/cli-path.js'
-import { killProcess } from '../../utils/process.js'
 import { type SiteBuilder, withSiteBuilder } from '../../utils/site-builder.js'
 import { InvokeFunctionResult } from '../../../../src/lib/functions/runtimes/index.js'
 

@@ -2,10 +2,10 @@ import { mkdir, mkdtemp, writeFile } from 'fs/promises'
 import { tmpdir } from 'os'
 import { join } from 'path'
 
+import { watchDebounced } from '@netlify/dev-utils'
 import { describe, expect, test, vi } from 'vitest'
 
 import { FunctionsRegistry } from '../../../../src/lib/functions/registry.js'
-import { watchDebounced } from '../../../../src/utils/command-helpers.js'
 import { getFrameworksAPIPaths } from '../../../../src/utils/frameworks-api.js'
 
 const duplicateFunctions = [
@@ -36,8 +36,8 @@ const duplicateFunctions = [
   },
 ]
 
-vi.mock('../../../../src/utils/command-helpers.js', async () => {
-  const helpers = await vi.importActual('../../../../src/utils/command-helpers.js')
+vi.mock('@netlify/dev-utils', async () => {
+  const helpers = await vi.importActual('@netlify/dev-utils')
 
   return {
     ...helpers,

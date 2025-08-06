@@ -8,7 +8,7 @@ import { getPathInHome } from '../lib/settings.js'
 
 import { NETLIFYDEVERR, NETLIFYDEVLOG, chalk, exit, log } from './command-helpers.js'
 import execa from './execa.js'
-import type CLIState from './cli-state.js'
+import type { LocalState } from './types.js'
 
 const PACKAGE_NAME = 'live-tunnel-client'
 const EXEC_NAME = PACKAGE_NAME
@@ -173,7 +173,7 @@ export const startLiveTunnel = async ({
   return session.session_url
 }
 
-export const getLiveTunnelSlug = (state: CLIState, override?: string) => {
+export const getLiveTunnelSlug = (state: LocalState, override?: string) => {
   if (override !== undefined) {
     return override
   }

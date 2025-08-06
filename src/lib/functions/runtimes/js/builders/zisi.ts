@@ -5,6 +5,7 @@ import path from 'path'
 import { ARCHIVE_FORMAT, zipFunction, listFunction, type FunctionResult } from '@netlify/zip-it-and-ship-it'
 // TODO(serhalp): Export this type from zisi
 import type { FeatureFlags } from '@netlify/zip-it-and-ship-it/dist/feature_flags.js'
+import { type MemoizeCache, memoize } from '@netlify/dev-utils'
 import decache from 'decache'
 import { readPackageUp } from 'read-package-up'
 import sourceMapSupport from 'source-map-support'
@@ -13,7 +14,6 @@ import { NETLIFYDEVERR, type NormalizedCachedConfigConfig } from '../../../../..
 import { SERVE_FUNCTIONS_FOLDER } from '../../../../../utils/functions/functions.js'
 import { getPathInProject } from '../../../../settings.js'
 import { type NormalizedFunctionsConfig, normalizeFunctionsConfig } from '../../../config.js'
-import { type BuildCommandCache, memoizedBuild } from '../../../memoized-build.js'
 import type NetlifyFunction from '../../../netlify-function.js'
 import type { BaseBuildResult } from '../../index.js'
 import type { JsBuildResult } from '../index.js'
@@ -39,16 +39,14 @@ const addFunctionsConfigDefaults = (config: NormalizedFunctionsConfig) => ({
 const buildFunction = async ({
   cache,
   config,
-  directory,
   featureFlags,
   func,
   hasTypeModule,
   projectRoot,
   targetDirectory,
 }: {
-  cache: BuildCommandCache<FunctionResult>
+  cache: MemoizeCache<FunctionResult>
   config: NormalizedFunctionsConfig
-  directory?: string | undefined
   featureFlags: FeatureFlags
   // This seems like it should be `ZisiBuildResult` but it's technically referenced from `detectZisiBuilder` so TS
   // can't know at that point that we'll only end up calling it with a `ZisiBuildResult`... Consider refactoring?
@@ -63,16 +61,6 @@ const buildFunction = async ({
     config,
     featureFlags: { ...featureFlags, zisi_functions_api_v2: true },
   }
-  const functionDirectory = path.dirname(func.mainFile)
-
-  // If we have a function at `functions/my-func/index.js` and we pass
-  // that path to `zipFunction`, it will lack the context of the whole
-  // functions directory and will infer the name of the function to be
-  // `index`, not `my-func`. Instead, we need to pass the directory of
-  // the function. The exception is when the function is a file at the
-  // root of the functions directory (e.g. `functions/my-func.js`). In
-  // this case, we use `mainFile` as the function path of `zipFunction`.
-  const entryPath = functionDirectory === directory ? func.mainFile : functionDirectory
   const {
     entryFilename,
     excludedRoutes,
@@ -84,11 +72,11 @@ const buildFunction = async ({
     routes,
     runtimeAPIVersion,
     schedule,
-  } = await memoizedBuild({
+  } = await memoize({
     cache,
-    cacheKey: `zisi-${entryPath}`,
+    cacheKey: `zisi-${func.srcPath}`,
     command: async () => {
-      const result = await zipFunction(entryPath, targetDirectory, zipOptions)
+      const result = await zipFunction(func.srcPath, targetDirectory, zipOptions)
       if (result == null) {
         throw new Error('Failed to build function')
       }
@@ -179,7 +167,6 @@ const netlifyConfigToZisiConfig = ({
 
 export default async function detectZisiBuilder({
   config,
-  directory,
   errorExit,
   func,
   metadata,
@@ -229,11 +216,10 @@ export default async function detectZisiBuilder({
 
   const targetDirectory = await getTargetDirectory({ projectRoot, errorExit })
 
-  const build = async ({ cache = {} }: { cache?: BuildCommandCache<FunctionResult> }) =>
+  const build = async ({ cache = {} }: { cache?: MemoizeCache<FunctionResult> }) =>
     buildFunction({
       cache,
       config: functionsConfig,
-      directory,
       func,
       projectRoot,
       targetDirectory,

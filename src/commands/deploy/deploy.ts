@@ -586,6 +586,10 @@ const handleBuild = async ({
     deployHandler,
   })
   const { configMutations, exitCode, newConfig } = await runBuild(resolvedOptions)
+  // Without this, the deploy command fails silently
+  if (options.json && exitCode !== 0) {
+    logAndThrowError('Error while running build')
+  }
   if (exitCode !== 0) {
     exit(exitCode)
   }
@@ -833,7 +837,7 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
 
     const initializeOpts = [EXISTING_SITE, NEW_SITE] as const
 
-    const { initChoice } = await inquirer.prompt<{ initChoice: typeof initializeOpts[number] }>([
+    const { initChoice } = await inquirer.prompt<{ initChoice: (typeof initializeOpts)[number] }>([
       {
         type: 'list',
         name: 'initChoice',

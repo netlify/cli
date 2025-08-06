@@ -1,3 +1,5 @@
+import { type Geolocation, mockLocation } from '@netlify/dev-utils'
+
 const API_URL = 'https://netlifind.netlify.app'
 const STATE_GEO_PROPERTY = 'geolocation'
 // 24 hours
@@ -6,33 +8,11 @@ const CACHE_TTL = 8.64e7
 // 10 seconds
 const REQUEST_TIMEOUT = 1e4
 
-export type Geolocation = {
-  city: string
-  country: {
-    code: string
-    name: string
-  }
-  subdivision: {
-    code: string
-    name: string
-  }
-  longitude: number
-  latitude: number
-  timezone: string
-}
+export { Geolocation }
 
 interface State {
   get(key: string): unknown
   set(key: string, value: unknown): void
-}
-
-export const mockLocation: Geolocation = {
-  city: 'San Francisco',
-  country: { code: 'US', name: 'United States' },
-  subdivision: { code: 'CA', name: 'California' },
-  longitude: 0,
-  latitude: 0,
-  timezone: 'UTC',
 }
 
 /**
@@ -61,7 +41,7 @@ export const getGeoLocation = async ({
   // `cache`, let's try to use it.
   // Or, if the country we're trying to mock is the same one as we have in the
   // cache, let's use the cache instead of the mock.
-  if (cacheObject !== undefined && (mode === 'cache' || cacheObject.data.country.code === geoCountry)) {
+  if (cacheObject !== undefined && (mode === 'cache' || cacheObject.data.country?.code === geoCountry)) {
     const age = Date.now() - cacheObject.timestamp
 
     // Let's use the cached data if it's not older than the TTL. Also, if the

@@ -7,6 +7,7 @@ import { NetlifyAPI } from '@netlify/api'
 import { DefaultLogger, Project } from '@netlify/build-info'
 import { NodeFS, NoopLogger } from '@netlify/build-info/node'
 import { resolveConfig } from '@netlify/config'
+import { getGlobalConfigStore, LocalState } from '@netlify/dev-utils'
 import { isCI } from 'ci-info'
 import { Command, Help, Option, type OptionValues } from 'commander'
 import debug from 'debug'
@@ -35,10 +36,8 @@ import {
 } from '../utils/command-helpers.js'
 import type { FeatureFlags } from '../utils/feature-flags.js'
 import { getFrameworksAPIPaths } from '../utils/frameworks-api.js'
-import getGlobalConfigStore from '../utils/get-global-config-store.js'
 import { getSiteByName } from '../utils/get-site.js'
 import openBrowser from '../utils/open-browser.js'
-import CLIState from '../utils/cli-state.js'
 import { identify, reportError, track } from '../utils/telemetry/index.js'
 import type { NetlifyOptions } from './types.js'
 import type { CachedConfig } from '../lib/build.js'
@@ -500,9 +499,21 @@ export default class BaseCommand extends Command {
   private async init(actionCommand: BaseCommand) {
     debug(`${actionCommand.name()}:init`)('start')
     const flags = actionCommand.opts()
+
     // here we actually want to use the process.cwd as we are setting the workingDir
     // eslint-disable-next-line no-restricted-properties
-    this.workingDir = flags.cwd ? resolve(flags.cwd) : process.cwd()
+    const processCwd = process.cwd()
+
+    if (flags.cwd) {
+      const resolvedCwd = resolve(flags.cwd)
+      this.workingDir = resolvedCwd
+
+      // if cwd matches process.cwd, act like cwd wasn't provided
+      if (resolvedCwd === processCwd) {
+        delete flags.cwd
+        this.workingDir = processCwd
+      }
+    }
 
     // ==================================================
     // Create a Project and run the Heuristics to detect
@@ -554,7 +565,7 @@ export default class BaseCommand extends Command {
     // ==================================================
     // Retrieve Site id and build state from the state.json
     // ==================================================
-    const state = new CLIState(this.workingDir)
+    const state = new LocalState(this.workingDir)
     const [token] = await getToken(flags.auth)
 
     const apiUrlOpts: {
