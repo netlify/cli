@@ -436,7 +436,7 @@ describe.concurrent('commands/dev/config', () => {
         const form = new FormData()
         form.append('some', 'thing')
         const rsp = new Response(form)
-        const expectedResponseBody = await rsp.text()
+        const expectedResponseBody = Buffer.from(await rsp.text()).toString('base64')
 
         const response = await fetch(`${server.url}/api/echo?ding=dong`, {
           method: 'POST',
