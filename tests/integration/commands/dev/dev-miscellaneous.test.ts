@@ -1,4 +1,3 @@
-import events from 'node:events'
 import { Buffer } from 'buffer'
 import path from 'path'
 import { platform } from 'process'
@@ -595,12 +594,17 @@ describe.concurrent('commands/dev-miscellaneous', () => {
         const stream = res.body
 
         expect(stream).not.toBeNull()
+        if (!stream) throw new Error('Expected a readable stream')
 
         let numberOfChunks = 0
-        stream!.on('data', () => {
+
+        const reader = stream.getReader()
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        while (true) {
+          const { done } = await reader.read()
+          if (done) break
           numberOfChunks += 1
-        })
-        await events.once(stream!, 'end')
+        }
 
         // streamed responses arrive in more than one batch
         expect(numberOfChunks).not.toBe(1)
