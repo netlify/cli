@@ -228,20 +228,14 @@ const validateFolders = async ({
   return { deployFolderStat, functionsFolderStat }
 }
 
-/**
- * @param {object} config
- * @param {string} config.deployFolder
- * @param {*} config.site
- * @returns
- */
-// @ts-expect-error TS(7031) FIXME: Binding element 'deployFolder' implicitly has an '... Remove this comment to see the full error message
-const getDeployFilesFilter = ({ deployFolder, site }) => {
+const getDeployFilesFilter = ({ deployFolder, site }: { deployFolder: string; site: { root: string } }) => {
   // site.root === deployFolder can happen when users run `netlify deploy --dir .`
   // in that specific case we don't want to publish the repo node_modules
   // when site.root !== deployFolder the behaviour matches our buildbot
   const skipNodeModules = site.root === deployFolder
 
   return (filename: string) => {
+    // TODO(serhalp) Per types, this should not be possible. Confirm and remove this check.
     if (filename == null) {
       return false
     }
@@ -285,16 +279,20 @@ const prepareProductionDeploy = async ({ api, siteData }) => {
   }
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'actual' implicitly has an 'any' type.
-const hasErrorMessage = (actual, expected) => {
+const hasErrorMessage = (actual: unknown, expected: string): boolean => {
   if (typeof actual === 'string') {
     return actual.includes(expected)
   }
   return false
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'error_' implicitly has an 'any' t... Remove this comment to see the full error message
-const reportDeployError = ({ error_, failAndExit }) => {
+const reportDeployError = ({
+  error_,
+  failAndExit,
+}: {
+  error_: (Error & { json?: Record<string, unknown>; status?: number }) | any
+  failAndExit: (errorOrMessage: Error | string) => void
+}) => {
   switch (true) {
     case error_.name === 'JSONHTTPError': {
       const message = error_?.json?.message ?? ''
