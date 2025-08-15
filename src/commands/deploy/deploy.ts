@@ -118,6 +118,22 @@ const getDeployFolder = async ({
 
   if (!deployFolder) {
     log('Please provide a publish directory (e.g. "public" or "dist" or "."):')
+    
+    // Generate copy-pasteable command with current options
+    let copyableCommand = 'netlify deploy --dir <PATH>'
+    if (options.create) {
+      const siteName = typeof options.create === 'string' ? options.create : '<SITE_NAME>'
+      copyableCommand = `netlify deploy --create ${siteName} --dir <PATH>`
+      if (options.team) {
+        copyableCommand += ` --team ${options.team}`
+      }
+    } else if (options.site) {
+      copyableCommand = `netlify deploy --site ${options.site} --dir <PATH>`
+    }
+    if (options.prod) copyableCommand += ' --prod'
+    
+    log(`\n💡 To specify directory non-interactively, use: ${copyableCommand}\n`)
+    
     const { promptPath } = await inquirer.prompt([
       {
         type: 'input',
@@ -267,10 +283,57 @@ const SEC_TO_MILLISEC = 1e3
 // 100 bytes
 const SYNC_FILE_LIMIT = 1e2
 
+// Helper function to generate copy-pasteable deploy command
+const generateDeployCommand = (options: DeployOptionValues, availableTeams: { name: string; slug: string }[]): string => {
+  let command = 'netlify deploy --create <SITE_NAME>'
+  
+  if (availableTeams.length > 1) {
+    command += ' --team <TEAM_SLUG>'
+  }
+  
+  if (options.dir) {
+    command += ` --dir ${options.dir}`
+  }
+  
+  if (options.prod) {
+    command += ' --prod'
+  }
+  
+  if (options.functions) {
+    command += ` --functions ${options.functions}`
+  }
+  
+  if (options.message) {
+    command += ` --message "${options.message}"`
+  }
+  
+  if (options.context) {
+    command += ` --context ${options.context}`
+  }
+  
+  return command
+}
+
 // @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-const prepareProductionDeploy = async ({ api, siteData }) => {
+const prepareProductionDeploy = async ({ api, siteData, options }) => {
   if (isObject(siteData.published_deploy) && siteData.published_deploy.locked) {
     log(`\n${NETLIFYDEVERR} Deployments are "locked" for production context of this project\n`)
+    
+    // Generate copy-pasteable command with current options
+    let copyableCommand = 'netlify deploy --prod'
+    if (options.create) {
+      const siteName = typeof options.create === 'string' ? options.create : '<SITE_NAME>'
+      copyableCommand = `netlify deploy --create ${siteName} --prod`
+      if (options.team) copyableCommand += ` --team ${options.team}`
+    } else if (options.site) {
+      copyableCommand = `netlify deploy --site ${options.site} --prod`
+    }
+    if (options.dir) copyableCommand += ` --dir ${options.dir}`
+    
+    log('\n💡 To unlock deployments non-interactively, use:')
+    log(`  netlify api updateSite --data '{ "site": { "managed_dns": false } }'`)
+    log(`  ${copyableCommand} (after unlocking)\n`)
+    
     const { unlockChoice } = await inquirer.prompt([
       {
         type: 'confirm',
@@ -461,7 +524,7 @@ const runDeploy = async ({
 
   try {
     if (deployToProduction) {
-      await prepareProductionDeploy({ siteData, api })
+      await prepareProductionDeploy({ siteData, api, options })
     }
 
     const draft = !deployToProduction && !alias
@@ -831,30 +894,84 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
   if (hasSiteData) {
     initialSiteData = siteInfo
   } else {
-    log("This folder isn't linked to a project yet")
-    const NEW_SITE = '+  Create & configure a new project'
-    const EXISTING_SITE = 'Link this directory to an existing project'
+    // Check if --create flag is used
+    if (options.create) {
+      const { accounts } = command.netlify
+      
+      // Handle site name - could be string (provided) or true (just flag without value)
+      const siteName = typeof options.create === 'string' ? options.create : undefined
+      
+      // Validate team requirement
+      if (!options.team) {
+        if (accounts.length === 0) {
+          return logAndThrowError('No teams available. Please ensure you have access to at least one team.')
+        } else if (accounts.length === 1) {
+          // Auto-use the single team
+          options.team = accounts[0].slug
+          if (siteName) {
+            log(`Creating new site: ${siteName} (using team: ${accounts[0].name})`)
+          } else {
+            log(`Creating new site with random name (using team: ${accounts[0].name})`)
+          }
+        } else {
+          // Multiple teams - require explicit team selection
+          const availableTeams = accounts.map(team => team.slug).join(', ')
+          return logAndThrowError(
+            `Multiple teams available. Please specify which team to use with --team flag.\n` +
+            `Available teams: ${availableTeams}\n\n` +
+            `Example: netlify deploy --create${siteName ? ` ${siteName}` : ''} --team <TEAM_SLUG>`
+          )
+        }
+      } else {
+        if (siteName) {
+          log(`Creating new site: ${siteName}`)
+        } else {
+          log(`Creating new site with random name`)
+        }
+      }
+      
+      newSiteData = await sitesCreate({ 
+        name: siteName, 
+        accountSlug: options.team 
+      }, command)
+      site.id = newSiteData.id
+    } else {
+      log("This folder isn't linked to a project yet")
+      
+      // Generate copy-pasteable command with current options
+      const { accounts } = command.netlify
+      const availableTeams = accounts.map(acc => ({ name: acc.name, slug: acc.slug }))
+      const copyableCommand = generateDeployCommand(options, availableTeams)
+      
+      const NEW_SITE = '+  Create & configure a new project'
+      const EXISTING_SITE = 'Link this directory to an existing project'
 
-    const initializeOpts = [EXISTING_SITE, NEW_SITE] as const
+      const initializeOpts = [EXISTING_SITE, NEW_SITE] as const
 
-    const { initChoice } = await inquirer.prompt<{ initChoice: (typeof initializeOpts)[number] }>([
-      {
-        type: 'list',
-        name: 'initChoice',
-        message: 'What would you like to do?',
-        choices: initializeOpts,
-      },
-    ])
-    // create site or search for one
-    switch (initChoice) {
-      case NEW_SITE:
-        newSiteData = await sitesCreate({}, command)
-        site.id = newSiteData.id
-        break
-      case EXISTING_SITE:
-        newSiteData = await link({}, command)
-        site.id = newSiteData.id
-        break
+      log(`\n💡 To create and deploy in one go, use: ${copyableCommand}`)
+      if (availableTeams.length > 1) {
+        log(`\nYou must pick a --team: ${availableTeams.map(team => team.slug).join(', ')}`)
+      }
+      log('')
+      const { initChoice } = await inquirer.prompt<{ initChoice: (typeof initializeOpts)[number] }>([
+        {
+          type: 'list',
+          name: 'initChoice',
+          message: 'What would you like to do?',
+          choices: initializeOpts,
+        },
+      ])
+      // create site or search for one
+      switch (initChoice) {
+        case NEW_SITE:
+          newSiteData = await sitesCreate({}, command)
+          site.id = newSiteData.id
+          break
+        case EXISTING_SITE:
+          newSiteData = await link({}, command)
+          site.id = newSiteData.id
+          break
+      }
     }
   }
 
