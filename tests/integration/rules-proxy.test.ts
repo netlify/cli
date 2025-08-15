@@ -2,9 +2,10 @@ import http from 'http'
 import net from 'net'
 import path from 'path'
 
+import { RedirectsHandler } from '@netlify/redirects'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 
-import { createRewriter, getWatchers } from '../../src/utils/rules-proxy.js'
+import { getWatchers, nodeRequestToWebRequest } from '../../src/utils/rules-proxy.js'
 
 import fetch from 'node-fetch'
 import { createSiteBuilder, SiteBuilder } from './utils/site-builder.js'
@@ -20,18 +21,18 @@ describe('rules-proxy', () => {
 
     await builder.build()
 
-    const rewriter = await createRewriter({
-      // @ts-expect-error TS(2322) FIXME: Type '{}' is not assignable to type 'NormalizedCac... Remove this comment to see the full error message
-      config: {},
-      distDir: builder.directory,
-      projectDir: builder.directory,
-      jwtSecret: '',
-      jwtRoleClaim: '',
-      geoCountry: undefined,
+    const redirectsHandler = new RedirectsHandler({
       configPath: path.join(builder.directory, 'netlify.toml'),
+      configRedirects: [],
+      geoCountry: undefined,
+      jwtRoleClaim: '',
+      jwtSecret: '',
+      projectDir: builder.directory,
+      publicDir: builder.directory
     })
+
     server = http.createServer(async function onRequest(req, res) {
-      const match = await rewriter(req)
+      const match = await redirectsHandler.match(nodeRequestToWebRequest(req))
       res.end(JSON.stringify(match))
     })
 

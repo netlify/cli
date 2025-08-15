@@ -69,6 +69,7 @@
     "@netlify/headers-parser": "9.0.1",
     "@netlify/local-functions-proxy": "2.0.3",
     "@netlify/redirect-parser": "15.0.3",
+    "@netlify/redirects": "^3.0.9",
     "@netlify/zip-it-and-ship-it": "14.1.1",
     "@octokit/rest": "21.1.1",
     "@opentelemetry/api": "1.8.0",

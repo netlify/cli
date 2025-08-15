@@ -14,6 +14,7 @@ import util from 'util'
 import zlib from 'zlib'
 
 import { renderFunctionErrorPage } from '@netlify/dev-utils'
+import { RedirectsHandler } from '@netlify/redirects'
 import contentType from 'content-type'
 import cookie from 'cookie'
 import { getProperty } from 'dot-prop'
@@ -43,7 +44,7 @@ import { NETLIFYDEVLOG, NETLIFYDEVWARN, type NormalizedCachedConfigConfig, chalk
 import createStreamPromise from './create-stream-promise.js'
 import { NFFunctionName, NFFunctionRoute, NFRequestID, headersForPath, parseHeaders } from './headers.js'
 import { generateRequestID } from './request-id.js'
-import { createRewriter, onChanges } from './rules-proxy.js'
+import { onChanges, nodeRequestToWebRequest } from './rules-proxy.js'
 import { signRedirect } from './sign-redirect.js'
 import type { Request, Rewriter, ServerSettings } from './types.js'
 
@@ -159,10 +160,6 @@ const isEndpointExists = async function (endpoint: string, origin: string) {
   }
 }
 
-const isExternal = function (match: Match): boolean {
-  return 'to' in match && /^https?:\/\//.exec(match.to) != null
-}
-
 const stripOrigin = function ({ hash, pathname, search }: URL): string {
   return `${pathname}${search}${hash}`
 }
@@ -198,6 +195,7 @@ const handleAddonUrl = function ({ addonUrl, req, res }) {
   proxyToExternalUrl({ req, res, dest, destURL })
 }
 
+// Line 102 of RedirectsHandler
 const isRedirect = function (match: Match | { status?: number | undefined }): boolean {
   return 'status' in match && match.status != null && match.status >= 300 && match.status <= 400
 }
@@ -253,48 +251,32 @@ const serveRedirect = async function ({
   env,
   functionsRegistry,
   imageProxy,
-  match,
   options,
   proxy,
   req,
   res,
   siteInfo,
+  redirectsHandler,
 }: {
-  match: Match | null
+  redirectsHandler: RedirectsHandler
 } & Record<string, $TSFixMe>) {
+
+  const match = await redirectsHandler.match(req)
   if (!match) return proxy.web(req, res, options)
 
   options = options || req.proxyOptions || {}
   options.match = null
 
-  if (match.force404) {
+  if (match.force) {
     res.writeHead(404)
     res.end(await render404(options.publicFolder))
     return
   }
 
-  if (match.proxyHeaders && Object.keys(match.proxyHeaders).length >= 0) {
-    Object.entries(match.proxyHeaders).forEach(([key, value]) => {
+  if (match.headers && Object.keys(match.headers).length >= 0) {
+    Object.entries(match.headers).forEach(([key, value]) => {
       req.headers[key] = value
     })
-  }
-
-  if (match.signingSecret) {
-    const signingSecretVar = env[match.signingSecret]
-
-    if (signingSecretVar) {
-      req.headers['x-nf-sign'] = signRedirect({
-        deployContext: 'dev',
-        secret: signingSecretVar.value,
-        siteID: siteInfo.id,
-        siteURL: siteInfo.url,
-      })
-    } else {
-      log(
-        NETLIFYDEVWARN,
-        `Could not sign redirect because environment variable ${chalk.yellow(match.signingSecret)} is not set`,
-      )
-    }
   }
 
   if (isFunction(options.functionsPort, req.url)) {
@@ -308,6 +290,9 @@ const serveRedirect = async function ({
   }
 
   const originalURL = req.url
+
+  // TODO: Handle match exceptions
+  // - This handles JWT and role exceptions 
   if (match.exceptions && match.exceptions.JWT) {
     // Some values of JWT can start with :, so, make sure to normalize them
     const expectedRoles = new Set(
@@ -353,14 +338,11 @@ const serveRedirect = async function ({
   }
 
   const reqUrl = reqToURL(req, req.url)
-  const isHiddenProxy =
-    match.proxyHeaders &&
-    Object.entries(match.proxyHeaders).some(([key, val]) => key.toLowerCase() === 'x-nf-hidden-proxy' && val === 'true')
 
   const staticFile = await getStatic(decodeURIComponent(reqUrl.pathname), options.publicFolder)
   const endpointExists =
     !staticFile &&
-    !isHiddenProxy &&
+    !match.hiddenProxy &&
     process.env.NETLIFY_DEV_SERVER_CHECK_SSG_ENDPOINTS &&
     (await isEndpointExists(decodeURIComponent(reqUrl.pathname), options.target))
   if (staticFile || endpointExists) {
@@ -374,8 +356,9 @@ const serveRedirect = async function ({
 
   if (match.force || !staticFile || !options.framework || req.method === 'POST') {
     // construct destination URL from redirect rule match
-    const dest = new URL(match.to, `${reqUrl.protocol}//${reqUrl.host}`)
+    const dest = new URL(match.target, `${reqUrl.protocol}//${reqUrl.host}`)
 
+    // Lines 108-112 in RedirectsHandler
     // We pass through request params if the redirect rule
     // doesn't have any query params
     if ([...dest.searchParams].length === 0) {
@@ -391,12 +374,12 @@ const serveRedirect = async function ({
 
     let destURL = stripOrigin(dest)
 
-    if (isExternal(match)) {
-      if (isRedirect(match)) {
+    if (match.external) {
+      if (match.redirect) {
         // This is a redirect, so we set the complete external URL as destination
         destURL = `${dest}`
       } else {
-        if (!isHiddenProxy) {
+        if (!match.hiddenProxy) {
           console.log(`${NETLIFYDEVLOG} Proxying to ${dest}`)
         }
         proxyToExternalUrl({ req, res, dest, destURL })
@@ -404,9 +387,9 @@ const serveRedirect = async function ({
       }
     }
 
-    if (isRedirect(match)) {
+    if (match.redirect) {
       console.log(`${NETLIFYDEVLOG} Redirecting ${req.url} to ${destURL}`)
-      res.writeHead(match.status, {
+      res.writeHead(match.statusCode, {
         Location: destURL,
         'Cache-Control': 'no-cache',
       })
@@ -435,8 +418,8 @@ const serveRedirect = async function ({
       (!staticFile && ((!options.framework && destStaticFile) || isInternal(destURL) || matchingFunction))
     ) {
       req.url = destStaticFile ? destStaticFile + dest.search : destURL
-      const { status } = match
-      statusValue = status
+      const { statusCode } = match
+      statusValue = statusCode
       console.log(`${NETLIFYDEVLOG} Rewrote URL to`, req.url)
     }
 
@@ -490,6 +473,7 @@ const initializeProxy = async function ({
   port,
   projectDir,
   siteInfo,
+  redirectsHandler,
 }: { config: NormalizedCachedConfigConfig } & Record<string, $TSFixMe>) {
   const proxy = httpProxy.createProxyServer({
     selfHandleResponse: true,
@@ -636,6 +620,7 @@ const initializeProxy = async function ({
           options,
           siteInfo,
           env,
+          redirectsHandler,
         })
       }
     }
@@ -655,6 +640,7 @@ const initializeProxy = async function ({
         options,
         siteInfo,
         env,
+        redirectsHandler,
       })
     }
 
@@ -791,10 +777,10 @@ const onRequest = async (
     functionsServer,
     imageProxy,
     proxy,
-    rewriter,
+    redirectsHandler,
     settings,
     siteInfo,
-  }: { rewriter: Rewriter; settings: ServerSettings; edgeFunctionsProxy?: EdgeFunctionsProxy } & Record<
+  }: { redirectsHandler: RedirectsHandler; settings: ServerSettings; edgeFunctionsProxy?: EdgeFunctionsProxy } & Record<
     string,
     $TSFixMe
   >,
@@ -841,7 +827,7 @@ const onRequest = async (
     return
   }
 
-  const match = await rewriter(req)
+  const match = await redirectsHandler.match(nodeRequestToWebRequest(req))
   const options = {
     match,
     addonsUrls,
@@ -876,7 +862,8 @@ const onRequest = async (
     // @ts-expect-error TS(7031) FIXME: Binding element 'statusCode' implicitly has an 'an... Remove this comment to see the full error message
     req[shouldGenerateETag] = ({ statusCode }) => statusCode < 300 || statusCode >= 400
 
-    return serveRedirect({ req, res, proxy, imageProxy, match, options, siteInfo, env, functionsRegistry })
+    
+    return serveRedirect({ req, res, proxy, imageProxy, options, siteInfo, env, functionsRegistry, redirectsHandler })
   }
 
   // The request will be served by the framework server, which means we want to
@@ -977,6 +964,26 @@ export const startProxy = async function ({
     config,
     settings,
   })
+
+  const redirectsHandler = new RedirectsHandler({
+    configPath,
+    configRedirects: config.redirects ?? [],
+    geoCountry,
+    jwtRoleClaim: settings.jwtRolePath,
+    jwtSecret: settings.jwtSecret,
+    notFoundHandler: async (req) => {
+      const body = await render404(settings.dist)
+      return new Response(body, {
+        status: 404,
+        headers: { 'Content-Type': 'text/html' },
+      })
+    },
+    projectDir,
+    publicDir: settings.dist,
+    siteID: siteInfo.id,
+    siteURL: siteInfo.url,
+  })
+
   const proxy = await initializeProxy({
     env,
     host: settings.frameworkHost,
@@ -987,21 +994,12 @@ export const startProxy = async function ({
     siteInfo,
     imageProxy,
     config,
-  })
-
-  const rewriter = await createRewriter({
-    config,
-    configPath,
-    distDir: settings.dist,
-    geoCountry,
-    jwtSecret: settings.jwtSecret,
-    jwtRoleClaim: settings.jwtRolePath,
-    projectDir,
+    redirectsHandler,
   })
 
   const onRequestWithOptions = onRequest.bind(undefined, {
     proxy,
-    rewriter,
+    redirectsHandler,
     settings,
     addonsUrls,
     functionsRegistry,
@@ -1016,10 +1014,10 @@ export const startProxy = async function ({
     ? https.createServer({ cert: settings.https.cert, key: settings.https.key }, onRequestWithOptions)
     : http.createServer(onRequestWithOptions)
   const onUpgrade = async function onUpgrade(req: http.IncomingMessage, socket: Duplex, head: Buffer) {
-    const match = await rewriter(req)
-    if (match && !match.force404 && isExternal(match)) {
+    const match = await redirectsHandler.match(nodeRequestToWebRequest(req))
+    if (match && !match.force && match.external) {
       const reqUrl = reqToURL(req, req.url)
-      const dest = new URL(match.to, `${reqUrl.protocol}//${reqUrl.host}`)
+      const dest = new URL(match.target, `${reqUrl.protocol}//${reqUrl.host}`)
       const destURL = stripOrigin(dest)
       proxy.ws(req, socket, head, { target: dest.origin, changeOrigin: true, pathRewrite: () => destURL })
       return
