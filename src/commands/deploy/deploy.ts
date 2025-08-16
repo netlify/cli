@@ -120,17 +120,7 @@ const getDeployFolder = async ({
     log('Please provide a publish directory (e.g. "public" or "dist" or "."):')
     
     // Generate copy-pasteable command with current options
-    let copyableCommand = 'netlify deploy --dir <PATH>'
-    if (options.create) {
-      const siteName = typeof options.create === 'string' ? options.create : '<SITE_NAME>'
-      copyableCommand = `netlify deploy --create ${siteName} --dir <PATH>`
-      if (options.team) {
-        copyableCommand += ` --team ${options.team}`
-      }
-    } else if (options.site) {
-      copyableCommand = `netlify deploy --site ${options.site} --dir <PATH>`
-    }
-    if (options.prod) copyableCommand += ' --prod'
+    const copyableCommand = generateDeployCommand({ ...options, dir: '<PATH>' }, [], command)
     
     log(`\nTo specify directory non-interactively, use: ${copyableCommand}\n`)
     
@@ -284,58 +274,68 @@ const SEC_TO_MILLISEC = 1e3
 const SYNC_FILE_LIMIT = 1e2
 
 // Helper function to generate copy-pasteable deploy command
-const generateDeployCommand = (options: DeployOptionValues, availableTeams: { name: string; slug: string }[]): string => {
-  let command = 'netlify deploy'
+const generateDeployCommand = (options: DeployOptionValues, availableTeams: { name: string; slug: string }[], command?: BaseCommand): string => {
+  const parts = ['netlify deploy']
   
+  // Handle site selection/creation first
   if (options.create) {
     const siteName = typeof options.create === 'string' ? options.create : '<SITE_NAME>'
-    command += ` --create ${siteName}`
+    parts.push(`--create ${siteName}`)
     if (availableTeams.length > 1) {
-      command += ' --team <TEAM_SLUG>'
+      parts.push('--team <TEAM_SLUG>')
     }
   } else if (options.site) {
-    command += ` --site ${options.site}`
+    parts.push(`--site ${options.site}`)
   } else {
-    command += ' --create <SITE_NAME>'
+    parts.push('--create <SITE_NAME>')
     if (availableTeams.length > 1) {
-      command += ' --team <TEAM_SLUG>'
+      parts.push('--team <TEAM_SLUG>')
     }
   }
   
-  if (options.dir) {
-    command += ` --dir ${options.dir}`
+  // Derive flagMap from actual command option definitions if available
+  if (command?.options) {
+    for (const option of command.options) {
+      // Skip special cases handled above
+      if (['create', 'site', 'team'].includes(option.attributeName())) {
+        continue
+      }
+      
+      // Skip hidden options and build option (deprecated)
+      if (option.hidden || option.attributeName() === 'build') {
+        continue
+      }
+      
+      const optionName = option.attributeName() as keyof DeployOptionValues
+      const value = options[optionName]
+      
+      if (value && option.long) {
+        const flag = option.long
+        const hasValue = option.required || option.optional
+        
+        if (hasValue && typeof value === 'string') {
+          // Quote message values since they may contain spaces
+          const quotedValue = optionName === 'message' ? `"${value}"` : value
+          parts.push(`${flag} ${quotedValue}`)
+        } else if (hasValue && typeof value === 'number') {
+          parts.push(`${flag} ${value}`)
+        } else if (!hasValue && value === true) {
+          parts.push(flag)
+        }
+      }
+    }
   }
   
-  if (options.prod) {
-    command += ' --prod'
-  }
-  
-  if (options.prodIfUnlocked) {
-    command += ' --prod-if-unlocked'
-  }
-  
-  if (options.functions) {
-    command += ` --functions ${options.functions}`
-  }
-  
-  if (options.message) {
-    command += ` --message "${options.message}"`
-  }
-  
-  if (options.context) {
-    command += ` --context ${options.context}`
-  }
-  
-  return command
+  return parts.join(' ')
 }
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-const prepareProductionDeploy = async ({ api, siteData, options }) => {
+const prepareProductionDeploy = async ({ api, siteData, options, command }) => {
   if (isObject(siteData.published_deploy) && siteData.published_deploy.locked) {
     log(`\n${NETLIFYDEVERR} Deployments are "locked" for production context of this project\n`)
     
     // Generate copy-pasteable command with current options
-    const overrideCommand = generateDeployCommand({ ...options, prodIfUnlocked: true, prod: false }, [])
+    const overrideCommand = generateDeployCommand({ ...options, prodIfUnlocked: true, prod: false }, [], command)
     
     log('\nTo override deployment lock (USE WITH CAUTION), use:')
     log(`  ${overrideCommand}`)
@@ -531,7 +531,7 @@ const runDeploy = async ({
 
   try {
     if (deployToProduction) {
-      await prepareProductionDeploy({ siteData, api, options })
+      await prepareProductionDeploy({ siteData, api, options, command })
     }
 
     const draft = !deployToProduction && !alias
@@ -948,7 +948,7 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
       // Generate copy-pasteable command with current options
       const { accounts } = command.netlify
       const availableTeams = accounts.map(acc => ({ name: acc.name, slug: acc.slug }))
-      const copyableCommand = generateDeployCommand(options, availableTeams)
+      const copyableCommand = generateDeployCommand(options, availableTeams, command)
       
       const NEW_SITE = '+  Create & configure a new project'
       const EXISTING_SITE = 'Link this directory to an existing project'
