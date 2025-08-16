@@ -7,6 +7,7 @@ export type DeployOptionValues = BaseOptionValues & {
   build: boolean
   branch?: string
   context?: string
+  create?: string | boolean
   dir?: string
   functions?: string
   json: boolean
@@ -16,6 +17,7 @@ export type DeployOptionValues = BaseOptionValues & {
   prodIfUnlocked: boolean
   site?: string
   skipFunctionsCache: boolean
+  team?: string
   timeout?: number
   trigger?: boolean
 }
