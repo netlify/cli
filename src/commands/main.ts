@@ -45,7 +45,6 @@ import { createServeCommand } from './serve/index.js'
 import { createSitesCommand } from './sites/index.js'
 import { createStatusCommand } from './status/index.js'
 import { createSwitchCommand } from './switch/index.js'
-import { createTeamsCommand } from './teams/index.js'
 import { AddressInUseError } from './types.js'
 import { createUnlinkCommand } from './unlink/index.js'
 import { createWatchCommand } from './watch/index.js'
@@ -236,7 +235,6 @@ export const createMainCommand = (): BaseCommand => {
   createSitesCommand(program)
   createStatusCommand(program)
   createSwitchCommand(program)
-  createTeamsCommand(program)
   createUnlinkCommand(program)
   createWatchCommand(program)
   createLogsCommand(program)
