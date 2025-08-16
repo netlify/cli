@@ -301,11 +301,6 @@ const generateDeployCommand = (options: DeployOptionValues, availableTeams: { na
         continue
       }
       
-      // Skip hidden options and build option (deprecated)
-      if (option.hidden || option.attributeName() === 'build') {
-        continue
-      }
-      
       const optionName = option.attributeName() as keyof DeployOptionValues
       const value = options[optionName]
       
