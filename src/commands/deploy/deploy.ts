@@ -285,10 +285,21 @@ const SYNC_FILE_LIMIT = 1e2
 
 // Helper function to generate copy-pasteable deploy command
 const generateDeployCommand = (options: DeployOptionValues, availableTeams: { name: string; slug: string }[]): string => {
-  let command = 'netlify deploy --create <SITE_NAME>'
+  let command = 'netlify deploy'
   
-  if (availableTeams.length > 1) {
-    command += ' --team <TEAM_SLUG>'
+  if (options.create) {
+    const siteName = typeof options.create === 'string' ? options.create : '<SITE_NAME>'
+    command += ` --create ${siteName}`
+    if (availableTeams.length > 1) {
+      command += ' --team <TEAM_SLUG>'
+    }
+  } else if (options.site) {
+    command += ` --site ${options.site}`
+  } else {
+    command += ' --create <SITE_NAME>'
+    if (availableTeams.length > 1) {
+      command += ' --team <TEAM_SLUG>'
+    }
   }
   
   if (options.dir) {
@@ -320,15 +331,7 @@ const prepareProductionDeploy = async ({ api, siteData, options }) => {
     log(`\n${NETLIFYDEVERR} Deployments are "locked" for production context of this project\n`)
     
     // Generate copy-pasteable command with current options
-    let copyableCommand = 'netlify deploy --prod'
-    if (options.create) {
-      const siteName = typeof options.create === 'string' ? options.create : '<SITE_NAME>'
-      copyableCommand = `netlify deploy --create ${siteName} --prod`
-      if (options.team) copyableCommand += ` --team ${options.team}`
-    } else if (options.site) {
-      copyableCommand = `netlify deploy --site ${options.site} --prod`
-    }
-    if (options.dir) copyableCommand += ` --dir ${options.dir}`
+    const copyableCommand = generateDeployCommand({ ...options, prod: true }, [])
     
     log('\n💡 To unlock deployments non-interactively, use:')
     log(`  netlify api updateSite --data '{ "site": { "managed_dns": false } }'`)
