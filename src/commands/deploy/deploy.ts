@@ -132,7 +132,7 @@ const getDeployFolder = async ({
     }
     if (options.prod) copyableCommand += ' --prod'
     
-    log(`\n💡 To specify directory non-interactively, use: ${copyableCommand}\n`)
+    log(`\nTo specify directory non-interactively, use: ${copyableCommand}\n`)
     
     const { promptPath } = await inquirer.prompt([
       {
@@ -310,6 +310,10 @@ const generateDeployCommand = (options: DeployOptionValues, availableTeams: { na
     command += ' --prod'
   }
   
+  if (options.prodIfUnlocked) {
+    command += ' --prod-if-unlocked'
+  }
+  
   if (options.functions) {
     command += ` --functions ${options.functions}`
   }
@@ -331,11 +335,11 @@ const prepareProductionDeploy = async ({ api, siteData, options }) => {
     log(`\n${NETLIFYDEVERR} Deployments are "locked" for production context of this project\n`)
     
     // Generate copy-pasteable command with current options
-    const copyableCommand = generateDeployCommand({ ...options, prod: true }, [])
+    const overrideCommand = generateDeployCommand({ ...options, prodIfUnlocked: true, prod: false }, [])
     
-    log('\n💡 To unlock deployments non-interactively, use:')
-    log(`  netlify api updateSite --data '{ "site": { "managed_dns": false } }'`)
-    log(`  ${copyableCommand} (after unlocking)\n`)
+    log('\nTo override deployment lock (USE WITH CAUTION), use:')
+    log(`  ${overrideCommand}`)
+    log('\nWarning: Only use --prod-if-unlocked if you are absolutely sure you want to override the deployment lock.\n')
     
     const { unlockChoice } = await inquirer.prompt([
       {
@@ -951,7 +955,7 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
 
       const initializeOpts = [EXISTING_SITE, NEW_SITE] as const
 
-      log(`\n💡 To create and deploy in one go, use: ${copyableCommand}`)
+      log(`\nTo create and deploy in one go, use: ${copyableCommand}`)
       if (availableTeams.length > 1) {
         log(`\nYou must pick a --team: ${availableTeams.map(team => team.slug).join(', ')}`)
       }
