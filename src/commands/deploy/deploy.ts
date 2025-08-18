@@ -304,6 +304,21 @@ const generateDeployCommand = (options: DeployOptionValues, availableTeams: { na
       const optionName = option.attributeName() as keyof DeployOptionValues
       const value = options[optionName]
       
+      // Special handling for build option (negatable boolean)
+      if (optionName === 'build') {
+        // Only add --no-build if build is explicitly false
+        if (value === false) {
+          parts.push('--no-build')
+        }
+        // Skip adding --build since it's the default and hidden
+        continue
+      }
+      
+      // Skip the --no-build option since it's handled above with the build option
+      if (option.long === '--no-build') {
+        continue
+      }
+      
       if (value && option.long) {
         const flag = option.long
         const hasValue = option.required || option.optional
@@ -321,7 +336,18 @@ const generateDeployCommand = (options: DeployOptionValues, availableTeams: { na
     }
   }
   
-  return parts.join(' ')
+  // Deduplicate flags to prevent issues like --no-build --no-build
+  const uniqueParts: string[] = []
+  const seen = new Set<string>()
+  
+  for (const part of parts) {
+    if (!seen.has(part)) {
+      uniqueParts.push(part)
+      seen.add(part)
+    }
+  }
+  
+  return uniqueParts.join(' ')
 }
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
