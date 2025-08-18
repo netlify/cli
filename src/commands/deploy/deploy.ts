@@ -302,7 +302,7 @@ const generateDeployCommand = (options: DeployOptionValues, availableTeams: { na
       const optionName = option.attributeName() as keyof DeployOptionValues
       const value = options[optionName]
       
-      if (option.long && option.long.startsWith('--no-')) {
+      if (option.long?.startsWith('--no-')) {
         if (value === false) {
           parts.push(option.long)
         }
@@ -907,7 +907,7 @@ const validateTeamForSiteCreation = (accounts: { slug: string; name: string }[],
   )
 }
 
-const createSiteWithFlags = async (options: DeployOptionValues, command: BaseCommand, site: any) => {
+const createSiteWithFlags = async (options: DeployOptionValues, command: BaseCommand, site: $TSFixMe) => {
   const { accounts } = command.netlify
   const siteName = typeof options.createSite === 'string' ? options.createSite : undefined
   
@@ -926,7 +926,7 @@ const createSiteWithFlags = async (options: DeployOptionValues, command: BaseCom
   return siteData
 }
 
-const promptForSiteAction = async (options: DeployOptionValues, command: BaseCommand, site: any) => {
+const promptForSiteAction = async (options: DeployOptionValues, command: BaseCommand, site: $TSFixMe) => {
   log("This folder isn't linked to a project yet")
   
   const { accounts } = command.netlify
@@ -953,7 +953,7 @@ const promptForSiteAction = async (options: DeployOptionValues, command: BaseCom
   return siteData
 }
 
-const ensureSiteExists = async (options: DeployOptionValues, command: BaseCommand, site: any, siteInfo: any): Promise<SiteInfo> => {
+const ensureSiteExists = async (options: DeployOptionValues, command: BaseCommand, site: $TSFixMe, siteInfo: SiteInfo): Promise<SiteInfo> => {
   const hasSiteData = (site.id || options.site) && !isEmpty(siteInfo)
   
   if (hasSiteData) {
