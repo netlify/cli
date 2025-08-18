@@ -278,16 +278,16 @@ const generateDeployCommand = (options: DeployOptionValues, availableTeams: { na
   const parts = ['netlify deploy']
   
   // Handle site selection/creation first
-  if (options.create) {
-    const siteName = typeof options.create === 'string' ? options.create : '<SITE_NAME>'
-    parts.push(`--create ${siteName}`)
+  if (options.createSite) {
+    const siteName = typeof options.createSite === 'string' ? options.createSite : '<SITE_NAME>'
+    parts.push(`--create-site ${siteName}`)
     if (availableTeams.length > 1) {
       parts.push('--team <TEAM_SLUG>')
     }
   } else if (options.site) {
     parts.push(`--site ${options.site}`)
   } else {
-    parts.push('--create <SITE_NAME>')
+    parts.push('--create-site <SITE_NAME>')
     if (availableTeams.length > 1) {
       parts.push('--team <TEAM_SLUG>')
     }
@@ -297,7 +297,7 @@ const generateDeployCommand = (options: DeployOptionValues, availableTeams: { na
   if (command?.options) {
     for (const option of command.options) {
       // Skip special cases handled above
-      if (['create', 'site', 'team'].includes(option.attributeName())) {
+      if (['createSite', 'site', 'team'].includes(option.attributeName())) {
         continue
       }
       
@@ -896,12 +896,12 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
   if (hasSiteData) {
     initialSiteData = siteInfo
   } else {
-    // Check if --create flag is used
-    if (options.create) {
+    // Check if --create-site flag is used
+    if (options.createSite) {
       const { accounts } = command.netlify
       
       // Handle site name - could be string (provided) or true (just flag without value)
-      const siteName = typeof options.create === 'string' ? options.create : undefined
+      const siteName = typeof options.createSite === 'string' ? options.createSite : undefined
       
       // Validate team requirement
       if (!options.team) {
@@ -921,7 +921,7 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
           return logAndThrowError(
             `Multiple teams available. Please specify which team to use with --team flag.\n` +
             `Available teams: ${availableTeams}\n\n` +
-            `Example: netlify deploy --create${siteName ? ` ${siteName}` : ''} --team <TEAM_SLUG>`
+            `Example: netlify deploy --create-site${siteName ? ` ${siteName}` : ''} --team <TEAM_SLUG>`
           )
         }
       } else {

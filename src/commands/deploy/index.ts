@@ -74,12 +74,12 @@ For detailed configuration options, see the Netlify documentation.`,
       false,
     )
     .option(
-      '--create [name]',
+      '--create-site [name]',
       'Create a new site and deploy to it. Optionally specify a name, otherwise a random name will be generated. Requires --team flag if you have multiple teams.',
     )
     .option(
       '--team <slug>',
-      'Specify team slug when creating a site. Only works with --create flag.',
+      'Specify team slug when creating a site. Only works with --create-site flag.',
     )
     .addExamples([
       'netlify deploy',
@@ -92,7 +92,7 @@ For detailed configuration options, see the Netlify documentation.`,
       'netlify deploy --auth $NETLIFY_AUTH_TOKEN',
       'netlify deploy --trigger',
       'netlify deploy --context deploy-preview',
-      'netlify deploy --create my-new-site --team my-team # Create site and deploy',
+      'netlify deploy --create-site my-new-site --team my-team # Create site and deploy',
     ])
     .addHelpText('after', () => {
       const docsUrl = 'https://docs.netlify.com/site-deploys/overview/'
@@ -113,8 +113,8 @@ For more information about Netlify deploys, see ${terminalLink(docsUrl, docsUrl,
         return logAndThrowError('--context flag is only available when using the --build flag')
       }
 
-      if (options.team && !options.create) {
-        return logAndThrowError('--team flag can only be used with --create flag')
+      if (options.team && !options.createSite) {
+        return logAndThrowError('--team flag can only be used with --create-site flag')
       }
 
       const { deploy } = await import('./deploy.js')

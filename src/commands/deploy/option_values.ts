@@ -7,7 +7,7 @@ export type DeployOptionValues = BaseOptionValues & {
   build: boolean
   branch?: string
   context?: string
-  create?: string | boolean
+  createSite?: string | boolean
   dir?: string
   functions?: string
   json: boolean
