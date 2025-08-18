@@ -10,11 +10,8 @@ export interface AgentRunner {
   branch?: string
   result_branch?: string
   current_task?: string
-  agent?: string
-  model?: string
   user?: {
     id: string
-    email: string
     full_name?: string
   }
 }
