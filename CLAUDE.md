@@ -2,172 +2,135 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Overview
-
-The Netlify CLI is a command-line interface for interacting with Netlify's platform, written in TypeScript and built on Node.js. It provides functionality for site deployment, local development, functions management, and more.
-
 ## Development Commands
 
-**Build and Development:**
-- `npm run build` - Compile TypeScript to JavaScript in dist/
-- `npm run dev` - Watch mode compilation with TypeScript
-- `npm run clean` - Remove dist/ directory
-- `npm start` - Run the CLI using the built code
+### Build and Development
+- `npm run build` - Compiles TypeScript using `tsc --project tsconfig.build.json`
+- `npm run dev` - Runs TypeScript compiler in watch mode
+- `npm run clean` - Removes the `dist/` directory
 
-**Testing:**
-- `npm test` - Run all tests (unit + integration + e2e)
-- `npm run test:unit` - Run unit tests only
-- `npm run test:integration` - Run integration tests only
-- `npm run test:e2e` - Run end-to-end tests
-- `npm run test:init` - Initialize test dependencies
-- To run a single test file: `npx vitest tests/unit/path/to/test.test.ts`
+### Testing
+- `npm test` - Runs the full test suite (unit, integration, and e2e tests)
+- `npm run test:unit` - Runs unit tests only with `vitest run tests/unit/`
+- `npm run test:integration` - Runs integration tests with `vitest run --retry=3 tests/integration/`
+- `npm run test:e2e` - Runs end-to-end tests with `vitest run --config vitest.e2e.config.ts`
+- **Single test file**: `npm exec vitest -- run tests/unit/lib/account.test.ts`
+- **Single test by name**: `npm exec vitest -- run tests/unit/lib/account.test.ts -t 'test name'`
+- **Debug tests**: `DEBUG_TESTS=true npm exec vitest -- run [test-file] -t 'test name'`
+- `npm run test:init` - Sets up test dependencies for various fixtures (Hugo, Next.js, monorepo)
 
-**Code Quality:**
-- `npm run lint` - Run ESLint
-- `npm run lint:fix` - Fix auto-fixable linting issues
-- `npm run typecheck` - Run TypeScript compiler checks
-- `npm run typecheck:watch` - Watch mode for type checking
-- `npm run format` - Format code with Prettier
-- `npm run format:check` - Check code formatting
+### Code Quality
+- `npm run lint` - Runs ESLint with cache
+- `npm run lint:fix` - Runs ESLint and automatically fixes issues
+- `npm run format` - Formats code with Prettier
+- `npm run format:check` - Checks code formatting without modifying files
+- `npm run typecheck` - Runs TypeScript type checking
+- `npm run typecheck:watch` - Runs TypeScript type checking in watch mode
 
-**Local Development Setup:**
-1. `npm link` - Link the local CLI for testing
-2. Use `netlify` command to test local changes
+### Running the CLI Locally
+- `./bin/run.js [command]` - Runs the CLI locally
+- `DEBUG=true ./bin/run.js [command]` - Runs with stack traces enabled for debugging
+- `npm run start -- [command]` - Alternative way to run CLI locally
 
 ## Architecture
 
-**Command Structure:**
-- All commands extend `BaseCommand` (`src/commands/base-command.ts`)
-- Commands are organized in `src/commands/` with subcommands in subdirectories
-- Command registration happens in `src/commands/main.ts`
-- Each command follows the pattern: `src/commands/[command]/[command].ts`
+### Core Structure
+The Netlify CLI is built with **Commander.js** for CLI interface, **@netlify/js-client** for API interactions, and **TypeScript** with modular architecture. The system uses a registry pattern for managing Functions and Edge Functions, with sophisticated local development server capabilities.
 
-**Key Directories:**
-- `src/commands/` - CLI command implementations
-- `src/lib/` - Core library functionality (API, configuration, etc.)
-- `src/utils/` - Utility functions and helpers
-- `src/recipes/` - Automated setup recipes for frameworks
-- `tests/unit/` - Unit tests
-- `tests/integration/` - Integration tests
-- `e2e/` - End-to-end tests
-- `functions-templates/` - Templates for creating functions
+### Key Architectural Patterns
 
-**Configuration Management:**
-- Uses `@netlify/config` for resolving netlify.toml files
-- Configuration resolution happens in `BaseCommand.getConfig()`
-- Supports workspace/monorepo configurations
-- State management through `CLIState` class
+#### Command Architecture
+- All commands extend `BaseCommand` class (`src/commands/base-command.ts`) which provides:
+  - Consistent config loading and API client setup
+  - Site information management and linking
+  - Authentication and token handling
+  - Analytics and telemetry integration
+- Commands follow a modular structure with separate `index.ts` files for exports
+- Each command supports both interactive prompts and non-interactive flag-based operation
 
-**Function Handling:**
-- Functions are managed through `src/lib/functions/`
-- Supports multiple runtimes: JavaScript, TypeScript, Go, Rust
-- Local function serving via `src/lib/functions/server.ts`
-- Function templates in `functions-templates/`
+#### Registry Pattern for Runtime Management
+- **FunctionsRegistry** (`src/lib/functions/registry.ts`): Manages Netlify Functions lifecycle
+  - Supports multiple runtimes (JavaScript/TypeScript, Go, Rust)
+  - Handles hot reloading and file watching
+  - Manages function builds and serving
+- **EdgeFunctionsRegistry** (`src/lib/edge-functions/registry.ts`): Manages Edge Functions
+  - Uses `@netlify/edge-bundler` for Deno-based edge runtime
+  - Handles Edge Function deployment and local serving
 
-**Development Server:**
-- Local development server in `src/commands/dev/`
-- Edge functions support via `src/lib/edge-functions/`
-- Proxy functionality for API calls and redirects
-- Live reloading and hot module replacement
+#### Development Server Architecture (`netlify dev`)
+The dev server (`src/commands/dev/dev.ts`) orchestrates multiple subsystems:
+- **Proxy Server**: Routes requests between static files, functions, and edge functions
+- **Functions Server**: Executes Netlify Functions locally with runtime-specific handlers
+- **Edge Functions Proxy**: Serves Edge Functions via Deno runtime
+- **Framework Detection**: Auto-detects and integrates with various web frameworks
+- **Live Tunneling**: Provides public URLs for local development via Netlify's tunnel service
 
-**API Integration:**
-- Uses `@netlify/api` for Netlify API communication
-- Authentication handling in `BaseCommand.authenticate()`
-- Site information and deployment management
+#### Config System
+- Uses `@netlify/config` for configuration resolution and normalization
+- Supports `netlify.toml` files with environment-specific overrides
+- Integrates with Netlify's build plugins system
+- Handles environment variable injection from multiple sources (process, .env files, Netlify site settings)
 
-## Testing Architecture
+### Key Libraries and Their Roles
 
-**Test Framework:** Vitest with custom configurations
-- Unit tests: Fast, isolated testing of individual modules
-- Integration tests: Test command interactions with fixtures
-- E2E tests: Full CLI command testing with live sites
+#### Core Infrastructure
+- `src/lib/api.ts` - Netlify API client wrapper with authentication
+- `src/lib/build.ts` - Build system integration and config caching
+- `src/lib/settings.ts` - Project and global settings management
+- `src/utils/command-helpers.ts` - Shared utilities for CLI commands (logging, error handling, prompts)
 
-**Test Utilities:**
-- `tests/integration/utils/` contains testing helpers
-- Mock API responses in `tests/integration/utils/mock-api.ts`
-- Site builder utilities for test setup
-- Fixture projects in `tests/integration/__fixtures__/`
+#### Function Runtime System
+- `src/lib/functions/runtimes/` - Runtime-specific builders and executors
+  - `js/` - JavaScript/TypeScript function handling with `zip-it-and-ship-it`
+  - `go/` - Go function compilation and execution
+  - `rust/` - Rust function compilation via Cargo
+- `src/lib/functions/server.ts` - Local function server with request/response handling
 
-**Running Specific Tests:**
-- Unit: `npx vitest tests/unit/specific-test.test.ts`
-- Integration: `npx vitest tests/integration/specific-area/`
-- Coverage: `npm run test` generates coverage reports
+#### Development Tools
+- `src/utils/dev.ts` - Development server utilities and environment setup
+- `src/utils/proxy-server.ts` - HTTP proxy for routing dev server requests
+- `src/utils/detect-server-settings.ts` - Framework detection and port management
 
-## Key Dependencies
+#### Deployment System
+- `src/utils/deploy/` - Site deployment orchestration
+  - File hashing, diffing, and upload optimization
+  - Build artifact management and caching
+  - Progress tracking and status reporting
 
-- `commander` - CLI framework
-- `@netlify/*` packages - Core Netlify functionality
-- `inquirer` - Interactive prompts
-- `chalk` - Terminal styling
-- `execa` - Process execution
-- `fastify` - Local development server
-- `chokidar` - File watching
+### Testing Architecture
+- **Unit Tests** (`tests/unit/`): Test individual modules and utilities
+- **Integration Tests** (`tests/integration/`): Test full command workflows using fixtures
+- **E2E Tests**: Test complete user scenarios with real Netlify API interactions
+- **Fixtures** (`tests/integration/__fixtures__/`): Sample projects for testing different frameworks and configurations
 
-## Architecture Visualization Command
+### Important Implementation Details
 
-**New Feature:** The CLI now includes a comprehensive architecture visualization command that shows how Netlify's primitives work together.
+#### Environment Variable Handling
+Environment variables are loaded from multiple sources with specific precedence:
+1. Process environment
+2. `.env` files (multiple variants supported)
+3. Netlify site settings (shared, project-specific)
+4. Addon-provided variables
+5. Build-time configuration
 
-### Basic Usage
-```bash
-netlify architecture                    # Show static architecture
-netlify arch                           # Short alias
-netlify architecture --include-metrics # Include live performance data
-netlify architecture --format json    # JSON output for scripting
-```
+#### Function URL Routing
+Functions are accessible via standardized URL patterns:
+- `/.netlify/functions/[function-name]` - Standard functions
+- `/.netlify/builders/[function-name]` - On-demand builders
+- Custom paths supported via function configuration
 
-### Advanced Options
-```bash
-netlify architecture --scope functions     # Focus on functions only
-netlify architecture --scope edge         # Focus on edge functions
-netlify architecture --time-range 7d      # Show 7 days of metrics
-netlify architecture --branch staging     # Analyze specific branch
-```
+#### Build Plugin Integration
+The CLI integrates with Netlify's build plugin system, allowing plugins to:
+- Modify build configuration
+- Add custom build steps
+- Integrate with the development server
+- Provide additional CLI commands
 
-### Integration Points
-- **Post-Deploy**: Automatically shows architecture summary after successful deployments
-- **Dev Server**: Shows local architecture emulation on `netlify dev` startup
-- **Observability**: Integrates with Netlify's new observability APIs for live metrics
-- **Error Handling**: Graceful fallbacks when live data unavailable
+### Development Setup Requirements
+- Node.js 20.12.2+ required
+- Git LFS must be installed for full test suite
+- Some integration tests require Netlify Auth Token (`NETLIFY_AUTH_TOKEN`) or login via `./bin/run.js login`
+- Live tests can be disabled with `NETLIFY_TEST_DISABLE_LIVE=true`
 
-### Architecture Components
-The command analyzes and displays:
-- **Edge Network**: Domain, SSL, CDN, caching performance
-- **Edge Functions**: Both framework-generated and custom
-- **Serverless Functions**: Performance metrics, error rates, types
-- **Framework Integration**: Auto-detected frameworks and features
-- **Data Layer**: Blob store, databases, external API usage
-- **Security**: WAF, firewall, rate limiting status
-
-### File Structure
-```
-src/commands/architecture/
-├── architecture.ts           # Main command implementation
-├── architecture-analyzer.ts  # Static analysis of local code
-├── architecture-renderer.ts  # ASCII/JSON output formatting
-├── observability-client.ts   # Live metrics API integration
-├── post-deploy-integration.ts# Deploy/dev server integration
-├── error-handling.ts         # Comprehensive error handling
-├── example-output.md         # Usage examples
-└── index.ts                  # Public exports
-```
-
-## Node.js Requirements
-
-- Node.js >=20.12.2 required
-- Uses ES modules (type: "module" in package.json)
-- TypeScript compilation target: ES2022
-
-## Workspace Support
-
-The CLI supports monorepos and workspaces:
-- Detects workspace configurations automatically
-- `--filter` flag to target specific packages
-- Workspace root detection and package selection
-- Configuration file resolution per workspace
-
-## Build System
-
-- TypeScript compilation with `tsconfig.build.json`
-- Output to `dist/` directory
-- Source maps enabled for debugging
-- Module resolution supports both ES modules and CommonJS dependencies
+### Coding Style:
+- Never write comments on what the code does, make the code clean and self explanatory instead
