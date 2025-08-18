@@ -95,12 +95,11 @@ export const agentsShow = async (id: string, options: AgentShowOptions, command:
     log(`  Site: ${chalk.cyan(siteInfo.name)} (${site.id ?? ''})`)
 
     if (agentRunner.user) {
-      log(`  Created by: ${agentRunner.user.full_name ?? agentRunner.user.email}`)
+      log(`  Created by: ${agentRunner.user.full_name ?? 'Anonymous'}`)
     }
 
     log(``)
     log(chalk.bold('Configuration:'))
-    log(`  Agent: ${chalk.cyan(agentRunner.agent ?? 'codex')}`)
     log(`  Branch: ${chalk.cyan(agentRunner.branch ?? 'main')}`)
 
     if (agentRunner.result_branch) {

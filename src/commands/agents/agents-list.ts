@@ -124,7 +124,6 @@ export const agentsList = async (options: AgentListOptions, command: BaseCommand
     agentRunners.forEach((runner) => {
       const id = truncateText(runner.id, 8)
       const status = formatStatus(runner.state ?? 'unknown')
-      const agent = (runner.agent ?? 'codex').padEnd(colWidths[2])
       const prompt = truncateText(runner.title ?? 'No title', 38).padEnd(colWidths[3])
       const branch = truncateText(runner.branch ?? 'main', 13).padEnd(colWidths[4])
       const duration = runner.done_at
@@ -132,7 +131,7 @@ export const agentsList = async (options: AgentListOptions, command: BaseCommand
         : formatDuration(runner.created_at).padEnd(colWidths[5])
       const created = new Date(runner.created_at).toLocaleDateString().padEnd(colWidths[6])
 
-      const row = [chalk.cyan(id), status, agent, chalk.dim(prompt), branch, duration, created].join(' ')
+      const row = [chalk.cyan(id), status, chalk.dim(prompt), branch, duration, created].join(' ')
 
       log(row)
     })
