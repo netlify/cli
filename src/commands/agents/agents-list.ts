@@ -9,7 +9,7 @@ import {
   type ChalkInstance,
 } from '../../utils/command-helpers.js'
 import type BaseCommand from '../base-command.js'
-import type { AgentRunner } from './types.js'
+import type { AgentRunner, AgentRunnerSession } from './types.js'
 
 const formatDuration = (startTime: string, endTime?: string): string => {
   const start = new Date(startTime)
@@ -56,11 +56,10 @@ export const agentsList = async (options: AgentListOptions, command: BaseCommand
   await command.authenticate()
 
   try {
-    // Build query parameters
     const params = new URLSearchParams()
     params.set('site_id', site.id ?? '')
     params.set('page', '1')
-    params.set('per_page', '50') // Get more results for list view
+    params.set('per_page', '50')
 
     if (options.status) {
       params.set('status', options.status)
@@ -97,11 +96,9 @@ export const agentsList = async (options: AgentListOptions, command: BaseCommand
       return
     }
 
-    // Display results in a table format
     log(`${chalk.bold('Agent Runners')} for ${chalk.cyan(siteInfo.name)}`)
     log(``)
 
-    // Table header
     const header = [
       chalk.bold('ID'),
       chalk.bold('STATUS'),
@@ -112,26 +109,66 @@ export const agentsList = async (options: AgentListOptions, command: BaseCommand
       chalk.bold('CREATED'),
     ]
 
-    // Calculate column widths
-    const colWidths = [8, 10, 8, 40, 15, 10, 12]
+    const colWidths = [26, 10, 8, 35, 12, 10, 12]
 
     // Print header
     const headerRow = header.map((h, i) => h.padEnd(colWidths[i])).join(' ')
     log(headerRow)
     log('─'.repeat(headerRow.length))
 
+    // Fetch agent info for each runner
+    const agentInfo = new Map<string, string>()
+
+    try {
+      // Fetch latest session for each runner in parallel to get agent info
+      const sessionPromises = agentRunners.map(async (runner) => {
+        try {
+          const sessionsResponse = await fetch(
+            `${apiOpts.scheme ?? 'https'}://${apiOpts.host ?? api.host}/api/v1/agent_runners/${
+              runner.id
+            }/sessions?page=1&per_page=1`,
+            {
+              method: 'GET',
+              headers: {
+                Authorization: `Bearer ${api.accessToken ?? ''}`,
+                'User-Agent': apiOpts.userAgent,
+              },
+            },
+          )
+
+          if (sessionsResponse.ok) {
+            const sessions = (await sessionsResponse.json()) as AgentRunnerSession[] | undefined
+            if (sessions && sessions.length > 0 && sessions[0].agent_config) {
+              const agent = (sessions[0].agent_config as { agent?: string }).agent
+              if (agent) {
+                agentInfo.set(runner.id, agent)
+              }
+            }
+          }
+        } catch {
+          // Failed to fetch session for this runner, continue without agent info
+        }
+      })
+
+      // Wait for all session fetches to complete
+      await Promise.allSettled(sessionPromises)
+    } catch {
+      // If parallel fetch fails entirely, continue without agent info
+    }
+
     // Print each agent runner
     agentRunners.forEach((runner) => {
-      const id = truncateText(runner.id, 8)
+      const id = runner.id.padEnd(colWidths[0])
       const status = formatStatus(runner.state ?? 'unknown')
-      const prompt = truncateText(runner.title ?? 'No title', 38).padEnd(colWidths[3])
-      const branch = truncateText(runner.branch ?? 'main', 13).padEnd(colWidths[4])
+      const agent = (agentInfo.get(runner.id) ?? 'unknown').padEnd(colWidths[2])
+      const prompt = truncateText(runner.title ?? 'No title', colWidths[3] - 2).padEnd(colWidths[3])
+      const branch = truncateText(runner.branch ?? 'unknown', colWidths[4] - 2).padEnd(colWidths[4])
       const duration = runner.done_at
         ? formatDuration(runner.created_at, runner.done_at).padEnd(colWidths[5])
         : formatDuration(runner.created_at).padEnd(colWidths[5])
       const created = new Date(runner.created_at).toLocaleDateString().padEnd(colWidths[6])
 
-      const row = [chalk.cyan(id), status, chalk.dim(prompt), branch, duration, created].join(' ')
+      const row = [chalk.cyan(id), status, agent, chalk.dim(prompt), branch, duration, created].join(' ')
 
       log(row)
     })

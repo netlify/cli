@@ -98,8 +98,48 @@ export const agentsShow = async (id: string, options: AgentShowOptions, command:
       log(`  Created by: ${agentRunner.user.full_name ?? 'Anonymous'}`)
     }
 
+    // Fetch sessions to get agent information
+    let sessions: AgentRunnerSession[] | undefined
+    try {
+      const sessionsResponse = await fetch(
+        `${apiOpts.scheme ?? 'https'}://${
+          apiOpts.host ?? api.host
+        }/api/v1/agent_runners/${id}/sessions?page=1&per_page=5`,
+        {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${api.accessToken ?? ''}`,
+            'User-Agent': apiOpts.userAgent,
+          },
+        },
+      )
+
+      if (sessionsResponse.ok) {
+        sessions = (await sessionsResponse.json()) as AgentRunnerSession[] | undefined
+      }
+    } catch {
+      // Sessions fetch failed, but continue without session data
+    }
+
     log(``)
     log(chalk.bold('Configuration:'))
+
+    // Display agent information from latest session
+    if (sessions && sessions.length > 0) {
+      const latestSession = sessions[0]
+      if (latestSession.agent_config) {
+        const agent = (latestSession.agent_config as { agent?: string }).agent
+        const model = (latestSession.agent_config as { model?: string }).model
+
+        if (agent) {
+          log(`  Agent: ${chalk.cyan(agent)}`)
+        }
+        if (model) {
+          log(`  Model: ${chalk.cyan(model)}`)
+        }
+      }
+    }
+
     log(`  Branch: ${chalk.cyan(agentRunner.branch ?? 'main')}`)
 
     if (agentRunner.result_branch) {
@@ -126,47 +166,24 @@ export const agentsShow = async (id: string, options: AgentShowOptions, command:
       log(`  Running for: ${formatDuration(agentRunner.created_at)}`)
     }
 
-    // Show sessions if available
-    try {
-      const sessionsResponse = await fetch(
-        `${apiOpts.scheme ?? 'https'}://${
-          apiOpts.host ?? api.host
-        }/api/v1/agent_runners/${id}/sessions?page=1&per_page=5`,
-        {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${api.accessToken ?? ''}`,
-            'User-Agent': apiOpts.userAgent,
-          },
-        },
-      )
-
-      if (sessionsResponse.ok) {
-        const sessions = (await sessionsResponse.json()) as AgentRunnerSession[] | undefined
-        if (sessions && sessions.length > 0) {
-          log(``)
-          log(chalk.bold('Recent Sessions:'))
-          sessions.slice(0, 3).forEach((session, index: number) => {
-            log(
-              // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-              `  ${(index + 1).toString()}. ${formatStatus(session.state ?? 'unknown')} - ${
-                session.title ?? 'No title'
-              }`,
-            )
-            if (session.result && session.state === 'done') {
-              const resultPreview =
-                session.result.length > 100 ? session.result.substring(0, 100) + '...' : session.result
-              log(`     ${chalk.dim(resultPreview)}`)
-            }
-          })
-
-          if (sessions.length > 3) {
-            log(`     ${chalk.dim(`... and ${(sessions.length - 3).toString()} more sessions`)}`)
-          }
+    // Show recent sessions if available
+    if (sessions && sessions.length > 0) {
+      log(``)
+      log(chalk.bold('Recent Sessions:'))
+      sessions.slice(0, 3).forEach((session, index: number) => {
+        log(
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+          `  ${(index + 1).toString()}. ${formatStatus(session.state ?? 'unknown')} - ${session.title ?? 'No title'}`,
+        )
+        if (session.result && session.state === 'done') {
+          const resultPreview = session.result.length > 100 ? session.result.substring(0, 100) + '...' : session.result
+          log(`     ${chalk.dim(resultPreview)}`)
         }
+      })
+
+      if (sessions.length > 3) {
+        log(`     ${chalk.dim(`... and ${(sessions.length - 3).toString()} more sessions`)}`)
       }
-    } catch {
-      // Sessions fetch failed, but don't fail the whole command
     }
 
     log(``)
