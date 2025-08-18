@@ -6,7 +6,7 @@ import type BaseCommand from '../base-command.js'
 import type { AgentRunner } from './types.js'
 
 const AVAILABLE_AGENTS = [
-  { name: 'Claude (default)', value: 'claude' },
+  { name: 'Claude', value: 'claude' },
   { name: 'Codex', value: 'codex' },
   { name: 'Gemini', value: 'gemini' },
 ]
