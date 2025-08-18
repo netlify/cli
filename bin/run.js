@@ -63,7 +63,4 @@ Run ${chalk.inverse.hex(NETLIFY_CYAN_HEX)('{updateCommand}')} to update`
 // Must come first, including before any imports
 maybeEnableCompileCache()
 
-main().catch((error) => {
-  console.error('Fatal error:', error)
-  process.exit(1)
-})
+await main()
