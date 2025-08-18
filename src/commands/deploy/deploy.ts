@@ -887,6 +887,86 @@ const prepAndRunDeploy = async ({
   return results
 }
 
+const validateTeamForSiteCreation = (accounts: { slug: string; name: string }[], options: DeployOptionValues, siteName?: string) => {
+  if (accounts.length === 0) {
+    return logAndThrowError('No teams available. Please ensure you have access to at least one team.')
+  }
+  
+  if (accounts.length === 1) {
+    options.team = accounts[0].slug
+    const message = siteName ? `Creating new site: ${siteName}` : 'Creating new site with random name'
+    log(`${message} (using team: ${accounts[0].name})`)
+    return
+  }
+  
+  const availableTeams = accounts.map(team => team.slug).join(', ')
+  return logAndThrowError(
+    `Multiple teams available. Please specify which team to use with --team flag.\n` +
+    `Available teams: ${availableTeams}\n\n` +
+    `Example: netlify deploy --create-site${siteName ? ` ${siteName}` : ''} --team <TEAM_SLUG>`
+  )
+}
+
+const createSiteWithFlags = async (options: DeployOptionValues, command: BaseCommand, site: any) => {
+  const { accounts } = command.netlify
+  const siteName = typeof options.createSite === 'string' ? options.createSite : undefined
+  
+  if (!options.team) {
+    validateTeamForSiteCreation(accounts, options, siteName)
+  } else {
+    const message = siteName ? `Creating new site: ${siteName}` : 'Creating new site with random name'
+    log(message)
+  }
+  
+  const siteData = await sitesCreate({ 
+    name: siteName, 
+    accountSlug: options.team 
+  }, command)
+  site.id = siteData.id
+  return siteData
+}
+
+const promptForSiteAction = async (options: DeployOptionValues, command: BaseCommand, site: any) => {
+  log("This folder isn't linked to a project yet")
+  
+  const { accounts } = command.netlify
+  const availableTeams = accounts.map(acc => ({ name: acc.name, slug: acc.slug }))
+  const copyableCommand = generateDeployCommand(options, availableTeams, command)
+  
+  log(`\nTo create and deploy in one go, use: ${copyableCommand}`)
+  if (availableTeams.length > 1) {
+    log(`\nYou must pick a --team: ${availableTeams.map(team => team.slug).join(', ')}`)
+  }
+  
+  const { initChoice } = await inquirer.prompt([{
+    type: 'list',
+    name: 'initChoice',
+    message: 'What would you like to do?',
+    choices: ['Link this directory to an existing project', '+  Create & configure a new project']
+  }])
+  
+  const siteData = initChoice.startsWith('+') 
+    ? await sitesCreate({}, command)
+    : await link({}, command)
+  
+  site.id = siteData.id
+  return siteData
+}
+
+const ensureSiteExists = async (options: DeployOptionValues, command: BaseCommand, site: any, siteInfo: any): Promise<SiteInfo> => {
+  const hasSiteData = (site.id || options.site) && !isEmpty(siteInfo)
+  
+  if (hasSiteData) {
+    return siteInfo
+  }
+  
+  if (options.createSite) {
+    return createSiteWithFlags(options, command, site)
+  }
+  
+  return promptForSiteAction(options, command, site)
+}
+
 export const deploy = async (options: DeployOptionValues, command: BaseCommand) => {
   const { workingDir } = command
   const { api, site, siteInfo } = command.netlify
@@ -896,97 +976,7 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
 
   await command.authenticate(options.auth)
 
-  let initialSiteData: SiteInfo | undefined
-  let newSiteData!: SiteInfo
-
-  const hasSiteData = (site.id || options.site) && !isEmpty(siteInfo)
-
-  if (hasSiteData) {
-    initialSiteData = siteInfo
-  } else {
-    // Check if --create-site flag is used
-    if (options.createSite) {
-      const { accounts } = command.netlify
-      
-      // Handle site name - could be string (provided) or true (just flag without value)
-      const siteName = typeof options.createSite === 'string' ? options.createSite : undefined
-      
-      // Validate team requirement
-      if (!options.team) {
-        if (accounts.length === 0) {
-          return logAndThrowError('No teams available. Please ensure you have access to at least one team.')
-        } else if (accounts.length === 1) {
-          // Auto-use the single team
-          options.team = accounts[0].slug
-          if (siteName) {
-            log(`Creating new site: ${siteName} (using team: ${accounts[0].name})`)
-          } else {
-            log(`Creating new site with random name (using team: ${accounts[0].name})`)
-          }
-        } else {
-          // Multiple teams - require explicit team selection
-          const availableTeams = accounts.map(team => team.slug).join(', ')
-          return logAndThrowError(
-            `Multiple teams available. Please specify which team to use with --team flag.\n` +
-            `Available teams: ${availableTeams}\n\n` +
-            `Example: netlify deploy --create-site${siteName ? ` ${siteName}` : ''} --team <TEAM_SLUG>`
-          )
-        }
-      } else {
-        if (siteName) {
-          log(`Creating new site: ${siteName}`)
-        } else {
-          log(`Creating new site with random name`)
-        }
-      }
-      
-      newSiteData = await sitesCreate({ 
-        name: siteName, 
-        accountSlug: options.team 
-      }, command)
-      site.id = newSiteData.id
-    } else {
-      log("This folder isn't linked to a project yet")
-      
-      // Generate copy-pasteable command with current options
-      const { accounts } = command.netlify
-      const availableTeams = accounts.map(acc => ({ name: acc.name, slug: acc.slug }))
-      const copyableCommand = generateDeployCommand(options, availableTeams, command)
-      
-      const NEW_SITE = '+  Create & configure a new project'
-      const EXISTING_SITE = 'Link this directory to an existing project'
-
-      const initializeOpts = [EXISTING_SITE, NEW_SITE] as const
-
-      log(`\nTo create and deploy in one go, use: ${copyableCommand}`)
-      if (availableTeams.length > 1) {
-        log(`\nYou must pick a --team: ${availableTeams.map(team => team.slug).join(', ')}`)
-      }
-      log('')
-      const { initChoice } = await inquirer.prompt<{ initChoice: (typeof initializeOpts)[number] }>([
-        {
-          type: 'list',
-          name: 'initChoice',
-          message: 'What would you like to do?',
-          choices: initializeOpts,
-        },
-      ])
-      // create site or search for one
-      switch (initChoice) {
-        case NEW_SITE:
-          newSiteData = await sitesCreate({}, command)
-          site.id = newSiteData.id
-          break
-        case EXISTING_SITE:
-          newSiteData = await link({}, command)
-          site.id = newSiteData.id
-          break
-      }
-    }
-  }
-
-  // This is the best I could come up with to make TS happy with the complexities above.
-  const siteData = initialSiteData ?? newSiteData
+  const siteData = await ensureSiteExists(options, command, site, siteInfo)
   const siteId = siteData.id
 
   if (options.trigger) {
