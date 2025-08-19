@@ -5,7 +5,7 @@ import { chalk, logAndThrowError, log, logJson, type APIError } from '../../util
 import { startSpinner, stopSpinner } from '../../lib/spinner.js'
 import type BaseCommand from '../base-command.js'
 import type { AgentRunner, AgentRunnerSession } from './types.js'
-import { formatDuration, formatStatus, truncateText } from './utils.js'
+import { formatDuration, formatStatus, truncateText, getAgentName } from './utils.js'
 
 interface AgentListOptions extends OptionValues {
   status?: string
@@ -112,7 +112,7 @@ export const agentsList = async (options: AgentListOptions, command: BaseCommand
       table.addRow(
         runner.id,
         (runner.state ?? 'unknown').toUpperCase(),
-        agentInfo.get(runner.id) ?? 'unknown',
+        getAgentName(agentInfo.get(runner.id) ?? 'unknown'),
         truncateText(runner.title ?? 'No title', 35),
         truncateText(runner.branch ?? 'unknown', 12),
         runner.done_at ? formatDuration(runner.created_at, runner.done_at) : formatDuration(runner.created_at),
