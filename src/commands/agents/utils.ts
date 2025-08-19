@@ -38,8 +38,8 @@ export const validatePrompt = (input: string): boolean | string => {
   if (!input || input.trim().length === 0) {
     return 'Please provide a prompt for the agent'
   }
-  if (input.trim().length < 10) {
-    return 'Please provide a more detailed prompt (at least 10 characters)'
+  if (input.trim().length < 5) {
+    return 'Please provide a more detailed prompt (at least 5 characters)'
   }
   return true
 }
