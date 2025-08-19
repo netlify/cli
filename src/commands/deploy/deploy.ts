@@ -942,7 +942,7 @@ const promptForSiteAction = async (options: DeployOptionValues, command: BaseCom
     type: 'list',
     name: 'initChoice',
     message: 'What would you like to do?',
-    choices: ['Link this directory to an existing project', '+  Create & configure a new project']
+    choices: ['Link this directory to an existing project', 'Create & configure a new project']
   }])
   
   const siteData = initChoice.startsWith('+') 
