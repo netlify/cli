@@ -5,7 +5,8 @@ import { chalk, logAndThrowError, log, logJson, type APIError } from '../../util
 import { startSpinner, stopSpinner } from '../../lib/spinner.js'
 import type BaseCommand from '../base-command.js'
 import type { AgentRunner } from './types.js'
-import { AVAILABLE_AGENTS, validatePrompt, validateAgent, formatStatus } from './utils.js'
+import { validatePrompt, validateAgent, formatStatus } from './utils.js'
+import { AVAILABLE_AGENTS } from './constants.js'
 
 interface AgentCreateOptions extends OptionValues {
   prompt?: string
