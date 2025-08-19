@@ -133,10 +133,10 @@ export const agentsCreate = async (promptArg: string, options: AgentCreateOption
       return agentRunner
     }
 
-    log(`${chalk.green('✓')} Agent runner created successfully!`)
+    log(`${chalk.green('✓')} Agent task created successfully!`)
     log(``)
     log(chalk.bold('Details:'))
-    log(`  Runner ID: ${chalk.cyan(agentRunner.id)}`)
+    log(`  Task ID: ${chalk.cyan(agentRunner.id)}`)
     log(`  Prompt: ${chalk.dim(prompt)}`)
     log(`  Agent: ${chalk.cyan(agent)}${model ? ` (${model})` : ''}`)
     log(`  Branch: ${chalk.cyan(branch)}`)
@@ -147,7 +147,9 @@ export const agentsCreate = async (promptArg: string, options: AgentCreateOption
     log(`  Web: ${chalk.blue(`https://app.netlify.com/sites/${site.id ?? siteInfo.id}/agents/${agentRunner.id}`)}`)
     log(``)
     log(
-      chalk.dim('Note: The agent will run remotely on Netlify infrastructure and may take a few minutes to complete.'),
+      chalk.dim(
+        'Note: The agent task will run remotely on Netlify infrastructure and may take a few minutes to complete.',
+      ),
     )
 
     return agentRunner
@@ -172,6 +174,6 @@ export const agentsCreate = async (promptArg: string, options: AgentCreateOption
       }
     }
 
-    return logAndThrowError(`Failed to create agent runner: ${error.message}`)
+    return logAndThrowError(`Failed to create agent task: ${error.message}`)
   }
 }

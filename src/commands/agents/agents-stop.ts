@@ -14,7 +14,7 @@ export const agentsStop = async (id: string, options: AgentStopOptions, command:
   await command.authenticate()
 
   if (!id) {
-    return logAndThrowError('Agent runner ID is required')
+    return logAndThrowError('Agent task ID is required')
   }
 
   try {
@@ -37,24 +37,24 @@ export const agentsStop = async (id: string, options: AgentStopOptions, command:
 
     const agentRunner = (await statusResponse.json()) as AgentRunner
 
-    // Check if agent runner can be stopped
+    // Check if agent task can be stopped
     if (agentRunner.state === 'done') {
-      log(chalk.yellow('Agent runner is already completed.'))
+      log(chalk.yellow('Agent task is already completed.'))
       return agentRunner
     }
 
     if (agentRunner.state === 'cancelled') {
-      log(chalk.yellow('Agent runner is already cancelled.'))
+      log(chalk.yellow('Agent task is already cancelled.'))
       return agentRunner
     }
 
     if (agentRunner.state === 'error') {
-      log(chalk.yellow('Agent runner has already errored.'))
+      log(chalk.yellow('Agent task has already errored.'))
       return agentRunner
     }
 
-    // Stop the agent runner
-    log(chalk.yellow('Stopping agent runner...'))
+    // Stop the agent task
+    log(chalk.yellow('Stopping agent task...'))
 
     const response = await fetch(
       `${apiOpts.scheme ?? 'https'}://${apiOpts.host ?? api.host}/api/v1/agent_runners/${id}`,
@@ -79,14 +79,14 @@ export const agentsStop = async (id: string, options: AgentStopOptions, command:
       return result
     }
 
-    log(`${chalk.green('✓')} Agent runner stopped successfully!`)
+    log(`${chalk.green('✓')} Agent task stopped successfully!`)
     log(``)
     log(chalk.bold('Details:'))
-    log(`  Runner ID: ${chalk.cyan(id)}`)
+    log(`  Task ID: ${chalk.cyan(id)}`)
     log(`  Previous Status: ${chalk.dim(agentRunner.state ?? 'unknown')}`)
     log(`  New Status: ${chalk.red('CANCELLED')}`)
     log(``)
-    log(chalk.dim('The agent runner has been stopped and will not continue processing.'))
+    log(chalk.dim('The agent task has been stopped and will not continue processing.'))
 
     return result
   } catch (error_) {
@@ -98,18 +98,16 @@ export const agentsStop = async (id: string, options: AgentStopOptions, command:
         return logAndThrowError('Authentication failed. Please run `netlify login` to authenticate.')
       }
       if (error.status === 403) {
-        return logAndThrowError(
-          'Permission denied. Make sure you have access to this site and can manage agent runners.',
-        )
+        return logAndThrowError('Permission denied. Make sure you have access to this site and can manage agent tasks.')
       }
       if (error.status === 404) {
-        return logAndThrowError('Agent runner not found. Check the ID and try again.')
+        return logAndThrowError('Agent task not found. Check the ID and try again.')
       }
       if (error.status === 422) {
-        return logAndThrowError('Cannot stop this agent runner. It may already be completed or in an invalid state.')
+        return logAndThrowError('Cannot stop this agent task. It may already be completed or in an invalid state.')
       }
     }
 
-    return logAndThrowError(`Failed to stop agent runner: ${error.message}`)
+    return logAndThrowError(`Failed to stop agent task: ${error.message}`)
   }
 }
