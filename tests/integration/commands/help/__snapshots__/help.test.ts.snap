@@ -18,7 +18,7 @@ COMMANDS
   $ completion   Generate shell completion script
   $ db           Provision a production ready Postgres database with a single
                  command
-  $ deploy       Create a new deploy from the contents of a folder
+  $ deploy       Deploy your project to Netlify
   $ dev          Local dev server
   $ env          Control environment variables for the current project
   $ functions    Manage netlify functions
