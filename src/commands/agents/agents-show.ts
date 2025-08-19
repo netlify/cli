@@ -4,12 +4,7 @@ import { chalk, logAndThrowError, log, logJson, type APIError } from '../../util
 import { startSpinner, stopSpinner } from '../../lib/spinner.js'
 import type BaseCommand from '../base-command.js'
 import type { AgentRunner, AgentRunnerSession } from './types.js'
-import { STATUS_COLORS } from './constants.js'
-
-const formatStatus = (status: string): string => {
-  const colorFn = status in STATUS_COLORS ? STATUS_COLORS[status as keyof typeof STATUS_COLORS] : chalk.white
-  return colorFn(status.toUpperCase())
-}
+import { formatStatus } from './utils.js'
 
 const formatDate = (dateString: string): string => {
   const date = new Date(dateString)
@@ -79,7 +74,7 @@ export const agentsShow = async (id: string, options: AgentShowOptions, command:
     log(``)
 
     log(chalk.bold('Basic Information:'))
-    log(`  ID: ${chalk.cyan(agentRunner.id)}`)
+    log(`  Task ID: ${chalk.cyan(agentRunner.id)}`)
     log(`  Status: ${formatStatus(agentRunner.state ?? 'new')}`)
     log(`  Site: ${chalk.cyan(siteInfo.name)} (${site.id ?? ''})`)
 

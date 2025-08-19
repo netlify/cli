@@ -5,7 +5,7 @@ import { chalk, logAndThrowError, log, logJson, type APIError } from '../../util
 import { startSpinner, stopSpinner } from '../../lib/spinner.js'
 import type BaseCommand from '../base-command.js'
 import type { AgentRunner } from './types.js'
-import { AVAILABLE_AGENTS, validatePrompt, validateAgent } from './utils.js'
+import { AVAILABLE_AGENTS, validatePrompt, validateAgent, formatStatus } from './utils.js'
 
 interface AgentCreateOptions extends OptionValues {
   prompt?: string
@@ -123,11 +123,15 @@ export const agentsCreate = async (promptArg: string, options: AgentCreateOption
     log(`  Prompt: ${chalk.dim(finalPrompt)}`)
     log(`  Agent: ${chalk.cyan(agent)}${model ? ` (${model})` : ''}`)
     log(`  Branch: ${chalk.cyan(branch)}`)
-    log(`  Status: ${chalk.yellow(agentRunner.state ?? 'new')}`)
+    log(`  Status: ${formatStatus(agentRunner.state ?? 'new')}`)
     log(``)
     log(chalk.bold('Monitor progress:'))
     log(`  CLI: ${chalk.cyan(`netlify agents:show ${agentRunner.id}`)}`)
-    log(`  Web: ${chalk.blue(`https://app.netlify.com/sites/${site.id ?? siteInfo.id}/agents/${agentRunner.id}`)}`)
+    log(
+      `  View in browser: ${chalk.blue(
+        `https://app.netlify.com/sites/${site.id ?? siteInfo.id}/agents/${agentRunner.id}`,
+      )}`,
+    )
     log(``)
     log(
       chalk.dim(
@@ -147,7 +151,7 @@ export const agentsCreate = async (promptArg: string, options: AgentCreateOption
       }
       if (error.status === 403) {
         return logAndThrowError(
-          'Permission denied. Make sure you have access to this site and agent runners are enabled.',
+          'Permission denied. Make sure you have access to this site and agent tasks are enabled.',
         )
       }
       if (error.status === 404) {
