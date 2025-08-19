@@ -50,7 +50,7 @@ export const agentsList = async (options: AgentListOptions, command: BaseCommand
     params.set('per_page', '50')
 
     if (options.status) {
-      params.set('status', options.status)
+      params.set('state', options.status)
     }
 
     const response = await fetch(
@@ -128,14 +128,14 @@ export const agentsList = async (options: AgentListOptions, command: BaseCommand
       stopSpinner({ spinner: agentSpinner, error: true })
     }
 
-    // Create and populate table
+    // Create and populate table without colors for proper formatting
     const table = new AsciiTable(`Agent Tasks for ${siteInfo.name}`)
     table.setHeading('ID', 'STATUS', 'AGENT', 'PROMPT', 'BRANCH', 'DURATION', 'CREATED')
 
     agentRunners.forEach((runner) => {
       table.addRow(
         runner.id,
-        formatStatus(runner.state ?? 'unknown'),
+        (runner.state ?? 'unknown').toUpperCase(),
         agentInfo.get(runner.id) ?? 'unknown',
         truncateText(runner.title ?? 'No title', 35),
         truncateText(runner.branch ?? 'unknown', 12),
@@ -144,7 +144,26 @@ export const agentsList = async (options: AgentListOptions, command: BaseCommand
       )
     })
 
-    log(table.toString())
+    // Apply colors to the table output
+    let tableOutput = table.toString()
+
+    // Create unique status mappings to avoid replacement conflicts
+    const statusReplacements = new Set<string>()
+    agentRunners.forEach((runner) => {
+      const status = runner.state ?? 'unknown'
+      statusReplacements.add(status)
+    })
+
+    // Apply color replacements
+    statusReplacements.forEach((status) => {
+      const plainStatus = status.toUpperCase()
+      const coloredStatus = formatStatus(status)
+      // Use word boundary regex to avoid partial matches
+      const regex = new RegExp(`\\b${plainStatus}\\b`, 'g')
+      tableOutput = tableOutput.replace(regex, coloredStatus)
+    })
+
+    log(tableOutput)
 
     log('')
     log(chalk.dim(`Total: ${agentRunners.length.toString()} agent task(s)`))
