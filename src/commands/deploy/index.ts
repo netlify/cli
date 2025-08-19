@@ -13,7 +13,7 @@ export const createDeployCommand = (program: BaseCommand) =>
     .description(
       `Deploy your project to Netlify
 
-Builds and deploys your project to Netlify. By default, creates a draft deploy for preview.
+Builds and deploys your project to Netlify. Creates a draft deploy by default.
 Use --prod to deploy directly to your live site.
 
 The deploy command will:
