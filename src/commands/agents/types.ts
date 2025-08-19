@@ -1,8 +1,16 @@
+import type { AgentState, SessionState, AvailableAgent } from './constants.js'
+
+export interface AgentConfig {
+  agent?: AvailableAgent
+  model?: string
+  [key: string]: unknown
+}
+
 export interface AgentRunner {
   id: string
   site_id?: string
   parent_agent_runner_id?: string
-  state?: 'new' | 'running' | 'done' | 'error' | 'cancelled' | 'archived'
+  state?: AgentState
   created_at: string
   updated_at: string
   done_at?: string
@@ -20,13 +28,13 @@ export interface AgentRunnerSession {
   id: string
   agent_runner_id: string
   dev_server_id?: string
-  state: 'new' | 'running' | 'done' | 'error' | 'cancelled'
+  state: SessionState
   created_at: string
   updated_at: string
   done_at?: string
   title?: string
   prompt: string
-  agent_config?: Record<string, unknown>
+  agent_config?: AgentConfig
   result?: string
   result_diff?: string
   duration?: number

@@ -1,27 +1,13 @@
 import type { OptionValues } from 'commander'
 
-import {
-  chalk,
-  logAndThrowError,
-  log,
-  logJson,
-  type APIError,
-  type ChalkInstance,
-} from '../../utils/command-helpers.js'
+import { chalk, logAndThrowError, log, logJson, type APIError } from '../../utils/command-helpers.js'
+import { startSpinner, stopSpinner } from '../../lib/spinner.js'
 import type BaseCommand from '../base-command.js'
 import type { AgentRunner, AgentRunnerSession } from './types.js'
+import { STATUS_COLORS } from './constants.js'
 
 const formatStatus = (status: string): string => {
-  const statusColors: Record<string, ChalkInstance> = {
-    new: chalk.blue,
-    running: chalk.yellow,
-    done: chalk.green,
-    error: chalk.red,
-    cancelled: chalk.gray,
-    archived: chalk.dim,
-  }
-
-  const colorFn = statusColors[status] ?? chalk.white
+  const colorFn = status in STATUS_COLORS ? STATUS_COLORS[status as keyof typeof STATUS_COLORS] : chalk.white
   return colorFn(status.toUpperCase())
 }
 
@@ -58,8 +44,10 @@ export const agentsShow = async (id: string, options: AgentShowOptions, command:
   await command.authenticate()
 
   if (!id) {
-    return logAndThrowError('Agent runner ID is required')
+    return logAndThrowError('Agent task ID is required')
   }
+
+  const showSpinner = startSpinner({ text: 'Fetching agent task details...' })
 
   try {
     const response = await fetch(
@@ -79,6 +67,7 @@ export const agentsShow = async (id: string, options: AgentShowOptions, command:
     }
 
     const agentRunner = (await response.json()) as AgentRunner
+    stopSpinner({ spinner: showSpinner })
 
     if (options.json) {
       logJson(agentRunner)
@@ -128,8 +117,7 @@ export const agentsShow = async (id: string, options: AgentShowOptions, command:
     if (sessions && sessions.length > 0) {
       const latestSession = sessions[0]
       if (latestSession.agent_config) {
-        const agent = (latestSession.agent_config as { agent?: string }).agent
-        const model = (latestSession.agent_config as { model?: string }).model
+        const { agent, model } = latestSession.agent_config
 
         if (agent) {
           log(`  Agent: ${chalk.cyan(agent)}`)
@@ -170,11 +158,8 @@ export const agentsShow = async (id: string, options: AgentShowOptions, command:
     if (sessions && sessions.length > 0) {
       log(``)
       log(chalk.bold('Recent Runs:'))
-      sessions.slice(0, 3).forEach((session, index: number) => {
-        log(
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-          `  ${(index + 1).toString()}. ${formatStatus(session.state ?? 'unknown')} - ${session.title ?? 'No title'}`,
-        )
+      sessions.slice(0, 3).forEach((session, index) => {
+        log(`  ${(index + 1).toString()}. ${formatStatus(session.state)} - ${session.title ?? 'No title'}`)
         if (session.result && session.state === 'done') {
           const resultPreview = session.result.length > 100 ? session.result.substring(0, 100) + '...' : session.result
           log(`     ${chalk.dim(resultPreview)}`)
@@ -197,6 +182,7 @@ export const agentsShow = async (id: string, options: AgentShowOptions, command:
 
     return agentRunner
   } catch (error_) {
+    stopSpinner({ spinner: showSpinner, error: true })
     const error = error_ as APIError | Error
 
     // Handle specific error cases

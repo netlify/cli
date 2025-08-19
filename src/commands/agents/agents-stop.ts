@@ -1,6 +1,7 @@
 import type { OptionValues } from 'commander'
 
 import { chalk, logAndThrowError, log, logJson, type APIError } from '../../utils/command-helpers.js'
+import { startSpinner, stopSpinner } from '../../lib/spinner.js'
 import type BaseCommand from '../base-command.js'
 import type { AgentRunner } from './types.js'
 
@@ -16,6 +17,8 @@ export const agentsStop = async (id: string, options: AgentStopOptions, command:
   if (!id) {
     return logAndThrowError('Agent task ID is required')
   }
+
+  const statusSpinner = startSpinner({ text: 'Checking agent task status...' })
 
   try {
     // First check if the agent runner exists and is stoppable
@@ -36,6 +39,7 @@ export const agentsStop = async (id: string, options: AgentStopOptions, command:
     }
 
     const agentRunner = (await statusResponse.json()) as AgentRunner
+    stopSpinner({ spinner: statusSpinner })
 
     // Check if agent task can be stopped
     if (agentRunner.state === 'done') {
@@ -54,7 +58,7 @@ export const agentsStop = async (id: string, options: AgentStopOptions, command:
     }
 
     // Stop the agent task
-    log(chalk.yellow('Stopping agent task...'))
+    const stopSpinnerInstance = startSpinner({ text: 'Stopping agent task...' })
 
     const response = await fetch(
       `${apiOpts.scheme ?? 'https'}://${apiOpts.host ?? api.host}/api/v1/agent_runners/${id}`,
@@ -73,6 +77,7 @@ export const agentsStop = async (id: string, options: AgentStopOptions, command:
     }
 
     const result = (await response.json()) as Record<string, unknown>
+    stopSpinner({ spinner: stopSpinnerInstance })
 
     if (options.json) {
       logJson(result)
@@ -90,6 +95,7 @@ export const agentsStop = async (id: string, options: AgentStopOptions, command:
 
     return result
   } catch (error_) {
+    stopSpinner({ spinner: statusSpinner, error: true })
     const error = error_ as APIError | Error
 
     // Handle specific error cases

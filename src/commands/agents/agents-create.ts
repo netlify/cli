@@ -2,32 +2,10 @@ import type { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 
 import { chalk, logAndThrowError, log, logJson, type APIError } from '../../utils/command-helpers.js'
+import { startSpinner, stopSpinner } from '../../lib/spinner.js'
 import type BaseCommand from '../base-command.js'
 import type { AgentRunner } from './types.js'
-
-const AVAILABLE_AGENTS = [
-  { name: 'Claude', value: 'claude' },
-  { name: 'Codex', value: 'codex' },
-  { name: 'Gemini', value: 'gemini' },
-]
-
-const validatePrompt = (input: string): boolean | string => {
-  if (!input || input.trim().length === 0) {
-    return 'Please provide a prompt for the agent'
-  }
-  if (input.trim().length < 10) {
-    return 'Please provide a more detailed prompt (at least 10 characters)'
-  }
-  return true
-}
-
-const validateAgent = (agent: string): boolean | string => {
-  const validAgents = AVAILABLE_AGENTS.map((a) => a.value)
-  if (!validAgents.includes(agent)) {
-    return `Invalid agent. Available agents: ${validAgents.join(', ')}`
-  }
-  return true
-}
+import { AVAILABLE_AGENTS, validatePrompt, validateAgent } from './utils.js'
 
 interface AgentCreateOptions extends OptionValues {
   prompt?: string
@@ -41,8 +19,12 @@ export const agentsCreate = async (promptArg: string, options: AgentCreateOption
 
   await command.authenticate()
 
-  let { prompt, agent, branch } = options
+  const { prompt, agent: initialAgent, branch: initialBranch } = options
   const { model } = options
+
+  let finalPrompt: string
+  let agent = initialAgent
+  let branch = initialBranch
 
   // Interactive prompt if not provided
   if (!prompt && !promptArg) {
@@ -56,14 +38,14 @@ export const agentsCreate = async (promptArg: string, options: AgentCreateOption
         validate: validatePrompt,
       },
     ])
-    prompt = promptInput
+    finalPrompt = promptInput
   } else {
-    // eslint-disable-next-line @typescript-eslint/non-nullable-type-assertion-style
-    prompt = promptArg || (prompt as string)
+    // Use promptArg if provided, otherwise use prompt from options
+    finalPrompt = (promptArg || prompt) ?? ''
   }
 
   // Validate prompt
-  const promptValidation = validatePrompt(prompt)
+  const promptValidation = validatePrompt(finalPrompt)
   if (promptValidation !== true) {
     return logAndThrowError(promptValidation)
   }
@@ -96,9 +78,9 @@ export const agentsCreate = async (promptArg: string, options: AgentCreateOption
     branch = siteInfo.build_settings?.repo_branch ?? 'main'
   }
 
-  try {
-    log(chalk.yellow('Creating agent runner...'))
+  const createSpinner = startSpinner({ text: 'Creating agent task...' })
 
+  try {
     // Create the agent runner using the same API format as the React UI
     const createParams = new URLSearchParams()
     createParams.set('site_id', site.id ?? '')
@@ -114,7 +96,7 @@ export const agentsCreate = async (promptArg: string, options: AgentCreateOption
         },
         body: JSON.stringify({
           branch,
-          prompt,
+          prompt: finalPrompt,
           agent,
           model,
         }),
@@ -127,6 +109,7 @@ export const agentsCreate = async (promptArg: string, options: AgentCreateOption
     }
 
     const agentRunner = (await response.json()) as AgentRunner
+    stopSpinner({ spinner: createSpinner })
 
     if (options.json) {
       logJson(agentRunner)
@@ -137,7 +120,7 @@ export const agentsCreate = async (promptArg: string, options: AgentCreateOption
     log(``)
     log(chalk.bold('Details:'))
     log(`  Task ID: ${chalk.cyan(agentRunner.id)}`)
-    log(`  Prompt: ${chalk.dim(prompt)}`)
+    log(`  Prompt: ${chalk.dim(finalPrompt)}`)
     log(`  Agent: ${chalk.cyan(agent)}${model ? ` (${model})` : ''}`)
     log(`  Branch: ${chalk.cyan(branch)}`)
     log(`  Status: ${chalk.yellow(agentRunner.state ?? 'new')}`)
@@ -154,6 +137,7 @@ export const agentsCreate = async (promptArg: string, options: AgentCreateOption
 
     return agentRunner
   } catch (error_) {
+    stopSpinner({ spinner: createSpinner, error: true })
     const error = error_ as APIError | Error
 
     // Handle specific error cases

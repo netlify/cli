@@ -1,15 +1,11 @@
 import type { OptionValues } from 'commander'
+import AsciiTable from 'ascii-table'
 
-import {
-  chalk,
-  logAndThrowError,
-  log,
-  logJson,
-  type APIError,
-  type ChalkInstance,
-} from '../../utils/command-helpers.js'
+import { chalk, logAndThrowError, log, logJson, type APIError } from '../../utils/command-helpers.js'
+import { startSpinner, stopSpinner } from '../../lib/spinner.js'
 import type BaseCommand from '../base-command.js'
 import type { AgentRunner, AgentRunnerSession } from './types.js'
+import { STATUS_COLORS } from './constants.js'
 
 const formatDuration = (startTime: string, endTime?: string): string => {
   const start = new Date(startTime)
@@ -26,17 +22,7 @@ const formatDuration = (startTime: string, endTime?: string): string => {
 }
 
 const formatStatus = (status: string): string => {
-  const statusColors: Record<string, ChalkInstance> = {
-    new: chalk.blue,
-    running: chalk.yellow,
-    done: chalk.green,
-    error: chalk.red,
-    cancelled: chalk.gray,
-    archived: chalk.dim,
-  }
-
-  const colorFn = statusColors[status] ?? chalk.white
-
+  const colorFn = status in STATUS_COLORS ? STATUS_COLORS[status as keyof typeof STATUS_COLORS] : chalk.white
   return colorFn(status.toUpperCase())
 }
 
@@ -54,6 +40,8 @@ export const agentsList = async (options: AgentListOptions, command: BaseCommand
   const { api, site, siteInfo, apiOpts } = command.netlify
 
   await command.authenticate()
+
+  const listSpinner = startSpinner({ text: 'Fetching agent tasks...' })
 
   try {
     const params = new URLSearchParams()
@@ -82,6 +70,7 @@ export const agentsList = async (options: AgentListOptions, command: BaseCommand
     }
 
     const agentRunners = (await response.json()) as AgentRunner[] | null | undefined
+    stopSpinner({ spinner: listSpinner })
 
     if (options.json) {
       logJson(agentRunners)
@@ -96,36 +85,9 @@ export const agentsList = async (options: AgentListOptions, command: BaseCommand
       return
     }
 
-    log(`${chalk.bold('Agent Tasks')} for ${chalk.cyan(siteInfo.name)}`)
-    log(``)
-
-    const header = [
-      chalk.bold('ID'),
-      chalk.bold('STATUS'),
-      chalk.bold('AGENT'),
-      chalk.bold('PROMPT'),
-      chalk.bold('BRANCH'),
-      chalk.bold('DURATION'),
-      chalk.bold('CREATED'),
-    ]
-
-    const colWidths = [26, 10, 8, 35, 12, 10, 12]
-
-    // Print header with proper alignment
-    // eslint-disable-next-line no-control-regex
-    const ansiRegex = /\x1b\[[0-9;]*m/g
-    const headerRow = header
-      .map((h, i) => {
-        // Remove chalk formatting for length calculation
-        const cleanHeader = h.replace(ansiRegex, '')
-        return h + ' '.repeat(Math.max(0, colWidths[i] - cleanHeader.length))
-      })
-      .join(' ')
-    log(headerRow)
-    log('─'.repeat(headerRow.replace(ansiRegex, '').length))
-
     // Fetch agent info for each runner
     const agentInfo = new Map<string, string>()
+    const agentSpinner = startSpinner({ text: 'Loading agent information...' })
 
     try {
       // Fetch latest session for each runner in parallel to get agent info
@@ -147,7 +109,7 @@ export const agentsList = async (options: AgentListOptions, command: BaseCommand
           if (sessionsResponse.ok) {
             const sessions = (await sessionsResponse.json()) as AgentRunnerSession[] | undefined
             if (sessions && sessions.length > 0 && sessions[0].agent_config) {
-              const agent = (sessions[0].agent_config as { agent?: string }).agent
+              const { agent } = sessions[0].agent_config
               if (agent) {
                 agentInfo.set(runner.id, agent)
               }
@@ -160,33 +122,29 @@ export const agentsList = async (options: AgentListOptions, command: BaseCommand
 
       // Wait for all session fetches to complete
       await Promise.allSettled(sessionPromises)
+      stopSpinner({ spinner: agentSpinner })
     } catch {
       // If parallel fetch fails entirely, continue without agent info
+      stopSpinner({ spinner: agentSpinner, error: true })
     }
 
-    // Print each agent runner
+    // Create and populate table
+    const table = new AsciiTable(`Agent Tasks for ${siteInfo.name}`)
+    table.setHeading('ID', 'STATUS', 'AGENT', 'PROMPT', 'BRANCH', 'DURATION', 'CREATED')
+
     agentRunners.forEach((runner) => {
-      const id = chalk.cyan(runner.id)
-      const status = formatStatus(runner.state ?? 'unknown')
-      const agent = agentInfo.get(runner.id) ?? 'unknown'
-      const prompt = chalk.dim(truncateText(runner.title ?? 'No title', colWidths[3] - 2))
-      const branch = truncateText(runner.branch ?? 'unknown', colWidths[4] - 2)
-      const duration = runner.done_at
-        ? formatDuration(runner.created_at, runner.done_at)
-        : formatDuration(runner.created_at)
-      const created = new Date(runner.created_at).toLocaleDateString()
-
-      // Align each column properly
-      const columns = [id, status, agent, prompt, branch, duration, created]
-      const alignedRow = columns
-        .map((col, i) => {
-          const cleanCol = col.replace(ansiRegex, '')
-          return col + ' '.repeat(Math.max(0, colWidths[i] - cleanCol.length))
-        })
-        .join(' ')
-
-      log(alignedRow)
+      table.addRow(
+        runner.id,
+        formatStatus(runner.state ?? 'unknown'),
+        agentInfo.get(runner.id) ?? 'unknown',
+        truncateText(runner.title ?? 'No title', 35),
+        truncateText(runner.branch ?? 'unknown', 12),
+        runner.done_at ? formatDuration(runner.created_at, runner.done_at) : formatDuration(runner.created_at),
+        new Date(runner.created_at).toLocaleDateString(),
+      )
     })
+
+    log(table.toString())
 
     log('')
     log(chalk.dim(`Total: ${agentRunners.length.toString()} agent task(s)`))
@@ -195,6 +153,7 @@ export const agentsList = async (options: AgentListOptions, command: BaseCommand
 
     return agentRunners
   } catch (error_) {
+    stopSpinner({ spinner: listSpinner, error: true })
     const error = error_ as APIError | Error
 
     // Handle specific error cases
