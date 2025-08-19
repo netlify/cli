@@ -86,7 +86,7 @@ export const agentsShow = async (id: string, options: AgentShowOptions, command:
     }
 
     // Display detailed information
-    log(chalk.bold('Agent Runner Details'))
+    log(chalk.bold('Agent Task Details'))
     log(``)
 
     log(chalk.bold('Basic Information:'))
@@ -166,10 +166,10 @@ export const agentsShow = async (id: string, options: AgentShowOptions, command:
       log(`  Running for: ${formatDuration(agentRunner.created_at)}`)
     }
 
-    // Show recent sessions if available
+    // Show recent runs if available
     if (sessions && sessions.length > 0) {
       log(``)
-      log(chalk.bold('Recent Sessions:'))
+      log(chalk.bold('Recent Runs:'))
       sessions.slice(0, 3).forEach((session, index: number) => {
         log(
           // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -182,7 +182,7 @@ export const agentsShow = async (id: string, options: AgentShowOptions, command:
       })
 
       if (sessions.length > 3) {
-        log(`     ${chalk.dim(`... and ${(sessions.length - 3).toString()} more sessions`)}`)
+        log(`     ${chalk.dim(`... and ${(sessions.length - 3).toString()} more runs`)}`)
       }
     }
 
@@ -208,10 +208,10 @@ export const agentsShow = async (id: string, options: AgentShowOptions, command:
         return logAndThrowError('Permission denied. Make sure you have access to this site.')
       }
       if (error.status === 404) {
-        return logAndThrowError('Agent runner not found. Check the ID and try again.')
+        return logAndThrowError('Agent task not found. Check the ID and try again.')
       }
     }
 
-    return logAndThrowError(`Failed to show agent runner: ${error.message}`)
+    return logAndThrowError(`Failed to show agent task: ${error.message}`)
   }
 }

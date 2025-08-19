@@ -89,14 +89,14 @@ export const agentsList = async (options: AgentListOptions, command: BaseCommand
     }
 
     if (!agentRunners || agentRunners.length === 0) {
-      log(chalk.yellow('No agent runners found for this site.'))
+      log(chalk.yellow('No agent tasks found for this site.'))
       log(``)
-      log(`Create your first agent runner with:`)
+      log(`Create your first agent task with:`)
       log(`  ${chalk.cyan('netlify agents:create')}`)
       return
     }
 
-    log(`${chalk.bold('Agent Runners')} for ${chalk.cyan(siteInfo.name)}`)
+    log(`${chalk.bold('Agent Tasks')} for ${chalk.cyan(siteInfo.name)}`)
     log(``)
 
     const header = [
@@ -111,10 +111,18 @@ export const agentsList = async (options: AgentListOptions, command: BaseCommand
 
     const colWidths = [26, 10, 8, 35, 12, 10, 12]
 
-    // Print header
-    const headerRow = header.map((h, i) => h.padEnd(colWidths[i])).join(' ')
+    // Print header with proper alignment
+    // eslint-disable-next-line no-control-regex
+    const ansiRegex = /\x1b\[[0-9;]*m/g
+    const headerRow = header
+      .map((h, i) => {
+        // Remove chalk formatting for length calculation
+        const cleanHeader = h.replace(ansiRegex, '')
+        return h + ' '.repeat(Math.max(0, colWidths[i] - cleanHeader.length))
+      })
+      .join(' ')
     log(headerRow)
-    log('─'.repeat(headerRow.length))
+    log('─'.repeat(headerRow.replace(ansiRegex, '').length))
 
     // Fetch agent info for each runner
     const agentInfo = new Map<string, string>()
@@ -158,23 +166,30 @@ export const agentsList = async (options: AgentListOptions, command: BaseCommand
 
     // Print each agent runner
     agentRunners.forEach((runner) => {
-      const id = runner.id.padEnd(colWidths[0])
+      const id = chalk.cyan(runner.id)
       const status = formatStatus(runner.state ?? 'unknown')
-      const agent = (agentInfo.get(runner.id) ?? 'unknown').padEnd(colWidths[2])
-      const prompt = truncateText(runner.title ?? 'No title', colWidths[3] - 2).padEnd(colWidths[3])
-      const branch = truncateText(runner.branch ?? 'unknown', colWidths[4] - 2).padEnd(colWidths[4])
+      const agent = agentInfo.get(runner.id) ?? 'unknown'
+      const prompt = chalk.dim(truncateText(runner.title ?? 'No title', colWidths[3] - 2))
+      const branch = truncateText(runner.branch ?? 'unknown', colWidths[4] - 2)
       const duration = runner.done_at
-        ? formatDuration(runner.created_at, runner.done_at).padEnd(colWidths[5])
-        : formatDuration(runner.created_at).padEnd(colWidths[5])
-      const created = new Date(runner.created_at).toLocaleDateString().padEnd(colWidths[6])
+        ? formatDuration(runner.created_at, runner.done_at)
+        : formatDuration(runner.created_at)
+      const created = new Date(runner.created_at).toLocaleDateString()
 
-      const row = [chalk.cyan(id), status, agent, chalk.dim(prompt), branch, duration, created].join(' ')
+      // Align each column properly
+      const columns = [id, status, agent, prompt, branch, duration, created]
+      const alignedRow = columns
+        .map((col, i) => {
+          const cleanCol = col.replace(ansiRegex, '')
+          return col + ' '.repeat(Math.max(0, colWidths[i] - cleanCol.length))
+        })
+        .join(' ')
 
-      log(row)
+      log(alignedRow)
     })
 
     log('')
-    log(chalk.dim(`Total: ${agentRunners.length.toString()} agent runner(s)`))
+    log(chalk.dim(`Total: ${agentRunners.length.toString()} agent task(s)`))
     log('')
     log(`${chalk.dim('Use')} ${chalk.cyan('netlify agents:show <id>')} ${chalk.dim('to view details')}`)
 
@@ -195,6 +210,6 @@ export const agentsList = async (options: AgentListOptions, command: BaseCommand
       }
     }
 
-    return logAndThrowError(`Failed to list agent runners: ${error.message}`)
+    return logAndThrowError(`Failed to list agent tasks: ${error.message}`)
   }
 }
