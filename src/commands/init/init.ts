@@ -180,7 +180,7 @@ const createOrLinkSiteToRepo = async (command: BaseCommand) => {
   const initializeOpts = [EXISTING_SITE, NEW_SITE] as const
 
   // TODO(serhalp): inquirer should infer the choice type here, but doesn't. Fix.
-  const { initChoice } = await inquirer.prompt<{ initChoice: (typeof initializeOpts)[number] }>([
+  const { initChoice } = await inquirer.prompt<{ initChoice: typeof initializeOpts[number] }>([
     {
       type: 'list',
       name: 'initChoice',

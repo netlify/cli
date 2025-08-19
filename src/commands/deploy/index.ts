@@ -77,10 +77,7 @@ For detailed configuration options, see the Netlify documentation.`,
       '--create-site [name]',
       'Create a new site and deploy to it. Optionally specify a name, otherwise a random name will be generated. Requires --team flag if you have multiple teams.',
     )
-    .option(
-      '--team <slug>',
-      'Specify team slug when creating a site. Only works with --create-site flag.',
-    )
+    .option('--team <slug>', 'Specify team slug when creating a site. Only works with --create-site flag.')
     .addExamples([
       'netlify deploy',
       'netlify deploy --site my-first-project',
