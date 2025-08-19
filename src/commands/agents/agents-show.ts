@@ -4,7 +4,7 @@ import { chalk, logAndThrowError, log, logJson, type APIError } from '../../util
 import { startSpinner, stopSpinner } from '../../lib/spinner.js'
 import type BaseCommand from '../base-command.js'
 import type { AgentRunner, AgentRunnerSession } from './types.js'
-import { formatDate, formatDuration, formatStatus } from './utils.js'
+import { formatDate, formatDuration, formatStatus, getAgentName } from './utils.js'
 
 interface AgentShowOptions extends OptionValues {
   json?: boolean
@@ -92,7 +92,7 @@ export const agentsShow = async (id: string, options: AgentShowOptions, command:
         const { agent, model } = latestSession.agent_config
 
         if (agent) {
-          log(`  Agent: ${chalk.cyan(agent)}`)
+          log(`  Agent: ${chalk.cyan(getAgentName(agent))}`)
         }
         if (model) {
           log(`  Model: ${chalk.cyan(model)}`)

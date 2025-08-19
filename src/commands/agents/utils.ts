@@ -51,3 +51,8 @@ export const validateAgent = (agent: string): boolean | string => {
   }
   return true
 }
+
+export const getAgentName = (agent: string): string => {
+  const entry = AVAILABLE_AGENTS.find((a) => a.value === agent)
+  return entry ? entry.name : agent
+}
