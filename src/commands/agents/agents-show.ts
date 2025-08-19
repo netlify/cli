@@ -4,30 +4,7 @@ import { chalk, logAndThrowError, log, logJson, type APIError } from '../../util
 import { startSpinner, stopSpinner } from '../../lib/spinner.js'
 import type BaseCommand from '../base-command.js'
 import type { AgentRunner, AgentRunnerSession } from './types.js'
-import { formatStatus } from './utils.js'
-
-const formatDate = (dateString: string): string => {
-  const date = new Date(dateString)
-  return date.toLocaleString()
-}
-
-const formatDuration = (startTime: string, endTime?: string): string => {
-  const start = new Date(startTime)
-  const end = endTime ? new Date(endTime) : new Date()
-  const duration = end.getTime() - start.getTime()
-
-  const hours = Math.floor(duration / 3600000)
-  const minutes = Math.floor((duration % 3600000) / 60000)
-  const seconds = Math.floor((duration % 60000) / 1000)
-
-  if (hours > 0) {
-    return `${hours.toString()}h ${minutes.toString()}m ${seconds.toString()}s`
-  }
-  if (minutes > 0) {
-    return `${minutes.toString()}m ${seconds.toString()}s`
-  }
-  return `${seconds.toString()}s`
-}
+import { formatDate, formatDuration, formatStatus } from './utils.js'
 
 interface AgentShowOptions extends OptionValues {
   json?: boolean
@@ -75,7 +52,7 @@ export const agentsShow = async (id: string, options: AgentShowOptions, command:
 
     log(chalk.bold('Basic Information:'))
     log(`  Task ID: ${chalk.cyan(agentRunner.id)}`)
-    log(`  Status: ${formatStatus(agentRunner.state ?? 'new')}`)
+    log(`  Status: ${formatStatus(agentRunner.state ?? 'unknown')}`)
     log(`  Site: ${chalk.cyan(siteInfo.name)} (${site.id ?? ''})`)
 
     if (agentRunner.user) {
@@ -123,7 +100,7 @@ export const agentsShow = async (id: string, options: AgentShowOptions, command:
       }
     }
 
-    log(`  Branch: ${chalk.cyan(agentRunner.branch ?? 'main')}`)
+    log(`  Branch: ${chalk.cyan(agentRunner.branch ?? 'unknown')}`)
 
     if (agentRunner.result_branch) {
       log(`  Result Branch: ${chalk.green(agentRunner.result_branch)}`)

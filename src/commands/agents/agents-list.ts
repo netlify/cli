@@ -5,26 +5,7 @@ import { chalk, logAndThrowError, log, logJson, type APIError } from '../../util
 import { startSpinner, stopSpinner } from '../../lib/spinner.js'
 import type BaseCommand from '../base-command.js'
 import type { AgentRunner, AgentRunnerSession } from './types.js'
-import { formatStatus } from './utils.js'
-
-const formatDuration = (startTime: string, endTime?: string): string => {
-  const start = new Date(startTime)
-  const end = endTime ? new Date(endTime) : new Date()
-  const duration = end.getTime() - start.getTime()
-
-  const minutes = Math.floor(duration / 60000)
-  const seconds = Math.floor((duration % 60000) / 1000)
-
-  if (minutes > 0) {
-    return `${minutes.toString()}m ${seconds.toString()}s`
-  }
-  return `${seconds.toString()}s`
-}
-
-const truncateText = (text: string, maxLength: number): string => {
-  if (text.length <= maxLength) return text
-  return text.substring(0, maxLength - 3) + '...'
-}
+import { formatDuration, formatStatus, truncateText } from './utils.js'
 
 interface AgentListOptions extends OptionValues {
   status?: string

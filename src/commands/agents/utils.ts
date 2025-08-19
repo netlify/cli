@@ -1,6 +1,34 @@
 import { AVAILABLE_AGENTS, STATUS_COLORS } from './constants.js'
 import { chalk } from '../../utils/command-helpers.js'
 
+export const truncateText = (text: string, maxLength: number): string => {
+  if (text.length <= maxLength) return text
+  return text.substring(0, maxLength - 3) + '...'
+}
+
+export const formatDate = (dateString: string): string => {
+  const date = new Date(dateString)
+  return date.toLocaleString()
+}
+
+export const formatDuration = (startTime: string, endTime?: string): string => {
+  const start = new Date(startTime)
+  const end = endTime ? new Date(endTime) : new Date()
+  const duration = end.getTime() - start.getTime()
+
+  const hours = Math.floor(duration / 3600000)
+  const minutes = Math.floor((duration % 3600000) / 60000)
+  const seconds = Math.floor((duration % 60000) / 1000)
+
+  if (hours > 0) {
+    return `${hours.toString()}h ${minutes.toString()}m ${seconds.toString()}s`
+  }
+  if (minutes > 0) {
+    return `${minutes.toString()}m ${seconds.toString()}s`
+  }
+  return `${seconds.toString()}s`
+}
+
 export const formatStatus = (status: string): string => {
   const colorFn = status in STATUS_COLORS ? STATUS_COLORS[status as keyof typeof STATUS_COLORS] : chalk.white
   return colorFn(status.toUpperCase())
@@ -23,5 +51,3 @@ export const validateAgent = (agent: string): boolean | string => {
   }
   return true
 }
-
-export { AVAILABLE_AGENTS }
