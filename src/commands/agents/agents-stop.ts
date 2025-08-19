@@ -4,6 +4,7 @@ import { chalk, logAndThrowError, log, logJson, type APIError } from '../../util
 import { startSpinner, stopSpinner } from '../../lib/spinner.js'
 import type BaseCommand from '../base-command.js'
 import type { AgentRunner } from './types.js'
+import { formatStatus } from './utils.js'
 
 interface AgentStopOptions extends OptionValues {
   json?: boolean
@@ -88,8 +89,8 @@ export const agentsStop = async (id: string, options: AgentStopOptions, command:
     log(``)
     log(chalk.bold('Details:'))
     log(`  Task ID: ${chalk.cyan(id)}`)
-    log(`  Previous Status: ${chalk.dim(agentRunner.state ?? 'unknown')}`)
-    log(`  New Status: ${chalk.red('CANCELLED')}`)
+    log(`  Previous Status: ${formatStatus(agentRunner.state ?? 'unknown')}`)
+    log(`  New Status: ${formatStatus('cancelled')}`)
     log(``)
     log(chalk.dim('The agent task has been stopped and will not continue processing.'))
 

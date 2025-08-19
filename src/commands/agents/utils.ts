@@ -1,10 +1,11 @@
-import { AVAILABLE_AGENTS } from './constants.js'
+import { AVAILABLE_AGENTS, STATUS_COLORS } from './constants.js'
+import { chalk } from '../../utils/command-helpers.js'
 
-/**
- * Validates a prompt string for agent task creation
- * @param input - The prompt string to validate
- * @returns true if valid, error message string if invalid
- */
+export const formatStatus = (status: string): string => {
+  const colorFn = status in STATUS_COLORS ? STATUS_COLORS[status as keyof typeof STATUS_COLORS] : chalk.white
+  return colorFn(status.toUpperCase())
+}
+
 export const validatePrompt = (input: string): boolean | string => {
   if (!input || input.trim().length === 0) {
     return 'Please provide a prompt for the agent'
@@ -15,11 +16,6 @@ export const validatePrompt = (input: string): boolean | string => {
   return true
 }
 
-/**
- * Validates that an agent type is supported
- * @param agent - The agent type to validate
- * @returns true if valid, error message string if invalid
- */
 export const validateAgent = (agent: string): boolean | string => {
   const validAgents = AVAILABLE_AGENTS.map((a) => a.value) as string[]
   if (!validAgents.includes(agent)) {
