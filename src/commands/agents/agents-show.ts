@@ -1,6 +1,6 @@
 import type { OptionValues } from 'commander'
 
-import { chalk, logAndThrowError, log, logJson, type APIError } from '../../utils/command-helpers.js'
+import { chalk, logAndThrowError, log, logJson } from '../../utils/command-helpers.js'
 import { startSpinner, stopSpinner } from '../../lib/spinner.js'
 import type BaseCommand from '../base-command.js'
 import type { AgentRunner, AgentRunnerSession } from './types.js'
@@ -154,21 +154,9 @@ export const agentsShow = async (id: string, options: AgentShowOptions, command:
 
     return agentRunner
   } catch (error_) {
-    stopSpinner({ spinner: showSpinner, error: true })
-    const error = error_ as APIError | Error
+    const error = error_ as Error
 
-    // Handle specific error cases
-    if ('status' in error) {
-      if (error.status === 401) {
-        return logAndThrowError('Authentication failed. Please run `netlify login` to authenticate.')
-      }
-      if (error.status === 403) {
-        return logAndThrowError('Permission denied. Make sure you have access to this site.')
-      }
-      if (error.status === 404) {
-        return logAndThrowError('Agent task not found. Check the ID and try again.')
-      }
-    }
+    stopSpinner({ spinner: showSpinner, error: true })
 
     return logAndThrowError(`Failed to show agent task: ${error.message}`)
   }

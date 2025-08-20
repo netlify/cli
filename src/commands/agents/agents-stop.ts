@@ -1,6 +1,6 @@
 import type { OptionValues } from 'commander'
 
-import { chalk, logAndThrowError, log, logJson, type APIError } from '../../utils/command-helpers.js'
+import { chalk, logAndThrowError, log, logJson } from '../../utils/command-helpers.js'
 import { startSpinner, stopSpinner } from '../../lib/spinner.js'
 import type BaseCommand from '../base-command.js'
 import type { AgentRunner } from './types.js'
@@ -72,13 +72,15 @@ export const agentsStop = async (id: string, options: AgentStopOptions, command:
       },
     )
 
+    stopSpinner({ spinner: stopSpinnerInstance })
+
     if (!response.ok) {
       const errorData = (await response.json().catch(() => ({}))) as { error?: string }
       throw new Error(errorData.error ?? `HTTP ${response.status.toString()}: ${response.statusText}`)
     }
 
-    const result = (await response.json()) as Record<string, unknown>
-    stopSpinner({ spinner: stopSpinnerInstance })
+    // Success case, 202 with empty body
+    const result = { success: true }
 
     if (options.json) {
       logJson(result)
@@ -96,24 +98,9 @@ export const agentsStop = async (id: string, options: AgentStopOptions, command:
 
     return result
   } catch (error_) {
-    stopSpinner({ spinner: statusSpinner, error: true })
-    const error = error_ as APIError | Error
+    const error = error_ as Error
 
-    // Handle specific error cases
-    if ('status' in error) {
-      if (error.status === 401) {
-        return logAndThrowError('Authentication failed. Please run `netlify login` to authenticate.')
-      }
-      if (error.status === 403) {
-        return logAndThrowError('Permission denied. Make sure you have access to this site and can manage agent tasks.')
-      }
-      if (error.status === 404) {
-        return logAndThrowError('Agent task not found. Check the ID and try again.')
-      }
-      if (error.status === 422) {
-        return logAndThrowError('Cannot stop this agent task. It may already be completed or in an invalid state.')
-      }
-    }
+    stopSpinner({ spinner: statusSpinner, error: true })
 
     return logAndThrowError(`Failed to stop agent task: ${error.message}`)
   }

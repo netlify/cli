@@ -1,7 +1,7 @@
 import type { OptionValues } from 'commander'
 import AsciiTable from 'ascii-table'
 
-import { chalk, logAndThrowError, log, logJson, type APIError } from '../../utils/command-helpers.js'
+import { chalk, logAndThrowError, log, logJson } from '../../utils/command-helpers.js'
 import { startSpinner, stopSpinner } from '../../lib/spinner.js'
 import type BaseCommand from '../base-command.js'
 import type { AgentRunner, AgentRunnerSession } from './types.js'
@@ -148,21 +148,9 @@ export const agentsList = async (options: AgentListOptions, command: BaseCommand
 
     return agentRunners
   } catch (error_) {
-    stopSpinner({ spinner: listSpinner, error: true })
-    const error = error_ as APIError | Error
+    const error = error_ as Error
 
-    // Handle specific error cases
-    if ('status' in error) {
-      if (error.status === 401) {
-        return logAndThrowError('Authentication failed. Please run `netlify login` to authenticate.')
-      }
-      if (error.status === 403) {
-        return logAndThrowError('Permission denied. Make sure you have access to this site.')
-      }
-      if (error.status === 404) {
-        return logAndThrowError('Site not found. Make sure the site exists and you have access to it.')
-      }
-    }
+    stopSpinner({ spinner: listSpinner, error: true })
 
     return logAndThrowError(`Failed to list agent tasks: ${error.message}`)
   }
