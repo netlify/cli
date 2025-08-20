@@ -20,8 +20,7 @@ export const agentsCreate = async (promptArg: string, options: AgentCreateOption
 
   await command.authenticate()
 
-  const { prompt, agent: initialAgent, branch: initialBranch } = options
-  const { model } = options
+  const { prompt, agent: initialAgent, branch: initialBranch, model } = options
 
   let finalPrompt: string
   let agent = initialAgent
@@ -41,11 +40,9 @@ export const agentsCreate = async (promptArg: string, options: AgentCreateOption
     ])
     finalPrompt = promptInput
   } else {
-    // Use promptArg if provided, otherwise use prompt from options
     finalPrompt = (promptArg || prompt) ?? ''
   }
 
-  // Validate prompt
   const promptValidation = validatePrompt(finalPrompt)
   if (promptValidation !== true) {
     return logAndThrowError(promptValidation)
