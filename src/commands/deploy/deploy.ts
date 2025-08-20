@@ -937,12 +937,23 @@ const createSiteWithFlags = async (options: DeployOptionValues, command: BaseCom
     throw new Error('Team must be specified to create a site')
   }
 
-  const siteData = await api.createSiteInTeam({
-    accountSlug: options.team,
-    body,
-  })
-  site.id = siteData.id
-  return siteData as SiteInfo
+  try {
+    const siteData = await api.createSiteInTeam({
+      accountSlug: options.team,
+      body,
+    })
+    site.id = siteData.id
+    return siteData as SiteInfo
+  } catch (error_) {
+    if ((error_ as APIError).status === 422) {
+      return logAndThrowError(
+        siteName
+          ? `Site name "${siteName}" is already taken. Please try a different name.`
+          : 'Unable to create site with a random name. Please try again or specify a different name.',
+      )
+    }
+    return logAndThrowError(`Failed to create site: ${(error_ as APIError).status}: ${(error_ as APIError).message}`)
+  }
 }
 
 const promptForSiteAction = async (options: DeployOptionValues, command: BaseCommand, site: $TSFixMe) => {
