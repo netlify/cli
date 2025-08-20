@@ -63,7 +63,7 @@ Provision a production ready Postgres database with a single command
 
 ### [deploy](/commands/deploy)
 
-Create a new deploy from the contents of a folder
+Deploy your project to Netlify
 
 ### [dev](/commands/dev)
 

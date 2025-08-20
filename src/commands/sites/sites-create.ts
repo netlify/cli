@@ -33,7 +33,7 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand) =
 
   await command.authenticate()
 
-  let { accountSlug }: { accountSlug?: string } = options
+  let accountSlug = options.accountSlug as string | undefined
   if (!accountSlug) {
     const { accountSlug: accountSlugInput }: { accountSlug: string } = await inquirer.prompt<
       Promise<{ accountSlug: string }>
