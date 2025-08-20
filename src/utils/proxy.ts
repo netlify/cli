@@ -251,30 +251,22 @@ const serveRedirect = async function ({
   env,
   functionsRegistry,
   imageProxy,
+  redirectsMatch,
   options,
   proxy,
   req,
   res,
   siteInfo,
-  redirectsHandler,
 }: {
-  redirectsHandler: RedirectsHandler
+  redirectsMatch: Awaited<ReturnType<RedirectsHandler["match"]>>
 } & Record<string, $TSFixMe>) {
-
-  const match = await redirectsHandler.match(req)
-  if (!match) return proxy.web(req, res, options)
+  if (!redirectsMatch) return proxy.web(req, res, options)
 
   options = options || req.proxyOptions || {}
   options.match = null
 
-  if (match.force) {
-    res.writeHead(404)
-    res.end(await render404(options.publicFolder))
-    return
-  }
-
-  if (match.headers && Object.keys(match.headers).length >= 0) {
-    Object.entries(match.headers).forEach(([key, value]) => {
+  if (redirectsMatch.headers && Object.keys(redirectsMatch.headers).length >= 0) {
+    Object.entries(redirectsMatch.headers).forEach(([key, value]) => {
       req.headers[key] = value
     })
   }
@@ -291,12 +283,12 @@ const serveRedirect = async function ({
 
   const originalURL = req.url
 
-  // TODO: Handle match exceptions
+  // TODO: Handle redirectsMatch exceptions
   // - This handles JWT and role exceptions 
-  if (match.exceptions && match.exceptions.JWT) {
+  if (redirectsMatch.exceptions && redirectsMatch.exceptions.JWT) {
     // Some values of JWT can start with :, so, make sure to normalize them
     const expectedRoles = new Set(
-      match.exceptions.JWT.split(',').map((value) => (value.startsWith(':') ? value.slice(1) : value)),
+      redirectsMatch.exceptions.JWT.split(',').map((value) => (value.startsWith(':') ? value.slice(1) : value)),
     )
 
     const cookieValues = cookie.parse(req.headers.cookie || '')
@@ -342,21 +334,21 @@ const serveRedirect = async function ({
   const staticFile = await getStatic(decodeURIComponent(reqUrl.pathname), options.publicFolder)
   const endpointExists =
     !staticFile &&
-    !match.hiddenProxy &&
+    !redirectsMatch.hiddenProxy &&
     process.env.NETLIFY_DEV_SERVER_CHECK_SSG_ENDPOINTS &&
     (await isEndpointExists(decodeURIComponent(reqUrl.pathname), options.target))
   if (staticFile || endpointExists) {
     const pathname = staticFile || reqUrl.pathname
     req.url = encodeURI(decodeURI(pathname)) + reqUrl.search
     // if there is an existing static file and it is not a forced redirect, return the file
-    if (!match.force) {
+    if (!redirectsMatch.force) {
       return proxy.web(req, res, { ...options, staticFile })
     }
   }
 
-  if (match.force || !staticFile || !options.framework || req.method === 'POST') {
+  if (redirectsMatch.force || !staticFile || !options.framework || req.method === 'POST') {
     // construct destination URL from redirect rule match
-    const dest = new URL(match.target, `${reqUrl.protocol}//${reqUrl.host}`)
+    const dest = new URL(redirectsMatch.target, `${reqUrl.protocol}//${reqUrl.host}`)
 
     // Lines 108-112 in RedirectsHandler
     // We pass through request params if the redirect rule
@@ -374,30 +366,6 @@ const serveRedirect = async function ({
 
     let destURL = stripOrigin(dest)
 
-    if (match.external) {
-      if (match.redirect) {
-        // This is a redirect, so we set the complete external URL as destination
-        destURL = `${dest}`
-      } else {
-        if (!match.hiddenProxy) {
-          console.log(`${NETLIFYDEVLOG} Proxying to ${dest}`)
-        }
-        proxyToExternalUrl({ req, res, dest, destURL })
-        return
-      }
-    }
-
-    if (match.redirect) {
-      console.log(`${NETLIFYDEVLOG} Redirecting ${req.url} to ${destURL}`)
-      res.writeHead(match.statusCode, {
-        Location: destURL,
-        'Cache-Control': 'no-cache',
-      })
-      res.end(`Redirecting to ${destURL}`)
-
-      return
-    }
-
     const ct = req.headers['content-type'] ? contentType.parse(req).type : ''
     if (
       req.method === 'POST' &&
@@ -414,11 +382,11 @@ const serveRedirect = async function ({
       (await functionsRegistry.getFunctionForURLPath(destURL, req.method, () => Boolean(destStaticFile)))
     let statusValue
     if (
-      match.force ||
+      redirectsMatch.force ||
       (!staticFile && ((!options.framework && destStaticFile) || isInternal(destURL) || matchingFunction))
     ) {
       req.url = destStaticFile ? destStaticFile + dest.search : destURL
-      const { statusCode } = match
+      const { statusCode } = redirectsMatch
       statusValue = statusCode
       console.log(`${NETLIFYDEVLOG} Rewrote URL to`, req.url)
     }
@@ -439,6 +407,7 @@ const serveRedirect = async function ({
     if (isImageRequest(req)) {
       return imageProxy(req, res)
     }
+
     const addonUrl = getAddonUrl(options.addonsUrls, req)
     if (addonUrl) {
       handleAddonUrl({ req, res, addonUrl })
@@ -827,9 +796,9 @@ const onRequest = async (
     return
   }
 
-  const match = await redirectsHandler.match(nodeRequestToWebRequest(req))
+  const redirectsMatch = await redirectsHandler.match(nodeRequestToWebRequest(req))
   const options = {
-    match,
+    match: redirectsMatch,
     addonsUrls,
     target: `http://${
       settings.frameworkHost && isIPv6(settings.frameworkHost) ? `[${settings.frameworkHost}]` : settings.frameworkHost
@@ -855,15 +824,14 @@ const onRequest = async (
     }
   }
 
-  if (match) {
+  if (redirectsMatch) {
     maybeNotifyActivity()
 
     // We don't want to generate an ETag for 3xx redirects.
     // @ts-expect-error TS(7031) FIXME: Binding element 'statusCode' implicitly has an 'an... Remove this comment to see the full error message
     req[shouldGenerateETag] = ({ statusCode }) => statusCode < 300 || statusCode >= 400
 
-    
-    return serveRedirect({ req, res, proxy, imageProxy, options, siteInfo, env, functionsRegistry, redirectsHandler })
+    return serveRedirect({ req, res, proxy, imageProxy, redirectsMatch, options, siteInfo, env, functionsRegistry, redirectsHandler })
   }
 
   // The request will be served by the framework server, which means we want to
