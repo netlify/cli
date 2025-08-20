@@ -18,7 +18,7 @@
   "dependencies": {
     "@astrojs/starlight": "0.35.2",
     "@bugsnag/js": "8.4.0",
-    "astro": "5.12.9",
+    "astro": "5.13.2",
     "markdown-magic": "2.6.1",
     "sharp": "0.34.3",
     "strip-ansi": "7.1.0"
