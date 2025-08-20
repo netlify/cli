@@ -926,15 +926,34 @@ const createSiteWithFlags = async (options: DeployOptionValues, command: BaseCom
     log(message)
   }
 
-  const siteData = await sitesCreate(
-    {
-      name: siteName,
+  // Create site directly via API to bypass interactive prompts
+  const { api } = command.netlify
+  const body: { name?: string } = {}
+  if (siteName) {
+    body.name = siteName.trim()
+  }
+
+  if (!options.team) {
+    throw new Error('Team must be specified to create a site')
+  }
+
+  try {
+    const siteData = await api.createSiteInTeam({
       accountSlug: options.team,
-    },
-    command,
-  )
-  site.id = siteData.id
-  return siteData
+      body,
+    })
+    site.id = siteData.id
+    return siteData as SiteInfo
+  } catch (error_) {
+    if ((error_ as APIError).status === 422) {
+      return logAndThrowError(
+        siteName
+          ? `Site name "${siteName}" is already taken. Please try a different name.`
+          : 'Unable to create site with a random name. Please try again or specify a different name.',
+      )
+    }
+    return logAndThrowError(`Failed to create site: ${(error_ as APIError).status}: ${(error_ as APIError).message}`)
+  }
 }
 
 const promptForSiteAction = async (options: DeployOptionValues, command: BaseCommand, site: $TSFixMe) => {
@@ -954,11 +973,20 @@ const promptForSiteAction = async (options: DeployOptionValues, command: BaseCom
       type: 'list',
       name: 'initChoice',
       message: 'What would you like to do?',
-      choices: ['Link this directory to an existing project', 'Create & configure a new project'],
+      choices: [
+        {
+          name: '⇄  Link this directory to an existing project',
+          value: 'link',
+        },
+        {
+          name: '+  Create & configure a new project',
+          value: 'create',
+        },
+      ],
     },
   ])
 
-  const siteData = initChoice.startsWith('+') ? await sitesCreate({}, command) : await link({}, command)
+  const siteData = initChoice === 'create' ? await sitesCreate({}, command) : await link({}, command)
 
   site.id = siteData.id
   return siteData
