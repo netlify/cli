@@ -926,15 +926,19 @@ const createSiteWithFlags = async (options: DeployOptionValues, command: BaseCom
     log(message)
   }
 
-  const siteData = await sitesCreate(
-    {
-      name: siteName,
-      accountSlug: options.team,
-    },
-    command,
-  )
+  // Create site directly via API to bypass interactive prompts
+  const { api } = command.netlify
+  const body: { name?: string } = {}
+  if (siteName) {
+    body.name = siteName.trim()
+  }
+  
+  const siteData = await api.createSiteInTeam({
+    accountSlug: options.team!,
+    body,
+  })
   site.id = siteData.id
-  return siteData
+  return siteData as SiteInfo
 }
 
 const promptForSiteAction = async (options: DeployOptionValues, command: BaseCommand, site: $TSFixMe) => {
