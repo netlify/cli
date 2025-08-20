@@ -129,6 +129,11 @@ Support for package.json's main field, and intrinsic index.js entrypoints are co
       'Ignore any functions created as part of a previous `build` or `deploy` commands, forcing them to be bundled again as part of the deployment',
       false,
     )
+    .option(
+      '--upload-source-zip',
+      'Upload source code as a zip file',
+      false,
+    )
     .addExamples([
       'netlify deploy',
       'netlify deploy --site my-first-project',
@@ -140,6 +145,7 @@ Support for package.json's main field, and intrinsic index.js entrypoints are co
       'netlify deploy --auth $NETLIFY_AUTH_TOKEN',
       'netlify deploy --trigger',
       'netlify deploy --context deploy-preview',
+      'netlify deploy --upload-source-zip # Upload source code',
     ])
     .addHelpText('after', () => {
       const docsUrl = 'https://docs.netlify.com/site-deploys/overview/'

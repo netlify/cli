@@ -18,4 +18,5 @@ export type DeployOptionValues = BaseOptionValues & {
   skipFunctionsCache: boolean
   timeout?: number
   trigger?: boolean
+  uploadSourceZip?: boolean
 }
