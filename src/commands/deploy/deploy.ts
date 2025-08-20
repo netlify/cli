@@ -932,9 +932,13 @@ const createSiteWithFlags = async (options: DeployOptionValues, command: BaseCom
   if (siteName) {
     body.name = siteName.trim()
   }
-  
+
+  if (!options.team) {
+    throw new Error('Team must be specified to create a site')
+  }
+
   const siteData = await api.createSiteInTeam({
-    accountSlug: options.team!,
+    accountSlug: options.team,
     body,
   })
   site.id = siteData.id
