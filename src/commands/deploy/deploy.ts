@@ -953,16 +953,19 @@ const promptForSiteAction = async (options: DeployOptionValues, command: BaseCom
     log(`\nYou must pick a --team: ${availableTeams.map((team) => team.slug).join(', ')}`)
   }
 
+  const NEW_SITE = '+  Create & configure a new project'
+  const EXISTING_SITE = '⇄  Link this directory to an existing project'
+
   const { initChoice } = await inquirer.prompt([
     {
       type: 'list',
       name: 'initChoice',
       message: 'What would you like to do?',
-      choices: ['Link this directory to an existing project', 'Create & configure a new project'],
+      choices: [EXISTING_SITE, NEW_SITE],
     },
   ])
 
-  const siteData = initChoice.startsWith('+') ? await sitesCreate({}, command) : await link({}, command)
+  const siteData = initChoice === NEW_SITE ? await sitesCreate({}, command) : await link({}, command)
 
   site.id = siteData.id
   return siteData
