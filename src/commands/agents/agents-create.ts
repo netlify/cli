@@ -43,9 +43,9 @@ export const agentsCreate = async (promptArg: string, options: AgentCreateOption
     finalPrompt = (promptArg || prompt) ?? ''
   }
 
-  const promptValidation = validatePrompt(finalPrompt)
-  if (promptValidation !== true) {
-    return logAndThrowError(promptValidation)
+  const promptIsValid = validatePrompt(finalPrompt)
+  if (promptIsValid !== true) {
+    return logAndThrowError(promptIsValid)
   }
 
   // Agent selection if not provided
@@ -63,7 +63,6 @@ export const agentsCreate = async (promptArg: string, options: AgentCreateOption
     ])
     agent = agentInput
   } else {
-    // Validate provided agent
     const agentValidation = validateAgent(agent)
     if (agentValidation !== true) {
       return logAndThrowError(agentValidation)
