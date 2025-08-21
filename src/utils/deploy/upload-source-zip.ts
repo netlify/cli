@@ -1,6 +1,6 @@
 import { execFile } from 'child_process'
-import { readFile, stat } from 'fs/promises'
-import { join, relative } from 'path'
+import { readFile } from 'fs/promises'
+import { join } from 'path'
 import { promisify } from 'util'
 import type { PathLike } from 'fs'
 import { platform } from 'os'
@@ -43,14 +43,22 @@ const DEFAULT_IGNORE_PATTERNS = [
   '.temp',
 ]
 
-const createSourceZip = async (sourceDir: string, statusCb: (status: DeployEvent) => void) => {
+const createSourceZip = async ({
+  sourceDir,
+  filename,
+  statusCb,
+}: {
+  sourceDir: string
+  filename: string
+  statusCb: (status: DeployEvent) => void
+}) => {
   // Check for Windows - this feature is not supported on Windows
   if (platform() === 'win32') {
     throw new Error('Source zip upload is not supported on Windows')
   }
 
   const tmpDir = temporaryDirectory()
-  const zipPath = join(tmpDir, 'source.zip')
+  const zipPath = join(tmpDir, filename)
 
   statusCb({
     type: 'source-zip-upload',
@@ -70,10 +78,14 @@ const createSourceZip = async (sourceDir: string, statusCb: (status: DeployEvent
   return zipPath
 }
 
-const uploadZipToS3 = async (zipPath: string, uploadUrl: string, statusCb: (status: DeployEvent) => void): Promise<void> => {
+const uploadZipToS3 = async (
+  zipPath: string,
+  uploadUrl: string,
+  statusCb: (status: DeployEvent) => void,
+): Promise<void> => {
   const zipBuffer = await readFile(zipPath)
   const sizeMB = (zipBuffer.length / 1024 / 1024).toFixed(2)
-  
+
   statusCb({
     type: 'source-zip-upload',
     msg: `Uploading source zip (${sizeMB} MB)...`,
@@ -90,7 +102,7 @@ const uploadZipToS3 = async (zipPath: string, uploadUrl: string, statusCb: (stat
   })
 
   if (!response.ok) {
-    throw new Error(`Failed to upload zip: ${response.status} ${response.statusText}`)
+    throw new Error(`Failed to upload zip: ${response.statusText}`)
   }
 }
 
@@ -105,7 +117,7 @@ export const uploadSourceZip = async ({
   try {
     // Create zip from source directory
     try {
-      zipPath = await createSourceZip(sourceDir, statusCb)
+      zipPath = await createSourceZip({ sourceDir, filename, statusCb })
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error)
       statusCb({

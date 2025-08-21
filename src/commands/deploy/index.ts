@@ -1,4 +1,4 @@
-import { env } from 'process'
+import { env, platform } from 'process'
 
 import { Option } from 'commander'
 import terminalLink from 'terminal-link'
@@ -117,6 +117,12 @@ For more information about Netlify deploys, see ${terminalLink(docsUrl, docsUrl,
 
       if (options.team && !options.createSite) {
         return logAndThrowError('--team flag can only be used with --create-site flag')
+      }
+
+      // Handle Windows + source zip upload
+      if (options.uploadSourceZip && platform === 'win32') {
+        warn('Source zip upload is not supported on Windows. Disabling --upload-source-zip option.')
+        options.uploadSourceZip = false
       }
 
       const { deploy } = await import('./deploy.js')
