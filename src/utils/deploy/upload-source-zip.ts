@@ -3,6 +3,7 @@ import { readFile, stat } from 'fs/promises'
 import { join, relative } from 'path'
 import { promisify } from 'util'
 import type { PathLike } from 'fs'
+import { platform } from 'os'
 
 import fetch from 'node-fetch'
 
@@ -43,6 +44,11 @@ const DEFAULT_IGNORE_PATTERNS = [
 ]
 
 const createSourceZip = async (sourceDir: string, statusCb: (status: DeployEvent) => void) => {
+  // Check for Windows - this feature is not supported on Windows
+  if (platform() === 'win32') {
+    throw new Error('Source zip upload is not supported on Windows')
+  }
+
   const tmpDir = temporaryDirectory()
   const zipPath = join(tmpDir, 'source.zip')
 
@@ -98,10 +104,32 @@ export const uploadSourceZip = async ({
 
   try {
     // Create zip from source directory
-    zipPath = await createSourceZip(sourceDir, statusCb)
+    try {
+      zipPath = await createSourceZip(sourceDir, statusCb)
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error)
+      statusCb({
+        type: 'source-zip-upload',
+        msg: `Failed to create source zip: ${errorMsg}`,
+        phase: 'error',
+      })
+      warn(`Failed to create source zip: ${errorMsg}`)
+      throw error
+    }
 
     // Upload to S3
-    await uploadZipToS3(zipPath, uploadUrl, statusCb)
+    try {
+      await uploadZipToS3(zipPath, uploadUrl, statusCb)
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error)
+      statusCb({
+        type: 'source-zip-upload',
+        msg: `Failed to upload source zip: ${errorMsg}`,
+        phase: 'error',
+      })
+      warn(`Failed to upload source zip: ${errorMsg}`)
+      throw error
+    }
 
     statusCb({
       type: 'source-zip-upload',
@@ -110,17 +138,6 @@ export const uploadSourceZip = async ({
     })
 
     log(`✔ Source code uploaded`)
-  } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : String(error)
-    
-    statusCb({
-      type: 'source-zip-upload',
-      msg: `Failed to upload source zip: ${errorMsg}`,
-      phase: 'error',
-    })
-
-    warn(`Failed to upload source zip: ${errorMsg}`)
-    throw error
   } finally {
     // Clean up temporary zip file
     if (zipPath) {
