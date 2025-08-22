@@ -224,10 +224,12 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
   })
 
   // Try to add `.netlify` to `.gitignore`.
-  try {
-    await ensureNetlifyIgnore(repositoryRoot)
-  } catch {
-    // no-op
+  if (!options.skipGitignore) {
+    try {
+      await ensureNetlifyIgnore(repositoryRoot)
+    } catch {
+      // no-op
+    }
   }
 
   // TODO: We should consolidate this with the existing config watcher.
