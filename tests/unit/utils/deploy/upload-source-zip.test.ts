@@ -36,6 +36,10 @@ describe('uploadSourceZip', () => {
   })
 
   test('creates zip and uploads successfully', async () => {
+    // Ensure OS platform mock returns non-Windows
+    const mockOs = await import('os')
+    vi.mocked(mockOs.platform).mockReturnValue('darwin')
+    
     // Import after mocks are set up
     const { uploadSourceZip } = await import('../../../../src/utils/deploy/upload-source-zip.js')
 
@@ -100,6 +104,10 @@ describe('uploadSourceZip', () => {
   })
 
   test('handles upload failure correctly', async () => {
+    // Ensure OS platform mock returns non-Windows
+    const mockOs = await import('os')
+    vi.mocked(mockOs.platform).mockReturnValue('darwin')
+    
     const { uploadSourceZip } = await import('../../../../src/utils/deploy/upload-source-zip.js')
 
     const mockFetch = await import('node-fetch')
@@ -148,6 +156,10 @@ describe('uploadSourceZip', () => {
   })
 
   test('includes proper exclusion patterns in zip command', async () => {
+    // Ensure OS platform mock returns non-Windows
+    const mockOs = await import('os')
+    vi.mocked(mockOs.platform).mockReturnValue('darwin')
+    
     const { uploadSourceZip } = await import('../../../../src/utils/deploy/upload-source-zip.js')
 
     const mockFetch = await import('node-fetch')
@@ -187,6 +199,34 @@ describe('uploadSourceZip', () => {
       expect.arrayContaining(['-x', 'node_modules', '.git', '.netlify', '.env']),
       expect.objectContaining({ cwd: '/test/source' }),
       expect.any(Function),
+    )
+  })
+
+  test('throws error on Windows platform', async () => {
+    // Mock OS platform to return Windows
+    const mockOs = await import('os')
+    vi.mocked(mockOs.platform).mockReturnValue('win32')
+    
+    const { uploadSourceZip } = await import('../../../../src/utils/deploy/upload-source-zip.js')
+    
+    const mockStatusCb = vi.fn()
+    
+    await expect(
+      uploadSourceZip({
+        sourceDir: '/test/source',
+        uploadUrl: 'https://s3.example.com/upload-url',
+        filename: 'test-source.zip',
+        statusCb: mockStatusCb,
+      }),
+    ).rejects.toThrow('Source zip upload is not supported on Windows')
+
+    // Should call error status callback
+    expect(mockStatusCb).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'source-zip-upload',
+        phase: 'error',
+        msg: 'Failed to create source zip: Source zip upload is not supported on Windows',
+      }),
     )
   })
 })
