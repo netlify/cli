@@ -1,5 +1,5 @@
 import { describe, expect, test, vi, beforeEach } from 'vitest'
-import type { HeadersInit, Response } from 'node-fetch'
+import type { Response } from 'node-fetch'
 import type { ChildProcess } from 'child_process'
 
 // Mock all dependencies at the top level
