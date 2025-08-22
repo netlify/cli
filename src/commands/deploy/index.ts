@@ -73,11 +73,7 @@ For detailed configuration options, see the Netlify documentation.`,
       'Ignore any functions created as part of a previous `build` or `deploy` commands, forcing them to be bundled again as part of the deployment',
       false,
     )
-    .addOption(
-      new Option('--upload-source-zip', 'Upload source code as a zip file')
-        .default(false)
-        .hideHelp(true),
-    )
+    .addOption(new Option('--upload-source-zip', 'Upload source code as a zip file').default(false).hideHelp(true))
     .option(
       '--create-site [name]',
       'Create a new site and deploy to it. Optionally specify a name, otherwise a random name will be generated. Requires --team flag if you have multiple teams.',

@@ -547,14 +547,14 @@ const runDeploy = async ({
 
     results = await api.createSiteDeploy({ siteId, title, body: createDeployBody })
     deployId = results.id
-    
+
     // Handle source zip upload if requested and URL provided
     if (options.uploadSourceZip && results.source_zip_upload_url && results.source_zip_filename) {
       await uploadSourceZip({
         sourceDir: site.root,
         uploadUrl: results.source_zip_upload_url,
         filename: results.source_zip_filename,
-        statusCb: silent ? () => {} : deployProgressCb()
+        statusCb: silent ? () => {} : deployProgressCb(),
       })
     }
 
