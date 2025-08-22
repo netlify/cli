@@ -93,6 +93,7 @@ export const createDevCommand = (program: BaseCommand) => {
         .conflicts('edgeInspect')
         .argParser(validateShortFlagArgs),
     )
+    .addOption(new Option('--skip-gitignore', 'skip adding .netlify to .gitignore file'))
     .addExamples([
       'netlify dev',
       'netlify dev -d public',
@@ -104,6 +105,7 @@ export const createDevCommand = (program: BaseCommand) => {
       'netlify dev --edge-inspect=127.0.0.1:9229',
       'netlify dev --edge-inspect-brk',
       'netlify dev --edge-inspect-brk=127.0.0.1:9229',
+      'netlify dev --skip-gitignore # skip adding .netlify to .gitignore',
       'BROWSER=none netlify dev # disable browser auto opening',
     ])
     .addHelpText('after', () => {

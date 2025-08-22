@@ -573,6 +573,52 @@ describe.concurrent('command/dev', () => {
     })
   })
 
+  test('should not add `.netlify` to `.gitignore` when --skip-gitignore flag is used', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      const existingGitIgnore = ['.vscode/', 'node_modules/', '!node_modules/cool_module']
+
+      await builder
+        .withContentFile({
+          path: '.gitignore',
+          content: existingGitIgnore.join('\n'),
+        })
+        .withContentFile({
+          path: 'index.html',
+          content: '<html><h1>Hi',
+        })
+        .build()
+
+      await withDevServer({ cwd: builder.directory, args: ['--skip-gitignore'] }, async () => {
+        const gitignore = await fs.readFile(path.join(builder.directory, '.gitignore'), 'utf8')
+        const entries = gitignore.split('\n')
+
+        t.expect(entries.includes('.netlify')).toBe(false)
+        t.expect(entries).toEqual(existingGitIgnore)
+      })
+    })
+  })
+
+  test('should not create a `.gitignore` file when --skip-gitignore flag is used', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      await builder
+        .withContentFile({
+          path: 'index.html',
+          content: '<html><h1>Hi',
+        })
+        .build()
+
+      await withDevServer({ cwd: builder.directory, args: ['--skip-gitignore'] }, async () => {
+        try {
+          await fs.access(path.join(builder.directory, '.gitignore'))
+          t.expect(false).toBe(true) // Should not reach here
+        } catch (error) {
+          // File should not exist, which is expected
+          t.expect((error as NodeJS.ErrnoException).code).toBe('ENOENT')
+        }
+      })
+    })
+  })
+
   describe.concurrent('blobs', () => {
     describe.concurrent('on startup', () => {
       test.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true')(

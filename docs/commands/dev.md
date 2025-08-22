@@ -36,6 +36,7 @@ netlify dev
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 - `offline` (*boolean*) - Disables any features that require network access
 - `port` (*string*) - port of netlify dev
+- `skip-gitignore` (*boolean*) - skip adding .netlify to .gitignore file
 - `target-port` (*string*) - port of target app server
 
 | Subcommand | description  |
@@ -56,6 +57,7 @@ netlify dev --edge-inspect
 netlify dev --edge-inspect=127.0.0.1:9229
 netlify dev --edge-inspect-brk
 netlify dev --edge-inspect-brk=127.0.0.1:9229
+netlify dev --skip-gitignore # skip adding .netlify to .gitignore
 BROWSER=none netlify dev # disable browser auto opening
 ```
 
