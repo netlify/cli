@@ -78,8 +78,11 @@ describe('uploadSourceZip', () => {
 
     expect(mockChildProcess.execFile).toHaveBeenCalledWith(
       'zip',
-      expect.arrayContaining(['-r', '/tmp/test-temp-dir/test-source.zip', '.']),
-      expect.objectContaining({ cwd: '/test/source' }),
+      expect.arrayContaining(['-r', expect.stringMatching(/test-source\.zip$/), '.']),
+      expect.objectContaining({
+        cwd: '/test/source',
+        maxBuffer: 104857600,
+      }),
       expect.any(Function),
     )
 
@@ -99,7 +102,7 @@ describe('uploadSourceZip', () => {
       }),
     )
 
-    expect(mockFs.unlink).toHaveBeenCalledWith('/tmp/test-temp-dir/test-source.zip')
+    expect(mockFs.unlink).toHaveBeenCalledWith(expect.stringMatching(/test-source\.zip$/))
     expect(mockCommandHelpers.log).toHaveBeenCalledWith('✔ Source code uploaded')
   })
 
@@ -196,8 +199,11 @@ describe('uploadSourceZip', () => {
 
     expect(mockChildProcess.execFile).toHaveBeenCalledWith(
       'zip',
-      expect.arrayContaining(['-x', 'node_modules', '.git', '.netlify', '.env']),
-      expect.objectContaining({ cwd: '/test/source' }),
+      expect.arrayContaining(['-x', 'node_modules', '-x', '.git', '-x', '.netlify', '-x', '.env']),
+      expect.objectContaining({
+        cwd: '/test/source',
+        maxBuffer: 104857600,
+      }),
       expect.any(Function),
     )
   })
