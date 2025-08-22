@@ -39,7 +39,7 @@ describe('uploadSourceZip', () => {
     // Ensure OS platform mock returns non-Windows
     const mockOs = await import('os')
     vi.mocked(mockOs.platform).mockReturnValue('darwin')
-    
+
     // Import after mocks are set up
     const { uploadSourceZip } = await import('../../../../src/utils/deploy/upload-source-zip.js')
 
@@ -107,7 +107,7 @@ describe('uploadSourceZip', () => {
     // Ensure OS platform mock returns non-Windows
     const mockOs = await import('os')
     vi.mocked(mockOs.platform).mockReturnValue('darwin')
-    
+
     const { uploadSourceZip } = await import('../../../../src/utils/deploy/upload-source-zip.js')
 
     const mockFetch = await import('node-fetch')
@@ -159,7 +159,7 @@ describe('uploadSourceZip', () => {
     // Ensure OS platform mock returns non-Windows
     const mockOs = await import('os')
     vi.mocked(mockOs.platform).mockReturnValue('darwin')
-    
+
     const { uploadSourceZip } = await import('../../../../src/utils/deploy/upload-source-zip.js')
 
     const mockFetch = await import('node-fetch')
@@ -206,11 +206,11 @@ describe('uploadSourceZip', () => {
     // Mock OS platform to return Windows
     const mockOs = await import('os')
     vi.mocked(mockOs.platform).mockReturnValue('win32')
-    
+
     const { uploadSourceZip } = await import('../../../../src/utils/deploy/upload-source-zip.js')
-    
+
     const mockStatusCb = vi.fn()
-    
+
     await expect(
       uploadSourceZip({
         sourceDir: '/test/source',
