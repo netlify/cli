@@ -39,7 +39,15 @@ import { fileExistsAsync, isFileAsync } from '../lib/fs.js'
 import { getFormHandler } from '../lib/functions/form-submissions-handler.js'
 import { DEFAULT_FUNCTION_URL_EXPRESSION } from '../lib/functions/registry.js'
 
-import { NETLIFYDEVLOG, NETLIFYDEVWARN, type NormalizedCachedConfigConfig, chalk, log, logError, warn } from './command-helpers.js'
+import {
+  NETLIFYDEVLOG,
+  NETLIFYDEVWARN,
+  type NormalizedCachedConfigConfig,
+  chalk,
+  log,
+  logError,
+  warn,
+} from './command-helpers.js'
 import createStreamPromise from './create-stream-promise.js'
 import { NFFunctionName, NFFunctionRoute, NFRequestID, headersForPath, parseHeaders } from './headers.js'
 import { generateRequestID } from './request-id.js'
@@ -984,7 +992,7 @@ export const startProxy = async function ({
 
   const imageProxy = new ImageHandler({
     imagesConfig: config.images,
-    logger: { log, warn, error: logError},
+    logger: { log, warn, error: logError },
   })
 
   const proxy = await initializeProxy({
