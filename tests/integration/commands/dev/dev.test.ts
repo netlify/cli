@@ -6,7 +6,7 @@ import process from 'process'
 
 import js from 'dedent'
 import jwt, { type JwtPayload } from 'jsonwebtoken'
-import fetch from 'node-fetch'
+
 import { describe, test } from 'vitest'
 
 import { withDevServer } from '../../utils/dev-server.js'
@@ -243,7 +243,7 @@ describe.concurrent('command/dev', () => {
             'Content-Type': 'application/x-www-form-urlencoded',
           },
           body: 'param=value',
-          follow: 0,
+          redirect: 'manual',
         })
         const postBody = await postResponse.json()
         t.expect(postBody).toHaveProperty('body', { param: 'value' })
@@ -311,7 +311,7 @@ describe.concurrent('command/dev', () => {
                   'Content-Type': 'application/x-www-form-urlencoded',
                 },
                 body: 'param=value',
-                follow: 0,
+                redirect: 'manual',
               }),
             ])
             const getBody = await getResponse.json()
@@ -348,7 +348,7 @@ describe.concurrent('command/dev', () => {
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const [response1, response2] = await Promise.all([
-          fetch(`${server.url}/api/ping`, { follow: 0, redirect: 'manual' }),
+          fetch(`${server.url}/api/ping`, { redirect: 'manual' }),
           fetch(`${server.url}/api/ping`),
         ])
         const response2Body = await response2.json()
@@ -417,7 +417,7 @@ describe.concurrent('command/dev', () => {
         const response = await fetch(`${server.url}/api/echo`, {
           method: 'POST',
           body: 'param=value',
-          follow: 0,
+          redirect: 'manual',
         })
 
         // Method Not Allowed
