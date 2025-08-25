@@ -20,4 +20,5 @@ export type DeployOptionValues = BaseOptionValues & {
   team?: string
   timeout?: number
   trigger?: boolean
+  uploadSourceZip?: boolean
 }
