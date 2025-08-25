@@ -40,6 +40,7 @@ import {
 } from '../../utils/command-helpers.js'
 import { DEFAULT_DEPLOY_TIMEOUT } from '../../utils/deploy/constants.js'
 import { type DeployEvent, deploySite } from '../../utils/deploy/deploy-site.js'
+import { uploadSourceZip } from '../../utils/deploy/upload-source-zip.js'
 import { getEnvelopeEnv } from '../../utils/env/index.js'
 import { getFunctionsManifestPath, getInternalFunctionsDir } from '../../utils/functions/index.js'
 import openBrowser from '../../utils/open-browser.js'
@@ -542,8 +543,20 @@ const runDeploy = async ({
     }
 
     const draft = !deployToProduction && !alias
-    results = await api.createSiteDeploy({ siteId, title, body: { draft, branch: alias } })
+    const createDeployBody = { draft, branch: alias, include_upload_url: options.uploadSourceZip }
+
+    results = await api.createSiteDeploy({ siteId, title, body: createDeployBody })
     deployId = results.id
+
+    // Handle source zip upload if requested and URL provided
+    if (options.uploadSourceZip && results.source_zip_upload_url && results.source_zip_filename) {
+      await uploadSourceZip({
+        sourceDir: site.root,
+        uploadUrl: results.source_zip_upload_url,
+        filename: results.source_zip_filename,
+        statusCb: silent ? () => {} : deployProgressCb(),
+      })
+    }
 
     const internalFunctionsFolder = await getInternalFunctionsDir({ base: site.root, packagePath, ensureExists: true })
 
