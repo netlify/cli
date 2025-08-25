@@ -14,6 +14,7 @@ import util from 'util'
 import zlib from 'zlib'
 
 import { renderFunctionErrorPage } from '@netlify/dev-utils'
+import { ImageHandler } from '@netlify/images'
 import contentType from 'content-type'
 import cookie from 'cookie'
 import { getProperty } from 'dot-prop'
@@ -37,9 +38,16 @@ import {
 import { fileExistsAsync, isFileAsync } from '../lib/fs.js'
 import { getFormHandler } from '../lib/functions/form-submissions-handler.js'
 import { DEFAULT_FUNCTION_URL_EXPRESSION } from '../lib/functions/registry.js'
-import { initializeProxy as initializeImageProxy, isImageRequest } from '../lib/images/proxy.js'
 
-import { NETLIFYDEVLOG, NETLIFYDEVWARN, type NormalizedCachedConfigConfig, chalk, log } from './command-helpers.js'
+import {
+  NETLIFYDEVLOG,
+  NETLIFYDEVWARN,
+  type NormalizedCachedConfigConfig,
+  chalk,
+  log,
+  logError,
+  warn,
+} from './command-helpers.js'
 import createStreamPromise from './create-stream-promise.js'
 import { NFFunctionName, NFFunctionRoute, NFRequestID, headersForPath, parseHeaders } from './headers.js'
 import { generateRequestID } from './request-id.js'
@@ -259,6 +267,7 @@ const serveRedirect = async function ({
   req,
   res,
   siteInfo,
+  proxyUrl,
 }: {
   match: Match | null
 } & Record<string, $TSFixMe>) {
@@ -453,9 +462,12 @@ const serveRedirect = async function ({
 
       return proxy.web(req, res, { headers: functionHeaders, target: options.functionsServer })
     }
-    if (isImageRequest(req)) {
-      return imageProxy(req, res)
+
+    const imageMatch = imageProxy.match(req)
+    if (imageMatch) {
+      return imageMatch.handle(proxyUrl)
     }
+
     const addonUrl = getAddonUrl(options.addonsUrls, req)
     if (addonUrl) {
       handleAddonUrl({ req, res, addonUrl })
@@ -490,6 +502,7 @@ const initializeProxy = async function ({
   port,
   projectDir,
   siteInfo,
+  proxyUrl,
 }: { config: NormalizedCachedConfigConfig } & Record<string, $TSFixMe>) {
   const proxy = httpProxy.createProxyServer({
     selfHandleResponse: true,
@@ -634,6 +647,7 @@ const initializeProxy = async function ({
           options,
           siteInfo,
           env,
+          proxyUrl,
         })
       }
     }
@@ -653,6 +667,7 @@ const initializeProxy = async function ({
         options,
         siteInfo,
         env,
+        proxyUrl,
       })
     }
 
@@ -792,6 +807,7 @@ const onRequest = async (
     rewriter,
     settings,
     siteInfo,
+    proxyUrl,
   }: { rewriter: Rewriter; settings: ServerSettings; edgeFunctionsProxy?: EdgeFunctionsProxy } & Record<
     string,
     $TSFixMe
@@ -802,8 +818,9 @@ const onRequest = async (
   req.originalBody =
     req.method && ['GET', 'OPTIONS', 'HEAD'].includes(req.method) ? null : await createStreamPromise(req, BYTES_LIMIT)
 
-  if (isImageRequest(req)) {
-    return imageProxy(req, res)
+  const imageMatch = imageProxy.match(req)
+  if (imageMatch) {
+    return imageMatch.handle(proxyUrl)
   }
 
   const edgeFunctionsProxyURL = await edgeFunctionsProxy?.(req as any)
@@ -971,10 +988,11 @@ export const startProxy = async function ({
     })
   }
 
-  const imageProxy = initializeImageProxy({
-    config,
-    settings,
+  const imageProxy = new ImageHandler({
+    imagesConfig: config.images,
+    logger: { log, warn, error: logError },
   })
+
   const proxy = await initializeProxy({
     env,
     host: settings.frameworkHost,
@@ -985,6 +1003,7 @@ export const startProxy = async function ({
     siteInfo,
     imageProxy,
     config,
+    proxyUrl: getProxyUrl(settings),
   })
 
   const rewriter = await createRewriter({
@@ -1009,6 +1028,7 @@ export const startProxy = async function ({
     siteInfo,
     env,
     api,
+    proxyUrl: getProxyUrl(settings),
   })
   const primaryServer = settings.https
     ? https.createServer({ cert: settings.https.cert, key: settings.https.key }, onRequestWithOptions)
