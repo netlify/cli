@@ -14,6 +14,7 @@ import util from 'util'
 import zlib from 'zlib'
 
 import { renderFunctionErrorPage } from '@netlify/dev-utils'
+import { ImageHandler } from '@netlify/images'
 import contentType from 'content-type'
 import cookie from 'cookie'
 import { getProperty } from 'dot-prop'
@@ -54,7 +55,6 @@ import { generateRequestID } from './request-id.js'
 import { createRewriter, onChanges } from './rules-proxy.js'
 import { signRedirect } from './sign-redirect.js'
 import type { Request, Rewriter, ServerSettings } from './types.js'
-import { ImageHandler } from '@netlify/images'
 
 const gunzip = util.promisify(zlib.gunzip)
 const gzip = util.promisify(zlib.gzip)
