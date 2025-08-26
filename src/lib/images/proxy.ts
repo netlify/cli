@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from 'http'
 
-import { ImageHandler } from '@netlify/images'
+import { type ImageHandler } from '@netlify/images'
 
 import { getProxyUrl } from '../../utils/proxy.js'
 import type { ServerSettings } from '../../utils/types.d.ts'
