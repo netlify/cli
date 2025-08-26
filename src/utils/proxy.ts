@@ -39,13 +39,22 @@ import { getFormHandler } from '../lib/functions/form-submissions-handler.js'
 import { DEFAULT_FUNCTION_URL_EXPRESSION } from '../lib/functions/registry.js'
 import { initializeProxy as initializeImageProxy, isImageRequest } from '../lib/images/proxy.js'
 
-import { NETLIFYDEVLOG, NETLIFYDEVWARN, type NormalizedCachedConfigConfig, chalk, log } from './command-helpers.js'
+import {
+  NETLIFYDEVLOG,
+  NETLIFYDEVWARN,
+  type NormalizedCachedConfigConfig,
+  chalk,
+  log,
+  logError,
+  warn,
+} from './command-helpers.js'
 import createStreamPromise from './create-stream-promise.js'
 import { NFFunctionName, NFFunctionRoute, NFRequestID, headersForPath, parseHeaders } from './headers.js'
 import { generateRequestID } from './request-id.js'
 import { createRewriter, onChanges } from './rules-proxy.js'
 import { signRedirect } from './sign-redirect.js'
 import type { Request, Rewriter, ServerSettings } from './types.js'
+import { ImageHandler } from '@netlify/images'
 
 const gunzip = util.promisify(zlib.gunzip)
 const gzip = util.promisify(zlib.gzip)
@@ -971,10 +980,15 @@ export const startProxy = async function ({
     })
   }
 
-  const imageProxy = initializeImageProxy({
-    config,
-    settings,
+  const imageHandler = new ImageHandler({
+    logger: { log, warn, error: logError },
+    imagesConfig: config.images,
   })
+  const imageProxy = initializeImageProxy({
+    settings,
+    imageHandler,
+  })
+
   const proxy = await initializeProxy({
     env,
     host: settings.frameworkHost,
