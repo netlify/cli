@@ -533,9 +533,11 @@ const runDeploy = async ({
   logsUrl: string
   functionLogsUrl: string
   edgeFunctionLogsUrl: string
+  sourceZipUrl?: string
 }> => {
   let results
   let deployId
+  let uploadSourceZipResult
 
   try {
     if (deployToProduction) {
@@ -550,7 +552,7 @@ const runDeploy = async ({
 
     // Handle source zip upload if requested and URL provided
     if (options.uploadSourceZip && results.source_zip_upload_url && results.source_zip_filename) {
-      await uploadSourceZip({
+      uploadSourceZipResult = await uploadSourceZip({
         sourceDir: site.root,
         uploadUrl: results.source_zip_upload_url,
         filename: results.source_zip_filename,
@@ -644,6 +646,7 @@ const runDeploy = async ({
     logsUrl,
     functionLogsUrl,
     edgeFunctionLogsUrl,
+    sourceZipUrl: uploadSourceZipResult?.sourceZipUrl,
   }
 }
 
@@ -735,15 +738,18 @@ interface JsonData {
   function_logs: string
   edge_function_logs: string
   url?: string
+  source_zip_url?: string
 }
 
 const printResults = ({
   deployToProduction,
+  uploadSourceZip,
   json,
   results,
   runBuildCommand,
 }: {
   deployToProduction: boolean
+  uploadSourceZip: boolean
   json: boolean
   results: Awaited<ReturnType<typeof prepAndRunDeploy>>
   runBuildCommand: boolean
@@ -771,6 +777,10 @@ const printResults = ({
     }
     if (deployToProduction) {
       jsonData.url = results.siteUrl
+    }
+
+    if (uploadSourceZip) {
+      jsonData.source_zip_url = results.sourceZipUrl
     }
 
     logJson(jsonData)
@@ -1086,6 +1096,7 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
     json: options.json,
     results,
     deployToProduction,
+    uploadSourceZip: !!options.uploadSourceZip,
   })
 
   if (options.open) {
