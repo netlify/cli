@@ -8,7 +8,7 @@ import type { SiteInfo, EnvironmentVariableSource } from '../../utils/types.js'
  * These all match possible `context` values returned by the Envelope API.
  * Note that a user may also specify a branch name with the special `branch:my-branch-name` format.
  */
-export const SUPPORTED_CONTEXTS = ['all', 'production', 'deploy-preview', 'branch-deploy', 'dev'] as const
+export const SUPPORTED_CONTEXTS = ['all', 'production', 'deploy-preview', 'branch-deploy', 'dev', 'dev-server'] as const
 /**
  * Additional aliases for the user-provided env `context` option.
  */
@@ -30,7 +30,13 @@ type EnvelopeEnvVarScope =
 type EnvelopeEnvVar = Awaited<ReturnType<NetlifyAPI['getEnvVars']>>[number] & {
   scopes: EnvelopeEnvVarScope[]
 }
-type EnvelopeEnvVarContext = NonNullable<NonNullable<EnvelopeEnvVar['values']>[number]['context']>
+
+type EnvelopeEnvVarContext = NonNullable<
+  | NonNullable<EnvelopeEnvVar['values']>[number]['context']
+  // TODO(ndhoule): Netlify API is incorrect - Update OpenAPI types with this context type   ..
+  | 'dev-server'
+>
+
 export type EnvelopeEnvVarValue = {
   /**
    * The deploy context of the this env var value
@@ -104,6 +110,12 @@ export const getValueForContext = (
 ): EnvelopeEnvVarValue | undefined => {
   const isSupportedContext = (SUPPORTED_CONTEXTS as readonly string[]).includes(contextOrBranch)
   if (!isSupportedContext) {
+    // FIXME(ndhoule): If it's not a supported context, we just assume this is a branch deploy. This
+    // means that if you ever add a deploy context but forget to add it to SUPPORTED_CONTEXTS, we'll
+    // just load the wrong environment variables. (This bug is not theoretical: it's why I'm writing
+    // this comment.) We should instead pass a `context` and optional `branch` parameter to this
+    // function rather than mix the two concepts, and we should fail when an unsupported context is
+    // provided.
     const valueMatchingAsBranch = values.find((val) => val.context_parameter === contextOrBranch)
     // This is a `branch` context, which is an override, so it takes precedence
     if (valueMatchingAsBranch != null) {
