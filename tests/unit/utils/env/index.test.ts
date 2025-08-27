@@ -23,9 +23,14 @@ test('should return a matching value from a given context', () => {
       context: 'dev',
       value: 'bar',
     },
+    {
+      context: 'dev-server',
+      value: 'bar',
+    },
   ])
-  const result = getValueForContext(values, 'dev')
-  expect(result).toHaveProperty('value', 'bar')
+  expect(getValueForContext(values, 'production')).toHaveProperty('value', 'foo')
+  expect(getValueForContext(values, 'dev')).toHaveProperty('value', 'bar')
+  expect(getValueForContext(values, 'dev-server')).toHaveProperty('value', 'bar')
 })
 
 test('should return a value from the `branch` context with a matching `context_parameter` given a branch', () => {

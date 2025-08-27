@@ -137,7 +137,7 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
 
   env[BLOBS_CONTEXT_VARIABLE] = { sources: ['internal'], value: encodeBlobsContext(blobsContext) }
 
-  if (!options.offline && !options.offlineEnv) {
+  if (!(options.offline || options.offlineEnv)) {
     env = await getEnvelopeEnv({ api, context: options.context, env, siteInfo })
     log(`${NETLIFYDEVLOG} Injecting environment variable values for ${chalk.yellow('all scopes')}`)
   }

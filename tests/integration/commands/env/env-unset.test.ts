@@ -72,7 +72,7 @@ describe('env:unset command', async () => {
         (request) => request.method === 'PATCH' && request.path === '/api/v1/accounts/test-account/env/OTHER_VAR',
       )
 
-      expect(patchRequests).toHaveLength(3)
+      expect(patchRequests).toHaveLength(4)
     })
   })
 

@@ -196,7 +196,7 @@ describe('env:set command', async () => {
         (request) => request.method === 'PUT' && request.path === '/api/v1/accounts/test-account/env/OTHER_VAR',
       )
       expect(putRequest).toHaveProperty('body.is_secret', true)
-      expect(putRequest).toHaveProperty('body.values.length', 4)
+      expect(putRequest).toHaveProperty('body.values.length', 5)
       expect(putRequest).toHaveProperty('body.values[0].context', 'production')
       expect(putRequest).toHaveProperty('body.values[0].value', 'envelope-all-value')
       expect(putRequest).toHaveProperty('body.values[1].context', 'deploy-preview')
