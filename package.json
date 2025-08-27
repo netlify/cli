@@ -63,7 +63,7 @@
     "@netlify/build": "35.1.2",
     "@netlify/build-info": "10.0.7",
     "@netlify/config": "24.0.3",
-    "@netlify/dev-utils": "4.1.1",
+    "@netlify/dev-utils": "4.1.2",
     "@netlify/edge-bundler": "14.5.2",
     "@netlify/edge-functions-bootstrap": "2.14.0",
     "@netlify/headers-parser": "9.0.2",
