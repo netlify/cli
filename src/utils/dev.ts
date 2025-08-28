@@ -8,6 +8,9 @@ import { supportsBackgroundFunctions } from '../lib/account.js'
 
 import { NETLIFYDEVLOG, chalk, logAndThrowError, log, warn, APIError } from './command-helpers.js'
 import { loadDotEnvFiles } from './dot-env.js'
+import type { CachedConfig } from '../lib/build.js'
+import type { NetlifySite } from '../commands/types.js'
+import type { DevConfig } from '../commands/dev/types.js'
 import type { EnvironmentVariables, SiteInfo } from './types.js'
 
 // Possible sources of environment variables. For the purpose of printing log messages only. Order does not matter.
@@ -41,8 +44,7 @@ const ENV_VAR_SOURCES = {
 const ERROR_CALL_TO_ACTION =
   "Double-check your login status with 'netlify status' or contact support with details of your error."
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'site' implicitly has an 'any' typ... Remove this comment to see the full error message
-const validateSiteInfo = ({ site, siteInfo }) => {
+const validateSiteInfo = ({ site, siteInfo }: { site: NetlifySite; siteInfo: SiteInfo }): void => {
   if (isEmpty(siteInfo)) {
     return logAndThrowError(
       `Failed to retrieve project information for project ${chalk.yellow(site.id)}. ${ERROR_CALL_TO_ACTION}`,
@@ -73,9 +75,9 @@ const getAccounts = async ({ api }: { api: NetlifyAPI }) => {
   }
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-const getAddons = async ({ api, site }) => {
+const getAddons = async ({ api, site }: { api: NetlifyAPI; site: NetlifySite }) => {
   try {
+    // @ts-expect-error(serhalp) One of three types is incorrect here (is `site.id` optional?). Dig and fix.
     const addons = await api.listServiceInstancesForSite({ siteId: site.id })
     return addons
   } catch (error_) {
@@ -87,13 +89,11 @@ const getAddons = async ({ api, site }) => {
   }
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'addons' implicitly has an 'any' t... Remove this comment to see the full error message
-const getAddonsInformation = ({ addons, siteInfo }) => {
+type Addons = Awaited<ReturnType<NetlifyAPI['listServiceInstancesForSite']>>
+const getAddonsInformation = ({ addons, siteInfo }: { addons: Addons; siteInfo: SiteInfo }) => {
   const urls = Object.fromEntries(
-    // @ts-expect-error TS(7006) FIXME: Parameter 'addon' implicitly has an 'any' type.
     addons.map((addon) => [addon.service_slug, `${siteInfo.ssl_url}${addon.service_path}`]),
   )
-  // @ts-expect-error TS(7006) FIXME: Parameter 'addon' implicitly has an 'any' type.
   const env = Object.assign({}, ...addons.map((addon) => addon.env))
   return { urls, env }
 }
@@ -113,17 +113,17 @@ const SYNCHRONOUS_FUNCTION_TIMEOUT = 30
 // default 15 minutes for background functions
 const BACKGROUND_FUNCTION_TIMEOUT = 900
 
-/**
- *
- * @param {object} config
- * @param {boolean} config.offline
- * @param {*} config.api
- * @param {*} config.site
- * @param {*} config.siteInfo
- * @returns
- */
-// @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-export const getSiteInformation = async ({ api, offline, site, siteInfo }) => {
+export const getSiteInformation = async ({
+  api,
+  offline,
+  site,
+  siteInfo,
+}: {
+  api: NetlifyAPI
+  offline: boolean
+  site: NetlifySite
+  siteInfo: SiteInfo
+}) => {
   if (site.id && !offline) {
     validateSiteInfo({ site, siteInfo })
     const [accounts, addons] = await Promise.all([getAccounts({ api }), getAddons({ api, site })])
@@ -157,21 +157,22 @@ export const getSiteInformation = async ({ api, offline, site, siteInfo }) => {
   }
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'source' implicitly has an 'any' type.
-const getEnvSourceName = (source) => {
-  // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-  const { name = source, printFn = chalk.green } = ENV_VAR_SOURCES[source] || {}
+const getEnvSourceName = (source: string) => {
+  const { name = source, printFn = chalk.green } = ENV_VAR_SOURCES[source] ?? {}
 
   return printFn(name)
 }
 
-/**
- * @param {{devConfig: any, env: Record<string, { sources: string[], value: string}>, site: any}} param0
- */
-// @ts-expect-error TS(7031) FIXME: Binding element 'devConfig' implicitly has an 'any... Remove this comment to see the full error message
-export const getDotEnvVariables = async ({ devConfig, env, site }): Promise<EnvironmentVariables> => {
+export const getDotEnvVariables = async ({
+  devConfig,
+  env,
+  site,
+}: {
+  devConfig: DevConfig
+  env: CachedConfig['env']
+  site: NetlifySite
+}): Promise<Record<string, { sources: string[]; value: string }>> => {
   const dotEnvFiles = await loadDotEnvFiles({ envFiles: devConfig.envFiles, projectDir: site.root })
-  // @ts-expect-error TS(2339) FIXME: Property 'env' does not exist on type '{ warning: ... Remove this comment to see the full error message
   dotEnvFiles.forEach(({ env: fileEnv, file }) => {
     const newSourceName = `${file} file`
 
@@ -183,6 +184,7 @@ export const getDotEnvVariables = async ({ devConfig, env, site }): Promise<Envi
       }
 
       env[key] = {
+        // @ts-expect-error(serhalp) Something isn't right with these types but it's a can of worms.
         sources,
         value: fileEnv[key],
       }
@@ -248,8 +250,7 @@ export const acquirePort = async ({
   return acquiredPort
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'fn' implicitly has an 'any' type.
-export const processOnExit = (fn) => {
+export const processOnExit = (fn: (...args: unknown[]) => void) => {
   const signals = ['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit']
   signals.forEach((signal) => {
     process.on(signal, fn)
