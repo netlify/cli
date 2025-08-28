@@ -235,4 +235,137 @@ describe('uploadSourceZip', () => {
       }),
     )
   })
+
+  test('handles zip creation failure correctly', async () => {
+    // Ensure OS platform mock returns non-Windows
+    const mockOs = await import('os')
+    vi.mocked(mockOs.platform).mockReturnValue('darwin')
+
+    const { uploadSourceZip } = await import('../../../../src/utils/deploy/upload-source-zip.js')
+
+    const mockChildProcess = await import('child_process')
+    const mockCommandHelpers = await import('../../../../src/utils/command-helpers.js')
+    const mockTempFile = await import('../../../../src/utils/temporary-file.js')
+
+    // Mock execFile to simulate failure
+    vi.mocked(mockChildProcess.execFile).mockImplementation((_command, _args, _options, callback) => {
+      if (callback) {
+        callback(new Error('zip command failed'), '', 'zip: error creating archive')
+      }
+      return {} as import('child_process').ChildProcess
+    })
+
+    vi.mocked(mockCommandHelpers.warn).mockImplementation(() => {})
+    vi.mocked(mockTempFile.temporaryDirectory).mockReturnValue('/tmp/test-temp-dir')
+
+    const mockStatusCb = vi.fn()
+
+    await expect(
+      uploadSourceZip({
+        sourceDir: '/test/source',
+        uploadUrl: 'https://s3.example.com/upload-url',
+        filename: 'test-source.zip',
+        statusCb: mockStatusCb,
+      }),
+    ).rejects.toThrow('zip command failed')
+
+    expect(mockStatusCb).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'source-zip-upload',
+        phase: 'error',
+        msg: 'Failed to create source zip: zip command failed',
+      }),
+    )
+
+    expect(mockCommandHelpers.warn).toHaveBeenCalledWith('Failed to create source zip: zip command failed')
+  })
+
+  test('cleans up zip file even when upload fails', async () => {
+    // Ensure OS platform mock returns non-Windows
+    const mockOs = await import('os')
+    vi.mocked(mockOs.platform).mockReturnValue('darwin')
+
+    const { uploadSourceZip } = await import('../../../../src/utils/deploy/upload-source-zip.js')
+
+    const mockFetch = await import('node-fetch')
+    const mockChildProcess = await import('child_process')
+    const mockFs = await import('fs/promises')
+    const mockCommandHelpers = await import('../../../../src/utils/command-helpers.js')
+    const mockTempFile = await import('../../../../src/utils/temporary-file.js')
+
+    // Mock successful zip creation but failed upload
+    vi.mocked(mockChildProcess.execFile).mockImplementation((_command, _args, _options, callback) => {
+      if (callback) {
+        callback(null, '', '')
+      }
+      return {} as import('child_process').ChildProcess
+    })
+
+    vi.mocked(mockFs.readFile).mockResolvedValue(Buffer.from('mock zip content'))
+    vi.mocked(mockFetch.default).mockResolvedValue({
+      ok: false,
+      status: 500,
+      statusText: 'Internal Server Error',
+    } as unknown as import('node-fetch').Response)
+
+    vi.mocked(mockCommandHelpers.warn).mockImplementation(() => {})
+    vi.mocked(mockTempFile.temporaryDirectory).mockReturnValue('/tmp/test-temp-dir')
+    vi.mocked(mockFs.unlink).mockResolvedValue(undefined)
+
+    const mockStatusCb = vi.fn()
+
+    await expect(
+      uploadSourceZip({
+        sourceDir: '/test/source',
+        uploadUrl: 'https://s3.example.com/upload-url',
+        filename: 'test-source.zip',
+        statusCb: mockStatusCb,
+      }),
+    ).rejects.toThrow('Failed to upload zip: Internal Server Error')
+
+    // Should still attempt cleanup
+    expect(mockFs.unlink).toHaveBeenCalledWith(expect.stringMatching(/test-source\.zip$/))
+  })
+
+  test('handles no status callback gracefully', async () => {
+    // Ensure OS platform mock returns non-Windows
+    const mockOs = await import('os')
+    vi.mocked(mockOs.platform).mockReturnValue('darwin')
+
+    const { uploadSourceZip } = await import('../../../../src/utils/deploy/upload-source-zip.js')
+
+    const mockFetch = await import('node-fetch')
+    const mockChildProcess = await import('child_process')
+    const mockFs = await import('fs/promises')
+    const mockCommandHelpers = await import('../../../../src/utils/command-helpers.js')
+    const mockTempFile = await import('../../../../src/utils/temporary-file.js')
+
+    vi.mocked(mockFetch.default).mockResolvedValue({
+      ok: true,
+      status: 200,
+      statusText: 'OK',
+      json: vi.fn().mockResolvedValue({ url: 'https://test-source-zip-url.com' }),
+    } as unknown as import('node-fetch').Response)
+
+    vi.mocked(mockChildProcess.execFile).mockImplementation((_command, _args, _options, callback) => {
+      if (callback) {
+        callback(null, '', '')
+      }
+      return {} as import('child_process').ChildProcess
+    })
+
+    vi.mocked(mockFs.readFile).mockResolvedValue(Buffer.from('mock zip content'))
+    vi.mocked(mockCommandHelpers.log).mockImplementation(() => {})
+    vi.mocked(mockTempFile.temporaryDirectory).mockReturnValue('/tmp/test-temp-dir')
+
+    // Should not throw when no status callback provided
+    const result = await uploadSourceZip({
+      sourceDir: '/test/source',
+      uploadUrl: 'https://s3.example.com/upload-url',
+      filename: 'test-source.zip',
+      // No statusCb provided - should use default empty function
+    })
+
+    expect(result).toHaveProperty('sourceZipUrl')
+  })
 })
