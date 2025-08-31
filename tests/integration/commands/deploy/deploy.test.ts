@@ -1203,7 +1203,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         await validateDeploy({ deploy, siteName: SITE_NAME, content })
         expect(deploy).toHaveProperty('source_zip_filename')
         expect(typeof deploy.source_zip_filename).toBe('string')
-        expect(deploy.source_zip_filename).toMatch(/^https:\/\//)
+        expect(deploy.source_zip_filename).toMatch(/\.zip$/)
       } catch (error) {
         // If the feature is not yet supported by the API, skip the test
         if (
