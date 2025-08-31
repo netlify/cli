@@ -1184,7 +1184,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
     })
   })
 
-  test('should include source_zip_url in JSON output when --upload-source-zip flag is used', async (t) => {
+  test('should include source_zip_filename in JSON output when --upload-source-zip flag is used', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       const content = '<h1>Source zip test</h1>'
       builder.withContentFile({
@@ -1201,9 +1201,9 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         }).then((output: string) => JSON.parse(output))
 
         await validateDeploy({ deploy, siteName: SITE_NAME, content })
-        expect(deploy).toHaveProperty('source_zip_url')
-        expect(typeof deploy.source_zip_url).toBe('string')
-        expect(deploy.source_zip_url).toMatch(/^https:\/\//)
+        expect(deploy).toHaveProperty('source_zip_filename')
+        expect(typeof deploy.source_zip_filename).toBe('string')
+        expect(deploy.source_zip_filename).toMatch(/^https:\/\//)
       } catch (error) {
         // If the feature is not yet supported by the API, skip the test
         if (error instanceof Error && (error.message.includes('include_upload_url') || error.message.includes('source_zip'))) {

@@ -366,6 +366,6 @@ describe('uploadSourceZip', () => {
       // No statusCb provided - should use default empty function
     })
 
-    expect(result).toHaveProperty('sourceZipUrl')
+    expect(result).toHaveProperty('sourceZipFileName')
   })
 })

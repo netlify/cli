@@ -533,7 +533,7 @@ const runDeploy = async ({
   logsUrl: string
   functionLogsUrl: string
   edgeFunctionLogsUrl: string
-  sourceZipUrl?: string
+  sourceZipFileName?: string
 }> => {
   let results
   let deployId
@@ -646,7 +646,7 @@ const runDeploy = async ({
     logsUrl,
     functionLogsUrl,
     edgeFunctionLogsUrl,
-    sourceZipUrl: uploadSourceZipResult?.sourceZipUrl,
+    sourceZipFileName: uploadSourceZipResult?.sourceZipFileName,
   }
 }
 
@@ -738,7 +738,7 @@ interface JsonData {
   function_logs: string
   edge_function_logs: string
   url?: string
-  source_zip_url?: string
+  source_zip_filename?: string
 }
 
 const printResults = ({
@@ -780,7 +780,7 @@ const printResults = ({
     }
 
     if (uploadSourceZip) {
-      jsonData.source_zip_url = results.sourceZipUrl
+      jsonData.source_zip_filename = results.sourceZipFileName
     }
 
     logJson(jsonData)

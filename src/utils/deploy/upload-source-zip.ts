@@ -78,11 +78,7 @@ const createSourceZip = async ({
   return zipPath
 }
 
-const uploadZipToS3 = async (
-  zipPath: string,
-  uploadUrl: string,
-  statusCb: (status: DeployEvent) => void,
-): Promise<{ url: string }> => {
+const uploadZipToS3 = async (zipPath: string, uploadUrl: string, statusCb: (status: DeployEvent) => void) => {
   const zipBuffer = await readFile(zipPath)
   const sizeMB = (zipBuffer.length / 1024 / 1024).toFixed(2)
 
@@ -104,8 +100,6 @@ const uploadZipToS3 = async (
   if (!response.ok) {
     throw new Error(`Failed to upload zip: ${response.statusText}`)
   }
-  // todo provide proper url
-  return { url: '' }
 }
 
 export const uploadSourceZip = async ({
@@ -113,7 +107,7 @@ export const uploadSourceZip = async ({
   uploadUrl,
   filename,
   statusCb = () => {},
-}: UploadSourceZipOptions): Promise<{ sourceZipUrl: string }> => {
+}: UploadSourceZipOptions): Promise<{ sourceZipFileName: string }> => {
   let zipPath: PathLike | undefined
 
   try {
@@ -131,12 +125,12 @@ export const uploadSourceZip = async ({
       throw error
     }
 
-    let sourceZipUrl: string
+    let sourceZipFileName: string
 
     // Upload to S3
     try {
-      const { url } = await uploadZipToS3(zipPath, uploadUrl, statusCb)
-      sourceZipUrl = url
+      await uploadZipToS3(zipPath, uploadUrl, statusCb)
+      sourceZipFileName = filename
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error)
       statusCb({
@@ -156,7 +150,7 @@ export const uploadSourceZip = async ({
 
     log(`✔ Source code uploaded`)
 
-    return { sourceZipUrl }
+    return { sourceZipFileName }
   } finally {
     // Clean up temporary zip file
     if (zipPath) {
