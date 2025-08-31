@@ -1206,7 +1206,10 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         expect(deploy.source_zip_filename).toMatch(/^https:\/\//)
       } catch (error) {
         // If the feature is not yet supported by the API, skip the test
-        if (error instanceof Error && (error.message.includes('include_upload_url') || error.message.includes('source_zip'))) {
+        if (
+          error instanceof Error &&
+          (error.message.includes('include_upload_url') || error.message.includes('source_zip'))
+        ) {
           t.skip()
         } else {
           throw error
