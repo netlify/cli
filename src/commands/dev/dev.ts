@@ -137,7 +137,7 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
 
   env[BLOBS_CONTEXT_VARIABLE] = { sources: ['internal'], value: encodeBlobsContext(blobsContext) }
 
-  if (!options.offline && !options.offlineEnv) {
+  if (!(options.offline || options.offlineEnv)) {
     env = await getEnvelopeEnv({ api, context: options.context, env, siteInfo })
     log(`${NETLIFYDEVLOG} Injecting environment variable values for ${chalk.yellow('all scopes')}`)
   }
@@ -224,10 +224,12 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
   })
 
   // Try to add `.netlify` to `.gitignore`.
-  try {
-    await ensureNetlifyIgnore(repositoryRoot)
-  } catch {
-    // no-op
+  if (!options.skipGitignore) {
+    try {
+      await ensureNetlifyIgnore(repositoryRoot)
+    } catch {
+      // no-op
+    }
   }
 
   // TODO: We should consolidate this with the existing config watcher.

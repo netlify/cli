@@ -40,6 +40,7 @@ import {
 } from '../../utils/command-helpers.js'
 import { DEFAULT_DEPLOY_TIMEOUT } from '../../utils/deploy/constants.js'
 import { type DeployEvent, deploySite } from '../../utils/deploy/deploy-site.js'
+import { uploadSourceZip } from '../../utils/deploy/upload-source-zip.js'
 import { getEnvelopeEnv } from '../../utils/env/index.js'
 import { getFunctionsManifestPath, getInternalFunctionsDir } from '../../utils/functions/index.js'
 import openBrowser from '../../utils/open-browser.js'
@@ -118,6 +119,12 @@ const getDeployFolder = async ({
 
   if (!deployFolder) {
     log('Please provide a publish directory (e.g. "public" or "dist" or "."):')
+
+    // Generate copy-pasteable command with current options
+    const copyableCommand = generateDeployCommand({ ...options, dir: '<PATH>' }, [], command)
+
+    log(`\nTo specify directory non-interactively, use: ${copyableCommand}\n`)
+
     const { promptPath } = await inquirer.prompt([
       {
         type: 'input',
@@ -267,10 +274,81 @@ const SEC_TO_MILLISEC = 1e3
 // 100 bytes
 const SYNC_FILE_LIMIT = 1e2
 
+// Helper function to generate copy-pasteable deploy command
+const generateDeployCommand = (
+  options: DeployOptionValues,
+  availableTeams: { name: string; slug: string }[],
+  command?: BaseCommand,
+): string => {
+  const parts = ['netlify deploy']
+
+  // Handle site selection/creation first
+  if (options.createSite) {
+    const siteName = typeof options.createSite === 'string' ? options.createSite : '<SITE_NAME>'
+    parts.push(`--create-site ${siteName}`)
+    if (availableTeams.length > 1) {
+      parts.push('--team <TEAM_SLUG>')
+    }
+  } else if (options.site) {
+    parts.push(`--site ${options.site}`)
+  } else {
+    parts.push('--create-site <SITE_NAME>')
+    if (availableTeams.length > 1) {
+      parts.push('--team <TEAM_SLUG>')
+    }
+  }
+
+  if (command?.options) {
+    for (const option of command.options) {
+      if (['createSite', 'site', 'team'].includes(option.attributeName())) {
+        continue
+      }
+
+      const optionName = option.attributeName() as keyof DeployOptionValues
+      const value = options[optionName]
+
+      if (option.long?.startsWith('--no-')) {
+        if (value === false) {
+          parts.push(option.long)
+        }
+        continue
+      }
+
+      if (optionName === 'build') {
+        continue
+      }
+
+      if (value && option.long) {
+        const flag = option.long
+        const hasValue = option.required || option.optional
+
+        if (hasValue && typeof value === 'string') {
+          const quotedValue = optionName === 'message' ? `"${value}"` : value
+          parts.push(`${flag} ${quotedValue}`)
+        } else if (hasValue && typeof value === 'number') {
+          parts.push(`${flag} ${value}`)
+        } else if (!hasValue && value === true) {
+          parts.push(flag)
+        }
+      }
+    }
+  }
+
+  return parts.join(' ')
+}
+
 // @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-const prepareProductionDeploy = async ({ api, siteData }) => {
+const prepareProductionDeploy = async ({ api, siteData, options, command }) => {
   if (isObject(siteData.published_deploy) && siteData.published_deploy.locked) {
     log(`\n${NETLIFYDEVERR} Deployments are "locked" for production context of this project\n`)
+
+    // Generate copy-pasteable command with current options
+    const overrideCommand = generateDeployCommand({ ...options, prodIfUnlocked: true, prod: false }, [], command)
+
+    log('\nTo override deployment lock (USE WITH CAUTION), use:')
+    log(`  ${overrideCommand}`)
+    log('\nWarning: Only use --prod-if-unlocked if you are absolutely sure you want to override the deployment lock.\n')
+
     const { unlockChoice } = await inquirer.prompt([
       {
         type: 'confirm',
@@ -455,18 +533,32 @@ const runDeploy = async ({
   logsUrl: string
   functionLogsUrl: string
   edgeFunctionLogsUrl: string
+  sourceZipFileName?: string
 }> => {
   let results
   let deployId
+  let uploadSourceZipResult
 
   try {
     if (deployToProduction) {
-      await prepareProductionDeploy({ siteData, api })
+      await prepareProductionDeploy({ siteData, api, options, command })
     }
 
     const draft = !deployToProduction && !alias
-    results = await api.createSiteDeploy({ siteId, title, body: { draft, branch: alias } })
+    const createDeployBody = { draft, branch: alias, include_upload_url: options.uploadSourceZip }
+
+    results = await api.createSiteDeploy({ siteId, title, body: createDeployBody })
     deployId = results.id
+
+    // Handle source zip upload if requested and URL provided
+    if (options.uploadSourceZip && results.source_zip_upload_url && results.source_zip_filename) {
+      uploadSourceZipResult = await uploadSourceZip({
+        sourceDir: site.root,
+        uploadUrl: results.source_zip_upload_url,
+        filename: results.source_zip_filename,
+        statusCb: silent ? () => {} : deployProgressCb(),
+      })
+    }
 
     const internalFunctionsFolder = await getInternalFunctionsDir({ base: site.root, packagePath, ensureExists: true })
 
@@ -554,6 +646,7 @@ const runDeploy = async ({
     logsUrl,
     functionLogsUrl,
     edgeFunctionLogsUrl,
+    sourceZipFileName: uploadSourceZipResult?.sourceZipFileName,
   }
 }
 
@@ -645,15 +738,18 @@ interface JsonData {
   function_logs: string
   edge_function_logs: string
   url?: string
+  source_zip_filename?: string
 }
 
 const printResults = ({
   deployToProduction,
+  uploadSourceZip,
   json,
   results,
   runBuildCommand,
 }: {
   deployToProduction: boolean
+  uploadSourceZip: boolean
   json: boolean
   results: Awaited<ReturnType<typeof prepAndRunDeploy>>
   runBuildCommand: boolean
@@ -681,6 +777,10 @@ const printResults = ({
     }
     if (deployToProduction) {
       jsonData.url = results.siteUrl
+    }
+
+    if (uploadSourceZip) {
+      jsonData.source_zip_filename = results.sourceZipFileName
     }
 
     logJson(jsonData)
@@ -814,6 +914,126 @@ const prepAndRunDeploy = async ({
   return results
 }
 
+const validateTeamForSiteCreation = (
+  accounts: { slug: string; name: string }[],
+  options: DeployOptionValues,
+  siteName?: string,
+) => {
+  if (accounts.length === 0) {
+    return logAndThrowError('No teams available. Please ensure you have access to at least one team.')
+  }
+
+  if (accounts.length === 1) {
+    options.team = accounts[0].slug
+    const message = siteName ? `Creating new site: ${siteName}` : 'Creating new site with random name'
+    log(`${message} (using team: ${accounts[0].name})`)
+    return
+  }
+
+  const availableTeams = accounts.map((team) => team.slug).join(', ')
+  return logAndThrowError(
+    `Multiple teams available. Please specify which team to use with --team flag.\n` +
+      `Available teams: ${availableTeams}\n\n` +
+      `Example: netlify deploy --create-site${siteName ? ` ${siteName}` : ''} --team <TEAM_SLUG>`,
+  )
+}
+
+const createSiteWithFlags = async (options: DeployOptionValues, command: BaseCommand, site: $TSFixMe) => {
+  const { accounts } = command.netlify
+  const siteName = typeof options.createSite === 'string' ? options.createSite : undefined
+
+  if (!options.team) {
+    validateTeamForSiteCreation(accounts, options, siteName)
+  } else {
+    const message = siteName ? `Creating new site: ${siteName}` : 'Creating new site with random name'
+    log(message)
+  }
+
+  // Create site directly via API to bypass interactive prompts
+  const { api } = command.netlify
+  const body: { name?: string } = {}
+  if (siteName) {
+    body.name = siteName.trim()
+  }
+
+  if (!options.team) {
+    throw new Error('Team must be specified to create a site')
+  }
+
+  try {
+    const siteData = await api.createSiteInTeam({
+      accountSlug: options.team,
+      body,
+    })
+    site.id = siteData.id
+    return siteData as SiteInfo
+  } catch (error_) {
+    if ((error_ as APIError).status === 422) {
+      return logAndThrowError(
+        siteName
+          ? `Site name "${siteName}" is already taken. Please try a different name.`
+          : 'Unable to create site with a random name. Please try again or specify a different name.',
+      )
+    }
+    return logAndThrowError(`Failed to create site: ${(error_ as APIError).status}: ${(error_ as APIError).message}`)
+  }
+}
+
+const promptForSiteAction = async (options: DeployOptionValues, command: BaseCommand, site: $TSFixMe) => {
+  log("This folder isn't linked to a project yet")
+
+  const { accounts } = command.netlify
+  const availableTeams = accounts.map((acc) => ({ name: acc.name, slug: acc.slug }))
+  const copyableCommand = generateDeployCommand(options, availableTeams, command)
+
+  log(`\nTo create and deploy in one go, use: ${copyableCommand}`)
+  if (availableTeams.length > 1) {
+    log(`\nYou must pick a --team: ${availableTeams.map((team) => team.slug).join(', ')}`)
+  }
+
+  const { initChoice } = await inquirer.prompt([
+    {
+      type: 'list',
+      name: 'initChoice',
+      message: 'What would you like to do?',
+      choices: [
+        {
+          name: '⇄  Link this directory to an existing project',
+          value: 'link',
+        },
+        {
+          name: '+  Create & configure a new project',
+          value: 'create',
+        },
+      ],
+    },
+  ])
+
+  const siteData = initChoice === 'create' ? await sitesCreate({}, command) : await link({}, command)
+
+  site.id = siteData.id
+  return siteData
+}
+
+const ensureSiteExists = async (
+  options: DeployOptionValues,
+  command: BaseCommand,
+  site: $TSFixMe,
+  siteInfo: SiteInfo,
+): Promise<SiteInfo> => {
+  const hasSiteData = (site.id || options.site) && !isEmpty(siteInfo)
+
+  if (hasSiteData) {
+    return siteInfo
+  }
+
+  if (options.createSite) {
+    return createSiteWithFlags(options, command, site)
+  }
+
+  return promptForSiteAction(options, command, site)
+}
+
 export const deploy = async (options: DeployOptionValues, command: BaseCommand) => {
   const { workingDir } = command
   const { api, site, siteInfo } = command.netlify
@@ -823,43 +1043,7 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
 
   await command.authenticate(options.auth)
 
-  let initialSiteData: SiteInfo | undefined
-  let newSiteData!: SiteInfo
-
-  const hasSiteData = (site.id || options.site) && !isEmpty(siteInfo)
-
-  if (hasSiteData) {
-    initialSiteData = siteInfo
-  } else {
-    log("This folder isn't linked to a project yet")
-    const NEW_SITE = '+  Create & configure a new project'
-    const EXISTING_SITE = 'Link this directory to an existing project'
-
-    const initializeOpts = [EXISTING_SITE, NEW_SITE] as const
-
-    const { initChoice } = await inquirer.prompt<{ initChoice: (typeof initializeOpts)[number] }>([
-      {
-        type: 'list',
-        name: 'initChoice',
-        message: 'What would you like to do?',
-        choices: initializeOpts,
-      },
-    ])
-    // create site or search for one
-    switch (initChoice) {
-      case NEW_SITE:
-        newSiteData = await sitesCreate({}, command)
-        site.id = newSiteData.id
-        break
-      case EXISTING_SITE:
-        newSiteData = await link({}, command)
-        site.id = newSiteData.id
-        break
-    }
-  }
-
-  // This is the best I could come up with to make TS happy with the complexities above.
-  const siteData = initialSiteData ?? newSiteData
+  const siteData = await ensureSiteExists(options, command, site, siteInfo)
   const siteId = siteData.id
 
   if (options.trigger) {
@@ -912,6 +1096,7 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
     json: options.json,
     results,
     deployToProduction,
+    uploadSourceZip: !!options.uploadSourceZip,
   })
 
   if (options.open) {
