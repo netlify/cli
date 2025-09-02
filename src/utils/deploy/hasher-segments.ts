@@ -5,6 +5,7 @@ import { pipeline } from 'node:stream/promises'
 
 import transform from 'parallel-transform'
 
+import type { File, OriginalFile } from './file.js'
 import { normalizePath } from './util.js'
 import type { StatusCallback } from './status-cb.js'
 
@@ -39,7 +40,7 @@ export const fileNormalizerCtor = ({
   normalizer: normalizeFunction,
 }: {
   assetType: string
-  normalizer?: (file: unknown) => unknown
+  normalizer?: (file: OriginalFile) => File
 }) => {
   return new Transform({
     objectMode: true,
