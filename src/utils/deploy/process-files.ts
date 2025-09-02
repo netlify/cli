@@ -20,7 +20,7 @@ export const deployFileNormalizer = (workingDir: string, file: File) => {
       break
 
     case join(workingDir, deployConfigPathPath):
-      normalizedPath = [deployConfigPathPath, file.normalizedPath].join('/')
+      normalizedPath = `.netlify/${DEPLOY_CONFIG_PATH}/${file.normalizedPath}`
 
       break
   }
