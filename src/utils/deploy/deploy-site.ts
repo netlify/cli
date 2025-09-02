@@ -4,7 +4,6 @@ import cleanDeep from 'clean-deep'
 
 import BaseCommand from '../../commands/base-command.js'
 import { type $TSFixMe } from '../../commands/types.js'
-import { getDeployConfigPathIfExists } from '../../lib/deploy-config.js'
 import { warn } from '../command-helpers.js'
 
 import {
@@ -17,7 +16,12 @@ import {
 import { hashConfig } from './hash-config.js'
 import hashFiles from './hash-files.js'
 import hashFns from './hash-fns.js'
-import { deployFileNormalizer, getEdgeFunctionsDistPathIfExists, isEdgeFunctionFile } from './process-files.js'
+import {
+  deployFileNormalizer,
+  getDeployConfigPathIfExists,
+  getEdgeFunctionsDistPathIfExists,
+  isEdgeFunctionFile,
+} from './process-files.js'
 import uploadFiles from './upload-files.js'
 import { getUploadList, waitForDeploy, waitForDiff } from './util.js'
 import type { DeployEvent } from './status-cb.js'

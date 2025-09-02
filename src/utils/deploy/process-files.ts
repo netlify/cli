@@ -5,15 +5,25 @@ import { getPathInProject } from '../../lib/settings.js'
 import { EDGE_FUNCTIONS_FOLDER, PUBLIC_URL_PATH } from '../../lib/edge-functions/consts.js'
 import { File } from './file.js'
 
-const DEPLOY_CONFIG_PATH = '.netlify/deploy-config'
+const DEPLOY_CONFIG_PATH = 'deploy-config'
 
 const deployConfigPathPath = getPathInProject([DEPLOY_CONFIG_PATH])
 const edgeFunctionsDistPath = getPathInProject([EDGE_FUNCTIONS_FOLDER])
 
 export const deployFileNormalizer = (workingDir: string, file: File) => {
-  const absoluteDistPath = join(workingDir, edgeFunctionsDistPath)
-  const isEdgeFunction = file.root === absoluteDistPath
-  const normalizedPath = isEdgeFunction ? `${PUBLIC_URL_PATH}/${file.normalizedPath}` : file.normalizedPath
+  let { normalizedPath } = file
+
+  switch (file.root) {
+    case join(workingDir, edgeFunctionsDistPath):
+      normalizedPath = `${PUBLIC_URL_PATH}/${file.normalizedPath}`
+
+      break
+
+    case join(workingDir, deployConfigPathPath):
+      normalizedPath = [deployConfigPathPath, file.normalizedPath].join('/')
+
+      break
+  }
 
   return {
     ...file,
