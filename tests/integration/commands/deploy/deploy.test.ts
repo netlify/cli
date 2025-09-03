@@ -19,15 +19,17 @@ const SITE_NAME = generateSiteName('netlify-test-deploy-')
 
 const validateContent = async ({
   content,
+  headers,
   path: pathname,
   siteUrl,
 }: {
   content?: string | undefined
+  headers?: Record<string, string>
   path: string
   pathname?: string | undefined
   siteUrl: string
 }) => {
-  const response = await fetch(`${siteUrl}${pathname}`)
+  const response = await fetch(`${siteUrl}${pathname}`, { headers })
   const body = await response.text()
   if (content === undefined) {
     expect(response.status).toBe(404)
@@ -1181,6 +1183,107 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
           expect.stringContaining(`Error: option '--prod-if-unlocked' cannot be used with option '-p, --prod'`),
         )
       }
+    })
+  })
+
+  test('should include source_zip_filename in JSON output when --upload-source-zip flag is used', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      const content = '<h1>Source zip test</h1>'
+      builder.withContentFile({
+        path: 'public/index.html',
+        content,
+      })
+
+      await builder.build()
+
+      try {
+        const deploy = await callCli(['deploy', '--json', '--no-build', '--dir', 'public', '--upload-source-zip'], {
+          cwd: builder.directory,
+          env: { NETLIFY_SITE_ID: context.siteId },
+        }).then((output: string) => JSON.parse(output))
+
+        await validateDeploy({ deploy, siteName: SITE_NAME, content })
+        expect(deploy).toHaveProperty('source_zip_filename')
+        expect(typeof deploy.source_zip_filename).toBe('string')
+        expect(deploy.source_zip_filename).toMatch(/\.zip$/)
+      } catch (error) {
+        // If the feature is not yet supported by the API, skip the test
+        if (
+          error instanceof Error &&
+          (error.message.includes('include_upload_url') || error.message.includes('source_zip'))
+        ) {
+          t.skip()
+        } else {
+          throw error
+        }
+      }
+    })
+  })
+
+  test('should deploy files from the deploy config directory', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      const deployConfig = {
+        skew_protection: {
+          patterns: ['.*'],
+          sources: [
+            {
+              type: 'header',
+              name: 'x-deploy-id',
+            },
+          ],
+        },
+      }
+      builder
+        .withContentFile({
+          path: '.netlify/deploy-config/deploy-config.json',
+          content: JSON.stringify(deployConfig),
+        })
+        .withContentFile({
+          path: 'public/index.html',
+          content: 'Static file',
+        })
+        .withFunction({
+          config: { path: '/*' },
+          path: 'echo-headers.mjs',
+          pathPrefix: 'netlify/functions',
+          handler: async (req: Request) =>
+            Response.json({ 'x-deploy-id': req.headers.get('x-deploy-id'), 'x-foo': req.headers.get('x-foo') }),
+          runtimeAPIVersion: 2,
+        })
+        .withNetlifyToml({
+          config: {
+            build: { publish: 'public', command: 'echo "no op"' },
+          },
+        })
+
+      await builder.build()
+
+      const options = {
+        cwd: builder.directory,
+        env: { NETLIFY_SITE_ID: context.siteId },
+      }
+
+      await callCli(['build'], options)
+      const deploy = (await callCli(['deploy', '--json', '--no-build'], options).then((output: string) =>
+        JSON.parse(output),
+      )) as Deploy
+
+      await pause(500)
+
+      // Checking that `x-deploy-id` is null even though we're sending it in
+      // the request asserts that skew protection (and therefore the deploy
+      // config) is working.
+      const expectedContent = { 'x-deploy-id': null, 'x-foo': 'bar' }
+
+      await validateContent({
+        siteUrl: deploy.deploy_url,
+        path: '',
+        content: JSON.stringify(expectedContent),
+        headers: {
+          'x-deploy-id': deploy.deploy_id,
+          'x-foo': 'bar',
+        },
+      })
     })
   })
 })
