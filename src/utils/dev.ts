@@ -122,6 +122,20 @@ const BACKGROUND_FUNCTION_TIMEOUT = 900
  * @param {*} config.siteInfo
  * @returns
  */
+export const parseAIGatewayContext = (): { token: string; url: string } | undefined => {
+  try {
+    const aiGatewayEnv = process.env.AI_GATEWAY
+    if (aiGatewayEnv) {
+      const decodedData = Buffer.from(aiGatewayEnv, 'base64').toString('utf8')
+      const aiGatewayData = JSON.parse(decodedData) as { token: string; url: string }
+      return { token: aiGatewayData.token, url: aiGatewayData.url }
+    }
+  } catch {
+    // Ignore parsing errors - AI Gateway is optional
+  }
+  return undefined
+}
+
 // @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
 export const getSiteInformation = async ({ api, offline, site, siteInfo }) => {
   if (site.id && !offline) {

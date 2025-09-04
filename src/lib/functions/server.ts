@@ -28,7 +28,7 @@ import type { LocalState, ServerSettings, SiteInfo } from '../../utils/types.js'
 
 import { handleBackgroundFunction, handleBackgroundFunctionResult } from './background.js'
 import { createFormSubmissionHandler } from './form-submissions-handler.js'
-import { FunctionsRegistry } from './registry.js'
+import { FunctionsRegistry, type AIGatewayContext } from './registry.js'
 import { handleScheduledFunction } from './scheduled.js'
 import { handleSynchronousFunction } from './synchronous.js'
 
@@ -299,6 +299,7 @@ const getFunctionsServer = (options: GetFunctionsServerOptions) => {
 
 export const startFunctionsServer = async (
   options: {
+    aiGatewayContext?: AIGatewayContext
     blobsContext: BlobsContextWithEdgeAccess
     command: BaseCommand
     config: NormalizedCachedConfigConfig
@@ -316,6 +317,7 @@ export const startFunctionsServer = async (
   } & Omit<GetFunctionsServerOptions, 'functionsRegistry'>,
 ): Promise<FunctionsRegistry | undefined> => {
   const {
+    aiGatewayContext,
     blobsContext,
     capabilities,
     command,
@@ -378,6 +380,7 @@ export const startFunctionsServer = async (
   }
 
   const functionsRegistry = new FunctionsRegistry({
+    aiGatewayContext,
     blobsContext,
     capabilities,
     config,
