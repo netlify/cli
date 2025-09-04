@@ -15,7 +15,6 @@ import {
   injectEnvVariables,
   parseAIGatewayContext,
 } from '../../utils/dev.js'
-import { getEnvelopeEnv } from '../../utils/env/index.js'
 import { getFunctionsDir } from '../../utils/functions/index.js'
 import { getProxyUrl } from '../../utils/proxy.js'
 import BaseCommand from '../base-command.js'
@@ -30,12 +29,6 @@ export const functionsServe = async (options: OptionValues, command: BaseCommand
   let { env } = command.netlify.cachedConfig
 
   env.NETLIFY_DEV = { sources: ['internal'], value: 'true' }
-
-
-  if (!(options.offline || options.offlineEnv)) {
-    env = await getEnvelopeEnv({ api, context: options.context, env, siteInfo })
-    log(`${NETLIFYDEVLOG} Injecting environment variable values for all scopes`)
-  }
 
   env = await getDotEnvVariables({ devConfig: { ...config.dev }, env, site })
   injectEnvVariables(env)
@@ -53,7 +46,7 @@ export const functionsServe = async (options: OptionValues, command: BaseCommand
     if (aiGatewayToken) {
       const aiGatewayPayload = JSON.stringify({
         token: aiGatewayToken.token,
-        url: `${siteUrl}/.netlify/ai`,
+        url: `${siteUrl as string}/.netlify/ai`,
       })
       const base64Payload = Buffer.from(aiGatewayPayload).toString('base64')
       env.AI_GATEWAY = { sources: ['internal'], value: base64Payload }

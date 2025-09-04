@@ -226,3 +226,8 @@ export interface Plugin {
   package: string
   pinned_version?: string | undefined
 }
+
+export interface AIGatewayContext {
+  token: string
+  url: string
+}

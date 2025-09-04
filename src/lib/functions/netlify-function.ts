@@ -10,14 +10,10 @@ import semver from 'semver'
 import { logAndThrowError, type NormalizedCachedConfigConfig } from '../../utils/command-helpers.js'
 import { BACKGROUND } from '../../utils/functions/get-functions.js'
 import { type BlobsContextWithEdgeAccess, getBlobsEventProperty } from '../blobs/blobs.js'
-import type { ServerSettings } from '../../utils/types.js'
+import type { AIGatewayContext, ServerSettings } from '../../utils/types.js'
 
 import type { BaseBuildResult, InvokeFunctionResult, Runtime } from './runtimes/index.js'
 
-export interface AIGatewayContext {
-  token: string
-  url: string
-}
 
 export interface InvocationError {
   errorMessage: string

@@ -24,11 +24,11 @@ import { NFFunctionName, NFFunctionRoute } from '../../utils/headers.js'
 import type { BlobsContextWithEdgeAccess } from '../blobs/blobs.js'
 import { headers as efHeaders } from '../edge-functions/headers.js'
 import { getGeoLocation } from '../geo-location.js'
-import type { LocalState, ServerSettings, SiteInfo } from '../../utils/types.js'
+import type { AIGatewayContext, LocalState, ServerSettings, SiteInfo } from '../../utils/types.js'
 
 import { handleBackgroundFunction, handleBackgroundFunctionResult } from './background.js'
 import { createFormSubmissionHandler } from './form-submissions-handler.js'
-import { FunctionsRegistry, type AIGatewayContext } from './registry.js'
+import { FunctionsRegistry } from './registry.js'
 import { handleScheduledFunction } from './scheduled.js'
 import { handleSynchronousFunction } from './synchronous.js'
 
