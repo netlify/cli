@@ -4,7 +4,6 @@ import type { NetlifyAPI } from '@netlify/api'
 import { applyMutations } from '@netlify/config'
 import { OptionValues } from 'commander'
 
-import { fetchAIGatewayToken } from '../../lib/api.js'
 import { BLOBS_CONTEXT_VARIABLE, encodeBlobsContext, getBlobsContextWithEdgeAccess } from '../../lib/blobs/blobs.js'
 import { promptEditorHelper } from '../../lib/edge-functions/editor-helper.js'
 import { startFunctionsServer } from '../../lib/functions/server.js'
@@ -20,7 +19,7 @@ import {
   netlifyCommand,
 } from '../../utils/command-helpers.js'
 import detectServerSettings, { getConfigWithPlugins } from '../../utils/detect-server-settings.js'
-import { UNLINKED_SITE_MOCK_ID, getDotEnvVariables, getSiteInformation, injectEnvVariables, parseAIGatewayContext } from '../../utils/dev.js'
+import { UNLINKED_SITE_MOCK_ID, getDotEnvVariables, getSiteInformation, injectEnvVariables, parseAIGatewayContext, setupAIGateway } from '../../utils/dev.js'
 import { getEnvelopeEnv } from '../../utils/env/index.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import { getLiveTunnelSlug, startLiveTunnel } from '../../utils/live-tunnel.js'
@@ -156,19 +155,7 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
     siteInfo,
   })
 
-  if (site.id && site.id !== UNLINKED_SITE_MOCK_ID && siteUrl && !(options.offline || options.offlineEnv)) {
-    const aiGatewayToken = await fetchAIGatewayToken({ api, siteId: site.id })
-    if (aiGatewayToken) {
-      const aiGatewayPayload = JSON.stringify({
-        token: aiGatewayToken.token,
-        url: `${siteUrl as string}/.netlify/ai`,
-      })
-      const base64Payload = Buffer.from(aiGatewayPayload).toString('base64')
-      env.AI_GATEWAY = { sources: ['internal'], value: base64Payload }
-      process.env.AI_GATEWAY = base64Payload
-      log(`${NETLIFYDEVLOG} AI Gateway configured for AI provider SDK interception`)
-    }
-  }
+  await setupAIGateway({ api, env, options, site, siteUrl })
 
   let settings: ServerSettings
   try {

@@ -2,7 +2,6 @@ import { join } from 'path'
 
 import { OptionValues } from 'commander'
 
-import { fetchAIGatewayToken } from '../../lib/api.js'
 import { getBlobsContextWithEdgeAccess } from '../../lib/blobs/blobs.js'
 import { startFunctionsServer } from '../../lib/functions/server.js'
 import { printBanner } from '../../utils/dev-server-banner.js'
@@ -14,6 +13,7 @@ import {
   getSiteInformation,
   injectEnvVariables,
   parseAIGatewayContext,
+  setupAIGateway,
 } from '../../utils/dev.js'
 import { getFunctionsDir } from '../../utils/functions/index.js'
 import { getProxyUrl } from '../../utils/proxy.js'
@@ -40,20 +40,7 @@ export const functionsServe = async (options: OptionValues, command: BaseCommand
     siteInfo,
   })
 
-  // Configure AI Gateway for standalone functions:serve command
-  if (site.id && site.id !== UNLINKED_SITE_MOCK_ID && siteUrl && !(options.offline || options.offlineEnv)) {
-    const aiGatewayToken = await fetchAIGatewayToken({ api, siteId: site.id })
-    if (aiGatewayToken) {
-      const aiGatewayPayload = JSON.stringify({
-        token: aiGatewayToken.token,
-        url: `${siteUrl as string}/.netlify/ai`,
-      })
-      const base64Payload = Buffer.from(aiGatewayPayload).toString('base64')
-      env.AI_GATEWAY = { sources: ['internal'], value: base64Payload }
-      process.env.AI_GATEWAY = base64Payload
-      log(`${NETLIFYDEVLOG} AI Gateway configured for AI provider SDK interception`)
-    }
-  }
+  await setupAIGateway({ api, env, options, site, siteUrl })
 
   const functionsPort = await acquirePort({
     configuredPort: options.port || config.dev?.functionsPort,

@@ -136,6 +136,37 @@ export const parseAIGatewayContext = (): { token: string; url: string } | undefi
   return undefined
 }
 
+export const setupAIGateway = async ({
+  api,
+  env,
+  options,
+  site,
+  siteUrl,
+}: {
+  api: any
+  env: any
+  options: any
+  site: any
+  siteUrl: string | undefined
+}): Promise<void> => {
+  if (site.id && site.id !== UNLINKED_SITE_MOCK_ID && siteUrl && !(options.offline || options.offlineEnv)) {
+    const { fetchAIGatewayToken } = await import('../lib/api.js')
+    const aiGatewayToken = await fetchAIGatewayToken({ api, siteId: site.id })
+    if (aiGatewayToken) {
+      const aiGatewayPayload = JSON.stringify({
+        token: aiGatewayToken.token,
+        url: `${siteUrl}/.netlify/ai`,
+      })
+      const base64Payload = Buffer.from(aiGatewayPayload).toString('base64')
+      env.AI_GATEWAY = { sources: ['internal'], value: base64Payload }
+      process.env.AI_GATEWAY = base64Payload
+      
+      const { NETLIFYDEVLOG, log } = await import('./command-helpers.js')
+      log(`${NETLIFYDEVLOG} AI Gateway configured for AI provider SDK interception`)
+    }
+  }
+}
+
 // @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
 export const getSiteInformation = async ({ api, offline, site, siteInfo }) => {
   if (site.id && !offline) {
