@@ -28,7 +28,6 @@ import type { AIGatewayContext, ServerSettings } from '../../utils/types.js'
 import NetlifyFunction from './netlify-function.js'
 import runtimes, { type BaseBuildResult } from './runtimes/index.js'
 
-
 export const DEFAULT_FUNCTION_URL_EXPRESSION = /^\/.netlify\/(functions|builders)\/([^/]+).*/
 const TYPES_PACKAGE = '@netlify/functions'
 const ZIP_EXTENSION = '.zip'

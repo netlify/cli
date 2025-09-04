@@ -5,7 +5,6 @@ import { OptionValues } from 'commander'
 import { getBlobsContextWithEdgeAccess } from '../../lib/blobs/blobs.js'
 import { startFunctionsServer } from '../../lib/functions/server.js'
 import { printBanner } from '../../utils/dev-server-banner.js'
-import { NETLIFYDEVLOG, log } from '../../utils/command-helpers.js'
 import {
   UNLINKED_SITE_MOCK_ID,
   acquirePort,

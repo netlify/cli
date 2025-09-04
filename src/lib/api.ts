@@ -46,46 +46,50 @@ export const listSites = async ({
   return sites as unknown[] as SiteInfo[]
 }
 
-export const fetchAIGatewayToken = async ({ api, siteId }: { api: NetlifyAPI; siteId: string }): Promise<AIGatewayTokenResponse | null> => {
+export const fetchAIGatewayToken = async ({
+  api,
+  siteId,
+}: {
+  api: NetlifyAPI
+  siteId: string
+}): Promise<AIGatewayTokenResponse | null> => {
   try {
     const url = `${api.scheme}://${api.host}/api/v1/sites/${siteId}/ai-gateway/token`
-    
+
     const response = await fetch(url, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${api.accessToken ?? ''}`,
+        Authorization: `Bearer ${api.accessToken ?? ''}`,
         'Content-Type': 'application/json',
       },
     })
-    
+
     if (!response.ok) {
       if (response.status === 404) {
         return null
       }
       throw new Error(`HTTP ${String(response.status)}: ${response.statusText}`)
     }
-    
+
     const data: unknown = await response.json()
-    
+
     if (typeof data !== 'object' || data === null) {
       throw new Error('Invalid response: not an object')
     }
-    
+
     const responseData = data as Record<string, unknown>
-    
+
     if (typeof responseData.token !== 'string' || typeof responseData.url !== 'string') {
       throw new Error('Invalid response: missing token or url')
     }
-    
+
     return {
       token: responseData.token,
       url: responseData.url,
     }
   } catch (error) {
     warn(
-      `Failed to fetch AI Gateway token for site ${siteId}: ${
-        error instanceof Error ? error.message : String(error)
-      }`,
+      `Failed to fetch AI Gateway token for site ${siteId}: ${error instanceof Error ? error.message : String(error)}`,
     )
     return null
   }

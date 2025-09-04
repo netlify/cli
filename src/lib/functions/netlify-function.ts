@@ -14,7 +14,6 @@ import type { AIGatewayContext, ServerSettings } from '../../utils/types.js'
 
 import type { BaseBuildResult, InvokeFunctionResult, Runtime } from './runtimes/index.js'
 
-
 export interface InvocationError {
   errorMessage: string
   errorType: string

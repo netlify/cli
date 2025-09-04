@@ -143,10 +143,10 @@ export const setupAIGateway = async ({
   site,
   siteUrl,
 }: {
-  api: any
-  env: any
-  options: any
-  site: any
+  api: NetlifyAPI
+  env: Record<string, { sources: string[]; value: string }>
+  options: { offline?: boolean; offlineEnv?: boolean }
+  site: { id?: string }
   siteUrl: string | undefined
 }): Promise<void> => {
   if (site.id && site.id !== UNLINKED_SITE_MOCK_ID && siteUrl && !(options.offline || options.offlineEnv)) {
@@ -160,7 +160,7 @@ export const setupAIGateway = async ({
       const base64Payload = Buffer.from(aiGatewayPayload).toString('base64')
       env.AI_GATEWAY = { sources: ['internal'], value: base64Payload }
       process.env.AI_GATEWAY = base64Payload
-      
+
       const { NETLIFYDEVLOG, log } = await import('./command-helpers.js')
       log(`${NETLIFYDEVLOG} AI Gateway configured for AI provider SDK interception`)
     }
