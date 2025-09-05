@@ -4,9 +4,8 @@ import path from 'path'
 
 import type { HandlerEvent } from '@netlify/functions'
 import js from 'dedent'
-import FormData from 'form-data'
 import getPort from 'get-port'
-import fetch from 'node-fetch'
+
 import { describe, test } from 'vitest'
 
 import { withDevServer } from '../../utils/dev-server.js'
@@ -113,7 +112,7 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
             data: {
               ip: '::ffff:127.0.0.1',
               some: 'thing',
-              user_agent: 'node-fetch',
+              user_agent: 'node',
             },
             human_fields: {
               Some: 'thing',
@@ -316,7 +315,7 @@ describe.concurrent('commands/dev-forms-and-redirects', () => {
       await builder.build()
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
-        const response = await fetch(`${server.url}/foo.html`, { follow: 0 })
+        const response = await fetch(`${server.url}/foo.html`, { redirect: 'manual' })
         t.expect(response).not.toHaveProperty('headers.location')
         t.expect(await response.text()).toEqual('<html><h1>foo')
       })
