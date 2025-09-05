@@ -11,6 +11,8 @@ import {
   getDotEnvVariables,
   getSiteInformation,
   injectEnvVariables,
+  parseAIGatewayContext,
+  setupAIGateway,
 } from '../../utils/dev.js'
 import { getFunctionsDir } from '../../utils/functions/index.js'
 import { getProxyUrl } from '../../utils/proxy.js'
@@ -37,6 +39,8 @@ export const functionsServe = async (options: OptionValues, command: BaseCommand
     siteInfo,
   })
 
+  await setupAIGateway({ api, env, options, site, siteUrl })
+
   const functionsPort = await acquirePort({
     configuredPort: options.port || config.dev?.functionsPort,
     defaultPort: DEFAULT_PORT,
@@ -49,8 +53,11 @@ export const functionsServe = async (options: OptionValues, command: BaseCommand
     siteID: site.id ?? UNLINKED_SITE_MOCK_ID,
   })
 
+  const aiGatewayContext = parseAIGatewayContext()
+
   await startFunctionsServer({
     loadDistFunctions: process.env.NETLIFY_FUNCTIONS_SERVE_LOAD_DIST_FUNCTIONS === 'true',
+    aiGatewayContext,
     blobsContext,
     config,
     debug: options.debug,

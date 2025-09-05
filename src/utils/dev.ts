@@ -122,6 +122,51 @@ const BACKGROUND_FUNCTION_TIMEOUT = 900
  * @param {*} config.siteInfo
  * @returns
  */
+export const parseAIGatewayContext = (): { token: string; url: string } | undefined => {
+  try {
+    const aiGatewayEnv = process.env.AI_GATEWAY
+    if (aiGatewayEnv) {
+      const decodedData = Buffer.from(aiGatewayEnv, 'base64').toString('utf8')
+      const aiGatewayData = JSON.parse(decodedData) as { token: string; url: string }
+      return { token: aiGatewayData.token, url: aiGatewayData.url }
+    }
+  } catch {
+    // Ignore parsing errors - AI Gateway is optional
+  }
+  return undefined
+}
+
+export const setupAIGateway = async ({
+  api,
+  env,
+  options,
+  site,
+  siteUrl,
+}: {
+  api: NetlifyAPI
+  env: Record<string, { sources: string[]; value: string }>
+  options: { offline?: boolean; offlineEnv?: boolean }
+  site: { id?: string }
+  siteUrl: string | undefined
+}): Promise<void> => {
+  if (site.id && site.id !== UNLINKED_SITE_MOCK_ID && siteUrl && !(options.offline || options.offlineEnv)) {
+    const { fetchAIGatewayToken } = await import('../lib/api.js')
+    const aiGatewayToken = await fetchAIGatewayToken({ api, siteId: site.id })
+    if (aiGatewayToken) {
+      const aiGatewayPayload = JSON.stringify({
+        token: aiGatewayToken.token,
+        url: `${siteUrl}/.netlify/ai`,
+      })
+      const base64Payload = Buffer.from(aiGatewayPayload).toString('base64')
+      env.AI_GATEWAY = { sources: ['internal'], value: base64Payload }
+      process.env.AI_GATEWAY = base64Payload
+
+      const { NETLIFYDEVLOG, log } = await import('./command-helpers.js')
+      log(`${NETLIFYDEVLOG} AI Gateway configured for AI provider SDK interception`)
+    }
+  }
+}
+
 // @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
 export const getSiteInformation = async ({ api, offline, site, siteInfo }) => {
   if (site.id && !offline) {

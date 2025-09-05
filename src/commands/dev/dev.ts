@@ -19,7 +19,14 @@ import {
   netlifyCommand,
 } from '../../utils/command-helpers.js'
 import detectServerSettings, { getConfigWithPlugins } from '../../utils/detect-server-settings.js'
-import { UNLINKED_SITE_MOCK_ID, getDotEnvVariables, getSiteInformation, injectEnvVariables } from '../../utils/dev.js'
+import {
+  UNLINKED_SITE_MOCK_ID,
+  getDotEnvVariables,
+  getSiteInformation,
+  injectEnvVariables,
+  parseAIGatewayContext,
+  setupAIGateway,
+} from '../../utils/dev.js'
 import { getEnvelopeEnv } from '../../utils/env/index.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import { getLiveTunnelSlug, startLiveTunnel } from '../../utils/live-tunnel.js'
@@ -155,6 +162,8 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
     siteInfo,
   })
 
+  await setupAIGateway({ api, env, options, site, siteUrl })
+
   let settings: ServerSettings
   try {
     settings = await detectServerSettings(devConfig, options, command)
@@ -204,7 +213,10 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
   // FIXME(serhalp): `applyMutations` is `(any, any) => any)`. Add types in `@netlify/config`.
   const mutatedConfig: typeof config = applyMutations(config, configMutations)
 
+  const aiGatewayContext = parseAIGatewayContext()
+
   const functionsRegistry = await startFunctionsServer({
+    aiGatewayContext,
     blobsContext,
     command,
     config: mutatedConfig,

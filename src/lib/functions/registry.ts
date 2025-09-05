@@ -23,7 +23,7 @@ import { INTERNAL_FUNCTIONS_FOLDER, SERVE_FUNCTIONS_FOLDER } from '../../utils/f
 import type { BlobsContextWithEdgeAccess } from '../blobs/blobs.js'
 import { BACKGROUND_FUNCTIONS_WARNING } from '../log.js'
 import { getPathInProject } from '../settings.js'
-import type { ServerSettings } from '../../utils/types.js'
+import type { AIGatewayContext, ServerSettings } from '../../utils/types.js'
 
 import NetlifyFunction from './netlify-function.js'
 import runtimes, { type BaseBuildResult } from './runtimes/index.js'
@@ -67,6 +67,11 @@ export class FunctionsRegistry {
    */
   private blobsContext: BlobsContextWithEdgeAccess
 
+  /**
+   * Context object for Netlify AI Gateway
+   */
+  private aiGatewayContext?: AIGatewayContext
+
   private buildCommandCache?: MemoizeCache<Record<string, unknown>>
   private capabilities: {
     backgroundFunctions?: boolean
@@ -84,6 +89,7 @@ export class FunctionsRegistry {
   private timeouts: { backgroundFunctions: number; syncFunctions: number }
 
   constructor({
+    aiGatewayContext,
     blobsContext,
     capabilities,
     config,
@@ -97,6 +103,7 @@ export class FunctionsRegistry {
     settings,
     timeouts,
   }: {
+    aiGatewayContext?: AIGatewayContext
     blobsContext: BlobsContextWithEdgeAccess
     buildCache?: Record<string, unknown>
     capabilities: {
@@ -124,6 +131,7 @@ export class FunctionsRegistry {
     this.timeouts = timeouts
     this.settings = settings
     this.blobsContext = blobsContext
+    this.aiGatewayContext = aiGatewayContext
 
     /**
      * An object to be shared among all functions in the registry. It can be
@@ -547,6 +555,7 @@ export class FunctionsRegistry {
         }
 
         const func = new NetlifyFunction({
+          aiGatewayContext: this.aiGatewayContext,
           blobsContext: this.blobsContext,
           config: this.config,
           mainFile,

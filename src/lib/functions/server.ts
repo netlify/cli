@@ -24,7 +24,7 @@ import { NFFunctionName, NFFunctionRoute } from '../../utils/headers.js'
 import type { BlobsContextWithEdgeAccess } from '../blobs/blobs.js'
 import { headers as efHeaders } from '../edge-functions/headers.js'
 import { getGeoLocation } from '../geo-location.js'
-import type { LocalState, ServerSettings, SiteInfo } from '../../utils/types.js'
+import type { AIGatewayContext, LocalState, ServerSettings, SiteInfo } from '../../utils/types.js'
 
 import { handleBackgroundFunction, handleBackgroundFunctionResult } from './background.js'
 import { createFormSubmissionHandler } from './form-submissions-handler.js'
@@ -299,6 +299,7 @@ const getFunctionsServer = (options: GetFunctionsServerOptions) => {
 
 export const startFunctionsServer = async (
   options: {
+    aiGatewayContext?: AIGatewayContext
     blobsContext: BlobsContextWithEdgeAccess
     command: BaseCommand
     config: NormalizedCachedConfigConfig
@@ -316,6 +317,7 @@ export const startFunctionsServer = async (
   } & Omit<GetFunctionsServerOptions, 'functionsRegistry'>,
 ): Promise<FunctionsRegistry | undefined> => {
   const {
+    aiGatewayContext,
     blobsContext,
     capabilities,
     command,
@@ -378,6 +380,7 @@ export const startFunctionsServer = async (
   }
 
   const functionsRegistry = new FunctionsRegistry({
+    aiGatewayContext,
     blobsContext,
     capabilities,
     config,
