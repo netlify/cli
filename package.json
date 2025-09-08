@@ -183,7 +183,7 @@
     "@types/parse-github-url": "1.0.3",
     "@types/picomatch": "4.0.2",
     "@types/prettyjson": "0.0.33",
-    "@types/semver": "7.7.0",
+    "@types/semver": "7.7.1",
     "@types/serialize-javascript": "5.0.4",
     "@types/source-map-support": "0.5.10",
     "@types/update-notifier": "6.0.8",
