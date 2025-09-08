@@ -171,7 +171,7 @@
     "@types/etag": "1.8.4",
     "@types/folder-walker": "3.2.4",
     "@types/gitconfiglocal": "2.0.3",
-    "@types/inquirer": "9.0.8",
+    "@types/inquirer": "9.0.9",
     "@types/inquirer-autocomplete-prompt": "3.0.3",
     "@types/jsonwebtoken": "9.0.10",
     "@types/lodash": "4.17.20",
