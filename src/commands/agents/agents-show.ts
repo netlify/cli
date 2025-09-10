@@ -100,10 +100,15 @@ export const agentsShow = async (id: string, options: AgentShowOptions, command:
       }
     }
 
-    log(`  Branch: ${chalk.cyan(agentRunner.branch ?? 'unknown')}`)
+    const isGitBased = Boolean(siteInfo.build_settings?.repo_branch)
 
-    if (agentRunner.result_branch) {
-      log(`  Result Branch: ${chalk.green(agentRunner.result_branch)}`)
+    if (isGitBased) {
+      log(`  Branch: ${chalk.cyan(agentRunner.branch ?? 'unknown')}`)
+      if (agentRunner.result_branch) {
+        log(`  Result Branch: ${chalk.green(agentRunner.result_branch)}`)
+      }
+    } else {
+      log(`  Base: ${chalk.cyan('Latest production deployment')}`)
     }
 
     log(``)

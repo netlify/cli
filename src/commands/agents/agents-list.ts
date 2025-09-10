@@ -104,17 +104,22 @@ export const agentsList = async (options: AgentListOptions, command: BaseCommand
       stopSpinner({ spinner: agentSpinner, error: true })
     }
 
+    const isGitBased = Boolean(siteInfo.build_settings?.repo_branch)
+
     // Create and populate table without colors for proper formatting
     const table = new AsciiTable(`Agent Tasks for ${siteInfo.name}`)
-    table.setHeading('ID', 'STATUS', 'AGENT', 'PROMPT', 'BRANCH', 'DURATION', 'CREATED')
+    const baseColumnLabel = isGitBased ? 'BRANCH' : 'BASE'
+    table.setHeading('ID', 'STATUS', 'AGENT', 'PROMPT', baseColumnLabel, 'DURATION', 'CREATED')
 
     agentRunners.forEach((runner) => {
+      const baseValue = isGitBased ? truncateText(runner.branch ?? 'unknown', 12) : 'Production'
+
       table.addRow(
         runner.id,
         (runner.state ?? 'unknown').toUpperCase(),
         getAgentName(agentInfo.get(runner.id) ?? 'unknown'),
         truncateText(runner.title ?? 'No title', 35),
-        truncateText(runner.branch ?? 'unknown', 12),
+        baseValue,
         runner.done_at ? formatDuration(runner.created_at, runner.done_at) : formatDuration(runner.created_at),
         new Date(runner.created_at).toLocaleDateString(),
       )

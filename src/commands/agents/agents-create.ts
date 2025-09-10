@@ -26,6 +26,8 @@ export const agentsCreate = async (promptArg: string, options: AgentCreateOption
   let agent = initialAgent
   let branch = initialBranch
 
+  const isGitBased = Boolean(siteInfo.build_settings?.repo_branch)
+
   // Interactive prompt if not provided
   if (!prompt && !promptArg) {
     const { promptInput } = await inquirer.prompt<{
@@ -69,10 +71,31 @@ export const agentsCreate = async (promptArg: string, options: AgentCreateOption
     }
   }
 
-  // Use site's default branch if not specified
-  if (!branch) {
-    // Try to get default branch from site info, fallback to 'main'
-    branch = siteInfo.build_settings?.repo_branch ?? 'main'
+  if (isGitBased) {
+    if (!branch) {
+      const defaultBranch = siteInfo.build_settings?.repo_branch
+
+      const { branchInput } = await inquirer.prompt<{
+        branchInput: string
+      }>([
+        {
+          type: 'input',
+          name: 'branchInput',
+          message: 'Which branch would you like to work on?',
+          default: defaultBranch,
+          validate: (input: string) => {
+            if (!input || input.trim().length === 0) {
+              return 'Branch name is required'
+            }
+            return true
+          },
+        },
+      ])
+
+      branch = branchInput.trim()
+    }
+  } else {
+    branch = undefined
   }
 
   const createSpinner = startSpinner({ text: 'Creating agent task...' })
@@ -92,7 +115,7 @@ export const agentsCreate = async (promptArg: string, options: AgentCreateOption
           'User-Agent': apiOpts.userAgent,
         },
         body: JSON.stringify({
-          branch,
+          ...(branch ? { branch } : {}),
           prompt: finalPrompt,
           agent,
           model,
@@ -119,7 +142,11 @@ export const agentsCreate = async (promptArg: string, options: AgentCreateOption
     log(`  Task ID: ${chalk.cyan(agentRunner.id)}`)
     log(`  Prompt: ${chalk.dim(finalPrompt)}`)
     log(`  Agent: ${chalk.cyan(getAgentName(agent))}${model ? ` (${model})` : ''}`)
-    log(`  Branch: ${chalk.cyan(branch)}`)
+    if (isGitBased && branch) {
+      log(`  Branch: ${chalk.cyan(branch)}`)
+    } else {
+      log(`  Base: ${chalk.cyan('Latest production deployment')}`)
+    }
     log(`  Status: ${formatStatus(agentRunner.state ?? 'new')}`)
     log(``)
     log(chalk.bold('Monitor progress:'))

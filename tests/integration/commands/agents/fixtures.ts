@@ -11,6 +11,14 @@ export const mockSiteInfo = {
   },
 }
 
+export const mockSiteInfoNoRepo = {
+  admin_url: 'https://app.netlify.com/projects/zip-site/overview',
+  ssl_url: 'https://zip-site.netlify.app/',
+  id: 'zip_site_id',
+  name: 'zip-site',
+  // No build_settings
+}
+
 export const mockUser = {
   id: 'user_id',
   full_name: 'Test User',
@@ -30,6 +38,20 @@ export const mockAgentRunner = {
   updated_at: '2024-01-15T10:30:00.000Z',
   title: 'Create a login form',
   branch: 'main',
+  user: {
+    id: 'user_id',
+    full_name: 'Test User',
+  },
+}
+
+export const mockAgentRunnerNoRepo = {
+  id: 'agent_runner_no_repo_id',
+  site_id: 'zip_site_id',
+  state: 'new',
+  created_at: '2024-01-15T10:30:00.000Z',
+  updated_at: '2024-01-15T10:30:00.000Z',
+  title: 'Add a contact form',
+  // No branch field for non-git sites
   user: {
     id: 'user_id',
     full_name: 'Test User',
