@@ -2,6 +2,9 @@ import { join } from 'path'
 
 import { OptionValues } from 'commander'
 
+import { parseAIGatewayContext, setupAIGateway } from '@netlify/ai-gateway'
+
+import { NETLIFYDEVLOG, log } from '../../utils/command-helpers.js'
 import { getBlobsContextWithEdgeAccess } from '../../lib/blobs/blobs.js'
 import { startFunctionsServer } from '../../lib/functions/server.js'
 import { printBanner } from '../../utils/dev-server-banner.js'
@@ -11,8 +14,6 @@ import {
   getDotEnvVariables,
   getSiteInformation,
   injectEnvVariables,
-  parseAIGatewayContext,
-  setupAIGatewayCLI as setupAIGateway,
 } from '../../utils/dev.js'
 import { getFunctionsDir } from '../../utils/functions/index.js'
 import { getProxyUrl } from '../../utils/proxy.js'
@@ -40,6 +41,10 @@ export const functionsServe = async (options: OptionValues, command: BaseCommand
   })
 
   await setupAIGateway({ api, env, options, site, siteUrl })
+
+  if (env.AI_GATEWAY?.value) {
+    log(`${NETLIFYDEVLOG} AI Gateway configured for AI provider SDK interception`)
+  }
 
   const functionsPort = await acquirePort({
     configuredPort: options.port || config.dev?.functionsPort,

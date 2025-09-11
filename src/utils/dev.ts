@@ -1,7 +1,6 @@
 import process from 'process'
 
 import type { NetlifyAPI } from '@netlify/api'
-import { setupAIGateway, parseAIGatewayContext } from '@netlify/ai-gateway'
 import getPort from 'get-port'
 import isEmpty from 'lodash/isEmpty.js'
 
@@ -123,29 +122,6 @@ const BACKGROUND_FUNCTION_TIMEOUT = 900
  * @param {*} config.siteInfo
  * @returns
  */
-
-export { parseAIGatewayContext }
-
-export const setupAIGatewayCLI = async ({
-  api,
-  env,
-  options,
-  site,
-  siteUrl,
-}: {
-  api: NetlifyAPI
-  env: Record<string, { sources: string[]; value: string }>
-  options: { offline?: boolean; offlineEnv?: boolean }
-  site: { id?: string }
-  siteUrl: string | undefined
-}): Promise<void> => {
-  await setupAIGateway({ api, env, options, site, siteUrl })
-
-  if (env.AI_GATEWAY?.value) {
-    const { NETLIFYDEVLOG, log } = await import('./command-helpers.js')
-    log(`${NETLIFYDEVLOG} AI Gateway configured for AI provider SDK interception`)
-  }
-}
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
 export const getSiteInformation = async ({ api, offline, site, siteInfo }) => {
