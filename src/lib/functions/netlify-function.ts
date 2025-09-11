@@ -10,7 +10,8 @@ import semver from 'semver'
 import { logAndThrowError, type NormalizedCachedConfigConfig } from '../../utils/command-helpers.js'
 import { BACKGROUND } from '../../utils/functions/get-functions.js'
 import { type BlobsContextWithEdgeAccess, getBlobsEventProperty } from '../blobs/blobs.js'
-import type { AIGatewayContext, ServerSettings } from '../../utils/types.js'
+import type { AIGatewayContext } from '@netlify/ai-gateway'
+import type { ServerSettings } from '../../utils/types.js'
 
 import type { BaseBuildResult, InvokeFunctionResult, Runtime } from './runtimes/index.js'
 
@@ -42,7 +43,7 @@ const getNextRun = function (schedule: string) {
 }
 
 export default class NetlifyFunction<BuildResult extends BaseBuildResult> {
-  private readonly aiGatewayContext?: AIGatewayContext
+  private readonly aiGatewayContext?: AIGatewayContext | null
   private readonly blobsContext: BlobsContextWithEdgeAccess
   private readonly config: NormalizedCachedConfigConfig
   private readonly directory?: string
@@ -89,7 +90,7 @@ export default class NetlifyFunction<BuildResult extends BaseBuildResult> {
     timeoutBackground,
     timeoutSynchronous,
   }: {
-    aiGatewayContext?: AIGatewayContext
+    aiGatewayContext?: AIGatewayContext | null
     blobsContext: BlobsContextWithEdgeAccess
     config: NormalizedCachedConfigConfig
     directory?: string
@@ -290,7 +291,6 @@ export default class NetlifyFunction<BuildResult extends BaseBuildResult> {
 
     if (this.aiGatewayContext) {
       const payload = JSON.stringify(this.aiGatewayContext)
-
       event.aiGateway = Buffer.from(payload).toString('base64')
     }
 

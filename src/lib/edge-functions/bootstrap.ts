@@ -1,6 +1,6 @@
 import { env } from 'process'
 
-import { getURL } from '@netlify/edge-functions-bootstrap/version'
+import { getURL } from '@netlify/edge-functions/version'
 
 import { warn } from '../../utils/command-helpers.js'
 

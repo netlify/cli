@@ -23,7 +23,8 @@ import { INTERNAL_FUNCTIONS_FOLDER, SERVE_FUNCTIONS_FOLDER } from '../../utils/f
 import type { BlobsContextWithEdgeAccess } from '../blobs/blobs.js'
 import { BACKGROUND_FUNCTIONS_WARNING } from '../log.js'
 import { getPathInProject } from '../settings.js'
-import type { AIGatewayContext, ServerSettings } from '../../utils/types.js'
+import type { AIGatewayContext } from '@netlify/ai-gateway'
+import type { ServerSettings } from '../../utils/types.js'
 
 import NetlifyFunction from './netlify-function.js'
 import runtimes, { type BaseBuildResult } from './runtimes/index.js'
@@ -70,7 +71,7 @@ export class FunctionsRegistry {
   /**
    * Context object for Netlify AI Gateway
    */
-  private aiGatewayContext?: AIGatewayContext
+  private aiGatewayContext?: AIGatewayContext | null
 
   private buildCommandCache?: MemoizeCache<Record<string, unknown>>
   private capabilities: {
@@ -103,7 +104,7 @@ export class FunctionsRegistry {
     settings,
     timeouts,
   }: {
-    aiGatewayContext?: AIGatewayContext
+    aiGatewayContext?: AIGatewayContext | null
     blobsContext: BlobsContextWithEdgeAccess
     buildCache?: Record<string, unknown>
     capabilities: {

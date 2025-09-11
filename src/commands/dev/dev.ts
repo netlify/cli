@@ -25,7 +25,7 @@ import {
   getSiteInformation,
   injectEnvVariables,
   parseAIGatewayContext,
-  setupAIGateway,
+  setupAIGatewayCLI as setupAIGateway,
 } from '../../utils/dev.js'
 import { getEnvelopeEnv } from '../../utils/env/index.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
@@ -213,7 +213,9 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
   // FIXME(serhalp): `applyMutations` is `(any, any) => any)`. Add types in `@netlify/config`.
   const mutatedConfig: typeof config = applyMutations(config, configMutations)
 
-  const aiGatewayContext = parseAIGatewayContext()
+  // Temporarily disable AI Gateway parsing
+  const aiGatewayContext = undefined
+  // const aiGatewayContext = parseAIGatewayContext()
 
   const functionsRegistry = await startFunctionsServer({
     aiGatewayContext,

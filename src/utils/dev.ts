@@ -1,6 +1,7 @@
 import process from 'process'
 
 import type { NetlifyAPI } from '@netlify/api'
+import { setupAIGateway, parseAIGatewayContext } from '@netlify/ai-gateway'
 import getPort from 'get-port'
 import isEmpty from 'lodash/isEmpty.js'
 
@@ -122,21 +123,10 @@ const BACKGROUND_FUNCTION_TIMEOUT = 900
  * @param {*} config.siteInfo
  * @returns
  */
-export const parseAIGatewayContext = (): { token: string; url: string } | undefined => {
-  try {
-    const aiGatewayEnv = process.env.AI_GATEWAY
-    if (aiGatewayEnv) {
-      const decodedData = Buffer.from(aiGatewayEnv, 'base64').toString('utf8')
-      const aiGatewayData = JSON.parse(decodedData) as { token: string; url: string }
-      return { token: aiGatewayData.token, url: aiGatewayData.url }
-    }
-  } catch {
-    // Ignore parsing errors - AI Gateway is optional
-  }
-  return undefined
-}
 
-export const setupAIGateway = async ({
+export { parseAIGatewayContext }
+
+export const setupAIGatewayCLI = async ({
   api,
   env,
   options,
@@ -149,21 +139,11 @@ export const setupAIGateway = async ({
   site: { id?: string }
   siteUrl: string | undefined
 }): Promise<void> => {
-  if (site.id && site.id !== UNLINKED_SITE_MOCK_ID && siteUrl && !(options.offline || options.offlineEnv)) {
-    const { fetchAIGatewayToken } = await import('../lib/api.js')
-    const aiGatewayToken = await fetchAIGatewayToken({ api, siteId: site.id })
-    if (aiGatewayToken) {
-      const aiGatewayPayload = JSON.stringify({
-        token: aiGatewayToken.token,
-        url: `${siteUrl}/.netlify/ai`,
-      })
-      const base64Payload = Buffer.from(aiGatewayPayload).toString('base64')
-      env.AI_GATEWAY = { sources: ['internal'], value: base64Payload }
-      process.env.AI_GATEWAY = base64Payload
+  await setupAIGateway({ api, env, options, site, siteUrl })
 
-      const { NETLIFYDEVLOG, log } = await import('./command-helpers.js')
-      log(`${NETLIFYDEVLOG} AI Gateway configured for AI provider SDK interception`)
-    }
+  if (env.AI_GATEWAY?.value) {
+    const { NETLIFYDEVLOG, log } = await import('./command-helpers.js')
+    log(`${NETLIFYDEVLOG} AI Gateway configured for AI provider SDK interception`)
   }
 }
 

@@ -12,7 +12,7 @@ import {
   getSiteInformation,
   injectEnvVariables,
   parseAIGatewayContext,
-  setupAIGateway,
+  setupAIGatewayCLI as setupAIGateway,
 } from '../../utils/dev.js'
 import { getFunctionsDir } from '../../utils/functions/index.js'
 import { getProxyUrl } from '../../utils/proxy.js'

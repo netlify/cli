@@ -24,7 +24,8 @@ import { NFFunctionName, NFFunctionRoute } from '../../utils/headers.js'
 import type { BlobsContextWithEdgeAccess } from '../blobs/blobs.js'
 import { headers as efHeaders } from '../edge-functions/headers.js'
 import { getGeoLocation } from '../geo-location.js'
-import type { AIGatewayContext, LocalState, ServerSettings, SiteInfo } from '../../utils/types.js'
+import type { AIGatewayContext } from '@netlify/ai-gateway'
+import type { LocalState, ServerSettings, SiteInfo } from '../../utils/types.js'
 
 import { handleBackgroundFunction, handleBackgroundFunctionResult } from './background.js'
 import { createFormSubmissionHandler } from './form-submissions-handler.js'
@@ -299,7 +300,7 @@ const getFunctionsServer = (options: GetFunctionsServerOptions) => {
 
 export const startFunctionsServer = async (
   options: {
-    aiGatewayContext?: AIGatewayContext
+    aiGatewayContext?: AIGatewayContext | null
     blobsContext: BlobsContextWithEdgeAccess
     command: BaseCommand
     config: NormalizedCachedConfigConfig
