@@ -10,7 +10,7 @@ import semver from 'semver'
 import { logAndThrowError, type NormalizedCachedConfigConfig } from '../../utils/command-helpers.js'
 import { BACKGROUND } from '../../utils/functions/get-functions.js'
 import { type BlobsContextWithEdgeAccess, getBlobsEventProperty } from '../blobs/blobs.js'
-import type { AIGatewayContext } from '@netlify/ai-gateway'
+import type { AIGatewayContext } from '@netlify/ai/bootstrap'
 import type { ServerSettings } from '../../utils/types.js'
 
 import type { BaseBuildResult, InvokeFunctionResult, Runtime } from './runtimes/index.js'

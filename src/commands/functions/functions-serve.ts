@@ -2,7 +2,7 @@ import { join } from 'path'
 
 import { OptionValues } from 'commander'
 
-import { parseAIGatewayContext, setupAIGateway } from '@netlify/ai-gateway'
+import { parseAIGatewayContext, setupAIGateway } from '@netlify/ai/bootstrap'
 
 import { NETLIFYDEVLOG, log } from '../../utils/command-helpers.js'
 import { getBlobsContextWithEdgeAccess } from '../../lib/blobs/blobs.js'
@@ -40,9 +40,12 @@ export const functionsServe = async (options: OptionValues, command: BaseCommand
     siteInfo,
   })
 
-  await setupAIGateway({ api, env, options, site, siteUrl })
+  if (!options.offline) {
+    await setupAIGateway({ api, env, siteId: site.id, siteUrl })
+  }
 
   if (env.AI_GATEWAY?.value) {
+    process.env.AI_GATEWAY = env.AI_GATEWAY.value
     log(`${NETLIFYDEVLOG} AI Gateway configured for AI provider SDK interception`)
   }
 
@@ -58,7 +61,7 @@ export const functionsServe = async (options: OptionValues, command: BaseCommand
     siteID: site.id ?? UNLINKED_SITE_MOCK_ID,
   })
 
-  const aiGatewayContext = parseAIGatewayContext()
+  const aiGatewayContext = parseAIGatewayContext(env.AI_GATEWAY?.value)
 
   await startFunctionsServer({
     loadDistFunctions: process.env.NETLIFY_FUNCTIONS_SERVE_LOAD_DIST_FUNCTIONS === 'true',

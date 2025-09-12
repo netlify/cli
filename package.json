@@ -62,7 +62,7 @@
     "@netlify/blobs": "10.0.10",
     "@netlify/build": "35.1.6",
     "@netlify/build-info": "10.0.7",
-    "@netlify/ai-gateway": "file:../primitives/packages/ai-gateway",
+    "@netlify/ai": "file:../primitives/packages/ai",
     "@netlify/config": "24.0.3",
     "@netlify/dev-utils": "4.1.3",
     "@netlify/edge-bundler": "14.5.4",
