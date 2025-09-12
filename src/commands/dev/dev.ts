@@ -19,6 +19,8 @@ import {
   netlifyCommand,
 } from '../../utils/command-helpers.js'
 import detectServerSettings, { getConfigWithPlugins } from '../../utils/detect-server-settings.js'
+import { parseAIGatewayContext, setupAIGateway } from '@netlify/ai/bootstrap'
+
 import { UNLINKED_SITE_MOCK_ID, getDotEnvVariables, getSiteInformation, injectEnvVariables } from '../../utils/dev.js'
 import { getEnvelopeEnv } from '../../utils/env/index.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
@@ -155,6 +157,15 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
     siteInfo,
   })
 
+  if (!options.offline && !options.offlineEnv) {
+    await setupAIGateway({ api, env, siteId: site.id, siteUrl })
+  }
+
+  if (env.AI_GATEWAY?.value) {
+    process.env.AI_GATEWAY = env.AI_GATEWAY.value
+    log(`${NETLIFYDEVLOG} AI Gateway configured for AI provider SDK interception`)
+  }
+
   let settings: ServerSettings
   try {
     settings = await detectServerSettings(devConfig, options, command)
@@ -204,7 +215,10 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
   // FIXME(serhalp): `applyMutations` is `(any, any) => any)`. Add types in `@netlify/config`.
   const mutatedConfig: typeof config = applyMutations(config, configMutations)
 
+  const aiGatewayContext = parseAIGatewayContext(env.AI_GATEWAY?.value)
+
   const functionsRegistry = await startFunctionsServer({
+    aiGatewayContext,
     blobsContext,
     command,
     config: mutatedConfig,
