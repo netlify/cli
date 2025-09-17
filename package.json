@@ -207,7 +207,7 @@
     "picomatch": "4.0.3",
     "prettier": "2.8.8",
     "serialize-javascript": "6.0.2",
-    "strip-ansi": "7.1.0",
+    "strip-ansi": "7.1.2",
     "temp-dir": "3.0.0",
     "tree-kill": "1.2.2",
     "tsx": "4.20.5",
