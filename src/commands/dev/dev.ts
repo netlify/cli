@@ -158,10 +158,10 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
   })
 
   if (!options.offline && !options.offlineEnv) {
-    await setupAIGateway({ api, env, siteId: site.id, siteUrl })
+    await setupAIGateway({ api, env, siteID: site.id, siteURL: siteUrl })
   }
 
-  if (env.AI_GATEWAY?.value) {
+  if (env.AI_GATEWAY.value) {
     process.env.AI_GATEWAY = env.AI_GATEWAY.value
     log(`${NETLIFYDEVLOG} AI Gateway configured for AI provider SDK interception`)
   }
@@ -215,7 +215,7 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
   // FIXME(serhalp): `applyMutations` is `(any, any) => any)`. Add types in `@netlify/config`.
   const mutatedConfig: typeof config = applyMutations(config, configMutations)
 
-  const aiGatewayContext = parseAIGatewayContext(env.AI_GATEWAY?.value)
+  const aiGatewayContext = parseAIGatewayContext(env.AI_GATEWAY.value)
 
   const functionsRegistry = await startFunctionsServer({
     aiGatewayContext,

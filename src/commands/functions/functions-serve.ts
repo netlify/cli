@@ -41,7 +41,7 @@ export const functionsServe = async (options: OptionValues, command: BaseCommand
   })
 
   if (!options.offline) {
-    await setupAIGateway({ api, env, siteId: site.id, siteUrl })
+    await setupAIGateway({ api, env, siteID: site.id, siteURL: siteUrl })
   }
 
   if (env.AI_GATEWAY?.value) {

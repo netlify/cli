@@ -10,6 +10,11 @@ import { cliPath } from '../../utils/cli-path.js'
 import { withMockApi } from '../../utils/mock-api.js'
 import { type SiteBuilder, withSiteBuilder } from '../../utils/site-builder.js'
 import { InvokeFunctionResult } from '../../../../src/lib/functions/runtimes/index.js'
+import {
+  assertAIGatewayValue,
+  createAIGatewayCheckFunction,
+  createAIGatewayTestData,
+} from '../../utils/ai-gateway-helpers.js'
 
 const DEFAULT_PORT = 9999
 const SERVE_TIMEOUT = 180_000
@@ -200,35 +205,19 @@ describe.concurrent('functions:serve command', () => {
 
   test('should inject AI Gateway when linked site and online', async (t) => {
     await withSiteBuilder(t, async (builder) => {
-      const siteInfo = {
-        account_slug: 'test-account',
-        id: 'test-site-id',
-        name: 'site-name',
-        ssl_url: 'https://test-site.netlify.app',
-      }
-      
-      const aiGatewayToken = {
-        token: 'ai-gateway-token-functions',
-        url: 'https://api.netlify.com/.netlify/ai/',
-      }
-
-      const routes = [
-        { path: 'sites/test-site-id', response: siteInfo },
-        { path: 'sites/test-site-id/service-instances', response: [] },
-        { path: 'accounts', response: [{ slug: siteInfo.account_slug }] },
-        { path: 'sites/test-site-id/ai-gateway/token', response: aiGatewayToken },
-      ]
+      const { siteInfo, aiGatewayToken, routes } = createAIGatewayTestData()
+      const checkFunction = createAIGatewayCheckFunction()
 
       await builder
         .withNetlifyToml({ config: { functions: { directory: 'functions' } } })
         .withFunction({
-          path: 'check-ai-gateway.js',
+          path: checkFunction.path,
           handler: () => {
             return Promise.resolve({
               statusCode: 200,
               body: JSON.stringify({
                 hasAIGateway: !!process.env.AI_GATEWAY,
-                aiGatewayValue: process.env.AI_GATEWAY || null,
+                aiGatewayValue: process.env.AI_GATEWAY ?? null,
               }),
             })
           },
@@ -249,18 +238,11 @@ describe.concurrent('functions:serve command', () => {
             },
           },
           async () => {
-            const response = await fetch(`http://localhost:${port.toString()}/.netlify/functions/check-ai-gateway`)
-            const result = await response.json() as { hasAIGateway: boolean; aiGatewayValue: string | null }
+            const response = await fetch(`http://localhost:${port.toString()}${checkFunction.urlPath}`)
+            const result = (await response.json()) as { hasAIGateway: boolean; aiGatewayValue: string | null }
 
             t.expect(response.status).toBe(200)
-            t.expect(result.hasAIGateway).toBe(true)
-            t.expect(result.aiGatewayValue).toBeDefined()
-
-            if (result.aiGatewayValue) {
-              const decodedPayload = JSON.parse(Buffer.from(result.aiGatewayValue, 'base64').toString())
-              t.expect(decodedPayload).toHaveProperty('token', aiGatewayToken.token)
-              t.expect(decodedPayload).toHaveProperty('url', `${siteInfo.ssl_url}/.netlify/ai`)
-            }
+            assertAIGatewayValue(t, result, aiGatewayToken.token, `${siteInfo.ssl_url}/.netlify/ai`)
           },
         )
       })
@@ -269,10 +251,12 @@ describe.concurrent('functions:serve command', () => {
 
   test('should not inject AI Gateway when site is unlinked in functions serve', async (t) => {
     await withSiteBuilder(t, async (builder) => {
+      const checkFunction = createAIGatewayCheckFunction()
+
       await builder
         .withNetlifyToml({ config: { functions: { directory: 'functions' } } })
         .withFunction({
-          path: 'check-ai-gateway.js',
+          path: checkFunction.path,
           handler: () => {
             return Promise.resolve({
               statusCode: 200,
@@ -295,8 +279,8 @@ describe.concurrent('functions:serve command', () => {
           },
         },
         async () => {
-          const response = await fetch(`http://localhost:${port.toString()}/.netlify/functions/check-ai-gateway`)
-          const result = await response.json() as { hasAIGateway: boolean }
+          const response = await fetch(`http://localhost:${port.toString()}${checkFunction.urlPath}`)
+          const result = (await response.json()) as { hasAIGateway: boolean }
 
           t.expect(response.status).toBe(200)
           t.expect(result.hasAIGateway).toBe(false)
@@ -307,43 +291,13 @@ describe.concurrent('functions:serve command', () => {
 
   test('should inject AI Gateway for V2 functions in functions serve', async (t) => {
     await withSiteBuilder(t, async (builder) => {
-      const siteInfo = {
-        account_slug: 'test-account',
-        id: 'test-site-id',
-        name: 'site-name',
-        ssl_url: 'https://test-site.netlify.app',
-      }
-      
-      const aiGatewayToken = {
-        token: 'ai-gateway-token-v2-functions',
-        url: 'https://api.netlify.com/.netlify/ai/',
-      }
-
-      const routes = [
-        { path: 'sites/test-site-id', response: siteInfo },
-        { path: 'sites/test-site-id/service-instances', response: [] },
-        { path: 'accounts', response: [{ slug: siteInfo.account_slug }] },
-        { path: 'sites/test-site-id/ai-gateway/token', response: aiGatewayToken },
-      ]
+      const { siteInfo, aiGatewayToken, routes } = createAIGatewayTestData()
+      const checkFunction = createAIGatewayCheckFunction('v2')
 
       await builder
         .withContentFile({
-          path: 'netlify/functions/check-ai-gateway-v2.js',
-          content: `
-          export default () => {
-            return new Response(
-              JSON.stringify({
-                hasAIGateway: !!process.env.AI_GATEWAY,
-                aiGatewayValue: process.env.AI_GATEWAY || null,
-              }),
-              {
-                status: 200,
-                headers: { 'Content-Type': 'application/json' },
-              },
-            )
-          }
-          export const config = { path: "/check-ai-gateway-v2" }
-          `,
+          path: checkFunction.path,
+          content: checkFunction.content,
         })
         .build()
 
@@ -361,18 +315,11 @@ describe.concurrent('functions:serve command', () => {
             },
           },
           async () => {
-            const response = await fetch(`http://localhost:${port.toString()}/check-ai-gateway-v2`)
-            const result = await response.json() as { hasAIGateway: boolean; aiGatewayValue: string | null }
+            const response = await fetch(`http://localhost:${port.toString()}${checkFunction.urlPath}`)
+            const result = (await response.json()) as { hasAIGateway: boolean; aiGatewayValue: string | null }
 
             t.expect(response.status).toBe(200)
-            t.expect(result.hasAIGateway).toBe(true)
-            t.expect(result.aiGatewayValue).toBeDefined()
-
-            if (result.aiGatewayValue) {
-              const decodedPayload = JSON.parse(Buffer.from(result.aiGatewayValue, 'base64').toString())
-              t.expect(decodedPayload).toHaveProperty('token', aiGatewayToken.token)
-              t.expect(decodedPayload).toHaveProperty('url', `${siteInfo.ssl_url}/.netlify/ai`)
-            }
+            assertAIGatewayValue(t, result, aiGatewayToken.token, `${siteInfo.ssl_url}/.netlify/ai`)
           },
         )
       })
