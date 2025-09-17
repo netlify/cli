@@ -25,7 +25,22 @@ export const createAIGatewayTestData = () => {
   return { siteInfo, aiGatewayToken, routes }
 }
 
-export const createAIGatewayCheckFunction = (version: 'v1' | 'v2' = 'v1') => {
+type V1Function = {
+  path: string
+  handler: string
+  urlPath: string
+}
+
+type V2Function = {
+  path: string
+  content: string
+  urlPath: string
+}
+
+export function createAIGatewayCheckFunction(version: 'v1'): V1Function
+export function createAIGatewayCheckFunction(version: 'v2'): V2Function
+export function createAIGatewayCheckFunction(version?: 'v1'): V1Function
+export function createAIGatewayCheckFunction(version: 'v1' | 'v2' = 'v1'): V1Function | V2Function {
   if (version === 'v2') {
     return {
       path: 'netlify/functions/check-ai-gateway-v2.js',
@@ -80,7 +95,12 @@ export const assertAIGatewayValue = (
   }
 }
 
-export const createMockApiFailureRoutes = (siteInfo: { account_slug: string; id: string; name: string; ssl_url: string | null }) => [
+export const createMockApiFailureRoutes = (siteInfo: {
+  account_slug: string
+  id: string
+  name: string
+  ssl_url: string | null
+}) => [
   { path: 'sites/test-site-id', response: siteInfo },
   { path: 'sites/test-site-id/service-instances', response: [] },
   { path: 'accounts', response: [{ slug: siteInfo.account_slug }] },
