@@ -1186,6 +1186,67 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
     })
   })
 
+  test('should deploy as draft when --draft flag is used', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      const content = '<h1>Draft deploy test</h1>'
+      builder.withContentFile({
+        path: 'public/index.html',
+        content,
+      })
+
+      await builder.build()
+
+      const deploy = await callCli(['deploy', '--json', '--no-build', '--dir', 'public', '--draft'], {
+        cwd: builder.directory,
+        env: { NETLIFY_SITE_ID: context.siteId },
+      }).then((output: string) => JSON.parse(output))
+
+      await validateDeploy({ deploy, siteName: SITE_NAME, content })
+      expect(deploy).toHaveProperty(
+        'function_logs',
+        `https://app.netlify.com/projects/${SITE_NAME}/logs/functions?scope=deploy:${deploy.deploy_id}`,
+      )
+      expect(deploy).toHaveProperty(
+        'edge_function_logs',
+        `https://app.netlify.com/projects/${SITE_NAME}/logs/edge-functions?scope=deployid:${deploy.deploy_id}`,
+      )
+    })
+  })
+
+  test('should not run deploy with --draft and --prod flags together', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      await builder.build()
+      try {
+        await callCli(['deploy', '--no-build', '--draft', '--prod'], {
+          cwd: builder.directory,
+          env: { NETLIFY_SITE_ID: context.siteId },
+        })
+      } catch (error) {
+        expect(error).toHaveProperty(
+          'stderr',
+          expect.stringContaining(`Error: option '-p, --prod' cannot be used with option '--draft'`),
+        )
+      }
+    })
+  })
+
+  test('should not run deploy with --draft and --prod-if-unlocked flags together', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      await builder.build()
+      try {
+        await callCli(['deploy', '--no-build', '--draft', '--prod-if-unlocked'], {
+          cwd: builder.directory,
+          env: { NETLIFY_SITE_ID: context.siteId },
+        })
+      } catch (error) {
+        expect(error).toHaveProperty(
+          'stderr',
+          expect.stringContaining(`Error: option '--prod-if-unlocked' cannot be used with option '--draft'`),
+        )
+      }
+    })
+  })
+
   test('should include source_zip_filename in JSON output when --upload-source-zip flag is used', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       const content = '<h1>Source zip test</h1>'
