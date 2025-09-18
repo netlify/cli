@@ -1247,6 +1247,37 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
     })
   })
 
+  test('should deploy as draft when --draft flag is used with --alias and --no-build', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      const content = '<h1>Draft deploy with alias test</h1>'
+      builder.withContentFile({
+        path: 'public/index.html',
+        content,
+      })
+
+      await builder.build()
+
+      const deploy = await callCli(
+        ['deploy', '--json', '--no-build', '--dir', 'public', '--draft', '--alias', 'test-branch'],
+        {
+          cwd: builder.directory,
+          env: { NETLIFY_SITE_ID: context.siteId },
+        },
+      ).then((output: string) => JSON.parse(output))
+
+      await validateDeploy({ deploy, siteName: SITE_NAME, content })
+      expect(deploy).toHaveProperty(
+        'function_logs',
+        `https://app.netlify.com/projects/${SITE_NAME}/logs/functions?scope=deploy:${deploy.deploy_id}`,
+      )
+      expect(deploy).toHaveProperty(
+        'edge_function_logs',
+        `https://app.netlify.com/projects/${SITE_NAME}/logs/edge-functions?scope=deployid:${deploy.deploy_id}`,
+      )
+      expect(deploy.deploy_url).toContain('test-branch--')
+    })
+  })
+
   test('should include source_zip_filename in JSON output when --upload-source-zip flag is used', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       const content = '<h1>Source zip test</h1>'
