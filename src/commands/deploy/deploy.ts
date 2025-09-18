@@ -544,7 +544,7 @@ const runDeploy = async ({
       await prepareProductionDeploy({ siteData, api, options, command })
     }
 
-    const draft = !deployToProduction && !alias
+    const draft = options.draft || (!deployToProduction && !alias)
     const createDeployBody = { draft, branch: alias, include_upload_url: options.uploadSourceZip }
 
     results = await api.createSiteDeploy({ siteId, title, body: createDeployBody })
@@ -1050,7 +1050,8 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
     return triggerDeploy({ api, options, siteData, siteId })
   }
 
-  const deployToProduction = options.prod || (options.prodIfUnlocked && !(siteData.published_deploy?.locked ?? false))
+  const deployToProduction =
+    !options.draft && (options.prod || (options.prodIfUnlocked && !(siteData.published_deploy?.locked ?? false)))
 
   let results = {} as Awaited<ReturnType<typeof prepAndRunDeploy>>
 

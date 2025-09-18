@@ -9,6 +9,7 @@ export type DeployOptionValues = BaseOptionValues & {
   context?: string
   createSite?: string | boolean
   dir?: string
+  draft: boolean
   functions?: string
   json: boolean
   message?: string
