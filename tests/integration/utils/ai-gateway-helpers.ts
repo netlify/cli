@@ -25,26 +25,16 @@ export const createAIGatewayTestData = () => {
   return { siteInfo, aiGatewayToken, routes }
 }
 
-type V1Function = {
-  path: string
-  handler: string
-  urlPath: string
-}
-
 type V2Function = {
   path: string
   content: string
   urlPath: string
 }
 
-export function createAIGatewayCheckFunction(version: 'v1'): V1Function
-export function createAIGatewayCheckFunction(version: 'v2'): V2Function
-export function createAIGatewayCheckFunction(version?: 'v1'): V1Function
-export function createAIGatewayCheckFunction(version: 'v1' | 'v2' = 'v1'): V1Function | V2Function {
-  if (version === 'v2') {
-    return {
-      path: 'netlify/functions/check-ai-gateway-v2.js',
-      content: `export default () => {
+export function createAIGatewayCheckFunction(): V2Function {
+  return {
+    path: 'netlify/functions/check-ai-gateway.js',
+    content: `export default () => {
   return new Response(
     JSON.stringify({
       hasAIGateway: !!process.env.AI_GATEWAY,
@@ -56,23 +46,8 @@ export function createAIGatewayCheckFunction(version: 'v1' | 'v2' = 'v1'): V1Fun
     },
   )
 }
-export const config = { path: "/check-ai-gateway-v2" }`,
-      urlPath: '/check-ai-gateway-v2',
-    }
-  }
-
-  return {
-    path: 'check-ai-gateway.js',
-    handler: `async () => {
-      return {
-        statusCode: 200,
-        body: JSON.stringify({
-          hasAIGateway: !!process.env.AI_GATEWAY,
-          aiGatewayValue: process.env.AI_GATEWAY || null,
-        }),
-      }
-    }`,
-    urlPath: '/.netlify/functions/check-ai-gateway',
+export const config = { path: "/check-ai-gateway" }`,
+    urlPath: '/check-ai-gateway',
   }
 }
 

@@ -145,8 +145,6 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
   }
 
   env = await getDotEnvVariables({ devConfig, env, site })
-  injectEnvVariables(env)
-  await promptEditorHelper({ chalk, config, log, NETLIFYDEVLOG, repositoryRoot, state })
 
   const { accountId, addonsUrls, capabilities, siteUrl, timeouts } = await getSiteInformation({
     // inherited from base command --offline
@@ -161,11 +159,14 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
     await setupAIGateway({ api, env, siteID: site.id, siteURL: siteUrl })
   }
 
+  injectEnvVariables(env)
+
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (env.AI_GATEWAY?.value) {
-    process.env.AI_GATEWAY = env.AI_GATEWAY.value
     log(`${NETLIFYDEVLOG} AI Gateway configured for AI provider SDK interception`)
   }
+
+  await promptEditorHelper({ chalk, config, log, NETLIFYDEVLOG, repositoryRoot, state })
 
   let settings: ServerSettings
   try {

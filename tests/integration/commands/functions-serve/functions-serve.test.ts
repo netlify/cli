@@ -209,18 +209,9 @@ describe.concurrent('functions:serve command', () => {
       const checkFunction = createAIGatewayCheckFunction()
 
       await builder
-        .withNetlifyToml({ config: { functions: { directory: 'functions' } } })
-        .withFunction({
+        .withContentFile({
           path: checkFunction.path,
-          handler: () => {
-            return Promise.resolve({
-              statusCode: 200,
-              body: JSON.stringify({
-                hasAIGateway: !!process.env.AI_GATEWAY,
-                aiGatewayValue: process.env.AI_GATEWAY ?? null,
-              }),
-            })
-          },
+          content: checkFunction.content,
         })
         .build()
 
@@ -254,17 +245,9 @@ describe.concurrent('functions:serve command', () => {
       const checkFunction = createAIGatewayCheckFunction()
 
       await builder
-        .withNetlifyToml({ config: { functions: { directory: 'functions' } } })
-        .withFunction({
+        .withContentFile({
           path: checkFunction.path,
-          handler: () => {
-            return Promise.resolve({
-              statusCode: 200,
-              body: JSON.stringify({
-                hasAIGateway: !!process.env.AI_GATEWAY,
-              }),
-            })
-          },
+          content: checkFunction.content,
         })
         .build()
 
@@ -292,7 +275,7 @@ describe.concurrent('functions:serve command', () => {
   test('should inject AI Gateway for V2 functions in functions serve', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       const { siteInfo, aiGatewayToken, routes } = createAIGatewayTestData()
-      const checkFunction = createAIGatewayCheckFunction('v2')
+      const checkFunction = createAIGatewayCheckFunction()
 
       await builder
         .withContentFile({

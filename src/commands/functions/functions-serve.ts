@@ -31,7 +31,6 @@ export const functionsServe = async (options: OptionValues, command: BaseCommand
   env.NETLIFY_DEV = { sources: ['internal'], value: 'true' }
 
   env = await getDotEnvVariables({ devConfig: { ...config.dev }, env, site })
-  injectEnvVariables(env)
 
   const { accountId, capabilities, siteUrl, timeouts } = await getSiteInformation({
     offline: options.offline,
@@ -44,8 +43,9 @@ export const functionsServe = async (options: OptionValues, command: BaseCommand
     await setupAIGateway({ api, env, siteID: site.id, siteURL: siteUrl })
   }
 
+  injectEnvVariables(env)
+
   if (env.AI_GATEWAY?.value) {
-    process.env.AI_GATEWAY = env.AI_GATEWAY.value
     log(`${NETLIFYDEVLOG} AI Gateway configured for AI provider SDK interception`)
   }
 

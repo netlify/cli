@@ -17,10 +17,9 @@ describe.concurrent('AI Gateway Integration', () => {
       const checkFunction = createAIGatewayCheckFunction()
 
       await builder
-        .withNetlifyToml({ config: { functions: { directory: 'functions' } } })
-        .withFunction({
+        .withContentFile({
           path: checkFunction.path,
-          handler: checkFunction.handler,
+          content: checkFunction.content,
         })
         .build()
 
@@ -52,10 +51,9 @@ describe.concurrent('AI Gateway Integration', () => {
       const checkFunction = createAIGatewayCheckFunction()
 
       await builder
-        .withNetlifyToml({ config: { functions: { directory: 'functions' } } })
-        .withFunction({
+        .withContentFile({
           path: checkFunction.path,
-          handler: checkFunction.handler,
+          content: checkFunction.content,
         })
         .build()
 
@@ -85,10 +83,9 @@ describe.concurrent('AI Gateway Integration', () => {
       const checkFunction = createAIGatewayCheckFunction()
 
       await builder
-        .withNetlifyToml({ config: { functions: { directory: 'functions' } } })
-        .withFunction({
+        .withContentFile({
           path: checkFunction.path,
-          handler: checkFunction.handler,
+          content: checkFunction.content,
         })
         .build()
 
@@ -127,10 +124,9 @@ describe.concurrent('AI Gateway Integration', () => {
       ]
 
       await builder
-        .withNetlifyToml({ config: { functions: { directory: 'functions' } } })
-        .withFunction({
+        .withContentFile({
           path: checkFunction.path,
-          handler: checkFunction.handler,
+          content: checkFunction.content,
         })
         .build()
 
@@ -165,10 +161,9 @@ describe.concurrent('AI Gateway Integration', () => {
       const checkFunction = createAIGatewayCheckFunction()
 
       await builder
-        .withNetlifyToml({ config: { functions: { directory: 'functions' } } })
-        .withFunction({
+        .withContentFile({
           path: checkFunction.path,
-          handler: checkFunction.handler,
+          content: checkFunction.content,
         })
         .build()
 
@@ -199,7 +194,7 @@ describe.concurrent('AI Gateway Integration', () => {
   test('should work with V2 functions', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       const { siteInfo, aiGatewayToken, routes } = createAIGatewayTestData()
-      const checkFunction = createAIGatewayCheckFunction('v2')
+      const checkFunction = createAIGatewayCheckFunction()
 
       await builder
         .withContentFile({
@@ -247,10 +242,9 @@ describe.concurrent('AI Gateway Integration', () => {
       ]
 
       await builder
-        .withNetlifyToml({ config: { functions: { directory: 'functions' } } })
-        .withFunction({
+        .withContentFile({
           path: checkFunction.path,
-          handler: checkFunction.handler,
+          content: checkFunction.content,
         })
         .build()
 
