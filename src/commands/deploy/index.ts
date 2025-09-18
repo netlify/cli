@@ -29,12 +29,18 @@ For detailed configuration options, see the Netlify documentation.`,
     .addOption(
       new Option('-p, --prod', 'Deploy to production')
         .default(false)
-        .conflicts(['alias', 'branch', 'prod-if-unlocked']),
+        .conflicts(['alias', 'branch', 'prod-if-unlocked', 'draft']),
     )
     .addOption(
       new Option('--prod-if-unlocked', 'Deploy to production if unlocked, create a draft otherwise')
         .default(false)
-        .conflicts(['alias', 'branch', 'prod']),
+        .conflicts(['alias', 'branch', 'prod', 'draft']),
+    )
+    .addOption(
+      new Option('--draft', 'Explicitly create a draft deploy')
+        .default(false)
+        .conflicts(['prod', 'prod-if-unlocked'])
+        .hideHelp(true),
     )
     .option(
       '--alias <name>',
