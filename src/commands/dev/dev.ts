@@ -161,11 +161,6 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
 
   injectEnvVariables(env)
 
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  if (env.AI_GATEWAY?.value) {
-    log(`${NETLIFYDEVLOG} AI Gateway configured for AI provider SDK interception`)
-  }
-
   await promptEditorHelper({ chalk, config, log, NETLIFYDEVLOG, repositoryRoot, state })
 
   let settings: ServerSettings

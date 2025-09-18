@@ -45,10 +45,6 @@ export const functionsServe = async (options: OptionValues, command: BaseCommand
 
   injectEnvVariables(env)
 
-  if (env.AI_GATEWAY?.value) {
-    log(`${NETLIFYDEVLOG} AI Gateway configured for AI provider SDK interception`)
-  }
-
   const functionsPort = await acquirePort({
     configuredPort: options.port || config.dev?.functionsPort,
     defaultPort: DEFAULT_PORT,
