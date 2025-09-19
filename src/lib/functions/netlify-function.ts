@@ -10,6 +10,7 @@ import semver from 'semver'
 import { logAndThrowError, type NormalizedCachedConfigConfig } from '../../utils/command-helpers.js'
 import { BACKGROUND } from '../../utils/functions/get-functions.js'
 import { type BlobsContextWithEdgeAccess, getBlobsEventProperty } from '../blobs/blobs.js'
+import type { AIGatewayContext } from '@netlify/ai/bootstrap'
 import type { ServerSettings } from '../../utils/types.js'
 
 import type { BaseBuildResult, InvokeFunctionResult, Runtime } from './runtimes/index.js'
@@ -42,6 +43,7 @@ const getNextRun = function (schedule: string) {
 }
 
 export default class NetlifyFunction<BuildResult extends BaseBuildResult> {
+  private readonly aiGatewayContext?: AIGatewayContext | null
   private readonly blobsContext: BlobsContextWithEdgeAccess
   private readonly config: NormalizedCachedConfigConfig
   private readonly directory?: string
@@ -74,6 +76,7 @@ export default class NetlifyFunction<BuildResult extends BaseBuildResult> {
   private srcFiles = new Set<string>()
 
   constructor({
+    aiGatewayContext,
     blobsContext,
     config,
     directory,
@@ -87,6 +90,7 @@ export default class NetlifyFunction<BuildResult extends BaseBuildResult> {
     timeoutBackground,
     timeoutSynchronous,
   }: {
+    aiGatewayContext?: AIGatewayContext | null
     blobsContext: BlobsContextWithEdgeAccess
     config: NormalizedCachedConfigConfig
     directory?: string
@@ -101,6 +105,7 @@ export default class NetlifyFunction<BuildResult extends BaseBuildResult> {
     timeoutBackground?: number
     timeoutSynchronous?: number
   }) {
+    this.aiGatewayContext = aiGatewayContext
     this.blobsContext = blobsContext
     this.config = config
     this.directory = directory
@@ -282,6 +287,11 @@ export default class NetlifyFunction<BuildResult extends BaseBuildResult> {
       const payload = JSON.stringify(getBlobsEventProperty(this.blobsContext))
 
       event.blobs = Buffer.from(payload).toString('base64')
+    }
+
+    if (this.aiGatewayContext) {
+      const payload = JSON.stringify(this.aiGatewayContext)
+      event.aiGateway = Buffer.from(payload).toString('base64')
     }
 
     try {

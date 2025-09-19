@@ -19,6 +19,8 @@ import {
   netlifyCommand,
 } from '../../utils/command-helpers.js'
 import detectServerSettings, { getConfigWithPlugins } from '../../utils/detect-server-settings.js'
+import { parseAIGatewayContext, setupAIGateway } from '@netlify/ai/bootstrap'
+
 import { UNLINKED_SITE_MOCK_ID, getDotEnvVariables, getSiteInformation, injectEnvVariables } from '../../utils/dev.js'
 import { getEnvelopeEnv } from '../../utils/env/index.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
@@ -143,8 +145,6 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
   }
 
   env = await getDotEnvVariables({ devConfig, env, site })
-  injectEnvVariables(env)
-  await promptEditorHelper({ chalk, config, log, NETLIFYDEVLOG, repositoryRoot, state })
 
   const { accountId, addonsUrls, capabilities, siteUrl, timeouts } = await getSiteInformation({
     // inherited from base command --offline
@@ -154,6 +154,14 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
     site,
     siteInfo,
   })
+
+  if (!options.offline && !options.offlineEnv) {
+    await setupAIGateway({ api, env, siteID: site.id, siteURL: siteUrl })
+  }
+
+  injectEnvVariables(env)
+
+  await promptEditorHelper({ chalk, config, log, NETLIFYDEVLOG, repositoryRoot, state })
 
   let settings: ServerSettings
   try {
@@ -204,7 +212,11 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
   // FIXME(serhalp): `applyMutations` is `(any, any) => any)`. Add types in `@netlify/config`.
   const mutatedConfig: typeof config = applyMutations(config, configMutations)
 
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  const aiGatewayContext = parseAIGatewayContext(env.AI_GATEWAY?.value)
+
   const functionsRegistry = await startFunctionsServer({
+    aiGatewayContext,
     blobsContext,
     command,
     config: mutatedConfig,
