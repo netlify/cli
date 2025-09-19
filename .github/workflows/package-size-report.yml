@@ -1,0 +1,30 @@
+name: Package Size Report
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  pkg-size-report:
+    name: Package Size Report
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: navikt/github-app-token-generator@793caf0d755fb4d6e88150825f680f188535cb48
+        id: get-token
+        with:
+          private-key: ${{ secrets.TOKENS_PRIVATE_KEY }}
+          app-id: ${{ secrets.TOKENS_APP_ID }}
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'latest'
+
+      - name: Package size report
+        uses: pkg-size/action@v1.1.1
+        env:
+          GITHUB_TOKEN: ${{ steps.get-token.outputs.token }}
