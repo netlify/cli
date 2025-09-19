@@ -68,6 +68,7 @@
     "@netlify/edge-bundler": "14.5.4",
     "@netlify/edge-functions": "2.17.4",
     "@netlify/headers-parser": "9.0.2",
+    "@netlify/images": "^1.2.5",
     "@netlify/local-functions-proxy": "2.0.3",
     "@netlify/redirect-parser": "15.0.3",
     "@netlify/zip-it-and-ship-it": "14.1.7",
