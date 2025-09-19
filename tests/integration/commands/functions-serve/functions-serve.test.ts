@@ -7,8 +7,14 @@ import { describe, test } from 'vitest'
 import waitPort from 'wait-port'
 
 import { cliPath } from '../../utils/cli-path.js'
+import { withMockApi } from '../../utils/mock-api.js'
 import { type SiteBuilder, withSiteBuilder } from '../../utils/site-builder.js'
 import { InvokeFunctionResult } from '../../../../src/lib/functions/runtimes/index.js'
+import {
+  assertAIGatewayValue,
+  createAIGatewayCheckFunction,
+  createAIGatewayTestData,
+} from '../../utils/ai-gateway-helpers.js'
 
 const DEFAULT_PORT = 9999
 const SERVE_TIMEOUT = 180_000
@@ -18,10 +24,12 @@ const withFunctionsServer = async (
     args = [],
     builder,
     port = DEFAULT_PORT,
+    env = {},
   }: {
     args?: string[]
     builder: SiteBuilder
     port?: number
+    env?: NodeJS.ProcessEnv
   },
   testHandler: () => Promise<unknown>,
 ) => {
@@ -29,6 +37,7 @@ const withFunctionsServer = async (
   try {
     ps = execa(cliPath, ['functions:serve', ...args], {
       cwd: builder.directory,
+      env: { ...process.env, ...env },
     })
 
     ps.stdout?.on('data', (data: Buffer) => {
@@ -190,6 +199,112 @@ describe.concurrent('functions:serve command', () => {
       await withFunctionsServer({ builder, args: ['--port', port.toString()], port }, async () => {
         const response = await fetch(`http://localhost:${port.toString()}/ping`)
         t.expect(await response.text()).toEqual('ping')
+      })
+    })
+  })
+
+  test('should inject AI Gateway when linked site and online', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      const { siteInfo, aiGatewayToken, routes } = createAIGatewayTestData()
+      const checkFunction = createAIGatewayCheckFunction()
+
+      await builder
+        .withContentFile({
+          path: checkFunction.path,
+          content: checkFunction.content,
+        })
+        .build()
+
+      await withMockApi(routes, async ({ apiUrl }) => {
+        const port = await getPort()
+        await withFunctionsServer(
+          {
+            builder,
+            args: ['--port', port.toString()],
+            port,
+            env: {
+              NETLIFY_API_URL: apiUrl,
+              NETLIFY_SITE_ID: siteInfo.id,
+              NETLIFY_AUTH_TOKEN: 'fake-token',
+            },
+          },
+          async () => {
+            const response = await fetch(`http://localhost:${port.toString()}${checkFunction.urlPath}`)
+            const result = (await response.json()) as { hasAIGateway: boolean; aiGatewayValue: string | null }
+
+            t.expect(response.status).toBe(200)
+            assertAIGatewayValue(t, result, aiGatewayToken.token, `${siteInfo.ssl_url}/.netlify/ai`)
+          },
+        )
+      })
+    })
+  })
+
+  test('should not inject AI Gateway when site is unlinked in functions serve', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      const checkFunction = createAIGatewayCheckFunction()
+
+      await builder
+        .withContentFile({
+          path: checkFunction.path,
+          content: checkFunction.content,
+        })
+        .build()
+
+      const port = await getPort()
+      await withFunctionsServer(
+        {
+          builder,
+          args: ['--port', port.toString()],
+          port,
+          env: {
+            NETLIFY_AUTH_TOKEN: 'fake-token',
+          },
+        },
+        async () => {
+          const response = await fetch(`http://localhost:${port.toString()}${checkFunction.urlPath}`)
+          const result = (await response.json()) as { hasAIGateway: boolean }
+
+          t.expect(response.status).toBe(200)
+          t.expect(result.hasAIGateway).toBe(false)
+        },
+      )
+    })
+  })
+
+  test('should inject AI Gateway for V2 functions in functions serve', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      const { siteInfo, aiGatewayToken, routes } = createAIGatewayTestData()
+      const checkFunction = createAIGatewayCheckFunction()
+
+      await builder
+        .withContentFile({
+          path: checkFunction.path,
+          content: checkFunction.content,
+        })
+        .build()
+
+      await withMockApi(routes, async ({ apiUrl }) => {
+        const port = await getPort()
+        await withFunctionsServer(
+          {
+            builder,
+            args: ['--port', port.toString()],
+            port,
+            env: {
+              NETLIFY_API_URL: apiUrl,
+              NETLIFY_SITE_ID: siteInfo.id,
+              NETLIFY_AUTH_TOKEN: 'fake-token',
+            },
+          },
+          async () => {
+            const response = await fetch(`http://localhost:${port.toString()}${checkFunction.urlPath}`)
+            const result = (await response.json()) as { hasAIGateway: boolean; aiGatewayValue: string | null }
+
+            t.expect(response.status).toBe(200)
+            assertAIGatewayValue(t, result, aiGatewayToken.token, `${siteInfo.ssl_url}/.netlify/ai`)
+          },
+        )
       })
     })
   })
