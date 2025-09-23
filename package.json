@@ -138,7 +138,7 @@
     "parallel-transform": "1.2.0",
     "parse-github-url": "1.0.3",
     "prettyjson": "1.2.5",
-    "raw-body": "3.0.0",
+    "raw-body": "3.0.1",
     "read-package-up": "11.0.0",
     "readdirp": "4.1.2",
     "semver": "7.7.2",
