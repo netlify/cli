@@ -17,7 +17,7 @@ vi.mock('fs/promises', () => ({
 }))
 
 vi.mock('fs', () => ({
-  mkdirSync: vi.fn(),
+  mkdirSync: vi.fn().mockReturnValue(undefined),
 }))
 
 vi.mock('../../../../src/utils/command-helpers.js', () => ({
@@ -403,7 +403,7 @@ describe('uploadSourceZip', () => {
     vi.mocked(mockFs.readFile).mockResolvedValue(Buffer.from('mock zip content'))
     vi.mocked(mockCommandHelpers.log).mockImplementation(() => {})
     vi.mocked(mockTempFile.temporaryDirectory).mockReturnValue('/tmp/test-temp-dir')
-    vi.mocked(mockFsSync.mkdirSync).mockImplementation(() => {})
+    vi.mocked(mockFsSync.mkdirSync).mockReturnValue(undefined)
 
     const mockStatusCb = vi.fn()
 
