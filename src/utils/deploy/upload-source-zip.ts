@@ -1,6 +1,5 @@
 import { execFile } from 'child_process'
-import { readFile } from 'fs/promises'
-import { mkdirSync } from 'fs'
+import { readFile, mkdir } from 'fs/promises'
 import { join, dirname } from 'path'
 import { promisify } from 'util'
 import type { PathLike } from 'fs'
@@ -65,7 +64,7 @@ const createSourceZip = async ({
   // The filename from the API includes a subdirectory path (e.g., 'workspace-snapshots/source-xxx.zip')
   // While temporaryDirectory() creates a new empty directory, the subdirectory within it doesn't exist
   // so we need to create it before the zip command can write the file
-  mkdirSync(dirname(zipPath), { recursive: true })
+  await mkdir(dirname(zipPath), { recursive: true })
 
   statusCb({
     type: 'source-zip-upload',

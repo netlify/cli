@@ -14,10 +14,7 @@ vi.mock('child_process', () => ({
 vi.mock('fs/promises', () => ({
   readFile: vi.fn(),
   unlink: vi.fn(),
-}))
-
-vi.mock('fs', () => ({
-  mkdirSync: vi.fn().mockReturnValue(undefined),
+  mkdir: vi.fn(),
 }))
 
 vi.mock('../../../../src/utils/command-helpers.js', () => ({
@@ -383,7 +380,6 @@ describe('uploadSourceZip', () => {
     const mockFetch = await import('node-fetch')
     const mockChildProcess = await import('child_process')
     const mockFs = await import('fs/promises')
-    const mockFsSync = await import('fs')
     const mockCommandHelpers = await import('../../../../src/utils/command-helpers.js')
     const mockTempFile = await import('../../../../src/utils/temporary-file.js')
 
@@ -401,9 +397,9 @@ describe('uploadSourceZip', () => {
     })
 
     vi.mocked(mockFs.readFile).mockResolvedValue(Buffer.from('mock zip content'))
+    vi.mocked(mockFs.mkdir).mockResolvedValue(undefined)
     vi.mocked(mockCommandHelpers.log).mockImplementation(() => {})
     vi.mocked(mockTempFile.temporaryDirectory).mockReturnValue('/tmp/test-temp-dir')
-    vi.mocked(mockFsSync.mkdirSync).mockReturnValue(undefined)
 
     const mockStatusCb = vi.fn()
 
@@ -416,7 +412,7 @@ describe('uploadSourceZip', () => {
     })
 
     // Should create the subdirectory before attempting zip creation
-    expect(mockFsSync.mkdirSync).toHaveBeenCalledWith('/tmp/test-temp-dir/workspace-snapshots', { recursive: true })
+    expect(mockFs.mkdir).toHaveBeenCalledWith('/tmp/test-temp-dir/workspace-snapshots', { recursive: true })
 
     // Should still call zip command with the full path
     expect(mockChildProcess.execFile).toHaveBeenCalledWith(
