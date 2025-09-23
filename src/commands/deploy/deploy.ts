@@ -1,6 +1,7 @@
 import { type Stats } from 'fs'
 import { stat } from 'fs/promises'
 import { basename, resolve } from 'path'
+import { stdin, stdout } from 'process'
 
 import type { NetlifyAPI } from '@netlify/api'
 import { type NetlifyConfig, type OnPostBuild, runCoreSteps } from '@netlify/build'
@@ -118,6 +119,14 @@ const getDeployFolder = async ({
   }
 
   if (!deployFolder) {
+    if (!stdin.isTTY || !stdout.isTTY) {
+      // non interactive - can't get the value, resolve to the cwd
+      if (command.workspacePackage) {
+        return command.jsWorkspaceRoot || site.root
+      }
+      return command.workingDir
+    }
+
     log('Please provide a publish directory (e.g. "public" or "dist" or "."):')
 
     // Generate copy-pasteable command with current options
