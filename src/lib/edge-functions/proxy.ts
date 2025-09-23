@@ -4,6 +4,7 @@ import type { IncomingMessage, ClientRequest } from 'http'
 import { join, resolve } from 'path'
 
 import * as bundler from '@netlify/edge-bundler'
+import type { AIGatewayContext } from '@netlify/ai/bootstrap'
 import getAvailablePort from 'get-port'
 
 import type BaseCommand from '../../commands/base-command.js'
@@ -75,6 +76,7 @@ const createAccountInfoHeader = ({ id }: { id: string }) => {
 
 export const initializeProxy = async ({
   accountId,
+  aiGatewayContext,
   blobsContext,
   command,
   config,
@@ -95,6 +97,7 @@ export const initializeProxy = async ({
   state,
 }: {
   accountId: string
+  aiGatewayContext?: AIGatewayContext | null
   blobsContext: BlobsContextWithEdgeAccess
   command: BaseCommand
   config: NormalizedCachedConfigConfig
@@ -124,6 +127,7 @@ export const initializeProxy = async ({
   // the network if needed. We don't want to wait for that to be completed, or
   // the command will be left hanging.
   const server = prepareServer({
+    aiGatewayContext,
     command,
     config,
     configPath,
@@ -162,6 +166,10 @@ export const initializeProxy = async ({
       ).toString('base64')
     }
 
+    if (aiGatewayContext) {
+      req.headers[headers.AIGateway] = Buffer.from(JSON.stringify(aiGatewayContext)).toString('base64')
+    }
+
     await registry.initialize()
 
     const url = new URL(req.url!, `http://${LOCAL_HOST}:${mainPort}`)
@@ -194,6 +202,7 @@ export const isEdgeFunctionsRequest = (req: IncomingMessage): req is ExtendedInc
   Object.hasOwn(req, headersSymbol)
 
 const prepareServer = async ({
+  aiGatewayContext,
   command,
   config,
   configPath,
@@ -207,6 +216,7 @@ const prepareServer = async ({
   projectDir,
   repositoryRoot,
 }: {
+  aiGatewayContext?: AIGatewayContext | null
   command: BaseCommand
   config: NormalizedCachedConfigConfig
   configPath: string
@@ -245,8 +255,9 @@ const prepareServer = async ({
       servePath,
     })
     const registry = new EdgeFunctionsRegistry({
-      command,
+      aiGatewayContext,
       bundler,
+      command,
       config,
       configPath,
       debug,

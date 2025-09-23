@@ -257,6 +257,7 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
 
   await startProxyServer({
     addonsUrls,
+    aiGatewayContext,
     api,
     blobsContext,
     command,

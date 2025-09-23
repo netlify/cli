@@ -1,6 +1,7 @@
 import { Buffer } from 'buffer'
 
 export const headers = {
+  AIGateway: 'x-nf-ai-gateway',
   BlobsInfo: 'x-nf-blobs-info',
   DeployID: 'x-nf-deploy-id',
   DeployContext: 'x-nf-deploy-context',
