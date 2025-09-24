@@ -462,6 +462,33 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
           config: {
             build: {
               publish: 'public',
+              command: 'echo "Build failed with custom error" >&2 && exit 1',
+            },
+          },
+        })
+
+      await builder.build()
+
+      await expect(
+        callCli(['deploy', '--json'], {
+          cwd: builder.directory,
+          env: { NETLIFY_SITE_ID: context.siteId },
+        }),
+      ).rejects.toThrow('Error while running build: Build failed with custom error')
+    })
+  })
+
+  test('should throw error without stderr details when build fails with --json option and no stderr output', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      builder
+        .withContentFile({
+          path: 'public/index.html',
+          content: '<h1>Test content</h1>',
+        })
+        .withNetlifyToml({
+          config: {
+            build: {
+              publish: 'public',
               command: 'exit 1',
             },
           },
