@@ -25,6 +25,6 @@
   },
   "devDependencies": {
     "@netlify/functions": "4.2.6",
-    "tsx": "4.20.4"
+    "tsx": "4.20.5"
   }
 }
