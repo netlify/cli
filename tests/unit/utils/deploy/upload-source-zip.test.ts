@@ -1,4 +1,5 @@
 import { describe, expect, test, vi, beforeEach } from 'vitest'
+import { join } from 'path'
 import type { Response } from 'node-fetch'
 import type { ChildProcess } from 'child_process'
 
@@ -412,12 +413,16 @@ describe('uploadSourceZip', () => {
     })
 
     // Should create the subdirectory before attempting zip creation
-    expect(mockFs.mkdir).toHaveBeenCalledWith('/tmp/test-temp-dir/workspace-snapshots', { recursive: true })
+    expect(mockFs.mkdir).toHaveBeenCalledWith(join('/tmp/test-temp-dir', 'workspace-snapshots'), { recursive: true })
 
     // Should still call zip command with the full path
     expect(mockChildProcess.execFile).toHaveBeenCalledWith(
       'zip',
-      expect.arrayContaining(['-r', '/tmp/test-temp-dir/workspace-snapshots/source-abc123-def456.zip', '.']),
+      expect.arrayContaining([
+        '-r',
+        join('/tmp/test-temp-dir', 'workspace-snapshots', 'source-abc123-def456.zip'),
+        '.',
+      ]),
       expect.objectContaining({
         cwd: '/test/source',
         maxBuffer: 104857600,
