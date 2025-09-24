@@ -21,7 +21,7 @@
     "astro": "5.13.5",
     "markdown-magic": "2.6.1",
     "sharp": "0.34.4",
-    "strip-ansi": "7.1.0"
+    "strip-ansi": "7.1.2"
   },
   "devDependencies": {
     "@netlify/functions": "4.2.6",
