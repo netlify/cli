@@ -194,7 +194,14 @@ export const getRunBuildOptions = async ({
   }
 }
 
-export const runBuild = async (options: RunBuildOptions) => {
+export const runBuild = async (
+  options: RunBuildOptions,
+): Promise<{
+  exitCode: number
+  newConfig: NetlifyConfig
+  configMutations: Record<string, string>
+  logs?: { stdout: string[]; stderr: string[] }
+}> => {
   // If netlify NETLIFY_API_URL is set we need to pass this information to @netlify/build
   // TODO don't use testOpts, but add real properties to do this.
   if (process.env.NETLIFY_API_URL) {
@@ -212,7 +219,8 @@ export const runBuild = async (options: RunBuildOptions) => {
     configMutations,
     netlifyConfig: newConfig,
     severityCode: exitCode,
+    logs,
     // TODO(serhalp): Upstream the type fixes above into @netlify/build and remove this type assertion
   } = await (build as unknown as (opts: RunBuildOptions) => Promise<ReturnType<typeof build>>)(options)
-  return { exitCode, newConfig, configMutations }
+  return { exitCode, newConfig, configMutations, logs }
 }
