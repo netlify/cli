@@ -3,6 +3,7 @@ import { join } from 'path'
 import { fileURLToPath } from 'url'
 
 import type { Declaration, EdgeFunction, FunctionConfig, Manifest, ModuleGraph } from '@netlify/edge-bundler'
+import type { AIGatewayContext } from '@netlify/ai/bootstrap'
 import { watchDebounced } from '@netlify/dev-utils'
 
 import BaseCommand from '../../commands/base-command.js'
@@ -31,8 +32,9 @@ type RunIsolate = Awaited<ReturnType<typeof import('@netlify/edge-bundler').serv
 type ModuleJson = ModuleGraph['modules'][number]
 
 interface EdgeFunctionsRegistryOptions {
-  command: BaseCommand
+  aiGatewayContext?: AIGatewayContext | null
   bundler: typeof import('@netlify/edge-bundler')
+  command: BaseCommand
   config: NormalizedCachedConfigConfig
   configPath: string
   debug: boolean
@@ -40,10 +42,10 @@ interface EdgeFunctionsRegistryOptions {
   env: Record<string, { sources: string[]; value: string }>
   featureFlags: FeatureFlags
   getUpdatedConfig: () => Promise<NormalizedCachedConfigConfig>
+  importMapFromTOML?: string
   projectDir: string
   runIsolate: RunIsolate
   servePath: string
-  importMapFromTOML?: string
 }
 
 /**
@@ -92,6 +94,7 @@ function traverseLocalDependencies(
 export class EdgeFunctionsRegistry {
   public importMapFromDeployConfig?: string
 
+  private aiGatewayContext?: AIGatewayContext | null
   private buildError: Error | null = null
   private bundler: typeof import('@netlify/edge-bundler')
   private configPath: string
@@ -125,6 +128,7 @@ export class EdgeFunctionsRegistry {
   private command: BaseCommand
 
   constructor({
+    aiGatewayContext,
     bundler,
     command,
     config,
@@ -138,6 +142,7 @@ export class EdgeFunctionsRegistry {
     runIsolate,
     servePath,
   }: EdgeFunctionsRegistryOptions) {
+    this.aiGatewayContext = aiGatewayContext
     this.command = command
     this.bundler = bundler
     this.configPath = configPath
