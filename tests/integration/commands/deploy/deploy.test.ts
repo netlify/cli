@@ -505,6 +505,34 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
     })
   })
 
+  test('should include stdout and stderr when build fails with --json --verbose options', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      builder
+        .withContentFile({
+          path: 'public/index.html',
+          content: '<h1>Test content</h1>',
+        })
+        .withNetlifyToml({
+          config: {
+            build: {
+              publish: 'public',
+              command:
+                "node -e \"process.stdout.write('Build output'); process.stderr.write('Build error'); process.exit(1)\"",
+            },
+          },
+        })
+
+      await builder.build()
+
+      await expect(
+        callCli(['deploy', '--json', '--verbose'], {
+          cwd: builder.directory,
+          env: { NETLIFY_SITE_ID: context.siteId },
+        }),
+      ).rejects.toThrow('Build output')
+    })
+  })
+
   test('should deploy hidden public folder but ignore hidden/__MACOSX files', { retry: 3 }, async (t) => {
     await withSiteBuilder(t, async (builder) => {
       builder
