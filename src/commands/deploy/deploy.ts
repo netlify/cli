@@ -690,7 +690,15 @@ const handleBuild = async ({
   const { configMutations, exitCode, newConfig, logs } = await runBuild(resolvedOptions)
   // Without this, the deploy command fails silently
   if (options.json && exitCode !== 0) {
-    const message = logs?.stderr.length ? `: ${logs.stderr.join('')}` : ''
+    let message = ''
+
+    if (options.verbose && logs?.stdout.length) {
+      message += `\n\n${logs.stdout.join('')}\n\n`
+    }
+
+    if (logs?.stderr.length) {
+      message += logs.stderr.join('')
+    }
 
     logAndThrowError(`Error while running build${message}`)
   }

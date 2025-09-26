@@ -105,6 +105,10 @@ For more information about Netlify deploys, see ${terminalLink(docsUrl, docsUrl,
 `
     })
     .action(async (options: DeployOptionValues, command: BaseCommand) => {
+      if (command.parent?.opts().verbose) {
+        options.verbose = true
+      }
+
       if (options.build && command.getOptionValueSource('build') === 'cli') {
         warn(`${chalk.cyanBright('--build')} is now the default and can safely be omitted.`)
       }
