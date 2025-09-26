@@ -211,7 +211,7 @@
     "strip-ansi": "7.1.2",
     "temp-dir": "3.0.0",
     "tree-kill": "1.2.2",
-    "tsx": "4.20.5",
+    "tsx": "4.20.6",
     "typescript": "5.8.3",
     "typescript-eslint": "8.26.0",
     "verdaccio": "6.1.6",
