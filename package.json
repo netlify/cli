@@ -204,7 +204,7 @@
     "memfs": "4.46.1",
     "nock": "14.0.10",
     "npm-run-all2": "8.0.4",
-    "p-timeout": "6.1.4",
+    "p-timeout": "7.0.0",
     "picomatch": "4.0.3",
     "prettier": "2.8.8",
     "serialize-javascript": "6.0.2",
