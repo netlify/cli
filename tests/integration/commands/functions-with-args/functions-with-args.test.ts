@@ -2,7 +2,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import type { HandlerEvent } from '@netlify/functions'
-import fetch from 'node-fetch'
+
 import { describe, test } from 'vitest'
 import js from 'dedent'
 import ts from 'dedent'
