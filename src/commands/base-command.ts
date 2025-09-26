@@ -172,6 +172,7 @@ export type BaseOptionValues = {
   filter?: string
   httpProxy?: string
   silent?: string
+  verbose?: boolean
 }
 
 /** Base command class that provides tracking and config initialization */
@@ -796,4 +797,4 @@ export default class BaseCommand extends Command {
 }
 
 export const getBaseOptionValues = (options: OptionValues): BaseOptionValues =>
-  pick(options, ['auth', 'cwd', 'debug', 'filter', 'httpProxy', 'silent'])
+  pick(options, ['auth', 'cwd', 'debug', 'filter', 'httpProxy', 'silent', 'verbose'])
