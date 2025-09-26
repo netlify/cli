@@ -203,7 +203,7 @@
     "lodash.shuffle": "4.2.0",
     "memfs": "4.46.1",
     "nock": "14.0.10",
-    "npm-run-all2": "7.0.2",
+    "npm-run-all2": "8.0.4",
     "p-timeout": "6.1.4",
     "picomatch": "4.0.3",
     "prettier": "2.8.8",
