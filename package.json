@@ -161,7 +161,7 @@
     "@netlify/edge-functions-bootstrap": "2.17.1",
     "@netlify/functions": "3.0.4",
     "@netlify/types": "2.0.3",
-    "@sindresorhus/slugify": "2.2.1",
+    "@sindresorhus/slugify": "3.0.0",
     "@tsconfig/node18": "18.2.4",
     "@tsconfig/recommended": "1.0.10",
     "@types/backoff": "2.5.5",
