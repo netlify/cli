@@ -201,7 +201,7 @@
     "eslint-plugin-n": "17.23.1",
     "form-data": "4.0.4",
     "lodash.shuffle": "4.2.0",
-    "memfs": "4.46.1",
+    "memfs": "4.47.0",
     "nock": "14.0.10",
     "npm-run-all2": "8.0.4",
     "p-timeout": "7.0.0",
