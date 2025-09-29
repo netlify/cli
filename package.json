@@ -72,7 +72,7 @@
     "@netlify/local-functions-proxy": "2.0.3",
     "@netlify/redirect-parser": "15.0.3",
     "@netlify/zip-it-and-ship-it": "14.1.8",
-    "@octokit/rest": "21.1.1",
+    "@octokit/rest": "22.0.0",
     "@opentelemetry/api": "1.8.0",
     "@pnpm/tabtab": "0.5.4",
     "ansi-escapes": "7.1.1",
