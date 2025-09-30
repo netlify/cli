@@ -213,7 +213,7 @@
     "tree-kill": "1.2.2",
     "tsx": "4.20.6",
     "typescript": "5.8.3",
-    "typescript-eslint": "8.44.1",
+    "typescript-eslint": "8.45.0",
     "verdaccio": "6.1.6",
     "vitest": "3.2.4"
   },
