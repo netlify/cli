@@ -19,7 +19,6 @@ export const doesProjectRequireLinkedSite = async ({
   siteInfo,
 }: DoesProjectRequireLinkedSiteParams): Promise<[boolean, string[]]> => {
   // If we don't have a site, these extensions need one initialized
-  // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
   const hasSiteData = Boolean(site.id || options.site) && !isEmpty(siteInfo)
   if (hasSiteData) {
     return [false, []]
