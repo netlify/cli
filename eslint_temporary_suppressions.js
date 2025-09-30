@@ -41,6 +41,12 @@ export default [
     },
   },
   {
+    files: ['e2e/install.e2e.ts'],
+    rules: {
+      '@typescript-eslint/await-thenable': 'off',
+    },
+  },
+  {
     files: ['src/commands/api/api.ts'],
     rules: {
       '@typescript-eslint/no-unsafe-assignment': 'off',
@@ -731,6 +737,7 @@ export default [
       '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/no-unsafe-call': 'off',
       '@typescript-eslint/no-confusing-void-expression': 'off',
+      '@typescript-eslint/await-thenable': 'off',
     },
   },
   {
@@ -1187,6 +1194,7 @@ export default [
       '@typescript-eslint/no-require-imports': 'off',
       '@typescript-eslint/require-await': 'off',
       '@typescript-eslint/no-unnecessary-type-conversion': 'off',
+      '@typescript-eslint/await-thenable': 'off',
     },
   },
   {
