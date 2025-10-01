@@ -10,6 +10,7 @@ USAGE
   $ netlify [COMMAND]
 
 COMMANDS
+  $ agents       Manage Netlify AI agent tasks
   $ api          Run any Netlify API method
   $ blobs        Manage objects in Netlify Blobs
   $ build        Build on your local machine
