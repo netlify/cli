@@ -23,6 +23,7 @@ import getCLIPackageJson from '../utils/get-cli-package-json.js'
 import { didEnableCompileCache } from '../utils/nodejs-compile-cache.js'
 import { track, reportError } from '../utils/telemetry/index.js'
 
+import { createAgentsCommand } from './agents/index.js'
 import { createApiCommand } from './api/index.js'
 import BaseCommand from './base-command.js'
 import { createBlobsCommand } from './blobs/blobs.js'
@@ -239,6 +240,7 @@ export const createMainCommand = (): BaseCommand => {
   createWatchCommand(program)
   createLogsCommand(program)
   createDatabaseCommand(program)
+  createAgentsCommand(program)
 
   program.setAnalyticsPayload({ didEnableCompileCache })
 
