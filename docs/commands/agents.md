@@ -11,7 +11,7 @@ description: Manage Netlify AI agent tasks for automated development workflows
 Manage Netlify AI agent tasks
 The `agents` command will help you run AI agents on your Netlify sites to automate development tasks
 
-Note: Agent tasks execute remotely on Netlify's infrastructure, not locally.
+Note: Agent tasks execute remotely on Netlify infrastructure, not locally.
 
 **Usage**
 
@@ -63,7 +63,7 @@ netlify agents:create
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `json` (*boolean*) - output result as JSON
 - `model` (*string*) - model to use for the agent
-- `project` (*string*) - project ID or slug (if not in a linked directory)
+- `project` (*string*) - project ID or name (if not in a linked directory)
 - `prompt` (*string*) - agent prompt
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
@@ -75,7 +75,7 @@ netlify agents:create
 netlify agents:create "Fix the login bug"
 netlify agents:create --prompt "Add dark mode" --agent claude
 netlify agents:create -p "Update README" -a codex -b feature-branch
-netlify agents:create "Add tests" --project my-site-slug
+netlify agents:create "Add tests" --project my-site-name
 ```
 
 ---
@@ -93,7 +93,7 @@ netlify agents:list
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `json` (*boolean*) - output result as JSON
-- `project` (*string*) - project ID or slug (if not in a linked directory)
+- `project` (*string*) - project ID or name (if not in a linked directory)
 - `status` (*string*) - filter by status (new, running, done, error, cancelled)
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
@@ -125,7 +125,7 @@ netlify agents:show
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `json` (*boolean*) - output result as JSON
-- `project` (*string*) - project ID or slug (if not in a linked directory)
+- `project` (*string*) - project ID or name (if not in a linked directory)
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
@@ -155,7 +155,7 @@ netlify agents:stop
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `json` (*boolean*) - output result as JSON
-- `project` (*string*) - project ID or slug (if not in a linked directory)
+- `project` (*string*) - project ID or name (if not in a linked directory)
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
