@@ -1,4 +1,3 @@
-import fetch from 'node-fetch'
 import { type Geolocation, mockLocation } from '@netlify/dev-utils'
 
 const API_URL = 'https://netlifind.netlify.app'
