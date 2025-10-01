@@ -153,7 +153,7 @@ export const agentsCreate = async (promptArg: string, options: AgentCreateOption
     log(`  CLI: ${chalk.cyan(`netlify agents:show ${agentRunner.id}`)}`)
     log(
       `  View in browser: ${chalk.blue(
-        `https://app.netlify.com/sites/${site.id ?? siteInfo.id}/agents/${agentRunner.id}`,
+        `https://app.netlify.com/projects/${siteInfo.name}/agent-runs/${agentRunner.id}`,
       )}`,
     )
     log(``)

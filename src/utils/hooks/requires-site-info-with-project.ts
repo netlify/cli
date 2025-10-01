@@ -16,45 +16,44 @@ const requiresSiteInfoWithProject = async (command: Command) => {
 
   let siteId = site.id
 
-  // If --project flag is provided, resolve it to a site ID
-  if (options.project && !siteId) {
+  // If --project flag is provided, resolve it to a site ID (overrides linked site)
+  if (options.project) {
     try {
-      // Try to get site by ID first (if project looks like an ID)
-      if (options.project.length === 24 && /^[a-f0-9]+$/i.test(options.project)) {
-        const siteData = await api.getSite({ siteId: options.project })
-        if (siteData.id) {
-          siteId = siteData.id
-          // Update the site info in the command
-          baseCommand.netlify.site.id = siteId
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
-          baseCommand.netlify.siteInfo = siteData as any // Type assertion needed due to API type mismatch
-        }
-      } else {
-        const sites = await api.listSites({
-          filter: 'all',
-          name: options.project,
-        })
-        const matchedSite = sites.find((site) => site.name === options.project)
-
-        if (matchedSite?.id) {
-          siteId = matchedSite.id
-          // Update the site info in the command
-          baseCommand.netlify.site.id = siteId
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
-          baseCommand.netlify.siteInfo = matchedSite as any // Type assertion needed due to API type mismatch
-        } else {
-          return logAndThrowError(`Project "${options.project}" not found. Make sure you have access to this project.`)
-        }
+      const siteData = await api.getSite({ siteId: options.project })
+      if (siteData.id) {
+        siteId = siteData.id
+        baseCommand.netlify.site.id = siteId
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
+        baseCommand.netlify.siteInfo = siteData as any
       }
     } catch (error_) {
       const error = error_ as APIError
-      if (error.status === 401) {
-        return logAndThrowError(`Not authorized to access project "${options.project}"`)
-      }
       if (error.status === 404) {
-        return logAndThrowError(`Project "${options.project}" not found`)
+        try {
+          const sites = await api.listSites({
+            filter: 'all',
+            name: options.project,
+          })
+          const matchedSite = sites.find((site) => site.name === options.project)
+
+          if (matchedSite?.id) {
+            siteId = matchedSite.id
+            baseCommand.netlify.site.id = siteId
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
+            baseCommand.netlify.siteInfo = matchedSite as any
+          } else {
+            return logAndThrowError(
+              `Project "${options.project}" not found. Make sure you have access to this project.`,
+            )
+          }
+        } catch (listError) {
+          return logAndThrowError(`Failed to resolve project "${options.project}": ${(listError as Error).message}`)
+        }
+      } else if (error.status === 401) {
+        return logAndThrowError(`Not authorized to access project "${options.project}"`)
+      } else {
+        return logAndThrowError(`Failed to resolve project "${options.project}": ${error.message}`)
       }
-      return logAndThrowError(`Failed to resolve project "${options.project}": ${error.message}`)
     }
   }
 
