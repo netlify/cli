@@ -23,7 +23,7 @@ export const agentsList = async (options: AgentListOptions, command: BaseCommand
     const params = new URLSearchParams()
     params.set('site_id', site.id ?? '')
     params.set('page', '1')
-    params.set('per_page', '50')
+    params.set('per_page', '15')
 
     if (options.status) {
       params.set('state', options.status)
