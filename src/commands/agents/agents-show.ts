@@ -155,7 +155,11 @@ export const agentsShow = async (id: string, options: AgentShowOptions, command:
       log(`  Stop: ${chalk.cyan(`netlify agents:stop ${agentRunner.id}`)}`)
     }
 
-    log(`  View in browser: ${chalk.blue(`https://app.netlify.com/sites/${site.id ?? ''}/agents/${agentRunner.id}`)}`)
+    log(
+      `  View in browser: ${chalk.blue(
+        `https://app.netlify.com/projects/${siteInfo.name}/agent-runs/${agentRunner.id}`,
+      )}`,
+    )
 
     return agentRunner
   } catch (error_) {
