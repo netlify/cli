@@ -5,7 +5,7 @@ import type BaseCommand from '../../commands/base-command.js'
 
 /**
  * A preAction hook that errors out if siteInfo is an empty object
- * Also handles --project flag to resolve site by ID or slug
+ * Also handles --project flag to resolve site by name
  */
 const requiresSiteInfoWithProject = async (command: Command) => {
   // commander (at least the version we're on) is typed such that `.preAction()` can't accept
@@ -30,11 +30,11 @@ const requiresSiteInfoWithProject = async (command: Command) => {
           baseCommand.netlify.siteInfo = siteData as any // Type assertion needed due to API type mismatch
         }
       } else {
-        // Try to find site by name/slug
-        const sites = await api.listSites()
-        const matchedSite = sites.find(
-          (s) => s.name === options.project || s.custom_domain === options.project || s.url === options.project,
-        )
+        const sites = await api.listSites({
+          filter: 'all',
+          name: options.project,
+        })
+        const matchedSite = sites.find((site) => site.name === options.project)
 
         if (matchedSite?.id) {
           siteId = matchedSite.id
