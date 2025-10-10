@@ -159,7 +159,7 @@
     "@bugsnag/js": "8.6.0",
     "@eslint/compat": "1.4.0",
     "@eslint/js": "9.36.0",
-    "@netlify/functions": "3.0.4",
+    "@netlify/functions": "4.3.0",
     "@netlify/types": "2.0.3",
     "@sindresorhus/slugify": "3.0.0",
     "@tsconfig/node18": "18.2.4",
