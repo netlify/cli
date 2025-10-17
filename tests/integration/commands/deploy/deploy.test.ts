@@ -824,14 +824,27 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         true,
       )) as unknown as Deploy
 
+      // Add retry logic for fetching deployed functions
+      const fetchWithRetry = async (url: string, maxRetries = 5) => {
+        for (let i = 0; i < maxRetries; i++) {
+          try {
+            return await fetch(url)
+          } catch (error) {
+            if (i === maxRetries - 1) throw error
+            await pause(2000 * (i + 1)) // Exponential backoff: 2s, 4s, 6s, 8s
+          }
+        }
+        throw new Error(`Failed to fetch ${url} after ${maxRetries} retries`)
+      }
+
       const [response1, response2, response3, response4, response5, response6, response7] = await Promise.all([
-        fetch(`${deployUrl}/.netlify/functions/func-1`).then((res) => res.text()),
-        fetch(`${deployUrl}/.netlify/functions/func-2`).then((res) => res.text()),
-        fetch(`${deployUrl}/.netlify/functions/func-3`).then((res) => res.text()),
-        fetch(`${deployUrl}/.netlify/functions/func-4`),
-        fetch(`${deployUrl}/internal-v2-func`).then((res) => res.text()),
-        fetch(`${deployUrl}/framework-function-1`).then((res) => res.text()),
-        fetch(`${deployUrl}/framework-edge-function-1`).then((res) => res.text()),
+        fetchWithRetry(`${deployUrl}/.netlify/functions/func-1`).then((res) => res.text()),
+        fetchWithRetry(`${deployUrl}/.netlify/functions/func-2`).then((res) => res.text()),
+        fetchWithRetry(`${deployUrl}/.netlify/functions/func-3`).then((res) => res.text()),
+        fetchWithRetry(`${deployUrl}/.netlify/functions/func-4`),
+        fetchWithRetry(`${deployUrl}/internal-v2-func`).then((res) => res.text()),
+        fetchWithRetry(`${deployUrl}/framework-function-1`).then((res) => res.text()),
+        fetchWithRetry(`${deployUrl}/framework-edge-function-1`).then((res) => res.text()),
       ])
 
       t.expect(response1).toEqual('User 1')
