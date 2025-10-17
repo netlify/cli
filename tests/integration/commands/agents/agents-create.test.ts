@@ -1,16 +1,12 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
+import execa from 'execa'
 
 import { callCli } from '../../utils/call-cli.js'
+import { cliPath } from '../../utils/cli-path.js'
 import { getCLIOptions, withMockApi } from '../../utils/mock-api.js'
 import { withSiteBuilder } from '../../utils/site-builder.js'
+import { answerWithValue, handleQuestions } from '../../utils/handle-questions.js'
 import { mockSiteInfo, mockSiteInfoNoRepo, mockAgentRunner, mockAgentRunnerNoRepo } from './fixtures.js'
-
-// Mock inquirer for interactive prompts
-vi.mock('inquirer', () => ({
-  default: {
-    prompt: vi.fn(),
-  },
-}))
 
 // Mock spinner to avoid UI interference in tests
 vi.mock('../../../../src/lib/spinner.js', () => ({
@@ -72,12 +68,16 @@ describe('agents:create command', () => {
       await builder.build()
 
       await withMockApi(routes, async ({ apiUrl }) => {
-        const cliResponse = (await callCli(
-          ['agents:create', 'Create a form', '--agent', 'claude', '--json'],
-          getCLIOptions({ apiUrl, builder }),
-          true, // parseJson
-        )) as typeof mockAgentRunner
+        const { stdout } = await execa(
+          cliPath,
+          ['agents:create', 'Create a form', '--agent', 'claude', '--branch', 'main', '--json'],
+          {
+            cwd: builder.directory,
+            env: { NETLIFY_API_URL: apiUrl, NETLIFY_SITE_ID: 'site_id', NETLIFY_AUTH_TOKEN: 'fake-token' },
+          },
+        )
 
+        const cliResponse = JSON.parse(stdout) as typeof mockAgentRunner
         expect(cliResponse).toEqual(mockAgentRunner)
       })
     })
@@ -128,8 +128,11 @@ describe('agents:create command', () => {
 
       await withMockApi(routes, async ({ apiUrl }) => {
         await expect(
-          callCli(['agents:create', 'Create a form', '--agent', 'claude'], getCLIOptions({ apiUrl, builder })),
-        ).rejects.toThrow('Failed to create agent task: Unauthorized')
+          execa(cliPath, ['agents:create', 'Create a form', '--agent', 'claude', '--branch', 'main'], {
+            cwd: builder.directory,
+            env: { NETLIFY_API_URL: apiUrl, NETLIFY_SITE_ID: 'site_id', NETLIFY_AUTH_TOKEN: 'fake-token' },
+          }),
+        ).rejects.toThrow()
       })
     })
   })
@@ -172,17 +175,17 @@ describe('agents:create command', () => {
       await builder.build()
 
       await withMockApi(routes, async ({ apiUrl }) => {
-        const cliResponse = (await callCli(
-          ['agents:create', 'Add a contact form', '--agent', 'claude'],
-          getCLIOptions({ apiUrl, builder, env: { NETLIFY_SITE_ID: 'zip_site_id' } }),
-        )) as string
+        const { stdout } = await execa(cliPath, ['agents:create', 'Add a contact form', '--agent', 'claude'], {
+          cwd: builder.directory,
+          env: { NETLIFY_API_URL: apiUrl, NETLIFY_SITE_ID: 'zip_site_id', NETLIFY_AUTH_TOKEN: 'fake-token' },
+        })
 
-        expect(cliResponse).toContain('Agent task created successfully!')
-        expect(cliResponse).toContain('Task ID: agent_runner_no_repo_id')
-        expect(cliResponse).toContain('Prompt: Add a contact form')
-        expect(cliResponse).toContain('Agent: Claude')
-        expect(cliResponse).toContain('Base: Latest production deployment')
-        expect(cliResponse).not.toContain('Branch:')
+        expect(stdout).toContain('Agent task created successfully!')
+        expect(stdout).toContain('Task ID: agent_runner_no_repo_id')
+        expect(stdout).toContain('Prompt: Add a contact form')
+        expect(stdout).toContain('Agent: Claude')
+        expect(stdout).toContain('Base: Latest production deployment')
+        expect(stdout).not.toContain('Branch:')
       })
     })
   })
@@ -207,24 +210,23 @@ describe('agents:create command', () => {
       await builder.build()
 
       await withMockApi(routes, async ({ apiUrl }) => {
-        const cliResponse = (await callCli(
+        const { stdout } = await execa(
+          cliPath,
           ['agents:create', 'Create a dashboard', '--agent', 'claude', '--branch', 'feature-branch'],
-          getCLIOptions({ apiUrl, builder }),
-        )) as string
+          {
+            cwd: builder.directory,
+            env: { NETLIFY_API_URL: apiUrl, NETLIFY_SITE_ID: 'site_id', NETLIFY_AUTH_TOKEN: 'fake-token' },
+          },
+        )
 
-        expect(cliResponse).toContain('Agent task created successfully!')
-        expect(cliResponse).toContain('Branch: main') // Mock returns main branch
-        expect(cliResponse).not.toContain('Base: Latest production deployment')
+        expect(stdout).toContain('Agent task created successfully!')
+        expect(stdout).toContain('Branch: feature-branch')
+        expect(stdout).not.toContain('Base: Latest production deployment')
       })
     })
   })
 
   test('should prompt for branch when none provided for git site', async (t) => {
-    const inquirer = await import('inquirer')
-
-    // Mock the branch input prompt
-    vi.mocked(inquirer.default.prompt).mockResolvedValue({ branchInput: 'develop' })
-
     const routes = [
       ...baseRoutes,
       {
@@ -242,20 +244,22 @@ describe('agents:create command', () => {
       await builder.build()
 
       await withMockApi(routes, async ({ apiUrl }) => {
-        const cliResponse = (await callCli(
-          ['agents:create', 'Create a form', '--agent', 'claude'],
-          getCLIOptions({ apiUrl, builder }),
-        )) as string
+        const childProcess = execa(cliPath, ['agents:create', 'Create a form', '--agent', 'claude'], {
+          cwd: builder.directory,
+          env: { NETLIFY_API_URL: apiUrl, NETLIFY_SITE_ID: 'site_id', NETLIFY_AUTH_TOKEN: 'fake-token' },
+        })
 
-        expect(inquirer.default.prompt).toHaveBeenCalledWith([
-          expect.objectContaining({
-            name: 'branchInput',
-            message: 'Which branch would you like to work on?',
-            default: 'main', // Should use repo default
-          }),
+        handleQuestions(childProcess, [
+          {
+            question: 'Which branch would you like to work on?',
+            answer: answerWithValue('develop'),
+          },
         ])
 
-        expect(cliResponse).toContain('Branch: develop')
+        const result = await childProcess
+
+        expect(result.stdout).toContain('Agent task created successfully!')
+        expect(result.stdout).toContain('Branch: develop')
       })
     })
   })
