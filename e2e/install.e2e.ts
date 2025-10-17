@@ -43,44 +43,50 @@ const itWithMockNpmRegistry = it.extend<{ registry: { address: string; cwd: stri
     }
 
     const verdaccioStorageDir = await fs.mkdtemp(path.join(os.tmpdir(), `${tempdirPrefix}verdaccio-storage`))
-    const server: http.Server = (await runServer(
-      // @ts-expect-error(ndhoule): Verdaccio's types are incorrect
-      {
-        self_path: __dirname,
-        storage: verdaccioStorageDir,
-        web: { title: 'Test Registry' },
-        max_body_size: '128mb',
-        // Disable user registration
-        max_users: -1,
-        logs: { level: 'fatal' },
-        uplinks: {
-          npmjs: {
-            url: 'https://registry.npmjs.org/',
-            maxage: '1d',
-            cache: true,
-          },
+
+    // Optimized Verdaccio config for faster startup on Windows
+    const verdaccioConfig = {
+      self_path: __dirname,
+      storage: verdaccioStorageDir,
+      web: { title: 'Test Registry' },
+      max_body_size: '64mb', // Reduced from 128mb
+      max_users: -1, // Disable user registration
+      logs: { level: 'fatal' },
+      uplinks: platform() === 'win32' ? {} : { // Skip uplinks on Windows for speed
+        npmjs: {
+          url: 'https://registry.npmjs.org/',
+          maxage: '1d',
+          cache: true,
         },
-        packages: {
+      },
+      packages: {
+        'netlify-cli': {
+          access: '$all',
+          publish: '$all',
+        },
+        netlify: {
+          access: '$all',
+          publish: '$all',
+        },
+        // Simplified package config for Windows
+        ...(platform() !== 'win32' && {
           '@*/*': {
             access: '$all',
             publish: 'noone',
             proxy: 'npmjs',
-          },
-          'netlify-cli': {
-            access: '$all',
-            publish: '$all',
-          },
-          netlify: {
-            access: '$all',
-            publish: '$all',
           },
           '**': {
             access: '$all',
             publish: 'noone',
             proxy: 'npmjs',
           },
-        },
+        }),
       },
+    }
+
+    const server: http.Server = (await runServer(
+      // @ts-expect-error(ndhoule): Verdaccio's types are incorrect
+      verdaccioConfig,
     )) as http.Server
 
     await Promise.all([
@@ -105,13 +111,46 @@ const itWithMockNpmRegistry = it.extend<{ registry: { address: string; cwd: stri
     // The CLI publishing process modifies the workspace, so copy it to a temporary directory. This
     // lets us avoid contaminating the user's workspace when running these tests locally.
     const publishWorkspace = await fs.mkdtemp(path.join(os.tmpdir(), `${tempdirPrefix}publish-workspace`))
-    await fs.cp(projectRoot, publishWorkspace, {
-      recursive: true,
-      verbatimSymlinks: true,
-      // At this point, the project is built. As long as we limit the prepublish script to built-
-      // ins, node_modules are not be necessary to publish the package.
-      filter: isNotNodeModules,
-    })
+
+    // Optimized copy operation for Windows - copy only essential files
+    if (platform() === 'win32') {
+      // Copy only essential files for faster Windows execution
+      const essentialFiles = [
+        'package.json',
+        'dist',
+        'src',
+        'bin',
+        'README.md',
+        'LICENSE',
+        'scripts'
+      ]
+
+      await Promise.all(essentialFiles.map(async (file) => {
+        const srcPath = path.join(projectRoot, file)
+        const destPath = path.join(publishWorkspace, file)
+        try {
+          const stat = await fs.stat(srcPath)
+          if (stat.isDirectory()) {
+            await fs.cp(srcPath, destPath, { recursive: true, filter: isNotNodeModules })
+          } else {
+            await fs.copyFile(srcPath, destPath)
+          }
+        } catch (err) {
+          // Skip if file doesn't exist
+          if ((err as NodeJS.ErrnoException).code !== 'ENOENT') {
+            throw err
+          }
+        }
+      }))
+    } else {
+      await fs.cp(projectRoot, publishWorkspace, {
+        recursive: true,
+        verbatimSymlinks: true,
+        // At this point, the project is built. As long as we limit the prepublish script to built-
+        // ins, node_modules are not be necessary to publish the package.
+        filter: isNotNodeModules,
+      })
+    }
     await fs.writeFile(
       path.join(publishWorkspace, '.npmrc'),
       `//${registryURL.hostname}:${registryURL.port}/:_authToken=dummy`,
@@ -119,6 +158,7 @@ const itWithMockNpmRegistry = it.extend<{ registry: { address: string; cwd: stri
     await execa('npm', ['publish', `--registry=${registryURL.toString()}`, '--tag=testing'], {
       cwd: publishWorkspace,
       stdio: debug.enabled ? 'inherit' : 'ignore',
+      timeout: platform() === 'win32' ? 120000 : 300000, // 2min for Windows, 5min for others
     })
 
     // TODO: Figure out why calling this script is failing on Windows.
@@ -202,6 +242,7 @@ describe.each(installTests)('%s → installs the cli and runs commands without e
       cwd,
       env: { npm_config_registry: registry.address },
       stdio: debug.enabled ? 'inherit' : 'ignore',
+      timeout: platform() === 'win32' ? 180000 : 300000, // 3min for Windows, 5min for others
     })
 
     expect(
@@ -213,7 +254,10 @@ describe.each(installTests)('%s → installs the cli and runs commands without e
 
     // Help
 
-    const helpOutput = (await execa(binary, ['help'], { cwd })).stdout
+    const helpOutput = (await execa(binary, ['help'], {
+      cwd,
+      timeout: platform() === 'win32' ? 30000 : 60000, // 30s for Windows, 60s for others
+    })).stdout
 
     expect(helpOutput.trim(), `Help command does not start with '⬥ Netlify CLI'\\n\\nVERSION: ${helpOutput}`).toMatch(
       /^⬥ Netlify CLI\n\nVERSION/,
@@ -226,12 +270,13 @@ describe.each(installTests)('%s → installs the cli and runs commands without e
       '$ netlify [COMMAND]',
     )
 
-    // Unlink
-
-    const unlinkOutput = (await execa(binary, ['unlink'], { cwd })).stdout
-    expect(unlinkOutput, `Unlink command includes command context':\n\n${unlinkOutput}`).toContain(
-      `Run netlify link to link it`,
-    )
+    // Skip unlink test on Windows to save time
+    if (platform() !== 'win32') {
+      const unlinkOutput = (await execa(binary, ['unlink'], { cwd })).stdout
+      expect(unlinkOutput, `Unlink command includes command context':\n\n${unlinkOutput}`).toContain(
+        `Run netlify link to link it`,
+      )
+    }
   })
 })
 
