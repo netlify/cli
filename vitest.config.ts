@@ -22,7 +22,7 @@ export default defineConfig({
     pool: 'threads',
     poolOptions: {
       threads: {
-        singleThread: true,
+        singleThread: process.platform === 'win32',
       },
     },
     coverage: {
