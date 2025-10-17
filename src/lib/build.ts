@@ -1,7 +1,7 @@
 import fs from 'fs'
 import process from 'process'
 
-import build, { type NetlifyConfig, type OnEnd, type OnPostBuild } from '@netlify/build'
+import build, { type NetlifyConfig, type OnEnd, type OnPostBuild, type Logs } from '@netlify/build'
 import type { MinimalHeader } from '@netlify/headers-parser'
 import tomlify from 'tomlify-j0.4'
 import type { OptionValues } from 'commander'
@@ -194,13 +194,17 @@ export const getRunBuildOptions = async ({
   }
 }
 
+export const logsAreBuffered = (logs: unknown): logs is Logs => {
+  return logs !== undefined && logs !== null && typeof logs === 'object' && 'stdout' in logs && 'stderr' in logs
+}
+
 export const runBuild = async (
   options: RunBuildOptions,
 ): Promise<{
   exitCode: number
   newConfig: NetlifyConfig
   configMutations: Record<string, string>
-  logs?: { stdout: string[]; stderr: string[] }
+  logs?: Logs
 }> => {
   // If netlify NETLIFY_API_URL is set we need to pass this information to @netlify/build
   // TODO don't use testOpts, but add real properties to do this.
@@ -222,5 +226,5 @@ export const runBuild = async (
     logs,
     // TODO(serhalp): Upstream the type fixes above into @netlify/build and remove this type assertion
   } = await (build as unknown as (opts: RunBuildOptions) => Promise<ReturnType<typeof build>>)(options)
-  return { exitCode, newConfig, configMutations, logs }
+  return { exitCode, newConfig, configMutations, logs: logsAreBuffered(logs) ? logs : undefined }
 }
