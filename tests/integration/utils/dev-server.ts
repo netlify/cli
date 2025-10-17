@@ -71,7 +71,10 @@ const startServer = async ({
   skipWaitPort = false,
   targetPort,
 }: DevServerOptions): Promise<DevServer | { timeout: boolean; output: string }> => {
-  const port = await getPort()
+  // Use worker-specific port ranges to avoid conflicts in parallel execution
+  const workerId = process.env.VITEST_WORKER_ID || '1'
+  const workerOffset = (parseInt(workerId) - 1) * 100
+  const port = await getPort({ port: getPort.makeRange(3000 + workerOffset, 3000 + workerOffset + 99) })
   const host = 'localhost'
   const url = `http://${host}:${port}`
 
@@ -89,7 +92,8 @@ const startServer = async ({
   if (targetPort) {
     baseArgs.push('--target-port', targetPort.toString())
   } else {
-    const staticPort = await getPort()
+    // Use same worker-specific range for static port
+    const staticPort = await getPort({ port: getPort.makeRange(4000 + workerOffset, 4000 + workerOffset + 99) })
     baseArgs.push('--staticServerPort', staticPort.toString())
   }
 
@@ -158,7 +162,18 @@ const startServer = async ({
             },
             close: async () => {
               selfKilled = true
-              await killProcess(ps)
+              // Enhanced cleanup for Windows to handle Next.js child processes
+              if (process.platform === 'win32' && ps.pid) {
+                try {
+                  // Kill process tree on Windows to ensure all child processes are terminated
+                  await execa('taskkill', ['/pid', ps.pid.toString(), '/T', '/F'])
+                } catch {
+                  // Fallback to standard kill if taskkill fails
+                  await killProcess(ps)
+                }
+              } else {
+                await killProcess(ps)
+              }
             },
             promptHistory,
           })
