@@ -157,7 +157,7 @@ type Test = { packageName: string }
 type InstallTest = Test & { install: [cmd: string, args: string[]]; lockfile: string }
 type RunTest = Test & { run: [cmd: string, args: string[]] }
 
-const installTests: [packageManager: string, config: InstallTest][] = [
+const allInstallTests: [packageManager: string, config: InstallTest][] = [
   [
     'npm',
     {
@@ -183,6 +183,12 @@ const installTests: [packageManager: string, config: InstallTest][] = [
     },
   ],
 ]
+
+// Filter tests based on TEST_PACKAGE_MANAGER environment variable
+const filterPackageManager = process.env.TEST_PACKAGE_MANAGER
+const installTests = filterPackageManager
+  ? allInstallTests.filter(([packageManager]) => packageManager === filterPackageManager)
+  : allInstallTests
 
 describe.each(installTests)('%s → installs the cli and runs commands without errors', (_, config) => {
   // TODO: Figure out why this flow is failing on Windows.

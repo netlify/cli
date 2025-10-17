@@ -14,14 +14,15 @@ on:
 
 jobs:
   e2e-windows:
-    name: E2E Windows tests
+    name: E2E Windows tests (${{ matrix.package-manager }})
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 20
+    timeout-minutes: 8
     strategy:
       matrix:
         os: [windows-2025]
         # Pinning 20.x version as a temporary workaround due to this https://github.com/nodejs/node/issues/52884
         node-version: ['20.12.2', '22']
+        package-manager: ['npm', 'pnpm', 'yarn']
       fail-fast: false
     steps:
       # This improves Windows network performance. We need this since we open many ports in our tests.
@@ -54,6 +55,8 @@ jobs:
 
       - name: Run E2E tests
         run: npm run test:e2e
+        env:
+          TEST_PACKAGE_MANAGER: ${{ matrix.package-manager }}
 
       - name: Notify Slack
         uses: 8398a7/action-slack@v3
@@ -64,7 +67,7 @@ jobs:
           custom_payload: |
             {
               attachments: [{
-                title: 'E2E Test Failed! (${{ matrix.os }},node-${{ matrix.node-version }}',
+                title: 'E2E Test Failed! (${{ matrix.os }},node-${{ matrix.node-version }},${{ matrix.package-manager }})',
                 color: 'danger',
                 text: `${process.env.AS_WORKFLOW}\n\nEither something broke or a test is flaky.\n\nConsider doing something about it :fire_engine:`,
               }]
