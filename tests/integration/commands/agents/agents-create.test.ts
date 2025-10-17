@@ -83,7 +83,44 @@ describe('agents:create command', () => {
     })
   })
 
-  test.todo('should handle interactive mode when no prompt provided')
+  test('should handle interactive mode when no prompt provided', async (t) => {
+    const routes = [
+      ...baseRoutes,
+      {
+        path: 'agent_runners',
+        method: 'POST' as const,
+        response: mockAgentRunner,
+        validateRequest: (request: { body: string }) => {
+          const body = JSON.parse(request.body) as { prompt: string; branch: string }
+          expect(body.prompt).toBe('Build a contact form')
+          expect(body.branch).toBe('main')
+        },
+      },
+    ]
+
+    await withSiteBuilder(t, async (builder) => {
+      await builder.build()
+
+      await withMockApi(routes, async ({ apiUrl }) => {
+        const childProcess = execa(cliPath, ['agents:create', '--agent', 'claude', '--branch', 'main'], {
+          cwd: builder.directory,
+          env: { NETLIFY_API_URL: apiUrl, NETLIFY_SITE_ID: 'site_id', NETLIFY_AUTH_TOKEN: 'fake-token' },
+        })
+
+        handleQuestions(childProcess, [
+          {
+            question: 'What would you like the agent to do?',
+            answer: answerWithValue('Build a contact form'),
+          },
+        ])
+
+        const result = await childProcess
+
+        expect(result.stdout).toContain('Agent task created successfully!')
+        expect(result.stdout).toContain('Prompt: Build a contact form')
+      })
+    })
+  })
 
   test('should validate prompt input', async (t) => {
     await withSiteBuilder(t, async (builder) => {
