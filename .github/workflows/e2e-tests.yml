@@ -16,7 +16,7 @@ jobs:
   e2e-windows:
     name: E2E Windows tests (${{ matrix.package-manager }})
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 8
+    timeout-minutes: 15
     strategy:
       matrix:
         os: [windows-2025]

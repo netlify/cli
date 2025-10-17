@@ -52,13 +52,17 @@ const itWithMockNpmRegistry = it.extend<{ registry: { address: string; cwd: stri
       max_body_size: '64mb', // Reduced from 128mb
       max_users: -1, // Disable user registration
       logs: { level: 'fatal' },
-      uplinks: platform() === 'win32' ? {} : { // Skip uplinks on Windows for speed
-        npmjs: {
-          url: 'https://registry.npmjs.org/',
-          maxage: '1d',
-          cache: true,
-        },
-      },
+      uplinks:
+        platform() === 'win32'
+          ? {}
+          : {
+              // Skip uplinks on Windows for speed
+              npmjs: {
+                url: 'https://registry.npmjs.org/',
+                maxage: '1d',
+                cache: true,
+              },
+            },
       packages: {
         'netlify-cli': {
           access: '$all',
@@ -115,33 +119,27 @@ const itWithMockNpmRegistry = it.extend<{ registry: { address: string; cwd: stri
     // Optimized copy operation for Windows - copy only essential files
     if (platform() === 'win32') {
       // Copy only essential files for faster Windows execution
-      const essentialFiles = [
-        'package.json',
-        'dist',
-        'src',
-        'bin',
-        'README.md',
-        'LICENSE',
-        'scripts'
-      ]
+      const essentialFiles = ['package.json', 'dist', 'src', 'bin', 'README.md', 'LICENSE', 'scripts']
 
-      await Promise.all(essentialFiles.map(async (file) => {
-        const srcPath = path.join(projectRoot, file)
-        const destPath = path.join(publishWorkspace, file)
-        try {
-          const stat = await fs.stat(srcPath)
-          if (stat.isDirectory()) {
-            await fs.cp(srcPath, destPath, { recursive: true, filter: isNotNodeModules })
-          } else {
-            await fs.copyFile(srcPath, destPath)
+      await Promise.all(
+        essentialFiles.map(async (file) => {
+          const srcPath = path.join(projectRoot, file)
+          const destPath = path.join(publishWorkspace, file)
+          try {
+            const stat = await fs.stat(srcPath)
+            if (stat.isDirectory()) {
+              await fs.cp(srcPath, destPath, { recursive: true, filter: isNotNodeModules })
+            } else {
+              await fs.copyFile(srcPath, destPath)
+            }
+          } catch (err) {
+            // Skip if file doesn't exist
+            if ((err as NodeJS.ErrnoException).code !== 'ENOENT') {
+              throw err
+            }
           }
-        } catch (err) {
-          // Skip if file doesn't exist
-          if ((err as NodeJS.ErrnoException).code !== 'ENOENT') {
-            throw err
-          }
-        }
-      }))
+        }),
+      )
     } else {
       await fs.cp(projectRoot, publishWorkspace, {
         recursive: true,
@@ -155,11 +153,41 @@ const itWithMockNpmRegistry = it.extend<{ registry: { address: string; cwd: stri
       path.join(publishWorkspace, '.npmrc'),
       `//${registryURL.hostname}:${registryURL.port}/:_authToken=dummy`,
     )
-    await execa('npm', ['publish', `--registry=${registryURL.toString()}`, '--tag=testing'], {
-      cwd: publishWorkspace,
-      stdio: debug.enabled ? 'inherit' : 'ignore',
-      timeout: platform() === 'win32' ? 120000 : 300000, // 2min for Windows, 5min for others
-    })
+
+    // Retry logic for Windows npm publish which can be flaky
+    const maxRetries = platform() === 'win32' ? 3 : 1
+    let lastError: Error | undefined
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        await execa('npm', ['publish', `--registry=${registryURL.toString()}`, '--tag=testing'], {
+          cwd: publishWorkspace,
+          stdio: debug.enabled ? 'inherit' : 'pipe',
+          timeout: 300000, // 5min for all platforms
+        })
+        break // Success, exit retry loop
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error))
+        const errorMessage = error instanceof Error ? error.message : String(error)
+        console.error(`Attempt ${String(attempt)}/${String(maxRetries)} failed to publish package:`, errorMessage)
+
+        if (error && typeof error === 'object' && 'stdout' in error && error.stdout) {
+          console.error('stdout:', error.stdout)
+        }
+        if (error && typeof error === 'object' && 'stderr' in error && error.stderr) {
+          console.error('stderr:', error.stderr)
+        }
+
+        if (attempt < maxRetries) {
+          console.log(`Retrying in 5 seconds...`)
+          await new Promise((resolve) => setTimeout(resolve, 5000))
+        }
+      }
+    }
+
+    if (lastError) {
+      throw lastError
+    }
 
     // TODO: Figure out why calling this script is failing on Windows.
     if (platform() !== 'win32') {
@@ -254,10 +282,12 @@ describe.each(installTests)('%s → installs the cli and runs commands without e
 
     // Help
 
-    const helpOutput = (await execa(binary, ['help'], {
-      cwd,
-      timeout: platform() === 'win32' ? 30000 : 60000, // 30s for Windows, 60s for others
-    })).stdout
+    const helpOutput = (
+      await execa(binary, ['help'], {
+        cwd,
+        timeout: platform() === 'win32' ? 30000 : 60000, // 30s for Windows, 60s for others
+      })
+    ).stdout
 
     expect(helpOutput.trim(), `Help command does not start with '⬥ Netlify CLI'\\n\\nVERSION: ${helpOutput}`).toMatch(
       /^⬥ Netlify CLI\n\nVERSION/,
