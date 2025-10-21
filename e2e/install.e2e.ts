@@ -43,45 +43,42 @@ const itWithMockNpmRegistry = it.extend<{ registry: { address: string; cwd: stri
     }
 
     const verdaccioStorageDir = await fs.mkdtemp(path.join(os.tmpdir(), `${tempdirPrefix}verdaccio-storage`))
-    const server: http.Server = (await runServer(
-      // @ts-expect-error(ndhoule): Verdaccio's types are incorrect
-      {
-        self_path: __dirname,
-        storage: verdaccioStorageDir,
-        web: { title: 'Test Registry' },
-        max_body_size: '128mb',
-        // Disable user registration
-        max_users: -1,
-        logs: { level: 'fatal' },
-        uplinks: {
-          npmjs: {
-            url: 'https://registry.npmjs.org/',
-            maxage: '1d',
-            cache: true,
-          },
-        },
-        packages: {
-          '@*/*': {
-            access: '$all',
-            publish: 'noone',
-            proxy: 'npmjs',
-          },
-          'netlify-cli': {
-            access: '$all',
-            publish: '$all',
-          },
-          netlify: {
-            access: '$all',
-            publish: '$all',
-          },
-          '**': {
-            access: '$all',
-            publish: 'noone',
-            proxy: 'npmjs',
-          },
+    const server: http.Server = (await runServer({
+      self_path: __dirname,
+      storage: verdaccioStorageDir,
+      web: { title: 'Test Registry' },
+      max_body_size: '128mb',
+      // Disable user registration
+      max_users: -1,
+      logs: { level: 'fatal' },
+      uplinks: {
+        npmjs: {
+          url: 'https://registry.npmjs.org/',
+          maxage: '1d',
+          cache: true,
         },
       },
-    )) as http.Server
+      packages: {
+        '@*/*': {
+          access: '$all',
+          publish: 'noone',
+          proxy: 'npmjs',
+        },
+        'netlify-cli': {
+          access: '$all',
+          publish: '$all',
+        },
+        netlify: {
+          access: '$all',
+          publish: '$all',
+        },
+        '**': {
+          access: '$all',
+          publish: 'noone',
+          proxy: 'npmjs',
+        },
+      },
+    })) as http.Server
 
     await Promise.all([
       Promise.race([
