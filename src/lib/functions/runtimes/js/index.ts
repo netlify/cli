@@ -84,7 +84,20 @@ export const invokeFunction = async ({
     timeoutMs: timeout * SECONDS_TO_MILLISECONDS,
   }
 
-  const worker = new Worker(workerURL, { workerData })
+  const worker = new Worker(workerURL, {
+    env: {
+      ...process.env,
+      // AWS Lambda disables these Node.js experimental features, even in Node.js versions where they are enabled by
+      // default: https://docs.aws.amazon.com/lambda/latest/dg/lambda-nodejs.html#w292aac41c19.
+      // Replace this here to match production as closely as possible.
+      NODE_OPTIONS: ['--no-experimental-require-module', '--no-experimental-detect-module']
+        // Unfortunately Node.js throws if `NODE_OPTIONS` contains any unsupported flags and these flags have been added
+        // and removed in various specific versions in each major line. Luckily Node.js has an API just for this!
+        .filter((flag) => process.allowedNodeEnvironmentFlags.has(flag))
+        .join(' '),
+    },
+    workerData,
+  })
   return await new Promise((resolve, reject) => {
     worker.on('message', (result: WorkerMessage): void => {
       // TODO(serhalp): Improve `WorkerMessage` type. It sure would be nice to keep it simple as it
