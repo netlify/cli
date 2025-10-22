@@ -61,7 +61,7 @@
     "@netlify/ai": "0.3.0",
     "@netlify/api": "14.0.7",
     "@netlify/blobs": "10.1.0",
-    "@netlify/build": "35.2.1",
+    "@netlify/build": "35.2.7",
     "@netlify/build-info": "10.0.9",
     "@netlify/config": "24.0.6",
     "@netlify/dev-utils": "4.3.0",
