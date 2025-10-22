@@ -3,7 +3,7 @@ import { rename } from 'fs/promises'
 import { join } from 'path'
 
 import execa from 'execa'
-import fetch from 'node-fetch'
+
 import { describe, expect, test } from 'vitest'
 
 import { withDevServer } from '../../utils/dev-server.js'

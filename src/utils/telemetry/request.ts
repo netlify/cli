@@ -2,8 +2,6 @@
 // to run as a detached process
 import process from 'process'
 
-import fetch from 'node-fetch'
-
 import getPackageJson from '../get-cli-package-json.js'
 
 const { name, version } = await getPackageJson()

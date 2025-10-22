@@ -6,7 +6,7 @@ import { join } from 'node:path'
 
 import { LocalState } from '@netlify/dev-utils'
 import express from 'express'
-import fetch from 'node-fetch'
+
 import { afterAll, beforeAll, describe, expect, test, vi } from 'vitest'
 
 import { FunctionsRegistry } from '../../../../src/lib/functions/registry.js'

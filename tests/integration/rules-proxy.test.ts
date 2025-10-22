@@ -6,7 +6,6 @@ import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 
 import { createRewriter, getWatchers } from '../../src/utils/rules-proxy.js'
 
-import fetch from 'node-fetch'
 import { createSiteBuilder, SiteBuilder } from './utils/site-builder.js'
 
 describe('rules-proxy', () => {

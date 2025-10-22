@@ -1,11 +1,9 @@
 import { Buffer } from 'node:buffer'
 import { version } from 'node:process'
-import events from 'node:events'
 
 import type { HandlerEvent } from '@netlify/functions'
-import FormData from 'form-data'
 import getPort from 'get-port'
-import fetch from 'node-fetch'
+
 import { gte } from 'semver'
 import { describe, test } from 'vitest'
 
@@ -437,9 +435,8 @@ describe.concurrent('commands/dev/config', () => {
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const form = new FormData()
         form.append('some', 'thing')
-
-        const expectedBoundary = form.getBoundary()
-        const expectedResponseBody = form.getBuffer().toString('base64')
+        const rsp = new Response(form)
+        const expectedResponseBody = Buffer.from(await rsp.text()).toString('base64')
 
         const response = await fetch(`${server.url}/api/echo?ding=dong`, {
           method: 'POST',
@@ -448,8 +445,10 @@ describe.concurrent('commands/dev/config', () => {
         const body = await response.json()
 
         t.expect(body).toHaveProperty('headers.host', `${server.host}:${server.port.toString()}`)
-        t.expect(body).toHaveProperty('headers.content-type', `multipart/form-data;boundary=${expectedBoundary}`)
-        t.expect(body).toHaveProperty('headers.content-length', '164')
+        t.expect((body as { headers: { 'content-type': string } }).headers['content-type']).toMatch(
+          /^multipart\/form-data; ?boundary=.+/,
+        )
+        t.expect(body).toHaveProperty('headers.content-length', '126')
         t.expect(body).toHaveProperty('httpMethod', 'POST')
         t.expect(body).toHaveProperty('isBase64Encoded', true)
         t.expect(body).toHaveProperty('path', '/api/echo')
@@ -521,15 +520,12 @@ describe.concurrent('commands/dev/config', () => {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const body = res.body!
 
-        body.on('data', (chunk: Buffer) => {
+        for await (const chunk of body) {
           const now = Date.now()
-
           t.expect(now > lastTimestamp).toBe(true)
-
           lastTimestamp = now
-          chunks.push(chunk.toString())
-        })
-        await events.once(body, 'end')
+          chunks.push(Buffer.from(chunk).toString())
+        }
 
         t.expect(chunks).toStrictEqual(['one', 'two', 'three'])
       })
