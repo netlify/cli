@@ -3,6 +3,7 @@ import js from 'dedent'
 import execa from 'execa'
 import getPort from 'get-port'
 import fetch from 'node-fetch'
+import semver from 'semver'
 import { describe, test } from 'vitest'
 import waitPort from 'wait-port'
 
@@ -202,6 +203,89 @@ describe.concurrent('functions:serve command', () => {
       })
     })
   })
+
+  test('should thread env vars from user env to function execution environment', async (t) => {
+    const port = await getPort()
+    await withSiteBuilder(t, async (builder) => {
+      await builder
+        .withContentFile({
+          path: 'netlify/functions/get-env.js',
+          content: `
+          export default async () => Response.json(process.env)
+          export const config = { path: "/get-env" }
+          `,
+        })
+        .build()
+
+      await withFunctionsServer({ builder, args: ['--port', port.toString()], port, env: { foo: 'bar' } }, async () => {
+        const response = await fetch(`http://localhost:${port.toString()}/get-env`)
+        t.expect(await response.json()).toMatchObject(t.expect.objectContaining({ foo: 'bar' }))
+      })
+    })
+  })
+
+  test('should thread `NODE_OPTIONS` if set in user env to function execution environment', async (t) => {
+    const port = await getPort()
+    await withSiteBuilder(t, async (builder) => {
+      await builder
+        .withContentFile({
+          path: 'netlify/functions/get-env.js',
+          content: `
+          export default async () => new Response(process.env.NODE_OPTIONS)
+          export const config = { path: "/get-env" }
+          `,
+        })
+        .build()
+
+      await withFunctionsServer(
+        {
+          builder,
+          args: ['--port', port.toString()],
+          port,
+          env: { NODE_OPTIONS: '--abort-on-uncaught-exception --trace-exit' },
+        },
+        async () => {
+          const response = await fetch(`http://localhost:${port.toString()}/get-env`)
+          t.expect(await response.text()).toContain('--abort-on-uncaught-exception --trace-exit')
+        },
+      )
+    })
+  })
+
+  // Testing just 22+ for simplicity. The real range is quite complex.
+  test.runIf(semver.gte(process.versions.node, '22.12.0'))(
+    'should add AWS Lambda compat `NODE_OPTIONS` to function execution environment',
+    async (t) => {
+      const port = await getPort()
+      await withSiteBuilder(t, async (builder) => {
+        await builder
+          .withContentFile({
+            path: 'netlify/functions/get-env.js',
+            content: `
+          export default async () => new Response(process.env.NODE_OPTIONS)
+          export const config = { path: "/get-env" }
+          `,
+          })
+          .build()
+
+        await withFunctionsServer(
+          {
+            builder,
+            args: ['--port', port.toString()],
+            port,
+            env: { NODE_OPTIONS: '--abort-on-uncaught-exception --trace-exit' },
+          },
+          async () => {
+            const response = await fetch(`http://localhost:${port.toString()}/get-env`)
+            const body = await response.text()
+            t.expect(body).toContain('--no-experimental-require-module')
+            t.expect(body).toContain('--no-experimental-detect-module')
+            t.expect(body).toContain('--abort-on-uncaught-exception --trace-exit')
+          },
+        )
+      })
+    },
+  )
 
   test('should inject AI Gateway when linked site and online', async (t) => {
     await withSiteBuilder(t, async (builder) => {
