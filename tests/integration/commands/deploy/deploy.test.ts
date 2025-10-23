@@ -57,6 +57,7 @@ type Deploy = {
   logs: string
   function_logs: string
   edge_function_logs: string
+  url: string
 }
 
 const validateDeploy = async ({
@@ -76,6 +77,7 @@ const validateDeploy = async ({
   expect(deploy.logs).toBeTruthy()
   expect(deploy.function_logs).toBeTruthy()
   expect(deploy.edge_function_logs).toBeTruthy()
+  expect(deploy.url).toBeTruthy()
   expect(deploy.site_name).toEqual(siteName)
 
   await validateContent({ siteUrl: deploy.deploy_url, path: '', content })
