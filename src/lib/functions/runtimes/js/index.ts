@@ -90,7 +90,11 @@ export const invokeFunction = async ({
       // AWS Lambda disables these Node.js experimental features, even in Node.js versions where they are enabled by
       // default: https://docs.aws.amazon.com/lambda/latest/dg/lambda-nodejs.html#w292aac41c19.
       // Replace this here to match production as closely as possible.
-      NODE_OPTIONS: ['--no-experimental-require-module', '--no-experimental-detect-module']
+      NODE_OPTIONS: [
+        ...(process.env.NODE_OPTIONS?.split(' ') ?? []),
+        '--no-experimental-require-module',
+        '--no-experimental-detect-module',
+      ]
         // Unfortunately Node.js throws if `NODE_OPTIONS` contains any unsupported flags and these flags have been added
         // and removed in various specific versions in each major line. Luckily Node.js has an API just for this!
         .filter((flag) => process.allowedNodeEnvironmentFlags.has(flag))
