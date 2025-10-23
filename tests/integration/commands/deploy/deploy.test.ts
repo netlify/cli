@@ -80,7 +80,7 @@ const validateDeploy = async ({
   expect(deploy.url).toBeTruthy()
   expect(deploy.site_name).toEqual(siteName)
 
-  await validateContent({ siteUrl: deploy.deploy_url, path: '', content })
+  await validateContent({ siteUrl: deploy.deploy_url, url: deploy.siteUrl, path: '', content })
 }
 
 const context: { account: unknown; siteId: string } = {
