@@ -748,16 +748,39 @@ const bundleEdgeFunctions = async (options: DeployOptionValues, command: BaseCom
   })
 }
 
+/**
+ * JSON output structure for the deploy command when --json flag is used.
+ * 
+ * This provides machine-readable deployment information for scripting and automation.
+ */
 interface JsonData {
+  /** Unique identifier for the site */
   site_id: string
+  /** Name of the site */
   site_name: string
+  /** Unique identifier for this specific deploy */
   deploy_id: string
+  /** 
+   * Primary/canonical URL for the site.
+   * This is the permanent URL of the site (e.g., https://example.netlify.app)
+   * and remains consistent across deploys.
+   */
   site_url: string
+  /** 
+   * Unique per-deploy URL.
+   * This is a unique URL for this specific deploy (e.g., https://abc123--example.netlify.app)
+   * and can be used to preview this deploy even after subsequent deploys.
+   */
   deploy_url: string
+  /** URL to view deployment logs in the Netlify UI */
   logs: string
+  /** URL to view function logs in the Netlify UI */
   function_logs: string
+  /** URL to view edge function logs in the Netlify UI */
   edge_function_logs: string
+  /** @deprecated Legacy field, same as site_url. Only present for production deploys. */
   url?: string
+  /** Filename of the source zip if --upload-source-zip was used */
   source_zip_filename?: string
 }
 
@@ -790,13 +813,17 @@ const printResults = ({
       site_id: results.siteId,
       site_name: results.siteName,
       deploy_id: results.deployId,
+      // site_url is the canonical/primary site URL (always included)
       site_url: results.siteUrl,
+      // deploy_url is the unique per-deploy URL (always included)
       deploy_url: results.deployUrl,
       logs: results.logsUrl,
       function_logs: results.functionLogsUrl,
       edge_function_logs: results.edgeFunctionLogsUrl,
     }
+    // Legacy 'url' field for backward compatibility (production deploys only)
     if (deployToProduction) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       jsonData.url = results.siteUrl
     }
 
