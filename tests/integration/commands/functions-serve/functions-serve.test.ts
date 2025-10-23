@@ -252,7 +252,7 @@ describe.concurrent('functions:serve command', () => {
     })
   })
 
-  // Testing just 22+ for simplicity. The real range is quite complex.
+  // Testing just 22.12.0+ for simplicity. The real range is quite complex.
   test.runIf(semver.gte(process.versions.node, '22.12.0'))(
     'should add AWS Lambda compat `NODE_OPTIONS` to function execution environment',
     async (t) => {
@@ -286,6 +286,72 @@ describe.concurrent('functions:serve command', () => {
       })
     },
   )
+
+  test.runIf(
+    process.allowedNodeEnvironmentFlags.has('--no-experimental-require-module') ||
+      process.allowedNodeEnvironmentFlags.has('--experimental-require-module'),
+  )('should allow user to re-enable experimental require module feature', async (t) => {
+    const port = await getPort()
+    await withSiteBuilder(t, async (builder) => {
+      await builder
+        .withContentFile({
+          path: 'netlify/functions/get-env.js',
+          content: `
+          export default async () => new Response(process.env.NODE_OPTIONS)
+          export const config = { path: "/get-env" }
+          `,
+        })
+        .build()
+
+      await withFunctionsServer(
+        {
+          builder,
+          args: ['--port', port.toString()],
+          port,
+          env: { NODE_OPTIONS: '--experimental-require-module' },
+        },
+        async () => {
+          const response = await fetch(`http://localhost:${port.toString()}/get-env`)
+          const body = await response.text()
+          t.expect(body).toContain('--experimental-require-module')
+          t.expect(body).not.toContain('--no-experimental-require-module')
+        },
+      )
+    })
+  })
+
+  test.runIf(
+    process.allowedNodeEnvironmentFlags.has('--no-experimental-detect-module') ||
+      process.allowedNodeEnvironmentFlags.has('--experimental-detect-module'),
+  )('should allow user to re-enable experimental detect module feature', async (t) => {
+    const port = await getPort()
+    await withSiteBuilder(t, async (builder) => {
+      await builder
+        .withContentFile({
+          path: 'netlify/functions/get-env.js',
+          content: `
+          export default async () => new Response(process.env.NODE_OPTIONS)
+          export const config = { path: "/get-env" }
+          `,
+        })
+        .build()
+
+      await withFunctionsServer(
+        {
+          builder,
+          args: ['--port', port.toString()],
+          port,
+          env: { NODE_OPTIONS: '--experimental-detect-module' },
+        },
+        async () => {
+          const response = await fetch(`http://localhost:${port.toString()}/get-env`)
+          const body = await response.text()
+          t.expect(body).toContain('--experimental-detect-module')
+          t.expect(body).not.toContain('--no-experimental-detect-module')
+        },
+      )
+    })
+  })
 
   test('should inject AI Gateway when linked site and online', async (t) => {
     await withSiteBuilder(t, async (builder) => {
