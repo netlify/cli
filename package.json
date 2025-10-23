@@ -58,7 +58,7 @@
   },
   "dependencies": {
     "@fastify/static": "7.0.4",
-    "@netlify/ai": "0.3.0",
+    "@netlify/ai": "0.3.1",
     "@netlify/api": "14.0.7",
     "@netlify/blobs": "10.1.0",
     "@netlify/build": "35.2.7",
