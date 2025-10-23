@@ -750,7 +750,7 @@ const bundleEdgeFunctions = async (options: DeployOptionValues, command: BaseCom
 
 /**
  * JSON output structure for the deploy command when --json flag is used.
- * 
+ *
  * This provides machine-readable deployment information for scripting and automation.
  */
 interface JsonData {
@@ -760,13 +760,13 @@ interface JsonData {
   site_name: string
   /** Unique identifier for this specific deploy */
   deploy_id: string
-  /** 
+  /**
    * Primary/canonical URL for the site.
    * This is the permanent URL of the site (e.g., https://example.netlify.app)
    * and remains consistent across deploys.
    */
   site_url: string
-  /** 
+  /**
    * Unique per-deploy URL.
    * This is a unique URL for this specific deploy (e.g., https://abc123--example.netlify.app)
    * and can be used to preview this deploy even after subsequent deploys.

@@ -478,13 +478,13 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
       // Validate both URLs exist
       expect(draftDeploy.site_url).toBeTruthy()
       expect(draftDeploy.deploy_url).toBeTruthy()
-      
+
       // site_url should be the primary site URL (without deploy ID)
       expect(draftDeploy.site_url).toMatch(/https:\/\/[^/]+\.netlify\.app/)
-      
+
       // deploy_url should be the per-deploy URL (with deploy ID)
       expect(draftDeploy.deploy_url).toMatch(/https:\/\/[a-f0-9]+--.+\.netlify\.app/)
-      
+
       // For draft deploys, site_url and deploy_url should be different
       expect(draftDeploy.site_url).not.toEqual(draftDeploy.deploy_url)
 
@@ -497,7 +497,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
       // Both URLs should exist in production deploy too
       expect(prodDeploy.site_url).toBeTruthy()
       expect(prodDeploy.deploy_url).toBeTruthy()
-      
+
       // The legacy 'url' field should also exist for production and match site_url
       expect(prodDeploy.url).toBeTruthy()
       expect(prodDeploy.url).toEqual(prodDeploy.site_url)
