@@ -752,6 +752,7 @@ interface JsonData {
   site_id: string
   site_name: string
   deploy_id: string
+  site_url: string
   deploy_url: string
   logs: string
   function_logs: string
@@ -789,6 +790,7 @@ const printResults = ({
       site_id: results.siteId,
       site_name: results.siteName,
       deploy_id: results.deployId,
+      site_url: results.siteUrl,
       deploy_url: results.deployUrl,
       logs: results.logsUrl,
       function_logs: results.functionLogsUrl,

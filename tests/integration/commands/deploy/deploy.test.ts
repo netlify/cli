@@ -52,6 +52,7 @@ type Deploy = {
   }
   site_id: string
   site_name: string
+  site_url: string
   deploy_url: string
   deploy_id: string
   logs: string
@@ -71,6 +72,7 @@ const validateDeploy = async ({
 }) => {
   expect(deploy.site_id).toBeTruthy()
   expect(deploy.site_name).toBeTruthy()
+  expect(deploy.site_url).toBeTruthy()
   expect(deploy.deploy_url).toBeTruthy()
   expect(deploy.deploy_id).toBeTruthy()
   expect(deploy.logs).toBeTruthy()
@@ -448,6 +450,57 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         'edge_function_logs',
         `https://app.netlify.com/projects/${SITE_NAME}/logs/edge-functions`,
       )
+    })
+  })
+
+  test('should include both site_url and deploy_url in JSON output', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      const content = '<h1>URL field test</h1>'
+      builder
+        .withContentFile({
+          path: 'public/index.html',
+          content,
+        })
+        .withNetlifyToml({
+          config: {
+            build: { publish: 'public' },
+          },
+        })
+
+      await builder.build()
+
+      // Test draft deploy
+      const draftDeploy = await callCli(['deploy', '--json', '--no-build', '--dir', 'public'], {
+        cwd: builder.directory,
+        env: { NETLIFY_SITE_ID: context.siteId },
+      }).then((output: string) => JSON.parse(output))
+
+      // Validate both URLs exist
+      expect(draftDeploy.site_url).toBeTruthy()
+      expect(draftDeploy.deploy_url).toBeTruthy()
+      
+      // site_url should be the primary site URL (without deploy ID)
+      expect(draftDeploy.site_url).toMatch(/https:\/\/[^/]+\.netlify\.app/)
+      
+      // deploy_url should be the per-deploy URL (with deploy ID)
+      expect(draftDeploy.deploy_url).toMatch(/https:\/\/[a-f0-9]+--.+\.netlify\.app/)
+      
+      // For draft deploys, site_url and deploy_url should be different
+      expect(draftDeploy.site_url).not.toEqual(draftDeploy.deploy_url)
+
+      // Test production deploy
+      const prodDeploy = await callCli(['deploy', '--json', '--no-build', '--dir', 'public', '--prod'], {
+        cwd: builder.directory,
+        env: { NETLIFY_SITE_ID: context.siteId },
+      }).then((output: string) => JSON.parse(output))
+
+      // Both URLs should exist in production deploy too
+      expect(prodDeploy.site_url).toBeTruthy()
+      expect(prodDeploy.deploy_url).toBeTruthy()
+      
+      // The legacy 'url' field should also exist for production and match site_url
+      expect(prodDeploy.url).toBeTruthy()
+      expect(prodDeploy.url).toEqual(prodDeploy.site_url)
     })
   })
 
