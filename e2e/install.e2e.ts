@@ -50,7 +50,7 @@ const itWithMockNpmRegistry = it.extend<{ registry: { address: string; cwd: stri
       max_body_size: '128mb',
       // Disable user registration
       max_users: -1,
-      logs: { level: 'fatal' },
+      log: { level: 'fatal' },
       uplinks: {
         npmjs: {
           url: 'https://registry.npmjs.org/',
