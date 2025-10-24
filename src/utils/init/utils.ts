@@ -44,11 +44,20 @@ const normalizeSettings = (settings: Partial<Settings>, config: NormalizedCached
   const plugins = getPluginsToAutoInstall(command, settings.plugins_from_config_file, settings.plugins_recommended)
   const recommendedPlugins = getRecommendPlugins(plugins, config)
 
+  let functionsDir = config.build.functions || 'netlify/functions'
+  const repositoryRoot = command.netlify.repositoryRoot
+  if (functionsDir && path.isAbsolute(functionsDir) && repositoryRoot) {
+    const relativePath = path.relative(repositoryRoot, functionsDir)
+    if (relativePath && !relativePath.startsWith('..')) {
+      functionsDir = relativePath
+    }
+  }
+
   return {
     defaultBaseDir: settings.baseDirectory ?? command.project.relativeBaseDirectory ?? '',
     defaultBuildCmd: config.build.command || settings.buildCommand,
     defaultBuildDir: settings.dist,
-    defaultFunctionsDir: config.build.functions || 'netlify/functions',
+    defaultFunctionsDir: functionsDir,
     recommendedPlugins,
   }
 }
