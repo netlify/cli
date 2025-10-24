@@ -117,7 +117,6 @@ export const initializeProxy = async ({
   siteInfo: $TSFixMe
   state: LocalState
 }) => {
-  const userFunctionsPath = config.build.edge_functions
   const isolatePort = await getAvailablePort()
   const runtimeFeatureFlags = ['edge_functions_bootstrap_failure_mode', 'edge_functions_bootstrap_populate_environment']
   const protocol = settings.https ? 'https' : 'http'
@@ -132,7 +131,6 @@ export const initializeProxy = async ({
     config,
     configPath,
     debug,
-    directory: userFunctionsPath,
     env: configEnv,
     featureFlags: buildFeatureFlags,
     getUpdatedConfig,
@@ -207,7 +205,6 @@ const prepareServer = async ({
   config,
   configPath,
   debug,
-  directory,
   env: configEnv,
   featureFlags,
   getUpdatedConfig,
@@ -221,7 +218,6 @@ const prepareServer = async ({
   config: NormalizedCachedConfigConfig
   configPath: string
   debug: boolean
-  directory?: string
   env: Record<string, { sources: string[]; value: string }>
   featureFlags: FeatureFlags
   getUpdatedConfig: () => Promise<NormalizedCachedConfigConfig>
@@ -261,7 +257,6 @@ const prepareServer = async ({
       config,
       configPath,
       debug,
-      directories: directory ? [directory] : [],
       env: configEnv,
       featureFlags,
       getUpdatedConfig,
