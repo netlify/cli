@@ -22,7 +22,7 @@ const tempdirPrefix = 'netlify-cli-e2e-test--'
 
 const debug = createDebug('netlify-cli:e2e')
 const isNodeModules = picomatch('**/node_modules/**', { dot: true })
-const copyFilter = async (src: string) => {
+const shouldCopyCLIFile = async (src: string) => {
   if (isNodeModules(src)) return false
 
   try {
@@ -121,7 +121,7 @@ const itWithMockNpmRegistry = it.extend<{ registry: { address: string; cwd: stri
       verbatimSymlinks: true,
       // At this point, the project is built. As long as we limit the prepublish script to built-
       // ins, node_modules are not be necessary to publish the package.
-      filter: copyFilter,
+      filter: shouldCopyCLIFile,
     })
     await fs.writeFile(
       path.join(publishWorkspace, '.npmrc'),
