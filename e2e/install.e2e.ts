@@ -21,8 +21,22 @@ const distDir = path.join(projectRoot, 'dist')
 const tempdirPrefix = 'netlify-cli-e2e-test--'
 
 const debug = createDebug('netlify-cli:e2e')
-const isNodeModules = picomatch('**/node_modules/**')
-const isNotNodeModules = (target: string) => !isNodeModules(target)
+const isNodeModules = picomatch('**/node_modules/**', { dot: true })
+const copyFilter = async (src: string) => {
+  if (isNodeModules(src)) return false
+
+  try {
+    const st = await fs.lstat(src) // DO NOT follow symlinks
+    if (st.isSocket() || st.isFIFO() || st.isCharacterDevice() || st.isBlockDevice()) {
+      return false
+    }
+  } catch {
+    // If we can't lstat it, skip it
+    return false
+  }
+
+  return true
+}
 
 const itWithMockNpmRegistry = it.extend<{ registry: { address: string; cwd: string } }>({
   registry: async (
@@ -107,7 +121,7 @@ const itWithMockNpmRegistry = it.extend<{ registry: { address: string; cwd: stri
       verbatimSymlinks: true,
       // At this point, the project is built. As long as we limit the prepublish script to built-
       // ins, node_modules are not be necessary to publish the package.
-      filter: isNotNodeModules,
+      filter: copyFilter,
     })
     await fs.writeFile(
       path.join(publishWorkspace, '.npmrc'),
