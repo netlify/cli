@@ -53,6 +53,7 @@ import { SiteInfo } from '../../utils/types.js'
 import type { DeployOptionValues } from './option_values.js'
 import boxen from 'boxen'
 import terminalLink from 'terminal-link'
+import { anyEdgeFunctionsDirectoryExists } from '../../lib/edge-functions/get-directories.js'
 
 const triggerDeploy = async ({
   api,
@@ -727,8 +728,11 @@ const bundleEdgeFunctions = async (options: DeployOptionValues, command: BaseCom
     // We log our own progress so we don't want this as well. Plus, this logs much of the same
     // information as the build that (likely) came before this as part of the deploy build.
     quiet: options.debug ?? true,
-    // @ts-expect-error FIXME(serhalp): This is missing from the `runCoreSteps` type in @netlify/build
+    // (cachedConfig type error hides this one, but it still is valid) @ts-expect-error FIXME(serhalp): This is missing from the `runCoreSteps` type in @netlify/build
     edgeFunctionsBootstrapURL: await getBootstrapURL(),
+    // @ts-expect-error 'CachedConfig' is not assignable to type 'Record<string, unknown>'.
+    // Index signature for type 'string' is missing in type 'CachedConfig'.
+    cachedConfig: command.netlify.cachedConfig,
   })
 
   if (!success) {
@@ -867,10 +871,11 @@ const prepAndRunDeploy = async ({
   const functionsFolder = getFunctionsFolder({ workingDir, options, config, site, siteData })
   const { configPath } = site
 
-  const edgeFunctionsConfig = command.netlify.config.edge_functions
-
-  // build flag wasn't used and edge functions exist
-  if (!options.build && edgeFunctionsConfig && edgeFunctionsConfig.length !== 0) {
+  // build flag wasn't used and edge functions directories exist
+  if (!options.build && (await anyEdgeFunctionsDirectoryExists(command))) {
+    // for the case of directories existing but not containing any edge functions,
+    // there is early bail in edge functions bundling after scanning for edge functions
+    // for this case and to avoid replicating scanning logic here, we defer to the bundling step
     await bundleEdgeFunctions(options, command)
   }
 
