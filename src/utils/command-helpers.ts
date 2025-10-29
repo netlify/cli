@@ -300,7 +300,7 @@ export const netlifyCommand = () => {
   }
 
   // Captures `pnpx netlify ...`
-  if (pkgFromUserAgent(npm_config_user_agent) === 'pnpm' && npm_command === 'run-script') {
+  if (pkgFromUserAgent(npm_config_user_agent) === 'pnpm' && ['run-script', 'run'].includes(npm_command ?? '')) {
     return `pnpx netlify`
   }
 
