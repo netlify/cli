@@ -1,8 +1,72 @@
 import { rm } from 'node:fs/promises'
+import net from 'net'
 
 import waitPort from 'wait-port'
 
 import { startSpinner, stopSpinner } from '../lib/spinner.js'
+
+// Custom port checker that handles ECONNRESET errors in Node.js 24.x
+const checkPortWithRetry = async (
+  port: number,
+  host: string,
+  timeout: number,
+  maxRetries = 10,
+): Promise<{ open: boolean; ipVersion?: 4 | 6 }> => {
+  const startTime = Date.now()
+  
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    if (Date.now() - startTime > timeout) {
+      return { open: false }
+    }
+    
+    try {
+      await new Promise<void>((resolve, reject) => {
+        const socket = new net.Socket()
+        let isResolved = false
+        
+        const cleanup = () => {
+          if (!isResolved) {
+            socket.destroy()
+          }
+        }
+        
+        socket.on('connect', () => {
+          isResolved = true
+          socket.end()
+          resolve()
+        })
+        
+        socket.on('error', (error) => {
+          isResolved = true
+          cleanup()
+          // Silently retry on ECONNRESET (common in Node.js 24.x)
+          if ('code' in error && error.code === 'ECONNRESET') {
+            resolve() // Treat as "need to retry"
+          } else {
+            reject(error)
+          }
+        })
+        
+        socket.setTimeout(1000, () => {
+          isResolved = true
+          cleanup()
+          reject(new Error('Socket timeout'))
+        })
+        
+        socket.connect(port, host)
+      })
+      
+      // Successfully connected
+      return { open: true, ipVersion: net.isIPv6(host) ? 6 : 4 }
+    } catch (error) {
+      // Wait a bit before retrying (exponential backoff)
+      await new Promise(resolve => setTimeout(resolve, Math.min(100 * (attempt + 1), 1000)))
+      continue
+    }
+  }
+  
+  return { open: false }
+}
 
 import { logAndThrowError, log, NETLIFYDEVERR, NETLIFYDEVLOG, chalk } from './command-helpers.js'
 import { runCommand } from './shell.js'
@@ -56,14 +120,13 @@ export const startFrameworkServer = async function ({
       const ipVersion = parseInt(process.versions.node.split('.')[0]) >= 18 ? 6 : 4
       port = { open: true, ipVersion }
     } else {
-      const waitPortPromise = waitPort({
+      const waitPortPromise = checkPortWithRetry(
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        port: settings.frameworkPort!,
-        host: 'localhost',
-        output: 'silent',
-        timeout: FRAMEWORK_PORT_TIMEOUT_MS,
-        ...(settings.pollingStrategies?.includes('HTTP') && { protocol: 'http' }),
-      })
+        settings.frameworkPort!,
+        'localhost',
+        FRAMEWORK_PORT_TIMEOUT_MS,
+        20,
+      )
 
       const timerId = setTimeout(() => {
         if (!port?.open) {
