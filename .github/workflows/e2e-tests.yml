@@ -21,7 +21,7 @@ jobs:
       matrix:
         os: [windows-2025]
         # Pinning 20.x version as a temporary workaround due to this https://github.com/nodejs/node/issues/52884
-        node-version: ['20.12.2', '22']
+        node-version: ['20.12.2', '22', '24']
       fail-fast: false
     steps:
       # This improves Windows network performance. We need this since we open many ports in our tests.
@@ -79,7 +79,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macOS-latest]
-        node-version: ['20.12.2', '22']
+        node-version: ['20.12.2', '22', '24']
       fail-fast: false
     steps:
       - name: Git checkout
