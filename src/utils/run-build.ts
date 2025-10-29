@@ -126,7 +126,8 @@ export async function runNetlifyBuild({
     })
 
     settings.frameworkHost = ipVersion === 6 ? '::1' : '127.0.0.1'
-    settings.detectFrameworkHost = options.skipWaitPort
+    // Enable IPv4/IPv6 auto-detection when port checking is enabled
+    settings.detectFrameworkHost = !options.skipWaitPort
   }
 
   if (timeline === 'build') {
