@@ -107,7 +107,7 @@ export async function runNetlifyBuild({
   }: { netlifyConfig?: NetlifyConfig; settingsOverrides?: Partial<ServerSettings> } = {}) => {
     let cwd = command.workingDir
 
-    if (!options.cwd && command.project.workspace?.packages.length) {
+    if (!options.cwd && command.project.workspace?.packages.length && command.project.workspace.isRoot) {
       cwd = join(command.project.jsWorkspaceRoot, settings.baseDirectory || '')
     }
 
