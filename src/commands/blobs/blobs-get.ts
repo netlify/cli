@@ -24,7 +24,7 @@ export const blobsGet = async (storeName: string, key: string, options: Options,
   let blob
 
   try {
-    blob = await store.get(key)
+    blob = await store.get(key, { type: 'arrayBuffer' })
   } catch {
     return logAndThrowError(`Could not retrieve blob ${chalk.yellow(key)} from store ${chalk.yellow(storeName)}`)
   }
@@ -35,9 +35,10 @@ export const blobsGet = async (storeName: string, key: string, options: Options,
 
   if (output) {
     const path = resolve(output)
-
-    await fs.writeFile(path, blob)
+    await fs.writeFile(path, Buffer.from(blob))
   } else {
-    console.log(blob)
+    const decoder = new TextDecoder('utf-8')
+    const str = decoder.decode(blob)
+    console.log(str)
   }
 }
