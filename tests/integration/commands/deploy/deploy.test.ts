@@ -386,6 +386,11 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         .withBuildPlugin({
           name: 'log-env',
           plugin: {
+            async onPreBuild() {
+              const { DEPLOY_ID, DEPLOY_URL } = require('process').env
+              console.log(`DEPLOY_ID_PREBUILD: ${DEPLOY_ID}`)
+              console.log(`DEPLOY_URL_PREBUILD: ${DEPLOY_URL}`)
+            },
             async onSuccess() {
               const { DEPLOY_ID, DEPLOY_URL } = require('process').env
               console.log(`DEPLOY_ID: ${DEPLOY_ID}`)
@@ -402,11 +407,16 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
       })
 
       t.expect(output).toContain('Netlify Build completed in')
+      const [, deployIdPreBuild] = output.match(/DEPLOY_ID_PREBUILD: (\w+)/) ?? []
+      const [, deployURLPreBuild] = output.match(/DEPLOY_URL_PREBUILD: (.+)/) ?? []
       const [, deployId] = output.match(/DEPLOY_ID: (\w+)/) ?? []
       const [, deployURL] = output.match(/DEPLOY_URL: (.+)/) ?? []
 
-      t.expect(deployId).not.toEqual('0')
-      t.expect(deployURL).toContain(`https://${deployId}--`)
+      t.expect(deployIdPreBuild).toBeTruthy()
+      t.expect(deployIdPreBuild).not.toEqual('0')
+      t.expect(deployURLPreBuild).toContain(`https://${deployIdPreBuild}--`)
+      t.expect(deployId).toEqual(deployIdPreBuild)
+      t.expect(deployURL).toEqual(deployURLPreBuild)
     })
   })
 

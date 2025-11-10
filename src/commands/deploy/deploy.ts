@@ -531,9 +531,11 @@ const runDeploy = async ({
   skipFunctionsCache,
   // @ts-expect-error TS(7031) FIXME: Binding element 'title' implicitly has an 'any' ty... Remove this comment to see the full error message
   title,
+  deployId: existingDeployId,
 }: {
   functionsFolder?: string
   command: BaseCommand
+  deployId?: string
 }): Promise<{
   siteId: string
   siteName: string
@@ -546,28 +548,35 @@ const runDeploy = async ({
   sourceZipFileName?: string
 }> => {
   let results
-  let deployId
+  let deployId = existingDeployId
   let uploadSourceZipResult
 
   try {
-    if (deployToProduction) {
-      await prepareProductionDeploy({ siteData, api, options, command })
-    }
+    // We won't have a deploy ID if we run the command with `--no-build`.
+    // In this case, we must create the deploy.
+    if (!deployId) {
+      if (deployToProduction) {
+        await prepareProductionDeploy({ siteData, api, options, command })
+      }
 
-    const draft = options.draft || (!deployToProduction && !alias)
-    const createDeployBody = { draft, branch: alias, include_upload_url: options.uploadSourceZip }
+      const draft = options.draft || (!deployToProduction && !alias)
+      const createDeployBody = { draft, branch: alias, include_upload_url: options.uploadSourceZip }
 
-    results = await api.createSiteDeploy({ siteId, title, body: createDeployBody })
-    deployId = results.id
+      const createDeployResponse = await api.createSiteDeploy({ siteId, title, body: createDeployBody })
+      deployId = createDeployResponse.id as string
 
-    // Handle source zip upload if requested and URL provided
-    if (options.uploadSourceZip && results.source_zip_upload_url && results.source_zip_filename) {
-      uploadSourceZipResult = await uploadSourceZip({
-        sourceDir: site.root,
-        uploadUrl: results.source_zip_upload_url,
-        filename: results.source_zip_filename,
-        statusCb: silent ? () => {} : deployProgressCb(),
-      })
+      if (
+        options.uploadSourceZip &&
+        createDeployResponse.source_zip_upload_url &&
+        createDeployResponse.source_zip_filename
+      ) {
+        uploadSourceZipResult = await uploadSourceZip({
+          sourceDir: site.root,
+          uploadUrl: createDeployResponse.source_zip_upload_url,
+          filename: createDeployResponse.source_zip_filename,
+          statusCb: silent ? () => {} : deployProgressCb(),
+        })
+      }
     }
 
     const internalFunctionsFolder = await getInternalFunctionsDir({ base: site.root, packagePath, ensureExists: true })
@@ -633,6 +642,7 @@ const runDeploy = async ({
       await cancelDeploy({ api, deployId })
     }
     reportDeployError({ error_, failAndExit: logAndThrowError })
+    throw error_
   }
 
   const siteUrl = results.deploy.ssl_url || results.deploy.url
@@ -690,7 +700,7 @@ const handleBuild = async ({
   })
   const { configMutations, exitCode, newConfig, logs } = await runBuild(resolvedOptions)
   // Without this, the deploy command fails silently
-  if (options.json && exitCode !== 0) {
+  if (exitCode !== 0) {
     let message = ''
 
     if (options.verbose && logs?.stdout.length) {
@@ -702,9 +712,6 @@ const handleBuild = async ({
     }
 
     logAndThrowError(`Error while running build${message}`)
-  }
-  if (exitCode !== 0) {
-    exit(exitCode)
   }
   return { newConfig, configMutations }
 }
@@ -849,10 +856,12 @@ const prepAndRunDeploy = async ({
   siteData,
   siteId,
   workingDir,
+  deployId,
 }: {
   options: DeployOptionValues
   command: BaseCommand
   workingDir: string
+  deployId?: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- FIXME(serhalp)
   [key: string]: any
 }) => {
@@ -933,6 +942,7 @@ const prepAndRunDeploy = async ({
     siteId,
     skipFunctionsCache: options.skipFunctionsCache,
     title: options.message,
+    deployId,
   })
 
   return results
@@ -1080,29 +1090,75 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
   let results = {} as Awaited<ReturnType<typeof prepAndRunDeploy>>
 
   if (options.build) {
-    const settings = await detectFrameworkSettings(command, 'build')
-    await handleBuild({
-      packagePath: command.workspacePackage,
-      cachedConfig: command.netlify.cachedConfig,
-      defaultConfig: getDefaultConfig(settings),
-      currentDir: command.workingDir,
-      options,
-      deployHandler: async ({ netlifyConfig }: { netlifyConfig: NetlifyConfig }) => {
-        results = await prepAndRunDeploy({
-          command,
-          options,
-          workingDir,
-          api,
-          site,
-          config: netlifyConfig,
-          siteData,
-          siteId,
-          deployToProduction,
-        })
+    if (deployToProduction) {
+      await prepareProductionDeploy({ siteData, api, options, command })
+    }
 
-        return { newEnvChanges: { DEPLOY_ID: results.deployId, DEPLOY_URL: results.deployUrl } }
-      },
-    })
+    const draft = options.draft || (!deployToProduction && !alias)
+    const createDeployBody = { draft, branch: alias, include_upload_url: options.uploadSourceZip }
+
+    // TODO: Type this properly in `@netlify/api`.
+    const deployMetadata = (await api.createSiteDeploy({
+      siteId,
+      title: options.message,
+      body: createDeployBody,
+    })) as Awaited<ReturnType<typeof api.createSiteDeploy>> & {
+      source_zip_upload_url?: string
+      source_zip_filename?: string
+    }
+    const deployId = deployMetadata.id || ''
+    const deployUrl = deployMetadata.deploy_ssl_url || deployMetadata.deploy_url || ''
+
+    command.netlify.cachedConfig.env.DEPLOY_ID = { sources: ['internal'], value: deployId }
+    command.netlify.cachedConfig.env.DEPLOY_URL = { sources: ['internal'], value: deployUrl }
+
+    process.env.DEPLOY_ID = deployId
+    process.env.DEPLOY_URL = deployUrl
+
+    if (
+      options.uploadSourceZip &&
+      deployMetadata.source_zip_upload_url &&
+      deployMetadata.source_zip_filename &&
+      site.root
+    ) {
+      await uploadSourceZip({
+        sourceDir: site.root,
+        uploadUrl: deployMetadata.source_zip_upload_url,
+        filename: deployMetadata.source_zip_filename,
+        statusCb: options.json || options.silent ? () => {} : deployProgressCb(),
+      })
+    }
+    try {
+      const settings = await detectFrameworkSettings(command, 'build')
+      await handleBuild({
+        packagePath: command.workspacePackage,
+        cachedConfig: command.netlify.cachedConfig,
+        defaultConfig: getDefaultConfig(settings),
+        currentDir: command.workingDir,
+        options,
+        deployHandler: async ({ netlifyConfig }: { netlifyConfig: NetlifyConfig }) => {
+          results = await prepAndRunDeploy({
+            command,
+            options,
+            workingDir,
+            api,
+            site,
+            config: netlifyConfig,
+            siteData,
+            siteId,
+            deployToProduction,
+            deployId,
+          })
+
+          return {}
+        },
+      })
+    } catch (error) {
+      // The build has failed, so let's cancel the deploy we created.
+      await cancelDeploy({ api, deployId })
+
+      throw error
+    }
   } else {
     results = await prepAndRunDeploy({
       command,
