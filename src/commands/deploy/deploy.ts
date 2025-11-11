@@ -641,7 +641,12 @@ const runDeploy = async ({
     if (deployId) {
       await cancelDeploy({ api, deployId })
     }
+
     reportDeployError({ error_, failAndExit: logAndThrowError })
+
+    // We'll never get here, as `reportDeployError` calls `logAndThrowError`,
+    // which will throw. But we're throwing anyway just to make types happy.
+    throw error_
   }
 
   const siteUrl = results.deploy.ssl_url || results.deploy.url
