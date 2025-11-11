@@ -371,11 +371,12 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
 
   test('runs build command before deploy by default', async (t) => {
     await withSiteBuilder(t, async (builder) => {
-      const content = '<h1>⊂◉‿◉つ</h1>'
+      const rootContent = '<h1>⊂◉‿◉つ</h1>'
+
       builder
         .withContentFile({
           path: 'public/index.html',
-          content,
+          content: rootContent,
         })
         .withNetlifyToml({
           config: {
@@ -398,6 +399,20 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
             },
           },
         })
+        .withEdgeFunction({
+          handler: async () => new Response('Hello from edge function'),
+          name: 'edge',
+          config: {
+            path: '/edge-function',
+          },
+        })
+        .withFunction({
+          config: { path: '/function' },
+          path: 'hello.mjs',
+          pathPrefix: 'netlify/functions',
+          handler: async () => new Response('Hello from function'),
+          runtimeAPIVersion: 2,
+        })
 
       await builder.build()
 
@@ -417,6 +432,10 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
       t.expect(deployURLPreBuild).toContain(`https://${deployIdPreBuild}--`)
       t.expect(deployId).toEqual(deployIdPreBuild)
       t.expect(deployURL).toEqual(deployURLPreBuild)
+
+      await validateContent({ siteUrl: deployURL, path: '', content: rootContent })
+      await validateContent({ siteUrl: deployURL, path: '/edge-function', content: 'Hello from edge function' })
+      await validateContent({ siteUrl: deployURL, path: '/function', content: 'Hello from function' })
     })
   })
 
