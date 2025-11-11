@@ -642,7 +642,6 @@ const runDeploy = async ({
       await cancelDeploy({ api, deployId })
     }
     reportDeployError({ error_, failAndExit: logAndThrowError })
-    throw error_
   }
 
   const siteUrl = results.deploy.ssl_url || results.deploy.url
