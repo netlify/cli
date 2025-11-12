@@ -2,7 +2,6 @@ import { promises as fs } from 'fs'
 import path, { join } from 'path'
 
 import { NetlifyConfig, type GeneratedFunction } from '@netlify/build'
-import semver from 'semver'
 
 import BaseCommand from '../commands/base-command.js'
 import { $TSFixMe } from '../commands/types.js'
@@ -127,8 +126,7 @@ export async function runNetlifyBuild({
     })
 
     settings.frameworkHost = ipVersion === 6 ? '::1' : '127.0.0.1'
-    const nodeVersion = process.versions.node
-    settings.detectFrameworkHost = options.skipWaitPort || semver.gte(nodeVersion, '24.0.0')
+    settings.detectFrameworkHost = options.skipWaitPort
   }
 
   if (timeline === 'build') {
