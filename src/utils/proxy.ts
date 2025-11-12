@@ -492,12 +492,32 @@ const initializeProxy = async function ({
   projectDir,
   siteInfo,
 }: { config: NormalizedCachedConfigConfig } & Record<string, $TSFixMe>) {
+  const agent = new http.Agent({
+    keepAlive: false,
+    maxSockets: Infinity,
+  })
+  const originalCreateConnection = agent.createConnection.bind(agent)
+  agent.createConnection = function (options, callback) {
+    const socket = originalCreateConnection(options, callback)
+
+    if (socket) {
+      socket.on('error', (error) => {
+        if ('code' in error && error.code === 'ECONNRESET') {
+          socket.destroy()
+        }
+      })
+    }
+
+    return socket
+  }
+
   const proxy = httpProxy.createProxyServer({
     selfHandleResponse: true,
     target: {
       host,
       port,
     },
+    agent,
   })
   const headersFiles = [...new Set([path.resolve(projectDir, '_headers'), path.resolve(distDir, '_headers')])]
 
