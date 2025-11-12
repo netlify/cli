@@ -373,41 +373,46 @@ const prepareProductionDeploy = async ({ api, siteData, options, command }) => {
   }
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'actual' implicitly has an 'any' type.
-const hasErrorMessage = (actual, expected) => {
+const hasErrorMessage = (actual: unknown, expected: string): boolean => {
   if (typeof actual === 'string') {
     return actual.includes(expected)
   }
   return false
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'error_' implicitly has an 'any' t... Remove this comment to see the full error message
-const reportDeployError = ({ error_, failAndExit }) => {
+interface DeployError extends Error {
+  json?: { message?: string }
+  status?: unknown
+}
+const reportDeployError = ({
+  error,
+  failAndExit,
+}: {
+  error: DeployError
+  failAndExit: (err: unknown) => never
+}): never => {
   switch (true) {
-    case error_.name === 'JSONHTTPError': {
-      const message = error_?.json?.message ?? ''
+    case error.name === 'JSONHTTPError': {
+      const message = error.json?.message ?? ''
       if (hasErrorMessage(message, 'Background Functions not allowed by team plan')) {
         return failAndExit(`\n${BACKGROUND_FUNCTIONS_WARNING}`)
       }
-      warn(`JSONHTTPError: ${message} ${error_.status}`)
-      warn(`\n${JSON.stringify(error_, null, '  ')}\n`)
-      failAndExit(error_)
-      return
+      warn(`JSONHTTPError: ${message} ${error.status}`)
+      warn(`\n${JSON.stringify(error, null, '  ')}\n`)
+      return failAndExit(error)
     }
-    case error_.name === 'TextHTTPError': {
-      warn(`TextHTTPError: ${error_.status}`)
-      warn(`\n${error_}\n`)
-      failAndExit(error_)
-      return
+    case error.name === 'TextHTTPError': {
+      warn(`TextHTTPError: ${error.status}`)
+      warn(`\n${error}\n`)
+      return failAndExit(error)
     }
-    case hasErrorMessage(error_.message, 'Invalid filename'): {
-      warn(error_.message)
-      failAndExit(error_)
-      return
+    case hasErrorMessage(error.message, 'Invalid filename'): {
+      warn(error.message)
+      return failAndExit(error)
     }
     default: {
-      warn(`\n${JSON.stringify(error_, null, '  ')}\n`)
-      failAndExit(error_)
+      warn(`\n${JSON.stringify(error, null, '  ')}\n`)
+      return failAndExit(error)
     }
   }
 }
@@ -637,16 +642,12 @@ const runDeploy = async ({
       skipFunctionsCache,
       siteRoot: site.root,
     })
-  } catch (error_) {
+  } catch (error) {
     if (deployId) {
       await cancelDeploy({ api, deployId })
     }
 
-    reportDeployError({ error_, failAndExit: logAndThrowError })
-
-    // We'll never get here, as `reportDeployError` calls `logAndThrowError`,
-    // which will throw. But we're throwing anyway just to make types happy.
-    throw error_
+    return reportDeployError({ error: error as DeployError, failAndExit: logAndThrowError })
   }
 
   const siteUrl = results.deploy.ssl_url || results.deploy.url
