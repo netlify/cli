@@ -18,12 +18,6 @@ export const waitPort = async (
         const socket = new net.Socket()
         let isResolved = false
 
-        const cleanup = () => {
-          if (!isResolved) {
-            socket.destroy()
-          }
-        }
-
         socket.on('connect', () => {
           isResolved = true
           socket.end()
@@ -31,15 +25,19 @@ export const waitPort = async (
         })
 
         socket.on('error', (error) => {
-          isResolved = true
-          cleanup()
-          reject(error)
+          if (!isResolved) {
+            isResolved = true
+            socket.destroy()
+            reject(error)
+          }
         })
 
         socket.setTimeout(1000, () => {
-          isResolved = true
-          cleanup()
-          reject(new Error('Socket timeout'))
+          if (!isResolved) {
+            isResolved = true
+            socket.destroy()
+            reject(new Error('Socket timeout'))
+          }
         })
 
         socket.connect(port, host)
