@@ -371,11 +371,12 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
 
   test('runs build command before deploy by default', async (t) => {
     await withSiteBuilder(t, async (builder) => {
-      const content = '<h1>⊂◉‿◉つ</h1>'
+      const rootContent = '<h1>⊂◉‿◉つ</h1>'
+
       builder
         .withContentFile({
           path: 'public/index.html',
-          content,
+          content: rootContent,
         })
         .withNetlifyToml({
           config: {
@@ -386,12 +387,31 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         .withBuildPlugin({
           name: 'log-env',
           plugin: {
+            async onPreBuild() {
+              const { DEPLOY_ID, DEPLOY_URL } = require('process').env
+              console.log(`DEPLOY_ID_PREBUILD: ${DEPLOY_ID}`)
+              console.log(`DEPLOY_URL_PREBUILD: ${DEPLOY_URL}`)
+            },
             async onSuccess() {
               const { DEPLOY_ID, DEPLOY_URL } = require('process').env
               console.log(`DEPLOY_ID: ${DEPLOY_ID}`)
               console.log(`DEPLOY_URL: ${DEPLOY_URL}`)
             },
           },
+        })
+        .withEdgeFunction({
+          handler: async () => new Response('Hello from edge function'),
+          name: 'edge',
+          config: {
+            path: '/edge-function',
+          },
+        })
+        .withFunction({
+          config: { path: '/function' },
+          path: 'hello.mjs',
+          pathPrefix: 'netlify/functions',
+          handler: async () => new Response('Hello from function'),
+          runtimeAPIVersion: 2,
         })
 
       await builder.build()
@@ -402,11 +422,20 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
       })
 
       t.expect(output).toContain('Netlify Build completed in')
+      const [, deployIdPreBuild] = output.match(/DEPLOY_ID_PREBUILD: (\w+)/) ?? []
+      const [, deployURLPreBuild] = output.match(/DEPLOY_URL_PREBUILD: (.+)/) ?? []
       const [, deployId] = output.match(/DEPLOY_ID: (\w+)/) ?? []
       const [, deployURL] = output.match(/DEPLOY_URL: (.+)/) ?? []
 
-      t.expect(deployId).not.toEqual('0')
-      t.expect(deployURL).toContain(`https://${deployId}--`)
+      t.expect(deployIdPreBuild).toBeTruthy()
+      t.expect(deployIdPreBuild).not.toEqual('0')
+      t.expect(deployURLPreBuild).toContain(`https://${deployIdPreBuild}--`)
+      t.expect(deployId).toEqual(deployIdPreBuild)
+      t.expect(deployURL).toEqual(deployURLPreBuild)
+
+      await validateContent({ siteUrl: deployURL, path: '', content: rootContent })
+      await validateContent({ siteUrl: deployURL, path: '/edge-function', content: 'Hello from edge function' })
+      await validateContent({ siteUrl: deployURL, path: '/function', content: 'Hello from function' })
     })
   })
 
