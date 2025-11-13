@@ -33,11 +33,7 @@ export const waitPort = async (
         socket.on('error', (error) => {
           isResolved = true
           cleanup()
-          if ('code' in error && error.code === 'ECONNRESET') {
-            resolve()
-          } else {
-            reject(error)
-          }
+          reject(error)
         })
 
         socket.setTimeout(1000, () => {
