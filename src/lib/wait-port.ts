@@ -14,14 +14,16 @@ export const waitPort = async (
     }
 
     try {
-      await new Promise<void>((resolve, reject) => {
+      const ipVersion = await new Promise<4 | 6>((resolve, reject) => {
         const socket = new net.Socket()
         let isResolved = false
 
         socket.on('connect', () => {
           isResolved = true
+          // Detect actual IP version from the connection
+          const detectedVersion = socket.remoteFamily === 'IPv6' ? 6 : 4
           socket.end()
-          resolve()
+          resolve(detectedVersion)
         })
 
         socket.on('error', (error) => {
@@ -43,7 +45,7 @@ export const waitPort = async (
         socket.connect(port, host)
       })
 
-      return { open: true, ipVersion: net.isIPv6(host) ? 6 : 4 }
+      return { open: true, ipVersion }
     } catch {
       await new Promise((resolve) => setTimeout(resolve, Math.min(100 * (attempt + 1), 1000)))
       continue
