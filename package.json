@@ -66,7 +66,7 @@
     "@netlify/config": "24.0.9",
     "@netlify/dev-utils": "4.3.0",
     "@netlify/edge-bundler": "14.8.7",
-    "@netlify/edge-functions": "3.0.1",
+    "@netlify/edge-functions": "3.0.2",
     "@netlify/edge-functions-bootstrap": "2.17.1",
     "@netlify/headers-parser": "9.0.2",
     "@netlify/local-functions-proxy": "2.0.3",
