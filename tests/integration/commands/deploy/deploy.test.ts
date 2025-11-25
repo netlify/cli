@@ -388,14 +388,16 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
           name: 'log-env',
           plugin: {
             async onPreBuild() {
-              const { DEPLOY_ID, DEPLOY_URL } = require('process').env
+              const { DEPLOY_ID, DEPLOY_URL, NETLIFY_SKEW_PROTECTION_TOKEN } = require('process').env
               console.log(`DEPLOY_ID_PREBUILD: ${DEPLOY_ID}`)
               console.log(`DEPLOY_URL_PREBUILD: ${DEPLOY_URL}`)
+              console.log(`NETLIFY_SKEW_PROTECTION_TOKEN_PREBUILD: ${NETLIFY_SKEW_PROTECTION_TOKEN}`)
             },
             async onSuccess() {
-              const { DEPLOY_ID, DEPLOY_URL } = require('process').env
+              const { DEPLOY_ID, DEPLOY_URL, NETLIFY_SKEW_PROTECTION_TOKEN } = require('process').env
               console.log(`DEPLOY_ID: ${DEPLOY_ID}`)
               console.log(`DEPLOY_URL: ${DEPLOY_URL}`)
+              console.log(`NETLIFY_SKEW_PROTECTION_TOKEN: ${NETLIFY_SKEW_PROTECTION_TOKEN}`)
             },
           },
         })
@@ -424,14 +426,19 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
       t.expect(output).toContain('Netlify Build completed in')
       const [, deployIdPreBuild] = output.match(/DEPLOY_ID_PREBUILD: (\w+)/) ?? []
       const [, deployURLPreBuild] = output.match(/DEPLOY_URL_PREBUILD: (.+)/) ?? []
+      const [, skewProtectionTokenPreBuild] = output.match(/NETLIFY_SKEW_PROTECTION_TOKEN_PREBUILD: (.+)/) ?? []
       const [, deployId] = output.match(/DEPLOY_ID: (\w+)/) ?? []
       const [, deployURL] = output.match(/DEPLOY_URL: (.+)/) ?? []
+      const [, skewProtectionToken] = output.match(/NETLIFY_SKEW_PROTECTION_TOKEN: (.+)/) ?? []
 
       t.expect(deployIdPreBuild).toBeTruthy()
       t.expect(deployIdPreBuild).not.toEqual('0')
       t.expect(deployURLPreBuild).toContain(`https://${deployIdPreBuild}--`)
       t.expect(deployId).toEqual(deployIdPreBuild)
       t.expect(deployURL).toEqual(deployURLPreBuild)
+
+      t.expect(skewProtectionTokenPreBuild).toEqual(skewProtectionToken)
+      t.expect(skewProtectionToken).toBeTruthy()
 
       await validateContent({ siteUrl: deployURL, path: '', content: rootContent })
       await validateContent({ siteUrl: deployURL, path: '/edge-function', content: 'Hello from edge function' })
