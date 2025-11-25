@@ -50,7 +50,7 @@ jobs:
       - name: Setup Deno
         uses: denoland/setup-deno@v1
         with:
-          deno-version: 1.46.3
+          deno-version: 2.5.6
 
       - name: Install core dependencies
         run: npm ci --no-audit
