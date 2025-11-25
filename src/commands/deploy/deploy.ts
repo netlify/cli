@@ -700,21 +700,15 @@ const handleBuild = async ({
   const [token] = await getToken()
   const resolvedOptions = await getRunBuildOptions({
     cachedConfig,
-    defaultConfig,
-    packagePath,
-    token,
-    options,
     currentDir,
+    defaultConfig,
     deployHandler,
+    deployId,
+    options,
+    packagePath,
+    skewProtectionToken,
+    token,
   })
-
-  if (deployId) {
-    resolvedOptions.deployId = deployId
-  }
-
-  if (skewProtectionToken) {
-    resolvedOptions.skewProtectionToken = skewProtectionToken
-  }
 
   const { configMutations, exitCode, newConfig, logs } = await runBuild(resolvedOptions)
   // Without this, the deploy command fails silently
