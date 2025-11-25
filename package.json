@@ -60,7 +60,7 @@
     "@fastify/static": "7.0.4",
     "@netlify/ai": "0.3.0",
     "@netlify/api": "14.0.10",
-    "@netlify/blobs": "10.1.0",
+    "@netlify/blobs": "10.4.1",
     "@netlify/build": "35.4.0",
     "@netlify/build-info": "10.0.10",
     "@netlify/config": "24.0.9",
