@@ -680,15 +680,19 @@ const handleBuild = async ({
   currentDir,
   defaultConfig,
   deployHandler,
+  deployId,
   options,
   packagePath,
+  skewProtectionToken,
 }: {
   cachedConfig: CachedConfig
   currentDir: string
   defaultConfig?: DefaultConfig | undefined
   deployHandler?: PatchedHandlerType<OnPostBuild> | undefined
+  deployId?: string
   options: DeployOptionValues
   packagePath: string | undefined
+  skewProtectionToken?: string
 }) => {
   if (!options.build) {
     return {}
@@ -696,13 +700,16 @@ const handleBuild = async ({
   const [token] = await getToken()
   const resolvedOptions = await getRunBuildOptions({
     cachedConfig,
-    defaultConfig,
-    packagePath,
-    token,
-    options,
     currentDir,
+    defaultConfig,
     deployHandler,
+    deployId,
+    options,
+    packagePath,
+    skewProtectionToken,
+    token,
   })
+
   const { configMutations, exitCode, newConfig, logs } = await runBuild(resolvedOptions)
   // Without this, the deploy command fails silently
   if (exitCode !== 0) {
@@ -1112,13 +1119,7 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
       source_zip_filename?: string
     }
     const deployId = deployMetadata.id || ''
-    const deployUrl = deployMetadata.deploy_ssl_url || deployMetadata.deploy_url || ''
-
-    command.netlify.cachedConfig.env.DEPLOY_ID = { sources: ['internal'], value: deployId }
-    command.netlify.cachedConfig.env.DEPLOY_URL = { sources: ['internal'], value: deployUrl }
-
-    process.env.DEPLOY_ID = deployId
-    process.env.DEPLOY_URL = deployUrl
+    const skewProtectionToken = deployMetadata.skew_protection_token
 
     if (
       options.uploadSourceZip &&
@@ -1157,6 +1158,8 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
 
           return {}
         },
+        deployId,
+        skewProtectionToken,
       })
     } catch (error) {
       // The build has failed, so let's cancel the deploy we created.
