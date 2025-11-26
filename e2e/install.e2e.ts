@@ -165,7 +165,11 @@ const itWithMockNpmRegistry = it.extend<{ registry: { address: string; cwd: stri
 })
 
 type Test = { packageName: string }
-type InstallTest = Test & { install: [cmd: string, args: string[]]; lockfile: string }
+type InstallTest = Test & {
+  install: [cmd: string, args: string[]]
+  lockfile: string
+  cleanInstall: [cmd: string, args: string[]]
+}
 type RunTest = Test & { run: [cmd: string, args: string[]] }
 
 const installTests: [packageManager: string, config: InstallTest][] = [
@@ -174,6 +178,7 @@ const installTests: [packageManager: string, config: InstallTest][] = [
     {
       packageName: 'netlify-cli',
       install: ['npm', ['install', 'netlify-cli@testing']],
+      cleanInstall: ['npm', ['ci']],
       lockfile: 'package-lock.json',
     },
   ],
@@ -182,6 +187,7 @@ const installTests: [packageManager: string, config: InstallTest][] = [
     {
       packageName: 'netlify-cli',
       install: ['pnpm', ['add', 'netlify-cli@testing']],
+      cleanInstall: ['pnpm', ['install', '--frozen-lockfile']],
       lockfile: 'pnpm-lock.yaml',
     },
   ],
@@ -190,6 +196,7 @@ const installTests: [packageManager: string, config: InstallTest][] = [
     {
       packageName: 'netlify-cli',
       install: ['yarn', ['add', 'netlify-cli@testing']],
+      cleanInstall: ['yarn', ['install', '--frozen-lockfile']],
       lockfile: 'yarn.lock',
     },
   ],
@@ -213,6 +220,13 @@ describe.each(installTests)('%s → installs the cli and runs commands without e
       existsSync(path.join(cwd, config.lockfile)),
       `Generated lock file ${config.lockfile} does not exist in ${cwd}`,
     ).toBe(true)
+
+    // Regression test: ensure we don't trigger known `npm ci` bugs: https://github.com/npm/cli/issues/7622.
+    await execa(...config.cleanInstall, {
+      cwd,
+      env: { npm_config_registry: registry.address },
+      stdio: debug.enabled ? 'inherit' : 'ignore',
+    })
 
     const binary = path.resolve(path.join(cwd, `./node_modules/.bin/netlify${platform() === 'win32' ? '.cmd' : ''}`))
 
