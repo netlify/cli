@@ -26,6 +26,10 @@ jobs:
           cache: npm
           registry-url: 'https://registry.npmjs.org'
 
+      # Use npm@10 due to https://github.com/npm/cli/issues/8489 and https://github.com/npm/cli/issues/8767
+      - name: Setup npm version
+        run: npm install -g npm@10
+
       - name: Install core dependencies
         run: npm ci --no-audit
 
