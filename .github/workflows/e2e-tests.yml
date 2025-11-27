@@ -21,7 +21,7 @@ jobs:
       matrix:
         os: [windows-2025]
         # Pinning 20.x version as a temporary workaround due to this https://github.com/nodejs/node/issues/52884
-        node-version: ['20.12.2', '22']
+        node-version: ['20.12.2', '22', '24']
       fail-fast: false
     steps:
       # This improves Windows network performance. We need this since we open many ports in our tests.
@@ -31,20 +31,20 @@ jobs:
           REG ADD HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\TCPIP\Parameters /v TcpTimedWaitDelay /t REG_DWORD /d 30 /f
 
       - name: Git checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: Setup node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm
           check-latest: true
 
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10
+      # Let corepack manage npm, pnpm, and yarn versions for E2E tests
+      - name: Enable corepack
+        run: corepack enable
 
       - name: Install dependencies
         run: npm ci --no-audit
@@ -79,16 +79,16 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macOS-latest]
-        node-version: ['20.12.2', '22']
+        node-version: ['20.12.2', '22', '24']
       fail-fast: false
     steps:
       - name: Git checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: Setup node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm

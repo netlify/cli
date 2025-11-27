@@ -172,6 +172,7 @@ export type BaseOptionValues = {
   filter?: string
   httpProxy?: string
   silent?: string
+  verbose?: boolean
 }
 
 /** Base command class that provides tracking and config initialization */
@@ -620,10 +621,7 @@ export default class BaseCommand extends Command {
       ...apiUrlOpts,
     })
     const { accounts = [], buildDir, config, configPath, repositoryRoot, siteInfo } = cachedConfig
-    let { env } = cachedConfig
-    if (flags.offlineEnv) {
-      env = {}
-    }
+    const env = cachedConfig?.env ?? {}
     env.NETLIFY_CLI_VERSION = { sources: ['internal'], value: version }
     const normalizedConfig = normalizeConfig(config)
 
@@ -799,4 +797,4 @@ export default class BaseCommand extends Command {
 }
 
 export const getBaseOptionValues = (options: OptionValues): BaseOptionValues =>
-  pick(options, ['auth', 'cwd', 'debug', 'filter', 'httpProxy', 'silent'])
+  pick(options, ['auth', 'cwd', 'debug', 'filter', 'httpProxy', 'silent', 'verbose'])

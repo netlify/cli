@@ -2,6 +2,8 @@ import { join } from 'path'
 
 import { OptionValues } from 'commander'
 
+import { parseAIGatewayContext, setupAIGateway } from '@netlify/ai/bootstrap'
+
 import { getBlobsContextWithEdgeAccess } from '../../lib/blobs/blobs.js'
 import { startFunctionsServer } from '../../lib/functions/server.js'
 import { printBanner } from '../../utils/dev-server-banner.js'
@@ -28,7 +30,6 @@ export const functionsServe = async (options: OptionValues, command: BaseCommand
   env.NETLIFY_DEV = { sources: ['internal'], value: 'true' }
 
   env = await getDotEnvVariables({ devConfig: { ...config.dev }, env, site })
-  injectEnvVariables(env)
 
   const { accountId, capabilities, siteUrl, timeouts } = await getSiteInformation({
     offline: options.offline,
@@ -36,6 +37,12 @@ export const functionsServe = async (options: OptionValues, command: BaseCommand
     site,
     siteInfo,
   })
+
+  if (!options.offline) {
+    await setupAIGateway({ api, env, siteID: site.id, siteURL: siteUrl })
+  }
+
+  injectEnvVariables(env)
 
   const functionsPort = await acquirePort({
     configuredPort: options.port || config.dev?.functionsPort,
@@ -49,8 +56,11 @@ export const functionsServe = async (options: OptionValues, command: BaseCommand
     siteID: site.id ?? UNLINKED_SITE_MOCK_ID,
   })
 
+  const aiGatewayContext = parseAIGatewayContext(env.AI_GATEWAY?.value)
+
   await startFunctionsServer({
     loadDistFunctions: process.env.NETLIFY_FUNCTIONS_SERVE_LOAD_DIST_FUNCTIONS === 'true',
+    aiGatewayContext,
     blobsContext,
     config,
     debug: options.debug,

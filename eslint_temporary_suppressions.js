@@ -17,6 +17,7 @@ export default [
       // scenarios to communicate intent.
       'no-empty': 'off',
       '@typescript-eslint/no-empty-function': 'off',
+      '@typescript-eslint/prefer-nullish-coalescing': 'off',
 
       // We use these globals even though they're technically unstable features on our minimum
       // supported node version.
@@ -37,6 +38,12 @@ export default [
     files: ['bin/run.js'],
     rules: {
       'n/no-unpublished-bin': 'off',
+    },
+  },
+  {
+    files: ['e2e/install.e2e.ts'],
+    rules: {
+      '@typescript-eslint/await-thenable': 'off',
     },
   },
   {
@@ -221,6 +228,7 @@ export default [
       '@typescript-eslint/await-thenable': 'off',
       '@typescript-eslint/no-confusing-void-expression': 'off',
       '@typescript-eslint/no-floating-promises': 'off',
+      '@typescript-eslint/no-unnecessary-type-conversion': 'off',
     },
   },
   {
@@ -532,6 +540,7 @@ export default [
       '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/no-deprecated': 'off',
+      '@typescript-eslint/no-unnecessary-type-conversion': 'off',
     },
   },
   {
@@ -549,6 +558,7 @@ export default [
       '@typescript-eslint/no-floating-promises': 'off',
       '@typescript-eslint/prefer-regexp-exec': 'off',
       '@typescript-eslint/no-non-null-assertion': 'off',
+      '@typescript-eslint/no-unnecessary-type-conversion': 'off',
     },
   },
   {
@@ -727,6 +737,7 @@ export default [
       '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/no-unsafe-call': 'off',
       '@typescript-eslint/no-confusing-void-expression': 'off',
+      '@typescript-eslint/await-thenable': 'off',
     },
   },
   {
@@ -1020,6 +1031,12 @@ export default [
     },
   },
   {
+    files: ['src/utils/scripted-commands.ts'],
+    rules: {
+      '@typescript-eslint/no-unnecessary-type-conversion': 'off',
+    },
+  },
+  {
     files: ['src/utils/sign-redirect.ts'],
     rules: {
       '@typescript-eslint/no-unsafe-assignment': 'off',
@@ -1176,6 +1193,8 @@ export default [
       '@typescript-eslint/no-non-null-assertion': 'off',
       '@typescript-eslint/no-require-imports': 'off',
       '@typescript-eslint/require-await': 'off',
+      '@typescript-eslint/no-unnecessary-type-conversion': 'off',
+      '@typescript-eslint/await-thenable': 'off',
     },
   },
   {
@@ -1207,6 +1226,7 @@ export default [
     rules: {
       '@typescript-eslint/restrict-template-expressions': 'off',
       '@typescript-eslint/no-non-null-assertion': 'off',
+      '@typescript-eslint/no-unnecessary-type-conversion': 'off',
     },
   },
   {
