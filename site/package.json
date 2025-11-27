@@ -16,15 +16,15 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@astrojs/starlight": "0.35.3",
-    "@bugsnag/js": "8.4.0",
-    "astro": "5.13.5",
+    "@astrojs/starlight": "0.36.0",
+    "@bugsnag/js": "8.6.0",
+    "astro": "5.15.9",
     "markdown-magic": "2.6.1",
-    "sharp": "0.34.3",
-    "strip-ansi": "7.1.0"
+    "sharp": "0.34.4",
+    "strip-ansi": "7.1.2"
   },
   "devDependencies": {
-    "@netlify/functions": "4.2.5",
-    "tsx": "4.20.4"
+    "@netlify/functions": "5.1.0",
+    "tsx": "4.20.6"
   }
 }

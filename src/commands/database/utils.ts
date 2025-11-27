@@ -166,9 +166,8 @@ export const getAccount = async (
     accountId: string
   },
 ) => {
-  let account: Awaited<ReturnType<typeof command.netlify.api.getAccount>>[number]
+  let account: Awaited<ReturnType<typeof command.netlify.api.getAccount>>
   try {
-    // @ts-expect-error -- TODO: fix the getAccount type in the openapi spec. It should not be an array of accounts, just one account.
     account = await command.netlify.api.getAccount({ accountId })
   } catch (e) {
     throw new Error(`Error getting account, make sure you are logged in with netlify login`, {
@@ -179,7 +178,7 @@ export const getAccount = async (
     throw new Error(`Error getting account, make sure you are logged in with netlify login`)
   }
   return account as { id: string; name: string } & Omit<
-    Awaited<ReturnType<typeof command.netlify.api.getAccount>>[number],
+    Awaited<ReturnType<typeof command.netlify.api.getAccount>>,
     'id' | 'name'
   >
 }

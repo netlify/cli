@@ -17,17 +17,17 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macOS-latest, windows-2025]
-        node-version: ['20.12.2', '22.x']
+        node-version: ['20.12.2', '22.x', '24']
         exclude:
           - os: windows-2025
             node-version: '22.x'
       fail-fast: false
     steps:
       - name: Git checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm

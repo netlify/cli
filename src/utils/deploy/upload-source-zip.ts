@@ -1,6 +1,6 @@
 import { execFile } from 'child_process'
-import { readFile } from 'fs/promises'
-import { join } from 'path'
+import { readFile, mkdir } from 'fs/promises'
+import { join, dirname } from 'path'
 import { promisify } from 'util'
 import type { PathLike } from 'fs'
 import { platform } from 'os'
@@ -21,26 +21,26 @@ interface UploadSourceZipOptions {
 }
 
 const DEFAULT_IGNORE_PATTERNS = [
-  'node_modules',
-  '.git',
-  '.netlify',
-  '.next',
-  'dist',
-  'build',
-  '.nuxt',
-  '.output',
-  '.vercel',
-  '__pycache__',
-  '.venv',
+  'node_modules*',
+  '.git*',
+  '.netlify*',
+  '.next*',
+  'dist*',
+  'build*',
+  '.nuxt*',
+  '.output*',
+  '.vercel*',
+  '__pycache__*',
+  '.venv*',
   '.env',
   '.DS_Store',
   'Thumbs.db',
   '*.log',
-  '.nyc_output',
-  'coverage',
-  '.cache',
-  '.tmp',
-  '.temp',
+  '.nyc_output*',
+  'coverage*',
+  '.cache*',
+  '.tmp*',
+  '.temp*',
 ]
 
 const createSourceZip = async ({
@@ -59,6 +59,12 @@ const createSourceZip = async ({
 
   const tmpDir = temporaryDirectory()
   const zipPath = join(tmpDir, filename)
+
+  // Ensure the directory for the zip file exists
+  // The filename from the API includes a subdirectory path (e.g., 'workspace-snapshots/source-xxx.zip')
+  // While temporaryDirectory() creates a new empty directory, the subdirectory within it doesn't exist
+  // so we need to create it before the zip command can write the file
+  await mkdir(dirname(zipPath), { recursive: true })
 
   statusCb({
     type: 'source-zip-upload',

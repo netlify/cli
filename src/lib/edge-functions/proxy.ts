@@ -4,6 +4,7 @@ import type { IncomingMessage, ClientRequest } from 'http'
 import { join, resolve } from 'path'
 
 import * as bundler from '@netlify/edge-bundler'
+import type { AIGatewayContext } from '@netlify/ai/bootstrap'
 import getAvailablePort from 'get-port'
 
 import type BaseCommand from '../../commands/base-command.js'
@@ -75,6 +76,7 @@ const createAccountInfoHeader = ({ id }: { id: string }) => {
 
 export const initializeProxy = async ({
   accountId,
+  aiGatewayContext,
   blobsContext,
   command,
   config,
@@ -95,6 +97,7 @@ export const initializeProxy = async ({
   state,
 }: {
   accountId: string
+  aiGatewayContext?: AIGatewayContext | null
   blobsContext: BlobsContextWithEdgeAccess
   command: BaseCommand
   config: NormalizedCachedConfigConfig
@@ -114,7 +117,6 @@ export const initializeProxy = async ({
   siteInfo: $TSFixMe
   state: LocalState
 }) => {
-  const userFunctionsPath = config.build.edge_functions
   const isolatePort = await getAvailablePort()
   const runtimeFeatureFlags = ['edge_functions_bootstrap_failure_mode', 'edge_functions_bootstrap_populate_environment']
   const protocol = settings.https ? 'https' : 'http'
@@ -124,11 +126,11 @@ export const initializeProxy = async ({
   // the network if needed. We don't want to wait for that to be completed, or
   // the command will be left hanging.
   const server = prepareServer({
+    aiGatewayContext,
     command,
     config,
     configPath,
     debug,
-    directory: userFunctionsPath,
     env: configEnv,
     featureFlags: buildFeatureFlags,
     getUpdatedConfig,
@@ -160,6 +162,10 @@ export const initializeProxy = async ({
       req.headers[headers.BlobsInfo] = Buffer.from(
         JSON.stringify({ url: blobsContext.edgeURL, url_uncached: blobsContext.edgeURL, token: blobsContext.token }),
       ).toString('base64')
+    }
+
+    if (aiGatewayContext) {
+      req.headers[headers.AIGateway] = Buffer.from(JSON.stringify(aiGatewayContext)).toString('base64')
     }
 
     await registry.initialize()
@@ -194,11 +200,11 @@ export const isEdgeFunctionsRequest = (req: IncomingMessage): req is ExtendedInc
   Object.hasOwn(req, headersSymbol)
 
 const prepareServer = async ({
+  aiGatewayContext,
   command,
   config,
   configPath,
   debug,
-  directory,
   env: configEnv,
   featureFlags,
   getUpdatedConfig,
@@ -207,11 +213,11 @@ const prepareServer = async ({
   projectDir,
   repositoryRoot,
 }: {
+  aiGatewayContext?: AIGatewayContext | null
   command: BaseCommand
   config: NormalizedCachedConfigConfig
   configPath: string
   debug: boolean
-  directory?: string
   env: Record<string, { sources: string[]; value: string }>
   featureFlags: FeatureFlags
   getUpdatedConfig: () => Promise<NormalizedCachedConfigConfig>
@@ -245,12 +251,12 @@ const prepareServer = async ({
       servePath,
     })
     const registry = new EdgeFunctionsRegistry({
-      command,
+      aiGatewayContext,
       bundler,
+      command,
       config,
       configPath,
       debug,
-      directories: directory ? [directory] : [],
       env: configEnv,
       featureFlags,
       getUpdatedConfig,

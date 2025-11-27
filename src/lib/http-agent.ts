@@ -1,9 +1,9 @@
 import { readFile } from 'fs/promises'
 
 import { HttpsProxyAgent } from 'https-proxy-agent'
-import waitPort from 'wait-port'
 
 import { NETLIFYDEVERR, NETLIFYDEVWARN, exit, log } from '../utils/command-helpers.js'
+import { waitPort } from './wait-port.js'
 
 // https://github.com/TooTallNate/node-https-proxy-agent/issues/89
 // Maybe replace with https://github.com/delvedor/hpagent
@@ -29,7 +29,7 @@ class HttpsProxyAgentWithCA extends HttpsProxyAgent {
 const DEFAULT_HTTP_PORT = 80
 const DEFAULT_HTTPS_PORT = 443
 // 50 seconds
-const AGENT_PORT_TIMEOUT = 50
+const AGENT_PORT_TIMEOUT = 50_000
 
 export const tryGetAgent = async ({
   certificateFile,
@@ -66,12 +66,11 @@ export const tryGetAgent = async ({
 
   let port
   try {
-    port = await waitPort({
-      port: Number.parseInt(proxyUrl.port) || (scheme === 'http' ? DEFAULT_HTTP_PORT : DEFAULT_HTTPS_PORT),
-      host: proxyUrl.hostname,
-      timeout: AGENT_PORT_TIMEOUT,
-      output: 'silent',
-    })
+    port = await waitPort(
+      Number.parseInt(proxyUrl.port) || (scheme === 'http' ? DEFAULT_HTTP_PORT : DEFAULT_HTTPS_PORT),
+      proxyUrl.hostname,
+      AGENT_PORT_TIMEOUT,
+    )
   } catch (error) {
     // unknown error
     // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.

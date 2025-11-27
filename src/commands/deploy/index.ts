@@ -29,12 +29,18 @@ For detailed configuration options, see the Netlify documentation.`,
     .addOption(
       new Option('-p, --prod', 'Deploy to production')
         .default(false)
-        .conflicts(['alias', 'branch', 'prod-if-unlocked']),
+        .conflicts(['alias', 'branch', 'prod-if-unlocked', 'draft']),
     )
     .addOption(
       new Option('--prod-if-unlocked', 'Deploy to production if unlocked, create a draft otherwise')
         .default(false)
-        .conflicts(['alias', 'branch', 'prod']),
+        .conflicts(['alias', 'branch', 'prod', 'draft']),
+    )
+    .addOption(
+      new Option('--draft', 'Explicitly create a draft deploy')
+        .default(false)
+        .conflicts(['prod', 'prod-if-unlocked'])
+        .hideHelp(true),
     )
     .option(
       '--alias <name>',
@@ -99,6 +105,10 @@ For more information about Netlify deploys, see ${terminalLink(docsUrl, docsUrl,
 `
     })
     .action(async (options: DeployOptionValues, command: BaseCommand) => {
+      if (command.parent?.opts().verbose) {
+        options.verbose = true
+      }
+
       if (options.build && command.getOptionValueSource('build') === 'cli') {
         warn(`${chalk.cyanBright('--build')} is now the default and can safely be omitted.`)
       }

@@ -28,12 +28,12 @@ export const blobsSet = async (
     siteID: siteInfo.id,
     token: api.accessToken ?? '',
   })
-  let value = valueParts.join(' ')
+  let value: string | ArrayBuffer = valueParts.join(' ')
 
   if (input) {
     const inputPath = resolve(input)
     try {
-      value = await fs.readFile(inputPath, 'utf8')
+      value = await fs.readFile(inputPath)
     } catch (error) {
       if (isNodeError(error) && error.code === 'ENOENT') {
         return logAndThrowError(

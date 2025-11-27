@@ -122,6 +122,7 @@ const BACKGROUND_FUNCTION_TIMEOUT = 900
  * @param {*} config.siteInfo
  * @returns
  */
+
 // @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
 export const getSiteInformation = async ({ api, offline, site, siteInfo }) => {
   if (site.id && !offline) {

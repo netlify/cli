@@ -25,7 +25,7 @@ jobs:
 
       - name: Check File Existence
         id: check-file-existence
-        uses: thebinaryfelix/check-file-existence-action@1.0.0
+        uses: thebinaryfelix/check-file-existence-action@1.0.1
         with:
           files: '.delta.*'
 

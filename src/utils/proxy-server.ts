@@ -1,3 +1,5 @@
+import type { AIGatewayContext } from '@netlify/ai/bootstrap'
+
 import type BaseCommand from '../commands/base-command.js'
 import type { $TSFixMe, NetlifyOptions } from '../commands/types.js'
 import type { BlobsContextWithEdgeAccess } from '../lib/blobs/blobs.js'
@@ -42,6 +44,7 @@ export const generateInspectSettings = (
 export const startProxyServer = async ({
   accountId,
   addonsUrls,
+  aiGatewayContext,
   api,
   blobsContext,
   command,
@@ -65,6 +68,7 @@ export const startProxyServer = async ({
 }: {
   accountId: string | undefined
   addonsUrls: $TSFixMe
+  aiGatewayContext?: AIGatewayContext | null
   api?: NetlifyOptions['api']
   blobsContext?: BlobsContextWithEdgeAccess
   command: BaseCommand
@@ -89,6 +93,7 @@ export const startProxyServer = async ({
 }) => {
   const url = await startProxy({
     addonsUrls,
+    aiGatewayContext,
     blobsContext,
     command,
     config,

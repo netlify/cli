@@ -3,6 +3,7 @@ import { join } from 'path'
 import { fileURLToPath } from 'url'
 
 import type { Declaration, EdgeFunction, FunctionConfig, Manifest, ModuleGraph } from '@netlify/edge-bundler'
+import type { AIGatewayContext } from '@netlify/ai/bootstrap'
 import { watchDebounced } from '@netlify/dev-utils'
 
 import BaseCommand from '../../commands/base-command.js'
@@ -21,7 +22,12 @@ import type { FeatureFlags } from '../../utils/feature-flags.js'
 import { MultiMap } from '../../utils/multimap.js'
 import { getPathInProject } from '../settings.js'
 
-import { DIST_IMPORT_MAP_PATH, INTERNAL_EDGE_FUNCTIONS_FOLDER } from './consts.js'
+import { DIST_IMPORT_MAP_PATH } from './consts.js'
+import {
+  getFrameworkEdgeFunctionsDirectory,
+  getInternalEdgeFunctionsDirectory,
+  getUserEdgeFunctionsDirectory,
+} from './get-directories.js'
 
 type DependencyCache = Record<string, string[]>
 type EdgeFunctionEvent = 'buildError' | 'loaded' | 'reloaded' | 'reloading' | 'removed'
@@ -31,19 +37,19 @@ type RunIsolate = Awaited<ReturnType<typeof import('@netlify/edge-bundler').serv
 type ModuleJson = ModuleGraph['modules'][number]
 
 interface EdgeFunctionsRegistryOptions {
-  command: BaseCommand
+  aiGatewayContext?: AIGatewayContext | null
   bundler: typeof import('@netlify/edge-bundler')
+  command: BaseCommand
   config: NormalizedCachedConfigConfig
   configPath: string
   debug: boolean
-  directories: string[]
   env: Record<string, { sources: string[]; value: string }>
   featureFlags: FeatureFlags
   getUpdatedConfig: () => Promise<NormalizedCachedConfigConfig>
+  importMapFromTOML?: string
   projectDir: string
   runIsolate: RunIsolate
   servePath: string
-  importMapFromTOML?: string
 }
 
 /**
@@ -92,6 +98,7 @@ function traverseLocalDependencies(
 export class EdgeFunctionsRegistry {
   public importMapFromDeployConfig?: string
 
+  private aiGatewayContext?: AIGatewayContext | null
   private buildError: Error | null = null
   private bundler: typeof import('@netlify/edge-bundler')
   private configPath: string
@@ -102,7 +109,6 @@ export class EdgeFunctionsRegistry {
   // Mapping file URLs to names of functions that use them as dependencies.
   private dependencyPaths = new MultiMap<string, string>()
 
-  private directories: string[]
   private directoryWatchers = new Map<string, import('chokidar').FSWatcher>()
   private env: Record<string, string>
   private featureFlags: FeatureFlags
@@ -125,11 +131,11 @@ export class EdgeFunctionsRegistry {
   private command: BaseCommand
 
   constructor({
+    aiGatewayContext,
     bundler,
     command,
     config,
     configPath,
-    directories,
     env,
     featureFlags,
     getUpdatedConfig,
@@ -138,10 +144,10 @@ export class EdgeFunctionsRegistry {
     runIsolate,
     servePath,
   }: EdgeFunctionsRegistryOptions) {
+    this.aiGatewayContext = aiGatewayContext
     this.command = command
     this.bundler = bundler
     this.configPath = configPath
-    this.directories = directories
     this.featureFlags = featureFlags
     this.getUpdatedConfig = getUpdatedConfig
     this.runIsolate = runIsolate
@@ -558,16 +564,12 @@ export class EdgeFunctionsRegistry {
     return { functionsConfig, graph, success }
   }
 
-  private get internalDirectory() {
-    return join(this.projectDir, getPathInProject([INTERNAL_EDGE_FUNCTIONS_FOLDER]))
-  }
-
   private get internalImportMapPath() {
     return join(this.projectDir, getPathInProject([DIST_IMPORT_MAP_PATH]))
   }
 
   private async readDeployConfig() {
-    const manifestPath = join(this.internalDirectory, 'manifest.json')
+    const manifestPath = join(getInternalEdgeFunctionsDirectory(this.command), 'manifest.json')
     try {
       const contents = await readFile(manifestPath, 'utf8')
       const manifest = JSON.parse(contents)
@@ -587,15 +589,16 @@ export class EdgeFunctionsRegistry {
 
     this.declarationsFromDeployConfig = deployConfig.functions
     this.importMapFromDeployConfig = deployConfig.import_map
-      ? join(this.internalDirectory, deployConfig.import_map)
+      ? join(getInternalEdgeFunctionsDirectory(this.command), deployConfig.import_map)
       : undefined
   }
 
   private async scanForFunctions() {
+    const userFunctionDirectory = getUserEdgeFunctionsDirectory(this.command)
     const [frameworkFunctions, integrationFunctions, userFunctions] = await Promise.all([
-      this.usesFrameworksAPI ? this.bundler.find([this.command.netlify.frameworksAPIPaths.edgeFunctions.path]) : [],
-      this.bundler.find([this.internalDirectory]),
-      this.bundler.find(this.directories),
+      this.usesFrameworksAPI ? this.bundler.find([getFrameworkEdgeFunctionsDirectory(this.command)]) : [],
+      this.bundler.find([getInternalEdgeFunctionsDirectory(this.command)]),
+      userFunctionDirectory ? this.bundler.find([userFunctionDirectory]) : [],
       this.scanForDeployConfig(),
     ])
     const internalFunctions = [...frameworkFunctions, ...integrationFunctions]
