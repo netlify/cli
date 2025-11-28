@@ -816,9 +816,7 @@ const printResults = ({
       logs: results.logsUrl,
       function_logs: results.functionLogsUrl,
       edge_function_logs: results.edgeFunctionLogsUrl,
-    }
-    if (deployToProduction) {
-      jsonData.url = results.siteUrl
+      url: results.siteUrl,
     }
 
     if (uploadSourceZip) {
