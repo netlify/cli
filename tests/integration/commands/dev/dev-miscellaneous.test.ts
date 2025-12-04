@@ -857,7 +857,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
           })
           .build()
 
-        await waitForLogMatching('Reloaded edge function', { timeout: 1000 })
+        await waitForLogMatching('Reloaded edge function', { timeout: 500 })
 
         const helloBuilderMessage = await fetch(`http://localhost:${port}/hello`, {}).then((res) => res.text())
 
@@ -901,7 +901,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
           })
           .build()
 
-        await waitForLogMatching('Removed edge function', { timeout: 1000 })
+        await waitForLogMatching('Removed edge function', { timeout: 500 })
 
         const authNotFoundMessage = await fetch(`http://localhost:${port}/auth`).then((response) => response.text())
 
@@ -937,7 +937,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
         t.expect(res1.status).toBe(200)
         t.expect(await res1.text()).toEqual('Hello world')
 
-        await waitForLogMatching('Loaded edge function', { timeout: 1000 })
+        await waitForLogMatching('Loaded edge function', { timeout: 500 })
 
         await builder
           .withEdgeFunction({
@@ -947,7 +947,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
           })
           .build()
 
-        await waitForLogMatching('Reloaded edge function', { timeout: 1000 })
+        await waitForLogMatching('Reloaded edge function', { timeout: 500 })
 
         const [res2, res3, res4] = await Promise.all([
           fetch(`http://localhost:${port}/hello-1`),
@@ -1070,7 +1070,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
         t.expect(res1.status).toBe(200)
         t.expect(await res1.text()).toEqual('Hello from an internal function')
 
-        await waitForLogMatching('Loaded edge function', { timeout: 1000 })
+        await waitForLogMatching('Loaded edge function', { timeout: 500 })
 
         await builder
           .withEdgeFunction({
@@ -1081,7 +1081,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
           })
           .build()
 
-        await waitForLogMatching('Reloaded edge function', { timeout: 1000 })
+        await waitForLogMatching('Reloaded edge function', { timeout: 500 })
 
         const [res2, res3] = await Promise.all([
           fetch(`http://localhost:${port}/internal-1`),

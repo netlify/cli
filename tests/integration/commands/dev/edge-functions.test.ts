@@ -183,7 +183,7 @@ describe.skipIf(isWindows)('edge functions', async () => {
 
   await setupFixtureTests('dev-server-with-edge-functions', { devServer: true, mockApi: { routes } }, () => {
     test<FixtureTestContext>('should not remove other edge functions on change', async ({ devServer, fixture }) => {
-      await devServer!.waitForLogMatching('Loaded edge function', { timeout: 1000 })
+      await devServer!.waitForLogMatching('Loaded edge function', { timeout: 500 })
 
       await fixture.builder
         .withEdgeFunction({
@@ -232,7 +232,7 @@ describe.skipIf(isWindows)('edge functions', async () => {
           })
           .build()
 
-        await server.waitForLogMatching('Reloaded edge function', { timeout: 1000 })
+        await server.waitForLogMatching('Reloaded edge function', { timeout: 500 })
 
         const response2 = await fetch(server.url, {}).then((res) => res.text())
         t.expect(response2).toEqual('bar')
