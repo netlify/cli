@@ -16,6 +16,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const testMatrix = [{ args: [] }, { args: ['esbuild'] }]
 
 const WAIT_WRITE = 3000
+const DEBOUNCE_WAIT = 150
 
 describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args }) => {
   test('Updates a JavaScript function when its main file is modified', async (t) => {
@@ -48,7 +49,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
           ).toEqual('Hello')
         }, outputBuffer)
 
-        await pause(WAIT_WRITE)
+        await waitForLogMatching('Loaded function hello', { timeout: WAIT_WRITE })
 
         await builder
           .withFunction({
@@ -61,7 +62,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
           })
           .build()
 
-        await waitForLogMatching('Reloaded function hello')
+        await waitForLogMatching('Reloaded function hello', { timeout: WAIT_WRITE })
 
         const response = await fetch(`http://localhost:${port.toString()}/.netlify/functions/hello`)
 
@@ -115,7 +116,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
           ).toEqual('Modern Web Development on the JAMStack')
         }, outputBuffer)
 
-        await pause(WAIT_WRITE)
+        await waitForLogMatching('Loaded function hello', { timeout: WAIT_WRITE })
 
         await builder
           .withContentFile({
@@ -143,7 +144,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
           })
           .build()
 
-        await waitForLogMatching('Reloaded function hello')
+        await waitForLogMatching('Reloaded function hello', { timeout: WAIT_WRITE })
 
         const response = await fetch(`http://localhost:${port.toString()}/.netlify/functions/hello`)
 
@@ -180,16 +181,16 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
           ).toEqual('WOOF!')
         }, outputBuffer)
 
-        await pause(WAIT_WRITE)
+        await waitForLogMatching('Loaded function hello', { timeout: WAIT_WRITE })
 
         await builder
           .withContentFile({ path: 'functions/lib/util.js', content: js`exports.bark = () => 'WOOF WOOF!'` })
           .build()
 
         if (args.includes('esbuild')) {
-          await waitForLogMatching('Reloaded function hello')
+          await waitForLogMatching('Reloaded function hello', { timeout: WAIT_WRITE })
         } else {
-          // no message printed when using not esbuild
+          // no message printed when not using esbuild
           await pause(WAIT_WRITE)
         }
 
@@ -258,7 +259,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
           ).toEqual('Modern Web Development on the JAMStack')
         }, outputBuffer)
 
-        await pause(WAIT_WRITE)
+        await waitForLogMatching('Loaded function hello', { timeout: WAIT_WRITE })
 
         await builder
           .withContentFile({
@@ -271,7 +272,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
           })
           .build()
 
-        await waitForLogMatching('Reloaded function hello')
+        await waitForLogMatching('Reloaded function hello', { timeout: WAIT_WRITE })
 
         const response = await fetch(`http://localhost:${port.toString()}/.netlify/functions/hello`).then((res) =>
           res.text(),
@@ -317,7 +318,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
           })
           .build()
 
-        await waitForLogMatching('Loaded function hello')
+        await waitForLogMatching('Loaded function hello', { timeout: WAIT_WRITE })
 
         const response = await fetch(`http://localhost:${port.toString()}/.netlify/functions/hello`).then((res) =>
           res.text(),
@@ -359,7 +360,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
           t.expect(unauthenticatedResponse.status).toBe(404)
         }, outputBuffer)
 
-        await pause(WAIT_WRITE)
+        await waitForLogMatching('Loaded function help', { timeout: WAIT_WRITE })
 
         await builder
           .withContentFile({
@@ -387,7 +388,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
           })
           .build()
 
-        await waitForLogMatching('Loaded function hello')
+        await waitForLogMatching('Loaded function hello', { timeout: WAIT_WRITE })
 
         const response = await fetch(`http://localhost:${port.toString()}/.netlify/functions/hello`).then((res) =>
           res.text(),
@@ -428,7 +429,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
           ).toEqual('Hello')
         }, outputBuffer)
 
-        await pause(WAIT_WRITE)
+        await waitForLogMatching('Loaded function hello', { timeout: WAIT_WRITE })
 
         await builder
           .withoutFile({
@@ -436,7 +437,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
           })
           .build()
 
-        await waitForLogMatching('Removed function hello')
+        await waitForLogMatching('Removed function hello', { timeout: WAIT_WRITE })
 
         const { status } = await fetch(`http://localhost:${port.toString()}/.netlify/functions/hello`)
 
@@ -491,7 +492,6 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
           })
           .build()
 
-        const DEBOUNCE_WAIT = 150
         await pause(DEBOUNCE_WAIT)
 
         const resp2 = await fetch(`${server.url}/.netlify/functions/hello`)
@@ -528,15 +528,13 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
           })
           .build()
 
-        await pause(WAIT_WRITE)
+        await waitForLogMatching('Loaded function hello', { timeout: WAIT_WRITE })
 
         await tryAndLogOutput(async () => {
           t.expect(
             await fetch(`http://localhost:${port.toString()}/.netlify/functions/hello`).then((res) => res.text()),
           ).toEqual('Internal')
         }, outputBuffer)
-
-        await pause(WAIT_WRITE)
 
         await builder
           .withFunction({
@@ -550,7 +548,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
           })
           .build()
 
-        await waitForLogMatching('Reloaded function hello')
+        await waitForLogMatching('Reloaded function hello', { timeout: WAIT_WRITE })
 
         const response = await fetch(`http://localhost:${port.toString()}/.netlify/functions/hello`).then((res) =>
           res.text(),
@@ -603,7 +601,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
           ).toEqual('User')
         }, outputBuffer)
 
-        await pause(WAIT_WRITE)
+        await waitForLogMatching('Loaded function hello', { timeout: WAIT_WRITE })
 
         await builder
           .withFunction({
@@ -625,7 +623,7 @@ describe.concurrent.each(testMatrix)('withSiteBuilder with args: $args', ({ args
           })
           .build()
 
-        await waitForLogMatching('Reloaded function hello')
+        await waitForLogMatching('Reloaded function hello', { timeout: WAIT_WRITE })
 
         const response = await fetch(`http://localhost:${port.toString()}/.netlify/functions/hello`).then((res) =>
           res.text(),
@@ -979,7 +977,8 @@ describe.concurrent('serving functions', () => {
         })
         .build()
 
-      await withDevServer({ cwd: builder.directory }, async ({ outputBuffer, port }) => {
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      await withDevServer({ cwd: builder.directory }, async ({ outputBuffer, port, waitForLogMatching }) => {
         await tryAndLogOutput(async () => {
           const [responseHelloNameOne, responseHelloNameTwo] = await Promise.all([
             fetch(`http://localhost:${port.toString()}/.netlify/functions/hello?name=one`).then((res) => res.text()),
@@ -1002,9 +1001,7 @@ describe.concurrent('serving functions', () => {
           ])
           .build()
 
-        // wait for the watcher to rebuild the function
-        const delay = 1000
-        await pause(delay)
+        await waitForLogMatching('Reloaded function hello', { timeout: 1000 })
 
         t.expect(outputBuffer.some((buffer) => /.*Reloaded function hello.*/.test(buffer.toString()))).toBe(true)
         await tryAndLogOutput(async () => {

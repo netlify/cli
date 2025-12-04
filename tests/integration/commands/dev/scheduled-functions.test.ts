@@ -2,7 +2,6 @@ import { describe, expect, test } from 'vitest'
 
 import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
 import fetch from 'node-fetch'
-import { pause } from '../../utils/pause.js'
 
 describe('scheduled functions', async () => {
   await setupFixtureTests('dev-server-with-functions', { devServer: true }, () => {
@@ -36,8 +35,7 @@ describe('scheduled functions', async () => {
         })
         .build()
 
-      const DETECT_FILE_CHANGE_DELAY = 500
-      await pause(DETECT_FILE_CHANGE_DELAY)
+      await devServer!.waitForLogMatching('Reloaded function ping', { timeout: 500 })
 
       const warning = await fetch(`http://localhost:${devServer!.port}/.netlify/functions/ping`, {}).then((res) =>
         res.text(),
