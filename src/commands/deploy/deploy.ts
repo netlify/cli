@@ -1120,6 +1120,7 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
     }
     const deployId = deployMetadata.id || ''
     const skewProtectionToken = deployMetadata.skew_protection_token
+    let sourceZipFileName: string | undefined
 
     if (
       options.uploadSourceZip &&
@@ -1133,6 +1134,7 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
         filename: deployMetadata.source_zip_filename,
         statusCb: options.json || options.silent ? () => {} : deployProgressCb(),
       })
+      sourceZipFileName = deployMetadata.source_zip_filename
     }
     try {
       const settings = await detectFrameworkSettings(command, 'build')
@@ -1161,6 +1163,11 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
         deployId,
         skewProtectionToken,
       })
+
+      // Ensure source zip filename is included in results for JSON output
+      if (sourceZipFileName) {
+        results.sourceZipFileName = sourceZipFileName
+      }
     } catch (error) {
       // The build has failed, so let's cancel the deploy we created.
       await cancelDeploy({ api, deployId })
