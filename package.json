@@ -156,7 +156,7 @@
   "devDependencies": {
     "@babel/preset-react": "7.27.1",
     "@bugsnag/js": "8.6.0",
-    "@eslint/compat": "1.4.0",
+    "@eslint/compat": "1.4.1",
     "@eslint/js": "9.36.0",
     "@netlify/functions": "5.1.0",
     "@netlify/types": "2.2.0",
