@@ -8,7 +8,6 @@ import { describe, expect, test } from 'vitest'
 
 import { withDevServer } from '../../utils/dev-server.js'
 import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
-import { pause } from '../../utils/pause.js'
 import { withSiteBuilder } from '../../utils/site-builder.js'
 
 // Skipping tests on Windows because of an issue with the Deno CLI throwing IO
@@ -184,8 +183,7 @@ describe.skipIf(isWindows)('edge functions', async () => {
 
   await setupFixtureTests('dev-server-with-edge-functions', { devServer: true, mockApi: { routes } }, () => {
     test<FixtureTestContext>('should not remove other edge functions on change', async ({ devServer, fixture }) => {
-      // we need to wait till file watchers are loaded
-      await pause(500)
+      await devServer!.waitForLogMatching('Loaded edge function', { timeout: 1000 })
 
       await fixture.builder
         .withEdgeFunction({
@@ -234,7 +232,7 @@ describe.skipIf(isWindows)('edge functions', async () => {
           })
           .build()
 
-        await pause(500)
+        await server.waitForLogMatching('Reloaded edge function', { timeout: 1000 })
 
         const response2 = await fetch(server.url, {}).then((res) => res.text())
         t.expect(response2).toEqual('bar')

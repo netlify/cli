@@ -17,7 +17,6 @@ import js from 'dedent'
 import { cliPath } from '../../utils/cli-path.js'
 import { getExecaOptions, withDevServer } from '../../utils/dev-server.js'
 import { withMockApi } from '../../utils/mock-api.js'
-import { pause } from '../../utils/pause.js'
 import { withSiteBuilder, type SiteBuilder } from '../../utils/site-builder.js'
 import { normalize } from '../../utils/snapshots.js'
 
@@ -848,7 +847,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
 
       await builder.build()
 
-      await withDevServer({ cwd: builder.directory }, async ({ port }) => {
+      await withDevServer({ cwd: builder.directory }, async ({ port, waitForLogMatching }) => {
         const helloWorldMessage = await fetch(`http://localhost:${port}/hello`).then((res) => res.text())
 
         await builder
@@ -858,8 +857,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
           })
           .build()
 
-        const DETECT_FILE_CHANGE_DELAY = 500
-        await pause(DETECT_FILE_CHANGE_DELAY)
+        await waitForLogMatching('Reloaded edge function', { timeout: 1000 })
 
         const helloBuilderMessage = await fetch(`http://localhost:${port}/hello`, {}).then((res) => res.text())
 
@@ -894,7 +892,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
 
       await builder.build()
 
-      await withDevServer({ cwd: builder.directory }, async ({ port }) => {
+      await withDevServer({ cwd: builder.directory }, async ({ port, waitForLogMatching }) => {
         const authResponseMessage = await fetch(`http://localhost:${port}/auth`).then((response) => response.text())
 
         await builder
@@ -903,8 +901,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
           })
           .build()
 
-        const DETECT_FILE_CHANGE_DELAY = 500
-        await pause(DETECT_FILE_CHANGE_DELAY)
+        await waitForLogMatching('Removed edge function', { timeout: 1000 })
 
         const authNotFoundMessage = await fetch(`http://localhost:${port}/auth`).then((response) => response.text())
 
@@ -940,9 +937,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
         t.expect(res1.status).toBe(200)
         t.expect(await res1.text()).toEqual('Hello world')
 
-        // wait for file watcher to be up and running, which might take a little
-        // if we do not wait, the next file change will not be picked up
-        await pause(500)
+        await waitForLogMatching('Loaded edge function', { timeout: 1000 })
 
         await builder
           .withEdgeFunction({
@@ -952,7 +947,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
           })
           .build()
 
-        await waitForLogMatching('Reloaded edge function')
+        await waitForLogMatching('Reloaded edge function', { timeout: 1000 })
 
         const [res2, res3, res4] = await Promise.all([
           fetch(`http://localhost:${port}/hello-1`),
@@ -1075,9 +1070,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
         t.expect(res1.status).toBe(200)
         t.expect(await res1.text()).toEqual('Hello from an internal function')
 
-        // wait for file watcher to be up and running, which might take a little
-        // if we do not wait, the next file change will not be picked up
-        await pause(500)
+        await waitForLogMatching('Loaded edge function', { timeout: 1000 })
 
         await builder
           .withEdgeFunction({
@@ -1088,7 +1081,7 @@ describe.concurrent('commands/dev-miscellaneous', () => {
           })
           .build()
 
-        await waitForLogMatching('Reloaded edge function')
+        await waitForLogMatching('Reloaded edge function', { timeout: 1000 })
 
         const [res2, res3] = await Promise.all([
           fetch(`http://localhost:${port}/internal-1`),
