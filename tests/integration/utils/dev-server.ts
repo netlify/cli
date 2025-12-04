@@ -145,20 +145,20 @@ const startServer = async ({
                   return
                 }
 
-                let timeoutId: ReturnType<typeof setTimeout> | undefined
                 const listener = (stdoutData: string) => {
                   if (stdoutData.includes(match)) {
-                    if (timeoutId) clearTimeout(timeoutId)
+                    clearTimeout(timeoutId)
                     ps.stdout!.removeListener('data', listener)
                     resolveWait()
                   }
                 }
-                ps.stdout!.on('data', listener)
 
-                timeoutId = setTimeout(() => {
+                const timeoutId = setTimeout(() => {
                   ps.stdout!.removeListener('data', listener)
                   rejectWait(new Error(`Timeout waiting for log matching "${match}" after ${timeout}ms`))
                 }, timeout)
+
+                ps.stdout!.on('data', listener)
               })
             },
             get output() {
