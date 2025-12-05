@@ -3,10 +3,7 @@ import { test } from 'vitest'
 
 import { tryAndLogOutput, withDevServer } from '../utils/dev-server.js'
 import { createMock as createExecaMock } from '../utils/mock-execa.js'
-import { pause } from '../utils/pause.js'
 import { withSiteBuilder } from '../utils/site-builder.js'
-
-const WAIT_WRITE = 1000
 
 test('Updates a Rust function when a file is modified', async (t) => {
   await withSiteBuilder(t, async (builder) => {
@@ -83,13 +80,13 @@ test('Updates a Rust function when a file is modified', async (t) => {
             t.expect(response).toEqual(originalBody)
           }, outputBuffer)
 
-          await pause(WAIT_WRITE)
+          await waitForLogMatching('Loaded function rust-func', { timeout: 1000 })
 
           await builder
             .withContentFile({ path: 'functions/rust-func/src/main.rs', content: `<updated mock main.rs>` })
             .build()
 
-          await waitForLogMatching('Reloaded function rust-func')
+          await waitForLogMatching('Reloaded function rust-func', { timeout: 1000 })
 
           const response = await fetch(`http://localhost:${port.toString()}/.netlify/functions/rust-func`).then((res) =>
             res.text(),

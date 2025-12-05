@@ -28,7 +28,7 @@ export interface DevServer {
   port: number
   errorBuffer: Buffer[]
   outputBuffer: Buffer[]
-  waitForLogMatching(match: string): Promise<void>
+  waitForLogMatching(match: string, options?: { timeout?: number }): Promise<void>
   output: string
   error: string
   close(): Promise<void>
@@ -137,14 +137,27 @@ const startServer = async ({
             port,
             errorBuffer,
             outputBuffer,
-            waitForLogMatching(match: string) {
-              return new Promise<void>((resolveWait) => {
+            waitForLogMatching(match: string, options?: { timeout?: number }) {
+              const timeout = options?.timeout ?? 30_000
+              return new Promise<void>((resolveWait, rejectWait) => {
+                if (outputBuffer.join('').includes(match)) {
+                  resolveWait()
+                  return
+                }
+
                 const listener = (stdoutData: string) => {
                   if (stdoutData.includes(match)) {
-                    ps.removeListener('data', listener)
+                    clearTimeout(timeoutId)
+                    ps.stdout!.removeListener('data', listener)
                     resolveWait()
                   }
                 }
+
+                const timeoutId = setTimeout(() => {
+                  ps.stdout!.removeListener('data', listener)
+                  rejectWait(new Error(`Timeout waiting for log matching "${match}" after ${timeout}ms`))
+                }, timeout)
+
                 ps.stdout!.on('data', listener)
               })
             },
