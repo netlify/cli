@@ -165,7 +165,11 @@ const itWithMockNpmRegistry = it.extend<{ registry: { address: string; cwd: stri
 })
 
 type Test = { packageName: string }
-type InstallTest = Test & { install: [cmd: string, args: string[]]; lockfile: string }
+type InstallTest = Test & {
+  install: [cmd: string, args: string[]]
+  lockfile: string
+  cleanInstall: [cmd: string, args: string[]]
+}
 type RunTest = Test & { run: [cmd: string, args: string[]] }
 
 const installTests: [packageManager: string, config: InstallTest][] = [
@@ -174,6 +178,7 @@ const installTests: [packageManager: string, config: InstallTest][] = [
     {
       packageName: 'netlify-cli',
       install: ['npm', ['install', 'netlify-cli@testing']],
+      cleanInstall: ['npm', ['ci']],
       lockfile: 'package-lock.json',
     },
   ],
@@ -182,6 +187,7 @@ const installTests: [packageManager: string, config: InstallTest][] = [
     {
       packageName: 'netlify-cli',
       install: ['pnpm', ['add', 'netlify-cli@testing']],
+      cleanInstall: ['pnpm', ['install', '--frozen-lockfile']],
       lockfile: 'pnpm-lock.yaml',
     },
   ],
@@ -190,12 +196,13 @@ const installTests: [packageManager: string, config: InstallTest][] = [
     {
       packageName: 'netlify-cli',
       install: ['yarn', ['add', 'netlify-cli@testing']],
+      cleanInstall: ['yarn', ['install', '--frozen-lockfile']],
       lockfile: 'yarn.lock',
     },
   ],
 ]
 
-describe.each(installTests)('%s → installs the cli and runs commands without errors', (_, config) => {
+describe.each(installTests)('%s → installs the cli and runs commands without errors', (packageManager, config) => {
   // TODO: Figure out why this flow is failing on Windows.
   const npxOnWindows = platform() === 'win32' && 'run' in config
 
@@ -203,22 +210,51 @@ describe.each(installTests)('%s → installs the cli and runs commands without e
     // Install
 
     const cwd = registry.cwd
-    await execa(...config.install, {
+    const installResult = await execa(...config.install, {
       cwd,
       env: { npm_config_registry: registry.address },
-      stdio: debug.enabled ? 'inherit' : 'ignore',
+      all: true,
+      reject: false,
     })
+    if (installResult.exitCode !== 0) {
+      throw new Error(
+        `Install failed for ${packageManager}\nExit code: ${installResult.exitCode.toString()}\n\n${
+          installResult.all || ''
+        }`,
+      )
+    }
 
     expect(
       existsSync(path.join(cwd, config.lockfile)),
       `Generated lock file ${config.lockfile} does not exist in ${cwd}`,
     ).toBe(true)
 
+    // Regression test: ensure we don't trigger known `npm ci` bugs: https://github.com/npm/cli/issues/7622.
+    const cleanInstallResult = await execa(...config.cleanInstall, {
+      cwd,
+      env: { npm_config_registry: registry.address },
+      all: true,
+      reject: false,
+    })
+    if (cleanInstallResult.exitCode !== 0) {
+      throw new Error(
+        `Clean install failed for ${packageManager}\nExit code: ${cleanInstallResult.exitCode.toString()}\n\n${
+          cleanInstallResult.all || ''
+        }`,
+      )
+    }
+
     const binary = path.resolve(path.join(cwd, `./node_modules/.bin/netlify${platform() === 'win32' ? '.cmd' : ''}`))
 
     // Help
 
-    const helpOutput = (await execa(binary, ['help'], { cwd })).stdout
+    const helpResult = await execa(binary, ['help'], { cwd, all: true, reject: false })
+    if (helpResult.exitCode !== 0) {
+      throw new Error(
+        `Help command failed: ${binary} help\nExit code: ${helpResult.exitCode.toString()}\n\n${helpResult.all || ''}`,
+      )
+    }
+    const helpOutput = helpResult.stdout
 
     expect(helpOutput.trim(), `Help command does not start with '⬥ Netlify CLI'\\n\\nVERSION: ${helpOutput}`).toMatch(
       /^⬥ Netlify CLI\n\nVERSION/,
@@ -233,7 +269,15 @@ describe.each(installTests)('%s → installs the cli and runs commands without e
 
     // Unlink
 
-    const unlinkOutput = (await execa(binary, ['unlink'], { cwd })).stdout
+    const unlinkResult = await execa(binary, ['unlink'], { cwd, all: true, reject: false })
+    if (unlinkResult.exitCode !== 0) {
+      throw new Error(
+        `Unlink command failed: ${binary} unlink\nExit code: ${unlinkResult.exitCode.toString()}\n\n${
+          unlinkResult.all || ''
+        }`,
+      )
+    }
+    const unlinkOutput = unlinkResult.stdout
     expect(unlinkOutput, `Unlink command includes command context':\n\n${unlinkOutput}`).toContain(
       `Run netlify link to link it`,
     )
@@ -257,7 +301,7 @@ const runTests: [packageManager: string, config: RunTest][] = [
   ],
 ]
 
-describe.each(runTests)('%s → runs cli commands without errors', (_, config) => {
+describe.each(runTests)('%s → runs cli commands without errors', (packageManager, config) => {
   // TODO: Figure out why this flow is failing on Windows.
   const npxOnWindows = platform() === 'win32' && 'run' in config
 
@@ -269,11 +313,26 @@ describe.each(runTests)('%s → runs cli commands without errors', (_, config) =
 
     // Install
 
-    await execa(cmd, [...args], { env })
+    const installResult = await execa(cmd, [...args], { env, all: true, reject: false })
+    if (installResult.exitCode !== 0) {
+      throw new Error(
+        `Install failed for ${packageManager}\nExit code: ${installResult.exitCode.toString()}\n\n${
+          installResult.all || ''
+        }`,
+      )
+    }
 
     // Help
 
-    const helpOutput = (await execa(cmd, [...args, 'help'], { env })).stdout
+    const helpResult = await execa(cmd, [...args, 'help'], { env, all: true, reject: false })
+    if (helpResult.exitCode !== 0) {
+      throw new Error(
+        `Help command failed: ${cmd} ${args.join(' ')} help\nExit code: ${helpResult.exitCode.toString()}\n\n${
+          helpResult.all || ''
+        }`,
+      )
+    }
+    const helpOutput = helpResult.stdout
 
     expect(helpOutput.trim(), `Help command does not start with '⬥ Netlify CLI'\\n\\nVERSION: ${helpOutput}`).toMatch(
       /^⬥ Netlify CLI\n\nVERSION/,
@@ -288,7 +347,15 @@ describe.each(runTests)('%s → runs cli commands without errors', (_, config) =
 
     // Unlink
 
-    const unlinkOutput = (await execa(cmd, [...args, 'unlink'], { env })).stdout
+    const unlinkResult = await execa(cmd, [...args, 'unlink'], { env, all: true, reject: false })
+    if (unlinkResult.exitCode !== 0) {
+      throw new Error(
+        `Unlink command failed: ${cmd} ${args.join(' ')} unlink\nExit code: ${unlinkResult.exitCode.toString()}\n\n${
+          unlinkResult.all || ''
+        }`,
+      )
+    }
+    const unlinkOutput = unlinkResult.stdout
     expect(unlinkOutput, `Unlink command includes command context':\n\n${unlinkOutput}`).toContain(
       `Run ${cmd} netlify link to link it`,
     )

@@ -5,8 +5,8 @@ import getPort from 'get-port'
 import fetch from 'node-fetch'
 import semver from 'semver'
 import { describe, test } from 'vitest'
-import waitPort from 'wait-port'
 
+import { waitPort } from '../../../../src/lib/wait-port.js'
 import { cliPath } from '../../utils/cli-path.js'
 import { withMockApi } from '../../utils/mock-api.js'
 import { type SiteBuilder, withSiteBuilder } from '../../utils/site-builder.js'
@@ -48,12 +48,8 @@ const withFunctionsServer = async (
       console.log(data.toString())
     })
 
-    const { open } = await waitPort({
-      port,
-      output: 'silent',
-      timeout: SERVE_TIMEOUT,
-    })
-    if (!open) {
+    const result = await waitPort(port, 'localhost', SERVE_TIMEOUT)
+    if (!result.open) {
       throw new Error('Timed out waiting for functions server')
     }
     return await testHandler()

@@ -371,11 +371,12 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
 
   test('runs build command before deploy by default', async (t) => {
     await withSiteBuilder(t, async (builder) => {
-      const content = '<h1>⊂◉‿◉つ</h1>'
+      const rootContent = '<h1>⊂◉‿◉つ</h1>'
+
       builder
         .withContentFile({
           path: 'public/index.html',
-          content,
+          content: rootContent,
         })
         .withNetlifyToml({
           config: {
@@ -386,12 +387,33 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         .withBuildPlugin({
           name: 'log-env',
           plugin: {
+            async onPreBuild() {
+              const { DEPLOY_ID, DEPLOY_URL, NETLIFY_SKEW_PROTECTION_TOKEN } = require('process').env
+              console.log(`DEPLOY_ID_PREBUILD: ${DEPLOY_ID}`)
+              console.log(`DEPLOY_URL_PREBUILD: ${DEPLOY_URL}`)
+              console.log(`NETLIFY_SKEW_PROTECTION_TOKEN_PREBUILD: ${NETLIFY_SKEW_PROTECTION_TOKEN}`)
+            },
             async onSuccess() {
-              const { DEPLOY_ID, DEPLOY_URL } = require('process').env
+              const { DEPLOY_ID, DEPLOY_URL, NETLIFY_SKEW_PROTECTION_TOKEN } = require('process').env
               console.log(`DEPLOY_ID: ${DEPLOY_ID}`)
               console.log(`DEPLOY_URL: ${DEPLOY_URL}`)
+              console.log(`NETLIFY_SKEW_PROTECTION_TOKEN: ${NETLIFY_SKEW_PROTECTION_TOKEN}`)
             },
           },
+        })
+        .withEdgeFunction({
+          handler: async () => new Response('Hello from edge function'),
+          name: 'edge',
+          config: {
+            path: '/edge-function',
+          },
+        })
+        .withFunction({
+          config: { path: '/function' },
+          path: 'hello.mjs',
+          pathPrefix: 'netlify/functions',
+          handler: async () => new Response('Hello from function'),
+          runtimeAPIVersion: 2,
         })
 
       await builder.build()
@@ -402,11 +424,25 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
       })
 
       t.expect(output).toContain('Netlify Build completed in')
+      const [, deployIdPreBuild] = output.match(/DEPLOY_ID_PREBUILD: (\w+)/) ?? []
+      const [, deployURLPreBuild] = output.match(/DEPLOY_URL_PREBUILD: (.+)/) ?? []
+      const [, skewProtectionTokenPreBuild] = output.match(/NETLIFY_SKEW_PROTECTION_TOKEN_PREBUILD: (.+)/) ?? []
       const [, deployId] = output.match(/DEPLOY_ID: (\w+)/) ?? []
       const [, deployURL] = output.match(/DEPLOY_URL: (.+)/) ?? []
+      const [, skewProtectionToken] = output.match(/NETLIFY_SKEW_PROTECTION_TOKEN: (.+)/) ?? []
 
-      t.expect(deployId).not.toEqual('0')
-      t.expect(deployURL).toContain(`https://${deployId}--`)
+      t.expect(deployIdPreBuild).toBeTruthy()
+      t.expect(deployIdPreBuild).not.toEqual('0')
+      t.expect(deployURLPreBuild).toContain(`https://${deployIdPreBuild}--`)
+      t.expect(deployId).toEqual(deployIdPreBuild)
+      t.expect(deployURL).toEqual(deployURLPreBuild)
+
+      t.expect(skewProtectionTokenPreBuild).toEqual(skewProtectionToken)
+      t.expect(skewProtectionToken).toBeTruthy()
+
+      await validateContent({ siteUrl: deployURL, path: '', content: rootContent })
+      await validateContent({ siteUrl: deployURL, path: '/edge-function', content: 'Hello from edge function' })
+      await validateContent({ siteUrl: deployURL, path: '/function', content: 'Hello from function' })
     })
   })
 
@@ -1471,6 +1507,41 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
 
       try {
         const deploy = await callCli(['deploy', '--json', '--no-build', '--dir', 'public', '--upload-source-zip'], {
+          cwd: builder.directory,
+          env: { NETLIFY_SITE_ID: context.siteId },
+        }).then((output: string) => JSON.parse(output))
+
+        await validateDeploy({ deploy, siteName: SITE_NAME, content })
+        expect(deploy).toHaveProperty('source_zip_filename')
+        expect(typeof deploy.source_zip_filename).toBe('string')
+        expect(deploy.source_zip_filename).toMatch(/\.zip$/)
+      } catch (error) {
+        // If the feature is not yet supported by the API, skip the test
+        if (
+          error instanceof Error &&
+          (error.message.includes('include_upload_url') || error.message.includes('source_zip'))
+        ) {
+          t.skip()
+        } else {
+          throw error
+        }
+      }
+    })
+  })
+
+  test('should include source_zip_filename in JSON output when --upload-source-zip flag is used with build', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      const content = '<h1>Source zip test with build</h1>'
+      builder.withContentFile({
+        path: 'public/index.html',
+        content,
+      })
+
+      await builder.build()
+
+      try {
+        // Test WITH build (the default) - this is what agent runners use
+        const deploy = await callCli(['deploy', '--json', '--dir', 'public', '--upload-source-zip'], {
           cwd: builder.directory,
           env: { NETLIFY_SITE_ID: context.siteId },
         }).then((output: string) => JSON.parse(output))
