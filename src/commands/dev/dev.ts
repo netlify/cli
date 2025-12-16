@@ -159,11 +159,14 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
     await setupAIGateway({ api, env, siteID: site.id, siteURL: siteUrl })
 
     // Parse AI Gateway context and inject provider API keys
-    const aiGatewayContext = parseAIGatewayContext(env.AI_GATEWAY?.value)
-    if (aiGatewayContext?.envVars) {
-      for (const envVar of aiGatewayContext.envVars) {
-        env[envVar.key] = { sources: ['internal'], value: aiGatewayContext.token }
-        env[envVar.url] = { sources: ['internal'], value: aiGatewayContext.url }
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- AI_GATEWAY is conditionally set by setupAIGateway
+    if (env.AI_GATEWAY) {
+      const aiGatewayContext = parseAIGatewayContext(env.AI_GATEWAY.value)
+      if (aiGatewayContext?.envVars) {
+        for (const envVar of aiGatewayContext.envVars) {
+          env[envVar.key] = { sources: ['internal'], value: aiGatewayContext.token }
+          env[envVar.url] = { sources: ['internal'], value: aiGatewayContext.url }
+        }
       }
     }
   }
