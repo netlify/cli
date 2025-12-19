@@ -392,7 +392,9 @@ describe.concurrent('commands/init', () => {
 
         handleQuestions(childProcess, initQuestions)
 
-        await childProcess
+        const { stdout } = await childProcess
+
+        t.expect(stdout).toContain("We detected that you're using Next.js. Below are recommended build settings.")
 
         await assertNetlifyToml(t, builder.directory, { command, functions: defaultFunctionsDirectory, publish })
       })
