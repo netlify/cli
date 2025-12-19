@@ -157,6 +157,18 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
 
   if (!options.offline && !options.offlineEnv) {
     await setupAIGateway({ api, env, siteID: site.id, siteURL: siteUrl })
+
+    // Parse AI Gateway context and inject provider API keys
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- AI_GATEWAY is conditionally set by setupAIGateway
+    if (env.AI_GATEWAY) {
+      const aiGatewayContext = parseAIGatewayContext(env.AI_GATEWAY.value)
+      if (aiGatewayContext?.envVars) {
+        for (const envVar of aiGatewayContext.envVars) {
+          env[envVar.key] = { sources: ['internal'], value: aiGatewayContext.token }
+          env[envVar.url] = { sources: ['internal'], value: aiGatewayContext.url }
+        }
+      }
+    }
   }
 
   injectEnvVariables(env)
@@ -166,6 +178,12 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
   let settings: ServerSettings
   try {
     settings = await detectServerSettings(devConfig, options, command)
+
+    // Ensure settings.env includes all injected env vars for child process
+    settings.env = {
+      ...process.env,
+      ...settings.env,
+    }
 
     const { NETLIFY_INCLUDE_DEV_SERVER_PLUGIN } = process.env
 
