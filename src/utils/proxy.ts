@@ -15,6 +15,7 @@ import zlib from 'zlib'
 
 import { renderFunctionErrorPage } from '@netlify/dev-utils'
 import { ImageHandler } from '@netlify/images'
+import type { AIGatewayContext } from '@netlify/ai/bootstrap'
 import contentType from 'content-type'
 import cookie from 'cookie'
 import { getProperty } from 'dot-prop'
@@ -921,6 +922,7 @@ type EdgeFunctionsProxy = Awaited<ReturnType<typeof initializeEdgeFunctionsProxy
 export const startProxy = async function ({
   accountId,
   addonsUrls,
+  aiGatewayContext,
   api,
   blobsContext,
   command,
@@ -946,6 +948,7 @@ export const startProxy = async function ({
   settings: ServerSettings
   disableEdgeFunctions: boolean
   getUpdatedConfig: () => Promise<NormalizedCachedConfigConfig>
+  aiGatewayContext?: AIGatewayContext | null
 } & Record<string, $TSFixMe>) {
   const secondaryServerPort = settings.https ? await getAvailablePort() : null
   const functionsServer = settings.functionsPort ? `http://127.0.0.1:${settings.functionsPort}` : null
@@ -958,8 +961,10 @@ export const startProxy = async function ({
     )
   } else {
     edgeFunctionsProxy = await initializeEdgeFunctionsProxy({
-      command,
+      accountId,
+      aiGatewayContext,
       blobsContext,
+      command,
       config,
       configPath,
       debug,
@@ -975,7 +980,6 @@ export const startProxy = async function ({
       projectDir,
       repositoryRoot,
       siteInfo,
-      accountId,
       state,
     })
   }

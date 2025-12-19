@@ -1,8 +1,7 @@
 import { rm } from 'node:fs/promises'
 
-import waitPort from 'wait-port'
-
 import { startSpinner, stopSpinner } from '../lib/spinner.js'
+import { waitPort } from '../lib/wait-port.js'
 
 import { logAndThrowError, log, NETLIFYDEVERR, NETLIFYDEVLOG, chalk } from './command-helpers.js'
 import { runCommand } from './shell.js'
@@ -56,14 +55,13 @@ export const startFrameworkServer = async function ({
       const ipVersion = parseInt(process.versions.node.split('.')[0]) >= 18 ? 6 : 4
       port = { open: true, ipVersion }
     } else {
-      const waitPortPromise = waitPort({
+      const waitPortPromise = waitPort(
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        port: settings.frameworkPort!,
-        host: 'localhost',
-        output: 'silent',
-        timeout: FRAMEWORK_PORT_TIMEOUT_MS,
-        ...(settings.pollingStrategies?.includes('HTTP') && { protocol: 'http' }),
-      })
+        settings.frameworkPort!,
+        'localhost',
+        FRAMEWORK_PORT_TIMEOUT_MS,
+        20,
+      )
 
       const timerId = setTimeout(() => {
         if (!port?.open) {

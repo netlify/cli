@@ -5,7 +5,7 @@ import { format, inspect } from 'util'
 
 import type { NetlifyAPI } from '@netlify/api'
 import { getAPIToken } from '@netlify/dev-utils'
-import { Chalk } from 'chalk'
+import { Chalk, type ChalkInstance as ChalkInstancePrimitiveType } from 'chalk'
 import WSL from 'is-wsl'
 import terminalLink from 'terminal-link'
 
@@ -22,7 +22,7 @@ const argv = process.argv.slice(2)
  * Chalk instance for CLI that can be initialized with no colors mode
  * needed for json outputs where we don't want to have colors
  * @param  {boolean} noColors - disable chalk colors
- * @return {import('chalk').ChalkInstance} - default or custom chalk instance
+ * @return {ChalkInstancePrimitiveType} - default or custom chalk instance
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'noColors' implicitly has an 'any' type.
 const safeChalk = function (noColors) {
@@ -34,6 +34,8 @@ const safeChalk = function (noColors) {
 }
 
 export const chalk = safeChalk(argv.includes('--json'))
+
+export type ChalkInstance = ChalkInstancePrimitiveType
 
 /**
  * Adds the filler to the start of the string
@@ -298,7 +300,7 @@ export const netlifyCommand = () => {
   }
 
   // Captures `pnpx netlify ...`
-  if (pkgFromUserAgent(npm_config_user_agent) === 'pnpm' && npm_command === 'run-script') {
+  if (pkgFromUserAgent(npm_config_user_agent) === 'pnpm' && ['run-script', 'run'].includes(npm_command ?? '')) {
     return `pnpx netlify`
   }
 

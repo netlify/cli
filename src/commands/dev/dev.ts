@@ -19,6 +19,8 @@ import {
   netlifyCommand,
 } from '../../utils/command-helpers.js'
 import detectServerSettings, { getConfigWithPlugins } from '../../utils/detect-server-settings.js'
+import { parseAIGatewayContext, setupAIGateway } from '@netlify/ai/bootstrap'
+
 import { UNLINKED_SITE_MOCK_ID, getDotEnvVariables, getSiteInformation, injectEnvVariables } from '../../utils/dev.js'
 import { getEnvelopeEnv } from '../../utils/env/index.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
@@ -143,8 +145,6 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
   }
 
   env = await getDotEnvVariables({ devConfig, env, site })
-  injectEnvVariables(env)
-  await promptEditorHelper({ chalk, config, log, NETLIFYDEVLOG, repositoryRoot, state })
 
   const { accountId, addonsUrls, capabilities, siteUrl, timeouts } = await getSiteInformation({
     // inherited from base command --offline
@@ -155,9 +155,35 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
     siteInfo,
   })
 
+  if (!options.offline && !options.offlineEnv) {
+    await setupAIGateway({ api, env, siteID: site.id, siteURL: siteUrl })
+
+    // Parse AI Gateway context and inject provider API keys
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- AI_GATEWAY is conditionally set by setupAIGateway
+    if (env.AI_GATEWAY) {
+      const aiGatewayContext = parseAIGatewayContext(env.AI_GATEWAY.value)
+      if (aiGatewayContext?.envVars) {
+        for (const envVar of aiGatewayContext.envVars) {
+          env[envVar.key] = { sources: ['internal'], value: aiGatewayContext.token }
+          env[envVar.url] = { sources: ['internal'], value: aiGatewayContext.url }
+        }
+      }
+    }
+  }
+
+  injectEnvVariables(env)
+
+  await promptEditorHelper({ chalk, config, log, NETLIFYDEVLOG, repositoryRoot, state })
+
   let settings: ServerSettings
   try {
     settings = await detectServerSettings(devConfig, options, command)
+
+    // Ensure settings.env includes all injected env vars for child process
+    settings.env = {
+      ...process.env,
+      ...settings.env,
+    }
 
     const { NETLIFY_INCLUDE_DEV_SERVER_PLUGIN } = process.env
 
@@ -204,7 +230,11 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
   // FIXME(serhalp): `applyMutations` is `(any, any) => any)`. Add types in `@netlify/config`.
   const mutatedConfig: typeof config = applyMutations(config, configMutations)
 
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  const aiGatewayContext = parseAIGatewayContext(env.AI_GATEWAY?.value)
+
   const functionsRegistry = await startFunctionsServer({
+    aiGatewayContext,
     blobsContext,
     command,
     config: mutatedConfig,
@@ -245,6 +275,7 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
 
   await startProxyServer({
     addonsUrls,
+    aiGatewayContext,
     api,
     blobsContext,
     command,

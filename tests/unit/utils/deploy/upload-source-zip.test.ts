@@ -1,4 +1,5 @@
 import { describe, expect, test, vi, beforeEach } from 'vitest'
+import { join } from 'path'
 import type { Response } from 'node-fetch'
 import type { ChildProcess } from 'child_process'
 
@@ -14,6 +15,7 @@ vi.mock('child_process', () => ({
 vi.mock('fs/promises', () => ({
   readFile: vi.fn(),
   unlink: vi.fn(),
+  mkdir: vi.fn(),
 }))
 
 vi.mock('../../../../src/utils/command-helpers.js', () => ({
@@ -199,7 +201,7 @@ describe('uploadSourceZip', () => {
 
     expect(mockChildProcess.execFile).toHaveBeenCalledWith(
       'zip',
-      expect.arrayContaining(['-x', 'node_modules', '-x', '.git', '-x', '.netlify', '-x', '.env']),
+      expect.arrayContaining(['-x', 'node_modules*', '-x', '.git*', '-x', '.netlify*', '-x', '.env']),
       expect.objectContaining({
         cwd: '/test/source',
         maxBuffer: 104857600,
@@ -367,5 +369,65 @@ describe('uploadSourceZip', () => {
     })
 
     expect(result).toHaveProperty('sourceZipFileName')
+  })
+
+  test('creates subdirectories when filename includes path', async () => {
+    // Ensure OS platform mock returns non-Windows
+    const mockOs = await import('os')
+    vi.mocked(mockOs.platform).mockReturnValue('darwin')
+
+    const { uploadSourceZip } = await import('../../../../src/utils/deploy/upload-source-zip.js')
+
+    const mockFetch = await import('node-fetch')
+    const mockChildProcess = await import('child_process')
+    const mockFs = await import('fs/promises')
+    const mockCommandHelpers = await import('../../../../src/utils/command-helpers.js')
+    const mockTempFile = await import('../../../../src/utils/temporary-file.js')
+
+    vi.mocked(mockFetch.default).mockResolvedValue({
+      ok: true,
+      status: 200,
+      statusText: 'OK',
+    } as unknown as Response)
+
+    vi.mocked(mockChildProcess.execFile).mockImplementation((_command, _args, _options, callback) => {
+      if (callback) {
+        callback(null, '', '')
+      }
+      return {} as ChildProcess
+    })
+
+    vi.mocked(mockFs.readFile).mockResolvedValue(Buffer.from('mock zip content'))
+    vi.mocked(mockFs.mkdir).mockResolvedValue(undefined)
+    vi.mocked(mockCommandHelpers.log).mockImplementation(() => {})
+    vi.mocked(mockTempFile.temporaryDirectory).mockReturnValue('/tmp/test-temp-dir')
+
+    const mockStatusCb = vi.fn()
+
+    // Test with a filename that includes a subdirectory path (like the API provides)
+    await uploadSourceZip({
+      sourceDir: '/test/source',
+      uploadUrl: 'https://s3.example.com/upload-url',
+      filename: 'workspace-snapshots/source-abc123-def456.zip',
+      statusCb: mockStatusCb,
+    })
+
+    // Should create the subdirectory before attempting zip creation
+    expect(mockFs.mkdir).toHaveBeenCalledWith(join('/tmp/test-temp-dir', 'workspace-snapshots'), { recursive: true })
+
+    // Should still call zip command with the full path
+    expect(mockChildProcess.execFile).toHaveBeenCalledWith(
+      'zip',
+      expect.arrayContaining([
+        '-r',
+        join('/tmp/test-temp-dir', 'workspace-snapshots', 'source-abc123-def456.zip'),
+        '.',
+      ]),
+      expect.objectContaining({
+        cwd: '/test/source',
+        maxBuffer: 104857600,
+      }),
+      expect.any(Function),
+    )
   })
 })

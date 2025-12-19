@@ -16,15 +16,19 @@ jobs:
       contents: write
     steps:
       - name: Check out specified ref (${{ inputs.ref }})
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ inputs.ref }}
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
-          node-version: '22.18.0'
+          node-version: '24'
           cache: npm
           registry-url: 'https://registry.npmjs.org'
+
+      # Use npm@10 due to https://github.com/npm/cli/issues/8489 and https://github.com/npm/cli/issues/8767
+      - name: Setup npm version
+        run: npm install -g npm@10
 
       - name: Install core dependencies
         run: npm ci --no-audit

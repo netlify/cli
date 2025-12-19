@@ -1,6 +1,7 @@
 import { type Stats } from 'fs'
 import { stat } from 'fs/promises'
 import { basename, resolve } from 'path'
+import { stdin, stdout } from 'process'
 
 import type { NetlifyAPI } from '@netlify/api'
 import { type NetlifyConfig, type OnPostBuild, runCoreSteps } from '@netlify/build'
@@ -52,6 +53,7 @@ import { SiteInfo } from '../../utils/types.js'
 import type { DeployOptionValues } from './option_values.js'
 import boxen from 'boxen'
 import terminalLink from 'terminal-link'
+import { anyEdgeFunctionsDirectoryExists } from '../../lib/edge-functions/get-directories.js'
 
 const triggerDeploy = async ({
   api,
@@ -118,6 +120,14 @@ const getDeployFolder = async ({
   }
 
   if (!deployFolder) {
+    if (!stdin.isTTY || !stdout.isTTY) {
+      // non interactive - can't get the value, resolve to the cwd
+      if (command.workspacePackage) {
+        return command.jsWorkspaceRoot || site.root
+      }
+      return command.workingDir
+    }
+
     log('Please provide a publish directory (e.g. "public" or "dist" or "."):')
 
     // Generate copy-pasteable command with current options
@@ -363,41 +373,46 @@ const prepareProductionDeploy = async ({ api, siteData, options, command }) => {
   }
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'actual' implicitly has an 'any' type.
-const hasErrorMessage = (actual, expected) => {
+const hasErrorMessage = (actual: unknown, expected: string): boolean => {
   if (typeof actual === 'string') {
     return actual.includes(expected)
   }
   return false
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'error_' implicitly has an 'any' t... Remove this comment to see the full error message
-const reportDeployError = ({ error_, failAndExit }) => {
+interface DeployError extends Error {
+  json?: { message?: string }
+  status?: unknown
+}
+const reportDeployError = ({
+  error,
+  failAndExit,
+}: {
+  error: DeployError
+  failAndExit: (err: unknown) => never
+}): never => {
   switch (true) {
-    case error_.name === 'JSONHTTPError': {
-      const message = error_?.json?.message ?? ''
+    case error.name === 'JSONHTTPError': {
+      const message = error.json?.message ?? ''
       if (hasErrorMessage(message, 'Background Functions not allowed by team plan')) {
         return failAndExit(`\n${BACKGROUND_FUNCTIONS_WARNING}`)
       }
-      warn(`JSONHTTPError: ${message} ${error_.status}`)
-      warn(`\n${JSON.stringify(error_, null, '  ')}\n`)
-      failAndExit(error_)
-      return
+      warn(`JSONHTTPError: ${message} ${error.status}`)
+      warn(`\n${JSON.stringify(error, null, '  ')}\n`)
+      return failAndExit(error)
     }
-    case error_.name === 'TextHTTPError': {
-      warn(`TextHTTPError: ${error_.status}`)
-      warn(`\n${error_}\n`)
-      failAndExit(error_)
-      return
+    case error.name === 'TextHTTPError': {
+      warn(`TextHTTPError: ${error.status}`)
+      warn(`\n${error}\n`)
+      return failAndExit(error)
     }
-    case hasErrorMessage(error_.message, 'Invalid filename'): {
-      warn(error_.message)
-      failAndExit(error_)
-      return
+    case hasErrorMessage(error.message, 'Invalid filename'): {
+      warn(error.message)
+      return failAndExit(error)
     }
     default: {
-      warn(`\n${JSON.stringify(error_, null, '  ')}\n`)
-      failAndExit(error_)
+      warn(`\n${JSON.stringify(error, null, '  ')}\n`)
+      return failAndExit(error)
     }
   }
 }
@@ -521,9 +536,11 @@ const runDeploy = async ({
   skipFunctionsCache,
   // @ts-expect-error TS(7031) FIXME: Binding element 'title' implicitly has an 'any' ty... Remove this comment to see the full error message
   title,
+  deployId: existingDeployId,
 }: {
   functionsFolder?: string
   command: BaseCommand
+  deployId?: string
 }): Promise<{
   siteId: string
   siteName: string
@@ -536,28 +553,35 @@ const runDeploy = async ({
   sourceZipFileName?: string
 }> => {
   let results
-  let deployId
+  let deployId = existingDeployId
   let uploadSourceZipResult
 
   try {
-    if (deployToProduction) {
-      await prepareProductionDeploy({ siteData, api, options, command })
-    }
+    // We won't have a deploy ID if we run the command with `--no-build`.
+    // In this case, we must create the deploy.
+    if (!deployId) {
+      if (deployToProduction) {
+        await prepareProductionDeploy({ siteData, api, options, command })
+      }
 
-    const draft = !deployToProduction && !alias
-    const createDeployBody = { draft, branch: alias, include_upload_url: options.uploadSourceZip }
+      const draft = options.draft || (!deployToProduction && !alias)
+      const createDeployBody = { draft, branch: alias, include_upload_url: options.uploadSourceZip }
 
-    results = await api.createSiteDeploy({ siteId, title, body: createDeployBody })
-    deployId = results.id
+      const createDeployResponse = await api.createSiteDeploy({ siteId, title, body: createDeployBody })
+      deployId = createDeployResponse.id as string
 
-    // Handle source zip upload if requested and URL provided
-    if (options.uploadSourceZip && results.source_zip_upload_url && results.source_zip_filename) {
-      uploadSourceZipResult = await uploadSourceZip({
-        sourceDir: site.root,
-        uploadUrl: results.source_zip_upload_url,
-        filename: results.source_zip_filename,
-        statusCb: silent ? () => {} : deployProgressCb(),
-      })
+      if (
+        options.uploadSourceZip &&
+        createDeployResponse.source_zip_upload_url &&
+        createDeployResponse.source_zip_filename
+      ) {
+        uploadSourceZipResult = await uploadSourceZip({
+          sourceDir: site.root,
+          uploadUrl: createDeployResponse.source_zip_upload_url,
+          filename: createDeployResponse.source_zip_filename,
+          statusCb: silent ? () => {} : deployProgressCb(),
+        })
+      }
     }
 
     const internalFunctionsFolder = await getInternalFunctionsDir({ base: site.root, packagePath, ensureExists: true })
@@ -618,11 +642,12 @@ const runDeploy = async ({
       skipFunctionsCache,
       siteRoot: site.root,
     })
-  } catch (error_) {
+  } catch (error) {
     if (deployId) {
       await cancelDeploy({ api, deployId })
     }
-    reportDeployError({ error_, failAndExit: logAndThrowError })
+
+    return reportDeployError({ error: error as DeployError, failAndExit: logAndThrowError })
   }
 
   const siteUrl = results.deploy.ssl_url || results.deploy.url
@@ -655,15 +680,19 @@ const handleBuild = async ({
   currentDir,
   defaultConfig,
   deployHandler,
+  deployId,
   options,
   packagePath,
+  skewProtectionToken,
 }: {
   cachedConfig: CachedConfig
   currentDir: string
   defaultConfig?: DefaultConfig | undefined
   deployHandler?: PatchedHandlerType<OnPostBuild> | undefined
+  deployId?: string
   options: DeployOptionValues
   packagePath: string | undefined
+  skewProtectionToken?: string
 }) => {
   if (!options.build) {
     return {}
@@ -671,20 +700,30 @@ const handleBuild = async ({
   const [token] = await getToken()
   const resolvedOptions = await getRunBuildOptions({
     cachedConfig,
-    defaultConfig,
-    packagePath,
-    token,
-    options,
     currentDir,
+    defaultConfig,
     deployHandler,
+    deployId,
+    options,
+    packagePath,
+    skewProtectionToken,
+    token,
   })
-  const { configMutations, exitCode, newConfig } = await runBuild(resolvedOptions)
+
+  const { configMutations, exitCode, newConfig, logs } = await runBuild(resolvedOptions)
   // Without this, the deploy command fails silently
-  if (options.json && exitCode !== 0) {
-    logAndThrowError('Error while running build')
-  }
   if (exitCode !== 0) {
-    exit(exitCode)
+    let message = ''
+
+    if (options.verbose && logs?.stdout.length) {
+      message += `\n\n${logs.stdout.join('')}\n\n`
+    }
+
+    if (logs?.stderr.length) {
+      message += logs.stderr.join('')
+    }
+
+    logAndThrowError(`Error while running build${message}`)
   }
   return { newConfig, configMutations }
 }
@@ -708,8 +747,11 @@ const bundleEdgeFunctions = async (options: DeployOptionValues, command: BaseCom
     // We log our own progress so we don't want this as well. Plus, this logs much of the same
     // information as the build that (likely) came before this as part of the deploy build.
     quiet: options.debug ?? true,
-    // @ts-expect-error FIXME(serhalp): This is missing from the `runCoreSteps` type in @netlify/build
+    // (cachedConfig type error hides this one, but it still is valid) @ts-expect-error FIXME(serhalp): This is missing from the `runCoreSteps` type in @netlify/build
     edgeFunctionsBootstrapURL: await getBootstrapURL(),
+    // @ts-expect-error 'CachedConfig' is not assignable to type 'Record<string, unknown>'.
+    // Index signature for type 'string' is missing in type 'CachedConfig'.
+    cachedConfig: command.netlify.cachedConfig,
   })
 
   if (!success) {
@@ -826,10 +868,12 @@ const prepAndRunDeploy = async ({
   siteData,
   siteId,
   workingDir,
+  deployId,
 }: {
   options: DeployOptionValues
   command: BaseCommand
   workingDir: string
+  deployId?: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- FIXME(serhalp)
   [key: string]: any
 }) => {
@@ -848,10 +892,11 @@ const prepAndRunDeploy = async ({
   const functionsFolder = getFunctionsFolder({ workingDir, options, config, site, siteData })
   const { configPath } = site
 
-  const edgeFunctionsConfig = command.netlify.config.edge_functions
-
-  // build flag wasn't used and edge functions exist
-  if (!options.build && edgeFunctionsConfig && edgeFunctionsConfig.length !== 0) {
+  // build flag wasn't used and edge functions directories exist
+  if (!options.build && (await anyEdgeFunctionsDirectoryExists(command))) {
+    // for the case of directories existing but not containing any edge functions,
+    // there is early bail in edge functions bundling after scanning for edge functions
+    // for this case and to avoid replicating scanning logic here, we defer to the bundling step
     await bundleEdgeFunctions(options, command)
   }
 
@@ -909,6 +954,7 @@ const prepAndRunDeploy = async ({
     siteId,
     skipFunctionsCache: options.skipFunctionsCache,
     title: options.message,
+    deployId,
   })
 
   return results
@@ -1050,34 +1096,84 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
     return triggerDeploy({ api, options, siteData, siteId })
   }
 
-  const deployToProduction = options.prod || (options.prodIfUnlocked && !(siteData.published_deploy?.locked ?? false))
+  const deployToProduction =
+    !options.draft && (options.prod || (options.prodIfUnlocked && !(siteData.published_deploy?.locked ?? false)))
 
   let results = {} as Awaited<ReturnType<typeof prepAndRunDeploy>>
 
   if (options.build) {
-    const settings = await detectFrameworkSettings(command, 'build')
-    await handleBuild({
-      packagePath: command.workspacePackage,
-      cachedConfig: command.netlify.cachedConfig,
-      defaultConfig: getDefaultConfig(settings),
-      currentDir: command.workingDir,
-      options,
-      deployHandler: async ({ netlifyConfig }: { netlifyConfig: NetlifyConfig }) => {
-        results = await prepAndRunDeploy({
-          command,
-          options,
-          workingDir,
-          api,
-          site,
-          config: netlifyConfig,
-          siteData,
-          siteId,
-          deployToProduction,
-        })
+    if (deployToProduction) {
+      await prepareProductionDeploy({ siteData, api, options, command })
+    }
 
-        return { newEnvChanges: { DEPLOY_ID: results.deployId, DEPLOY_URL: results.deployUrl } }
-      },
-    })
+    const draft = options.draft || (!deployToProduction && !alias)
+    const createDeployBody = { draft, branch: alias, include_upload_url: options.uploadSourceZip }
+
+    // TODO: Type this properly in `@netlify/api`.
+    const deployMetadata = (await api.createSiteDeploy({
+      siteId,
+      title: options.message,
+      body: createDeployBody,
+    })) as Awaited<ReturnType<typeof api.createSiteDeploy>> & {
+      source_zip_upload_url?: string
+      source_zip_filename?: string
+    }
+    const deployId = deployMetadata.id || ''
+    const skewProtectionToken = deployMetadata.skew_protection_token
+    let sourceZipFileName: string | undefined
+
+    if (
+      options.uploadSourceZip &&
+      deployMetadata.source_zip_upload_url &&
+      deployMetadata.source_zip_filename &&
+      site.root
+    ) {
+      await uploadSourceZip({
+        sourceDir: site.root,
+        uploadUrl: deployMetadata.source_zip_upload_url,
+        filename: deployMetadata.source_zip_filename,
+        statusCb: options.json || options.silent ? () => {} : deployProgressCb(),
+      })
+      sourceZipFileName = deployMetadata.source_zip_filename
+    }
+    try {
+      const settings = await detectFrameworkSettings(command, 'build')
+      await handleBuild({
+        packagePath: command.workspacePackage,
+        cachedConfig: command.netlify.cachedConfig,
+        defaultConfig: getDefaultConfig(settings),
+        currentDir: command.workingDir,
+        options,
+        deployHandler: async ({ netlifyConfig }: { netlifyConfig: NetlifyConfig }) => {
+          results = await prepAndRunDeploy({
+            command,
+            options,
+            workingDir,
+            api,
+            site,
+            config: netlifyConfig,
+            siteData,
+            siteId,
+            deployToProduction,
+            deployId,
+          })
+
+          return {}
+        },
+        deployId,
+        skewProtectionToken,
+      })
+
+      // Ensure source zip filename is included in results for JSON output
+      if (sourceZipFileName) {
+        results.sourceZipFileName = sourceZipFileName
+      }
+    } catch (error) {
+      // The build has failed, so let's cancel the deploy we created.
+      await cancelDeploy({ api, deployId })
+
+      throw error
+    }
   } else {
     results = await prepAndRunDeploy({
       command,

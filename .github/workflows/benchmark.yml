@@ -12,12 +12,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Git checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Use Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: lts/*
+          node-version: '24'
           cache: npm
 
       - name: Install dependencies
@@ -41,7 +41,7 @@ jobs:
         run: echo ${{ github.event.number }} > ./pr_number
 
       - name: Upload deltas
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: delta-action-deltas
           retention-days: 7

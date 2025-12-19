@@ -4,6 +4,10 @@
   "ignorePresets": [":prHourlyLimit2"],
   "semanticCommits": "enabled",
   "dependencyDashboard": true,
+  "constraints": {
+    // Use npm@10 due to https://github.com/npm/cli/issues/8489 and https://github.com/npm/cli/issues/8767
+    "npm": '^10.0.0',
+  },
   "postUpdateOptions": ["npmDedupe"],
   "packageRules": [
     {
