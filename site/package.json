@@ -24,7 +24,7 @@
     "strip-ansi": "7.1.2"
   },
   "devDependencies": {
-    "@netlify/functions": "5.1.0",
+    "@netlify/functions": "5.1.2",
     "tsx": "4.20.6"
   }
 }
