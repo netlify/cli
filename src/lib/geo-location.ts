@@ -97,8 +97,7 @@ const getGeoLocationFromAPI = async (): Promise<Geolocation> => {
     method: 'GET',
     signal: AbortSignal.timeout(REQUEST_TIMEOUT),
   })
-  // @ts-expect-error TS(2339) - Property 'geo' does not exist on type 'unknown'
-  const { geo } = await res.json()
+  const { geo } = (await res.json()) as { geo: Geolocation }
 
   return geo
 }
