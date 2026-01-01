@@ -92,13 +92,17 @@ export const getGeoLocation = async ({
 /**
  * Returns geolocation data from a remote API.
  */
+
+interface GeoLocationAPIResponse {
+  geo: Geolocation
+}
+
 const getGeoLocationFromAPI = async (): Promise<Geolocation> => {
   const res = await fetch(API_URL, {
     method: 'GET',
     signal: AbortSignal.timeout(REQUEST_TIMEOUT),
   })
-  // @ts-expect-error TS(2339) - Property 'geo' does not exist on type 'unknown'
-  const { geo } = await res.json()
+  const { geo } = (await res.json()) as GeoLocationAPIResponse
 
   return geo
 }
