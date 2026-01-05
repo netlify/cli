@@ -10,10 +10,8 @@
 // // rawFlags = {stuff: yay!}
 //
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'raw' implicitly has an 'any' type.
-export const parseRawFlags = function (raw) {
-  // @ts-expect-error TS(7006) FIXME: Parameter 'acc' implicitly has an 'any' type.
-  const rawFlags = raw.reduce((acc, curr, index, array) => {
+export const parseRawFlags = function (raw: string[]): Record<string, unknown> {
+  const rawFlags = raw.reduce((acc: Record<string, unknown>, curr, index, array) => {
     if (/^-{1,2}/.test(curr)) {
       const key = curr.replace(/^-{1,2}/, '')
       const next = array[index + 1]
@@ -30,8 +28,7 @@ export const parseRawFlags = function (raw) {
   return rawFlags
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
-export const aggressiveJSONParse = function (value) {
+export const aggressiveJSONParse = function (value: string): unknown {
   if (value === 'true') {
     return true
   }
