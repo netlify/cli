@@ -1,26 +1,24 @@
 import { readFile } from 'fs/promises'
+import { ClientRequest, RequestOptions } from 'http'
 
-import { HttpsProxyAgent } from 'https-proxy-agent'
+import { HttpsProxyAgent, HttpsProxyAgentOptions } from 'https-proxy-agent'
 
 import { NETLIFYDEVERR, NETLIFYDEVWARN, exit, log } from '../utils/command-helpers.js'
 import { waitPort } from './wait-port.js'
 
 // https://github.com/TooTallNate/node-https-proxy-agent/issues/89
 // Maybe replace with https://github.com/delvedor/hpagent
-// @ts-expect-error TS(2507) FIXME: Type 'typeof createHttpsProxyAgent' is not a const... Remove this comment to see the full error message
 class HttpsProxyAgentWithCA extends HttpsProxyAgent {
-  // @ts-expect-error TS(7006) FIXME: Parameter 'opts' implicitly has an 'any' type.
-  constructor(opts) {
+  ca: Buffer | undefined
+
+  constructor(opts: HttpsProxyAgentOptions) {
     super(opts)
-    // @ts-expect-error TS(2339) FIXME: Property 'ca' does not exist on type 'HttpsProxyAg... Remove this comment to see the full error message
     this.ca = opts.ca
   }
 
-  // @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
-  callback(req, opts) {
+  callback(req: ClientRequest, opts: RequestOptions) {
     return super.callback(req, {
       ...opts,
-      // @ts-expect-error TS(2339) FIXME: Property 'ca' does not exist on type 'HttpsProxyAg... Remove this comment to see the full error message
       ...(this.ca && { ca: this.ca }),
     })
   }
@@ -31,21 +29,27 @@ const DEFAULT_HTTPS_PORT = 443
 // 50 seconds
 const AGENT_PORT_TIMEOUT = 50_000
 
+const isError = (error: unknown): error is Error => error instanceof Error
+
 export const tryGetAgent = async ({
   certificateFile,
   httpProxy,
 }: {
-  httpProxy?: string | undefined
-  certificateFile?: string | undefined
+  httpProxy?: string
+  certificateFile?: string
 }): Promise<
   | {
-      error?: string | undefined
-      warning?: string | undefined
-      message?: string | undefined
+      error?: string
+      warning?: string
+      message?: string
+      agent?: undefined
     }
   | {
       agent: HttpsProxyAgentWithCA
-      response: unknown
+      response?: unknown
+      error?: undefined
+      warning?: string
+      message?: string
     }
 > => {
   if (!httpProxy) {
@@ -73,8 +77,7 @@ export const tryGetAgent = async ({
     )
   } catch (error) {
     // unknown error
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    return { error: `${httpProxy} is not available.`, message: error.message }
+    return { error: `${httpProxy} is not available.`, message: isError(error) ? error.message : String(error) }
   }
 
   if (!port.open) {
@@ -82,19 +85,21 @@ export const tryGetAgent = async ({
     return { error: `Could not connect to '${httpProxy}'` }
   }
 
-  let response = {}
+  let response: { warning?: string; message?: string } = {}
 
   let certificate
   if (certificateFile) {
     try {
       certificate = await readFile(certificateFile)
     } catch (error) {
-      // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-      response = { warning: `Could not read certificate file '${certificateFile}'.`, message: error.message }
+      response = {
+        warning: `Could not read certificate file '${certificateFile}'.`,
+        message: isError(error) ? error.message : String(error),
+      }
     }
   }
 
-  const opts = {
+  const opts: HttpsProxyAgentOptions = {
     port: proxyUrl.port,
     host: proxyUrl.host,
     hostname: proxyUrl.hostname,
@@ -103,13 +108,16 @@ export const tryGetAgent = async ({
   }
 
   const agent = new HttpsProxyAgentWithCA(opts)
-  response = { ...response, agent }
-  return response
+  return { ...response, agent }
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'certificateFile' implicitly has a... Remove this comment to see the full error message
-export const getAgent = async ({ certificateFile, httpProxy }) => {
-  // @ts-expect-error TS(2339) FIXME: Property 'agent' does not exist on type '{ error?:... Remove this comment to see the full error message
+export const getAgent = async ({
+  certificateFile,
+  httpProxy,
+}: {
+  httpProxy?: string
+  certificateFile?: string
+}) => {
   const { agent, error, message, warning } = await tryGetAgent({ httpProxy, certificateFile })
   if (error) {
     log(NETLIFYDEVERR, error, message || '')
