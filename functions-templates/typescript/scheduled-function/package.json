@@ -17,6 +17,6 @@
   "dependencies": {
     "@netlify/functions": "^5.1.0",
     "@types/node": "^22.0.0",
-    "typescript": "^4.5.5"
+    "typescript": "^5.0.0"
   }
 }
