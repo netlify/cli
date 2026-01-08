@@ -6,7 +6,7 @@ import { format, inspect } from 'util'
 import type { NetlifyAPI } from '@netlify/api'
 import { getAPIToken } from '@netlify/dev-utils'
 import { Chalk, type ChalkInstance as ChalkInstancePrimitiveType } from 'chalk'
-import { Option } from 'commander'
+import type { Option } from 'commander'
 import WSL from 'is-wsl'
 import terminalLink from 'terminal-link'
 
