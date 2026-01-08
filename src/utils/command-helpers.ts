@@ -6,6 +6,7 @@ import { format, inspect } from 'util'
 import type { NetlifyAPI } from '@netlify/api'
 import { getAPIToken } from '@netlify/dev-utils'
 import { Chalk, type ChalkInstance as ChalkInstancePrimitiveType } from 'chalk'
+import { Option } from 'commander'
 import WSL from 'is-wsl'
 import terminalLink from 'terminal-link'
 
@@ -24,8 +25,7 @@ const argv = process.argv.slice(2)
  * @param  {boolean} noColors - disable chalk colors
  * @return {ChalkInstancePrimitiveType} - default or custom chalk instance
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'noColors' implicitly has an 'any' type.
-const safeChalk = function (noColors) {
+const safeChalk = function (noColors: boolean) {
   if (noColors) {
     const colorlessChalk = new Chalk({ level: 0 })
     return colorlessChalk
@@ -44,8 +44,7 @@ export type ChalkInstance = ChalkInstancePrimitiveType
  * @param {string} [filler]
  * @returns {string}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'str' implicitly has an 'any' type.
-export const padLeft = (str, count, filler = ' ') => str.padStart(str.length + count, filler)
+export const padLeft = (str: string, count: number, filler = ' ') => str.padStart(str.length + count, filler)
 
 const platform = WSL ? 'wsl' : os.platform()
 const arch = os.arch() === 'ia32' ? 'x86' : os.arch()
@@ -77,13 +76,12 @@ export const BANG = process.platform === 'win32' ? '»' : '›'
  * @example
  * options.sort(sortOptions)
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'optionA' implicitly has an 'any' type.
-export const sortOptions = (optionA, optionB) => {
+export const sortOptions = (optionA: Option, optionB: Option) => {
   // base flags should be always at the bottom
-  if (BASE_FLAGS.has(optionA.long) || BASE_FLAGS.has(optionB.long)) {
+  if ((optionA.long && BASE_FLAGS.has(optionA.long)) || (optionB.long && BASE_FLAGS.has(optionB.long))) {
     return -1
   }
-  return optionA.long.localeCompare(optionB.long)
+  return (optionA.long ?? '').localeCompare(optionB.long ?? '')
 }
 
 // Poll Token timeout 5 Minutes
