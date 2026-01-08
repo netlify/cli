@@ -7,10 +7,27 @@ export const createInitCommand = (program: BaseCommand) =>
   program
     .command('init')
     .description(
-      'Configure continuous deployment for a new or existing project. To create a new project without continuous deployment, use `netlify sites:create`',
+      `Initialize a Netlify project in the current directory
+
+Links this directory to a new or existing Netlify project and saves the project ID locally.
+\`netlify init\` can be used with or without Git/continuous deployment.
+
+The init command can:
+- Create a new Netlify project, or link to an existing one
+- Add \`.netlify/\` to \`.gitignore\`
+- Create or update \`netlify.toml\` with detected build settings (optional)
+- Connect a Git repository for continuous deployment (optional)
+
+If no Git remote is detected, you can still create a project and deploy manually with \`netlify deploy\`.`,
     )
     .option('-m, --manual', 'Manually configure a git remote for CI')
     .option('--git-remote-name <name>', 'Name of Git remote to use. e.g. "origin"')
+    .addExamples([
+      'netlify init',
+      'netlify init --manual',
+      'netlify init --force',
+      'netlify init --git-remote-name upstream',
+    ])
     .addHelpText('after', () => {
       const docsUrl = 'https://docs.netlify.com/cli/get-started/'
       return `
