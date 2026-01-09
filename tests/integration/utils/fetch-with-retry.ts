@@ -1,10 +1,6 @@
 import { pause } from './pause.js'
 
-export const fetchWithRetry = async (
-  url: string,
-  options?: RequestInit,
-  maxRetries = 5,
-): Promise<Response> => {
+export const fetchWithRetry = async (url: string, options?: RequestInit, maxRetries = 5): Promise<Response> => {
   for (let i = 0; i < maxRetries; i++) {
     try {
       const response = await fetch(url, options)

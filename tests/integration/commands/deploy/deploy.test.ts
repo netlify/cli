@@ -1164,7 +1164,9 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         },
         true,
       )) as unknown as Deploy
-      const response = await fetchWithRetry(`${deployUrl}/.netlify/functions/bundled-function-1`).then((res) => res.text())
+      const response = await fetchWithRetry(`${deployUrl}/.netlify/functions/bundled-function-1`).then((res) =>
+        res.text(),
+      )
       expect(response).toEqual('Pre-bundled')
     })
   })
@@ -1224,7 +1226,9 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         true,
       )) as unknown as Deploy
 
-      const response = await fetchWithRetry(`${deployUrl}/.netlify/functions/bundled-function-1`).then((res) => res.text())
+      const response = await fetchWithRetry(`${deployUrl}/.netlify/functions/bundled-function-1`).then((res) =>
+        res.text(),
+      )
       t.expect(response).toEqual('Bundled at deployment')
     })
   })
@@ -1285,7 +1289,9 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         true,
       )) as unknown as { deploy_url: string }
 
-      const response = await fetchWithRetry(`${deployUrl}/.netlify/functions/bundled-function-1`).then((res) => res.text())
+      const response = await fetchWithRetry(`${deployUrl}/.netlify/functions/bundled-function-1`).then((res) =>
+        res.text(),
+      )
       t.expect(response).toEqual('Bundled at deployment')
     })
   })
