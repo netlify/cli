@@ -9,6 +9,7 @@ import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 
 import { callCli } from '../../utils/call-cli.js'
 import { createLiveTestSite, generateSiteName } from '../../utils/create-live-test-site.js'
+import { fetchWithRetry } from '../../utils/fetch-with-retry.js'
 import { FixtureTestContext, setupFixtureTests } from '../../utils/fixture.js'
 import { pause } from '../../utils/pause.js'
 import { withSiteBuilder } from '../../utils/site-builder.js'
@@ -863,7 +864,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         true,
       )) as unknown as Deploy
 
-      const response = await fetch(`${deployUrl}/.netlify/functions/hello`)
+      const response = await fetchWithRetry(`${deployUrl}/.netlify/functions/hello`)
       t.expect(await response.text()).toEqual('Hello')
       t.expect(response.status).toBe(200)
     })
@@ -973,19 +974,6 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         true,
       )) as unknown as Deploy
 
-      // Add retry logic for fetching deployed functions
-      const fetchWithRetry = async (url: string, maxRetries = 5) => {
-        for (let i = 0; i < maxRetries; i++) {
-          try {
-            return await fetch(url)
-          } catch (error) {
-            if (i === maxRetries - 1) throw error
-            await pause(2000 * (i + 1)) // Exponential backoff: 2s, 4s, 6s, 8s
-          }
-        }
-        throw new Error(`Failed to fetch ${url} after ${maxRetries} retries`)
-      }
-
       const [response1, response2, response3, response4, response5, response6, response7] = await Promise.all([
         fetchWithRetry(`${deployUrl}/.netlify/functions/func-1`).then((res) => res.text()),
         fetchWithRetry(`${deployUrl}/.netlify/functions/func-2`).then((res) => res.text()),
@@ -1033,7 +1021,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         },
         true,
       )) as unknown as Deploy
-      const response = await fetch(`${deployUrl}/.netlify/functions/func-1`).then((res) => res.text())
+      const response = await fetchWithRetry(`${deployUrl}/.netlify/functions/func-1`).then((res) => res.text())
 
       t.expect(response).toEqual('Internal')
     })
@@ -1176,7 +1164,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         },
         true,
       )) as unknown as Deploy
-      const response = await fetch(`${deployUrl}/.netlify/functions/bundled-function-1`).then((res) => res.text())
+      const response = await fetchWithRetry(`${deployUrl}/.netlify/functions/bundled-function-1`).then((res) => res.text())
       expect(response).toEqual('Pre-bundled')
     })
   })
@@ -1236,7 +1224,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         true,
       )) as unknown as Deploy
 
-      const response = await fetch(`${deployUrl}/.netlify/functions/bundled-function-1`).then((res) => res.text())
+      const response = await fetchWithRetry(`${deployUrl}/.netlify/functions/bundled-function-1`).then((res) => res.text())
       t.expect(response).toEqual('Bundled at deployment')
     })
   })
@@ -1297,7 +1285,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         true,
       )) as unknown as { deploy_url: string }
 
-      const response = await fetch(`${deployUrl}/.netlify/functions/bundled-function-1`).then((res) => res.text())
+      const response = await fetchWithRetry(`${deployUrl}/.netlify/functions/bundled-function-1`).then((res) => res.text())
       t.expect(response).toEqual('Bundled at deployment')
     })
   })

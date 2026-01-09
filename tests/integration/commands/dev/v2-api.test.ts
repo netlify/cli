@@ -53,7 +53,7 @@ describe.runIf(gte(version, '20.12.2')).concurrent('v2 api', async () => {
       expect(thirdChunk.done).toBeTruthy()
     })
 
-    test<FixtureTestContext>('receives context', async ({ devServer, expect }) => {
+    test<FixtureTestContext>('receives context', { retry: 3 }, async ({ devServer, expect }) => {
       const response = await fetch(`http://localhost:${devServer!.port}/.netlify/functions/context`, {
         headers: {
           Cookie: 'foo=bar;',
