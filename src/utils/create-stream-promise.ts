@@ -1,5 +1,5 @@
 import { Buffer } from 'buffer'
-import { IncomingMessage } from 'http'
+import type { Readable } from 'stream'
 
 const SEC_TO_MILLISEC = 1e3
 
@@ -7,16 +7,15 @@ const SEC_TO_MILLISEC = 1e3
 const DEFAULT_BYTES_LIMIT = 6e6
 
 const createStreamPromise = function (
-  stream: IncomingMessage,
+  stream: Readable,
   timeoutSeconds: number,
   bytesLimit = DEFAULT_BYTES_LIMIT,
 ): Promise<Buffer> {
   return new Promise(function streamPromiseFunc(resolve, reject) {
-    let data: unknown[] | null = []
+    let data: Buffer[] | null = []
     let dataLength = 0
 
-    // @ts-expect-error TS(7034) FIXME: Variable 'timeoutId' implicitly has type 'any' in ... Remove this comment to see the full error message
-    let timeoutId: NodeJS.Timeout = null
+    let timeoutId: NodeJS.Timeout | null = null
     if (timeoutSeconds != null && Number.isFinite(timeoutSeconds)) {
       timeoutId = setTimeout(() => {
         data = null
@@ -24,7 +23,7 @@ const createStreamPromise = function (
       }, timeoutSeconds * SEC_TO_MILLISEC)
     }
 
-    stream.on('data', function onData(chunk) {
+    stream.on('data', function onData(chunk: Buffer) {
       if (!Array.isArray(data)) {
         // Stream harvesting closed
         return
@@ -41,12 +40,15 @@ const createStreamPromise = function (
     stream.on('error', function onError(error) {
       data = null
       reject(error)
-      clearTimeout(timeoutId)
+      if (timeoutId) {
+        clearTimeout(timeoutId)
+      }
     })
     stream.on('end', function onEnd() {
-      clearTimeout(timeoutId)
+      if (timeoutId) {
+        clearTimeout(timeoutId)
+      }
       if (data) {
-        // @ts-expect-error TS(7005) FIXME: Variable 'data' implicitly has an 'any[]' type.
         resolve(Buffer.concat(data))
       }
     })
