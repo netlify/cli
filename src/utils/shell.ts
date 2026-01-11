@@ -52,6 +52,8 @@ export const runCommand = (
     // we use reject=false to avoid rejecting synchronously when the command doesn't exist
     reject: false,
     env: {
+      // Include process.env so injected env vars are passed to child process
+      ...process.env,
       // we want always colorful terminal outputs
       FORCE_COLOR: 'true',
       ...env,

@@ -169,7 +169,163 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
     })
   })
 
-  test('should deploy Edge Functions when directory exists', async (t) => {
+  for (const { variant, shouldRunBuildBeforeDeploy } of [
+    {
+      variant: 'after running a build',
+      shouldRunBuildBeforeDeploy: true,
+    },
+    {
+      variant: 'without running a build',
+      shouldRunBuildBeforeDeploy: false,
+    },
+  ]) {
+    test(`should deploy Edge Functions when directory exists ${variant}`, async (t) => {
+      await withSiteBuilder(t, async (builder) => {
+        const content = 'Edge Function works NOT'
+        builder
+          .withContentFile({
+            path: 'public/index.html',
+            content,
+          })
+          .withNetlifyToml({
+            config: {
+              build: { publish: 'public', command: 'echo "no op"' },
+            },
+          })
+          .withEdgeFunction({
+            handler: async () => new Response('Edge Function works'),
+            config: {
+              path: '/*',
+            },
+            name: 'edge',
+          })
+
+        await builder.build()
+
+        const options = {
+          cwd: builder.directory,
+          env: { NETLIFY_SITE_ID: context.siteId },
+        }
+
+        if (shouldRunBuildBeforeDeploy) {
+          await callCli(['build'], options)
+        }
+        const deploy = await callCli(['deploy', '--json', '--no-build'], options).then((output: string) =>
+          JSON.parse(output),
+        )
+
+        // give edge functions manifest a couple ticks to propagate
+        await pause(500)
+
+        await validateDeploy({
+          deploy,
+          siteName: SITE_NAME,
+          content: 'Edge Function works',
+          contentMessage: 'Edge function did not execute correctly or was not deployed correctly',
+        })
+      })
+    })
+
+    test(`should deploy Edge Functions with custom cwd when directory exists ${variant}`, async (t) => {
+      await withSiteBuilder(t, async (builder) => {
+        const content = 'Edge Function works NOT'
+        const pathPrefix = 'app/cool'
+        builder
+          .withContentFile({
+            path: 'app/cool/public/index.html',
+            content,
+          })
+          .withNetlifyToml({
+            config: {
+              build: { publish: 'public', command: 'echo "no op"' },
+            },
+            pathPrefix,
+          })
+          .withEdgeFunction({
+            handler: async () => new Response('Edge Function works'),
+            name: 'edge',
+            config: {
+              path: '/*',
+            },
+            pathPrefix,
+          })
+
+        await builder.build()
+
+        const options = {
+          cwd: builder.directory,
+          env: { NETLIFY_SITE_ID: context.siteId },
+        }
+
+        if (shouldRunBuildBeforeDeploy) {
+          await callCli(['build', '--cwd', pathPrefix], options)
+        }
+        const deploy = await callCli(['deploy', '--json', '--no-build', '--cwd', pathPrefix], options).then(
+          (output: string) => JSON.parse(output),
+        )
+
+        // give edge functions manifest a couple ticks to propagate
+        await pause(500)
+
+        await validateDeploy({
+          deploy,
+          siteName: SITE_NAME,
+          content: 'Edge Function works',
+          contentMessage: 'Edge function did not execute correctly or was not deployed correctly',
+        })
+      })
+    })
+
+    test(`should deploy integrations Edge Functions when directory exists ${variant}`, async (t) => {
+      await withSiteBuilder(t, async (builder) => {
+        const content = 'Edge Function works NOT'
+        builder
+          .withContentFile({
+            path: 'public/index.html',
+            content,
+          })
+          .withNetlifyToml({
+            config: {
+              build: { publish: 'public', command: 'echo "no op"' },
+            },
+          })
+          .withEdgeFunction({
+            handler: async () => new Response('Edge Function works'),
+            config: {
+              path: '/*',
+            },
+            name: 'edge',
+            path: '.netlify/edge-functions',
+          })
+
+        await builder.build()
+
+        const options = {
+          cwd: builder.directory,
+          env: { NETLIFY_SITE_ID: context.siteId },
+        }
+
+        if (shouldRunBuildBeforeDeploy) {
+          await callCli(['build'], options)
+        }
+        const deploy = await callCli(['deploy', '--json', '--no-build'], options).then((output: string) =>
+          JSON.parse(output),
+        )
+
+        // give edge functions manifest a couple ticks to propagate
+        await pause(500)
+
+        await validateDeploy({
+          deploy,
+          siteName: SITE_NAME,
+          content: 'Edge Function works',
+          contentMessage: 'Edge function did not execute correctly or was not deployed correctly',
+        })
+      })
+    })
+  }
+
+  test('should deploy framework Edge Functions when directory exists without running a build', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       const content = 'Edge Function works NOT'
       builder
@@ -180,12 +336,15 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         .withNetlifyToml({
           config: {
             build: { publish: 'public', command: 'echo "no op"' },
-            edge_functions: [{ function: 'edge', path: '/*' }],
           },
         })
         .withEdgeFunction({
           handler: async () => new Response('Edge Function works'),
+          config: {
+            path: '/*',
+          },
           name: 'edge',
+          path: '.netlify/v1/edge-functions',
         })
 
       await builder.build()
@@ -195,7 +354,7 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         env: { NETLIFY_SITE_ID: context.siteId },
       }
 
-      await callCli(['build'], options)
+      // skipping running build here, because it cleans up frameworks API directories
       const deploy = await callCli(['deploy', '--json', '--no-build'], options).then((output: string) =>
         JSON.parse(output),
       )
@@ -212,59 +371,14 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
     })
   })
 
-  test('should deploy Edge Functions with custom cwd when directory exists', async (t) => {
-    await withSiteBuilder(t, async (builder) => {
-      const content = 'Edge Function works NOT'
-      const pathPrefix = 'app/cool'
-      builder
-        .withContentFile({
-          path: 'app/cool/public/index.html',
-          content,
-        })
-        .withNetlifyToml({
-          config: {
-            build: { publish: 'public', command: 'echo "no op"' },
-            edge_functions: [{ function: 'edge', path: '/*' }],
-          },
-          pathPrefix,
-        })
-        .withEdgeFunction({
-          handler: async () => new Response('Edge Function works'),
-          name: 'edge',
-          pathPrefix,
-        })
-
-      await builder.build()
-
-      const options = {
-        cwd: builder.directory,
-        env: { NETLIFY_SITE_ID: context.siteId },
-      }
-
-      await callCli(['build', '--cwd', pathPrefix], options)
-      const deploy = await callCli(['deploy', '--json', '--no-build', '--cwd', pathPrefix], options).then(
-        (output: string) => JSON.parse(output),
-      )
-
-      // give edge functions manifest a couple ticks to propagate
-      await pause(500)
-
-      await validateDeploy({
-        deploy,
-        siteName: SITE_NAME,
-        content: 'Edge Function works',
-        contentMessage: 'Edge function did not execute correctly or was not deployed correctly',
-      })
-    })
-  })
-
   test('runs build command before deploy by default', async (t) => {
     await withSiteBuilder(t, async (builder) => {
-      const content = '<h1>⊂◉‿◉つ</h1>'
+      const rootContent = '<h1>⊂◉‿◉つ</h1>'
+
       builder
         .withContentFile({
           path: 'public/index.html',
-          content,
+          content: rootContent,
         })
         .withNetlifyToml({
           config: {
@@ -275,12 +389,33 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
         .withBuildPlugin({
           name: 'log-env',
           plugin: {
+            async onPreBuild() {
+              const { DEPLOY_ID, DEPLOY_URL, NETLIFY_SKEW_PROTECTION_TOKEN } = require('process').env
+              console.log(`DEPLOY_ID_PREBUILD: ${DEPLOY_ID}`)
+              console.log(`DEPLOY_URL_PREBUILD: ${DEPLOY_URL}`)
+              console.log(`NETLIFY_SKEW_PROTECTION_TOKEN_PREBUILD: ${NETLIFY_SKEW_PROTECTION_TOKEN}`)
+            },
             async onSuccess() {
-              const { DEPLOY_ID, DEPLOY_URL } = require('process').env
+              const { DEPLOY_ID, DEPLOY_URL, NETLIFY_SKEW_PROTECTION_TOKEN } = require('process').env
               console.log(`DEPLOY_ID: ${DEPLOY_ID}`)
               console.log(`DEPLOY_URL: ${DEPLOY_URL}`)
+              console.log(`NETLIFY_SKEW_PROTECTION_TOKEN: ${NETLIFY_SKEW_PROTECTION_TOKEN}`)
             },
           },
+        })
+        .withEdgeFunction({
+          handler: async () => new Response('Hello from edge function'),
+          name: 'edge',
+          config: {
+            path: '/edge-function',
+          },
+        })
+        .withFunction({
+          config: { path: '/function' },
+          path: 'hello.mjs',
+          pathPrefix: 'netlify/functions',
+          handler: async () => new Response('Hello from function'),
+          runtimeAPIVersion: 2,
         })
 
       await builder.build()
@@ -291,11 +426,25 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
       })
 
       t.expect(output).toContain('Netlify Build completed in')
+      const [, deployIdPreBuild] = output.match(/DEPLOY_ID_PREBUILD: (\w+)/) ?? []
+      const [, deployURLPreBuild] = output.match(/DEPLOY_URL_PREBUILD: (.+)/) ?? []
+      const [, skewProtectionTokenPreBuild] = output.match(/NETLIFY_SKEW_PROTECTION_TOKEN_PREBUILD: (.+)/) ?? []
       const [, deployId] = output.match(/DEPLOY_ID: (\w+)/) ?? []
       const [, deployURL] = output.match(/DEPLOY_URL: (.+)/) ?? []
+      const [, skewProtectionToken] = output.match(/NETLIFY_SKEW_PROTECTION_TOKEN: (.+)/) ?? []
 
-      t.expect(deployId).not.toEqual('0')
-      t.expect(deployURL).toContain(`https://${deployId}--`)
+      t.expect(deployIdPreBuild).toBeTruthy()
+      t.expect(deployIdPreBuild).not.toEqual('0')
+      t.expect(deployURLPreBuild).toContain(`https://${deployIdPreBuild}--`)
+      t.expect(deployId).toEqual(deployIdPreBuild)
+      t.expect(deployURL).toEqual(deployURLPreBuild)
+
+      t.expect(skewProtectionTokenPreBuild).toEqual(skewProtectionToken)
+      t.expect(skewProtectionToken).toBeTruthy()
+
+      await validateContent({ siteUrl: deployURL, path: '', content: rootContent })
+      await validateContent({ siteUrl: deployURL, path: '/edge-function', content: 'Hello from edge function' })
+      await validateContent({ siteUrl: deployURL, path: '/function', content: 'Hello from function' })
     })
   })
 
@@ -1360,6 +1509,41 @@ describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('co
 
       try {
         const deploy = await callCli(['deploy', '--json', '--no-build', '--dir', 'public', '--upload-source-zip'], {
+          cwd: builder.directory,
+          env: { NETLIFY_SITE_ID: context.siteId },
+        }).then((output: string) => JSON.parse(output))
+
+        await validateDeploy({ deploy, siteName: SITE_NAME, content })
+        expect(deploy).toHaveProperty('source_zip_filename')
+        expect(typeof deploy.source_zip_filename).toBe('string')
+        expect(deploy.source_zip_filename).toMatch(/\.zip$/)
+      } catch (error) {
+        // If the feature is not yet supported by the API, skip the test
+        if (
+          error instanceof Error &&
+          (error.message.includes('include_upload_url') || error.message.includes('source_zip'))
+        ) {
+          t.skip()
+        } else {
+          throw error
+        }
+      }
+    })
+  })
+
+  test('should include source_zip_filename in JSON output when --upload-source-zip flag is used with build', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      const content = '<h1>Source zip test with build</h1>'
+      builder.withContentFile({
+        path: 'public/index.html',
+        content,
+      })
+
+      await builder.build()
+
+      try {
+        // Test WITH build (the default) - this is what agent runners use
+        const deploy = await callCli(['deploy', '--json', '--dir', 'public', '--upload-source-zip'], {
           cwd: builder.directory,
           env: { NETLIFY_SITE_ID: context.siteId },
         }).then((output: string) => JSON.parse(output))

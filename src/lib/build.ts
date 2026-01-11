@@ -132,16 +132,20 @@ export const getRunBuildOptions = async ({
   currentDir,
   defaultConfig,
   deployHandler,
+  deployId,
   options: { context, cwd, debug, dry, json, offline, silent },
   packagePath,
+  skewProtectionToken,
   token,
 }: {
   cachedConfig: CachedConfig
   currentDir: string
   defaultConfig?: undefined | DefaultConfig
   deployHandler?: PatchedHandlerType<OnPostBuild>
+  deployId?: string
   options: OptionValues
   packagePath?: string
+  skewProtectionToken?: string
   token?: null | string
 }): Promise<RunBuildOptions> => {
   const eventHandlers: { onEnd: EventHandler<OnEnd>; onPostBuild?: EventHandler<OnPostBuild> } = {
@@ -170,6 +174,7 @@ export const getRunBuildOptions = async ({
   return {
     cachedConfig,
     defaultConfig: defaultConfig ?? {},
+    deployId,
     siteId: cachedConfig.siteInfo.id,
     accountId: cachedConfig.siteInfo.account_id,
     packagePath,
@@ -191,6 +196,7 @@ export const getRunBuildOptions = async ({
     // @ts-expect-error(serhalp) -- TODO(serhalp): Upstream the type fixes above into @netlify/build
     eventHandlers,
     edgeFunctionsBootstrapURL: await getBootstrapURL(),
+    skewProtectionToken,
   }
 }
 
