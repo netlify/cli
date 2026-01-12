@@ -1,4 +1,5 @@
 import { Readable } from 'stream'
+import type { IncomingMessage } from 'http'
 
 import { parse as parseContentType } from 'content-type'
 import type { RequestHandler } from 'express'
@@ -60,14 +61,15 @@ export const createFormSubmissionHandler = function ({
       return
     }
 
-    const fakeRequest = new Readable({
-      read() {
-        this.push(req.body)
-        this.push(null)
-      },
-    })
-    // @ts-expect-error TS(2339) FIXME: Property 'headers' does not exist on type 'Readabl... Remove this comment to see the full error message
-    fakeRequest.headers = req.headers
+    const fakeRequest = Object.assign(
+      new Readable({
+        read() {
+          this.push(req.body)
+          this.push(null)
+        },
+      }),
+      { headers: req.headers },
+    ) as IncomingMessage
 
     const handlerName = getFormHandler({ functionsRegistry })
     if (!handlerName) {
@@ -91,44 +93,54 @@ export const createFormSubmissionHandler = function ({
       fields = Object.fromEntries(new URLSearchParams(bodyData.toString()))
     } else if (ct.type === 'multipart/form-data') {
       try {
-        ;[fields, files] = await new Promise((resolve, reject) => {
+        ;[fields, files] = await new Promise<
+          [
+            Record<string, string | string[]>,
+            Record<
+              string,
+              | { filename: string; size: number; type: string; url: string }
+              | { filename: string; size: number; type: string; url: string }[]
+            >,
+          ]
+        >((resolve, reject) => {
           const form = new multiparty.Form({ encoding: ct.parameters.charset || 'utf8' })
-          // @ts-expect-error TS(7006) FIXME: Parameter 'err' implicitly has an 'any' type.
-          form.parse(fakeRequest, (err, Fields, Files) => {
+          form.parse(fakeRequest, (err: Error, formFields: multiparty.Fields, formFiles: multiparty.Files) => {
             if (err) {
               reject(err)
               return
             }
-            Files = Object.entries(Files).reduce(
+
+            const filesTransformed = Object.entries(formFiles).reduce(
               (prev, [name, values]) => ({
                 ...prev,
-                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 [name]: values.map((value) => ({
                   filename: value.originalFilename,
                   size: value.size,
-                  type: value.headers?.['content-type'],
+                  type: value.headers['content-type'],
                   url: value.path,
                 })),
               }),
-              {},
+              {} as Record<string, { filename: string; size: number; type: string; url: string }[]>,
             )
+
             resolve([
-              Object.entries(Fields).reduce(
-                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+              Object.entries(formFields).reduce(
                 (prev, [name, values]) => ({ ...prev, [name]: values.length > 1 ? values : values[0] }),
-                {},
+                {} as Record<string, string | string[]>,
               ),
-              Object.entries(Files).reduce(
-                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+              Object.entries(filesTransformed).reduce(
                 (prev, [name, values]) => ({ ...prev, [name]: values.length > 1 ? values : values[0] }),
-                {},
+                {} as Record<
+                  string,
+                  | { filename: string; size: number; type: string; url: string }
+                  | { filename: string; size: number; type: string; url: string }[]
+                >,
               ),
             ])
           })
         })
       } catch (error) {
-        // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
-        warn(error)
+        warn(String(error))
         next()
         return
       }
@@ -137,30 +149,25 @@ export const createFormSubmissionHandler = function ({
       next()
       return
     }
+
+    const findValue = (possibleProps: string[]) => {
+      const key = Object.keys(fields).find((name) => possibleProps.includes(name.toLowerCase()))
+      return key ? fields[key] : undefined
+    }
+
+    const filesAsUrls = Object.entries(files).reduce(
+      (prev, [name, value]) => ({ ...prev, [name]: Array.isArray(value) ? value.map(({ url }) => url) : value.url }),
+      {} as Record<string, string | string[]>,
+    )
+
     const data = JSON.stringify({
       payload: {
-        company:
-          // @ts-expect-error TS(2538) FIXME: Type 'undefined' cannot be used as an index type.
-          fields[Object.keys(fields).find((name) => ['company', 'business', 'employer'].includes(name.toLowerCase()))],
-        last_name:
-          // @ts-expect-error TS(2538) FIXME: Type 'undefined' cannot be used as an index type.
-          fields[Object.keys(fields).find((name) => ['lastname', 'surname', 'byname'].includes(name.toLowerCase()))],
-        first_name:
-          fields[
-            // @ts-expect-error TS(2538) FIXME: Type 'undefined' cannot be used as an index type.
-            Object.keys(fields).find((name) => ['firstname', 'givenname', 'forename'].includes(name.toLowerCase()))
-          ],
-        // @ts-expect-error TS(2538) FIXME: Type 'undefined' cannot be used as an index type.
-        name: fields[Object.keys(fields).find((name) => ['name', 'fullname'].includes(name.toLowerCase()))],
-        email:
-          fields[
-            // @ts-expect-error TS(2538) FIXME: Type 'undefined' cannot be used as an index type.
-            Object.keys(fields).find((name) =>
-              ['email', 'mail', 'from', 'twitter', 'sender'].includes(name.toLowerCase()),
-            )
-          ],
-        // @ts-expect-error TS(2538) FIXME: Type 'undefined' cannot be used as an index type.
-        title: fields[Object.keys(fields).find((name) => ['title', 'subject'].includes(name.toLowerCase()))],
+        company: findValue(['company', 'business', 'employer']),
+        last_name: findValue(['lastname', 'surname', 'byname']),
+        first_name: findValue(['firstname', 'givenname', 'forename']),
+        name: findValue(['name', 'fullname']),
+        email: findValue(['email', 'mail', 'from', 'twitter', 'sender']),
+        title: findValue(['title', 'subject']),
         data: {
           ...fields,
           ...files,
@@ -169,16 +176,15 @@ export const createFormSubmissionHandler = function ({
           referrer: req.headers.referer,
         },
         created_at: new Date().toISOString(),
-        human_fields: Object.entries({
-          ...fields,
-          // @ts-expect-error TS(2339) FIXME: Property 'url' does not exist on type 'unknown'.
-          ...Object.entries(files).reduce((prev, [name, { url }]) => ({ ...prev, [name]: url }), {}),
-        }).reduce((prev, [key, val]) => ({ ...prev, [capitalize(key)]: val }), {}),
-        ordered_human_fields: Object.entries({
-          ...fields,
-          // @ts-expect-error TS(2339) FIXME: Property 'url' does not exist on type 'unknown'.
-          ...Object.entries(files).reduce((prev, [name, { url }]) => ({ ...prev, [name]: url }), {}),
-        }).map(([key, val]) => ({ title: capitalize(key), name: key, value: val })),
+        human_fields: Object.entries({ ...fields, ...filesAsUrls }).reduce(
+          (prev, [key, val]) => ({ ...prev, [capitalize(key)]: val }),
+          {},
+        ),
+        ordered_human_fields: Object.entries({ ...fields, ...filesAsUrls }).map(([key, val]) => ({
+          title: capitalize(key),
+          name: key,
+          value: val,
+        })),
         site_url: siteUrl,
       },
     })
