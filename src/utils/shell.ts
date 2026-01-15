@@ -2,7 +2,7 @@ import process from 'process'
 import { Transform } from 'stream'
 import { stripVTControlCharacters } from 'util'
 
-import execa from 'execa'
+import execa, { type ExecaError } from 'execa'
 
 import { type Spinner } from '../lib/spinner.js'
 
@@ -100,13 +100,11 @@ export const runCommand = (
         )} exists`,
       )
     } else {
-      const errorMessage = result.failed
-        ? // @ts-expect-error FIXME(serhalp): We use `reject: false` which means the resolved value is either the resolved value
-          // or the rejected value, but the types aren't smart enough to know this.
-          `${NETLIFYDEVERR} ${result.shortMessage as string}`
-        : `${NETLIFYDEVWARN} "${command}" exited with code ${result.exitCode.toString()}`
-
-      log(`${errorMessage}. Shutting down Netlify Dev server`)
+      if (result.failed) {
+        log(`${NETLIFYDEVERR} ${(result as ExecaError).shortMessage}. Shutting down Netlify Dev server`)
+      } else {
+        log(`${NETLIFYDEVWARN} "${command}" exited with code ${result.exitCode}. Shutting down Netlify Dev server`)
+      }
     }
 
     await cleanupBeforeExit({ exitCode: 1 })
