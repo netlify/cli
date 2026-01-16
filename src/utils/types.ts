@@ -63,8 +63,8 @@ export type ServerSettings = BaseServerSettings & {
 
 export interface Request extends IncomingMessage {
   originalBody?: Buffer | null
-  protocol?: string
-  hostname?: string
+  protocol: string
+  hostname: string
 }
 
 export type Rewriter = (req: Request) => Promise<Match | null>

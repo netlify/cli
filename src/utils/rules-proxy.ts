@@ -90,12 +90,7 @@ export const createRewriter = async function ({
 
   return async function rewriter(req: Request): Promise<Match | null> {
     const matcherFunc = await getMatcher()
-    const reqUrl = new URL(
-      req.url ?? '',
-      `${req.protocol || (req.headers.scheme && `${req.headers.scheme}:`) || 'http:'}//${
-        req.hostname || req.headers.host
-      }`,
-    )
+    const reqUrl = new URL(req.url ?? '', `${req.protocol}://${req.hostname}`)
     const cookieValues = cookie.parse(req.headers.cookie || '')
     const headers: Record<string, string | string[]> = {
       'x-language': cookieValues.nf_lang || getLanguage(req.headers),

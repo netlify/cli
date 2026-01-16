@@ -471,12 +471,7 @@ const serveRedirect = async function ({
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
 const reqToURL = function (req, pathname) {
-  return new URL(
-    pathname,
-    `${req.protocol || (req.headers.scheme && `${req.headers.scheme}:`) || 'http:'}//${
-      req.headers.host || req.hostname
-    }`,
-  )
+  return new URL(pathname, `${req.protocol}://${req.hostname}`)
 }
 
 const MILLISEC_TO_SEC = 1e3
@@ -800,6 +795,13 @@ const onRequest = async (
   req: Request,
   res: ServerResponse,
 ) => {
+  // We're proxying traffic to a framework server, which can be running on a
+  // different port and protocol. We need to massage the request object to
+  // make it look like it's hitting the framework server directly.
+  const url = new URL(req.url ?? '/', `http://${req.headers.host ?? 'localhost'}`)
+  req.protocol = url.protocol.replace(/:$/, '')
+  req.hostname = url.hostname
+
   req.originalBody =
     req.method && ['GET', 'OPTIONS', 'HEAD'].includes(req.method) ? null : await createStreamPromise(req, BYTES_LIMIT)
 
