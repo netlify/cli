@@ -105,7 +105,7 @@ export const deploySite = async (
     hashFiles({
       assetType,
       concurrentHash,
-      directories: [dir, edgeFunctionsDistPath, deployConfigPath].filter(Boolean),
+      directories: [dir, edgeFunctionsDistPath, deployConfigPath].filter(Boolean) as string[],
       filter,
       hashAlgorithm,
       normalizer: deployFileNormalizer.bind(null, workingDir),
