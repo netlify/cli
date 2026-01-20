@@ -203,13 +203,11 @@ const installTests: [packageManager: string, config: InstallTest][] = [
 ]
 
 describe.each(installTests)('%s → installs the cli and runs commands without errors', (packageManager, config) => {
-  // TODO: Figure out why this flow is failing on Windows.
-  const npxOnWindows = platform() === 'win32' && 'run' in config
   // Yarn v1 enforces engine constraints strictly. A transitive dep (chokidar@5) requires node >=20.19.0,
   // breaking yarn installs on older Node 20.x. Node 20 EOL is April 2026, so we skip rather than override.
   const yarnOnOldNode20 = packageManager === 'yarn' && process.versions.node === '20.12.2'
 
-  itWithMockNpmRegistry.skipIf(npxOnWindows || yarnOnOldNode20)('runs the commands without errors', async ({ registry }) => {
+  itWithMockNpmRegistry.skipIf(yarnOnOldNode20)('runs the commands without errors', async ({ registry }) => {
     // Install
 
     const cwd = registry.cwd
@@ -306,9 +304,9 @@ const runTests: [packageManager: string, config: RunTest][] = [
 
 describe.each(runTests)('%s → runs cli commands without errors', (packageManager, config) => {
   // TODO: Figure out why this flow is failing on Windows.
-  const npxOnWindows = platform() === 'win32' && 'run' in config
+  const skipOnWindows = platform() === 'win32'
 
-  itWithMockNpmRegistry.skipIf(npxOnWindows)('runs commands without errors', async ({ registry }) => {
+  itWithMockNpmRegistry.skipIf(skipOnWindows)('runs commands without errors', async ({ registry }) => {
     const [cmd, args] = config.run
     const env = {
       npm_config_registry: registry.address,
