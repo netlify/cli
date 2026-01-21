@@ -140,11 +140,14 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
   env[BLOBS_CONTEXT_VARIABLE] = { sources: ['internal'], value: encodeBlobsContext(blobsContext) }
 
   if (!(options.offline || options.offlineEnv)) {
-    env = await getEnvelopeEnv({ api, context: options.context, env, siteInfo })
     log(`${NETLIFYDEVLOG} Injecting environment variable values for ${chalk.yellow('all scopes')}`)
   }
 
   env = await getDotEnvVariables({ devConfig, env, site })
+
+  if (!(options.offline || options.offlineEnv)) {
+    env = await getEnvelopeEnv({ api, context: options.context, env, siteInfo })
+  }
 
   const { accountId, addonsUrls, capabilities, siteUrl, timeouts } = await getSiteInformation({
     // inherited from base command --offline
