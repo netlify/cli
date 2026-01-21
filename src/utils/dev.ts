@@ -184,24 +184,24 @@ export const getDotEnvVariables = async ({
   site: { root?: string }
 }): Promise<EnvironmentVariables> => {
   const dotEnvFiles = await loadDotEnvFiles({ envFiles: devConfig.envFiles, projectDir: site.root || process.cwd() })
-  dotEnvFiles.forEach(({ env: fileEnv, file }) => {
+  const newEnv = { ...env }
+
+  for (const { env: fileEnv, file } of dotEnvFiles) {
     const newSourceName = `${file} file`
 
-    Object.keys(fileEnv).forEach((key) => {
-      const sources = key in env ? [newSourceName, ...env[key].sources] : [newSourceName]
-
-      if (sources.includes('internal')) {
-        return
+    for (const key in fileEnv) {
+      if (newEnv[key]) {
+        newEnv[key].sources.push(newSourceName)
+      } else {
+        newEnv[key] = {
+          sources: [newSourceName],
+          value: fileEnv[key],
+        }
       }
+    }
+  }
 
-      env[key] = {
-        sources,
-        value: fileEnv[key],
-      }
-    })
-  })
-
-  return env
+  return newEnv
 }
 
 /**
