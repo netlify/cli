@@ -190,13 +190,13 @@ export const getDotEnvVariables = async ({
     const newSourceName = `${file} file`
 
     for (const key in fileEnv) {
-      if (newEnv[key]) {
-        newEnv[key].sources.push(newSourceName)
-      } else {
-        newEnv[key] = {
-          sources: [newSourceName],
-          value: fileEnv[key],
-        }
+      if (newEnv[key]?.sources.includes('internal')) {
+        continue
+      }
+
+      newEnv[key] = {
+        sources: [newSourceName, ...(newEnv[key]?.sources || [])],
+        value: fileEnv[key],
       }
     }
   }

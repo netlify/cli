@@ -367,9 +367,11 @@ describe.concurrent('commands/dev/config', () => {
         })
         const body = await response.json()
 
+        console.log(body)
         t.expect(body).toHaveProperty('body', 'some=thing')
         t.expect(body).toHaveProperty('headers.host', `${server.host}:${server.port.toString()}`)
         t.expect(body).toHaveProperty('headers.content-type', 'application/x-www-form-urlencoded')
+        t.expect(body).toHaveProperty('headers.transfer-encoding', 'chunked')
         t.expect(body).toHaveProperty('httpMethod', 'POST')
         t.expect(body).toHaveProperty('isBase64Encoded', false)
         t.expect(body).toHaveProperty('path', '/api/echo')

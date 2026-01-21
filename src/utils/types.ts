@@ -218,7 +218,7 @@ export type EnvironmentVariableSource = 'account' | 'addons' | 'configFile' | 'g
 
 export type EnvironmentVariables = Record<
   string,
-  { sources: string[]; value: string; scopes?: EnvironmentVariableScope[] }
+  { sources: EnvironmentVariableSource[]; value: string; scopes?: EnvironmentVariableScope[] }
 >
 
 export interface Plugin {
