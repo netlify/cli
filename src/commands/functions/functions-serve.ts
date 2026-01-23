@@ -6,6 +6,7 @@ import { parseAIGatewayContext, setupAIGateway } from '@netlify/ai/bootstrap'
 
 import { getBlobsContextWithEdgeAccess } from '../../lib/blobs/blobs.js'
 import { startFunctionsServer } from '../../lib/functions/server.js'
+import { NETLIFYDEVLOG, log } from '../../utils/command-helpers.js'
 import { printBanner } from '../../utils/dev-server-banner.js'
 import {
   UNLINKED_SITE_MOCK_ID,
@@ -31,15 +32,17 @@ export const functionsServe = async (options: OptionValues, command: BaseCommand
 
   env = await getDotEnvVariables({ devConfig: { ...config.dev }, env, site })
 
-  const { accountId, capabilities, siteUrl, timeouts } = await getSiteInformation({
+  const { accountId, aiGatewayDisabled, capabilities, siteUrl, timeouts } = await getSiteInformation({
     offline: options.offline,
     api,
     site,
     siteInfo,
   })
 
-  if (!options.offline) {
+  if (!options.offline && !aiGatewayDisabled) {
     await setupAIGateway({ api, env, siteID: site.id, siteURL: siteUrl })
+  } else if (aiGatewayDisabled) {
+    log(`${NETLIFYDEVLOG} AI Gateway is disabled for this account`)
   }
 
   injectEnvVariables(env)

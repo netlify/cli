@@ -146,7 +146,7 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
 
   env = await getDotEnvVariables({ devConfig, env, site })
 
-  const { accountId, addonsUrls, capabilities, siteUrl, timeouts } = await getSiteInformation({
+  const { accountId, addonsUrls, aiGatewayDisabled, capabilities, siteUrl, timeouts } = await getSiteInformation({
     // inherited from base command --offline
 
     offline: options.offline,
@@ -155,7 +155,7 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
     siteInfo,
   })
 
-  if (!options.offline && !options.offlineEnv) {
+  if (!options.offline && !options.offlineEnv && !aiGatewayDisabled) {
     await setupAIGateway({ api, env, siteID: site.id, siteURL: siteUrl })
 
     // Parse AI Gateway context and inject provider API keys
@@ -169,6 +169,8 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
         }
       }
     }
+  } else if (aiGatewayDisabled) {
+    log(`${NETLIFYDEVLOG} AI Gateway is disabled for this account`)
   }
 
   injectEnvVariables(env)
