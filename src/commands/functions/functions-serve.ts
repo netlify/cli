@@ -32,16 +32,16 @@ export const functionsServe = async (options: OptionValues, command: BaseCommand
 
   env = await getDotEnvVariables({ devConfig: { ...config.dev }, env, site })
 
-  const { accountId, aiGatewayDisabled, capabilities, siteUrl, timeouts } = await getSiteInformation({
+  const { accountId, capabilities, siteUrl, timeouts } = await getSiteInformation({
     offline: options.offline,
     api,
     site,
     siteInfo,
   })
 
-  if (!options.offline && !aiGatewayDisabled) {
+  if (!options.offline && !capabilities.aiGatewayDisabled) {
     await setupAIGateway({ api, env, siteID: site.id, siteURL: siteUrl })
-  } else if (aiGatewayDisabled) {
+  } else if (capabilities.aiGatewayDisabled) {
     log(`${NETLIFYDEVLOG} AI Gateway is disabled for this account`)
   }
 

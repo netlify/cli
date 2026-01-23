@@ -141,9 +141,9 @@ export const getSiteInformation = async ({ api, offline, site, siteInfo }) => {
       addonsUrls,
       siteUrl: siteInfo.ssl_url,
       accountId: account?.id,
-      aiGatewayDisabled: account?.capabilities?.ai_gateway_disabled?.included ?? false,
       capabilities: {
         backgroundFunctions: supportsBackgroundFunctions(account),
+        aiGatewayDisabled: account?.capabilities?.ai_gateway_disabled?.included ?? false,
       },
       timeouts: {
         syncFunctions: siteInfo.functions_timeout ?? siteInfo.functions_config?.timeout ?? SYNCHRONOUS_FUNCTION_TIMEOUT,
@@ -156,8 +156,9 @@ export const getSiteInformation = async ({ api, offline, site, siteInfo }) => {
   return {
     addonsUrls: {},
     siteUrl: '',
-    aiGatewayDisabled: false,
-    capabilities: {},
+    capabilities: {
+      aiGatewayDisabled: false,
+    },
     timeouts: {
       syncFunctions: SYNCHRONOUS_FUNCTION_TIMEOUT,
       backgroundFunctions: BACKGROUND_FUNCTION_TIMEOUT,
