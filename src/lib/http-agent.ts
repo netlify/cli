@@ -1,30 +1,10 @@
 import { readFile } from 'fs/promises'
+import http from 'http'
 
-import { HttpsProxyAgent } from 'https-proxy-agent'
+import { HttpsProxyAgent, type HttpsProxyAgentOptions } from 'https-proxy-agent'
 
 import { NETLIFYDEVERR, NETLIFYDEVWARN, exit, log } from '../utils/command-helpers.js'
 import { waitPort } from './wait-port.js'
-
-// https://github.com/TooTallNate/node-https-proxy-agent/issues/89
-// Maybe replace with https://github.com/delvedor/hpagent
-// @ts-expect-error TS(2507) FIXME: Type 'typeof createHttpsProxyAgent' is not a const... Remove this comment to see the full error message
-class HttpsProxyAgentWithCA extends HttpsProxyAgent {
-  // @ts-expect-error TS(7006) FIXME: Parameter 'opts' implicitly has an 'any' type.
-  constructor(opts) {
-    super(opts)
-    // @ts-expect-error TS(2339) FIXME: Property 'ca' does not exist on type 'HttpsProxyAg... Remove this comment to see the full error message
-    this.ca = opts.ca
-  }
-
-  // @ts-expect-error TS(7006) FIXME: Parameter 'req' implicitly has an 'any' type.
-  callback(req, opts) {
-    return super.callback(req, {
-      ...opts,
-      // @ts-expect-error TS(2339) FIXME: Property 'ca' does not exist on type 'HttpsProxyAg... Remove this comment to see the full error message
-      ...(this.ca && { ca: this.ca }),
-    })
-  }
-}
 
 const DEFAULT_HTTP_PORT = 80
 const DEFAULT_HTTPS_PORT = 443
@@ -44,7 +24,7 @@ export const tryGetAgent = async ({
       message?: string | undefined
     }
   | {
-      agent: HttpsProxyAgentWithCA
+      agent: HttpsProxyAgent<string>
       response: unknown
     }
 > => {
@@ -94,29 +74,30 @@ export const tryGetAgent = async ({
     }
   }
 
-  const opts = {
-    port: proxyUrl.port,
-    host: proxyUrl.host,
-    hostname: proxyUrl.hostname,
-    protocol: proxyUrl.protocol,
-    ca: certificate,
-  }
-
-  const agent = new HttpsProxyAgentWithCA(opts)
+  const agent = new HttpsProxyAgent(httpProxy, { ca: certificate })
   response = { ...response, agent }
   return response
 }
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'certificateFile' implicitly has a... Remove this comment to see the full error message
-export const getAgent = async ({ certificateFile, httpProxy }) => {
-  // @ts-expect-error TS(2339) FIXME: Property 'agent' does not exist on type '{ error?:... Remove this comment to see the full error message
-  const { agent, error, message, warning } = await tryGetAgent({ httpProxy, certificateFile })
-  if (error) {
-    log(NETLIFYDEVERR, error, message || '')
+export const getAgent = async ({
+  certificateFile,
+  httpProxy,
+}: {
+  certificateFile?: string
+  httpProxy?: string
+}): Promise<HttpsProxyAgent<string> | undefined> => {
+  const result = await tryGetAgent({ httpProxy, certificateFile })
+
+  if ('error' in result && result.error) {
+    log(NETLIFYDEVERR, result.error, result.message || '')
     exit(1)
   }
-  if (warning) {
-    log(NETLIFYDEVWARN, warning, message || '')
+
+  if ('warning' in result && result.warning) {
+    log(NETLIFYDEVWARN, result.warning, result.message || '')
   }
-  return agent
+
+  if ('agent' in result) {
+    return result.agent
+  }
 }
