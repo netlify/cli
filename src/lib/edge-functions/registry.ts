@@ -100,6 +100,8 @@ export class EdgeFunctionsRegistry {
 
   private aiGatewayContext?: AIGatewayContext | null
   private buildError: Error | null = null
+  private buildPending = false
+  private buildPromise: Promise<{ warnings: Record<string, string[]> }> | null = null
   private bundler: typeof import('@netlify/edge-bundler')
   private configPath: string
   private importMapFromTOML?: string
@@ -181,7 +183,41 @@ export class EdgeFunctionsRegistry {
     return [...this.internalFunctions, ...this.userFunctions]
   }
 
-  private async build() {
+  private async build(): Promise<{ warnings: Record<string, string[]> }> {
+    // If a build is already in progress, mark that we need another build
+    // and return the current build's promise. The running build will
+    // trigger a rebuild when it completes if buildPending is true.
+    if (this.buildPromise) {
+      this.buildPending = true
+      return this.buildPromise
+    }
+
+    this.buildPending = false
+    this.buildPromise = this.doBuild()
+
+    try {
+      const result = await this.buildPromise
+      this.buildPromise = null
+
+      // If another build was requested while we were building, run it now
+      if (this.buildPending) {
+        return await this.build()
+      }
+
+      return result
+    } catch (error) {
+      this.buildPromise = null
+
+      // If another build was requested while we were building, run it now
+      if (this.buildPending) {
+        return await this.build()
+      }
+
+      throw error
+    }
+  }
+
+  private async doBuild(): Promise<{ warnings: Record<string, string[]> }> {
     const warnings: Record<string, string[]> = {}
 
     try {

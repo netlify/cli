@@ -218,7 +218,7 @@ describe.concurrent('commands/init', () => {
     const initQuestions = [
       {
         question: 'Yes, create and deploy project manually',
-        answer: answerWithValue(CONFIRM),
+        answer: CONFIRM, // List selection only needs one CONFIRM, not answerWithValue
       },
       { question: 'Team: (Use arrow keys)', answer: CONFIRM },
       {
@@ -227,7 +227,7 @@ describe.concurrent('commands/init', () => {
       },
       {
         question: `Do you want to configure build settings? We'll suggest settings for your project automatically`,
-        answer: answerWithValue(CONFIRM),
+        answer: CONFIRM, // Confirm prompt only needs one CONFIRM
       },
       {
         question: 'Your build command (hugo build/yarn run build/etc)',
