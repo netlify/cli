@@ -183,6 +183,9 @@ export class EdgeFunctionsRegistry {
     return [...this.internalFunctions, ...this.userFunctions]
   }
 
+  // Note: We intentionally don't use @netlify/dev-utils memoize() here because
+  // it has a 300ms debounce and fire-and-forget logic. Edge function build
+  // needs callers to receive the latest build result
   private async build(): Promise<{ warnings: Record<string, string[]> }> {
     // If a build is already in progress, mark that we need another build
     // and return the current build's promise. The running build will
