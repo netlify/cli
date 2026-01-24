@@ -101,9 +101,7 @@ export const runCommand = (
       )
     } else {
       const errorMessage = result.failed
-        ? // @ts-expect-error FIXME(serhalp): We use `reject: false` which means the resolved value is either the resolved value
-          // or the rejected value, but the types aren't smart enough to know this.
-          `${NETLIFYDEVERR} ${result.shortMessage as string}`
+        ? `${NETLIFYDEVERR} ${'shortMessage' in result ? result.shortMessage : 'Process exited with an error'}`
         : `${NETLIFYDEVWARN} "${command}" exited with code ${result.exitCode.toString()}`
 
       log(`${errorMessage}. Shutting down Netlify Dev server`)
