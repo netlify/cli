@@ -41,7 +41,13 @@ describe('EdgeFunctionsRegistry.build() coalescing', () => {
     for (const r of results) {
       expect(r).toEqual({ warnings: {} })
     }
-    expect(state.buildCount).toBe(2) // First build + one more rebuild for pending
+    // First build + one rebuild for pending = 2 total
+    expect(state.buildCount).toBe(2)
+
+    // Subsequent call after all concurrent calls complete triggers a NEW build
+    // @ts-expect-error -- accessing private method for testing
+    await registry.build()
+    expect(state.buildCount).toBe(3)
   })
 
   test('retries pending build on failure', async () => {
