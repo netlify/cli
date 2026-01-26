@@ -4,20 +4,31 @@ import { EdgeFunctionsRegistry } from '../../../../src/lib/edge-functions/regist
 
 /**
  * Tests for EdgeFunctionsRegistry.build() coalescing behavior.
+ *
+ * We use a TestableRegistry interface + cast through `unknown` to access
+ * private members needed for testing the build coalescing logic. The return
+ * type of createMockRegistry is explicit to contain the broader type within
+ * the test setup.
  */
+
+/** Type exposing the private members we need for testing build coalescing */
+interface TestableRegistry {
+  buildPending: boolean
+  buildPromise: Promise<{ warnings: Record<string, string[]> }> | null
+  doBuild: () => Promise<{ warnings: Record<string, string[]> }>
+  build: () => Promise<{ warnings: Record<string, string[]> }>
+}
+
 describe('EdgeFunctionsRegistry.build() coalescing', () => {
-  const createMockRegistry = () => {
+  const createMockRegistry = (): { registry: TestableRegistry; state: { buildCount: number; shouldFail: boolean } } => {
     const state = { buildCount: 0, shouldFail: false }
 
     // Create instance with minimal mocked dependencies
-    const registry = Object.create(EdgeFunctionsRegistry.prototype) as InstanceType<typeof EdgeFunctionsRegistry>
+    const registry = Object.create(EdgeFunctionsRegistry.prototype) as unknown as TestableRegistry
 
     // Initialize only the properties needed for build()
-    // @ts-expect-error -- accessing private members for testing
     registry.buildPending = false
-    // @ts-expect-error -- accessing private members for testing
     registry.buildPromise = null
-    // @ts-expect-error -- accessing private members for testing
     registry.doBuild = vi.fn(async () => {
       state.buildCount++
       await new Promise((resolve) => setTimeout(resolve, 10))
@@ -34,7 +45,6 @@ describe('EdgeFunctionsRegistry.build() coalescing', () => {
   test('concurrent calls coalesce into fewer builds', async () => {
     const { registry, state } = createMockRegistry()
 
-    // @ts-expect-error -- accessing private method for testing
     const results = await Promise.all([registry.build(), registry.build(), registry.build()])
 
     expect(results).toHaveLength(3)
@@ -45,7 +55,6 @@ describe('EdgeFunctionsRegistry.build() coalescing', () => {
     expect(state.buildCount).toBe(2)
 
     // Subsequent call after all concurrent calls complete triggers a NEW build
-    // @ts-expect-error -- accessing private method for testing
     await registry.build()
     expect(state.buildCount).toBe(3)
   })
@@ -54,7 +63,6 @@ describe('EdgeFunctionsRegistry.build() coalescing', () => {
     const { registry, state } = createMockRegistry()
     state.shouldFail = true
 
-    // @ts-expect-error -- accessing private method for testing
     const [result1, result2] = await Promise.allSettled([registry.build(), registry.build()])
 
     expect(result1.status).toBe('fulfilled') // First call gets retry result
