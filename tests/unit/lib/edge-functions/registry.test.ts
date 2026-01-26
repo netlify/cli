@@ -5,13 +5,12 @@ import { EdgeFunctionsRegistry } from '../../../../src/lib/edge-functions/regist
 /**
  * Tests for EdgeFunctionsRegistry.build() coalescing behavior.
  *
- * We use a TestableRegistry interface + cast through `unknown` to access
- * private members needed for testing the build coalescing logic. The return
- * type of createMockRegistry is explicit to contain the broader type within
- * the test setup.
+ * The build(), buildPending, buildPromise, and doBuild members are protected
+ * to allow testing. We create a minimal instance using Object.create to test
+ * the coalescing logic in isolation without the full constructor dependencies.
  */
 
-/** Type exposing the private members we need for testing build coalescing */
+/** Test harness exposing protected members for build coalescing tests */
 interface TestableRegistry {
   buildPending: boolean
   buildPromise: Promise<{ warnings: Record<string, string[]> }> | null
@@ -20,13 +19,13 @@ interface TestableRegistry {
 }
 
 describe('EdgeFunctionsRegistry.build() coalescing', () => {
-  const createMockRegistry = (): { registry: TestableRegistry; state: { buildCount: number; shouldFail: boolean } } => {
+  const createMockRegistry = () => {
     const state = { buildCount: 0, shouldFail: false }
 
-    // Create instance with minimal mocked dependencies
-    const registry = Object.create(EdgeFunctionsRegistry.prototype) as unknown as TestableRegistry
+    // Create instance with prototype chain for build() method, typed to expose protected members
+    const registry = Object.create(EdgeFunctionsRegistry.prototype) as TestableRegistry
 
-    // Initialize only the properties needed for build()
+    // Initialize protected properties needed for build()
     registry.buildPending = false
     registry.buildPromise = null
     registry.doBuild = vi.fn(async () => {

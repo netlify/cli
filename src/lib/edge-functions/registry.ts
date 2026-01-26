@@ -100,8 +100,8 @@ export class EdgeFunctionsRegistry {
 
   private aiGatewayContext?: AIGatewayContext | null
   private buildError: Error | null = null
-  private buildPending = false
-  private buildPromise: Promise<{ warnings: Record<string, string[]> }> | null = null
+  protected buildPending = false
+  protected buildPromise: Promise<{ warnings: Record<string, string[]> }> | null = null
   private bundler: typeof import('@netlify/edge-bundler')
   private configPath: string
   private importMapFromTOML?: string
@@ -186,7 +186,7 @@ export class EdgeFunctionsRegistry {
   // Note: We intentionally don't use @netlify/dev-utils memoize() here because
   // it has a 300ms debounce and fire-and-forget logic. Edge function build
   // needs callers to receive the latest build result
-  private async build(): Promise<{ warnings: Record<string, string[]> }> {
+  protected async build(): Promise<{ warnings: Record<string, string[]> }> {
     // If a build is already in progress, mark that we need another build
     // and return the current build's promise. The running build will
     // trigger a rebuild when it completes if buildPending is true.
@@ -220,7 +220,7 @@ export class EdgeFunctionsRegistry {
     }
   }
 
-  private async doBuild(): Promise<{ warnings: Record<string, string[]> }> {
+  protected async doBuild(): Promise<{ warnings: Record<string, string[]> }> {
     const warnings: Record<string, string[]> = {}
 
     try {
