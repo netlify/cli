@@ -1,31 +1,23 @@
 import { describe, expect, test, vi } from 'vitest'
 
-import { EdgeFunctionsRegistry } from '../../../../src/lib/edge-functions/registry.js'
+import { EdgeFunctionsRegistryImpl } from '../../../../src/lib/edge-functions/registry.js'
 
 /**
- * Tests for EdgeFunctionsRegistry.build() coalescing behavior.
+ * Tests for EdgeFunctionsRegistryImpl.build() coalescing behavior.
  *
- * The build(), buildPending, buildPromise, and doBuild members are protected
- * to allow testing. We create a minimal instance using Object.create to test
- * the coalescing logic in isolation without the full constructor dependencies.
+ * The build(), buildPending, buildPromise, and doBuild members are public on
+ * the implementation class (but not on the EdgeFunctionsRegistry interface),
+ * allowing direct unit testing of the coalescing logic.
  */
 
-/** Test harness exposing protected members for build coalescing tests */
-interface TestableRegistry {
-  buildPending: boolean
-  buildPromise: Promise<{ warnings: Record<string, string[]> }> | null
-  doBuild: () => Promise<{ warnings: Record<string, string[]> }>
-  build: () => Promise<{ warnings: Record<string, string[]> }>
-}
-
-describe('EdgeFunctionsRegistry.build() coalescing', () => {
+describe('EdgeFunctionsRegistryImpl.build() coalescing', () => {
   const createMockRegistry = () => {
     const state = { buildCount: 0, shouldFail: false }
 
-    // Create instance with prototype chain for build() method, typed to expose protected members
-    const registry = Object.create(EdgeFunctionsRegistry.prototype) as TestableRegistry
+    // Create instance with prototype chain for build() method
+    const registry = Object.create(EdgeFunctionsRegistryImpl.prototype) as EdgeFunctionsRegistryImpl
 
-    // Initialize protected properties needed for build()
+    // Initialize properties needed for build()
     registry.buildPending = false
     registry.buildPromise = null
     registry.doBuild = vi.fn(async () => {
