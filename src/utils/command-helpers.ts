@@ -101,9 +101,8 @@ export const pollForToken = async ({
       return logAndThrowError('Could not retrieve access token')
     }
     return accessToken
-  } catch (error_) {
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    if (error_.name === 'TimeoutError') {
+  } catch (error) {
+    if (error instanceof Error && error.name === 'TimeoutError') {
       return logAndThrowError(
         `Timed out waiting for authorization. If you do not have a ${chalk.bold.greenBright(
           'Netlify',
@@ -111,9 +110,9 @@ export const pollForToken = async ({
           'https://app.netlify.com/signup',
         )}, then run ${chalk.cyanBright('netlify login')} again.`,
       )
-    } else {
-      return logAndThrowError(error_)
     }
+
+    return logAndThrowError(error)
   } finally {
     spinner.stop()
     spinner.clear()
