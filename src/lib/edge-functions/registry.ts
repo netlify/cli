@@ -101,7 +101,7 @@ export class EdgeFunctionsRegistry {
   private aiGatewayContext?: AIGatewayContext | null
   private buildError: Error | null = null
 
-  // protected for testing only, not a stable extension point
+  // @internal - protected for testing only, not a stable extension point
   protected buildPending = false
   protected buildPromise: Promise<{ warnings: Record<string, string[]> }> | null = null
   private bundler: typeof import('@netlify/edge-bundler')
