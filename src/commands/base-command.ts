@@ -17,6 +17,8 @@ import inquirerAutocompletePrompt from 'inquirer-autocomplete-prompt'
 import merge from 'lodash/merge.js'
 import pick from 'lodash/pick.js'
 
+import type { HttpsProxyAgent } from 'https-proxy-agent'
+
 import { getAgent } from '../lib/http-agent.js'
 import {
   NETLIFY_CYAN,
@@ -590,7 +592,15 @@ export default class BaseCommand extends Command {
       httpProxy: flags.httpProxy,
       certificateFile: flags.httpProxyCertificateFilename,
     })
-    const apiOpts = { ...apiUrlOpts, agent }
+    const apiOpts: {
+      userAgent: string
+      scheme?: string
+      host?: string
+      pathPrefix?: string
+      fetchOptions?: {
+        agent?: HttpsProxyAgent<string>
+      }
+    } = { ...apiUrlOpts, fetchOptions: { agent } }
     const api = new NetlifyAPI(token ?? '', apiOpts)
 
     actionCommand.siteId = flags.siteId || (typeof flags.site === 'string' && flags.site) || state.get('siteId')
