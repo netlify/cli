@@ -95,11 +95,26 @@ function traverseLocalDependencies(
   })
 }
 
-export class EdgeFunctionsRegistry {
+/** Public contract for EdgeFunctionsRegistry - consumers should use this type */
+export interface EdgeFunctionsRegistry {
+  initialize(): Promise<void>
+  matchURLPath(
+    urlPath: string,
+    method: string,
+    headers: Record<string, string | string[] | undefined>,
+  ): { functionNames: string[]; invocationMetadata: unknown }
+}
+
+export class EdgeFunctionsRegistryImpl implements EdgeFunctionsRegistry {
   public importMapFromDeployConfig?: string
 
   private aiGatewayContext?: AIGatewayContext | null
   private buildError: Error | null = null
+
+  /** @internal Exposed for testing - not part of the public EdgeFunctionsRegistry interface */
+  public buildPending = false
+  /** @internal Exposed for testing - not part of the public EdgeFunctionsRegistry interface */
+  public buildPromise: Promise<{ warnings: Record<string, string[]> }> | null = null
   private bundler: typeof import('@netlify/edge-bundler')
   private configPath: string
   private importMapFromTOML?: string
@@ -155,8 +170,8 @@ export class EdgeFunctionsRegistry {
     this.projectDir = projectDir
 
     this.importMapFromTOML = importMapFromTOML
-    this.declarationsFromTOML = EdgeFunctionsRegistry.getDeclarationsFromTOML(config)
-    this.env = EdgeFunctionsRegistry.getEnvironmentVariables(env)
+    this.declarationsFromTOML = EdgeFunctionsRegistryImpl.getDeclarationsFromTOML(config)
+    this.env = EdgeFunctionsRegistryImpl.getEnvironmentVariables(env)
 
     this.initialScan = this.doInitialScan()
 
@@ -181,7 +196,51 @@ export class EdgeFunctionsRegistry {
     return [...this.internalFunctions, ...this.userFunctions]
   }
 
-  private async build() {
+  /**
+   * Triggers a build of edge functions with coalescing behavior.
+   *
+   * Note: We intentionally don't use @netlify/dev-utils memoize() here because
+   * it has a 300ms debounce and fire-and-forget logic. Edge function build
+   * needs callers to receive the latest build result.
+   *
+   * @internal Exposed for testing - not part of the public EdgeFunctionsRegistry interface
+   */
+  public async build(): Promise<{ warnings: Record<string, string[]> }> {
+    // If a build is already in progress, mark that we need another build
+    // and return the current build's promise. The running build will
+    // trigger a rebuild when it completes if buildPending is true.
+    if (this.buildPromise) {
+      this.buildPending = true
+      return this.buildPromise
+    }
+
+    this.buildPending = false
+    this.buildPromise = this.doBuild()
+
+    try {
+      const result = await this.buildPromise
+      this.buildPromise = null
+
+      // If another build was requested while we were building, run it now
+      if (this.buildPending) {
+        return await this.build()
+      }
+
+      return result
+    } catch (error) {
+      this.buildPromise = null
+
+      // If another build was requested while we were building, run it now
+      if (this.buildPending) {
+        return await this.build()
+      }
+
+      throw error
+    }
+  }
+
+  /** @internal Exposed for testing - not part of the public EdgeFunctionsRegistry interface */
+  public async doBuild(): Promise<{ warnings: Record<string, string[]> }> {
     const warnings: Record<string, string[]> = {}
 
     try {
@@ -643,7 +702,7 @@ export class EdgeFunctionsRegistry {
       onChange: async () => {
         const newConfig = await this.getUpdatedConfig()
 
-        this.declarationsFromTOML = EdgeFunctionsRegistry.getDeclarationsFromTOML(newConfig)
+        this.declarationsFromTOML = EdgeFunctionsRegistryImpl.getDeclarationsFromTOML(newConfig)
 
         await this.checkForAddedOrDeletedFunctions()
       },

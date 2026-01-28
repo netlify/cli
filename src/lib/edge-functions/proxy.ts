@@ -25,7 +25,7 @@ import type { LocalState, ServerSettings } from '../../utils/types.js'
 import { getBootstrapURL } from './bootstrap.js'
 import { DIST_IMPORT_MAP_PATH, EDGE_FUNCTIONS_SERVE_FOLDER } from './consts.js'
 import { getFeatureFlagsHeader, getInvocationMetadataHeader, headers } from './headers.js'
-import { EdgeFunctionsRegistry } from './registry.js'
+import { EdgeFunctionsRegistryImpl } from './registry.js'
 
 export type EdgeFunctionDeclaration = bundler.Declaration
 
@@ -250,7 +250,7 @@ const prepareServer = async ({
       rootPath: repositoryRoot,
       servePath,
     })
-    const registry = new EdgeFunctionsRegistry({
+    const registry = new EdgeFunctionsRegistryImpl({
       aiGatewayContext,
       bundler,
       command,

@@ -28,7 +28,7 @@ export interface DevServer {
   port: number
   errorBuffer: Buffer[]
   outputBuffer: Buffer[]
-  waitForLogMatching(match: string): Promise<void>
+  waitForLogMatching(match: string, timeoutMs?: number): Promise<void>
   output: string
   error: string
   close(): Promise<void>
@@ -137,16 +137,22 @@ const startServer = async ({
             port,
             errorBuffer,
             outputBuffer,
-            waitForLogMatching(match: string) {
-              return new Promise<void>((resolveWait) => {
-                const listener = (stdoutData: string) => {
-                  if (stdoutData.includes(match)) {
-                    ps.removeListener('data', listener)
-                    resolveWait()
+            waitForLogMatching(match: string, timeoutMs = 30_000) {
+              return pTimeout(
+                new Promise<void>((resolveWait) => {
+                  const listener = (stdoutData: string) => {
+                    if (stdoutData.includes(match)) {
+                      ps.stdout!.removeListener('data', listener)
+                      resolveWait()
+                    }
                   }
-                }
-                ps.stdout!.on('data', listener)
-              })
+                  ps.stdout!.on('data', listener)
+                }),
+                {
+                  milliseconds: timeoutMs,
+                  message: `Timed out waiting for log matching "${match}".\nOutput so far:\n${outputBuffer.join('')}`,
+                },
+              )
             },
             get output() {
               // these are getters so we do the actual joining as late as possible as the array might still get
