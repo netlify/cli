@@ -4,7 +4,6 @@ import path, { join } from 'path'
 import { NetlifyConfig, type GeneratedFunction } from '@netlify/build'
 
 import BaseCommand from '../commands/base-command.js'
-import { $TSFixMe } from '../commands/types.js'
 import { getBootstrapURL } from '../lib/edge-functions/bootstrap.js'
 import { INTERNAL_EDGE_FUNCTIONS_FOLDER } from '../lib/edge-functions/consts.js'
 import { getPathInProject } from '../lib/settings.js'
@@ -47,10 +46,22 @@ const cleanInternalDirectory = async (basePath?: string) => {
   await Promise.all(ops)
 }
 
+type BuildOptions = {
+  context: string
+  cwd?: string
+  debug: boolean
+  dir?: string
+  dry: boolean
+  offline: boolean
+  quiet: boolean
+  saveConfig: boolean
+  skipWaitPort?: boolean
+}
+
 type RunNetlifyBuildOptions = {
   command: BaseCommand
   // The flags of the command
-  options: $TSFixMe
+  options: BuildOptions
   settings: ServerSettings
   env: NodeJS.ProcessEnv
   timeline: 'dev' | 'build'
@@ -71,7 +82,7 @@ export async function runNetlifyBuild({
 }: {
   command: BaseCommand
   // The flags of the command
-  options: $TSFixMe
+  options: BuildOptions
   settings: ServerSettings
   env: NodeJS.ProcessEnv
   timeline: 'build' | 'dev'
@@ -83,6 +94,7 @@ export async function runNetlifyBuild({
   const sharedOptions = {
     cachedConfig,
     configPath: cachedConfig.configPath,
+    saveConfig: options.saveConfig,
     siteId: cachedConfig.siteInfo.id,
     token: cachedConfig.token,
     apiHost: apiOpts.host,
@@ -139,12 +151,13 @@ export async function runNetlifyBuild({
     const tempConfigPath = await copyConfig(cachedConfig.configPath ?? '', command.workingDir)
     const buildSiteOptions = {
       ...sharedOptions,
-      outputConfigPath: tempConfigPath,
-      saveConfig: true,
+      cachedConfig: {
+        ...sharedOptions.cachedConfig,
+        outputConfigPath: tempConfigPath,
+      },
     }
 
     // Run Netlify Build using the main entry point.
-    // @ts-expect-error TS(2345) FIXME: Argument of type '{ outputConfigPath: string; save... Remove this comment to see the full error message
     const { netlifyConfig, success, generatedFunctions } = await buildSite(buildSiteOptions)
 
     if (!success) {
