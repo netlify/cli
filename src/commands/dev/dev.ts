@@ -155,7 +155,7 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
     siteInfo,
   })
 
-  if (!options.offline && !options.offlineEnv) {
+  if (!options.offline && !options.offlineEnv && !capabilities.aiGatewayDisabled) {
     await setupAIGateway({ api, env, siteID: site.id, siteURL: siteUrl })
 
     // Parse AI Gateway context and inject provider API keys
@@ -169,6 +169,8 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
         }
       }
     }
+  } else if (capabilities.aiGatewayDisabled) {
+    log(`${NETLIFYDEVLOG} AI Gateway is disabled for this account`)
   }
 
   injectEnvVariables(env)

@@ -58,6 +58,11 @@ type Capabilities = NonNullable<ApiAccount['capabilities']> & {
         included?: boolean | undefined
       }
     | undefined
+  ai_gateway_disabled?:
+    | {
+        included?: boolean | undefined
+      }
+    | undefined
 }
 export type Capability = keyof Capabilities
 export type Account = ApiAccount & {
@@ -138,6 +143,7 @@ export const getSiteInformation = async ({ api, offline, site, siteInfo }) => {
       accountId: account?.id,
       capabilities: {
         backgroundFunctions: supportsBackgroundFunctions(account),
+        aiGatewayDisabled: account?.capabilities?.ai_gateway_disabled?.included ?? false,
       },
       timeouts: {
         syncFunctions: siteInfo.functions_timeout ?? siteInfo.functions_config?.timeout ?? SYNCHRONOUS_FUNCTION_TIMEOUT,
@@ -150,7 +156,9 @@ export const getSiteInformation = async ({ api, offline, site, siteInfo }) => {
   return {
     addonsUrls: {},
     siteUrl: '',
-    capabilities: {},
+    capabilities: {
+      aiGatewayDisabled: false,
+    },
     timeouts: {
       syncFunctions: SYNCHRONOUS_FUNCTION_TIMEOUT,
       backgroundFunctions: BACKGROUND_FUNCTION_TIMEOUT,
