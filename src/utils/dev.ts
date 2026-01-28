@@ -118,18 +118,33 @@ const SYNCHRONOUS_FUNCTION_TIMEOUT = 30
 // default 15 minutes for background functions
 const BACKGROUND_FUNCTION_TIMEOUT = 900
 
-/**
- *
- * @param {object} config
- * @param {boolean} config.offline
- * @param {*} config.api
- * @param {*} config.site
- * @param {*} config.siteInfo
- * @returns
- */
+interface GetSiteInformationOptions {
+  api: NetlifyAPI
+  offline: boolean
+  site: { id?: string }
+  siteInfo: SiteInfo
+}
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
-export const getSiteInformation = async ({ api, offline, site, siteInfo }) => {
+export interface SiteInformationResult {
+  addonsUrls: Record<string, string>
+  siteUrl: string
+  accountId?: string
+  capabilities: {
+    backgroundFunctions?: boolean
+    aiGatewayDisabled: boolean
+  }
+  timeouts: {
+    syncFunctions: number
+    backgroundFunctions: number
+  }
+}
+
+export const getSiteInformation = async ({
+  api,
+  offline,
+  site,
+  siteInfo,
+}: GetSiteInformationOptions): Promise<SiteInformationResult> => {
   if (site.id && !offline) {
     validateSiteInfo({ site, siteInfo })
     const [accounts, addons] = await Promise.all([getAccounts({ api }), getAddons({ api, site })])
@@ -143,7 +158,7 @@ export const getSiteInformation = async ({ api, offline, site, siteInfo }) => {
       accountId: account?.id,
       capabilities: {
         backgroundFunctions: supportsBackgroundFunctions(account),
-        aiGatewayDisabled: account?.capabilities?.ai_gateway_disabled?.included ?? false,
+        aiGatewayDisabled: siteInfo.capabilities?.ai_gateway_disabled ?? false,
       },
       timeouts: {
         syncFunctions: siteInfo.functions_timeout ?? siteInfo.functions_config?.timeout ?? SYNCHRONOUS_FUNCTION_TIMEOUT,
