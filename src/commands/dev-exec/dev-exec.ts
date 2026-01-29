@@ -3,6 +3,7 @@ import execa from 'execa'
 
 import { parseAIGatewayContext, setupAIGateway } from '@netlify/ai/bootstrap'
 
+import { NETLIFYDEVLOG, log } from '../../utils/command-helpers.js'
 import { getDotEnvVariables, getSiteInformation, injectEnvVariables } from '../../utils/dev.js'
 import { getEnvelopeEnv } from '../../utils/env/index.js'
 import BaseCommand from '../base-command.js'
@@ -24,10 +25,9 @@ export const devExec = async (cmd: string, options: OptionValues, command: BaseC
   if (!capabilities.aiGatewayDisabled) {
     await setupAIGateway({ api, env, siteID: site.id, siteURL: siteUrl })
 
-    // Parse AI Gateway context and inject provider API keys
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- AI_GATEWAY is conditionally set by setupAIGateway
-    if (env.AI_GATEWAY) {
-      const aiGatewayContext = parseAIGatewayContext(env.AI_GATEWAY.value)
+    const aiGatewayEnv = env.AI_GATEWAY as (typeof env)[string] | undefined
+    if (aiGatewayEnv) {
+      const aiGatewayContext = parseAIGatewayContext(aiGatewayEnv.value)
       if (aiGatewayContext?.envVars) {
         for (const envVar of aiGatewayContext.envVars) {
           env[envVar.key] = { sources: ['internal'], value: aiGatewayContext.token }
@@ -35,6 +35,8 @@ export const devExec = async (cmd: string, options: OptionValues, command: BaseC
         }
       }
     }
+  } else {
+    log(`${NETLIFYDEVLOG} AI Gateway is disabled for this account`)
   }
 
   injectEnvVariables(env)

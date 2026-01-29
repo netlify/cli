@@ -69,10 +69,9 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
   if (!options.offline && !capabilities.aiGatewayDisabled) {
     await setupAIGateway({ api, env, siteID: site.id, siteURL: siteUrl })
 
-    // Parse AI Gateway context and inject provider API keys
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- AI_GATEWAY is conditionally set by setupAIGateway
-    if (env.AI_GATEWAY) {
-      const aiGatewayContext = parseAIGatewayContext(env.AI_GATEWAY.value)
+    const aiGatewayEnv = env.AI_GATEWAY as (typeof env)[string] | undefined
+    if (aiGatewayEnv) {
+      const aiGatewayContext = parseAIGatewayContext(aiGatewayEnv.value)
       if (aiGatewayContext?.envVars) {
         for (const envVar of aiGatewayContext.envVars) {
           env[envVar.key] = { sources: ['internal'], value: aiGatewayContext.token }
@@ -80,7 +79,7 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
         }
       }
     }
-  } else if (capabilities.aiGatewayDisabled) {
+  } else if (!options.offline && capabilities.aiGatewayDisabled) {
     log(`${NETLIFYDEVLOG} AI Gateway is disabled for this account`)
   }
 

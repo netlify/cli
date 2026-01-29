@@ -41,7 +41,7 @@ export const functionsServe = async (options: OptionValues, command: BaseCommand
 
   if (!options.offline && !capabilities.aiGatewayDisabled) {
     await setupAIGateway({ api, env, siteID: site.id, siteURL: siteUrl })
-  } else if (capabilities.aiGatewayDisabled) {
+  } else if (!options.offline && capabilities.aiGatewayDisabled) {
     log(`${NETLIFYDEVLOG} AI Gateway is disabled for this account`)
   }
 

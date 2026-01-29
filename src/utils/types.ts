@@ -95,8 +95,9 @@ export interface SiteInfo {
         repo_url: string
       }
     | undefined
-  capabilities?: Record<string, unknown> & {
+  capabilities?: {
     ai_gateway_disabled?: boolean
+    [key: string]: unknown
   }
   created_at: string
   custom_domain: string
