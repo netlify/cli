@@ -1,5 +1,6 @@
 import process from 'process'
 
+import { parseAIGatewayContext, setupAIGateway } from '@netlify/ai/bootstrap'
 import type { OptionValues } from 'commander'
 
 import {
@@ -56,8 +57,6 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
   }
 
   env = await getDotEnvVariables({ devConfig, env, site })
-  injectEnvVariables(env)
-  await promptEditorHelper({ chalk, config, log, NETLIFYDEVLOG, repositoryRoot, state })
 
   const { accountId, addonsUrls, capabilities, siteUrl, timeouts } = await getSiteInformation({
     // inherited from base command --offline
@@ -66,6 +65,26 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
     site,
     siteInfo,
   })
+
+  if (!options.offline && !capabilities.aiGatewayDisabled) {
+    await setupAIGateway({ api, env, siteID: site.id, siteURL: siteUrl })
+
+    const aiGatewayEnv = env.AI_GATEWAY as (typeof env)[string] | undefined
+    if (aiGatewayEnv) {
+      const aiGatewayContext = parseAIGatewayContext(aiGatewayEnv.value)
+      if (aiGatewayContext?.envVars) {
+        for (const envVar of aiGatewayContext.envVars) {
+          env[envVar.key] = { sources: ['internal'], value: aiGatewayContext.token }
+          env[envVar.url] = { sources: ['internal'], value: aiGatewayContext.url }
+        }
+      }
+    }
+  } else if (!options.offline && capabilities.aiGatewayDisabled) {
+    log(`${NETLIFYDEVLOG} AI Gateway is disabled for this account`)
+  }
+
+  injectEnvVariables(env)
+  await promptEditorHelper({ chalk, config, log, NETLIFYDEVLOG, repositoryRoot, state })
 
   if (!site.root) {
     throw new Error('Site root not found')
