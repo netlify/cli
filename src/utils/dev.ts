@@ -283,7 +283,9 @@ export const acquirePort = async ({
 export const processOnExit = (fn: (...args: unknown[]) => void | Promise<void>) => {
   const signals = ['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit'] as const
   signals.forEach((signal) => {
-    process.on(signal, fn)
+    process.on(signal, (...args) => {
+      void fn(...args)
+    })
   })
 }
 

@@ -8,7 +8,7 @@ import { UPLOAD_INITIAL_DELAY, UPLOAD_MAX_DELAY, UPLOAD_RANDOM_FACTOR } from './
 
 export interface FileObject {
   assetType: 'file' | 'function'
-  body?: any
+  body?: string | Buffer | fs.ReadStream
   filepath?: string
   invocationMode?: string
   normalizedPath: string
@@ -43,7 +43,15 @@ const uploadFiles = async (
   const uploadFile = async (fileObj: FileObject, index: number) => {
     const { assetType, body, filepath, invocationMode, normalizedPath, runtime, timeout } = fileObj
 
-    const readStreamCtor = () => body ?? fs.createReadStream(filepath!)
+    const readStreamCtor = () => {
+      if (body) {
+        return body
+      }
+      if (filepath) {
+        return fs.createReadStream(filepath)
+      }
+      throw new Error(`Missing body or filepath for asset ${normalizedPath}`)
+    }
 
     statusCb({
       type: 'upload',
@@ -66,14 +74,14 @@ const uploadFiles = async (
       }
       case 'function': {
         response = await retryUpload((retryCount: number) => {
-          const params = {
+          const params: Parameters<NetlifyAPI['uploadDeployFunction']>[0] & { xNfRetryCount?: number } = {
             body: readStreamCtor,
             deployId,
             invocationMode,
             timeout,
             name: encodeURI(normalizedPath),
             runtime,
-          } as any
+          }
 
           if (retryCount > 0) {
             params.xNfRetryCount = retryCount
