@@ -192,10 +192,19 @@ const getEnvSourceName = (source) => {
 /**
  * @param {{devConfig: any, env: Record<string, { sources: string[], value: string}>, site: any}} param0
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'devConfig' implicitly has an 'any... Remove this comment to see the full error message
-export const getDotEnvVariables = async ({ devConfig, env, site }): Promise<EnvironmentVariables> => {
-  const dotEnvFiles = await loadDotEnvFiles({ envFiles: devConfig.envFiles, projectDir: site.root })
-  // @ts-expect-error TS(2339) FIXME: Property 'env' does not exist on type '{ warning: ... Remove this comment to see the full error message
+export const getDotEnvVariables = async ({
+  devConfig,
+  env,
+  site,
+}: {
+  devConfig: any
+  env: EnvironmentVariables
+  site: { root?: string }
+}): Promise<EnvironmentVariables> => {
+  const dotEnvFiles = await loadDotEnvFiles({
+    envFiles: devConfig.envFiles,
+    projectDir: site.root || process.cwd(),
+  })
   dotEnvFiles.forEach(({ env: fileEnv, file }) => {
     const newSourceName = `${file} file`
 
