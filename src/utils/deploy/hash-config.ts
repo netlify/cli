@@ -5,7 +5,6 @@ import tomlify from 'tomlify-j0.4'
 import type { NormalizedCachedConfigConfig } from '../command-helpers.js'
 
 export const hashConfig = ({ config }: { config: NormalizedCachedConfigConfig }) => {
-  if (!config) throw new Error('Missing config option')
   const configString = serializeToml(config)
 
   const hash = createHash('sha1').update(configString).digest('hex')

@@ -6,10 +6,10 @@ import type { NetlifyAPI } from '@netlify/api'
 
 import { UPLOAD_INITIAL_DELAY, UPLOAD_MAX_DELAY, UPLOAD_RANDOM_FACTOR } from './constants.js'
 
-interface FileObject {
+export interface FileObject {
   assetType: 'file' | 'function'
   body?: any
-  filepath: string
+  filepath?: string
   invocationMode?: string
   normalizedPath: string
   runtime?: string
@@ -34,7 +34,6 @@ const uploadFiles = async (
   uploadList: FileObject[],
   { concurrentUpload, maxRetry, statusCb }: UploadOptions,
 ) => {
-  if (!concurrentUpload || !statusCb || !maxRetry) throw new Error('Missing required option concurrentUpload')
   statusCb({
     type: 'upload',
     msg: `Uploading ${uploadList.length} files`,
@@ -44,7 +43,7 @@ const uploadFiles = async (
   const uploadFile = async (fileObj: FileObject, index: number) => {
     const { assetType, body, filepath, invocationMode, normalizedPath, runtime, timeout } = fileObj
 
-    const readStreamCtor = () => body ?? fs.createReadStream(filepath)
+    const readStreamCtor = () => body ?? fs.createReadStream(filepath!)
 
     statusCb({
       type: 'upload',
@@ -56,7 +55,7 @@ const uploadFiles = async (
       case 'file': {
         response = await retryUpload(
           () =>
-            (api as any).uploadDeployFile({
+            (api as unknown as NetlifyAPI).uploadDeployFile({
               body: readStreamCtor,
               deployId,
               path: encodeURI(normalizedPath),
@@ -67,20 +66,20 @@ const uploadFiles = async (
       }
       case 'function': {
         response = await retryUpload((retryCount: number) => {
-          const params: any = {
+          const params = {
             body: readStreamCtor,
             deployId,
             invocationMode,
             timeout,
             name: encodeURI(normalizedPath),
             runtime,
-          }
+          } as any
 
           if (retryCount > 0) {
             params.xNfRetryCount = retryCount
           }
 
-          return (api as any).uploadDeployFunction(params)
+          return (api as unknown as NetlifyAPI).uploadDeployFunction(params)
         }, maxRetry)
         break
       }

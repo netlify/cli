@@ -4,6 +4,7 @@ import type { NetlifyAPI } from '@netlify/api'
 import pWaitFor from 'p-wait-for'
 
 import { DEPLOY_POLL } from './constants.js'
+import type { FileObject } from './upload-files.js'
 
 type Deploy = Awaited<ReturnType<NetlifyAPI['getSiteDeploy']>>
 
@@ -107,7 +108,7 @@ export const waitForDeploy = async (
 }
 
 // Transform the fileShaMap and fnShaMap into a generic shaMap that file-uploader.js can use
-export const getUploadList = (required?: string[] | null, shaMap?: Record<string, any[]> | null) => {
+export const getUploadList = (required?: string[] | null, shaMap?: Record<string, FileObject[]> | null) => {
   if (!required || !shaMap) return []
   return required.flatMap((sha) => shaMap[sha])
 }
