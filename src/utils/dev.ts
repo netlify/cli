@@ -190,20 +190,17 @@ const getEnvSourceName = (source: string) => {
   return chalk.green(source)
 }
 
-/**
- * @param {{devConfig: any, env: Record<string, { sources: string[], value: string}>, site: any}} param0
- */
 export const getDotEnvVariables = async ({
   devConfig,
   env,
   site,
 }: {
-  devConfig: { envFiles?: string[] } & Record<string, unknown>
+  devConfig: { envFiles?: string[]; env_files?: string[] } & Record<string, unknown>
   env: EnvironmentVariables
   site: { root?: string }
 }): Promise<EnvironmentVariables> => {
   const dotEnvFiles = await loadDotEnvFiles({
-    envFiles: devConfig.envFiles || [],
+    envFiles: devConfig.envFiles || devConfig.env_files,
     // eslint-disable-next-line no-restricted-properties
     projectDir: site.root || process.cwd(),
   })
@@ -283,7 +280,7 @@ export const acquirePort = async ({
   return acquiredPort
 }
 
-export const processOnExit = (fn: (...args: unknown[]) => void) => {
+export const processOnExit = (fn: (...args: unknown[]) => void | Promise<void>) => {
   const signals = ['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit'] as const
   signals.forEach((signal) => {
     process.on(signal, fn)

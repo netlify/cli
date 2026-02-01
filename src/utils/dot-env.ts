@@ -13,7 +13,7 @@ export interface DotEnvResult {
   warning?: string
 }
 
-export const loadDotEnvFiles = async function ({ envFiles, projectDir }: { envFiles: string[]; projectDir: string }) {
+export const loadDotEnvFiles = async function ({ envFiles, projectDir }: { envFiles?: string[]; projectDir: string }) {
   const response = await tryLoadDotEnvFiles({ projectDir, dotenvFiles: envFiles })
 
   const filesWithWarning = response.filter((el): el is { warning: string } => Boolean(el.warning))
@@ -28,14 +28,15 @@ export const loadDotEnvFiles = async function ({ envFiles, projectDir }: { envFi
 const defaultEnvFiles = ['.env.development.local', '.env.local', '.env.development', '.env']
 
 export const tryLoadDotEnvFiles = async ({
-  dotenvFiles = defaultEnvFiles,
+  dotenvFiles,
   projectDir,
 }: {
   dotenvFiles?: string[]
   projectDir: string
 }): Promise<DotEnvResult[]> => {
+  const filesToLoad = dotenvFiles && dotenvFiles.length !== 0 ? dotenvFiles : defaultEnvFiles
   const results = await Promise.all(
-    dotenvFiles.map(async (file): Promise<DotEnvResult | undefined> => {
+    filesToLoad.map(async (file): Promise<DotEnvResult | undefined> => {
       const filepath = path.resolve(projectDir, file)
       try {
         const isFile = await isFileAsync(filepath)

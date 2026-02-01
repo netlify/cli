@@ -44,7 +44,12 @@ test('Adds a retry count to function upload requests', async () => {
     statusCb: vi.fn(),
   }
 
-  await uploadFiles(mockApi as unknown as Pick<NetlifyAPI, 'uploadDeployFile' | 'uploadDeployFunction'>, deployId, files, options)
+  await uploadFiles(
+    mockApi as unknown as Pick<NetlifyAPI, 'uploadDeployFile' | 'uploadDeployFunction'>,
+    deployId,
+    files,
+    options,
+  )
 
   expect(uploadDeployFunction).toHaveBeenCalledTimes(3)
   expect(uploadDeployFunction).toHaveBeenNthCalledWith(1, expect.not.objectContaining({ xNfRetryCount: 1 }))
@@ -80,7 +85,12 @@ test('Does not retry on 400 response from function upload requests', async () =>
   }
 
   try {
-    await uploadFiles(mockApi as unknown as Pick<NetlifyAPI, 'uploadDeployFile' | 'uploadDeployFunction'>, deployId, files, options)
+    await uploadFiles(
+      mockApi as unknown as Pick<NetlifyAPI, 'uploadDeployFile' | 'uploadDeployFunction'>,
+      deployId,
+      files,
+      options,
+    )
   } catch {}
 
   expect(uploadDeployFunction).toHaveBeenCalledTimes(1)
