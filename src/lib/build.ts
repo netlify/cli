@@ -56,8 +56,6 @@ export interface CachedConfig {
                 keyFile: string
               }
             | undefined
-          envFiles?: string[] | undefined
-          env_files?: string[] | undefined
           // FIXME(serhalp): There is absolutely no trace of this in the `netlify/build` codebase yet
           // it appears to be real functionality. Fix this upstream.
           processing: {

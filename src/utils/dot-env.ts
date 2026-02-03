@@ -7,20 +7,17 @@ import { isFileAsync } from '../lib/fs.js'
 
 import { warn } from './command-helpers.js'
 
-interface DotEnvFileResult {
+export type DotEnvFileResult = {
   file: string
   env: Record<string, string>
 }
 
-interface DotEnvWarningResult {
+export type DotEnvWarningResult = {
   warning: string
 }
 
-type DotEnvResult = DotEnvFileResult | DotEnvWarningResult
+export type DotEnvResult = DotEnvFileResult | DotEnvWarningResult
 
-/**
- * Loads .env files and returns an array of successfully loaded files and their environment variables.
- */
 export const loadDotEnvFiles = async function ({
   envFiles,
   projectDir,
@@ -41,9 +38,6 @@ export const loadDotEnvFiles = async function ({
 // in the user configuration, the order is highest to lowest
 const defaultEnvFiles = ['.env.development.local', '.env.local', '.env.development', '.env']
 
-/**
- * Attempts to load .env files and returns an array of results (file/env or warning).
- */
 export const tryLoadDotEnvFiles = async ({
   dotenvFiles = defaultEnvFiles,
   projectDir,
@@ -73,5 +67,5 @@ export const tryLoadDotEnvFiles = async ({
   )
 
   // we return in order of lowest to highest priority
-  return results.filter((result): result is DotEnvResult => Boolean(result)).reverse()
+  return (results.filter((result): result is DotEnvResult => Boolean(result))).reverse()
 }

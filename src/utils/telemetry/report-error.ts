@@ -3,7 +3,7 @@ import { dirname, join } from 'path'
 import process, { version as nodejsVersion } from 'process'
 import { fileURLToPath } from 'url'
 
-import type { NotifiableError, Event } from '@bugsnag/js'
+import { type Event } from '@bugsnag/js'
 import { getGlobalConfigStore } from '@netlify/dev-utils'
 import { isCI } from 'ci-info'
 
@@ -13,30 +13,49 @@ import { cliVersion } from './utils.js'
 
 const dirPath = dirname(fileURLToPath(import.meta.url))
 
+interface ReportErrorConfig {
+  severity?: Event['severity']
+  metadata?: Record<string, Record<string, unknown>>
+}
+
 /**
- * Reports an error to telemetry.
+ * Report an error to telemetry
  */
-export const reportError = async function (
-  error: NotifiableError | Record<string, unknown>,
-  config: { severity: Event['severity']; metadata?: Record<string, unknown> } = { severity: 'error' },
-) {
+export const reportError = async function (error: unknown, config: ReportErrorConfig = {}): Promise<void> {
   if (isCI) {
     return
   }
 
   // convert a NotifiableError to an error class
-  const err =
-    error instanceof Error ? error : typeof error === 'string' ? new Error(error) : (error as Record<string, unknown>)
+  let err: Error
+  if (error instanceof Error) {
+    err = error
+  } else if (typeof error === 'string') {
+    err = new Error(error)
+  } else if (typeof error === 'object' && error !== null && ('message' in error || 'name' in error)) {
+    const errorObject = error as Record<string, unknown>
+    const message = typeof errorObject.message === 'string' ? errorObject.message : 'Unknown error'
+    err = new Error(message)
+    if (typeof errorObject.name === 'string') {
+      err.name = errorObject.name
+    }
+    if (typeof errorObject.stack === 'string') {
+      err.stack = errorObject.stack
+    }
+  } else {
+    err = new Error(typeof error === 'object' && error !== null ? JSON.stringify(error) : String(error))
+  }
 
   const globalConfig = await getGlobalConfigStore()
 
   const options = JSON.stringify({
     type: 'error',
     data: {
-      message: 'message' in err ? (err.message as string) : 'Unknown error',
-      name: 'name' in err ? (err.name as string) : 'Error',
-      stack: 'stack' in err ? (err.stack as string) : undefined,
-      cause: 'cause' in err ? err.cause : undefined,
+      message: err.message,
+      name: err.name,
+      stack: err.stack,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      cause: (err as any).cause,
       severity: config.severity,
       user: {
         id: globalConfig.get('userId'),

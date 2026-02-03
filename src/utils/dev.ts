@@ -78,12 +78,8 @@ const getAccounts = async ({ api }: { api: NetlifyAPI }) => {
 }
 
 const getAddons = async ({ api, site }: { api: NetlifyAPI; site: { id?: string } }) => {
-  const { id } = site
-  if (!id) {
-    return []
-  }
   try {
-    const addons = await api.listServiceInstancesForSite({ siteId: id })
+    const addons = await api.listServiceInstancesForSite({ siteId: site.id ?? '' })
     return addons
   } catch (error_) {
     return logAndThrowError(
@@ -94,23 +90,20 @@ const getAddons = async ({ api, site }: { api: NetlifyAPI; site: { id?: string }
   }
 }
 
-const getAddonsInformation = ({ addons, siteInfo }: { addons: Record<string, unknown>[]; siteInfo: SiteInfo }) => {
+type Addon = Awaited<ReturnType<NetlifyAPI['listServiceInstancesForSite']>>[number]
+
+const getAddonsInformation = ({ addons, siteInfo }: { addons: Addon[]; siteInfo: SiteInfo }) => {
   const urls = Object.fromEntries(
-    addons.map((addon) => [addon.service_slug as string, `${siteInfo.ssl_url ?? ''}${addon.service_path as string}`]),
+    addons.map((addon) => [addon.service_slug, `${siteInfo.ssl_url}${addon.service_path}`]),
   )
-  const env = Object.assign({}, ...addons.map((addon) => addon.env as Record<string, string>))
+  const env = Object.assign({}, ...addons.map((addon) => addon.env))
   return { urls, env }
 }
 
 const getSiteAccount = ({ accounts, siteInfo }: { accounts: Account[]; siteInfo: SiteInfo }): Account | undefined => {
-  const { account_id: accountId, account_slug: accountSlug } = siteInfo
-  const siteAccount = accounts.find(
-    (account) => (accountSlug && account.slug === accountSlug) || (accountId && account.id === accountId),
-  )
+  const siteAccount = accounts.find((account) => account.slug === siteInfo.account_slug)
   if (!siteAccount) {
-    warn(
-      `Could not find account for project '${siteInfo.name ?? 'unknown'}' with account slug '${accountSlug ?? 'unknown'}'`,
-    )
+    warn(`Could not find account for project '${siteInfo.name}' with account slug '${siteInfo.account_slug}'`)
     return undefined
   }
   return siteAccount
@@ -158,8 +151,8 @@ export const getSiteInformation = async ({
 
     return {
       addonsUrls,
-      siteUrl: siteInfo.ssl_url ?? '',
-      accountId: account?.id ?? siteInfo.account_id,
+      siteUrl: siteInfo.ssl_url,
+      accountId: account?.id,
       capabilities: {
         backgroundFunctions: supportsBackgroundFunctions(account),
         aiGatewayDisabled: siteInfo.capabilities?.ai_gateway_disabled ?? false,
@@ -186,32 +179,30 @@ export const getSiteInformation = async ({
 }
 
 const getEnvSourceName = (source: string) => {
-  const sourceConfig = (
-    ENV_VAR_SOURCES as Record<string, { name: string; printFn: (str: string) => string } | undefined>
-  )[source]
-  const name = sourceConfig?.name ?? source
-  const printFn = sourceConfig?.printFn ?? chalk.green
+  const sourceConfig = (ENV_VAR_SOURCES as Record<string, { name: string; printFn: (s: string) => string } | undefined>)[source]
+  const { name = source, printFn = chalk.green } = sourceConfig || {}
 
   return printFn(name)
 }
 
+/**
+ * @param {{devConfig: any, env: Record<string, { sources: string[], value: string}>, site: any}} param0
+ */
 export const getDotEnvVariables = async ({
   devConfig,
   env,
   site,
 }: {
-  devConfig: { envFiles?: string[]; env_files?: string[] }
+  devConfig: { envFiles?: string[]; env_files?: string[]; [key: string]: unknown }
   env: EnvironmentVariables
-  site: { root?: string }
+  site: { root?: string; [key: string]: unknown }
 }): Promise<EnvironmentVariables> => {
   const { root } = site
   if (!root) {
     return env
   }
-
   const envFiles = devConfig.envFiles || devConfig.env_files
   const dotEnvFiles = await loadDotEnvFiles({ envFiles, projectDir: root })
-
   dotEnvFiles.forEach(({ env: fileEnv, file }) => {
     const newSourceName = `${file} file`
 
@@ -288,11 +279,11 @@ export const acquirePort = async ({
   return acquiredPort
 }
 
-export const processOnExit = (fn: (signal: string) => void | Promise<void>) => {
+export const processOnExit = (fn: (codeOrSignal: string | number) => void | Promise<void>) => {
   const signals = ['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit']
   signals.forEach((signal) => {
     process.on(signal, (codeOrSignal) => {
-      void fn(String(codeOrSignal))
+      void fn(codeOrSignal)
     })
   })
 }
