@@ -96,16 +96,21 @@ const getAddons = async ({ api, site }: { api: NetlifyAPI; site: { id?: string }
 
 const getAddonsInformation = ({ addons, siteInfo }: { addons: Record<string, unknown>[]; siteInfo: SiteInfo }) => {
   const urls = Object.fromEntries(
-    addons.map((addon) => [addon.service_slug as string, `${siteInfo.ssl_url}${addon.service_path as string}`]),
+    addons.map((addon) => [addon.service_slug as string, `${siteInfo.ssl_url ?? ''}${addon.service_path as string}`]),
   )
   const env = Object.assign({}, ...addons.map((addon) => addon.env as Record<string, string>))
   return { urls, env }
 }
 
 const getSiteAccount = ({ accounts, siteInfo }: { accounts: Account[]; siteInfo: SiteInfo }): Account | undefined => {
-  const siteAccount = accounts.find((account) => account.slug === siteInfo.account_slug)
+  const { account_id: accountId, account_slug: accountSlug } = siteInfo
+  const siteAccount = accounts.find(
+    (account) => (accountSlug && account.slug === accountSlug) || (accountId && account.id === accountId),
+  )
   if (!siteAccount) {
-    warn(`Could not find account for project '${siteInfo.name}' with account slug '${siteInfo.account_slug}'`)
+    warn(
+      `Could not find account for project '${siteInfo.name ?? 'unknown'}' with account slug '${accountSlug ?? 'unknown'}'`,
+    )
     return undefined
   }
   return siteAccount
@@ -153,8 +158,8 @@ export const getSiteInformation = async ({
 
     return {
       addonsUrls,
-      siteUrl: siteInfo.ssl_url,
-      accountId: account?.id,
+      siteUrl: siteInfo.ssl_url ?? '',
+      accountId: account?.id ?? siteInfo.account_id,
       capabilities: {
         backgroundFunctions: supportsBackgroundFunctions(account),
         aiGatewayDisabled: siteInfo.capabilities?.ai_gateway_disabled ?? false,
