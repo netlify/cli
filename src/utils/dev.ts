@@ -179,7 +179,9 @@ export const getSiteInformation = async ({
 }
 
 const getEnvSourceName = (source: string) => {
-  const sourceConfig = (ENV_VAR_SOURCES as Record<string, { name: string; printFn: (s: string) => string } | undefined>)[source]
+  const sourceConfig = (
+    ENV_VAR_SOURCES as Record<string, { name: string; printFn: (s: string) => string } | undefined>
+  )[source]
   const { name = source, printFn = chalk.green } = sourceConfig || {}
 
   return printFn(name)

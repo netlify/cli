@@ -67,5 +67,5 @@ export const tryLoadDotEnvFiles = async ({
   )
 
   // we return in order of lowest to highest priority
-  return (results.filter((result): result is DotEnvResult => Boolean(result))).reverse()
+  return results.filter((result): result is DotEnvResult => Boolean(result)).reverse()
 }
