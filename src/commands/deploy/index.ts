@@ -3,7 +3,6 @@ import { env, platform } from 'process'
 import { Option } from 'commander'
 import terminalLink from 'terminal-link'
 
-import { normalizeContext } from '../../utils/env/index.js'
 import BaseCommand from '../base-command.js'
 import { chalk, logAndThrowError, warn } from '../../utils/command-helpers.js'
 import type { DeployOptionValues } from './option_values.js'
@@ -73,8 +72,7 @@ For detailed configuration options, see the Netlify documentation.`,
     )
     .option(
       '--context <context>',
-      'Specify a deploy context for environment variables read during the build ("production", "deploy-preview", "branch-deploy", "dev") or `branch:your-branch` where `your-branch` is the name of a branch (default: dev)',
-      normalizeContext,
+      'Specify a deploy context for environment variables read during the build (”production”, ”deploy-preview”, ”branch-deploy”, ”dev”) or `branch:your-branch` where `your-branch` is the name of a branch (default: dev)',
     )
     .option(
       '--skip-functions-cache',
