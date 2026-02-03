@@ -113,6 +113,13 @@ export const getBuildSettings = async ({
     log()
   }
 
+  const frameworkName = setting.framework?.name
+  if (frameworkName) {
+    log(`We detected that you're using ${formatTitle(frameworkName)}. Below are recommended build settings.`)
+    log('For each setting, press Enter to accept the default or provide your own value.')
+    log()
+  }
+
   const { baseDir, buildCmd, buildDir } = await inquirer.prompt<{
     baseDir?: string | undefined
     buildCmd: string

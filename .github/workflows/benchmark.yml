@@ -41,7 +41,7 @@ jobs:
         run: echo ${{ github.event.number }} > ./pr_number
 
       - name: Upload deltas
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: delta-action-deltas
           retention-days: 7
