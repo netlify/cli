@@ -102,7 +102,7 @@
     "express-logging": "1.1.1",
     "extract-zip": "2.0.1",
     "fastest-levenshtein": "1.0.16",
-    "fastify": "4.29.1",
+    "fastify": "5.7.3",
     "find-up": "7.0.0",
     "folder-walker": "3.2.0",
     "fuzzy": "0.1.3",
