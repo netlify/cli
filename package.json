@@ -135,7 +135,7 @@
     "open": "10.2.0",
     "p-filter": "4.1.0",
     "p-map": "7.0.3",
-    "p-wait-for": "5.0.2",
+    "p-wait-for": "6.0.0",
     "parallel-transform": "1.2.0",
     "parse-github-url": "1.0.3",
     "prettyjson": "1.2.5",
