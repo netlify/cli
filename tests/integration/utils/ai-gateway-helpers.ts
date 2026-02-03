@@ -83,24 +83,3 @@ export const createMockApiFailureRoutes = (siteInfo: {
   { path: 'sites/test-site-id/ai-gateway/token', status: 404, response: { message: 'Not Found' } },
   { path: 'ai-gateway/providers', status: 404, response: { message: 'Not Found' } },
 ]
-
-export const createAIGatewayDisabledTestData = () => {
-  const siteInfo = {
-    account_slug: 'test-account',
-    id: 'test-site-id',
-    name: 'site-name',
-    ssl_url: 'https://test-site.netlify.app',
-  }
-
-  const routes = [
-    { path: 'sites/test-site-id', response: siteInfo },
-    { path: 'sites/test-site-id/service-instances', response: [] },
-    {
-      path: 'accounts',
-      response: [{ slug: siteInfo.account_slug, capabilities: { ai_gateway_disabled: { included: true } } }],
-    },
-    { path: 'accounts/test-account/env', response: [] },
-  ]
-
-  return { siteInfo, routes }
-}
