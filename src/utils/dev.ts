@@ -94,18 +94,9 @@ const getAddons = async ({ api, site }: { api: NetlifyAPI; site: { id?: string }
   }
 }
 
-const getAddonsInformation = ({
-  addons,
-  siteInfo,
-}: {
-  addons: Record<string, unknown>[]
-  siteInfo: SiteInfo
-}) => {
+const getAddonsInformation = ({ addons, siteInfo }: { addons: Record<string, unknown>[]; siteInfo: SiteInfo }) => {
   const urls = Object.fromEntries(
-    addons.map((addon) => [
-      addon.service_slug as string,
-      `${siteInfo.ssl_url}${addon.service_path as string}`,
-    ]),
+    addons.map((addon) => [addon.service_slug as string, `${siteInfo.ssl_url}${addon.service_path as string}`]),
   )
   const env = Object.assign({}, ...addons.map((addon) => addon.env as Record<string, string>))
   return { urls, env }
@@ -190,7 +181,9 @@ export const getSiteInformation = async ({
 }
 
 const getEnvSourceName = (source: string) => {
-  const sourceConfig = (ENV_VAR_SOURCES as Record<string, { name: string; printFn: (str: string) => string } | undefined>)[source]
+  const sourceConfig = (
+    ENV_VAR_SOURCES as Record<string, { name: string; printFn: (str: string) => string } | undefined>
+  )[source]
   const name = sourceConfig?.name ?? source
   const printFn = sourceConfig?.printFn ?? chalk.green
 
