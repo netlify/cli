@@ -78,8 +78,12 @@ const getAccounts = async ({ api }: { api: NetlifyAPI }) => {
 }
 
 const getAddons = async ({ api, site }: { api: NetlifyAPI; site: { id?: string } }) => {
+  const { id } = site
+  if (!id) {
+    return []
+  }
   try {
-    const addons = await api.listServiceInstancesForSite({ siteId: site.id ?? '' })
+    const addons = await api.listServiceInstancesForSite({ siteId: id })
     return addons
   } catch (error_) {
     return logAndThrowError(
@@ -101,9 +105,10 @@ const getAddonsInformation = ({ addons, siteInfo }: { addons: Addon[]; siteInfo:
 }
 
 const getSiteAccount = ({ accounts, siteInfo }: { accounts: Account[]; siteInfo: SiteInfo }): Account | undefined => {
-  const siteAccount = accounts.find((account) => account.slug === siteInfo.account_slug)
+  const { account_id: accountId, account_slug: accountSlug } = siteInfo
+  const siteAccount = accounts.find((account) => account.slug === accountSlug || account.id === accountId)
   if (!siteAccount) {
-    warn(`Could not find account for project '${siteInfo.name}' with account slug '${siteInfo.account_slug}'`)
+    warn(`Could not find account for project '${siteInfo.name}' with account slug '${accountSlug}'`)
     return undefined
   }
   return siteAccount
@@ -152,7 +157,7 @@ export const getSiteInformation = async ({
     return {
       addonsUrls,
       siteUrl: siteInfo.ssl_url,
-      accountId: account?.id,
+      accountId: account?.id ?? siteInfo.account_id,
       capabilities: {
         backgroundFunctions: supportsBackgroundFunctions(account),
         aiGatewayDisabled: siteInfo.capabilities?.ai_gateway_disabled ?? false,
@@ -199,12 +204,9 @@ export const getDotEnvVariables = async ({
   env: EnvironmentVariables
   site: { root?: string; [key: string]: unknown }
 }): Promise<EnvironmentVariables> => {
-  const { root } = site
-  if (!root) {
-    return env
-  }
   const envFiles = devConfig.envFiles || devConfig.env_files
-  const dotEnvFiles = await loadDotEnvFiles({ envFiles, projectDir: root })
+  // eslint-disable-next-line no-restricted-properties
+  const dotEnvFiles = await loadDotEnvFiles({ envFiles, projectDir: site.root || process.cwd() })
   dotEnvFiles.forEach(({ env: fileEnv, file }) => {
     const newSourceName = `${file} file`
 
@@ -285,7 +287,12 @@ export const processOnExit = (fn: (codeOrSignal: string | number) => void | Prom
   const signals = ['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit']
   signals.forEach((signal) => {
     process.on(signal, (codeOrSignal) => {
-      void fn(codeOrSignal)
+      const result = fn(codeOrSignal)
+      if (result instanceof Promise) {
+        result.catch(() => {
+          // ignore
+        })
+      }
     })
   })
 }
