@@ -102,8 +102,7 @@ export const pollForToken = async ({
     }
     return accessToken
   } catch (error_) {
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    if (error_.name === 'TimeoutError') {
+    if (error_ instanceof Error && error_.name === 'TimeoutError') {
       return logAndThrowError(
         `Timed out waiting for authorization. If you do not have a ${chalk.bold.greenBright(
           'Netlify',

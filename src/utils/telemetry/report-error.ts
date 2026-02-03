@@ -3,6 +3,7 @@ import { dirname, join } from 'path'
 import process, { version as nodejsVersion } from 'process'
 import { fileURLToPath } from 'url'
 
+import type { NotifiableError, Event } from '@bugsnag/js'
 import { getGlobalConfigStore } from '@netlify/dev-utils'
 import { isCI } from 'ci-info'
 
@@ -13,37 +14,32 @@ import { cliVersion } from './utils.js'
 const dirPath = dirname(fileURLToPath(import.meta.url))
 
 /**
- *
- * @param {import('@bugsnag/js').NotifiableError} error
- * @param {object} config
- * @param {import('@bugsnag/js').Event['severity']} config.severity
- * @param {Record<string, Record<string, any>>} [config.metadata]
- * @returns {Promise<void>}
+ * Reports an error to telemetry.
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'error' implicitly has an 'any' type.
-export const reportError = async function (error, config = {}) {
+export const reportError = async function (
+  error: NotifiableError | Record<string, any>,
+  config: { severity: Event['severity']; metadata?: Record<string, any> } = { severity: 'error' },
+) {
   if (isCI) {
     return
   }
 
   // convert a NotifiableError to an error class
-  const err = error instanceof Error ? error : typeof error === 'string' ? new Error(error) : error
+  const err = error instanceof Error ? error : typeof error === 'string' ? new Error(error) : (error as any)
 
   const globalConfig = await getGlobalConfigStore()
 
   const options = JSON.stringify({
     type: 'error',
     data: {
-      message: err.message,
-      name: err.name,
-      stack: err.stack,
-      cause: err.cause,
-      // @ts-expect-error TS(2339) FIXME: Property 'severity' does not exist on type '{}'.
+      message: err?.message || String(err),
+      name: err?.name || 'Error',
+      stack: err?.stack,
+      cause: err?.cause,
       severity: config.severity,
       user: {
         id: globalConfig.get('userId'),
       },
-      // @ts-expect-error TS(2339) FIXME: Property 'metadata' does not exist on type '{}'.
       metadata: config.metadata,
       osName: `${os.platform()}-${os.arch()}`,
       cliVersion,
