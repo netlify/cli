@@ -132,7 +132,7 @@
     "netlify-redirector": "0.5.0",
     "node-fetch": "3.3.2",
     "normalize-package-data": "7.0.1",
-    "open": "10.2.0",
+    "open": "11.0.0",
     "p-filter": "4.1.0",
     "p-map": "7.0.3",
     "p-wait-for": "5.0.2",
