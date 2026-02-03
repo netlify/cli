@@ -6,7 +6,7 @@
 
 Interact with [Netlify](http://netlify.com/) from the comfort of your CLI.
 
-See the [CLI command line reference](https://cli.netlify.com/#commands) to get started and the docs on using
+See the [CLI command line reference](https://cli.netlify.com/commands/) to get started and the docs on using
 [Netlify Dev](https://github.com/netlify/cli/blob/main/docs/commands/dev.md) to run your site locally.
 
 ## Table of Contents

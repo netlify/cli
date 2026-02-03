@@ -50,7 +50,7 @@ jobs:
       - name: Setup Deno
         uses: denoland/setup-deno@v1
         with:
-          deno-version: 2.6.6
+          deno-version: 2.5.6
 
       - name: Install core dependencies
         run: npm ci --no-audit
@@ -93,7 +93,7 @@ jobs:
         run: echo "shard=$(echo '${{ matrix.shard }}' | tr '/' '-')" >> $GITHUB_OUTPUT
 
       - name: Store npm error artefacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v5
         if: always()
         with:
           name: npm-logs--${{ matrix.os }}--${{ matrix.node-version }}--${{ steps.sanitize-shard-name.outputs.shard }}

@@ -58,11 +58,6 @@ type Capabilities = NonNullable<ApiAccount['capabilities']> & {
         included?: boolean | undefined
       }
     | undefined
-  ai_gateway_disabled?:
-    | {
-        included?: boolean | undefined
-      }
-    | undefined
 }
 export type Capability = keyof Capabilities
 export type Account = ApiAccount & {
@@ -118,33 +113,18 @@ const SYNCHRONOUS_FUNCTION_TIMEOUT = 30
 // default 15 minutes for background functions
 const BACKGROUND_FUNCTION_TIMEOUT = 900
 
-interface GetSiteInformationOptions {
-  api: NetlifyAPI
-  offline: boolean
-  site: { id?: string }
-  siteInfo: SiteInfo
-}
+/**
+ *
+ * @param {object} config
+ * @param {boolean} config.offline
+ * @param {*} config.api
+ * @param {*} config.site
+ * @param {*} config.siteInfo
+ * @returns
+ */
 
-export interface SiteInformationResult {
-  addonsUrls: Record<string, string>
-  siteUrl: string
-  accountId?: string
-  capabilities: {
-    backgroundFunctions?: boolean
-    aiGatewayDisabled: boolean
-  }
-  timeouts: {
-    syncFunctions: number
-    backgroundFunctions: number
-  }
-}
-
-export const getSiteInformation = async ({
-  api,
-  offline,
-  site,
-  siteInfo,
-}: GetSiteInformationOptions): Promise<SiteInformationResult> => {
+// @ts-expect-error TS(7031) FIXME: Binding element 'api' implicitly has an 'any' type... Remove this comment to see the full error message
+export const getSiteInformation = async ({ api, offline, site, siteInfo }) => {
   if (site.id && !offline) {
     validateSiteInfo({ site, siteInfo })
     const [accounts, addons] = await Promise.all([getAccounts({ api }), getAddons({ api, site })])
@@ -158,7 +138,6 @@ export const getSiteInformation = async ({
       accountId: account?.id,
       capabilities: {
         backgroundFunctions: supportsBackgroundFunctions(account),
-        aiGatewayDisabled: siteInfo.capabilities?.ai_gateway_disabled ?? false,
       },
       timeouts: {
         syncFunctions: siteInfo.functions_timeout ?? siteInfo.functions_config?.timeout ?? SYNCHRONOUS_FUNCTION_TIMEOUT,
@@ -171,9 +150,7 @@ export const getSiteInformation = async ({
   return {
     addonsUrls: {},
     siteUrl: '',
-    capabilities: {
-      aiGatewayDisabled: false,
-    },
+    capabilities: {},
     timeouts: {
       syncFunctions: SYNCHRONOUS_FUNCTION_TIMEOUT,
       backgroundFunctions: BACKGROUND_FUNCTION_TIMEOUT,

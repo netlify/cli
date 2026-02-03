@@ -6,7 +6,6 @@ import { withSiteBuilder } from '../../utils/site-builder.js'
 import {
   assertAIGatewayValue,
   createAIGatewayCheckFunction,
-  createAIGatewayDisabledTestData,
   createAIGatewayTestData,
   createMockApiFailureRoutes,
 } from '../../utils/ai-gateway-helpers.js'
@@ -159,42 +158,6 @@ describe.concurrent('AI Gateway Integration', () => {
     await withSiteBuilder(t, async (builder) => {
       const { siteInfo } = createAIGatewayTestData()
       const routes = createMockApiFailureRoutes(siteInfo)
-      const checkFunction = createAIGatewayCheckFunction()
-
-      await builder
-        .withContentFile({
-          path: checkFunction.path,
-          content: checkFunction.content,
-        })
-        .build()
-
-      await withMockApi(routes, async ({ apiUrl }) => {
-        await withDevServer(
-          {
-            cwd: builder.directory,
-            offline: false,
-            env: {
-              NETLIFY_API_URL: apiUrl,
-              NETLIFY_SITE_ID: siteInfo.id,
-              NETLIFY_AUTH_TOKEN: 'fake-token',
-              AI_GATEWAY: undefined,
-            },
-          },
-          async (server) => {
-            const response = await fetch(`${server.url}${checkFunction.urlPath}`)
-            const result = (await response.json()) as { hasAIGateway: boolean }
-
-            t.expect(response.status).toBe(200)
-            t.expect(result.hasAIGateway).toBe(false)
-          },
-        )
-      })
-    })
-  })
-
-  test('should not setup AI Gateway when account has ai_gateway_disabled', async (t) => {
-    await withSiteBuilder(t, async (builder) => {
-      const { siteInfo, routes } = createAIGatewayDisabledTestData()
       const checkFunction = createAIGatewayCheckFunction()
 
       await builder

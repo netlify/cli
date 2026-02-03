@@ -14,7 +14,6 @@ import util from 'util'
 import zlib from 'zlib'
 
 import { renderFunctionErrorPage } from '@netlify/dev-utils'
-import { ImageHandler } from '@netlify/images'
 import type { AIGatewayContext } from '@netlify/ai/bootstrap'
 import contentType from 'content-type'
 import cookie from 'cookie'
@@ -41,15 +40,7 @@ import { getFormHandler } from '../lib/functions/form-submissions-handler.js'
 import { DEFAULT_FUNCTION_URL_EXPRESSION } from '../lib/functions/registry.js'
 import { initializeProxy as initializeImageProxy, isImageRequest } from '../lib/images/proxy.js'
 
-import {
-  NETLIFYDEVLOG,
-  NETLIFYDEVWARN,
-  type NormalizedCachedConfigConfig,
-  chalk,
-  log,
-  logError,
-  warn,
-} from './command-helpers.js'
+import { NETLIFYDEVLOG, NETLIFYDEVWARN, type NormalizedCachedConfigConfig, chalk, log } from './command-helpers.js'
 import createStreamPromise from './create-stream-promise.js'
 import { NFFunctionName, NFFunctionRoute, NFRequestID, headersForPath, parseHeaders } from './headers.js'
 import { generateRequestID } from './request-id.js'
@@ -984,15 +975,10 @@ export const startProxy = async function ({
     })
   }
 
-  const imageHandler = new ImageHandler({
-    logger: { log, warn, error: logError },
-    imagesConfig: config.images,
-  })
   const imageProxy = initializeImageProxy({
+    config,
     settings,
-    imageHandler,
   })
-
   const proxy = await initializeProxy({
     env,
     host: settings.frameworkHost,
