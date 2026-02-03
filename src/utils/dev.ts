@@ -181,9 +181,10 @@ export const getSiteInformation = async ({
   }
 }
 
-const getEnvSourceName = (source: string) => {
-  const { name = source, printFn = chalk.green } =
-    (ENV_VAR_SOURCES as Record<string, { name: string; printFn: (s: string) => string }>)[source] || {}
+// @ts-expect-error TS(7006) FIXME: Parameter 'source' implicitly has an 'any' type.
+const getEnvSourceName = (source) => {
+  // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+  const { name = source, printFn = chalk.green } = ENV_VAR_SOURCES[source] || {}
 
   return printFn(name)
 }
@@ -229,9 +230,7 @@ export const injectEnvVariables = (env: EnvironmentVariables): void => {
   const envVarsToLogByUsedSource: Record<string, string[]> = {}
   for (const [key, variable] of Object.entries(env)) {
     const existsInProcess = process.env[key] !== undefined
-    const [usedSource, ...overriddenSources] = existsInProcess
-      ? (['process', ...variable.sources] as const)
-      : variable.sources
+    const [usedSource, ...overriddenSources] = existsInProcess ? ['process', ...variable.sources] : variable.sources
     const usedSourceName = getEnvSourceName(usedSource)
     const isInternal = variable.sources.includes('internal')
 
@@ -281,7 +280,7 @@ export const acquirePort = async ({
 }
 
 export const processOnExit = (fn: (...args: unknown[]) => unknown) => {
-  const signals: NodeJS.Signals[] = ['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP']
+  const signals: (NodeJS.Signals | 'exit')[] = ['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit']
   signals.forEach((signal) => {
     process.on(signal, fn)
   })

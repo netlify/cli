@@ -17,7 +17,7 @@ export interface DotEnvFile {
   env: DotenvParseOutput
 }
 
-interface DotEnvWarning {
+export interface DotEnvWarning {
   warning: string
 }
 
@@ -29,9 +29,9 @@ export const loadDotEnvFiles = async function ({
 }: LoadDotEnvFilesOptions): Promise<DotEnvFile[]> {
   const response = await tryLoadDotEnvFiles({ projectDir, dotenvFiles: envFiles })
 
-  const filesWithWarning = response.filter((result) => 'warning' in result)
+  const filesWithWarning = response.filter((result): result is DotEnvWarning => 'warning' in result)
   filesWithWarning.forEach((result) => {
-    warn((result as DotEnvWarning).warning)
+    warn(result.warning)
   })
 
   return response.filter((result): result is DotEnvFile => 'file' in result && 'env' in result)
