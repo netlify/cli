@@ -35,6 +35,7 @@ import { createDevCommand } from './dev/index.js'
 import { createDevExecCommand } from './dev-exec/index.js'
 import { createEnvCommand } from './env/index.js'
 import { createFunctionsCommand } from './functions/index.js'
+import { createGitCredentialCommand } from './git-credential/index.js'
 import { createInitCommand } from './init/index.js'
 import { createLinkCommand } from './link/index.js'
 import { createLoginCommand } from './login/index.js'
@@ -241,6 +242,7 @@ export const createMainCommand = (): BaseCommand => {
   createLogsCommand(program)
   createDatabaseCommand(program)
   createAgentsCommand(program)
+  createGitCredentialCommand(program)
 
   program.setAnalyticsPayload({ didEnableCompileCache })
 

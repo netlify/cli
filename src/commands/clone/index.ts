@@ -7,24 +7,30 @@ export const createCloneCommand = (program: BaseCommand) =>
   program
     .command('clone')
     .description(
-      `Clone a remote repository and link it to an existing project on Netlify
-Use this command when the existing Netlify project is already configured to deploy from the existing repo.
+      `Clone a repository and link it to a Netlify project
 
-If you specify a target directory, the repo will be cloned into that directory. By default, a directory will be created with the name of the repo.
+You can clone from:
+- A GitHub/GitLab repository URL or shorthand (e.g., owner/repo)
+- A Netlify site name (e.g., my-site)
+- A Netlify site URL (e.g., https://my-site.netlify.app)
 
-To specify a project, use --id or --name. By default, the Netlify project to link will be automatically detected if exactly one project found is found with a matching git URL. If we cannot find such a project, you will be interactively prompted to select one.`,
+When cloning a Netlify site that has a connected repository, the repository will be cloned from the connected source (GitHub, GitLab, etc.).
+
+When cloning a Netlify site without a connected repository, the repository will be cloned from Netlify's managed git service with automatic credential configuration.
+
+If you specify a target directory, the repo will be cloned into that directory. By default, a directory will be created with the name of the repo or site.`,
     )
-    .argument('<repo>', 'URL of the repository to clone or Github `owner/repo` (required)')
+    .argument('<repository>', 'Repository URL, GitHub shorthand (owner/repo), Netlify site name, or Netlify site URL')
     .argument('[targetDir]', 'directory in which to clone the repository - will be created if it does not exist')
-    .option('--id <id>', 'ID of existing Netlify project to link to')
-    .option('--name <name>', 'Name of existing Netlify project to link to')
+    .option('--id <id>', 'ID of existing Netlify project to link to (only for GitHub/GitLab repos)')
+    .option('--name <name>', 'Name of existing Netlify project to link to (only for GitHub/GitLab repos)')
     .addExamples([
+      'netlify clone my-site-name',
+      'netlify clone https://my-site.netlify.app',
+      'netlify clone https://app.netlify.com/sites/my-site',
       'netlify clone vibecoder/next-unicorn',
       'netlify clone https://github.com/vibecoder/next-unicorn.git',
-      'netlify clone git@github.com:vibecoder/next-unicorn.git',
-      'netlify clone vibecoder/next-unicorn ./next-unicorn-shh-secret',
-      'netlify clone --id 123-123-123-123 vibecoder/next-unicorn',
-      'netlify clone --name my-project-name vibecoder/next-unicorn',
+      'netlify clone my-site-name ./local-folder',
     ])
     .addHelpText('after', () => {
       const docsUrl = 'https://docs.netlify.com/cli/get-started/#link-and-unlink-sites'
