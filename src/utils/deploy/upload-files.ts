@@ -25,19 +25,14 @@ const isErrorWithStatus = (error: unknown): error is ErrorWithStatus =>
   typeof error === 'object' &&
   error !== null &&
   'status' in error &&
-  typeof (error as Record<string, unknown>).status === 'number'
+  typeof (error as { status: unknown }).status === 'number'
 
 const uploadFiles = async (
   api: NetlifyAPI,
   deployId: string,
   uploadList: UploadFileObj[],
-  {
-    concurrentUpload,
-    maxRetry,
-    statusCb,
-  }: { concurrentUpload: number; maxRetry: number; statusCb: StatusCallback },
+  { concurrentUpload, maxRetry, statusCb }: { concurrentUpload: number; maxRetry: number; statusCb: StatusCallback },
 ) => {
-  if (!concurrentUpload || !maxRetry) throw new Error('Missing required option concurrentUpload')
   statusCb({
     type: 'upload',
     msg: `Uploading ${uploadList.length} files`,
