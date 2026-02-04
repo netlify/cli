@@ -92,7 +92,7 @@
     "cron-parser": "4.9.0",
     "debug": "4.4.3",
     "decache": "4.6.2",
-    "dot-prop": "9.0.0",
+    "dot-prop": "10.1.0",
     "dotenv": "17.2.3",
     "env-paths": "4.0.0",
     "envinfo": "7.15.0",
