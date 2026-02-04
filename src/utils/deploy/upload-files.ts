@@ -28,11 +28,7 @@ const uploadFiles = async (
   api: NetlifyAPI,
   deployId: string,
   uploadList: UploadFileObj[],
-  {
-    concurrentUpload,
-    maxRetry,
-    statusCb,
-  }: { concurrentUpload: number; maxRetry: number; statusCb: StatusCallback },
+  { concurrentUpload, maxRetry, statusCb }: { concurrentUpload: number; maxRetry: number; statusCb: StatusCallback },
 ) => {
   if (!concurrentUpload || !statusCb || !maxRetry) throw new Error('Missing required option concurrentUpload')
   statusCb({
