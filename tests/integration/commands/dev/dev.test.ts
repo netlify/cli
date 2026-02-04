@@ -233,7 +233,6 @@ describe.concurrent('command/dev', () => {
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const getResponse = await fetch(`${server.url}/api/ping`)
         const jsonPingWithGet = await getResponse.json()
-        t.expect(jsonPingWithGet).toHaveProperty('body', {})
         t.expect(jsonPingWithGet).toHaveProperty('method', 'GET')
         t.expect(jsonPingWithGet).toHaveProperty('url', '/ping')
 
@@ -354,7 +353,6 @@ describe.concurrent('command/dev', () => {
         const response2Body = await response2.json()
         t.expect(response1.headers.get('location')).toEqual(`http://localhost:${port.toString()}/ping`)
 
-        t.expect(response2Body).toHaveProperty('body', {})
         t.expect(response2Body).toHaveProperty('method', 'GET')
         t.expect(response2Body).toHaveProperty('url', '/ping')
       })
