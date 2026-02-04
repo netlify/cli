@@ -192,12 +192,9 @@ const proxyToExternalUrl = function ({
     target: dest.origin,
     changeOrigin: true,
     pathRewrite: () => destURL,
-    // hide logging
-    logLevel: 'warn',
     ...(Buffer.isBuffer(req.originalBody) && { buffer: Readable.from(req.originalBody) }),
   })
-  // @ts-expect-error TS(2345) FIXME: Argument of type 'Request' is not assignable to parameter of type 'Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
-  handler(req, res, () => {})
+  void handler(req, res, () => {})
 }
 
 // @ts-expect-error TS(7031) FIXME: Binding element 'addonUrl' implicitly has an 'any'... Remove this comment to see the full error message
