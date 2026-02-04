@@ -84,7 +84,7 @@ export const startMockApi = ({ routes, silent }: MockApiOptions): Promise<MockAp
     )
   })
 
-  app.all('*', function onRequest(req, res) {
+  app.all('{*splat}', function onRequest(req, res) {
     addRequest(requests, req)
     if (!silent) {
       console.warn(`Route not found: (${req.method.toUpperCase()}) ${req.url}`)
