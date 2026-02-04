@@ -22,15 +22,22 @@ interface ErrorWithStatus {
 }
 
 const isErrorWithStatus = (error: unknown): error is ErrorWithStatus =>
-  typeof error === 'object' && error !== null && 'status' in error && typeof (error as any).status === 'number'
+  typeof error === 'object' &&
+  error !== null &&
+  'status' in error &&
+  typeof (error as Record<string, unknown>).status === 'number'
 
 const uploadFiles = async (
   api: NetlifyAPI,
   deployId: string,
   uploadList: UploadFileObj[],
-  { concurrentUpload, maxRetry, statusCb }: { concurrentUpload: number; maxRetry: number; statusCb: StatusCallback },
+  {
+    concurrentUpload,
+    maxRetry,
+    statusCb,
+  }: { concurrentUpload: number; maxRetry: number; statusCb: StatusCallback },
 ) => {
-  if (!concurrentUpload || !statusCb || !maxRetry) throw new Error('Missing required option concurrentUpload')
+  if (!concurrentUpload || !maxRetry) throw new Error('Missing required option concurrentUpload')
   statusCb({
     type: 'upload',
     msg: `Uploading ${uploadList.length} files`,
@@ -40,7 +47,7 @@ const uploadFiles = async (
   const uploadFile = async (fileObj: UploadFileObj, index: number) => {
     const { assetType, body, filepath, invocationMode, normalizedPath, runtime, timeout } = fileObj
 
-    const readStreamCtor = () => body ?? fs.createReadStream(filepath)
+    const readStreamCtor = () => (body as unknown as fs.ReadStream | undefined) ?? fs.createReadStream(filepath)
 
     statusCb({
       type: 'upload',
@@ -53,7 +60,7 @@ const uploadFiles = async (
         response = await retryUpload(
           () =>
             api.uploadDeployFile({
-              body: readStreamCtor as any,
+              body: readStreamCtor as unknown as () => fs.ReadStream,
               deployId,
               path: encodeURI(normalizedPath),
             }),
@@ -64,7 +71,7 @@ const uploadFiles = async (
       case 'function': {
         response = await retryUpload((retryCount: number) => {
           const params = {
-            body: readStreamCtor as any,
+            body: readStreamCtor as unknown as () => fs.ReadStream,
             deployId,
             invocationMode,
             timeout,
