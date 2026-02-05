@@ -47,6 +47,7 @@ const configureGitAuth = async (repoDir: string): Promise<void> => {
     ['config', '--add', `credential.https://${AGENTGIT_HOST}.helper`, `!${cliPath} git-credential`],
     { cwd: repoDir },
   )
+  await execa('git', ['config', 'http.postBuffer', '524288000'], { cwd: repoDir })
 }
 
 const redactToken = (message: string, token: string): string => {
