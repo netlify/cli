@@ -13,8 +13,8 @@ const siteInfo = {
   name: 'mock-site-name',
 }
 const routes = [
-  { path: 'sites/*/service-instances', response: [] },
-  { path: 'sites/*', response: siteInfo },
+  { path: 'sites/:siteId/service-instances', response: [] },
+  { path: 'sites/{*splat}', response: siteInfo },
   {
     path: 'accounts',
     response: [{ id: siteInfo.account_id, slug: siteInfo.account_slug }],

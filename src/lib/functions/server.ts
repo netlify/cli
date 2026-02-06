@@ -293,7 +293,7 @@ const getFunctionsServer = (options: GetFunctionsServerOptions) => {
     }),
   )
 
-  app.all('*', functionHandler)
+  app.all('{*splat}', functionHandler)
 
   return app
 }
