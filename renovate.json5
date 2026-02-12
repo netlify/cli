@@ -12,9 +12,7 @@
   "packageRules": [
     {
       "matchPackagePrefixes": ["@netlify/"],
-      "prCreation": "immediate",
-      "semanticCommitType": "chore",
-      "automerge": false
+      "prCreation": "immediate"
     },
     {
       "matchFileNames": ["site/package.json"],
