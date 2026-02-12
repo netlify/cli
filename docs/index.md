@@ -115,7 +115,7 @@ Manage netlify functions
 
 ### [init](/commands/init)
 
-Configure continuous deployment for a new or existing project. To create a new project without continuous deployment, use `netlify sites:create`
+Initialize a Netlify project in the current directory
 
 ### [link](/commands/link)
 
