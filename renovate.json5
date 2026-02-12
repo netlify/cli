@@ -11,6 +11,11 @@
   "postUpdateOptions": ["npmDedupe"],
   "packageRules": [
     {
+      "description": "Open PRs immediately for @netlify/ packages without a schedule",
+      "matchPackagePatterns": ["^@netlify/"],
+      "schedule": ["at any time"]
+    },
+    {
       "matchFileNames": ["site/package.json"],
       "semanticCommitType": "chore",
       "addLabels": ["website"],
