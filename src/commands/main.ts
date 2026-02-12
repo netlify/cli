@@ -84,12 +84,8 @@ process.on('uncaughtException', async (err: AddressInUseError | Error) => {
   } else {
     logError(
       `${chalk.red(
-        'Netlify CLI has terminated unexpectedly',
-      )}\nThis is a problem with the Netlify CLI, not with your application.\nIf you recently updated the CLI, consider reverting to an older version by running:\n\n${chalk.bold(
-        'npm install -g netlify-cli@VERSION',
-      )}\n\nYou can use any version from ${chalk.underline(
-        'https://ntl.fyi/cli-versions',
-      )}.\n\nPlease report this problem at ${chalk.underline(
+        'Netlify CLI has terminated unexpectedly.',
+      )}\n\nPlease report this problem with reproduction steps at ${chalk.underline(
         'https://ntl.fyi/cli-error',
       )} including the error details below.\n`,
     )
