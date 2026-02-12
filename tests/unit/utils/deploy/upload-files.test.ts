@@ -1,7 +1,8 @@
 import { v4 as generateUUID } from 'uuid'
 import { afterAll, expect, test, vi } from 'vitest'
 
-import uploadFiles from '../../../../src/utils/deploy/upload-files.js'
+import type { NetlifyAPI } from '@netlify/api'
+import uploadFiles, { type UploadFileObj } from '../../../../src/utils/deploy/upload-files.js'
 
 vi.mock('../../../../src/utils/deploy/constants.js', async () => {
   const actual = await vi.importActual('../../../../src/utils/deploy/constants.js')
@@ -18,8 +19,7 @@ test('Adds a retry count to function upload requests', async () => {
   const uploadDeployFunction = vi.fn()
   const mockError = new Error('Uh-oh')
 
-  // @ts-expect-error TS(2339) FIXME: Property 'status' does not exist on type 'Error'.
-  mockError.status = 500
+  Object.assign(mockError, { status: 500 })
 
   uploadDeployFunction.mockRejectedValueOnce(mockError)
   uploadDeployFunction.mockRejectedValueOnce(mockError)
@@ -27,9 +27,9 @@ test('Adds a retry count to function upload requests', async () => {
 
   const mockApi = {
     uploadDeployFunction,
-  }
+  } as unknown as NetlifyAPI
   const deployId = generateUUID()
-  const files = [
+  const files: UploadFileObj[] = [
     {
       assetType: 'function',
       filepath: '/some/path/func1.zip',
@@ -55,16 +55,15 @@ test('Does not retry on 400 response from function upload requests', async () =>
   const uploadDeployFunction = vi.fn()
   const mockError = new Error('Uh-oh')
 
-  // @ts-expect-error TS(2339) FIXME: Property 'status' does not exist on type 'Error'.
-  mockError.status = 400
+  Object.assign(mockError, { status: 400 })
 
   uploadDeployFunction.mockRejectedValue(mockError)
 
   const mockApi = {
     uploadDeployFunction,
-  }
+  } as unknown as NetlifyAPI
   const deployId = generateUUID()
-  const files = [
+  const files: UploadFileObj[] = [
     {
       assetType: 'function',
       filepath: '/some/path/func1.zip',
