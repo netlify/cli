@@ -175,7 +175,7 @@
     "@types/inquirer": "9.0.9",
     "@types/inquirer-autocomplete-prompt": "3.0.3",
     "@types/jsonwebtoken": "9.0.10",
-    "@types/lodash": "4.17.20",
+    "@types/lodash": "4.17.23",
     "@types/lodash.shuffle": "4.2.9",
     "@types/multiparty": "4.2.1",
     "@types/node": "22.18.11",
