@@ -2,7 +2,9 @@ import os from 'os'
 import { dirname, join } from 'path'
 import process, { version as nodejsVersion } from 'process'
 import { fileURLToPath } from 'url'
+import { inspect } from 'util'
 
+import { type Event } from '@bugsnag/js'
 import { getGlobalConfigStore } from '@netlify/dev-utils'
 import { isCI } from 'ci-info'
 
@@ -12,44 +14,75 @@ import { cliVersion } from './utils.js'
 
 const dirPath = dirname(fileURLToPath(import.meta.url))
 
+interface ReportErrorConfig {
+  severity?: Event['severity']
+  metadata?: Record<string, Record<string, unknown>>
+}
+
 /**
- *
- * @param {import('@bugsnag/js').NotifiableError} error
- * @param {object} config
- * @param {import('@bugsnag/js').Event['severity']} config.severity
- * @param {Record<string, Record<string, any>>} [config.metadata]
- * @returns {Promise<void>}
+ * Report an error to telemetry
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'error' implicitly has an 'any' type.
-export const reportError = async function (error, config = {}) {
+export const reportError = async function (error: unknown, config: ReportErrorConfig = {}): Promise<void> {
   if (isCI) {
     return
   }
 
   // convert a NotifiableError to an error class
-  const err = error instanceof Error ? error : typeof error === 'string' ? new Error(error) : error
+  let err: Error
+  if (error instanceof Error) {
+    err = error
+  } else if (typeof error === 'string') {
+    err = new Error(error)
+  } else if (typeof error === 'object' && error !== null && ('message' in error || 'name' in error)) {
+    const errorObject = error as Record<string, unknown>
+    const message = typeof errorObject.message === 'string' ? errorObject.message : 'Unknown error'
+    err = new Error(message)
+    if (typeof errorObject.name === 'string') {
+      err.name = errorObject.name
+    }
+    if (typeof errorObject.stack === 'string') {
+      err.stack = errorObject.stack
+    }
+  } else {
+    err = new Error(typeof error === 'object' && error !== null ? inspect(error) : String(error))
+  }
 
   const globalConfig = await getGlobalConfigStore()
 
-  const options = JSON.stringify({
-    type: 'error',
-    data: {
-      message: err.message,
-      name: err.name,
-      stack: err.stack,
-      cause: err.cause,
-      // @ts-expect-error TS(2339) FIXME: Property 'severity' does not exist on type '{}'.
-      severity: config.severity,
-      user: {
-        id: globalConfig.get('userId'),
+  let options: string
+  try {
+    options = JSON.stringify({
+      type: 'error',
+      data: {
+        message: err.message,
+        name: err.name,
+        stack: err.stack,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        cause: (err as any).cause ? inspect((err as any).cause) : undefined,
+        severity: config.severity,
+        user: {
+          id: globalConfig.get('userId'),
+        },
+        metadata: config.metadata ? inspect(config.metadata) : undefined,
+        osName: `${os.platform()}-${os.arch()}`,
+        cliVersion,
+        nodejsVersion,
       },
-      // @ts-expect-error TS(2339) FIXME: Property 'metadata' does not exist on type '{}'.
-      metadata: config.metadata,
-      osName: `${os.platform()}-${os.arch()}`,
-      cliVersion,
-      nodejsVersion,
-    },
-  })
+    })
+  } catch {
+    // If stringify fails, we at least try to report a simplified error
+    options = JSON.stringify({
+      type: 'error',
+      data: {
+        message: `Error reporting failed: ${err.message}`,
+        name: 'ErrorReportingError',
+        severity: config.severity,
+        osName: `${os.platform()}-${os.arch()}`,
+        cliVersion,
+        nodejsVersion,
+      },
+    })
+  }
 
   // spawn detached child process to handle send and wait for the http request to finish
   // otherwise it can get canceled
