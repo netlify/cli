@@ -19,9 +19,9 @@ netlify sites
 
 **Flags**
 
-- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
@@ -80,11 +80,11 @@ netlify sites:create-template
 **Flags**
 
 - `account-slug` (*string*) - account slug to create the project under
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `name` (*string*) - name of project
 - `url` (*string*) - template url
-- `debug` (*boolean*) - Print debugging information
-- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 - `with-ci` (*boolean*) - initialize CI hooks during project creation
 
 **Examples**
@@ -113,10 +113,10 @@ netlify sites:delete
 
 **Flags**
 
-- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
-- `force` (*boolean*) - Delete without prompting (useful for CI).
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
+- `force` (*boolean*) - Delete without prompting (useful for CI).
 
 **Examples**
 
@@ -137,10 +137,10 @@ netlify sites:list
 
 **Flags**
 
-- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
-- `json` (*boolean*) - Output project data as JSON
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
+- `json` (*boolean*) - Output project data as JSON
 
 ---
 
