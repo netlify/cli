@@ -1,7 +1,7 @@
 import { Mock, afterAll, afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 
 import BaseCommand from '../../../../src/commands/base-command.js'
-import { createLogsFunctionCommand } from '../../../../src/commands/logs/index.js'
+import { createLogsEdgeFunctionCommand } from '../../../../src/commands/logs/index.js'
 import { LOG_LEVELS } from '../../../../src/commands/logs/log-levels.js'
 import { log } from '../../../../src/utils/command-helpers.js'
 import { getWebSocket } from '../../../../src/utils/websockets/index.js'
@@ -22,7 +22,7 @@ vi.mock('../../../../src/utils/command-helpers.js', async () => {
 
 vi.mock('inquirer', () => ({
   default: {
-    prompt: vi.fn().mockResolvedValue({ result: 'cool-function' }),
+    prompt: vi.fn().mockResolvedValue({ result: 'deploy-id-1' }),
     registerPrompt: vi.fn(),
   },
 }))
@@ -51,20 +51,19 @@ const routes = [
     response: { name: 'test user', slug: 'test-user', email: 'user@test.com' },
   },
   {
-    path: 'sites/site_id/functions',
-    response: {
-      functions: [
-        {
-          n: 'cool-function',
-          a: 'account',
-          oid: 'function-id',
-        },
-      ],
-    },
+    path: 'sites/site_id/deploys',
+    response: [
+      {
+        id: 'deploy-id-1',
+        context: 'production',
+        user_id: 'user-1',
+        review_id: null,
+      },
+    ],
   },
 ]
 
-describe('logs:function command', () => {
+describe('logs:edge-functions command', () => {
   const originalEnv = process.env
 
   let program: BaseCommand
@@ -77,7 +76,7 @@ describe('logs:function command', () => {
   beforeEach(() => {
     program = new BaseCommand('netlify')
 
-    createLogsFunctionCommand(program)
+    createLogsEdgeFunctionCommand(program)
   })
 
   afterAll(() => {
@@ -87,7 +86,7 @@ describe('logs:function command', () => {
     process.env = { ...originalEnv }
   })
 
-  test('should setup the functions stream correctly', async ({}) => {
+  test('should setup the edge functions stream correctly', async () => {
     const { apiUrl } = await startMockApi({ routes })
     const spyWebsocket = getWebSocket as unknown as Mock
     const spyOn = vi.fn()
@@ -100,13 +99,14 @@ describe('logs:function command', () => {
     const env = getEnvironmentVariables({ apiUrl })
     Object.assign(process.env, env)
 
-    await program.parseAsync(['', '', 'logs:function'])
+    await program.parseAsync(['', '', 'logs:edge-functions'])
 
     expect(spyWebsocket).toHaveBeenCalledOnce()
+    expect(spyWebsocket).toHaveBeenCalledWith('wss://socketeer.services.netlify.com/edge-function/logs')
     expect(spyOn).toHaveBeenCalledTimes(4)
   })
 
-  test('should send the correct payload to the websocket', async ({}) => {
+  test('should send the correct payload to the websocket', async () => {
     const { apiUrl } = await startMockApi({ routes })
     const spyWebsocket = getWebSocket as unknown as Mock
     const spyOn = vi.fn()
@@ -119,7 +119,7 @@ describe('logs:function command', () => {
     const env = getEnvironmentVariables({ apiUrl })
     Object.assign(process.env, env)
 
-    await program.parseAsync(['', '', 'logs:function'])
+    await program.parseAsync(['', '', 'logs:edge-functions'])
 
     const setupCall = spyOn.mock.calls.find((args) => args[0] === 'open')
     expect(setupCall).toBeDefined()
@@ -132,13 +132,38 @@ describe('logs:function command', () => {
     const [message] = call
     const body = JSON.parse(message)
 
-    expect(body.function_id).toEqual('function-id')
+    expect(body.deploy_id).toEqual('deploy-id-1')
     expect(body.site_id).toEqual('site_id')
-    expect(body.account_id).toEqual('account')
     expect(body.access_token).toEqual(env.NETLIFY_AUTH_TOKEN)
+    expect(body.since).toBeDefined()
   })
 
-  test('should print only specified log levels', async ({}) => {
+  test('should use deploy ID from --deploy-id option when provided', async () => {
+    const { apiUrl } = await startMockApi({ routes })
+    const spyWebsocket = getWebSocket as unknown as Mock
+    const spyOn = vi.fn()
+    const spySend = vi.fn()
+    spyWebsocket.mockReturnValue({
+      on: spyOn,
+      send: spySend,
+    })
+
+    const env = getEnvironmentVariables({ apiUrl })
+    Object.assign(process.env, env)
+
+    await program.parseAsync(['', '', 'logs:edge-functions', '--deploy-id', 'my-deploy-id'])
+
+    const setupCall = spyOn.mock.calls.find((args) => args[0] === 'open')
+    const openCallback = setupCall?.[1]
+    openCallback?.()
+
+    const call = spySend.mock.calls[0]
+    const body = JSON.parse(call[0])
+
+    expect(body.deploy_id).toEqual('my-deploy-id')
+  })
+
+  test('should print only specified log levels', async () => {
     const { apiUrl } = await startMockApi({ routes })
     const spyWebsocket = getWebSocket as unknown as Mock
     const spyOn = vi.fn()
@@ -152,121 +177,17 @@ describe('logs:function command', () => {
     const env = getEnvironmentVariables({ apiUrl })
     Object.assign(process.env, env)
 
-    await program.parseAsync(['', '', 'logs:function', '--level', 'info'])
+    await program.parseAsync(['', '', 'logs:edge-functions', '--level', 'info'])
     const messageCallback = spyOn.mock.calls.find((args) => args[0] === 'message')
     const messageCallbackFunc = messageCallback?.[1]
-    const mockInfoData = {
-      level: LOG_LEVELS.INFO,
-      message: 'Hello World',
-    }
-    const mockWarnData = {
-      level: LOG_LEVELS.WARN,
-      message: 'There was a warning',
-    }
 
-    messageCallbackFunc?.(JSON.stringify(mockInfoData))
-    messageCallbackFunc?.(JSON.stringify(mockWarnData))
+    messageCallbackFunc?.(JSON.stringify({ level: LOG_LEVELS.INFO, message: 'Hello World' }))
+    messageCallbackFunc?.(JSON.stringify({ level: LOG_LEVELS.WARN, message: 'There was a warning' }))
 
     expect(spyLog).toHaveBeenCalledTimes(1)
   })
 
-  test('should print all the log levels', async ({}) => {
-    const { apiUrl } = await startMockApi({ routes })
-    const spyWebsocket = getWebSocket as unknown as Mock
-    const spyOn = vi.fn()
-    const spySend = vi.fn()
-    spyWebsocket.mockReturnValue({
-      on: spyOn,
-      send: spySend,
-    })
-    const spyLog = log as unknown as Mock
-
-    const env = getEnvironmentVariables({ apiUrl })
-    Object.assign(process.env, env)
-
-    await program.parseAsync(['', '', 'logs:function'])
-    const messageCallback = spyOn.mock.calls.find((args) => args[0] === 'message')
-    const messageCallbackFunc = messageCallback?.[1]
-    const mockInfoData = {
-      level: LOG_LEVELS.INFO,
-      message: 'Hello World',
-    }
-    const mockWarnData = {
-      level: LOG_LEVELS.WARN,
-      message: 'There was a warning',
-    }
-
-    messageCallbackFunc?.(JSON.stringify(mockInfoData))
-    messageCallbackFunc?.(JSON.stringify(mockWarnData))
-
-    expect(spyLog).toHaveBeenCalledTimes(2)
-  })
-
-  test('should find function by ID', async ({}) => {
-    const { apiUrl } = await startMockApi({ routes })
-    const spyWebsocket = getWebSocket as unknown as Mock
-    const spyOn = vi.fn()
-    const spySend = vi.fn()
-    spyWebsocket.mockReturnValue({
-      on: spyOn,
-      send: spySend,
-    })
-
-    const env = getEnvironmentVariables({ apiUrl })
-    Object.assign(process.env, env)
-
-    await program.parseAsync(['', '', 'logs:function', 'function-id'])
-
-    const setupCall = spyOn.mock.calls.find((args) => args[0] === 'open')
-    const openCallback = setupCall?.[1]
-    openCallback?.()
-
-    const call = spySend.mock.calls[0]
-    const body = JSON.parse(call[0])
-
-    expect(body.function_id).toEqual('function-id')
-    expect(body.site_id).toEqual('site_id')
-  })
-
-  test('should look up function from deploy when --deploy is specified', async ({}) => {
-    const deployRoutes = [
-      ...routes,
-      {
-        path: 'sites/site_id/deploys/deploy-123',
-        response: {
-          id: 'deploy-123',
-          available_functions: [
-            { n: 'deploy-function', oid: 'deploy-fn-id' },
-          ],
-        },
-      },
-    ]
-    const { apiUrl } = await startMockApi({ routes: deployRoutes })
-    const spyWebsocket = getWebSocket as unknown as Mock
-    const spyOn = vi.fn()
-    const spySend = vi.fn()
-    spyWebsocket.mockReturnValue({
-      on: spyOn,
-      send: spySend,
-    })
-
-    const env = getEnvironmentVariables({ apiUrl })
-    Object.assign(process.env, env)
-
-    await program.parseAsync(['', '', 'logs:function', 'deploy-function', '--deploy-id', 'deploy-123'])
-
-    const setupCall = spyOn.mock.calls.find((args) => args[0] === 'open')
-    const openCallback = setupCall?.[1]
-    openCallback?.()
-
-    const call = spySend.mock.calls[0]
-    const body = JSON.parse(call[0])
-
-    expect(body.function_id).toEqual('deploy-fn-id')
-    expect(body.site_id).toEqual('site_id')
-  })
-
-  test('should fetch historical logs when --from is specified', async ({}) => {
+  test('should fetch historical logs when --from is specified', async () => {
     const { apiUrl } = await startMockApi({ routes })
     const spyWebsocket = getWebSocket as unknown as Mock
 
@@ -274,7 +195,7 @@ describe('logs:function command', () => {
     Object.assign(process.env, env)
 
     const mockLogs = [
-      { timestamp: '2026-01-15T10:00:00Z', level: 'info', message: 'Function executed' },
+      { timestamp: '2026-01-15T10:00:00Z', level: 'info', message: 'Edge function executed' },
     ]
 
     const originalFetch = global.fetch
@@ -290,7 +211,7 @@ describe('logs:function command', () => {
     global.fetch = spyFetch
 
     try {
-      await program.parseAsync(['', '', 'logs:function', 'cool-function', '--from', '2026-01-01T00:00:00Z'])
+      await program.parseAsync(['', '', 'logs:edge-functions', '--from', '2026-01-01T00:00:00Z'])
 
       expect(spyWebsocket).not.toHaveBeenCalled()
 
@@ -298,8 +219,7 @@ describe('logs:function command', () => {
         args[0].includes('analytics.services.netlify.com'),
       )
       expect(analyticsCall).toBeDefined()
-      expect(analyticsCall![0]).toContain('function_logs')
-      expect(analyticsCall![0]).toContain('cool-function')
+      expect(analyticsCall![0]).toContain('edge_function_logs')
       expect(analyticsCall![0]).toContain('site_id')
     } finally {
       global.fetch = originalFetch
