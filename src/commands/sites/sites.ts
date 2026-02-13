@@ -1,5 +1,5 @@
 import { OptionValues, InvalidArgumentError } from 'commander'
-
+import { chalk, log } from '../../utils/command-helpers.js'
 import BaseCommand from '../base-command.js'
 
 const MAX_SITE_NAME_LENGTH = 63
@@ -22,23 +22,18 @@ export const createSitesFromTemplateCommand = (program: BaseCommand) => {
   program
     .command('sites:create-template')
     .description(
-      `(Beta) Create a project from a starter template
-Create a project from a starter template.`,
+      `(Deprecated) Create a project from a starter template
+This command has been deprecated. Use the Netlify UI to deploy from a template.`,
     )
-    .option('-n, --name [name]', 'name of project')
-    .option('-u, --url [url]', 'template url')
-    .option('-a, --account-slug [slug]', 'account slug to create the project under')
-    .option('-c, --with-ci', 'initialize CI hooks during project creation')
-    .argument('[repository]', 'repository to use as starter template')
-    .addHelpText('after', `(Beta) Create a project from starter template.`)
-    .addExamples([
-      'netlify sites:create-template',
-      'netlify sites:create-template nextjs-blog-theme',
-      'netlify sites:create-template my-github-profile/my-template',
-    ])
-    .action(async (repository: string, options: OptionValues, command: BaseCommand) => {
-      const { sitesCreateTemplate } = await import('./sites-create-template.js')
-      await sitesCreateTemplate(repository, options, command)
+    .addHelpText('after', `(Deprecated) This command has been deprecated. Learn more: https://docs.netlify.com/start/quickstarts/deploy-from-template/`)
+
+    .action(() => {
+      log()
+      log(chalk.yellow.bold('This command has been deprecated.'))
+      log()
+      log('To deploy from a template, please use the Netlify UI or API.')
+      log(`Learn more: ${chalk.cyan('https://docs.netlify.com/start/quickstarts/deploy-from-template/')}`)
+      log()
     })
 }
 

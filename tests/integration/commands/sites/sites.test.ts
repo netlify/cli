@@ -5,10 +5,7 @@ import { render } from 'prettyjson'
 import { afterAll, beforeEach, describe, expect, test, vi } from 'vitest'
 
 import BaseCommand from '../../../../src/commands/base-command.js'
-import { createSitesCreateCommand, createSitesFromTemplateCommand } from '../../../../src/commands/sites/sites.js'
-import { getGitHubToken } from '../../../../src/utils/init/config-github.js'
-import { fetchTemplates } from '../../../../src/utils/sites/create-template.js'
-import { createRepo, getTemplatesFromGitHub } from '../../../../src/utils/sites/utils.js'
+import { createSitesCreateCommand } from '../../../../src/commands/sites/sites.js'
 import { getEnvironmentVariables, withMockApi } from '../../utils/mock-api.js'
 
 vi.mock('../../../../src/utils/command-helpers.js', async () => ({
@@ -35,16 +32,6 @@ vi.mock('../../../../src/utils/sites/utils.js', () => ({
       archived: true,
     },
   ]),
-  createRepo: vi.fn().mockImplementation(() => ({
-    full_name: 'Next starter',
-    private: false,
-    branch: 'main',
-    id: 1,
-  })),
-  validateTemplate: vi.fn().mockImplementation(() => ({
-    exists: true,
-    isTemplate: true,
-  })),
 }))
 
 vi.mock('prettyjson', async () => {
@@ -105,87 +92,6 @@ describe('sites command', () => {
 
     Object.defineProperty(process, 'env', {
       value: OLD_ENV,
-    })
-  })
-  describe('sites:create-template', () => {
-    test('basic', async () => {
-      await withMockApi(routes, async ({ apiUrl }) => {
-        Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
-
-        const program = new BaseCommand('netlify')
-
-        createSitesFromTemplateCommand(program)
-
-        await program.parseAsync(['', '', 'sites:create-template'])
-      })
-
-      expect(getGitHubToken).toHaveBeenCalledOnce()
-      expect(getTemplatesFromGitHub).toHaveBeenCalledOnce()
-      expect(createRepo).toHaveBeenCalledOnce()
-      expect(render).toHaveBeenCalledOnce()
-      expect(render).toHaveBeenCalledWith({
-        'Admin URL': siteInfo.admin_url,
-        URL: siteInfo.ssl_url,
-        'Project ID': siteInfo.id,
-        'Repo URL': siteInfo.build_settings.repo_url,
-      })
-    })
-
-    test('should not fetch templates if one is passed as option', async () => {
-      await withMockApi(routes, async ({ apiUrl }) => {
-        Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
-
-        const program = new BaseCommand('netlify')
-
-        createSitesFromTemplateCommand(program)
-
-        await program.parseAsync([
-          '',
-          '',
-          'sites:create-template',
-          '-u',
-          'http://github.com/netlify-templates/next-starter',
-        ])
-
-        expect(getTemplatesFromGitHub).not.toHaveBeenCalled()
-      })
-    })
-
-    test('should throw an error if the URL option is not a valid URL', async () => {
-      await withMockApi(routes, async ({ apiUrl }) => {
-        Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
-
-        const program = new BaseCommand('netlify')
-
-        createSitesFromTemplateCommand(program)
-
-        await expect(async () => {
-          await program.parseAsync(['', '', 'sites:create-template', '-u', 'not-a-url'])
-        }).rejects.toThrowError('Invalid URL')
-      })
-    })
-  })
-
-  describe('fetchTemplates', () => {
-    test('should return an array of templates with name, source code url and slug', async () => {
-      await withMockApi(routes, async ({ apiUrl }) => {
-        Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
-
-        const program = new BaseCommand('netlify')
-
-        createSitesFromTemplateCommand(program)
-
-        const templates = await fetchTemplates('fake-token')
-
-        expect(getTemplatesFromGitHub).toHaveBeenCalledWith('fake-token')
-        expect(templates).toEqual([
-          {
-            name: 'next-starter',
-            sourceCodeUrl: 'http://github.com/netlify-templates/next-starter',
-            slug: 'netlify-templates/next-starter',
-          },
-        ])
-      })
     })
   })
 
