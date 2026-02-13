@@ -93,6 +93,6 @@ export const logsEdgeFunction = async (options: OptionValues, command: BaseComma
 
   ws.on('error', (err: Error) => {
     log('Connection error')
-    log(err)
+    log(err.message)
   })
 }
