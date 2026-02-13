@@ -1,7 +1,6 @@
 import fetch from 'node-fetch'
-import execa from 'execa'
 
-import { GitHubRepoResponse, logAndThrowError } from '../command-helpers.js'
+import { logAndThrowError } from '../command-helpers.js'
 import { GitHubRepo } from '../types.js'
 
 export const getTemplatesFromGitHub = async (token: string): Promise<GitHubRepo[]> => {

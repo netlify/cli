@@ -1,7 +1,6 @@
 import process from 'process'
 
 import inquirer from 'inquirer'
-import { render } from 'prettyjson'
 import { afterAll, beforeEach, describe, expect, test, vi } from 'vitest'
 
 import BaseCommand from '../../../../src/commands/base-command.js'
