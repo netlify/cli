@@ -25,7 +25,10 @@ export const createSitesFromTemplateCommand = (program: BaseCommand) => {
       `(Deprecated) Create a project from a starter template
 This command has been deprecated. Use the Netlify UI to deploy from a template.`,
     )
-    .addHelpText('after', `(Deprecated) This command has been deprecated. Learn more: https://docs.netlify.com/start/quickstarts/deploy-from-template/`)
+    .addHelpText(
+      'after',
+      `(Deprecated) This command has been deprecated. Learn more: https://docs.netlify.com/start/quickstarts/deploy-from-template/`,
+    )
 
     .action(() => {
       log()
