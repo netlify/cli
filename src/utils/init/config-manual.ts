@@ -88,8 +88,8 @@ export default async function configManual({
 
   const repoPath = await getRepoPath({ repoData })
   const repo = {
-    provider: 'manual',
-    repo_path: repoPath,
+    provider: repoData.provider ?? 'manual',
+    repo_path: repoData.repo ?? repoPath,
     repo_branch: repoData.branch,
     allowed_branches: [repoData.branch],
     deploy_key_id: deployKey.id,
