@@ -669,7 +669,7 @@ const runDeploy = async ({
     .filter((fn): fn is { n: string; oid: string } => Boolean(fn.n && fn.oid))
     .map((fn) => ({ name: fn.n, id: fn.oid }))
 
-  const hasEdgeFunctions = Boolean((results.deploy as any).edge_functions_count)
+  const hasEdgeFunctions = (results.edgeFunctionsCount ?? 0) > 0
 
   return {
     siteId: results.deploy.site_id,
