@@ -1,7 +1,11 @@
 export default {
   extends: ['@commitlint/config-conventional'],
-  rules: {
-    // Allow breaking changes with ! instead of requiring BREAKING CHANGE: footer
-    'footer-max-line-length': [0],
+  parserPreset: {
+    parserOpts: {
+      headerPattern: /^(\w+)(?:\(([^)]*)\))?(!)?:\s(.+)$/,
+      breakingHeaderPattern: /^(\w+)(?:\(([^)]*)\))?(!)?:\s(.+)$/,
+      headerCorrespondence: ['type', 'scope', 'breaking', 'subject'],
+      issuePrefixes: ['#'],
+    },
   },
 }
