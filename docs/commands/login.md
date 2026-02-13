@@ -19,9 +19,9 @@ netlify login
 
 **Flags**
 
-- `new` (*boolean*) - Login to new Netlify account
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
+- `new` (*boolean*) - Login to new Netlify account
 
 
 <!-- AUTO-GENERATED-CONTENT:END -->

@@ -19,9 +19,9 @@ netlify db
 
 **Flags**
 
-- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
@@ -51,12 +51,12 @@ netlify init
 **Flags**
 
 - `assume-no` (*boolean*) - Non-interactive setup. Does not initialize any third-party tools/boilerplate. Ideal for CI environments or AI tools.
-- `boilerplate` (*drizzle*) - Type of boilerplate to add to your project.
-- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
-- `overwrite` (*boolean*) - Overwrites existing files that would be created when setting up boilerplate
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
+- `boilerplate` (*drizzle*) - Type of boilerplate to add to your project.
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `no-boilerplate` (*boolean*) - Don't add any boilerplate to your project.
+- `overwrite` (*boolean*) - Overwrites existing files that would be created when setting up boilerplate
 
 **Examples**
 
