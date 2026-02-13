@@ -296,9 +296,9 @@ describe('logs:function command', () => {
         return parsedUrl.hostname === 'analytics.services.netlify.com'
       })
       expect(analyticsCall).toBeDefined()
-      expect(analyticsCall![0]).toContain('function_logs')
-      expect(analyticsCall![0]).toContain('cool-function')
-      expect(analyticsCall![0]).toContain('site_id')
+      expect((analyticsCall as string[])[0]).toContain('function_logs')
+      expect((analyticsCall as string[])[0]).toContain('cool-function')
+      expect((analyticsCall as string[])[0]).toContain('site_id')
     } finally {
       global.fetch = originalFetch
     }
