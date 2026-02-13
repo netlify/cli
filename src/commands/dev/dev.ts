@@ -235,7 +235,7 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
 
   log(`${NETLIFYDEVLOG} Setting up local dev server`)
 
-  const { configMutations, generatedFunctions } = await runDevTimeline({
+  const { configMutations, generatedFunctions, deployEnvironment } = await runDevTimeline({
     command,
     options,
     settings,
@@ -269,6 +269,7 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
     offline: options.offline,
     state,
     accountId,
+    deployEnvironment,
   })
 
   // Try to add `.netlify` to `.gitignore`.
@@ -314,6 +315,7 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
     accountId,
     functionsRegistry,
     repositoryRoot,
+    deployEnvironment,
   })
 
   if (devConfig.autoLaunch !== false) {

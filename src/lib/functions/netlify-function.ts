@@ -46,6 +46,7 @@ export default class NetlifyFunction<BuildResult extends BaseBuildResult> {
   private readonly aiGatewayContext?: AIGatewayContext | null
   private readonly blobsContext: BlobsContextWithEdgeAccess
   private readonly config: NormalizedCachedConfigConfig
+  private readonly deployEnvironment: { key: string; value: string; isSecret: boolean }[]
   private readonly directory?: string
   private readonly projectRoot: string
   private readonly timeoutBackground?: number
@@ -79,6 +80,7 @@ export default class NetlifyFunction<BuildResult extends BaseBuildResult> {
     aiGatewayContext,
     blobsContext,
     config,
+    deployEnvironment,
     directory,
     displayName,
     mainFile,
@@ -93,6 +95,7 @@ export default class NetlifyFunction<BuildResult extends BaseBuildResult> {
     aiGatewayContext?: AIGatewayContext | null
     blobsContext: BlobsContextWithEdgeAccess
     config: NormalizedCachedConfigConfig
+    deployEnvironment: { key: string; value: string; isSecret: boolean }[]
     directory?: string
     displayName?: string
     mainFile: string
@@ -108,6 +111,7 @@ export default class NetlifyFunction<BuildResult extends BaseBuildResult> {
     this.aiGatewayContext = aiGatewayContext
     this.blobsContext = blobsContext
     this.config = config
+    this.deployEnvironment = deployEnvironment ?? []
     this.directory = directory
     this.mainFile = mainFile
     this.name = name
@@ -281,6 +285,7 @@ export default class NetlifyFunction<BuildResult extends BaseBuildResult> {
     const environment = {
       // Include function-specific environment variables from config
       ...configEnvVars,
+      ...Object.fromEntries(this.deployEnvironment.map(({ key, value }) => [key, value])),
     }
 
     if (this.blobsContext) {

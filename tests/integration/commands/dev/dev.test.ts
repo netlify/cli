@@ -834,6 +834,102 @@ describe.concurrent('command/dev', () => {
     })
   })
 
+  test('deploy environment variables injected by onDev plugin hooks are injected into functions', async (t) => {
+    await withSiteBuilder(t, async (builder) => {
+      await builder
+        .withNetlifyToml({
+          config: {
+            plugins: [{ package: './plugins/plugin' }],
+            dev: {
+              command: 'node index.mjs',
+              targetPort: 4445,
+            },
+          },
+        })
+        .withBuildPlugin({
+          name: 'plugin',
+          plugin: {
+            onDev({ utils }) {
+              utils.deploy.env.add('DEPLOY_FUNCTION_ENV_VAR', 'function-only', {
+                scopes: ['functions'],
+              })
+              utils.deploy.env.add('DEPLOY_MULTI_ENV_VAR', 'multi', {
+                scopes: ['functions', 'post_processing'],
+              })
+              utils.deploy.env.add('DEPLOY_POSTPROCESSING_ENV_VAR', 'post_processing-only', {
+                scopes: ['post_processing'],
+              })
+            },
+          },
+        })
+        .withContentFile({
+          path: 'netlify/functions/test-function.mjs',
+          content: js`
+              export default async () => Response.json({
+                DEPLOY_FUNCTION_ENV_VAR: process.env.DEPLOY_FUNCTION_ENV_VAR ?? '',
+                DEPLOY_MULTI_ENV_VAR: process.env.DEPLOY_MULTI_ENV_VAR ?? '',
+                DEPLOY_POSTPROCESSING_ENV_VAR: process.env.DEPLOY_POSTPROCESSING_ENV_VAR ?? '',
+              })
+              `,
+        })
+        .withContentFile({
+          path: 'netlify/functions/test-edge-function.mjs',
+          content: js`
+              export const config = {
+                path: '/test-edge-function',
+              };
+
+              export default async () => Response.json({
+                DEPLOY_FUNCTION_ENV_VAR: process.env.DEPLOY_FUNCTION_ENV_VAR ?? '',
+                DEPLOY_MULTI_ENV_VAR: process.env.DEPLOY_MULTI_ENV_VAR ?? '',
+                DEPLOY_POSTPROCESSING_ENV_VAR: process.env.DEPLOY_POSTPROCESSING_ENV_VAR ?? '',
+              })
+              `,
+        })
+        .withContentFile({
+          path: 'index.mjs',
+          content: js`
+              import process from 'process';
+              import http from 'http';
+
+              const server = http.createServer((req, res) => {
+                res.write('Hello, world')
+                res.end();
+              })
+
+              server.listen(4445)
+              `,
+        })
+        .build()
+
+      await withDevServer(
+        {
+          cwd: builder.directory,
+        },
+        async (server) => {
+          const output = server.outputBuffer.map((buf: Buffer) => buf.toString()).join('\n')
+          t.expect(output).toContain('Local dev server ready')
+
+          const functionRes = await fetch(new URL('/.netlify/functions/test-function', server.url))
+          t.expect(functionRes.status).toBe(200)
+          t.expect(await functionRes.json()).toEqual({
+            DEPLOY_FUNCTION_ENV_VAR: 'function-only',
+            DEPLOY_MULTI_ENV_VAR: 'multi',
+            DEPLOY_POSTPROCESSING_ENV_VAR: '',
+          })
+
+          const edgeFunctionRes = await fetch(new URL('/test-edge-function', server.url))
+          t.expect(edgeFunctionRes.status).toBe(200)
+          t.expect(await edgeFunctionRes.json()).toEqual({
+            DEPLOY_FUNCTION_ENV_VAR: 'function-only',
+            DEPLOY_MULTI_ENV_VAR: 'multi',
+            DEPLOY_POSTPROCESSING_ENV_VAR: '',
+          })
+        },
+      )
+    })
+  })
+
   test('should inject `branch-deploy` and `branch` context env vars when given context matches `branch:*`', async (t) => {
     await withSiteBuilder(t, async (builder) => {
       await builder
