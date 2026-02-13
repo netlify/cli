@@ -124,13 +124,12 @@ describe('logs:edge-functions command', () => {
     const setupCall = spyOn.mock.calls.find((args) => args[0] === 'open')
     expect(setupCall).toBeDefined()
 
-    const openCallback = setupCall?.[1]
+    const openCallback = setupCall?.[1] as (() => void) | undefined
     openCallback?.()
 
     expect(spySend).toHaveBeenCalledOnce()
-    const call = spySend.mock.calls[0]
-    const [message] = call
-    const body = JSON.parse(message)
+    const call = spySend.mock.calls[0] as string[]
+    const body = JSON.parse(call[0]) as Record<string, unknown>
 
     expect(body.deploy_id).toEqual('deploy-id-1')
     expect(body.site_id).toEqual('site_id')
@@ -154,11 +153,11 @@ describe('logs:edge-functions command', () => {
     await program.parseAsync(['', '', 'logs:edge-functions', '--deploy-id', 'my-deploy-id'])
 
     const setupCall = spyOn.mock.calls.find((args) => args[0] === 'open')
-    const openCallback = setupCall?.[1]
+    const openCallback = setupCall?.[1] as (() => void) | undefined
     openCallback?.()
 
-    const call = spySend.mock.calls[0]
-    const body = JSON.parse(call[0])
+    const call = spySend.mock.calls[0] as string[]
+    const body = JSON.parse(call[0]) as Record<string, unknown>
 
     expect(body.deploy_id).toEqual('my-deploy-id')
   })
@@ -179,7 +178,7 @@ describe('logs:edge-functions command', () => {
 
     await program.parseAsync(['', '', 'logs:edge-functions', '--level', 'info'])
     const messageCallback = spyOn.mock.calls.find((args) => args[0] === 'message')
-    const messageCallbackFunc = messageCallback?.[1]
+    const messageCallbackFunc = messageCallback?.[1] as ((data: string) => void) | undefined
 
     messageCallbackFunc?.(JSON.stringify({ level: LOG_LEVELS.INFO, message: 'Hello World' }))
     messageCallbackFunc?.(JSON.stringify({ level: LOG_LEVELS.WARN, message: 'There was a warning' }))
@@ -216,8 +215,8 @@ describe('logs:edge-functions command', () => {
         args[0].includes('analytics.services.netlify.com'),
       )
       expect(analyticsCall).toBeDefined()
-      expect(analyticsCall![0]).toContain('edge_function_logs')
-      expect(analyticsCall![0]).toContain('site_id')
+      expect((analyticsCall as string[])[0]).toContain('edge_function_logs')
+      expect((analyticsCall as string[])[0]).toContain('site_id')
     } finally {
       global.fetch = originalFetch
     }

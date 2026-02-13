@@ -10,7 +10,7 @@ import { CLI_LOG_LEVEL_CHOICES_STRING, LOG_LEVELS_LIST } from './log-levels.js'
 import { getName } from './build.js'
 
 export const logsEdgeFunction = async (options: OptionValues, command: BaseCommand) => {
-  let deployId: string | undefined = options.deployId
+  let deployId = options.deployId as string | undefined
   await command.authenticate()
 
   const client = command.netlify.api
@@ -22,15 +22,16 @@ export const logsEdgeFunction = async (options: OptionValues, command: BaseComma
     return
   }
 
-  if (options.level && !options.level.every((level: string) => LOG_LEVELS_LIST.includes(level))) {
-    log(`Invalid log level. Choices are:${CLI_LOG_LEVEL_CHOICES_STRING}`)
+  const levels = options.level as string[] | undefined
+  if (levels && !levels.every((level) => LOG_LEVELS_LIST.includes(level))) {
+    log(`Invalid log level. Choices are:${CLI_LOG_LEVEL_CHOICES_STRING.toString()}`)
   }
 
-  const levelsToPrint = options.level || LOG_LEVELS_LIST
+  const levelsToPrint: string[] = levels || LOG_LEVELS_LIST
 
   if (options.from) {
-    const fromMs = parseDateToMs(options.from)
-    const toMs = options.to ? parseDateToMs(options.to) : Date.now()
+    const fromMs = parseDateToMs(options.from as string)
+    const toMs = options.to ? parseDateToMs(options.to as string) : Date.now()
 
     const url = `https://analytics.services.netlify.com/v2/sites/${siteId}/edge_function_logs?from=${fromMs.toString()}&to=${toMs.toString()}`
     const data = await fetchHistoricalLogs({ url, accessToken: client.accessToken ?? '' })
@@ -38,7 +39,7 @@ export const logsEdgeFunction = async (options: OptionValues, command: BaseComma
     return
   }
 
-  const userId = command.netlify.globalConfig.get('userId')
+  const userId = command.netlify.globalConfig.get('userId') as string
 
   if (!deployId) {
     const deploys = await client.listSiteDeploys({ siteId })
@@ -51,15 +52,15 @@ export const logsEdgeFunction = async (options: OptionValues, command: BaseComma
     if (deploys.length === 1) {
       deployId = deploys[0].id
     } else {
-      const { result } = await inquirer.prompt({
+      const { result } = (await inquirer.prompt({
         name: 'result',
         type: 'list',
         message: `Select a deploy\n\n${chalk.yellow('*')} indicates a deploy created by you`,
-        choices: deploys.map((deploy: any) => ({
+        choices: deploys.map((deploy) => ({
           name: getName({ deploy, userId }),
           value: deploy.id,
         })),
-      })
+      })) as { result: string }
 
       deployId = result
     }
@@ -79,7 +80,7 @@ export const logsEdgeFunction = async (options: OptionValues, command: BaseComma
   })
 
   ws.on('message', (data: string) => {
-    const logData = JSON.parse(data)
+    const logData = JSON.parse(data) as { level: string; message: string; timestamp?: string }
     if (!levelsToPrint.includes(logData.level.toLowerCase())) {
       return
     }
@@ -90,7 +91,7 @@ export const logsEdgeFunction = async (options: OptionValues, command: BaseComma
     log('Connection closed')
   })
 
-  ws.on('error', (err: any) => {
+  ws.on('error', (err: Error) => {
     log('Connection error')
     log(err)
   })

@@ -54,7 +54,7 @@ export function formatLogEntry(entry: { timestamp?: string; level?: string; mess
 }
 
 export function printHistoricalLogs(data: unknown, levelsToPrint: string[]): void {
-  const entries = Array.isArray(data) ? data : []
+  const entries = Array.isArray(data) ? (data as { timestamp?: string; level?: string; message?: string }[]) : []
 
   if (entries.length === 0) {
     log('No logs found for the specified time range')
