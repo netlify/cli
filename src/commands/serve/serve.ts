@@ -162,6 +162,7 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
     offline: options.offline,
     state,
     accountId,
+    deployEnvironment: [],
   })
 
   // Try to add `.netlify` to `.gitignore`.

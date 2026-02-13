@@ -80,6 +80,7 @@ export const functionsServe = async (options: OptionValues, command: BaseCommand
     offline: options.offline,
     state,
     accountId,
+    deployEnvironment: [],
   })
 
   const url = getProxyUrl({ port: functionsPort })

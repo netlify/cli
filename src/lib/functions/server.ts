@@ -315,6 +315,7 @@ export const startFunctionsServer = async (
     site: NetlifySite
     siteInfo: SiteInfo
     timeouts: { backgroundFunctions: number; syncFunctions: number }
+    deployEnvironment: { key: string; value: string; isSecret: boolean }[]
   } & Omit<GetFunctionsServerOptions, 'functionsRegistry'>,
 ): Promise<FunctionsRegistry | undefined> => {
   const {
@@ -395,6 +396,7 @@ export const startFunctionsServer = async (
     projectRoot: command.workingDir,
     settings,
     timeouts,
+    deployEnvironment: options.deployEnvironment,
   })
 
   await functionsRegistry.scan(functionsDirectories)
