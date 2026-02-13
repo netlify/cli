@@ -26,7 +26,7 @@ netlify sites
 | Subcommand | description  |
 |:--------------------------- |:-----|
 | [`sites:create`](/commands/sites#sitescreate) | Create an empty project (advanced)  |
-| [`sites:create-template`](/commands/sites#sitescreate-template) | (Beta) Create a project from a starter template  |
+| [`sites:create-template`](/commands/sites#sitescreate-template) | (Deprecated) Create a project from a starter template  |
 | [`sites:delete`](/commands/sites#sitesdelete) | Delete a project  |
 | [`sites:list`](/commands/sites#siteslist) | List all projects you have access to  |
 
@@ -64,8 +64,8 @@ netlify sites:create
 ---
 ## `sites:create-template`
 
-(Beta) Create a project from a starter template
-Create a project from a starter template.
+(Deprecated) Create a project from a starter template
+This command has been deprecated. Use the Netlify UI to deploy from a template.
 
 **Usage**
 
@@ -73,27 +73,11 @@ Create a project from a starter template.
 netlify sites:create-template
 ```
 
-**Arguments**
-
-- repository - repository to use as starter template
-
 **Flags**
 
-- `account-slug` (*string*) - account slug to create the project under
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
-- `name` (*string*) - name of project
-- `url` (*string*) - template url
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
-- `with-ci` (*boolean*) - initialize CI hooks during project creation
-
-**Examples**
-
-```bash
-netlify sites:create-template
-netlify sites:create-template nextjs-blog-theme
-netlify sites:create-template my-github-profile/my-template
-```
 
 ---
 ## `sites:delete`
