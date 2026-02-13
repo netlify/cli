@@ -1,7 +1,6 @@
 import fetch from 'node-fetch'
-import execa from 'execa'
 
-import { GitHubRepoResponse, logAndThrowError } from '../command-helpers.js'
+import { logAndThrowError } from '../command-helpers.js'
 import { GitHubRepo } from '../types.js'
 
 export const getTemplatesFromGitHub = async (token: string): Promise<GitHubRepo[]> => {
@@ -28,52 +27,4 @@ export const getTemplatesFromGitHub = async (token: string): Promise<GitHubRepo[
     return logAndThrowError(error_)
   }
   return allTemplates
-}
-
-export const validateTemplate = async ({ ghToken, templateName }: { ghToken: string; templateName: string }) => {
-  const response = await fetch(`https://api.github.com/repos/${templateName}`, {
-    headers: {
-      Authorization: `token ${ghToken}`,
-    },
-  })
-
-  if (response.status === 404) {
-    return { exists: false }
-  }
-
-  if (!response.ok) {
-    throw new Error(`Error fetching template ${templateName}: ${await response.text()}`)
-  }
-
-  const data = (await response.json()) as GitHubRepoResponse
-
-  return { exists: true, isTemplate: data.is_template }
-}
-
-export const createRepo = async (
-  templateName: string,
-  ghToken: string,
-  siteName: string,
-): Promise<GitHubRepoResponse> => {
-  const resp = await fetch(`https://api.github.com/repos/${templateName}/generate`, {
-    method: 'POST',
-    headers: {
-      Authorization: `token ${ghToken}`,
-    },
-    body: JSON.stringify({
-      name: siteName,
-    }),
-  })
-
-  const data = await resp.json()
-
-  return data as GitHubRepoResponse
-}
-
-export const callLinkSite = async (cliPath: string, repoName: string, input: string) => {
-  const { stdout } = await execa(cliPath, ['link'], {
-    input,
-    cwd: repoName,
-  })
-  return stdout
 }
