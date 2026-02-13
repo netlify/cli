@@ -200,7 +200,8 @@ describe('logs:edge-functions command', () => {
 
     const originalFetch = global.fetch
     const spyFetch = vi.fn().mockImplementation((url: string) => {
-      const parsedUrl = new URL(url)
+      const hostname = new URL(url).hostname
+      if (hostname === 'analytics.services.netlify.com') {
       if (parsedUrl.hostname === 'analytics.services.netlify.com') {
         return Promise.resolve({
           ok: true,
@@ -215,9 +216,10 @@ describe('logs:edge-functions command', () => {
       await program.parseAsync(['', '', 'logs:edge-functions', '--from', '2026-01-01T00:00:00Z'])
 
       expect(spyWebsocket).not.toHaveBeenCalled()
-
       const analyticsCall = spyFetch.mock.calls.find((args: string[]) => {
-        const parsedUrl = new URL(args[0])
+        const hostname = new URL(args[0]).hostname
+        return hostname === 'analytics.services.netlify.com'
+      })
         return parsedUrl.hostname === 'analytics.services.netlify.com'
       })
       expect(analyticsCall).toBeDefined()
