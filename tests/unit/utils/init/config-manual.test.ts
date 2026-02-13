@@ -1,6 +1,7 @@
-import { describe, expect, it, vi, beforeEach, type Mock } from 'vitest'
+import { describe, expect, it, vi, beforeEach } from 'vitest'
 import type { RepoData } from '../../../../src/utils/get-repo-data.js'
 import type { NetlifyAPI } from '@netlify/api'
+import type BaseCommand from '../../../../src/commands/base-command.js'
 
 const mockPrompt = vi.fn()
 const mockLog = vi.fn()
@@ -30,7 +31,7 @@ vi.mock('../../../../src/utils/init/utils.js', () => ({
 
 describe('config-manual', () => {
   let mockApi: Partial<NetlifyAPI>
-  let mockCommand: any
+  let mockCommand: Pick<BaseCommand, 'netlify'>
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -38,11 +39,11 @@ describe('config-manual', () => {
     mockApi = {}
     mockCommand = {
       netlify: {
-        api: mockApi,
-        cachedConfig: { configPath: '/test/netlify.toml' },
-        config: { plugins: [] },
+        api: mockApi as NetlifyAPI,
+        cachedConfig: { configPath: '/test/netlify.toml' } as BaseCommand['netlify']['cachedConfig'],
+        config: { plugins: [] } as BaseCommand['netlify']['config'],
         repositoryRoot: '/test',
-      },
+      } as BaseCommand['netlify'],
     }
 
     mockPrompt.mockResolvedValue({
@@ -78,19 +79,14 @@ describe('config-manual', () => {
       }
 
       await configManual({
-        command: mockCommand,
+        command: mockCommand as BaseCommand,
         repoData,
         siteId: 'site-123',
       })
 
-      expect(mockSetupSite).toHaveBeenCalledWith(
-        expect.objectContaining({
-          repo: expect.objectContaining({
-            provider: 'gitlab',
-            repo_path: 'ownername/test',
-          }),
-        }),
-      )
+      const setupCall = mockSetupSite.mock.calls[0][0] as { repo: { provider: string; repo_path: string } }
+      expect(setupCall.repo.provider).toBe('gitlab')
+      expect(setupCall.repo.repo_path).toBe('ownername/test')
     })
 
     it('should use repo path (owner/name format) instead of SSH URL for GitLab', async () => {
@@ -107,12 +103,14 @@ describe('config-manual', () => {
       }
 
       await configManual({
-        command: mockCommand,
+        command: mockCommand as BaseCommand,
         repoData,
         siteId: 'site-123',
       })
 
-      const setupSiteCall = (mockSetupSite as Mock).mock.calls[0][0]
+      const setupSiteCall = mockSetupSite.mock.calls[0][0] as {
+        repo: { repo_path: string }
+      }
       expect(setupSiteCall.repo.repo_path).toBe('ownername/test')
       expect(setupSiteCall.repo.repo_path).not.toBe('git@gitlab.com:ownername/test.git')
     })
@@ -131,18 +129,13 @@ describe('config-manual', () => {
       }
 
       await configManual({
-        command: mockCommand,
+        command: mockCommand as BaseCommand,
         repoData,
         siteId: 'site-123',
       })
 
-      expect(mockSetupSite).toHaveBeenCalledWith(
-        expect.objectContaining({
-          repo: expect.objectContaining({
-            provider: 'manual',
-          }),
-        }),
-      )
+      const setupCall = mockSetupSite.mock.calls[0][0] as { repo: { provider: string } }
+      expect(setupCall.repo.provider).toBe('manual')
     })
   })
 
@@ -161,19 +154,14 @@ describe('config-manual', () => {
       }
 
       await configManual({
-        command: mockCommand,
+        command: mockCommand as BaseCommand,
         repoData,
         siteId: 'site-123',
       })
 
-      expect(mockSetupSite).toHaveBeenCalledWith(
-        expect.objectContaining({
-          repo: expect.objectContaining({
-            provider: 'github',
-            repo_path: 'user/test',
-          }),
-        }),
-      )
+      const setupCall = mockSetupSite.mock.calls[0][0] as { repo: { provider: string; repo_path: string } }
+      expect(setupCall.repo.provider).toBe('github')
+      expect(setupCall.repo.repo_path).toBe('user/test')
     })
   })
 })
