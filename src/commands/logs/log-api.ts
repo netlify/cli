@@ -53,10 +53,7 @@ export function formatLogEntry(entry: { timestamp?: string; level?: string; mess
   return parts.join(' ')
 }
 
-export function printHistoricalLogs(
-  data: unknown,
-  levelsToPrint: string[],
-): void {
+export function printHistoricalLogs(data: unknown, levelsToPrint: string[]): void {
   const entries = Array.isArray(data) ? data : []
 
   if (entries.length === 0) {

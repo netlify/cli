@@ -194,9 +194,7 @@ describe('logs:edge-functions command', () => {
     const env = getEnvironmentVariables({ apiUrl })
     Object.assign(process.env, env)
 
-    const mockLogs = [
-      { timestamp: '2026-01-15T10:00:00Z', level: 'info', message: 'Edge function executed' },
-    ]
+    const mockLogs = [{ timestamp: '2026-01-15T10:00:00Z', level: 'info', message: 'Edge function executed' }]
 
     const originalFetch = global.fetch
     const spyFetch = vi.fn().mockImplementation((url: string) => {
