@@ -5,7 +5,6 @@ export default {
       headerPattern: /^(\w+)(?:\(([^)]*)\))?(!)?:\s(.+)$/,
       breakingHeaderPattern: /^(\w+)(?:\(([^)]*)\))?(!)?:\s(.+)$/,
       headerCorrespondence: ['type', 'scope', 'breaking', 'subject'],
-      issuePrefixes: ['#'],
     },
   },
 }
