@@ -200,7 +200,8 @@ describe('logs:edge-functions command', () => {
 
     const originalFetch = global.fetch
     const spyFetch = vi.fn().mockImplementation((url: string) => {
-      if (url.includes('analytics.services.netlify.com')) {
+      const parsedUrl = new URL(url)
+      if (parsedUrl.hostname === 'analytics.services.netlify.com') {
         return Promise.resolve({
           ok: true,
           json: () => Promise.resolve(mockLogs),
@@ -215,9 +216,10 @@ describe('logs:edge-functions command', () => {
 
       expect(spyWebsocket).not.toHaveBeenCalled()
 
-      const analyticsCall = spyFetch.mock.calls.find((args: string[]) =>
-        args[0].includes('analytics.services.netlify.com'),
-      )
+      const analyticsCall = spyFetch.mock.calls.find((args: string[]) => {
+        const parsedUrl = new URL(args[0])
+        return parsedUrl.hostname === 'analytics.services.netlify.com'
+      })
       expect(analyticsCall).toBeDefined()
       expect(analyticsCall![0]).toContain('edge_function_logs')
       expect(analyticsCall![0]).toContain('site_id')
