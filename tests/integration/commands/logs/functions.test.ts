@@ -235,9 +235,7 @@ describe('logs:function command', () => {
         path: 'sites/site_id/deploys/deploy-123',
         response: {
           id: 'deploy-123',
-          available_functions: [
-            { n: 'deploy-function', oid: 'deploy-fn-id' },
-          ],
+          available_functions: [{ n: 'deploy-function', oid: 'deploy-fn-id' }],
         },
       },
     ]
@@ -273,9 +271,7 @@ describe('logs:function command', () => {
     const env = getEnvironmentVariables({ apiUrl })
     Object.assign(process.env, env)
 
-    const mockLogs = [
-      { timestamp: '2026-01-15T10:00:00Z', level: 'info', message: 'Function executed' },
-    ]
+    const mockLogs = [{ timestamp: '2026-01-15T10:00:00Z', level: 'info', message: 'Function executed' }]
 
     const originalFetch = global.fetch
     const spyFetch = vi.fn().mockImplementation((url: string) => {

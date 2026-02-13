@@ -9,10 +9,7 @@ import { parseDateToMs, fetchHistoricalLogs, printHistoricalLogs, formatLogEntry
 import { CLI_LOG_LEVEL_CHOICES_STRING, LOG_LEVELS_LIST } from './log-levels.js'
 import { getName } from './build.js'
 
-export const logsEdgeFunction = async (
-  options: OptionValues,
-  command: BaseCommand,
-) => {
+export const logsEdgeFunction = async (options: OptionValues, command: BaseCommand) => {
   let deployId: string | undefined = options.deployId
   await command.authenticate()
 
