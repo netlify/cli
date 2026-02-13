@@ -132,6 +132,7 @@ Stream logs from your project
 | Subcommand | description  |
 |:--------------------------- |:-----|
 | [`logs:deploy`](/commands/logs#logsdeploy) | Stream the logs of deploys currently being built to the console  |
+| [`logs:edge-functions`](/commands/logs#logsedge-functions) | Stream netlify edge function logs to the console  |
 | [`logs:function`](/commands/logs#logsfunction) | Stream netlify function logs to the console  |
 
 
