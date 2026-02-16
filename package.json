@@ -57,6 +57,7 @@
     "typecheck:watch": "tsc --watch"
   },
   "dependencies": {
+    "@clack/prompts": "^1.0.0",
     "@fastify/static": "9.0.0",
     "@netlify/ai": "0.3.4",
     "@netlify/api": "14.0.13",

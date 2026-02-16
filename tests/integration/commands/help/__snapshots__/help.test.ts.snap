@@ -31,6 +31,7 @@ COMMANDS
   $ login        Login to your Netlify account
   $ logs         Stream logs from your project
   $ open         Open settings for the project linked to the current folder
+  $ push         Push code to Netlify via git, triggering a build
   $ recipes      Create and modify files in a project using pre-defined recipes
   $ serve        Build the project for production and serve locally. This does
                  not watch the code for changes, so if you need to rebuild your

@@ -6,6 +6,7 @@ import { chalk, exit, log, netlifyCommand } from '../../utils/command-helpers.js
 import getRepoData from '../../utils/get-repo-data.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import { configureRepo } from '../../utils/init/config.js'
+import { configNetlifyGit } from '../../utils/init/config-netlify-git.js'
 import { track } from '../../utils/telemetry/index.js'
 import type BaseCommand from '../base-command.js'
 import { link } from '../link/link.js'
@@ -240,6 +241,14 @@ export const init = async (
 
   // Add .netlify to .gitignore file
   await ensureNetlifyIgnore(repositoryRoot)
+
+  // Handle --git flag: use Netlify-hosted git
+  if (options.git) {
+    const siteInfo = isEmpty(existingSiteInfo) ? await createOrLinkSiteToRepo(command) : existingSiteInfo
+    persistState({ state, siteInfo })
+    await configNetlifyGit({ command, siteId: siteInfo.id })
+    return siteInfo
+  }
 
   const repoUrl = getRepoUrl(existingSiteInfo)
   if (repoUrl && !options.force) {
