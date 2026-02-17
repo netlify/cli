@@ -10,7 +10,7 @@ describe('@netlify/dev integration', () => {
       builder
         .withPackageJson({
           packageJson: {
-            dependencies: { '@netlify/db': '0.1.0' },
+            dependencies: { '@netlify/db': '0.1.0', '@netlify/db-dev': '0.2.0' },
           },
         })
         .withCommand({ command: ['npm', 'install'] })
