@@ -21,7 +21,13 @@ import {
 import detectServerSettings, { getConfigWithPlugins } from '../../utils/detect-server-settings.js'
 import { parseAIGatewayContext, setupAIGateway } from '@netlify/ai/bootstrap'
 
-import { UNLINKED_SITE_MOCK_ID, getDotEnvVariables, getSiteInformation, injectEnvVariables } from '../../utils/dev.js'
+import {
+  UNLINKED_SITE_MOCK_ID,
+  getDotEnvVariables,
+  getSiteInformation,
+  injectEnvVariables,
+  processOnExit,
+} from '../../utils/dev.js'
 import { getEnvelopeEnv } from '../../utils/env/index.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import { getLiveTunnelSlug, startLiveTunnel } from '../../utils/live-tunnel.js'
@@ -35,6 +41,7 @@ import { getBaseOptionValues } from '../base-command.js'
 import type { NetlifySite } from '../types.js'
 
 import type { DevConfig } from './types.js'
+import { startNetlifyDev as startProgrammaticNetlifyDev } from './programmatic-netlify-dev.js'
 import { doesProjectRequireLinkedSite } from '../../lib/extensions.js'
 
 const handleLiveTunnel = async ({
@@ -173,6 +180,16 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
   }
 
   injectEnvVariables(env)
+
+  const programmaticNetlifyDev = await startProgrammaticNetlifyDev({
+    projectRoot: command.workingDir,
+    apiToken: api.accessToken ?? undefined,
+    env,
+  })
+
+  if (programmaticNetlifyDev) {
+    processOnExit(() => programmaticNetlifyDev.stop())
+  }
 
   await promptEditorHelper({ chalk, config, log, NETLIFYDEVLOG, repositoryRoot, state })
 
