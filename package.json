@@ -159,7 +159,7 @@
     "@eslint/compat": "1.4.1",
     "@eslint/js": "9.36.0",
     "@netlify/functions": "5.1.0",
-    "@netlify/types": "2.2.0",
+    "@netlify/types": "2.3.0",
     "@sindresorhus/slugify": "3.0.0",
     "@tsconfig/node18": "18.2.4",
     "@tsconfig/recommended": "1.0.13",
