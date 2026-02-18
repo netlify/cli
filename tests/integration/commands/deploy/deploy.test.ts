@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url'
 import { load } from 'cheerio'
 import execa from 'execa'
 import fetch from 'node-fetch'
-import { afterAll, beforeAll, describe, expect, test } from 'vitest'
+import { afterAll, beforeAll, describe, expect, test, vi } from 'vitest'
 
 import { callCli } from '../../utils/call-cli.js'
 import { createLiveTestSite, generateSiteName } from '../../utils/create-live-test-site.js'
@@ -86,7 +86,13 @@ const context: { account: unknown; siteId: string } = {
   account: undefined,
 }
 
-describe.skipIf(process.env.NETLIFY_TEST_DISABLE_LIVE === 'true').concurrent('commands/deploy', () => {
+const disableLiveTests = process.env.NETLIFY_TEST_DISABLE_LIVE === 'true'
+
+// Running multiple entire build + deploy cycles concurrently results in a lot of network requests that may
+// cause resource contention anyway, so lower the default concurrency from 5 to 3.
+vi.setConfig({ maxConcurrency: 3 })
+
+describe.skipIf(disableLiveTests).concurrent('commands/deploy', { timeout: 300_000 }, () => {
   beforeAll(async () => {
     const { account, siteId } = await createLiveTestSite(SITE_NAME)
     context.siteId = siteId
