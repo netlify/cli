@@ -12,37 +12,6 @@ vi.mock('../../../../src/utils/command-helpers.js', async () => ({
   log: () => {},
 }))
 
-// mock the getGithubToken method with a fake token
-vi.mock('../../../../src/utils/init/config-github.js', () => ({
-  getGitHubToken: vi.fn().mockImplementation(() => 'my-token'),
-}))
-
-vi.mock('../../../../src/utils/sites/utils.js', () => ({
-  getTemplatesFromGitHub: vi.fn().mockImplementation(() => [
-    {
-      name: 'next-starter',
-      html_url: 'http://github.com/netlify-templates/next-starter',
-      full_name: 'netlify-templates/next-starter',
-    },
-    {
-      name: 'archived-starter',
-      html_url: 'https://github.com/netlify-templates/fake-repo',
-      full_name: 'netlify-templates/fake-repo',
-      archived: true,
-    },
-  ]),
-}))
-
-vi.mock('prettyjson', async () => {
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-  const realRender = (await vi.importActual('prettyjson')) as typeof import('prettyjson')
-
-  return {
-    ...realRender,
-    render: vi.fn().mockImplementation((...args: Parameters<typeof realRender.render>) => realRender.render(...args)),
-  }
-})
-
 vi.spyOn(inquirer, 'prompt').mockImplementation(() => Promise.resolve({ accountSlug: 'test-account' }))
 
 const siteInfo = {
