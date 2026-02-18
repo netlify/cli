@@ -37,8 +37,9 @@ describe('@netlify/dev integration', () => {
 
       await withDevServer({ cwd: builder.directory, env: { EXPERIMENTAL_NETLIFY_DB_ENABLED: '1' } }, async (server) => {
         const response = await fetch(`${server.url}/db-test`)
-        const body = await response.json()
-        t.expect(body).toEqual({ sum: 2 })
+        const body = await response.text()
+        console.log(body)
+        t.expect(body).toEqual(JSON.stringify({ sum: 2 }))
       })
     })
   })
@@ -57,10 +58,11 @@ describe('@netlify/dev integration', () => {
 
       await withDevServer({ cwd: builder.directory }, async (server) => {
         const response = await fetch(`${server.url}/db-url`)
-        const body = await response.json()
+        const body = await response.text()
+        console.log(body)
 
         t.expect(response.status).toBe(200)
-        t.expect(body).toEqual({ url: '' })
+        t.expect(body).toEqual(JSON.stringify({ url: '' }))
       })
     })
   })
