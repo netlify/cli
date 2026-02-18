@@ -76,7 +76,6 @@ jobs:
           # Changes the polling interval used by the file watcher
           CHOKIDAR_INTERVAL: 20
           CHOKIDAR_USEPOLLING: 1
-          DEBUG_TESTS: 1
 
       - name: Get test coverage flags
         id: test-coverage-flags
