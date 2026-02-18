@@ -26,7 +26,6 @@ netlify sites
 | Subcommand | description  |
 |:--------------------------- |:-----|
 | [`sites:create`](/commands/sites#sitescreate) | Create an empty project (advanced)  |
-| [`sites:create-template`](/commands/sites#sitescreate-template) | (Deprecated) Create a project from a starter template  |
 | [`sites:delete`](/commands/sites#sitesdelete) | Delete a project  |
 | [`sites:list`](/commands/sites#siteslist) | List all projects you have access to  |
 
@@ -60,24 +59,6 @@ netlify sites:create
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 - `with-ci` (*boolean*) - initialize CI hooks during project creation
-
----
-## `sites:create-template`
-
-(Deprecated) Create a project from a starter template
-This command has been deprecated. Use the Netlify UI to deploy from a template.
-
-**Usage**
-
-```bash
-netlify sites:create-template
-```
-
-**Flags**
-
-- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
-- `debug` (*boolean*) - Print debugging information
-- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 ---
 ## `sites:delete`

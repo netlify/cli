@@ -1,5 +1,4 @@
 import { OptionValues, InvalidArgumentError } from 'commander'
-import { chalk, log } from '../../utils/command-helpers.js'
 import BaseCommand from '../base-command.js'
 
 const MAX_SITE_NAME_LENGTH = 63
@@ -16,28 +15,6 @@ const validateName = function (value) {
 
 const sites = (_options: OptionValues, command: BaseCommand) => {
   command.help()
-}
-
-export const createSitesFromTemplateCommand = (program: BaseCommand) => {
-  program
-    .command('sites:create-template')
-    .description(
-      `(Deprecated) Create a project from a starter template
-This command has been deprecated. Use the Netlify UI to deploy from a template.`,
-    )
-    .addHelpText(
-      'after',
-      `(Deprecated) This command has been deprecated. Learn more: https://docs.netlify.com/start/quickstarts/deploy-from-template/`,
-    )
-
-    .action(() => {
-      log()
-      log(chalk.yellow.bold('This command has been deprecated.'))
-      log()
-      log('To deploy from a template, please use the Netlify UI or API.')
-      log(`Learn more: ${chalk.cyan('https://docs.netlify.com/start/quickstarts/deploy-from-template/')}`)
-      log()
-    })
 }
 
 export const createSitesCreateCommand = (program: BaseCommand) => {
@@ -64,7 +41,6 @@ Create a blank project that isn't associated with any git remote. Will link the 
 
 export const createSitesCommand = (program: BaseCommand) => {
   createSitesCreateCommand(program)
-  createSitesFromTemplateCommand(program)
 
   program
     .command('sites:list')
