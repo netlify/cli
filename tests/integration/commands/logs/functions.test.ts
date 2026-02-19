@@ -201,4 +201,106 @@ describe('logs:function command', () => {
 
     expect(spyLog).toHaveBeenCalledTimes(2)
   })
+
+  test('should find function by ID', async ({}) => {
+    const { apiUrl } = await startMockApi({ routes })
+    const spyWebsocket = getWebSocket as unknown as Mock
+    const spyOn = vi.fn()
+    const spySend = vi.fn()
+    spyWebsocket.mockReturnValue({
+      on: spyOn,
+      send: spySend,
+    })
+
+    const env = getEnvironmentVariables({ apiUrl })
+    Object.assign(process.env, env)
+
+    await program.parseAsync(['', '', 'logs:function', 'function-id'])
+
+    const setupCall = spyOn.mock.calls.find((args) => args[0] === 'open')
+    const openCallback = setupCall?.[1]
+    openCallback?.()
+
+    const call = spySend.mock.calls[0]
+    const body = JSON.parse(call[0])
+
+    expect(body.function_id).toEqual('function-id')
+    expect(body.site_id).toEqual('site_id')
+  })
+
+  test('should look up function from deploy when --deploy is specified', async ({}) => {
+    const deployRoutes = [
+      ...routes,
+      {
+        path: 'sites/site_id/deploys/deploy-123',
+        response: {
+          id: 'deploy-123',
+          available_functions: [{ n: 'deploy-function', oid: 'deploy-fn-id' }],
+        },
+      },
+    ]
+    const { apiUrl } = await startMockApi({ routes: deployRoutes })
+    const spyWebsocket = getWebSocket as unknown as Mock
+    const spyOn = vi.fn()
+    const spySend = vi.fn()
+    spyWebsocket.mockReturnValue({
+      on: spyOn,
+      send: spySend,
+    })
+
+    const env = getEnvironmentVariables({ apiUrl })
+    Object.assign(process.env, env)
+
+    await program.parseAsync(['', '', 'logs:function', 'deploy-function', '--deploy-id', 'deploy-123'])
+
+    const setupCall = spyOn.mock.calls.find((args) => args[0] === 'open')
+    const openCallback = setupCall?.[1]
+    openCallback?.()
+
+    const call = spySend.mock.calls[0]
+    const body = JSON.parse(call[0])
+
+    expect(body.function_id).toEqual('deploy-fn-id')
+    expect(body.site_id).toEqual('site_id')
+  })
+
+  test('should fetch historical logs when --from is specified', async ({}) => {
+    const { apiUrl } = await startMockApi({ routes })
+    const spyWebsocket = getWebSocket as unknown as Mock
+
+    const env = getEnvironmentVariables({ apiUrl })
+    Object.assign(process.env, env)
+
+    const mockLogs = [{ timestamp: '2026-01-15T10:00:00Z', level: 'info', message: 'Function executed' }]
+
+    const originalFetch = global.fetch
+    const spyFetch = vi.fn().mockImplementation((url: string) => {
+      const parsedUrl = new URL(url)
+      if (parsedUrl.hostname === 'analytics.services.netlify.com') {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(mockLogs),
+        })
+      }
+      return originalFetch(url)
+    })
+    global.fetch = spyFetch
+
+    try {
+      await program.parseAsync(['', '', 'logs:function', 'cool-function', '--from', '2026-01-01T00:00:00Z'])
+
+      expect(spyWebsocket).not.toHaveBeenCalled()
+
+      const analyticsCall = spyFetch.mock.calls.find((args: string[]) => {
+        const parsedUrl = new URL(args[0])
+        return parsedUrl.hostname === 'analytics.services.netlify.com'
+      })
+      expect(analyticsCall).toBeDefined()
+      expect((analyticsCall as string[])[0]).toContain('function_logs')
+      expect((analyticsCall as string[])[0]).toContain('cool-function')
+      expect((analyticsCall as string[])[0]).toContain('site_id')
+    } finally {
+      global.fetch = originalFetch
+    }
+  })
 })
