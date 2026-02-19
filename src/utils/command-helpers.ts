@@ -241,29 +241,6 @@ export interface APIError extends Error {
   message: string
 }
 
-export class GitHubAPIError extends Error {
-  status: string
-
-  constructor(status: string, message: string) {
-    super(message)
-    this.status = status
-    this.name = 'GitHubAPIError'
-  }
-}
-
-export interface GitHubRepoResponse {
-  status?: string
-  message?: string
-  id?: number
-  name?: string
-  clone_url?: string
-  full_name?: string
-  private?: boolean
-  default_branch?: string
-  errors?: string[]
-  is_template?: boolean
-}
-
 export const checkFileForLine = (filename: string, line: string) => {
   let filecontent = ''
   try {
