@@ -1,5 +1,4 @@
 import { OptionValues, InvalidArgumentError } from 'commander'
-
 import BaseCommand from '../base-command.js'
 
 const MAX_SITE_NAME_LENGTH = 63
@@ -16,30 +15,6 @@ const validateName = function (value) {
 
 const sites = (_options: OptionValues, command: BaseCommand) => {
   command.help()
-}
-
-export const createSitesFromTemplateCommand = (program: BaseCommand) => {
-  program
-    .command('sites:create-template')
-    .description(
-      `(Beta) Create a project from a starter template
-Create a project from a starter template.`,
-    )
-    .option('-n, --name [name]', 'name of project')
-    .option('-u, --url [url]', 'template url')
-    .option('-a, --account-slug [slug]', 'account slug to create the project under')
-    .option('-c, --with-ci', 'initialize CI hooks during project creation')
-    .argument('[repository]', 'repository to use as starter template')
-    .addHelpText('after', `(Beta) Create a project from starter template.`)
-    .addExamples([
-      'netlify sites:create-template',
-      'netlify sites:create-template nextjs-blog-theme',
-      'netlify sites:create-template my-github-profile/my-template',
-    ])
-    .action(async (repository: string, options: OptionValues, command: BaseCommand) => {
-      const { sitesCreateTemplate } = await import('./sites-create-template.js')
-      await sitesCreateTemplate(repository, options, command)
-    })
 }
 
 export const createSitesCreateCommand = (program: BaseCommand) => {
@@ -66,7 +41,6 @@ Create a blank project that isn't associated with any git remote. Will link the 
 
 export const createSitesCommand = (program: BaseCommand) => {
   createSitesCreateCommand(program)
-  createSitesFromTemplateCommand(program)
 
   program
     .command('sites:list')
