@@ -18,12 +18,7 @@ const listAccounts = async () => {
 }
 
 export const createLiveTestSite = async function (siteName: string) {
-  console.log(`[createLiveTestSite] Creating new project: ${siteName}`)
-
-  console.log(`[createLiveTestSite] Listing accounts...`)
-  const listStart = Date.now()
   const accounts = await listAccounts()
-  console.log(`[createLiveTestSite] Listed accounts in ${String(Date.now() - listStart)}ms (found ${String(accounts.length)})`)
 
   if (!Array.isArray(accounts) || accounts.length <= 0) {
     throw new Error(`Can't find suitable account to create a project`)
@@ -39,10 +34,7 @@ export const createLiveTestSite = async function (siteName: string) {
   }
   const accountSlug = account.slug
 
-  console.log(`[createLiveTestSite] Creating site '${siteName}' in account '${accountSlug}'...`)
-  const createStart = Date.now()
   const cliResponse = (await callCli(['sites:create', '--name', siteName, '--account-slug', accountSlug])) as string
-  console.log(`[createLiveTestSite] sites:create completed in ${String(Date.now() - createStart)}ms`)
 
   const isProjectCreated = cliResponse.includes('Project Created')
   if (!isProjectCreated) {
@@ -54,7 +46,6 @@ export const createLiveTestSite = async function (siteName: string) {
   const matches = /Project ID:\s+([a-zA-Z\d-]+)/m.exec(stripAnsi(cliResponse))
   if (matches && Object.prototype.hasOwnProperty.call(matches, 1) && matches[1]) {
     const [, siteId] = matches
-    console.log(`[createLiveTestSite] Done. Project Id: ${siteId}`)
     return { siteId, account }
   }
 
