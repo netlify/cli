@@ -29,18 +29,16 @@ const validateContent = async ({
   pathname?: string | undefined
   siteUrl: string
 }) => {
-  const response = await fetch(`${siteUrl}${pathname}`, { headers })
+  const url = `${siteUrl}${pathname}`
+  const response = await fetch(url, { headers })
   const body = await response.text()
+  const requestId = response.headers.get('x-nf-request-id') ?? ''
   if (content === undefined) {
     expect(response.status).toBe(404)
     return
   }
-  expect(response.status, `status should be 200. request id: ${response.headers.get('x-nf-request-id') ?? ''}`).toBe(
-    200,
-  )
-  expect(body, `body should be as expected. request id: ${response.headers.get('x-nf-request-id') ?? ''}`).toEqual(
-    content,
-  )
+  expect(response.status, `status should be 200. url: ${url} request id: ${requestId}`).toBe(200)
+  expect(body, `body should be as expected. url: ${url} request id: ${requestId}`).toEqual(content)
 }
 
 type Deploy = {
@@ -57,6 +55,14 @@ type Deploy = {
   logs: string
   function_logs: string
   edge_function_logs: string
+}
+
+const parseDeploy = (output: string): Deploy => {
+  try {
+    return JSON.parse(output)
+  } catch {
+    throw new Error(`Failed to parse deploy output as JSON. Raw output:\n${output}`)
+  }
 }
 
 const validateDeploy = async ({
@@ -118,7 +124,7 @@ describe.skipIf(disableLiveTests).concurrent('commands/deploy', { timeout: 300_0
       const deploy = await callCli(['deploy', '--json', '--no-build', '--dir', 'public'], {
         cwd: builder.directory,
         env: { NETLIFY_SITE_ID: context.siteId },
-      }).then((output: string) => JSON.parse(output))
+      }).then(parseDeploy)
 
       await validateDeploy({ deploy, siteName: SITE_NAME, content })
     })
@@ -142,7 +148,7 @@ describe.skipIf(disableLiveTests).concurrent('commands/deploy', { timeout: 300_0
 
       const deploy = await callCli(['deploy', '--json', '--no-build', '--site', SITE_NAME], {
         cwd: builder.directory,
-      }).then((output: string) => JSON.parse(output))
+      }).then(parseDeploy)
 
       await validateDeploy({ deploy, siteName: SITE_NAME, content })
     })
@@ -167,7 +173,7 @@ describe.skipIf(disableLiveTests).concurrent('commands/deploy', { timeout: 300_0
       const deploy = await callCli(['deploy', '--json', '--no-build'], {
         cwd: builder.directory,
         env: { NETLIFY_SITE_ID: context.siteId },
-      }).then((output: string) => JSON.parse(output))
+      }).then(parseDeploy)
 
       await validateDeploy({ deploy, siteName: SITE_NAME, content })
     })
@@ -214,9 +220,7 @@ describe.skipIf(disableLiveTests).concurrent('commands/deploy', { timeout: 300_0
         if (shouldRunBuildBeforeDeploy) {
           await callCli(['build'], options)
         }
-        const deploy = await callCli(['deploy', '--json', '--no-build'], options).then((output: string) =>
-          JSON.parse(output),
-        )
+        const deploy = await callCli(['deploy', '--json', '--no-build'], options).then(parseDeploy)
 
         // give edge functions manifest a couple ticks to propagate
         await pause(500)
@@ -264,9 +268,7 @@ describe.skipIf(disableLiveTests).concurrent('commands/deploy', { timeout: 300_0
         if (shouldRunBuildBeforeDeploy) {
           await callCli(['build', '--cwd', pathPrefix], options)
         }
-        const deploy = await callCli(['deploy', '--json', '--no-build', '--cwd', pathPrefix], options).then(
-          (output: string) => JSON.parse(output),
-        )
+        const deploy = await callCli(['deploy', '--json', '--no-build', '--cwd', pathPrefix], options).then(parseDeploy)
 
         // give edge functions manifest a couple ticks to propagate
         await pause(500)
@@ -312,9 +314,7 @@ describe.skipIf(disableLiveTests).concurrent('commands/deploy', { timeout: 300_0
         if (shouldRunBuildBeforeDeploy) {
           await callCli(['build'], options)
         }
-        const deploy = await callCli(['deploy', '--json', '--no-build'], options).then((output: string) =>
-          JSON.parse(output),
-        )
+        const deploy = await callCli(['deploy', '--json', '--no-build'], options).then(parseDeploy)
 
         // give edge functions manifest a couple ticks to propagate
         await pause(500)
@@ -359,9 +359,7 @@ describe.skipIf(disableLiveTests).concurrent('commands/deploy', { timeout: 300_0
       }
 
       // skipping running build here, because it cleans up frameworks API directories
-      const deploy = await callCli(['deploy', '--json', '--no-build'], options).then((output: string) =>
-        JSON.parse(output),
-      )
+      const deploy = await callCli(['deploy', '--json', '--no-build'], options).then(parseDeploy)
 
       // give edge functions manifest a couple ticks to propagate
       await pause(500)
@@ -567,7 +565,7 @@ describe.skipIf(disableLiveTests).concurrent('commands/deploy', { timeout: 300_0
       const deploy = await callCli(['deploy', '--json', '--no-build', '--dir', 'public'], {
         cwd: builder.directory,
         env: { NETLIFY_SITE_ID: context.siteId },
-      }).then((output: string) => JSON.parse(output))
+      }).then(parseDeploy)
 
       await validateDeploy({ deploy, siteName: SITE_NAME, content })
       expect(deploy).toHaveProperty('logs', `https://app.netlify.com/projects/${SITE_NAME}/deploys/${deploy.deploy_id}`)
@@ -594,7 +592,7 @@ describe.skipIf(disableLiveTests).concurrent('commands/deploy', { timeout: 300_0
       const deploy = await callCli(['deploy', '--json', '--no-build', '--dir', 'public', '--prod'], {
         cwd: builder.directory,
         env: { NETLIFY_SITE_ID: context.siteId },
-      }).then((output: string) => JSON.parse(output))
+      }).then(parseDeploy)
 
       await validateDeploy({ deploy, siteName: SITE_NAME, content })
       expect(deploy).toHaveProperty('logs', `https://app.netlify.com/projects/${SITE_NAME}/deploys/${deploy.deploy_id}`)
@@ -720,7 +718,7 @@ describe.skipIf(disableLiveTests).concurrent('commands/deploy', { timeout: 300_0
       const deploy = await callCli(['deploy', '--json', '--no-build'], {
         cwd: builder.directory,
         env: { NETLIFY_SITE_ID: context.siteId },
-      }).then((output: string) => JSON.parse(output))
+      }).then(parseDeploy)
 
       await validateDeploy({ deploy, siteName: SITE_NAME, content: 'index' })
       await validateContent({
@@ -765,7 +763,7 @@ describe.skipIf(disableLiveTests).concurrent('commands/deploy', { timeout: 300_0
       const deploy = await callCli(['deploy', '--json', '--no-build'], {
         cwd: builder.directory,
         env: { NETLIFY_SITE_ID: context.siteId },
-      }).then((output: string) => JSON.parse(output))
+      }).then(parseDeploy)
 
       await validateDeploy({ deploy, siteName: SITE_NAME, content: 'index' })
       await validateContent({
@@ -800,7 +798,7 @@ describe.skipIf(disableLiveTests).concurrent('commands/deploy', { timeout: 300_0
       const deploy = await callCli(['deploy', '--json', '--no-build'], {
         cwd: builder.directory,
         env: { NETLIFY_SITE_ID: context.siteId },
-      }).then((output: string) => JSON.parse(output))
+      }).then(parseDeploy)
 
       await validateDeploy({ deploy, siteName: SITE_NAME, content: 'index' })
       await validateContent({
@@ -860,14 +858,10 @@ describe.skipIf(disableLiveTests).concurrent('commands/deploy', { timeout: 300_0
         })
         .build()
 
-      const { deploy_url: deployUrl } = (await callCli(
-        ['deploy', '--json'],
-        {
-          cwd: builder.directory,
-          env: { NETLIFY_SITE_ID: context.siteId },
-        },
-        true,
-      )) as unknown as Deploy
+      const { deploy_url: deployUrl } = await callCli(['deploy', '--json'], {
+        cwd: builder.directory,
+        env: { NETLIFY_SITE_ID: context.siteId },
+      }).then(parseDeploy)
 
       const response = await fetch(`${deployUrl}/.netlify/functions/hello`)
       t.expect(await response.text()).toEqual('Hello')
@@ -970,14 +964,10 @@ describe.skipIf(disableLiveTests).concurrent('commands/deploy', { timeout: 300_0
         })
         .build()
 
-      const { deploy_url: deployUrl } = (await callCli(
-        ['deploy', '--json'],
-        {
-          cwd: builder.directory,
-          env: { NETLIFY_SITE_ID: context.siteId },
-        },
-        true,
-      )) as unknown as Deploy
+      const { deploy_url: deployUrl } = await callCli(['deploy', '--json'], {
+        cwd: builder.directory,
+        env: { NETLIFY_SITE_ID: context.siteId },
+      }).then(parseDeploy)
 
       // Add retry logic for fetching deployed functions
       const fetchWithRetry = async (url: string, maxRetries = 5) => {
@@ -1031,14 +1021,10 @@ describe.skipIf(disableLiveTests).concurrent('commands/deploy', { timeout: 300_0
         })
         .build()
 
-      const { deploy_url: deployUrl } = (await callCli(
-        ['deploy', '--json'],
-        {
-          cwd: builder.directory,
-          env: { NETLIFY_SITE_ID: context.siteId },
-        },
-        true,
-      )) as unknown as Deploy
+      const { deploy_url: deployUrl } = await callCli(['deploy', '--json'], {
+        cwd: builder.directory,
+        env: { NETLIFY_SITE_ID: context.siteId },
+      }).then(parseDeploy)
       const response = await fetch(`${deployUrl}/.netlify/functions/func-1`).then((res) => res.text())
 
       t.expect(response).toEqual('Internal')
@@ -1089,23 +1075,18 @@ describe.skipIf(disableLiveTests).concurrent('commands/deploy', { timeout: 300_0
         })
         .build()
 
-      const deploy = (await callCli(
-        ['deploy', '--json'],
-        {
-          cwd: builder.directory,
-          env: { NETLIFY_SITE_ID: context.siteId },
-        },
-        true,
-      )) as unknown as Deploy
+      const deploy = await callCli(['deploy', '--json'], {
+        cwd: builder.directory,
+        env: { NETLIFY_SITE_ID: context.siteId },
+      }).then(parseDeploy)
 
-      const fullDeploy = (await callCli(
+      const fullDeploy = await callCli(
         ['api', 'getDeploy', '--data', JSON.stringify({ deploy_id: deploy.deploy_id })],
         {
           cwd: builder.directory,
           env: { NETLIFY_SITE_ID: context.siteId },
         },
-        true,
-      )) as unknown as Deploy
+      ).then(parseDeploy)
 
       const redirectsMessage = fullDeploy.summary.messages.find(({ title }) => title === '3 redirect rules processed')
       t.expect(redirectsMessage).toBeDefined()
@@ -1174,14 +1155,10 @@ describe.skipIf(disableLiveTests).concurrent('commands/deploy', { timeout: 300_0
         })
         .build()
 
-      const { deploy_url: deployUrl } = (await callCli(
-        ['deploy', '--json', '--no-build'],
-        {
-          cwd: builder.directory,
-          env: { NETLIFY_SITE_ID: context.siteId },
-        },
-        true,
-      )) as unknown as Deploy
+      const { deploy_url: deployUrl } = await callCli(['deploy', '--json', '--no-build'], {
+        cwd: builder.directory,
+        env: { NETLIFY_SITE_ID: context.siteId },
+      }).then(parseDeploy)
       const response = await fetch(`${deployUrl}/.netlify/functions/bundled-function-1`).then((res) => res.text())
       expect(response).toEqual('Pre-bundled')
     })
@@ -1233,14 +1210,10 @@ describe.skipIf(disableLiveTests).concurrent('commands/deploy', { timeout: 300_0
         })
         .build()
 
-      const { deploy_url: deployUrl } = (await callCli(
-        ['deploy', '--json', '--no-build', '--skip-functions-cache'],
-        {
-          cwd: builder.directory,
-          env: { NETLIFY_SITE_ID: context.siteId },
-        },
-        true,
-      )) as unknown as Deploy
+      const { deploy_url: deployUrl } = await callCli(['deploy', '--json', '--no-build', '--skip-functions-cache'], {
+        cwd: builder.directory,
+        env: { NETLIFY_SITE_ID: context.siteId },
+      }).then(parseDeploy)
 
       const response = await fetch(`${deployUrl}/.netlify/functions/bundled-function-1`).then((res) => res.text())
       t.expect(response).toEqual('Bundled at deployment')
@@ -1294,14 +1267,10 @@ describe.skipIf(disableLiveTests).concurrent('commands/deploy', { timeout: 300_0
         })
         .build()
 
-      const { deploy_url: deployUrl } = (await callCli(
-        ['deploy', '--json', '--no-build'],
-        {
-          cwd: builder.directory,
-          env: { NETLIFY_SITE_ID: context.siteId },
-        },
-        true,
-      )) as unknown as { deploy_url: string }
+      const { deploy_url: deployUrl } = await callCli(['deploy', '--json', '--no-build'], {
+        cwd: builder.directory,
+        env: { NETLIFY_SITE_ID: context.siteId },
+      }).then(parseDeploy)
 
       const response = await fetch(`${deployUrl}/.netlify/functions/bundled-function-1`).then((res) => res.text())
       t.expect(response).toEqual('Bundled at deployment')
@@ -1353,14 +1322,10 @@ describe.skipIf(disableLiveTests).concurrent('commands/deploy', { timeout: 300_0
         .build()
 
       await execa.command('npm install', { cwd: builder.directory })
-      const { deploy_url: deployUrl } = (await callCli(
-        ['deploy', '--json', '--no-build'],
-        {
-          cwd: builder.directory,
-          env: { NETLIFY_SITE_ID: context.siteId },
-        },
-        true,
-      )) as unknown as { deploy_url: string }
+      const { deploy_url: deployUrl } = await callCli(['deploy', '--json', '--no-build'], {
+        cwd: builder.directory,
+        env: { NETLIFY_SITE_ID: context.siteId },
+      }).then(parseDeploy)
 
       const response = await fetch(`${deployUrl}/read-blob`).then((res) => res.text())
       t.expect(response).toEqual('hello from the blob')
@@ -1374,14 +1339,10 @@ describe.skipIf(disableLiveTests).concurrent('commands/deploy', { timeout: 300_0
         timeout: 300_000,
       },
       async ({ fixture }) => {
-        const { deploy_url: deployUrl } = (await callCli(
-          ['deploy', '--json'],
-          {
-            cwd: fixture.directory,
-            env: { NETLIFY_SITE_ID: context.siteId },
-          },
-          true,
-        )) as unknown as { deploy_url: string }
+        const { deploy_url: deployUrl } = await callCli(['deploy', '--json'], {
+          cwd: fixture.directory,
+          env: { NETLIFY_SITE_ID: context.siteId },
+        }).then(parseDeploy)
 
         const html = await fetch(deployUrl).then((res) => res.text())
         const $ = load(html)
@@ -1422,7 +1383,7 @@ describe.skipIf(disableLiveTests).concurrent('commands/deploy', { timeout: 300_0
       const deploy = await callCli(['deploy', '--json', '--no-build', '--dir', 'public', '--draft'], {
         cwd: builder.directory,
         env: { NETLIFY_SITE_ID: context.siteId },
-      }).then((output: string) => JSON.parse(output))
+      }).then(parseDeploy)
 
       await validateDeploy({ deploy, siteName: SITE_NAME, content })
       expect(deploy).toHaveProperty(
@@ -1486,7 +1447,7 @@ describe.skipIf(disableLiveTests).concurrent('commands/deploy', { timeout: 300_0
           cwd: builder.directory,
           env: { NETLIFY_SITE_ID: context.siteId },
         },
-      ).then((output: string) => JSON.parse(output))
+      ).then(parseDeploy)
 
       await validateDeploy({ deploy, siteName: SITE_NAME, content })
       expect(deploy).toHaveProperty(
@@ -1515,7 +1476,7 @@ describe.skipIf(disableLiveTests).concurrent('commands/deploy', { timeout: 300_0
         const deploy = await callCli(['deploy', '--json', '--no-build', '--dir', 'public', '--upload-source-zip'], {
           cwd: builder.directory,
           env: { NETLIFY_SITE_ID: context.siteId },
-        }).then((output: string) => JSON.parse(output))
+        }).then(parseDeploy)
 
         await validateDeploy({ deploy, siteName: SITE_NAME, content })
         expect(deploy).toHaveProperty('source_zip_filename')
@@ -1550,7 +1511,7 @@ describe.skipIf(disableLiveTests).concurrent('commands/deploy', { timeout: 300_0
         const deploy = await callCli(['deploy', '--json', '--dir', 'public', '--upload-source-zip'], {
           cwd: builder.directory,
           env: { NETLIFY_SITE_ID: context.siteId },
-        }).then((output: string) => JSON.parse(output))
+        }).then(parseDeploy)
 
         await validateDeploy({ deploy, siteName: SITE_NAME, content })
         expect(deploy).toHaveProperty('source_zip_filename')
@@ -1614,9 +1575,7 @@ describe.skipIf(disableLiveTests).concurrent('commands/deploy', { timeout: 300_0
       }
 
       await callCli(['build'], options)
-      const deploy = (await callCli(['deploy', '--json', '--no-build'], options).then((output: string) =>
-        JSON.parse(output),
-      )) as Deploy
+      const deploy = await callCli(['deploy', '--json', '--no-build'], options).then(parseDeploy)
 
       await pause(500)
 
