@@ -55,6 +55,7 @@ type Deploy = {
   logs: string
   function_logs: string
   edge_function_logs: string
+  source_zip_filename?: string
 }
 
 const parseDeploy = (output: string): Deploy => {
@@ -107,8 +108,9 @@ describe.skipIf(disableLiveTests).concurrent('commands/deploy', { timeout: 300_0
 
   afterAll(async () => {
     const { siteId } = context
-    console.log(`deleting test site "${SITE_NAME}". ${siteId}`)
-    await callCli(['sites:delete', siteId, '--force'])
+    // TODO: temporarily disabled to debug deploy test failures — re-enable after investigation
+    console.log(`skipping deletion of test site "${SITE_NAME}". ${siteId}`)
+    // await callCli(['sites:delete', siteId, '--force'])
   })
 
   test('should deploy project when dir flag is passed', async (t) => {
