@@ -88,6 +88,7 @@ export class FunctionsRegistry {
   // TODO(serhalp): This is confusing. Refactor to accept entire settings or rename or something?
   private settings: Pick<ServerSettings, 'functions' | 'functionsPort'>
   private timeouts: { backgroundFunctions: number; syncFunctions: number }
+  private readonly deployEnvironment: { key: string; value: string; isSecret: boolean }[]
 
   constructor({
     aiGatewayContext,
@@ -95,6 +96,7 @@ export class FunctionsRegistry {
     capabilities,
     config,
     debug = false,
+    deployEnvironment,
     frameworksAPIPaths,
     generatedFunctions,
     isConnected = false,
@@ -121,6 +123,7 @@ export class FunctionsRegistry {
     // TODO(serhalp): This is confusing. Refactor to accept entire settings or rename or something?
     settings: Pick<ServerSettings, 'functions' | 'functionsPort'>
     timeouts: { backgroundFunctions: number; syncFunctions: number }
+    deployEnvironment: { key: string; value: string; isSecret: boolean }[]
   }) {
     this.capabilities = capabilities
     this.config = config
@@ -133,6 +136,7 @@ export class FunctionsRegistry {
     this.settings = settings
     this.blobsContext = blobsContext
     this.aiGatewayContext = aiGatewayContext
+    this.deployEnvironment = deployEnvironment ?? []
 
     /**
      * An object to be shared among all functions in the registry. It can be
@@ -571,6 +575,7 @@ export class FunctionsRegistry {
           timeoutSynchronous: this.timeouts.syncFunctions,
           settings: this.settings,
           srcPath,
+          deployEnvironment: this.deployEnvironment,
         })
 
         // If a function we're registering was also unregistered in this run,

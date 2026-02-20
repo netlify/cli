@@ -50,6 +50,7 @@ interface EdgeFunctionsRegistryOptions {
   projectDir: string
   runIsolate: RunIsolate
   servePath: string
+  deployEnvironment: { key: string; value: string; isSecret: boolean }[]
 }
 
 /**
@@ -158,6 +159,7 @@ export class EdgeFunctionsRegistryImpl implements EdgeFunctionsRegistry {
     projectDir,
     runIsolate,
     servePath,
+    deployEnvironment,
   }: EdgeFunctionsRegistryOptions) {
     this.aiGatewayContext = aiGatewayContext
     this.command = command
@@ -171,7 +173,7 @@ export class EdgeFunctionsRegistryImpl implements EdgeFunctionsRegistry {
 
     this.importMapFromTOML = importMapFromTOML
     this.declarationsFromTOML = EdgeFunctionsRegistryImpl.getDeclarationsFromTOML(config)
-    this.env = EdgeFunctionsRegistryImpl.getEnvironmentVariables(env)
+    this.env = EdgeFunctionsRegistryImpl.getEnvironmentVariables(env, deployEnvironment)
 
     this.initialScan = this.doInitialScan()
 
@@ -363,7 +365,10 @@ export class EdgeFunctionsRegistryImpl implements EdgeFunctionsRegistry {
     return declarations.find((declaration) => declaration.function === func)?.name ?? func
   }
 
-  private static getEnvironmentVariables(envConfig: Record<string, { sources: string[]; value: string }>) {
+  private static getEnvironmentVariables(
+    envConfig: Record<string, { sources: string[]; value: string }>,
+    deployEnvironment: { key: string; value: string; isSecret: boolean }[],
+  ) {
     const env = Object.create(null)
 
     Object.entries(envConfig).forEach(([key, variable]) => {
@@ -377,6 +382,10 @@ export class EdgeFunctionsRegistryImpl implements EdgeFunctionsRegistry {
         env[key] = variable.value
       }
     })
+
+    for (const { key, value } of deployEnvironment) {
+      env[key] = value
+    }
 
     env.DENO_REGION = 'local'
 

@@ -315,6 +315,7 @@ export const startFunctionsServer = async (
     site: NetlifySite
     siteInfo: SiteInfo
     timeouts: { backgroundFunctions: number; syncFunctions: number }
+    deployEnvironment: { key: string; value: string; isSecret: boolean; scopes: string[] }[]
   } & Omit<GetFunctionsServerOptions, 'functionsRegistry'>,
 ): Promise<FunctionsRegistry | undefined> => {
   const {
@@ -395,6 +396,11 @@ export const startFunctionsServer = async (
     projectRoot: command.workingDir,
     settings,
     timeouts,
+    deployEnvironment: options.deployEnvironment
+      .filter(({ scopes }) => scopes.includes('functions'))
+      // Scopes should be opaque to the functions registry: We just filtered down to only variables
+      // should be applied to functions.
+      .map(({ scopes, ...rest }) => rest),
   })
 
   await functionsRegistry.scan(functionsDirectories)

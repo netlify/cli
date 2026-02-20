@@ -56,12 +56,16 @@ type RunNetlifyBuildOptions = {
   timeline: 'dev' | 'build'
 }
 
-export async function runNetlifyBuild(
-  opts: RunNetlifyBuildOptions & { timeline: 'dev' },
-): Promise<{ configMutations: unknown; generatedFunctions: GeneratedFunction[] }>
-export async function runNetlifyBuild(
-  opts: RunNetlifyBuildOptions & { timeline: 'build' },
-): Promise<{ configPath: string; generatedFunctions: GeneratedFunction[] }>
+export async function runNetlifyBuild(opts: RunNetlifyBuildOptions & { timeline: 'dev' }): Promise<{
+  configMutations: unknown
+  generatedFunctions: GeneratedFunction[]
+  deployEnvironment: { key: string; value: string; isSecret: boolean; scopes: string[] }[]
+}>
+export async function runNetlifyBuild(opts: RunNetlifyBuildOptions & { timeline: 'build' }): Promise<{
+  configPath: string
+  generatedFunctions: GeneratedFunction[]
+  deployEnvironment: { key: string; value: string; isSecret: boolean; scopes: string[] }[]
+}>
 export async function runNetlifyBuild({
   command,
   env = {},
@@ -163,7 +167,11 @@ export async function runNetlifyBuild({
     }
     await devCommand({ netlifyConfig, settingsOverrides })
 
-    return { configPath: tempConfigPath, generatedFunctions }
+    return {
+      configPath: tempConfigPath,
+      deployEnvironment: [] as { key: string; value: string; isSecret: boolean }[],
+      generatedFunctions,
+    }
   }
 
   const startDevOptions = {
@@ -181,6 +189,7 @@ export async function runNetlifyBuild({
     error: startDevError,
     success,
     generatedFunctions,
+    deployEnvVars: deployEnvironment,
   } = await startDev(devCommand, startDevOptions)
 
   if (!success && startDevError) {
@@ -189,7 +198,11 @@ export async function runNetlifyBuild({
     )
   }
 
-  return { configMutations, generatedFunctions }
+  return {
+    configMutations,
+    deployEnvironment: deployEnvironment as { key: string; value: string; isSecret: boolean }[],
+    generatedFunctions,
+  }
 }
 
 type RunTimelineOptions = Omit<Parameters<typeof runNetlifyBuild>[0], 'timeline'>
