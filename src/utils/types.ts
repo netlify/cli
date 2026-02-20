@@ -204,20 +204,6 @@ export type MinimalAccount = {
   members_count: number
 }
 
-export interface GitHubRepo {
-  name: string
-  html_url: string
-  full_name: string
-  archived: boolean
-  disabled: boolean
-}
-
-export interface Template {
-  name: string
-  sourceCodeUrl: string
-  slug: string
-}
-
 type EnvironmentVariableScope = 'builds' | 'functions' | 'runtime' | 'post_processing'
 export type EnvironmentVariableSource = 'account' | 'addons' | 'configFile' | 'general' | 'internal' | 'ui'
 

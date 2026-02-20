@@ -165,7 +165,6 @@ Handle various project operations
 | Subcommand | description  |
 |:--------------------------- |:-----|
 | [`sites:create`](/commands/sites#sitescreate) | Create an empty project (advanced)  |
-| [`sites:create-template`](/commands/sites#sitescreate-template) | (Beta) Create a project from a starter template  |
 | [`sites:delete`](/commands/sites#sitesdelete) | Delete a project  |
 | [`sites:list`](/commands/sites#siteslist) | List all projects you have access to  |
 
