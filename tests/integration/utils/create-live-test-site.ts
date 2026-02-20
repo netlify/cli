@@ -1,10 +1,11 @@
 import { appendFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { resolve } from 'node:path'
 import process from 'node:process'
+import { fileURLToPath } from 'node:url'
 
 import { callCli } from './call-cli.js'
 
-const SITE_IDS_FILE = join(process.cwd(), '.netlify-test-site-ids')
+const SITE_IDS_FILE = resolve(fileURLToPath(import.meta.url), '../../../../.netlify-test-site-ids')
 
 export const generateSiteName = function (prefix: string) {
   const randomString = Math.random()
@@ -22,8 +23,13 @@ const listAccounts = async () => {
 }
 
 export const createLiveTestSite = async function (siteName: string) {
-  console.log(`Creating new project for tests: ${siteName}`)
+  console.log(`[createLiveTestSite] Creating new project: ${siteName}`)
+
+  console.log(`[createLiveTestSite] Listing accounts...`)
+  const listStart = Date.now()
   const accounts = await listAccounts()
+  console.log(`[createLiveTestSite] Listed accounts in ${Date.now() - listStart}ms (found ${accounts.length})`)
+
   if (!Array.isArray(accounts) || accounts.length <= 0) {
     throw new Error(`Can't find suitable account to create a project`)
   }
@@ -37,12 +43,15 @@ export const createLiveTestSite = async function (siteName: string) {
     )
   }
   const accountSlug = account.slug
-  console.log(`Using account ${accountSlug} to create project: ${siteName}`)
+
+  console.log(`[createLiveTestSite] Creating site '${siteName}' in account '${accountSlug}'...`)
+  const createStart = Date.now()
   const cliResponse = (await callCli(['sites:create', '--name', siteName, '--account-slug', accountSlug])) as string
+  console.log(`[createLiveTestSite] sites:create completed in ${Date.now() - createStart}ms`)
 
   const isProjectCreated = cliResponse.includes('Project Created')
   if (!isProjectCreated) {
-    throw new Error(`Failed creating project: ${cliResponse}`)
+    throw new Error(`Failed creating project. CLI response:\n${cliResponse}`)
   }
 
   const { default: stripAnsi } = await import('strip-ansi')
@@ -50,10 +59,10 @@ export const createLiveTestSite = async function (siteName: string) {
   const matches = /Project ID:\s+([a-zA-Z\d-]+)/m.exec(stripAnsi(cliResponse))
   if (matches && Object.prototype.hasOwnProperty.call(matches, 1) && matches[1]) {
     const [, siteId] = matches
-    console.log(`Done creating project ${siteName} for account '${accountSlug}'. Project Id: ${siteId}`)
+    console.log(`[createLiveTestSite] Done. Project Id: ${siteId}`)
     appendFileSync(SITE_IDS_FILE, `${siteId}\n`)
     return { siteId, account }
   }
 
-  throw new Error(`Failed creating project: ${cliResponse}`)
+  throw new Error(`Failed to extract project ID from CLI response:\n${cliResponse}`)
 }
