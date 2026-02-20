@@ -93,7 +93,9 @@ const context: { account: unknown; siteId: string } = {
   account: undefined,
 }
 
-const disableLiveTests = process.env.NETLIFY_TEST_DISABLE_LIVE === 'true'
+const disableLiveTests =
+  process.env.NETLIFY_TEST_DISABLE_LIVE === 'true' ||
+  (process.env.CI === 'true' && !process.env.NETLIFY_LIVE_TEST_SITE_ID)
 
 // Running multiple entire build + deploy cycles concurrently results in a lot of network requests that may
 // cause resource contention anyway, so lower the default concurrency from 5 to 3.

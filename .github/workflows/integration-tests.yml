@@ -25,12 +25,17 @@ jobs:
         run: |
           SITE_NAME="netlify-test-deploy-$(openssl rand -hex 4)"
           echo "Creating test site: $SITE_NAME"
-          RESPONSE=$(curl -sf -X POST \
+          HTTP_CODE=$(curl -s -o response.json -w '%{http_code}' -X POST \
             -H "Authorization: Bearer $NETLIFY_AUTH_TOKEN" \
             -H "Content-Type: application/json" \
             -d "{\"name\": \"$SITE_NAME\"}" \
             "https://api.netlify.com/api/v1/netlify-integration-testing/sites")
-          SITE_ID=$(echo "$RESPONSE" | jq -r '.id')
+          if [ "$HTTP_CODE" -ne 201 ]; then
+            echo "::warning::Failed to create site. HTTP $HTTP_CODE. Live tests will be skipped."
+            cat response.json
+            exit 0
+          fi
+          SITE_ID=$(jq -r '.id' response.json)
           echo "site-id=$SITE_ID" >> "$GITHUB_OUTPUT"
           echo "Created site $SITE_NAME with ID $SITE_ID"
         env:
@@ -39,7 +44,8 @@ jobs:
   integration:
     name: Integration
     needs: [setup]
-    # Run even if setup was skipped (fork PRs) — live tests will be skipped via NETLIFY_TEST_DISABLE_LIVE
+    # Run even if setup was skipped (fork PRs) or failed to create a site.
+    # Tests that need a live site will be skipped if NETLIFY_LIVE_TEST_SITE_ID is not set.
     if: ${{ !cancelled() }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 40
