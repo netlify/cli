@@ -11,8 +11,36 @@ on:
       - '!release-please--**'
 
 jobs:
+  setup:
+    name: Create test site
+    runs-on: ubuntu-latest
+    # Skip for fork PRs since they don't have access to secrets
+    if: ${{ !(github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == true) }}
+    timeout-minutes: 5
+    outputs:
+      site-id: ${{ steps.create-site.outputs.site-id }}
+    steps:
+      - name: Create site
+        id: create-site
+        run: |
+          SITE_NAME="netlify-test-deploy-$(openssl rand -hex 4)"
+          echo "Creating test site: $SITE_NAME"
+          RESPONSE=$(curl -sf -X POST \
+            -H "Authorization: Bearer $NETLIFY_AUTH_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{\"name\": \"$SITE_NAME\"}" \
+            "https://api.netlify.com/api/v1/netlify-integration-testing/sites")
+          SITE_ID=$(echo "$RESPONSE" | jq -r '.id')
+          echo "site-id=$SITE_ID" >> "$GITHUB_OUTPUT"
+          echo "Created site $SITE_NAME with ID $SITE_ID"
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+
   integration:
     name: Integration
+    needs: [setup]
+    # Run even if setup was skipped (fork PRs) — live tests will be skipped via NETLIFY_TEST_DISABLE_LIVE
+    if: ${{ !cancelled() }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 40
     strategy:
@@ -71,17 +99,13 @@ jobs:
             ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == true }}
           NETLIFY_TEST_ACCOUNT_SLUG: 'netlify-integration-testing'
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          # Site ID created by the setup job, shared across all matrix jobs
+          NETLIFY_LIVE_TEST_SITE_ID: ${{ needs.setup.outputs.site-id }}
           # NETLIFY_TEST_GITHUB_TOKEN is used to avoid reaching GitHub API limits in exec-fetcher.js
           NETLIFY_TEST_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Changes the polling interval used by the file watcher
           CHOKIDAR_INTERVAL: 20
           CHOKIDAR_USEPOLLING: 1
-
-      - name: Clean up test sites
-        if: always()
-        run: node scripts/clean-test-sites.js
-        env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
 
       - name: Get test coverage flags
         id: test-coverage-flags
@@ -112,3 +136,20 @@ jobs:
         with:
           flags: ${{ steps.test-coverage-flags.outputs.os }},${{ steps.test-coverage-flags.outputs.node }}
           token: ${{ secrets.CODECOV_TOKEN }}
+
+  cleanup:
+    name: Delete test site
+    needs: [setup, integration]
+    if: ${{ always() && needs.setup.outputs.site-id }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Delete site
+        run: |
+          echo "Deleting test site ${{ needs.setup.outputs.site-id }}"
+          curl -sf -X DELETE \
+            -H "Authorization: Bearer $NETLIFY_AUTH_TOKEN" \
+            "https://api.netlify.com/api/v1/sites/${{ needs.setup.outputs.site-id }}"
+          echo "Deleted successfully"
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}

@@ -101,13 +101,18 @@ vi.setConfig({ maxConcurrency: 3 })
 
 describe.skipIf(disableLiveTests).concurrent('commands/deploy', { timeout: 300_000 }, () => {
   beforeAll(async () => {
-    const { account, siteId } = await createLiveTestSite(SITE_NAME)
-    context.siteId = siteId
-    context.account = account
+    // In CI, a shared site is created once by the setup job and passed via env var.
+    // Locally, we create (and later delete) a site per test run.
+    if (process.env.NETLIFY_LIVE_TEST_SITE_ID) {
+      context.siteId = process.env.NETLIFY_LIVE_TEST_SITE_ID
+    } else {
+      const { account, siteId } = await createLiveTestSite(SITE_NAME)
+      context.siteId = siteId
+      context.account = account
+    }
   })
 
-  // In CI, site cleanup happens in a separate step. Locally, we clean up here.
-  if (!process.env.CI) {
+  if (!process.env.NETLIFY_LIVE_TEST_SITE_ID) {
     afterAll(async () => {
       const { siteId } = context
 

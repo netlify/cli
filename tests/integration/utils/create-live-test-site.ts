@@ -1,11 +1,6 @@
-import { appendFileSync } from 'node:fs'
-import { resolve } from 'node:path'
 import process from 'node:process'
-import { fileURLToPath } from 'node:url'
 
 import { callCli } from './call-cli.js'
-
-const SITE_IDS_FILE = resolve(fileURLToPath(import.meta.url), '../../../../.netlify-test-site-ids')
 
 export const generateSiteName = function (prefix: string) {
   const randomString = Math.random()
@@ -28,7 +23,7 @@ export const createLiveTestSite = async function (siteName: string) {
   console.log(`[createLiveTestSite] Listing accounts...`)
   const listStart = Date.now()
   const accounts = await listAccounts()
-  console.log(`[createLiveTestSite] Listed accounts in ${Date.now() - listStart}ms (found ${accounts.length})`)
+  console.log(`[createLiveTestSite] Listed accounts in ${String(Date.now() - listStart)}ms (found ${String(accounts.length)})`)
 
   if (!Array.isArray(accounts) || accounts.length <= 0) {
     throw new Error(`Can't find suitable account to create a project`)
@@ -47,7 +42,7 @@ export const createLiveTestSite = async function (siteName: string) {
   console.log(`[createLiveTestSite] Creating site '${siteName}' in account '${accountSlug}'...`)
   const createStart = Date.now()
   const cliResponse = (await callCli(['sites:create', '--name', siteName, '--account-slug', accountSlug])) as string
-  console.log(`[createLiveTestSite] sites:create completed in ${Date.now() - createStart}ms`)
+  console.log(`[createLiveTestSite] sites:create completed in ${String(Date.now() - createStart)}ms`)
 
   const isProjectCreated = cliResponse.includes('Project Created')
   if (!isProjectCreated) {
@@ -60,7 +55,6 @@ export const createLiveTestSite = async function (siteName: string) {
   if (matches && Object.prototype.hasOwnProperty.call(matches, 1) && matches[1]) {
     const [, siteId] = matches
     console.log(`[createLiveTestSite] Done. Project Id: ${siteId}`)
-    appendFileSync(SITE_IDS_FILE, `${siteId}\n`)
     return { siteId, account }
   }
 

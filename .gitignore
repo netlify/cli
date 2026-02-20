@@ -21,9 +21,6 @@ vendor
 # Local Netlify folder
 /.netlify
 
-# Test site IDs for CI cleanup
-.netlify-test-site-ids
-
 # site
 site/dist
 site/.astro/
