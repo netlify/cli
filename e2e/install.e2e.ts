@@ -69,6 +69,9 @@ const itWithMockNpmRegistry = it.extend<{ registry: { address: string; cwd: stri
         npmjs: {
           url: 'https://registry.npmjs.org/',
           maxage: '1d',
+          timeout: '60s',
+          max_fails: 5,
+          fail_timeout: '5m',
           cache: true,
         },
       },
@@ -145,7 +148,7 @@ const itWithMockNpmRegistry = it.extend<{ registry: { address: string; cwd: stri
       })
     }
 
-    await fs.rm(publishWorkspace, { force: true, recursive: true })
+    await fs.rm(publishWorkspace, { force: true, recursive: true, maxRetries: 3, retryDelay: 1000 })
 
     const testWorkspace = await fs.mkdtemp(path.join(os.tmpdir(), tempdirPrefix))
     await use({
@@ -159,8 +162,8 @@ const itWithMockNpmRegistry = it.extend<{ registry: { address: string; cwd: stri
       // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
       server.closeAllConnections(),
     ])
-    await fs.rm(testWorkspace, { force: true, recursive: true })
-    await fs.rm(verdaccioStorageDir, { force: true, recursive: true })
+    await fs.rm(testWorkspace, { force: true, recursive: true, maxRetries: 3, retryDelay: 1000 })
+    await fs.rm(verdaccioStorageDir, { force: true, recursive: true, maxRetries: 3, retryDelay: 1000 })
   },
 })
 
