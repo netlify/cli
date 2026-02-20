@@ -88,8 +88,9 @@ const validateDeploy = async ({
   await validateContent({ siteUrl: deploy.deploy_url, path: '', content })
 }
 
-const context: { account: unknown; siteId: string } = {
+const context: { account: unknown; siteId: string; siteName: string } = {
   siteId: '',
+  siteName: '',
   account: undefined,
 }
 
@@ -107,9 +108,11 @@ describe.skipIf(disableLiveTests).concurrent('commands/deploy', { timeout: 300_0
     // Locally, we create (and later delete) a site per test run.
     if (process.env.NETLIFY_LIVE_TEST_SITE_ID) {
       context.siteId = process.env.NETLIFY_LIVE_TEST_SITE_ID
+      context.siteName = process.env.NETLIFY_LIVE_TEST_SITE_NAME ?? ''
     } else {
       const { account, siteId } = await createLiveTestSite(SITE_NAME)
       context.siteId = siteId
+      context.siteName = SITE_NAME
       context.account = account
     }
   })
@@ -137,7 +140,7 @@ describe.skipIf(disableLiveTests).concurrent('commands/deploy', { timeout: 300_0
         env: { NETLIFY_SITE_ID: context.siteId },
       }).then(parseDeploy)
 
-      await validateDeploy({ deploy, siteName: SITE_NAME, content })
+      await validateDeploy({ deploy, siteName: context.siteName, content })
     })
   })
 
@@ -157,11 +160,11 @@ describe.skipIf(disableLiveTests).concurrent('commands/deploy', { timeout: 300_0
 
       await builder.build()
 
-      const deploy = await callCli(['deploy', '--json', '--no-build', '--site', SITE_NAME], {
+      const deploy = await callCli(['deploy', '--json', '--no-build', '--site', context.siteName], {
         cwd: builder.directory,
       }).then(parseDeploy)
 
-      await validateDeploy({ deploy, siteName: SITE_NAME, content })
+      await validateDeploy({ deploy, siteName: context.siteName, content })
     })
   })
 
@@ -186,7 +189,7 @@ describe.skipIf(disableLiveTests).concurrent('commands/deploy', { timeout: 300_0
         env: { NETLIFY_SITE_ID: context.siteId },
       }).then(parseDeploy)
 
-      await validateDeploy({ deploy, siteName: SITE_NAME, content })
+      await validateDeploy({ deploy, siteName: context.siteName, content })
     })
   })
 
@@ -238,7 +241,7 @@ describe.skipIf(disableLiveTests).concurrent('commands/deploy', { timeout: 300_0
 
         await validateDeploy({
           deploy,
-          siteName: SITE_NAME,
+          siteName: context.siteName,
           content: 'Edge Function works',
           contentMessage: 'Edge function did not execute correctly or was not deployed correctly',
         })
@@ -286,7 +289,7 @@ describe.skipIf(disableLiveTests).concurrent('commands/deploy', { timeout: 300_0
 
         await validateDeploy({
           deploy,
-          siteName: SITE_NAME,
+          siteName: context.siteName,
           content: 'Edge Function works',
           contentMessage: 'Edge function did not execute correctly or was not deployed correctly',
         })
@@ -332,7 +335,7 @@ describe.skipIf(disableLiveTests).concurrent('commands/deploy', { timeout: 300_0
 
         await validateDeploy({
           deploy,
-          siteName: SITE_NAME,
+          siteName: context.siteName,
           content: 'Edge Function works',
           contentMessage: 'Edge function did not execute correctly or was not deployed correctly',
         })
@@ -377,7 +380,7 @@ describe.skipIf(disableLiveTests).concurrent('commands/deploy', { timeout: 300_0
 
       await validateDeploy({
         deploy,
-        siteName: SITE_NAME,
+        siteName: context.siteName,
         content: 'Edge Function works',
         contentMessage: 'Edge function did not execute correctly or was not deployed correctly',
       })
@@ -578,15 +581,18 @@ describe.skipIf(disableLiveTests).concurrent('commands/deploy', { timeout: 300_0
         env: { NETLIFY_SITE_ID: context.siteId },
       }).then(parseDeploy)
 
-      await validateDeploy({ deploy, siteName: SITE_NAME, content })
-      expect(deploy).toHaveProperty('logs', `https://app.netlify.com/projects/${SITE_NAME}/deploys/${deploy.deploy_id}`)
+      await validateDeploy({ deploy, siteName: context.siteName, content })
+      expect(deploy).toHaveProperty(
+        'logs',
+        `https://app.netlify.com/projects/${context.siteName}/deploys/${deploy.deploy_id}`,
+      )
       expect(deploy).toHaveProperty(
         'function_logs',
-        `https://app.netlify.com/projects/${SITE_NAME}/logs/functions?scope=deploy:${deploy.deploy_id}`,
+        `https://app.netlify.com/projects/${context.siteName}/logs/functions?scope=deploy:${deploy.deploy_id}`,
       )
       expect(deploy).toHaveProperty(
         'edge_function_logs',
-        `https://app.netlify.com/projects/${SITE_NAME}/logs/edge-functions?scope=deployid:${deploy.deploy_id}`,
+        `https://app.netlify.com/projects/${context.siteName}/logs/edge-functions?scope=deployid:${deploy.deploy_id}`,
       )
     })
   })
@@ -605,12 +611,18 @@ describe.skipIf(disableLiveTests).concurrent('commands/deploy', { timeout: 300_0
         env: { NETLIFY_SITE_ID: context.siteId },
       }).then(parseDeploy)
 
-      await validateDeploy({ deploy, siteName: SITE_NAME, content })
-      expect(deploy).toHaveProperty('logs', `https://app.netlify.com/projects/${SITE_NAME}/deploys/${deploy.deploy_id}`)
-      expect(deploy).toHaveProperty('function_logs', `https://app.netlify.com/projects/${SITE_NAME}/logs/functions`)
+      await validateDeploy({ deploy, siteName: context.siteName, content })
+      expect(deploy).toHaveProperty(
+        'logs',
+        `https://app.netlify.com/projects/${context.siteName}/deploys/${deploy.deploy_id}`,
+      )
+      expect(deploy).toHaveProperty(
+        'function_logs',
+        `https://app.netlify.com/projects/${context.siteName}/logs/functions`,
+      )
       expect(deploy).toHaveProperty(
         'edge_function_logs',
-        `https://app.netlify.com/projects/${SITE_NAME}/logs/edge-functions`,
+        `https://app.netlify.com/projects/${context.siteName}/logs/edge-functions`,
       )
     })
   })
@@ -731,7 +743,7 @@ describe.skipIf(disableLiveTests).concurrent('commands/deploy', { timeout: 300_0
         env: { NETLIFY_SITE_ID: context.siteId },
       }).then(parseDeploy)
 
-      await validateDeploy({ deploy, siteName: SITE_NAME, content: 'index' })
+      await validateDeploy({ deploy, siteName: context.siteName, content: 'index' })
       await validateContent({
         siteUrl: deploy.deploy_url,
         content: undefined,
@@ -776,7 +788,7 @@ describe.skipIf(disableLiveTests).concurrent('commands/deploy', { timeout: 300_0
         env: { NETLIFY_SITE_ID: context.siteId },
       }).then(parseDeploy)
 
-      await validateDeploy({ deploy, siteName: SITE_NAME, content: 'index' })
+      await validateDeploy({ deploy, siteName: context.siteName, content: 'index' })
       await validateContent({
         siteUrl: deploy.deploy_url,
         content: undefined,
@@ -811,7 +823,7 @@ describe.skipIf(disableLiveTests).concurrent('commands/deploy', { timeout: 300_0
         env: { NETLIFY_SITE_ID: context.siteId },
       }).then(parseDeploy)
 
-      await validateDeploy({ deploy, siteName: SITE_NAME, content: 'index' })
+      await validateDeploy({ deploy, siteName: context.siteName, content: 'index' })
       await validateContent({
         siteUrl: deploy.deploy_url,
         content: '{}',
@@ -1103,7 +1115,7 @@ describe.skipIf(disableLiveTests).concurrent('commands/deploy', { timeout: 300_0
       t.expect(redirectsMessage).toBeDefined()
       t.expect(redirectsMessage!.description).toEqual('All redirect rules deployed without errors.')
 
-      await validateDeploy({ deploy, siteName: SITE_NAME, content })
+      await validateDeploy({ deploy, siteName: context.siteName, content })
 
       const [pluginRedirectResponse, _redirectsResponse, netlifyTomResponse] = await Promise.all([
         fetch(`${deploy.deploy_url}/other-api/hello`).then((res) => res.text()),
@@ -1396,14 +1408,14 @@ describe.skipIf(disableLiveTests).concurrent('commands/deploy', { timeout: 300_0
         env: { NETLIFY_SITE_ID: context.siteId },
       }).then(parseDeploy)
 
-      await validateDeploy({ deploy, siteName: SITE_NAME, content })
+      await validateDeploy({ deploy, siteName: context.siteName, content })
       expect(deploy).toHaveProperty(
         'function_logs',
-        `https://app.netlify.com/projects/${SITE_NAME}/logs/functions?scope=deploy:${deploy.deploy_id}`,
+        `https://app.netlify.com/projects/${context.siteName}/logs/functions?scope=deploy:${deploy.deploy_id}`,
       )
       expect(deploy).toHaveProperty(
         'edge_function_logs',
-        `https://app.netlify.com/projects/${SITE_NAME}/logs/edge-functions?scope=deployid:${deploy.deploy_id}`,
+        `https://app.netlify.com/projects/${context.siteName}/logs/edge-functions?scope=deployid:${deploy.deploy_id}`,
       )
     })
   })
@@ -1460,14 +1472,14 @@ describe.skipIf(disableLiveTests).concurrent('commands/deploy', { timeout: 300_0
         },
       ).then(parseDeploy)
 
-      await validateDeploy({ deploy, siteName: SITE_NAME, content })
+      await validateDeploy({ deploy, siteName: context.siteName, content })
       expect(deploy).toHaveProperty(
         'function_logs',
-        `https://app.netlify.com/projects/${SITE_NAME}/logs/functions?scope=deploy:${deploy.deploy_id}`,
+        `https://app.netlify.com/projects/${context.siteName}/logs/functions?scope=deploy:${deploy.deploy_id}`,
       )
       expect(deploy).toHaveProperty(
         'edge_function_logs',
-        `https://app.netlify.com/projects/${SITE_NAME}/logs/edge-functions?scope=deployid:${deploy.deploy_id}`,
+        `https://app.netlify.com/projects/${context.siteName}/logs/edge-functions?scope=deployid:${deploy.deploy_id}`,
       )
       expect(deploy.deploy_url).toContain('test-branch--')
     })
@@ -1489,7 +1501,7 @@ describe.skipIf(disableLiveTests).concurrent('commands/deploy', { timeout: 300_0
           env: { NETLIFY_SITE_ID: context.siteId },
         }).then(parseDeploy)
 
-        await validateDeploy({ deploy, siteName: SITE_NAME, content })
+        await validateDeploy({ deploy, siteName: context.siteName, content })
         expect(deploy).toHaveProperty('source_zip_filename')
         expect(typeof deploy.source_zip_filename).toBe('string')
         expect(deploy.source_zip_filename).toMatch(/\.zip$/)
@@ -1524,7 +1536,7 @@ describe.skipIf(disableLiveTests).concurrent('commands/deploy', { timeout: 300_0
           env: { NETLIFY_SITE_ID: context.siteId },
         }).then(parseDeploy)
 
-        await validateDeploy({ deploy, siteName: SITE_NAME, content })
+        await validateDeploy({ deploy, siteName: context.siteName, content })
         expect(deploy).toHaveProperty('source_zip_filename')
         expect(typeof deploy.source_zip_filename).toBe('string')
         expect(deploy.source_zip_filename).toMatch(/\.zip$/)

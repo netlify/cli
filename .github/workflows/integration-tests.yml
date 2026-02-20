@@ -19,6 +19,7 @@ jobs:
     timeout-minutes: 5
     outputs:
       site-id: ${{ steps.create-site.outputs.site-id }}
+      site-name: ${{ steps.create-site.outputs.site-name }}
     steps:
       - name: Create site
         id: create-site
@@ -37,6 +38,7 @@ jobs:
           fi
           SITE_ID=$(jq -r '.id' response.json)
           echo "site-id=$SITE_ID" >> "$GITHUB_OUTPUT"
+          echo "site-name=$SITE_NAME" >> "$GITHUB_OUTPUT"
           echo "Created site $SITE_NAME with ID $SITE_ID"
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
@@ -105,8 +107,9 @@ jobs:
             ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == true }}
           NETLIFY_TEST_ACCOUNT_SLUG: 'netlify-integration-testing'
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          # Site ID created by the setup job, shared across all matrix jobs
+          # Site created by the setup job, shared across all matrix jobs
           NETLIFY_LIVE_TEST_SITE_ID: ${{ needs.setup.outputs.site-id }}
+          NETLIFY_LIVE_TEST_SITE_NAME: ${{ needs.setup.outputs.site-name }}
           # NETLIFY_TEST_GITHUB_TOKEN is used to avoid reaching GitHub API limits in exec-fetcher.js
           NETLIFY_TEST_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Changes the polling interval used by the file watcher
