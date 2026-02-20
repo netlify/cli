@@ -33,7 +33,6 @@ jobs:
             "https://api.netlify.com/api/v1/netlify-integration-testing/sites")
           if [ "$HTTP_CODE" -ne 201 ]; then
             echo "::warning::Failed to create site. HTTP $HTTP_CODE. Live tests will be skipped."
-            cat response.json
             exit 0
           fi
           SITE_ID=$(jq -r '.id' response.json)
