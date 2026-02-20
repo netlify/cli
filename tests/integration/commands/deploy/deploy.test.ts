@@ -106,12 +106,14 @@ describe.skipIf(disableLiveTests).concurrent('commands/deploy', { timeout: 300_0
     context.account = account
   })
 
-  afterAll(async () => {
-    const { siteId } = context
-    // TODO: temporarily disabled to debug deploy test failures — re-enable after investigation
-    console.log(`skipping deletion of test site "${SITE_NAME}". ${siteId}`)
-    // await callCli(['sites:delete', siteId, '--force'])
-  })
+  // In CI, site cleanup happens in a separate step. Locally, we clean up here.
+  if (!process.env.CI) {
+    afterAll(async () => {
+      const { siteId } = context
+
+      await callCli(['sites:delete', siteId, '--force'])
+    })
+  }
 
   test('should deploy project when dir flag is passed', async (t) => {
     await withSiteBuilder(t, async (builder) => {

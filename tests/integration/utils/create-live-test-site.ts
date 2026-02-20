@@ -1,6 +1,10 @@
+import { appendFileSync } from 'node:fs'
+import { join } from 'node:path'
 import process from 'node:process'
 
 import { callCli } from './call-cli.js'
+
+const SITE_IDS_FILE = join(process.cwd(), '.netlify-test-site-ids')
 
 export const generateSiteName = function (prefix: string) {
   const randomString = Math.random()
@@ -47,6 +51,7 @@ export const createLiveTestSite = async function (siteName: string) {
   if (matches && Object.prototype.hasOwnProperty.call(matches, 1) && matches[1]) {
     const [, siteId] = matches
     console.log(`Done creating project ${siteName} for account '${accountSlug}'. Project Id: ${siteId}`)
+    appendFileSync(SITE_IDS_FILE, `${siteId}\n`)
     return { siteId, account }
   }
 

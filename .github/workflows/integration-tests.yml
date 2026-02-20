@@ -77,6 +77,12 @@ jobs:
           CHOKIDAR_INTERVAL: 20
           CHOKIDAR_USEPOLLING: 1
 
+      - name: Clean up test sites
+        if: always()
+        run: node scripts/clean-test-sites.js
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+
       - name: Get test coverage flags
         id: test-coverage-flags
         # For windows we have to use $env:
