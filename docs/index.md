@@ -145,6 +145,10 @@ Open settings for the project linked to the current folder
 | [`open:site`](/commands/open#opensite) | Opens current project url in browser  |
 
 
+### [push](/commands/push)
+
+Push code to Netlify via git, triggering a build
+
 ### [recipes](/commands/recipes)
 
 Create and modify files in a project using pre-defined recipes
