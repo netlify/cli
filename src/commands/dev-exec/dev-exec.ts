@@ -13,7 +13,11 @@ export const devExec = async (cmd: string, options: OptionValues, command: BaseC
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const withEnvelopeEnvVars = await getEnvelopeEnv({ api, context: options.context, env: cachedConfig.env, siteInfo })
-  const env = await getDotEnvVariables({ devConfig: { ...config.dev }, env: withEnvelopeEnvVars, site })
+  const env = await getDotEnvVariables({
+    devConfig: { framework: '#auto', ...config.dev },
+    env: withEnvelopeEnvVars,
+    site,
+  })
 
   const { capabilities, siteUrl } = await getSiteInformation({
     offline: false,
