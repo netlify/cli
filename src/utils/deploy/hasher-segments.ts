@@ -40,14 +40,14 @@ export const fileNormalizerCtor = ({
   normalizer: normalizeFunction,
 }: {
   assetType: string
-  normalizer?: (file: OriginalFile) => File
+  normalizer?: (file: File) => Partial<File>
 }) => {
   return new Transform({
     objectMode: true,
     transform(fileObj, _, callback) {
       const normalizedFile = { ...fileObj, assetType, normalizedPath: normalizePath(fileObj.relname) }
 
-      const result = normalizeFunction !== undefined ? normalizeFunction(normalizedFile) : normalizedFile
+      const result = normalizeFunction !== undefined ? { ...normalizedFile, ...normalizeFunction(normalizedFile) } : normalizedFile
 
       this.push(result)
 

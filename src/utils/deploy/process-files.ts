@@ -3,14 +3,14 @@ import { join } from 'path'
 
 import { getPathInProject } from '../../lib/settings.js'
 import { EDGE_FUNCTIONS_FOLDER, PUBLIC_URL_PATH } from '../../lib/edge-functions/consts.js'
-import { File } from './file.js'
+import type { File } from './file.js'
 
 const DEPLOY_CONFIG_PATH = 'deploy-config'
 
 const deployConfigPathPath = getPathInProject([DEPLOY_CONFIG_PATH])
 const edgeFunctionsDistPath = getPathInProject([EDGE_FUNCTIONS_FOLDER])
 
-export const deployFileNormalizer = (workingDir: string, file: File) => {
+export const deployFileNormalizer = (workingDir: string, file: File): { normalizedPath: string } => {
   let { normalizedPath } = file
 
   switch (file.root) {
