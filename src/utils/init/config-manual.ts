@@ -86,10 +86,10 @@ export default async function configManual({
   const deployKey = await createDeployKey({ api })
   await addDeployKey(deployKey)
 
-  const repoPath = await getRepoPath({ repoData })
+  const repoPath = repoData.repo ?? (await getRepoPath({ repoData }))
   const repo = {
     provider: repoData.provider ?? 'manual',
-    repo_path: repoData.repo ?? repoPath,
+    repo_path: repoPath,
     repo_branch: repoData.branch,
     allowed_branches: [repoData.branch],
     deploy_key_id: deployKey.id,
