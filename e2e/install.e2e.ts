@@ -255,7 +255,9 @@ describe.each(installTests)('%s → installs the cli and runs commands without e
       const helpResult = await execa(binary, ['help'], { cwd, all: true, reject: false })
       if (helpResult.exitCode !== 0) {
         throw new Error(
-          `Help command failed: ${binary} help\nExit code: ${helpResult.exitCode.toString()}\n\n${helpResult.all || ''}`,
+          `Help command failed: ${binary} help\nExit code: ${helpResult.exitCode.toString()}\n\n${
+            helpResult.all || ''
+          }`,
         )
       }
       const helpOutput = helpResult.stdout
