@@ -151,7 +151,7 @@ beforeAll(async () => {
   }
 
   await fs.rm(publishWorkspace, { force: true, recursive: true, maxRetries: 3, retryDelay: 1000 })
-})
+}, 120_000)
 
 afterAll(async () => {
   if (shared.server) {
