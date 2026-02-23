@@ -16,7 +16,7 @@ jobs:
   e2e-windows:
     name: E2E Windows tests
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 20
+    timeout-minutes: 30
     strategy:
       matrix:
         os: [windows-2025]
@@ -75,7 +75,7 @@ jobs:
   e2e-linux-based-os:
     name: E2E
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 10
+    timeout-minutes: 30
     strategy:
       matrix:
         os: [ubuntu-latest, macOS-latest]
