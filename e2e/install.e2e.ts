@@ -7,6 +7,8 @@ import { platform } from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+import process from 'node:process'
+
 import execa from 'execa'
 import { runServer } from 'verdaccio'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
@@ -123,7 +125,11 @@ beforeAll(async () => {
   )
   shared.registryURL = registryURL.toString()
 
+  // The CLI publishing process modifies the workspace, so copy it to a temporary directory. This
+  // lets us avoid contaminating the user's workspace when running these tests locally.
   const publishWorkspace = await fs.mkdtemp(path.join(os.tmpdir(), `${tempdirPrefix}publish-workspace`))
+  // At this point, the project is built. As long as we limit the prepublish script to built-
+  // ins, node_modules are not necessary to publish the package.
   await fs.cp(projectRoot, publishWorkspace, {
     recursive: true,
     verbatimSymlinks: true,
@@ -153,19 +159,22 @@ beforeAll(async () => {
   await fs.rm(publishWorkspace, { force: true, recursive: true, maxRetries: 3, retryDelay: 1000 })
 }, 120_000)
 
-afterAll(async () => {
-  if (shared.server) {
-    await Promise.all([
-      events.once(shared.server, 'close'),
-      shared.server.close(),
-      // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
-      shared.server.closeAllConnections(),
-    ])
-  }
-  if (shared.verdaccioStorageDir) {
-    await fs.rm(shared.verdaccioStorageDir, { force: true, recursive: true, maxRetries: 3, retryDelay: 1000 })
-  }
-})
+// In CI the process exits after tests, so skip cleanup to save time.
+if (!process.env.CI) {
+  afterAll(async () => {
+    if (shared.server) {
+      await Promise.all([
+        events.once(shared.server, 'close'),
+        shared.server.close(),
+        // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
+        shared.server.closeAllConnections(),
+      ])
+    }
+    if (shared.verdaccioStorageDir) {
+      await fs.rm(shared.verdaccioStorageDir, { force: true, recursive: true, maxRetries: 3, retryDelay: 1000 })
+    }
+  })
+}
 
 type Test = { packageName: string }
 type InstallTest = Test & {
@@ -288,7 +297,9 @@ describe.each(installTests)('%s → installs the cli and runs commands without e
         `Run netlify link to link it`,
       )
     } finally {
-      await fs.rm(cwd, { force: true, recursive: true, maxRetries: 3, retryDelay: 1000 })
+      if (!process.env.CI) {
+        await fs.rm(cwd, { force: true, recursive: true, maxRetries: 3, retryDelay: 1000 })
+      }
     }
   })
 })
@@ -369,7 +380,9 @@ describe.each(runTests)('%s → runs cli commands without errors', (packageManag
         `Run ${cmd} netlify link to link it`,
       )
     } finally {
-      await fs.rm(cwd, { force: true, recursive: true, maxRetries: 3, retryDelay: 1000 })
+      if (!process.env.CI) {
+        await fs.rm(cwd, { force: true, recursive: true, maxRetries: 3, retryDelay: 1000 })
+      }
     }
   })
 })
