@@ -214,7 +214,7 @@
     "tsx": "4.20.6",
     "typescript": "5.8.3",
     "typescript-eslint": "8.45.0",
-    "verdaccio": "6.2.4",
+    "verdaccio": "6.2.7",
     "vitest": "3.2.4"
   },
   "ava": {
