@@ -98,9 +98,7 @@ export const createDeployRoutes = (): { routes: Route[] } & DeployRouteState => 
       path: 'deploys/deploy_id/files/{*filepath}',
       method: 'PUT',
       response: (req: express.Request, res: express.Response) => {
-        const filePath = Array.isArray(req.params.filepath)
-          ? req.params.filepath.join('/')
-          : req.params.filepath
+        const filePath = Array.isArray(req.params.filepath) ? req.params.filepath.join('/') : req.params.filepath
         uploadedFiles[filePath] = Buffer.isBuffer(req.body) ? req.body : Buffer.from(req.body as string)
         res.json({ message: 'ok' })
       },
