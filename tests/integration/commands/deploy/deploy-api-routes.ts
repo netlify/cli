@@ -1,5 +1,5 @@
 import type { AddressInfo } from 'net'
-import { promisify } from 'util'
+import { isDeepStrictEqual, promisify } from 'util'
 
 import expressModule, { urlencoded, json, raw } from 'express'
 
@@ -100,7 +100,7 @@ export const createDeployRoutes = (): { routes: Route[] } & DeployRouteState => 
       response: (req: express.Request, res: express.Response) => {
         const filePath = Array.isArray(req.params.filepath)
           ? req.params.filepath.join('/')
-          : (req.params.filepath as string)
+          : req.params.filepath
         uploadedFiles[filePath] = Buffer.isBuffer(req.body) ? req.body : Buffer.from(req.body as string)
         res.json({ message: 'ok' })
       },
@@ -111,7 +111,7 @@ export const createDeployRoutes = (): { routes: Route[] } & DeployRouteState => 
       path: 'deploys/deploy_id/functions/{*fnname}',
       method: 'PUT',
       response: (req: express.Request, res: express.Response) => {
-        const fnName = Array.isArray(req.params.fnname) ? req.params.fnname.join('/') : (req.params.fnname as string)
+        const fnName = Array.isArray(req.params.fnname) ? req.params.fnname.join('/') : req.params.fnname
         uploadedFunctions[fnName] = Buffer.isBuffer(req.body) ? req.body : Buffer.from(req.body as string)
         res.json({ message: 'ok' })
       },
@@ -190,7 +190,6 @@ export const startDeployMockApi = ({ routes }: { routes: Route[] }): Promise<Moc
       `/api/v1/${path}`,
       function onRequest(req: express.Request, res: express.Response) {
         if (requestBody !== undefined) {
-          const { isDeepStrictEqual } = require('util')
           if (!isDeepStrictEqual(requestBody, req.body)) {
             res.status(500)
             res.json({ message: `Request body doesn't match` })
