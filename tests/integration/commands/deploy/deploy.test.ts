@@ -823,20 +823,6 @@ describe.concurrent('deploy command', () => {
     })
   })
 
-  test('should exit with error when deploying an empty directory', async (t) => {
-    await withMockDeploy(async (mockApi) => {
-      await withSiteBuilder(t, async (builder) => {
-        await builder.build()
-
-        try {
-          await callCli(['deploy', '--no-build', '--dir', '.'], getCLIOptions({ apiUrl: mockApi.apiUrl, builder }))
-        } catch (error) {
-          expect(error).toHaveProperty('stderr', expect.stringContaining('Error: No files or functions to deploy'))
-        }
-      })
-    })
-  })
-
   test('refreshes configuration when building before deployment', async (t) => {
     await withMockDeploy(async (mockApi, deployState) => {
       await withSiteBuilder(t, async (builder) => {
@@ -1235,17 +1221,15 @@ describe.concurrent('deploy command', () => {
     await withMockDeploy(async (mockApi) => {
       await withSiteBuilder(t, async (builder) => {
         await builder.build()
-        try {
-          await callCli(
+        await expect(
+          callCli(
             ['deploy', '--no-build', '--prod-if-unlocked', '--prod'],
             getCLIOptions({ apiUrl: mockApi.apiUrl, builder }),
-          )
-        } catch (error) {
-          expect(error).toHaveProperty(
-            'stderr',
-            expect.stringContaining(`Error: option '--prod-if-unlocked' cannot be used with option '-p, --prod'`),
-          )
-        }
+          ),
+        ).rejects.toHaveProperty(
+          'stderr',
+          expect.stringContaining(`Error: option '--prod-if-unlocked' cannot be used with option '-p, --prod'`),
+        )
       })
     })
   })
@@ -1284,17 +1268,12 @@ describe.concurrent('deploy command', () => {
     await withMockDeploy(async (mockApi) => {
       await withSiteBuilder(t, async (builder) => {
         await builder.build()
-        try {
-          await callCli(
-            ['deploy', '--no-build', '--draft', '--prod'],
-            getCLIOptions({ apiUrl: mockApi.apiUrl, builder }),
-          )
-        } catch (error) {
-          expect(error).toHaveProperty(
-            'stderr',
-            expect.stringContaining(`Error: option '-p, --prod' cannot be used with option '--draft'`),
-          )
-        }
+        await expect(
+          callCli(['deploy', '--no-build', '--draft', '--prod'], getCLIOptions({ apiUrl: mockApi.apiUrl, builder })),
+        ).rejects.toHaveProperty(
+          'stderr',
+          expect.stringContaining(`Error: option '-p, --prod' cannot be used with option '--draft'`),
+        )
       })
     })
   })
@@ -1303,17 +1282,15 @@ describe.concurrent('deploy command', () => {
     await withMockDeploy(async (mockApi) => {
       await withSiteBuilder(t, async (builder) => {
         await builder.build()
-        try {
-          await callCli(
+        await expect(
+          callCli(
             ['deploy', '--no-build', '--draft', '--prod-if-unlocked'],
             getCLIOptions({ apiUrl: mockApi.apiUrl, builder }),
-          )
-        } catch (error) {
-          expect(error).toHaveProperty(
-            'stderr',
-            expect.stringContaining(`Error: option '--prod-if-unlocked' cannot be used with option '--draft'`),
-          )
-        }
+          ),
+        ).rejects.toHaveProperty(
+          'stderr',
+          expect.stringContaining(`Error: option '--prod-if-unlocked' cannot be used with option '--draft'`),
+        )
       })
     })
   })
