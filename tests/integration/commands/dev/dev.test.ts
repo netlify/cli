@@ -5,6 +5,7 @@ import path from 'node:path'
 import process from 'process'
 
 import js from 'dedent'
+import getPort from 'get-port'
 import jwt, { type JwtPayload } from 'jsonwebtoken'
 import fetch from 'node-fetch'
 import { describe, test } from 'vitest'
@@ -781,13 +782,15 @@ describe.concurrent('command/dev', () => {
 
       test('ensures dev server plugins can mutate env', async (t) => {
         await withSiteBuilder(t, async (builder) => {
+          const port = await getPort()
+
           await builder
             .withNetlifyToml({
               config: {
                 plugins: [{ package: './plugins/plugin' }],
                 dev: {
                   command: 'node index.mjs',
-                  targetPort: 4444,
+                  targetPort: port,
                 },
               },
             })
@@ -810,7 +813,7 @@ describe.concurrent('command/dev', () => {
                 res.end();
               })
 
-              server.listen(4444)
+              server.listen(${port.toString()})
               `,
             })
             .build()
