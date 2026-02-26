@@ -21,13 +21,8 @@ import {
 import detectServerSettings, { getConfigWithPlugins } from '../../utils/detect-server-settings.js'
 import { parseAIGatewayContext, setupAIGateway } from '@netlify/ai/bootstrap'
 
-import {
-  UNLINKED_SITE_MOCK_ID,
-  getDotEnvVariables,
-  getSiteInformation,
-  injectEnvVariables,
-  processOnExit,
-} from '../../utils/dev.js'
+import { UNLINKED_SITE_MOCK_ID, getDotEnvVariables, getSiteInformation, injectEnvVariables } from '../../utils/dev.js'
+import { runBeforeProcessExit } from '../../utils/shell.js'
 import { getEnvelopeEnv } from '../../utils/env/index.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import { getLiveTunnelSlug, startLiveTunnel } from '../../utils/live-tunnel.js'
@@ -188,7 +183,7 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
   })
 
   if (programmaticNetlifyDev) {
-    processOnExit(() => programmaticNetlifyDev.stop())
+    runBeforeProcessExit(() => programmaticNetlifyDev.stop())
   }
 
   await promptEditorHelper({ chalk, config, log, NETLIFYDEVLOG, repositoryRoot, state })
