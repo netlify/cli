@@ -17,9 +17,9 @@ netlify logs
 
 **Flags**
 
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
-- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
@@ -51,9 +51,9 @@ netlify logs:deploy
 
 **Flags**
 
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
-- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 
 ---
 ## `logs:edge-functions`
@@ -68,12 +68,12 @@ netlify logs:edge-functions
 
 **Flags**
 
-- `debug` (*boolean*) - Print debugging information
-- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 - `deploy-id` (*string*) - Deploy ID to stream edge function logs for
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `from` (*string*) - Start date for historical logs (ISO 8601 format)
 - `level` (*string*) - Log levels to stream. Choices are: trace, debug, info, warn, error, fatal
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 - `to` (*string*) - End date for historical logs (ISO 8601 format, defaults to now)
 
 **Examples**
@@ -103,12 +103,12 @@ netlify logs:function
 
 **Flags**
 
-- `debug` (*boolean*) - Print debugging information
-- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 - `deploy-id` (*string*) - Deploy ID to look up the function from
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `from` (*string*) - Start date for historical logs (ISO 8601 format)
 - `level` (*string*) - Log levels to stream. Choices are: trace, debug, info, warn, error, fatal
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 - `to` (*string*) - End date for historical logs (ISO 8601 format, defaults to now)
 
 **Examples**
