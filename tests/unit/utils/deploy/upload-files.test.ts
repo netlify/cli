@@ -1,5 +1,6 @@
 import { v4 as generateUUID } from 'uuid'
 import { afterAll, expect, test, vi } from 'vitest'
+import type { NetlifyAPI } from '@netlify/api'
 
 import uploadFiles from '../../../../src/utils/deploy/upload-files.js'
 
@@ -18,8 +19,7 @@ test('Adds a retry count to function upload requests', async () => {
   const uploadDeployFunction = vi.fn()
   const mockError = new Error('Uh-oh')
 
-  // @ts-expect-error TS(2339) FIXME: Property 'status' does not exist on type 'Error'.
-  mockError.status = 500
+  Object.assign(mockError, { status: 500 })
 
   uploadDeployFunction.mockRejectedValueOnce(mockError)
   uploadDeployFunction.mockRejectedValueOnce(mockError)
@@ -27,11 +27,12 @@ test('Adds a retry count to function upload requests', async () => {
 
   const mockApi = {
     uploadDeployFunction,
+    uploadDeployFile: vi.fn(),
   }
   const deployId = generateUUID()
   const files = [
     {
-      assetType: 'function',
+      assetType: 'function' as const,
       filepath: '/some/path/func1.zip',
       normalizedPath: 'func1.zip',
       runtime: 'js',
@@ -43,7 +44,12 @@ test('Adds a retry count to function upload requests', async () => {
     statusCb: vi.fn(),
   }
 
-  await uploadFiles(mockApi, deployId, files, options)
+  await uploadFiles(
+    mockApi as unknown as Pick<NetlifyAPI, 'uploadDeployFile' | 'uploadDeployFunction'>,
+    deployId,
+    files,
+    options,
+  )
 
   expect(uploadDeployFunction).toHaveBeenCalledTimes(3)
   expect(uploadDeployFunction).toHaveBeenNthCalledWith(1, expect.not.objectContaining({ xNfRetryCount: 1 }))
@@ -55,18 +61,18 @@ test('Does not retry on 400 response from function upload requests', async () =>
   const uploadDeployFunction = vi.fn()
   const mockError = new Error('Uh-oh')
 
-  // @ts-expect-error TS(2339) FIXME: Property 'status' does not exist on type 'Error'.
-  mockError.status = 400
+  Object.assign(mockError, { status: 400 })
 
   uploadDeployFunction.mockRejectedValue(mockError)
 
   const mockApi = {
     uploadDeployFunction,
+    uploadDeployFile: vi.fn(),
   }
   const deployId = generateUUID()
   const files = [
     {
-      assetType: 'function',
+      assetType: 'function' as const,
       filepath: '/some/path/func1.zip',
       normalizedPath: 'func1.zip',
       runtime: 'js',
@@ -79,7 +85,12 @@ test('Does not retry on 400 response from function upload requests', async () =>
   }
 
   try {
-    await uploadFiles(mockApi, deployId, files, options)
+    await uploadFiles(
+      mockApi as unknown as Pick<NetlifyAPI, 'uploadDeployFile' | 'uploadDeployFunction'>,
+      deployId,
+      files,
+      options,
+    )
   } catch {}
 
   expect(uploadDeployFunction).toHaveBeenCalledTimes(1)
