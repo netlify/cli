@@ -24,10 +24,10 @@ netlify api
 
 **Flags**
 
-- `data` (*string*) - Data to use
-- `list` (*boolean*) - List out available API methods
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
+- `data` (*string*) - Data to use
+- `list` (*boolean*) - List out available API methods
 
 **Examples**
 

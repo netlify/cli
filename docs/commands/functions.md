@@ -19,9 +19,9 @@ netlify functions
 
 **Flags**
 
-- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 
 | Subcommand | description  |
 |:--------------------------- |:-----|
@@ -52,11 +52,11 @@ netlify functions:build
 
 **Flags**
 
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `functions` (*string*) - Specify a functions directory to build to
 - `src` (*string*) - Specify the source directory for the functions
-- `debug` (*boolean*) - Print debugging information
-- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 ---
 ## `functions:create`
@@ -75,13 +75,13 @@ netlify functions:create
 
 **Flags**
 
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `language` (*string*) - function language
 - `name` (*string*) - function name
 - `offline` (*boolean*) - Disables any features that require network access
 - `url` (*string*) - pull template from URL
-- `debug` (*boolean*) - Print debugging information
-- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 **Examples**
 
@@ -149,11 +149,11 @@ netlify functions:list
 
 **Flags**
 
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `functions` (*string*) - Specify a functions directory to list
 - `json` (*boolean*) - Output function data as JSON
-- `debug` (*boolean*) - Print debugging information
-- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 ---
 ## `functions:serve`
@@ -168,12 +168,12 @@ netlify functions:serve
 
 **Flags**
 
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `functions` (*string*) - Specify a functions directory to serve
 - `offline` (*boolean*) - Disables any features that require network access
 - `port` (*string*) - Specify a port for the functions server
-- `debug` (*boolean*) - Print debugging information
-- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 
 ---
 
