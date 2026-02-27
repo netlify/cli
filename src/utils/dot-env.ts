@@ -1,44 +1,65 @@
 import { readFile } from 'fs/promises'
 import path from 'path'
 
-import dotenv from 'dotenv'
+import dotenv, { type DotenvParseOutput } from 'dotenv'
 
 import { isFileAsync } from '../lib/fs.js'
 
 import { warn } from './command-helpers.js'
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'envFiles' implicitly has an 'any'... Remove this comment to see the full error message
-export const loadDotEnvFiles = async function ({ envFiles, projectDir }) {
+interface LoadDotEnvFilesOptions {
+  envFiles?: string[]
+  projectDir: string
+}
+
+export interface DotEnvFile {
+  file: string
+  env: DotenvParseOutput
+}
+
+export interface DotEnvWarning {
+  warning: string
+}
+
+type DotEnvResult = DotEnvFile | DotEnvWarning
+
+export const loadDotEnvFiles = async function ({
+  envFiles,
+  projectDir,
+}: LoadDotEnvFilesOptions): Promise<DotEnvFile[]> {
   const response = await tryLoadDotEnvFiles({ projectDir, dotenvFiles: envFiles })
 
-  // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-  const filesWithWarning = response.filter((el) => el.warning)
-  filesWithWarning.forEach((el) => {
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-    warn(el.warning)
+  const filesWithWarning = response.filter((result): result is DotEnvWarning => 'warning' in result)
+  filesWithWarning.forEach((result) => {
+    warn(result.warning)
   })
 
-  // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-  return response.filter((el) => el.file && el.env)
+  return response.filter((result): result is DotEnvFile => 'file' in result && 'env' in result)
 }
 
 // in the user configuration, the order is highest to lowest
 const defaultEnvFiles = ['.env.development.local', '.env.local', '.env.development', '.env']
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'projectDir' implicitly has an 'an... Remove this comment to see the full error message
-export const tryLoadDotEnvFiles = async ({ dotenvFiles = defaultEnvFiles, projectDir }) => {
+interface TryLoadDotEnvFilesOptions {
+  dotenvFiles?: string[]
+  projectDir: string
+}
+
+export const tryLoadDotEnvFiles = async ({
+  dotenvFiles = defaultEnvFiles,
+  projectDir,
+}: TryLoadDotEnvFilesOptions): Promise<DotEnvResult[]> => {
   const results = await Promise.all(
-    dotenvFiles.map(async (file) => {
+    dotenvFiles.map(async (file): Promise<DotEnvResult | undefined> => {
       const filepath = path.resolve(projectDir, file)
       try {
         const isFile = await isFileAsync(filepath)
         if (!isFile) {
-          return
+          return undefined
         }
       } catch (error) {
         return {
-          // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-          warning: `Failed reading env variables from file: ${filepath}: ${error.message}`,
+          warning: `Failed reading env variables from file: ${filepath}: ${(error as Error).message}`,
         }
       }
       const content = await readFile(filepath, 'utf-8')
@@ -48,5 +69,5 @@ export const tryLoadDotEnvFiles = async ({ dotenvFiles = defaultEnvFiles, projec
   )
 
   // we return in order of lowest to highest priority
-  return results.filter(Boolean).reverse()
+  return results.filter((result): result is DotEnvResult => result !== undefined).reverse()
 }

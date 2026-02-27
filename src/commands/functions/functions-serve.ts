@@ -30,7 +30,7 @@ export const functionsServe = async (options: OptionValues, command: BaseCommand
 
   env.NETLIFY_DEV = { sources: ['internal'], value: 'true' }
 
-  env = await getDotEnvVariables({ devConfig: { ...config.dev }, env, site })
+  env = await getDotEnvVariables({ devConfig: { framework: '#auto', ...config.dev }, env, site })
 
   const { accountId, capabilities, siteUrl, timeouts } = await getSiteInformation({
     offline: options.offline,

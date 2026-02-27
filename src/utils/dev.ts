@@ -8,6 +8,7 @@ import { supportsBackgroundFunctions } from '../lib/account.js'
 
 import { NETLIFYDEVLOG, chalk, logAndThrowError, log, warn, APIError } from './command-helpers.js'
 import { loadDotEnvFiles } from './dot-env.js'
+import type { DevConfig } from '../commands/dev/types.js'
 import type { EnvironmentVariables, SiteInfo } from './types.js'
 
 // Possible sources of environment variables. For the purpose of printing log messages only. Order does not matter.
@@ -41,8 +42,7 @@ const ENV_VAR_SOURCES = {
 const ERROR_CALL_TO_ACTION =
   "Double-check your login status with 'netlify status' or contact support with details of your error."
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'site' implicitly has an 'any' typ... Remove this comment to see the full error message
-const validateSiteInfo = ({ site, siteInfo }) => {
+const validateSiteInfo = ({ site, siteInfo }: { site: { id?: string }; siteInfo: SiteInfo }) => {
   if (isEmpty(siteInfo)) {
     return logAndThrowError(
       `Failed to retrieve project information for project ${chalk.yellow(site.id)}. ${ERROR_CALL_TO_ACTION}`,
@@ -192,10 +192,17 @@ const getEnvSourceName = (source) => {
 /**
  * @param {{devConfig: any, env: Record<string, { sources: string[], value: string}>, site: any}} param0
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'devConfig' implicitly has an 'any... Remove this comment to see the full error message
-export const getDotEnvVariables = async ({ devConfig, env, site }): Promise<EnvironmentVariables> => {
-  const dotEnvFiles = await loadDotEnvFiles({ envFiles: devConfig.envFiles, projectDir: site.root })
-  // @ts-expect-error TS(2339) FIXME: Property 'env' does not exist on type '{ warning: ... Remove this comment to see the full error message
+export const getDotEnvVariables = async ({
+  devConfig,
+  env,
+  site,
+}: {
+  devConfig: DevConfig
+  env: EnvironmentVariables
+  site: { root?: string }
+}): Promise<EnvironmentVariables> => {
+  const dotEnvFiles = await loadDotEnvFiles({ envFiles: devConfig.envFiles, projectDir: site.root || '' })
+
   dotEnvFiles.forEach(({ env: fileEnv, file }) => {
     const newSourceName = `${file} file`
 
@@ -272,9 +279,8 @@ export const acquirePort = async ({
   return acquiredPort
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'fn' implicitly has an 'any' type.
-export const processOnExit = (fn) => {
-  const signals = ['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit']
+export const processOnExit = (fn: (...args: unknown[]) => unknown) => {
+  const signals: (NodeJS.Signals | 'exit')[] = ['SIGINT', 'SIGTERM', 'SIGQUIT', 'SIGHUP', 'exit']
   signals.forEach((signal) => {
     process.on(signal, fn)
   })
