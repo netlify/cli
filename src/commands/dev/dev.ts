@@ -158,7 +158,16 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
   })
 
   if (!options.offline && !options.offlineEnv && !capabilities.aiGatewayDisabled) {
-    await setupAIGateway({ api, env, siteID: site.id, siteURL: siteUrl })
+    // Resolve accountId: from site info, or fall back to user's first account
+    const resolvedAccountId = accountId ?? command.netlify.accounts?.[0]?.id
+    await setupAIGateway({
+      api,
+      env,
+      siteID: site.id,
+      siteURL: siteUrl,
+      accountID: resolvedAccountId,
+      siteHasDeploy: !!siteInfo.published_deploy,
+    })
 
     const aiGatewayEnv = env.AI_GATEWAY as (typeof env)[string] | undefined
     if (aiGatewayEnv) {

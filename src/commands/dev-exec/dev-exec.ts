@@ -15,7 +15,7 @@ export const devExec = async (cmd: string, options: OptionValues, command: BaseC
   const withEnvelopeEnvVars = await getEnvelopeEnv({ api, context: options.context, env: cachedConfig.env, siteInfo })
   const env = await getDotEnvVariables({ devConfig: { ...config.dev }, env: withEnvelopeEnvVars, site })
 
-  const { capabilities, siteUrl } = await getSiteInformation({
+  const { accountId, capabilities, siteUrl } = await getSiteInformation({
     offline: false,
     api,
     site,
@@ -23,7 +23,15 @@ export const devExec = async (cmd: string, options: OptionValues, command: BaseC
   })
 
   if (!capabilities.aiGatewayDisabled) {
-    await setupAIGateway({ api, env, siteID: site.id, siteURL: siteUrl })
+    const resolvedAccountId = accountId ?? command.netlify.accounts?.[0]?.id
+    await setupAIGateway({
+      api,
+      env,
+      siteID: site.id,
+      siteURL: siteUrl,
+      accountID: resolvedAccountId,
+      siteHasDeploy: !!siteInfo.published_deploy,
+    })
 
     const aiGatewayEnv = env.AI_GATEWAY as (typeof env)[string] | undefined
     if (aiGatewayEnv) {

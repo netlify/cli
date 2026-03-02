@@ -59,7 +59,7 @@
   "dependencies": {
     "@fastify/static": "9.0.0",
     "@netlify/ai": "0.3.8",
-    "@netlify/api": "14.0.16",
+    "@netlify/api": "^14.0.17",
     "@netlify/blobs": "10.7.0",
     "@netlify/build": "35.8.4",
     "@netlify/build-info": "10.3.1",
