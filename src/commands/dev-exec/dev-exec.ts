@@ -23,7 +23,7 @@ export const devExec = async (cmd: string, options: OptionValues, command: BaseC
   })
 
   if (!capabilities.aiGatewayDisabled) {
-    const resolvedAccountId = accountId ?? command.netlify.accounts?.[0]?.id
+    const resolvedAccountId = accountId ?? command.netlify.accounts[0]?.id
     await setupAIGateway({
       api,
       env,

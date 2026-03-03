@@ -67,7 +67,7 @@ export const serve = async (options: OptionValues, command: BaseCommand) => {
   })
 
   if (!options.offline && !capabilities.aiGatewayDisabled) {
-    const resolvedAccountId = accountId ?? command.netlify.accounts?.[0]?.id
+    const resolvedAccountId = accountId ?? command.netlify.accounts[0]?.id
     await setupAIGateway({
       api,
       env,
