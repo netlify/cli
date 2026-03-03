@@ -158,7 +158,6 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
   })
 
   if (!options.offline && !options.offlineEnv && !capabilities.aiGatewayDisabled) {
-    // Resolve accountId: from site info, or fall back to user's first account
     const resolvedAccountId = accountId ?? command.netlify.accounts?.[0]?.id
     await setupAIGateway({
       api,
