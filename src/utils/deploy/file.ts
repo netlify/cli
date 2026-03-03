@@ -1,9 +1,9 @@
-import walker from 'folder-walker'
+import type { Entry } from 'folder-walker'
 
-export type OriginalFile = walker.Entry
+export type OriginalFile = Entry
 
-export type File = walker.Entry & {
-  hash: string
-  assetType: string
+export type File = Entry & {
+  hash?: string
+  assetType?: string
   normalizedPath: string
 }
