@@ -27,7 +27,12 @@ export const createDatabaseCommand = (program: BaseCommand) => {
     .command('db')
     .alias('database')
     .description(`Provision a production ready Postgres database with a single command`)
-    .addExamples(['netlify db status', 'netlify db init', 'netlify db init --help'])
+    .addExamples([
+      'netlify db status',
+      'netlify db init',
+      'netlify db init --help',
+      ...(process.env.EXPERIMENTAL_NETLIFY_DB_ENABLED === '1' ? ['netlify db migrate'] : []),
+    ])
 
   dbCommand
     .command('init')
@@ -80,4 +85,16 @@ export const createDatabaseCommand = (program: BaseCommand) => {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       await status(options, command)
     })
+
+  if (process.env.EXPERIMENTAL_NETLIFY_DB_ENABLED === '1') {
+    dbCommand
+      .command('migrate')
+      .description('Apply database migrations to the local development database')
+      .option('--to <name>', 'Target migration name or prefix to apply up to (applies all if omitted)')
+      .option('--json', 'Output result as JSON')
+      .action(async (options: { to?: string; json?: boolean }, command: BaseCommand) => {
+        const { migrate } = await import('./migrate.js')
+        await migrate(options, command)
+      })
+  }
 }
