@@ -22,7 +22,6 @@ vi.mock('../../../../src/utils/command-helpers.js', async () => ({
   },
 }))
 
-// eslint-disable-next-line import/first
 import { migrate } from '../../../../src/commands/database/migrate.js'
 
 function createMockCommand(overrides: { buildDir?: string; projectRoot?: string; migrationsPath?: string } = {}) {
