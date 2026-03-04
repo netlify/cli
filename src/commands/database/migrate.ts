@@ -24,18 +24,25 @@ export const migrate = async (options: MigrateOptions, command: BaseCommand) => 
 
   const dbDirectory = path.join(buildDir, '.netlify', 'db')
 
-  let NetlifyDB: typeof import('@netlify/db-dev').NetlifyDB
+  // TODO: We should grab the db from the `NetlifyDev` instance, so this type
+  // would go away.
+  let dbDev: {
+    NetlifyDB: new (opts: { directory: string }) => {
+      start(): Promise<string>
+      stop(): Promise<void>
+      applyMigrations(migrationsDirectory: string, target?: string): Promise<string[]>
+    }
+  }
 
   try {
-    const dbDev = await import('@netlify/db-dev')
-    NetlifyDB = dbDev.NetlifyDB
+    dbDev = await import('@netlify/db-dev')
   } catch {
     throw new Error(
       'The @netlify/db-dev package is required for local database migrations. Install it with: npm install @netlify/db-dev',
     )
   }
 
-  const db = new NetlifyDB({ directory: dbDirectory })
+  const db = new dbDev.NetlifyDB({ directory: dbDirectory })
 
   try {
     await db.start()
