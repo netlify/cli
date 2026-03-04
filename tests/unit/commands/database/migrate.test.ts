@@ -26,7 +26,11 @@ vi.mock('../../../../src/utils/command-helpers.js', async () => ({
 import { migrate } from '../../../../src/commands/database/migrate.js'
 
 function createMockCommand(overrides: { buildDir?: string; projectRoot?: string; migrationsPath?: string } = {}) {
-  const { buildDir = '/project', projectRoot = '/project', migrationsPath = '/project/netlify/db/migrations' } = overrides
+  const {
+    buildDir = '/project',
+    projectRoot = '/project',
+    migrationsPath = '/project/netlify/db/migrations',
+  } = overrides
 
   return {
     project: { root: projectRoot, baseDirectory: undefined },
