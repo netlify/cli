@@ -1,6 +1,6 @@
 import { describe, expect, test, vi, beforeEach } from 'vitest'
 
-const { mockStart, mockStop, mockApplyMigrations, MockNetlifyDev, logMessages } = vi.hoisted(() => {
+const { mockStart, mockStop, mockApplyMigrations, MockNetlifyDev, logMessages, jsonMessages } = vi.hoisted(() => {
   const mockStart = vi.fn().mockResolvedValue({})
   const mockStop = vi.fn().mockResolvedValue(undefined)
   const mockApplyMigrations = vi.fn().mockResolvedValue([])
@@ -10,7 +10,8 @@ const { mockStart, mockStop, mockApplyMigrations, MockNetlifyDev, logMessages } 
     db: { applyMigrations: mockApplyMigrations },
   }))
   const logMessages: string[] = []
-  return { mockStart, mockStop, mockApplyMigrations, MockNetlifyDev, logMessages }
+  const jsonMessages: unknown[] = []
+  return { mockStart, mockStop, mockApplyMigrations, MockNetlifyDev, logMessages, jsonMessages }
 })
 
 vi.mock('@netlify/dev', () => ({
@@ -21,6 +22,9 @@ vi.mock('../../../../src/utils/command-helpers.js', async () => ({
   ...(await vi.importActual('../../../../src/utils/command-helpers.js')),
   log: (...args: string[]) => {
     logMessages.push(args.join(' '))
+  },
+  logJson: (message: unknown) => {
+    jsonMessages.push(message)
   },
 }))
 
@@ -45,6 +49,7 @@ function createMockCommand(overrides: { buildDir?: string; projectRoot?: string;
 describe('migrate', () => {
   beforeEach(() => {
     logMessages.length = 0
+    jsonMessages.length = 0
     vi.clearAllMocks()
     mockApplyMigrations.mockResolvedValue([])
   })
@@ -147,8 +152,8 @@ describe('migrate', () => {
 
     await migrate({ json: true }, createMockCommand())
 
-    expect(logMessages).toHaveLength(1)
-    expect(JSON.parse(logMessages[0])).toEqual({
+    expect(jsonMessages).toHaveLength(1)
+    expect(jsonMessages[0]).toEqual({
       migrations_applied: ['0001_create_users', '0002_add_posts'],
     })
   })
@@ -158,8 +163,8 @@ describe('migrate', () => {
 
     await migrate({ json: true }, createMockCommand())
 
-    expect(logMessages).toHaveLength(1)
-    expect(JSON.parse(logMessages[0])).toEqual({
+    expect(jsonMessages).toHaveLength(1)
+    expect(jsonMessages[0]).toEqual({
       migrations_applied: [],
     })
   })

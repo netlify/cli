@@ -1,6 +1,6 @@
 import { NetlifyDev } from '@netlify/dev'
 
-import { log } from '../../utils/command-helpers.js'
+import { log, logJson } from '../../utils/command-helpers.js'
 import BaseCommand from '../base-command.js'
 
 export interface MigrateOptions {
@@ -48,7 +48,7 @@ export const migrate = async (options: MigrateOptions, command: BaseCommand) => 
     const applied = await db.applyMigrations(migrationsDirectory, name)
 
     if (json) {
-      logJson(JSON.stringify({ migrations_applied: applied }))
+      logJson({ migrations_applied: applied })
     } else if (applied.length === 0) {
       log('No pending migrations to apply.')
     } else {
