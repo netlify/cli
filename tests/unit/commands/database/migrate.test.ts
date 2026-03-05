@@ -1,19 +1,21 @@
 import { describe, expect, test, vi, beforeEach } from 'vitest'
 
-const mockStart = vi.fn().mockResolvedValue('postgres://localhost:5432/postgres')
-const mockStop = vi.fn().mockResolvedValue(undefined)
-const mockApplyMigrations = vi.fn().mockResolvedValue([])
-const MockNetlifyDB = vi.fn().mockImplementation(() => ({
-  start: mockStart,
-  stop: mockStop,
-  applyMigrations: mockApplyMigrations,
-}))
+const { mockStart, mockStop, mockApplyMigrations, MockNetlifyDev, logMessages } = vi.hoisted(() => {
+  const mockStart = vi.fn().mockResolvedValue({})
+  const mockStop = vi.fn().mockResolvedValue(undefined)
+  const mockApplyMigrations = vi.fn().mockResolvedValue([])
+  const MockNetlifyDev = vi.fn().mockImplementation(() => ({
+    start: mockStart,
+    stop: mockStop,
+    db: { applyMigrations: mockApplyMigrations },
+  }))
+  const logMessages: string[] = []
+  return { mockStart, mockStop, mockApplyMigrations, MockNetlifyDev, logMessages }
+})
 
-vi.mock('@netlify/db-dev', () => ({
-  NetlifyDB: MockNetlifyDB,
+vi.mock('@netlify/dev', () => ({
+  NetlifyDev: MockNetlifyDev,
 }))
-
-const logMessages: string[] = []
 
 vi.mock('../../../../src/utils/command-helpers.js', async () => ({
   ...(await vi.importActual('../../../../src/utils/command-helpers.js')),
@@ -47,25 +49,50 @@ describe('migrate', () => {
     mockApplyMigrations.mockResolvedValue([])
   })
 
-  test('creates NetlifyDB with the correct directory', async () => {
+  test('creates NetlifyDev with the correct project root and all non-db features disabled', async () => {
     await migrate({}, createMockCommand({ buildDir: '/my/project' }))
 
-    expect(MockNetlifyDB).toHaveBeenCalledWith({ directory: '/my/project/.netlify/db' })
+    expect(MockNetlifyDev).toHaveBeenCalledWith(
+      expect.objectContaining({
+        projectRoot: '/my/project',
+        aiGateway: { enabled: false },
+        blobs: { enabled: false },
+        edgeFunctions: { enabled: false },
+        environmentVariables: { enabled: false },
+        functions: { enabled: false },
+        geolocation: { enabled: false },
+        headers: { enabled: false },
+        images: { enabled: false },
+        redirects: { enabled: false },
+        staticFiles: { enabled: false },
+        serverAddress: null,
+      }),
+    )
   })
 
-  test('starts and stops the database', async () => {
+  test('starts and stops NetlifyDev', async () => {
     await migrate({}, createMockCommand())
 
     expect(mockStart).toHaveBeenCalledOnce()
     expect(mockStop).toHaveBeenCalledOnce()
   })
 
-  test('stops the database even when applyMigrations throws', async () => {
+  test('stops NetlifyDev even when applyMigrations throws', async () => {
     mockApplyMigrations.mockRejectedValueOnce(new Error('migration failed'))
 
     await expect(migrate({}, createMockCommand())).rejects.toThrow('migration failed')
 
     expect(mockStop).toHaveBeenCalledOnce()
+  })
+
+  test('throws when db is not available after start', async () => {
+    MockNetlifyDev.mockImplementationOnce(() => ({
+      start: mockStart,
+      stop: mockStop,
+      db: undefined,
+    }))
+
+    await expect(migrate({}, createMockCommand())).rejects.toThrow('Local database failed to start')
   })
 
   test('uses migrations directory from config', async () => {
