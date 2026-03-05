@@ -1,4 +1,4 @@
-import path from 'node:path'
+import { NetlifyDev } from '@netlify/dev'
 
 import { log } from '../../utils/command-helpers.js'
 import BaseCommand from '../base-command.js'
@@ -22,30 +22,28 @@ export const migrate = async (options: MigrateOptions, command: BaseCommand) => 
     )
   }
 
-  const dbDirectory = path.join(buildDir, '.netlify', 'db')
+  const netlifyDev = new NetlifyDev({
+    projectRoot: buildDir,
+    aiGateway: { enabled: false },
+    blobs: { enabled: false },
+    edgeFunctions: { enabled: false },
+    environmentVariables: { enabled: false },
+    functions: { enabled: false },
+    geolocation: { enabled: false },
+    headers: { enabled: false },
+    images: { enabled: false },
+    redirects: { enabled: false },
+    staticFiles: { enabled: false },
+    serverAddress: null,
+  })
 
-  // TODO: We should grab the db from the `NetlifyDev` instance, so this type
-  // would go away.
-  let dbDev: {
-    NetlifyDB: new (opts: { directory: string }) => {
-      start(): Promise<string>
-      stop(): Promise<void>
-      applyMigrations(migrationsDirectory: string, target?: string): Promise<string[]>
+  try {
+    await netlifyDev.start()
+
+    const { db } = netlifyDev
+    if (!db) {
+      throw new Error('Local database failed to start. Set EXPERIMENTAL_NETLIFY_DB_ENABLED=1 to enable.')
     }
-  }
-
-  try {
-    dbDev = await import('@netlify/db-dev')
-  } catch {
-    throw new Error(
-      'The @netlify/db-dev package is required for local database migrations. Install it with: npm install @netlify/db-dev',
-    )
-  }
-
-  const db = new dbDev.NetlifyDB({ directory: dbDirectory })
-
-  try {
-    await db.start()
 
     const applied = await db.applyMigrations(migrationsDirectory, name)
 
@@ -60,6 +58,6 @@ export const migrate = async (options: MigrateOptions, command: BaseCommand) => 
       }
     }
   } finally {
-    await db.stop()
+    await netlifyDev.stop()
   }
 }
