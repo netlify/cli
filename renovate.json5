@@ -42,7 +42,7 @@
       "extends": [":pinAllExceptPeerDependencies"]
     },
     {
-      "matchFileNames": ["package.json", "site/package.json"],
+      "matchFileNames": ["package.json"],
       "extends": [":pinAllExceptPeerDependencies"]
     },
     {
