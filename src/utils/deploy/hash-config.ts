@@ -2,29 +2,25 @@ import { createHash } from 'node:crypto'
 
 import tomlify from 'tomlify-j0.4'
 
-// @ts-expect-error TS(7031) FIXME: Binding element 'config' implicitly has an 'any' t... Remove this comment to see the full error message
-export const hashConfig = ({ config }) => {
-  if (!config) throw new Error('Missing config option')
+import type { NormalizedCachedConfigConfig } from '../command-helpers.js'
+
+export const hashConfig = ({ config }: { config: NormalizedCachedConfigConfig }) => {
   const configString = serializeToml(config)
 
   const hash = createHash('sha1').update(configString).digest('hex')
 
   return {
-    assetType: 'file',
+    assetType: 'file' as const,
     body: configString,
     hash,
     normalizedPath: 'netlify.toml',
   }
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'object' implicitly has an 'any' type.
-export const serializeToml = function (object) {
+export const serializeToml = function (object: unknown) {
   return tomlify.toToml(object, { space: 2, replace: replaceTomlValue })
 }
 
-// `tomlify-j0.4` serializes integers as floats, e.g. `200.0`.
-// This is a problem with `redirects[*].status`.
-// @ts-expect-error TS(7006) FIXME: Parameter 'key' implicitly has an 'any' type.
-const replaceTomlValue = function (key, value) {
+const replaceTomlValue = function (key: string, value: unknown) {
   return Number.isInteger(value) ? String(value) : false
 }
