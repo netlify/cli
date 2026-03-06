@@ -1,0 +1,50 @@
+import { NetlifyDev } from '@netlify/dev'
+
+import { log, logJson } from '../../utils/command-helpers.js'
+import BaseCommand from '../base-command.js'
+
+export interface ResetOptions {
+  json?: boolean
+}
+
+export const reset = async (options: ResetOptions, command: BaseCommand) => {
+  const { json } = options
+  const buildDir = command.netlify.site.root ?? command.project.root ?? command.project.baseDirectory
+  if (!buildDir) {
+    throw new Error('Could not determine the project root directory.')
+  }
+
+  const netlifyDev = new NetlifyDev({
+    projectRoot: buildDir,
+    aiGateway: { enabled: false },
+    blobs: { enabled: false },
+    edgeFunctions: { enabled: false },
+    environmentVariables: { enabled: false },
+    functions: { enabled: false },
+    geolocation: { enabled: false },
+    headers: { enabled: false },
+    images: { enabled: false },
+    redirects: { enabled: false },
+    staticFiles: { enabled: false },
+    serverAddress: null,
+  })
+
+  try {
+    await netlifyDev.start()
+
+    const { db } = netlifyDev
+    if (!db) {
+      throw new Error('Local database failed to start. Set EXPERIMENTAL_NETLIFY_DB_ENABLED=1 to enable.')
+    }
+
+    await db.reset()
+
+    if (json) {
+      logJson({ reset: true })
+    } else {
+      log('Local development database has been reset.')
+    }
+  } finally {
+    await netlifyDev.stop()
+  }
+}
