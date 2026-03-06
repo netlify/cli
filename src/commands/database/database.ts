@@ -31,7 +31,7 @@ export const createDatabaseCommand = (program: BaseCommand) => {
       'netlify db status',
       'netlify db init',
       'netlify db init --help',
-      ...(process.env.EXPERIMENTAL_NETLIFY_DB_ENABLED === '1' ? ['netlify db migrate'] : []),
+      ...(process.env.EXPERIMENTAL_NETLIFY_DB_ENABLED === '1' ? ['netlify db migrate', 'netlify db reset'] : []),
     ])
 
   dbCommand
@@ -95,6 +95,15 @@ export const createDatabaseCommand = (program: BaseCommand) => {
       .action(async (options: { to?: string; json?: boolean }, command: BaseCommand) => {
         const { migrate } = await import('./migrate.js')
         await migrate(options, command)
+      })
+
+    dbCommand
+      .command('reset')
+      .description('Reset the local development database, removing all data and tables')
+      .option('--json', 'Output result as JSON')
+      .action(async (options: { json?: boolean }, command: BaseCommand) => {
+        const { reset } = await import('./reset.js')
+        await reset(options, command)
       })
   }
 }
