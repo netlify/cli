@@ -1,6 +1,6 @@
 import { OptionValues } from 'commander'
 
-import { chalk, exit, getToken, log } from '../../utils/command-helpers.js'
+import { chalk, exit, getToken, log, logAndThrowError } from '../../utils/command-helpers.js'
 import { TokenLocation } from '../../utils/types.js'
 import BaseCommand from '../base-command.js'
 
@@ -18,6 +18,22 @@ const msg = function (location: TokenLocation) {
 }
 
 export const login = async (options: OptionValues, command: BaseCommand) => {
+  if (options.request && options.check) {
+    return logAndThrowError('`--request` and `--check` are mutually exclusive')
+  }
+
+  if (options.request) {
+    const { loginRequest } = await import('./login-request.js')
+    await loginRequest()
+    return
+  }
+
+  if (options.check) {
+    const { loginCheck } = await import('./login-check.js')
+    await loginCheck(options)
+    return
+  }
+
   const [accessToken, location] = await getToken()
 
   command.setAnalyticsPayload({ new: options.new })

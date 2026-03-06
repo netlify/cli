@@ -255,7 +255,10 @@ export const createMainCommand = (): BaseCommand => {
       const cliDocsEntrypointUrl = 'https://developers.netlify.com/cli'
       const docsUrl = 'https://docs.netlify.com'
       const bugsUrl = pkg.bugs?.url ?? ''
-      return `→ For more help with the CLI, visit ${NETLIFY_CYAN(
+      return `To get started run: ${NETLIFY_CYAN('netlify login')}
+To ask a human for credentials: ${NETLIFY_CYAN('netlify login --request <msg>')}
+
+→ For more help with the CLI, visit ${NETLIFY_CYAN(
         terminalLink(cliDocsEntrypointUrl, cliDocsEntrypointUrl, { fallback: false }),
       )}
 → For help with Netlify, visit ${NETLIFY_CYAN(terminalLink(docsUrl, docsUrl, { fallback: false }))}
