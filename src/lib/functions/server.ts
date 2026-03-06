@@ -171,7 +171,8 @@ export const createHandler = function (options: GetFunctionsServerOptions): Requ
     const rawQuery = new URL(request.originalUrl, 'http://example.com').search.slice(1)
     // TODO(serhalp): Update several tests to pass realistic `config` objects and remove nullish coalescing.
     const protocol = options.config?.dev?.https ? 'https' : 'http'
-    const url = new URL(requestPath, `${protocol}://${request.get('host') || 'localhost'}`)
+    const hostname = request.get('host') || 'localhost'
+    const url = new URL(requestPath, `${protocol}://${hostname}`)
     url.search = rawQuery
     const rawUrl = url.toString()
     const event = {
