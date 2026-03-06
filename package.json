@@ -90,7 +90,7 @@
     "comment-json": "4.3.0",
     "content-type": "1.0.5",
     "cookie": "1.0.2",
-    "cron-parser": "4.9.0",
+    "cron-parser": "5.5.0",
     "debug": "4.4.3",
     "decache": "4.6.2",
     "dot-prop": "10.1.0",
