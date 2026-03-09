@@ -22,6 +22,7 @@ export const migrate = async (options: MigrateOptions, command: BaseCommand) => 
     )
   }
 
+  const runningDbUrl = command.netlify.state.get('db.url') as string | undefined
   const netlifyDev = new NetlifyDev({
     projectRoot: buildDir,
     aiGateway: { enabled: false },
@@ -35,6 +36,7 @@ export const migrate = async (options: MigrateOptions, command: BaseCommand) => 
     redirects: { enabled: false },
     staticFiles: { enabled: false },
     serverAddress: null,
+    ...(runningDbUrl ? { db: { connectionString: runningDbUrl } } : {}),
   })
 
   try {
@@ -46,18 +48,21 @@ export const migrate = async (options: MigrateOptions, command: BaseCommand) => 
     }
 
     const applied = await db.applyMigrations(migrationsDirectory, name)
-
-    if (json) {
-      logJson({ migrations_applied: applied })
-    } else if (applied.length === 0) {
-      log('No pending migrations to apply.')
-    } else {
-      log(`Applied ${String(applied.length)} migration${applied.length === 1 ? '' : 's'}:`)
-      for (const migration of applied) {
-        log(`  - ${migration}`)
-      }
-    }
+    logAppliedMigrations(applied, json)
   } finally {
     await netlifyDev.stop()
+  }
+}
+
+function logAppliedMigrations(applied: string[], json?: boolean) {
+  if (json) {
+    logJson({ migrations_applied: applied })
+  } else if (applied.length === 0) {
+    log('No pending migrations to apply.')
+  } else {
+    log(`Applied ${String(applied.length)} migration${applied.length === 1 ? '' : 's'}:`)
+    for (const migration of applied) {
+      log(`  - ${migration}`)
+    }
   }
 }

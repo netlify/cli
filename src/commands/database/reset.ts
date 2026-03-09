@@ -14,6 +14,7 @@ export const reset = async (options: ResetOptions, command: BaseCommand) => {
     throw new Error('Could not determine the project root directory.')
   }
 
+  const runningDbUrl = command.netlify.state.get('db.url') as string | undefined
   const netlifyDev = new NetlifyDev({
     projectRoot: buildDir,
     aiGateway: { enabled: false },
@@ -27,6 +28,7 @@ export const reset = async (options: ResetOptions, command: BaseCommand) => {
     redirects: { enabled: false },
     staticFiles: { enabled: false },
     serverAddress: null,
+    ...(runningDbUrl ? { db: { connectionString: runningDbUrl } } : {}),
   })
 
   try {
@@ -38,13 +40,13 @@ export const reset = async (options: ResetOptions, command: BaseCommand) => {
     }
 
     await db.reset()
-
-    if (json) {
-      logJson({ reset: true })
-    } else {
-      log('Local development database has been reset.')
-    }
   } finally {
     await netlifyDev.stop()
+  }
+
+  if (json) {
+    logJson({ reset: true })
+  } else {
+    log('Local development database has been reset.')
   }
 }

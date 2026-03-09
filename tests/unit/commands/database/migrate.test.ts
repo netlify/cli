@@ -30,11 +30,14 @@ vi.mock('../../../../src/utils/command-helpers.js', async () => ({
 
 import { migrate } from '../../../../src/commands/database/migrate.js'
 
-function createMockCommand(overrides: { buildDir?: string; projectRoot?: string; migrationsPath?: string } = {}) {
+function createMockCommand(
+  overrides: { buildDir?: string; projectRoot?: string; migrationsPath?: string; dbUrl?: string } = {},
+) {
   const {
     buildDir = '/project',
     projectRoot = '/project',
     migrationsPath = '/project/netlify/db/migrations',
+    dbUrl,
   } = overrides
 
   return {
@@ -42,6 +45,7 @@ function createMockCommand(overrides: { buildDir?: string; projectRoot?: string;
     netlify: {
       site: { root: buildDir },
       config: { db: { migrations: { path: migrationsPath } } },
+      state: { get: (key: string) => (key === 'db.url' ? dbUrl : undefined) },
     },
   } as unknown as Parameters<typeof migrate>[1]
 }
@@ -73,6 +77,24 @@ describe('migrate', () => {
         serverAddress: null,
       }),
     )
+  })
+
+  test('passes db connection string to NetlifyDev when running db is detected', async () => {
+    const dbUrl = 'postgres://localhost:54321/postgres'
+    await migrate({}, createMockCommand({ dbUrl }))
+
+    expect(MockNetlifyDev).toHaveBeenCalledWith(
+      expect.objectContaining({
+        db: { connectionString: dbUrl },
+      }),
+    )
+  })
+
+  test('does not pass db option when no running db is detected', async () => {
+    await migrate({}, createMockCommand())
+
+    const constructorArg = MockNetlifyDev.mock.calls[0][0] as Record<string, unknown>
+    expect(constructorArg).not.toHaveProperty('db')
   })
 
   test('starts and stops NetlifyDev', async () => {
@@ -109,7 +131,7 @@ describe('migrate', () => {
   test('throws when no migrations directory is configured', async () => {
     const command = {
       project: { root: '/project', baseDirectory: undefined },
-      netlify: { site: { root: '/project' }, config: {} },
+      netlify: { site: { root: '/project' }, config: {}, state: { get: () => undefined } },
     } as unknown as Parameters<typeof migrate>[1]
 
     await expect(migrate({}, command)).rejects.toThrow('No migrations directory found')
@@ -172,7 +194,7 @@ describe('migrate', () => {
   test('throws when project root cannot be determined', async () => {
     const command = {
       project: { root: undefined, baseDirectory: undefined },
-      netlify: { site: { root: undefined }, config: {} },
+      netlify: { site: { root: undefined }, config: {}, state: { get: () => undefined } },
     } as unknown as Parameters<typeof migrate>[1]
 
     await expect(migrate({}, command)).rejects.toThrow('Could not determine the project root directory.')
