@@ -13,6 +13,7 @@ export class PgClientExecutor implements SQLExecutor {
     await this.#client.query(sql)
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
   async query<T>(sql: string, params?: unknown[]): Promise<{ rows: T[] }> {
     const result = await this.#client.query<T & QueryResultRow>(sql, params)
     return { rows: result.rows }
