@@ -1,5 +1,5 @@
 {
-  "extends": ["@tsconfig/recommended", "@tsconfig/node18"],
+  "extends": ["@tsconfig/recommended", "@tsconfig/node20"],
   "compilerOptions": {
     "allowJs": true,
     "downlevelIteration": true,
