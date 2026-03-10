@@ -119,7 +119,7 @@
     "is-docker": "4.0.0",
     "is-stream": "4.0.1",
     "is-wsl": "3.1.0",
-    "isexe": "3.1.1",
+    "isexe": "4.0.0",
     "jsonwebtoken": "9.0.3",
     "jwt-decode": "4.0.0",
     "lambda-local": "2.2.0",
