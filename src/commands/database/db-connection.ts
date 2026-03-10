@@ -1,6 +1,8 @@
+import path from 'node:path'
+
 import { Client } from 'pg'
 
-import { NetlifyDev } from '@netlify/dev'
+import { NetlifyDB } from '@netlify/db-dev'
 import { LocalState } from '@netlify/dev-utils'
 
 import { PgClientExecutor } from './pg-client-executor.js'
@@ -14,46 +16,26 @@ export async function connectToDatabase(buildDir: string): Promise<DBConnection>
   const state = new LocalState(buildDir)
   const connectionString = state.get('dbConnectionString')
 
-  if (connectionString) {
-    const client = new Client({ connectionString })
+  if (!connectionString) {
+    const dbDirectory = path.join(buildDir, '.netlify', 'db')
+    const db = new NetlifyDB({ directory: dbDirectory })
+    const newConnectionString = await db.start()
+
+    const client = new Client({ connectionString: newConnectionString })
     await client.connect()
     return {
       executor: new PgClientExecutor(client),
-      cleanup: () => client.end(),
+      cleanup: async () => {
+        await client.end()
+        await db.stop()
+      },
     }
   }
 
-  const netlifyDev = new NetlifyDev({
-    projectRoot: buildDir,
-    aiGateway: { enabled: false },
-    blobs: { enabled: false },
-    edgeFunctions: { enabled: false },
-    environmentVariables: { enabled: false },
-    functions: { enabled: false },
-    geolocation: { enabled: false },
-    headers: { enabled: false },
-    images: { enabled: false },
-    redirects: { enabled: false },
-    staticFiles: { enabled: false },
-    serverAddress: null,
-  })
-
-  await netlifyDev.start()
-
-  const devConnectionString = state.get('dbConnectionString')
-  if (!devConnectionString) {
-    await netlifyDev.stop()
-    throw new Error('Local database failed to start. Set EXPERIMENTAL_NETLIFY_DB_ENABLED=1 to enable.')
-  }
-
-  const client = new Client({ connectionString: devConnectionString })
+  const client = new Client({ connectionString })
   await client.connect()
-
   return {
     executor: new PgClientExecutor(client),
-    cleanup: async () => {
-      await client.end()
-      await netlifyDev.stop()
-    },
+    cleanup: () => client.end(),
   }
 }
