@@ -153,7 +153,7 @@
     "update-notifier": "7.3.1",
     "uuid": "13.0.0",
     "write-file-atomic": "5.0.1",
-    "ws": "8.18.3"
+    "ws": "8.19.0"
   },
   "devDependencies": {
     "@babel/preset-react": "7.27.1",
