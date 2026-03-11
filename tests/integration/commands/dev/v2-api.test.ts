@@ -19,6 +19,7 @@ const routes = [
     path: 'accounts',
     response: [{ id: siteInfo.account_id, slug: siteInfo.account_slug }],
   },
+  { path: 'accounts/:accountId/env', response: [] },
 ]
 
 const setup = async ({ fixture }: { fixture: { directory: string } }) => {
