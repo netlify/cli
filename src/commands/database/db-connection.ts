@@ -1,6 +1,6 @@
 import { Client } from 'pg'
 
-import type { SQLExecutor } from '@netlify/db-dev'
+import type { SQLExecutor } from '@netlify/dev'
 import { NetlifyDev } from '@netlify/dev'
 import { LocalState } from '@netlify/dev-utils'
 

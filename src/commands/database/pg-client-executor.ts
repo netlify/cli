@@ -1,6 +1,6 @@
 import type { Client, QueryResultRow } from 'pg'
 
-import type { SQLExecutor } from '@netlify/db-dev'
+import type { SQLExecutor } from '@netlify/dev'
 
 export class PgClientExecutor implements SQLExecutor {
   #client: Client
