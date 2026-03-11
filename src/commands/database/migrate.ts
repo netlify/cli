@@ -1,7 +1,8 @@
-import { NetlifyDev } from '@netlify/dev'
+import { applyMigrations } from '@netlify/dev'
 
 import { log, logJson } from '../../utils/command-helpers.js'
 import BaseCommand from '../base-command.js'
+import { connectToDatabase } from './db-connection.js'
 
 export interface MigrateOptions {
   to?: string
@@ -22,30 +23,10 @@ export const migrate = async (options: MigrateOptions, command: BaseCommand) => 
     )
   }
 
-  const netlifyDev = new NetlifyDev({
-    projectRoot: buildDir,
-    aiGateway: { enabled: false },
-    blobs: { enabled: false },
-    edgeFunctions: { enabled: false },
-    environmentVariables: { enabled: false },
-    functions: { enabled: false },
-    geolocation: { enabled: false },
-    headers: { enabled: false },
-    images: { enabled: false },
-    redirects: { enabled: false },
-    staticFiles: { enabled: false },
-    serverAddress: null,
-  })
+  const { executor, cleanup } = await connectToDatabase(buildDir)
 
   try {
-    await netlifyDev.start()
-
-    const { db } = netlifyDev
-    if (!db) {
-      throw new Error('Local database failed to start. Set EXPERIMENTAL_NETLIFY_DB_ENABLED=1 to enable.')
-    }
-
-    const applied = await db.applyMigrations(migrationsDirectory, name)
+    const applied = await applyMigrations(executor, migrationsDirectory, name)
 
     if (json) {
       logJson({ migrations_applied: applied })
@@ -58,6 +39,6 @@ export const migrate = async (options: MigrateOptions, command: BaseCommand) => 
       }
     }
   } finally {
-    await netlifyDev.stop()
+    await cleanup()
   }
 }
