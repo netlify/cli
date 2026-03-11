@@ -10,6 +10,7 @@ const { mockApplyMigrations, mockCleanup, mockExecutor, logMessages, jsonMessage
 })
 
 vi.mock('@netlify/dev', () => ({
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   applyMigrations: (...args: unknown[]) => mockApplyMigrations(...args),
 }))
 

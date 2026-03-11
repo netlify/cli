@@ -10,6 +10,7 @@ const { mockResetDatabase, mockCleanup, mockExecutor, logMessages, jsonMessages 
 })
 
 vi.mock('@netlify/dev', () => ({
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   resetDatabase: (...args: unknown[]) => mockResetDatabase(...args),
 }))
 
