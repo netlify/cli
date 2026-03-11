@@ -74,6 +74,11 @@ export interface CachedConfig {
             }
           }
         }
+    db?: {
+      migrations?: {
+        path?: string
+      }
+    }
     edge_functions?: EdgeFunctionDeclaration[]
     functions?: NetlifyConfig['functions']
     functionsDirectory?: undefined | string

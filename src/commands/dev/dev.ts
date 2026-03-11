@@ -158,7 +158,15 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
   })
 
   if (!options.offline && !options.offlineEnv && !capabilities.aiGatewayDisabled) {
-    await setupAIGateway({ api, env, siteID: site.id, siteURL: siteUrl })
+    const resolvedAccountId = accountId ?? command.netlify.accounts[0]?.id
+    await setupAIGateway({
+      api,
+      env,
+      siteID: site.id,
+      siteURL: siteUrl,
+      accountID: resolvedAccountId,
+      siteHasDeploy: !!siteInfo.published_deploy,
+    })
 
     const aiGatewayEnv = env.AI_GATEWAY as (typeof env)[string] | undefined
     if (aiGatewayEnv) {
@@ -230,7 +238,7 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
 
   log(`${NETLIFYDEVLOG} Setting up local dev server`)
 
-  const { configMutations, generatedFunctions } = await runDevTimeline({
+  const { configMutations, generatedFunctions, deployEnvironment } = await runDevTimeline({
     command,
     options,
     settings,
@@ -264,6 +272,7 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
     offline: options.offline,
     state,
     accountId,
+    deployEnvironment,
   })
 
   // Try to add `.netlify` to `.gitignore`.
@@ -309,6 +318,7 @@ export const dev = async (options: OptionValues, command: BaseCommand) => {
     accountId,
     functionsRegistry,
     repositoryRoot,
+    deployEnvironment,
   })
 
   if (devConfig.autoLaunch !== false) {
