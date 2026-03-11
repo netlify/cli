@@ -9,7 +9,7 @@ const { mockResetDatabase, mockCleanup, mockExecutor, logMessages, jsonMessages 
   return { mockResetDatabase, mockCleanup, mockExecutor, logMessages, jsonMessages }
 })
 
-vi.mock('@netlify/db-dev', () => ({
+vi.mock('@netlify/dev', () => ({
   resetDatabase: (...args: unknown[]) => mockResetDatabase(...args),
 }))
 

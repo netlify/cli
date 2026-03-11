@@ -9,7 +9,7 @@ const { mockApplyMigrations, mockCleanup, mockExecutor, logMessages, jsonMessage
   return { mockApplyMigrations, mockCleanup, mockExecutor, logMessages, jsonMessages }
 })
 
-vi.mock('@netlify/db-dev', () => ({
+vi.mock('@netlify/dev', () => ({
   applyMigrations: (...args: unknown[]) => mockApplyMigrations(...args),
 }))
 

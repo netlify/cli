@@ -1,4 +1,4 @@
-import { resetDatabase } from '@netlify/db-dev'
+import { resetDatabase } from '@netlify/dev'
 
 import { log, logJson } from '../../utils/command-helpers.js'
 import BaseCommand from '../base-command.js'

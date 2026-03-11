@@ -1,4 +1,4 @@
-import { applyMigrations } from '@netlify/db-dev'
+import { applyMigrations } from '@netlify/dev'
 
 import { log, logJson } from '../../utils/command-helpers.js'
 import BaseCommand from '../base-command.js'
