@@ -1,21 +1,26 @@
 import { describe, expect, test, vi, beforeEach } from 'vitest'
 
-const { mockStart, mockStop, mockApplyMigrations, MockNetlifyDev, logMessages, jsonMessages } = vi.hoisted(() => {
-  const mockStart = vi.fn().mockResolvedValue({})
-  const mockStop = vi.fn().mockResolvedValue(undefined)
+const { mockApplyMigrations, mockCleanup, mockExecutor, logMessages, jsonMessages } = vi.hoisted(() => {
   const mockApplyMigrations = vi.fn().mockResolvedValue([])
-  const MockNetlifyDev = vi.fn().mockImplementation(() => ({
-    start: mockStart,
-    stop: mockStop,
-    db: { applyMigrations: mockApplyMigrations },
-  }))
+  const mockCleanup = vi.fn().mockResolvedValue(undefined)
+  const mockExecutor = {}
   const logMessages: string[] = []
   const jsonMessages: unknown[] = []
-  return { mockStart, mockStop, mockApplyMigrations, MockNetlifyDev, logMessages, jsonMessages }
+  return { mockApplyMigrations, mockCleanup, mockExecutor, logMessages, jsonMessages }
 })
 
 vi.mock('@netlify/dev', () => ({
-  NetlifyDev: MockNetlifyDev,
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+  applyMigrations: (...args: unknown[]) => mockApplyMigrations(...args),
+}))
+
+vi.mock('../../../../src/commands/database/db-connection.js', () => ({
+  connectToDatabase: vi.fn().mockImplementation(() =>
+    Promise.resolve({
+      executor: mockExecutor,
+      cleanup: mockCleanup,
+    }),
+  ),
 }))
 
 vi.mock('../../../../src/utils/command-helpers.js', async () => ({
@@ -54,56 +59,24 @@ describe('migrate', () => {
     mockApplyMigrations.mockResolvedValue([])
   })
 
-  test('creates NetlifyDev with the correct project root and all non-db features disabled', async () => {
-    await migrate({}, createMockCommand({ buildDir: '/my/project' }))
-
-    expect(MockNetlifyDev).toHaveBeenCalledWith(
-      expect.objectContaining({
-        projectRoot: '/my/project',
-        aiGateway: { enabled: false },
-        blobs: { enabled: false },
-        edgeFunctions: { enabled: false },
-        environmentVariables: { enabled: false },
-        functions: { enabled: false },
-        geolocation: { enabled: false },
-        headers: { enabled: false },
-        images: { enabled: false },
-        redirects: { enabled: false },
-        staticFiles: { enabled: false },
-        serverAddress: null,
-      }),
-    )
-  })
-
-  test('starts and stops NetlifyDev', async () => {
+  test('calls cleanup after successful migration', async () => {
     await migrate({}, createMockCommand())
 
-    expect(mockStart).toHaveBeenCalledOnce()
-    expect(mockStop).toHaveBeenCalledOnce()
+    expect(mockCleanup).toHaveBeenCalledOnce()
   })
 
-  test('stops NetlifyDev even when applyMigrations throws', async () => {
+  test('calls cleanup even when applyMigrations throws', async () => {
     mockApplyMigrations.mockRejectedValueOnce(new Error('migration failed'))
 
     await expect(migrate({}, createMockCommand())).rejects.toThrow('migration failed')
 
-    expect(mockStop).toHaveBeenCalledOnce()
+    expect(mockCleanup).toHaveBeenCalledOnce()
   })
 
-  test('throws when db is not available after start', async () => {
-    MockNetlifyDev.mockImplementationOnce(() => ({
-      start: mockStart,
-      stop: mockStop,
-      db: undefined,
-    }))
-
-    await expect(migrate({}, createMockCommand())).rejects.toThrow('Local database failed to start')
-  })
-
-  test('uses migrations directory from config', async () => {
+  test('passes executor and migrations directory to applyMigrations', async () => {
     await migrate({}, createMockCommand({ migrationsPath: '/custom/migrations' }))
 
-    expect(mockApplyMigrations).toHaveBeenCalledWith('/custom/migrations', undefined)
+    expect(mockApplyMigrations).toHaveBeenCalledWith(mockExecutor, '/custom/migrations', undefined)
   })
 
   test('throws when no migrations directory is configured', async () => {
@@ -118,7 +91,7 @@ describe('migrate', () => {
   test('passes the --to target to applyMigrations', async () => {
     await migrate({ to: '0002_add_posts' }, createMockCommand())
 
-    expect(mockApplyMigrations).toHaveBeenCalledWith(expect.any(String), '0002_add_posts')
+    expect(mockApplyMigrations).toHaveBeenCalledWith(mockExecutor, expect.any(String), '0002_add_posts')
   })
 
   test('logs message when no migrations are applied', async () => {
