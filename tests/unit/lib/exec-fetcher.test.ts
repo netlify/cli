@@ -201,39 +201,30 @@ describe('fetchLatestVersion', () => {
   })
 
   test('should include auth header when NETLIFY_TEST_GITHUB_TOKEN is set', async () => {
-    const originalToken: string | undefined = process.env.NETLIFY_TEST_GITHUB_TOKEN
-    process.env.NETLIFY_TEST_GITHUB_TOKEN = 'test-token-123'
+    vi.stubEnv('NETLIFY_TEST_GITHUB_TOKEN', 'test-token-123')
 
-    try {
-      vi.mocked(fetch).mockResolvedValue({
-        ok: false,
-        status: 500,
-        body: null,
-        text: () => Promise.resolve('error'),
-      } as unknown as Response)
+    vi.mocked(fetch).mockResolvedValue({
+      ok: false,
+      status: 500,
+      body: null,
+      text: () => Promise.resolve('error'),
+    } as unknown as Response)
 
-      await expect(
-        fetchLatestVersion({
-          packageName: 'traffic-mesh-agent',
-          execName: 'traffic-mesh',
-          destination: '',
-          extension: 'tar.gz',
-          latestVersion: 'v1.0.0',
-        }),
-      ).rejects.toThrowError()
+    await expect(
+      fetchLatestVersion({
+        packageName: 'traffic-mesh-agent',
+        execName: 'traffic-mesh',
+        destination: '',
+        extension: 'tar.gz',
+        latestVersion: 'v1.0.0',
+      }),
+    ).rejects.toThrowError()
 
-      expect(vi.mocked(fetch)).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.objectContaining({
-          headers: expect.objectContaining({ Authorization: 'token test-token-123' }) as unknown,
-        }),
-      )
-    } finally {
-      if (originalToken === undefined) {
-        delete process.env.NETLIFY_TEST_GITHUB_TOKEN
-      } else {
-        process.env.NETLIFY_TEST_GITHUB_TOKEN = originalToken
-      }
-    }
+    expect(vi.mocked(fetch)).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({
+        headers: expect.objectContaining({ Authorization: 'token test-token-123' }) as unknown,
+      }),
+    )
   })
 })
