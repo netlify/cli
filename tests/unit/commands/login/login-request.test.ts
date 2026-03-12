@@ -31,7 +31,7 @@ describe('loginRequest', () => {
   })
 
   test('outputs ticket info as plain text', async () => {
-    await loginRequest()
+    await loginRequest('test message')
 
     const output = stdoutOutput.join('')
     expect(output).toContain('Ticket ID: test-ticket-123')
@@ -41,10 +41,18 @@ describe('loginRequest', () => {
     expect(output).toContain('netlify login --check test-ticket-123')
   })
 
+  test('passes message to createTicket', async () => {
+    await loginRequest('Grant access to deploy site')
+
+    expect(mocks.createTicket).toHaveBeenCalledWith(
+      expect.objectContaining({ body: { message: 'Grant access to deploy site' } }),
+    )
+  })
+
   test('uses custom NETLIFY_WEB_UI when set', async () => {
     process.env.NETLIFY_WEB_UI = 'https://custom.netlify.com'
 
-    await loginRequest()
+    await loginRequest('test message')
 
     const output = stdoutOutput.join('')
     expect(output).toContain('https://custom.netlify.com/authorize?response_type=ticket&ticket=test-ticket-123')
