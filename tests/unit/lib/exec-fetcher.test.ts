@@ -69,12 +69,7 @@ describe('fetchLatestVersion', () => {
   test('throws a user-friendly error on 404 mentioning OS and arch', async () => {
     processArchSpy.mockReturnValue('x64')
     processPlatformSpy.mockReturnValue('win32')
-    vi.mocked(fetch).mockResolvedValue({
-      ok: false,
-      status: 404,
-      body: null,
-      text: () => Promise.resolve('Not Found'),
-    } as unknown as Response)
+    vi.mocked(fetch).mockResolvedValue(new Response('Not Found', { status: 404 }))
 
     await expect(fetchLatestVersion({ ...FETCH_ARGS, extension: 'zip' })).rejects.toThrowError(
       /The operating system windows with the CPU architecture amd64 is currently not supported!/,
@@ -82,12 +77,7 @@ describe('fetchLatestVersion', () => {
   })
 
   test('throws the HTTP status on non-404 download errors', async () => {
-    vi.mocked(fetch).mockResolvedValue({
-      ok: false,
-      status: 500,
-      body: null,
-      text: () => Promise.resolve('Internal Server Error'),
-    } as unknown as Response)
+    vi.mocked(fetch).mockResolvedValue(new Response('Internal Server Error', { status: 500 }))
 
     await expect(fetchLatestVersion(FETCH_ARGS)).rejects.toThrowError(/Download failed: 500/)
   })
@@ -95,12 +85,7 @@ describe('fetchLatestVersion', () => {
   test('includes the platform and arch in the 404 error for linux-x64', async () => {
     processArchSpy.mockReturnValue('x64')
     processPlatformSpy.mockReturnValue('linux')
-    vi.mocked(fetch).mockResolvedValue({
-      ok: false,
-      status: 404,
-      body: null,
-      text: () => Promise.resolve('Not Found'),
-    } as unknown as Response)
+    vi.mocked(fetch).mockResolvedValue(new Response('Not Found', { status: 404 }))
 
     await expect(fetchLatestVersion(FETCH_ARGS)).rejects.toThrowError(
       /The operating system linux with the CPU architecture amd64 is currently not supported!/,
@@ -109,13 +94,8 @@ describe('fetchLatestVersion', () => {
 
   test('resolves the latest tag from GitHub when latestVersion is omitted', async () => {
     vi.mocked(fetch)
-      .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ tag_name: 'v2.0.0' }) } as unknown as Response)
-      .mockResolvedValueOnce({
-        ok: false,
-        status: 404,
-        body: null,
-        text: () => Promise.resolve('Not Found'),
-      } as unknown as Response)
+      .mockResolvedValueOnce(new Response(JSON.stringify({ tag_name: 'v2.0.0' })))
+      .mockResolvedValueOnce(new Response('Not Found', { status: 404 }))
 
     await expect(fetchLatestVersion({ ...FETCH_ARGS, latestVersion: undefined })).rejects.toThrowError()
 
@@ -130,7 +110,7 @@ describe('fetchLatestVersion', () => {
   })
 
   test('throws when the GitHub releases API returns an error', async () => {
-    vi.mocked(fetch).mockResolvedValueOnce({ ok: false, status: 403 } as unknown as Response)
+    vi.mocked(fetch).mockResolvedValueOnce(new Response(null, { status: 403 }))
 
     await expect(fetchLatestVersion({ ...FETCH_ARGS, latestVersion: undefined })).rejects.toThrowError(
       /Failed to fetch latest release.*403/,
@@ -147,15 +127,7 @@ describe('fetchLatestVersion', () => {
       ])
       const gzipped = gzipSync(Buffer.from(tarBuffer))
 
-      vi.mocked(fetch).mockResolvedValue({
-        ok: true,
-        body: new ReadableStream({
-          start(controller) {
-            controller.enqueue(gzipped)
-            controller.close()
-          },
-        }),
-      } as unknown as Response)
+      vi.mocked(fetch).mockResolvedValue(new Response(gzipped))
 
       await fetchLatestVersion({ ...FETCH_ARGS, destination })
 
@@ -169,12 +141,7 @@ describe('fetchLatestVersion', () => {
   test('sends an Authorization header when NETLIFY_TEST_GITHUB_TOKEN is set', async () => {
     vi.stubEnv('NETLIFY_TEST_GITHUB_TOKEN', 'test-token-123')
 
-    vi.mocked(fetch).mockResolvedValue({
-      ok: false,
-      status: 500,
-      body: null,
-      text: () => Promise.resolve('error'),
-    } as unknown as Response)
+    vi.mocked(fetch).mockResolvedValue(new Response('error', { status: 500 }))
 
     await expect(fetchLatestVersion(FETCH_ARGS)).rejects.toThrowError()
 

@@ -37,8 +37,7 @@ vi.mock('p-wait-for', () => ({
   }),
 }))
 
-const mockFetchResponse = (status: number, body: Record<string, unknown>) =>
-  ({ status, json: () => Promise.resolve(body) } as never)
+const jsonResponse = (status: number, body: Record<string, unknown>) => new Response(JSON.stringify(body), { status })
 
 const TUNNEL_ARGS = {
   siteId: 'site-456',
@@ -60,8 +59,8 @@ afterEach(() => {
 describe('startLiveTunnel', () => {
   const mockSessionCreatedThenOnline = (sessionId = 'session-123', sessionUrl = 'https://test.netlify.live') => {
     vi.mocked(fetch)
-      .mockResolvedValueOnce(mockFetchResponse(201, { id: sessionId, session_url: sessionUrl, state: 'connecting' }))
-      .mockResolvedValueOnce(mockFetchResponse(200, { id: sessionId, state: 'online' }))
+      .mockResolvedValueOnce(jsonResponse(201, { id: sessionId, session_url: sessionUrl, state: 'connecting' }))
+      .mockResolvedValueOnce(jsonResponse(200, { id: sessionId, state: 'online' }))
   }
 
   test('returns the session URL', async () => {
@@ -89,10 +88,10 @@ describe('startLiveTunnel', () => {
   test('polls the session until it is online', async () => {
     vi.mocked(fetch)
       .mockResolvedValueOnce(
-        mockFetchResponse(201, { id: 'session-123', session_url: 'https://test.netlify.live', state: 'connecting' }),
+        jsonResponse(201, { id: 'session-123', session_url: 'https://test.netlify.live', state: 'connecting' }),
       )
-      .mockResolvedValueOnce(mockFetchResponse(200, { id: 'session-123', state: 'booting' }))
-      .mockResolvedValueOnce(mockFetchResponse(200, { id: 'session-123', state: 'online' }))
+      .mockResolvedValueOnce(jsonResponse(200, { id: 'session-123', state: 'booting' }))
+      .mockResolvedValueOnce(jsonResponse(200, { id: 'session-123', state: 'online' }))
 
     await startLiveTunnel(TUNNEL_ARGS)
 
@@ -142,7 +141,7 @@ describe('startLiveTunnel', () => {
   })
 
   test('throws the API error message when session creation fails', async () => {
-    vi.mocked(fetch).mockResolvedValueOnce(mockFetchResponse(422, { message: 'Slug already taken' }))
+    vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(422, { message: 'Slug already taken' }))
 
     await expect(startLiveTunnel({ ...TUNNEL_ARGS, slug: 'taken-slug' })).rejects.toThrowError('Slug already taken')
   })
@@ -150,9 +149,9 @@ describe('startLiveTunnel', () => {
   test('throws the API error message when polling fails', async () => {
     vi.mocked(fetch)
       .mockResolvedValueOnce(
-        mockFetchResponse(201, { id: 'session-123', session_url: 'https://test.netlify.live', state: 'connecting' }),
+        jsonResponse(201, { id: 'session-123', session_url: 'https://test.netlify.live', state: 'connecting' }),
       )
-      .mockResolvedValueOnce(mockFetchResponse(500, { message: 'Internal server error' }))
+      .mockResolvedValueOnce(jsonResponse(500, { message: 'Internal server error' }))
 
     await expect(startLiveTunnel(TUNNEL_ARGS)).rejects.toThrowError('Internal server error')
   })
