@@ -24,7 +24,7 @@ export const login = async (options: OptionValues, command: BaseCommand) => {
 
   if (options.request) {
     const { loginRequest } = await import('./login-request.js')
-    await loginRequest(options.request)
+    await loginRequest(options.request as string)
     return
   }
 
