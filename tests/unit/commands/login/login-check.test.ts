@@ -19,14 +19,12 @@ vi.mock('@netlify/api', () => ({
   })),
 }))
 
-vi.mock('@netlify/dev-utils', () => ({
-  getGlobalConfigStore: vi.fn().mockResolvedValue({
-    get: mocks.globalConfigGet,
-    set: mocks.globalConfigSet,
-  }),
-}))
+import type { GlobalConfigStore } from '@netlify/dev-utils'
 
 import { loginCheck } from '../../../../src/commands/login/login-check.js'
+
+const apiOpts = { userAgent: 'test-agent' }
+const globalConfig = { get: mocks.globalConfigGet, set: mocks.globalConfigSet } as unknown as GlobalConfigStore
 
 describe('loginCheck', () => {
   let stdoutOutput: string[]
@@ -47,19 +45,43 @@ describe('loginCheck', () => {
   test('outputs pending when ticket is not authorized', async () => {
     mocks.showTicket.mockResolvedValue({ authorized: false })
 
-    await loginCheck({ check: 'ticket-abc' })
+    await loginCheck({ check: 'ticket-abc' }, apiOpts, globalConfig)
 
     const output = stdoutOutput.join('')
     expect(output).toContain('Status: pending')
   })
 
-  test('outputs denied when showTicket throws', async () => {
-    mocks.showTicket.mockRejectedValue(new Error('Not found'))
+  test('outputs denied when showTicket returns 404', async () => {
+    const error = Object.assign(new Error('Not Found'), { status: 404 })
+    mocks.showTicket.mockRejectedValue(error)
 
-    await loginCheck({ check: 'ticket-bad' })
+    await loginCheck({ check: 'ticket-bad' }, apiOpts, globalConfig)
 
     const output = stdoutOutput.join('')
     expect(output).toContain('Status: denied')
+  })
+
+  test('outputs denied when showTicket returns 401', async () => {
+    const error = Object.assign(new Error('Unauthorized'), { status: 401 })
+    mocks.showTicket.mockRejectedValue(error)
+
+    await loginCheck({ check: 'ticket-bad' }, apiOpts, globalConfig)
+
+    const output = stdoutOutput.join('')
+    expect(output).toContain('Status: denied')
+  })
+
+  test('rethrows non-auth errors from showTicket', async () => {
+    const error = Object.assign(new Error('Internal Server Error'), { status: 500 })
+    mocks.showTicket.mockRejectedValue(error)
+
+    await expect(loginCheck({ check: 'ticket-bad' })).rejects.toThrow('Internal Server Error')
+  })
+
+  test('rethrows errors without a status from showTicket', async () => {
+    mocks.showTicket.mockRejectedValue(new Error('Network failure'))
+
+    await expect(loginCheck({ check: 'ticket-bad' })).rejects.toThrow('Network failure')
   })
 
   test('outputs authorized and stores token when ticket is authorized', async () => {
@@ -71,7 +93,7 @@ describe('loginCheck', () => {
       full_name: 'Test User',
     })
 
-    await loginCheck({ check: 'ticket-ok' })
+    await loginCheck({ check: 'ticket-ok' }, apiOpts, globalConfig)
 
     const output = stdoutOutput.join('')
     expect(output).toContain('Status: authorized')

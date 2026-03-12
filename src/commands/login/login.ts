@@ -24,13 +24,13 @@ export const login = async (options: OptionValues, command: BaseCommand) => {
 
   if (options.request) {
     const { loginRequest } = await import('./login-request.js')
-    await loginRequest(options.request as string)
+    await loginRequest(options.request as string, command.netlify.apiOpts)
     return
   }
 
   if (options.check) {
     const { loginCheck } = await import('./login-check.js')
-    await loginCheck(options)
+    await loginCheck(options, command.netlify.apiOpts, command.netlify.globalConfig)
     return
   }
 

@@ -1,22 +1,30 @@
 import { NetlifyAPI } from '@netlify/api'
-import { getGlobalConfigStore } from '@netlify/dev-utils'
 import { OptionValues } from 'commander'
 
-import { log, logAndThrowError, logJson, USER_AGENT } from '../../utils/command-helpers.js'
+import { log, logAndThrowError, logJson } from '../../utils/command-helpers.js'
 import { storeToken } from '../base-command.js'
+import type { NetlifyOptions } from '../types.js'
 
-export const loginCheck = async (options: OptionValues) => {
+export const loginCheck = async (
+  options: OptionValues,
+  apiOpts: NetlifyOptions['apiOpts'],
+  globalConfig: NetlifyOptions['globalConfig'],
+) => {
   const ticketId = options.check as string
 
-  const api = new NetlifyAPI('', { userAgent: USER_AGENT })
+  const api = new NetlifyAPI('', apiOpts)
 
   let ticket: { authorized?: boolean }
   try {
     ticket = await api.showTicket({ ticketId })
-  } catch {
-    logJson({ status: 'denied' })
-    log('Status: denied')
-    return
+  } catch (error) {
+    const status = (error as { status?: number }).status
+    if (status === 401 || status === 404) {
+      logJson({ status: 'denied' })
+      log('Status: denied')
+      return
+    }
+    throw error
   }
 
   if (!ticket.authorized) {
@@ -37,7 +45,6 @@ export const loginCheck = async (options: OptionValues) => {
     return logAndThrowError('Could not retrieve user ID from Netlify API')
   }
 
-  const globalConfig = await getGlobalConfigStore()
   storeToken(globalConfig, {
     userId: user.id,
     name: user.full_name,
