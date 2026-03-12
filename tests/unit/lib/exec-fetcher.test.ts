@@ -1,4 +1,4 @@
-import { readFile } from 'fs/promises'
+import { readFile, rm } from 'fs/promises'
 import os from 'os'
 import path from 'path'
 import process from 'process'
@@ -32,36 +32,41 @@ afterAll(() => {
   vi.restoreAllMocks()
 })
 
-test(`should use 386 if process architecture is ia32`, () => {
+const FETCH_ARGS = {
+  packageName: 'traffic-mesh-agent',
+  execName: 'traffic-mesh',
+  destination: '',
+  extension: 'tar.gz',
+  latestVersion: 'v1.0.0',
+} as const
+
+test('getArch maps ia32 to 386', () => {
   processArchSpy.mockReturnValue('ia32')
   expect(getArch()).toBe('386')
 })
 
-test(`should use amd64 if process architecture is x64`, () => {
+test('getArch maps x64 to amd64', () => {
   processArchSpy.mockReturnValue('x64')
   expect(getArch()).toBe('amd64')
 })
 
-test(`should append .exe on windows for the executable name`, () => {
+test('getExecName appends .exe on Windows', () => {
   processPlatformSpy.mockReturnValue('win32')
-  const execName = 'some-binary-file'
-  expect(getExecName({ execName })).toBe(`${execName}.exe`)
+  expect(getExecName({ execName: 'some-binary' })).toBe('some-binary.exe')
 })
 
-test(`should not append anything on darwin to executable`, () => {
+test('getExecName leaves the name unchanged on macOS', () => {
   processPlatformSpy.mockReturnValue('darwin')
-  const execName = 'some-binary-file'
-  expect(getExecName({ execName })).toBe(execName)
+  expect(getExecName({ execName: 'some-binary' })).toBe('some-binary')
 })
 
-test(`should not append anything on linux to executable`, () => {
+test('getExecName leaves the name unchanged on Linux', () => {
   processPlatformSpy.mockReturnValue('linux')
-  const execName = 'some-binary-file'
-  expect(getExecName({ execName })).toBe(execName)
+  expect(getExecName({ execName: 'some-binary' })).toBe('some-binary')
 })
 
 describe('fetchLatestVersion', () => {
-  test('should throw a user-friendly error on 404', async () => {
+  test('throws a user-friendly error on 404 mentioning OS and arch', async () => {
     processArchSpy.mockReturnValue('x64')
     processPlatformSpy.mockReturnValue('win32')
     vi.mocked(fetch).mockResolvedValue({
@@ -71,18 +76,12 @@ describe('fetchLatestVersion', () => {
       text: () => Promise.resolve('Not Found'),
     } as unknown as Response)
 
-    await expect(
-      fetchLatestVersion({
-        packageName: 'traffic-mesh-agent',
-        execName: 'traffic-mesh',
-        destination: '',
-        extension: 'zip',
-        latestVersion: 'v1.0.0',
-      }),
-    ).rejects.toThrowError(/The operating system windows with the CPU architecture amd64 is currently not supported!/)
+    await expect(fetchLatestVersion({ ...FETCH_ARGS, extension: 'zip' })).rejects.toThrowError(
+      /The operating system windows with the CPU architecture amd64 is currently not supported!/,
+    )
   })
 
-  test('should propagate non-404 errors', async () => {
+  test('throws the HTTP status on non-404 download errors', async () => {
     vi.mocked(fetch).mockResolvedValue({
       ok: false,
       status: 500,
@@ -90,18 +89,10 @@ describe('fetchLatestVersion', () => {
       text: () => Promise.resolve('Internal Server Error'),
     } as unknown as Response)
 
-    await expect(
-      fetchLatestVersion({
-        packageName: 'traffic-mesh-agent',
-        execName: 'traffic-mesh',
-        destination: '',
-        extension: 'zip',
-        latestVersion: 'v1.0.0',
-      }),
-    ).rejects.toThrowError(/Download failed: 500/)
+    await expect(fetchLatestVersion(FETCH_ARGS)).rejects.toThrowError(/Download failed: 500/)
   })
 
-  test('should map linux x64 to amd64 arch', async () => {
+  test('includes the platform and arch in the 404 error for linux-x64', async () => {
     processArchSpy.mockReturnValue('x64')
     processPlatformSpy.mockReturnValue('linux')
     vi.mocked(fetch).mockResolvedValue({
@@ -111,23 +102,14 @@ describe('fetchLatestVersion', () => {
       text: () => Promise.resolve('Not Found'),
     } as unknown as Response)
 
-    await expect(
-      fetchLatestVersion({
-        packageName: 'traffic-mesh-agent',
-        execName: 'traffic-mesh',
-        destination: '',
-        extension: 'zip',
-        latestVersion: 'v1.0.0',
-      }),
-    ).rejects.toThrowError(/The operating system linux with the CPU architecture amd64 is currently not supported!/)
+    await expect(fetchLatestVersion(FETCH_ARGS)).rejects.toThrowError(
+      /The operating system linux with the CPU architecture amd64 is currently not supported!/,
+    )
   })
 
-  test('should resolve latest tag from GitHub API when latestVersion is not provided', async () => {
+  test('resolves the latest tag from GitHub when latestVersion is omitted', async () => {
     vi.mocked(fetch)
-      .mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({ tag_name: 'v2.0.0' }),
-      } as unknown as Response)
+      .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ tag_name: 'v2.0.0' }) } as unknown as Response)
       .mockResolvedValueOnce({
         ok: false,
         status: 404,
@@ -135,14 +117,7 @@ describe('fetchLatestVersion', () => {
         text: () => Promise.resolve('Not Found'),
       } as unknown as Response)
 
-    await expect(
-      fetchLatestVersion({
-        packageName: 'traffic-mesh-agent',
-        execName: 'traffic-mesh',
-        destination: '',
-        extension: 'tar.gz',
-      }),
-    ).rejects.toThrowError()
+    await expect(fetchLatestVersion({ ...FETCH_ARGS, latestVersion: undefined })).rejects.toThrowError()
 
     expect(vi.mocked(fetch)).toHaveBeenCalledWith(
       'https://api.github.com/repos/netlify/traffic-mesh-agent/releases/latest',
@@ -154,53 +129,44 @@ describe('fetchLatestVersion', () => {
     )
   })
 
-  test('should throw on GitHub API error (e.g. rate limit)', async () => {
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: false,
-      status: 403,
-    } as unknown as Response)
+  test('throws when the GitHub releases API returns an error', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({ ok: false, status: 403 } as unknown as Response)
 
-    await expect(
-      fetchLatestVersion({
-        packageName: 'traffic-mesh-agent',
-        execName: 'traffic-mesh',
-        destination: '',
-        extension: 'tar.gz',
-      }),
-    ).rejects.toThrowError(/Failed to fetch latest release.*403/)
+    await expect(fetchLatestVersion({ ...FETCH_ARGS, latestVersion: undefined })).rejects.toThrowError(
+      /Failed to fetch latest release.*403/,
+    )
   })
 
-  test('should download and extract a tar.gz release', async () => {
+  test('downloads and extracts a tar.gz release to the destination', async () => {
     const destination = path.join(os.tmpdir(), `exec-fetcher-test-${String(Date.now())}`)
     const fileContent = 'hello from test binary'
 
-    const tarBuffer = await packTar([{ header: { name: 'test-binary', size: fileContent.length }, body: fileContent }])
-    const gzipped = gzipSync(Buffer.from(tarBuffer))
+    try {
+      const tarBuffer = await packTar([
+        { header: { name: 'test-binary', size: fileContent.length }, body: fileContent },
+      ])
+      const gzipped = gzipSync(Buffer.from(tarBuffer))
 
-    const body = new ReadableStream({
-      start(controller) {
-        controller.enqueue(gzipped)
-        controller.close()
-      },
-    })
-    vi.mocked(fetch).mockResolvedValue({
-      ok: true,
-      body,
-    } as unknown as Response)
+      vi.mocked(fetch).mockResolvedValue({
+        ok: true,
+        body: new ReadableStream({
+          start(controller) {
+            controller.enqueue(gzipped)
+            controller.close()
+          },
+        }),
+      } as unknown as Response)
 
-    await fetchLatestVersion({
-      packageName: 'traffic-mesh-agent',
-      execName: 'traffic-mesh',
-      destination,
-      extension: 'tar.gz',
-      latestVersion: 'v1.0.0',
-    })
+      await fetchLatestVersion({ ...FETCH_ARGS, destination })
 
-    const extracted = await readFile(path.join(destination, 'test-binary'), 'utf-8')
-    expect(extracted).toBe(fileContent)
+      const extracted = await readFile(path.join(destination, 'test-binary'), 'utf-8')
+      expect(extracted).toBe(fileContent)
+    } finally {
+      await rm(destination, { recursive: true, force: true })
+    }
   })
 
-  test('should include auth header when NETLIFY_TEST_GITHUB_TOKEN is set', async () => {
+  test('sends an Authorization header when NETLIFY_TEST_GITHUB_TOKEN is set', async () => {
     vi.stubEnv('NETLIFY_TEST_GITHUB_TOKEN', 'test-token-123')
 
     vi.mocked(fetch).mockResolvedValue({
@@ -210,15 +176,7 @@ describe('fetchLatestVersion', () => {
       text: () => Promise.resolve('error'),
     } as unknown as Response)
 
-    await expect(
-      fetchLatestVersion({
-        packageName: 'traffic-mesh-agent',
-        execName: 'traffic-mesh',
-        destination: '',
-        extension: 'tar.gz',
-        latestVersion: 'v1.0.0',
-      }),
-    ).rejects.toThrowError()
+    await expect(fetchLatestVersion(FETCH_ARGS)).rejects.toThrowError()
 
     expect(vi.mocked(fetch)).toHaveBeenCalledWith(
       expect.any(String),
