@@ -34,11 +34,7 @@ const resolveLatestTag = async (repository: string): Promise<string> => {
     headers: getGitHubHeaders(),
   })
   if (!response.ok) {
-    const text = await response.text()
-    if (response.status === 403 && text.includes('API rate limit exceeded')) {
-      throw new Error('GitHub API rate limit exceeded')
-    }
-    throw new Error(`Failed to fetch latest release for ${repository}: ${String(response.status)} ${text}`)
+    throw new Error(`Failed to fetch latest release for ${repository}: ${String(response.status)}`)
   }
   const data = (await response.json()) as { tag_name: string }
   return data.tag_name

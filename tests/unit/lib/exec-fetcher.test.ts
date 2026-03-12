@@ -154,11 +154,10 @@ describe('fetchLatestVersion', () => {
     )
   })
 
-  test('should throw on GitHub API rate limit', async () => {
+  test('should throw on GitHub API error (e.g. rate limit)', async () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: false,
       status: 403,
-      text: () => Promise.resolve('{"message":"API rate limit exceeded for ..."}'),
     } as unknown as Response)
 
     await expect(
@@ -168,7 +167,7 @@ describe('fetchLatestVersion', () => {
         destination: '',
         extension: 'tar.gz',
       }),
-    ).rejects.toThrowError(/GitHub API rate limit exceeded/)
+    ).rejects.toThrowError(/Failed to fetch latest release.*403/)
   })
 
   test('should download and extract a tar.gz release', async () => {
