@@ -75,13 +75,13 @@ describe('loginCheck', () => {
     const error = Object.assign(new Error('Internal Server Error'), { status: 500 })
     mocks.showTicket.mockRejectedValue(error)
 
-    await expect(loginCheck({ check: 'ticket-bad' })).rejects.toThrow('Internal Server Error')
+    await expect(loginCheck({ check: 'ticket-bad' }, apiOpts, globalConfig)).rejects.toThrow('Internal Server Error')
   })
 
   test('rethrows errors without a status from showTicket', async () => {
     mocks.showTicket.mockRejectedValue(new Error('Network failure'))
 
-    await expect(loginCheck({ check: 'ticket-bad' })).rejects.toThrow('Network failure')
+    await expect(loginCheck({ check: 'ticket-bad' }, apiOpts, globalConfig)).rejects.toThrow('Network failure')
   })
 
   test('outputs authorized and stores token when ticket is authorized', async () => {
