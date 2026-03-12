@@ -76,7 +76,15 @@ const downloadAndExtract = async (url: string, destination: string): Promise<voi
     const fileStream = createWriteStream(tmpFile)
     await pipeline(response.body, fileStream)
     try {
-      await execFile('unzip', ['-o', tmpFile, '-d', destination])
+      if (isWindows()) {
+        await execFile('powershell.exe', [
+          '-NoProfile',
+          '-Command',
+          `Expand-Archive -Force -Path '${tmpFile}' -DestinationPath '${destination}'`,
+        ])
+      } else {
+        await execFile('unzip', ['-o', tmpFile, '-d', destination])
+      }
     } finally {
       await unlink(tmpFile)
     }
