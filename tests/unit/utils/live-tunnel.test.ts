@@ -4,10 +4,6 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 
 import { startLiveTunnel, getLiveTunnelSlug } from '../../../src/utils/live-tunnel.js'
 
-vi.mock('node-fetch', () => ({
-  default: vi.fn(),
-}))
-
 vi.mock('../../../src/lib/exec-fetcher.js', () => ({
   shouldFetchLatestVersion: vi.fn().mockResolvedValue(false),
   fetchLatestVersion: vi.fn().mockResolvedValue(undefined),
@@ -50,16 +46,16 @@ vi.mock('p-wait-for', () => ({
 
 beforeEach(() => {
   vi.clearAllMocks()
+  vi.stubGlobal('fetch', vi.fn())
 })
 
 afterEach(() => {
   vi.restoreAllMocks()
+  vi.unstubAllGlobals()
 })
 
 describe('startLiveTunnel', () => {
   test('should create a live tunnel session and return the session URL', async () => {
-    const { default: fetch } = await import('node-fetch')
-
     vi.mocked(fetch)
       .mockResolvedValueOnce({
         status: 201,
@@ -97,8 +93,6 @@ describe('startLiveTunnel', () => {
   })
 
   test('should poll until the session is online', async () => {
-    const { default: fetch } = await import('node-fetch')
-
     vi.mocked(fetch)
       .mockResolvedValueOnce({
         status: 201,
@@ -125,7 +119,6 @@ describe('startLiveTunnel', () => {
   })
 
   test('should spawn the tunnel client binary with correct args', async () => {
-    const { default: fetch } = await import('node-fetch')
     const { default: execa } = await import('../../../src/utils/execa.js')
 
     vi.mocked(fetch)
@@ -154,7 +147,6 @@ describe('startLiveTunnel', () => {
   })
 
   test('should install the tunnel client if shouldFetchLatestVersion returns true', async () => {
-    const { default: fetch } = await import('node-fetch')
     const { shouldFetchLatestVersion, fetchLatestVersion } = await import('../../../src/lib/exec-fetcher.js')
 
     vi.mocked(shouldFetchLatestVersion).mockResolvedValueOnce(true)
@@ -186,7 +178,6 @@ describe('startLiveTunnel', () => {
   })
 
   test('should not install the tunnel client if shouldFetchLatestVersion returns false', async () => {
-    const { default: fetch } = await import('node-fetch')
     const { fetchLatestVersion } = await import('../../../src/lib/exec-fetcher.js')
 
     vi.mocked(fetch)
@@ -233,8 +224,6 @@ describe('startLiveTunnel', () => {
   })
 
   test('should throw if session creation fails', async () => {
-    const { default: fetch } = await import('node-fetch')
-
     vi.mocked(fetch).mockResolvedValueOnce({
       status: 422,
       json: () => Promise.resolve({ message: 'Slug already taken' }),
@@ -251,8 +240,6 @@ describe('startLiveTunnel', () => {
   })
 
   test('should throw if polling returns a non-200 status', async () => {
-    const { default: fetch } = await import('node-fetch')
-
     vi.mocked(fetch)
       .mockResolvedValueOnce({
         status: 201,
