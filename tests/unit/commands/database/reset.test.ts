@@ -1,21 +1,26 @@
 import { describe, expect, test, vi, beforeEach } from 'vitest'
 
-const { mockStart, mockStop, mockReset, MockNetlifyDev, logMessages, jsonMessages } = vi.hoisted(() => {
-  const mockStart = vi.fn().mockResolvedValue({})
-  const mockStop = vi.fn().mockResolvedValue(undefined)
-  const mockReset = vi.fn().mockResolvedValue(undefined)
-  const MockNetlifyDev = vi.fn().mockImplementation(() => ({
-    start: mockStart,
-    stop: mockStop,
-    db: { reset: mockReset },
-  }))
+const { mockResetDatabase, mockCleanup, mockExecutor, logMessages, jsonMessages } = vi.hoisted(() => {
+  const mockResetDatabase = vi.fn().mockResolvedValue(undefined)
+  const mockCleanup = vi.fn().mockResolvedValue(undefined)
+  const mockExecutor = {}
   const logMessages: string[] = []
   const jsonMessages: unknown[] = []
-  return { mockStart, mockStop, mockReset, MockNetlifyDev, logMessages, jsonMessages }
+  return { mockResetDatabase, mockCleanup, mockExecutor, logMessages, jsonMessages }
 })
 
 vi.mock('@netlify/dev', () => ({
-  NetlifyDev: MockNetlifyDev,
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+  resetDatabase: (...args: unknown[]) => mockResetDatabase(...args),
+}))
+
+vi.mock('../../../../src/commands/database/db-connection.js', () => ({
+  connectToDatabase: vi.fn().mockImplementation(() =>
+    Promise.resolve({
+      executor: mockExecutor,
+      cleanup: mockCleanup,
+    }),
+  ),
 }))
 
 vi.mock('../../../../src/utils/command-helpers.js', async () => ({
@@ -47,14 +52,14 @@ describe('reset', () => {
     logMessages.length = 0
     jsonMessages.length = 0
     vi.clearAllMocks()
+    mockResetDatabase.mockResolvedValue(undefined)
   })
 
-  test('starts NetlifyDev, resets the database, and stops', async () => {
+  test('resets the database and calls cleanup', async () => {
     await reset({}, createMockCommand())
 
-    expect(mockStart).toHaveBeenCalledOnce()
-    expect(mockReset).toHaveBeenCalledOnce()
-    expect(mockStop).toHaveBeenCalledOnce()
+    expect(mockResetDatabase).toHaveBeenCalledWith(mockExecutor)
+    expect(mockCleanup).toHaveBeenCalledOnce()
   })
 
   test('logs success message after reset', async () => {
@@ -70,22 +75,12 @@ describe('reset', () => {
     expect(jsonMessages[0]).toEqual({ reset: true })
   })
 
-  test('stops NetlifyDev even when reset throws', async () => {
-    mockReset.mockRejectedValueOnce(new Error('reset failed'))
+  test('calls cleanup even when reset throws', async () => {
+    mockResetDatabase.mockRejectedValueOnce(new Error('reset failed'))
 
     await expect(reset({}, createMockCommand())).rejects.toThrow('reset failed')
 
-    expect(mockStop).toHaveBeenCalledOnce()
-  })
-
-  test('throws when db is not available after start', async () => {
-    MockNetlifyDev.mockImplementationOnce(() => ({
-      start: mockStart,
-      stop: mockStop,
-      db: undefined,
-    }))
-
-    await expect(reset({}, createMockCommand())).rejects.toThrow('Local database failed to start')
+    expect(mockCleanup).toHaveBeenCalledOnce()
   })
 
   test('throws when project root cannot be determined', async () => {
