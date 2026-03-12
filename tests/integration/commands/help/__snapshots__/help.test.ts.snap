@@ -41,6 +41,9 @@ COMMANDS
   $ unlink       Unlink a local folder from a Netlify project
   $ watch        Watch for project deploy to finish
 
+To get started run: netlify login
+To ask a human for credentials: netlify login --request <msg>
+
 → For more help with the CLI, visit https://developers.netlify.com/cli
 → For help with Netlify, visit https://docs.netlify.com
 → To report a CLI bug, visit https://github.com/netlify/cli/issues"
