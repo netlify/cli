@@ -2,6 +2,7 @@ import { Option } from 'commander'
 import inquirer from 'inquirer'
 import BaseCommand from '../base-command.js'
 import type { DatabaseBoilerplateType, DatabaseInitOptions } from './init.js'
+import type { MigrationNewOptions } from './migration-new.js'
 
 export type Extension = {
   id: string
@@ -31,7 +32,9 @@ export const createDatabaseCommand = (program: BaseCommand) => {
       'netlify db status',
       'netlify db init',
       'netlify db init --help',
-      ...(process.env.EXPERIMENTAL_NETLIFY_DB_ENABLED === '1' ? ['netlify db migrate', 'netlify db reset'] : []),
+      ...(process.env.EXPERIMENTAL_NETLIFY_DB_ENABLED === '1'
+        ? ['netlify db migrate', 'netlify db reset', 'netlify db migration new']
+        : []),
     ])
 
   dbCommand
@@ -105,5 +108,27 @@ export const createDatabaseCommand = (program: BaseCommand) => {
         const { reset } = await import('./reset.js')
         await reset(options, command)
       })
+
+    const migrationCommand = dbCommand.command('migration').description('Manage database migrations')
+
+    migrationCommand
+      .command('new')
+      .description('Create a new migration')
+      .option('-d, --description <description>', 'Purpose of the migration (used to generate the file name)')
+      .addOption(
+        new Option('-s, --scheme <scheme>', 'Numbering scheme for migration prefixes').choices([
+          'sequential',
+          'timestamp',
+        ]),
+      )
+      .option('--json', 'Output result as JSON')
+      .action(async (options: MigrationNewOptions, command: BaseCommand) => {
+        const { migrationNew } = await import('./migration-new.js')
+        await migrationNew(options, command)
+      })
+      .addExamples([
+        'netlify db migration new',
+        'netlify db migration new --description "add users table" --scheme sequential',
+      ])
   }
 }
