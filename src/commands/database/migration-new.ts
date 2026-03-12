@@ -58,7 +58,7 @@ export const generateNextPrefix = (existingNames: string[], scheme: NumberingSch
   }
 
   const prefixes = existingNames.map((name) => {
-    const match = /^(\d+)/.exec(name)
+    const match = /^(\d{4})[_-]/.exec(name)
     return match ? parseInt(match[1], 10) : 0
   })
   const maxPrefix = prefixes.length > 0 ? Math.max(...prefixes) : 0
@@ -147,12 +147,19 @@ export const migrationNew = async (options: MigrationNewOptions, command: BaseCo
   }
 
   const slug = generateSlug(description)
+  if (!slug) {
+    throw new Error(
+      `Description "${description}" produces an empty slug. Use a description with alphanumeric characters (e.g. "add users table").`,
+    )
+  }
+
   const prefix = generateNextPrefix(existingMigrations, scheme)
   const folderName = `${prefix}_${slug}`
   const folderPath = join(migrationsDirectory, folderName)
+  const migrationFilePath = join(folderPath, 'migration.sql')
 
   await mkdir(folderPath, { recursive: true })
-  await writeFile(join(folderPath, 'migration.sql'), '-- Write your migration SQL here\n')
+  await writeFile(migrationFilePath, '-- Write your migration SQL here\n', { flag: 'wx' })
 
   if (json) {
     logJson({ path: folderPath, name: folderName })

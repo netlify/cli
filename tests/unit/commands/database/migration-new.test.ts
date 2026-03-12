@@ -73,6 +73,10 @@ describe('generateSlug', () => {
   ])('generates "$expected" from "$input"', ({ input, expected }) => {
     expect(generateSlug(input)).toBe(expected)
   })
+
+  test.each(['!!!', '___', '   ', '@#$%'])('returns empty string for non-alphanumeric input "%s"', (input) => {
+    expect(generateSlug(input)).toBe('')
+  })
 })
 
 describe('detectNumberingScheme', () => {
@@ -105,6 +109,10 @@ describe('generateNextPrefix', () => {
   test('generates timestamp prefix with 14 digits', () => {
     const prefix = generateNextPrefix([], 'timestamp')
     expect(prefix).toMatch(/^\d{14}$/)
+  })
+
+  test('ignores timestamp-style names when computing sequential prefix', () => {
+    expect(generateNextPrefix(['20260312143000_add-users', '0003_add-posts'], 'sequential')).toBe('0004')
   })
 })
 
@@ -164,6 +172,9 @@ describe('migrationNew', () => {
     expect(mockWriteFile).toHaveBeenCalledWith(
       join(expectedFolder, 'migration.sql'),
       '-- Write your migration SQL here\n',
+      {
+        flag: 'wx',
+      },
     )
   })
 
@@ -210,6 +221,25 @@ describe('migrationNew', () => {
     const mkdirCall = mockMkdir.mock.calls[0][0] as string
     const folderName = mkdirCall.split(/[/\\]/).pop() ?? ''
     expect(folderName).toMatch(/^\d{14}_add-posts-table$/)
+  })
+
+  test('throws when description produces an empty slug', async () => {
+    await expect(migrationNew({ description: '!!!', scheme: 'sequential' }, createMockCommand())).rejects.toThrow(
+      'produces an empty slug',
+    )
+
+    expect(mockMkdir).not.toHaveBeenCalled()
+    expect(mockWriteFile).not.toHaveBeenCalled()
+  })
+
+  test('throws when migration file already exists', async () => {
+    const existsError = new Error('EEXIST: file already exists') as NodeJS.ErrnoException
+    existsError.code = 'EEXIST'
+    mockWriteFile.mockRejectedValueOnce(existsError)
+
+    await expect(
+      migrationNew({ description: 'add posts table', scheme: 'sequential' }, createMockCommand()),
+    ).rejects.toThrow()
   })
 
   test('handles empty migrations directory gracefully', async () => {
