@@ -94,7 +94,7 @@
     "debug": "4.4.3",
     "decache": "4.6.2",
     "dot-prop": "10.1.0",
-    "dotenv": "17.2.3",
+    "dotenv": "17.3.1",
     "env-paths": "4.0.0",
     "envinfo": "7.15.0",
     "etag": "1.8.1",
