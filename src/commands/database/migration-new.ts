@@ -116,34 +116,19 @@ export const migrationNew = async (options: MigrationNewOptions, command: BaseCo
   }
 
   if (!scheme) {
-    if (detectedScheme) {
-      const answers = await inquirer.prompt<{ scheme: NumberingScheme }>([
-        {
-          type: 'list',
-          name: 'scheme',
-          message: 'Numbering scheme:',
-          choices: [
-            { name: 'Sequential (0001, 0002, ...)', value: 'sequential' },
-            { name: 'Timestamp (20260312143000)', value: 'timestamp' },
-          ],
-          default: detectedScheme,
-        },
-      ])
-      scheme = answers.scheme
-    } else {
-      const answers = await inquirer.prompt<{ scheme: NumberingScheme }>([
-        {
-          type: 'list',
-          name: 'scheme',
-          message: 'Numbering scheme:',
-          choices: [
-            { name: 'Sequential (0001, 0002, ...)', value: 'sequential' },
-            { name: 'Timestamp (20260312143000)', value: 'timestamp' },
-          ],
-        },
-      ])
-      scheme = answers.scheme
-    }
+    const answers = await inquirer.prompt<{ scheme: NumberingScheme }>([
+      {
+        type: 'list',
+        name: 'scheme',
+        message: 'Numbering scheme:',
+        choices: [
+          { name: 'Sequential (0001, 0002, ...)', value: 'sequential' },
+          { name: 'Timestamp (20260312143000)', value: 'timestamp' },
+        ],
+        ...(detectedScheme && { default: detectedScheme }),
+      },
+    ])
+    scheme = answers.scheme
   }
 
   const slug = generateSlug(description)
