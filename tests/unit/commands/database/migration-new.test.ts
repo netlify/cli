@@ -259,8 +259,8 @@ describe('migrationNew', () => {
     permError.code = 'EACCES'
     mockReaddir.mockRejectedValue(permError)
 
-    await expect(
-      migrationNew({ description: 'add table', scheme: 'sequential' }, createMockCommand()),
-    ).rejects.toThrow('EACCES')
+    await expect(migrationNew({ description: 'add table', scheme: 'sequential' }, createMockCommand())).rejects.toThrow(
+      'EACCES',
+    )
   })
 })
