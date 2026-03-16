@@ -144,7 +144,15 @@ export const migrationNew = async (options: MigrationNewOptions, command: BaseCo
   const migrationFilePath = join(folderPath, 'migration.sql')
 
   await mkdir(folderPath, { recursive: true })
-  await writeFile(migrationFilePath, '-- Write your migration SQL here\n', { flag: 'wx' })
+  await writeFile(migrationFilePath, `-- Write your migration SQL here
+--
+-- Example:
+--   CREATE TABLE IF NOT EXISTS users (
+--     id SERIAL PRIMARY KEY,
+--     name TEXT NOT NULL,
+--     created_at TIMESTAMP DEFAULT NOW()
+--   );
+`, { flag: 'wx' })
 
   if (json) {
     logJson({ path: folderPath, name: folderName })

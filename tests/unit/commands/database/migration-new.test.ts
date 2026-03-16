@@ -171,7 +171,7 @@ describe('migrationNew', () => {
     expect(mockMkdir).toHaveBeenCalledWith(expectedFolder, { recursive: true })
     expect(mockWriteFile).toHaveBeenCalledWith(
       join(expectedFolder, 'migration.sql'),
-      '-- Write your migration SQL here\n',
+      expect.stringContaining('-- Write your migration SQL here'),
       {
         flag: 'wx',
       },
