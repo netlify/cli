@@ -51,7 +51,7 @@ type Analytics = {
 inquirer.registerPrompt('autocomplete', inquirerAutocompletePrompt)
 /** Netlify CLI client id. Lives in bot@netlify.com */
 // TODO: setup client for multiple environments
-const CLIENT_ID = 'd6f37de6614df7ae58664cfca524744d73807a377f5ee71f1a254f78412e3750'
+export const CLIENT_ID = 'd6f37de6614df7ae58664cfca524744d73807a377f5ee71f1a254f78412e3750'
 
 const NANO_SECS_TO_MSECS = 1e6
 /** The fallback width for the help terminal */
@@ -173,6 +173,26 @@ export type BaseOptionValues = {
   httpProxy?: string
   silent?: string
   verbose?: boolean
+}
+
+export function storeToken(
+  globalConfig: Awaited<ReturnType<typeof getGlobalConfigStore>>,
+  { userId, name, email, accessToken }: { userId: string; name?: string; email?: string; accessToken: string },
+) {
+  const userData = merge(globalConfig.get(`users.${userId}`), {
+    id: userId,
+    name,
+    email,
+    auth: {
+      token: accessToken,
+      github: {
+        user: undefined,
+        token: undefined,
+      },
+    },
+  })
+  globalConfig.set('userId', userId)
+  globalConfig.set(`users.${userId}`, userData)
 }
 
 /** Base command class that provides tracking and config initialization */
@@ -441,6 +461,9 @@ export default class BaseCommand extends Command {
 
     log(`Opening ${authLink}`)
     await openBrowser({ url: authLink })
+    log()
+    log(`To request authorization from a human, run: ${chalk.cyanBright('netlify login --request "<msg>"')}`)
+    log()
 
     const accessToken = await pollForToken({
       api: this.netlify.api,
@@ -448,23 +471,11 @@ export default class BaseCommand extends Command {
     })
 
     const { email, full_name: name, id: userId } = await this.netlify.api.getCurrentUser()
+    if (!userId) {
+      return logAndThrowError('Could not retrieve user ID from Netlify API')
+    }
 
-    const userData = merge(this.netlify.globalConfig.get(`users.${userId}`), {
-      id: userId,
-      name,
-      email,
-      auth: {
-        token: accessToken,
-        github: {
-          user: undefined,
-          token: undefined,
-        },
-      },
-    })
-    // Set current userId
-    this.netlify.globalConfig.set('userId', userId)
-    // Set user data
-    this.netlify.globalConfig.set(`users.${userId}`, userData)
+    storeToken(this.netlify.globalConfig, { userId, name, email, accessToken })
 
     await identify({
       name,
