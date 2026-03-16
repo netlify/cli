@@ -187,7 +187,13 @@ const hashFns = async (
   const fnConfig = functionZips
     .filter((func) =>
       Boolean(
-        func.displayName || func.generator || func.routes || func.buildData || func.priority || func.trafficRules || func.eventSubscriptions,
+        func.displayName ||
+          func.generator ||
+          func.routes ||
+          func.buildData ||
+          func.priority ||
+          func.trafficRules ||
+          func.eventSubscriptions,
       ),
     )
     .reduce(
