@@ -242,13 +242,25 @@ describe('migrationNew', () => {
     ).rejects.toThrow()
   })
 
-  test('handles empty migrations directory gracefully', async () => {
-    mockReaddir.mockRejectedValue(new Error('ENOENT'))
+  test('handles missing migrations directory gracefully', async () => {
+    const readError = new Error('ENOENT: no such file or directory') as NodeJS.ErrnoException
+    readError.code = 'ENOENT'
+    mockReaddir.mockRejectedValue(readError)
 
     await migrationNew({ description: 'initial migration', scheme: 'sequential' }, createMockCommand())
 
     expect(mockMkdir).toHaveBeenCalledWith(join('/project/netlify/db/migrations', '0001_initial-migration'), {
       recursive: true,
     })
+  })
+
+  test('rethrows non-ENOENT readdir errors', async () => {
+    const permError = new Error('EACCES: permission denied') as NodeJS.ErrnoException
+    permError.code = 'EACCES'
+    mockReaddir.mockRejectedValue(permError)
+
+    await expect(
+      migrationNew({ description: 'add table', scheme: 'sequential' }, createMockCommand()),
+    ).rejects.toThrow('EACCES')
   })
 })

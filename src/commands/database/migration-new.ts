@@ -72,8 +72,11 @@ const getExistingMigrationNames = async (migrationsDirectory: string): Promise<s
       .filter((entry) => entry.isDirectory())
       .map((entry) => entry.name)
       .sort()
-  } catch {
-    return []
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      return []
+    }
+    throw error
   }
 }
 
