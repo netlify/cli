@@ -33,7 +33,7 @@ export const createDatabaseCommand = (program: BaseCommand) => {
       'netlify db init',
       'netlify db init --help',
       ...(process.env.EXPERIMENTAL_NETLIFY_DB_ENABLED === '1'
-        ? ['netlify db migrate', 'netlify db reset', 'netlify db migration new']
+        ? ['netlify db connection-string', 'netlify db migrate', 'netlify db reset', 'netlify db migration new']
         : []),
     ])
 
@@ -90,6 +90,15 @@ export const createDatabaseCommand = (program: BaseCommand) => {
     })
 
   if (process.env.EXPERIMENTAL_NETLIFY_DB_ENABLED === '1') {
+    dbCommand
+      .command('connection-string')
+      .description('Print the connection string for the local development database')
+      .option('--json', 'Output result as JSON')
+      .action(async (options: { json?: boolean }, command: BaseCommand) => {
+        const { connectionString } = await import('./connection-string.js')
+        connectionString(options, command)
+      })
+
     dbCommand
       .command('migrate')
       .description('Apply database migrations to the local development database')
