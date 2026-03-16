@@ -24,6 +24,7 @@ beforeEach(() => {
 afterEach(() => {
   vi.clearAllMocks()
   vi.unstubAllGlobals()
+  vi.unstubAllEnvs()
   processArchSpy.mockReset()
   processPlatformSpy.mockReset()
 })

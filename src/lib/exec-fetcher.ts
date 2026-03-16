@@ -76,7 +76,7 @@ const downloadAndExtract = async (url: string, destination: string): Promise<voi
         await execFile('powershell.exe', [
           '-NoProfile',
           '-Command',
-          `Expand-Archive -Force -Path '${tmpFile}' -DestinationPath '${destination}'`,
+          `Expand-Archive -Force -LiteralPath '${tmpFile}' -DestinationPath '${destination}'`,
         ])
       } else {
         await execFile('unzip', ['-o', tmpFile, '-d', destination])
