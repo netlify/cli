@@ -7,13 +7,27 @@ import { login } from '../login/login.js'
 
 const LOGIN_NEW = 'I would like to login to a new account'
 
-export const switchCommand = async (_options: OptionValues, command: BaseCommand) => {
+export const switchCommand = async (options: OptionValues, command: BaseCommand) => {
   const availableUsersChoices = Object.values(command.netlify.globalConfig.get('users') || {}).reduce(
     (prev, current) =>
       // @ts-expect-error TS(2769) FIXME: No overload matches this call.
       Object.assign(prev, { [current.id]: current.name ? `${current.name} (${current.email})` : current.email }),
     {},
   )
+
+  if (options.email) {
+    const matchedAccount = Object.entries(availableUsersChoices as Record<string, string>).find(([, label]) =>
+      label.includes(options.email),
+    )
+    if (matchedAccount) {
+      command.netlify.globalConfig.set('userId', matchedAccount[0])
+      log('')
+      log(`You're now using ${chalk.bold(matchedAccount[1])}.`)
+      return
+    }
+    log(`No account found matching ${chalk.bold(options.email)}, showing all available accounts.`)
+    log('')
+  }
 
   const { accountSwitchChoice } = await inquirer.prompt([
     {
