@@ -67,13 +67,14 @@ describe('switchCommand', () => {
     expect(mockPrompt).toHaveBeenCalled()
   })
 
-  test('--email matches partial email strings', async () => {
-    const { command, mockSet } = createCommand()
+  test('--email does not match partial email strings', async () => {
+    const { command } = createCommand()
+    mockPrompt.mockResolvedValueOnce({ accountSwitchChoice: 'Bob (bob@corp.com)' })
 
     await switchCommand({ email: 'bob@corp' }, command)
 
-    expect(mockSet).toHaveBeenCalledWith('userId', 'user-2')
-    expect(mockPrompt).not.toHaveBeenCalled()
+    expect(logMessages.some((m) => m.includes('No account found matching'))).toBe(true)
+    expect(mockPrompt).toHaveBeenCalled()
   })
 
   test('without --email shows interactive prompt', async () => {

@@ -8,21 +8,22 @@ import { login } from '../login/login.js'
 const LOGIN_NEW = 'I would like to login to a new account'
 
 export const switchCommand = async (options: OptionValues, command: BaseCommand) => {
-  const availableUsersChoices = Object.values(command.netlify.globalConfig.get('users') || {}).reduce(
+  const users = (command.netlify.globalConfig.get('users') || {}) as Record<
+    string,
+    { id: string; name?: string; email: string }
+  >
+  const availableUsersChoices = Object.values(users).reduce<Record<string, string>>(
     (prev, current) =>
-      // @ts-expect-error TS(2769) FIXME: No overload matches this call.
       Object.assign(prev, { [current.id]: current.name ? `${current.name} (${current.email})` : current.email }),
     {},
   )
 
   if (options.email) {
-    const matchedAccount = Object.entries(availableUsersChoices as Record<string, string>).find(([, label]) =>
-      label.includes(options.email),
-    )
-    if (matchedAccount) {
-      command.netlify.globalConfig.set('userId', matchedAccount[0])
+    const matchedUser = Object.values(users).find((user) => user.email === options.email)
+    if (matchedUser) {
+      command.netlify.globalConfig.set('userId', matchedUser.id)
       log('')
-      log(`You're now using ${chalk.bold(matchedAccount[1])}.`)
+      log(`You're now using ${chalk.bold(availableUsersChoices[matchedUser.id])}.`)
       return
     }
     log(`No account found matching ${chalk.bold(options.email)}, showing all available accounts.`)
