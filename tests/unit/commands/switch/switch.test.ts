@@ -37,7 +37,7 @@ const createCommand = (usersData = users) => {
         set: mockSet,
       },
     },
-  }
+  } as unknown as Parameters<typeof switchCommand>[1]
   return { command, mockSet }
 }
 
@@ -50,7 +50,7 @@ describe('switchCommand', () => {
   test('--email auto-switches when a match is found', async () => {
     const { command, mockSet } = createCommand()
 
-    await switchCommand({ email: 'alice@example.com' }, command as any)
+    await switchCommand({ email: 'alice@example.com' }, command)
 
     expect(mockSet).toHaveBeenCalledWith('userId', 'user-1')
     expect(logMessages.some((m) => m.includes('Alice'))).toBe(true)
@@ -61,7 +61,7 @@ describe('switchCommand', () => {
     const { command } = createCommand()
     mockPrompt.mockResolvedValueOnce({ accountSwitchChoice: 'Bob (bob@corp.com)' })
 
-    await switchCommand({ email: 'nobody@example.com' }, command as any)
+    await switchCommand({ email: 'nobody@example.com' }, command)
 
     expect(logMessages.some((m) => m.includes('No account found matching'))).toBe(true)
     expect(mockPrompt).toHaveBeenCalled()
@@ -70,7 +70,7 @@ describe('switchCommand', () => {
   test('--email matches partial email strings', async () => {
     const { command, mockSet } = createCommand()
 
-    await switchCommand({ email: 'bob@corp' }, command as any)
+    await switchCommand({ email: 'bob@corp' }, command)
 
     expect(mockSet).toHaveBeenCalledWith('userId', 'user-2')
     expect(mockPrompt).not.toHaveBeenCalled()
@@ -80,7 +80,7 @@ describe('switchCommand', () => {
     const { command, mockSet } = createCommand()
     mockPrompt.mockResolvedValueOnce({ accountSwitchChoice: 'Alice (alice@example.com)' })
 
-    await switchCommand({}, command as any)
+    await switchCommand({}, command)
 
     expect(mockPrompt).toHaveBeenCalled()
     expect(mockSet).toHaveBeenCalledWith('userId', 'user-1')
@@ -90,7 +90,7 @@ describe('switchCommand', () => {
     const { command } = createCommand()
     mockPrompt.mockResolvedValueOnce({ accountSwitchChoice: 'I would like to login to a new account' })
 
-    await switchCommand({}, command as any)
+    await switchCommand({}, command)
 
     expect(mockLogin).toHaveBeenCalledWith({ new: true }, command)
   })
