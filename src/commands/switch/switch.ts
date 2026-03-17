@@ -35,7 +35,6 @@ export const switchCommand = async (options: OptionValues, command: BaseCommand)
       type: 'list',
       name: 'accountSwitchChoice',
       message: 'Please select the account you want to use:',
-      // @ts-expect-error TS(2769) FIXME: No overload matches this call.
       choices: [...Object.entries(availableUsersChoices).map(([, val]) => val), LOGIN_NEW],
     },
   ])
@@ -43,7 +42,6 @@ export const switchCommand = async (options: OptionValues, command: BaseCommand)
   if (accountSwitchChoice === LOGIN_NEW) {
     await login({ new: true }, command)
   } else {
-    // @ts-expect-error TS(2769) FIXME: No overload matches this call.
     const selectedAccount = Object.entries(availableUsersChoices).find(
       ([, availableUsersChoice]) => availableUsersChoice === accountSwitchChoice,
     )
