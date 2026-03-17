@@ -96,7 +96,7 @@
     "dot-prop": "10.1.0",
     "dotenv": "17.3.1",
     "env-paths": "4.0.0",
-    "envinfo": "7.15.0",
+    "envinfo": "7.21.0",
     "etag": "1.8.1",
     "execa": "5.1.1",
     "express": "5.2.1",
