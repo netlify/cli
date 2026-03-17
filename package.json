@@ -89,7 +89,7 @@
     "commander": "12.1.0",
     "comment-json": "4.6.2",
     "content-type": "1.0.5",
-    "cookie": "1.0.2",
+    "cookie": "1.1.1",
     "cron-parser": "4.9.0",
     "debug": "4.4.3",
     "decache": "4.6.2",
