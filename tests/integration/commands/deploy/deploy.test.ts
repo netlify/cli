@@ -1439,7 +1439,7 @@ describe.concurrent('deploy command', () => {
         await builder.build()
 
         await callCli(
-          ['deploy', '--json', '--no-build', '--filter', 'packages/app-astro'],
+          ['deploy', '--json', '--no-build', '--filter', path.join('packages', 'app-astro')],
           getCLIOptions({ apiUrl: mockApi.apiUrl, builder }),
         ).then(parseDeploy)
 
@@ -1451,7 +1451,7 @@ describe.concurrent('deploy command', () => {
         deployState.reset()
 
         await callCli(
-          ['deploy', '--json', '--no-build', '--filter', 'packages/app-tanstack'],
+          ['deploy', '--json', '--no-build', '--filter', path.join('packages', 'app-tanstack')],
           getCLIOptions({ apiUrl: mockApi.apiUrl, builder }),
         ).then(parseDeploy)
 
@@ -1500,7 +1500,7 @@ describe.concurrent('deploy command', () => {
         await builder.build()
 
         await callCli(
-          ['deploy', '--json', '--no-build', '--cwd', 'packages/app-astro'],
+          ['deploy', '--json', '--no-build', '--cwd', path.join('packages', 'app-astro')],
           getCLIOptions({ apiUrl: mockApi.apiUrl, builder }),
         ).then(parseDeploy)
 
@@ -1512,7 +1512,7 @@ describe.concurrent('deploy command', () => {
         deployState.reset()
 
         await callCli(
-          ['deploy', '--json', '--no-build', '--cwd', 'packages/app-tanstack'],
+          ['deploy', '--json', '--no-build', '--cwd', path.join('packages', 'app-tanstack')],
           getCLIOptions({ apiUrl: mockApi.apiUrl, builder }),
         ).then(parseDeploy)
 
