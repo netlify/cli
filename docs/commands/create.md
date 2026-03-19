@@ -26,11 +26,12 @@ netlify create
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `json` (*boolean*) - output result as JSON
 - `model` (*string*) - model to use for the agent
+- `name` (*string*) - project name (subdomain)
 - `no-wait` (*boolean*) - return immediately after starting the agent run without polling for completion
 - `prompt` (*string*) - description of the site to create
+- `team` (*string*) - team slug to create the site in
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
-- `team` (*string*) - team slug to create the site in
 
 **Examples**
 
@@ -38,6 +39,7 @@ netlify create
 netlify create "a portfolio site"
 netlify create --prompt "a blog with dark mode" --agent claude
 netlify create "landing page for a coffee shop" --team my-team
+netlify create "an e-commerce store" --name my-store
 netlify create "an e-commerce store" --no-wait
 ```
 

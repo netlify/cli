@@ -361,6 +361,87 @@ describe('create command', () => {
     })
   })
 
+  describe('--name flag', () => {
+    test('should pass name in site creation body', async (t) => {
+      const routes = [
+        ...baseRoutes,
+        { path: 'test-account/sites', method: 'POST' as const, response: mockCreatedSite },
+        { path: 'agent_runners', method: 'POST' as const, response: mockAgentRunner },
+      ]
+
+      await withSiteBuilder(t, async (builder) => {
+        await builder.build()
+
+        await withMockApi(routes, async ({ apiUrl, requests }) => {
+          await callCli(
+            ['create', 'Build a site', '--agent', 'claude', '--no-wait', '--team', 'test-account', '--name', 'my-cool-site'],
+            getCLIOptions({ apiUrl, builder, env: { NETLIFY_SITE_ID: '' } }),
+          )
+
+          const siteCreateRequest = requests.find(
+            (r) => r.path === '/api/v1/test-account/sites' && r.method === 'POST',
+          )
+          expect(siteCreateRequest).toBeDefined()
+          expect(siteCreateRequest!.body).toEqual(
+            expect.objectContaining({ name: 'my-cool-site', created_via: 'agent_runner' }),
+          )
+        })
+      })
+    })
+
+    test('should fail after retries exhausted on name collision', async (t) => {
+      const routes = [
+        ...baseRoutes,
+        { path: 'test-account/sites', method: 'POST' as const, status: 422, response: { error: 'subdomain must be unique' } },
+      ]
+
+      await withSiteBuilder(t, async (builder) => {
+        await builder.build()
+
+        await withMockApi(routes, async ({ apiUrl, requests }) => {
+          await expect(
+            callCli(
+              ['create', 'Build a site', '--agent', 'claude', '--team', 'test-account', '--name', 'taken-name'],
+              getCLIOptions({ apiUrl, builder, env: { NETLIFY_SITE_ID: '' } }),
+            ),
+          ).rejects.toThrow('already taken')
+
+          const siteCreateRequests = requests.filter(
+            (r) => r.path === '/api/v1/test-account/sites' && r.method === 'POST',
+          )
+          // Original attempt + 2 retries = 3 total
+          expect(siteCreateRequests).toHaveLength(3)
+        })
+      })
+    })
+
+    test('should not retry on 422 when no --name is given', async (t) => {
+      const routes = [
+        ...baseRoutes,
+        { path: 'test-account/sites', method: 'POST' as const, status: 422, response: { error: 'subdomain must be unique' } },
+      ]
+
+      await withSiteBuilder(t, async (builder) => {
+        await builder.build()
+
+        await withMockApi(routes, async ({ apiUrl, requests }) => {
+          await expect(
+            callCli(
+              ['create', 'Build a site', '--agent', 'claude', '--team', 'test-account'],
+              getCLIOptions({ apiUrl, builder, env: { NETLIFY_SITE_ID: '' } }),
+            ),
+          ).rejects.toThrow()
+
+          const siteCreateRequests = requests.filter(
+            (r) => r.path === '/api/v1/test-account/sites' && r.method === 'POST',
+          )
+          // Should only try once without --name
+          expect(siteCreateRequests).toHaveLength(1)
+        })
+      })
+    })
+  })
+
   describe('API request validation', () => {
     test('should send created_via: agent_runner when creating site', async (t) => {
       const routes = [

@@ -1,7 +1,7 @@
 import type { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 
-import { chalk, logAndThrowError, log, logJson } from '../../utils/command-helpers.js'
+import { chalk, logAndThrowError, log, logJson, warn, type APIError } from '../../utils/command-helpers.js'
 import { startSpinner, stopSpinner } from '../../lib/spinner.js'
 import { track } from '../../utils/telemetry/index.js'
 import type BaseCommand from '../base-command.js'
@@ -14,6 +14,7 @@ interface CreateOptions extends OptionValues {
   prompt?: string
   agent?: string
   model?: string
+  name?: string
   team?: string
   wait?: boolean
 }
@@ -51,7 +52,7 @@ export const createAction = async (promptArg: string, options: CreateOptions, co
 
   await command.authenticate()
 
-  const { prompt, agent: initialAgent, model, team: teamFlag } = options
+  const { prompt, agent: initialAgent, model, name: siteName, team: teamFlag } = options
 
   // Resolve prompt
   let finalPrompt: string
@@ -119,23 +120,44 @@ export const createAction = async (promptArg: string, options: CreateOptions, co
     return logAndThrowError('No account found. Please log in first.')
   }
 
-  // Step 1: Create site
+  // Step 1: Create site (with retry on name collision)
+  const MAX_NAME_RETRIES = 2
   const siteSpinner = startSpinner({ text: 'Creating project...' })
 
   let site: SiteInfo
-  try {
-    site = (await api.createSiteInTeam({
-      accountSlug,
-      body: {
-        created_via: 'agent_runner',
-      } as Record<string, unknown>,
-    })) as unknown as SiteInfo
+  let nameAttempt = siteName
+  let retries = 0
 
-    stopSpinner({ spinner: siteSpinner })
-    log(`${chalk.green('✓')} Project created: ${chalk.cyan(site.name)}`)
-  } catch (error_) {
-    stopSpinner({ spinner: siteSpinner, error: true })
-    return logAndThrowError(`Failed to create project: ${(error_ as Error).message}`)
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  while (true) {
+    try {
+      const body: Record<string, unknown> = { created_via: 'agent_runner' }
+      if (nameAttempt) {
+        body.name = nameAttempt.trim()
+      }
+
+      site = (await api.createSiteInTeam({
+        accountSlug,
+        body,
+      })) as unknown as SiteInfo
+
+      stopSpinner({ spinner: siteSpinner })
+      log(`${chalk.green('✓')} Project created: ${chalk.cyan(site.name)}`)
+      break
+    } catch (error_) {
+      if ((error_ as APIError).status === 422 && siteName && retries < MAX_NAME_RETRIES) {
+        retries++
+        const suffix = Math.floor(Math.random() * 900 + 100).toString()
+        nameAttempt = `${siteName}-${suffix}`
+        warn(`${siteName}.netlify.app already exists. Trying ${nameAttempt}...`)
+        continue
+      }
+      stopSpinner({ spinner: siteSpinner, error: true })
+      if ((error_ as APIError).status === 422) {
+        return logAndThrowError(`Project name "${String(nameAttempt ?? siteName)}" is already taken. Please try a different name.`)
+      }
+      return logAndThrowError(`Failed to create project: ${(error_ as Error).message}`)
+    }
   }
 
   // Step 2: Create agent runner
