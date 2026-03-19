@@ -67,7 +67,7 @@ describe('create command', () => {
 
         await withMockApi(routes, async ({ apiUrl }) => {
           const cliResponse = (await callCli(
-            ['create', 'Build a fancy portfolio site', '--agent', 'claude', '--no-wait', '--team', 'test-account'],
+            ['create', 'Build a fancy portfolio site', '--agent', 'claude', '--no-wait', '--account-slug', 'test-account'],
             getCLIOptions({ apiUrl, builder, env: { NETLIFY_SITE_ID: '' } }),
           )) as string
 
@@ -103,7 +103,7 @@ describe('create command', () => {
               'claude',
               '--no-wait',
               '--json',
-              '--team',
+              '--account-slug',
               'test-account',
             ],
             {
@@ -141,7 +141,7 @@ describe('create command', () => {
 
         await withMockApi(routes, async ({ apiUrl }) => {
           const cliResponse = (await callCli(
-            ['create', 'Build a fancy site', '--agent', 'claude', '--team', 'test-account'],
+            ['create', 'Build a fancy site', '--agent', 'claude', '--account-slug', 'test-account'],
             getCLIOptions({ apiUrl, builder, env: { NETLIFY_SITE_ID: '' } }),
           )) as string
 
@@ -166,7 +166,7 @@ describe('create command', () => {
 
         await withMockApi(routes, async ({ apiUrl }) => {
           const cliResponse = (await callCli(
-            ['create', 'Build a broken site', '--agent', 'claude', '--team', 'test-account'],
+            ['create', 'Build a broken site', '--agent', 'claude', '--account-slug', 'test-account'],
             getCLIOptions({ apiUrl, builder, env: { NETLIFY_SITE_ID: '' } }),
           )) as string
 
@@ -195,7 +195,7 @@ describe('create command', () => {
         await withMockApi(routes, async ({ apiUrl }) => {
           const { stdout } = await execa(
             cliPath,
-            ['create', 'Build a blog', '--agent', 'claude', '--json', '--team', 'test-account'],
+            ['create', 'Build a blog', '--agent', 'claude', '--json', '--account-slug', 'test-account'],
             {
               cwd: builder.directory,
               env: { NETLIFY_API_URL: apiUrl, NETLIFY_AUTH_TOKEN: 'fake-token' },
@@ -228,7 +228,7 @@ describe('create command', () => {
         await withMockApi(routes, async ({ apiUrl }) => {
           await expect(
             callCli(
-              ['create', 'Build a site', '--agent', 'claude', '--team', 'test-account'],
+              ['create', 'Build a site', '--agent', 'claude', '--account-slug', 'test-account'],
               getCLIOptions({ apiUrl, builder, env: { NETLIFY_SITE_ID: '' } }),
             ),
           ).rejects.toThrow()
@@ -249,7 +249,7 @@ describe('create command', () => {
         await withMockApi(routes, async ({ apiUrl }) => {
           await expect(
             callCli(
-              ['create', 'Build a site', '--agent', 'claude', '--team', 'test-account'],
+              ['create', 'Build a site', '--agent', 'claude', '--account-slug', 'test-account'],
               getCLIOptions({ apiUrl, builder, env: { NETLIFY_SITE_ID: '' } }),
             ),
           ).rejects.toThrow()
@@ -266,7 +266,7 @@ describe('create command', () => {
         await withMockApi(baseRoutes, async ({ apiUrl }) => {
           await expect(
             callCli(
-              ['create', 'hi', '--agent', 'claude', '--team', 'test-account'],
+              ['create', 'hi', '--agent', 'claude', '--account-slug', 'test-account'],
               getCLIOptions({ apiUrl, builder, env: { NETLIFY_SITE_ID: '' } }),
             ),
           ).rejects.toThrow('Please provide a more detailed prompt')
@@ -281,7 +281,7 @@ describe('create command', () => {
         await withMockApi(baseRoutes, async ({ apiUrl }) => {
           await expect(
             callCli(
-              ['create', 'Build a great site', '--agent', 'invalid-agent', '--team', 'test-account'],
+              ['create', 'Build a great site', '--agent', 'invalid-agent', '--account-slug', 'test-account'],
               getCLIOptions({ apiUrl, builder, env: { NETLIFY_SITE_ID: '' } }),
             ),
           ).rejects.toThrow('Invalid agent')
@@ -302,7 +302,7 @@ describe('create command', () => {
         await builder.build()
 
         await withMockApi(routes, async ({ apiUrl }) => {
-          const childProcess = execa(cliPath, ['create', '--agent', 'claude', '--no-wait', '--team', 'test-account'], {
+          const childProcess = execa(cliPath, ['create', '--agent', 'claude', '--no-wait', '--account-slug', 'test-account'], {
             cwd: builder.directory,
             env: { NETLIFY_API_URL: apiUrl, NETLIFY_AUTH_TOKEN: 'fake-token' },
           })
@@ -374,7 +374,7 @@ describe('create command', () => {
 
         await withMockApi(routes, async ({ apiUrl, requests }) => {
           await callCli(
-            ['create', 'Build a site', '--agent', 'claude', '--no-wait', '--team', 'test-account', '--name', 'my-cool-site'],
+            ['create', 'Build a site', '--agent', 'claude', '--no-wait', '--account-slug', 'test-account', '--name', 'my-cool-site'],
             getCLIOptions({ apiUrl, builder, env: { NETLIFY_SITE_ID: '' } }),
           )
 
@@ -401,7 +401,7 @@ describe('create command', () => {
         await withMockApi(routes, async ({ apiUrl, requests }) => {
           await expect(
             callCli(
-              ['create', 'Build a site', '--agent', 'claude', '--team', 'test-account', '--name', 'taken-name'],
+              ['create', 'Build a site', '--agent', 'claude', '--account-slug', 'test-account', '--name', 'taken-name'],
               getCLIOptions({ apiUrl, builder, env: { NETLIFY_SITE_ID: '' } }),
             ),
           ).rejects.toThrow('already taken')
@@ -427,7 +427,7 @@ describe('create command', () => {
         await withMockApi(routes, async ({ apiUrl, requests }) => {
           await expect(
             callCli(
-              ['create', 'Build a site', '--agent', 'claude', '--team', 'test-account'],
+              ['create', 'Build a site', '--agent', 'claude', '--account-slug', 'test-account'],
               getCLIOptions({ apiUrl, builder, env: { NETLIFY_SITE_ID: '' } }),
             ),
           ).rejects.toThrow()
@@ -455,7 +455,7 @@ describe('create command', () => {
 
         await withMockApi(routes, async ({ apiUrl, requests }) => {
           await callCli(
-            ['create', 'Build a site', '--agent', 'claude', '--no-wait', '--team', 'test-account'],
+            ['create', 'Build a site', '--agent', 'claude', '--no-wait', '--account-slug', 'test-account'],
             getCLIOptions({ apiUrl, builder, env: { NETLIFY_SITE_ID: '' } }),
           )
 
@@ -482,7 +482,7 @@ describe('create command', () => {
 
         await withMockApi(routes, async ({ apiUrl, requests }) => {
           await callCli(
-            ['create', 'Build a blog with dark mode', '--agent', 'claude', '--no-wait', '--team', 'test-account'],
+            ['create', 'Build a blog with dark mode', '--agent', 'claude', '--no-wait', '--account-slug', 'test-account'],
             getCLIOptions({ apiUrl, builder, env: { NETLIFY_SITE_ID: '' } }),
           )
 

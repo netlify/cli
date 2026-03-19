@@ -15,7 +15,7 @@ interface CreateOptions extends OptionValues {
   agent?: string
   model?: string
   name?: string
-  team?: string
+  accountSlug?: string
   wait?: boolean
 }
 
@@ -52,7 +52,7 @@ export const createAction = async (promptArg: string, options: CreateOptions, co
 
   await command.authenticate()
 
-  const { prompt, agent: initialAgent, model, name: siteName, team: teamFlag } = options
+  const { prompt, agent: initialAgent, model, name: siteName, accountSlug: accountSlugFlag } = options
 
   // Resolve prompt
   let finalPrompt: string
@@ -97,8 +97,8 @@ export const createAction = async (promptArg: string, options: CreateOptions, co
 
   // Resolve team
   let accountSlug: string | undefined
-  if (teamFlag) {
-    accountSlug = teamFlag
+  if (accountSlugFlag) {
+    accountSlug = accountSlugFlag
   } else if (accounts.length > 1) {
     const { accountSlug: selected } = await inquirer.prompt<{ accountSlug: string }>([
       {
