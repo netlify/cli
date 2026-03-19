@@ -24,6 +24,7 @@ netlify create
 
 - `account-slug` (*string*) - account slug to create the project under
 - `agent` (*string*) - agent type (claude, codex, gemini)
+- `dir` (*string*) - directory to create the project in (defaults to current directory)
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `json` (*boolean*) - output result as JSON
 - `model` (*string*) - model to use for the agent

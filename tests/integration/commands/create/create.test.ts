@@ -442,6 +442,125 @@ describe('create command', () => {
     })
   })
 
+  describe('source download', () => {
+    const mockAgentRunnerDoneWithDeploy = {
+      ...mockAgentRunner,
+      state: 'done',
+      done_at: '2025-01-15T10:35:00.000Z',
+      latest_session_deploy_id: 'deploy_abc',
+    }
+
+    test('should attempt to download source when agent run succeeds with deploy', async (t) => {
+      const routes = [
+        ...baseRoutes,
+        { path: 'test-account/sites', method: 'POST' as const, response: mockCreatedSite },
+        { path: 'agent_runners', method: 'POST' as const, response: mockAgentRunner },
+        { path: 'agent_runners/ar_123', response: mockAgentRunnerDoneWithDeploy },
+        { path: 'sites/new_site_id', response: mockCreatedSite },
+        { path: 'deploys/deploy_abc/download', response: { url: 'http://localhost:0/fake-source.zip' } },
+      ]
+
+      await withSiteBuilder(t, async (builder) => {
+        await builder.build()
+
+        await withMockApi(routes, async ({ apiUrl, requests }) => {
+          // The download will fail because the fake URL is unreachable, but we can verify
+          // that the deploy download endpoint was called with the correct deploy ID
+          await expect(
+            callCli(
+              ['create', 'Build a site', '--agent', 'claude', '--account-slug', 'test-account'],
+              getCLIOptions({ apiUrl, builder, env: { NETLIFY_SITE_ID: '' } }),
+            ),
+          ).rejects.toThrow('Failed to download source')
+
+          const downloadRequest = requests.find(
+            (r) => r.path === '/api/v1/deploys/deploy_abc/download' && r.method === 'GET',
+          )
+          expect(downloadRequest).toBeDefined()
+        })
+      })
+    })
+
+    test('should not attempt download on --no-wait', async (t) => {
+      const routes = [
+        ...baseRoutes,
+        { path: 'test-account/sites', method: 'POST' as const, response: mockCreatedSite },
+        { path: 'agent_runners', method: 'POST' as const, response: mockAgentRunner },
+      ]
+
+      await withSiteBuilder(t, async (builder) => {
+        await builder.build()
+
+        await withMockApi(routes, async ({ apiUrl, requests }) => {
+          await callCli(
+            ['create', 'Build a site', '--agent', 'claude', '--no-wait', '--account-slug', 'test-account'],
+            getCLIOptions({ apiUrl, builder, env: { NETLIFY_SITE_ID: '' } }),
+          )
+
+          const downloadRequest = requests.find(
+            (r) => r.path.includes('deploys') && r.path.includes('download'),
+          )
+          expect(downloadRequest).toBeUndefined()
+        })
+      })
+    })
+
+    test('should not attempt download on agent error', async (t) => {
+      const routes = [
+        ...baseRoutes,
+        { path: 'test-account/sites', method: 'POST' as const, response: mockCreatedSite },
+        { path: 'agent_runners', method: 'POST' as const, response: mockAgentRunner },
+        { path: 'agent_runners/ar_123', response: mockAgentRunnerError },
+        { path: 'sites/new_site_id', response: mockCreatedSite },
+      ]
+
+      await withSiteBuilder(t, async (builder) => {
+        await builder.build()
+
+        await withMockApi(routes, async ({ apiUrl, requests }) => {
+          await callCli(
+            ['create', 'Build a broken site', '--agent', 'claude', '--account-slug', 'test-account'],
+            getCLIOptions({ apiUrl, builder, env: { NETLIFY_SITE_ID: '' } }),
+          )
+
+          const downloadRequest = requests.find(
+            (r) => r.path.includes('deploys') && r.path.includes('download'),
+          )
+          expect(downloadRequest).toBeUndefined()
+        })
+      })
+    })
+
+    test('should skip download when no deploy ID on agent runner', async (t) => {
+      const routes = [
+        ...baseRoutes,
+        { path: 'test-account/sites', method: 'POST' as const, response: mockCreatedSite },
+        { path: 'agent_runners', method: 'POST' as const, response: mockAgentRunner },
+        { path: 'agent_runners/ar_123', response: mockAgentRunnerDone },
+        { path: 'sites/new_site_id', response: mockCreatedSite },
+      ]
+
+      await withSiteBuilder(t, async (builder) => {
+        await builder.build()
+
+        await withMockApi(routes, async ({ apiUrl, requests }) => {
+          const cliResponse = (await callCli(
+            ['create', 'Build a site', '--agent', 'claude', '--account-slug', 'test-account'],
+            getCLIOptions({ apiUrl, builder, env: { NETLIFY_SITE_ID: '' } }),
+          )) as string
+
+          expect(cliResponse).toContain('Agent run complete!')
+          expect(cliResponse).toContain('No deploy found')
+
+          const downloadRequest = requests.find(
+            (r) => r.path.includes('deploys') && r.path.includes('download'),
+          )
+          expect(downloadRequest).toBeUndefined()
+        })
+      })
+    })
+  })
+
   describe('API request validation', () => {
     test('should send created_via: agent_runner when creating site', async (t) => {
       const routes = [

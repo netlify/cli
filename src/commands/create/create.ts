@@ -11,6 +11,7 @@ export const createCreateCommand = (program: BaseCommand) => {
     .option('--agent <agent>', 'agent type (claude, codex, gemini)')
     .option('-m, --model <model>', 'model to use for the agent')
     .option('-n, --name <name>', 'project name (subdomain)')
+    .option('-d, --dir <path>', 'directory to create the project in (defaults to current directory)')
     .option('-a, --account-slug <slug>', 'account slug to create the project under')
     .option('--no-wait', 'return immediately after starting the agent run without polling for completion')
     .option('--json', 'output result as JSON')

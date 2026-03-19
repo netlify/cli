@@ -18,6 +18,7 @@ export interface AgentRunner {
   branch?: string
   result_branch?: string
   current_task?: string
+  latest_session_deploy_id?: string
   user?: {
     id: string
     full_name?: string

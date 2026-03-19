@@ -1,7 +1,18 @@
+import { execFile as execFileCb } from 'child_process'
+import { createWriteStream } from 'fs'
+import { mkdir, rm, unlink, readdir } from 'fs/promises'
+import path from 'path'
+import process from 'process'
+import { pipeline } from 'stream/promises'
+import { promisify } from 'util'
+
 import type { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 
+import { LocalState } from '@netlify/dev-utils'
+
 import { chalk, logAndThrowError, log, logJson, warn, type APIError } from '../../utils/command-helpers.js'
+import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import { startSpinner, stopSpinner } from '../../lib/spinner.js'
 import { track } from '../../utils/telemetry/index.js'
 import type BaseCommand from '../base-command.js'
@@ -10,11 +21,14 @@ import { validatePrompt, validateAgent, formatStatus } from '../agents/utils.js'
 import { AVAILABLE_AGENTS } from '../agents/constants.js'
 import type { SiteInfo } from '../../utils/types.js'
 
+const execFile = promisify(execFileCb)
+
 interface CreateOptions extends OptionValues {
   prompt?: string
   agent?: string
   model?: string
   name?: string
+  dir?: string
   accountSlug?: string
   wait?: boolean
 }
@@ -47,12 +61,58 @@ const fetchAgentRunner = async (
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
+const downloadAndExtractSource = async (
+  deployId: string,
+  projectDir: string,
+  api: { accessToken?: string | null; host: string },
+  apiOpts: { scheme?: string; host?: string; userAgent: string },
+) => {
+  const urlResponse = await fetch(
+    `${apiOpts.scheme ?? 'https'}://${apiOpts.host ?? api.host}/api/v1/deploys/${deployId}/download`,
+    {
+      headers: {
+        Authorization: `Bearer ${api.accessToken ?? ''}`,
+        'User-Agent': apiOpts.userAgent,
+      },
+    },
+  )
+
+  if (!urlResponse.ok) {
+    throw new Error(`Failed to get source download URL (HTTP ${urlResponse.status.toString()})`)
+  }
+
+  const { url } = (await urlResponse.json()) as { url: string }
+
+  const zipResponse = await fetch(url, { redirect: 'follow' })
+  if (!zipResponse.ok || !zipResponse.body) {
+    throw new Error(`Failed to download source zip (HTTP ${zipResponse.status.toString()})`)
+  }
+
+  await mkdir(projectDir, { recursive: true })
+
+  const tmpFile = path.join(projectDir, '_source.zip')
+  await pipeline(zipResponse.body, createWriteStream(tmpFile))
+  try {
+    if (process.platform === 'win32') {
+      await execFile('powershell.exe', [
+        '-NoProfile',
+        '-Command',
+        `Expand-Archive -Force -LiteralPath '${tmpFile}' -DestinationPath '${projectDir}'`,
+      ])
+    } else {
+      await execFile('unzip', ['-o', tmpFile, '-d', projectDir])
+    }
+  } finally {
+    await unlink(tmpFile)
+  }
+}
+
 export const createAction = async (promptArg: string, options: CreateOptions, command: BaseCommand) => {
   const { accounts, api, apiOpts } = command.netlify
 
   await command.authenticate()
 
-  const { prompt, agent: initialAgent, model, name: siteName, accountSlug: accountSlugFlag } = options
+  const { prompt, agent: initialAgent, model, name: siteName, dir, accountSlug: accountSlugFlag } = options
 
   // Resolve prompt
   let finalPrompt: string
@@ -308,10 +368,53 @@ export const createAction = async (promptArg: string, options: CreateOptions, co
   log()
   if (agentRunner.state === 'done') {
     log(`${chalk.green('✓')} Agent run complete!`)
+
+    // Step 5: Download source and link project
+    const projectDir = path.resolve(dir || '.', site.name)
+    const relativeDir = path.relative(command.workingDir, projectDir) || '.'
+
+    if (agentRunner.latest_session_deploy_id) {
+      let dirExists = false
+      try {
+        const entries = await readdir(projectDir)
+        dirExists = entries.length > 0
+      } catch {
+        // Directory doesn't exist, which is what we want
+      }
+
+      if (dirExists) {
+        warn(`Directory ${relativeDir} already exists and is not empty. Skipping source download.`)
+      } else {
+        const downloadSpinner = startSpinner({ text: 'Downloading source...' })
+        try {
+          await downloadAndExtractSource(agentRunner.latest_session_deploy_id, projectDir, api, apiOpts)
+          stopSpinner({ spinner: downloadSpinner })
+          log(`${chalk.green('✓')} Source downloaded to ${chalk.cyan(relativeDir)}`)
+
+          const state = new LocalState(projectDir)
+          state.set('siteId', site.id)
+          await ensureNetlifyIgnore(projectDir)
+          log(`${chalk.green('✓')} Project linked to ${chalk.cyan(site.name)}`)
+        } catch (error_) {
+          stopSpinner({ spinner: downloadSpinner, error: true })
+          await rm(projectDir, { recursive: true, force: true }).catch(() => {})
+          return logAndThrowError(`Failed to download source: ${(error_ as Error).message}`)
+        }
+      }
+    } else {
+      warn('No deploy found for this agent run. Skipping source download.')
+    }
+
     log()
     log(`  Site URL:  ${chalk.cyan(siteUrl)}`)
     log(`  Admin URL: ${chalk.blue(site.admin_url)}`)
-    log(`  Agent Run: ${chalk.blue(agentRunUrl)}`)
+    log()
+    if (agentRunner.latest_session_deploy_id) {
+      log(chalk.bold('Next steps:'))
+      log(`  cd ${chalk.cyan(relativeDir)} and start making changes`)
+      log(`  When ready, run ${chalk.cyan('netlify deploy')} to publish your new changes`)
+      log()
+    }
   } else {
     log(`${chalk.red('✗')} Agent run ${formatStatus(agentRunner.state ?? 'error')}`)
     log()
