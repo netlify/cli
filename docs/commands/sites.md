@@ -58,6 +58,7 @@ netlify sites:create
 - `name` (*string*) - name of project
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
+- `prompt` (*string*) - description of the site to create (delegates to `netlify create`)
 - `with-ci` (*boolean*) - initialize CI hooks during project creation
 
 ---

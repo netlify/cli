@@ -29,11 +29,17 @@ Create a blank project that isn't associated with any git remote. Will link the 
     .option('-c, --with-ci', 'initialize CI hooks during project creation')
     .option('-m, --manual', 'force manual CI setup.  Used --with-ci flag')
     .option('--disable-linking', 'create the project without linking it to current directory')
+    .option('-p, --prompt <prompt>', 'description of the site to create (delegates to `netlify create`)')
     .addHelpText(
       'after',
       `Create a blank project that isn't associated with any git remote. Will link the project to the current working directory.`,
     )
     .action(async (options: OptionValues, command: BaseCommand) => {
+      if (options.prompt) {
+        const { createAction } = await import('../create/create-action.js')
+        await createAction('', options, command)
+        return
+      }
       const { sitesCreate } = await import('./sites-create.js')
       await sitesCreate(options, command)
     })
