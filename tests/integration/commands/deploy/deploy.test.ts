@@ -1323,4 +1323,204 @@ describe.concurrent('deploy command', () => {
       })
     })
   })
+
+  test('should include build_version in deploy body', async (t) => {
+    await withMockDeploy(async (mockApi, deployState) => {
+      await withSiteBuilder(t, async (builder) => {
+        builder.withContentFile({
+          path: 'public/index.html',
+          content: '<h1>test</h1>',
+        })
+
+        await builder.build()
+
+        await callCli(
+          ['deploy', '--json', '--no-build', '--dir', 'public'],
+          getCLIOptions({ apiUrl: mockApi.apiUrl, builder }),
+        ).then(parseDeploy)
+
+        const body = deployState.getDeployBody()
+        expect(body).not.toBeNull()
+        expect(body!.build_version).toMatch(/^\d+\.\d+\.\d+/)
+      })
+    })
+  })
+
+  test('should report unknown framework when no framework is detected', async (t) => {
+    await withMockDeploy(async (mockApi, deployState) => {
+      await withSiteBuilder(t, async (builder) => {
+        builder.withContentFile({
+          path: 'public/index.html',
+          content: '<h1>test</h1>',
+        })
+
+        await builder.build()
+
+        await callCli(
+          ['deploy', '--json', '--no-build', '--dir', 'public'],
+          getCLIOptions({ apiUrl: mockApi.apiUrl, builder }),
+        ).then(parseDeploy)
+
+        const body = deployState.getDeployBody()
+        expect(body).not.toBeNull()
+        expect(body!.framework).toBe('unknown')
+        expect(body!.framework_version).toBe('unknown')
+      })
+    })
+  })
+
+  test('should report detected framework and version in deploy body', async (t) => {
+    await withMockDeploy(async (mockApi, deployState) => {
+      await withSiteBuilder(t, async (builder) => {
+        builder
+          .withContentFile({
+            path: 'public/index.html',
+            content: '<h1>test</h1>',
+          })
+          .withPackageJson({
+            packageJson: {
+              dependencies: { astro: '5.7.0' },
+            },
+          })
+          .withNetlifyToml({
+            config: {
+              build: { publish: 'public' },
+            },
+          })
+
+        await builder.build()
+
+        await callCli(['deploy', '--json', '--no-build'], getCLIOptions({ apiUrl: mockApi.apiUrl, builder })).then(
+          parseDeploy,
+        )
+
+        const body = deployState.getDeployBody()
+        expect(body).not.toBeNull()
+        expect(body!.framework).toBe('astro')
+        expect(body!.framework_version).toBe('5.7.0')
+      })
+    })
+  })
+
+  test('should report correct framework for each package in a monorepo', async (t) => {
+    await withMockDeploy(async (mockApi, deployState) => {
+      await withSiteBuilder(t, async (builder) => {
+        builder
+          .withPackageJson({
+            packageJson: {
+              workspaces: ['packages/*'],
+            },
+          })
+          .withContentFile({
+            path: 'packages/app-astro/public/index.html',
+            content: '<h1>astro app</h1>',
+          })
+          .withPackageJson({
+            packageJson: { name: 'app-astro', dependencies: { astro: '5.7.0' } },
+            pathPrefix: 'packages/app-astro',
+          })
+          .withNetlifyToml({
+            config: { build: { publish: 'packages/app-astro/public' } },
+            pathPrefix: 'packages/app-astro',
+          })
+          .withContentFile({
+            path: 'packages/app-tanstack/public/index.html',
+            content: '<h1>tanstack app</h1>',
+          })
+          .withPackageJson({
+            packageJson: { name: 'app-tanstack', dependencies: { '@tanstack/react-start': '1.120.0' } },
+            pathPrefix: 'packages/app-tanstack',
+          })
+          .withNetlifyToml({
+            config: { build: { publish: 'packages/app-tanstack/public' } },
+            pathPrefix: 'packages/app-tanstack',
+          })
+
+        await builder.build()
+
+        await callCli(
+          ['deploy', '--json', '--no-build', '--filter', 'packages/app-astro'],
+          getCLIOptions({ apiUrl: mockApi.apiUrl, builder }),
+        ).then(parseDeploy)
+
+        const astroBody = deployState.getDeployBody()
+        expect(astroBody).not.toBeNull()
+        expect(astroBody!.framework).toBe('astro')
+        expect(astroBody!.framework_version).toBe('5.7.0')
+
+        deployState.reset()
+
+        await callCli(
+          ['deploy', '--json', '--no-build', '--filter', 'packages/app-tanstack'],
+          getCLIOptions({ apiUrl: mockApi.apiUrl, builder }),
+        ).then(parseDeploy)
+
+        const tanstackBody = deployState.getDeployBody()
+        expect(tanstackBody).not.toBeNull()
+        expect(tanstackBody!.framework).toBe('tanstack-start')
+        expect(tanstackBody!.framework_version).toBe('1.120.0')
+      })
+    })
+  })
+
+  test('should report correct framework for each package in a monorepo using --cwd', async (t) => {
+    await withMockDeploy(async (mockApi, deployState) => {
+      await withSiteBuilder(t, async (builder) => {
+        builder
+          .withPackageJson({
+            packageJson: {
+              workspaces: ['packages/*'],
+            },
+          })
+          .withContentFile({
+            path: 'packages/app-astro/public/index.html',
+            content: '<h1>astro app</h1>',
+          })
+          .withPackageJson({
+            packageJson: { name: 'app-astro', dependencies: { astro: '5.7.0' } },
+            pathPrefix: 'packages/app-astro',
+          })
+          .withNetlifyToml({
+            config: { build: { publish: 'public' } },
+            pathPrefix: 'packages/app-astro',
+          })
+          .withContentFile({
+            path: 'packages/app-tanstack/public/index.html',
+            content: '<h1>tanstack app</h1>',
+          })
+          .withPackageJson({
+            packageJson: { name: 'app-tanstack', dependencies: { '@tanstack/react-start': '1.120.0' } },
+            pathPrefix: 'packages/app-tanstack',
+          })
+          .withNetlifyToml({
+            config: { build: { publish: 'public' } },
+            pathPrefix: 'packages/app-tanstack',
+          })
+
+        await builder.build()
+
+        await callCli(
+          ['deploy', '--json', '--no-build', '--cwd', 'packages/app-astro'],
+          getCLIOptions({ apiUrl: mockApi.apiUrl, builder }),
+        ).then(parseDeploy)
+
+        const astroBody = deployState.getDeployBody()
+        expect(astroBody).not.toBeNull()
+        expect(astroBody!.framework).toBe('astro')
+        expect(astroBody!.framework_version).toBe('5.7.0')
+
+        deployState.reset()
+
+        await callCli(
+          ['deploy', '--json', '--no-build', '--cwd', 'packages/app-tanstack'],
+          getCLIOptions({ apiUrl: mockApi.apiUrl, builder }),
+        ).then(parseDeploy)
+
+        const tanstackBody = deployState.getDeployBody()
+        expect(tanstackBody).not.toBeNull()
+        expect(tanstackBody!.framework).toBe('tanstack-start')
+        expect(tanstackBody!.framework_version).toBe('1.120.0')
+      })
+    })
+  })
 })

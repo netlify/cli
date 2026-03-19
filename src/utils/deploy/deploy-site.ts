@@ -169,9 +169,8 @@ For more information, visit https://ntl.fyi/cli-native-modules.`)
     phase: 'start',
   })
 
-  // frameworks are already detected and results are memoized
-  const frameworks = await command.project.detectFrameworks()
-  const primaryFramework = frameworks?.[0]
+  const packageFrameworks = command.project.frameworks.get(command.workspacePackage ?? '')
+  const primaryFramework = packageFrameworks?.[0]
 
   // @ts-expect-error TS(2349) This expression is not callable
   const deployParams = cleanDeep({
