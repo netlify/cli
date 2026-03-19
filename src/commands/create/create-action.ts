@@ -14,7 +14,8 @@ interface CreateOptions extends OptionValues {
   prompt?: string
   agent?: string
   model?: string
-  account?: string
+  team?: string
+  wait?: boolean
 }
 
 const POLL_INTERVAL = 2000
@@ -50,7 +51,7 @@ export const createAction = async (promptArg: string, options: CreateOptions, co
 
   await command.authenticate()
 
-  const { prompt, agent: initialAgent, model, account: accountFlag } = options
+  const { prompt, agent: initialAgent, model, team: teamFlag } = options
 
   // Resolve prompt
   let finalPrompt: string
@@ -93,10 +94,10 @@ export const createAction = async (promptArg: string, options: CreateOptions, co
     }
   }
 
-  // Resolve account
+  // Resolve team
   let accountSlug: string | undefined
-  if (accountFlag) {
-    accountSlug = accountFlag
+  if (teamFlag) {
+    accountSlug = teamFlag
   } else if (accounts.length > 1) {
     const { accountSlug: selected } = await inquirer.prompt<{ accountSlug: string }>([
       {
@@ -176,6 +177,47 @@ export const createAction = async (promptArg: string, options: CreateOptions, co
   }
 
   const agentRunUrl = `https://app.netlify.com/projects/${site.name}/agent-runs/${agentRunner.id}`
+  const agentRunCreateUrl = `${agentRunUrl}/create`
+  const showCmd = `netlify agents:show ${agentRunner.id} --project ${site.name}`
+
+  // --no-wait: return immediately with status info
+  if (options.wait === false) {
+    void track('create_started', {
+      siteId: site.id,
+      agentRunnerId: agentRunner.id,
+      noWait: true,
+    })
+
+    if (options.json) {
+      logJson({
+        site: {
+          id: site.id,
+          name: site.name,
+          admin_url: site.admin_url,
+        },
+        agentRunner: {
+          id: agentRunner.id,
+          state: agentRunner.state,
+          url: agentRunCreateUrl,
+        },
+      })
+      return
+    }
+
+    log()
+    log(`${chalk.green('✓')} Agent run started! The agent is now building your site in the background.`)
+    log()
+    log(chalk.bold('Next steps:'))
+    log(`  View progress in the browser:`)
+    log(`    ${chalk.blue(agentRunCreateUrl)}`)
+    log()
+    log(`  Check status from the CLI:`)
+    log(`    ${chalk.cyan(showCmd)}`)
+    log()
+    log(chalk.dim('The agent typically takes a few minutes to complete. You\'ll be able to see the site URL once it\'s done.'))
+    log()
+    return
+  }
 
   // Step 3: Poll for completion
   const pollSpinner = startSpinner({ text: 'Agent is working...' })

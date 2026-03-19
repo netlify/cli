@@ -63,6 +63,10 @@ Generate shell completion script
 | [`completion:install`](/commands/completion#completioninstall) | Generates completion script for your preferred shell  |
 
 
+### [create](/commands/create)
+
+Create a new Netlify project using an AI agent
+
 ### [db](/commands/db)
 
 Provision a production ready Postgres database with a single command
