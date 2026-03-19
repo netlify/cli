@@ -30,6 +30,7 @@ interface CreateOptions extends OptionValues {
   name?: string
   dir?: string
   accountSlug?: string
+  download?: boolean
   wait?: boolean
 }
 
@@ -373,7 +374,9 @@ export const createAction = async (promptArg: string, options: CreateOptions, co
     const projectDir = path.resolve(dir || '.', site.name)
     const relativeDir = path.relative(command.workingDir, projectDir) || '.'
 
-    if (agentRunner.latest_session_deploy_id) {
+    if (options.download === false) {
+      // --no-download: skip source download
+    } else if (agentRunner.latest_session_deploy_id) {
       let dirExists = false
       try {
         const entries = await readdir(projectDir)

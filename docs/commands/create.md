@@ -29,6 +29,7 @@ netlify create
 - `json` (*boolean*) - output result as JSON
 - `model` (*string*) - model to use for the agent
 - `name` (*string*) - project name (subdomain)
+- `no-download` (*boolean*) - skip downloading source code after the agent run completes
 - `no-wait` (*boolean*) - return immediately after starting the agent run without polling for completion
 - `prompt` (*string*) - description of the site to create
 - `debug` (*boolean*) - Print debugging information

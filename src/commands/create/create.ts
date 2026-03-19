@@ -13,6 +13,7 @@ export const createCreateCommand = (program: BaseCommand) => {
     .option('-n, --name <name>', 'project name (subdomain)')
     .option('-d, --dir <path>', 'directory to create the project in (defaults to current directory)')
     .option('-a, --account-slug <slug>', 'account slug to create the project under')
+    .option('--no-download', 'skip downloading source code after the agent run completes')
     .option('--no-wait', 'return immediately after starting the agent run without polling for completion')
     .option('--json', 'output result as JSON')
     .addExamples([
