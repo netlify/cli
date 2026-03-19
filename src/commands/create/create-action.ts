@@ -23,6 +23,17 @@ import type { SiteInfo } from '../../utils/types.js'
 
 const execFile = promisify(execFileCb)
 
+interface ApiClient {
+  accessToken?: string | null
+  host: string
+}
+
+interface ApiOptions {
+  scheme?: string
+  host?: string
+  userAgent: string
+}
+
 interface CreateOptions extends OptionValues {
   prompt?: string
   agent?: string
@@ -37,11 +48,7 @@ interface CreateOptions extends OptionValues {
 const POLL_INTERVAL = 2000
 const TERMINAL_STATES = ['done', 'error', 'cancelled']
 
-const fetchAgentRunner = async (
-  id: string,
-  api: { accessToken?: string | null; host: string },
-  apiOpts: { scheme?: string; host?: string; userAgent: string },
-): Promise<AgentRunner> => {
+const fetchAgentRunner = async (id: string, api: ApiClient, apiOpts: ApiOptions): Promise<AgentRunner> => {
   const response = await fetch(
     `${apiOpts.scheme ?? 'https'}://${apiOpts.host ?? api.host}/api/v1/agent_runners/${id}`,
     {
@@ -62,12 +69,7 @@ const fetchAgentRunner = async (
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
-const downloadAndExtractSource = async (
-  deployId: string,
-  projectDir: string,
-  api: { accessToken?: string | null; host: string },
-  apiOpts: { scheme?: string; host?: string; userAgent: string },
-) => {
+const downloadAndExtractSource = async (deployId: string, projectDir: string, api: ApiClient, apiOpts: ApiOptions) => {
   const urlResponse = await fetch(
     `${apiOpts.scheme ?? 'https'}://${apiOpts.host ?? api.host}/api/v1/deploys/${deployId}/download`,
     {
@@ -215,7 +217,9 @@ export const createAction = async (promptArg: string, options: CreateOptions, co
       }
       stopSpinner({ spinner: siteSpinner, error: true })
       if ((error_ as APIError).status === 422) {
-        return logAndThrowError(`Project name "${String(nameAttempt ?? siteName)}" is already taken. Please try a different name.`)
+        return logAndThrowError(
+          `Project name "${String(nameAttempt ?? siteName)}" is already taken. Please try a different name.`,
+        )
       }
       return logAndThrowError(`Failed to create project: ${(error_ as Error).message}`)
     }
@@ -297,7 +301,11 @@ export const createAction = async (promptArg: string, options: CreateOptions, co
     log(`  Check status from the CLI:`)
     log(`    ${chalk.cyan(showCmd)}`)
     log()
-    log(chalk.dim('The agent typically takes a few minutes to complete. You\'ll be able to see the site URL once it\'s done.'))
+    log(
+      chalk.dim(
+        "The agent typically takes a few minutes to complete. You'll be able to see the site URL once it's done.",
+      ),
+    )
     log()
     return
   }
@@ -326,9 +334,8 @@ export const createAction = async (promptArg: string, options: CreateOptions, co
   } catch (error_) {
     stopSpinner({ spinner: pollSpinner, error: true })
     log()
-    log(`${chalk.red('✗')} Error polling agent status: ${(error_ as Error).message}`)
     log(`  View details: ${chalk.blue(agentRunUrl)}`)
-    return logAndThrowError((error_ as Error).message)
+    return logAndThrowError(`Error polling agent status: ${(error_ as Error).message}`)
   }
 
   stopSpinner({ spinner: pollSpinner })
@@ -370,13 +377,12 @@ export const createAction = async (promptArg: string, options: CreateOptions, co
   if (agentRunner.state === 'done') {
     log(`${chalk.green('✓')} Agent run complete!`)
 
-    // Step 5: Download source and link project
+    // Step 4: Download source and link project
     const projectDir = path.resolve(dir || '.', site.name)
     const relativeDir = path.relative(command.workingDir, projectDir) || '.'
 
-    if (options.download === false) {
-      // --no-download: skip source download
-    } else if (agentRunner.latest_session_deploy_id) {
+    let downloaded = false
+    if (options.download !== false && agentRunner.latest_session_deploy_id) {
       let dirExists = false
       try {
         const entries = await readdir(projectDir)
@@ -398,13 +404,14 @@ export const createAction = async (promptArg: string, options: CreateOptions, co
           state.set('siteId', site.id)
           await ensureNetlifyIgnore(projectDir)
           log(`${chalk.green('✓')} Project linked to ${chalk.cyan(site.name)}`)
+          downloaded = true
         } catch (error_) {
           stopSpinner({ spinner: downloadSpinner, error: true })
           await rm(projectDir, { recursive: true, force: true }).catch(() => {})
           return logAndThrowError(`Failed to download source: ${(error_ as Error).message}`)
         }
       }
-    } else {
+    } else if (options.download !== false && !agentRunner.latest_session_deploy_id) {
       warn('No deploy found for this agent run. Skipping source download.')
     }
 
@@ -412,7 +419,7 @@ export const createAction = async (promptArg: string, options: CreateOptions, co
     log(`  Site URL:  ${chalk.cyan(siteUrl)}`)
     log(`  Admin URL: ${chalk.blue(site.admin_url)}`)
     log()
-    if (agentRunner.latest_session_deploy_id) {
+    if (downloaded) {
       log(chalk.bold('Next steps:'))
       log(`  cd ${chalk.cyan(relativeDir)} and start making changes`)
       log(`  When ready, run ${chalk.cyan('netlify deploy')} to publish your new changes`)

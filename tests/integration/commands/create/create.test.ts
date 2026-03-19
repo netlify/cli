@@ -67,7 +67,15 @@ describe('create command', () => {
 
         await withMockApi(routes, async ({ apiUrl }) => {
           const cliResponse = (await callCli(
-            ['create', 'Build a fancy portfolio site', '--agent', 'claude', '--no-wait', '--account-slug', 'test-account'],
+            [
+              'create',
+              'Build a fancy portfolio site',
+              '--agent',
+              'claude',
+              '--no-wait',
+              '--account-slug',
+              'test-account',
+            ],
             getCLIOptions({ apiUrl, builder, env: { NETLIFY_SITE_ID: '' } }),
           )) as string
 
@@ -96,16 +104,7 @@ describe('create command', () => {
         await withMockApi(routes, async ({ apiUrl }) => {
           const { stdout } = await execa(
             cliPath,
-            [
-              'create',
-              'Build a blog',
-              '--agent',
-              'claude',
-              '--no-wait',
-              '--json',
-              '--account-slug',
-              'test-account',
-            ],
+            ['create', 'Build a blog', '--agent', 'claude', '--no-wait', '--json', '--account-slug', 'test-account'],
             {
               cwd: builder.directory,
               env: { NETLIFY_API_URL: apiUrl, NETLIFY_AUTH_TOKEN: 'fake-token' },
@@ -173,9 +172,7 @@ describe('create command', () => {
           expect(cliResponse).toContain('Project created: cool-new-site-abc123')
           expect(cliResponse).toContain('Agent run')
           expect(cliResponse).toContain('ERROR')
-          expect(cliResponse).toContain(
-            'https://app.netlify.com/projects/cool-new-site-abc123/agent-runs/ar_123',
-          )
+          expect(cliResponse).toContain('https://app.netlify.com/projects/cool-new-site-abc123/agent-runs/ar_123')
         })
       })
     })
@@ -240,7 +237,12 @@ describe('create command', () => {
       const routes = [
         ...baseRoutes,
         { path: 'test-account/sites', method: 'POST' as const, response: mockCreatedSite },
-        { path: 'agent_runners', method: 'POST' as const, status: 500, response: { error: 'Agent service unavailable' } },
+        {
+          path: 'agent_runners',
+          method: 'POST' as const,
+          status: 500,
+          response: { error: 'Agent service unavailable' },
+        },
       ]
 
       await withSiteBuilder(t, async (builder) => {
@@ -302,10 +304,14 @@ describe('create command', () => {
         await builder.build()
 
         await withMockApi(routes, async ({ apiUrl }) => {
-          const childProcess = execa(cliPath, ['create', '--agent', 'claude', '--no-wait', '--account-slug', 'test-account'], {
-            cwd: builder.directory,
-            env: { NETLIFY_API_URL: apiUrl, NETLIFY_AUTH_TOKEN: 'fake-token' },
-          })
+          const childProcess = execa(
+            cliPath,
+            ['create', '--agent', 'claude', '--no-wait', '--account-slug', 'test-account'],
+            {
+              cwd: builder.directory,
+              env: { NETLIFY_API_URL: apiUrl, NETLIFY_AUTH_TOKEN: 'fake-token' },
+            },
+          )
 
           handleQuestions(childProcess, [
             {
@@ -338,14 +344,10 @@ describe('create command', () => {
         await builder.build()
 
         await withMockApi(multiAccountRoutes, async ({ apiUrl }) => {
-          const childProcess = execa(
-            cliPath,
-            ['create', 'Build a portfolio', '--agent', 'claude', '--no-wait'],
-            {
-              cwd: builder.directory,
-              env: { NETLIFY_API_URL: apiUrl, NETLIFY_AUTH_TOKEN: 'fake-token' },
-            },
-          )
+          const childProcess = execa(cliPath, ['create', 'Build a portfolio', '--agent', 'claude', '--no-wait'], {
+            cwd: builder.directory,
+            env: { NETLIFY_API_URL: apiUrl, NETLIFY_AUTH_TOKEN: 'fake-token' },
+          })
 
           handleQuestions(childProcess, [
             {
@@ -374,15 +376,23 @@ describe('create command', () => {
 
         await withMockApi(routes, async ({ apiUrl, requests }) => {
           await callCli(
-            ['create', 'Build a site', '--agent', 'claude', '--no-wait', '--account-slug', 'test-account', '--name', 'my-cool-site'],
+            [
+              'create',
+              'Build a site',
+              '--agent',
+              'claude',
+              '--no-wait',
+              '--account-slug',
+              'test-account',
+              '--name',
+              'my-cool-site',
+            ],
             getCLIOptions({ apiUrl, builder, env: { NETLIFY_SITE_ID: '' } }),
           )
 
-          const siteCreateRequest = requests.find(
-            (r) => r.path === '/api/v1/test-account/sites' && r.method === 'POST',
-          )
+          const siteCreateRequest = requests.find((r) => r.path === '/api/v1/test-account/sites' && r.method === 'POST')
           expect(siteCreateRequest).toBeDefined()
-          expect(siteCreateRequest!.body).toEqual(
+          expect(siteCreateRequest?.body).toEqual(
             expect.objectContaining({ name: 'my-cool-site', created_via: 'agent_runner' }),
           )
         })
@@ -392,7 +402,12 @@ describe('create command', () => {
     test('should fail after retries exhausted on name collision', async (t) => {
       const routes = [
         ...baseRoutes,
-        { path: 'test-account/sites', method: 'POST' as const, status: 422, response: { error: 'subdomain must be unique' } },
+        {
+          path: 'test-account/sites',
+          method: 'POST' as const,
+          status: 422,
+          response: { error: 'subdomain must be unique' },
+        },
       ]
 
       await withSiteBuilder(t, async (builder) => {
@@ -418,7 +433,12 @@ describe('create command', () => {
     test('should not retry on 422 when no --name is given', async (t) => {
       const routes = [
         ...baseRoutes,
-        { path: 'test-account/sites', method: 'POST' as const, status: 422, response: { error: 'subdomain must be unique' } },
+        {
+          path: 'test-account/sites',
+          method: 'POST' as const,
+          status: 422,
+          response: { error: 'subdomain must be unique' },
+        },
       ]
 
       await withSiteBuilder(t, async (builder) => {
@@ -497,9 +517,7 @@ describe('create command', () => {
             getCLIOptions({ apiUrl, builder, env: { NETLIFY_SITE_ID: '' } }),
           )
 
-          const downloadRequest = requests.find(
-            (r) => r.path.includes('deploys') && r.path.includes('download'),
-          )
+          const downloadRequest = requests.find((r) => r.path.includes('deploys') && r.path.includes('download'))
           expect(downloadRequest).toBeUndefined()
         })
       })
@@ -523,9 +541,7 @@ describe('create command', () => {
             getCLIOptions({ apiUrl, builder, env: { NETLIFY_SITE_ID: '' } }),
           )
 
-          const downloadRequest = requests.find(
-            (r) => r.path.includes('deploys') && r.path.includes('download'),
-          )
+          const downloadRequest = requests.find((r) => r.path.includes('deploys') && r.path.includes('download'))
           expect(downloadRequest).toBeUndefined()
         })
       })
@@ -552,9 +568,7 @@ describe('create command', () => {
           expect(cliResponse).toContain('Agent run complete!')
           expect(cliResponse).toContain('No deploy found')
 
-          const downloadRequest = requests.find(
-            (r) => r.path.includes('deploys') && r.path.includes('download'),
-          )
+          const downloadRequest = requests.find((r) => r.path.includes('deploys') && r.path.includes('download'))
           expect(downloadRequest).toBeUndefined()
         })
       })
@@ -578,13 +592,9 @@ describe('create command', () => {
             getCLIOptions({ apiUrl, builder, env: { NETLIFY_SITE_ID: '' } }),
           )
 
-          const siteCreateRequest = requests.find(
-            (r) => r.path === '/api/v1/test-account/sites' && r.method === 'POST',
-          )
+          const siteCreateRequest = requests.find((r) => r.path === '/api/v1/test-account/sites' && r.method === 'POST')
           expect(siteCreateRequest).toBeDefined()
-          expect(siteCreateRequest!.body).toEqual(
-            expect.objectContaining({ created_via: 'agent_runner' }),
-          )
+          expect(siteCreateRequest?.body).toEqual(expect.objectContaining({ created_via: 'agent_runner' }))
         })
       })
     })
@@ -601,15 +611,21 @@ describe('create command', () => {
 
         await withMockApi(routes, async ({ apiUrl, requests }) => {
           await callCli(
-            ['create', 'Build a blog with dark mode', '--agent', 'claude', '--no-wait', '--account-slug', 'test-account'],
+            [
+              'create',
+              'Build a blog with dark mode',
+              '--agent',
+              'claude',
+              '--no-wait',
+              '--account-slug',
+              'test-account',
+            ],
             getCLIOptions({ apiUrl, builder, env: { NETLIFY_SITE_ID: '' } }),
           )
 
-          const agentRunnerRequest = requests.find(
-            (r) => r.path.includes('agent_runners') && r.method === 'POST',
-          )
+          const agentRunnerRequest = requests.find((r) => r.path.includes('agent_runners') && r.method === 'POST')
           expect(agentRunnerRequest).toBeDefined()
-          expect(agentRunnerRequest!.body).toEqual(
+          expect(agentRunnerRequest?.body).toEqual(
             expect.objectContaining({
               mode: 'create',
               prompt: 'Build a blog with dark mode',
