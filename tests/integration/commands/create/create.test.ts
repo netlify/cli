@@ -577,6 +577,88 @@ describe('create command', () => {
     })
   })
 
+  describe('--git flag', () => {
+    test('should not attempt repo creation on --no-wait', async (t) => {
+      const routes = [
+        ...baseRoutes,
+        { path: 'test-account/sites', method: 'POST' as const, response: mockCreatedSite },
+        { path: 'agent_runners', method: 'POST' as const, response: mockAgentRunner },
+      ]
+
+      await withSiteBuilder(t, async (builder) => {
+        await builder.build()
+
+        await withMockApi(routes, async ({ apiUrl, requests }) => {
+          await callCli(
+            [
+              'create',
+              'Build a site',
+              '--agent',
+              'claude',
+              '--no-wait',
+              '--git',
+              'github',
+              '--account-slug',
+              'test-account',
+            ],
+            getCLIOptions({ apiUrl, builder, env: { NETLIFY_SITE_ID: '' } }),
+          )
+
+          const repoRequest = requests.find((r) => r.path.includes('/repo') && r.method === 'POST')
+          expect(repoRequest).toBeUndefined()
+        })
+      })
+    })
+
+    test('should not attempt repo creation on agent error', async (t) => {
+      const routes = [
+        ...baseRoutes,
+        { path: 'test-account/sites', method: 'POST' as const, response: mockCreatedSite },
+        { path: 'agent_runners', method: 'POST' as const, response: mockAgentRunner },
+        { path: 'agent_runners/ar_123', response: mockAgentRunnerError },
+        { path: 'sites/new_site_id', response: mockCreatedSite },
+      ]
+
+      await withSiteBuilder(t, async (builder) => {
+        await builder.build()
+
+        await withMockApi(routes, async ({ apiUrl, requests }) => {
+          await callCli(
+            ['create', 'Build a site', '--agent', 'claude', '--git', 'github', '--account-slug', 'test-account'],
+            getCLIOptions({ apiUrl, builder, env: { NETLIFY_SITE_ID: '' } }),
+          )
+
+          const repoRequest = requests.find((r) => r.path.includes('/repo') && r.method === 'POST')
+          expect(repoRequest).toBeUndefined()
+        })
+      })
+    })
+
+    test('should warn on unsupported git provider', async (t) => {
+      const routes = [
+        ...baseRoutes,
+        { path: 'test-account/sites', method: 'POST' as const, response: mockCreatedSite },
+        { path: 'agent_runners', method: 'POST' as const, response: mockAgentRunner },
+        { path: 'agent_runners/ar_123', response: mockAgentRunnerDone },
+        { path: 'sites/new_site_id', response: mockCreatedSite },
+      ]
+
+      await withSiteBuilder(t, async (builder) => {
+        await builder.build()
+
+        await withMockApi(routes, async ({ apiUrl }) => {
+          const cliResponse = (await callCli(
+            ['create', 'Build a site', '--agent', 'claude', '--git', 'gitlab', '--account-slug', 'test-account'],
+            getCLIOptions({ apiUrl, builder, env: { NETLIFY_SITE_ID: '' } }),
+          )) as string
+
+          expect(cliResponse).toContain('Unsupported git provider')
+          expect(cliResponse).toContain('gitlab')
+        })
+      })
+    })
+  })
+
   describe('API request validation', () => {
     test('should send created_via: agent_runner when creating site', async (t) => {
       const routes = [

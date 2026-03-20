@@ -13,6 +13,8 @@ export const createCreateCommand = (program: BaseCommand) => {
     .option('-n, --name <name>', 'project name (subdomain)')
     .option('-d, --dir <path>', 'directory to create the project in (defaults to current directory)')
     .option('-a, --account-slug <slug>', 'account slug to create the project under')
+    .option('--git <provider>', 'create a git repository and push source code (e.g. github)')
+    .option('--repo-owner <owner>', 'GitHub org or user to create the repo under')
     .option('--no-download', 'skip downloading source code after the agent run completes')
     .option('--no-wait', 'return immediately after starting the agent run without polling for completion')
     .option('--json', 'output result as JSON')
@@ -21,6 +23,7 @@ export const createCreateCommand = (program: BaseCommand) => {
       'netlify create --prompt "a blog with dark mode" --agent claude',
       'netlify create "landing page for a coffee shop" --account-slug my-team',
       'netlify create "an e-commerce store" --name my-store',
+      'netlify create "an e-commerce store" --git github',
       'netlify create "an e-commerce store" --no-wait',
     ])
     .action(async (prompt: string, options: OptionValues, command: BaseCommand) => {

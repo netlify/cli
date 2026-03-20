@@ -10,9 +10,11 @@ import type { OptionValues } from 'commander'
 import inquirer from 'inquirer'
 
 import { LocalState } from '@netlify/dev-utils'
+import { Octokit } from '@octokit/rest'
 
-import { chalk, logAndThrowError, log, logJson, warn, type APIError } from '../../utils/command-helpers.js'
+import { chalk, logAndThrowError, log, logJson, warn, exit, type APIError } from '../../utils/command-helpers.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
+import { getGitHubToken as promptForGitHubToken } from '../../utils/gh-auth.js'
 import { startSpinner, stopSpinner } from '../../lib/spinner.js'
 import { track } from '../../utils/telemetry/index.js'
 import type BaseCommand from '../base-command.js'
@@ -21,6 +23,31 @@ import { validatePrompt, validateAgent, formatStatus } from '../agents/utils.js'
 import type { SiteInfo } from '../../utils/types.js'
 
 const execFile = promisify(execFileCb)
+
+const resolveGitHubToken = async (globalConfig: {
+  get: (key: string) => unknown
+  set: (key: string, value: unknown) => void
+}): Promise<string> => {
+  const userId = globalConfig.get('userId') as string | undefined
+  if (userId) {
+    const cached = globalConfig.get(`users.${userId}.auth.github`) as { token?: string; user?: string } | undefined
+    if (cached?.token) {
+      try {
+        const octokit = new Octokit({ auth: `token ${cached.token}` })
+        await octokit.rest.users.getAuthenticated()
+        return cached.token
+      } catch {
+        // Token expired or invalid, fall through to re-auth
+      }
+    }
+  }
+
+  const newToken = await promptForGitHubToken()
+  if (userId) {
+    globalConfig.set(`users.${userId}.auth.github`, newToken)
+  }
+  return newToken.token
+}
 
 interface ApiClient {
   accessToken?: string | null
@@ -40,6 +67,8 @@ interface CreateOptions extends OptionValues {
   name?: string
   dir?: string
   accountSlug?: string
+  git?: string
+  repoOwner?: string
   download?: boolean
   wait?: boolean
 }
@@ -106,6 +135,129 @@ const downloadAndExtractSource = async (deployId: string, projectDir: string, ap
     }
   } finally {
     await unlink(tmpFile)
+  }
+}
+
+const selectRepoOwner = async (ghToken: string, repoOwnerFlag?: string): Promise<string> => {
+  if (repoOwnerFlag) {
+    return repoOwnerFlag
+  }
+
+  const octokit = new Octokit({ auth: `token ${ghToken}` })
+  const { data: user } = await octokit.rest.users.getAuthenticated()
+  const { data: orgs } = await octokit.rest.orgs.listForAuthenticatedUser()
+
+  if (orgs.length === 0) {
+    return user.login
+  }
+
+  const choices = [
+    { name: `${user.login} (personal)`, value: user.login },
+    ...orgs.map((org) => ({ name: org.login, value: org.login })),
+  ]
+
+  const { owner } = await inquirer.prompt<{ owner: string }>([
+    {
+      type: 'list',
+      name: 'owner',
+      message: 'Where should the GitHub repo be created?',
+      choices,
+    },
+  ])
+
+  return owner
+}
+
+const createGitHubRepo = async (
+  siteId: string,
+  repoName: string,
+  providerToken: string,
+  repoOwner: string,
+  api: ApiClient,
+  apiOpts: ApiOptions,
+) => {
+  const body: Record<string, unknown> = {
+    provider: 'github',
+    provider_token: providerToken,
+    repo_name: repoName,
+    repo_owner: repoOwner,
+    private: true,
+    create_initial_commit: true,
+  }
+
+  const response = await fetch(
+    `${apiOpts.scheme ?? 'https'}://${apiOpts.host ?? api.host}/api/v1/sites/${siteId}/repo`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${api.accessToken ?? ''}`,
+        'Content-Type': 'application/json',
+        'User-Agent': apiOpts.userAgent,
+      },
+      body: JSON.stringify(body),
+    },
+  )
+
+  if (!response.ok) {
+    const errorData = (await response.json().catch(() => ({}))) as { error?: string }
+    throw new Error(errorData.error ?? `HTTP ${response.status.toString()}: ${response.statusText}`)
+  }
+
+  return (await response.json()) as SiteInfo
+}
+
+const PUSH_TERMINAL_STATES = ['complete', 'failed']
+
+const PUSH_STATE_LABELS: Record<string, string> = {
+  pending: 'Preparing to push to GitHub...',
+  fetching_files: 'Fetching source files...',
+  pushing: 'Pushing to GitHub...',
+}
+
+const pollRepoPush = async (
+  siteId: string,
+  api: ApiClient,
+  apiOpts: ApiOptions,
+  spinner: { update: (opts: { text: string }) => void },
+): Promise<SiteInfo> => {
+  let lastState = ''
+
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  while (true) {
+    await sleep(POLL_INTERVAL)
+
+    const response = await fetch(`${apiOpts.scheme ?? 'https'}://${apiOpts.host ?? api.host}/api/v1/sites/${siteId}`, {
+      headers: {
+        Authorization: `Bearer ${api.accessToken ?? ''}`,
+        'User-Agent': apiOpts.userAgent,
+      },
+    })
+
+    if (!response.ok) {
+      throw new Error(`Failed to check push status (HTTP ${response.status.toString()})`)
+    }
+
+    const siteData = (await response.json()) as SiteInfo
+    const progress = siteData.git_initial_push_progress
+
+    if (progress && progress.state !== lastState) {
+      lastState = progress.state
+      const label = PUSH_STATE_LABELS[progress.state]
+      if (label) {
+        spinner.update({ text: label })
+      }
+    }
+
+    if (progress && PUSH_TERMINAL_STATES.includes(progress.state)) {
+      if (progress.state === 'failed') {
+        throw new Error(progress.error_message ?? 'Push to GitHub failed')
+      }
+      return siteData
+    }
+
+    if (!progress && siteData.repo?.repo_path) {
+      return siteData
+    }
   }
 }
 
@@ -334,6 +486,8 @@ export const createAction = async (promptArg: string, options: CreateOptions, co
     finalSite = site
   }
 
+  let githubRepoPath: string | undefined
+
   const siteUrl = finalSite.ssl_url || finalSite.url
 
   void track('sites_createCompleted', {
@@ -401,9 +555,53 @@ export const createAction = async (promptArg: string, options: CreateOptions, co
       warn('No deploy found for this agent run. Skipping source download.')
     }
 
+    // Step 5: Create GitHub repo and push source
+    if (options.git) {
+      if (options.git !== 'github') {
+        warn(`Unsupported git provider "${options.git}". Only "github" is supported.`)
+      } else {
+        try {
+          const ghToken = await resolveGitHubToken(command.netlify.globalConfig)
+          const repoOwner = await selectRepoOwner(ghToken, options.repoOwner)
+          const repoSpinner = startSpinner({ text: 'Creating GitHub repository...' })
+          try {
+            await createGitHubRepo(site.id, site.name, ghToken, repoOwner, api, apiOpts)
+            repoSpinner.update({ text: 'Pushing source to GitHub...' })
+            await pollRepoPush(site.id, api, apiOpts, repoSpinner)
+            stopSpinner({ spinner: repoSpinner })
+
+            githubRepoPath = `${repoOwner}/${site.name}`
+            log(`${chalk.green('✓')} GitHub repo created: ${chalk.cyan(`https://github.com/${githubRepoPath}`)}`)
+
+            if (downloaded) {
+              try {
+                const repoUrl = `https://github.com/${githubRepoPath}.git`
+                await execFile('git', ['init'], { cwd: projectDir })
+                await execFile('git', ['remote', 'add', 'origin', repoUrl], { cwd: projectDir })
+                await execFile('git', ['fetch', 'origin'], { cwd: projectDir })
+                await execFile('git', ['reset', 'origin/main'], { cwd: projectDir })
+                await execFile('git', ['branch', '-u', 'origin/main'], { cwd: projectDir })
+                log(`${chalk.green('✓')} Git repository initialized`)
+              } catch {
+                // Non-fatal: local git init is best-effort
+              }
+            }
+          } catch (error_) {
+            stopSpinner({ spinner: repoSpinner, error: true })
+            warn(`Failed to create GitHub repo: ${(error_ as Error).message}`)
+          }
+        } catch (error_) {
+          warn(`GitHub authentication failed: ${(error_ as Error).message}`)
+        }
+      }
+    }
+
     log()
     log(`  Site URL:  ${chalk.cyan(siteUrl)}`)
     log(`  Admin URL: ${chalk.blue(site.admin_url)}`)
+    if (githubRepoPath) {
+      log(`  Repo URL:  ${chalk.blue(`https://github.com/${githubRepoPath}`)}`)
+    }
     log()
     if (downloaded) {
       log(chalk.bold('Next steps:'))
@@ -417,4 +615,6 @@ export const createAction = async (promptArg: string, options: CreateOptions, co
     log(`  View details: ${chalk.blue(agentRunUrl)}`)
   }
   log()
+
+  exit()
 }
