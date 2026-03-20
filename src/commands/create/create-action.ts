@@ -513,7 +513,6 @@ export const createAction = async (promptArg: string, options: CreateOptions, co
     return
   }
 
-  log()
   if (agentRunner.state === 'done') {
     log(`${chalk.green('✓')} Agent run complete!`)
 
@@ -606,7 +605,11 @@ export const createAction = async (promptArg: string, options: CreateOptions, co
     if (downloaded) {
       log(chalk.bold('Next steps:'))
       log(`  cd ${chalk.cyan(relativeDir)} and start making changes`)
-      log(`  When ready, run ${chalk.cyan('netlify deploy')} to publish your new changes`)
+      if (githubRepoPath) {
+        log('  When ready, push your changes to your repo and Netlify will automatically deploy your changes')
+      } else {
+        log(`  When ready, run ${chalk.cyan('netlify deploy')} to publish your new changes`)
+      }
       log()
     }
   } else {
