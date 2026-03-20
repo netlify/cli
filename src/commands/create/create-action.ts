@@ -18,7 +18,6 @@ import { track } from '../../utils/telemetry/index.js'
 import type BaseCommand from '../base-command.js'
 import type { AgentRunner } from '../agents/types.js'
 import { validatePrompt, validateAgent, formatStatus } from '../agents/utils.js'
-import { AVAILABLE_AGENTS } from '../agents/constants.js'
 import type { SiteInfo } from '../../utils/types.js'
 
 const execFile = promisify(execFileCb)
@@ -138,24 +137,11 @@ export const createAction = async (promptArg: string, options: CreateOptions, co
     return logAndThrowError(promptIsValid)
   }
 
-  // Resolve agent
-  let agent = initialAgent
-  if (!agent) {
-    const { agentInput } = await inquirer.prompt<{ agentInput: string }>([
-      {
-        type: 'list',
-        name: 'agentInput',
-        message: 'Which agent would you like to use?',
-        choices: AVAILABLE_AGENTS,
-        default: 'claude',
-      },
-    ])
-    agent = agentInput
-  } else {
-    const agentIsValid = validateAgent(agent)
-    if (agentIsValid !== true) {
-      return logAndThrowError(agentIsValid)
-    }
+  // Resolve agent (default to claude)
+  const agent = initialAgent ?? 'claude'
+  const agentIsValid = validateAgent(agent)
+  if (agentIsValid !== true) {
+    return logAndThrowError(agentIsValid)
   }
 
   // Resolve team
@@ -269,7 +255,7 @@ export const createAction = async (promptArg: string, options: CreateOptions, co
 
   // --no-wait: return immediately with status info
   if (options.wait === false) {
-    void track('create_started', {
+    void track('sites_createStarted', {
       siteId: site.id,
       agentRunnerId: agentRunner.id,
       noWait: true,
@@ -350,7 +336,7 @@ export const createAction = async (promptArg: string, options: CreateOptions, co
 
   const siteUrl = finalSite.ssl_url || finalSite.url
 
-  void track('create_completed', {
+  void track('sites_createCompleted', {
     siteId: site.id,
     agentRunnerId: agentRunner.id,
     state: agentRunner.state,
@@ -408,7 +394,7 @@ export const createAction = async (promptArg: string, options: CreateOptions, co
         } catch (error_) {
           stopSpinner({ spinner: downloadSpinner, error: true })
           await rm(projectDir, { recursive: true, force: true }).catch(() => {})
-          return logAndThrowError(`Failed to download source: ${(error_ as Error).message}`)
+          warn(`Failed to download source: ${(error_ as Error).message}`)
         }
       }
     } else if (options.download !== false && !agentRunner.latest_session_deploy_id) {

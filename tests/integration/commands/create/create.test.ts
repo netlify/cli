@@ -484,14 +484,16 @@ describe('create command', () => {
         await builder.build()
 
         await withMockApi(routes, async ({ apiUrl, requests }) => {
-          // The download will fail because the fake URL is unreachable, but we can verify
+          // The download will fail because the fake URL is unreachable, but the command
+          // should still succeed (download failure is non-fatal) and we can verify
           // that the deploy download endpoint was called with the correct deploy ID
-          await expect(
-            callCli(
-              ['create', 'Build a site', '--agent', 'claude', '--account-slug', 'test-account'],
-              getCLIOptions({ apiUrl, builder, env: { NETLIFY_SITE_ID: '' } }),
-            ),
-          ).rejects.toThrow('Failed to download source')
+          const cliResponse = (await callCli(
+            ['create', 'Build a site', '--agent', 'claude', '--account-slug', 'test-account'],
+            getCLIOptions({ apiUrl, builder, env: { NETLIFY_SITE_ID: '' } }),
+          )) as string
+
+          expect(cliResponse).toContain('Agent run complete!')
+          expect(cliResponse).toContain('Failed to download source')
 
           const downloadRequest = requests.find(
             (r) => r.path === '/api/v1/deploys/deploy_abc/download' && r.method === 'GET',
