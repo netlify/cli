@@ -633,5 +633,6 @@ export const createAction = async (promptArg: string, options: CreateOptions, co
   }
   log()
 
-  exit()
+  process.exitCode = 0
+  setTimeout(() => exit(), 100).unref()
 }
