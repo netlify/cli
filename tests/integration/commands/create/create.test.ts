@@ -313,12 +313,10 @@ describe('create command', () => {
             },
           )
 
-          handleQuestions(childProcess, [
-            {
-              question: 'Describe the site you want to create',
-              answer: answerWithValue('A beautiful landing page'),
-            },
-          ])
+          setTimeout(() => {
+            childProcess.stdin?.write('A beautiful landing page\n\n')
+            childProcess.stdin?.end()
+          }, 1000)
 
           const result = await childProcess
           expect(result.stdout).toContain('Agent run started!')

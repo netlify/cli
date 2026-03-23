@@ -1,6 +1,7 @@
 import type { OptionValues } from 'commander'
 
 import type BaseCommand from '../base-command.js'
+import { validateSiteName } from '../../utils/validation.js'
 
 export const createCreateCommand = (program: BaseCommand) => {
   program
@@ -10,7 +11,7 @@ export const createCreateCommand = (program: BaseCommand) => {
     .option('-p, --prompt <prompt>', 'description of the site to create')
     .option('--agent <agent>', 'agent type (claude, codex, gemini)')
     .option('-m, --model <model>', 'model to use for the agent')
-    .option('-n, --name <name>', 'project name (subdomain)')
+    .option('-n, --name <name>', 'project name (subdomain)', validateSiteName)
     .option('-d, --dir <path>', 'directory to create the project in (defaults to current directory)')
     .option('-a, --account-slug <slug>', 'account slug to create the project under')
     .option('--git <provider>', 'create a git repository and push source code (e.g. github)')

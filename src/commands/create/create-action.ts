@@ -3,6 +3,7 @@ import { createWriteStream } from 'fs'
 import { mkdir, rm, unlink, readdir } from 'fs/promises'
 import path from 'path'
 import process from 'process'
+import readline from 'readline'
 import { pipeline } from 'stream/promises'
 import { promisify } from 'util'
 
@@ -94,6 +95,22 @@ const fetchAgentRunner = async (id: string, api: ApiClient, apiOpts: ApiOptions)
 
   return (await response.json()) as AgentRunner
 }
+
+const readMultilineInput = (): Promise<string> =>
+  new Promise((resolve) => {
+    const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
+    const lines: string[] = []
+    rl.on('line', (line) => {
+      if (line === '' && lines.length > 0) {
+        rl.close()
+        return
+      }
+      lines.push(line)
+    })
+    rl.on('close', () => {
+      resolve(lines.join('\n').trim())
+    })
+  })
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
@@ -271,15 +288,9 @@ export const createAction = async (promptArg: string, options: CreateOptions, co
   // Resolve prompt
   let finalPrompt: string
   if (!prompt && !promptArg) {
-    const { promptInput } = await inquirer.prompt<{ promptInput: string }>([
-      {
-        type: 'input',
-        name: 'promptInput',
-        message: 'Describe the site you want to create:',
-        validate: validatePrompt,
-      },
-    ])
-    finalPrompt = promptInput
+    log(chalk.bold('What do you want to build? Type out your prompt for your project:'))
+    log(chalk.dim('(Press Enter on an empty line to submit)'))
+    finalPrompt = await readMultilineInput()
   } else {
     finalPrompt = (promptArg || prompt) ?? ''
   }
@@ -333,7 +344,7 @@ export const createAction = async (promptArg: string, options: CreateOptions, co
   while (true) {
     try {
       const body: Record<string, unknown> = { created_via: 'agent_runner' }
-      if (nameAttempt) {
+      if (nameAttempt && nameAttempt !== 'undefined') {
         body.name = nameAttempt.trim()
       }
 
@@ -355,8 +366,11 @@ export const createAction = async (promptArg: string, options: CreateOptions, co
       }
       stopSpinner({ spinner: siteSpinner, error: true })
       if ((error_ as APIError).status === 422) {
+        const name = nameAttempt ?? siteName
         return logAndThrowError(
-          `Project name "${String(nameAttempt ?? siteName)}" is already taken. Please try a different name.`,
+          name
+            ? `Project name "${name}" is already taken. Please try a different name.`
+            : `Failed to create project: ${(error_ as Error).message}`,
         )
       }
       return logAndThrowError(`Failed to create project: ${(error_ as Error).message}`)
@@ -383,7 +397,7 @@ export const createAction = async (promptArg: string, options: CreateOptions, co
         body: JSON.stringify({
           prompt: finalPrompt,
           agent,
-          model,
+          ...(model ? { model } : {}),
           mode: 'create',
         }),
       },
