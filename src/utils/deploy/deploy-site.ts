@@ -1,5 +1,6 @@
 import { rm } from 'fs/promises'
 
+import { getVersion as getNetlifyBuildVersion } from '@netlify/build'
 import cleanDeep from 'clean-deep'
 
 import BaseCommand from '../../commands/base-command.js'
@@ -168,6 +169,9 @@ For more information, visit https://ntl.fyi/cli-native-modules.`)
     phase: 'start',
   })
 
+  const packageFrameworks = command.project.frameworks.get(command.workspacePackage ?? '')
+  const primaryFramework = packageFrameworks?.[0]
+
   // @ts-expect-error TS(2349) This expression is not callable
   const deployParams = cleanDeep({
     siteId,
@@ -180,6 +184,9 @@ For more information, visit https://ntl.fyi/cli-native-modules.`)
       async: Object.keys(files).length > syncFileLimit,
       branch,
       draft,
+      framework: primaryFramework?.id ?? 'unknown',
+      framework_version: primaryFramework?.detected.package?.version?.toString() ?? 'unknown',
+      build_version: getNetlifyBuildVersion(),
     },
   })
   let deploy = await api.updateSiteDeploy(deployParams)
