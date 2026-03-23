@@ -112,7 +112,7 @@
     "gitconfiglocal": "2.1.0",
     "http-proxy": "1.18.1",
     "http-proxy-middleware": "3.0.5",
-    "https-proxy-agent": "7.0.6",
+    "https-proxy-agent": "8.0.0",
     "inquirer": "8.2.7",
     "inquirer-autocomplete-prompt": "1.4.0",
     "is-docker": "4.0.0",
