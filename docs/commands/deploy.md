@@ -43,8 +43,9 @@ netlify deploy
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 - `prod` (*boolean*) - Deploy to production
 - `site` (*string*) - A project name or ID to deploy to
+- `site-name` (*string*) - Name for a new site. Implies --create-site if the site does not already exist.
 - `skip-functions-cache` (*boolean*) - Ignore any functions created as part of a previous `build` or `deploy` commands, forcing them to be bundled again as part of the deployment
-- `team` (*string*) - Specify team slug when creating a site. Only works with --create-site flag.
+- `team` (*string*) - Specify team slug when creating a site. Only works with --create-site or --site-name flag.
 - `timeout` (*string*) - Timeout to wait for deployment to finish
 - `trigger` (*boolean*) - Trigger a new build of your project on Netlify without uploading local files
 
@@ -61,7 +62,8 @@ netlify deploy --message "A message with an $ENV_VAR"
 netlify deploy --auth $NETLIFY_AUTH_TOKEN
 netlify deploy --trigger
 netlify deploy --context deploy-preview
-netlify deploy --create-site my-new-site --team my-team # Create site and deploy
+netlify deploy --site-name my-new-site --team my-team # Create site and deploy
+netlify deploy --create-site my-new-site --team my-team # Equivalent to --site-name
 ```
 
 
