@@ -177,19 +177,17 @@ describe('create command', () => {
       })
     })
 
-    test('should return JSON when --json flag is used with polling', async (t) => {
+    test('should return JSON immediately without polling (--json implies --no-wait)', async (t) => {
       const routes = [
         ...baseRoutes,
         { path: 'test-account/sites', method: 'POST' as const, response: mockCreatedSite },
         { path: 'agent_runners', method: 'POST' as const, response: mockAgentRunner },
-        { path: 'agent_runners/ar_123', response: mockAgentRunnerDone },
-        { path: 'sites/new_site_id', response: mockCreatedSite },
       ]
 
       await withSiteBuilder(t, async (builder) => {
         await builder.build()
 
-        await withMockApi(routes, async ({ apiUrl }) => {
+        await withMockApi(routes, async ({ apiUrl, requests }) => {
           const { stdout } = await execa(
             cliPath,
             ['create', 'Build a blog', '--agent', 'claude', '--json', '--account-slug', 'test-account'],
@@ -200,13 +198,17 @@ describe('create command', () => {
           )
 
           const parsed = JSON.parse(stdout) as {
-            site: { id: string; url: string }
-            agentRunner: { id: string; state: string }
+            site: { id: string; name: string }
+            agentRunner: { id: string; state: string; url: string }
           }
           expect(parsed.site.id).toBe('new_site_id')
-          expect(parsed.site.url).toBe('https://cool-new-site-abc123.netlify.app')
+          expect(parsed.site.name).toBe('cool-new-site-abc123')
           expect(parsed.agentRunner.id).toBe('ar_123')
-          expect(parsed.agentRunner.state).toBe('done')
+          expect(parsed.agentRunner.state).toBe('new')
+          expect(parsed.agentRunner.url).toContain('/agent-runs/ar_123/create')
+
+          const pollRequest = requests.find((r) => r.path === '/api/v1/agent_runners/ar_123' && r.method === 'GET')
+          expect(pollRequest).toBeUndefined()
         })
       })
     })

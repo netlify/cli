@@ -75,6 +75,7 @@ interface CreateOptions extends OptionValues {
   repoOwner?: string
   download?: boolean
   wait?: boolean
+  json?: boolean
 }
 
 const POLL_INTERVAL = 2000
@@ -388,8 +389,8 @@ export const createAction = async (promptArg: string, options: CreateOptions, co
   const agentRunCreateUrl = `${agentRunUrl}/create`
   const showCmd = `netlify agents:show ${agentRunner.id} --project ${site.name}`
 
-  // --no-wait: return immediately with status info
-  if (options.wait === false) {
+  // --no-wait or --json: return immediately with status info
+  if (options.wait === false || options.json) {
     void track('sites_createStarted', {
       siteId: site.id,
       agentRunnerId: agentRunner.id,
@@ -478,23 +479,6 @@ export const createAction = async (promptArg: string, options: CreateOptions, co
     agentRunnerId: agentRunner.id,
     state: agentRunner.state,
   })
-
-  if (options.json) {
-    logJson({
-      site: {
-        id: site.id,
-        name: site.name,
-        url: siteUrl,
-        admin_url: site.admin_url,
-      },
-      agentRunner: {
-        id: agentRunner.id,
-        state: agentRunner.state,
-        url: agentRunUrl,
-      },
-    })
-    return
-  }
 
   if (agentRunner.state === 'done') {
     log(`${chalk.green('✓')} Agent run complete!`)
