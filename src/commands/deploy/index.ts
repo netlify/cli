@@ -130,7 +130,9 @@ For more information about Netlify deploys, see ${terminalLink(docsUrl, docsUrl,
 
       if (options.siteName) {
         if (options.site) {
-          return logAndThrowError('Cannot specify both --site-name and --site. Use --site to deploy to an existing project.')
+          return logAndThrowError(
+            'Cannot specify both --site-name and --site. Use --site to deploy to an existing project.',
+          )
         }
         if (options.createSite && typeof options.createSite === 'string' && options.createSite !== options.siteName) {
           return logAndThrowError('Cannot specify both --site-name and --create-site with different names.')
