@@ -38,6 +38,7 @@ COMMANDS
   $ sites        Handle various project operations
   $ status       Print status information
   $ switch       Switch your active Netlify account
+  $ teams        Handle various team operations
   $ unlink       Unlink a local folder from a Netlify project
   $ watch        Watch for project deploy to finish
 
