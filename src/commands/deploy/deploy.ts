@@ -702,7 +702,12 @@ const handleBuild = async ({
     return {}
   }
   const [token] = await getToken()
+  const alias = options.alias || options.branch
+  if (alias && !options.context) {
+    options.context = 'branch-deploy'
+  }
   const resolvedOptions = await getRunBuildOptions({
+    branch: alias,
     cachedConfig,
     currentDir,
     defaultConfig,

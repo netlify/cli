@@ -133,6 +133,7 @@ type EventHandler<T extends (opts: any) => void | Promise<void>> = {
 // This is stored as `netlify.cachedConfig` and can be passed to
 // `@netlify/build --cachedConfig`.
 export const getRunBuildOptions = async ({
+  branch,
   cachedConfig,
   currentDir,
   defaultConfig,
@@ -143,6 +144,7 @@ export const getRunBuildOptions = async ({
   skewProtectionToken,
   token,
 }: {
+  branch?: string
   cachedConfig: CachedConfig
   currentDir: string
   defaultConfig?: undefined | DefaultConfig
@@ -179,6 +181,7 @@ export const getRunBuildOptions = async ({
   return {
     cachedConfig,
     defaultConfig: defaultConfig ?? {},
+    branch,
     deployId,
     siteId: cachedConfig.siteInfo.id,
     accountId: cachedConfig.siteInfo.account_id,
