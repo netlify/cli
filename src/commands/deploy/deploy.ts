@@ -1,3 +1,4 @@
+import { execSync } from 'child_process'
 import { randomBytes } from 'crypto'
 import { type Stats } from 'fs'
 import { stat } from 'fs/promises'
@@ -1125,6 +1126,20 @@ const ensureSiteExists = async (
   return promptForSiteAction(options, command, site)
 }
 
+const getLocalGitBranch = (): string | undefined => {
+  try {
+    const branch = execSync('git rev-parse --abbrev-ref HEAD', {
+      encoding: 'utf8',
+      stdio: ['pipe', 'pipe', 'ignore'],
+    }).trim()
+    if (branch && branch !== 'HEAD') {
+      return branch
+    }
+  } catch {
+    // not in a git repo
+  }
+}
+
 export const deploy = async (options: DeployOptionValues, command: BaseCommand) => {
   const { workingDir } = command
   const { api, site, siteInfo } = command.netlify
@@ -1143,7 +1158,8 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
 
   const deployToProduction =
     !options.draft && (options.prod || (options.prodIfUnlocked && !(siteData.published_deploy?.locked ?? false)))
-  const deployAlias = !deployToProduction && !alias ? `cli-${randomBytes(4).toString('hex')}` : alias
+  const deployAlias =
+    !deployToProduction && !alias ? `cli-${getLocalGitBranch() ?? randomBytes(4).toString('hex')}` : alias
 
   let results = {} as Awaited<ReturnType<typeof prepAndRunDeploy>>
 

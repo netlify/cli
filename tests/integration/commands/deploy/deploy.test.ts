@@ -40,6 +40,84 @@ const withMockDeploy = async (fn: (mockApi: MockApi, deployState: DeployRouteSta
   }
 }
 
+describe.concurrent('deploy branch handling', () => {
+  test('should set branch to cli-prefixed local git branch for non-prod deploys without alias', async (t) => {
+    await withMockDeploy(async (mockApi, deployState) => {
+      await withSiteBuilder(t, async (builder) => {
+        builder.withContentFile({
+          path: 'public/index.html',
+          content: '<h1>test</h1>',
+        })
+
+        await builder.build()
+
+        await callCli(
+          ['deploy', '--json', '--no-build', '--dir', 'public'],
+          getCLIOptions({ apiUrl: mockApi.apiUrl, builder }),
+        ).then(parseDeploy)
+
+        const createRequest = mockApi.requests.find((r) => r.method === 'POST' && r.path.includes('/deploys'))
+        const createBody = createRequest?.body as { branch?: string }
+        expect(createBody.branch).toBeDefined()
+        expect(createBody.branch).toMatch(/^cli-/)
+
+        const updateBody = deployState.getDeployBody()
+        expect(updateBody).not.toBeNull()
+        expect(updateBody!.branch).toBeDefined()
+        expect(updateBody!.branch).toMatch(/^cli-/)
+      })
+    })
+  })
+
+  test('should use explicit alias as branch without cli prefix', async (t) => {
+    await withMockDeploy(async (mockApi, deployState) => {
+      await withSiteBuilder(t, async (builder) => {
+        builder.withContentFile({
+          path: 'public/index.html',
+          content: '<h1>test</h1>',
+        })
+
+        await builder.build()
+
+        await callCli(
+          ['deploy', '--json', '--no-build', '--dir', 'public', '--alias', 'my-custom-alias'],
+          getCLIOptions({ apiUrl: mockApi.apiUrl, builder }),
+        ).then(parseDeploy)
+
+        const createRequest = mockApi.requests.find((r) => r.method === 'POST' && r.path.includes('/deploys'))
+        const createBody = createRequest?.body as { branch?: string }
+        expect(createBody.branch).toBe('my-custom-alias')
+
+        const updateBody = deployState.getDeployBody()
+        expect(updateBody).not.toBeNull()
+        expect(updateBody!.branch).toBe('my-custom-alias')
+      })
+    })
+  })
+
+  test('should not set branch for prod deploys without alias', async (t) => {
+    await withMockDeploy(async (mockApi) => {
+      await withSiteBuilder(t, async (builder) => {
+        builder.withContentFile({
+          path: 'public/index.html',
+          content: '<h1>test</h1>',
+        })
+
+        await builder.build()
+
+        await callCli(
+          ['deploy', '--json', '--no-build', '--dir', 'public', '--prod'],
+          getCLIOptions({ apiUrl: mockApi.apiUrl, builder }),
+        ).then(parseDeploy)
+
+        const createRequest = mockApi.requests.find((r) => r.method === 'POST' && r.path.includes('/deploys'))
+        const createBody = createRequest?.body as { branch?: string }
+        expect(createBody.branch).toBeUndefined()
+      })
+    })
+  })
+})
+
 describe.concurrent('deploy command', () => {
   test('should deploy project when dir flag is passed', async (t) => {
     await withMockDeploy(async (mockApi, deployState) => {
