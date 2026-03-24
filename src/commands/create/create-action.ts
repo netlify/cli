@@ -350,26 +350,26 @@ export const createAction = async (promptArg: string, options: CreateOptions, co
 
   let agentRunner: AgentRunner
   try {
-    const agentRunnerUrl = new URL(`/api/v1/agent_runners`, `${apiOpts.scheme ?? 'https'}://${apiOpts.host ?? api.host}`)
+    const agentRunnerUrl = new URL(
+      `/api/v1/agent_runners`,
+      `${apiOpts.scheme ?? 'https'}://${apiOpts.host ?? api.host}`,
+    )
     agentRunnerUrl.searchParams.set('site_id', site.id)
 
-    const response = await fetch(
-      agentRunnerUrl,
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${api.accessToken ?? ''}`,
-          'Content-Type': 'application/json',
-          'User-Agent': apiOpts.userAgent,
-        },
-        body: JSON.stringify({
-          prompt: finalPrompt,
-          agent,
-          ...(model ? { model } : {}),
-          mode: 'create',
-        }),
+    const response = await fetch(agentRunnerUrl, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${api.accessToken ?? ''}`,
+        'Content-Type': 'application/json',
+        'User-Agent': apiOpts.userAgent,
       },
-    )
+      body: JSON.stringify({
+        prompt: finalPrompt,
+        agent,
+        ...(model ? { model } : {}),
+        mode: 'create',
+      }),
+    })
 
     if (!response.ok) {
       const errorData = (await response.json().catch(() => ({}))) as { error?: string }
