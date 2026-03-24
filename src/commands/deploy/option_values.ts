@@ -17,6 +17,7 @@ export type DeployOptionValues = BaseOptionValues & {
   prod: boolean
   prodIfUnlocked: boolean
   site?: string
+  siteName?: string
   skipFunctionsCache: boolean
   team?: string
   timeout?: number

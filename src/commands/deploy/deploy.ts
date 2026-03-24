@@ -1,3 +1,4 @@
+import { randomBytes } from 'crypto'
 import { type Stats } from 'fs'
 import { stat } from 'fs/promises'
 import { basename, resolve } from 'path'
@@ -45,6 +46,7 @@ import { uploadSourceZip } from '../../utils/deploy/upload-source-zip.js'
 import { getEnvelopeEnv } from '../../utils/env/index.js'
 import { getFunctionsManifestPath, getInternalFunctionsDir } from '../../utils/functions/index.js'
 import openBrowser from '../../utils/open-browser.js'
+import { isInteractive } from '../../utils/scripted-commands.js'
 import type BaseCommand from '../base-command.js'
 import { link } from '../link/link.js'
 import { sitesCreate } from '../sites/sites-create.js'
@@ -292,25 +294,21 @@ const generateDeployCommand = (
 ): string => {
   const parts = ['netlify deploy']
 
-  // Handle site selection/creation first
   if (options.createSite) {
     const siteName = typeof options.createSite === 'string' ? options.createSite : '<SITE_NAME>'
-    parts.push(`--create-site ${siteName}`)
+    parts.push(`--site-name ${siteName}`)
     if (availableTeams.length > 1) {
       parts.push('--team <TEAM_SLUG>')
     }
   } else if (options.site) {
     parts.push(`--site ${options.site}`)
   } else {
-    parts.push('--create-site <SITE_NAME>')
-    if (availableTeams.length > 1) {
-      parts.push('--team <TEAM_SLUG>')
-    }
+    parts.push('--site <SITE>')
   }
 
   if (command?.options) {
     for (const option of command.options) {
-      if (['createSite', 'site', 'team'].includes(option.attributeName())) {
+      if (['createSite', 'site', 'siteName', 'team'].includes(option.attributeName())) {
         continue
       }
 
@@ -352,8 +350,14 @@ const prepareProductionDeploy = async ({ api, siteData, options, command }) => {
   if (isObject(siteData.published_deploy) && siteData.published_deploy.locked) {
     log(`\n${NETLIFYDEVERR} Deployments are "locked" for production context of this project\n`)
 
-    // Generate copy-pasteable command with current options
     const overrideCommand = generateDeployCommand({ ...options, prodIfUnlocked: true, prod: false }, [], command)
+
+    if (!isInteractive()) {
+      return logAndThrowError(
+        `Deployments are "locked" for production context of this project.\n\n` +
+          `To deploy anyway, use:\n  ${overrideCommand}`,
+      )
+    }
 
     log('\nTo override deployment lock (USE WITH CAUTION), use:')
     log(`  ${overrideCommand}`)
@@ -960,8 +964,17 @@ const prepAndRunDeploy = async ({
   return results
 }
 
+const resolveTeam = (
+  accounts: { slug: string; name: string; default?: boolean }[],
+): (typeof accounts)[0] | undefined => {
+  if (accounts.length === 1) {
+    return accounts[0]
+  }
+  return accounts.find((acc) => acc.default)
+}
+
 const validateTeamForSiteCreation = (
-  accounts: { slug: string; name: string }[],
+  accounts: { slug: string; name: string; default?: boolean }[],
   options: DeployOptionValues,
   siteName?: string,
 ) => {
@@ -969,18 +982,20 @@ const validateTeamForSiteCreation = (
     return logAndThrowError('No teams available. Please ensure you have access to at least one team.')
   }
 
-  if (accounts.length === 1) {
-    options.team = accounts[0].slug
+  const team = resolveTeam(accounts)
+  if (team) {
+    options.team = team.slug
     const message = siteName ? `Creating new site: ${siteName}` : 'Creating new site with random name'
-    log(`${message} (using team: ${accounts[0].name})`)
+    log(`${message} (using team: ${team.name})`)
     return
   }
 
-  const availableTeams = accounts.map((team) => team.slug).join(', ')
+  const availableTeams = accounts.map((t) => t.slug).join(', ')
   return logAndThrowError(
     `Multiple teams available. Please specify which team to use with --team flag.\n` +
       `Available teams: ${availableTeams}\n\n` +
-      `Example: netlify deploy --create-site${siteName ? ` ${siteName}` : ''} --team <TEAM_SLUG>`,
+      `Example: netlify deploy --site-name${siteName ? ` ${siteName}` : ' <SITE_NAME>'} --team <TEAM_SLUG>\n\n` +
+      `To list teams with full details, run:  netlify teams:list`,
   )
 }
 
@@ -1014,12 +1029,27 @@ const createSiteWithFlags = async (options: DeployOptionValues, command: BaseCom
     site.id = siteData.id
     return siteData as SiteInfo
   } catch (error_) {
+    if ((error_ as APIError).status === 422 && siteName) {
+      const suffix = randomBytes(4).toString('hex')
+      const suffixedName = `${siteName.trim()}-${suffix}`
+      log(`Site name "${siteName}" is taken. Retrying with "${suffixedName}"...`)
+      try {
+        const siteData = await api.createSiteInTeam({
+          accountSlug: options.team,
+          body: { name: suffixedName },
+        })
+        site.id = siteData.id
+        return siteData as SiteInfo
+      } catch (retryError) {
+        return logAndThrowError(
+          `Failed to create site "${suffixedName}": ${(retryError as APIError).status}: ${
+            (retryError as APIError).message
+          }`,
+        )
+      }
+    }
     if ((error_ as APIError).status === 422) {
-      return logAndThrowError(
-        siteName
-          ? `Site name "${siteName}" is already taken. Please try a different name.`
-          : 'Unable to create site with a random name. Please try again or specify a different name.',
-      )
+      return logAndThrowError('Unable to create site with a random name. Please try again or specify a different name.')
     }
     return logAndThrowError(`Failed to create site: ${(error_ as APIError).status}: ${(error_ as APIError).message}`)
   }
@@ -1074,6 +1104,14 @@ const ensureSiteExists = async (
   }
 
   if (options.createSite) {
+    return createSiteWithFlags(options, command, site)
+  }
+
+  if (!isInteractive()) {
+    const { accounts } = command.netlify
+    options.createSite = true
+    validateTeamForSiteCreation(accounts, options)
+    log(`No project linked. Auto-creating a new project (team: ${options.team})...`)
     return createSiteWithFlags(options, command, site)
   }
 
