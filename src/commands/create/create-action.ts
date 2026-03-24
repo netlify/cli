@@ -8,6 +8,7 @@ import { pipeline } from 'stream/promises'
 import { promisify } from 'util'
 
 import type { OptionValues } from 'commander'
+import extractZip from 'extract-zip'
 import inquirer from 'inquirer'
 
 import { LocalState } from '@netlify/dev-utils'
@@ -141,15 +142,7 @@ const downloadAndExtractSource = async (deployId: string, projectDir: string, ap
   const tmpFile = path.join(projectDir, '_source.zip')
   await pipeline(zipResponse.body, createWriteStream(tmpFile))
   try {
-    if (process.platform === 'win32') {
-      await execFile('powershell.exe', [
-        '-NoProfile',
-        '-Command',
-        `Expand-Archive -Force -LiteralPath '${tmpFile}' -DestinationPath '${projectDir}'`,
-      ])
-    } else {
-      await execFile('unzip', ['-o', tmpFile, '-d', projectDir])
-    }
+    await extractZip(tmpFile, { dir: projectDir })
   } finally {
     await unlink(tmpFile)
   }
@@ -288,7 +281,7 @@ export const createAction = async (promptArg: string, options: CreateOptions, co
   // Resolve prompt
   let finalPrompt: string
   if (!prompt && !promptArg) {
-    log(chalk.bold('What do you want to build? Type out your prompt for your project:'))
+    log(chalk.bold('What do you want to build? Type out the prompt for your project:'))
     log(chalk.dim('(Press Enter on an empty line to submit)'))
     finalPrompt = await readMultilineInput()
   } else {
@@ -382,11 +375,11 @@ export const createAction = async (promptArg: string, options: CreateOptions, co
 
   let agentRunner: AgentRunner
   try {
-    const createParams = new URLSearchParams()
-    createParams.set('site_id', site.id)
+    const agentRunnerUrl = new URL(`/api/v1/agent_runners`, `${apiOpts.scheme ?? 'https'}://${apiOpts.host ?? api.host}`)
+    agentRunnerUrl.searchParams.set('site_id', site.id)
 
     const response = await fetch(
-      `${apiOpts.scheme ?? 'https'}://${apiOpts.host ?? api.host}/api/v1/agent_runners?${createParams.toString()}`,
+      agentRunnerUrl,
       {
         method: 'POST',
         headers: {
