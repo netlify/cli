@@ -82,9 +82,11 @@ For detailed configuration options, see the Netlify documentation.`,
       false,
     )
     .addOption(new Option('--upload-source-zip', 'Upload source code as a zip file').default(false).hideHelp(true))
-    .option(
-      '--create-site [name]',
-      'Create a new site and deploy to it. Optionally specify a name, otherwise a random name will be generated. Uses your default team if --team is omitted.',
+    .addOption(
+      new Option(
+        '--create-site [name]',
+        'Create a new site and deploy to it. Optionally specify a name, otherwise a random name will be generated. Uses your default team if --team is omitted.',
+      ).hideHelp(true),
     )
     .option('--site-name <name>', 'Name for a new site. Implies --create-site if the site does not already exist.')
     .option(
@@ -103,7 +105,6 @@ For detailed configuration options, see the Netlify documentation.`,
       'netlify deploy --trigger',
       'netlify deploy --context deploy-preview',
       'netlify deploy --site-name my-new-site --team my-team # Create site and deploy',
-      'netlify deploy --create-site my-new-site --team my-team # Equivalent to --site-name',
     ])
     .addHelpText('after', () => {
       const docsUrl = 'https://docs.netlify.com/site-deploys/overview/'

@@ -46,7 +46,7 @@ import { uploadSourceZip } from '../../utils/deploy/upload-source-zip.js'
 import { getEnvelopeEnv } from '../../utils/env/index.js'
 import { getFunctionsManifestPath, getInternalFunctionsDir } from '../../utils/functions/index.js'
 import openBrowser from '../../utils/open-browser.js'
-import { isNonInteractive } from '../../utils/scripted-commands.js'
+import { isInteractive } from '../../utils/scripted-commands.js'
 import type BaseCommand from '../base-command.js'
 import { link } from '../link/link.js'
 import { sitesCreate } from '../sites/sites-create.js'
@@ -352,7 +352,7 @@ const prepareProductionDeploy = async ({ api, siteData, options, command }) => {
 
     const overrideCommand = generateDeployCommand({ ...options, prodIfUnlocked: true, prod: false }, [], command)
 
-    if (isNonInteractive()) {
+    if (!isInteractive()) {
       return logAndThrowError(
         `Deployments are "locked" for production context of this project.\n\n` +
           `To deploy anyway, use:\n  ${overrideCommand}`,
@@ -994,7 +994,7 @@ const validateTeamForSiteCreation = (
   return logAndThrowError(
     `Multiple teams available. Please specify which team to use with --team flag.\n` +
       `Available teams: ${availableTeams}\n\n` +
-      `Example: netlify deploy --create-site${siteName ? ` ${siteName}` : ''} --team <TEAM_SLUG>\n\n` +
+      `Example: netlify deploy --site-name${siteName ? ` ${siteName}` : ' <SITE_NAME>'} --team <TEAM_SLUG>\n\n` +
       `To list teams with full details, run:  netlify teams:list`,
   )
 }
@@ -1107,7 +1107,7 @@ const ensureSiteExists = async (
     return createSiteWithFlags(options, command, site)
   }
 
-  if (isNonInteractive()) {
+  if (!isInteractive()) {
     const { accounts } = command.netlify
     options.createSite = true
     validateTeamForSiteCreation(accounts, options)
