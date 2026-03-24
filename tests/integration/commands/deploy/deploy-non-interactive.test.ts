@@ -137,9 +137,7 @@ describe('deploy non-interactive mode', () => {
         const deploy = parseDeploy(output)
         expect(deploy.site_id).toBe('site_id')
 
-        const siteCreateRequests = mockApi.requests.filter(
-          (r) => r.method === 'POST' && r.path.endsWith('/sites'),
-        )
+        const siteCreateRequests = mockApi.requests.filter((r) => r.method === 'POST' && r.path.endsWith('/sites'))
         expect(siteCreateRequests).toHaveLength(2)
         const secondBody = siteCreateRequests[1].body as { name?: string }
         expect(secondBody.name).toMatch(/^taken-name-[0-9a-f]{8}$/)
@@ -178,9 +176,7 @@ describe('deploy non-interactive mode', () => {
           ),
         ).rejects.toThrow(/--team/)
 
-        const siteCreateRequests = mockApi.requests.filter(
-          (r) => r.method === 'POST' && r.path.endsWith('/sites'),
-        )
+        const siteCreateRequests = mockApi.requests.filter((r) => r.method === 'POST' && r.path.endsWith('/sites'))
         expect(siteCreateRequests).toHaveLength(0)
       })
     } finally {
