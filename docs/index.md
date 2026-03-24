@@ -182,6 +182,15 @@ Print status information
 
 Switch your active Netlify account
 
+### [teams](/commands/teams)
+
+Handle various team operations
+
+| Subcommand | description  |
+|:--------------------------- |:-----|
+| [`teams:list`](/commands/teams#teamslist) | List all teams you have access to  |
+
+
 ### [unlink](/commands/unlink)
 
 Unlink a local folder from a Netlify project
