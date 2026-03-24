@@ -10,12 +10,13 @@ import { promisify } from 'util'
 import type { OptionValues } from 'commander'
 import extractZip from 'extract-zip'
 import inquirer from 'inquirer'
+import fetch from 'node-fetch'
 
 import type { NetlifyAPI } from '@netlify/api'
 import { LocalState } from '@netlify/dev-utils'
 import { Octokit } from '@octokit/rest'
 
-import { chalk, logAndThrowError, log, logJson, warn, exit, type APIError } from '../../utils/command-helpers.js'
+import { chalk, logAndThrowError, log, logJson, warn, type APIError } from '../../utils/command-helpers.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import { getGitHubToken as promptForGitHubToken } from '../../utils/gh-auth.js'
 import { startSpinner, stopSpinner } from '../../lib/spinner.js'
@@ -600,7 +601,4 @@ export const createAction = async (promptArg: string, options: CreateOptions, co
     log(`  View details: ${chalk.blue(agentRunUrl)}`)
   }
   log()
-
-  process.exitCode = 0
-  setTimeout(() => exit(), 100).unref()
 }
