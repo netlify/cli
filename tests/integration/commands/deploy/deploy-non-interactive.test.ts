@@ -115,6 +115,11 @@ describe('deploy non-interactive mode', () => {
         const deploy = parseDeploy(output)
         expect(deploy.site_id).toBe('site_id')
         expect(deploy.deploy_id).toBe('deploy_id')
+
+        const siteCreateRequests = mockApi.requests.filter((r) => r.method === 'POST' && r.path.endsWith('/sites'))
+        expect(siteCreateRequests).toHaveLength(1)
+        const createBody = siteCreateRequests[0].body as { name?: string }
+        expect(createBody.name).toBe('my-test-site')
       })
     } finally {
       await mockApi.close()
@@ -165,16 +170,18 @@ describe('deploy non-interactive mode', () => {
         builder.withContentFile({ path: 'public/index.html', content: '<h1>Hello</h1>' })
         await builder.build()
 
-        await expect(
-          callCli(
-            ['deploy', '--no-build', '--dir', 'public'],
-            getCLIOptions({
-              apiUrl: mockApi.apiUrl,
-              builder,
-              env: { NETLIFY_SITE_ID: '', CI: 'true' },
-            }),
-          ),
-        ).rejects.toThrow(/--team/)
+        const rejected = callCli(
+          ['deploy', '--no-build', '--dir', 'public'],
+          getCLIOptions({
+            apiUrl: mockApi.apiUrl,
+            builder,
+            env: { NETLIFY_SITE_ID: '', CI: 'true' },
+          }),
+        )
+        await expect(rejected).rejects.toThrow(/--team/)
+        await expect(rejected).rejects.toThrow(/team-a/)
+        await expect(rejected).rejects.toThrow(/team-b/)
+        await expect(rejected).rejects.toThrow(/teams:list/)
 
         const siteCreateRequests = mockApi.requests.filter((r) => r.method === 'POST' && r.path.endsWith('/sites'))
         expect(siteCreateRequests).toHaveLength(0)
