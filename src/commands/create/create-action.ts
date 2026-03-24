@@ -20,6 +20,7 @@ import { chalk, logAndThrowError, log, logJson, warn, type APIError } from '../.
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import { getGitHubToken as promptForGitHubToken } from '../../utils/gh-auth.js'
 import { startSpinner, stopSpinner } from '../../lib/spinner.js'
+import { isInteractive } from '../../utils/scripted-commands.js'
 import { track } from '../../utils/telemetry/index.js'
 import type BaseCommand from '../base-command.js'
 import type { AgentRunner } from '../agents/types.js'
@@ -104,6 +105,7 @@ const readMultilineInput = (): Promise<string> =>
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
+// TODO: Replace with api client call once the deploy download endpoint is added to @netlify/open-api
 const downloadAndExtractSource = async (deployId: string, projectDir: string, api: ApiClient, apiOpts: ApiOptions) => {
   const urlResponse = await fetch(
     `${apiOpts.scheme ?? 'https'}://${apiOpts.host ?? api.host}/api/v1/deploys/${deployId}/download`,
@@ -167,6 +169,7 @@ const selectRepoOwner = async (ghToken: string, repoOwnerFlag?: string): Promise
   return owner
 }
 
+// TODO: Replace with api client call once the site repo endpoint is added to @netlify/open-api
 const createGitHubRepo = async (
   siteId: string,
   repoName: string,
@@ -352,6 +355,7 @@ export const createAction = async (promptArg: string, options: CreateOptions, co
 
   let agentRunner: AgentRunner
   try {
+    // TODO: Replace with api.createAgentRunner() once @netlify/open-api supports body params and the mode field
     const agentRunnerUrl = new URL(
       `/api/v1/agent_runners`,
       `${apiOpts.scheme ?? 'https'}://${apiOpts.host ?? api.host}`,
@@ -389,8 +393,9 @@ export const createAction = async (promptArg: string, options: CreateOptions, co
   const agentRunCreateUrl = `${agentRunUrl}/create`
   const showCmd = `netlify agents:show ${agentRunner.id} --project ${site.name}`
 
-  // --no-wait or --json: return immediately with status info
-  if (options.wait === false || options.json) {
+  const shouldSkipPolling = options.wait === false || options.json || !isInteractive()
+
+  if (shouldSkipPolling) {
     void track('sites_createStarted', {
       siteId: site.id,
       agentRunnerId: agentRunner.id,
