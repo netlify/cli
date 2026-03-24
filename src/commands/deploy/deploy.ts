@@ -303,10 +303,7 @@ const generateDeployCommand = (
   } else if (options.site) {
     parts.push(`--site ${options.site}`)
   } else {
-    parts.push('--site-name <SITE_NAME>')
-    if (availableTeams.length > 1) {
-      parts.push('--team <TEAM_SLUG>')
-    }
+    parts.push('--site <SITE>')
   }
 
   if (command?.options) {
@@ -1112,26 +1109,10 @@ const ensureSiteExists = async (
 
   if (isNonInteractive()) {
     const { accounts } = command.netlify
-    const team = resolveTeam(accounts)
-
-    if (team) {
-      options.createSite = true
-      options.team = team.slug
-      log(`No project linked. Auto-creating a new project (team: ${team.name})...`)
-      return createSiteWithFlags(options, command, site)
-    }
-
-    const availableTeams = accounts.map((acc) => ({ name: acc.name, slug: acc.slug }))
-    const copyableCommand = generateDeployCommand(options, availableTeams, command)
-
-    return logAndThrowError(
-      `This folder is not linked to a Netlify project and the CLI is running in non-interactive mode.\n\n` +
-        `To deploy, either:\n` +
-        `  1. Link to an existing project:  netlify link --id <SITE_ID>\n` +
-        `  2. Create a new project and deploy:  ${copyableCommand}\n` +
-        `  3. Specify an existing project:  netlify deploy --site <SITE_NAME_OR_ID> --dir . --prod\n\n` +
-        `To find your team slug, run:  netlify teams:list`,
-    )
+    options.createSite = true
+    validateTeamForSiteCreation(accounts, options)
+    log(`No project linked. Auto-creating a new project (team: ${options.team})...`)
+    return createSiteWithFlags(options, command, site)
   }
 
   return promptForSiteAction(options, command, site)

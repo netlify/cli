@@ -4,7 +4,7 @@ import { chalk, log, logJson } from '../../utils/command-helpers.js'
 import type BaseCommand from '../base-command.js'
 
 export const teamsList = async (options: OptionValues, command: BaseCommand) => {
-  await command.authenticate()
+  await command.authenticate(options.auth as string)
 
   const { accounts } = command.netlify
 

@@ -84,7 +84,7 @@ For detailed configuration options, see the Netlify documentation.`,
     .addOption(new Option('--upload-source-zip', 'Upload source code as a zip file').default(false).hideHelp(true))
     .option(
       '--create-site [name]',
-      'Create a new site and deploy to it. Optionally specify a name, otherwise a random name will be generated. Requires --team flag if you have multiple teams.',
+      'Create a new site and deploy to it. Optionally specify a name, otherwise a random name will be generated. Uses your default team if --team is omitted.',
     )
     .option('--site-name <name>', 'Name for a new site. Implies --create-site if the site does not already exist.')
     .option(
@@ -129,6 +129,9 @@ For more information about Netlify deploys, see ${terminalLink(docsUrl, docsUrl,
       }
 
       if (options.siteName) {
+        if (options.site) {
+          return logAndThrowError('Cannot specify both --site-name and --site. Use --site to deploy to an existing project.')
+        }
         if (options.createSite && typeof options.createSite === 'string' && options.createSite !== options.siteName) {
           return logAndThrowError('Cannot specify both --site-name and --create-site with different names.')
         }

@@ -136,6 +136,13 @@ describe('deploy non-interactive mode', () => {
 
         const deploy = parseDeploy(output)
         expect(deploy.site_id).toBe('site_id')
+
+        const siteCreateRequests = mockApi.requests.filter(
+          (r) => r.method === 'POST' && r.path.endsWith('/sites'),
+        )
+        expect(siteCreateRequests).toHaveLength(2)
+        const secondBody = siteCreateRequests[1].body as { name?: string }
+        expect(secondBody.name).toMatch(/^taken-name-[0-9a-f]{8}$/)
       })
     } finally {
       await mockApi.close()
@@ -169,7 +176,12 @@ describe('deploy non-interactive mode', () => {
               env: { NETLIFY_SITE_ID: '', CI: 'true' },
             }),
           ),
-        ).rejects.toThrow()
+        ).rejects.toThrow(/--team/)
+
+        const siteCreateRequests = mockApi.requests.filter(
+          (r) => r.method === 'POST' && r.path.endsWith('/sites'),
+        )
+        expect(siteCreateRequests).toHaveLength(0)
       })
     } finally {
       await mockApi.close()
