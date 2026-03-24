@@ -11,6 +11,7 @@ import type { OptionValues } from 'commander'
 import extractZip from 'extract-zip'
 import inquirer from 'inquirer'
 
+import type { NetlifyAPI } from '@netlify/api'
 import { LocalState } from '@netlify/dev-utils'
 import { Octokit } from '@octokit/rest'
 
@@ -78,23 +79,9 @@ interface CreateOptions extends OptionValues {
 const POLL_INTERVAL = 2000
 const TERMINAL_STATES = ['done', 'error', 'cancelled']
 
-const fetchAgentRunner = async (id: string, api: ApiClient, apiOpts: ApiOptions): Promise<AgentRunner> => {
-  const response = await fetch(
-    `${apiOpts.scheme ?? 'https'}://${apiOpts.host ?? api.host}/api/v1/agent_runners/${id}`,
-    {
-      headers: {
-        Authorization: `Bearer ${api.accessToken ?? ''}`,
-        'User-Agent': apiOpts.userAgent,
-      },
-    },
-  )
-
-  if (!response.ok) {
-    const errorData = (await response.json().catch(() => ({}))) as { error?: string }
-    throw new Error(errorData.error ?? `HTTP ${response.status.toString()}: ${response.statusText}`)
-  }
-
-  return (await response.json()) as AgentRunner
+const fetchAgentRunner = async (id: string, api: NetlifyAPI): Promise<AgentRunner> => {
+  const result = await api.getAgentRunner({ agent_runner_id: id })
+  return result as unknown as AgentRunner
 }
 
 const readMultilineInput = (): Promise<string> =>
@@ -226,8 +213,7 @@ const PUSH_STATE_LABELS: Record<string, string> = {
 
 const pollRepoPush = async (
   siteId: string,
-  api: ApiClient,
-  apiOpts: ApiOptions,
+  api: NetlifyAPI,
   spinner: { update: (opts: { text: string }) => void },
 ): Promise<SiteInfo> => {
   let lastState = ''
@@ -236,18 +222,7 @@ const pollRepoPush = async (
   while (true) {
     await sleep(POLL_INTERVAL)
 
-    const response = await fetch(`${apiOpts.scheme ?? 'https'}://${apiOpts.host ?? api.host}/api/v1/sites/${siteId}`, {
-      headers: {
-        Authorization: `Bearer ${api.accessToken ?? ''}`,
-        'User-Agent': apiOpts.userAgent,
-      },
-    })
-
-    if (!response.ok) {
-      throw new Error(`Failed to check push status (HTTP ${response.status.toString()})`)
-    }
-
-    const siteData = (await response.json()) as SiteInfo
+    const siteData = (await api.getSite({ siteId })) as unknown as SiteInfo
     const progress = siteData.git_initial_push_progress
 
     if (progress && progress.state !== lastState) {
@@ -464,7 +439,7 @@ export const createAction = async (promptArg: string, options: CreateOptions, co
     while (true) {
       await sleep(POLL_INTERVAL)
 
-      const runner = await fetchAgentRunner(agentRunner.id, api, apiOpts)
+      const runner = await fetchAgentRunner(agentRunner.id, api)
 
       if (runner.current_task && runner.current_task !== lastTask) {
         lastTask = runner.current_task
@@ -573,7 +548,7 @@ export const createAction = async (promptArg: string, options: CreateOptions, co
           try {
             await createGitHubRepo(site.id, site.name, ghToken, repoOwner, api, apiOpts)
             repoSpinner.update({ text: 'Pushing source to GitHub...' })
-            await pollRepoPush(site.id, api, apiOpts, repoSpinner)
+            await pollRepoPush(site.id, api, repoSpinner)
             stopSpinner({ spinner: repoSpinner })
 
             githubRepoPath = `${repoOwner}/${site.name}`
