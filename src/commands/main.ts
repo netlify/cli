@@ -29,6 +29,7 @@ import BaseCommand from './base-command.js'
 import { createBlobsCommand } from './blobs/blobs.js'
 import { createBuildCommand } from './build/index.js'
 import { createCloneCommand } from './clone/index.js'
+import { createCreateCommand } from './create/index.js'
 import { createCompletionCommand } from './completion/index.js'
 import { createDeployCommand } from './deploy/index.js'
 import { createDevCommand } from './dev/index.js'
@@ -225,6 +226,7 @@ export const createMainCommand = (): BaseCommand => {
   createRecipesCommand(program)
   createInitCommand(program)
   createCloneCommand(program)
+  createCreateCommand(program)
   createLinkCommand(program)
   createLoginCommand(program)
   createLogoutCommand(program)
