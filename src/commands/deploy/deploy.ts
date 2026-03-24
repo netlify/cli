@@ -47,6 +47,7 @@ import { getEnvelopeEnv } from '../../utils/env/index.js'
 import { getFunctionsManifestPath, getInternalFunctionsDir } from '../../utils/functions/index.js'
 import openBrowser from '../../utils/open-browser.js'
 import { isInteractive } from '../../utils/scripted-commands.js'
+import { resolveTeamForNonInteractive } from '../../utils/team.js'
 import type BaseCommand from '../base-command.js'
 import { link } from '../link/link.js'
 import { sitesCreate } from '../sites/sites-create.js'
@@ -831,6 +832,23 @@ const printResults = ({
 
     logJson(jsonData)
     exit(0)
+  } else if (!isInteractive()) {
+    if (deployToProduction) {
+      log(`\nProduction URL: <${results.siteUrl}>`)
+      log(`Unique deploy URL: <${results.deployUrl}>`)
+    } else {
+      log(`\nDraft URL: <${results.deployUrl}>`)
+    }
+    log(`\nBuild logs: <${results.logsUrl}>`)
+    log(`Function logs: <${results.functionLogsUrl}>`)
+    log(`Edge function logs: <${results.edgeFunctionLogsUrl}>`)
+
+    if (!deployToProduction) {
+      log()
+      log('If everything looks good on your draft URL, deploy it to your main project URL with the --prod flag:')
+      log(`netlify deploy${runBuildCommand ? '' : ' --no-build'} --prod`)
+      log()
+    }
   } else {
     const message = deployToProduction
       ? `Deployed to production URL: ${terminalLink(results.siteUrl, results.siteUrl, { fallback: false })}\n
@@ -964,47 +982,18 @@ const prepAndRunDeploy = async ({
   return results
 }
 
-const resolveTeam = (
-  accounts: { slug: string; name: string; default?: boolean }[],
-): (typeof accounts)[0] | undefined => {
-  if (accounts.length === 1) {
-    return accounts[0]
-  }
-  return accounts.find((acc) => acc.default)
-}
-
-const validateTeamForSiteCreation = (
-  accounts: { slug: string; name: string; default?: boolean }[],
-  options: DeployOptionValues,
-  siteName?: string,
-) => {
-  if (accounts.length === 0) {
-    return logAndThrowError('No teams available. Please ensure you have access to at least one team.')
-  }
-
-  const team = resolveTeam(accounts)
-  if (team) {
-    options.team = team.slug
-    const message = siteName ? `Creating new site: ${siteName}` : 'Creating new site with random name'
-    log(`${message} (using team: ${team.name})`)
-    return
-  }
-
-  const availableTeams = accounts.map((t) => t.slug).join(', ')
-  return logAndThrowError(
-    `Multiple teams available. Please specify which team to use with --team flag.\n` +
-      `Available teams: ${availableTeams}\n\n` +
-      `Example: netlify deploy --site-name${siteName ? ` ${siteName}` : ' <SITE_NAME>'} --team <TEAM_SLUG>\n\n` +
-      `To list teams with full details, run:  netlify teams:list`,
-  )
-}
-
 const createSiteWithFlags = async (options: DeployOptionValues, command: BaseCommand, site: $TSFixMe) => {
   const { accounts } = command.netlify
   const siteName = typeof options.createSite === 'string' ? options.createSite : undefined
 
   if (!options.team) {
-    validateTeamForSiteCreation(accounts, options, siteName)
+    const team = resolveTeamForNonInteractive(
+      accounts,
+      `netlify deploy --site-name${siteName ? ` ${siteName}` : ' <SITE_NAME>'} --team <TEAM_SLUG>`,
+    )
+    options.team = team.slug
+    const message = siteName ? `Creating new site: ${siteName}` : 'Creating new site with random name'
+    log(`${message} (using team: ${team.name})`)
   } else {
     const message = siteName ? `Creating new site: ${siteName}` : 'Creating new site with random name'
     log(message)
@@ -1110,8 +1099,9 @@ const ensureSiteExists = async (
   if (!isInteractive()) {
     const { accounts } = command.netlify
     options.createSite = true
-    validateTeamForSiteCreation(accounts, options)
-    log(`No project linked. Auto-creating a new project (team: ${options.team})...`)
+    const team = resolveTeamForNonInteractive(accounts, 'netlify deploy --site-name <SITE_NAME> --team <TEAM_SLUG>')
+    options.team = team.slug
+    log(`No project linked. Auto-creating a new project (team: ${team.name})...`)
     return createSiteWithFlags(options, command, site)
   }
 

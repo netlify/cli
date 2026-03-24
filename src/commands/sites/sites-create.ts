@@ -6,6 +6,8 @@ import prettyjson from 'prettyjson'
 import { chalk, logAndThrowError, log, logJson, warn, type APIError } from '../../utils/command-helpers.js'
 import getRepoData from '../../utils/get-repo-data.js'
 import { configureRepo } from '../../utils/init/config.js'
+import { isInteractive } from '../../utils/scripted-commands.js'
+import { resolveTeamForNonInteractive } from '../../utils/team.js'
 import { track } from '../../utils/telemetry/index.js'
 import type { SiteInfo } from '../../utils/types.js'
 import type BaseCommand from '../base-command.js'
@@ -35,20 +37,29 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand) =
 
   let accountSlug = options.accountSlug as string | undefined
   if (!accountSlug) {
-    const { accountSlug: accountSlugInput }: { accountSlug: string } = await inquirer.prompt<
-      Promise<{ accountSlug: string }>
-    >([
-      {
-        type: 'list',
-        name: 'accountSlug',
-        message: 'Team:',
-        choices: accounts.map((account) => ({
-          value: account.slug,
-          name: account.name,
-        })),
-      },
-    ])
-    accountSlug = accountSlugInput
+    if (!isInteractive()) {
+      const team = resolveTeamForNonInteractive(
+        accounts,
+        'netlify sites:create --name <SITE_NAME> --account-slug <TEAM_SLUG>',
+      )
+      accountSlug = team.slug
+      log(`Using team: ${team.name}`)
+    } else {
+      const { accountSlug: accountSlugInput }: { accountSlug: string } = await inquirer.prompt<
+        Promise<{ accountSlug: string }>
+      >([
+        {
+          type: 'list',
+          name: 'accountSlug',
+          message: 'Team:',
+          choices: accounts.map((account) => ({
+            value: account.slug,
+            name: account.name,
+          })),
+        },
+      ])
+      accountSlug = accountSlugInput
+    }
   }
 
   let site!: SiteInfo
@@ -78,7 +89,19 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand) =
       }
     }
   }
-  await inputSiteName(options.name)
+
+  if (!isInteractive() && !options.name) {
+    try {
+      site = (await api.createSiteInTeam({
+        accountSlug: accountSlug,
+        body: {},
+      })) as unknown as SiteInfo
+    } catch (error_) {
+      return logAndThrowError(`Failed to create site: ${(error_ as APIError).status}: ${(error_ as APIError).message}`)
+    }
+  } else {
+    await inputSiteName(options.name)
+  }
 
   log()
   log(chalk.greenBright.bold.underline(`Project Created`))
