@@ -38,9 +38,11 @@ import type { FeatureFlags } from '../utils/feature-flags.js'
 import { getFrameworksAPIPaths } from '../utils/frameworks-api.js'
 import { getSiteByName } from '../utils/get-site.js'
 import openBrowser from '../utils/open-browser.js'
+import { isInteractive } from '../utils/scripted-commands.js'
 import { identify, reportError, track } from '../utils/telemetry/index.js'
 import type { NetlifyOptions } from './types.js'
 import type { CachedConfig } from '../lib/build.js'
+import type { MinimalAccount } from '../utils/types.js'
 
 type Analytics = {
   startTime: bigint
@@ -452,7 +454,29 @@ export default class BaseCommand extends Command {
     if (token) {
       return token
     }
-    return this.expensivelyAuthenticate()
+    if (!isInteractive()) {
+      return logAndThrowError(
+        `Authentication required. NETLIFY_AUTH_TOKEN is not set and ${chalk.cyanBright(
+          '`netlify status`',
+        )} also informs us that you need to use ${chalk.cyanBright(
+          '`netlify login --request <message>`',
+        )} as a next step.`,
+      )
+    }
+    const accessToken = await this.expensivelyAuthenticate()
+    this.netlify.api.accessToken = accessToken
+    await this.refreshAccounts()
+    return accessToken
+  }
+
+  private async refreshAccounts() {
+    try {
+      const accounts = (await this.netlify.api.listAccountsForUser()) as MinimalAccount[]
+      this.netlify.accounts = accounts
+    } catch {
+      // If refresh fails, leave existing accounts in place.
+      // Commands will handle empty accounts with their own error messages.
+    }
   }
 
   async expensivelyAuthenticate() {
