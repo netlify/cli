@@ -90,4 +90,5 @@ export const envImport = async (fileName: string, options: OptionValues, command
   table.setHeading('Key', 'Value')
   table.addRowMatrix(Object.entries(importedEnv))
   log(table.toString())
+  log(`Changes will require a redeploy to take effect on any deployed versions of your project.`)
 }

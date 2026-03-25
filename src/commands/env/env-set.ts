@@ -138,4 +138,5 @@ export const envSet = async (key: string, value: string, options: OptionValues, 
       `${key}${value && !secret ? `=${value}` : ''}`,
     )}${withScope}${withSecret} in the ${chalk.magenta(context || 'all')} ${contextType}`,
   )
+  log(`Changes will require a redeploy to take effect on any deployed versions of your project.`)
 }
