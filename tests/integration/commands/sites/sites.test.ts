@@ -79,5 +79,39 @@ describe('sites command', () => {
         }).rejects.toThrowError('--name should be less than 64 characters')
       })
     })
+
+    test('should output JSON when --json flag is passed', async () => {
+      await withMockApi(routes, async ({ apiUrl }) => {
+        Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
+
+        const program = new BaseCommand('netlify')
+        createSitesCreateCommand(program)
+
+        const logJsonSpy = vi.spyOn(await import('../../../../src/utils/command-helpers.js'), 'logJson')
+
+        await program.parseAsync([
+          '',
+          '',
+          'sites:create',
+          '--name',
+          'test-site',
+          '--account-slug',
+          'test-account',
+          '--disable-linking',
+          '--json',
+        ])
+
+        expect(logJsonSpy).toHaveBeenCalledWith(
+          expect.objectContaining({
+            id: 'site_id',
+            name: 'site-name',
+            admin_url: 'https://app.netlify.com/projects/site-name/overview',
+            ssl_url: 'https://site-name.netlify.app/',
+          }),
+        )
+
+        logJsonSpy.mockRestore()
+      })
+    })
   })
 })
