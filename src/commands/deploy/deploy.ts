@@ -722,10 +722,10 @@ const handleBuild = async ({
   // while still getting clean JSON on stdout.
   if (options.verbose && options.json && logs) {
     if (logs.stdout.length) {
-      process.stderr.write(logs.stdout.join(''))
+      process.stderr.write(logs.stdout.join('\n'))
     }
     if (logs.stderr.length) {
-      process.stderr.write(logs.stderr.join(''))
+      process.stderr.write(logs.stderr.join('\n'))
     }
   }
 

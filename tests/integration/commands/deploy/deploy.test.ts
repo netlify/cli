@@ -714,7 +714,7 @@ describe.concurrent('deploy command', () => {
               build: {
                 publish: 'public',
                 command:
-                  "node -e \"process.stdout.write('Build stdout log'); process.stderr.write('Build stderr log')\"",
+                  "node -e \"process.stdout.write('Build stdout line 1\\nBuild stdout line 2'); process.stderr.write('Build stderr line 1\\nBuild stderr line 2')\"",
               },
             },
           })
@@ -732,9 +732,11 @@ describe.concurrent('deploy command', () => {
         // stdout should still be valid JSON
         expect(() => JSON.parse(stdout)).not.toThrowError()
 
-        // stderr should contain the build output
-        expect(stderr).toContain('Build stdout log')
-        expect(stderr).toContain('Build stderr log')
+        // stderr should contain the build output with line breaks preserved
+        expect(stderr).toContain('Build stdout line 1')
+        expect(stderr).toContain('Build stdout line 2')
+        expect(stderr).toContain('Build stderr line 1')
+        expect(stderr).toContain('Build stderr line 2')
       })
     })
   })
