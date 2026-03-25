@@ -713,7 +713,8 @@ describe.concurrent('deploy command', () => {
             config: {
               build: {
                 publish: 'public',
-                command: "node -e \"process.stdout.write('Build stdout log'); process.stderr.write('Build stderr log')\"",
+                command:
+                  "node -e \"process.stdout.write('Build stdout log'); process.stderr.write('Build stderr log')\"",
               },
             },
           })
