@@ -101,6 +101,7 @@ export const envClone = async (options: OptionValues, command: BaseCommand) => {
   }
 
   log(`Successfully cloned environment variables from ${chalk.green(siteFrom.name)} to ${chalk.green(siteTo.name)}`)
+  log(`Changes will require a redeploy to take effect on any deployed versions of your project.`)
 
   return true
 }
