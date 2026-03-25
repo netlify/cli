@@ -19,6 +19,7 @@ Create a blank project that isn't associated with any git remote. Will link the 
     .option('-m, --manual', 'force manual CI setup.  Used --with-ci flag')
     .option('--disable-linking', 'create the project without linking it to current directory')
     .option('-p, --prompt <prompt>', 'description of the site to create (delegates to `netlify create`)')
+    .option('--json', 'Output project data as JSON')
     .addHelpText(
       'after',
       `Create a blank project that isn't associated with any git remote. Will link the project to the current working directory.`,
