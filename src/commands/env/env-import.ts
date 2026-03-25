@@ -7,6 +7,7 @@ import dotenv from 'dotenv'
 import { exit, log, logJson } from '../../utils/command-helpers.js'
 import { translateFromEnvelopeToMongo, translateFromMongoToEnvelope } from '../../utils/env/index.js'
 import BaseCommand from '../base-command.js'
+import { getSiteInfo } from './utils.js'
 
 /**
  * Saves the imported env in the Envelope service
@@ -58,6 +59,8 @@ export const envImport = async (fileName: string, options: OptionValues, command
     return false
   }
 
+  const siteInfo = await getSiteInfo(api, siteId, cachedConfig)
+
   let importedEnv = {}
   try {
     const envFileContents = await readFile(fileName, 'utf-8')
@@ -72,8 +75,6 @@ export const envImport = async (fileName: string, options: OptionValues, command
     log(`No environment variables found in file ${fileName} to import`)
     return false
   }
-
-  const { siteInfo } = cachedConfig
 
   const finalEnv = await importDotEnv({ api, importedEnv, options, siteInfo })
 
