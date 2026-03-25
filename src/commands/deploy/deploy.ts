@@ -716,6 +716,19 @@ const handleBuild = async ({
   })
 
   const { configMutations, exitCode, newConfig, logs } = await runBuild(resolvedOptions)
+
+  // When --verbose is used with --json, pipe the build's stdout and stderr
+  // to the process stderr so that callers can see the full build output
+  // while still getting clean JSON on stdout.
+  if (options.verbose && options.json && logs) {
+    if (logs.stdout.length) {
+      process.stderr.write(logs.stdout.join(''))
+    }
+    if (logs.stderr.length) {
+      process.stderr.write(logs.stderr.join(''))
+    }
+  }
+
   // Without this, the deploy command fails silently
   if (exitCode !== 0) {
     let message = ''

@@ -1,9 +1,11 @@
 import path from 'path'
 import { fileURLToPath } from 'url'
 
+import execa from 'execa'
 import { describe, expect, test } from 'vitest'
 
 import { callCli } from '../../utils/call-cli.js'
+import { cliPath } from '../../utils/cli-path.js'
 import { getCLIOptions, type MockApi } from '../../utils/mock-api-vitest.js'
 import { withSiteBuilder } from '../../utils/site-builder.js'
 import { createDeployRoutes, startDeployMockApi, type DeployRouteState } from './deploy-api-routes.js'
@@ -695,6 +697,43 @@ describe.concurrent('deploy command', () => {
         await expect(
           callCli(['deploy', '--json', '--verbose'], getCLIOptions({ apiUrl: mockApi.apiUrl, builder })),
         ).rejects.toThrow('Build output')
+      })
+    })
+  })
+
+  test('should pipe build output to stderr when --json --verbose is used on successful deploy', async (t) => {
+    await withMockDeploy(async (mockApi) => {
+      await withSiteBuilder(t, async (builder) => {
+        builder
+          .withContentFile({
+            path: 'public/index.html',
+            content: '<h1>Test content</h1>',
+          })
+          .withNetlifyToml({
+            config: {
+              build: {
+                publish: 'public',
+                command: "node -e \"process.stdout.write('Build stdout log'); process.stderr.write('Build stderr log')\"",
+              },
+            },
+          })
+
+        await builder.build()
+
+        const { env, ...execOptions } = getCLIOptions({ apiUrl: mockApi.apiUrl, builder })
+        const { stdout, stderr } = await execa.node(cliPath, ['deploy', '--json', '--verbose'], {
+          ...execOptions,
+          env,
+          timeout: 3e5,
+          nodeOptions: [],
+        })
+
+        // stdout should still be valid JSON
+        expect(() => JSON.parse(stdout)).not.toThrowError()
+
+        // stderr should contain the build output
+        expect(stderr).toContain('Build stdout log')
+        expect(stderr).toContain('Build stderr log')
       })
     })
   })
