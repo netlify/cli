@@ -54,6 +54,7 @@ netlify sites:create
 - `account-slug` (*string*) - account slug to create the project under
 - `disable-linking` (*boolean*) - create the project without linking it to current directory
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
+- `json` (*boolean*) - Output project data as JSON
 - `manual` (*boolean*) - force manual CI setup.  Used --with-ci flag
 - `name` (*string*) - name of project
 - `debug` (*boolean*) - Print debugging information
