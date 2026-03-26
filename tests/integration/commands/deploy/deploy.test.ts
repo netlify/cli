@@ -401,6 +401,81 @@ describe.concurrent('deploy command', () => {
     })
   })
 
+  test('should deploy DB migration files when internal migrations directory exists', async (t) => {
+    await withMockDeploy(async (mockApi, deployState) => {
+      await withSiteBuilder(t, async (builder) => {
+        builder
+          .withContentFile({
+            path: 'public/index.html',
+            content: '<h1>Site with DB migrations</h1>',
+          })
+          .withContentFile({
+            path: '.netlify/internal/db/migrations/0000_oval_proudstar/migration.sql',
+            content: 'CREATE TABLE users (id serial PRIMARY KEY);',
+          })
+          .withContentFile({
+            path: '.netlify/internal/db/migrations/0001_second_migration/migration.sql',
+            content: 'ALTER TABLE users ADD COLUMN name text;',
+          })
+          .withNetlifyToml({
+            config: {
+              build: { publish: 'public' },
+            },
+          })
+
+        await builder.build()
+
+        const deploy = await callCli(
+          ['deploy', '--json', '--no-build', '--dir', 'public'],
+          getCLIOptions({ apiUrl: mockApi.apiUrl, builder }),
+        ).then(parseDeploy)
+
+        expect(deploy.site_id).toBe('site_id')
+
+        const body = deployState.getDeployBody()
+        expect(body).not.toBeNull()
+
+        const fileKeys = Object.keys(body!.files!)
+        expect(fileKeys).toContain('index.html')
+        expect(fileKeys).toContain('.netlify/internal/db/migrations/0000_oval_proudstar/migration.sql')
+        expect(fileKeys).toContain('.netlify/internal/db/migrations/0001_second_migration/migration.sql')
+      })
+    })
+  })
+
+  test('should not include DB migrations in deploy when internal migrations directory does not exist', async (t) => {
+    await withMockDeploy(async (mockApi, deployState) => {
+      await withSiteBuilder(t, async (builder) => {
+        builder
+          .withContentFile({
+            path: 'public/index.html',
+            content: '<h1>Site without DB migrations</h1>',
+          })
+          .withNetlifyToml({
+            config: {
+              build: { publish: 'public' },
+            },
+          })
+
+        await builder.build()
+
+        const deploy = await callCli(
+          ['deploy', '--json', '--no-build', '--dir', 'public'],
+          getCLIOptions({ apiUrl: mockApi.apiUrl, builder }),
+        ).then(parseDeploy)
+
+        expect(deploy.site_id).toBe('site_id')
+
+        const body = deployState.getDeployBody()
+        expect(body).not.toBeNull()
+
+        const fileKeys = Object.keys(body!.files!)
+        expect(fileKeys).toContain('index.html')
+        expect(fileKeys.some((key) => key.includes('db/migrations'))).toBe(false)
+      })
+    })
+  })
+
   test('runs build command before deploy by default', async (t) => {
     await withMockDeploy(async (mockApi, deployState) => {
       await withSiteBuilder(t, async (builder) => {
