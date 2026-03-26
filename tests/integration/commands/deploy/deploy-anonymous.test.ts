@@ -1,3 +1,6 @@
+import { readFile } from 'fs/promises'
+import { join } from 'path'
+
 import { describe, expect, test } from 'vitest'
 
 import { callCli } from '../../utils/call-cli.js'
@@ -100,6 +103,11 @@ describe('deploy --allow-anonymous', () => {
         expect(deploy.claim_url).toContain('drop_token=')
         expect(deploy.claim_command).toContain('--claim-site')
         expect(deploy.claim_command).toContain('--claim-token')
+
+        const stateJson = JSON.parse(
+          await readFile(join(builder.directory, '.netlify', 'state.json'), 'utf-8'),
+        ) as { siteId: string }
+        expect(stateJson.siteId).toBe('drop_site_id')
       })
     } finally {
       await mockApi.close()
@@ -423,6 +431,11 @@ describe('deploy --allow-anonymous', () => {
         const claimBody = claimReq?.body as { site: string; token: string }
         expect(claimBody.site).toBe('drop_site_id')
         expect(claimBody.token).toBe('drop-jwt-token')
+
+        const stateJson = JSON.parse(
+          await readFile(join(builder.directory, '.netlify', 'state.json'), 'utf-8'),
+        ) as { siteId: string }
+        expect(stateJson.siteId).toBe('drop_site_id')
       })
     } finally {
       await mockApi.close()
