@@ -4,9 +4,13 @@ import type { BaseOptionValues } from '../base-command.js'
 
 export type DeployOptionValues = BaseOptionValues & {
   alias?: string
+  allowAnonymous?: boolean
   build: boolean
   branch?: string
+  claimSite?: string
+  claimToken?: string
   context?: string
+  createdVia?: string
   createSite?: string | boolean
   dir?: string
   draft: boolean

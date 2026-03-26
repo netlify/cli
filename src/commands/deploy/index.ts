@@ -93,6 +93,14 @@ For detailed configuration options, see the Netlify documentation.`,
       '--team <slug>',
       'Specify team slug when creating a site. Only works with --create-site or --site-name flag.',
     )
+    .option(
+      '--allow-anonymous',
+      'If not logged in, deploy anonymously and create a claimable site instead of requiring authentication',
+      false,
+    )
+    .option('--created-via <source>', 'Specify the source of the deploy (e.g., "cli", "drop")')
+    .addOption(new Option('--claim-site <siteId>', 'Claim an anonymous deploy site').hideHelp(true))
+    .addOption(new Option('--claim-token <token>', 'Token for claiming an anonymous deploy site').hideHelp(true))
     .addExamples([
       'netlify deploy',
       'netlify deploy --site my-first-project',
@@ -105,6 +113,7 @@ For detailed configuration options, see the Netlify documentation.`,
       'netlify deploy --trigger',
       'netlify deploy --context deploy-preview',
       'netlify deploy --site-name my-new-site --team my-team # Create site and deploy',
+      'netlify deploy --allow-anonymous --dir ./public --no-build # Deploy without auth',
     ])
     .addHelpText('after', () => {
       const docsUrl = 'https://docs.netlify.com/site-deploys/overview/'
