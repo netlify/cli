@@ -54,7 +54,6 @@ import {
   createDropDeploy,
   uploadDropFiles,
   waitForDropDeploy,
-  claimDropSite,
 } from '../../utils/deploy/drop-api.js'
 import { getUploadList } from '../../utils/deploy/util.js'
 import hashFiles from '../../utils/deploy/hash-files.js'
@@ -1268,7 +1267,7 @@ const anonymousDeploy = async (options: DeployOptionValues, command: BaseCommand
       site_url: siteUrl,
       deploy_id: deployInfo.deploy_id,
       claim_url: claimUrl,
-      claim_command: `netlify deploy --claim-site ${deployInfo.id} --claim-token ${dropToken}`,
+      claim_command: `netlify claim ${deployInfo.id} --token ${dropToken}`,
       ...(isPasswordProtected ? { password: 'My-Drop-Site' } : {}),
     })
     exit(0)
@@ -1297,34 +1296,10 @@ const anonymousDeploy = async (options: DeployOptionValues, command: BaseCommand
   log(`  ${claimUrl}`)
   log('')
   log(`  ${chalk.bold('Claim via CLI:')}`)
-  log(`  netlify deploy --claim-site ${deployInfo.id} --claim-token ${dropToken}`)
+  log(`  netlify claim ${deployInfo.id} --token ${dropToken}`)
   log('')
   warn('Anonymously deployed sites need to be claimed within 60 minutes.')
   log('')
-}
-
-const claimAnonymousSite = async (options: DeployOptionValues, command: BaseCommand) => {
-  if (!options.claimSite || !options.claimToken) {
-    return logAndThrowError('Both --claim-site and --claim-token are required to claim an anonymous deploy')
-  }
-
-  const apiBase = command.netlify.api.basePath
-  const dropApiOptions = {
-    apiBase,
-    userAgent: command.netlify.api.defaultHeaders['User-agent'] || 'netlify-cli',
-  }
-
-  const authToken = command.netlify.api.accessToken
-  if (!authToken) {
-    return logAndThrowError('You must be logged in to claim a site. Run `netlify login` first.')
-  }
-
-  await claimDropSite(dropApiOptions, options.claimSite, options.claimToken, authToken)
-
-  command.netlify.state.set('siteId', options.claimSite)
-
-  log(`\n${NETLIFYDEVLOG} Site claimed successfully and linked to your account!`)
-  log(`You can now deploy to this site with: ${chalk.cyanBright('netlify deploy --prod')}\n`)
 }
 
 export const deploy = async (options: DeployOptionValues, command: BaseCommand) => {
@@ -1333,11 +1308,6 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
   const alias = options.alias || options.branch
 
   command.setAnalyticsPayload({ open: options.open, prod: options.prod, json: options.json, alias: Boolean(alias) })
-
-  if (options.claimSite && options.claimToken) {
-    await command.authenticate(options.auth)
-    return claimAnonymousSite(options, command)
-  }
 
   if (options.allowAnonymous) {
     const [token] = await getToken(options.auth)

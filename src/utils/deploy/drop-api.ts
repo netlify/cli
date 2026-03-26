@@ -85,7 +85,8 @@ export const uploadDropFile = async (
 ): Promise<void> => {
   // Node.js fetch needs `duplex: 'half'` for streaming bodies which isn't in standard RequestInit
   /* eslint-disable @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any */
-  const response: Response = await fetch(`${apiBase}/deploys/${deployId}/files${encodeURI(filePath)}`, {
+  const normalizedFilePath = filePath.startsWith('/') ? filePath : `/${filePath}`
+  const response: Response = await fetch(`${apiBase}/deploys/${deployId}/files${encodeURI(normalizedFilePath)}`, {
     method: 'PUT',
     headers: makeHeaders(userAgent, {
       'Content-Type': 'application/octet-stream',

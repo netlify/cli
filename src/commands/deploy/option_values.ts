@@ -7,8 +7,6 @@ export type DeployOptionValues = BaseOptionValues & {
   allowAnonymous?: boolean
   build: boolean
   branch?: string
-  claimSite?: string
-  claimToken?: string
   context?: string
   createdVia?: string
   createSite?: string | boolean

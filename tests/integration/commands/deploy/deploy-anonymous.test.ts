@@ -101,12 +101,12 @@ describe('deploy --allow-anonymous', () => {
         expect(deploy.site_url).toBe('https://anon-test-site.netlify.app')
         expect(deploy.claim_url).toContain('app.netlify.com/drop/')
         expect(deploy.claim_url).toContain('drop_token=')
-        expect(deploy.claim_command).toContain('--claim-site')
-        expect(deploy.claim_command).toContain('--claim-token')
+        expect(deploy.claim_command).toContain('netlify claim')
+        expect(deploy.claim_command).toContain('--token')
 
-        const stateJson = JSON.parse(
-          await readFile(join(builder.directory, '.netlify', 'state.json'), 'utf-8'),
-        ) as { siteId: string }
+        const stateJson = JSON.parse(await readFile(join(builder.directory, '.netlify', 'state.json'), 'utf-8')) as {
+          siteId: string
+        }
         expect(stateJson.siteId).toBe('drop_site_id')
       })
     } finally {
@@ -397,45 +397,6 @@ describe('deploy --allow-anonymous', () => {
         )
 
         await expect(rejected).rejects.toThrow(/--allow-anonymous/)
-      })
-    } finally {
-      await mockApi.close()
-    }
-  })
-
-  test('should claim site via --claim-site and --claim-token', async (t) => {
-    const routes: Route[] = [
-      ...createDropRoutes(),
-      { path: 'sites/drop_site_id', response: { ...siteInfo, id: 'drop_site_id' } },
-      { path: 'accounts/test-account/env', response: [] },
-    ]
-    const mockApi = await startDeployMockApi({ routes })
-    try {
-      await withSiteBuilder(t, async (builder) => {
-        await builder.build()
-
-        const output = (await callCli(
-          ['deploy', '--claim-site', 'drop_site_id', '--claim-token', 'drop-jwt-token'],
-          getCLIOptions({
-            apiUrl: mockApi.apiUrl,
-            builder,
-            env: { NETLIFY_SITE_ID: '' },
-          }),
-        )) as string
-
-        expect(output).toContain('claimed successfully')
-
-        const claimReq = mockApi.requests.find((r) => r.path.includes('/drop/claim'))
-        expect(claimReq).toBeDefined()
-        expect(claimReq?.method).toBe('POST')
-        const claimBody = claimReq?.body as { site: string; token: string }
-        expect(claimBody.site).toBe('drop_site_id')
-        expect(claimBody.token).toBe('drop-jwt-token')
-
-        const stateJson = JSON.parse(
-          await readFile(join(builder.directory, '.netlify', 'state.json'), 'utf-8'),
-        ) as { siteId: string }
-        expect(stateJson.siteId).toBe('drop_site_id')
       })
     } finally {
       await mockApi.close()

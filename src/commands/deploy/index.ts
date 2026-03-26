@@ -99,8 +99,6 @@ For detailed configuration options, see the Netlify documentation.`,
       false,
     )
     .option('--created-via <source>', 'Specify the source of the deploy (e.g., "cli", "drop")')
-    .addOption(new Option('--claim-site <siteId>', 'Claim an anonymous deploy site').hideHelp(true))
-    .addOption(new Option('--claim-token <token>', 'Token for claiming an anonymous deploy site').hideHelp(true))
     .addExamples([
       'netlify deploy',
       'netlify deploy --site my-first-project',
