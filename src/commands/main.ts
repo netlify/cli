@@ -36,12 +36,14 @@ import { createDevCommand } from './dev/index.js'
 import { createDevExecCommand } from './dev-exec/index.js'
 import { createEnvCommand } from './env/index.js'
 import { createFunctionsCommand } from './functions/index.js'
+import { createGitCredentialsCommand } from './git-credentials/index.js'
 import { createInitCommand } from './init/index.js'
 import { createLinkCommand } from './link/index.js'
 import { createLoginCommand } from './login/index.js'
 import { createLogoutCommand } from './logout/index.js'
 import { createLogsCommand } from './logs/index.js'
 import { createOpenCommand } from './open/index.js'
+import { createPushCommand } from './push/index.js'
 import { createRecipesCommand } from './recipes/index.js'
 import { createServeCommand } from './serve/index.js'
 import { createSitesCommand } from './sites/index.js'
@@ -223,6 +225,7 @@ export const createMainCommand = (): BaseCommand => {
   createDevCommand(program)
   createEnvCommand(program)
   createFunctionsCommand(program)
+  createGitCredentialsCommand(program)
   createRecipesCommand(program)
   createInitCommand(program)
   createCloneCommand(program)
@@ -231,6 +234,7 @@ export const createMainCommand = (): BaseCommand => {
   createLoginCommand(program)
   createLogoutCommand(program)
   createOpenCommand(program)
+  createPushCommand(program)
   createServeCommand(program)
   createSitesCommand(program)
   createStatusCommand(program)
