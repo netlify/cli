@@ -1,3 +1,4 @@
+import { execSync } from 'child_process'
 import { randomBytes } from 'crypto'
 import { type Stats } from 'fs'
 import { stat } from 'fs/promises'
@@ -635,7 +636,7 @@ const runDeploy = async ({
       config,
       fnDir: functionDirectories,
       functionsConfig,
-
+      branch: alias,
       statusCb: silent ? () => {} : deployProgressCb(),
       deployTimeout,
       syncFileLimit: SYNC_FILE_LIMIT,
@@ -681,6 +682,7 @@ const runDeploy = async ({
 }
 
 const handleBuild = async ({
+  alias,
   cachedConfig,
   currentDir,
   defaultConfig,
@@ -690,6 +692,7 @@ const handleBuild = async ({
   packagePath,
   skewProtectionToken,
 }: {
+  alias?: string
   cachedConfig: CachedConfig
   currentDir: string
   defaultConfig?: DefaultConfig | undefined
@@ -703,7 +706,11 @@ const handleBuild = async ({
     return {}
   }
   const [token] = await getToken()
+  if (alias && !options.context) {
+    options.context = 'branch-deploy'
+  }
   const resolvedOptions = await getRunBuildOptions({
+    branch: alias,
     cachedConfig,
     currentDir,
     defaultConfig,
@@ -894,6 +901,7 @@ const printResults = ({
 }
 
 const prepAndRunDeploy = async ({
+  alias,
   api,
   command,
   config,
@@ -905,6 +913,7 @@ const prepAndRunDeploy = async ({
   workingDir,
   deployId,
 }: {
+  alias?: string
   options: DeployOptionValues
   command: BaseCommand
   workingDir: string
@@ -912,7 +921,6 @@ const prepAndRunDeploy = async ({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- FIXME(serhalp)
   [key: string]: any
 }) => {
-  const alias = options.alias || options.branch
   // if a context is passed besides dev, we need to pull env vars from that specific context
   if (options.context && options.context !== 'dev') {
     command.netlify.cachedConfig.env = await getEnvelopeEnv({
@@ -1121,6 +1129,20 @@ const ensureSiteExists = async (
   return promptForSiteAction(options, command, site)
 }
 
+const getLocalGitBranch = (): string | undefined => {
+  try {
+    const branch = execSync('git rev-parse --abbrev-ref HEAD', {
+      encoding: 'utf8',
+      stdio: ['pipe', 'pipe', 'ignore'],
+    }).trim()
+    if (branch && branch !== 'HEAD') {
+      return branch
+    }
+  } catch {
+    // not in a git repo
+  }
+}
+
 export const deploy = async (options: DeployOptionValues, command: BaseCommand) => {
   const { workingDir } = command
   const { api, site, siteInfo } = command.netlify
@@ -1139,6 +1161,8 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
 
   const deployToProduction =
     !options.draft && (options.prod || (options.prodIfUnlocked && !(siteData.published_deploy?.locked ?? false)))
+  const deployAlias =
+    !deployToProduction && !alias ? `cli-${getLocalGitBranch() ?? randomBytes(4).toString('hex')}` : alias
 
   let results = {} as Awaited<ReturnType<typeof prepAndRunDeploy>>
 
@@ -1148,7 +1172,7 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
     }
 
     const draft = options.draft || (!deployToProduction && !alias)
-    const createDeployBody = { draft, branch: alias, include_upload_url: options.uploadSourceZip }
+    const createDeployBody = { draft, branch: deployAlias, include_upload_url: options.uploadSourceZip }
 
     // TODO: Type this properly in `@netlify/api`.
     const deployMetadata = (await api.createSiteDeploy({
@@ -1180,6 +1204,7 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
     try {
       const settings = await detectFrameworkSettings(command, 'build')
       await handleBuild({
+        alias: deployAlias,
         packagePath: command.workspacePackage,
         cachedConfig: command.netlify.cachedConfig,
         defaultConfig: getDefaultConfig(settings),
@@ -1187,6 +1212,7 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
         options,
         deployHandler: async ({ netlifyConfig }: { netlifyConfig: NetlifyConfig }) => {
           results = await prepAndRunDeploy({
+            alias: deployAlias,
             command,
             options,
             workingDir,
@@ -1217,6 +1243,7 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
     }
   } else {
     results = await prepAndRunDeploy({
+      alias: deployAlias,
       command,
       options,
       workingDir,
