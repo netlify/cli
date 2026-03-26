@@ -19,6 +19,7 @@ import hashFiles from './hash-files.js'
 import hashFns from './hash-fns.js'
 import {
   deployFileNormalizer,
+  getDbMigrationsDistPathIfExists,
   getDeployConfigPathIfExists,
   getEdgeFunctionsDistPathIfExists,
   isEdgeFunctionFile,
@@ -98,6 +99,7 @@ export const deploySite = async (
 
   const edgeFunctionsDistPath = await getEdgeFunctionsDistPathIfExists(workingDir)
   const deployConfigPath = await getDeployConfigPathIfExists(workingDir)
+  const dbMigrationsDistPath = await getDbMigrationsDistPathIfExists(workingDir)
   const [
     { files: staticFiles, filesShaMap: staticShaMap },
     { fnConfig, fnShaMap, functionSchedules, functions, functionsWithNativeModules },
@@ -106,7 +108,7 @@ export const deploySite = async (
     hashFiles({
       assetType,
       concurrentHash,
-      directories: [dir, edgeFunctionsDistPath, deployConfigPath].filter(Boolean),
+      directories: [dir, edgeFunctionsDistPath, deployConfigPath, dbMigrationsDistPath].filter(Boolean),
       filter,
       hashAlgorithm,
       normalizer: deployFileNormalizer.bind(null, workingDir),
