@@ -314,7 +314,7 @@ describe('deploy --allow-anonymous', () => {
           })
           .withFunction({
             path: 'hello.js',
-            handler: () => ({ statusCode: 200, body: 'Hello' }),
+            handler: 'exports.handler = async () => ({ statusCode: 200, body: "Hello" })',
           })
         await builder.build()
 
