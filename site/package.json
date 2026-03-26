@@ -19,7 +19,7 @@
     "@astrojs/starlight": "0.37.7",
     "@bugsnag/js": "8.8.1",
     "astro": "5.18.0",
-    "markdown-magic": "2.6.1",
+    "markdown-magic": "4.8.0",
     "sharp": "0.34.5",
     "strip-ansi": "7.2.0"
   },
