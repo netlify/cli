@@ -34,6 +34,7 @@ import {
   warn,
   logError,
 } from '../utils/command-helpers.js'
+import { handleOptionError, isOptionError } from '../utils/command-error-handler.js'
 import type { FeatureFlags } from '../utils/feature-flags.js'
 import { getFrameworksAPIPaths } from '../utils/frameworks-api.js'
 import { getSiteByName } from '../utils/get-site.js'
@@ -64,9 +65,6 @@ const HELP_$ = NETLIFY_CYAN('$')
 const HELP_INDENT_WIDTH = 2
 /** separator width between term and description */
 const HELP_SEPARATOR_WIDTH = 5
-
-/** Commander error codes for option-related errors */
-const OPTION_ERROR_CODES = ['commander.unknownOption', 'commander.missingArgument', 'commander.excessArguments']
 
 /**
  * A list of commands where we don't have to perform the workspace selection at.
@@ -291,12 +289,8 @@ export default class BaseCommand extends Command {
       // brief error message, making it easier for users in CI/CD environments to
       // understand what went wrong.
       this.exitOverride((error: CommanderError) => {
-        const isOptionError = OPTION_ERROR_CODES.includes(error.code)
-
-        if (isOptionError && !isInteractive()) {
-          log()
-          this.outputHelp()
-          log()
+        if (isOptionError(error)) {
+          handleOptionError(this)
         }
 
         throw error

@@ -21,6 +21,7 @@ import {
 import execa from '../utils/execa.js'
 import getCLIPackageJson from '../utils/get-cli-package-json.js'
 import { didEnableCompileCache } from '../utils/nodejs-compile-cache.js'
+import { handleOptionError, isOptionError } from '../utils/command-error-handler.js'
 import { isInteractive } from '../utils/scripted-commands.js'
 import { track, reportError } from '../utils/telemetry/index.js'
 
@@ -57,8 +58,6 @@ import terminalLink from 'terminal-link'
 import { createDatabaseCommand } from './database/index.js'
 
 const SUGGESTION_TIMEOUT = 1e4
-
-const OPTION_ERROR_CODES = ['commander.unknownOption', 'commander.missingArgument', 'commander.excessArguments']
 
 // These commands run with the --force flag in non-interactive and CI environments
 export const CI_FORCED_COMMANDS = {
@@ -188,7 +187,7 @@ const mainCommand = async function (options, command) {
   if (!isInteractive()) {
     log(`\nDid you mean ${chalk.blue(suggestion)}?`)
     log()
-    command.outputHelp()
+    command.outputHelp({ error: true })
     log()
     return logAndThrowError(`Run ${NETLIFY_CYAN(`${command.name()} help`)} for a list of available commands.`)
   }
@@ -290,12 +289,8 @@ To ask a human for credentials: ${NETLIFY_CYAN('netlify login --request <msg>')}
       },
     })
     .exitOverride(function (this: BaseCommand, error: CommanderError) {
-      const isOptionError = OPTION_ERROR_CODES.includes(error.code)
-
-      if (isOptionError && !isInteractive()) {
-        log()
-        this.outputHelp()
-        log()
+      if (isOptionError(error)) {
+        handleOptionError(this)
       }
 
       throw error

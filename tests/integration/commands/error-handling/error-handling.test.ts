@@ -1,14 +1,13 @@
-import { describe, test, expect } from 'vitest'
+import { describe, test } from 'vitest'
 
 import { callCli } from '../../utils/call-cli.js'
 import { normalize } from '../../utils/snapshots.js'
 
 describe('error handling', () => {
   test('unknown option shows error message', async (t) => {
-    await expect(callCli(['status', '--invalid-option'])).rejects.toThrow()
-
     try {
       await callCli(['status', '--invalid-option'])
+      t.expect.fail('Expected callCli to throw')
     } catch (error) {
       const stderr = (error as { stderr: string }).stderr
       const normalized = normalize(stderr)
@@ -20,10 +19,9 @@ describe('error handling', () => {
   })
 
   test('unknown command shows error', async (t) => {
-    await expect(callCli(['statuss'])).rejects.toThrow()
-
     try {
       await callCli(['statuss'])
+      t.expect.fail('Expected callCli to throw')
     } catch (error) {
       const stderr = (error as { stderr: string }).stderr
       const normalized = normalize(stderr)
@@ -35,10 +33,9 @@ describe('error handling', () => {
   })
 
   test('missing required argument shows error', async (t) => {
-    await expect(callCli(['sites:delete'])).rejects.toThrow()
-
     try {
       await callCli(['sites:delete'])
+      t.expect.fail('Expected callCli to throw')
     } catch (error) {
       const stderr = (error as { stderr: string }).stderr
       const normalized = normalize(stderr)
