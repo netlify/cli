@@ -43,7 +43,7 @@ describe('claim', () => {
         await builder.build()
 
         const output = (await callCli(
-          ['claim', 'drop_site_id', '--token', 'drop-jwt-token'],
+          ['claim', '--site', 'drop_site_id', '--token', 'drop-jwt-token'],
           getCLIOptions({
             apiUrl: mockApi.apiUrl,
             builder,
@@ -88,7 +88,7 @@ describe('claim', () => {
         await builder.build()
 
         const rejected = callCli(
-          ['claim', 'drop_site_id', '--token', 'expired-token'],
+          ['claim', '--site', 'drop_site_id', '--token', 'expired-token'],
           getCLIOptions({
             apiUrl: mockApi.apiUrl,
             builder,
@@ -125,7 +125,7 @@ describe('claim', () => {
         await builder.build()
 
         const rejected = callCli(
-          ['claim', 'drop_site_id', '--token', 'drop-jwt-token'],
+          ['claim', '--site', 'drop_site_id', '--token', 'drop-jwt-token'],
           getCLIOptions({
             apiUrl: mockApi.apiUrl,
             builder,
@@ -161,7 +161,7 @@ describe('claim', () => {
         await builder.build()
 
         const rejected = callCli(
-          ['claim', 'drop_site_id', '--token', 'drop-jwt-token'],
+          ['claim', '--site', 'drop_site_id', '--token', 'drop-jwt-token'],
           getCLIOptions({
             apiUrl: mockApi.apiUrl,
             builder,

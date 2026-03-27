@@ -1269,7 +1269,7 @@ const anonymousDeploy = async (options: DeployOptionValues, command: BaseCommand
       site_url: siteUrl,
       deploy_id: deployInfo.deploy_id,
       claim_url: claimUrl,
-      claim_command: `netlify claim ${deployInfo.id} --token ${dropToken}`,
+      claim_command: `netlify claim --site ${deployInfo.id} --token ${dropToken}`,
       ...(isPasswordProtected ? { password: 'My-Drop-Site' } : {}),
     })
     return
@@ -1298,7 +1298,7 @@ const anonymousDeploy = async (options: DeployOptionValues, command: BaseCommand
   log(`  ${claimUrl}`)
   log('')
   log(`  ${chalk.bold('Claim via CLI:')}`)
-  log(`  netlify claim ${deployInfo.id} --token ${dropToken}`)
+  log(`  netlify claim --site ${deployInfo.id} --token ${dropToken}`)
   log('')
   warn('Anonymously deployed sites need to be claimed within 60 minutes.')
   log('')
