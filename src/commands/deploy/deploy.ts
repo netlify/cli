@@ -1231,7 +1231,7 @@ const anonymousDeploy = async (options: DeployOptionValues, command: BaseCommand
     deployInfo = await createDropDeploy(dropApiOptions, files, dropToken, options.createdVia)
   } catch (error) {
     const dropError = error as DropApiError
-    if (dropError.status === 429 || String(error).includes('429')) {
+    if (dropError.status === 429) {
       const loginCommand = isInteractive()
         ? chalk.cyanBright('netlify login')
         : chalk.cyanBright('netlify login --request <message>')
@@ -1314,7 +1314,7 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
   if (options.allowAnonymous) {
     const [token] = await getToken(options.auth)
     if (token) {
-      log(`${NETLIFYDEVLOG} You are logged in — deploying normally.`)
+      log(`${NETLIFYDEVLOG} You are logged in — deploying to your team.`)
       const hasSiteData = (site.id || options.site) && siteInfo.url
       if (!hasSiteData && !options.createSite) {
         return logAndThrowError(
