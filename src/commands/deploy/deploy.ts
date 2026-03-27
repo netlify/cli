@@ -1272,7 +1272,7 @@ const anonymousDeploy = async (options: DeployOptionValues, command: BaseCommand
       claim_command: `netlify claim ${deployInfo.id} --token ${dropToken}`,
       ...(isPasswordProtected ? { password: 'My-Drop-Site' } : {}),
     })
-    exit(0)
+    return
   }
 
   log('')
