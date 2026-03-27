@@ -184,9 +184,11 @@ const mainCommand = async function (options, command) {
   const suggestion = closest(command.args[0], allCommands)
 
   // In non-interactive environments (CI/CD, scripts), show the suggestion
-  // without prompting, as prompts would block or timeout
+  // without prompting, and display full help for available commands
   if (!isInteractive()) {
     log(`\nDid you mean ${chalk.blue(suggestion)}?`)
+    log()
+    command.outputHelp()
     log()
     return logAndThrowError(`Run ${NETLIFY_CYAN(`${command.name()} help`)} for a list of available commands.`)
   }
