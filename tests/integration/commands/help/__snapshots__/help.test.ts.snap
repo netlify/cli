@@ -14,6 +14,7 @@ COMMANDS
   $ api          Run any Netlify API method
   $ blobs        Manage objects in Netlify Blobs
   $ build        Build on your local machine
+  $ claim        Claim an anonymously deployed site and link it to your account
   $ clone        Clone a remote repository and link it to an existing project
                  on Netlify
   $ completion   Generate shell completion script
