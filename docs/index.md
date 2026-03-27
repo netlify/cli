@@ -50,6 +50,10 @@ Manage objects in Netlify Blobs
 
 Build on your local machine
 
+### [claim](/commands/claim)
+
+Claim an anonymously deployed site and link it to your account
+
 ### [clone](/commands/clone)
 
 Clone a remote repository and link it to an existing project on Netlify

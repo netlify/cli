@@ -26,6 +26,7 @@ import { track, reportError } from '../utils/telemetry/index.js'
 import { createAgentsCommand } from './agents/index.js'
 import { createApiCommand } from './api/index.js'
 import BaseCommand from './base-command.js'
+import { createClaimCommand } from './claim/index.js'
 import { createBlobsCommand } from './blobs/blobs.js'
 import { createBuildCommand } from './build/index.js'
 import { createCloneCommand } from './clone/index.js'
@@ -217,6 +218,7 @@ export const createMainCommand = (): BaseCommand => {
   createApiCommand(program)
   createBlobsCommand(program)
   createBuildCommand(program)
+  createClaimCommand(program)
   createCompletionCommand(program)
   createDeployCommand(program)
   createDevExecCommand(program)
