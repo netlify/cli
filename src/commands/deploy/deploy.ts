@@ -40,7 +40,7 @@ import {
   warn,
   type APIError,
 } from '../../utils/command-helpers.js'
-import { DEFAULT_DEPLOY_TIMEOUT } from '../../utils/deploy/constants.js'
+import { DEFAULT_CONCURRENT_HASH, DEFAULT_DEPLOY_TIMEOUT } from '../../utils/deploy/constants.js'
 import { type DeployEvent, deploySite } from '../../utils/deploy/deploy-site.js'
 import { uploadSourceZip } from '../../utils/deploy/upload-source-zip.js'
 import { getEnvelopeEnv } from '../../utils/env/index.js'
@@ -48,6 +48,17 @@ import { getFunctionsManifestPath, getInternalFunctionsDir } from '../../utils/f
 import openBrowser from '../../utils/open-browser.js'
 import { isInteractive } from '../../utils/scripted-commands.js'
 import { resolveTeamForNonInteractive } from '../../utils/team.js'
+import {
+  type DropApiError,
+  type UploadListItem,
+  getDropToken,
+  createDropDeploy,
+  uploadDropFiles,
+  waitForDropDeploy,
+} from '../../utils/deploy/drop-api.js'
+import { getUploadList } from '../../utils/deploy/util.js'
+import hashFiles from '../../utils/deploy/hash-files.js'
+import { deployFileNormalizer, getEdgeFunctionsDistPathIfExists } from '../../utils/deploy/process-files.js'
 import type BaseCommand from '../base-command.js'
 import { link } from '../link/link.js'
 import { sitesCreate } from '../sites/sites-create.js'
@@ -1121,6 +1132,178 @@ const ensureSiteExists = async (
   return promptForSiteAction(options, command, site)
 }
 
+const anonymousDeploy = async (options: DeployOptionValues, command: BaseCommand) => {
+  const { workingDir } = command
+  const { site, config } = command.netlify
+
+  const dirHasFiles = async (dir: string | undefined): Promise<boolean> => {
+    if (!dir) return false
+    try {
+      const stats = await stat(dir)
+      if (!stats.isDirectory()) return false
+      const { readdir } = await import('fs/promises')
+      const entries = await readdir(dir)
+      return entries.length > 0
+    } catch {
+      return false
+    }
+  }
+
+  const checkForFunctions = async () => {
+    const functionsFolder = getFunctionsFolder({ config, options, site, siteData: {}, workingDir })
+    const internalFunctionsDir = await getInternalFunctionsDir({ base: site.root })
+    const frameworksFunctionsDir = command.netlify.frameworksAPIPaths.functions.path
+
+    const hasFunctions =
+      (await dirHasFiles(functionsFolder)) ||
+      (await dirHasFiles(internalFunctionsDir)) ||
+      (await dirHasFiles(frameworksFunctionsDir))
+    const hasEdgeFunctions = await anyEdgeFunctionsDirectoryExists(command)
+
+    if (hasFunctions || hasEdgeFunctions) {
+      log(
+        `\n${NETLIFYDEVERR} This project includes ${hasFunctions ? 'serverless functions' : ''}${
+          hasFunctions && hasEdgeFunctions ? ' and ' : ''
+        }${hasEdgeFunctions ? 'edge functions' : ''} which require authentication.`,
+      )
+      const loginCommand = isInteractive()
+        ? chalk.cyanBright('netlify login')
+        : chalk.cyanBright('netlify login --request <message>')
+      log(`Run ${loginCommand} first, then retry your deploy command.\n`)
+      exit(1)
+    }
+  }
+
+  await checkForFunctions()
+
+  if (options.build) {
+    const settings = await detectFrameworkSettings(command, 'build')
+    await handleBuild({
+      packagePath: command.workspacePackage,
+      cachedConfig: command.netlify.cachedConfig,
+      defaultConfig: getDefaultConfig(settings),
+      currentDir: workingDir,
+      options,
+    })
+    await checkForFunctions()
+  }
+
+  const deployFolder = await getDeployFolder({
+    command,
+    config: command.netlify.config,
+    options,
+    site,
+    siteData: {},
+  })
+  await validateDeployFolder(deployFolder)
+
+  const edgeFunctionsDistPath = await getEdgeFunctionsDistPathIfExists(workingDir)
+
+  const filter = getDeployFilesFilter({ site, deployFolder })
+  const { files, filesShaMap } = await hashFiles({
+    concurrentHash: DEFAULT_CONCURRENT_HASH,
+    directories: [deployFolder, edgeFunctionsDistPath].filter(Boolean),
+    filter,
+    normalizer: deployFileNormalizer.bind(null, workingDir),
+    statusCb: options.json ? () => {} : deployProgressCb(),
+  })
+
+  const filesCount = Object.keys(files).length
+  if (filesCount === 0) {
+    return logAndThrowError('No files to deploy')
+  }
+
+  log(`\n${NETLIFYDEVLOG} Deploying ${filesCount} files anonymously...`)
+
+  const apiBase = command.netlify.api.basePath
+
+  const dropApiOptions = {
+    apiBase,
+    userAgent: command.netlify.api.defaultHeaders['User-agent'] || 'netlify-cli',
+  }
+
+  const statusCb = options.json ? () => {} : deployProgressCb()
+
+  let dropToken: string
+  let deployInfo: Awaited<ReturnType<typeof createDropDeploy>>
+  try {
+    dropToken = await getDropToken(dropApiOptions)
+    deployInfo = await createDropDeploy(dropApiOptions, files, dropToken, options.createdVia)
+  } catch (error) {
+    const dropError = error as DropApiError
+    if (dropError.status === 429) {
+      const loginCommand = isInteractive()
+        ? chalk.cyanBright('netlify login')
+        : chalk.cyanBright('netlify login --request <message>')
+      return logAndThrowError(
+        `You've reached the daily limit for anonymous deploys. Run ${loginCommand} to sign up or log in, then retry your deploy.`,
+      )
+    }
+    throw error
+  }
+
+  const uploadList = getUploadList(deployInfo.required, filesShaMap) as UploadListItem[]
+
+  if (uploadList.length > 0) {
+    await uploadDropFiles(dropApiOptions, deployInfo.deploy_id, uploadList, dropToken, {
+      statusCb,
+    })
+  }
+
+  const deploy = await waitForDropDeploy(
+    dropApiOptions,
+    deployInfo.id,
+    deployInfo.deploy_id,
+    options.timeout ? options.timeout * 1000 : DEFAULT_DEPLOY_TIMEOUT,
+  )
+
+  site.id = deployInfo.id
+
+  const siteUrl = (deploy.ssl_url || deploy.url || `https://${deployInfo.subdomain}.netlify.app`) as string
+  const isPasswordProtected = !options.createdVia || options.createdVia === 'drop'
+  const claimUrl = `https://app.netlify.com/drop/${deployInfo.subdomain}#drop_token=${dropToken}`
+
+  if (options.json) {
+    logJson({
+      site_id: deployInfo.id,
+      site_url: siteUrl,
+      deploy_id: deployInfo.deploy_id,
+      claim_url: claimUrl,
+      claim_command: `netlify claim --site ${deployInfo.id} --token ${dropToken}`,
+      ...(isPasswordProtected ? { password: 'My-Drop-Site' } : {}),
+    })
+    return
+  }
+
+  log('')
+  log(chalk.cyanBright.bold(`🚀 Deploy complete\n${'─'.repeat(64)}`))
+  log('')
+
+  const boxContent = isPasswordProtected
+    ? `Site URL:  ${terminalLink(siteUrl, siteUrl, { fallback: false })}\n\nPassword:  My-Drop-Site`
+    : `Site URL:  ${terminalLink(siteUrl, siteUrl, { fallback: false })}`
+
+  log(
+    boxen(boxContent, {
+      padding: 1,
+      margin: 1,
+      textAlignment: 'center',
+      borderStyle: 'round',
+      borderColor: NETLIFY_CYAN_HEX,
+      title: `⬥  Anonymous deploy is live ⬥ `,
+      titleAlignment: 'center',
+    }),
+  )
+  log(`  ${chalk.bold('Claim on Netlify:')}`)
+  log(`  ${claimUrl}`)
+  log('')
+  log(`  ${chalk.bold('Claim via CLI:')}`)
+  log(`  netlify claim --site ${deployInfo.id} --token ${dropToken}`)
+  log('')
+  warn('Anonymously deployed sites need to be claimed within 60 minutes.')
+  log('')
+}
+
 export const deploy = async (options: DeployOptionValues, command: BaseCommand) => {
   const { workingDir } = command
   const { api, site, siteInfo } = command.netlify
@@ -1128,6 +1311,33 @@ export const deploy = async (options: DeployOptionValues, command: BaseCommand) 
 
   command.setAnalyticsPayload({ open: options.open, prod: options.prod, json: options.json, alias: Boolean(alias) })
 
+  if (options.allowAnonymous) {
+    const [token] = await getToken(options.auth)
+    if (token) {
+      log(`${NETLIFYDEVLOG} You are logged in — deploying to your team.`)
+      const hasSiteData = (site.id || options.site) && siteInfo.url
+      if (!hasSiteData && !options.createSite) {
+        return logAndThrowError(
+          `No project linked. Use ${chalk.cyanBright(
+            '--create-site <name>',
+          )} to create a new site, or ${chalk.cyanBright('--site <name-or-id>')} to deploy to an existing project.`,
+        )
+      }
+    } else {
+      return anonymousDeploy(options, command)
+    }
+  }
+
+  const [authToken] = await getToken(options.auth)
+  if (!authToken && !isInteractive()) {
+    return logAndThrowError(
+      `Authentication required. NETLIFY_AUTH_TOKEN is not set and ${chalk.cyanBright(
+        '`netlify login --request <message>`',
+      )} can be used to authenticate.\nAlternatively, use ${chalk.cyanBright(
+        '--allow-anonymous',
+      )} to deploy without an account.`,
+    )
+  }
   await command.authenticate(options.auth)
 
   const siteData = await ensureSiteExists(options, command, site, siteInfo)
