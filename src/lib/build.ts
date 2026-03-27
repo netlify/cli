@@ -138,7 +138,7 @@ export const getRunBuildOptions = async ({
   defaultConfig,
   deployHandler,
   deployId,
-  options: { context, cwd, debug, dry, json, offline, silent },
+  options: { alias, branch: branchOption, context, cwd, debug, dry, json, offline, silent },
   packagePath,
   skewProtectionToken,
   token,
@@ -176,6 +176,13 @@ export const getRunBuildOptions = async ({
     }
   }
 
+  // For non-production contexts, use the alias as the branch name so that
+  // branch-aware steps (e.g. DB setup) can create isolated resources for this
+  // deploy. In production, we leave it undefined so that @netlify/config
+  // resolves it from git as usual.
+  const isProductionContext = !context || context === 'production'
+  const branch = isProductionContext ? undefined : alias || branchOption
+
   return {
     cachedConfig,
     defaultConfig: defaultConfig ?? {},
@@ -186,6 +193,7 @@ export const getRunBuildOptions = async ({
     token: token ?? undefined,
     dry,
     debug,
+    branch,
     context,
     mode: 'cli',
     telemetry: false,
