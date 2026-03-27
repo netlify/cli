@@ -9,7 +9,7 @@ import { NodeFS, NoopLogger } from '@netlify/build-info/node'
 import { resolveConfig } from '@netlify/config'
 import { getGlobalConfigStore, LocalState } from '@netlify/dev-utils'
 import { isCI } from 'ci-info'
-import { Command, Help, Option, type OptionValues } from 'commander'
+import { Command, CommanderError, Help, Option, type OptionValues } from 'commander'
 import debug from 'debug'
 import { findUp } from 'find-up'
 import inquirer from 'inquirer'
@@ -64,6 +64,9 @@ const HELP_$ = NETLIFY_CYAN('$')
 const HELP_INDENT_WIDTH = 2
 /** separator width between term and description */
 const HELP_SEPARATOR_WIDTH = 5
+
+/** Commander error codes for option-related errors */
+const OPTION_ERROR_CODES = ['commander.unknownOption', 'commander.missingArgument', 'commander.excessArguments']
 
 /**
  * A list of commands where we don't have to perform the workspace selection at.
@@ -236,12 +239,13 @@ export default class BaseCommand extends Command {
   accountId?: string
 
   /**
-   * IMPORTANT this function will be called for each command!
-   * Don't do anything expensive in there.
+   * Override Commander's createCommand to return BaseCommand instances with our setup.
+   * This is called by .command() to create subcommands.
+   * IMPORTANT: This function is called for each command! Don't do anything expensive here.
    */
-  createCommand(name: string): BaseCommand {
-    const base = new BaseCommand(name)
-      // .addOption(new Option('--force', 'Force command to run. Bypasses prompts for certain destructive commands.'))
+  createCommand(name?: string): BaseCommand {
+    const commandName = name || ''
+    const base = new BaseCommand(commandName)
       .addOption(new Option('--silent', 'Silence CLI output').hideHelp(true))
       .addOption(new Option('--cwd <cwd>').hideHelp(true))
       .addOption(
@@ -262,20 +266,46 @@ export default class BaseCommand extends Command {
       )
       .option('--debug', 'Print debugging information')
 
-    // only add the `--filter` option to commands that are workspace aware
-    if (!COMMANDS_WITHOUT_WORKSPACE_OPTIONS.has(name)) {
+    if (!COMMANDS_WITHOUT_WORKSPACE_OPTIONS.has(commandName)) {
       base.option('--filter <app>', 'For monorepos, specify the name of the application to run the command in')
     }
 
-    return base.hook('preAction', async (_parentCommand, actionCommand) => {
+    base.hook('preAction', async (_parentCommand, actionCommand) => {
       if (actionCommand.opts()?.debug) {
         process.env.DEBUG = '*'
       }
-      debug(`${name}:preAction`)('start')
+      debug(`${commandName}:preAction`)('start')
       this.analytics.startTime = process.hrtime.bigint()
       await this.init(actionCommand as BaseCommand)
-      debug(`${name}:preAction`)('end')
+      debug(`${commandName}:preAction`)('end')
     })
+
+    // Wrap the command's action() to set exitOverride when action is registered.
+    // We set exitOverride here (rather than earlier) because Commander may clone
+    // or modify command instances during registration, so we need to set it on
+    // the final instance that will actually execute.
+    const originalAction = base.action.bind(base)
+    base.action = function (this: BaseCommand, fn: any) {
+      // Set exitOverride for option-related errors in non-interactive environments.
+      // In non-interactive mode, we show the full help output instead of just a
+      // brief error message, making it easier for users in CI/CD environments to
+      // understand what went wrong.
+      this.exitOverride((error: CommanderError) => {
+        const isOptionError = OPTION_ERROR_CODES.includes(error.code)
+
+        if (isOptionError && !isInteractive()) {
+          log()
+          this.outputHelp()
+          log()
+        }
+
+        throw error
+      })
+
+      return originalAction(fn)
+    }
+
+    return base
   }
 
   #noBaseOptions = false

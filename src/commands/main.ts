@@ -1,6 +1,6 @@
 import process from 'process'
 
-import { Option } from 'commander'
+import { Option, CommanderError } from 'commander'
 import envinfo from 'envinfo'
 import { closest } from 'fastest-levenshtein'
 import inquirer from 'inquirer'
@@ -21,6 +21,7 @@ import {
 import execa from '../utils/execa.js'
 import getCLIPackageJson from '../utils/get-cli-package-json.js'
 import { didEnableCompileCache } from '../utils/nodejs-compile-cache.js'
+import { isInteractive } from '../utils/scripted-commands.js'
 import { track, reportError } from '../utils/telemetry/index.js'
 
 import { createAgentsCommand } from './agents/index.js'
@@ -56,6 +57,8 @@ import terminalLink from 'terminal-link'
 import { createDatabaseCommand } from './database/index.js'
 
 const SUGGESTION_TIMEOUT = 1e4
+
+const OPTION_ERROR_CODES = ['commander.unknownOption', 'commander.missingArgument', 'commander.excessArguments']
 
 // These commands run with the --force flag in non-interactive and CI environments
 export const CI_FORCED_COMMANDS = {
@@ -180,6 +183,14 @@ const mainCommand = async function (options, command) {
   const allCommands = command.commands.map((cmd) => cmd.name())
   const suggestion = closest(command.args[0], allCommands)
 
+  // In non-interactive environments (CI/CD, scripts), show the suggestion
+  // without prompting, as prompts would block or timeout
+  if (!isInteractive()) {
+    log(`\nDid you mean ${chalk.blue(suggestion)}?`)
+    log()
+    return logAndThrowError(`Run ${NETLIFY_CYAN(`${command.name()} help`)} for a list of available commands.`)
+  }
+
   const applySuggestion = await new Promise((resolve) => {
     const prompt = inquirer.prompt({
       type: 'confirm',
@@ -275,6 +286,17 @@ To ask a human for credentials: ${NETLIFY_CYAN('netlify login --request <msg>')}
         write(` ${chalk.red(BANG)}   Error: ${message.replace(/^error:\s/g, '')}`)
         write(` ${chalk.red(BANG)}   See more help with --help\n`)
       },
+    })
+    .exitOverride(function (this: BaseCommand, error: CommanderError) {
+      const isOptionError = OPTION_ERROR_CODES.includes(error.code)
+
+      if (isOptionError && !isInteractive()) {
+        log()
+        this.outputHelp()
+        log()
+      }
+
+      throw error
     })
     .action(mainCommand)
 
