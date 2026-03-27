@@ -22,7 +22,7 @@ netlify claim
 **Flags**
 
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
-- `token` (*string*) - The drop token provided when the site was deployed
+- `token` (*string*) - The drop token provided when the site was deployed (required)
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
 

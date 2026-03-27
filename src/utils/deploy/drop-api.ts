@@ -24,6 +24,10 @@ interface DropApiOptions {
   userAgent: string
 }
 
+export interface DropApiError extends Error {
+  status?: number
+}
+
 const makeHeaders = (userAgent: string, extra: Record<string, string> = {}): Record<string, string> => ({
   'User-Agent': userAgent,
   Referer: APP_NETLIFY_REFERRER,
@@ -38,7 +42,9 @@ export const getDropToken = async ({ apiBase, userAgent }: DropApiOptions): Prom
   })
 
   if (!response.ok) {
-    throw new Error(`Failed to get drop token: ${String(response.status)} ${response.statusText}`)
+    const error: DropApiError = new Error(`Failed to get drop token: ${String(response.status)} ${response.statusText}`)
+    error.status = response.status
+    throw error
   }
 
   const data = (await response.json()) as { token: string }
@@ -65,7 +71,9 @@ export const createDropDeploy = async (
 
   if (!response.ok) {
     const errorText = await response.text()
-    throw new Error(`Failed to create drop deploy: ${String(response.status)} ${errorText}`)
+    const error: DropApiError = new Error(`Failed to create drop deploy: ${String(response.status)} ${errorText}`)
+    error.status = response.status
+    throw error
   }
 
   return (await response.json()) as DropDeployInfo
@@ -166,7 +174,9 @@ export const claimDropSite = async (
 
   if (!response.ok) {
     const errorText = await response.text()
-    throw new Error(`Failed to claim site: ${String(response.status)} ${errorText}`)
+    const error: DropApiError = new Error(`Failed to claim site: ${String(response.status)} ${errorText}`)
+    error.status = response.status
+    throw error
   }
 }
 

@@ -49,6 +49,7 @@ import openBrowser from '../../utils/open-browser.js'
 import { isInteractive } from '../../utils/scripted-commands.js'
 import { resolveTeamForNonInteractive } from '../../utils/team.js'
 import {
+  type DropApiError,
   type UploadListItem,
   getDropToken,
   createDropDeploy,
@@ -1229,7 +1230,8 @@ const anonymousDeploy = async (options: DeployOptionValues, command: BaseCommand
     dropToken = await getDropToken(dropApiOptions)
     deployInfo = await createDropDeploy(dropApiOptions, files, dropToken, options.createdVia)
   } catch (error) {
-    if (String(error).includes('429')) {
+    const dropError = error as DropApiError
+    if (dropError.status === 429 || String(error).includes('429')) {
       const loginCommand = isInteractive()
         ? chalk.cyanBright('netlify login')
         : chalk.cyanBright('netlify login --request <message>')
