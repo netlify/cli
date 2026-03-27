@@ -1441,6 +1441,48 @@ describe.concurrent('deploy command', () => {
     })
   })
 
+  test('should use alias as the branch for both the deploy request and the build', async (t) => {
+    await withMockDeploy(async (mockApi) => {
+      await withSiteBuilder(t, async (builder) => {
+        builder
+          .withContentFile({
+            path: 'public/index.html',
+            content: '<h1>test</h1>',
+          })
+          .withNetlifyToml({
+            config: {
+              build: { publish: 'public' },
+              plugins: [{ package: './plugins/log-branch' }],
+            },
+          })
+          .withBuildPlugin({
+            name: 'log-branch',
+            plugin: {
+              async onPreBuild() {
+                console.log(`TEST_BRANCH: ${require('process').env.BRANCH}`)
+              },
+            },
+          })
+
+        await builder.build()
+
+        const output: string = await callCli(
+          ['deploy', '--alias', 'custom-alias', '--context', 'deploy-preview'],
+          getCLIOptions({ apiUrl: mockApi.apiUrl, builder }),
+        )
+
+        const [, branch] = output.match(/TEST_BRANCH: (.+)/) ?? []
+        expect(branch).toBe('custom-alias')
+
+        const createDeployRequest = mockApi.requests.find(
+          (req) => req.method === 'POST' && req.path === '/api/v1/sites/site_id/deploys',
+        )
+        expect(createDeployRequest).toBeDefined()
+        expect((createDeployRequest!.body as Record<string, unknown>).branch).toBe('custom-alias')
+      })
+    })
+  })
+
   test('should include build_version in deploy body', async (t) => {
     await withMockDeploy(async (mockApi, deployState) => {
       await withSiteBuilder(t, async (builder) => {
