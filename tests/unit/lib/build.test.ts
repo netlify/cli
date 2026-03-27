@@ -9,6 +9,7 @@ vi.mock('../../../src/lib/edge-functions/bootstrap.js', () => ({
 const createMockCachedConfig = () => ({
   accounts: [],
   buildDir: '/test',
+  context: 'production',
   env: {},
   repositoryRoot: '/test',
   siteInfo: {
@@ -30,7 +31,7 @@ describe('getRunBuildOptions', () => {
       options: { alias: 'custom-alias' },
     })
 
-    expect(result.branch).toBe('custom-alias')
+    expect((result as Record<string, unknown>).branch).toBe('custom-alias')
   })
 
   test('should leave branch undefined when alias is not set', async () => {
@@ -40,6 +41,6 @@ describe('getRunBuildOptions', () => {
       options: {},
     })
 
-    expect(result.branch).toBeUndefined()
+    expect((result as Record<string, unknown>).branch).toBeUndefined()
   })
 })
