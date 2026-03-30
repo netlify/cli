@@ -64,25 +64,49 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand) =
 
   let site!: SiteInfo
 
-  // Allow the user to reenter site name if selected one isn't available
-  const inputSiteName = async (name?: string) => {
-    const { name: siteName } = await getSiteNameInput(name)
+  const MAX_NAME_RETRIES = 2
 
-    const body: { name?: string } = {}
-    if (typeof siteName === 'string') {
-      body.name = siteName.trim()
-    }
-    try {
-      // FIXME(serhalp): `id` and `name` should be required in `netlify` package type
-      site = (await api.createSiteInTeam({
-        accountSlug: accountSlug,
-        body,
-      })) as unknown as SiteInfo
-    } catch (error_) {
-      if ((error_ as APIError).status === 422) {
-        warn(`${siteName}.netlify.app already exists. Please try a different slug.`)
-        await inputSiteName()
-      } else {
+  const createSiteWithRetry = async (siteName: string | undefined) => {
+    let nameAttempt = siteName
+    let retries = 0
+
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    while (true) {
+      const body: { name?: string } = {}
+      if (typeof nameAttempt === 'string' && nameAttempt.trim()) {
+        body.name = nameAttempt.trim()
+      }
+
+      try {
+        site = (await api.createSiteInTeam({
+          accountSlug: accountSlug,
+          body,
+        })) as unknown as SiteInfo
+        break
+      } catch (error_) {
+        if ((error_ as APIError).status === 422) {
+          if (!isInteractive() && siteName && retries < MAX_NAME_RETRIES) {
+            retries++
+            const suffix = Math.floor(Math.random() * 900 + 100).toString()
+            nameAttempt = `${siteName}-${suffix}`
+            warn(`${siteName}.netlify.app already exists. Trying ${nameAttempt}...`)
+            continue
+          }
+
+          if (isInteractive()) {
+            warn(`${nameAttempt || 'Site name'}.netlify.app already exists. Please try a different slug.`)
+            const { name: newSiteName } = await getSiteNameInput(undefined)
+            nameAttempt = newSiteName
+            continue
+          }
+
+          return logAndThrowError(
+            siteName
+              ? `Project name "${nameAttempt}" is already taken. Please try a different name.`
+              : 'Failed to create site: name already taken',
+          )
+        }
+
         return logAndThrowError(
           `createSiteInTeam error: ${(error_ as APIError).status}: ${(error_ as APIError).message}`,
         )
@@ -99,8 +123,11 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand) =
     } catch (error_) {
       return logAndThrowError(`Failed to create site: ${(error_ as APIError).status}: ${(error_ as APIError).message}`)
     }
+  } else if (isInteractive() && !options.name) {
+    const { name: siteName } = await getSiteNameInput(options.name)
+    await createSiteWithRetry(siteName)
   } else {
-    await inputSiteName(options.name)
+    await createSiteWithRetry(options.name)
   }
 
   log()

@@ -113,5 +113,61 @@ describe('sites command', () => {
         logJsonSpy.mockRestore()
       })
     })
+
+    test('should fail after max retries in non-interactive mode', async () => {
+      const routesWithPersistentConflict = [
+        {
+          path: 'accounts',
+          response: [{ slug: 'test-account' }],
+        },
+        {
+          path: 'sites',
+          response: [],
+        },
+        {
+          path: 'user',
+          response: { name: 'test user', slug: 'test-user', email: 'user@test.com' },
+        },
+        {
+          path: 'test-account/sites',
+          method: 'POST' as const,
+          status: 422,
+          response: { message: 'site name already exists' },
+        },
+      ]
+
+      await withMockApi(routesWithPersistentConflict, async ({ apiUrl, requests }) => {
+        Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
+
+        const program = new BaseCommand('netlify')
+        program.exitOverride()
+        createSitesCreateCommand(program)
+
+        const warnSpy = vi.spyOn(await import('../../../../src/utils/command-helpers.js'), 'warn')
+
+        await expect(async () => {
+          await program.parseAsync([
+            '',
+            '',
+            'sites:create',
+            '--name',
+            'taken-site',
+            '--account-slug',
+            'test-account',
+            '--disable-linking',
+          ])
+        }).rejects.toThrowError(/already taken/)
+
+        const siteCreateRequests = requests.filter(
+          (r) => r.path === '/api/v1/test-account/sites' && r.method === 'POST',
+        )
+        expect(siteCreateRequests).toHaveLength(3)
+
+        expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('taken-site.netlify.app already exists'))
+        expect(warnSpy).toHaveBeenCalledWith(expect.stringMatching(/Trying taken-site-\d{3}\.\.\./))
+
+        warnSpy.mockRestore()
+      })
+    })
   })
 })
