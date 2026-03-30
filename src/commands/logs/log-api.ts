@@ -9,6 +9,36 @@ export function parseDateToMs(dateString: string): number {
   return ms
 }
 
+const ANALYTICS_BASE_URL = 'https://analytics.services.netlify.com/v2/sites'
+
+export function buildFunctionLogsUrl({
+  siteId,
+  branch,
+  functionName,
+  from,
+  to,
+}: {
+  siteId: string
+  branch: string
+  functionName: string
+  from: number
+  to: number
+}): string {
+  return `${ANALYTICS_BASE_URL}/${encodeURIComponent(siteId)}/branch/${encodeURIComponent(branch)}/function_logs/${encodeURIComponent(functionName)}?from=${from.toString()}&to=${to.toString()}`
+}
+
+export function buildEdgeFunctionLogsUrl({
+  siteId,
+  from,
+  to,
+}: {
+  siteId: string
+  from: number
+  to: number
+}): string {
+  return `${ANALYTICS_BASE_URL}/${encodeURIComponent(siteId)}/edge_function_logs?from=${from.toString()}&to=${to.toString()}`
+}
+
 export async function fetchHistoricalLogs({
   url,
   accessToken,
@@ -55,6 +85,7 @@ export function formatLogEntry(entry: { timestamp?: string; level?: string; mess
 
 export function printHistoricalLogs(data: unknown, levelsToPrint: string[]): void {
   const entries = Array.isArray(data) ? (data as { timestamp?: string; level?: string; message?: string }[]) : []
+  const normalizedLevels = levelsToPrint.map((level) => level.toLowerCase())
 
   if (entries.length === 0) {
     log('No logs found for the specified time range')
@@ -63,7 +94,7 @@ export function printHistoricalLogs(data: unknown, levelsToPrint: string[]): voi
 
   for (const entry of entries) {
     const level = (entry.level ?? '').toLowerCase()
-    if (levelsToPrint.length > 0 && !levelsToPrint.includes(level)) {
+    if (normalizedLevels.length > 0 && !normalizedLevels.includes(level)) {
       continue
     }
     log(formatLogEntry(entry))

@@ -813,13 +813,13 @@ const printResults = ({
   }
 
   const functionLogsData: Record<string, string> = {
-    'Function logs': terminalLink(results.functionLogsUrl, results.functionLogsUrl, { fallback: false }),
-    'Function CLI': `netlify logs:function --deploy-id ${results.deployId} <function-name>`,
+    'Functions logs': terminalLink(results.functionLogsUrl, results.functionLogsUrl, { fallback: false }),
+    'Functions CLI': `netlify logs:function --deploy-id ${results.deployId} <function-name-or-id>`,
   }
 
   const edgeFunctionLogsData: Record<string, string> = {
-    'Edge function logs': terminalLink(results.edgeFunctionLogsUrl, results.edgeFunctionLogsUrl, { fallback: false }),
-    'Edge function CLI': `netlify logs:edge-functions --deploy-id ${results.deployId}`,
+    'Edge Functions logs': terminalLink(results.edgeFunctionLogsUrl, results.edgeFunctionLogsUrl, { fallback: false }),
+    'Edge Functions CLI': `netlify logs:edge-functions --deploy-id ${results.deployId}`,
   }
 
   log('')

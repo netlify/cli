@@ -202,7 +202,7 @@ describe('logs:function command', () => {
     expect(spyLog).toHaveBeenCalledTimes(2)
   })
 
-  test('should find function by ID', async ({}) => {
+  test('should find function by ID', async () => {
     const { apiUrl } = await startMockApi({ routes })
     const spyWebsocket = getWebSocket as unknown as Mock
     const spyOn = vi.fn()
@@ -228,7 +228,7 @@ describe('logs:function command', () => {
     expect(body.site_id).toEqual('site_id')
   })
 
-  test('should look up function from deploy when --deploy is specified', async ({}) => {
+  test('should look up function from deploy when --deploy-id is specified', async () => {
     const deployRoutes = [
       ...routes,
       {
@@ -264,7 +264,7 @@ describe('logs:function command', () => {
     expect(body.site_id).toEqual('site_id')
   })
 
-  test('should fetch historical logs when --from is specified', async ({}) => {
+  test('should fetch historical logs when --from is specified', async () => {
     const { apiUrl } = await startMockApi({ routes })
     const spyWebsocket = getWebSocket as unknown as Mock
 

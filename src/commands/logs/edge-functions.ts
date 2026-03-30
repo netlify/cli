@@ -5,7 +5,7 @@ import { chalk, log } from '../../utils/command-helpers.js'
 import { getWebSocket } from '../../utils/websockets/index.js'
 import type BaseCommand from '../base-command.js'
 
-import { parseDateToMs, fetchHistoricalLogs, printHistoricalLogs, formatLogEntry } from './log-api.js'
+import { parseDateToMs, buildEdgeFunctionLogsUrl, fetchHistoricalLogs, printHistoricalLogs, formatLogEntry } from './log-api.js'
 import { CLI_LOG_LEVEL_CHOICES_STRING, LOG_LEVELS_LIST } from './log-levels.js'
 import { getName } from './build.js'
 
@@ -24,7 +24,7 @@ export const logsEdgeFunction = async (options: OptionValues, command: BaseComma
 
   const levels = options.level as string[] | undefined
   if (levels && !levels.every((level) => LOG_LEVELS_LIST.includes(level))) {
-    log(`Invalid log level. Choices are:${CLI_LOG_LEVEL_CHOICES_STRING.toString()}`)
+    log(`Invalid log level. Choices are:${CLI_LOG_LEVEL_CHOICES_STRING.join(',')}`)
   }
 
   const levelsToPrint: string[] = levels || LOG_LEVELS_LIST
@@ -33,7 +33,7 @@ export const logsEdgeFunction = async (options: OptionValues, command: BaseComma
     const fromMs = parseDateToMs(options.from as string)
     const toMs = options.to ? parseDateToMs(options.to as string) : Date.now()
 
-    const url = `https://analytics.services.netlify.com/v2/sites/${siteId}/edge_function_logs?from=${fromMs.toString()}&to=${toMs.toString()}`
+    const url = buildEdgeFunctionLogsUrl({ siteId, from: fromMs, to: toMs })
     const data = await fetchHistoricalLogs({ url, accessToken: client.accessToken ?? '' })
     printHistoricalLogs(data, levelsToPrint)
     return
