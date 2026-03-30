@@ -85,9 +85,7 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand) =
         return tryCreateSiteInteractive(undefined)
       }
 
-      return logAndThrowError(
-        `createSiteInTeam error: ${(error_ as APIError).status}: ${(error_ as APIError).message}`,
-      )
+      return logAndThrowError(`createSiteInTeam error: ${(error_ as APIError).status}: ${(error_ as APIError).message}`)
     }
   }
 
@@ -119,9 +117,7 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand) =
         } catch (error_) {
           if ((error_ as APIError).status === 422) {
             if (attempt === MAX_NAME_RETRIES) {
-              return logAndThrowError(
-                `Project name "${nameToTry}" is already taken. Please try a different name.`,
-              )
+              return logAndThrowError(`Project name "${nameToTry}" is already taken. Please try a different name.`)
             }
             continue
           }
