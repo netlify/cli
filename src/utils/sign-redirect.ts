@@ -1,8 +1,14 @@
 import jwt from 'jsonwebtoken'
 
+interface SignRedirectOptions {
+  deployContext: string
+  secret: string
+  siteID: string
+  siteURL: string
+}
+
 // https://docs.netlify.com/routing/redirects/rewrites-proxies/#signed-proxy-redirects
-// @ts-expect-error TS(7031) FIXME: Binding element 'deployContext' implicitly has an ... Remove this comment to see the full error message
-export const signRedirect = ({ deployContext, secret, siteID, siteURL }) => {
+export const signRedirect = ({ deployContext, secret, siteID, siteURL }: SignRedirectOptions) => {
   const claims = {
     deploy_context: deployContext,
     netlify_id: siteID,

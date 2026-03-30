@@ -1,6 +1,7 @@
 import { v4 as generateUUID } from 'uuid'
 import { afterAll, expect, test, vi } from 'vitest'
 
+import type { NetlifyAPI } from '@netlify/api'
 import uploadFiles from '../../../../src/utils/deploy/upload-files.js'
 
 vi.mock('../../../../src/utils/deploy/constants.js', async () => {
@@ -27,11 +28,11 @@ test('Adds a retry count to function upload requests', async () => {
 
   const mockApi = {
     uploadDeployFunction,
-  }
+  } as unknown as NetlifyAPI
   const deployId = generateUUID()
   const files = [
     {
-      assetType: 'function',
+      assetType: 'function' as const,
       filepath: '/some/path/func1.zip',
       normalizedPath: 'func1.zip',
       runtime: 'js',
@@ -62,11 +63,11 @@ test('Does not retry on 400 response from function upload requests', async () =>
 
   const mockApi = {
     uploadDeployFunction,
-  }
+  } as unknown as NetlifyAPI
   const deployId = generateUUID()
   const files = [
     {
-      assetType: 'function',
+      assetType: 'function' as const,
       filepath: '/some/path/func1.zip',
       normalizedPath: 'func1.zip',
       runtime: 'js',

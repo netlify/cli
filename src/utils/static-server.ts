@@ -4,13 +4,9 @@ import fastifyStatic from '@fastify/static'
 import Fastify from 'fastify'
 
 import { log, NETLIFYDEVLOG } from './command-helpers.js'
+import type { ServerSettings } from './types.js'
 
-/**
- * @param {object} config
- * @param {import('./types.js').ServerSettings} config.settings
- */
-// @ts-expect-error TS(7031) FIXME: Binding element 'settings' implicitly has an 'any'... Remove this comment to see the full error message
-export const startStaticServer = async ({ settings }) => {
+export const startStaticServer = async ({ settings }: { settings: ServerSettings }) => {
   const server = Fastify()
   const rootPath = path.resolve(settings.dist)
   server.register(fastifyStatic, {
@@ -35,6 +31,6 @@ export const startStaticServer = async ({ settings }) => {
   })
   await server.listen({ port: settings.frameworkPort })
   const [address] = server.addresses()
-  log(`\n${NETLIFYDEVLOG} Static server listening to`, settings.frameworkPort)
+  log(`\n${NETLIFYDEVLOG} Static server listening to`, String(settings.frameworkPort))
   return { family: address.family }
 }
