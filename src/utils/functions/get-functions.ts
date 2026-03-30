@@ -27,13 +27,13 @@ const extractSchedule = (functionConfigRecord: Record<string, { schedule?: strin
     Object.entries(functionConfigRecord).map(([name, config]) => [name, { schedule: config.schedule }]),
   )
 
-export const getFunctions = async (functionsSrcDir: string, config: { functions?: any } = {}) => {
+export const getFunctions = async (functionsSrcDir: string, config: { functions?: Record<string, unknown> } = {}) => {
   if (!(await fileExistsAsync(functionsSrcDir))) {
     return []
   }
 
   const functions = await listFunctions(functionsSrcDir, {
-    config: config.functions ? extractSchedule(config.functions) : undefined,
+    config: config.functions ? extractSchedule(config.functions as Record<string, { schedule?: string }>) : undefined,
     parseISC: true,
   })
   const functionsWithProps = functions

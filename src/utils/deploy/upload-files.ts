@@ -1,7 +1,6 @@
 import fs from 'fs'
 
 import type { NetlifyAPI } from '@netlify/api'
-import type { operations } from '@netlify/open-api'
 import backoff from 'backoff'
 import pMap from 'p-map'
 
@@ -37,7 +36,6 @@ const uploadFiles = async (
   uploadList: UploadFileObj[],
   { concurrentUpload, maxRetry, statusCb }: UploadOptions,
 ) => {
-  if (!concurrentUpload || !statusCb || !maxRetry) throw new Error('Missing required option concurrentUpload')
   statusCb({
     type: 'upload',
     msg: `Uploading ${uploadList.length} files`,
@@ -88,12 +86,14 @@ const uploadFiles = async (
             params.xNfRetryCount = retryCount
           }
 
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           return api.uploadDeployFunction(params as any)
         }, maxRetry)
         break
       }
       default: {
         const error = new Error('File Object missing assetType property')
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ;(error as any).fileObj = fileObj
         throw error
       }
@@ -112,9 +112,9 @@ const uploadFiles = async (
 }
 
 const isErrorWithStatus = (error: unknown): error is { status: number; name?: string } =>
-  typeof error === 'object' && error !== null && 'status' in error && typeof (error as any).status === 'number'
+  typeof error === 'object' && error !== null && 'status' in error && typeof (error as Record<string, unknown>).status === 'number'
 
-const retryUpload = (uploadFn: (retryCount: number) => Promise<any>, maxRetry: number) =>
+const retryUpload = <T>(uploadFn: (retryCount: number) => Promise<T>, maxRetry: number): Promise<T> =>
   new Promise((resolve, reject) => {
     let lastError: unknown
 
