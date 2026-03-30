@@ -30,6 +30,10 @@ interface UploadOptions {
 
 type UploadDeployFunctionParams = NonNullable<Parameters<NetlifyAPI['uploadDeployFunction']>[0]>
 
+interface FileObjError extends Error {
+  fileObj?: UploadFileObj
+}
+
 const uploadFiles = async (
   api: NetlifyAPI,
   deployId: string,
@@ -86,15 +90,13 @@ const uploadFiles = async (
             params.xNfRetryCount = retryCount
           }
 
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          return api.uploadDeployFunction(params as any)
+          return api.uploadDeployFunction(params as unknown as UploadDeployFunctionParams)
         }, maxRetry)
         break
       }
       default: {
-        const error = new Error('File Object missing assetType property')
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ;(error as any).fileObj = fileObj
+        const error: FileObjError = new Error('File Object missing assetType property')
+        error.fileObj = fileObj
         throw error
       }
     }
