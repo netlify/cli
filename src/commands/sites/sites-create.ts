@@ -10,6 +10,7 @@ import { isInteractive } from '../../utils/scripted-commands.js'
 import { resolveTeamForNonInteractive } from '../../utils/team.js'
 import { track } from '../../utils/telemetry/index.js'
 import type { SiteInfo } from '../../utils/types.js'
+import { MAX_SITE_NAME_LENGTH } from '../../utils/validation.js'
 import type BaseCommand from '../base-command.js'
 import { link } from '../link/link.js'
 
@@ -87,8 +88,11 @@ export const sitesCreate = async (options: OptionValues, command: BaseCommand) =
         if ((error_ as APIError).status === 422) {
           if (!isInteractive() && siteName && retries < MAX_NAME_RETRIES) {
             retries++
-            const suffix = Math.floor(Math.random() * 900 + 100).toString()
-            nameAttempt = `${siteName}-${suffix}`
+            const suffix = `-${Math.floor(Math.random() * 900 + 100).toString()}`
+            const normalizedBase = siteName.trim()
+            const maxBaseLength = MAX_SITE_NAME_LENGTH - suffix.length
+            const truncatedBase = normalizedBase.slice(0, maxBaseLength)
+            nameAttempt = `${truncatedBase}${suffix}`
             warn(`${siteName}.netlify.app already exists. Trying ${nameAttempt}...`)
             continue
           }
