@@ -1,6 +1,7 @@
 import { OptionValues } from 'commander'
 
-import { chalk, exit, getToken, log } from '../../utils/command-helpers.js'
+import { chalk, exit, getToken, log, logAndThrowError } from '../../utils/command-helpers.js'
+import { isInteractive } from '../../utils/scripted-commands.js'
 import { TokenLocation } from '../../utils/types.js'
 import BaseCommand from '../base-command.js'
 
@@ -18,6 +19,22 @@ const msg = function (location: TokenLocation) {
 }
 
 export const login = async (options: OptionValues, command: BaseCommand) => {
+  if (options.request && options.check) {
+    return logAndThrowError('`--request` and `--check` are mutually exclusive')
+  }
+
+  if (options.request) {
+    const { loginRequest } = await import('./login-request.js')
+    await loginRequest(options.request as string, command.netlify.apiOpts)
+    return
+  }
+
+  if (options.check) {
+    const { loginCheck } = await import('./login-check.js')
+    await loginCheck(options, command.netlify.apiOpts, command.netlify.globalConfig)
+    return
+  }
+
   const [accessToken, location] = await getToken()
 
   command.setAnalyticsPayload({ new: options.new })
@@ -32,6 +49,12 @@ export const login = async (options: OptionValues, command: BaseCommand) => {
     log(`To see all available commands run: ${chalk.cyanBright('netlify help')}`)
     log()
     return exit()
+  }
+
+  if (!isInteractive()) {
+    const { loginRequest } = await import('./login-request.js')
+    await loginRequest('CLI session', command.netlify.apiOpts)
+    return
   }
 
   await command.expensivelyAuthenticate()

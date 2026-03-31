@@ -111,9 +111,13 @@ export const pollForToken = async ({
           'https://app.netlify.com/signup',
         )}, then run ${chalk.cyanBright('netlify login')} again.`,
       )
-    } else {
-      return logAndThrowError(error_)
     }
+    if ((error_ as { status?: number }).status === 404) {
+      return logAndThrowError(
+        `Authorization was denied or the login session expired. Run ${chalk.cyanBright('netlify login')} to try again.`,
+      )
+    }
+    return logAndThrowError(error_)
   } finally {
     spinner.stop()
     spinner.clear()

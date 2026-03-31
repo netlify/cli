@@ -2,6 +2,7 @@ import { Option } from 'commander'
 import inquirer from 'inquirer'
 import BaseCommand from '../base-command.js'
 import type { DatabaseBoilerplateType, DatabaseInitOptions } from './init.js'
+import type { MigrationNewOptions } from './migration-new.js'
 
 export type Extension = {
   id: string
@@ -27,7 +28,14 @@ export const createDatabaseCommand = (program: BaseCommand) => {
     .command('db')
     .alias('database')
     .description(`Provision a production ready Postgres database with a single command`)
-    .addExamples(['netlify db status', 'netlify db init', 'netlify db init --help'])
+    .addExamples([
+      'netlify db status',
+      'netlify db init',
+      'netlify db init --help',
+      ...(process.env.EXPERIMENTAL_NETLIFY_DB_ENABLED === '1'
+        ? ['netlify db migrate', 'netlify db reset', 'netlify db migration new']
+        : []),
+    ])
 
   dbCommand
     .command('init')
@@ -80,4 +88,47 @@ export const createDatabaseCommand = (program: BaseCommand) => {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       await status(options, command)
     })
+
+  if (process.env.EXPERIMENTAL_NETLIFY_DB_ENABLED === '1') {
+    dbCommand
+      .command('migrate')
+      .description('Apply database migrations to the local development database')
+      .option('--to <name>', 'Target migration name or prefix to apply up to (applies all if omitted)')
+      .option('--json', 'Output result as JSON')
+      .action(async (options: { to?: string; json?: boolean }, command: BaseCommand) => {
+        const { migrate } = await import('./migrate.js')
+        await migrate(options, command)
+      })
+
+    dbCommand
+      .command('reset')
+      .description('Reset the local development database, removing all data and tables')
+      .option('--json', 'Output result as JSON')
+      .action(async (options: { json?: boolean }, command: BaseCommand) => {
+        const { reset } = await import('./reset.js')
+        await reset(options, command)
+      })
+
+    const migrationCommand = dbCommand.command('migration').description('Manage database migrations')
+
+    migrationCommand
+      .command('new')
+      .description('Create a new migration')
+      .option('-d, --description <description>', 'Purpose of the migration (used to generate the file name)')
+      .addOption(
+        new Option('-s, --scheme <scheme>', 'Numbering scheme for migration prefixes').choices([
+          'sequential',
+          'timestamp',
+        ]),
+      )
+      .option('--json', 'Output result as JSON')
+      .action(async (options: MigrationNewOptions, command: BaseCommand) => {
+        const { migrationNew } = await import('./migration-new.js')
+        await migrationNew(options, command)
+      })
+      .addExamples([
+        'netlify db migration new',
+        'netlify db migration new --description "add users table" --scheme sequential',
+      ])
+  }
 }

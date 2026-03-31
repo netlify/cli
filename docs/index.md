@@ -50,6 +50,10 @@ Manage objects in Netlify Blobs
 
 Build on your local machine
 
+### [claim](/commands/claim)
+
+Claim an anonymously deployed site and link it to your account
+
 ### [clone](/commands/clone)
 
 Clone a remote repository and link it to an existing project on Netlify
@@ -62,6 +66,10 @@ Generate shell completion script
 |:--------------------------- |:-----|
 | [`completion:install`](/commands/completion#completioninstall) | Generates completion script for your preferred shell  |
 
+
+### [create](/commands/create)
+
+Create a new Netlify project using an AI agent
 
 ### [db](/commands/db)
 
@@ -181,6 +189,15 @@ Print status information
 ### [switch](/commands/switch)
 
 Switch your active Netlify account
+
+### [teams](/commands/teams)
+
+Handle various team operations
+
+| Subcommand | description  |
+|:--------------------------- |:-----|
+| [`teams:list`](/commands/teams#teamslist) | List all teams you have access to  |
+
 
 ### [unlink](/commands/unlink)
 

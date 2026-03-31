@@ -45,6 +45,8 @@ const routes = [
 ]
 
 const OLD_ENV = process.env
+const OLD_STDIN_TTY = process.stdin.isTTY
+const OLD_STDOUT_TTY = process.stdout.isTTY
 
 describe('sites command', () => {
   beforeEach(() => {
@@ -61,6 +63,8 @@ describe('sites command', () => {
     Object.defineProperty(process, 'env', {
       value: OLD_ENV,
     })
+    process.stdin.isTTY = OLD_STDIN_TTY
+    process.stdout.isTTY = OLD_STDOUT_TTY
   })
 
   describe('sites:create', () => {
@@ -77,6 +81,162 @@ describe('sites command', () => {
         await expect(async () => {
           await program.parseAsync(['', '', 'sites:create', '--name', Array.from({ length: 64 }).fill('a').join('')])
         }).rejects.toThrowError('--name should be less than 64 characters')
+      })
+    })
+
+    test('should output JSON when --json flag is passed', async () => {
+      await withMockApi(routes, async ({ apiUrl }) => {
+        Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
+
+        const program = new BaseCommand('netlify')
+        createSitesCreateCommand(program)
+
+        const logJsonSpy = vi.spyOn(await import('../../../../src/utils/command-helpers.js'), 'logJson')
+
+        await program.parseAsync([
+          '',
+          '',
+          'sites:create',
+          '--name',
+          'test-site',
+          '--account-slug',
+          'test-account',
+          '--disable-linking',
+          '--json',
+        ])
+
+        expect(logJsonSpy).toHaveBeenCalledWith(
+          expect.objectContaining({
+            id: 'site_id',
+            name: 'site-name',
+            admin_url: 'https://app.netlify.com/projects/site-name/overview',
+            ssl_url: 'https://site-name.netlify.app/',
+          }),
+        )
+
+        logJsonSpy.mockRestore()
+      })
+    })
+
+    test('should fail after max retries in non-interactive mode', async () => {
+      const routesWithPersistentConflict = [
+        {
+          path: 'accounts',
+          response: [{ slug: 'test-account' }],
+        },
+        {
+          path: 'sites',
+          response: [],
+        },
+        {
+          path: 'user',
+          response: { name: 'test user', slug: 'test-user', email: 'user@test.com' },
+        },
+        {
+          path: 'test-account/sites',
+          method: 'POST' as const,
+          status: 422,
+          response: { message: 'site name already exists' },
+        },
+      ]
+
+      await withMockApi(routesWithPersistentConflict, async ({ apiUrl, requests }) => {
+        Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
+        process.env.CI = 'true'
+        process.stdin.isTTY = false
+        process.stdout.isTTY = false
+
+        const program = new BaseCommand('netlify')
+        program.exitOverride()
+        createSitesCreateCommand(program)
+
+        const warnSpy = vi.spyOn(await import('../../../../src/utils/command-helpers.js'), 'warn')
+
+        await expect(async () => {
+          await program.parseAsync([
+            '',
+            '',
+            'sites:create',
+            '--name',
+            'taken-site',
+            '--account-slug',
+            'test-account',
+            '--disable-linking',
+          ])
+        }).rejects.toThrowError(/already taken/)
+
+        const siteCreateRequests = requests.filter(
+          (r) => r.path === '/api/v1/test-account/sites' && r.method === 'POST',
+        )
+        expect(siteCreateRequests).toHaveLength(3)
+
+        expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('taken-site.netlify.app already exists'))
+        expect(warnSpy).toHaveBeenCalledWith(expect.stringMatching(/Trying taken-site-\d{3}\.\.\./))
+
+        warnSpy.mockRestore()
+      })
+    })
+
+    test('should truncate long site names when retrying to avoid exceeding max length', async () => {
+      const routesWithPersistentConflict = [
+        {
+          path: 'accounts',
+          response: [{ slug: 'test-account' }],
+        },
+        {
+          path: 'sites',
+          response: [],
+        },
+        {
+          path: 'user',
+          response: { name: 'test user', slug: 'test-user', email: 'user@test.com' },
+        },
+        {
+          path: 'test-account/sites',
+          method: 'POST' as const,
+          status: 422,
+          response: { message: 'site name already exists' },
+        },
+      ]
+
+      await withMockApi(routesWithPersistentConflict, async ({ apiUrl, requests }) => {
+        Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
+        process.env.CI = 'true'
+        process.stdin.isTTY = false
+        process.stdout.isTTY = false
+
+        const program = new BaseCommand('netlify')
+        program.exitOverride()
+        createSitesCreateCommand(program)
+
+        const longName = 'a'.repeat(60)
+
+        await expect(async () => {
+          await program.parseAsync([
+            '',
+            '',
+            'sites:create',
+            '--name',
+            longName,
+            '--account-slug',
+            'test-account',
+            '--disable-linking',
+          ])
+        }).rejects.toThrowError(/already taken/)
+
+        const siteCreateRequests = requests.filter(
+          (r) => r.path === '/api/v1/test-account/sites' && r.method === 'POST',
+        )
+
+        expect(siteCreateRequests).toHaveLength(3)
+
+        siteCreateRequests.slice(1).forEach((request) => {
+          const bodyName = (request.body as { name?: string }).name
+          expect(bodyName).toBeDefined()
+          if (bodyName) {
+            expect(bodyName.length).toBeLessThanOrEqual(63)
+          }
+        })
       })
     })
   })

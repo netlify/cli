@@ -25,7 +25,7 @@ export const startNetlifyDev = async ({
   apiToken,
   env,
   projectRoot,
-}: StartNetlifyDevOptions): Promise<NetlifyDev | undefined> => {
+}: StartNetlifyDevOptions): Promise<InstanceType<typeof NetlifyDev> | undefined> => {
   if (process.env.EXPERIMENTAL_NETLIFY_DB_ENABLED !== '1') {
     return
   }
