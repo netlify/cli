@@ -814,7 +814,7 @@ const printResults = ({
 
   const functionLogsData: Record<string, string> = {
     'Functions logs': terminalLink(results.functionLogsUrl, results.functionLogsUrl, { fallback: false }),
-    'Functions CLI': `netlify logs:function --deploy-id ${results.deployId} <function-name-or-id>`,
+    'Functions CLI': `netlify functions:logs --deploy-id ${results.deployId} <function-name-or-id>`,
   }
 
   const edgeFunctionLogsData: Record<string, string> = {
