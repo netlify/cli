@@ -48,6 +48,17 @@ export const createSitesCommand = (program: BaseCommand) => {
     })
 
   program
+    .command('sites:search')
+    .description('Search for projects by name')
+    .argument('<search-term>', 'Full or partial project name to search for')
+    .option('--json', 'Output project data as JSON')
+    .addExamples(['netlify sites:search my-project', 'netlify sites:search "partial name" --json'])
+    .action(async (searchTerm: string, options: OptionValues, command: BaseCommand) => {
+      const { sitesSearch } = await import('./sites-search.js')
+      await sitesSearch(searchTerm, options, command)
+    })
+
+  program
     .command('sites:delete')
     .description('Delete a project\nThis command will permanently delete the project on Netlify. Use with caution.')
     .argument('<id>', 'Project ID to delete.')

@@ -28,6 +28,7 @@ netlify sites
 | [`sites:create`](/commands/sites#sitescreate) | Create an empty project (advanced)  |
 | [`sites:delete`](/commands/sites#sitesdelete) | Delete a project  |
 | [`sites:list`](/commands/sites#siteslist) | List all projects you have access to  |
+| [`sites:search`](/commands/sites#sitessearch) | Search for projects by name  |
 
 
 **Examples**
@@ -108,6 +109,35 @@ netlify sites:list
 - `json` (*boolean*) - Output project data as JSON
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
+
+---
+## `sites:search`
+
+Search for projects by name
+
+**Usage**
+
+```bash
+netlify sites:search
+```
+
+**Arguments**
+
+- search-term - Full or partial project name to search for
+
+**Flags**
+
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
+- `json` (*boolean*) - Output project data as JSON
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
+
+**Examples**
+
+```bash
+netlify sites:search my-project
+netlify sites:search "partial name" --json
+```
 
 ---
 
