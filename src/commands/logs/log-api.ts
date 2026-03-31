@@ -24,19 +24,15 @@ export function buildFunctionLogsUrl({
   from: number
   to: number
 }): string {
-  return `${ANALYTICS_BASE_URL}/${encodeURIComponent(siteId)}/branch/${encodeURIComponent(branch)}/function_logs/${encodeURIComponent(functionName)}?from=${from.toString()}&to=${to.toString()}`
+  return `${ANALYTICS_BASE_URL}/${encodeURIComponent(siteId)}/branch/${encodeURIComponent(
+    branch,
+  )}/function_logs/${encodeURIComponent(functionName)}?from=${from.toString()}&to=${to.toString()}`
 }
 
-export function buildEdgeFunctionLogsUrl({
-  siteId,
-  from,
-  to,
-}: {
-  siteId: string
-  from: number
-  to: number
-}): string {
-  return `${ANALYTICS_BASE_URL}/${encodeURIComponent(siteId)}/edge_function_logs?from=${from.toString()}&to=${to.toString()}`
+export function buildEdgeFunctionLogsUrl({ siteId, from, to }: { siteId: string; from: number; to: number }): string {
+  return `${ANALYTICS_BASE_URL}/${encodeURIComponent(
+    siteId,
+  )}/edge_function_logs?from=${from.toString()}&to=${to.toString()}`
 }
 
 export async function fetchHistoricalLogs({

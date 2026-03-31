@@ -5,7 +5,13 @@ import { chalk, log } from '../../utils/command-helpers.js'
 import { getWebSocket } from '../../utils/websockets/index.js'
 import type BaseCommand from '../base-command.js'
 
-import { parseDateToMs, buildEdgeFunctionLogsUrl, fetchHistoricalLogs, printHistoricalLogs, formatLogEntry } from './log-api.js'
+import {
+  parseDateToMs,
+  buildEdgeFunctionLogsUrl,
+  fetchHistoricalLogs,
+  printHistoricalLogs,
+  formatLogEntry,
+} from './log-api.js'
 import { CLI_LOG_LEVEL_CHOICES_STRING, LOG_LEVELS_LIST } from './log-levels.js'
 import { getName } from './build.js'
 

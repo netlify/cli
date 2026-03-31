@@ -77,6 +77,11 @@ Provision a production ready Postgres database with a single command
 
 Deploy your project to Netlify
 
+| Subcommand | description  |
+|:--------------------------- |:-----|
+| [`deploy:logs`](/commands/deploy#deploylogs) | Stream the logs of deploys currently being built to the console  |
+
+
 ### [dev](/commands/dev)
 
 Local dev server
@@ -110,6 +115,7 @@ Manage netlify functions
 | [`functions:create`](/commands/functions#functionscreate) | Create a new function locally  |
 | [`functions:invoke`](/commands/functions#functionsinvoke) | Trigger a function while in netlify dev with simulated data, good for testing function calls including Netlify's Event Triggered Functions  |
 | [`functions:list`](/commands/functions#functionslist) | List functions that exist locally  |
+| [`functions:logs`](/commands/functions#functionslogs) | Stream netlify function logs to the console  |
 | [`functions:serve`](/commands/functions#functionsserve) | Serve functions locally  |
 
 

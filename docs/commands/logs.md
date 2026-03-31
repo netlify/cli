@@ -99,11 +99,11 @@ netlify logs:function
 
 **Arguments**
 
-- `functionName` - Name or ID of the function to stream logs for
+- functionName - Name or ID of the function to stream logs for
 
 **Flags**
 
-- `deploy-id` (*string*) - Deploy ID to find the function from
+- `deploy-id` (*string*) - Deploy ID to look up the function from
 - `filter` (*string*) - For monorepos, specify the name of the application to run the command in
 - `from` (*string*) - Start date for historical logs (ISO 8601 format)
 - `level` (*string*) - Log levels to stream. Choices are: trace, debug, info, warn, error, fatal
