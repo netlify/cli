@@ -45,7 +45,7 @@ const config = {
           md += formatDescription(stripAnsi(subCmd.description))
           md += formatUsage(subCmd.name, subCmd)
           md += formatArgs(subCmd.args)
-          md += formatFlags(subCmd.flags)
+          md += formatFlags(subCmd.flags, subCmd.name)
           md += commandExamples(subCmd.examples)
           md += `---\n`
         })
@@ -134,7 +134,13 @@ const formatFlags = function (cmdFlags, command) {
   if (!cmdFlags) {
     return ''
   }
-  const flagArray = Object.keys(cmdFlags)
+  let flagArray = Object.keys(cmdFlags)
+
+  // Exclude --filter flag for sites:search as it's not applicable
+  if (command === 'sites:search') {
+    flagArray = flagArray.filter(flag => flag !== 'filter')
+  }
+
   if (flagArray.length === 0) {
     return ''
   }
