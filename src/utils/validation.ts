@@ -2,7 +2,7 @@ import { InvalidArgumentError } from 'commander'
 
 import { BANG, chalk } from './command-helpers.js'
 
-const MAX_SITE_NAME_LENGTH = 63
+export const MAX_SITE_NAME_LENGTH = 63
 
 export const validateSiteName = (value: string): string => {
   if (value.length > MAX_SITE_NAME_LENGTH) {
