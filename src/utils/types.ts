@@ -215,7 +215,7 @@ export type MinimalAccount = {
 }
 
 type EnvironmentVariableScope = 'builds' | 'functions' | 'runtime' | 'post_processing'
-export type EnvironmentVariableSource = 'account' | 'addons' | 'configFile' | 'general' | 'internal' | 'ui'
+export type EnvironmentVariableSource = 'account' | 'addons' | 'configFile' | 'general' | 'internal' | 'ui' | string
 
 export type EnvironmentVariables = Record<
   string,
