@@ -50,6 +50,11 @@ netlify deploy
 - `timeout` (*string*) - Timeout to wait for deployment to finish
 - `trigger` (*boolean*) - Trigger a new build of your project on Netlify without uploading local files
 
+| Subcommand | description  |
+|:--------------------------- |:-----|
+| [`deploy:logs`](/commands/deploy#deploylogs) | Stream the logs of deploys currently being built to the console  |
+
+
 **Examples**
 
 ```bash
@@ -67,5 +72,23 @@ netlify deploy --site-name my-new-site --team my-team # Create site and deploy
 netlify deploy --allow-anonymous --dir ./public --no-build # Deploy without auth
 ```
 
+---
+## `deploy:logs`
+
+Stream the logs of deploys currently being built to the console
+
+**Usage**
+
+```bash
+netlify deploy:logs
+```
+
+**Flags**
+
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
+
+---
 
 <!-- AUTO-GENERATED-CONTENT:END -->

@@ -230,6 +230,7 @@ For more information, visit https://ntl.fyi/cli-native-modules.`)
     deployId,
     deploy,
     uploadList,
+    edgeFunctionsCount,
   }
   return deployManifest
 }

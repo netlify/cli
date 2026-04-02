@@ -567,6 +567,8 @@ const runDeploy = async ({
   functionLogsUrl: string
   edgeFunctionLogsUrl: string
   sourceZipFileName?: string
+  deployedFunctions: { name: string; id: string }[]
+  hasEdgeFunctions: boolean
 }> => {
   let results
   let deployId = existingDeployId
@@ -678,6 +680,13 @@ const runDeploy = async ({
     edgeFunctionLogsUrl += `?scope=deployid:${deployId}`
   }
 
+  const availableFunctions = (results.deploy.available_functions ?? []) as { n?: string; oid?: string }[]
+  const deployedFunctions = availableFunctions
+    .filter((fn): fn is { n: string; oid: string } => Boolean(fn.n && fn.oid))
+    .map((fn) => ({ name: fn.n, id: fn.oid }))
+
+  const hasEdgeFunctions = (results.edgeFunctionsCount ?? 0) > 0
+
   return {
     siteId: results.deploy.site_id,
     siteName: results.deploy.name,
@@ -688,6 +697,8 @@ const runDeploy = async ({
     functionLogsUrl,
     edgeFunctionLogsUrl,
     sourceZipFileName: uploadSourceZipResult?.sourceZipFileName,
+    deployedFunctions,
+    hasEdgeFunctions,
   }
 }
 
@@ -808,6 +819,7 @@ interface JsonData {
   logs: string
   function_logs: string
   edge_function_logs: string
+  deployed_functions: { name: string; id: string }[]
   url?: string
   source_zip_filename?: string
 }
@@ -825,10 +837,18 @@ const printResults = ({
   results: Awaited<ReturnType<typeof prepAndRunDeploy>>
   runBuildCommand: boolean
 }): void => {
-  const msgData: Record<string, string> = {
+  const buildLogsData: Record<string, string> = {
     'Build logs': terminalLink(results.logsUrl, results.logsUrl, { fallback: false }),
-    'Function logs': terminalLink(results.functionLogsUrl, results.functionLogsUrl, { fallback: false }),
-    'Edge function Logs': terminalLink(results.edgeFunctionLogsUrl, results.edgeFunctionLogsUrl, { fallback: false }),
+  }
+
+  const functionLogsData: Record<string, string> = {
+    'Functions logs': terminalLink(results.functionLogsUrl, results.functionLogsUrl, { fallback: false }),
+    'Functions CLI': `netlify functions:logs --deploy-id ${results.deployId} <function-name-or-id>`,
+  }
+
+  const edgeFunctionLogsData: Record<string, string> = {
+    'Edge Functions logs': terminalLink(results.edgeFunctionLogsUrl, results.edgeFunctionLogsUrl, { fallback: false }),
+    'Edge Functions CLI': `netlify logs:edge-functions --deploy-id ${results.deployId}`,
   }
 
   log('')
@@ -845,6 +865,7 @@ const printResults = ({
       logs: results.logsUrl,
       function_logs: results.functionLogsUrl,
       edge_function_logs: results.edgeFunctionLogsUrl,
+      deployed_functions: results.deployedFunctions,
     }
     if (deployToProduction) {
       jsonData.url = results.siteUrl
@@ -893,7 +914,22 @@ const printResults = ({
       }),
     )
 
-    log(prettyjson.render(msgData))
+    log(prettyjson.render(buildLogsData))
+
+    if (results.deployedFunctions.length > 0) {
+      log()
+      log(prettyjson.render(functionLogsData))
+    }
+
+    if (results.hasEdgeFunctions) {
+      log()
+      log(prettyjson.render(edgeFunctionLogsData))
+    }
+
+    if (results.deployedFunctions.length > 0 || results.hasEdgeFunctions) {
+      log()
+      log(chalk.dim('Use --from <datetime> and --to <datetime> to fetch historical logs (ISO 8601 format)'))
+    }
 
     if (!deployToProduction) {
       log()

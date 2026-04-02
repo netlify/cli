@@ -29,6 +29,7 @@ netlify functions
 | [`functions:create`](/commands/functions#functionscreate) | Create a new function locally  |
 | [`functions:invoke`](/commands/functions#functionsinvoke) | Trigger a function while in netlify dev with simulated data, good for testing function calls including Netlify's Event Triggered Functions  |
 | [`functions:list`](/commands/functions#functionslist) | List functions that exist locally  |
+| [`functions:logs`](/commands/functions#functionslogs) | Stream netlify function logs to the console  |
 | [`functions:serve`](/commands/functions#functionsserve) | Serve functions locally  |
 
 
@@ -154,6 +155,31 @@ netlify functions:list
 - `json` (*boolean*) - Output function data as JSON
 - `debug` (*boolean*) - Print debugging information
 - `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
+
+---
+## `functions:logs`
+
+Stream netlify function logs to the console
+
+**Usage**
+
+```bash
+netlify functions:logs
+```
+
+**Arguments**
+
+- functionName - Name or ID of the function to stream logs for
+
+**Flags**
+
+- `deploy-id` (*string*) - Deploy ID to look up the function from
+- `filter` (*string*) - For monorepos, specify the name of the application to run the command in
+- `from` (*string*) - Start date for historical logs (ISO 8601 format)
+- `level` (*string*) - Log levels to stream. Choices are: trace, debug, info, warn, error, fatal
+- `debug` (*boolean*) - Print debugging information
+- `auth` (*string*) - Netlify auth token - can be used to run this command without logging in
+- `to` (*string*) - End date for historical logs (ISO 8601 format, defaults to now)
 
 ---
 ## `functions:serve`
