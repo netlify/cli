@@ -4,7 +4,7 @@ import inquirer from 'inquirer'
 import { afterAll, beforeEach, describe, expect, test, vi } from 'vitest'
 
 import BaseCommand from '../../../../src/commands/base-command.js'
-import { createSitesCreateCommand } from '../../../../src/commands/sites/sites.js'
+import { createSitesCommand, createSitesCreateCommand } from '../../../../src/commands/sites/sites.js'
 import { getEnvironmentVariables, withMockApi } from '../../utils/mock-api.js'
 
 vi.mock('../../../../src/utils/command-helpers.js', async () => ({
@@ -237,6 +237,245 @@ describe('sites command', () => {
             expect(bodyName.length).toBeLessThanOrEqual(63)
           }
         })
+      })
+    })
+  })
+
+  describe('sites:search', () => {
+    test('should find and display matching sites', async () => {
+      const searchRoutes = [
+        {
+          path: 'accounts',
+          response: [{ slug: 'test-account' }],
+        },
+        {
+          path: 'sites',
+          response: [
+            {
+              id: 'site-1',
+              name: 'my-awesome-site',
+              ssl_url: 'https://my-awesome-site.netlify.app',
+              account_name: 'Test Account',
+              build_settings: { repo_url: 'https://github.com/test/repo' },
+            },
+            {
+              id: 'site-2',
+              name: 'my-other-site',
+              ssl_url: 'https://my-other-site.netlify.app',
+              account_name: 'Test Account',
+            },
+          ],
+        },
+        {
+          path: 'user',
+          response: { name: 'test user', slug: 'test-user', email: 'user@test.com' },
+        },
+      ]
+
+      await withMockApi(searchRoutes, async ({ apiUrl, requests }) => {
+        Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
+
+        const program = new BaseCommand('netlify')
+        createSitesCommand(program)
+
+        await program.parseAsync(['', '', 'sites:search', 'my'])
+
+        const searchRequest = requests.find((r) => r.path === '/api/v1/sites' && r.method === 'GET')
+        expect(searchRequest).toBeDefined()
+      })
+    })
+
+    test('should return JSON when --json flag is passed', async () => {
+      const searchRoutes = [
+        {
+          path: 'accounts',
+          response: [{ slug: 'test-account' }],
+        },
+        {
+          path: 'sites',
+          response: [
+            {
+              id: 'site-1',
+              name: 'my-site',
+              ssl_url: 'https://my-site.netlify.app',
+              account_name: 'Test Account',
+            },
+          ],
+        },
+        {
+          path: 'user',
+          response: { name: 'test user', slug: 'test-user', email: 'user@test.com' },
+        },
+      ]
+
+      await withMockApi(searchRoutes, async ({ apiUrl }) => {
+        Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
+
+        const program = new BaseCommand('netlify')
+        createSitesCommand(program)
+
+        const logJsonSpy = vi.spyOn(await import('../../../../src/utils/command-helpers.js'), 'logJson')
+
+        await program.parseAsync(['', '', 'sites:search', 'my-site', '--json'])
+
+        expect(logJsonSpy).toHaveBeenCalledWith(
+          expect.arrayContaining([
+            expect.objectContaining({
+              id: 'site-1',
+              name: 'my-site',
+            }),
+          ]),
+        )
+
+        logJsonSpy.mockRestore()
+      })
+    })
+
+    test('should return empty array when no sites found with --json', async () => {
+      const searchRoutes = [
+        {
+          path: 'accounts',
+          response: [{ slug: 'test-account' }],
+        },
+        {
+          path: 'sites',
+          response: [],
+        },
+        {
+          path: 'user',
+          response: { name: 'test user', slug: 'test-user', email: 'user@test.com' },
+        },
+      ]
+
+      await withMockApi(searchRoutes, async ({ apiUrl }) => {
+        Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
+
+        const program = new BaseCommand('netlify')
+        createSitesCommand(program)
+
+        const logJsonSpy = vi.spyOn(await import('../../../../src/utils/command-helpers.js'), 'logJson')
+
+        await program.parseAsync(['', '', 'sites:search', 'nonexistent', '--json'])
+
+        expect(logJsonSpy).toHaveBeenCalledWith([])
+
+        logJsonSpy.mockRestore()
+      })
+    })
+
+    test('should show friendly message when no sites found', async () => {
+      const searchRoutes = [
+        {
+          path: 'accounts',
+          response: [{ slug: 'test-account' }],
+        },
+        {
+          path: 'sites',
+          response: [],
+        },
+        {
+          path: 'user',
+          response: { name: 'test user', slug: 'test-user', email: 'user@test.com' },
+        },
+      ]
+
+      await withMockApi(searchRoutes, async ({ apiUrl, requests }) => {
+        Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
+
+        const program = new BaseCommand('netlify')
+        createSitesCommand(program)
+
+        await program.parseAsync(['', '', 'sites:search', 'nonexistent'])
+
+        const searchRequest = requests.find((r) => r.path === '/api/v1/sites' && r.method === 'GET')
+        expect(searchRequest).toBeDefined()
+      })
+    })
+
+    test('should work in non-interactive mode (CI environment)', async () => {
+      const searchRoutes = [
+        {
+          path: 'accounts',
+          response: [{ slug: 'test-account' }],
+        },
+        {
+          path: 'sites',
+          response: [
+            {
+              id: 'site-1',
+              name: 'test-site',
+              ssl_url: 'https://test-site.netlify.app',
+              account_name: 'Test Account',
+            },
+          ],
+        },
+        {
+          path: 'user',
+          response: { name: 'test user', slug: 'test-user', email: 'user@test.com' },
+        },
+      ]
+
+      await withMockApi(searchRoutes, async ({ apiUrl, requests }) => {
+        Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
+        process.env.CI = 'true'
+        process.stdin.isTTY = false
+        process.stdout.isTTY = false
+
+        const program = new BaseCommand('netlify')
+        createSitesCommand(program)
+
+        await program.parseAsync(['', '', 'sites:search', 'test'])
+
+        const searchRequest = requests.find((r) => r.path === '/api/v1/sites' && r.method === 'GET')
+        expect(searchRequest).toBeDefined()
+      })
+    })
+
+    test('should work in non-interactive mode with JSON output', async () => {
+      const searchRoutes = [
+        {
+          path: 'accounts',
+          response: [{ slug: 'test-account' }],
+        },
+        {
+          path: 'sites',
+          response: [
+            {
+              id: 'site-1',
+              name: 'test-site',
+              ssl_url: 'https://test-site.netlify.app',
+            },
+          ],
+        },
+        {
+          path: 'user',
+          response: { name: 'test user', slug: 'test-user', email: 'user@test.com' },
+        },
+      ]
+
+      await withMockApi(searchRoutes, async ({ apiUrl }) => {
+        Object.assign(process.env, getEnvironmentVariables({ apiUrl }))
+        process.env.CI = 'true'
+        process.stdin.isTTY = false
+        process.stdout.isTTY = false
+
+        const program = new BaseCommand('netlify')
+        createSitesCommand(program)
+
+        const logJsonSpy = vi.spyOn(await import('../../../../src/utils/command-helpers.js'), 'logJson')
+
+        await program.parseAsync(['', '', 'sites:search', 'test', '--json'])
+
+        expect(logJsonSpy).toHaveBeenCalledWith(
+          expect.arrayContaining([
+            expect.objectContaining({
+              id: 'site-1',
+              name: 'test-site',
+            }),
+          ]),
+        )
+
+        logJsonSpy.mockRestore()
       })
     })
   })

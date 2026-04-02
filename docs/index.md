@@ -175,6 +175,7 @@ Handle various project operations
 | [`sites:create`](/commands/sites#sitescreate) | Create an empty project (advanced)  |
 | [`sites:delete`](/commands/sites#sitesdelete) | Delete a project  |
 | [`sites:list`](/commands/sites#siteslist) | List all projects you have access to  |
+| [`sites:search`](/commands/sites#sitessearch) | Search for projects by name  |
 
 
 ### [status](/commands/status)
