@@ -54,9 +54,9 @@ Run ${chalk.inverse.hex(NETLIFY_CYAN_HEX)('{updateCommand}')} to update`
   try {
     await runProgram(program, argv)
 
-    program.onEnd()
+    await program.onEnd()
   } catch (error) {
-    program.onEnd(error)
+    await program.onEnd(error)
   }
 }
 

@@ -471,6 +471,8 @@ export default class BaseCommand extends Command {
       logError(error_ instanceof Error ? error_ : format(error_))
       exit(1)
     }
+
+    exit()
   }
 
   async authenticate(tokenFromFlag?: string) {
