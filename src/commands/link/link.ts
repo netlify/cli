@@ -9,6 +9,7 @@ import { startSpinner } from '../../lib/spinner.js'
 import { chalk, logAndThrowError, exit, log, APIError, netlifyCommand } from '../../utils/command-helpers.js'
 import { ensureNetlifyIgnore } from '../../utils/gitignore.js'
 import getRepoData from '../../utils/get-repo-data.js'
+import { isInteractive } from '../../utils/scripted-commands.js'
 import { track } from '../../utils/telemetry/index.js'
 import type { SiteInfo } from '../../utils/types.js'
 import BaseCommand from '../base-command.js'
@@ -39,7 +40,14 @@ const findSiteByRepoUrl = async (api: NetlifyAPI, repoUrl: string): Promise<Site
 
 Double check you are in the correct working directory and a remote origin repo is configured.
 
-Run ${chalk.cyanBright('git remote -v')} to see a list of your git remotes.`)
+Run ${chalk.cyanBright('git remote -v')} to see a list of your git remotes.
+
+To link manually:
+  ${chalk.cyanBright(`${netlifyCommand()} link --id <project-id>`)}
+  ${chalk.cyanBright(`${netlifyCommand()} link --name <project-name>`)}
+
+To search for projects:
+  ${chalk.cyanBright(`${netlifyCommand()} sites:search <search-term>`)}`)
 
     return exit(1)
   }
@@ -144,8 +152,14 @@ const linkPrompt = async (command: BaseCommand, options: LinkOptionValues): Prom
       if (!matchingSites || matchingSites.length === 0) {
         return logAndThrowError(`No project names found containing '${searchTerm}'.
 
-Run ${chalk.cyanBright(`${netlifyCommand()} link`)} again to try a new search,
-or run ${chalk.cyanBright(`npx ${netlifyCommand()} sites:create`)} to create a project.`)
+To search for projects:
+  ${chalk.cyanBright(`${netlifyCommand()} sites:search <search-term>`)}
+
+To link by project ID:
+  ${chalk.cyanBright(`${netlifyCommand()} link --id <project-id>`)}
+
+To create a new project:
+  ${chalk.cyanBright(`${netlifyCommand()} sites:create`)}`)
       }
 
       if (matchingSites.length > 1) {
@@ -326,7 +340,13 @@ export const link = async (options: LinkOptionValues, command: BaseCommand) => {
     }
 
     if (results.length === 0) {
-      return logAndThrowError(new Error(`No projects found named ${options.name}`))
+      return logAndThrowError(`No projects found named ${options.name}.
+
+To search for projects:
+  ${chalk.cyanBright(`${netlifyCommand()} sites:search ${options.name}`)}
+
+To link by project ID:
+  ${chalk.cyanBright(`${netlifyCommand()} link --id <project-id>`)}`)
     }
 
     const matchingSiteData = results.find((site: SiteInfo) => site.name === options.name) || results[0]
@@ -350,6 +370,25 @@ export const link = async (options: LinkOptionValues, command: BaseCommand) => {
       kind: 'byRepoUrl',
     })
   } else {
+    if (!isInteractive()) {
+      return logAndThrowError(`No project specified. In non-interactive mode, you must specify how to link:
+
+Link by project ID:
+  ${chalk.cyanBright(`${netlifyCommand()} link --id <project-id>`)}
+
+Link by project name:
+  ${chalk.cyanBright(`${netlifyCommand()} link --name <project-name>`)}
+
+Link by git remote URL:
+  ${chalk.cyanBright(`${netlifyCommand()} link --gitRemoteUrl <url>`)}
+
+To search for projects:
+  ${chalk.cyanBright(`${netlifyCommand()} sites:search <search-term>`)}
+
+To list all projects:
+  ${chalk.cyanBright(`${netlifyCommand()} sites:list`)}`)
+    }
+
     newSiteData = await linkPrompt(command, options)
   }
   // FIXME(serhalp): All the cases above except one (look up by site name) end up *returning*
