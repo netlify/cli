@@ -259,34 +259,16 @@ const detectServerSettings = async (
 ): Promise<ServerSettings> => {
   validateProperty(devConfig, 'framework', 'string')
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO(serhalp): Set to `BaseServerSettings`. Good luck!
-  let settings: any = {}
+  let settings: BaseServerSettings
 
   if (flags.dir || devConfig.framework === '#static') {
     // serving files statically without a framework server
     settings = await handleStaticServer({ flags, devConfig, workingDir: command.workingDir })
-  } else if (devConfig.framework === '#auto') {
-    // this is the default CLI behavior
-
-    const runDetection = !hasCommandAndTargetPort(devConfig)
-    const frameworkSettings = runDetection
-      ? getSettingsFromDetectedSettings(command, await detectFrameworkSettings(command, 'dev'))
-      : undefined
-    if (frameworkSettings === undefined && runDetection) {
-      log(`${NETLIFYDEVWARN} No app server detected. Using simple static server`)
-      settings = await handleStaticServer({ flags, devConfig, workingDir: command.workingDir })
-    } else {
-      validateFrameworkConfig({ devConfig })
-
-      settings = await mergeSettings({ devConfig, frameworkSettings, workingDir: command.workingDir })
-    }
-
-    settings.plugins = frameworkSettings?.plugins
   } else if (devConfig.framework === '#custom') {
     validateFrameworkConfig({ devConfig })
     // when the users wants to configure `command` and `targetPort`
     settings = handleCustomFramework({ devConfig, workingDir: command.workingDir })
-  } else if (devConfig.framework) {
+  } else if (devConfig.framework && devConfig.framework !== '#auto') {
     validateFrameworkConfig({ devConfig })
     // this is when the user explicitly configures a framework, e.g. `framework = "gatsby"`
     settings = await handleForcedFramework({
@@ -296,6 +278,22 @@ const detectServerSettings = async (
       workingDir: command.workingDir,
       workspacePackage: command.workspacePackage,
     })
+  } else {
+    // this is the default CLI behavior (#auto or undefined)
+    const runDetection = !hasCommandAndTargetPort(devConfig)
+    const frameworkSettings = runDetection
+      ? getSettingsFromDetectedSettings(command, await detectFrameworkSettings(command, 'dev'))
+      : undefined
+
+    if (frameworkSettings === undefined && runDetection) {
+      log(`${NETLIFYDEVWARN} No app server detected. Using simple static server`)
+      settings = await handleStaticServer({ flags, devConfig, workingDir: command.workingDir })
+    } else {
+      validateFrameworkConfig({ devConfig })
+
+      const mergedSettings = await mergeSettings({ devConfig, frameworkSettings, workingDir: command.workingDir })
+      settings = { ...mergedSettings, plugins: frameworkSettings?.plugins }
+    }
   }
 
   validateConfiguredPort({ devConfig, detectedPort: settings.frameworkPort })
