@@ -10,7 +10,10 @@ const formatValue = (value: unknown): string => {
   if (typeof value === 'object') {
     return JSON.stringify(value)
   }
-  return String(value)
+  if (typeof value === 'string') {
+    return value
+  }
+  return String(value as number | boolean | bigint)
 }
 
 export const formatQueryResult = (

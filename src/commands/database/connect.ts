@@ -31,7 +31,7 @@ export const connect = async (options: ConnectOptions, command: BaseCommand): Pr
   // --query: one-shot mode
   if (options.query) {
     try {
-      const result = await client.query(options.query)
+      const result = await client.query<Record<string, unknown>>(options.query)
       if (options.json) {
         logJson(result.rows)
       } else {
@@ -114,7 +114,7 @@ export const connect = async (options: ConnectOptions, command: BaseCommand): Pr
       rl.pause()
       void (async () => {
         try {
-          const result = await client.query(sql)
+          const result = await client.query<Record<string, unknown>>(sql)
           log(formatQueryResult(result.fields, result.rows, result.rowCount, result.command))
         } catch (err) {
           const message = err instanceof Error ? err.message : String(err)

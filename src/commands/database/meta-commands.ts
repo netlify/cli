@@ -31,7 +31,7 @@ export const executeMetaCommand = async (input: string, client: Client): Promise
   }
 
   if (cmd === '\\dt' || (cmd === '\\d' && args.length === 0)) {
-    const result = await client.query(
+    const result = await client.query<Record<string, unknown>>(
       `SELECT schemaname AS "Schema", tablename AS "Name", tableowner AS "Owner"
        FROM pg_tables
        WHERE schemaname NOT IN ('pg_catalog', 'information_schema')
@@ -42,7 +42,7 @@ export const executeMetaCommand = async (input: string, client: Client): Promise
 
   if (cmd === '\\d' && args.length > 0) {
     const tableName = args[0]
-    const result = await client.query(
+    const result = await client.query<Record<string, unknown>>(
       `SELECT column_name AS "Column", data_type AS "Type",
               CASE WHEN is_nullable = 'YES' THEN 'yes' ELSE 'no' END AS "Nullable",
               column_default AS "Default"
@@ -58,7 +58,7 @@ export const executeMetaCommand = async (input: string, client: Client): Promise
   }
 
   if (cmd === '\\l') {
-    const result = await client.query(
+    const result = await client.query<Record<string, unknown>>(
       `SELECT datname AS "Name",
               pg_catalog.pg_get_userbyid(datdba) AS "Owner",
               pg_catalog.pg_encoding_to_char(encoding) AS "Encoding"

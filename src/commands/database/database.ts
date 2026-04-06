@@ -94,7 +94,10 @@ export const createDatabaseCommand = (program: BaseCommand) => {
       .command('connect')
       .description('Connect to the database')
       .option('-q, --query <sql>', 'Execute a single query and exit')
-      .option('--json', 'Output query results as JSON. When used without --query, prints the connection details as JSON instead.')
+      .option(
+        '--json',
+        'Output query results as JSON. When used without --query, prints the connection details as JSON instead.',
+      )
       .action(async (options: { query?: string; json?: boolean }, command: BaseCommand) => {
         const { connect } = await import('./connect.js')
         await connect(options, command)
