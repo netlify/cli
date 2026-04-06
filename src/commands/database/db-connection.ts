@@ -11,14 +11,29 @@ interface DBConnection {
 }
 
 export async function connectToDatabase(buildDir: string): Promise<DBConnection> {
-  const state = new LocalState(buildDir)
-  const connectionString = state.get('dbConnectionString')
+  const { client, cleanup } = await connectRawClient(buildDir)
+  return {
+    executor: new PgClientExecutor(client),
+    cleanup,
+  }
+}
 
-  if (connectionString) {
-    const client = new Client({ connectionString })
+interface RawDBConnection {
+  client: Client
+  connectionString: string
+  cleanup: () => Promise<void>
+}
+
+export async function connectRawClient(buildDir: string): Promise<RawDBConnection> {
+  const state = new LocalState(buildDir)
+  const storedConnectionString = state.get('dbConnectionString')
+
+  if (storedConnectionString) {
+    const client = new Client({ connectionString: storedConnectionString })
     await client.connect()
     return {
-      executor: new PgClientExecutor(client),
+      client,
+      connectionString: storedConnectionString,
       cleanup: () => client.end(),
     }
   }
@@ -40,14 +55,21 @@ export async function connectToDatabase(buildDir: string): Promise<DBConnection>
 
   await netlifyDev.start()
 
-  const { db } = netlifyDev
-  if (!db) {
+  const connectionString = state.get('dbConnectionString')
+  if (!connectionString) {
     await netlifyDev.stop()
     throw new Error('Local database failed to start. Set EXPERIMENTAL_NETLIFY_DB_ENABLED=1 to enable.')
   }
 
+  const client = new Client({ connectionString })
+  await client.connect()
+
   return {
-    executor: db,
-    cleanup: () => netlifyDev.stop(),
+    client,
+    connectionString,
+    cleanup: async () => {
+      await client.end()
+      await netlifyDev.stop()
+    },
   }
 }

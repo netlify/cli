@@ -91,6 +91,22 @@ export const createDatabaseCommand = (program: BaseCommand) => {
 
   if (process.env.EXPERIMENTAL_NETLIFY_DB_ENABLED === '1') {
     dbCommand
+      .command('connect')
+      .description('Connect to the database')
+      .option('-q, --query <sql>', 'Execute a single query and exit')
+      .option('--json', 'Output query results as JSON. When used without --query, prints the connection details as JSON instead.')
+      .action(async (options: { query?: string; json?: boolean }, command: BaseCommand) => {
+        const { connect } = await import('./connect.js')
+        await connect(options, command)
+      })
+      .addExamples([
+        'netlify db connect',
+        'netlify db connect --query "SELECT * FROM users"',
+        'netlify db connect --json --query "SELECT * FROM users"',
+        'netlify db connect --json',
+      ])
+
+    dbCommand
       .command('migrate')
       .description('Apply database migrations to the local development database')
       .option('--to <name>', 'Target migration name or prefix to apply up to (applies all if omitted)')
