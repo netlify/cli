@@ -45,7 +45,7 @@ vi.mock('../../../../src/utils/execa.js', () => ({
 
 vi.stubGlobal('fetch', mockFetch)
 
-import { join } from 'path'
+import { join, resolve } from 'path'
 
 import inquirer from 'inquirer'
 import { migrationPull } from '../../../../src/commands/database/migration-pull.js'
@@ -165,21 +165,22 @@ describe('migrationPull', () => {
     vi.mocked(inquirer.prompt).mockResolvedValueOnce({ confirmed: true })
 
     const migrationsPath = '/project/netlify/db/migrations'
+    const resolved = resolve(migrationsPath)
     await migrationPull({}, createMockCommand({ migrationsPath }))
 
-    expect(mockRm).toHaveBeenCalledWith(migrationsPath, { recursive: true, force: true })
+    expect(mockRm).toHaveBeenCalledWith(resolved, { recursive: true, force: true })
 
     expect(mockMkdir).toHaveBeenCalledTimes(2)
-    expect(mockMkdir).toHaveBeenCalledWith(join(migrationsPath, '0001_create-users'), { recursive: true })
-    expect(mockMkdir).toHaveBeenCalledWith(join(migrationsPath, '0002_add-posts'), { recursive: true })
+    expect(mockMkdir).toHaveBeenCalledWith(resolve(resolved, '0001_create-users'), { recursive: true })
+    expect(mockMkdir).toHaveBeenCalledWith(resolve(resolved, '0002_add-posts'), { recursive: true })
 
     expect(mockWriteFile).toHaveBeenCalledTimes(2)
     expect(mockWriteFile).toHaveBeenCalledWith(
-      join(migrationsPath, '0001_create-users', 'migration.sql'),
+      resolve(resolved, '0001_create-users', 'migration.sql'),
       'CREATE TABLE users (id SERIAL PRIMARY KEY);',
     )
     expect(mockWriteFile).toHaveBeenCalledWith(
-      join(migrationsPath, '0002_add-posts', 'migration.sql'),
+      resolve(resolved, '0002_add-posts', 'migration.sql'),
       'CREATE TABLE posts (id SERIAL PRIMARY KEY, user_id INT REFERENCES users(id));',
     )
   })
