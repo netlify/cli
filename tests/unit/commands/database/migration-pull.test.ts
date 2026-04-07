@@ -45,7 +45,7 @@ vi.mock('../../../../src/utils/execa.js', () => ({
 
 vi.stubGlobal('fetch', mockFetch)
 
-import { join, resolve } from 'path'
+import { resolve } from 'path'
 
 import inquirer from 'inquirer'
 import { migrationPull } from '../../../../src/commands/database/migration-pull.js'
