@@ -1,6 +1,7 @@
 import { OptionValues } from 'commander'
 
 import { chalk, exit, getToken, log, logAndThrowError } from '../../utils/command-helpers.js'
+import { isInteractive } from '../../utils/scripted-commands.js'
 import { TokenLocation } from '../../utils/types.js'
 import BaseCommand from '../base-command.js'
 
@@ -48,6 +49,12 @@ export const login = async (options: OptionValues, command: BaseCommand) => {
     log(`To see all available commands run: ${chalk.cyanBright('netlify help')}`)
     log()
     return exit()
+  }
+
+  if (!isInteractive()) {
+    const { loginRequest } = await import('./login-request.js')
+    await loginRequest('CLI session', command.netlify.apiOpts)
+    return
   }
 
   await command.expensivelyAuthenticate()

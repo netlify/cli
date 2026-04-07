@@ -14,9 +14,11 @@ COMMANDS
   $ api          Run any Netlify API method
   $ blobs        Manage objects in Netlify Blobs
   $ build        Build on your local machine
+  $ claim        Claim an anonymously deployed site and link it to your account
   $ clone        Clone a remote repository and link it to an existing project
                  on Netlify
   $ completion   Generate shell completion script
+  $ create       Create a new Netlify project using an AI agent
   $ db           Provision a production ready Postgres database with a single
                  command
   $ deploy       Deploy your project to Netlify
@@ -38,6 +40,7 @@ COMMANDS
   $ sites        Handle various project operations
   $ status       Print status information
   $ switch       Switch your active Netlify account
+  $ teams        Handle various team operations
   $ unlink       Unlink a local folder from a Netlify project
   $ watch        Watch for project deploy to finish
 
