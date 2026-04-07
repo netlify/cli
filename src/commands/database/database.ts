@@ -154,7 +154,10 @@ export const createDatabaseCommand = (program: BaseCommand) => {
     migrationsCommand
       .command('pull')
       .description('Pull migrations and overwrite local migration files')
-      .option('-b, --branch [branch]', 'Pull migrations for a specific branch (defaults to the local git branch)')
+      .option(
+        '-b, --branch [branch]',
+        "Pull migrations for a specific branch (defaults to 'production'; pass --branch with no value to use local git branch)",
+      )
       .option('--force', 'Skip confirmation prompt', false)
       .option('--json', 'Output result as JSON')
       .action(async (options: MigrationPullOptions, command: BaseCommand) => {

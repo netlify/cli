@@ -1,5 +1,5 @@
 import { rm, mkdir, writeFile } from 'fs/promises'
-import { join, dirname } from 'path'
+import { dirname, resolve, isAbsolute } from 'path'
 
 import inquirer from 'inquirer'
 
@@ -114,10 +114,20 @@ export const migrationPull = async (options: MigrationPullOptions, command: Base
     }
   }
 
-  await rm(migrationsDirectory, { recursive: true, force: true })
+  const canonicalMigrationsDir = resolve(migrationsDirectory)
+
+  await rm(canonicalMigrationsDir, { recursive: true, force: true })
 
   for (const migration of migrations) {
-    const filePath = join(migrationsDirectory, migration.path)
+    if (isAbsolute(migration.path) || migration.path.split(/[/\\]/).includes('..')) {
+      throw new Error(`Migration path "${migration.path}" contains invalid path segments.`)
+    }
+
+    const filePath = resolve(canonicalMigrationsDir, migration.path)
+    if (!filePath.startsWith(canonicalMigrationsDir)) {
+      throw new Error(`Migration path "${migration.path}" resolves outside the migrations directory.`)
+    }
+
     await mkdir(dirname(filePath), { recursive: true })
     await writeFile(filePath, migration.content)
   }

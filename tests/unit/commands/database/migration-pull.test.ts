@@ -228,6 +228,45 @@ describe('migrationPull', () => {
     )
   })
 
+  test('rejects migration paths with directory traversal', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          migrations: [{ version: 1, name: 'evil', path: '../etc/passwd', content: 'malicious' }],
+        }),
+    })
+
+    await expect(migrationPull({ force: true }, createMockCommand())).rejects.toThrow('invalid path segments')
+    expect(mockWriteFile).not.toHaveBeenCalled()
+  })
+
+  test('rejects absolute migration paths', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          migrations: [{ version: 1, name: 'evil', path: '/etc/passwd', content: 'malicious' }],
+        }),
+    })
+
+    await expect(migrationPull({ force: true }, createMockCommand())).rejects.toThrow('invalid path segments')
+    expect(mockWriteFile).not.toHaveBeenCalled()
+  })
+
+  test('propagates filesystem write errors', async () => {
+    mockFetchResponse(sampleMigrations)
+    mockWriteFile.mockRejectedValueOnce(new Error('EACCES: permission denied'))
+
+    await expect(migrationPull({ force: true }, createMockCommand())).rejects.toThrow('EACCES')
+  })
+
+  test('propagates network errors', async () => {
+    mockFetch.mockRejectedValue(new Error('Network error'))
+
+    await expect(migrationPull({ force: true }, createMockCommand())).rejects.toThrow('Network error')
+  })
+
   describe('--branch option', () => {
     test('passes explicit branch name as query parameter', async () => {
       mockFetchResponse(sampleMigrations)
