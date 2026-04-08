@@ -105,6 +105,28 @@ export const createDatabaseCommand = (program: BaseCommand) => {
       ])
 
     dbCommand
+      .command('init')
+      .description('Initialize a new database for the current site')
+      .action(async (_options: Record<string, unknown>, command: BaseCommand) => {
+        const { log, chalk } = await import('../../utils/command-helpers.js')
+
+        log()
+        log(
+          chalk.yellow(
+            '`netlify db init` is no longer available. Databases are now provisioned automatically when @netlify/db is detected in your project.',
+          ),
+        )
+        log()
+        log('To get started, run:')
+        log(`  ${chalk.cyan('npm install @netlify/db')}`)
+        log()
+        log(
+          `If you have an existing database from the Netlify DB extension, visit ${chalk.cyan('https://ntl.fyi/db-migration')} for migration instructions.`,
+        )
+        log()
+      })
+
+    dbCommand
       .command('connect')
       .description('Connect to the database')
       .option('-q, --query <sql>', 'Execute a single query and exit')

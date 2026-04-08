@@ -76,4 +76,15 @@ export const status = async (_options: OptionValues, command: BaseCommand) => {
         unpooledDatabaseUrlEnv?.key === 'NETLIFY_DATABASE_URL_UNPOOLED' ? 'saved' : chalk.red('not set'),
     }),
   )
+
+  // Show deprecation warning if a legacy extension DB is detected
+  if (databaseUrlEnv?.key === 'NETLIFY_DATABASE_URL') {
+    log()
+    log(
+      chalk.yellow(
+        'Warning: This site has a database from the legacy Netlify DB extension, which has been deprecated. Netlify DB is now available as a built-in feature.',
+      ),
+    )
+    log(`For migration instructions, visit ${chalk.cyan('https://ntl.fyi/db-migration')}`)
+  }
 }
