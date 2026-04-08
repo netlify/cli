@@ -3,6 +3,7 @@ import inquirer from 'inquirer'
 import BaseCommand from '../base-command.js'
 import type { DatabaseBoilerplateType, DatabaseInitOptions } from './init.js'
 import type { MigrationNewOptions } from './migration-new.js'
+import type { MigrationPullOptions } from './migration-pull.js'
 
 export type Extension = {
   id: string
@@ -31,7 +32,7 @@ export const createDatabaseCommand = (program: BaseCommand) => {
     .addExamples([
       'netlify db status',
       ...(process.env.EXPERIMENTAL_NETLIFY_DB_ENABLED === '1'
-        ? ['netlify db migrations apply', 'netlify db reset', 'netlify db migrations new']
+        ? ['netlify db migrations apply', 'netlify db migrations pull', 'netlify db reset', 'netlify db migrations new']
         : ['netlify db init', 'netlify db init --help']),
     ])
 
@@ -148,6 +149,26 @@ export const createDatabaseCommand = (program: BaseCommand) => {
       .addExamples([
         'netlify db migrations new',
         'netlify db migrations new --description "add users table" --scheme sequential',
+      ])
+
+    migrationsCommand
+      .command('pull')
+      .description('Pull migrations and overwrite local migration files')
+      .option(
+        '-b, --branch [branch]',
+        "Pull migrations for a specific branch (defaults to 'production'; pass --branch with no value to use local git branch)",
+      )
+      .option('--force', 'Skip confirmation prompt', false)
+      .option('--json', 'Output result as JSON')
+      .action(async (options: MigrationPullOptions, command: BaseCommand) => {
+        const { migrationPull } = await import('./migration-pull.js')
+        await migrationPull(options, command)
+      })
+      .addExamples([
+        'netlify db migrations pull',
+        'netlify db migrations pull --branch staging',
+        'netlify db migrations pull --branch',
+        'netlify db migrations pull --force',
       ])
   }
 }
