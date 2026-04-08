@@ -86,7 +86,7 @@
     "chokidar": "4.0.3",
     "ci-info": "4.4.0",
     "clean-deep": "3.4.0",
-    "commander": "12.1.0",
+    "commander": "14.0.3",
     "comment-json": "4.6.2",
     "content-type": "1.0.5",
     "cookie": "1.1.1",
