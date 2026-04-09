@@ -32,7 +32,7 @@ export const connect = async (options: ConnectOptions, command: BaseCommand): Pr
 
   // --json without --query: print connection details
   if (options.json && !options.query) {
-    logJson({ connection_string: redactConnectionString(connectionString), context: 'dev' })
+    logJson({ connection_string: connectionString, context: 'dev' })
     await cleanup()
     return
   }
