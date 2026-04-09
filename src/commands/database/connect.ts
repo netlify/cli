@@ -11,6 +11,17 @@ export interface ConnectOptions {
   json?: boolean
 }
 
+function redactConnectionString(connectionString: string): string {
+  try {
+    const url = new URL(connectionString)
+    url.username = ''
+    url.password = ''
+    return url.toString()
+  } catch {
+    throw new Error('The connection string is not a valid URL.')
+  }
+}
+
 export const connect = async (options: ConnectOptions, command: BaseCommand): Promise<void> => {
   const buildDir = command.netlify.site.root ?? command.project.root ?? command.project.baseDirectory
   if (!buildDir) {
@@ -21,12 +32,12 @@ export const connect = async (options: ConnectOptions, command: BaseCommand): Pr
 
   // --json without --query: print connection details
   if (options.json && !options.query) {
-    logJson({ connection_string: connectionString, context: 'dev' })
+    logJson({ connection_string: redactConnectionString(connectionString), context: 'dev' })
     await cleanup()
     return
   }
 
-  log(`Connected to ${connectionString}`)
+  log(`Connected to ${redactConnectionString(connectionString)}`)
 
   // --query: one-shot mode
   if (options.query) {
