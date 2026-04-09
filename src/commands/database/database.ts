@@ -107,7 +107,7 @@ export const createDatabaseCommand = (program: BaseCommand) => {
     dbCommand
       .command('init')
       .description('Initialize a new database for the current site')
-      .action(async (_options: Record<string, unknown>, command: BaseCommand) => {
+      .action(async (_options: Record<string, unknown>, _command: BaseCommand) => {
         const { log, chalk } = await import('../../utils/command-helpers.js')
 
         log()
@@ -121,7 +121,9 @@ export const createDatabaseCommand = (program: BaseCommand) => {
         log(`  ${chalk.cyan('npm install @netlify/db')}`)
         log()
         log(
-          `If you have an existing database from the Netlify DB extension, visit ${chalk.cyan('https://ntl.fyi/db-migration')} for migration instructions.`,
+          `If you have an existing database from the Netlify DB extension, visit ${chalk.cyan(
+            'https://ntl.fyi/db-migration',
+          )} for migration instructions.`,
         )
         log()
       })
