@@ -18,7 +18,7 @@ function redactConnectionString(connectionString: string): string {
     url.password = ''
     return url.toString()
   } catch {
-    throw new Error('The connection string is not a valid URL.')
+    return 'database'
   }
 }
 
